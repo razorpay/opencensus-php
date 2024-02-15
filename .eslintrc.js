@@ -72,6 +72,7 @@ module.exports = {
     'i18n-rules/no-region-specific-keyword': 'warn',
     'i18n-rules/no-currency-hardcoding': 'warn',
     'i18n-rules/no-href-hardcoding': 'warn',
+    'i18n-rules/no-region-specific-image': 'warn',
   },
   env: {
     browser: true,
@@ -195,6 +196,7 @@ module.exports = {
         'i18n-rules/no-region-specific-keyword': 'off',
         'i18n-rules/no-currency-hardcoding': 'off',
         'i18n-rules/no-href-hardcoding': 'off',
+        'i18n-rules/no-region-specific-image': 'off',
       },
     },
   ],

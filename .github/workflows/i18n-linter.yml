@@ -171,6 +171,10 @@ jobs:
                     {
                       "type": "mrkdwn",
                       "text": "*Currency Hardcoding Errors:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noCurrencyHardcodingErrors }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Warnings for Images:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noRegionSpecificImages }}"
                     }
                   ]
                 }
