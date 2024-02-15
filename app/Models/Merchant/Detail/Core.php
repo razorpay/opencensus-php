@@ -707,12 +707,35 @@ class Core extends Base\Core
     {
         $merchantId = $merchant->getId();
 
+        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
+
+        $this->app['trace']->info(TraceCode::ACTIVATION_FORM_SUBMISSION_EVENT_KAFKA_PUBLISH, [
+                                                                                               'data' => $deviceDetail,
+                                                                                           ]
+        );
+        if (optional($deviceDetail)->getSignupCampaign() === null)
+        {
+            $this->app['trace']->info(TraceCode::ACTIVATION_FORM_SUBMISSION_EVENT_ENTRY_SKIPPED, [
+                                                                                                   'signup_campaign' => null,
+                                                                                                   'merchant_id'     => $merchantId,
+                                                                                               ]
+            );
+
+            return;
+        }
+
         $newMerchantDetail       = $this->repo->merchant_detail->findOrFailPublic($merchantId);
         $currentActivationStatus = $newMerchantDetail->getActivationStatus();
 
         if ($currentActivationStatus !== Status::UNDER_REVIEW and
             $currentActivationStatus !== Status::ACTIVATED_MCC_PENDING)
         {
+            $this->app['trace']->info(TraceCode::ACTIVATION_FORM_SUBMISSION_EVENT_ENTRY_SKIPPED, [
+                                                                                                   'activation_status' => $currentActivationStatus,
+                                                                                                   'merchant_id'       => $merchantId,
+                                                                                               ]
+            );
+
             return;
         }
 

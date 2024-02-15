@@ -125,9 +125,11 @@ class DetailServiceTest extends TestCase
         $this->getDriverAsMerchantMock();
 
         $this->repoMock->shouldReceive('driver')->with('merchant_business_detail')->andReturn($this->merchantBusinessDetailEntityMock);
-
+        $this->userDeviceDetailRepositoryMock->shouldReceive('fetchByMerchantIdAndUserRole')->withAnyArgs()->andReturn($this->userDeviceDetailEntityMock);
+        $this->repoMock->shouldReceive('driver')->with('user_device_detail')->andReturn($this->userDeviceDetailRepositoryMock);
+        $this->userDeviceDetailEntityMock->shouldReceive('getSignupCampaign')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
-
+        $this->merchantDetailEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
         $this->merchantDetailValidator->shouldReceive('validatePartnerActivationStatus')->andReturn();
 
         $this->getFindOrFailPublic();
@@ -143,6 +145,9 @@ class DetailServiceTest extends TestCase
         $this->merchantEntityMock->shouldReceive('isLinkedAccount')->andReturn(false);
 
         $this->merchantEntityMock->shouldReceive('isNoDocOnboardingEnabled')->andReturn(false);
+        $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
+        
+        $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
 
         $this->merchantBusinessDetailEntityMock->shouldReceive('setBlacklistedProductsCategory');
 
@@ -158,6 +163,11 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('getActivationStatus')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
+        
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('id')->andReturn('1cXSLlUU8V9sXl');
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('id')->andReturn('1cXSLlUU8V9sXl');
+        
+        
         $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('isLocked')->andReturn();
@@ -226,7 +236,8 @@ class DetailServiceTest extends TestCase
         $this->merchantBusinessDetailEntityMock->shouldReceive('getWebsiteDetails')->withAnyArgs()->andReturn(null);
         $this->userDeviceDetailRepositoryMock->shouldReceive('fetchByMerchantIdAndUserRole')->withAnyArgs()->andReturn($this->userDeviceDetailEntityMock);
         $this->userDeviceDetailEntityMock->shouldReceive('getValueFromMetadata')->withAnyArgs()->andReturn('api');
-
+        $this->userDeviceDetailEntityMock->shouldReceive('getSignupCampaign')->withAnyArgs()->andReturn();
+        
         $org = Mockery::mock('\RZP\Models\Admin\Org\Entity');
 
         $this->merchantEntityMock->shouldReceive('getAttribute')->withArgs(['org'])->andReturn($org);
