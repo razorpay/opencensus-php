@@ -8,9 +8,9 @@ const stateSpy = jest.spyOn(store, 'getState');
 
 describe('RL - Payment Details Form', () => {
   const onBlurElement = jest.fn();
-  const avlblMethods = ['card', 'emandate', 'upi', 'nach'];
+  const availableMethods = ['card', 'emandate', 'upi', 'nach'];
   const renderApp = (props) => {
-    render(<App avlblMethods={avlblMethods} onBlurElement={onBlurElement} {...props} />);
+    render(<App availableMethods={availableMethods} onBlurElement={onBlurElement} {...props} />);
   };
 
   test('Should render all Payment Details Fields', () => {

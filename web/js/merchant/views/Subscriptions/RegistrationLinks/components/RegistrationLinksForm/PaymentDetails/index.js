@@ -21,7 +21,7 @@ export default function PaymentDetailsForm(props) {
     amount,
     bankName,
     accountType,
-    avlblMethods,
+    availableMethods,
     isUPIPayment,
     isCardPayment,
     mandateMethod,
@@ -46,7 +46,7 @@ export default function PaymentDetailsForm(props) {
     trackNACHToolTipHover,
     currency,
   } = props;
-  let recurringMethods = avlblMethods;
+  let recurringMethods = availableMethods;
   // for TPV enabled Merchant, only emandate and UPI should be enabled
   if (isTPVEnabledMerchant) {
     recurringMethods = recurringMethods.filter((method) => ['emandate', 'upi'].includes(method));
@@ -55,7 +55,7 @@ export default function PaymentDetailsForm(props) {
     <>
       <PaymentMethod
         mandateMethod={mandateMethod}
-        avlblMethods={recurringMethods}
+        availableMethods={recurringMethods}
         handlePaymentMethod={handlePaymentMethod}
         onBlurElement={onBlurElement}
         isEsignEnabled={isEsignEnabled}
@@ -140,14 +140,14 @@ function getDocLinkForSelectedPayment(method) {
 }
 
 function PaymentMethod({
-  avlblMethods,
+  availableMethods,
   onBlurElement,
   mandateMethod,
   isEsignEnabled,
   handlePaymentMethod,
 }) {
   const { isConfigTagEnabled } = useI18Service();
-  if (avlblMethods.length) {
+  if (availableMethods.length) {
     const optionsList = getPaymentMethodOptions(isEsignEnabled);
     return (
       <div class="Input">
@@ -158,7 +158,7 @@ function PaymentMethod({
             showClear={false}
             searchEnabled={false}
             name="mandateMethod"
-            options={avlblMethods}
+            options={availableMethods}
             placeholder="Method to be used for Registration Link "
             optionComponent={(params) => paymentMethodOption(params, optionsList)}
             selectedOptionComponent={(params) => paymentMethodSelected(params, optionsList)}
@@ -176,7 +176,7 @@ function PaymentMethod({
     );
   }
 
-  return <PaymentMethodPlaceHolder content={avlblMethods[0]} />;
+  return <PaymentMethodPlaceHolder content={availableMethods[0]} />;
 }
 
 function PaymentMethodPlaceHolder({ content }) {

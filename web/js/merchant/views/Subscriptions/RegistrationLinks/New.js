@@ -1,28 +1,24 @@
 import React from 'react';
 import moment from 'moment';
-
 import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
+import { withRouter } from 'common/deprecated/withRouter';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Form from 'common/new-ui/Form';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
+import Spinner from 'common/ui/Spinner';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
-import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
-
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { isEmail, isPhone, validateBeneficiaryName } from 'common/utils/validators';
+import DocsLink from 'merchant/components/DocsLink';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { isMobileDevice } from 'merchant/components/Home/data';
 import { luminateRow } from 'merchant/reducers/app';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { saveInvoice } from 'merchant/reducers/invoices/list';
 import { createRegistrationLink } from 'merchant/reducers/registration_link';
-
-import Form from 'common/new-ui/Form';
-import Spinner from 'common/ui/Spinner';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { ModalAsideNav } from 'common/new-ui/Wizard';
-import { Modal, ModalContent } from 'common/new-ui/Modal';
-import DocsLink from 'merchant/components/DocsLink';
-
+import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
 import CustomerDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/CustomerDetails';
-import { isEmail, isPhone, validateBeneficiaryName } from 'common/utils/validators';
 import PaymentDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/PaymentDetails';
 import TokenDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/TokenDetails';
 import {
@@ -32,9 +28,6 @@ import {
   trackSubmitCreateForm,
   trackCloseCreateForm,
 } from 'merchant/views/Subscriptions/RegistrationLinks/ga';
-import analytics from 'merchant/views/Subscriptions/analytics';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import { isAmountLiesInRange, isMonthlyDebitPattern } from 'merchant/views/Subscriptions/utils';
 import {
   DEBIT_TYPES,
   FREQUENCY,
@@ -50,6 +43,9 @@ import {
   PAYMENT_METHODS,
   CAW_TABS,
 } from 'merchant/views/Subscriptions/constants';
+import { isAmountLiesInRange, isMonthlyDebitPattern } from 'merchant/views/Subscriptions/utils';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const CustomerDetailsMandatoryFields = [
   'description',
@@ -134,7 +130,6 @@ const getTokenDetailFields = (maxAmount, isNach = false) => [
 ];
 
 // eslint-disable-next-line react/no-unsafe
-
 @connect((state) => ({ user: state.session.user, org: state.session.org }), {
   openModal,
   closeModal,
@@ -151,7 +146,7 @@ class NewRegistrationLink extends React.Component {
     this.state = {
       loading: true,
       currentTab: 0,
-      avlblMethods: [],
+      availableMethods: [],
       emandateBanks: [],
       formFields: {
         hasNoExpiry: true,
@@ -379,19 +374,25 @@ class NewRegistrationLink extends React.Component {
       if (methods && methods.recurring) {
         const topEmandateBanks = [];
         const otherEmandateBanks = [];
-
-        const avlblMethods = Object.keys(methods.recurring).filter((methodName) => {
-          if (methodName === 'upi') {
-            return methods.recurring[methodName];
+        const { recurring } = methods;
+        const uniqueMethodKeys = new Set();
+        for (const [key, value] of Object.entries(recurring)) {
+          if (key.includes(PAYMENT_METHODS.UPI)) {
+            if (key === PAYMENT_METHODS.UPI && !!value) {
+              uniqueMethodKeys.add(PAYMENT_METHODS.UPI);
+            }
+            if (key === 'upi_autopay' && (!!value.intent || !!value.collect)) {
+              uniqueMethodKeys.add(PAYMENT_METHODS.UPI);
+            }
+          } else if (value) {
+            uniqueMethodKeys.add(key);
           }
+        }
+        const availableMethods = Array.from(uniqueMethodKeys);
 
-          return methods.recurring[methodName];
-        });
-
-        if (methods.recurring.emandate) {
-          const emandates = methods.recurring.emandate || {};
-
-          Object.entries(emandates).forEach(([code, bank]) => {
+        if (recurring.emandate) {
+          const { emandate } = recurring || {};
+          Object.entries(emandate).forEach(([code, bank]) => {
             const bankObj = {
               label: bank.name,
               authTypes: bank.auth_types,
@@ -407,9 +408,9 @@ class NewRegistrationLink extends React.Component {
         }
 
         this.setState({
+          availableMethods,
           loading: false,
           emandateBanks: [...topEmandateBanks, ...otherEmandateBanks],
-          avlblMethods,
         });
       }
     });
@@ -785,7 +786,7 @@ class NewRegistrationLink extends React.Component {
             showAmountField={this.props.user.isEmandateNonzeroAmountEnabled}
             amount={formFields.amount}
             accountType={formFields.accountType}
-            avlblMethods={this.state.avlblMethods}
+            availableMethods={this.state.availableMethods}
             mandateMethod={formFields.mandateMethod}
             emandateBanks={this.state.emandateBanks}
             bankName={formFields.bankName}
