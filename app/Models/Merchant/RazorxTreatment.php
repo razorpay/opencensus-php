@@ -1013,9 +1013,4 @@ final class RazorxTreatment
 
     public const ALLOW_BIN_SERVICE_DUAL_WRITE = 'allow_bin_service_dual_write';
 
-    /**
-     * Razorx flag to stop sending order data from API to PG-Router
-     */
-    const STOP_HOST_HEADER_INJECTION = 'stop_host_header_injection';
-
 }
