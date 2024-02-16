@@ -272,9 +272,12 @@ class PartnershipsService extends Base\Service
         return $this->sendRequest($parameters, self::CREATE_PARNTER_MIGRATION_AUDIT, Requests::POST);
     }
 
-    public function getLastEventAudits($parameters)
+    // Taking mode as optional param and default value with LIVE mode.
+    // In future if any use case comes up with mode specific, the caller needs to pass that value
+    // Not considering the mode from auth as event saving in PRTS and requester auth could vary for this feature
+    public function getLastEventAudits($parameters, string $mode = Mode::LIVE)
     {
-        return $this->sendRequestWithRetry($parameters, self::GET_LAST_EVENT_AUDITS, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::GET_LAST_EVENT_AUDITS, Requests::POST, $mode);
     }
 
     public function getLastPartnerMigration($parameters)
@@ -392,9 +395,12 @@ class PartnershipsService extends Base\Service
         return $this->sendRequestWithRetry($parameters, self::BULK_CAPTURE_BY_PARTNER_URL, Requests::POST);
     }
 
-    public function getEventAudits($parameters): ?array
+    // Taking mode as optional param and default value with LIVE mode.
+    // In future if any use case comes up with mode specific, the caller needs to pass that value
+    // Not considering the mode from auth as event saving in PRTS and requester auth could vary for this feature
+    public function getEventAudits($parameters, string $mode = Mode::LIVE): ?array
     {
-        return $this->sendRequestWithRetry($parameters, self::FETCH_EVENT_AUDITS, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::FETCH_EVENT_AUDITS, Requests::POST, $mode);
     }
 
     /**
