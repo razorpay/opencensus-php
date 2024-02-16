@@ -241,14 +241,7 @@ class Generator extends QrCode\Generator
         switch ($this->gateway)
         {
             case Gateway::UPI_YESBANK:
-                if ($this->ifPrefixAdditionExperimentInTREnabled($qrCode->getMerchantId()) === true)
-                {
-                    $refId = QrCode\Constants::QR_CODE_V2_YESBANK_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
-                }
-                else
-                {
-                    $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
-                }
+                $refId = QrCode\Constants::QR_CODE_V2_YESBANK_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
                 break;
 
             case Gateway::UPI_MINDGATE:
@@ -284,20 +277,6 @@ class Generator extends QrCode\Generator
         return $this->generateRefId($qrCode,$terminal, $refId);
     }
 
-    public function ifPrefixAdditionExperimentInTREnabled($merchantId)
-    {
-        $variant = $this->app['razorx']->getTreatment($merchantId,
-                                                      RazorxTreatment::PREFIX_IN_TR_FIELD_FOR_YESBANK_QR,
-                                                      $this->mode);
-
-        if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     private function generateRefId($qrCode, $terminal, $refId)
     {
         $terminalDetails = $terminal->toArray();
@@ -328,14 +307,7 @@ class Generator extends QrCode\Generator
 
                 if ($this->gateway === Gateway::UPI_YESBANK)
                 {
-                    if ($this->ifPrefixAdditionExperimentInTREnabled($qrCode->getMerchantId()) === true)
-                    {
-                        $refId = QrCode\Constants::QR_CODE_V2_YESBANK_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
-                    }
-                    else
-                    {
-                        $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
-                    }
+                    $refId = QrCode\Constants::QR_CODE_V2_YESBANK_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
                 }
             }
             catch (\Throwable $ex)

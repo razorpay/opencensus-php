@@ -817,8 +817,6 @@ final class RazorxTreatment
     // Experiment to use old Pricing plan for upi autopay
     const UPI_AUTOPAY_PRICING_BLACKLIST = 'upi_autopay_pricing_blacklist';
 
-    const PREFIX_IN_TR_FIELD_FOR_YESBANK_QR = 'prefix_in_tr_for_yesbank';
-
     //Experiment of susbcription other frequency changes
     public const UPI_AUTOPAY_CORRECT_FREQUENCY_FETCH = "upi_autopay_correct_frequency_fetch";
 

@@ -1212,14 +1212,7 @@ class Gateway extends Mindgate\Gateway
     {
         $expTime = $this->getExpiryTime($input);
 
-        if ((new QrCode\NonVirtualAccountQrCode\Generator())->ifPrefixAdditionExperimentInTREnabled($input['merchant']['id']) === true)
-        {
-            $input[CoreEntity::QR_CODE]['id'] = Constants::QR_CODE_V2_YESBANK_PREFIX . $input[CoreEntity::QR_CODE]['id'] . Constants::QR_CODE_V2_TR_SUFFIX;
-        }
-        else
-        {
-            $input[CoreEntity::QR_CODE]['id'] .= Constants::QR_CODE_V2_TR_SUFFIX;
-        }
+        $input[CoreEntity::QR_CODE]['id'] = Constants::QR_CODE_V2_YESBANK_PREFIX . $input[CoreEntity::QR_CODE]['id'] . Constants::QR_CODE_V2_TR_SUFFIX;
 
         $input[CoreEntity::QR_CODE][Entity::EXPIRY_TIME] = $expTime;
 
