@@ -11094,6 +11094,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PGOS_POS_SUBMIT                                      = "PGOS_POS_SUBMIT";
 
+    const RAZORX_EXPERIMENT_FOR_HOST_INJECTION                 = "RAZORX_EXPERIMENT_FOR_HOST_INJECTION";
+
+    const RAZORX_EXPERIMENT_FOR_HOST_INJECTION_FAILED          = "RAZORX_EXPERIMENT_FOR_HOST_INJECTION_FAILED";
+
     const RIZE_SERVICE_PROXY_REQUEST                           = 'RIZE_SERVICE_PROXY_REQUEST';
 
     const HEADER_LOGGER_FOR_PARITY                             = "HEADER_LOGGER_FOR_PARITY";
