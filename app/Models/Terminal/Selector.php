@@ -339,6 +339,29 @@ class Selector extends Base\Core
                                 'method'                        => $payment->getMethod(),
 
                             ]);
+
+                        if(is_null($payment->token) === true)
+                        {
+                            $this->trace->info(
+                                TraceCode::SMART_ROUTING_NACH_FALLBACK,
+                                [
+                                    'method'                        => $payment->getMethod(),
+                                    'recurring_type'                => $payment->getRecurringType(),
+                                    'selected_terminal'             => $traceTerminals[0],
+                                    'token_terminal'                => 'terminal_not_assigned_to_token',
+                                ]);
+                        }
+                        else
+                        {
+                            $this->trace->info(
+                                TraceCode::SMART_ROUTING_NACH_FALLBACK,
+                                [
+                                    'method'                        => $payment->getMethod(),
+                                    'recurring_type'                => $payment->getRecurringType(),
+                                    'selected_terminal'             => $traceTerminals[0],
+                                    'token_terminal'                => $payment->token->getTerminalId(),
+                                ]);
+                        }
                     }
                 }
 
