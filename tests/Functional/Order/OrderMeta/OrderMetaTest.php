@@ -698,4 +698,51 @@ class OrderMetaTest extends TestCase
 
         $this->runRequestResponseFlow($testData);
     }
+
+    public function testUpdateOneCcOrderWithPromotionSource()
+    {
+        $this->setUp1CCMerchant();
+        $order = $this->fixtures->order->create([
+            'amount'           => 1000,
+            'currency'         => "INR",
+            'receipt'          => "rec1",
+            'line_items_total' => 1000,
+        ]);
+        $orderId = $order->getPublicId();
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => [
+                    'line_items_total' => 1000,
+                    'promotions' => [
+                        [
+                            'reference_id' => 'ref1',
+                            'code'         => 'etwqyr',
+                            'value'        =>  200,
+                            'source'       => 'shopify'
+                        ]
+                    ],
+                ],
+                'type'     => 'one_click_checkout',
+            ]);
+
+
+        $this->ba->publicAuth();
+        $url = "/orders/1cc/$orderId/customer/";
+
+        $cacheKey = "SHIPPING_INFO_10000000000000_"
+            . $orderId
+            . "_1000_110085_Delhi_in";
+
+        $this->app['cache']->put($cacheKey, [
+            "serviceable"  => true,
+            "cod"          => true,
+            "cod_fee"      => 50,
+            "shipping_fee" => 60,
+        ],2400);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+        $this->runRequestResponseFlow($testData);
+    }
 }

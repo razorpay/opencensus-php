@@ -48,6 +48,8 @@ class Fields
     const PROMOTIONS_VALUE_TYPE             = 'value_type';
     const PROMOTIONS_DESCRIPTION            = 'description';
 
+    const PROMOTIONS_SOURCE                 = 'source';
+
     //Customer Details Fields
     const CUSTOMER_DETAILS_ID               = 'id';
     const CUSTOMER_DETAILS_NAME             = 'name';
