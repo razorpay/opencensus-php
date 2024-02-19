@@ -204,7 +204,7 @@ class Service extends Base\Service
             Type::DIRECT_SETTLEMENT_WITH_REFUND
         ];
 
-        $existingTerminals = $this->repo->terminal->getNonFailedNonDeactivatedByParams($params, false);
+        $existingTerminals = $this->repo->terminal->getNonFailedNonDeactivatedByParams($params);
 
         $dsCount = 0;
 
