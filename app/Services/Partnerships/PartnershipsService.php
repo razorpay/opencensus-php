@@ -317,32 +317,32 @@ class PartnershipsService extends Base\Service
 
     public function upsertPartnerConfig($parameters)
     {
-        return $this->sendRequestWithRetry($parameters, self::UPDATE_PARTNER_CONFIG, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::UPDATE_PARTNER_CONFIG, Requests::POST, Mode::LIVE);
     }
 
     public function deletePartnerConfig($parameters)
     {
-        return $this->sendRequestWithRetry($parameters, self::DELETE_PARTNER_CONFIG, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::DELETE_PARTNER_CONFIG, Requests::POST, Mode::LIVE);
     }
 
     public function upsertMerchantApplication($parameters)
     {
-        return $this->sendRequestWithRetry($parameters, self::UPDATE_MERCHANT_APPLICATION, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::UPDATE_MERCHANT_APPLICATION, Requests::POST, Mode::LIVE);
     }
 
     public function deleteMerchantApplication($parameters)
     {
-        return $this->sendRequestWithRetry($parameters, self::DELETE_MERCHANT_APPLICATION, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::DELETE_MERCHANT_APPLICATION, Requests::POST, Mode::LIVE);
     }
 
     public function upsertMerchantAccessMap($parameters)
     {
-        return $this->sendRequestWithRetry($parameters, self::UPDATE_MERCHANT_ACCESS_MAP, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::UPDATE_MERCHANT_ACCESS_MAP, Requests::POST, Mode::LIVE);
     }
 
     public function deleteMerchantAccessMap($parameters)
     {
-        return $this->sendRequestWithRetry($parameters, self::DELETE_MERCHANT_ACCESS_MAP, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::DELETE_MERCHANT_ACCESS_MAP, Requests::POST, Mode::LIVE);
     }
 
     public function getReferralLinkWithKycAccessConsent($parameters)
