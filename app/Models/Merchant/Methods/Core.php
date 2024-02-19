@@ -1586,7 +1586,7 @@ class Core extends Base\Core
             return false;
         }
 
-        if ($merchant->isBusinessBankingEnabled() === true or $merchant->isLinkedAccount() === true)
+        if ($merchant->isLinkedAccount() === true)
         {
             return false;
         }
