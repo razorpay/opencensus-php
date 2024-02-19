@@ -709,11 +709,17 @@ class Repository extends Base\Repository
 
         try
         {
-            $data = ["function" => "findByGatewayAndTerminalData", "gateway"=> $gateway, "terminal_data" => $terminalData, "withTrashed" => $withTrashed];
+            $data = [
+                "function" => "findByGatewayAndTerminalData",
+                "gateway"=> $gateway,
+                "terminal_data" => $terminalData,
+                "withTrashed" => $withTrashed,
+                "trace" => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8)
+            ];
 
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
-//                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
