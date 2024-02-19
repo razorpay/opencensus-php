@@ -4426,6 +4426,8 @@ class Route
         'ledger_outbox_partition_cron'                  => ['post',      'ledger/outbox/partition',                 'LedgerOutboxController@createLedgerOutboxPartition'              ],
         'expire_amount_credits'                         => ['post',      'amount_credits/expire',         'MerchantController@expireAmountCreditsInPgLedger'],
         'transfer_reversal_transactions_create'         => ['post', 'transfer_reversal/transactions/create', 'TransferController@createTransferReversalTransactions'],
+        'missing_refund_transactions_create'                           => ['post',      'ledger_outbox/refunds/txn/create',       'LedgerOutboxController@createMissingTransactionsForReverseShadowRefunds'],
+        'missing_transaction_create'                           => ['post',      'ledger_outbox/missing/txn/create',       'LedgerOutboxController@createMissingTransactionsForReverseShadowAdjustments'],
 
         // Recon service proxy route
         'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
@@ -5450,6 +5452,8 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'missing_refund_transactions_create',
+        'missing_transaction_create',
         'merchant_create_terminal_internal_app',
         'automatic_onboarding_cron',
         'internal_get_merchant_key',
@@ -15982,6 +15986,7 @@ class Route
             'settlement_cron_for_b2b_payments',
             'merchant_onboarding_crons',
             'merchant_risk_crons',
+            'missing_transaction_create',
             'banking_account_statement_insert_missing_cron',
             'banking_account_statement_fetch_missing_cron',
             'banking_account_statement_automate_recon_cron',
@@ -16930,6 +16935,7 @@ class Route
         ],
 
         'pg_router' => [
+            'missing_refund_transactions_create',
             'internal_currency_rates_update',
             'api_entity_fetch',
             'internal_payment_authorize_refund',

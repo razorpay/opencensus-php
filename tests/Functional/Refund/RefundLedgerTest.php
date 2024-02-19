@@ -3697,4 +3697,124 @@ class RefundLedgerTest extends TestCase
         $this->assertNull($ledgerOutboxEntity['deleted_at'], 'outbox entry should not be soft deleted');
     }
 
+    public function testNormalRefundReverseShadowMissingTransactionCreation()
+    {
+        Mail::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $journal = $this->getJournal();
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andReturn([
+                    "body" => $journal
+                ]
+            );
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $createdAt = $payment['created_at'];
+        $paymentId = $payment['id'];
+        if (substr($paymentId, 0, 4) === "pay_") {
+            $paymentId = substr($paymentId, 4);
+        }
+
+        $refundArray = [
+            'payment_id'  => $paymentId,
+            'merchant_id' => '10000000000000',
+            'amount'      => $payment['amount'],
+            'base_amount' => $payment['amount'],
+            'status'      => 'processed',
+            'gateway'     => 'upi_airtel'
+        ];
+
+        $refund = $this->fixtures->create('refund', $refundArray)->toArray();
+
+
+        $lastTxn = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->merchant->addFeatures('pg_ledger_reverse_shadow');
+
+        $testData['request']['content'] = [
+            'refunds_arr'               => $refund['id']
+        ];
+
+        $this->ba->pgRouterAuth();
+
+        $this->startTest($testData);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals("rfnd_".$refund['id'], $txn['entity_id']);
+        $this->assertEquals("refund", $txn['type']);
+    }
+
+    private function getJournal()
+    {
+
+        return [
+            "id"=> "LLJMDzXXytv87X",
+            "created_at"=> 1677466532,
+            "updated_at"=> 1677466532,
+            "amount"=> "100",
+            "base_amount"=> "100",
+            "currency"=> "INR",
+            "tenant"=> "PG",
+            "transactor_id"=> "rfnd_LLJMDzXXyjd7UI",
+            "transactor_event"=> "refund_processed",
+            "transaction_date"=> 1677466530,
+            "ledger_entry"=> [
+                [
+                    "id"=> "LLJMDzXXyjC93B",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "Jk3pWyD5WaSSPP",
+                    "amount"=> "100",
+                    "base_amount"=> "100",
+                    "type"=> "credit",
+                    "currency"=> "INR",
+                    "balance"=> "100.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "receivable"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_balance"
+                        ]
+                    ]
+                ],
+                [
+                    "id"=> "LLJMDzXYypsmcx",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "JjpZUAEYlvYbEG",
+                    "amount"=> "100",
+                    "base_amount"=> "100",
+                    "type"=> "debit",
+                    "currency"=> "INR",
+                    "balance"=> "100.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "fund_account_type"=> [
+                            "gateway_receivable"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
+
 }

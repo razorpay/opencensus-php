@@ -9,6 +9,7 @@ use RZP\Constants\Table;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
+use RZP\Base\ConnectionType;
 
 class Repository extends Base\Repository
 {
@@ -152,5 +153,25 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchAdjustmentsWithMissingTransactions($from, $to, $status, $transactorIds = [])
+    {
+        if(count($transactorIds) === 0)
+        {
+            return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                ->where(Adjustment\Entity::CREATED_AT, '>=', $from)
+                ->where(Adjustment\Entity::CREATED_AT, '<=', $to)
+                ->where(Adjustment\Entity::STATUS, '=', $status)
+                ->where(Adjustment\Entity::TRANSACTION_ID, '=', null)
+                ->get();
+        }
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->where(Adjustment\Entity::CREATED_AT, '>=', $from)
+            ->where(Adjustment\Entity::CREATED_AT, '<=', $to)
+            ->where(Adjustment\Entity::STATUS, '=', $status)
+            ->where(Adjustment\Entity::TRANSACTION_ID, '=', null)
+            ->whereIn(Adjustment\Entity::ID, $transactorIds)
+            ->get();
+    }
 
 }

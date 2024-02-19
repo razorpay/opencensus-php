@@ -39,6 +39,8 @@ class Constants
     const DEBIT                                         = "debit";
     const CREDIT                                        = "credit";
 
+    const PROCESSED                                     = "processed";
+
     // Async journal create error codes
     const BAD_REQUEST_RECORD_ALREADY_EXIST                     = "validation_failure: record_already_exist: BAD_REQUEST_RECORD_ALREADY_EXIST";
     const PAYLOAD_VALIDATION_FAILURE                           = "validation_failure: validation_failure: BAD_REQUEST_VALIDATION_FAILURE";
@@ -78,7 +80,10 @@ class Constants
     ];
 
     const LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED = "ondemand_settlement_processed";
-    const LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED  = "ondemand_settlement_reversed";
+    const LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED = "ondemand_settlement_reversed";
+
+    const ADJUSTMENT_PROCESSED = "adjustment_processed";
+
     const ONDEMAND_SETTLEMENT                           = "ondemand_settlement";
 
     const SETLLEMENT_ONDEMAND_EVENTS = [

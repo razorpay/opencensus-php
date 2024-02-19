@@ -848,5 +848,133 @@ class AdjustmentLedgerTest extends TestCase
         $this->assertEquals($oldBalanceAmount + $updatedAdjustment->getAmount(), $balance['balance']);
     }
 
+    public function testMissingAdjustmentTransactionsCreateCron()
+    {
+        Mail::fake();
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $createdAtTimestamp = (int)((millitime()-32400000)/1000);
+
+        $this->fixtures->create(
+            'adjustment',
+            [
+                'id'            => 'LN1MS4fADj0Sn0',
+                'merchant_id'   => '100abc000abc00',
+                'balance_id'    => 'LN5BW4fDCb1Sn7',
+                'entity_type'   => null,
+                'entity_id'     => null,
+                'amount'        => 500,
+                'currency'      => 'INR',
+                'description'   => 'add primary balance in reverse shadow',
+                'status'        => 'processed',
+                'transaction_id'=> null,
+                'created_at'    => $createdAtTimestamp
+            ]
+        );
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow'], '100abc000abc00');
+
+        $this->fixtures->create(
+            'balance',
+            [
+                'id'            => '100def000def00',
+                'balance'       => 1000,
+                'type'          => 'primary',
+                'merchant_id'   => '100abc000abc00'
+            ]
+        );
+
+        $journal = $this->getJournal();
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andReturn([
+                    "body" => $journal
+                ]
+            );
+
+        $this->ba->cronAuth();
+
+        $adj = $this->getDbLastEntity('adjustment');
+
+        $this->assertNotNull($adj);
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($txn);
+
+        $this->startTest();
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($txn);
+    }
+
+    private function getJournal()
+    {
+
+        return [
+            "id"=> "LLJMDzXXytv87X",
+            "created_at"=> 1677466532,
+            "updated_at"=> 1677466532,
+            "amount"=> "100",
+            "base_amount"=> "100",
+            "currency"=> "INR",
+            "tenant"=> "PG",
+            "transactor_id"=> "adj_LLJMDzXXyjd7UI",
+            "transactor_event"=> "adjustment_processed",
+            "transaction_date"=> 1677466530,
+            "ledger_entry"=> [
+                [
+                    "id"=> "LLJMDzXXyjC93B",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "Jk3pWyD5WaSSPP",
+                    "amount"=> "100",
+                    "base_amount"=> "100",
+                    "type"=> "credit",
+                    "currency"=> "INR",
+                    "balance"=> "100.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "receivable"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_balance"
+                        ]
+                    ]
+                ],
+                [
+                    "id"=> "LLJMDzXYypsmcx",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "JjpZUAEYlvYbEG",
+                    "amount"=> "100",
+                    "base_amount"=> "100",
+                    "type"=> "debit",
+                    "currency"=> "INR",
+                    "balance"=> "100.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "fund_account_type"=> [
+                            "adjustment_payable"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
+
 }
 

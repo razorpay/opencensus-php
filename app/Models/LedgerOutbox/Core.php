@@ -7,12 +7,14 @@ use Exception;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Metric;
 use RZP\Diag\EventCode;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
+use RZP\Models\Adjustment;
 use RZP\Models\Transfer;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -1577,6 +1579,135 @@ class Core extends Base\Core
         }
 
         return ['success' => true];
+    }
+
+    public function createMissingAdjustmentTransactions($startDate, $endDate, $transactorIds)
+    {
+        $responses = [];
+
+        $adjustmentsArr = $this->repo->adjustment->fetchAdjustmentsWithMissingTransactions($startDate, $endDate, Constants::PROCESSED, $transactorIds);
+
+        foreach ($adjustmentsArr as $adjustment)
+        {
+            $response = $this->validateAndCreateMissingAdjustmentTransaction($adjustment);
+
+            array_push($responses, $response);
+        }
+
+        return $responses;
+    }
+
+    /**
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateAndCreateMissingRefundTransaction(Payment\Refund\Entity $refund)
+    {
+        if($refund->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            throw(new \Exception("reverse shadow not enabled"));
+        }
+
+        try
+        {
+            $ledgerService = $this->app['ledger'];
+
+            $publicId = $refund->getPublicId();
+
+            $transactorEvent = "refund_processed";
+
+            $journal = $this->getJournalByTransactorInfo($publicId, $transactorEvent, $ledgerService);
+
+            if($journal === null)
+            {
+                return [
+                    "refund_id" => $publicId,
+                    "message"   => "journal not present for refund, won't create transaction"
+                ];
+            }
+
+            $transactionCreateInput = [
+                "id" => $refund->getId(),
+                "payment_id" => $refund->getPaymentId(),
+                "amount" => $refund->getAmount(),
+                "base_amount" => $refund->getBaseAmount(),
+                "speed_decisioned" => $refund->getSpeedDecisioned(),
+                "gateway" => $refund->getGateway(),
+                "fee" => $refund->getFee(),
+                "tax" => $refund->getTax(),
+                "journal_id" => $journal['id']
+            ];
+
+            if($refund->getModeRequested() != null)
+            {
+                $transactionCreateInput["mode"] = $refund->getModeRequested();
+            }
+
+            (new Payment\Refund\Service())->scroogeRefundsTransactionCreate($transactionCreateInput);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::MISSING_REFUND_TRANSACTION_CREATION_FAILED);
+            throw $e;
+        }
+
+        return [
+            "refund_id" => $refund->getId()
+        ];
+    }
+
+    public function validateAndCreateMissingAdjustmentTransaction(Adjustment\Entity $adjustment)
+    {
+        $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+            EntityConstants::MERCHANT,
+            $adjustment->getMerchantId(),
+            Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+
+        if($feature === null)
+        {
+            return [
+                "adjustment_id" => $adjustment->getId(),
+                "message"   => "reverse shadow not enabled"
+            ];
+        }
+
+        if($adjustment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            $this->trace->info(TraceCode::REVERSE_SHADOW_NOT_ENABLED, [
+                "merchant_id"   => $adjustment->getMerchantId()
+            ]);
+
+            throw(new \Exception(TraceCode::REVERSE_SHADOW_NOT_ENABLED));
+        }
+
+        $transactorEvent = Constants::ADJUSTMENT_PROCESSED;
+
+        $ledgerService = $this->app['ledger'];
+
+        $publicId = $adjustment->getPublicId();
+
+        if($adjustment->getEntityType() === "dispute")
+        {
+            $publicId = "disp_".$adjustment->getEntityId();
+        }
+
+        $journal = $this->getJournalByTransactorInfo($publicId, $transactorEvent, $ledgerService);
+
+        if($journal === null)
+        {
+            return [
+                "adjustment_id" => $adjustment->getId(),
+                "message"   => "journal not present for adjustment, won't create transaction"
+            ];
+        }
+
+        $transactionCreateInput = [
+            "id"                    => $adjustment->getId(),
+            "transaction_id"        => $journal["id"]
+        ];
+
+        $transactionCreateResponse = (new Adjustment\Service())->createAdjustmentInTransaction($transactionCreateInput);
+
+        return $transactionCreateResponse;
     }
 
     public function failTransferWithErrorCodeAndMessage($entry, $errorCode=ErrorCode::BAD_REQUEST_ERROR,

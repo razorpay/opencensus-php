@@ -152,6 +152,27 @@ return [
             ],
         ]
     ],
+    'testMissingAdjustmentTransactionsCreateCron' => [
+        'request' => [
+            'url' => '/ledger_outbox/adjustments/txn/create',
+            'method' => 'POST',
+            'content' => [
+                "init"  => "start"
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    "id" => "adj_LN1MS4fADj0Sn0",
+                    "entity" => "adjustment",
+                    "amount" => 500,
+                    "currency" => "INR",
+                    "channel" => "axis",
+                    "description" => "add primary balance in reverse shadow",
+                ]
+            ],
+        ]
+    ],
 ];
 
 

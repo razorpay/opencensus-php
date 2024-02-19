@@ -1560,4 +1560,22 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testNormalRefundReverseShadowMissingTransactionCreation' => [
+        'request' => [
+            'url' => '/ledger_outbox/refunds/txn/create',
+            'method' => 'POST',
+            'content' => [
+                "init"  => "start"
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'failures' => []
+                ],
+            ],
+            'status_code' => 200,
+        ]
+    ],
 ];

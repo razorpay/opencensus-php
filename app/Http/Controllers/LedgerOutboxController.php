@@ -47,4 +47,21 @@ class LedgerOutboxController extends Controller {
         return Response::json($response);
     }
 
+    public function createMissingTransactionsForReverseShadowRefunds()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createMissingTransactionsForReverseShadowRefunds($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createMissingTransactionsForReverseShadowAdjustments()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createMissingTransactionsForReverseShadowAdjustments($input);
+
+        return ApiResponse::json($data);
+    }
 }

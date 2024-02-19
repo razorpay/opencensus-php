@@ -5769,6 +5769,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_CALLBACK_TRACE                                    = 'P2P_CALLBACK_TRACE';
     const PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_CALLBACK      = 'PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_CALLBACK';
 
+    const MISSING_REFUND_TRANSACTION_CREATION_FAILED            = "MISSING_REFUND_TRANSACTION_CREATION_FAILED";
+    const NO_REFUND_IN_INPUT                                    = "NO_REFUND_IN_INPUT";
+    const REVERSE_SHADOW_NOT_ENABLED                            = "REVERSE_SHADOW_NOT_ENABLED";
+
     const REMINDER_DELETE_FAILURE                               = 'REMINDER_DELETE_FAILURE';
     const BAD_REQUEST_REMINDER_CREATION_FAILURE                 = 'BAD_REQUEST_REMINDER_CREATION_FAILURE';
 
