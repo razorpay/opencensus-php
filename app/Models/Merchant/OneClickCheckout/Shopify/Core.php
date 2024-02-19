@@ -2317,6 +2317,7 @@ class Core extends Base\Core
                 $attributes = $item['node']['customAttributes'];
 
                 $properties = [];
+                $propertyMap = [];
 
                 if($attributes !== null)
                 {
@@ -2331,7 +2332,10 @@ class Core extends Base\Core
                     }
                 }
 
-                $properties = $this->sortPropertyIfApplicable($properties, $propertyMap);
+                if(empty($properties) === false)
+                {
+                    $properties = $this->sortPropertyIfApplicable($properties, $propertyMap);
+                }
 
                 $lineItems[] = [
                     'variant_id' => str_replace(Constants::GID_PRODUCT_VARIANT, '', $item['node']['variant']['id']),
@@ -2357,24 +2361,17 @@ class Core extends Base\Core
 
         foreach(self::borosilPropertyOrder as $index => $propertyName)
         {
-            if(isset($propertyMap[$propertyName]))
+            if (array_key_exists($propertyName, $propertyMap))
             {
                 $sortedProperty[] = $propertyMap[$propertyName];
+
+                unset($propertyMap[$propertyName]);
             }
         }
 
-        $intersect = array_udiff($properties, $sortedProperty, 'arr_udiffFunction');
+        $propertyMapValue = array_values($propertyMap);
 
-        return array_merge($sortedProperty, $intersect);
-    }
-
-    protected function arr_udiffFunction($properties, $sortedProperty)
-    {
-        if ($properties === $sortedProperty)
-        {
-            return 0;
-        }
-        return ($properties > $sortedProperty) ? 1 : -1;
+        return array_merge($sortedProperty, $propertyMapValue);
     }
 
     public function getOrderFromCache(string $cartToken, string $browserUuid)
