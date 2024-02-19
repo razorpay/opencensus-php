@@ -403,7 +403,7 @@ abstract class AbstractTransfer
         return $transfer;
     }
 
-    protected function createTransferredEntity($transfer, $payment)
+    public function createTransferredEntity($transfer, $payment)
     {
         if ($transfer->isBalanceTransfer() === true)
         {
@@ -458,6 +458,8 @@ abstract class AbstractTransfer
                 throw $e;
             }
         }
+
+        $this->merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
 
         $parentMerchant = (new Core())->fetchAccountParentMerchant($this->merchant, $payment->getPublicKey() ?? null, $payment);
 

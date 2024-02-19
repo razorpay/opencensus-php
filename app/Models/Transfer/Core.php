@@ -7,6 +7,7 @@ use Neves\Events\TransactionalClosureEvent;
 
 use App;
 use RZP\Constants;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -2059,11 +2060,6 @@ class Core extends Base\Core
 
                 $merchant = (new Merchant\Repository)->findOrFailPublic($merchantId);
 
-                if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
-                {
-                    continue;
-                }
-
                 [, $debitJournalId] = $this->fetchJournalIdFromLedgerForTransfer($transfer, $transfer->getMerchantId());
 
                 [$creditJournalId,] = $this->fetchJournalIdFromLedgerForTransfer($transfer, $transfer->getToId());
@@ -2081,6 +2077,12 @@ class Core extends Base\Core
             catch (\Exception $ex)
             {
                 (new Metric())->pushMetricForTransferTransactionsCreate($ex);
+
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::FAILED_TRANSACTION_FOR_TRANSFERS_VIA_CRON
+                );
 
                 $this->trace->info(TraceCode::FAILED_TRANSACTION_FOR_TRANSFERS_VIA_CRON,
                                    [

@@ -444,7 +444,7 @@ class Core extends Base\Core
         }
     }
 
-    private function softDelete(string $transactorId, string $transactorEvent)
+    public function softDelete(string $transactorId, string $transactorEvent)
     {
         try
         {

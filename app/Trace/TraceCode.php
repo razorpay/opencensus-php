@@ -3338,6 +3338,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSFER_CREATE_REQUEST                               = 'TRANSFER_CREATE_REQUEST';
     const TRANSFER_PAYMENT_CREATE_REQUEST                       = 'TRANSFER_PAYMENT_CREATE_REQUEST';
     const TRANSFER_PAYMENT_UPDATE_AMOUNT_TRANSFERRED            = 'TRANSFER_PAYMENT_UPDATE_AMOUNT_TRANSFERRED';
+    const TRANSFER_PAYMENT_FIX_FAILURE                          = 'TRANSFER_PAYMENT_FIX_FAILURE';
+    const TRANSFER_PAYMENT_FIX_SUCCESS                          = 'TRANSFER_PAYMENT_FIX_SUCCESS';
+    const TRANSFER_AMOUNT_TRANSFERRED                           = 'TRANSFER_AMOUNT_TRANSFERRED';
     const TRANSFER_CREATE_SUCCESS                               = 'TRANSFER_CREATE_SUCCESS';
     const TRANSFER_EDIT_REQUEST                                 = 'TRANSFER_EDIT_REQUEST';
     const TRANSFER_EDIT_SUCCESS                                 = 'TRANSFER_EDIT_SUCCESS';
@@ -3488,10 +3491,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LINKED_ACCOUNT_INITIATE_PENNY_TESTING_FOR_BANK_ACCOUNT_UPDATE = 'LINKED_ACCOUNT_INITIATE_PENNY_TESTING_FOR_BANK_ACCOUNT_UPDATE';
 
     // Trace codes for the /transfer_debug endpoint on prod.
-    const ROUTE_DEBUG_ENDPOINT_OPTION_1                         = 'ROUTE_DEBUG_ENDPOINT_OPTION_1';
-    const ROUTE_DEBUG_ENDPOINT_OPTION_2                         = 'ROUTE_DEBUG_ENDPOINT_OPTION_2';
-    const ROUTE_DEBUG_ENDPOINT_OPTION_3                         = 'ROUTE_DEBUG_ENDPOINT_OPTION_3';
-    const ROUTE_DEBUG_ENDPOINT_OPTION_4                         = 'ROUTE_DEBUG_ENDPOINT_OPTION_4';
+    const ROUTE_DEBUG_ENDPOINT_OPTION                           = 'ROUTE_DEBUG_ENDPOINT_OPTION';
     const PAYMENT_TRANSFER_PROCESSED_IN_SYNC                    = 'PAYMENT_TRANSFER_PROCESSED_IN_SYNC';
     const ORDER_TRANSFER_PROCESSED_IN_SYNC                      = 'ORDER_TRANSFER_PROCESSED_IN_SYNC';
 

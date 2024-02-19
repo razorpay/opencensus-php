@@ -597,4 +597,21 @@ class Repository extends Base\Repository
 //                    ->pluck(Entity::ID)
 //                    ->toArray();
 //    }
+
+    public function fetchAmountTransferred(string $sourceId)
+    {
+
+        $amountCol          = $this->dbColumn((Entity::AMOUNT));
+        $amountReversedCol  = $this->dbColumn((Entity::AMOUNT_REVERSED));
+
+        $query = $this->newQuery()
+            ->selectRaw('SUM(' . $amountCol . ') - SUM(' . $amountReversedCol . ') AS amount_transferred')
+            ->where(Entity::SOURCE_ID, $sourceId)
+            ->whereIn(Entity::STATUS, [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED])
+            ->groupBy(Entity::SOURCE_ID);
+
+        return $query->first();
+
+
+    }
 }

@@ -13,6 +13,13 @@ class Repository extends BaseRepository
     {
        return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, $paymentID)
-                    ->get(); 
+                    ->get();
+    }
+
+    public function deleteTransferPayment($id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, $id)
+            ->delete();
     }
 }

@@ -480,7 +480,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PROCESSED_AT, $currentTime);
     }
 
-    public function setMessage(string $message)
+    public function setMessage($message)
     {
         $this->setAttribute(self::MESSAGE, $message);
     }

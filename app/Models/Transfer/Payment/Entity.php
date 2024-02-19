@@ -90,6 +90,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_TRANSFERRED, $amountTransferred);
     }
 
+    public function transferAmountFix(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT_TRANSFERRED, $amount);
+    }
+
     public function getAmountUntransferred()
     {
         return $this->getAmount() - $this->getAmountTransferred();

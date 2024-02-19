@@ -1341,10 +1341,16 @@ class Service extends Base\Service
         {
             case 'payment_transfer':
             {
+                // To process payment transfers in pending state.
+                // Data should be array of payment IDs
+                // Sample payload:
+                // {"option": "payment_transfer", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
                 $this->trace->info(
-                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION_1,
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
                     [
-                        'input' => $input,
+                        'option' => 'payment_transfer',
+                        'input'  => $input,
                     ]
                 );
 
@@ -1372,10 +1378,16 @@ class Service extends Base\Service
 
             case 'order_transfer':
             {
+                // To process order transfers in pending state.
+                // Data should be array of payment IDs
+                // Sample payload:
+                // {"option": "payment_transfer", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
                 $this->trace->info(
-                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION_2,
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
                     [
-                        'input' => $input,
+                        'option' => 'order_transfer',
+                        'input'  => $input,
                     ]
                 );
 
@@ -1403,10 +1415,16 @@ class Service extends Base\Service
 
             case 'settlement_status_update':
             {
+                // To update settlement status in transfer entity
+                // Data should be array of settlement IDs
+                // Sample payload:
+                // {"option": "settlement_status_update", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
                 $this->trace->info(
-                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION_3,
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
                     [
-                        'input' => $input,
+                        'option' => 'settlement_status_update',
+                        'input'  => $input,
                     ]
                 );
 
@@ -1424,14 +1442,237 @@ class Service extends Base\Service
 
             case 'settlement_id_update':
             {
+                // To update receipient settlement IO in transfer entity
+                // Data should be array of transaction IDs. The transaction ID is of the credit transaction to linked account
+                // Sample payload:
+                // {"option": "settlement_id_update", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
                 $this->trace->info(
-                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION_4,
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
                     [
-                        'input' => $input,
+                        'option' => 'settlement_id_update',
+                        'input'  => $input,
                     ]
                 );
 
-                // Insert code here for recipient_settlement_id update.
+                $transactionIds = $input['data'];
+
+                $this->updateTransfersWithSettlementId($transactionIds);
+
+                break;
+            }
+
+            case 'mark_pending':
+            {
+                // To update the status of transfers to pending state
+                // Data should be array of transfer IDs
+                // Sample payload:
+                // {"option": "mark_pending", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'mark_pending',
+                        'input'  => $input,
+                    ]
+                );
+
+                $transferIds = $input['data'];
+
+                foreach ($transferIds as $transferId)
+                {
+                    $transfer = $this->repo->transfer->findOrFail($transferId);
+
+                    $transfer->setStatus(Status::PENDING);
+
+                    $transfer->saveOrFail();
+                }
+
+                break;
+            }
+
+            case 'mark_failed':
+            {
+                // To update the status of transfers to failed state
+                // Data should be array of transfer IDs
+                // Sample payload:
+                // {"option": "mark_failed", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'mark_failed',
+                        'input'  => $input,
+                    ]
+                );
+
+                $transferIds = $input['data'];
+
+                foreach ($transferIds as $transferId)
+                {
+                    $transfer = $this->repo->transfer->findOrFail($transferId);
+
+                    $transfer->setStatus(Status::FAILED);
+
+                    $transfer->setFailed();
+
+                    $source = $transfer->getSourceType();
+
+                    if ($source === Constant::PAYMENT)
+                    {
+                        $transfer->setAttempts(Constant::MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS);
+                    }
+                    else if ($source === Constant::ORDER)
+                    {
+                        $transfer->setAttempts(Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS);
+                    }
+                    else
+                    {
+                        $transfer->setAttempts(1);
+                    }
+
+                    $this->repo->saveOrFail($transfer);
+
+                    (new Core())->eventTransferFailed($transfer);
+
+                    (new \RZP\Models\LedgerOutbox\Core())->softDelete($transfer->getPublicId(), \RZP\Models\Ledger\Constants::TRANSFER);
+
+                    $transfer->saveOrFail();
+                }
+
+                break;
+            }
+
+            case 'mark_processed':
+            {
+                // To update the status of transfers to processed state
+                // Data should be array of transfer IDs
+                // Sample payload:
+                // {"option": "mark_processed", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'mark_processed',
+                        'input'  => $input,
+                    ]
+                );
+
+                $transferIds = $input['data'];
+
+                foreach ($transferIds as $transferId)
+                {
+                    $transfer = $this->repo->transfer->findOrFail($transferId);
+
+                    if (($transfer->getStatus() === Status::PENDING) or ($transfer->getStatus() === Status::FAILED))
+                    {
+                        if ($transfer->getStatus() === Status::FAILED)
+                        {
+                            $transfer->setErrorCode(null);
+
+                            $transfer->setMessage(null);
+                        }
+
+                        $transfer->setStatus(Status::PROCESSED);
+
+                        $transfer->saveOrFail();
+
+                        (new Core())->eventTransferProcessed($transfer);
+
+                        $this->core->createTransactionForTransferViaCron([$transferId]);
+                    }
+                }
+
+                break;
+            }
+
+            case 'create_txns':
+            {
+                // To create debit/credit transactions for transfers
+                // Data should be array of transfer IDs
+                // Sample payload:
+                // {"option": "create_txns", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'create_txns',
+                        'input'  => $input,
+                    ]
+                );
+
+                $transferIds = $input['data'];
+
+                foreach ($transferIds as $transferId)
+                {
+                    $this->core->createTransactionForTransferViaCron([$transferId]);
+                }
+
+                break;
+            }
+
+            case 'fix_amount_transferred':
+            {
+                // To fix the amount_transferred in payment entity or transfer_payment entity
+                // Data should be array of payment IDs
+                // Sample payload:
+                // {"option": "create_txns", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'fix_amount_transferred',
+                        'input'  => $input,
+                    ]
+                );
+
+                $paymentIds = $input['data'];
+
+                foreach ($paymentIds as $paymentId)
+                {
+                    (new Payment\Service())->fixTransferAmountTransferred($paymentId, []);
+                }
+            }
+
+            case 'unlock_la_form':
+            {
+                // To unlock linked account activation form
+                // Data should be array of linked account IDs
+                // Sample payload:
+                // {"option": "unlock_la_form", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'unlock_la_form',
+                        'input'  => $input,
+                    ]
+                );
+
+                $merchantIds = $input['data'];
+
+                foreach ($merchantIds as $merchantId)
+                {
+                    $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                    $merchantDetails = $merchant->merchantDetail;
+
+                    if ($merchantDetails->isLocked() === false)
+                    {
+                        return;
+                    }
+
+                    if ($merchant->isLinkedAccount() === true)
+                    {
+                        $merchantDetailCore = new Merchant\Detail\Core();
+
+                        $input = [
+                            'locked'  =>  false,
+                        ];
+
+                        $merchantDetailCore->editMerchantDetailFields($merchant, $input);
+                    }
+                }
 
                 break;
             }
@@ -1698,4 +1939,5 @@ class Service extends Base\Service
 
         return $data;
     }
+
 }

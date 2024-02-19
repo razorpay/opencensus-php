@@ -1730,6 +1730,124 @@ class Service extends Base\Service
         }
     }
 
+    public function fixTransferAmountTransferred(string $id, array $input) : array
+    {
+        try
+        {
+            $payment = $this->repo->payment->findByPublicId($id);
+
+            $transferPayments = $this->repo->transfer_payment->getTransferPayment($payment->getId());
+
+            if  ($transferPayments->count() > 0)
+            {
+                $transferPayment = $transferPayments[0];
+            }
+
+            else
+            {
+                $this->trace->info(
+                    TraceCode::TRANSFER_PAYMENT_FIX_FAILURE,
+                    [
+                        'payment_id' => $id,
+                        'Reason'     => 'TRANSFER_PAYMENT_NOT_FOUND'
+                    ]
+                );
+
+                return [
+                    'Success' => false,
+                    'Reason'  => 'TRANSFER_PAYMENT_NOT_FOUND'
+                ];
+            }
+
+            return $this->repo->transaction(function () use ($payment, $transferPayment, $transferPayments)
+            {
+                $response = $this->updatePaymentAmountTransferredFix($payment, $transferPayment);
+
+                if  ($transferPayments->count() > 1)
+                {
+                    $transferPayment2 = $transferPayments[1];
+
+                    $this->repo->transfer_payment->deleteTransferPayment($transferPayment2->getId());
+
+                }
+
+                return $response;
+
+            });
+
+
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::TRANSFER_PAYMENT_FIX_FAILURE,
+                [
+                    'payment_id' => $id,
+                ]
+            );
+
+            throw $e;
+        }
+    }
+
+    public function updatePaymentAmountTransferredFix(Payment\Entity $payment, Transfer\Payment\Entity $transferPayment)
+    {
+        $amountTransferredDetailsFromPayment = $this->repo->transfer->fetchAmountTransferred($payment->getId());
+
+        if (empty($amountTransferredDetailsFromPayment) === true or empty($amountTransferredDetailsFromPayment['amount_transferred']) === true)
+        {
+            $amountTransferredFromPayment = 0;
+        }
+        else
+        {
+            $amountTransferredFromPayment = $amountTransferredDetailsFromPayment['amount_transferred'];
+        }
+
+        $amountTransferredDetailsFromOrder = $this->repo->transfer->fetchAmountTransferred($payment->getApiOrderId());
+
+        if (empty($amountTransferredDetailsFromOrder) === true or empty($amountTransferredDetailsFromOrder['amount_transferred']) === true)
+        {
+            $amountTransferredFromOrder = 0;
+        }
+        else
+        {
+            $amountTransferredFromOrder = $amountTransferredDetailsFromOrder['amount_transferred'];
+        }
+
+        $amountTransferred = $amountTransferredFromPayment + $amountTransferredFromOrder;
+
+        $this->trace->info(
+            TraceCode::TRANSFER_AMOUNT_TRANSFERRED,
+            [
+                'payment_id'              => $payment->getId(),
+                'calculated_amount'       => $amountTransferred,
+            ]
+        );
+
+        $this->repo->transfer_payment->lockForUpdateAndReload($transferPayment);
+
+        $transferPayment->transferAmountFix($amountTransferred);
+
+        $this->repo->saveOrFail($transferPayment);
+
+        $this->repo->payment->lockForUpdateAndReload($payment);
+
+        $payment->transferAmountFix(0);
+
+        $this->repo->saveOrFail($payment);
+
+        $this->trace->info(
+            TraceCode::TRANSFER_PAYMENT_FIX_SUCCESS,
+            [
+                'payment_id' => $payment->getId(),
+            ]
+        );
+
+        return [
+            'Success' => true,
+        ];
+    }
+
     /**
      * Get Transfers for a payment_id
      *

@@ -3566,6 +3566,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::AMOUNT_TRANSFERRED);
     }
 
+    public function getAmountTransferredOld()
+    {
+        return $this->getAttribute(self::AMOUNT_TRANSFERRED);
+    }
+
     public function getAmountUntransferred()
     {
         return $this->getAmount() - $this->getAmountTransferred();
@@ -5630,6 +5635,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $amountTransferred = $this->getAmountTransferred() + $amount;
 
         $this->setAttribute(self::AMOUNT_TRANSFERRED, $amountTransferred);
+    }
+
+    public function transferAmountFix(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT_TRANSFERRED, $amount);
     }
 
     /**
