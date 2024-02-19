@@ -4957,6 +4957,33 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
 
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "1000000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
         $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
 
         $this->startTest();
@@ -5424,8 +5451,6 @@ class SettlementOndemandTest extends TestCase
 
         $ondemandSettlementId = $payload["id"];
 
-        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
-
         $journal = $this->getPaymentGatewayCapturedJournalResponsePayload($ondemandSettlementId, 'ondemand_settlement_processed');
 
         $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow($journal);
@@ -5434,13 +5459,9 @@ class SettlementOndemandTest extends TestCase
 
         $txn = $this->getDbLastEntity('transaction');
 
-        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
-
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $ondemandSettlementId.'-'.'ondemand_settlement_processed']);
 
         $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
-
-        $actualLedgerOutboxEntry = json_decode($payload, true);
 
         $this->assertNotNull($txn);
 
@@ -5684,9 +5705,37 @@ class SettlementOndemandTest extends TestCase
 
         $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.webhook_key', 'DUMMY_KEY');
 
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "1000000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
         if($mockWebhhok) {
             $settlementOndemand = $this->fixtures->on('test')->create('settlement.ondemand',[
                 'amount'                    => 450000,
+                'status'                    => 'created',
                 'created_at'                => Carbon::now(Timezone::IST)->getTimestamp(),
                 'updated_at'                => Carbon::now(Timezone::IST)->getTimestamp(),
             ]);

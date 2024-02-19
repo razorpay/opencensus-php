@@ -258,6 +258,11 @@ class Constants
     // Ledger constants
     const IDEMPOTENCY_KEY                       = 'idempotency_key';
     const MERCHANT_ID                           = 'merchant_id';
+    const ENTITIES                              = 'entities';
+    const ACCOUNT_TYPE                          = 'account_type';
+    const PAYABLE                               = 'payable';
+    const FUND_ACCOUNT_TYPE                     = 'fund_account_type';
+    const TENANT_PG                             = 'PG';
     const MODE                                  = 'mode';
     const PG_GATEWAY_ONBOARD                    = 'pg_gateway_onboard';
     const SUCCESS                               = 'success';
@@ -4294,4 +4299,8 @@ class Constants
         self::ES_AUTOMATIC_THREE_PM,
         self::ES_ON_DEMAND_RESTRICTED,
     ];
+
+    const MERCHANT_BALANCE = "merchant_balance";
+
+    const IS_AMOUNT_VALID = "is_amount_valid";
 }

@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\Feature;
+use RZP\Models\Ledger\Constants;
 use RZP\Models\Ledger\ReverseShadow\Capital\Core as ReverseShadowCapitalCore;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -239,7 +240,21 @@ class Service extends Base\Service
 
         if($amountLeftForToday > 0)
         {
-            $amountLimitPerSettlement = ceil(($this->merchant->primaryBalance->getBalance() * $featureConfig->getPercentageOfBalanceLimit())/100);
+            if(($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)) {
+
+                $reverseShadowCapital = new ReverseShadowCapitalCore();
+
+                $ledgerService = $this->app['ledger'];
+
+                $merchantAccountBalance = $reverseShadowCapital->getMerchantAccountBalance($ledgerService, $this->merchant->getMerchantId());
+
+                $balance =  $merchantAccountBalance[Constants::MERCHANT_BALANCE];
+
+                $amountLimitPerSettlement = ceil(($balance * $featureConfig->getPercentageOfBalanceLimit())/100);
+            }
+            else {
+                $amountLimitPerSettlement = ceil(($this->merchant->primaryBalance->getBalance() * $featureConfig->getPercentageOfBalanceLimit())/100);
+            }
         }
 
         $settlableAmount = min($amountLeftForToday, $amountLimitPerSettlement);

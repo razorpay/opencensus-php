@@ -238,4 +238,6 @@ class Constants
 
     const LEDGER_ONDEMAND_PROCESSED_TRANSACTOR_ID_PREFIX = "setlod_";
     const LEDGER_ONDEMAND_REVERSED_TRANSACTOR_ID_PREFIX  = "setlodrvrsl_";
+
+    const IS_AMOUNT_VALID = "is_amount_valid";
 }

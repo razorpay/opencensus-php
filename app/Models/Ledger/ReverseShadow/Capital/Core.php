@@ -3,6 +3,7 @@
 namespace RZP\Models\Ledger\ReverseShadow\Capital;
 
 use Ramsey\Uuid\Uuid;
+use RZP\Services\Ledger as LedgerService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -79,18 +80,55 @@ class Core extends Base\Core
         $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
     }
 
-    public function validateBalance(array $input,Merchant\Entity $merchant): bool
+    public function validateBalance(array $input,Merchant\Entity $merchant): array
     {
+        $validationResponse = [];
+
         $ledgerService = $this->app['ledger'];
 
-        $merchantAccountBalances = $this->getMerchantAccountBalances($ledgerService, $merchant->getMerchantId());
+        $merchantAccountBalances = $this->getMerchantAccountBalance($ledgerService, $merchant->getMerchantId());
+
+        $validationResponse[Constants::MERCHANT_BALANCE] =  $merchantAccountBalances[Constants::MERCHANT_BALANCE];
 
         if ($input[OndemandEntity::AMOUNT] > $merchantAccountBalances[Constants::MERCHANT_BALANCE])
         {
-            return false;
+            $validationResponse[Constants::IS_AMOUNT_VALID] = false;
+            return $validationResponse;
         }
-        return true;
 
+        $validationResponse[Constants::IS_AMOUNT_VALID] = true;
+        return $validationResponse;
+
+    }
+
+    public function getMerchantAccountBalance($ledgerService, $merchantId): array
+    {
+        $accountPayload = $this->getAccountBalancePayloadForMerchantBalanceOnly($merchantId);
+
+        $requestHeaders = [
+            LedgerService::LEDGER_TENANT_HEADER    => Constants::TENANT_PG,
+            LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
+        ];
+
+        $response = $ledgerService->fetchAccountsByEntitiesAndMerchantID($accountPayload, $requestHeaders, true);
+
+        $merchantAccountBalancesList = $response['body']['accounts'];
+
+        return $this->getMerchantAccountBalancesMap($merchantAccountBalancesList);
+    }
+
+    private function getAccountBalancePayloadForMerchantBalanceOnly($merchantId) :array
+    {
+        return [
+            Constants::MERCHANT_ID => $merchantId,
+            Constants::ENTITIES => [
+                // PG Merchant Balance Account
+                [
+                    Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
+                    Constants::FUND_ACCOUNT_TYPE => [Constants::MERCHANT_BALANCE]
+                ],
+            ],
+        ];
     }
 
     public function fetchBalance($merchant){

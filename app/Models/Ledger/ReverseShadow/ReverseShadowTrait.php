@@ -622,4 +622,14 @@ trait ReverseShadowTrait
         }
         return $searchResults;
     }
+
+    public function fetchMerchantBalanceOnly($merchant){
+
+        $ledgerService = $this->app['ledger'];
+
+        $merchantAccountBalances = $this->getMerchantAccountBalance($ledgerService, $merchant->getId());
+
+        return $merchantAccountBalances[Constants::MERCHANT_BALANCE];
+
+    }
 }

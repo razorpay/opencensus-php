@@ -108,21 +108,24 @@ class Core extends Base\Core
         return [$settlementOndemand, $settlementOndemandPayouts, $txn];
     }
 
-    public function createSettlementOndemandWithReverseShadowOnLedger(array $input, Merchant\Entity $merchant, User\Entity $user = null, array $requestDetails = [])
+    public function createSettlementOndemandWithReverseShadowOnLedger(array $input, Merchant\Entity $merchant, User\Entity $user = null, array $requestDetails = [], $skipLedgerOutboxEntry = false)
     {
 
-        if ($input[Entity::AMOUNT] > $merchant->primaryBalance->getBalance())
+        $reverseShadowCapital = new ReverseShadowCapitalCore();
+
+        $validationResponse = $reverseShadowCapital -> validateBalance($input, $merchant);
+
+        if ( !$validationResponse[Constants::IS_AMOUNT_VALID] )
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,
                 null,
                 [
-                    'amount'  => $input[Entity::AMOUNT],
-                    'balance' => $merchant->primaryBalance->getBalance(),
-                ]);
+                    'amount' => $input[Entity::AMOUNT],
+                    'balance' => $validationResponse[Constants::MERCHANT_BALANCE],
+                ]
+            );
         }
-
-        $reverseShadowCapital = new ReverseShadowCapitalCore();
 
         $this->checkMerchantFundsOnHold();
 
@@ -170,7 +173,9 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($settlementOndemand);
 
-        $reverseShadowCapital -> createLedgerEntryForSettlementOndemandProcessedInReverseShadow($settlementOndemand);
+        if(!$skipLedgerOutboxEntry) {
+            $reverseShadowCapital->createLedgerEntryForSettlementOndemandProcessedInReverseShadow($settlementOndemand);
+        }
 
         return [$settlementOndemand, $settlementOndemandPayouts];
     }
@@ -241,7 +246,22 @@ class Core extends Base\Core
     {
         return $this->repo->beginTransactionAndRollback(function () use ($input, $merchant, $user)
         {
-            [$settlementOndemand, $settlementOndemandPayouts] = $this->createSettlementOndemand($input, $merchant, $user);
+            if(($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)) {
+
+                $requestDetails = [];
+
+                [$settlementOndemand, $settlementOndemandPayouts] = $this->createSettlementOndemandWithReverseShadowOnLedger(
+                    $input,
+                    $this->merchant,
+                    $this->user,
+                    $requestDetails,
+                    true
+                );
+            }
+            else
+            {
+                [$settlementOndemand, $settlementOndemandPayouts] = $this->createSettlementOndemand($input, $merchant, $user);
+            }
 
             [$fees, $tax, $feesSplit] = (new Pricing\Fee)->calculateMerchantFees($settlementOndemandPayouts[0]);
 
@@ -634,31 +654,33 @@ class Core extends Base\Core
     private function handleOndemandSettlementProcessedEventOnAcknowledgment($journal, string $transactorId, string $settlementOndemandId, string $merchantId, bool $accountAlreadyExistsForCapitalInNewLedger){
         $journalId = $journal['id'];
 
-        return $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger) {
+        $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger) {
 
             $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandId, $merchantId);
+            if($settlementOndemand->getStatus() === 'created') {
 
+
+                $settlementOndemandPayouts = (new OndemandPayout\Repository)
+                    ->fetchByOndemandIdAndMerchantId($settlementOndemand->getId(),
+                        $settlementOndemand->getMerchantId())->all();
+
+                if ($accountAlreadyExistsForCapitalInNewLedger === false) {
+                    (new Service)->handleJobPushPostTransactionCreation($settlementOndemand, $settlementOndemandPayouts, $this->mode, $merchantId);
+                }
+            }
+        });
+
+        return $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger) {
+            $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandId, $merchantId);
             $resource = $this->getTransactionMutexresource($settlementOndemand);
 
             list($txn, $feeSplit) = $this->app['api.mutex']->acquireAndRelease(
                 $resource,
-                function () use ($settlementOndemand, $journalId)
-                {
+                function () use ($settlementOndemand, $journalId) {
                     list($txn, $feeSplit) = (new Transaction\Processor\SettlementOndemand($settlementOndemand))
                         ->createTransaction($journalId);
-
                     $this->repo->saveOrFail($txn);
                 });
-
-            $settlementOndemandPayouts = (new OndemandPayout\Repository)
-                ->fetchByOndemandIdAndMerchantId($settlementOndemand->getId(),
-                    $settlementOndemand->getMerchantId())->all();
-
-            if($accountAlreadyExistsForCapitalInNewLedger === false)
-            {
-                (new Service)->handleJobPushPostTransactionCreation($settlementOndemand, $settlementOndemandPayouts, $this->mode, $merchantId);
-            }
-
             return $txn;
         });
     }

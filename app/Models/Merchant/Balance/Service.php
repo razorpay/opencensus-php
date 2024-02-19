@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Balance;
 
 use RZP\Diag\EventCode;
+use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Counter;
@@ -17,6 +18,8 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Services\Ledger as LedgerService;
+use Ramsey\Uuid\Uuid;
 
 class Service extends Base\Service
 {
@@ -123,9 +126,15 @@ class Service extends Base\Service
 
         $merchantIds = $input['merchant_ids'];
 
-        $result = new Base\PublicCollection;
+        $featureRepo = new Feature\Repository;
 
-        $balances = $this->repo->balance->getBalancesForMerchantIds($merchantIds, $input['balance_type']);
+        $reverseShadowMerchantIds = $featureRepo->getMerchantIdsHavingFeature(Feature\Constants::PG_LEDGER_REVERSE_SHADOW, $merchantIds);
+
+        $nonReverseShadowMerchantIds = array_diff($merchantIds, $reverseShadowMerchantIds);
+
+        $result = $this->applyPaginationAndCallLedgerService($reverseShadowMerchantIds);
+
+        $balances = $this->repo->balance->getBalancesForMerchantIds($nonReverseShadowMerchantIds, $input['balance_type']);
 
         foreach($balances as $merchantId => $balance) {
             $result->push([
@@ -140,6 +149,103 @@ class Service extends Base\Service
 
         return $response;
 
+    }
+
+    public function applyPaginationAndCallLedgerService(array $reverseShadowMerchantIds): Base\PublicCollection
+    {
+        $result = new Base\PublicCollection;
+
+        $offset = 0;
+
+        $limit = 100;
+
+        $pages = ceil(count($reverseShadowMerchantIds) / $limit);
+
+        while($pages > 0)
+        {
+
+            $requestSetOfMIDs = array_slice($reverseShadowMerchantIds, $offset, $limit);
+
+            $requestBody = $this->bulkFetchAccountsByEntitiesAndMerchantIDPayload($requestSetOfMIDs);
+
+            $requestHeaders = [
+                LedgerService::LEDGER_TENANT_HEADER    => Constants::TENANT_PG,
+                LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
+            ];
+
+            try {
+
+                // Call CLS Fetch Balance Bulk API
+                $ledgerService = new LedgerService($this->app);
+
+                $response = $ledgerService->fetchAccountsInBulkByEntitiesAndMerchantID($requestBody, $requestHeaders, true);
+
+                $this->parseResponse($response['body'], $result);
+
+                $offset += $limit;
+
+                $pages--;
+            }
+            catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_ACCOUNT_FETCH_MERCHANT_BALANCE_ERROR,
+                    []);
+            }
+        }
+
+        return $result;
+    }
+
+    public function bulkFetchAccountsByEntitiesAndMerchantIDPayload($requestSetOfMIDs): array
+    {
+
+        $requestPayload = ["merchantIDAndEntitiesList" => []];
+
+        foreach ($requestSetOfMIDs as $merchantId)
+        {
+            $request = [
+                Constants::MERCHANT_ID => $merchantId,
+                Constants::ENTITIES => [
+                    [
+                        Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
+                        Constants::FUND_ACCOUNT_TYPE => [Constants::MERCHANT_BALANCE]
+                    ]
+                ]
+            ];
+            $requestPayload["merchantIDAndEntitiesList"][] = $request;
+        }
+
+        return $requestPayload;
+    }
+
+    public function parseResponse($response, &$result)
+    {
+
+        foreach ($response['merchantAccounts'] as $merchantData)
+        {
+
+            $accounts = $merchantData['accounts'] ?? [];
+
+            if(!empty($accounts)) {
+
+                foreach ($merchantData['accounts'] as $account) {
+
+                    $entities = $account['entities'] ?? [];
+                    $accountTypes = $entities['account_type'] ?? [];
+                    $fundAccountTypes = $entities['fund_account_type'] ?? [];
+
+                    if (in_array('payable', $accountTypes) && in_array('merchant_balance', $fundAccountTypes)) {
+
+                        $result->push([
+                            'merchant_id' => stringify($merchantData['merchant_id']),
+                            'balance' => floatval($account['balance'])
+                        ]);
+                    }
+                }
+            }
+        }
     }
 
     public function updateFreePayout($balanceId, $input)

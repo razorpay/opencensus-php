@@ -15,6 +15,8 @@ use RZP\Constants\Entity;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Key;
+use RZP\Models\Ledger\Constants;
+use RZP\Models\Ledger\ReverseShadow\Capital\Core as ReverseShadowCapitalCore;
 use RZP\Models\Merchant\CheckoutExperiment;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Merchant\PaymentLimit\Service;
@@ -770,9 +772,18 @@ class MerchantController extends Controller
 
     public function getAccountBalance()
     {
+
         $data = $this->service()->fetchBalance();
 
         $merchant = $this->app['basicauth']->getMerchant();
+
+        if(($merchant !== null && $merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true))
+        {
+
+            $reverseShadowCapital = new ReverseShadowCapitalCore();
+
+            $data[Balance\Entity::BALANCE] = $reverseShadowCapital->fetchMerchantBalanceOnly($merchant);
+        }
 
         $repo = App::getFacadeRoot()['repo'];
 

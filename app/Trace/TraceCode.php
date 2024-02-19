@@ -11126,6 +11126,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     
     const HARVESTER_QUERY_FAILED = 'HARVESTER_QUERY_FAILED';
 
+    const LEDGER_ACCOUNT_FETCH_MERCHANT_BALANCE_ERROR                    = 'LEDGER_ACCOUNT_FETCH_MERCHANT_BALANCE_ERROR';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
