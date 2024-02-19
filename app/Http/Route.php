@@ -4769,10 +4769,13 @@ class Route
         '1cc_coupon_engine_get_segment'                      => ['get', '1cc/dashboard/ce/segment', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_coupon_engine_delete_segment'                   => ['delete', '1cc/dashboard/ce/segments', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_coupon_engine_upsert_coupon'                    => ['put', '1cc/dashboard/ce/coupons', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_coupon_engine_delete_coupon'                    => ['delete', '1cc/dashboard/ce/coupons', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_coupon_engine_get_coupons'                      => ['get', '1cc/dashboard/ce/coupons', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_coupon_engine_sync_platform_coupons'            => ['post', '1cc/dashboard/ce/coupons/sync', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_coupon_engine_get_sync_platform_coupons_status' => ['get', '1cc/dashboard/ce/coupons/sync', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_search_product_collections'                     => ['get', '1cc/magic/platform/products/collections/search', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+
+        '1cc_magic_konnect_get_sso_jwt'                      => ['get', '1cc/konnect/sso/jwt', 'OneClickCheckoutController@handleMerchantDashboardReq'],
 
         'fetch_turbo_upi_error_mapping'                      => ['get', 'upi/turbo/error_mapping', 'UpiTurboController@fetchErrorMappings'],
         'build_turbo_upi_error_mapping'                      => ['put', 'admin/upi/turbo/error_mapping', 'UpiTurboController@setErrorMappingsAdmin'],
@@ -7656,10 +7659,13 @@ class Route
         '1cc_coupon_engine_get_segment',
         '1cc_coupon_engine_delete_segment',
         '1cc_coupon_engine_upsert_coupon',
+        '1cc_coupon_engine_delete_coupon',
         '1cc_coupon_engine_get_coupons',
         '1cc_coupon_engine_sync_platform_coupons',
         '1cc_coupon_engine_get_sync_platform_coupons_status',
         '1cc_search_product_collections',
+
+        '1cc_magic_konnect_get_sso_jwt',
 
         // Merchant Analytics onboarding routes
         '1cc_save_analytics_integration_event_configs',
@@ -13202,10 +13208,13 @@ class Route
             '1cc_coupon_engine_get_segment',
             '1cc_coupon_engine_delete_segment',
             '1cc_coupon_engine_upsert_coupon',
+            '1cc_coupon_engine_delete_coupon',
             '1cc_coupon_engine_get_coupons',
             '1cc_coupon_engine_sync_platform_coupons',
             '1cc_coupon_engine_get_sync_platform_coupons_status',
             '1cc_search_product_collections',
+
+            '1cc_magic_konnect_get_sso_jwt',
 
             'growth_get_public_asset_details',
 
@@ -15772,11 +15781,13 @@ class Route
             '1cc_coupon_engine_get_segment',
             '1cc_coupon_engine_delete_segment',
             '1cc_coupon_engine_upsert_coupon',
+            '1cc_coupon_engine_delete_coupon',
             '1cc_coupon_engine_get_coupons',
             '1cc_coupon_engine_sync_platform_coupons',
             '1cc_coupon_engine_get_sync_platform_coupons_status',
             '1cc_search_product_collections',
 
+            '1cc_magic_konnect_get_sso_jwt',
             '1cc_shopify_fetch_liquid_files',
             '1cc_shopify_update_liquid_files',
 
@@ -17309,6 +17320,7 @@ class Route
             'one_cc_shopify_order_for_mcs',
             'one_cc_shopify_cart_for_mcs',
             'order_payments',
+            'internal_merchant_details_fetch',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',

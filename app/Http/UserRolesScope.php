@@ -1370,10 +1370,13 @@ class UserRolesScope
             '1cc_coupon_engine_get_segment'                       => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_coupon_engine_delete_segment'                    => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_coupon_engine_upsert_coupon'                     => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
+            '1cc_coupon_engine_delete_coupon'                     => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_coupon_engine_get_coupons'                       => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_coupon_engine_sync_platform_coupons'             => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_coupon_engine_get_sync_platform_coupons_status'  => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_search_product_collections'                      => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
+
+            '1cc_magic_konnect_get_sso_jwt'                       => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
 
             'fund_addition_tpv'                                   => [Role::OWNER, Role::ADMIN],
             'shipping_provider_list'                              => [Role::OWNER, Role::ADMIN],
