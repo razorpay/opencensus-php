@@ -12,6 +12,7 @@ use RZP\Base;
 use RZP\Exception;
 use Illuminate\Http\Request;
 use RZP\Http\Controllers\PlinkController;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\User;
 use RZP\Models\Admin;
 use RZP\Models\Batch;
@@ -116,6 +117,8 @@ class Validator extends Base\Validator
         . 'txt,';
 
     const VALIDATE_FILE_NAME = 'validate_file_name';
+
+    const EDIT_TERMINAL_BATCH_ROW_RULES = 'edit_terminal_batch_row';
 
     protected static $validateFileNameRules = [
         'filename'      => 'required|string',
@@ -1265,6 +1268,52 @@ class Validator extends Base\Validator
         Header::REDIRECT_URI   => 'string|required_with:oauth_referral',
         Header::SCOPE          => 'string|required_with:oauth_referral',
     ];
+
+    protected static $editTerminalBatchRowRules = [
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID       => 'required|public_id',
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY           => 'required|alpha_dash|custom',
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE            => 'sometimes|boolean',
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CC          => 'sometimes|boolean',
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_WALLET      => 'sometimes|boolean',
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CREDIT_LINE => 'sometimes|boolean',
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_MERCHANT_SIZE     => 'sometimes|numeric',
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_MCC               =>
+            'sometimes|numeric|prohibited_if:' . Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY . ',' .
+            Gateway::UPI_YESBANK . '|custom',
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_BILLING_LABEL     =>
+            'sometimes|boolean|prohibited_if:' . Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY . ',' . Gateway::UPI_ICICI,
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_MOBILE_NUMBER     => 'sometimes|boolean',
+    ];
+
+    protected function validateMcc($attribute, $value)
+    {
+        $strValue = (string) $value;
+
+        if (strlen($strValue) < 3 or
+            strlen($strValue) > 4)
+        {
+            throw new BadRequestValidationFailureException(
+                $strValue . " is an invalid MCC",
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            );
+        }
+    }
+
+    protected function validateGateway($attribute, $value)
+    {
+        if (in_array(
+                $value,
+                Gateway::$upiEditTerminalBulkGateways,
+                true
+            ) === false
+        )
+        {
+            throw new BadRequestValidationFailureException(
+                $value . " gateway is not supported for bulk terminal edit",
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            );
+        }
+    }
 
     public function validateMetadata($attribute, $value)
     {

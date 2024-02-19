@@ -1021,13 +1021,16 @@ class Header
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
     // Upi Onboarded Terminal edit Headers
-    const UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID   =   'Terminal Id';
-    const UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY       =   'Gateway';
-    const UPI_ONBOARDED_TERMINAL_EDIT_RECURRING     =   'Recurring';
-    const UPI_ONBOARDED_TERMINAL_EDIT_ONLINE        =   'Online';
+    const UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID           =   'Terminal Id';
+    const UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY               =   'Gateway';
+    const UPI_ONBOARDED_TERMINAL_EDIT_ONLINE                =   'Online';
     const UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CC              =   'Allow CC';
     const UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_WALLET          =   'Allow Wallet';
     const UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CREDIT_LINE     =   'Allow Credit Line';
+    const UPI_ONBOARDED_TERMINAL_EDIT_MERCHANT_SIZE         =   'Merchant Size';
+    const UPI_ONBOARDED_TERMINAL_EDIT_MCC                   =   'MCC';
+    const UPI_ONBOARDED_TERMINAL_EDIT_BILLING_LABEL         =   'Edit Billing Label';
+    const UPI_ONBOARDED_TERMINAL_EDIT_MOBILE_NUMBER         =   'Edit Mobile Number';
 
     // Upi Terminal Onboarding Headers
     const UPI_TERMINAL_ONBOARDING_MERCHANT_ID   =   'Merchant Id';
@@ -2099,11 +2102,14 @@ class Header
             self::INPUT => [
                 self::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID,
                 self::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY,
-                self::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING,
                 self::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE,
                 self::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CC,
                 self::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_WALLET,
                 self::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CREDIT_LINE,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_MERCHANT_SIZE,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_MCC,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_BILLING_LABEL,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_MOBILE_NUMBER,
             ],
             self::OUTPUT => [
                 self::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID,

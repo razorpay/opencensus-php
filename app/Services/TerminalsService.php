@@ -52,6 +52,7 @@ class TerminalsService
     const GATEWAY           = 'gateway';
     const TERMINAL_ID       = 'terminal_id';
     const GATEWAY_ACQUIRER  = 'gateway_acquirer';
+    const CATEGORY          = 'category';
     const MERCHANT_ID       = 'merchant_id';
     const IDENTIFIERS       = 'identifiers';
     const FEATURES          = 'features';
@@ -652,6 +653,11 @@ class TerminalsService
         if (isset($otherInputs[self::SECRETS]) === true)
         {
             $content[self::SECRETS] = $otherInputs[self::SECRETS];
+        }
+
+        if (isset($otherInputs[self::CATEGORY]) === true)
+        {
+            $content[self::CATEGORY] = $otherInputs[self::CATEGORY];
         }
 
         $content = json_encode($content);

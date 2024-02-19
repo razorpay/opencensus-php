@@ -3881,6 +3881,12 @@ class Gateway
         Payment\Gateway::INDUSIND_DEBIT_EMI
     ];
 
+    public static $upiEditTerminalBulkGateways = [
+        self::UPI_ICICI,
+        self::UPI_AXIS,
+        self::UPI_YESBANK
+    ];
+
     const CURRENCIES_SUPPORTED_BY_INTL_BANK_TRANSFER_BY_MODE = [
         IntlBankTransfer::SWIFT => [
             Currency::USD, Currency::AUD, Currency::CAD, Currency::HRK, Currency::DKK,

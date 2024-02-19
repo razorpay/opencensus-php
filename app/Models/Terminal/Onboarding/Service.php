@@ -264,19 +264,44 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * @param array $row
+     * Validate a row received in UPI Edit terminal batch file
+     * @return void
+     * @throws Exception\BadRequestValidationFailureException | \Throwable
+     */
+    public function validateUpiDmoEditInput(array $row)
+    {
+        unset($row['idempotency_key']);
+
+        (new Batch\Validator())->validateInput(Batch\Validator::EDIT_TERMINAL_BATCH_ROW_RULES, $row);
+    }
+
     public function processUpiTerminalEditBulkRow(array $row)
     {
         $this->trace->info(
             TraceCode::UPI_TERMINAL_ONBOARDED_EDIT_REQUEST,
             [
-                'Terminal Id'   =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID],
-                'Gateway'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY],
-                'Recurring'     =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING],
-                'Online'        =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE],
-                'Allow CC'      =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CC],
-                'Allow Wallet'  =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_WALLET],
-                'Allow Credit Line' =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CREDIT_LINE],
+                'Terminal Id'        => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID] ?? null,
+                'Gateway'            => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY] ?? null,
+                'Online'             => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE] ?? null,
+                'Allow CC'           => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CC] ?? null,
+                'Allow Wallet'       => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_WALLET] ?? null,
+                'Allow Credit Line'  => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CREDIT_LINE] ?? null,
+                'Merchant Size'      => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_MERCHANT_SIZE] ?? null,
+                'MCC'                => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_MCC] ?? null,
+                'Edit Billing Label' => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_BILLING_LABEL] ?? null,
+                'Edit Mobile Number' => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_MOBILE_NUMBER] ?? null,
+                'idempotency_key'    => $row['idempotency_key'] ?? null,
             ]);
+
+        // Remove all extra preceding and succeeding whitespaces from each value in a row
+        array_walk(
+            $row,
+            function (&$val) {
+                $val = trim($val);
+            }
+        );
 
         $result = [
             Constants::IDEMPOTENCY_KEY        => $row[Constants::IDEMPOTENCY_KEY],
@@ -286,29 +311,76 @@ class Service extends Base\Service
                 Constants::BATCH_ERROR_CODE        => '',
                 Constants::BATCH_ERROR_DESCRIPTION => '',
             ],
-            Constants::VPA_WHITELISTED => '',
         ];
 
         $result = array_merge($result, $row);
 
         try
         {
+            $this->validateUpiDmoEditInput($row);
+        }
+        catch (Exception\BadRequestValidationFailureException $bre)
+        {
+            $this->trace->traceException(
+                $bre,
+                Trace::ERROR,
+                TraceCode::VALIDATION_ERROR_IN_BATCH_FILE_ROW
+            );
+
+            $result[Constants::BATCH_ERROR] = [
+                Constants::BATCH_ERROR_DESCRIPTION => $bre->getMessage(),
+                Constants::BATCH_ERROR_CODE        => $bre->getCode(),
+            ];
+
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = 400;
+
+            return $result;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UNEXPECTED_ERROR_IN_UPI_ONBOARDED_TERMINAL_EDIT
+            );
+
+            $result[Constants::BATCH_ERROR] = [
+                Constants::BATCH_ERROR_DESCRIPTION => $e->getMessage(),
+                Constants::BATCH_ERROR_CODE        => $e->getCode(),
+            ];
+
+            return $result;
+        }
+
+        try
+        {
             (new UpiOnboardedTerminalEdit())->processEntry($row);
 
             $result[Constants::BATCH_SUCCESS] = true;
-            $result[Constants::TERMINAL_ID]  =  $row[Constants::TERMINAL_ID];
-            $result[Constants::BATCH_HTTP_STATUS_CODE] = 201;
-            $result[Constants::VPA_WHITELISTED] = $row[Constants::VPA_WHITELISTED];
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = 200;
 
             $this->trace->info(
                 TraceCode::UPI_TERMINAL_ONBOARDED_EDIT_RESPONSE,
                 [
-                    'Terminal Id'     =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID],
-                    'Gateway'         =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY],
-                    'Recurring'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING],
-                    'Online'          =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE],
-                    'VPA_WHITELISTED' =>  $row[Constants::VPA_WHITELISTED]
+                    'terminal_id'     => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID] ?? null,
+                    'gateway'         => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY] ?? null,
+                    'success'         => true,
                 ]);
+        }
+        catch (Exception\BadRequestValidationFailureException $bre)
+        {
+            $this->trace->traceException(
+                $bre,
+                Trace::ERROR,
+                TraceCode::VALIDATION_ERROR_IN_BATCH_FILE_ROW
+            );
+
+            $result[Constants::BATCH_ERROR] = [
+                Constants::BATCH_ERROR_DESCRIPTION => $bre->getMessage(),
+                Constants::BATCH_ERROR_CODE        => $bre->getCode(),
+            ];
+
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = 400;
         }
         catch(BaseException $exception)
         {
@@ -321,11 +393,9 @@ class Service extends Base\Service
 
             $this->trace->traceException($exception, Trace::ERROR,TraceCode::UPI_TERMINAL_ONBOARDED_EDIT_ERROR,
                 [
-                    'Terminal Id'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID],
-                    'Gateway'           =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY],
-                    'Recurring'         =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING],
-                    'Online'            =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE],
-                    'http_status_code'  =>  $result[Constants::BATCH_HTTP_STATUS_CODE]
+                    'terminal_id'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID] ?? null,
+                    'gateway'           =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY] ?? null,
+                    'http_status_code'  =>  $result[Constants::BATCH_HTTP_STATUS_CODE] ?? null
                 ]);
 
         }
@@ -340,10 +410,8 @@ class Service extends Base\Service
 
             $this->trace->traceException($throwable, Trace::ERROR,TraceCode::UPI_TERMINAL_ONBOARDED_EDIT_ERROR,
                 [
-                    'Terminal Id'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID],
-                    'Gateway'           =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY],
-                    'Recurring'         =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING],
-                    'Online'            =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE],
+                    'terminal_id'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID] ?? null,
+                    'gateway'           =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY] ?? null,
                     'http_status_code'  =>  $result[Constants::BATCH_HTTP_STATUS_CODE]
                 ]);
         }

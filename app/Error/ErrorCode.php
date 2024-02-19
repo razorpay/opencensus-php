@@ -3064,6 +3064,8 @@ class ErrorCode
 
     //methods
     const BAD_REQUEST_METHOD_NOT_ALLOWED_FOR_COUNTRY_ORG                            = 'BAD_REQUEST_METHOD_NOT_ALLOWED_FOR_COUNTRY_ORG';
+    const BAD_REQUEST_INVALID_UPI_DMO_EDIT_UPDATE_COMBINATION                       = 'BAD_REQUEST_INVALID_UPI_DMO_EDIT_UPDATE_COMBINATION';
+
 
     static function getConstants()
     {
