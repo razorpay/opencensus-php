@@ -47,7 +47,7 @@ class Scbl extends Base
                 'Tenure'                       => $emiTenure,
                 // Below fields are optional
                 'REDUCING_INTEREST_RATE_P_A'   => $this->getFormattedEmiRate($emiRate),
-                'PROCESSING_FEE'               => '',
+                'PROCESSING_FEE'               => '1%',
                 'FORCLOSURE_FEE'               => '',
                 'MIN_AMT'                      => '',
                 'MAX_AMT'                      => '',

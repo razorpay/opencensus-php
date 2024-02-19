@@ -38,6 +38,14 @@ class ProcessingFeePlan
                 ]
             ]
         ],
+        CreditEmiProvider::SCBL => [
+            Type::CREDIT => [
+                self:: DEFAULT => [
+                    self::TYPE => self::PERCENTAGE,
+                    self::PERCENTAGE => 1
+                ]
+            ]
+        ],
         CreditEmiProvider::KKBK => [
             Type::CREDIT => [
                 self:: DEFAULT => [
