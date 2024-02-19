@@ -68,10 +68,7 @@ class BusinessAuth
         'pos_fetch_all_device_orders',
         'pos_fetch_latest_order',
         'payment_handle_get',
-        'pincode_get',
-        'merchant_activation_business_categories_v3',
-        'onboarding_order_verify',
-        'onboarding_order_verify',
+        'merchant_activation_business_categories_v2',
     ];
 
     /**
