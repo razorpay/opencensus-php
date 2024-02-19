@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\CardMandate;
 use RZP\Constants\Timezone;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Models\Currency\Currency;
@@ -80,7 +81,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
 
     public function CreatePreDebitNotification(CardMandate\Entity $cardMandate, ?Payment\Entity $payment, $input): Notification
     {
-        $mandateHqInput = $this->getCreatePreDebitNotificationInput($input);
+        $mandateHqInput = $this->getCreatePreDebitNotificationInput($input, $payment);
 
         $response = $this->app->mandateHQ->createPreDebitNotification($cardMandate->getMandateId(), $mandateHqInput);
 
@@ -172,16 +173,21 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         return (new Notification($notificationAttributes));
     }
 
-    protected function getCreatePreDebitNotificationInput($input)
+    protected function getCreatePreDebitNotificationInput($input, Payment\Entity $payment)
     {
         $debitTimeCarbon = Carbon::createFromTimestamp($input['debit_at'] ?? Carbon::now()->addDay()->timestamp,
             Timezone::IST);
 
         $currency = empty($input['currency']) ? Currency::INR : $input['currency'];
         $payment_id = empty($input['payment_id']) ? null: $input['payment_id'];
+
+        $merchant_category = $this->getMerchantCategory($payment);
+
         return [
             Constants::NOTIFICATION_TYPE              => Constants::NOTIFICATION_TYPE_PRE_DEBIT,
             Constants::PAYMENT_ID                     => $payment_id,
+            Constants::MCC                            => $payment->merchant->getCategory(),
+            Constants::MERCHANT_CATEGORY              => $merchant_category,
             Constants::NOTIFICATION_PRE_DEBIT_DETAILS => [
                 Constants::NOTIFICATION_PRE_DEBIT_DETAILS_AMOUNT      => $input['amount'],
                 Constants::NOTIFICATION_PRE_DEBIT_DETAILS_PURPOSE     => $input['purpose'] ?? null,
@@ -408,6 +414,8 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             }
         }
 
+        $merchant_category = $this->getMerchantCategory($payment);
+
         $inputResponse = [
             Constants::AMOUNT            => $payment->getAmount(),
             Constants::CURRENCY          => $payment->getCurrency(),
@@ -415,6 +423,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             Constants::DEBIT_TYPE        => $debitType,
             Constants::BUSINESS          => $payment->merchant->getName(),
             Constants::MCC               => $payment->merchant->getCategory(),
+            Constants::MERCHANT_CATEGORY => $merchant_category,
             Constants::MAX_AMOUNT        => $maxAmount,
             Constants::START_TIME        => $startTime,
             Constants::END_TIME          => $endTime,
@@ -459,6 +468,21 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         }
 
         return $inputResponse;
+    }
+
+    public function getMerchantCategory(Payment\Entity $payment)
+    {
+        switch ($payment->merchant->getCategory2())
+        {
+            case Category::MUTUAL_FUNDS:
+                return 'MUF';
+            case Category::INSURANCE:
+                return 'INP';
+            case Category::CREDIT_CARD_BILL_PAYMENTS:
+                return 'CCP';
+            default:
+                return 'OTH';
+        }
     }
 
     public function getRedirectUrlForPayment($paymentId)
