@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -22,22 +24,53 @@ trait Transfer
      */
     public function processTransfer(array $input, Payment\Entity $originPayment = null, $transfer = null) : Payment\Entity
     {
-        $paymentData = $this->getTransferPaymentData($input, $originPayment);
-
-        $payment = Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment.create_payment'], function() use ($paymentData)
+        try
         {
-            return $this->createPaymentEntity($paymentData);
-        });
+            $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
-        $inputTrace = $input;
+            $this->trace->info(
+                TraceCode::TRANSFER_PAYMENT_EXISTS,
+                [
+                    'payment_id'    => $transferPayment->getId(),
+                ]
+            );
+        }
+        catch (BadRequestException $e)
+        {
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
+            {
+                $transferPayment = null;
+            }
+            else
+            {
+                throw $e;
+            }
+        }
 
-        unset($inputTrace['fta_data']['bank_account']['account_number'], $inputTrace['fta_data']['bank_account']['beneficiary_name']);
+        if ((empty($transferPayment) === false) and ($transferPayment->hasTransaction() === true))
+        {
+            return $transferPayment;
+        }
 
-        $this->trace->info(TraceCode::PAYMENT_CREATED, ['payment_id' => $payment->getId(), 'input' => $inputTrace]);
+        if ($transferPayment === null)
+        {
+            $paymentData = $this->getTransferPaymentData($input, $originPayment);
 
-        $this->setPaymentAttributes($payment);
+            $transferPayment = Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment.create_payment'], function() use ($paymentData)
+            {
+                return $this->createPaymentEntity($paymentData);
+            });
 
-        $this->processCurrencyConversionsForTransfer($originPayment, $payment);
+            $inputTrace = $input;
+
+            unset($inputTrace['fta_data']['bank_account']['account_number'], $inputTrace['fta_data']['bank_account']['beneficiary_name']);
+
+            $this->trace->info(TraceCode::PAYMENT_CREATED, ['payment_id' => $transferPayment->getId(), 'input' => $inputTrace]);
+
+            $this->setPaymentAttributes($transferPayment);
+
+            $this->processCurrencyConversionsForTransfer($originPayment, $transferPayment);
+        }
 
         $processViaLedgerReverseShadow = false;
 
@@ -49,26 +82,29 @@ trait Transfer
             $processViaLedgerReverseShadow = true;
         }
 
-        if ($processViaLedgerReverseShadow === false)
+        if ($processViaLedgerReverseShadow === true)
         {
-            $txnCore = new Transaction\Core;
-
-            list($txn, $feesSplit) = $txnCore->createFromPaymentTransferred($payment);
-
-            $this->repo->saveOrFail($txn);
-
-            $payment->setTax($txn->getTax());
-
-            if ($this->merchant->isFeeBearerCustomer() === false)
-            {
-                //set and fee values from txn
-                $payment->setFee($txn->getFee());
-            }
-
-            $txnCore->saveFeeDetails($txn, $feesSplit);
+            // Skip transaction creation for reverse shadow mode
+            return $transferPayment;
         }
 
-        return $payment;
+        $txnCore = new Transaction\Core;
+
+        list($txn, $feesSplit) = $txnCore->createFromPaymentTransferred($transferPayment);
+
+        $this->repo->saveOrFail($txn);
+
+        $transferPayment->setTax($txn->getTax());
+
+        if ($this->merchant->isFeeBearerCustomer() === false)
+        {
+            //set and fee values from txn
+            $transferPayment->setFee($txn->getFee());
+        }
+
+        $txnCore->saveFeeDetails($txn, $feesSplit);
+
+        return $transferPayment;
     }
 
     protected function setPaymentAttributes(Payment\Entity $payment)

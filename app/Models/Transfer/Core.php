@@ -1617,81 +1617,89 @@ class Core extends Base\Core
 
     public function  createTransferTransactionsInReverseShadow($sourcePayment, array $transferInput)
     {
-        $this->repo->transaction(function() use ($sourcePayment, $transferInput)
-        {
-            $this->trace->info(
-                TraceCode::TRANSFER_CREATE_TRANSACTION_REQUEST_REVERSE_SHADOW,
-                [
-                    'transfer_input' => $transferInput,
-                ]
-            );
+        $transferPublicId = $transferInput[LedgerConstants::TRANSFER_ID];
 
-            $transfer = $this->repo->transfer->findByPublicId($transferInput[LedgerConstants::TRANSFER_ID]);
-
-            $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
-
-            $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
-
-            $oldTransfer = clone $transfer;
-
-            // check if transfer debit txn exists
-            if ($oldTransfer->hasTransaction() !== true)
+        $this->mutex->acquireAndRelease(
+            'reverse_shadow_txn_' . $transferPublicId,
+            function () use ($transferPublicId, $transferInput, $sourcePayment)
             {
-                // create debit  transaction with source as transfer
-                $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function () use ($oldTransfer, $transferInput)
+                $this->repo->transaction(function() use ($transferPublicId, $sourcePayment, $transferInput)
                 {
-                    return $this->createTransactionForTransfer($oldTransfer, $transferInput[LedgerConstants::DEBIT_TRANSACTION_ID]);
+                    $this->trace->info(
+                        TraceCode::TRANSFER_CREATE_TRANSACTION_REQUEST_REVERSE_SHADOW,
+                        [
+                            'transfer_input' => $transferInput,
+                        ]
+                    );
+
+                    $transfer = $this->repo->transfer->findByPublicId($transferPublicId);
+
+                    $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+
+                    $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+
+                    $oldTransfer = clone $transfer;
+
+                    // check if transfer debit txn exists
+                    if ($oldTransfer->hasTransaction() !== true)
+                    {
+                        // create debit  transaction with source as transfer
+                        $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function () use ($oldTransfer, $transferInput)
+                        {
+                            return $this->createTransactionForTransfer($oldTransfer, $transferInput[LedgerConstants::DEBIT_TRANSACTION_ID]);
+                        });
+                    }
+
+                    // return if transferPayment credit txn exists
+                    if ($transferPayment->hasTransaction() === true)
+                    {
+                        return;
+                    }
+
+                    //create credit txn with source as transfer payment
+                    $txnCore = new Transaction\Core;
+
+                    list($creditTxn, $feesSplit) = $txnCore->createFromPaymentTransferred($transferPayment, $transferInput[LedgerConstants::CREDIT_TRANSACTION_ID]);
+
+                    $this->repo->saveOrFail($creditTxn);
+
+                    $transferPayment->setTax($creditTxn->getTax());
+
+                    if ($transferPayment->merchant->isFeeBearerCustomer() === false) // which merchant
+                    {
+                        //set and fee values from txn
+                        $transferPayment->setFee($creditTxn->getFee());
+                    }
+
+                    $txnCore->saveFeeDetails($creditTxn, $feesSplit);
+
+                    $this->repo->saveOrFail($transferPayment);
+
+                    // Metric to calculate latency to track delay in transaction creation.
+                    $currentTimeInSec = (int)(microtime(true));
+
+                    $latency = $currentTimeInSec - $transfer->getProcessedAt();
+
+                    (new Metric())->pushTransferTransactionCreationDelayMetrics($latency, $transfer->merchant->getCategory(),  $transfer->getSourceType());
+
+
+                    $this->trace->info(TraceCode::PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
+                        [
+                            LedgerConstants::DEBIT_TRANSACTION_ID => $transferInput[LedgerConstants::DEBIT_TRANSACTION_ID],
+                            LedgerConstants::CREDIT_TRANSACTION_ID => $creditTxn->getId(),
+                            LedgerConstants::TRANSACTOR_EVENT => LedgerConstants::TRANSFER,
+                            LedgerConstants::TRANSACTOR_ID => $transfer->getId(),
+                            LedgerOutboxConstants::SOURCE => $transferInput[LedgerOutboxConstants::SOURCE]
+                        ]
+                    );
+
+                    $this->trace->count(Metrics::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
+                        LedgerConstants::TRANSACTOR_EVENT => LedgerConstants::TRANSFER,
+                        LedgerOutboxConstants::SOURCE => $transferInput[LedgerOutboxConstants::SOURCE]
+                    ]);
                 });
-            }
-
-            // return if transferPayment credit txn exists
-            if ($transferPayment->hasTransaction() === true)
-            {
-                return;
-            }
-
-            //create credit txn with source as transfer payment
-            $txnCore = new Transaction\Core;
-
-            list($creditTxn, $feesSplit) = $txnCore->createFromPaymentTransferred($transferPayment, $transferInput[LedgerConstants::CREDIT_TRANSACTION_ID]);
-
-            $this->repo->saveOrFail($creditTxn);
-
-            $transferPayment->setTax($creditTxn->getTax());
-
-            if ($transferPayment->merchant->isFeeBearerCustomer() === false) // which merchant
-            {
-                //set and fee values from txn
-                $transferPayment->setFee($creditTxn->getFee());
-            }
-
-            $txnCore->saveFeeDetails($creditTxn, $feesSplit);
-
-            $this->repo->saveOrFail($transferPayment);
-
-            // Metric to calculate latency to track delay in transaction creation.
-            $currentTimeInSec = (int)(microtime(true));
-
-            $latency = $currentTimeInSec - $transfer->getProcessedAt();
-
-            (new Metric())->pushTransferTransactionCreationDelayMetrics($latency, $transfer->merchant->getCategory(),  $transfer->getSourceType());
-
-
-            $this->trace->info(TraceCode::PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
-                [
-                    LedgerConstants::DEBIT_TRANSACTION_ID => $transferInput[LedgerConstants::DEBIT_TRANSACTION_ID],
-                    LedgerConstants::CREDIT_TRANSACTION_ID => $creditTxn->getId(),
-                    LedgerConstants::TRANSACTOR_EVENT => LedgerConstants::TRANSFER,
-                    LedgerConstants::TRANSACTOR_ID => $transfer->getId(),
-                    LedgerOutboxConstants::SOURCE => $transferInput[LedgerOutboxConstants::SOURCE]
-                ]
-            );
-
-            $this->trace->count(Metrics::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
-                LedgerConstants::TRANSACTOR_EVENT => LedgerConstants::TRANSFER,
-                LedgerOutboxConstants::SOURCE => $transferInput[LedgerOutboxConstants::SOURCE]
-            ]);
-        });
+            },
+            900, ErrorCode::BAD_REQUEST_TRANSFER_TXN_CREATION_PROCESS_IN_PROGRESS);
     }
 
     protected function traceTransferIdsFetchedForSettlementStatusUpdate(string $settlementId, array $transferIds)
@@ -2044,6 +2052,23 @@ class Core extends Base\Core
         $response = $this->app['ledger']->fetchByTransactor($ledgerInput, $requestHeaders, true);
 
         return (new LedgerOutbox\Core)->determineJournalIdForAPITransaction($response, "merchant_balance", "merchant_balance");
+    }
+
+    public function fetchJournalIdFromLedgerForTransferReversal(string $publicReversalId, string $merchantId )
+    {
+        $requestHeaders = [
+            Ledger\Base::LEDGER_TENANT_HEADER => 'PG',
+        ];
+
+        $ledgerInput = [
+            Ledger\Base::TRANSACTOR_ID    => $publicReversalId,
+            Ledger\Base::MERCHANT_ID      => $merchantId,
+            Ledger\Base::TRANSACTOR_EVENT => LedgerConstants::TRANSFER_REVERSAL_PROCESSED,
+        ];
+
+        $response = $this->app['ledger']->fetchByTransactor($ledgerInput, $requestHeaders, true);
+
+        return $response['body']["id"];
     }
 
     public function createTransactionForTransferViaCron($transferIds)

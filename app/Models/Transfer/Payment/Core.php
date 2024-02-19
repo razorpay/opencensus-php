@@ -7,7 +7,7 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function createOrFetch($payment)
+    public function createOrFetch($payment, $saveEntity=true)
     {
         $transferPayments = $this->repo->transfer_payment->getTransferPayment($payment->getId());
 
@@ -30,7 +30,10 @@ class Core extends Base\Core
 
         $transferPayment = (new Entity)->build($input);
 
-        $transferPayment->saveOrFail();
+        if ($saveEntity === true)
+        {
+            $transferPayment->saveOrFail();
+        }
 
         return $transferPayment;
     }

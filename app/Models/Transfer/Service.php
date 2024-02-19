@@ -713,6 +713,13 @@ class Service extends Base\Service
         {
             try
             {
+                $payment = $this->repo->payment->findOrFail($paymentId);
+
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                {
+                    continue;
+                }
+
                 $this->trace->info(
                     TraceCode::PAYMENT_TRANSFER_PROCESS_SQS_PUSH_INIT,
                     [
@@ -720,8 +727,6 @@ class Service extends Base\Service
                         'mode'       => $this->mode,
                     ]
                 );
-
-                $payment = $this->repo->payment->findOrFail($paymentId);
 
                 $this->core->dispatchForTransferProcessing(Constant::PAYMENT, $payment);
 
@@ -750,6 +755,15 @@ class Service extends Base\Service
         {
             try
             {
+
+
+                $payment = $this->repo->payment->findOrFail($paymentId);
+
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                {
+                    continue;
+                }
+
                 $this->trace->info(
                     TraceCode::PAYMENT_TRANSFER_PROCESS_SYNC_INIT,
                     [
@@ -757,8 +771,6 @@ class Service extends Base\Service
                         'mode'       => $this->mode,
                     ]
                 );
-
-                $payment = $this->repo->payment->findOrFail($paymentId);
 
                 (new TransferProcess($this->mode, $payment->getId(), Constant::PAYMENT))->handle();
 
@@ -890,6 +902,11 @@ class Service extends Base\Service
             {
                 $this->core->fetchTransfersAndIncrementAttempts($order);
 
+                continue;
+            }
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
                 continue;
             }
 

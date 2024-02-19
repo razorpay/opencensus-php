@@ -632,4 +632,52 @@ trait ReverseShadowTrait
         return $merchantAccountBalances[Constants::MERCHANT_BALANCE];
 
     }
+
+    public function getFeeAndTaxFromJournal($journal, $commissionFundAccountType, $taxFundAccountType)
+    {
+        $tax = 0;
+        $commission = 0;
+        $isAmountCreditsUsed = false;
+
+        if (isset($journal['ledger_entry'])) {
+            foreach ($journal['ledger_entry'] as $ledgerEntry) {
+
+                if(isset($ledgerEntry['account_entities']) === true)
+                {
+                    $fundAccountType = [];
+                    $accountType = [];
+
+                    if (isset($ledgerEntry['account_entities']['fund_account_type']) === true)
+                    {
+                        $fundAccountType = $ledgerEntry['account_entities']['fund_account_type'];
+                    }
+
+                    if (isset($ledgerEntry['account_entities']['account_type']) === true)
+                    {
+                        $accountType = $ledgerEntry['account_entities']['account_type'];
+                    }
+
+                    $amount = intval($ledgerEntry['amount']);
+
+                    if(in_array($taxFundAccountType,$fundAccountType))
+                    {
+                        $tax = $amount;
+                    }
+
+                    if(in_array($commissionFundAccountType,$fundAccountType))
+                    {
+                        $commission = $amount;
+                    }
+
+                    if((in_array("reward", $fundAccountType))
+                        and (in_array("payable", $accountType)))
+                    {
+                        $isAmountCreditsUsed = true;
+                    }
+                }
+            }
+        }
+
+        return [$tax+$commission, $tax, $isAmountCreditsUsed];
+    }
 }

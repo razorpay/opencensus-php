@@ -921,7 +921,20 @@ class Core extends Base\Core
 
                     if ($sourcePayment === null)
                     {
-                        $this->trace->error(TraceCode::CAPTURED_SOURCE_PAYMENT_NOT_FOUND_FOR_TRANSFER, [
+                        foreach ($allPayments as $singlePayment)
+                        {
+                            if (($singlePayment->getStatus() === Payment\Status::REFUNDED))
+                            {
+                                $sourcePayment = $singlePayment;
+
+                                break;
+                            }
+                        }
+                    }
+
+                    if ($sourcePayment === null)
+                    {
+                        $this->trace->error(TraceCode::SOURCE_PAYMENT_NOT_FOUND_FOR_TRANSFER, [
                             'transfer_id'    => $transfer->getId(),
                             'order_id'       => $sourceOrderId,
                         ]);
@@ -960,9 +973,9 @@ class Core extends Base\Core
             {
                 $this->mutex->acquireAndRelease(
                     $mutexResource . $sourcePayment->getPublicId(),
-                    function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source)
+                    function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source, $journal)
                     {
-                        $this->repo->transaction(function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source)
+                        $this->repo->transaction(function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source, $journal)
                         {
                             if($transfer->getStatus() === Transfer\Status::PENDING)
                             {
@@ -976,6 +989,19 @@ class Core extends Base\Core
                                 $totalTransferAmount = $transfer->getAmount();
 
                                 $transferCore->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
+
+                                // set fee and tax from journal in transfer
+                                $filteredJournal = array_filter($journal, function ($item) use ($debitJournalId) {
+                                    return $item['id'] === $debitJournalId;
+                                });
+
+                                $debitJournal = reset($filteredJournal);
+
+                                [$fees, $tax, $isAmountCreditsUsed] = $this->getFeeAndTaxFromJournal($debitJournal,"rzp_transfer_fee","rzp_gst");
+
+                                $transfer->setFees($fees);
+
+                                $transfer->setTax($tax);
 
                                 $this->repo->saveOrFail($transfer);
 
@@ -999,6 +1025,8 @@ class Core extends Base\Core
                                     TraceCode::TRANSFER_PROCCESSED_SUCCESSFULLY_IN_REVERSE_SHADOW,
                                     [
                                         LedgerConstants::TRANSFER_ID  => $transfer->getPublicId(),
+                                        LedgerConstants::FEES  => $transfer->getFees(),
+                                        LedgerConstants::TAX  => $transfer->getTax(),
                                         'transfer_input_to_queue'     => $input
                                     ]);
 
@@ -1083,6 +1111,11 @@ class Core extends Base\Core
                             {
                                 throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
                             }
+                        }
+
+                        if ($payment->merchant->isFeeBearerCustomer() === false)
+                        {
+                            $payment->setFee(0);
                         }
 
                         list($txn, $merchantBalance) = $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);

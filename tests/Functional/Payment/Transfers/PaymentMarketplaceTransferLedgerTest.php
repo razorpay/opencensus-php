@@ -28,6 +28,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
     use TransferTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
+    use ReverseShadow\ReverseShadowTrait;
 
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
@@ -1233,9 +1234,11 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
     /* ACK worker test cases */
 
-    private function getPaymentTransferJournalResponsePayload($transferId, $debitJournalId, $creditJournalId, $sourceMID, $destnMID, $amountVal = 0)
+    private function getPaymentTransferJournalResponsePayload($transferId, $debitJournalId, $creditJournalId, $sourceMID, $destnMID, $amountVal = 0, $commissionVal = 0, $taxVal = 0)
     {
         $amount = sprintf('%d', $amountVal);
+        $commission = sprintf('%d', $commissionVal);
+        $tax = sprintf('%d', $taxVal);
         return [
             "journals" => [
                 [
@@ -1333,8 +1336,8 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                             "merchant_id" => $sourceMID,
                             "journal_id" => $debitJournalId,
                             "account_id" => "JjpZUBB7rH14Is",
-                            "amount" => "0",
-                            "base_amount" => "0",
+                            "amount" => $tax,
+                            "base_amount" => $tax,
                             "type" => "credit",
                             "currency" => "INR",
                             "balance" => "115976.000000",
@@ -1355,8 +1358,8 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                             "merchant_id" => $sourceMID,
                             "journal_id" => $debitJournalId,
                             "account_id" => "JjpZUBB7rH14Is",
-                            "amount" => "0",
-                            "base_amount" => "0",
+                            "amount" => $commission,
+                            "base_amount" => $commission,
                             "type" => "credit",
                             "currency" => "INR",
                             "balance" => "115976.000000",
@@ -1689,6 +1692,113 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         // check new destn balance
         $newDestnMarketBalance = $this->getAccountBalance($destnMID);
         $this->assertEquals($oldDestnMarketBalance + $transfer->getAmount(), $newDestnMarketBalance, 'destn balance not deeducted');
+
+    }
+
+    public function testGetFeeTaxFromTransferJournal()
+    {
+        $debitJournal = [
+            "id" => 'LsqR14zUg9dbDB',
+            "created_at" => 1686490069,
+            "updated_at" => 1686490069,
+            "amount" => '10000',
+            "base_amount" => '10000',
+            "currency" => "INR",
+            "tenant" => "PG",
+            "transactor_id" =>  'trf_TRFR157oYgCrCR',
+            "transactor_event" => 'transfer_processed',
+            "transaction_date" => 1686490069,
+            "ledger_entry" => [
+                [
+                    "id" => "M0dgdv6cUeToBw",
+                    "created_at" => 1686490069,
+                    "updated_at" => 1686490069,
+                    "merchant_id" =>  '10000000000000',
+                    "journal_id" => 'LsqR14zUg9dbDB',
+                    "account_id" => "LycvlyvdXjtmUL",
+                    "amount" => '9000',
+                    "base_amount" => '9000',
+                    "type" => "credit",
+                    "currency" => "INR",
+                    "account_entities" => [
+                        "account_type" => [
+                            "payable"
+                        ],
+                        "fund_account_type" => [
+                            "merchant_va_merchant"
+                        ]
+                    ]
+                ],
+                [
+                    "id" => "M0dgdvV4wWeXaO",
+                    "created_at" => 1686490069,
+                    "updated_at" => 1686490069,
+                    "merchant_id" =>  '10000000000000',
+                    "journal_id" => 'LsqR14zUg9dbDB',
+                    "account_id" => "JjpZUBB7rH14Is",
+                    "amount" => "100",
+                    "base_amount" => "100",
+                    "type" => "credit",
+                    "currency" => "INR",
+                    "balance" => "115976.000000",
+                    "balance_updated" => true,
+                    "account_entities" => [
+                        "account_type" => [
+                            "payable"
+                        ],
+                        "fund_account_type" => [
+                            "rzp_gst"
+                        ]
+                    ]
+                ],
+                [
+                    "id" => "M0dgdvV4wWeXaO",
+                    "created_at" => 1686490069,
+                    "updated_at" => 1686490069,
+                    "merchant_id" =>  '10000000000000',
+                    "journal_id" => 'LsqR14zUg9dbDB',
+                    "account_id" => "JjpZUBB7rH14Is",
+                    "amount" => "900",
+                    "base_amount" => "900",
+                    "type" => "credit",
+                    "currency" => "INR",
+                    "balance" => "115976.000000",
+                    "balance_updated" => true,
+                    "account_entities" => [
+                        "account_type" => [
+                            "cash"
+                        ],
+                        "fund_account_type" => [
+                            "rzp_transfer_fee"
+                        ]
+                    ]
+                ],
+                [
+                    "id" => "M0dgdvV5sSk8f9",
+                    "created_at" => 1686490069,
+                    "updated_at" => 1686490069,
+                    "merchant_id" =>  '10000000000000',
+                    "journal_id" => 'LsqR14zUg9dbDB',
+                    "account_id" => "LycvlyvdXjtmUL",
+                    "amount" => '10000',
+                    "base_amount" => '10000',
+                    "type" => "debit",
+                    "currency" => "INR",
+                    "account_entities" => [
+                        "account_type" => [
+                            "payable"
+                        ],
+                        "fund_account_type" => [
+                            "merchant_balance"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        [$fees, $tax, $isAmountCreditsUsed] = $this->getFeeAndTaxFromJournal($debitJournal,"rzp_transfer_fee","rzp_gst");
+        $this->assertEquals(100, $tax);
+        $this->assertEquals(1000, $fees);
+        $this->assertFalse($isAmountCreditsUsed);
 
     }
 
@@ -3065,5 +3175,163 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
     }
 
+    public function testPaymentTransferNotProcessedByPendingTransferCronInReverseShadowOutbox()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], 10000000000001);
 
+        $transferId = "AnyRandomID123";
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($this->payment['id']);
+
+        $dummyTransferData = [
+            'id'                 => $transferId,
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp(),
+            'processed_at'       => Carbon::now()->addHours(-4)->getTimestamp(),
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        // transfer entity exists
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertNotNull($transfer);
+        $this->assertEquals($transferId, $transfer['id']);
+        $this->assertEquals('pending', $transfer['status']);
+
+        // process transfer via pending transfer cron
+        $this->ba->cronAuth();
+        $request  = [
+            'method'    => 'POST',
+            'url'       => '/payment_transfers/process_pending?minutes=1',
+            'content'   => [
+
+            ],
+        ];
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response);
+
+
+        // fetch transfer journal payload from ledger_outbox
+        $ledgerOutboxEntity = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNull($ledgerOutboxEntity);
+
+        // check transfer is not processed
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertEquals($transferId, $transfer['id']);
+        $this->assertEquals('pending', $transfer['status']);
+    }
+
+    public function testTransferProcessingFailsInReverseShadowIfTransferAmountGreaterThanUntransferredAmount()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], 10000000000001);
+
+        $transferId = "AnyRandomID123";
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($this->payment['id']);
+
+        $dummyTransferData = [
+            'id'                 => $transferId,
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp(),
+            'processed_at'       => Carbon::now()->addHours(-4)->getTimestamp(),
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $transferPaymentData = [
+            'id'                 => 'testtrfpayment',
+            'payment_id'         => $paymentId,
+            'amount'             => $this->payment['amount'],
+            'amount_transferred' => $this->payment['amount'],
+        ];
+
+        $this->fixtures->create('transfer_payment', $transferPaymentData);
+
+        // process transfer
+        (new TransferProcess('test', $this->payment['id'], 'payment'))->handle();
+
+
+        // fetch transfer journal payload from ledger_outbox
+        $ledgerOutboxEntity = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNull($ledgerOutboxEntity);
+
+        // check transfer is not failed
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertEquals($transferId, $transfer['id']);
+        $this->assertEquals('failed', $transfer['status']);
+        $this->assertEquals('BAD_REQUEST_ERROR', $transfer['error_code']);
+        $this->assertEquals('Transfer amount should be less than or equal to amount not transferred yet', $transfer['message']);
+        $this->assertNull($transfer['transaction_id']);
+    }
+
+    public function testTransferProcessingNotReInitiatedWhenTransferIsFailedInReverseShadow()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], 10000000000001);
+
+        $transferId = "AnyRandomID123";
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($this->payment['id']);
+
+        $dummyTransferData = [
+            'id'                 => $transferId,
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "failed",
+            'attempts'           => 1,
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp(),
+            'processed_at'       => Carbon::now()->addHours(-4)->getTimestamp(),
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $transferPaymentData = [
+            'id'                 => 'testtrfpayment',
+            'payment_id'         => $paymentId,
+            'amount'             => $this->payment['amount'],
+            'amount_transferred' => $this->payment['amount'],
+        ];
+
+        $this->fixtures->create('transfer_payment', $transferPaymentData);
+
+        // process transfer
+        (new TransferProcess('test', $this->payment['id'], 'payment'))->handle();
+
+        // fetch transfer journal payload from ledger_outbox
+        $ledgerOutboxEntity = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNull($ledgerOutboxEntity);
+
+        // check transfer is failed and attempts not incremented
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertEquals($transferId, $transfer['id']);
+        $this->assertEquals('failed', $transfer['status']);
+        $this->assertEquals(1, $transfer['attempts']);
+    }
 }

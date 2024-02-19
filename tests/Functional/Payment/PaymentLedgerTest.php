@@ -3477,11 +3477,11 @@ class PaymentLedgerTest extends TestCase
 
         $this->assertNotNull($payment);
 
-        $this->assertEquals($payment['fee'], $txn['fee']);
-        $this->assertEquals($payment['tax'], $txn['tax']);
         $this->assertEquals($txn['balance_updated'],false);
+        $this->assertEquals($txn['fee'],0);
+        $this->assertEquals($txn['tax'],0);
         $this->assertEquals($txn['debit'],0);
-        $this->assertEquals($txn['debit'],0);
+        $this->assertEquals($txn['credit'],0);
 
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_gateway_captured']);
 
@@ -4487,13 +4487,12 @@ class PaymentLedgerTest extends TestCase
 
         $this->assertNotNull($payment);
 
-        $this->assertEquals(0, $txn['fee']);
-        $this->assertEquals(0,$txn['tax']);
+        // Note: as payment is captured before ack received and fee, tax is set in payment after outbox push, fee tax will not be 0
+         $this->assertEquals(0, $txn['fee']);
+         $this->assertEquals(0,$txn['tax']);
         $this->assertEquals(0,$txn['credit']);
         $this->assertNull($txn['balance_id']);
         $this->assertFalse($txn->isBalanceUpdated());
-        $this->assertEquals($payment['fee'], $txn['fee']);
-        $this->assertEquals($payment['tax'], $txn['tax']);
 
         // merchant capture ack
         $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);

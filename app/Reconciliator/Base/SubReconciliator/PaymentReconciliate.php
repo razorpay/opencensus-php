@@ -2387,6 +2387,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
                 [$fee, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($this->payment, $discount);
 
+                $this->payment->setFee($fee+$tax);
+                $this->payment->setTax($tax);
+
                 $this->trace->info(TraceCode::PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW, [
                     'payment_id' => $this->payment->getId(),
                     "fee" => $fee,

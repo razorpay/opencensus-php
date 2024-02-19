@@ -10,6 +10,7 @@ final class Constant
     const PAYMENT   = 'payment';
     const ORDER     = 'order';
     const MERCHANT  = 'merchant';
+    const TRANSFER  = 'transfer';
 
     // platform type transfer
     const PLATFORM          = 'platform';

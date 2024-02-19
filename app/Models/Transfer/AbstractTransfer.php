@@ -240,8 +240,19 @@ abstract class AbstractTransfer
     {
         $this->merchant = $merchant;
 
+        $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
+
+        $processViaReverseShadow = false;
+
+        if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
+            ($subMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+        {
+            $processViaReverseShadow = true;
+        }
+
         if (($transfer->isFailed() === true) and
-            ($transfer->getAttempts() >= Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS))
+            (($transfer->getAttempts() >= Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS) or
+             ($processViaReverseShadow === true)))
         {
             $this->trace->info(
                 $this->invalidCode,
@@ -266,7 +277,7 @@ abstract class AbstractTransfer
 
         try
         {
-            $transfer = $this->repo->transaction(function () use ($payment, $transfer)
+            $transfer = $this->repo->transaction(function () use ($payment, $transfer, $processViaReverseShadow)
             {
                 $core = new Core();
 
@@ -274,29 +285,11 @@ abstract class AbstractTransfer
 
                 $oldTransfer = clone $transfer;
 
-                $processViaReverseShadow = false;
-
-                $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
-
-                if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
-                    ($subMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
-                {
-                    $processViaReverseShadow = true;
-                }
-
-                if ($processViaReverseShadow === false)
-                {
-                    if ($oldTransfer->hasTransaction() === false)
-                    {
-                        $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function () use ($oldTransfer, $core)
-                        {
-                            return $core->createTransactionForTransfer($oldTransfer);
-                        });
-                    }
-                }
-
                 if ($processViaReverseShadow === true)
                 {
+                    // Attempt to update amount transferred value without saving to perform validation
+                    $this->updatePaymentAmountTransferred($payment, $transfer->getAmount(), false);
+
                     $payloadName = $this->getPayloadName($transfer->getPublicId(), LedgerConstants::TRANSFER);
 
                     $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadName($payloadName);
@@ -311,6 +304,14 @@ abstract class AbstractTransfer
 
                 if ($processViaReverseShadow === false)
                 {
+                    if ($oldTransfer->hasTransaction() === false)
+                    {
+                        $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function () use ($oldTransfer, $core)
+                        {
+                            return $core->createTransactionForTransfer($oldTransfer);
+                        });
+                    }
+
                     $transferPayment = $this->createTransferredEntity($transfer, $payment);
 
                     $transfer->setProcessed();
@@ -559,11 +560,14 @@ abstract class AbstractTransfer
         return $laNotes;
     }
 
-    private function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount)
+    private function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount, bool $saveEntity=true)
     {
         if ($payment->isTransferredInOldFlow())
         {
-            $this->repo->payment->lockForUpdateAndReload($payment);
+            if ($saveEntity === true)
+            {
+                $this->repo->payment->lockForUpdateAndReload($payment);
+            }
 
             $this->trace->info(
                 TraceCode::PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
@@ -574,14 +578,20 @@ abstract class AbstractTransfer
 
             $payment->transferAmount($amount);
 
-            $this->repo->saveOrFail($payment);
+            if ($saveEntity === true)
+            {
+                $this->repo->saveOrFail($payment);
+            }
 
             return;
         }
 
-        $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
+        $transferPayment = (new TransferPaymentCore)->createOrFetch($payment, $saveEntity);
 
-        $this->repo->transfer_payment->lockForUpdateAndReload($transferPayment);
+        if ($saveEntity === true)
+        {
+            $this->repo->transfer_payment->lockForUpdateAndReload($transferPayment);
+        }
 
         $this->trace->info(
             TraceCode::TRANSFER_PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
@@ -592,7 +602,10 @@ abstract class AbstractTransfer
 
         $transferPayment->transferAmount($amount);
 
-        $this->repo->saveOrFail($transferPayment);
+        if ($saveEntity === true)
+        {
+            $this->repo->saveOrFail($transferPayment);
+        }
     }
 
     protected function verifyAndSetErrorCode(Entity $transfer, string $errorCode)

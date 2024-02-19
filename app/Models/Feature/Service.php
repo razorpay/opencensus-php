@@ -1748,7 +1748,9 @@ class Service extends Base\Service
 
                 if($merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW))
                 {
-                    throw new \Exception(Constants::MERCHANT_FEATURE_ALREADY_ENABLED);
+                    $result[Constants::MESSAGE] = Constants::MERCHANT_FEATURE_ALREADY_ENABLED;
+                    $response->add($result);
+                    continue;
                 }
 
                 $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(

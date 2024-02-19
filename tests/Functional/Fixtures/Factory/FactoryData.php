@@ -2388,5 +2388,9 @@ final class FactoryData
             'flow'       => null,
             'type'       => 'default',
         ]);
+
+        $factory(Models\Transfer\Payment\Entity::class, [
+            'id' => $faker->uniqueId,
+        ]);
     }
 }

@@ -947,10 +947,13 @@ trait Capture
                 [$fee, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
 
                 $this->trace->info(TraceCode::PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW, [
-                    LedgerConstants::PAYMENT_ID => $payment->getId(),
-                    LedgerConstants::FEES       => $fee,
-                    LedgerConstants::TAX        =>$tax
+                    LedgerConstants::PAYMENT_ID =>  $payment->getId(),
+                    LedgerConstants::FEES       =>  $fee,
+                    LedgerConstants::TAX        =>  $tax
                 ]);
+
+                $payment->setFee($fee+$tax);
+                $payment->setTax($tax);
 
                 $this->repo->payment->saveOrFail($payment);
             }

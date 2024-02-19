@@ -4007,7 +4007,7 @@ return [
                 'items'     =>  [
                     [
                         'merchant_id'       => '10000000000000',
-                        'status'            => 'failure',
+                        'status'            => 'success',
                         'message'           => 'merchant feature already enabled'
                     ],
                     [

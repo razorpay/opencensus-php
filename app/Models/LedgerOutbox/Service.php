@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\LedgerOutbox;
+use RZP\Models\Ledger\ReverseShadow;
 use function RZP\Console\Commands\laravelPatternToEdgeRoute;
 
 
@@ -125,7 +126,9 @@ class Service extends Base\Service
 
         $limit = $input['limit'] ?? Constants::DEFAULT_LIMIT;
 
-        $response = (new LedgerOutbox\Cron\Transfer\Core())->retryFailedReverseShadowTransferTransactions($limit);
+        $retryCount = $input['retry_count'] ?? ReverseShadow\Constants::MAX_RETRY_COUNT_TRANSFER_CRON;
+
+        $response = (new LedgerOutbox\Cron\Transfer\Core())->retryFailedReverseShadowTransferTransactions($limit, $retryCount);
         return $response;
     }
 
