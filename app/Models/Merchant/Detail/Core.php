@@ -8,6 +8,7 @@ use Queue;
 use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\User;
 use RZP\Constants\Mode;
@@ -11786,6 +11787,8 @@ class Core extends Base\Core
 
         $paymentId = $body['payload']['payment']['entity']['id'];
 
+        $isWhiteGloveOnboardingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::WHITE_GLOVE_ONBOARDING_MANAGER_FEE] ?? null;
+
         $body = [
             'order_id'       => $orderId,
             'payment_status' => $paymentStatus,
@@ -11793,22 +11796,58 @@ class Core extends Base\Core
             'payment_id'     => $paymentId
         ];
 
+        if (isset($isWhiteGloveOnboardingHook) === true)
+        {
+            $body['payment_type'] = DetailConstants::ONBOARDING_MANAGER;
+        }
+
         $this->trace->info(TraceCode::FEE_BASED_GATING_WEBHOOK_PROCESSING, [
             'route'        => 'FEE_BASED_GATING_WEBHOOK_PROCESSING',
             'request_body' => $body
         ]);
     }
 
-    public function isGatingWebhookRequest(array $body) : bool
+    public function preProcessWhiteGloveRequest(array &$body, string $paymentType)
+    {
+        $body = ["payment_type" => $paymentType, "merchant_id" => $this->app['basicauth']->getMerchantId() ?? ''];
+
+        $this->trace->info(TraceCode::WHITE_GLOVE_ONBOARDING_PAYLOAD, [
+            'request_body' => $body
+        ]);
+    }
+
+    public function isOnboardingPaymentWebhookRequest(array $body) : bool
     {
         // If fee based description is set in the request , this means it is a gating request and return true, else false
-        $isFeeBasedGatingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::FEE_BASED_GATING_DESCRIPTION] ?? null;
+        $feeBasedGatingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::FEE_BASED_GATING_DESCRIPTION] ?? null;
+        $whiteGloveOnboardingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::WHITE_GLOVE_ONBOARDING_MANAGER_FEE] ?? null;
 
-        $this->trace->info(TraceCode::FEE_BASED_GATING_WEBHOOK_PROCESSING, [
-            'isFeeBasedGatingHook' => $isFeeBasedGatingHook,
+        $this->trace->info(TraceCode::ONBOARDING_PAYMENT_WEBHOOK_PROCESSING, [
+            'feeBasedGatingHook'       => $feeBasedGatingHook,
+            'whiteGloveOnboardingHook' => $whiteGloveOnboardingHook,
         ]);
 
-        if (isset($isFeeBasedGatingHook) === true)
+        if (isset($feeBasedGatingHook) === true or isset($whiteGloveOnboardingHook) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isWhiteGloveOnboardingApplicable() : bool
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $isRegularMerchant = (new MerchantCore())->isRegularMerchant($merchant);
+
+        $isIndianMerchant =  $merchant->getCountry() === DetailConstants::INDIA_COUNTRY_CODE;
+
+        $isRazorpayOrgIdMerchant = $merchant->getOrgId() === Org\Entity::RAZORPAY_ORG_ID;
+
+        $isEasyOnboardingMerchant = $merchant->isSignupCampaignAnyOf([DDConstants::EASY_ONBOARDING]);
+
+        if ($isRegularMerchant === true and $isIndianMerchant === true and $isRazorpayOrgIdMerchant === true and $isEasyOnboardingMerchant === true)
         {
             return true;
         }

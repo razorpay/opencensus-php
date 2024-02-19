@@ -386,6 +386,7 @@ class RouteTeamMap
         'merchant_policy_section_publish_v2'              => [self::TEAM_PAYMENTS_GROWTH],
 
         'onboarding_order_create'                         => [self::TEAM_PAYMENTS_GROWTH],
+        'fetch_onboarding_payment_details'                => [self::TEAM_PAYMENTS_GROWTH],
         'onboarding_order_verify'                         => [self::TEAM_PAYMENTS_GROWTH],
         'onboarding_payment_webhook'                      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_business_categories_v3'      => [self::TEAM_PAYMENTS_GROWTH],

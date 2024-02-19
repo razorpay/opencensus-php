@@ -54,6 +54,7 @@ class UserRolesScope
             'pgos_verify_otp'                                      => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             'onboarding_order_create'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER_AGENT, Role::PARTNER],
+            'fetch_onboarding_payment_details'                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'onboarding_order_verify'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER_AGENT, Role::PARTNER],
             'merchant_bmc_response_save'                           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
             'merchant_website_section_page_load_v2'                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],

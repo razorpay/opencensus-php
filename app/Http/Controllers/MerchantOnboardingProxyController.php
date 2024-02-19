@@ -43,6 +43,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_FETCH_GATING_LOGIC    = 'merchant_fetch_gating_logic';
     const MERCHANT_INVOICE_LOGIC_SAVE    = 'merchant_invoice_logic_save';
 
+    // white glove onboarding
+    const ONBOARDING_MANAGER                    = 'onboarding_manager';
+    const FETCH_ONBOARDING_PAYMENTS_DETAILS     = 'fetch_onboarding_payment_details';
+
     // Merchant Activation Business categories v3 mapping
     const MERCHANT_CATEGORIES_V3                    = 'fetch_merchant_categories';
     const MERCHANT_CATEGORIES_ADMIN_V3              = 'fetch_merchant_categories_admin';
@@ -216,6 +220,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::PAYMENT_ORDER_CREATE             => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderCreate',
         self::PAYMENT_ORDER_VERIFY             => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderVerify',
         self::MERCHANT_FETCH_GATING_LOGIC      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantGatingLogic',
+        self::FETCH_ONBOARDING_PAYMENTS_DETAILS      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchOnboardingPaymentDetails',
         self::PAYMENT_ORDER_WEBHOOK            => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderWebhook',
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantEligibilityForAutomationActivation',
         self::MERCHANT_INVOICE_LOGIC_SAVE                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantInvoiceLogic',
@@ -444,6 +449,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
             $routeKey = str_replace('/v1/pg/onboarding/' . $id . '/', '', $path);
         }
 
+        $this->overrideRouteKeyIfApplicable($routeKey, $id);
+
         $body = $request->all();
 
         // get path from defined route url map
@@ -465,7 +472,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
             if ($validationResponse['validated'] === true)
             {
-                $this->routeSpecificPreProcessor($routeKey, $body);
+                $this->routeSpecificPreProcessor($routeKey, $body, $id);
 
                 $response = $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $body, $headers);
 
@@ -654,7 +661,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     }
 
-    private function routeSpecificPreProcessor(string $routeKey, array &$body)
+    private function routeSpecificPreProcessor(string $routeKey, array &$body, string $id)
     {
         switch ($routeKey)
         {
@@ -668,6 +675,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
             case self::MERCHANT_CATEGORIES_V3:
                 (new Merchant\Detail\Core())->preProcessFetchCategoriesData($body);
+                break;
+
+            case self::FETCH_ONBOARDING_PAYMENTS_DETAILS:
+                (new Merchant\Detail\Core())->preProcessWhiteGloveRequest($body, $id);
                 break;
         }
     }
@@ -743,12 +754,29 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
                 break;
             case self::PAYMENT_ORDER_WEBHOOK:
-               $response['validated'] = (new Merchant\Detail\Core())->isGatingWebhookRequest($body);
+               $response['validated'] = (new Merchant\Detail\Core())->isOnboardingPaymentWebhookRequest($body);
+
+               break;
+
+            case self::FETCH_ONBOARDING_PAYMENTS_DETAILS:
+                $response['validated'] = (new Merchant\Detail\Core())->isWhiteGloveOnboardingApplicable();
 
                break;
         }
 
         return $response;
+    }
+
+    public function overrideRouteKeyIfApplicable(string &$routeKey, $id)
+    {
+        switch ($id)
+        {
+            case self::ONBOARDING_MANAGER:
+                $routeKey = self::FETCH_ONBOARDING_PAYMENTS_DETAILS;
+                break;
+
+            default:
+        }
     }
 
     public function canUpdateMerchantViaPGOS(Merchant\Entity $merchant): bool

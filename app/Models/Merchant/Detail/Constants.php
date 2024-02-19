@@ -40,6 +40,8 @@ class Constants
 
     const CASE_CREATION_DELAY_SECONDS = 300;
 
+    const INDIA_COUNTRY_CODE = "IN";
+
     // Input params for fetchMerchantAccountRecovery
     const EMAIL = 'email';
     const PHONE = 'phone';
@@ -233,6 +235,11 @@ class Constants
     const PAYMENT_STATUS               = 'payment_status';
     const INVOICE_SENT                 = 'invoice_sent';
     const FEE_BASED_GATING_DESCRIPTION = 'Fee for KYC verification request';
+
+    // White Glove Onboarding constants
+    const WHITE_GLOVE_ONBOARDING_MANAGER_FEE = 'fee_for_white_glove_onboarding_manager';
+    const ONBOARDING_MANAGER                 = 'onboarding_manager';
+
     // Default payment constants
     const DEFAULT_ELIGIBILITY_CRITERIA   = true;
     const DEFAULT_ORDER_ID               = "order_MblejZXmYhvaqK" ;
