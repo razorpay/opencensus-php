@@ -6220,10 +6220,10 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT][EntityConstants::FEATURE] = $merchant->getEnabledFeatures();
         $data[EntityConstants::MERCHANT][EntityConstants::ORG_FEATURE] = $merchant->org->getEnabledFeatures();
-       
+
         $isTransacted = (new \RZP\Models\Payment\Repository)
             ->hasMerchantTransacted($merchant->getId());
-        
+
         $data[EntityConstants::MERCHANT]['is_transacted'] = $isTransacted;
 
         $data[EntityConstants::MERCHANT][EntityConstants::METHODS] = $this->repo->methods->getMethodsForMerchant($merchant);
@@ -7358,16 +7358,23 @@ class Service extends Base\Service
 
         $response['product'] = $product;
 
-        if($optimise == true)
+        if($optimise)
         {
-            $subMCreateResponse = $this->getSubMerchantResponseV2($merchant, $subMerchant, $response, $newUser);
-        }
-        else
-        {
-            $subMCreateResponse = $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);
+            try
+            {
+                return $this->getSubMerchantResponseV2($merchant, $subMerchant, $response, $newUser);
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException($e);
+
+                $this->trace->info(TraceCode::SUBM_RESPONSE_V2_ERROR, [
+                    "exception" => $e->getMessage(),
+                ]);
+            }
         }
 
-        return $subMCreateResponse;
+        return $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);
     }
 
     /**
