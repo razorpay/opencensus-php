@@ -11114,6 +11114,7 @@ class Core extends Base\Core
               WHERE balance_id IN ($balanceString)
                 AND mode = '$mode'
                 AND ($conditions)
+                AND status != 'cancelled'
               GROUP BY balance_id, status;";
 
         $harvesterPayload = [
