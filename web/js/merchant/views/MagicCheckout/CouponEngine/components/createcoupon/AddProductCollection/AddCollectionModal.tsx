@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
@@ -13,11 +12,13 @@ import {
   ModalHeader,
   AddItemContainer,
   ModalCtaWrapper,
-  CollectionsList,
+  CollectionWrapper,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
 import {
   SearchBox,
   SearchInput,
+  ProductList,
+  ItemWrapper,
 } from 'merchant/views/MagicCheckout/CouponEngine/styles/AddProductModal';
 
 // helpers imports
@@ -38,24 +39,19 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
   const [apiData, setApiData] = useState<any[]>([]);
   const [formattedDataForRadioButton, setFormattedDataForRadioButton] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [selectedCollection, setSelectedCollection] = useState<any>({});
+  const [selectedCollections, setSelectedCollections] = useState<any[]>([]);
   const [nextPageCursor, setNextPageCursor] = useState<string>('');
   const [hasMore, setHasMore] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleConfirm = () => {
-    handleDiscountedItems(selectedCollection);
+    handleDiscountedItems(selectedCollections);
     closeModal();
   };
 
   const handleClose = () => {
-    setSelectedCollection({});
+    setSelectedCollections([]);
     closeModal();
-  };
-
-  const handleRadioButtonChange = (selectedCollectionId: any) => {
-    const selectedCollection = apiData.find((collection) => collection.id === selectedCollectionId);
-    setSelectedCollection(selectedCollection);
   };
 
   const fetchCollectionsData = async (resetCursor = false) => {
@@ -115,6 +111,18 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
     };
   }, [searchTerm]);
 
+  const handleVariantCheckboxChange = (selectedCollectionId: string) => {
+    const selectedCollection = apiData.find((collection) => collection.id === selectedCollectionId);
+
+    setSelectedCollections((prev) => {
+      if (prev.some((collection) => collection.id === selectedCollectionId)) {
+        return prev.filter((collection) => collection.id !== selectedCollectionId);
+      } else {
+        return [...prev, selectedCollection];
+      }
+    });
+  };
+
   return (
     <div>
       <AddItemContainer>
@@ -135,24 +143,28 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
               }}
             />
           </SearchBox>
-          <CollectionsList className="scroll" onScroll={handleScroll}>
-            <div className="form-input">
-              <Input.Radio
-                autoRender
-                name="collections"
-                onChange={(e) => {
-                  handleRadioButtonChange(e.target.value);
-                }}
-                options={formattedDataForRadioButton}
-                defaultValue={selectedCollection}
-              />
-              {isLoading && <Loader />}
-            </div>
-          </CollectionsList>
+          <ProductList className="scroll" onScroll={handleScroll}>
+            {formattedDataForRadioButton.map((collection: any) => (
+              <ItemWrapper key={collection.value}>
+                <CollectionWrapper>
+                  <Input.Check
+                    autoRender
+                    checked={selectedCollections.some((item) => item.id === collection.value)}
+                    onChange={() => {
+                      handleVariantCheckboxChange(collection.value);
+                    }}
+                  />
+                  <div>{collection.label}</div>
+                </CollectionWrapper>
+                <hr />
+              </ItemWrapper>
+            ))}
+            {isLoading && <Loader />}
+          </ProductList>
         </div>
       </AddItemContainer>
       <ModalCtaWrapper>
-        <div>{isEmpty(selectedCollection) ? 0 : 1} collection</div>
+        <div>{selectedCollections.length} collection</div>
         <div>
           <button className="secondary-cta" onClick={handleClose}>
             Cancel

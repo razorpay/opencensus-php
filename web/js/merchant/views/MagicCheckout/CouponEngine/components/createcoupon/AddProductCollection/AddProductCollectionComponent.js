@@ -21,6 +21,7 @@ import {
   DottedButtonWrapper,
   DottedButton,
   RemoveIcon,
+  AddCollectionsCta,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
 import { openModal } from 'merchant_common/reducers/modals';
 import { validateDiscountItems } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponFormValidators';
@@ -41,7 +42,7 @@ const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetai
     if (widgetsData[stateObject].discountApplicableTo === 'products') {
       selectedItemsList = Object.values(data);
     } else {
-      selectedItemsList = [data];
+      selectedItemsList = data;
     }
     const newData =
       widgetsData[stateObject].discountApplicableTo === 'products'
@@ -49,7 +50,7 @@ const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetai
             (accumulator, currentObject) => accumulator.concat(currentObject.variants),
             [],
           )
-        : [data.id];
+        : data.map((collection) => collection.id);
 
     const updatedDiscountedItemsList = [
       ...widgetsData[stateObject].discountedItemsList,
@@ -191,17 +192,22 @@ const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetai
                   </div>
                 </div>
               ) : (
-                <TableWrapper>
-                  <DataTable
-                    noStripe={true}
-                    items={widgetsData[stateObject].discountedItemsDisplayList}
-                    columns={[
-                      collectionName,
-                      productCount,
-                      collectionAction(widgetsData, setWidgetsData, stateObject),
-                    ]}
-                  />
-                </TableWrapper>
+                <div>
+                  <TableWrapper>
+                    <DataTable
+                      noStripe={true}
+                      items={widgetsData[stateObject].discountedItemsDisplayList}
+                      columns={[
+                        collectionName,
+                        productCount,
+                        collectionAction(widgetsData, setWidgetsData, stateObject),
+                      ]}
+                    />
+                  </TableWrapper>
+                  <AddCollectionsCta onClick={openAddItemsModal}>
+                    <i className="i i-plus" /> Add Collections
+                  </AddCollectionsCta>
+                </div>
               )}
             </div>
           ) : (

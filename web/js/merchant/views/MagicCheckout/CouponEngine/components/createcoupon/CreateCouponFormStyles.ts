@@ -379,10 +379,10 @@ export const HorizontalRadioButtons = styled.div`
   }
 `;
 
-export const CollectionsList = styled(HorizontalRadioButtons)`
-  label:first-child {
-    border-top: none;
-  }
+export const CollectionWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
 `;
 
 export const MinimumQuantityWrapper = styled.div`
@@ -433,4 +433,17 @@ export const SubTitle = styled.div`
 // making this InputIcon styled component to override the default css written for input icon in Input component
 export const InputIcon = styled.i`
   font-size: 10px !important;
+`;
+
+export const AddCollectionsCta = styled.div`
+  color: #0b70e7;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 700;
+  width: fit-content;
+
+  i {
+    font-size: 16px;
+    margin-right: 4px;
+  }
 `;
