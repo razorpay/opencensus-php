@@ -254,9 +254,11 @@ class CrossBorderCommonUseCases extends Job
         if (array_key_exists(self::MODE, $payload) === true)
         {
             $this->mode = $payload[self::MODE];
+            $this->app['rzp.mode'] = $payload[self::MODE];
         }
         else {
             $this->mode = Mode::LIVE;
+            $this->app['rzp.mode'] = Mode::LIVE;
         }
     }
 

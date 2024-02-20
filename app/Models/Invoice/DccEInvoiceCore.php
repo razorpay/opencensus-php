@@ -33,7 +33,9 @@ class DccEInvoiceCore extends Core
 
         $eInvoiceEntity->merchant()->associate($merchant);
 
-        $eInvoiceEntity->entity()->associate($externalEntity);
+        $eInvoiceEntity->setEntityType($externalEntity->getEntityName());
+
+        $eInvoiceEntity->setEntityId($externalEntity->getId());
 
         $eInvoiceEntity->build($input);
 

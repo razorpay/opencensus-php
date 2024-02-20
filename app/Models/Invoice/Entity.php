@@ -1493,6 +1493,16 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::FIRST_PAYMENT_MIN_AMOUNT, $amount);
     }
 
+    public function setEntityType($entityType)
+    {
+        $this->setAttribute(self::ENTITY_TYPE, $entityType);
+    }
+
+    public function setEntityId($entityId)
+    {
+        $this->setAttribute(self::ENTITY_ID, $entityId);
+    }
+
     // -------------------------------------- End Setters ------------
 
     // -------------------------------------- Accessors --------------
