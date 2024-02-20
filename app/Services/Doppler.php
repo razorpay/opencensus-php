@@ -18,6 +18,7 @@ use RZP\Gateway\Upi\Base\Repository;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\Feature;
 
 
 class Doppler
@@ -171,6 +172,12 @@ class Doppler
 
         $os = null;
 
+        $terminalProcurer = null;
+
+        $optimizerTerminal = false;
+
+        $optimizerMerchant = false;
+
         // associated terminal from payment entity
         $terminal = $payment->terminal;
 
@@ -179,6 +186,17 @@ class Doppler
             $gateway = $terminal->getGateway();
 
             $terminalType = $terminal->isShared() ? TerminalEntity::SHARED : TerminalEntity::DIRECT;
+
+            $terminalProcurer = $terminal->getProcurer();
+
+            $optimizerTerminal = $terminal->isOptimizer();
+        }
+
+        $merchant = $payment->merchant;
+
+        if ($merchant != null)
+        {
+            $optimizerMerchant = $payment->merchant->isFeatureEnabled(Feature\Constants::RAAS);
         }
 
         $paymentAnalytics = $payment->getMetadata('payment_analytics');
@@ -276,6 +294,9 @@ class Doppler
             'reason'                => $internalErrorDetails[Error\Error::REASON] ?? null,
             'internal_error_code'   => $internalErrorDetails[Error\Error::INTERNAL_ERROR_CODE] ?? null,
             'attempt'               => $paymentRetryAttempt ?? null,
+            'is_optimizer_merchant' => $optimizerMerchant ? 'true': 'false',
+            'is_optimizer_terminal' => $optimizerTerminal ? 'true' : 'false',
+            'terminal_procurer'     => $terminalProcurer,
         ];
 
 
