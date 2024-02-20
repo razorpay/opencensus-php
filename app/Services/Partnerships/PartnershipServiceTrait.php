@@ -18,10 +18,11 @@ trait PartnershipServiceTrait
         'commissions_get'                     => PartnershipsService::GET_COMMISSION_URL,
     );
 
-    static array $ignoreKeyForParity =[
-        'created_at',
-        'updated_at',
-        'pdf'
+    static array $RouteExcludedKeyMap = [
+        'commissions_invoice_fetch_all'       => array('created_at', 'updated_at', 'pdf','line_items'),
+        'commissions_invoice_fetch'           => array('created_at', 'updated_at', 'pdf'),
+        'commissions_get_multiple'            => array('created_at', 'updated_at'),
+        'commissions_get'                     => array('created_at', 'updated_at'),
     ];
 
     public function proxyToPartnershipService(array $parameters, string $partnerId)
@@ -94,10 +95,10 @@ trait PartnershipServiceTrait
 
     public function checkParity($prtsResult, $apiResult)
     {
-        $isIdentical = $this->isResultIdentical($prtsResult, $apiResult);
+        $currentRoute = app('request.ctx')->getRoute();
+        $isIdentical = $this->isResultIdentical($prtsResult, $apiResult, $currentRoute);
         if ($isIdentical === false)
         {
-            $currentRoute = app('request.ctx')->getRoute();
             $this->trace->info(TraceCode::PRTS_API_PARITY_CHECK_FAILED, [
                 'variant'    => $currentRoute,
                 'prts_res'   => $prtsResult,
@@ -107,14 +108,15 @@ trait PartnershipServiceTrait
         }
     }
 
-    private function isResultIdentical(array $prtsResult, array $apiResult) : bool
+    private function isResultIdentical(array $prtsResult, array $apiResult, string $routeName) : bool
     {
         // check if all the keys in prts is present in api and values are same
         // some keys might be present in api which are not there in api we can ignore those values
         foreach ($prtsResult as $key => $value)
         {
+            $excludedKeyArray = static::$RouteExcludedKeyMap[$routeName] ?? [];
             // ignore some keys from parity
-            if (in_array($key, static::$ignoreKeyForParity) ==  true)
+            if (in_array($key, $excludedKeyArray) ==  true)
             {
                 continue;
             }
@@ -126,7 +128,7 @@ trait PartnershipServiceTrait
             // if value is array then recursively call the function
             if (is_array($value))
             {
-                return $this->isResultIdentical($prtsResult[$key], $apiResult[$key]);
+                return $this->isResultIdentical($prtsResult[$key], $apiResult[$key], $routeName);
             }
             else
             {
