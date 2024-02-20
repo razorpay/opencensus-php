@@ -5,6 +5,7 @@ namespace RZP\Models\Customer;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Http\RequestContextV2;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use Str;
 use Lib\PhoneBook;
 use RZP\Constants\Mode;
@@ -332,9 +333,12 @@ class Core extends Base\Core
         {
             $response['session_id'] = $this->getTemporarySessionToken();
         }
+        $addressSortType = (new CommonUtils())->canRouteToCheckoutServiceForAddressSorting($customer['id']) ?
+            Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER : Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
 
-        $response['addresses'] = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
 
+        $response['addresses'] = (new Customer\Core)->fetchRzpAddressesFor1CC($customer, $addressSortType);
+        $response['one_cc_address_sort_by'] = $addressSortType;
         return $response;
     }
 
@@ -454,8 +458,12 @@ class Core extends Base\Core
 
             $response['tokens'] = $tokens->toArrayPublic();
         }
+        $addressSortType = (new CommonUtils())->canRouteToCheckoutServiceForAddressSorting($customer['id'])?
+            Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER : Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
 
-        $response['addresses'] = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+        $response['addresses']           = (new Customer\Core)->fetchRzpAddressesFor1CC($customer,$addressSortType);
+        $response['one_cc_address_sort_by'] = $addressSortType;
+
 
         $response['email'] = $customer->getEmail();
 
@@ -493,7 +501,12 @@ class Core extends Base\Core
             }
             else
             {
-                $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+                $addressSortType = (new CommonUtils())->canRouteToCheckoutServiceForAddressSorting($customer['id'])?
+                    Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER : Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+
+                $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer,$addressSortType);
+
+                $response['one_cc_address_sort_by'] = $addressSortType;
             }
             $addressConsentView = (new Customer\Core)->fetchAddressConsentViewsFor1CC($customer);
             $thirdPartyAddresses = (new Customer\Core)->fetchThirdPartyAddressesFor1cc($customer);
@@ -540,7 +553,11 @@ class Core extends Base\Core
                 if (empty($response['addresses']) === false) {
                     $rzpAddresses = $response['addresses'];
                 } else {
-                    $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+                    $addressSortType = (new CommonUtils())->canRouteToCheckoutServiceForAddressSorting($customer['id'])?
+                        Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER : Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+
+                    $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer,$addressSortType);
+                    $response['one_cc_address_sort_by'] = $addressSortType;
                 }
                 $addressConsentView = (new Customer\Core)->fetchAddressConsentViewsFor1CC($customer);
                 $thirdPartyAddresses = (new Customer\Core)->fetchThirdPartyAddressesFor1cc($customer);
@@ -602,7 +619,11 @@ class Core extends Base\Core
                 if (empty($response['addresses']) === false) {
                     $rzpAddresses = $response['addresses'];
                 } else {
-                    $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+                    $addressSortType = (new CommonUtils())->canRouteToCheckoutServiceForAddressSorting($customer['id'])?
+                        Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER : Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+
+                    $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer,$addressSortType);
+                    $response['one_cc_address_sort_by'] = $addressSortType;
                 }
                 $addressConsentView = (new Customer\Core)->fetchAddressConsentViewsFor1CC($customer);
                 $thirdPartyAddresses = (new Customer\Core)->fetchThirdPartyAddressesFor1cc($customer);
@@ -773,13 +794,14 @@ class Core extends Base\Core
      * @throws IntegrationException
      * @throws BadRequestException
      */
-    public function sortRZPAddressesFor1CC($addresses, $customer)
+    public function sortRZPAddressesFor1CC($addresses, $customer, &$addressSortType)
     {
         $merchantAddressOrderConfig = (new Merchant\Merchant1ccConfig\Core())->get1ccConfigByMerchantIdAndType($this->merchant, 'one_cc_address_sort_method');
-        $addressIds = match($merchantAddressOrderConfig){
-        Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_STRATEGY_FREQUENTLY_USED => $this->getAddressIdsOrderFromMagicCheckoutService($customer->getId(), Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_STRATEGY_FREQUENTLY_USED),
-            default => $this->getAddressIdsOrderFromMagicCheckoutService($customer->getId(), Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_STRATEGY_LAST_USED),
-        };
+        $addressSortType = Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_STRATEGY_LAST_USED;
+        if ($merchantAddressOrderConfig != null && $merchantAddressOrderConfig->getValue() === Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_STRATEGY_FREQUENTLY_USED) {
+            $addressSortType = Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_STRATEGY_FREQUENTLY_USED;
+        }
+        $addressIds =  $this->getAddressIdsOrderFromMagicCheckoutService($customer->getId(), $addressSortType);
 
         if (!empty($addressIds['id'])) {
             $addressIdsFromCheckoutService = $addressIds['id'];
@@ -808,18 +830,21 @@ class Core extends Base\Core
      * @throws IntegrationException
      * @throws BadRequestException
      */
-    public function fetchRzpAddressesFor1CC($customer, $shouldSortAddresses = false)
+    public function fetchRzpAddressesFor1CC($customer, &$addressSortType = NULL)
     {
+        if(empty($addressSortType)) {
+            $addressSortType = Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+        }
         if($this->merchant === null or $this->merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === false)
         {
             return [];
         }
         $addresses = $this->repo->address->fetchRzpAddressesFor1cc($customer);
         $addresses = $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
-        if ($shouldSortAddresses === false) {
+        if ($addressSortType === Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED) {
             return $addresses;
         }
-        return $this->sortRZPAddressesFor1CC($addresses, $customer);
+        return $this->sortRZPAddressesFor1CC($addresses, $customer, $addressSortType);
     }
 
     public function fetchRzpAddressesFor1CCInternal($customer)

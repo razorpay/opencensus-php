@@ -255,7 +255,7 @@ class CommonUtils extends Base\Core
         return $isTaxExpEnabled;
     }
 
-    public function canRouteToCheckoutServiceForAddressSorting(): bool
+    public function canRouteToCheckoutServiceForAddressSorting($customerID): bool
     {
         if (getenv('APP_ENV') === 'testing')
         {
@@ -264,7 +264,7 @@ class CommonUtils extends Base\Core
 
         $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
             [
-                'id' => UniqueIdEntity::generateUniqueId(),
+                'id' => $customerID,
                 'experiment_id' => $this->app['config']->get('app.magic_address_sorting_experiment_id'),
                 'request_data' => json_encode(
                     [

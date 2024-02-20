@@ -17,6 +17,7 @@ use RZP\Models\Base;
 use RZP\Models\Customer\Account\Metrics\Metric;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Payout;
 use RZP\Models\Address;
 use RZP\Models\Payment;
@@ -215,11 +216,14 @@ class Service extends Base\Service
 
                 (new Address\Core)->recordAddressConsent1cc($addressConsentInput, $customer);
             }
-
-            $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer,$shouldSortAddresses);
+            $addressSortType = (new CommonUtils())->canRouteToCheckoutServiceForAddressSorting($customer['id']) ?
+                Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER :
+                Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+            $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer,$addressSortType);
             $thirdPartyAddresses = $this->core->fetchThirdPartyAddressesFor1cc($customer);
             $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
 
+            $response['one_cc_address_sort_by'] = $addressSortType;
             $response['one_cc_addresses'] = $addresses;
             $response['one_cc_consent_banner_views'] = $this->core->fetchAddressConsentViewsFor1CC($customer);
             $response['one_cc_customer_consent'] = $this->core->fetchCustomerConsentFor1CC(
@@ -335,7 +339,11 @@ class Service extends Base\Service
             $shouldSortAddresses = (bool) ($input['one_cc_sort_addresses'] ?? false);
             unset($input['one_cc_sort_addresses']);
 
-            $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer, $shouldSortAddresses);
+            $addressSortType = (new CommonUtils())->canRouteToCheckoutServiceForAddressSorting($customer['id']) ?
+                Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER :
+                Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+
+            $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer, $addressSortType);
 
             $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
 
@@ -344,7 +352,7 @@ class Service extends Base\Service
             $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
 
             $customerData['addresses'] = $addresses;
-
+            $customerData['one_cc_address_sort_by'] = $addressSortType;
             if (count($addresses) > 0) {
                 $customerData['has_saved_addresses'] = true;
             }

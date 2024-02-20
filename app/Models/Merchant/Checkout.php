@@ -14,6 +14,7 @@ use RZP\Http\RequestContextV2;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Customer\Truecaller\AuthRequest\Metric;
 use RZP\Models\Locale\Core as Locale;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Order\ProductType;
 use Session;
 use Razorpay\Trace\Logger as Trace;
@@ -1286,15 +1287,16 @@ class Checkout
             $savedTokens = $tokenCore->fetchTokensByCustomerForCheckout($customer, $merchant);
 
             if($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === true){
-
-                $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+                $addressSortType = (new CommonUtils())->canRouteToCheckoutServiceForAddressSorting($customer['id'])?
+                    Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER : Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+                $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer,$addressSortType);
                 $addressConsentView = (new Customer\Core)->fetchAddressConsentViewsFor1CC($customer);
                 $thirdPartyAddresses = (new Customer\Core)->fetchThirdPartyAddressesFor1cc($customer);
                 $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
 
                 $custData['addresses'] = $addresses;
                 $custData['1cc_consent_banner_views'] = $addressConsentView;
-
+                $custData['one_cc_address_sort_by'] = $addressSortType;
                 //fetch customer consent
                 $custData['1cc_customer_consent'] =(new Customer\Core)->fetchCustomerConsentFor1CC($customer->getContact(), $merchant->getId());
             }
