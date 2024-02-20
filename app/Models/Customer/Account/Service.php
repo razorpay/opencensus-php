@@ -217,8 +217,9 @@ class Service extends Base\Service
                 (new Address\Core)->recordAddressConsent1cc($addressConsentInput, $customer);
             }
             $addressSortType = (new CommonUtils())->canRouteToCheckoutServiceForAddressSorting($customer['id']) ?
-                Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER :
-                Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+                \RZP\Models\Merchant\Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER :
+                \RZP\Models\Merchant\Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+
             $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer,$addressSortType);
             $thirdPartyAddresses = $this->core->fetchThirdPartyAddressesFor1cc($customer);
             $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
@@ -340,8 +341,9 @@ class Service extends Base\Service
             unset($input['one_cc_sort_addresses']);
 
             $addressSortType = (new CommonUtils())->canRouteToCheckoutServiceForAddressSorting($customer['id']) ?
-                Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER :
-                Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+                \RZP\Models\Merchant\Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_OTHER :
+                \RZP\Models\Merchant\Merchant1ccConfig\Constants::ONE_CC_ADDRESS_SORT_LAST_UPDATED;
+
 
             $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer, $addressSortType);
 
