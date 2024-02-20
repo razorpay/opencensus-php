@@ -72,6 +72,7 @@ module.exports = {
     'i18n-rules/no-region-specific-keyword': 'warn',
     'i18n-rules/no-currency-hardcoding': 'warn',
     'i18n-rules/no-href-hardcoding': 'warn',
+    'i18n-rules/no-hardcoded-i18n-types': 'warn',
     'i18n-rules/no-region-specific-image': 'warn',
   },
   env: {
@@ -196,6 +197,8 @@ module.exports = {
         'i18n-rules/no-region-specific-keyword': 'off',
         'i18n-rules/no-currency-hardcoding': 'off',
         'i18n-rules/no-href-hardcoding': 'off',
+        'i18n-rules/no-hardcoding-dates': 'off',
+        'i18n-rules/no-hardcoded-i18n-types': 'off',
         'i18n-rules/no-region-specific-image': 'off',
       },
     },

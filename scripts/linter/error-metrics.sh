@@ -8,6 +8,7 @@ totalFoundErrors=0
 noRegionSpecificKeywordErrors=0
 noHrefHardcodingErrors=0
 noCurrencyHardcodingErrors=0
+noHardcodingi18nTypes=0
 noRegionSpecificImages=0
 
 # Iterate through each entry in the JSON array, encode to base64
@@ -38,6 +39,9 @@ for encoded_entry in $(echo "${i18n_errors}" | jq -r '.[] | @base64'); do
         "i18n-rules/no-href-hardcoding")
             noHrefHardcodingErrors=$((noHrefHardcodingErrors + 1))
             ;;
+        "i18n-rules/no-hardcoded-i18n-types")
+            noHardcodingi18nTypes=$((noHardcodingi18nTypes + 1))
+            ;;
         "i18n-rules/no-currency-hardcoding")
             noCurrencyHardcodingErrors=$((noCurrencyHardcodingErrors + 1))
             ;;
@@ -49,7 +53,7 @@ for encoded_entry in $(echo "${i18n_errors}" | jq -r '.[] | @base64'); do
 done
 
 # Output the result
-output_result="{\"totalFoundErrors\": ${totalFoundErrors},\"noRegionSpecificKeywordErrors\": ${noRegionSpecificKeywordErrors},\"noHrefHardcodingErrors\": ${noHrefHardcodingErrors},\"noCurrencyHardcodingErrors\": ${noCurrencyHardcodingErrors}, \"noRegionSpecificImages\": ${noRegionSpecificImages}},"
+output_result="{\"totalFoundErrors\": ${totalFoundErrors},\"noRegionSpecificKeywordErrors\": ${noRegionSpecificKeywordErrors},\"noHrefHardcodingErrors\": ${noHrefHardcodingErrors},\"noCurrencyHardcodingErrors\": ${noCurrencyHardcodingErrors}, \"noRegionSpecificImages\": ${noRegionSpecificImages}, \"noHardcodingi18nTypes\": ${noHardcodingi18nTypes} },"
 
 echo "$output_result"
 # Store the output in a GitHub Actions output variable

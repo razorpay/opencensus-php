@@ -170,6 +170,10 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
+                      "text": "*Hardcoding i18n Types Errors:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noHardcodingi18nTypes }}"
+                    },
+                    {
+                      "type": "mrkdwn",
                       "text": "*Currency Hardcoding Errors:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noCurrencyHardcodingErrors }}"
                     },
                     {
