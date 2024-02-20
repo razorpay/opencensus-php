@@ -1710,6 +1710,7 @@ return [
         'splitz_experiment_merchant_find_for_implicit_join' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_FIND_FOR_IMPLICIT_JOIN', ''),
         'splitz_send_filter_to_asv' => env('ASV_SPLITZ_SEND_FILTER_TO_ASV', ''),
         'asv_splitz_experiment_tidb_migration' => env('ASV_SPLITZ_EXPERIMENT_TIDB_MIGRATION', ''),
+        'asv_splitz_experiment_tidb_comparison' => env('ASV_SPLITZ_EXPERIMENT_TIDB_COMPARISON', ''),
         'asv_enable_tidb_shadow' => env('ASV_ENABLE_TIDB_SHADOW', false),
     ],
 

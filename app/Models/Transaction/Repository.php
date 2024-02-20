@@ -581,7 +581,7 @@ class Repository extends Base\Repository
                 ->where($merchantParentIdColumn, '=', null);
         }
 
-        if (!$callingViaTidb and $this->asvRouter->shouldShadowCompareTiDBResults()) {
+        if (!$callingViaTidb) {
             event(new QueryShadowModeEvent(__FUNCTION__, $query->distinct()->toSql(), $query->getBindings()));
         }
 

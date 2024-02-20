@@ -71,7 +71,7 @@ class Repository extends Base\Repository
                       ->where(Entity::IS_NEW_SERVICE, '=', 0)
                       ->with('merchant', 'merchant.bankAccount');
 
-        if (!$callingViaTidb and $this->asvRouter->shouldShadowCompareTiDBResults()) {
+        if (!$callingViaTidb) {
             event(new QueryShadowModeEvent(__FUNCTION__, $setls->toSql(), $query->getBindings()));
         }
 

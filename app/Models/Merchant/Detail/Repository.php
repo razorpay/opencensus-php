@@ -427,7 +427,7 @@ class Repository extends Base\Repository
             $query->where($this->dbColumn(Entity::CREATED_AT), '>=', $createdAt);
         }
 
-        if (!$callingViaTidb and $this->asvRouter->shouldShadowCompareTiDBResults()) {
+        if (!$callingViaTidb) {
             event(new QueryShadowModeEvent(__FUNCTION__, $query->toSql(), $query->getBindings()));
         }
 
@@ -1215,7 +1215,7 @@ class Repository extends Base\Repository
                        ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', $activationMilestone)
                        ->Where($this->dbColumn(Entity::UPDATED_AT), '>=', $updatedAt);
 
-        if (!$callingViaTidb and $this->asvRouter->shouldShadowCompareTiDBResults()) {
+        if (!$callingViaTidb) {
             event(new QueryShadowModeEvent(__FUNCTION__, $query->toSql(), $query->getBindings()));
         }
 

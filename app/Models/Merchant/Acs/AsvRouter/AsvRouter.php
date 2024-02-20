@@ -42,7 +42,7 @@ class AsvRouter
      */
     protected $trace;
 
-    protected SplitzHelper $spitzHelper;
+    protected SplitzHelper $splitzHelper;
 
     public function __construct()
     {
@@ -52,7 +52,7 @@ class AsvRouter
 
         $this->trace = $app[Constant::TRACE];
 
-        $this->spitzHelper = new SplitzHelper();
+        $this->splitzHelper = new SplitzHelper();
     }
 
     public function isExclusionFlowOrFailure(): bool
@@ -193,7 +193,7 @@ class AsvRouter
                 return true;
             }
 
-            return $this->spitzHelper->isSplitzOnByExperimentName($experimentName, $id);
+            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $id);
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             return false;
@@ -255,7 +255,7 @@ class AsvRouter
                 return true;
             }
 
-            return $this->spitzHelper->isSplitzOnByExperimentName($experimentName, $id);
+            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $id);
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             return false;
@@ -271,7 +271,7 @@ class AsvRouter
 
             $experimentName       = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForWriteMigration();
             $routeOrWorkerName    = $this->getRouteOrJobName();
-            $isRequestRoutedToAsv = $this->spitzHelper->isSplitzOnForWriteByExperimentName(
+            $isRequestRoutedToAsv = $this->splitzHelper->isSplitzOnForWriteByExperimentName(
                 $experimentName,
                 $id,
                 $routeOrWorkerName,
@@ -311,7 +311,7 @@ class AsvRouter
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
 
-            $resp =  $this->spitzHelper->isSplitzOnForFindForImplicitJoinByExperimentName(
+            $resp =  $this->splitzHelper->isSplitzOnForFindForImplicitJoinByExperimentName(
                 $experimentName,
                 $id,
                 $entityName
@@ -405,7 +405,7 @@ class AsvRouter
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForFilterMigration();
 
-            return $this->spitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
+            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             return false;
@@ -437,7 +437,7 @@ class AsvRouter
     }
 
     public function shouldRouteBeMigratedToTiDB(string $functionName) : bool {
-        $result = $this->spitzHelper->checkSplitzVariantForAsvTiDBMigration($functionName);
+        $result = $this->splitzHelper->checkSplitzVariantForAsvTiDBMigration($functionName);
 
         $this->trace->info(TraceCode::ASV_TIDB_MIGRATION_DEBUG, [
             'shouldRouteBeMigratedToTiDB' => $result,
@@ -447,7 +447,7 @@ class AsvRouter
     }
 
     public function shouldShadowCompareTiDBResults() : bool {
-        return $this->app->config->get(AsvSdkIntegrationConstant::ASV_CONFIG)[AsvSdkIntegrationConstant::ASV_ENABLE_TIDB_SHADOW];
+        return $this->splitzHelper->checkSplitzValueForAsvTiDBComparison();
     }
 
 }

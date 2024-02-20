@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class QueryShadowModeListener implements ShouldQueue
 {
@@ -37,60 +38,63 @@ class QueryShadowModeListener implements ShouldQueue
 
     public function handle(QueryShadowModeEvent $event)
     {
-        try {
-            $queryString = $event->queryString;
+        if ((new AsvRouter())->shouldShadowCompareTiDBResults())
+        {
+            try {
+                $queryString = $event->queryString;
 
-            $appMode = $this->app['rzp.mode'] ?? 'test';
+                $appMode = $this->app['rzp.mode'] ?? 'test';
 
-            // Execute query in API DB
-            $liveDbResults = DB::connection($appMode)->select(DB::raw($queryString), $event->queryBindings);
+                // Execute query in API DB
+                $liveDbResults = DB::connection($appMode)->select(DB::raw($queryString), $event->queryBindings);
 
-            // Execute query in TiDB
-            $tiDbConnection = $this->getTiDBConnection($appMode);
-            $tiDbResults = DB::connection($tiDbConnection)->select(DB::raw($queryString), $event->queryBindings);
+                // Execute query in TiDB
+                $tiDbConnection = $this->getTiDBConnection($appMode);
+                $tiDbResults = DB::connection($tiDbConnection)->select(DB::raw($queryString), $event->queryBindings);
 
-            $diffFound = false;
+                $diffFound = false;
 
-            // Compare results
+                // Compare results
 
-            if (in_array($event->functionName, $this->COMPARE_LENGTH_MAP)) {
-                $diffFound = $this->compareLength($liveDbResults, $tiDbResults);
-            }
+                if (in_array($event->functionName, $this->COMPARE_LENGTH_MAP)) {
+                    $diffFound = $this->compareLength($liveDbResults, $tiDbResults);
+                }
 
-            if (!$diffFound and in_array($event->functionName, array_keys($this->COMPARE_PROPERTIES_MAP))) {
-                $diffFound = $this->compareKeys($liveDbResults, $tiDbResults, $event->functionName);
-            }
+                if (!$diffFound and in_array($event->functionName, array_keys($this->COMPARE_PROPERTIES_MAP))) {
+                    $diffFound = $this->compareKeys($liveDbResults, $tiDbResults, $event->functionName);
+                }
 
-            $this->trace->debug(TraceCode::ASV_TIDB_MIGRATION_DEBUG, [
-                'function'                          => $event->functionName,
-                'query'                             => $event->queryString,
-                'connectionUsedForDataWarehouse'    => $tiDbConnection,
-                'diffFound'                         => $diffFound
-            ]);
-
-            //Publish metrics and log error
-            if ($diffFound) {
-                $this->trace->error(TraceCode::ASV_TIDB_MIGRATION_SHADOW_MODE_MISMATCH, [
-                    'function'          => $event->functionName,
-                    'query'             => $event->queryString,
-                    'liveDbResults'     => $liveDbResults,
-                    'tidbResults'       => $tiDbResults
+                $this->trace->debug(TraceCode::ASV_TIDB_MIGRATION_DEBUG, [
+                    'function'                          => $event->functionName,
+                    'query'                             => $event->queryString,
+                    'connectionUsedForDataWarehouse'    => $tiDbConnection,
+                    'diffFound'                         => $diffFound
                 ]);
 
-                $this->trace->count(Metric::ASV_TIDB_MIGRATION_SHADOW_MODE_DIFF_TOTAL, [
-                    'function' => $event->functionName
-                ]);
+                //Publish metrics and log error
+                if ($diffFound) {
+                    $this->trace->error(TraceCode::ASV_TIDB_MIGRATION_SHADOW_MODE_MISMATCH, [
+                        'function'          => $event->functionName,
+                        'query'             => $event->queryString,
+                        'liveDbResults'     => $liveDbResults,
+                        'tidbResults'       => $tiDbResults
+                    ]);
+
+                    $this->trace->count(Metric::ASV_TIDB_MIGRATION_SHADOW_MODE_DIFF_TOTAL, [
+                        'function' => $event->functionName
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::ASV_TIDB_MIGRATION_ERROR,
+                    [
+                        'function'          => $event->functionName,
+                        'query'             => $event->queryString
+                    ]
+                );
             }
-        } catch (\Throwable $e) {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::ASV_TIDB_MIGRATION_ERROR,
-                [
-                    'function'          => $event->functionName,
-                    'query'             => $event->queryString
-                ]
-            );
         }
     }
 

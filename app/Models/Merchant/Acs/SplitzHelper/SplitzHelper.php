@@ -217,5 +217,30 @@ class SplitzHelper
 
         return false;
     }
+
+    function checkSplitzValueForAsvTiDBComparison() : bool {
+        try
+        {
+            $request = ['id' => 'constant',
+                        'experiment_id' => $this->app->config->get(ASVV2Constant::ASV_CONFIG)[SplitzConstant::ASV_SPLITZ_EXPERIMENT_TIDB_COMPARISON]];
+
+            $response = $this->splitzService->evaluateRequest($request);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_SPLITZ_ERROR);
+
+            return false;
+        }
+
+        return false;
+    }
 }
 
