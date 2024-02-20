@@ -634,39 +634,39 @@ export const growthAssetSchema = {
                 variant: yup.string().required().strict(true),
               }),
             description: yup.string().optional().strict(true),
-            f1: yup.object().required().strict(true).shape({
+            f1: yup.object().optional().strict(true).shape({
               annual: yup.string(),
               monthly: yup.string(),
             }),
-            f2: yup.object().required().strict(true).shape({
+            f2: yup.object().optional().strict(true).shape({
               annual: yup.string(),
               monthly: yup.string(),
             }),
-            f3: yup.object().required().strict(true).shape({
+            f3: yup.object().optional().strict(true).shape({
               annual: yup.string(),
               monthly: yup.string(),
             }),
-            f4: yup.object().required().strict(true).shape({
+            f4: yup.object().optional().strict(true).shape({
               annual: yup.string(),
               monthly: yup.string(),
             }),
-            f5: yup.object().required().strict(true).shape({
+            f5: yup.object().optional().strict(true).shape({
               annual: yup.string(),
               monthly: yup.string(),
             }),
-            f6: yup.object().required().strict(true).shape({
+            f6: yup.object().optional().strict(true).shape({
               annual: yup.string(),
               monthly: yup.string(),
             }),
-            f7: yup.object().required().strict(true).shape({
+            f7: yup.object().optional().strict(true).shape({
               annual: yup.string(),
               monthly: yup.string(),
             }),
-            f8: yup.object().required().strict(true).shape({
+            f8: yup.object().optional().strict(true).shape({
               annual: yup.string(),
               monthly: yup.string(),
             }),
-            f9: yup.object().required().strict(true).shape({
+            f9: yup.object().optional().strict(true).shape({
               annual: yup.string(),
               monthly: yup.string(),
             }),
