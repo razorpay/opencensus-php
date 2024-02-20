@@ -1890,4 +1890,107 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals('qr_code', $payment['receiver_type']);
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
     }
+    public function testDelayedCallbackOnSingleUseQrCodeForPosQr()
+    {
+        $posQRPricingPlan = [
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'TestMerchantPosUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'offline',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+            'channel'             => 'in_person',
+        ];
+
+        $this->fixtures->create('pricing', $posQRPricingPlan);
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 4000,
+                'name'  => 'Mitasha'],
+            headers:[
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+
+        $qrCodeId = $qrCode['id'];
+        $qrCode   = $this->closeQrCode($qrCodeId);
+        $this->assertEquals('closed', $qrCode['status']);
+
+        $this->fixtures->stripSign($qrCodeId);
+        $request                              = $this->testData['testProcessIciciQrPayment'];
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true, 'test');
+        $payment   = $this->getLastEntity('payment', true, 'test');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
+        $this->assertEquals('single_use', $qrCode['usage']);
+
+        $this->assertEquals(false, $qrPayment['expected']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $request['content']['BankRRN'] = '015306767324';
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true, 'test');
+        $payment   = $this->getLastEntity('payment', true, 'test');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
+        $this->assertEquals('single_use', $qrCode['usage']);
+
+        $this->assertEquals(false, $qrPayment['expected']);
+        $this->assertEquals('refunded', $payment['status']);
+    }
+    public function testDelayedCallbackOnSingleUseQrCodeForNonPosQr()
+    {
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 4000,
+                'name'  => 'Mitasha']
+        );
+        $qrCodeId = $qrCode['id'];
+        $qrCode   = $this->closeQrCode($qrCodeId);
+        $this->assertEquals('closed', $qrCode['status']);
+        $this->fixtures->stripSign($qrCodeId);
+        $request                              = $this->testData['testProcessIciciQrPayment'];
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true, 'test');
+        $payment   = $this->getLastEntity('payment', true, 'test');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
+        $this->assertEquals('single_use', $qrCode['usage']);
+
+        $this->assertEquals(true, $qrPayment['expected']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $request['content']['BankRRN'] = '015306767324';
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true, 'test');
+        $payment   = $this->getLastEntity('payment', true, 'test');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
+        $this->assertEquals('single_use', $qrCode['usage']);
+
+        $this->assertEquals(false, $qrPayment['expected']);
+        $this->assertEquals('refunded', $payment['status']);
+    }
 }

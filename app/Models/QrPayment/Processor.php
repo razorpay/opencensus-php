@@ -593,7 +593,9 @@ class Processor extends Base\Core
         {
             $isPaymentExpected = false;
 
-            if($qrPayment->getTransactionTime() !== null)
+
+            if(($this->qrCode->isRazorpayPosQrCode() === false) and
+               ($qrPayment->getTransactionTime() !== null))
             {
 
                 if (($this->qrCode->getClosedAt() !== null) and
