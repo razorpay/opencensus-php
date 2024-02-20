@@ -442,6 +442,7 @@ class UpiMindgateQRCodeTest extends TestCase
         $this->assertEquals($qrCodeEntity['reference'], $qrPayment['merchant_reference']);
         $this->assertEquals($paymentRequestEntity['description'], $qrPayment['notes']);
         $this->assertEquals('107611570997', $upi['npci_reference_id']);
+        $this->assertNotNull($qrPayment['transaction_time']);
 
         if ($qrCodeEntity['usage'] === 'single_use')
         {

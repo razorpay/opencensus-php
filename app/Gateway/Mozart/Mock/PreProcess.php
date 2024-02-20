@@ -431,6 +431,7 @@ class PreProcess extends Base\Mock\Server
         $response = MozartUpiResponse::getDefaultInstanceForV2();
 
         $response->mergeUpi([
+            'gateway_timestamp'             => $data['txn_auth_date'],
             UpiEntity::VPA                  => $data['payer_va'],
             UpiEntity::STATUS_CODE          => $data['respcode'],
             UpiEntity::NPCI_REFERENCE_ID    => $data['npci_upi_txn_id'],

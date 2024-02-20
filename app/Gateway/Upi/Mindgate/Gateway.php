@@ -802,24 +802,24 @@ class Gateway extends Base\Gateway
 
         $transactionTime = null;
 
-        if (empty($inputFields['gateway_timestamp']) === false)
+        if (empty($inputFields['upi']['gateway_timestamp']) === false)
         {
             try
             {
-                $transactionTime = Carbon::createFromFormat('Y-m-d H:i:s.v', $inputFields['gateway_timestamp'],
+                $transactionTime = Carbon::createFromFormat('Y:m:d H:i:s', $inputFields['upi']['gateway_timestamp'],
                     Timezone::IST);
             }
             catch (InvalidFormatException $e)
             {
                 // We are only catching this exception and tracing it for now
-                // We know that recon can only send timestamp in Y-m-d format
-                // Thus missing H:i:s.v data can cause this exception
+                // We know that recon can only send timestamp in Y:m:d format
+                // Thus missing H:i:s data can cause this exception
                 $this->trace->traceException(
                     $e,
                     Logger::WARNING,
                     TraceCode::QR_DATA_TIMESTAMP_DATA_MISSING,
                     [
-                        'input_timestamp' => $inputFields['gateway_timestamp'],
+                        'input_timestamp' => $inputFields['upi']['gateway_timestamp'],
                     ]
                 );
             }
