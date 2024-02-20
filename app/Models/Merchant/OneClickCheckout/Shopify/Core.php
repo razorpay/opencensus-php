@@ -71,6 +71,7 @@ class Core extends Base\Core
 
     const MAGIC_CHECKOUT_SERVICE_PAYLOAD_MATCH_PATH = 'v1/payload/match';
 
+    const RETRY_SHOPIFY_TXN_UPDATE_DELAY_MILLIS = 10 * 1000;
 
     protected $monitoring;
 
@@ -2174,8 +2175,18 @@ class Core extends Base\Core
             $errorMessage = strtolower($e->getMessage());
 
             $errorBadGateway = "502 bad gateway";
+            $errorSecurityRejection = 'Page temporarily unavailable';
+            $retryReason = '502';
 
-            if(strpos($errorMessage, $errorBadGateway) !== false)
+            // In case of a `430` we retry again. As Shopify does not
+            // send a `Retry-After` header, we wait for a generous 10 seconds.
+            if (strpos($errorMessage, $errorSecurityRejection) !== false)
+            {
+                $retryReason = '430';
+                usleep(self::RETRY_SHOPIFY_TXN_UPDATE_DELAY_MILLIS * 1000);
+            }
+
+            if(strpos($errorMessage, $errorBadGateway) !== false || strpos($errorMessage, $errorSecurityRejection) !== false)
             {
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_API_ERROR,
@@ -2183,7 +2194,8 @@ class Core extends Base\Core
                         'type' => 'update_transaction_retry_initiated',
                         'strategy' => 'retry',
                         'error_message' => $errorMessage,
-                        'order_id' => $payment['order_id']
+                        'order_id' => $payment['order_id'],
+                        'retry_reason' => $retryReason,
                     ]
                 );
 
