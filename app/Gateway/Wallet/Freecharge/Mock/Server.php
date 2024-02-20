@@ -30,6 +30,7 @@ class Server extends Base\Mock\Server
             'walletBalance' => '1234',
             'errorMessage'  => 'SUCCESS',
             'metadata'      => 'dummy',
+            'merchantTxnId'=>$input['payment']['id'],
         ];
 
         $content['checksum'] = $this->generateHash($content);

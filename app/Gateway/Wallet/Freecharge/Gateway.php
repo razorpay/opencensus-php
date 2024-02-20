@@ -372,7 +372,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-   protected function getGatewayData(array $refundFields =[])
+    protected function getGatewayData(array $refundFields =[])
     {
         if (empty($refundFields) === false)
         {
@@ -453,8 +453,8 @@ class Gateway extends Base\Gateway
             }
 
             return $scroogeResponse->setSuccess(true)
-                                   ->setGatewayVerifyResponse($verifyResponse)
-                                   ->toArray();
+                                            ->setGatewayVerifyResponse($verifyResponse)
+                                            ->toArray();
         }
         else
         {
@@ -759,6 +759,27 @@ class Gateway extends Base\Gateway
             );
         }
     }
+
+    protected function verifyPaymentIdForResponse($input)
+    {
+        $paymentId = $input['payment']['id'];
+        $paymentId = "pay_" . $paymentId;
+
+        $merchantTxnId = $input['gateway']['merchantTxnId'];
+        if ($merchantTxnId != '') {
+            if (strcmp($paymentId, $merchantTxnId) != 0) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Failed checksum verification gatewaymerchantid',
+                    null,
+                    [
+                        "payment_id" => $paymentId,
+                        "merchant_txn_id" => $merchantTxnId
+                    ]
+                );
+            }
+        }
+    }
+
 
     protected function getHashOfArray($content)
     {
@@ -1267,6 +1288,7 @@ class Gateway extends Base\Gateway
             ($content[ResponseFields::STATUS] === Status::TOPUP_SUCCESS))
         {
             $this->verifyCheckSumForResponse($content);
+            $this->verifyPaymentIdForResponse($input); //Adding for payment id & merchant id validation
         }
 
         return [];
@@ -1331,8 +1353,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->jsonToArray($response->body);
 
-        if (($response->status_code === 202 ) or ((isset($content[ResponseFields::ERROR_CODE]) === true) and
-            ($content[ResponseFields::ERROR_CODE] !== ResponseCode::SUCCESS_CODE)))
+        if (($response->status_code === 202 ) or ((isset($content[ResponseFields::ERROR_CODE]) === true) and ($content[ResponseFields::ERROR_CODE] !== ResponseCode::SUCCESS_CODE)))
         {
 
             throw new Exception\GatewayErrorException(
