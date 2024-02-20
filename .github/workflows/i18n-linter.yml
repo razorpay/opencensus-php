@@ -178,6 +178,10 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
+                      "text": "*No Deprecated Functions Usage Errors:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noDeprecatedFunctions }}"
+                    },
+                    {
+                      "type": "mrkdwn",
                       "text": "*Warnings for Images:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noRegionSpecificImages }}"
                     }
                   ]
