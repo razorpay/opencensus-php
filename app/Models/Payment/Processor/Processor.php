@@ -409,6 +409,16 @@ class Processor
     const ALLOW_CFB_MERCHANTS_ON_REARCH_UPS = 'allow_cfb_merchants_on_rearch_ups';
 
     /**
+     * Razorx flag to allow DFB merchants on re-arch flow
+     */
+    const ALLOW_DFB_MERCHANTS_ON_REARCH_UPS = 'allow_dfb_merchants_on_rearch_ups';
+
+    /**
+     * Razorx flag to allow fee_config_id on re-arch flow
+     */
+    const ALLOW_FEE_CONFIG_ID_MERCHANTS_ON_REARCH_UPS = 'allow_fee_config_id_merchants_on_rearch_ups';
+
+    /**
      * Razorx flag to allow non Rzp org merchants on re-arch flow
      */
     const ALLOW_NON_RZP_ORG_MERCHANTS_ON_REARCH_UPS = 'allow_non_rzp_org_merchants_on_rearch_ups';
@@ -2062,7 +2072,13 @@ class Processor
         return ($result === 'on');
     }
 
-    private function canRouteThroughUpsRearchFlow($input): bool
+    /**
+     * canRouteThroughUpsRearchFlow checks if payment is eligible to route via rearch flow
+     * @param $input
+     * @param bool $isUpiDfb
+     * @return bool
+     */
+    private function canRouteThroughUpsRearchFlow($input, bool & $isUpiDfb): bool
     {
         try
         {
@@ -2100,12 +2116,15 @@ class Processor
 
             $customCheckResults = $this->performCustomChecksToRouteViaUpsRearchFlow($input, $merchant, $currentRouteName);
 
+            $isUpiDfb = $customCheckResults['is_dfb'] ?? false;
+
             $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_ROUTING_CRITERIA,
             [
                 'merchant_id'   => $merchant->getId(),
                 'dimensions'    => $customCheckResults['dimensions'],
                 'route'         => $currentRouteName,
                 'route_via_ups' => $customCheckResults['route_via_ups'],
+                'is_dfb'        => $isUpiDfb
             ]);
 
             if ($customCheckResults['route_via_ups'] === false)
@@ -2273,8 +2292,8 @@ class Processor
 
         if ($merchant->isFeeBearerPlatform() === false)
         {
-            // if Dynamic Fee Bearer or Non-Whitelisted Customer Fee Bearer, Don't route through ReArch
-            if ($this->isUpsRearchCFBMerchant() === false)
+            // is UPS supported fee bearer merchant
+            if ($this->isUpsRearchFeeBearerMerchant($response) === false)
             {
                 $routeViaReArch = false;
                 $dimensions[12] = 1;
@@ -2382,8 +2401,12 @@ class Processor
                 // Check if fee config ID exists in the order
                 if ($order->getFeeConfigId() !== null)
                 {
-                    $routeViaReArch = false;
-                    $dimensions[26] = 1;
+
+                    if ($this->isFeeConfigIDRamped() === false)
+                    {
+                        $routeViaReArch = false;
+                        $dimensions[26] = 1;
+                    }
                 }
 
 //        Commenting since this is covered in $order->getProductId() check. Refer Condition 25
@@ -3121,6 +3144,8 @@ class Processor
 
             $isReArchPayment = false;
 
+            $isUpiDfb = false;
+
             if (($isSplitPaymentRequest === false) and
                 ($this->isLRSEducationMerchant() === false) and
                 ($this->isOpgspImportMerchant() === false) and
@@ -3129,11 +3154,16 @@ class Processor
                 ($this->canRouteRazorpayAccountThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or
-                ($this->canRouteThroughUpsRearchFlow($input) === true) or
+                ($this->canRouteThroughUpsRearchFlow($input, $isUpiDfb) === true) or
                 ($this->canRouteFpxThroughRearchFlow($input) === true) or
                 ($this->canRouteEmandateThroughRearchFlow($input) === true)))
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
+
+                if ((isset($input['method']) === true) && ($input['method'] === Payment\Method::UPI))
+                {
+                    $this->calculateAndAddConvenienceFeeForUpiIfApplicable($input, $isUpiDfb);
+                }
 
                 $isReArchPayment = true;
 
@@ -11349,14 +11379,30 @@ class Processor
     }
 
     /**
-     * isUpsRearchCFBMerchant checks if CFB Merchant is whitelisted for Rearch flow
+     * isUpsRearchFeeBearerMerchant checks FeeBearer is supported in Rearch
      * @return bool
      */
-    public function isUpsRearchCFBMerchant(): bool
+    public function isUpsRearchFeeBearerMerchant(array & $response): bool
     {
         if ($this->merchant->isFeeBearerCustomer() === false)
         {
-            return false;
+
+            if ($this->merchant->isFeeBearerDynamic() === false)
+            {
+                return false;
+            }
+
+            $shouldAllowDfb = $this->shouldAllowDfb();
+
+            if ($shouldAllowDfb === false)
+            {
+                return false;
+            }
+
+            $response['is_dfb'] = true;
+
+            return true;
+
         }
 
         $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),
@@ -11370,6 +11416,25 @@ class Processor
         ]);
 
         return $variant === 'on';
+    }
+
+    /**
+     * isFeeConfigIDRamped returns true if merchant is ramped on FeeConfigID
+     * @return bool
+     */
+    public function isFeeConfigIDRamped() : bool
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),
+            self::ALLOW_FEE_CONFIG_ID_MERCHANTS_ON_REARCH_UPS, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_FEE_CONFIG_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant' => $variant,
+            'mode'    => $this->mode,
+            'feature' => self::ALLOW_FEE_CONFIG_ID_MERCHANTS_ON_REARCH_UPS,
+        ]);
+
+        return str_starts_with($variant, 'on');
     }
 
     /**
@@ -11442,5 +11507,66 @@ class Processor
         ]);
 
         return str_starts_with($variant, 'on') === true;
+    }
+
+    // calculateAndAddConvenienceFeeForUpiIfApplicable is temporary function to calculate convenience fee for UPIPayments until this is moved to API By-pass
+    private function calculateAndAddConvenienceFeeForUpiIfApplicable(array & $input, bool $isUpiDfb): void
+    {
+
+        // if not DFB, return
+        if ((isset($isUpiDfb) === false) || ($isUpiDfb === false)) {
+            return;
+        }
+
+        // Re-calculates fees on the amount, using a dummy payment creation flow.
+        // This sets re-calculated fee and amount value (in paise) in $input.
+        // Hence, saving original amount as amount.
+        $feesArray = $this->processAndReturnFees($input);
+        if ((isset($feesArray) === false))
+        {
+            return;
+        }
+
+
+        if ((isset($feesArray['original_amount']) === true))
+        {
+            $input['amount'] = $feesArray['original_amount'];
+        }
+
+        if ((isset($feesArray['customer_fee']) === true))
+        {
+            $input['convenience_fee'] = $feesArray['customer_fee'];
+        }
+
+        if ((isset($feesArray['customer_fee_gst']) === true))
+        {
+            $input['convenience_fee_gst'] = $feesArray['customer_fee_gst'];
+        }
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_DFB_CONVENIENCE_FEE, [
+            'fee' => $input['convenience_fee'] ?? '',
+            'gst' => $input['convenience_fee_gst'] ?? '',
+        ]);
+
+    }
+
+
+    /**
+     * shouldAllowDfb checks if DFB merchant is ramped
+     * @return bool
+     */
+    private function shouldAllowDfb(): bool
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),
+            self::ALLOW_DFB_MERCHANTS_ON_REARCH_UPS, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_DFB_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant'     => $variant,
+            'mode'        => $this->mode,
+            'feature'     => self::ALLOW_DFB_MERCHANTS_ON_REARCH_UPS,
+        ]);
+
+        return str_starts_with($variant, 'on');
     }
 }
