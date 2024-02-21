@@ -17343,6 +17343,7 @@ class Route
             'settlement_ondemand_fetch',
             'payment_refund',
             'qr_code_create',
+            'setl_fetch_by_id',
             'payment_links_create',
             'settlement_ondemand_create',
             'merchant_fetch_schedule_tasks',
