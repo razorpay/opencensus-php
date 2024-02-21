@@ -108,7 +108,9 @@ trait ExternalOffersRepo
         $offers = [];
         // experiment false, fetch from API db
         foreach ($offerIds as $offerId) {
-            $offers[] = parent::findOrFail($offerId);
+            $id = OfferEntity::verifyIdAndSilentlyStripSign($offerId);
+
+            $offers[] = parent::findOrFail($id);
         }
 
         return $offers;
@@ -350,7 +352,6 @@ trait ExternalOffersRepo
     {
         if (app()->runningUnitTests() === true) {
             $keyName = Entity::getExternalConfigKeyName('offer');
-
             return (bool)ConfigKey::get($keyName, false);
         }
 

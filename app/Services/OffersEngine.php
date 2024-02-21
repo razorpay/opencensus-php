@@ -175,7 +175,6 @@ class OffersEngine
             $parsedResponse = $this->parseAndReturnResponse($response);
 
             $logResponse = $this->shouldLogResponse($endpoint, $request['method']);
-
             if($logResponse === true)
             {
                 $this->trace->info(TraceCode::OFFERS_ENGINE_RESPONSE,

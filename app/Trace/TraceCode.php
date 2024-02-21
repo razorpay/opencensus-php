@@ -8082,6 +8082,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORDER_API_BANK_ACCOUNT_EMPTY                        = "ORDER_API_BANK_ACCOUNT_EMPTY";
     const PG_ROUTER_BANK_ACCOUNT_MATCH_ERROR                  = "PG_ROUTER_BANK_ACCOUNT_MATCH_ERROR";
 
+    const PG_ROUTER_OFFER_NOT_FOUND                           = "PG_ROUTER_OFFER_NOT_FOUND";
+
     const PAYOUT_SOURCE_ENTITY_CREATE_REQUEST                 = 'PAYOUT_SOURCE_ENTITY_CREATE_REQUEST';
     const PAYOUT_SOURCE_ENTITY_CREATED                        = 'PAYOUT_SOURCE_ENTITY_CREATED';
     const VAULT_ENCRYPTION_FAILED                             = 'VAULT_ENCRYPTION_FAILED';

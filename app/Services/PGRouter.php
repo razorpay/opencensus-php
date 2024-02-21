@@ -804,9 +804,15 @@ class PGRouter
                 $response['body']['notes'] = json_decode($response['body']['notes']);
             }
 
+            $offersFromPGRouter = $response['body']['offers'] ?? [];
+
+            unset($response['body']['offers']);
+
             $response['body']['bank_account_data'] = $response['body']['bank_account'] ?? [];
 
             $order = (new Order\Entity())->forceFill($response['body']);
+
+            $entityOffers = (new EntityOfferRepository())->findByEntityIdAndType($order->getId(), 'offer');
 
             if (isset($response['body']['order_metas']) === true)
             {
@@ -818,27 +824,7 @@ class PGRouter
                 }
             }
 
-            $offersFromPGRouter = $response['body']['offers'] ?? [];
-
-            unset($response['body']['offers']);
-
-            if (empty($offersFromPGRouter) === false)
-            {
-                $order->offers = new PublicCollection();
-
-                $offerIDs = array_map(function($offerId) {
-                    return str_replace('offer_', '', $offerId);
-                }, $offersFromPGRouter);
-
-                // fetches normal offers from OE and limited offers from API db
-                $offers = (new Offer\Repository())->findManyFromOE($offerIDs, $order->getMerchantId());
-
-                // append each offer to order
-                foreach ($offers as $offer)
-                {
-                    $order->offers->push($offer);
-                }
-            }
+            $this->setOffersInOrder($entityOffers, $offersFromPGRouter, $order);
 
             $order->setExternal(true);
 
@@ -1346,6 +1332,49 @@ class PGRouter
             'options'   => $options,
             'content'   => $data
         ];
+    }
+
+    /**
+     * @param $entityOffers
+     * @param mixed $offersFromPGRouter
+     * @param Order\Entity $order
+     * @return void
+     */
+    public function setOffersInOrder($entityOffers, mixed $offersFromPGRouter, Order\Entity $order): void
+    {
+        $offerIDsFromAPI = [];
+
+        foreach ($entityOffers as $entityOffer)
+        {
+            $offerIDsFromAPI[] = $entityOffer->offer_id;
+        }
+
+        if (!empty($offerIDsFromAPI))
+        {
+            $differenceFromAPI = $offerIDsFromAPI;
+
+            if (!empty($offersFromPGRouter))
+            {
+                Offer\Entity::verifyIdAndSilentlyStripSignMultiple($offersFromPGRouter);
+
+                $differenceFromAPI = array_diff($offerIDsFromAPI, $offersFromPGRouter);
+
+            }
+
+            if (!empty($differenceFromAPI))
+            {
+                $this->trace->info(TraceCode::OFFER_RESPONSE_PARITY, [
+                    "orderID" => $order->getId(),
+                    "offerIDsFromAPI" => $offerIDsFromAPI,
+                    "offersFromPGRouter" => $offersFromPGRouter,
+                    "differenceFromAPI" => $differenceFromAPI,
+                ]);
+            }
+                // If there are no offers from PG Router, use $offerIDsFromAPI directly
+            $offerIDs = $offerIDsFromAPI;
+
+            $order->setAttribute('offers_data', $offerIDs);
+        }
     }
 
     private function logResponseTimeOfPgRouter(float $startTime, string $requestUrl)

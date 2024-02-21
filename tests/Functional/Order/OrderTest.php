@@ -1679,6 +1679,99 @@ class OrderTest extends TestCase
         $this->assertEquals($order['entity'], $entityOffer['entity_type']);
     }
 
+    public function testCreateOrderWithOfferRelationLoading()
+    {
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"],
+            'error_message' => 'Payment Method is not available for this Offer']);
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals(true, $order['force_offer']);
+
+        // Pivot table entry also got created
+        $entityOffer = $this->getLastEntity('entity_offer', true);
+
+
+        $dbOrder = $this->getDbEntityById('order', $order['id']);
+
+        $this->assertEquals(true, $dbOrder->hasOffers());
+
+        $this->assertEquals(false, $dbOrder->relationLoaded('offers'));
+
+        // offers relation should not be loaded till now
+
+        $dbOrder->setAttribute('offers_data',[$offer->getPublicId()]);
+
+        // offers relation should not be loaded till now
+
+        $dbOffers = $dbOrder->offers;
+
+        $this->assertEquals(true, $dbOrder->relationLoaded('offers'));
+
+        $this->assertEquals(true, $dbOrder->hasOffers());
+
+        // Offers should not reload again
+        $dbOrder->offers->first()->setAttribute('offer_already_loaded',true);
+
+        $this->assertEquals(true, $dbOrder->relationLoaded('offers'));
+
+        $this->assertEquals(true, $dbOrder->hasOffers());
+
+        $this->assertEquals(true, $dbOrder->offers->first()->getAttribute('offer_already_loaded'));
+
+    }
+
+    public function testCreateOrderWithOfferPublicAttribute()
+    {
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"],
+            'error_message' => 'Payment Method is not available for this Offer']);
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals(true, $order['force_offer']);
+
+        // Pivot table entry also got created
+        $entityOffer = $this->getLastEntity('entity_offer', true);
+
+
+        $dbOrder = $this->getDbEntityById('order', $order['id']);
+
+        $this->assertEquals(true, $dbOrder->hasOffers());
+
+        $this->assertEquals(false, $dbOrder->relationLoaded('offers'));
+
+        // offers relation should not be loaded till now
+
+        $dbOrder->setAttribute('offers_data',[$offer->getPublicId()]);
+
+        $orderPublicEntity = $dbOrder->toArrayPublic();
+
+        $this->assertEquals(true, $dbOrder->hasOffers());
+
+        $this->assertEquals(false, $dbOrder->relationLoaded('offers'));
+
+        $this->assertEquals($offer->getPublicId(), $orderPublicEntity['offer_id']);
+
+        $this->assertEquals($offer->getPublicId(), $orderPublicEntity['offers'][0]);
+
+        $this->assertEquals(true, $dbOrder->hasOffers());
+
+        $this->assertEquals(false, $dbOrder->relationLoaded('offers'));
+
+    }
+
     public function testCreateOrderWithOfferUpdatedFormat()
     {
         $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);

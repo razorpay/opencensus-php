@@ -3,7 +3,9 @@
 namespace RZP\Models\Order;
 
 use App;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Offer;
@@ -730,6 +732,73 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT_ID);
     }
 
+    /**
+     * @throws ServerErrorException
+     */
+    public function getOffersAttribute()
+    {
+
+        $app = \App::getFacadeRoot();
+
+        if ($this->relationLoaded('offers') === true)
+        {
+            return $this->getRelation('offers');
+        }
+        // Offers is not a must param in orders,
+        // if offer is present that offer_data would also be present
+        $pgRouterOffersArray = $this->getAttribute('offers_data');
+
+        $emptyOffers = collect();
+
+        if (empty($pgRouterOffersArray) === true)
+        {
+            // for running UT offers
+            // try to fetch from fallback
+            if ($app->runningUnitTests() === true)
+            {
+                $offers = $this->offers()->get();
+
+                if ($offers->count() !== 0)
+                {
+                    return $offers;
+                }
+            }
+
+            return $emptyOffers;
+        }
+        try
+        {
+            $offersEngineRepo = new Offer\Repository();
+
+            // fetches normal offers from OE and limited offers from API db
+            $offersArray = $offersEngineRepo->findManyFromOE($pgRouterOffersArray, $this->getMerchantId());
+
+            $offersCollection = new Base\PublicCollection();
+
+            foreach ($offersArray as $offer)
+            {
+                $offersCollection->push($offer);
+            }
+
+            $this->setRelation('offers', $offersCollection);
+
+            return $offersCollection;
+        }
+        catch (\Exception $e)
+        {
+            $ex = new Exception\ServerErrorException('Error fetching offers', ErrorCode::BAD_REQUEST_ORDER_OFFER_REQUEST_ERROR, null, null);
+            $app['trace']->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PG_ROUTER_OFFER_NOT_FOUND,
+                [
+                    'data' => $ex->getMessage()
+                ]);
+
+            throw $ex;
+        }
+    }
+
     public function getBankAccountAttribute()
     {
         $app = \App::getFacadeRoot();
@@ -870,7 +939,34 @@ class Entity extends Base\PublicEntity
 
     public function hasOffers(): bool
     {
-        return (($this->offers !== null) and (is_array($this->offers) === false) and ($this->offers->isNotEmpty() === true));
+        if(
+            $this->relationLoaded('offers') &&
+            $this->offers->isNotEmpty() &&
+            !is_array($this->offers)){
+            return true;
+        }
+
+        $pgRouterOffersArray = $this->getAttribute('offers_data');
+
+        if (empty($pgRouterOffersArray) === false)
+        {
+            return true;
+        }
+
+        $app = App::getFacadeRoot();
+        // for running UT offers
+        // try to fetch from fallback
+        if ($app->runningUnitTests() === true)
+        {
+            $offers = $this->offers()->get();
+
+            if ($offers->count() !== 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function hasOrderMeta(): bool
@@ -887,17 +983,36 @@ class Entity extends Base\PublicEntity
     {
         if ($this->hasOffers() === true)
         {
-            $offers = $this->offers;
+            $offerIds = $this->getAttribute('offers_data');
 
-            //
-            // For backward compatibility
-            //
-            if ($offers->count() === 1)
+            if (isset($offerIds))
             {
-                $array[self::OFFER_ID] = $offers->first()->getPublicId();
-            }
+                offer\Entity::verifyIdAndSilentlyStripSignMultiple($offerIds);
 
-            $array[self::OFFERS] = $offers->getPublicIds();
+                offer\Entity::getSignedIdMultiple($offerIds);
+
+                if (sizeof($offerIds) === 1)
+                {
+                    $array[self::OFFER_ID] = $offerIds[0];
+                }
+
+                $array[self::OFFERS] = $offerIds;
+
+            }
+            else
+            {
+                $offers = $this->offers;
+
+                //
+                // For backward compatibility
+                //
+                if ($offers->count() === 1)
+                {
+                    $array[self::OFFER_ID] = $offers->first()->getPublicId();
+                }
+                // only id is needed, no need for fetching complete offers object
+                $array[self::OFFERS] = $offers->getPublicIds();
+            }
         }
         else
         {
