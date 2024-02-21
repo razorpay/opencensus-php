@@ -9,6 +9,11 @@ export type Option = {
   value: string;
 };
 
+export type ChipProps = {
+  name: string;
+  values: string[];
+};
+
 export type SectionOption = {
   section: {
     name: string;

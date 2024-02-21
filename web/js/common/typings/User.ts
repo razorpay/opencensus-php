@@ -68,6 +68,8 @@ type Getters = {
   isInternationalMethodsHidden: boolean;
   isDirectTransferEnabled: boolean;
   isSubMerchantKycEnabled: boolean;
+  isOmniChannelMerchant: boolean;
+  isOmniEnabledMerchant: boolean;
 };
 
 type UserProperties = {

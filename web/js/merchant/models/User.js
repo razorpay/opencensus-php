@@ -874,6 +874,10 @@ export default class User {
     return this.isFeatureEnabled('razorpay_gcms');
   }
 
+  get isOmniEnabledMerchant() {
+    return this.isFeatureEnabled('omni_enabled');
+  }
+
   get isRegistrationLinkTokenAndPaymentsEnabled() {
     return (
       this.userRole !== rolesList.REGISTRATION_LINK_AGENT &&

@@ -1,5 +1,6 @@
 import { Option, Options } from 'common/components/Dropdown/types';
 import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { User } from 'common/typings';
 import { SearchQueryParam } from 'merchant/views/Transactions/v2/common/constants';
 import { Duration, DurationOption } from 'merchant/views/Transactions/v2/common/types';
 
@@ -44,6 +45,13 @@ interface SearchArgs {
 export interface PaymentsListFilterProps extends RouteComponentProps {
   onSubmit: (args: SearchArgs) => void;
   loading: boolean;
+  openModal: (args: { size: string; component: JSX.Element; isNew?: boolean }) => void;
+  user: User;
+}
+
+export interface ExtraFiltersModalProps {
+  closeModal: () => void;
+  handleSearch: (params) => void;
 }
 
 export interface DefaultStatusAndOptions {
@@ -56,6 +64,11 @@ export interface DefaultMethodAndOption {
   defaultMethodOption: Option;
 }
 
+export interface DefaultChannelAndOption {
+  defaultChannelValue: string;
+  defaultChannelOption: Option;
+}
+
 export interface DefaultValuesAndOptions {
   defaultDate: Duration;
   defaultPaymentDuration: DurationOption;
@@ -66,6 +79,8 @@ export interface DefaultValuesAndOptions {
   defaultSearchByValue: string;
   defaultMethodOption: Option;
   defaultCountryCodeValue: string;
+  defaultChannelValue: string;
+  defaultChannelOption: Option;
 }
 
 export interface AllOptions {
@@ -74,4 +89,5 @@ export interface AllOptions {
   statusOptions: Options;
   searchByOptions: Options;
   countryCodeOptions: Options;
+  paymentChannelOptions: Options;
 }

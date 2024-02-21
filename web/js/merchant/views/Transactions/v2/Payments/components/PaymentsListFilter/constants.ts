@@ -102,3 +102,10 @@ export const countryCodeOptions = [
     },
   },
 ];
+
+export const paymentChannelOptionsMap = {
+  [ALL_VALUE]: ALL_LABEL,
+  in_person: 'In Person',
+  online: 'Online',
+};
+export const paymentChannelOptions = generateOptions(paymentChannelOptionsMap);

@@ -1,5 +1,4 @@
 import {
-  paymentMethodOptions,
   paymentMethodSectionOptions,
   statusOptions,
   statusSectionOptions,
@@ -11,6 +10,7 @@ import {
   countryCodeOptions,
   searchBySectionOptions,
   searchByOptionsMap,
+  paymentChannelOptions,
 } from './constants';
 import qs from 'query-string';
 import {
@@ -20,6 +20,7 @@ import {
 } from 'merchant/views/Transactions/v2/common/utils';
 import {
   AllOptions,
+  DefaultChannelAndOption,
   DefaultMethodAndOption,
   DefaultStatusAndOptions,
   DefaultValuesAndOptions,
@@ -52,6 +53,15 @@ export const getDefaultCountryCodeValue = (): string => {
   return defaultCountryCodeValue;
 };
 
+export const getDefaultChannelAndOption = (): DefaultChannelAndOption => {
+  const { source_channel } = qs.parse(location.search);
+  const { defaultValue, defaultOption } = getDefaultSingleSelectValueAndOption({
+    searchValue: source_channel as string,
+    options: paymentChannelOptions,
+  });
+  return { defaultChannelValue: defaultValue, defaultChannelOption: defaultOption };
+};
+
 export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
   const { defaultDate, defaultDuration: defaultPaymentDuration } = getDefaultDateAndOption({
     customDurationOptionsMap: paymentDurationOptionsMap,
@@ -63,7 +73,7 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
     searchByOptionsMap,
   });
   const defaultCountryCodeValue = getDefaultCountryCodeValue();
-
+  const { defaultChannelValue, defaultChannelOption } = getDefaultChannelAndOption();
   return {
     defaultPaymentDuration,
     defaultDate,
@@ -74,6 +84,8 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
     defaultSearchByOption,
     defaultSearchByValue,
     defaultCountryCodeValue,
+    defaultChannelValue,
+    defaultChannelOption,
   };
 };
 
@@ -85,13 +97,15 @@ export const getOptions = (isMobile: boolean): AllOptions => {
       statusOptions: statusSectionOptions,
       searchByOptions: searchBySectionOptions,
       countryCodeOptions: countryCodeSectionOptions,
+      paymentChannelOptions,
     };
   }
   return {
     paymentDurationOptions,
-    paymentMethodOptions,
+    paymentMethodOptions: paymentMethodSectionOptions,
     statusOptions,
     searchByOptions,
     countryCodeOptions,
+    paymentChannelOptions,
   };
 };

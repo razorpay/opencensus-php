@@ -15,11 +15,22 @@ jest.mock('common/ui/Forms/DateRangePickerField', () => ({ onDatesChange }) => {
   );
 });
 jest.setTimeout(35000);
-
+const initState = {
+  session: {
+    user: {
+      isOmniChannelMerchant: false,
+    },
+  },
+};
 export const useMobileSpy = jest.spyOn(useMobile, 'useMobile');
 
 export const defaultProps = {
   onSubmit: jest.fn(),
 };
 
-export const renderApp = () => render(<PaymentsListFilter {...defaultProps} />);
+export const renderApp = (props, initialState) => {
+  return render(<PaymentsListFilter {...defaultProps} {...props} />, {
+    ...initState,
+    initialState,
+  });
+};

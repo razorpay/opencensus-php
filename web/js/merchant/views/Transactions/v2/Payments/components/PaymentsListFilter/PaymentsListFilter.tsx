@@ -1,8 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { Box, Button, SearchIcon, TextInput } from '@razorpay/blade/components';
+import {
+  Box,
+  Button,
+  Divider,
+  FilterIcon,
+  SearchIcon,
+  Tag,
+  Text,
+  TextInput,
+} from '@razorpay/blade/components';
 import moment from 'moment';
 import { withRouter } from 'common/deprecated/withRouter';
-
+import { connect } from 'react-redux';
+import { bindActionCreators, compose } from 'redux';
+import { openModal } from 'merchant_common/reducers/modals';
 import { CountryCodeInput } from 'common/components/CountryCodeInput';
 import Dropdown from 'common/components/Dropdown';
 import { Option } from 'common/components/Dropdown/types';
@@ -50,10 +61,19 @@ const DateRangePicker = lazy(
   () => import(/* webpackChunkName: 'DateRangePicker' */ 'common/ui/Forms/DateRangePickerField'),
 );
 
+const ExtraFiltersModal = lazy(
+  () =>
+    import(
+      /* webpackChunkName: 'ExtraFiltersModal' */ 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/ExtraFiltersModal'
+    ),
+);
+
 const PaymentsListFilter = ({
   onSubmit,
   loading,
+  user,
   location: { pathname },
+  openModal,
 }: PaymentsListFilterProps): JSX.Element => {
   const {
     defaultPaymentDuration,
@@ -65,16 +85,19 @@ const PaymentsListFilter = ({
     defaultSearchByOption,
     defaultSearchByValue,
     defaultCountryCodeValue,
+    defaultChannelOption,
+    defaultChannelValue,
   } = getDefaultValuesAndOptions();
   const [date, setDate] = useState<Duration>(defaultDate);
   const [shouldShowDateRangePicker, setShowDateRangePicker] = useState(
     defaultPaymentDuration.value === CUSTOM,
   );
   const [status, setStatus] = useState(defaultStatusValue);
-  const [method, setMethod] = useState(defaultMethodValue);
   const [searchBy, setSearchBy] = useState(defaultSearchByOption.value);
   const [searchByValue, setSearchByValue] = useState(defaultSearchByValue);
   const [countryCode, setCountryCode] = useState(defaultCountryCodeValue);
+  const method = defaultMethodValue;
+  const channel = defaultChannelValue;
   const isContactSearch = searchBy === SearchQueryParam.CONTACT;
   const isMobile = useMobile();
   const isMediumDesktopAndMobile = useMobile(mobileBreakoints);
@@ -85,6 +108,8 @@ const PaymentsListFilter = ({
     ? MOBILE_CALENDAR_NUMBER_OF_MONTHS
     : DESKTOP_CALENDAR_NUMBER_OF_MONTHS;
   const shouldShowStatus = pathname !== FAILED_PAYMENTS;
+  const isOmniChannelMerchant =
+    user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant);
 
   const handleSearch = (newSearchParams = {}) => {
     const newCountryCode = isContactSearch ? countryCode : '';
@@ -93,6 +118,7 @@ const PaymentsListFilter = ({
       status,
       method,
       country_code: newCountryCode,
+      source_channel: channel,
       ...newSearchParams,
     };
     if (searchByValue) {
@@ -131,7 +157,6 @@ const PaymentsListFilter = ({
 
   const onPaymentMethodChange = (selectedPaymentMethods: Option[]) => {
     const method = getValue(selectedPaymentMethods);
-    setMethod(method);
     handleSearch({ method });
     trackMethodFilter({
       paymentMethodSelected: selectedPaymentMethods[0].title,
@@ -176,85 +201,172 @@ const PaymentsListFilter = ({
     });
   };
 
+  const openExtraFiltersModal = () => {
+    const props = {
+      handleSearch,
+    };
+    openModal({
+      size: 'small',
+      isNew: true,
+      component: (
+        <SuspenseWithLoader>
+          <ExtraFiltersModal {...props} />
+        </SuspenseWithLoader>
+      ),
+    });
+  };
+  const clearChannel = () => {
+    handleSearch({ source_channel: '' });
+  };
+
+  const clearMethod = () => {
+    handleSearch({ method: '' });
+  };
+
   return (
-    <StyledListFilter data-testid="payments-filter">
-      <StyledSubListFilter className="scrollable-tab-header">
-        <StyledDateRangePicker>
-          <Dropdown
-            onChange={onDurationChange}
-            options={paymentDurationOptions}
-            defaultOptions={[defaultPaymentDuration]}
-            isDisabled={loading}
-            bottomSheetTitle={paymentDurationSectionName}
-          />
-          {shouldShowDateRangePicker && date.from && date.to ? (
-            <div className="rzp-daterange-picker">
-              <div className="daterange-container">
-                <SuspenseWithLoader>
-                  <DateRangePicker
-                    onDatesChange={onDatesChange}
-                    startDate={moment.unix(date.from)}
-                    endDate={moment.unix(date.to)}
-                    disabled={loading}
-                    numberOfMonths={numberOfMonths}
-                    withPortal={isMobile}
-                    defaultFocusedInput={defaultFocusedInput.current}
-                  />
-                </SuspenseWithLoader>
+    <Box marginBottom="spacing.5" display="flex" flexDirection="column">
+      <StyledListFilter data-testid="payments-filter">
+        <StyledSubListFilter className="scrollable-tab-header">
+          <StyledDateRangePicker>
+            <Dropdown
+              onChange={onDurationChange}
+              options={paymentDurationOptions}
+              defaultOptions={[defaultPaymentDuration]}
+              isDisabled={loading}
+              bottomSheetTitle={paymentDurationSectionName}
+            />
+            {shouldShowDateRangePicker && date.from && date.to ? (
+              <div className="rzp-daterange-picker">
+                <div className="daterange-container">
+                  <SuspenseWithLoader>
+                    <DateRangePicker
+                      onDatesChange={onDatesChange}
+                      startDate={moment.unix(date.from)}
+                      endDate={moment.unix(date.to)}
+                      disabled={loading}
+                      numberOfMonths={numberOfMonths}
+                      withPortal={isMobile}
+                      defaultFocusedInput={defaultFocusedInput.current}
+                    />
+                  </SuspenseWithLoader>
+                </div>
               </div>
-            </div>
-          ) : null}
-        </StyledDateRangePicker>
-        {shouldShowStatus ? (
-          <Dropdown
-            onChange={onStatusChange}
-            options={statusOptions}
-            defaultOptions={[defaultStatusOption]}
-            prefixTitle="Status: "
-            isDisabled={loading}
-            bottomSheetTitle={statusSectionName}
-          />
-        ) : null}
-        <Dropdown
-          onChange={onPaymentMethodChange}
-          options={paymentMethodOptions}
-          defaultOptions={[defaultMethodOption]}
-          prefixTitle="Payment method: "
-          isDisabled={loading}
-          bottomSheetTitle={paymentMethodSectionName}
-        />
-      </StyledSubListFilter>
-      <StyledSearchByFilter>
-        <Box display="flex" columnGap="spacing.1" marginLeft="auto">
-          <Dropdown
-            onChange={onSearchByOptionChange}
-            options={searchByOptions}
-            defaultOptions={[defaultSearchByOption]}
-            isDisabled={loading}
-            isSelectInput
-            bottomSheetTitle={searchBySectionName}
-            testID="search-by-dropdown"
-          />
-          {isContactSearch ? (
-            <CountryCodeInput
-              onChange={onCountryCodeChange}
-              dialCode={defaultCountryCodeValue}
-              showContactInput={false}
+            ) : null}
+          </StyledDateRangePicker>
+          {shouldShowStatus ? (
+            <Dropdown
+              onChange={onStatusChange}
+              options={statusOptions}
+              defaultOptions={[defaultStatusOption]}
+              prefixTitle="Status: "
+              isDisabled={loading}
+              bottomSheetTitle={statusSectionName}
             />
           ) : null}
-          <TextInput
-            showClearButton
-            label=""
-            defaultValue={defaultSearchByValue}
-            placeholder="Search"
-            onChange={onSearchByValueChange}
-            onClearButtonClick={() => onSearchByValueChange({})}
-          />
-          <Button accessibilityLabel="Search" icon={SearchIcon} size="medium" onClick={onSearch} />
+
+          {isOmniChannelMerchant ? (
+            <Divider marginRight="spacing.3" marginLeft="spacing.3" orientation="vertical" />
+          ) : null}
+          {isOmniChannelMerchant ? (
+            <Box>
+              <Button
+                isDisabled={loading}
+                variant="tertiary"
+                icon={FilterIcon}
+                onClick={openExtraFiltersModal}
+              >
+                All Filters
+              </Button>
+            </Box>
+          ) : (
+            <Dropdown
+              onChange={onPaymentMethodChange}
+              options={paymentMethodOptions}
+              defaultOptions={[defaultMethodOption]}
+              prefixTitle="Payment method: "
+              isDisabled={loading}
+              bottomSheetTitle={paymentMethodSectionName}
+            />
+          )}
+        </StyledSubListFilter>
+        <StyledSearchByFilter>
+          <Box display="flex" columnGap="spacing.1" marginLeft="auto">
+            <Dropdown
+              onChange={onSearchByOptionChange}
+              options={searchByOptions}
+              defaultOptions={[defaultSearchByOption]}
+              isDisabled={loading}
+              isSelectInput
+              bottomSheetTitle={searchBySectionName}
+              testID="search-by-dropdown"
+            />
+            {isContactSearch ? (
+              <CountryCodeInput
+                onChange={onCountryCodeChange}
+                dialCode={defaultCountryCodeValue}
+                showContactInput={false}
+              />
+            ) : null}
+            <TextInput
+              showClearButton
+              label=""
+              defaultValue={defaultSearchByValue}
+              placeholder="Search"
+              onChange={onSearchByValueChange}
+              onClearButtonClick={() => onSearchByValueChange({})}
+            />
+            <Button
+              accessibilityLabel="Search"
+              icon={SearchIcon}
+              size="medium"
+              onClick={onSearch}
+            />
+          </Box>
+        </StyledSearchByFilter>
+      </StyledListFilter>
+      {isOmniChannelMerchant ? (
+        <Box maxWidth="auto" display="flex" alignItems="center" flexDirection="row">
+          {method ? (
+            <Box display="flex" alignItems="center" flexDirection="row">
+              <Text type="normal" color="surface.text.subtle.lowContrast">
+                Payment Method:
+              </Text>
+              <Tag marginLeft="spacing.3" size="medium" onDismiss={clearMethod}>
+                {defaultMethodOption?.title || method}
+              </Tag>
+            </Box>
+          ) : null}
+          {channel && method ? (
+            <Divider marginRight="spacing.3" marginLeft="spacing.3" orientation="vertical" />
+          ) : null}
+          {channel ? (
+            <Box display="flex" alignItems="center" flexDirection="row">
+              <Text type="normal" color="surface.text.subtle.lowContrast">
+                Channel:
+              </Text>
+              <Tag marginLeft="spacing.3" size="medium" onDismiss={clearChannel}>
+                {defaultChannelOption?.title || channel}
+              </Tag>
+            </Box>
+          ) : null}
         </Box>
-      </StyledSearchByFilter>
-    </StyledListFilter>
+      ) : null}
+    </Box>
   );
 };
 
-export default withRouter(PaymentsListFilter);
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      openModal,
+    },
+    dispatch,
+  );
+
+export default withRouter<any>(
+  compose(connect(mapStateToProps, mapDispatchToProps)(PaymentsListFilter)),
+);

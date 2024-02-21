@@ -22,8 +22,11 @@ class PaymentsList extends ListContainer {
       history,
       location: { pathname, search },
       navigate,
-      user: { isOmniChannelMerchant, pos_activation_status },
+      user: { isOmniChannelMerchant, pos_activation_status, isOmniEnabledMerchant },
     } = this.props;
+    const shouldDisplaySourceChannel =
+      isOmniEnabledMerchant || (!!pos_activation_status && isOmniChannelMerchant);
+
     return (
       <>
         <PaymentsListFilter onSubmit={onSearch(history)} loading={loading} />
@@ -32,7 +35,7 @@ class PaymentsList extends ListContainer {
           skip={skip}
           paginate={onPaginate(this.paginate)}
           isDisabled={({ status }) => !paymentStatusVariantMap[status]}
-          shouldDisplaySourceChannel={isOmniChannelMerchant && !!pos_activation_status}
+          shouldDisplaySourceChannel={shouldDisplaySourceChannel}
           onRowClick={(id) =>
             handleDetailsClick({
               navigate,

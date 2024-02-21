@@ -4,14 +4,17 @@ import {
   searchByOptionsMap,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/constants';
 import { durationOptionsMap } from 'merchant/views/Transactions/v2/common/constants';
-import { screen, userEvent } from 'test-utils';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { screen, userEvent, waitFor } from 'test-utils';
 
 import { renderApp, defaultProps, useMobileSpy } from './mocks/fixtures/PaymentsListFilter';
 import 'jest-location-mock';
 
 describe('PaymentsListFilter', () => {
+  const openModalSpy = jest.spyOn(ModalActions, 'openModal');
   beforeEach(() => {
     useMobileSpy.mockReset();
+    openModalSpy.mockClear();
   });
 
   describe('Duration filter', () => {
@@ -171,6 +174,28 @@ describe('PaymentsListFilter', () => {
           country_code: '+44',
         }),
       );
+    });
+  });
+
+  describe('Extra Filters for Omni Merchants', () => {
+    test('should open extra filters modal when clicked on All Filters', async () => {
+      renderApp(
+        {},
+        {
+          session: {
+            user: {
+              isOmniChannelMerchant: true,
+              pos_activation_status: 'under_review',
+            },
+          },
+        },
+      );
+      const extraFiltersButton = screen.getByRole('button', { name: 'All Filters' });
+      expect(extraFiltersButton).toBeInTheDocument();
+      await userEvent.click(extraFiltersButton);
+      await waitFor(() => {
+        expect(openModalSpy).toHaveBeenCalled();
+      });
     });
   });
 });
