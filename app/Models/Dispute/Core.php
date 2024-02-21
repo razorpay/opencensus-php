@@ -671,14 +671,14 @@ class Core extends Base\Core
     {
         $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input);
 
+        $this->createRefundAndUpdateDispute($dispute, $acceptedDisputeAmount);
+
         // In case DAO = true, we make a negative adjustment at dispute creation stage,
         // which needs to be reversed now for refunds recovery method
         if ($dispute->getDeductAtOnset() === true)
         {
-            $this->createPositiveAdjustmentAndUpdateDispute($dispute, $dispute->getAmountDeducted());
+            $this->createPositiveAdjustmentAndUpdateDispute($dispute, $dispute->getAmountDeducted(), false);
         }
-
-        $this->createRefundAndUpdateDispute($dispute, $acceptedDisputeAmount);
     }
 
     protected function handleLostDisputeAdjustments(Entity $dispute, array $input)
@@ -847,7 +847,7 @@ class Core extends Base\Core
         $this->setRecoveryStatusAndUnRecoveredAmount($dispute->getBaseAmount(), $newBalance, $dispute);
     }
 
-    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0)
+    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $shouldResetDeductionSourceAttributes = true)
     {
         if ($amount === 0)
         {
@@ -884,7 +884,10 @@ class Core extends Base\Core
 
         $this->reversePaymentRefundAttributesDueToPositiveAdjustment($dispute);
 
-        $dispute->resetDeductionSourceAttributes();
+        if ($shouldResetDeductionSourceAttributes === true)
+        {
+            $dispute->resetDeductionSourceAttributes();
+        }
     }
 
     private function createLedgerEntriesForRazorpayDisputeDeduct(Adjustment\Entity $adjustment, $disputePublicId)
