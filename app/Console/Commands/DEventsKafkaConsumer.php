@@ -181,6 +181,20 @@ class DEventsKafkaConsumer extends Command
 
             $conf->set('auto.offset.reset', 'largest');
         }
+        elseif (count($topics) == 1 && $topics[0] == env('ES_SYNC_TOPIC_NAME'))
+        {
+            $consumerGroup = env('ES_SYNC_CONSUMER_GROUP');
+
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
+
+            $conf->set('group.id', $consumerGroup);
+
+            $conf->set('session.timeout.ms', 120000);
+
+            $conf->set('heartbeat.interval.ms', 30000);
+
+            $conf->set('auto.offset.reset', 'largest');
+        }
         else
         {
             if (count($topics) == 1 && $topics[0] == env('RAW_CONTACTS_KAFKA_TOPIC_NAME'))
