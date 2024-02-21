@@ -495,16 +495,24 @@ class Core extends Base\Core
 
         $isEligibleForFeeBasedGating = false;
 
-        $feeBasedGatingResponse = (new DetailCore())->fetchMerchantGatingDetails($merchant);
+        $whiteGloveAttributes = [];
 
-        if (isset($feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING]) === true)
+        $pgosFetchInternalResponse = (new Core())->fetchPgosInternalResponse($merchant, true);
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::FEE_BASED_GATING]) === true)
         {
-            $isEligibleForFeeBasedGating = $feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING][DetailConstants::IS_ELIGIBLE] ?? false;
+            $isEligibleForFeeBasedGating = $pgosFetchInternalResponse[DetailConstants::FEE_BASED_GATING][DetailConstants::IS_ELIGIBLE] ?? false;
+        }
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::ONBOARDING_PAYMENT_DETAILS]) === true)
+        {
+            $whiteGloveAttributes[DetailConstants::IS_ELIGIBLE] = $pgosFetchInternalResponse[DetailConstants::ONBOARDING_PAYMENT_DETAILS][DetailConstants::ELIGIBILITY] === DetailConstants::V1;
+            $whiteGloveAttributes[DetailConstants::TOTAL_LEAD_SCORE] = $pgosFetchInternalResponse[DetailConstants::ONBOARDING_PAYMENT_DETAILS][DetailConstants::TOTAL_LEAD_SCORE];
         }
 
         if ($isEligibleForFeeBasedGating === false)
         {
-            $this->pushKafkaEventOnActivationFormSubmit($oldMerchantDetails, $merchant, DEConstants::ACTIVATION_FORM_SUBMISSION_KAFKA);
+            $this->pushKafkaEventOnActivationFormSubmit($oldMerchantDetails, $merchant, DEConstants::ACTIVATION_FORM_SUBMISSION_KAFKA, $whiteGloveAttributes);
         }
 
         return $mutexTransactionData;
@@ -704,7 +712,7 @@ class Core extends Base\Core
 
     }
 
-    public function pushKafkaEventOnActivationFormSubmit($oldMerchantDetail, $merchant, $eventType = null)
+    public function pushKafkaEventOnActivationFormSubmit($oldMerchantDetail, $merchant, $eventType = null, $whiteGloveAttributes = [])
     {
         $merchantId = $merchant->getId();
 
@@ -741,7 +749,15 @@ class Core extends Base\Core
         }
 
         $processTimestamp = Carbon::now()->getTimestamp();
-        if ($this->shouldAddDelayInProcessing($merchantId) === true)
+
+        $isWhiteGloveMerchant = false;
+
+        if (isset($whiteGloveAttributes[DetailConstants::IS_ELIGIBLE]) === true)
+        {
+            $isWhiteGloveMerchant = $whiteGloveAttributes[DetailConstants::IS_ELIGIBLE];
+        }
+
+        if ($this->shouldAddDelayInProcessing($merchantId) === true and $isWhiteGloveMerchant === false)
         {
             $processTimestamp = Carbon::now()->getTimestamp() + DEConstants::CASE_CREATION_DELAY_SECONDS;
         }
@@ -767,6 +783,7 @@ class Core extends Base\Core
             DEConstants::EVENT_TYPE                  => $eventType,
             DEConstants::POS_DETAILS_REQUIRED_STATUS => $posDetailsRequiredStatus,
             DEConstants::PROCESS_TIMESTAMP           => $processTimestamp,
+            DEConstants::WHITE_GLOVE_ATTRIBUTES      => $whiteGloveAttributes,
         ];
 
         $activationFormSubmissionEventTopic = env(DEConstants::ACTIVATION_FORM_SUBMISSION_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
@@ -11385,6 +11402,11 @@ class Core extends Base\Core
                 return true;
             }
 
+            if (isset($response[Constant::SUCCESS]) and $response[Constant::SUCCESS] === false)
+            {
+                return false;
+            }
+
             throw new IntegrationException("KYC submission request failed", ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED);
         }
 
@@ -11696,7 +11718,7 @@ class Core extends Base\Core
         return null;
     }
 
-    public function fetchPgosInternalResponse(Merchant\Entity $merchant)
+    public function fetchPgosInternalResponse(Merchant\Entity $merchant, $shouldFetchWhiteGloveAttribute = false)
     {
         $app = App::getFacadeRoot();
 
@@ -11747,7 +11769,7 @@ class Core extends Base\Core
 
         $isEligibleForOthersM3 = $this->isEligibleForOthersM3($merchantId);
 
-        if ($isEligibleForFeeBasedGating === false && $isEligibleForOthersM3 === false)
+        if ($isEligibleForFeeBasedGating === false && $isEligibleForOthersM3 === false && $shouldFetchWhiteGloveAttribute === false)
         {
             return null;
         }

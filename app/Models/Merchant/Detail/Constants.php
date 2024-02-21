@@ -239,6 +239,9 @@ class Constants
     // White Glove Onboarding constants
     const WHITE_GLOVE_ONBOARDING_MANAGER_FEE = 'fee_for_white_glove_onboarding_manager';
     const ONBOARDING_MANAGER                 = 'onboarding_manager';
+    const ELIGIBILITY                        = 'eligibility';
+    const V1                                 = 'v1';
+    const TOTAL_LEAD_SCORE                   = 'total_lead_score';
 
     // Default payment constants
     const DEFAULT_ELIGIBILITY_CRITERIA   = true;
@@ -782,6 +785,9 @@ class Constants
     const POS_ACTIVATION_FORM_SUBMISSION_KAFKA = 'pos_activation_form_submission_kafka_event';
 
     const PROCESS_TIMESTAMP         = 'process_timestamp';
+
+    const WHITE_GLOVE_ATTRIBUTES       = 'white_glove_attributes';
+    const ONBOARDING_PAYMENT_DETAILS   = 'onboarding_payment_details';
 
     const POS_ACTIVATION_STATUS    = 'pos_activation_status';
     const IS_POS_DETAILS_SUBMITTED = 'is_pos_details_submitted';
