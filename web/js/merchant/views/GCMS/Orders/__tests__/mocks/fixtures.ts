@@ -54,12 +54,12 @@ export const orderResponse = {
     total_quantity: 9,
     total_amount: 5901,
     net_amount: 5896,
-    status: 'draft',
+    status: 'processed',
     issued_quantity: 0,
     processed_quantity: 0,
-    delivery_status: null,
+    delivery_status: 'completed',
     reseller_detail_id: 'NMmha9Rr43kHaD',
-    is_multiple_delivery: true,
+    is_multiple_delivery: false,
     created_at: 1704862386,
     updated_at: 1706437661,
   },
@@ -270,6 +270,28 @@ export const orderDetailsResponse = {
         tax: 0,
         fee: 0,
         discount_percent: 10,
+      },
+    ],
+  },
+};
+
+export const orderEmailDeliveryStatusResponse = {
+  status_code: 200,
+  success: true,
+  data: {
+    total_giftcard_count: '15',
+    items: [
+      {
+        status: 'initiated',
+        count: 5,
+      },
+      {
+        status: 'success',
+        count: 4,
+      },
+      {
+        status: 'failed',
+        count: 6,
       },
     ],
   },

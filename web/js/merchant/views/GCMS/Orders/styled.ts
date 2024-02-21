@@ -32,3 +32,11 @@ export const StyledImg = styled.img`
   width: 40px;
   border-radius: 5px;
 `;
+
+export const OrderDetailsDeliverySectionDistributionContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #f5f8fe;
+  padding: 15px;
+`;

@@ -16,7 +16,7 @@ const OrderCartStatusSection = () => {
   const { orderId } = useContext<GCMSOrderSession>(OrderSessionContext);
 
   const { data: order, isLoading } = useQuery<Order, Error>({
-    queryKey: ['wallet:order', merchantId, orderId, mode],
+    queryKey: ['gcms:order', merchantId, orderId, mode],
     queryFn: () => fetchOrderDetails({ mode, orderId }),
     enabled: !!orderId,
   });
@@ -65,7 +65,7 @@ const OrderCartStatusSection = () => {
                   weight="bold"
                 >{`${convertUnixToDate(order.updated_at)}`}</Text>
                 <Text color="surface.text.subdued.lowContrast" weight="bold" marginLeft="spacing.2">
-                  {`${new Date(order.updated_at).toLocaleTimeString()}`}
+                  {`${new Date(Number(order.updated_at) * 1000).toLocaleTimeString()}`}
                 </Text>
               </Box>
             )}

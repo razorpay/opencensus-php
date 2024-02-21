@@ -21,7 +21,7 @@ const Programs = ({ mode }: { mode: ModeT }) => {
     count: LIST_FETCH_BATCH_SIZE,
   });
   const { isLoading, data: programs } = useQuery<ListApiResponse<ProgramType>, Error>({
-    queryKey: ['wallet:programs', mode, paginationState],
+    queryKey: ['gcms:programs', mode, paginationState],
     queryFn: () => fetchPrograms({ ...paginationState, mode }),
   });
 

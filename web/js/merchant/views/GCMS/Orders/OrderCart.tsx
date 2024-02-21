@@ -39,7 +39,7 @@ const OrderCart = ({ showNotification }: Props) => {
     mutationFn: orderSubmit,
     onSuccess: (data) => {
       navigate(`/gcms/orders/${orderId}`);
-      queryClient.setQueryData(['wallet:order', merchantId, orderId, mode], data);
+      queryClient.setQueryData(['gcms:order', merchantId, orderId, mode], data);
       showNotification({
         type: 'success',
         message: 'Order has been submitted successfully',
@@ -56,7 +56,7 @@ const OrderCart = ({ showNotification }: Props) => {
   const { mutate: orderUpdateMutation, isLoading: isLoadingOrderUpdate } = useMutation({
     mutationFn: orderUpdate,
     onSuccess: (data) => {
-      queryClient.setQueryData(['wallet:order', merchantId, orderId, mode], data);
+      queryClient.setQueryData(['gcms:order', merchantId, orderId, mode], data);
       showNotification({
         type: 'success',
         message: 'Order has been cancelled successfully',

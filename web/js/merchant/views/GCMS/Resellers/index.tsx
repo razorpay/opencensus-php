@@ -64,7 +64,7 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
   const [resellerStatus, setResellerStatus] = useState('');
 
   const { isLoading, data: resellers } = useQuery({
-    queryKey: ['wallet:resellers', skip, resellerName, resellerStatus],
+    queryKey: ['gcms:resellers', skip, resellerName, resellerStatus],
     queryFn: () => fetchResellers({ skip, resellerName, resellerStatus, mode, merchantId }),
   });
   const handleNext = () => {

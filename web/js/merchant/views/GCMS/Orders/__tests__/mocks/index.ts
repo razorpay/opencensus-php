@@ -14,6 +14,7 @@ import {
   resellerDetailId,
   itemId,
   ordersListResponse,
+  orderEmailDeliveryStatusResponse,
 } from './fixtures';
 
 export default [
@@ -64,5 +65,8 @@ export default [
       );
     }
     return res(ctx.status(200), ctx.json(ordersListResponse), ctx.delay(100));
+  }),
+  rest.get(`*${getGCMSBasePath()}/orders/${orderId}/deliver/status`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(orderEmailDeliveryStatusResponse), ctx.delay(100));
   }),
 ];

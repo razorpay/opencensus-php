@@ -39,12 +39,12 @@ const OrderCreatePrograms = () => {
   const { orderId, resellerId } = useContext<GCMSOrderSession>(OrderSessionContext);
 
   const { isLoading, data: skus } = useQuery<ListApiResponse<ProgramType>, Error>({
-    queryKey: ['wallet:programs', merchantId, resellerId, mode],
+    queryKey: ['gcms:programs', merchantId, resellerId, mode],
     queryFn: () => fetchProgramsByResellerId({ mode, merchantId, resellerId }),
   });
   const { data: orderItems } = useQuery<ListApiResponse<OrderItem>, Error>({
     /* @ts-expect-error no-overload */
-    queryKey: ['wallet:order:items', merchantId, orderId, mode],
+    queryKey: ['gcms:order:items', merchantId, orderId, mode],
     queryFn: () => fetchOrderItems({ mode, merchantId, orderId }),
     enabled: !!orderId,
   });

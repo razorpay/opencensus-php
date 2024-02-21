@@ -52,7 +52,7 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
 
   const { data: orderItems, isLoading } = useQuery<ListApiResponse<OrderItem>, Error>({
     /* @ts-expect-error no-overload */
-    queryKey: ['wallet:order:items', merchantId, orderId, mode],
+    queryKey: ['gcms:order:items', merchantId, orderId, mode],
     queryFn: () => fetchOrderItems({ mode, merchantId, orderId }),
     enabled: !!orderId,
   });

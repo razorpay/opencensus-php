@@ -21,6 +21,7 @@ import { OrderItemDenomination } from 'merchant/views/GCMS/Orders/types';
 import { SKU } from 'merchant/views/GCMS/Programs/types';
 import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import { GCMSSession, SessionContext } from 'merchant/views/GCMS/shared/context';
+import { isPositiveInteger } from 'merchant/views/GCMS/shared/utils';
 import { ErrorText } from 'merchant/views/Marketplace/PlatformFee/components/styles';
 
 import { GCMSOrderSession, OrderSessionContext } from './context';
@@ -48,6 +49,7 @@ const OrderCreateProgramDenominationsModal = ({
       denomination: 0,
     },
   ]);
+  const [errorText, setErrorText] = useState('');
   const { mode, merchantId } = useContext<GCMSSession>(SessionContext);
   const { orderId } = useContext<GCMSOrderSession>(OrderSessionContext);
 
@@ -69,6 +71,10 @@ const OrderCreateProgramDenominationsModal = ({
     reset: resetOrderItemsPatch,
   } = useMutation({
     mutationFn: orderItemsPatch,
+    onError: (error) => {
+      /* @ts-expect-error empty */
+      setErrorText(error?.message || 'Something went wrong. Please try again.');
+    },
   });
 
   const isProgramDenominationArrayAvailable =
@@ -76,6 +82,7 @@ const OrderCreateProgramDenominationsModal = ({
     sku?.policies?.gift_card_price_denominations.length > 0;
 
   useEffect(() => {
+    setErrorText('');
     reset();
     resetOrderItemsPatch();
     const orderItemDenominationsIndexArray: string[] = [];
@@ -152,6 +159,8 @@ const OrderCreateProgramDenominationsModal = ({
             denomination: item?.id ? item.denomination : (item.denomination || 0) * 100,
           })),
         )
+        /* @ts-expect-error type-check-regex */
+        .filter((item) => isPositiveInteger(item?.quantity))
         .filter((item) => item.program_id && item.sku_id);
 
       const data = items.reduce(
@@ -181,7 +190,7 @@ const OrderCreateProgramDenominationsModal = ({
         );
       }
       queryClient.invalidateQueries({
-        queryKey: ['wallet:order:items', merchantId, orderId, mode],
+        queryKey: ['gcms:order:items', merchantId, orderId, mode],
       });
       setIsOpen(false);
       clear();
@@ -385,13 +394,13 @@ const OrderCreateProgramDenominationsModal = ({
             </Button>
           </Box>
         </Box>
-        {(isError || isErrorOrderItemPatchMutation || hasDuplicateEntries) && (
+        {(errorText || isError || isErrorOrderItemPatchMutation || hasDuplicateEntries) && (
           <Box paddingX="spacing.2">
             <ErrorText>
               {hasDuplicateEntries
                 ? 'Denominations must be distinct'
                 : /* @ts-expect-error error-message-check */
-                  error?.message || errorOrderItemPatchMutation?.message}
+                  errorText || error?.message || errorOrderItemPatchMutation?.message}
             </ErrorText>
           </Box>
         )}

@@ -527,6 +527,10 @@ export const validateReversalBatch = validateBatch('create_wallet_container_reve
 export const createGiftCardsBatch = createBatch('create_bulk_gift_cards');
 export const validateGiftCardsBatch = validateBatch('create_bulk_gift_cards');
 
+/* batches for GCMS */
+export const createGCMSEmailDeliveryBatch = createBatch('gcms_upload_bulk_emails');
+export const validateGCMSEmailDeliveryBatch = validateBatch('gcms_upload_bulk_emails');
+
 /* reducers */
 export const refundBatchesReducer = makeActionCollectionReducer(REFUND);
 export const batchesReducer = makeActionCollectionReducer(appendBatches(BATCH));

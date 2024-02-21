@@ -6,7 +6,6 @@ import { ModeT } from 'common/services/mode';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 
 import { fetchResellerBalance } from './queries';
-
 const ResellerDetailsHeader = ({
   mode,
   merchantId,

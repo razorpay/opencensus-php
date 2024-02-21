@@ -57,6 +57,19 @@ export const ORDERS_STATUS = {
   },
 };
 
+export const DELIVERY_STATUS = {
+  delivery_in_progress: {
+    label: 'Delivery In Progress',
+    value: 'delivery_in_progress',
+    color: 'notice',
+  },
+  completed: {
+    label: 'Completed',
+    value: 'completed',
+    color: 'positive',
+  },
+};
+
 export const DATE_RANGE_PRESETS: [string, number, string][] = [
   ['All Time', -30, 'days'],
   ['Past 7 Days', -7, 'days'],

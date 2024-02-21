@@ -29,6 +29,7 @@ const successMessageMap = {
     'You can download the feedback for the delivery statuses uploaded from the actions view, after the file is completely processed. Refresh the page to see current status of your upload. Rejected delivery statuses will contain error description, upload a new file to rectify the same.',
   virtual_account_edit:
     'You can download the output file from batch details view to check the items which were generated. For the items that could not be generated due to some issues, please upload a new batch file.',
+  gcms_upload_bulk_emails: ROUTE_SUCCESS_MESSAGE,
 };
 class BatchUpload extends Component {
   state = {

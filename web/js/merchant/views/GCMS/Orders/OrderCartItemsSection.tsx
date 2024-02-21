@@ -30,7 +30,7 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
   const { resellerId, orderId } = useContext<GCMSOrderSession>(OrderSessionContext);
 
   const { isLoading, data: skus } = useQuery<ListApiResponse<SKU>, Error>({
-    queryKey: ['wallet:programs', merchantId, resellerId, mode],
+    queryKey: ['gcms:programs', merchantId, resellerId, mode],
     queryFn: () => fetchProgramsByResellerId({ mode, merchantId, resellerId }),
   });
   const { data: orderItems, isLoading: isLoadingOrderItems } = useQuery<
@@ -38,7 +38,7 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
     Error
   >({
     /* @ts-expect-error no-overload */
-    queryKey: ['wallet:order:items', merchantId, orderId, mode],
+    queryKey: ['gcms:order:items', merchantId, orderId, mode],
     queryFn: () => fetchOrderItems({ mode, orderId }),
     enabled: !!orderId,
   });
@@ -49,10 +49,10 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
       onSuccess: (data) => {
         if (data?.order_items) {
           queryClient.setQueryData(
-            ['wallet:order:items', merchantId, orderId, mode],
+            ['gcms:order:items', merchantId, orderId, mode],
             data?.order_items,
           );
-          queryClient.invalidateQueries(['wallet:order', merchantId, orderId, mode]);
+          queryClient.invalidateQueries(['gcms:order', merchantId, orderId, mode]);
         }
         showNotification({
           type: 'success',
@@ -73,10 +73,10 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
       onSuccess: (data) => {
         if (data?.order_items) {
           queryClient.setQueryData(
-            ['wallet:order:items', merchantId, orderId, mode],
+            ['gcms:order:items', merchantId, orderId, mode],
             data?.order_items,
           );
-          queryClient.invalidateQueries(['wallet:order', merchantId, orderId, mode]);
+          queryClient.invalidateQueries(['gcms:order', merchantId, orderId, mode]);
         }
         showNotification({
           type: 'success',

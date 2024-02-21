@@ -4,6 +4,7 @@ import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { ModeT } from 'common/services/mode';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { stringifyQueryParams } from 'common/utils/rzp-utils';
+import { fetchBatchAjax } from 'merchant/reducers/batches';
 import {
   OrderCreateParams,
   OrderItem,
@@ -13,6 +14,8 @@ import {
   Order,
   OrderSubmitParams,
   OrderUpdateParams,
+  OrderDeliveryStatus,
+  OrderDeliveryBatch,
 } from 'merchant/views/GCMS/Orders/types';
 import { getGCMSBasePath, ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import { ListApiParams, ListApiResponse, MerchantReseller } from 'merchant/views/GCMS/shared/types';
@@ -359,6 +362,96 @@ export const fetchResellerOrders = async ({
       mode,
     });
     return res;
+  } catch (e: any) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const orderEmailDeliveryStart = async ({
+  mode = 'test',
+  orderId,
+}: {
+  mode?: ModeT;
+  orderId?: string;
+}) => {
+  try {
+    const res = await fetch({
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}/deliver/start`,
+      method: 'post',
+      mode,
+    });
+    return res;
+  } catch (e: any) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const fetchOrderEmailDeliveryStatus = async ({
+  mode = 'test',
+  orderId,
+}: {
+  mode?: ModeT;
+  orderId?: string;
+}) => {
+  try {
+    const res = await fetch<OrderDeliveryStatus>({
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}/deliver/status`,
+      method: 'get',
+      mode,
+    });
+    return res;
+  } catch (e: any) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const fetchOrderEmailDeliveryBatch = async ({
+  mode = 'test',
+  orderId,
+}: {
+  mode?: ModeT;
+  orderId?: string;
+}) => {
+  try {
+    const res = await fetch<OrderDeliveryBatch>({
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}/deliver/batches`,
+      method: 'get',
+      mode,
+    });
+    return res;
+  } catch (e: any) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const fetchOrderEmailDeliveryBatchDetails = async ({ batchId }: { batchId?: string }) => {
+  try {
+    const res = await fetchBatchAjax(`batch_${batchId}`);
+    return res?.batch;
   } catch (e: any) {
     errorService.captureError(e, {
       tags: {

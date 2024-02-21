@@ -45,26 +45,26 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
   const { orderId } = useParams<{ orderId: string }>();
 
   const { data: orderDetails, isLoading: isOrderDetailsLoading } = useQuery({
-    queryKey: ['wallet:order', merchantId, orderId, mode],
+    queryKey: ['gcms:order', merchantId, orderId, mode],
     queryFn: () => fetchOrderDetails({ mode, orderId }),
     enabled: !!orderId,
   });
 
   const { data: orderItems, isLoading: isOrderItemsLoading } = useQuery({
-    queryKey: ['wallet:order:items', merchantId, orderId, mode],
+    queryKey: ['gcms:order:items', merchantId, orderId, mode],
     queryFn: () => fetchOrderItems({ mode, orderId }),
     enabled: !!orderId,
   });
 
   const { isLoading: isResellerDetailsLoading, data: resellerDetails } = useQuery({
-    queryKey: ['wallet:reseller:details', merchantId, orderDetails?.reseller_id, mode],
+    queryKey: ['gcms:reseller:details', merchantId, orderDetails?.reseller_id, mode],
     queryFn: () =>
       fetchResellerDetails({ resellerId: orderDetails?.reseller_id, merchantId, mode }),
     enabled: !!orderDetails?.reseller_id,
   });
 
   const { isLoading: isSkusLoading, data: skus } = useQuery({
-    queryKey: ['wallet:programs', merchantId, orderDetails?.reseller_id, mode],
+    queryKey: ['gcms:programs', merchantId, orderDetails?.reseller_id, mode],
     queryFn: () =>
       fetchProgramsForReseller({ resellerId: orderDetails?.reseller_id, mode, count: 100 }),
     enabled: !!orderDetails?.reseller_id,
@@ -92,7 +92,9 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
       </Box>
       {isOrderDetailsLoading || isOrderItemsLoading || isResellerDetailsLoading || isSkusLoading ? (
         <Box display="flex" justifyContent="center" alignItems="center" height="100%" width="100%">
-          <Spinner center={undefined} />
+          <div className="page-spinner-container">
+            <Spinner center={undefined} />
+          </div>
         </Box>
       ) : (
         <Box display="flex" flexDirection="row" justifyContent="space-between" flexWrap="wrap">
@@ -115,10 +117,9 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                 </Heading>
                 <Box display="flex" marginTop="spacing.3">
                   <Text size="medium" color="surface.text.subdued.lowContrast">
-                    Order Date:
+                    Order Date:&nbsp;&nbsp;
                   </Text>
                   <Text size="medium" weight="bold">
-                    {' '}
                     {convertUnixToDate(orderDetails?.created_at)}
                   </Text>
                 </Box>
@@ -201,7 +202,9 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                                 imageProps={{ height: '60px', width: '92px' }}
                               />
                               <Box display="flex">
-                                <Text color="surface.text.subdued.lowContrast">Discount: </Text>
+                                <Text color="surface.text.subdued.lowContrast">
+                                  Discount:&nbsp;&nbsp;
+                                </Text>
                                 <Text weight="bold">
                                   {orderItemsByPrograms[programId][0].discount_percent / 100}%
                                 </Text>

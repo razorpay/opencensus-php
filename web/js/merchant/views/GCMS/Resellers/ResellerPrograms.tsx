@@ -17,7 +17,7 @@ const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
   const [skip, setSkip] = useState(0);
 
   const { isLoading, data: programs } = useQuery({
-    queryKey: ['wallet:reseller-programs', skip, resellerId],
+    queryKey: ['gcms:reseller-programs', skip, resellerId],
     queryFn: () => fetchProgramsForReseller({ skip, resellerId, mode }),
   });
 

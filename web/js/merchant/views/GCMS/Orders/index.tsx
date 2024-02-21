@@ -68,7 +68,7 @@ const Orders = ({ mode }: { mode: ModeT }) => {
   const [toDate, setToDate] = useState();
 
   const { isLoading, data: orders } = useQuery({
-    queryKey: ['wallet:orders', skip, resellerName, orderStatus, fromDate, toDate, orderId],
+    queryKey: ['gcms:orders', skip, resellerName, orderStatus, fromDate, toDate, orderId],
     queryFn: () =>
       fetchOrders({ skip, resellerName, orderStatus, fromDate, toDate, mode, orderId }),
   });

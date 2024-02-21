@@ -22,7 +22,7 @@ const OrderCartDeliveryTypeSection = ({ showNotification }: Props) => {
   const { orderId } = useContext<GCMSOrderSession>(OrderSessionContext);
 
   const { data: order, isLoading } = useQuery<Order, Error>({
-    queryKey: ['wallet:order', merchantId, orderId, mode],
+    queryKey: ['gcms:order', merchantId, orderId, mode],
     queryFn: () => fetchOrderDetails({ mode, orderId }),
     enabled: !!orderId,
   });
@@ -50,7 +50,7 @@ const OrderCartDeliveryTypeSection = ({ showNotification }: Props) => {
   } = useMutation({
     mutationFn: orderUpdate,
     onSuccess: (data) => {
-      queryClient.setQueryData(['wallet:order', merchantId, orderId, mode], data);
+      queryClient.setQueryData(['gcms:order', merchantId, orderId, mode], data);
       showNotification({
         type: 'success',
         message: 'Order has been updated successfully',

@@ -7,8 +7,8 @@ import TableBody from 'common/ui/TableBody';
 import { getFormattedAmountNew, convertUnixToDate } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
-import { ACCOUNT_ID_SUFFIX } from 'merchant/views/GCMS/Funds/constants';
 import store from 'merchant/store';
+import { ACCOUNT_ID_SUFFIX } from 'merchant/views/GCMS/Funds/constants';
 import {
   fetchBrandBalance,
   fetchBrandTransactions,
@@ -55,7 +55,7 @@ const BrandAccount = (): JSX.Element => {
   const merchantId = store.getState()?.session?.user?.current;
 
   const { isLoading: isFetchTransactionsLoading, data: transactions } = useQuery({
-    queryKey: ['wallet:brandAccount', skip, referenceId, fromDate, toDate],
+    queryKey: ['gcms:brandAccount', skip, referenceId, fromDate, toDate],
     queryFn: () =>
       fetchBrandTransactions({
         skip,
@@ -68,7 +68,7 @@ const BrandAccount = (): JSX.Element => {
   });
 
   const { isLoading: isFetchBrandBalanceLoading, data: brandBalanceData } = useQuery({
-    queryKey: ['wallet:brandBalance'],
+    queryKey: ['gcms:brandBalance'],
     queryFn: () => fetchBrandBalance({ merchantId, mode: 'test' }),
   });
 

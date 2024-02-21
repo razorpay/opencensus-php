@@ -35,5 +35,22 @@ describe('GCMS: Order Details', () => {
       expect(screen.getByText('Thank You Gift Card')).toBeInTheDocument(); //Program name
       expect(screen.queryAllByText('NMmsZbvXKsxmBh')[0]).toBeInTheDocument(); //SKU Id
     });
+
+    // Delivery Section
+    await waitFor(() => {
+      expect(screen.queryAllByText(/Delivery/i)[0]).toBeInTheDocument();
+      expect(screen.getByText(/Cards delivered to test@gmail.com/i)).toBeInTheDocument(); //Order Id
+    });
+
+    // Delivery Breakup Section
+    await waitFor(() => {
+      expect(screen.getByText('Delivery Breakup')).toBeInTheDocument();
+      expect(screen.getByText('Uploaded')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+      expect(screen.getByText('Delivered')).toBeInTheDocument();
+      expect(screen.getByText('4')).toBeInTheDocument();
+      expect(screen.getByText('Failed')).toBeInTheDocument();
+      expect(screen.getByText('6')).toBeInTheDocument();
+    });
   });
 });

@@ -49,23 +49,30 @@ const ProgramHeaderSection: React.FC<Props> = ({
           alignItems="center"
           justifyContent="space-between"
         >
-          {showOverview
-            ? headerSections.map((section) => (
-                <Box
-                  key={section.name}
-                  padding={['spacing.4', 'spacing.8', 'spacing.4', 'spacing.0']}
-                  display="flex"
-                  flexDirection="row"
-                  alignItems="center"
-                  {...sectionItemProps}
-                >
-                  <Text color="surface.text.muted.lowContrast">{section.name}:&nbsp;&nbsp;</Text>
-                  <Text color="surface.text.subdued.lowContrast" weight="bold">
-                    {capitalize(section.value)}
-                  </Text>
-                </Box>
-              ))
-            : null}
+          {showOverview ? (
+            headerSections.map((section) => (
+              <Box
+                key={section.name}
+                padding={['spacing.4', 'spacing.8', 'spacing.4', 'spacing.0']}
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                {...sectionItemProps}
+              >
+                <Text color="surface.text.muted.lowContrast">{section.name}:&nbsp;&nbsp;</Text>
+                <Text color="surface.text.subdued.lowContrast" weight="bold">
+                  {capitalize(section.value)}
+                </Text>
+              </Box>
+            ))
+          ) : (
+            <Box display="flex" flexDirection="row" paddingTop="spacing.2">
+              <Text color="surface.text.muted.lowContrast">Program ID:&nbsp;&nbsp;</Text>
+              <Text color="surface.text.subdued.lowContrast" weight="bold">
+                {program.program_id}
+              </Text>
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>

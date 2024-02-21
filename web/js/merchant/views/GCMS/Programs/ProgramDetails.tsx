@@ -21,7 +21,7 @@ const ProgramDetails: React.FC = () => {
 
   const mode = 'test';
   const { isLoading, data: program } = useQuery({
-    queryKey: ['wallet:programs:id', mode, programId],
+    queryKey: ['gcms:programs:id', mode, programId],
     queryFn: () => fetchProgramById({ mode, programId }),
   });
 

@@ -19,12 +19,12 @@ const OrderCartSummarySection = () => {
   const { orderId, resellerId } = useContext<GCMSOrderSession>(OrderSessionContext);
 
   const { data: order, isLoading: isLoadingOrder } = useQuery<Order, Error>({
-    queryKey: ['wallet:order', merchantId, orderId, mode],
+    queryKey: ['gcms:order', merchantId, orderId, mode],
     queryFn: () => fetchOrderDetails({ mode, orderId }),
     enabled: !!orderId,
   });
   const { isLoading, data: skus } = useQuery<ListApiResponse<SKU>, Error>({
-    queryKey: ['wallet:programs', merchantId, resellerId, mode],
+    queryKey: ['gcms:programs', merchantId, resellerId, mode],
     queryFn: () => fetchProgramsByResellerId({ mode, merchantId, resellerId }),
   });
   const { data: orderItems, isLoading: isLoadingOrderItems } = useQuery<
@@ -32,7 +32,7 @@ const OrderCartSummarySection = () => {
     Error
   >({
     /* @ts-expect-error no-overload */
-    queryKey: ['wallet:order:items', merchantId, orderId, mode],
+    queryKey: ['gcms:order:items', merchantId, orderId, mode],
     queryFn: () => fetchOrderItems({ mode, orderId }),
     enabled: !!orderId,
   });
