@@ -569,6 +569,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'checkout_v2',
+          experimentId: {
+            beta: 'NOq9DTaOYYUIhO',
+            production: 'NPN9bwDyfK9bZp',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'on',
+              },
+            ],
+          },
+        },
       ],
     },
     {

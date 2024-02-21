@@ -10,6 +10,7 @@ export function createBulkDiscountPayload({
   couponEligibility,
   discountOffered,
   usageRestriction,
+  combineCoupons,
   status,
   source,
   id,
@@ -189,10 +190,19 @@ export function createBulkDiscountPayload({
         couponEligibility,
         bulkDiscountDetails: discountOffered,
         usageRestriction,
+        combineCoupons,
       },
     },
     customer_whitelist,
     disabled_methods: couponDetails.prepaidMethodsOnly ? ['cod'] : null,
+    flags: {
+      force_display: couponDetails.display && couponDetails.couponDiscoveryEnabled,
+    },
+    combined_coupons: [
+      {
+        type: combineCoupons.shouldCombineFreeShippingCoupon ? 'shipping_fee' : null,
+      },
+    ],
   };
 
   return sanitizePayload(couponPayload);

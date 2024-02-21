@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useSplitzService } from 'common/splitz';
 
 // ui imports
 import Input from 'common/new-ui/Input';
@@ -24,6 +25,8 @@ interface CouponDetailsProps {
 
 const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'created' }) => {
   const { widgetsData, setWidgetsData, errorStates, setErrorStates } = useContext(ModalContext);
+  const { abExperiments } = useSplitzService();
+  const shouldShowCheckoutV2Changes = abExperiments?.checkout_v2?.variables?.result === 'on';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
     const { type, checked: isChecked } = e.target;
@@ -89,6 +92,7 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'creat
               }}
             />
             <p className="error-message">{errorStates.couponDetails.description}</p>
+
             <CheckboxGroup>
               <Input.Check
                 checked={widgetsData.couponDetails.display}
@@ -99,6 +103,20 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'creat
               />
               <span>Display this coupon at checkout</span>
             </CheckboxGroup>
+
+            {shouldShowCheckoutV2Changes && widgetsData.couponDetails.display && (
+              <CheckboxGroup>
+                <Input.Check
+                  checked={widgetsData.couponDetails.couponDiscoveryEnabled}
+                  type="checkbox"
+                  name="couponDiscoveryEnabled"
+                  onChange={(e) => handleInputChange(e, 'couponDiscoveryEnabled')}
+                  autoRender
+                />
+                <span>Enable coupon discovery at checkout</span>
+              </CheckboxGroup>
+            )}
+
             <CheckboxGroup>
               <Input.Check
                 checked={widgetsData.couponDetails.prepaidMethodsOnly}

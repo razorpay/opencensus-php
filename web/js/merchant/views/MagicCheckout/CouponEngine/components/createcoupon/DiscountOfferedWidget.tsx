@@ -184,7 +184,7 @@ const AccordionBody: React.FC = () => {
 };
 
 const DiscountOfferedWidget: React.FC = () => {
-  const { errorStates } = useContext(ModalContext);
+  const { widgetsData, errorStates } = useContext(ModalContext);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -203,7 +203,11 @@ const DiscountOfferedWidget: React.FC = () => {
         open={isOpen}
         header={<div>Discount Offered</div>}
         body={<AccordionBody />}
-        footer={<MaxQuantityWidget dataKey="discountOffered" />}
+        footer={
+          widgetsData.productsPurchased.minimumType === 'min_qty' ? (
+            <MaxQuantityWidget dataKey="discountOffered" />
+          ) : null
+        }
       />
     </div>
   );

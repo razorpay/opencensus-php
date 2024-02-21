@@ -63,6 +63,14 @@ export const getNavItems = (syncExperiment = false) => {
   return navItems;
 };
 
+export const COUPON_NAMES = {
+  AMOUNT_OFF_ORDER: 'amount_off_order',
+  AMOUNT_OFF_PRODUCTS: 'amount_off_products',
+  BUYX_GETY: 'buyx_gety',
+  BULK_ORDER: 'bulk_order',
+  FREE_SHIPPING: 'free_shipping',
+};
+
 export const COUPON_TYPES = [
   { label: 'All', name: '' },
   { label: 'Amount Off Product', name: 'amount_off_products' },
@@ -186,3 +194,9 @@ export const CREATE_COUPON_CONFIRMATION_MODAL_CONTENT = {
     </span>
   ),
 };
+
+export const MINIMUM_PURCHASE_REQUIREMENTS = [
+  { label: 'No minimum requirements', name: 'no_min_qty' },
+  { label: 'Minimum quantity of items', name: 'min_qty' },
+  { label: 'Minimum purchase amount (₹)', name: 'min_order_value' },
+];

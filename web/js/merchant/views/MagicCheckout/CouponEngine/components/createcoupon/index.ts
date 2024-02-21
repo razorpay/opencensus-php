@@ -7,6 +7,7 @@ import BulkDiscountOffered from 'merchant/views/MagicCheckout/CouponEngine/compo
 import ProductsPurchasedWidget from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/ProductsPurchasedWidget';
 import UsageRestrictionWidget from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/UsageRestrictionWidget';
 import ShippingRequirementsWidget from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/ShippingRequirementsWidget';
+import CombineCouponsWidget from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CombinedCouponsWidget/CombineCouponsWidget';
 
 export {
   CouponEligibilityWidget,
@@ -18,4 +19,5 @@ export {
   BulkDiscountOffered,
   CouponDetailsWidget,
   ShippingRequirementsWidget,
+  CombineCouponsWidget,
 };

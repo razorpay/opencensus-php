@@ -9,6 +9,7 @@ export function createCartDiscountPayload({
   couponValidity,
   couponEligibility,
   usageRestriction,
+  combineCoupons,
   status,
   source,
   id,
@@ -43,7 +44,6 @@ export function createCartDiscountPayload({
   ).toISOString();
 
   const expiryDate = moment(`${couponValidity.endDate} ${couponValidity.endTime}`).toISOString();
-
   const couponPayload = {
     type: 'amount_off_order',
     code: couponDetails.code,
@@ -99,10 +99,19 @@ export function createCartDiscountPayload({
         couponValidity,
         couponEligibility,
         usageRestriction,
+        combineCoupons,
       },
     },
     customer_whitelist,
     disabled_methods: couponDetails.prepaidMethodsOnly ? ['cod'] : null,
+    flags: {
+      force_display: couponDetails.display && couponDetails.couponDiscoveryEnabled,
+    },
+    combined_coupons: [
+      {
+        type: combineCoupons.shouldCombineFreeShippingCoupon ? 'shipping_fee' : null,
+      },
+    ],
   };
 
   return sanitizePayload(couponPayload);

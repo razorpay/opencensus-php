@@ -5,6 +5,21 @@ export type CustomerWhitelist =
     }
   | Record<string, unknown>;
 
+interface CartEntity {
+  key?: string;
+  condition?: {
+    values?: string[];
+    op: string;
+  };
+  total_count?: {
+    threshold: number;
+    op: 'gte' | 'lte' | 'in';
+  };
+  total_price?: {
+    threshold: number;
+    op: 'gte' | 'lte' | 'in';
+  };
+}
 export interface Condition {
   cart?: {
     quantity?: {
@@ -15,9 +30,9 @@ export interface Condition {
       threshold: number;
       op: 'gte';
     };
+    entities?: CartEntity[];
   };
 }
-
 export interface Redemption {
   type: string;
   fee_discount: {
@@ -68,4 +83,27 @@ export interface CouponPayload {
   };
   customer_whitelist: CustomerWhitelist;
   disabled_methods: string[] | null;
+  flags: {
+    force_display: boolean;
+  };
+}
+
+export interface CustomerBuys {
+  filter?: {
+    source: string;
+    filter_type: string;
+    unique_identifier?: {
+      variant_id: string;
+      type: string;
+    };
+    filter_value?: string;
+  }[];
+  qty?: number;
+  price?: {
+    formula: {
+      coeff: number;
+      const: number;
+    };
+    max_unit_discount: number;
+  };
 }

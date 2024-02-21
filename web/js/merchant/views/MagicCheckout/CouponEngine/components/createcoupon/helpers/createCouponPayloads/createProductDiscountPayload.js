@@ -9,6 +9,7 @@ export function createProductDiscountPayload({
   couponValidity,
   couponEligibility,
   usageRestriction,
+  combineCoupons,
   status,
   source,
   id,
@@ -160,10 +161,19 @@ export function createProductDiscountPayload({
         couponValidity,
         couponEligibility,
         usageRestriction,
+        combineCoupons,
       },
     },
     customer_whitelist,
     disabled_methods: couponDetails.prepaidMethodsOnly ? ['cod'] : null,
+    flags: {
+      force_display: couponDetails.display && couponDetails.couponDiscoveryEnabled,
+    },
+    combined_coupons: [
+      {
+        type: combineCoupons.shouldCombineFreeShippingCoupon ? 'shipping_fee' : null,
+      },
+    ],
   };
 
   return sanitizePayload(couponPayload);

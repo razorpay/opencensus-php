@@ -52,7 +52,7 @@ export interface UsageRestriction {
   total: number;
 }
 
-interface ProductsPurchased {
+export interface ProductsPurchased {
   minimumType: string;
   minimumValue: number | string;
   discountApplicableTo: string;
@@ -60,7 +60,7 @@ interface ProductsPurchased {
   discountedItemsDisplayList: DiscountedItemsList[];
 }
 
-interface DiscountOffered {
+export interface DiscountOffered {
   discountType: string;
   discountValue: number;
   discountApplicableTo: string;
@@ -80,12 +80,17 @@ interface BulkDiscountDetails {
   hasLimitedUseagePerOrder: boolean;
 }
 
+export interface CombineCoupons {
+  shouldCombineFreeShippingCoupon: boolean;
+}
+
 export interface CouponDetails {
   code: string;
   description: string;
   display: boolean;
   autoapply: boolean;
   prepaidMethodsOnly: boolean;
+  couponDiscoveryEnabled: boolean;
 }
 
 export type ShopifyCouponSyncResponse = {
@@ -130,6 +135,7 @@ export interface ModalContextValue {
     discountOffered: DiscountOffered;
     couponDetails: CouponDetails;
     bulkDiscountDetails: BulkDiscountDetails;
+    combineCoupons: CombineCoupons;
     status: string;
     id?: string;
     source: string | null;

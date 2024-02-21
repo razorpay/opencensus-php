@@ -161,6 +161,7 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
       couponEligibility: widgetsData.couponEligibility,
       usageRestriction: widgetsData.usageRestriction,
       productsPurchased: widgetsData.productsPurchased,
+      combineCoupons: widgetsData.combineCoupons,
       discountOffered:
         couponName === 'bulk_order' ? widgetsData.bulkDiscountDetails : widgetsData.discountOffered,
       status: updatedCouponStatus || widgetsData.status,

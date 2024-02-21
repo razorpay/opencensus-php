@@ -63,6 +63,7 @@ const initialWidgetsData: ModalContextValue['widgetsData'] = {
     display: true,
     autoapply: false,
     prepaidMethodsOnly: false,
+    couponDiscoveryEnabled: false,
   },
   bulkDiscountDetails: {
     discountSubType: 'fixedAmount',
@@ -70,6 +71,9 @@ const initialWidgetsData: ModalContextValue['widgetsData'] = {
     discountType: 'discountOnAll',
     maxUsagePerOrder: 1,
     hasLimitedUseagePerOrder: false,
+  },
+  combineCoupons: {
+    shouldCombineFreeShippingCoupon: false,
   },
   status: 'published',
   source: null,

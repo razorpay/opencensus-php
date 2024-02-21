@@ -14,6 +14,7 @@ describe('testing constants', () => {
       magic_shopify_shipping_engine: { variables: { result: 'on' } },
       magic_coupon_engine: { variables: { result: 'on' } },
       magic_hide_cod_when_disabled: { variables: { result: 'on' } },
+      checkout_v2: { variables: { result: 'on' } },
     };
 
     Object.keys(TABS).forEach((platform) => {

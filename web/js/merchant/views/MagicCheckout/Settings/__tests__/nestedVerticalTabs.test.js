@@ -34,6 +34,7 @@ jest.mock('common/splitz', () => ({
       magic_shopify_shipping_engine: variantOn,
       magic_coupon_engine: variantOn,
       magic_hide_cod_when_disabled: variantOn,
+      checkout_v2: variantOn,
     },
   }),
   withSplitzService: jest.fn(),

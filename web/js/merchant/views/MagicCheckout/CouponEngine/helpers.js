@@ -14,7 +14,9 @@ import {
 import {
   AVAILABLE_COUPON_TYPES,
   CREATE_COUPON_CONFIRMATION_MODAL_CONTENT,
+  COUPON_NAMES,
   COUPON_TYPES,
+  MINIMUM_PURCHASE_REQUIREMENTS,
 } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 
 // ui element imports
@@ -112,4 +114,18 @@ export const createApiData = (couponName, data) => {
     default:
       return null;
   }
+};
+
+export const getMinReqWidgetOptions = (couponName, v2ExperimentEnabled = false) => {
+  // todo: remove it post v2 launch
+  if (!v2ExperimentEnabled) {
+    return [{ label: 'Minimum quantity of items', name: 'min_qty' }];
+  }
+
+  if (couponName === COUPON_NAMES.BUYX_GETY) {
+    // in case of bxgy we dont want to show no min req
+    return MINIMUM_PURCHASE_REQUIREMENTS.filter((item) => item.name !== 'no_min_qty');
+  }
+
+  return MINIMUM_PURCHASE_REQUIREMENTS;
 };

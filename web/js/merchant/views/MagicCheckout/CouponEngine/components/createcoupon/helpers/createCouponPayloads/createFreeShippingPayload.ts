@@ -122,6 +122,9 @@ export function createFreeShippingCouponPayload({
     },
     customer_whitelist,
     disabled_methods: couponDetails.prepaidMethodsOnly ? ['cod'] : null,
+    flags: {
+      force_display: couponDetails.display && couponDetails.couponDiscoveryEnabled,
+    },
   };
 
   return sanitizePayload(couponPayload);
