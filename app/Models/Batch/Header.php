@@ -1644,7 +1644,7 @@ class Header
     const UPLOAD_BULK_EMAIL_ORDER_ID = "Order ID";
     const UPLOAD_BULK_EMAIL_PROGRAM_ID = "Program ID";
     const UPLOAD_BULK_EMAIL_PROGRAM_NAME = "Program Name (Optional)";
-    const UPLOAD_BULK_EMAIL_DENOMINATION = "Denomination (in Rupees)";
+    const UPLOAD_BULK_EMAIL_DENOMINATION = "Denomination (in Paisa)";
     const UPLOAD_BULK_EMAIL_EMAIL = "Email";
 
     // consent collection for creation of local tokens
