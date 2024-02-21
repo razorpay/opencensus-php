@@ -3269,7 +3269,7 @@ class FeeRecoveryTest extends TestCase
         Mail::fake();
 
         /** @var Merchant\Entity $merchant */
-        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905','randomBaAccId1', 5, 5001, [
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905','randomBaAccId1', 5, 500001, [
             Feature\Constants::PAYOUT
         ]);
 
@@ -3321,11 +3321,11 @@ class FeeRecoveryTest extends TestCase
 
         Mail::fake();
 
-        $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 5001, [
+        $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 500001, 500001, [
             Feature\Constants::PAYOUT
         ]);
 
-        $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626906', 'randomBaAccId2', 5, 5001, [
+        $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626906', 'randomBaAccId2', 5, 500001, [
             Feature\Constants::PAYOUT, Feature\Constants::EXCLUDE_FROM_CA_BILLING
         ]);
 
@@ -3342,7 +3342,7 @@ class FeeRecoveryTest extends TestCase
 
         Mail::fake();
 
-        $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626906', 'randomBaAccId1', 4999, 5000, [
+        $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626906', 'randomBaAccId1', 499999, 500000, [
             Feature\Constants::PAYOUT
         ]);
 
@@ -3379,7 +3379,7 @@ class FeeRecoveryTest extends TestCase
         Carbon::setTestNow($dateTime);
 
         /** @var Merchant\Entity $merchant */
-        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 5001, [
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 500001, 500001, [
             Feature\Constants::PAYOUT, Feature\Constants::AUTO_DISABLE_PAYOUTS,
         ]);
 
@@ -3401,12 +3401,12 @@ class FeeRecoveryTest extends TestCase
         Carbon::setTestNow($dateTime);
 
         /** @var Merchant\Entity $merchant1 */
-        $merchant1 = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 5001, [
+        $merchant1 = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 500001, 500001, [
             Feature\Constants::PAYOUT,
         ]);
 
         /** @var Merchant\Entity $merchant2 */
-        $merchant2 = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626906', 'randomBaAccId2', 5001, 4999, [
+        $merchant2 = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626906', 'randomBaAccId2', 500001, 499999, [
             Feature\Constants::PAYOUT,
         ]);
 
@@ -3436,7 +3436,7 @@ class FeeRecoveryTest extends TestCase
         Carbon::setTestNow($dateTime);
 
         /** @var Merchant\Entity $merchant */
-        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 5001, [
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 500001, 500001, [
             Feature\Constants::PAYOUT,
         ]);
 
@@ -3475,7 +3475,7 @@ class FeeRecoveryTest extends TestCase
     public function testFeeRecoveryLowBalanceAutomatedUnblocking()
     {
         /** @var Merchant\Entity $merchant */
-        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 4999, [
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 500001, 499999, [
             Feature\Constants::PAYOUT_LOW_BALANCE,
         ]);
 
@@ -3493,7 +3493,7 @@ class FeeRecoveryTest extends TestCase
     public function testFeeRecoveryLowBalanceNoAutomatedUnblockingHighFee()
     {
         /** @var Merchant\Entity $merchant */
-        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 5001, [
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 500001, 500001, [
             Feature\Constants::PAYOUT_LOW_BALANCE,
         ]);
 

@@ -25,7 +25,7 @@ class Constants
 
     const AUTOMATED_BLOCKING = 'automated_blocking';
 
-    const MIN_BALANCE_AMOUNT = 5000;
+    const MIN_BALANCE_AMOUNT = 500000;
 
     const FEE_RECOVERY_SLACK_CHANNEL = 'x-acquisition-alerts';
 }
