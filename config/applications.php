@@ -1253,6 +1253,12 @@ return [
                 'password'  => env('PG_ROUTER_SECRET'),
             ],
         ],
+
+        'bill-me' => [
+                'url'       => env('BILL_ME_URL'),
+                'password'  => env('BILL_ME_SECRET'),
+            ],
+
         'magic-checkout-service' => [
             'live'       => [
                 'url'       => env('MAGIC_CHECKOUT_SERVICE_URL'),

@@ -469,6 +469,13 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
+        $experimentResult = $this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::POST_PAYMENT_TO_BILL_ME, $this->getMode());
+
+        if (($experimentResult === 'on') and  ($this->app->runningUnitTests() === false))
+        {
+            $this->app['bill_me']->postPaymentDataToBillMe($payment->toArrayPublic(), false);
+        }
+
         if (($payment->hasSubscription() === true) and
             ($payment->isApiBasedEmandateAsyncPayment() === false))
         {

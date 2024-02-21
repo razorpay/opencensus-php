@@ -745,6 +745,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPGRouter();
 
+        $this->registerBillMe();
+
         $this->registerBvsHttpClients();
 
         $this->registerAsvHttpClient();
@@ -2280,6 +2282,16 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $mock = $app['config']->get('applications.pg_router.mock');
 
             $implementation = $mock ? Mock\PGRouter::class : PGRouter::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerBillMe()
+    {
+        $this->app->bind('bill_me', function ($app)
+        {
+            $implementation = BillMe::class;
 
             return new $implementation($app);
         });
