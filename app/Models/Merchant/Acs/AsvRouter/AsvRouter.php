@@ -291,6 +291,34 @@ class AsvRouter
         }
     }
 
+    public function shouldWriteToASVDB($repoClass, $functionName, $id): bool
+    {
+        try {
+            if ($this->isWriteFlowOrFailure() === false) {
+                return false;
+            }
+
+            $experimentName       = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForWriteToASVDB();
+            $routeOrWorkerName    = $this->getRouteOrJobName();
+            $isRequestRoutedToAsv = $this->splitzHelper->isSplitzOnForWriteByExperimentName(
+                $experimentName,
+                $id,
+                $routeOrWorkerName,
+            );
+
+
+            $this->logAndReportMetrics($repoClass, $routeOrWorkerName, $isRequestRoutedToAsv, $functionName);
+            return $isRequestRoutedToAsv;
+        } catch (\Throwable $e) {
+            $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_ERROR, [
+                'error_code' => $e->getCode(),
+            ]);
+
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
+            return false;
+        }
+    }
+
     public function shouldRouteImplicitJoinToAccountService($id, $entityName, $repoClass, $functionName): bool {
         try {
 
@@ -414,7 +442,7 @@ class AsvRouter
 
     public function shouldCreateTransactionWithAsvAlso(): bool
     {
-        return $this->shouldRouteWriteRequestToAccountService(
+        return $this->shouldWriteToASVDB(
             RepositoryManager::class,
             self::CREATE_TRANSACTION_WITH_ASV_ALSO,
             self::REPOSITORY_MANAGER_ID

@@ -87,6 +87,7 @@ final class RepoAndFunctionToSplitzMap
 
     public const ROUTE_WRITE_FLOW_TO_ASV = SplitzConstant::SPLITZ_SEND_WRITE_TO_ASV;
     public const ROUTE_FILTER_REQUEST_TO_ASV = SplitzConstant::SPLITZ_SEND_FILTER_TO_ASV;
+    public const ROUTE_WRITE_TO_ASV_DB = SplitzConstant::SPLITZ_SEND_WRITE_TO_ASV_DB;
 
     public static function getExperimentName(string $repoClass, string $functionName): string
     {
@@ -110,5 +111,9 @@ final class RepoAndFunctionToSplitzMap
 
     public static function getExperimentNameForFilterMigration(): string {
         return self::ROUTE_FILTER_REQUEST_TO_ASV;
+    }
+
+    public static function getExperimentNameForWriteToASVDB(): string {
+        return self::ROUTE_WRITE_TO_ASV_DB;
     }
 }

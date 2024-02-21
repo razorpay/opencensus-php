@@ -384,7 +384,7 @@ trait RepositoryUpdateTestAndLive
                 return false;
             }
 
-            return ($this->asvRouter)->shouldRouteWriteRequestToAccountService(
+            return ($this->asvRouter)->shouldWriteToASVDB(
                 $this::class, $function, $entity->getId()
             );
         } catch (\Throwable $th) {

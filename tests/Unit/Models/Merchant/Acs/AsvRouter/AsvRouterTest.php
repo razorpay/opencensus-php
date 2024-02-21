@@ -123,7 +123,7 @@ class AsvRouterTest extends TestCase
 
     public function testShouldCreateTransactionWithAsvAlso() {
 
-        Config::set('applications.asv_v2.splitz_send_write_to_asv', 'K1ZaAHZ7Lnumc62');
+        Config::set('applications.asv_v2.splitz_send_write_to_asv_db', 'K1ZaAHZ7Lnumc62');
         Config::set('applications.asv_v2.splitz_experiment_send_write_route_or_worker_to_asv', 'K1ZaAHZ7Lnumc3');
 
         $tests = [

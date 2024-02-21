@@ -13,7 +13,7 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\Merch
 
 class Merchant extends Base
 {
-    const FILTER_TIMEOUT_IN_MICRO_SECONDS = 2000000;
+    const FILTER_TIMEOUT_IN_MICRO_SECONDS = 5000000;
     const MERCHANT_FIND_BY_IDS = 'merchant_find_by_ids';
     const GET_NON_SUSPENDED_MERCHANTS_FROM_IDS = 'get_non_suspended_merchants_from_ids';
 

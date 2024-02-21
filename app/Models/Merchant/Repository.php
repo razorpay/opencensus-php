@@ -2739,7 +2739,7 @@ class Repository extends Base\Repository
         }
 
         $connectionArray = [Mode::LIVE, Mode::TEST];
-        if ($this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $linkedAccountMids[0])) {
+        if ($this->asvRouter->shouldWriteToASVDB(get_class($this), __FUNCTION__, $linkedAccountMids[0])) {
             $connectionArray = [Mode::LIVE, Mode::TEST, Connection::ASV_WRITER];
         }
 
