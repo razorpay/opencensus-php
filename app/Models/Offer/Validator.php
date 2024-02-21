@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         Entity::ISSUER              => 'filled|string',
         Entity::INTERNATIONAL       => 'sometimes_if:payment_method,card,emi|boolean',
         Entity::IINS                => 'filled|array',
-        Entity::PERCENT_RATE        => 'filled|integer|min:0|max:10000',
+        Entity::PERCENT_RATE        => 'filled|integer|min:1|max:10000',
         Entity::MAX_CASHBACK        => 'filled|integer|min:0',
         Entity::FLAT_CASHBACK       => 'filled|integer|min:0',
         Entity::MIN_AMOUNT          => 'filled|integer|min:0',
@@ -89,7 +89,7 @@ class Validator extends Base\Validator
         Entity::DEFAULT_OFFER       => 'filled|boolean',
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
         Entity::TYPE                => 'required|in:instant,deferred,already_discounted',
-        Entity::PERCENT_RATE        => 'sometimes|filled|min:1|max:10000',
+        Entity::PERCENT_RATE        => 'sometimes|filled|integer|min:1|max:10000',
         Entity::LOW_COST_EMI        => 'sometimes|array',
     ];
 
@@ -124,6 +124,7 @@ class Validator extends Base\Validator
         self::OFFER_PERIOD,
         self::EMI_ISSUER,
         Entity::EMI_DURATIONS,
+        Entity::PERCENT_RATE,
     ];
 
     protected static $editValidators = [
@@ -141,6 +142,28 @@ class Validator extends Base\Validator
         'offers'                        => 'required|array',
         'order_id'                      => 'required|string',
     ];
+    // only to be used for LC EMI offer
+    protected function validatePercentRate(array $input)
+    {
+        if (!(isset($input[Entity::EMI_SUBVENTION]) && isset($input[Entity::LOW_COST_EMI])))
+        {
+            return;
+        }
+        if (!isset($input[Entity::PERCENT_RATE]))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Percentage rate is required for Low cost EMI');
+        }
+
+        if ($input[Entity::PERCENT_RATE] > 0 && $input[Entity::PERCENT_RATE] < 10000)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            'Percentage rate Should be minimum .01%');
+
+    }
 
     protected function validatePaymentNetwork(array $input)
     {

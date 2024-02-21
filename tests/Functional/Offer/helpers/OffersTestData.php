@@ -1039,6 +1039,94 @@ return [
         ]
     ],
 
+    'testCreateLCEmiSubventionOfferWithZeroPercentRate' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test LC EMI Offer',
+                'payment_method' => 'emi',
+                'issuer' => 'HDFC',
+                'emi_subvention' => true,
+                'low_cost_emi' => [
+                    'discount_to_avail' => [
+                        'discount_percentage' => 0,
+                    ],
+                    'issuer' => 'HDFC',
+                    'tenure' => 6
+                ],
+                'max_payment_count' => 2,
+                'processing_time' => '1',
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'Emi Subvention offers',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' =>
+                    [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Percentage rate Should be minimum .01%'
+                    ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testCreateLCEmiSubventionOffer' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test LC EMI Offer',
+                'payment_method' => 'emi',
+                'issuer' => 'HDFC',
+                'emi_subvention' => true,
+                'low_cost_emi' => [
+                    'discount_to_avail' => [
+                        'discount_percentage' => 1,
+                    ],
+                    'issuer' => 'HDFC',
+                    'tenure' => 6
+                ],
+                'max_payment_count' => 2,
+                'processing_time' => '1',
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'Emi Subvention offers',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'active' => true,
+                    'name' => 'Test LC EMI Offer',
+                    'payment_method' => 'emi',
+                    'issuer' => 'HDFC',
+                    'emi_durations' => [6],
+                    'percent_rate' => 1,
+                    'max_payment_count' => 2,
+                    'min_amount' => 316389,
+                    'starts_at' => 1514764800,
+                    'ends_at' => 1546300800,
+                    'display_text' => 'Emi Subvention offers',
+                    'terms' => 'Some more details'
+                ]
+            ]
+        ]
+    ],
+
     'testPaymentMethodTypeForCreditCardOfferCreation' => [
         'request' => [
             'content' => [
