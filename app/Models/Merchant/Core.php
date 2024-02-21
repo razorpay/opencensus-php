@@ -5895,7 +5895,7 @@ class Core extends Base\Core
             'event_type'  => 'kyc_form_save',
         ]);
 
-        $kycFormUpdateAudits = $kycFormUpdateAuditResponse['response']['audits'];
+        $kycFormUpdateAudits = $kycFormUpdateAuditResponse['response']['audits'] ?? [];
 
         $kycFormUpdaters = collect($kycFormUpdateAudits)->groupBy('entity_id')->toArray();
 

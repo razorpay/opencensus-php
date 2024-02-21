@@ -922,6 +922,26 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+
+    public function testFetchPartnerPOSSubmerchantsProductPOSEmptyEventAudits()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
+
+        $this->mockPartnershipsServiceTreatment([], [
+            'response' => [
+            ],
+        ], 'getLastEventAudits');
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     // Fetch all subMs for partner_agent
     public function testFetchSubmerchantsProductPOSPartnerAgent()
     {

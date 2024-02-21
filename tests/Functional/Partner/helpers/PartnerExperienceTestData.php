@@ -911,6 +911,39 @@ return [
         ],
     ],
 
+    'testFetchPartnerPOSSubmerchantsProductPOSEmptyEventAudits' => [
+        'request'  => [
+            'url'     => '/submerchants?product=pos',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => 'activated',
+                        ],
+                        'dashboard_access' => false,
+                        'pos' => [
+                            'activation_status' => "under_review",
+                            'success'           => true,
+                            'last_kyc_performed_by' => [
+                                'contact_email' => '',
+                                'name'          => '',
+                                'id'            => '',
+                                'type'          => '',
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantProductPOS' => [
         'request'  => [
             'url'     => '/submerchants/acc_10000000000009?product=pos',

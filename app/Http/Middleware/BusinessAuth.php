@@ -69,6 +69,7 @@ class BusinessAuth
         'pos_fetch_latest_order',
         'payment_handle_get',
         'merchant_activation_business_categories_v2',
+        'fetch_device_config',
     ];
 
     /**
