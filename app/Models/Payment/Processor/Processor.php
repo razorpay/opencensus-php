@@ -1205,6 +1205,14 @@ class Processor
                 return false;
             }
 
+            // for rearch juspay payments, populating the application id in input to pass it to cps.
+            $appId = $this->ba->getOAuthApplicationId();
+
+            if(empty($appId) === false)
+            {
+                $input['application_id'] = $appId;
+            }
+
             if ($merchant->isFeeBearerDynamic() === true) {
                 // Re-calculates fees on the amount, using a dummy payment creation flow.
                 // This sets re-calculated fee and amount value (in paise) in $input.
@@ -1218,7 +1226,6 @@ class Processor
                     $input['convenience_fee_gst'] = $feesArray['customer_fee_gst'];
                 }
             }
-
 
             //Check for saved card token payments
             if(empty($input[Payment\Entity::TOKEN]) === false)
@@ -3136,6 +3143,11 @@ class Processor
             }
             else
             {
+                // for non-rearch juspay payments, application_id is not expected in input hence unsetting it
+                if(empty($input['application_id']) === false) {
+                    unset($input['application_id']);
+                }
+
                 $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, null, null, $meta);
 
                 $this->convert3ds2BrowserDetails($input);
