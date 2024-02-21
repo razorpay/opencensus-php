@@ -89,6 +89,53 @@ class PreferencesTest extends TestCase
         $expectedPayerAccountTypeMappings = Constants::getPayerAccountTypeMappings($this->gateway);
 
         $this->assertArraySelectiveEquals($expectedPayerAccountTypeMappings, $response[Constants::PAYER_ACCOUNT_TYPE_MAPPINGS]);
+
+        $this->assertArraySelectiveEquals(Constants::getDefaultPrefetchConfigs(), $response[Constants::PREFETCH]);
+    }
+
+    public function testGetPrefetchBankAccountDetailsWhenGlobalRedisConfigIsSet()
+    {
+        $this->setPrefetchBankAccountConfigInRedis();
+
+        $helper = $this->getPreferencesHelper();
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->getGatewayPreferences($this->gateway, []);
+
+        $expectedPreFetchObject = Admin\ConfigKey::get(Admin\ConfigKey::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT);
+
+        $this->assertArraySelectiveEquals($expectedPreFetchObject, $response[Constants::PREFETCH]);
+    }
+
+    public function testGetPrefetchBankListWhenMerchantLevelRedisConfigIsSet()
+    {
+        //Here, along with global config, we also set a merchant level config for MID 10000000000000 (used in the test)
+        $merchantLevelPrefetchConfig = [
+            Constants::BANKS => [
+                [
+                    'priority'     => 0,
+                    'display_name' => 'Axis'
+                ],
+                [
+                    'priority'     => 1,
+                    'display_name' => 'IndusInd'
+                ],
+            ],
+        ];
+
+        $this->setPrefetchBankAccountConfigInRedis($merchantLevelPrefetchConfig);
+
+        $helper = $this->getPreferencesHelper();
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->getGatewayPreferences($this->gateway, []);
+
+        // We expect that the merchant level configs are returned even if there are global and default configs present
+        $expectedPreFetchBankList = $merchantLevelPrefetchConfig;
+
+        $this->assertArraySelectiveEquals($expectedPreFetchBankList, $response[Constants::PREFETCH][Constants::BANKS]);
     }
 
     public function testCreateBankAccountForCustomerForPreferences()
@@ -240,5 +287,33 @@ class PreferencesTest extends TestCase
         [$errorMappings, $fileHash] = (new Core())->generateTurboErrorMappings([Gateway::UPI_AXISOLIVE]);
 
         $this->assertEquals($fileHash, $response[Entity::ERROR_MAPPING_HASH]);
+    }
+
+    public function setPrefetchBankAccountConfigInRedis($merchantConfig = [])
+    {
+        $config = [
+            Constants::CONSENT_MESSAGE    => 'Fetch all my accounts from top banks right now!',
+            Constants::FETCH_RETRY        => 1,
+            Constants::FETCH_CONCURRENT   => 5,
+            Constants::BANKS              => [
+                [
+                    'priority' => 0,
+                    'display_name' => 'SBI'
+                ],
+                [
+                    'priority' => 1,
+                    'display_name' => 'HDFC'
+                ],
+            ],
+        ];
+
+        if (empty($merchantConfig) === false) {
+            $config['10000000000000'] = $merchantConfig;
+        }
+
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT => $config
+                                           ]);
+
     }
 }

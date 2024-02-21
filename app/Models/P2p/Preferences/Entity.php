@@ -30,6 +30,7 @@ class Entity extends Base\Entity
     const BLOCKED                   = 'blocked';
 
     const PREFERENCES               = 'preferences';
+    const PREFETCH                  = 'prefetch';
     protected $entity             = 'p2p_preferences';
     protected static $sign        = 'preferences';
 

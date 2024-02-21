@@ -43,34 +43,28 @@ class Processor extends Base\Processor
 
             $preferencesResponse = array_merge($this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
 
-            if (isset($input[Entity::CUSTOMER_ID]) === true and (isset($input[Entity::ORDER_ID]) === true))
+            if ((isset($input[Entity::CUSTOMER_ID]) === true) and (isset($input[Entity::ORDER_ID]) === true))
             {
-                $doesOrderBelongToCustomer = $this->doesOrderBelongToCustomer($input[Entity::ORDER_ID], $input[Entity::CUSTOMER_ID]);
-
-                if ($doesOrderBelongToCustomer === false)
-                {
-                    $this->trace()->warning(
-                        TraceCode::ORDER_ID_NOT_BELONG_TO_CUSTOMER,
-                        [
-                           'message' => Constants::ORDER_ID_NOT_BELONG_TO_CUSTOMER,
-                        ]);
-
-                    throw new BadRequestValidationFailureException( Constants::ORDER_ID_NOT_BELONG_TO_CUSTOMER,);
-                }
+                $this->validateOrderAndCustomerIdInRequest($input);
             }
 
             if (isset($input[Entity::CUSTOMER_ID]) === true)
             {
-                $preferencesResponse = array_merge($this->getCustomerData((new Device\Core)->getDeviceCustomer($input[Entity::CUSTOMER_ID])),
-                                                   $this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
+                $customer = (new Device\Core)->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
+
+                $preferencesResponse = array_merge($this->getCustomerData($customer), $preferencesResponse);
             }
 
             $this->setMerchantInfoInResponse($preferencesResponse);
+
             $this->setMerchantFeaturesInResponse($preferencesResponse);
+
             $this->setExperimentsInResponse($preferencesResponse);
 
+            $this->setPrefetchConfigsInResponse($preferencesResponse);
+
             // if order id and customer id are empty
-            if (isset($input[Entity::ORDER_ID]) === false and (isset($input[Entity::CUSTOMER_ID]) === false))
+            if ((isset($input[Entity::ORDER_ID]) === false) and (isset($input[Entity::CUSTOMER_ID]) === false))
             {
                 return $this->postProcess($preferencesResponse);
             }
@@ -97,14 +91,22 @@ class Processor extends Base\Processor
 
             throw $e;
         }
+    }
 
-        // If TPV is enabled for the merchant
-        if($this->context()->getMerchant()->isTPVRequired() === true)
+    private function validateOrderAndCustomerIdInRequest($input)
+    {
+        $doesOrderBelongToCustomer = $this->doesOrderBelongToCustomer($input[Entity::ORDER_ID], $input[Entity::CUSTOMER_ID]);
+
+        if ($doesOrderBelongToCustomer === false)
         {
-            $preferencesResponse[Entity::TPV] = $this->getTPVContents($input);
-        }
+            $this->trace()->warning(
+                TraceCode::ORDER_ID_NOT_BELONG_TO_CUSTOMER,
+                [
+                    'message' => Constants::ORDER_ID_NOT_BELONG_TO_CUSTOMER,
+                ]);
 
-        return $this->postProcess($preferencesResponse);
+            throw new BadRequestValidationFailureException( Constants::ORDER_ID_NOT_BELONG_TO_CUSTOMER);
+        }
     }
 
     public function doesOrderBelongToCustomer($orderId, $customerId): bool
@@ -430,6 +432,30 @@ class Processor extends Base\Processor
                 TraceCode::FAILED_TO_ADD_TURBO_METADATA
             );
         }
+    }
+
+    private function setPrefetchConfigsInResponse(&$preferencesResponse)
+    {
+        $defaultPrefetchConfigs  = Constants::getDefaultPrefetchConfigs();
+        $merchantId              = $this->context()->getMerchant()->getId();
+
+        $dynamicPrefetchConfigs  = ConfigKey::get(ConfigKey::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT, []);
+        $merchantPrefetchBankListConfig = $dynamicPrefetchConfigs[$merchantId][Constants::BANKS] ?? null;
+
+        // First we try to check if there's a merchant level config defined in Redis and use the same.
+        // If not, we try to see if there's an overall config defined in Redis and use the same.
+        // If not, we use fallback default configs defined in app/Models/P2p/Preferences/Constants.php
+        $preferencesResponse[Constants::PREFETCH] = [
+            Constants::CONSENT_MESSAGE    => $dynamicPrefetchConfigs[Constants::CONSENT_MESSAGE] ??
+                                             $defaultPrefetchConfigs[Constants::CONSENT_MESSAGE],
+            Constants::FETCH_RETRY        => $dynamicPrefetchConfigs[Constants::FETCH_RETRY] ??
+                                             $defaultPrefetchConfigs[Constants::FETCH_RETRY],
+            Constants::FETCH_CONCURRENT   => $dynamicPrefetchConfigs[Constants::FETCH_CONCURRENT] ??
+                                             $defaultPrefetchConfigs[Constants::FETCH_CONCURRENT],
+            Constants::BANKS              => $merchantPrefetchBankListConfig ??
+                                             $dynamicPrefetchConfigs[Constants::BANKS] ??
+                                             $defaultPrefetchConfigs[Constants::BANKS],
+        ];
     }
 
     private function getSupportedPayerAccountTypesForMerchant(): array
