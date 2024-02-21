@@ -1770,12 +1770,12 @@ class UserTest extends TestCase
 
         $expected = [
             'id' => '100002Razorpay',
-            'otp_auth_token' => '100002Razorpay.1639136024'
+            'otp_auth_token' => 'VdqLuCDKWQUPE1VB742rYYCFuJd3Dyv02vDFeQTdztKRPr8TRN'
         ];
 
         $token = Mockery::mock('\RZP\Services\TokenService', [$this->app]);
 
-        $token->shouldReceive('generate')->andReturn('100002Razorpay.1639136024');
+        $token->shouldReceive('generate')->andReturn('VdqLuCDKWQUPE1VB742rYYCFuJd3Dyv02vDFeQTdztKRPr8TRN');
 
         $this->app->instance('token_service', $token);
 
@@ -2324,7 +2324,7 @@ class UserTest extends TestCase
             'merchants'             => '',
             'invitations'           => [],
             'settings'              => [],
-            'otp_auth_token'        => '100002Razorpay.1639136024',
+            'otp_auth_token'        => 'VdqLuCDKWQUPE1VB742rYYCFuJd3Dyv02vDFeQTdztKRPr8TRN',
         ];
 
         $this->userEntityMock->shouldReceive('isAccountLocked')->withAnyArgs()->andReturn(false);
@@ -2359,7 +2359,7 @@ class UserTest extends TestCase
 
         $token = Mockery::mock('\RZP\Services\TokenService', [$this->app]);
 
-        $token->shouldReceive('generate')->andReturn('100002Razorpay.1639136024');
+        $token->shouldReceive('generate')->andReturn('VdqLuCDKWQUPE1VB742rYYCFuJd3Dyv02vDFeQTdztKRPr8TRN');
 
         $this->app->instance('token_service', $token);
 

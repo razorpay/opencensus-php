@@ -5,7 +5,7 @@ namespace RZP\Services;
 use App;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Timezone;
+use RZP\Models\User\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Foundation\Application;
 use Illuminate\Support\Facades\Redis;
@@ -41,9 +41,7 @@ class TokenService
      */
     public function generate(string $context)
     {
-        $timestamp =  Carbon::now(Timezone::IST)->getTimestamp();
-
-        $token = $context . '.' . $timestamp;
+        $token = bin2hex(random_bytes(Entity::PASSWORD_TOKEN_LENGTH));
 
         $this->redis->set($token, $context, self::REDIS_EXPIRY_PARAM, self::TOKEN_EXPIRES_IN_SECONDS);
 
