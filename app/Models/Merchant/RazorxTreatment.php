@@ -1020,4 +1020,7 @@ final class RazorxTreatment
      */
     const STOP_HOST_HEADER_INJECTION = 'stop_host_header_injection';
 
+    const VALIDATE_VPA_REARCH_UPS     = 'validate_vpa_rearch_ups';
+    const VALIDATE_ACCOUNT_REARCH_UPS = 'validate_account_rearch_ups';
+
 }

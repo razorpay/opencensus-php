@@ -786,6 +786,125 @@ class UpiPaymentServiceTest extends TestCase
         );
     }
 
+    public function testValidateAccountProxySuccessForNumericVpa()
+    {
+//        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+        $this->setMockRazorxTreatment(['validate_account_rearch_ups' => 'on']);
+
+        $input = [
+            'entity' => 'vpa',
+            'value'  => '9815225341',
+            '_'      => [
+                'library' => 'checkoutjs',
+            ],
+        ];
+
+        $request = [
+            'content' => $input,
+            'url'     => '/v1/payments/validate/account',
+            'method'  => 'post'
+        ];
+
+        $this->ba->publicAuth();
+
+        $toAssertResponse = [
+            'vpa_token' => 'RandomGarbledVpaThatHasBeenEncrypted|RandomGarbledTokenForDecryption',
+            'masked_vpa' => 'r*********@rzp',
+            'customer_name' => 'R******************',
+            'success' => true,
+            'error' => null,
+        ];
+
+        $response =  $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySubset($toAssertResponse, $response);
+    }
+
+    public function testValidateAccountProxySuccessForNonNumericVpa()
+    {
+        //        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+        $this->setMockRazorxTreatment(['validate_account_rearch_ups' => 'on']);
+
+        $input = [
+            'entity' => 'vpa',
+            'value'  => 'razorpay@rzp',
+            '_'      => [
+                'library' => 'checkoutjs',
+            ],
+        ];
+
+        $request = [
+            'content' => $input,
+            'url'     => '/v1/payments/validate/account',
+            'method'  => 'post'
+        ];
+
+        $this->ba->publicAuth();
+
+        $toAssertResponse = [
+            'vpa' => 'razorpay@rzp',
+            'customer_name' => 'R******************',
+            'success' => true,
+            'error' => null,
+        ];
+
+        $response =  $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySubset($toAssertResponse, $response);
+    }
+
+    public function testValidateVpaProxySuccessForNonNumericVpa()
+    {
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+        $this->setMockRazorxTreatment(['validate_vpa_rearch_ups' => 'on']);
+
+        $input = [
+            'vpa' => 'razorpay@rzp',
+        ];
+
+        $request = [
+            'content' => $input,
+            'url'     => '/v1/payments/validate/vpa',
+            'method'  => 'post'
+        ];
+
+        $this->ba->privateAuth();
+
+        $toAssertResponse = [
+            'vpa' => 'razorpay@rzp',
+            'customer_name' => 'R******************',
+            'success' => true,
+            'error' => null,
+        ];
+
+        $response =  $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySubset($toAssertResponse, $response);
+    }
+
+    protected function setMockRazorxTreatment(array $razorxTreatment, string $defaultBehaviour = 'control')
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode) use ($razorxTreatment, $defaultBehaviour)
+                              {
+                                  if (array_key_exists($feature, $razorxTreatment) === true)
+                                  {
+                                      return $razorxTreatment[$feature];
+                                  }
+
+                                  return strtolower($defaultBehaviour);
+                              }));
+    }
+
     protected function createDependentEntitiesForRefund($payment, $status = 'authorized')
     {
         $refundArray = [

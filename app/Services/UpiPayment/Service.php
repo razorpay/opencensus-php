@@ -97,6 +97,9 @@ class Service
 
     const VALIDATE_VPA = 'validate_vpa';
 
+    const VALIDATE_ACCOUNT_PROXY = 'validate_account_proxy';
+    const VALIDATE_VPA_PROXY     = 'validate_vpa_proxy';
+
     const DASHBOARD_ENTITY_FETCH = 'dashboard_entity_fetch';
 
     const DASHBOARD_MULTIPLE_ENTITY_FETCH = 'dashboard_multiple_entity_fetch';
@@ -389,6 +392,8 @@ class Service
                     "vpa" => $input[Payment\Entity::VPA],
                 ];
                 break;
+            case self::VALIDATE_ACCOUNT_PROXY:
+            case self::VALIDATE_VPA_PROXY:
             case self::DASHBOARD_ENTITY_FETCH:
             case self::DASHBOARD_MULTIPLE_ENTITY_FETCH:
                 $data = $input;
@@ -560,6 +565,8 @@ class Service
                 return $response[Response::DATA];
             case self::VALIDATE_VPA:
                 return $this->processValidateVpaResponse($response);
+            case self::VALIDATE_ACCOUNT_PROXY:
+            case self::VALIDATE_VPA_PROXY:
             case self::DASHBOARD_ENTITY_FETCH:
             case self::DASHBOARD_MULTIPLE_ENTITY_FETCH:
                 return $response;
@@ -670,8 +677,9 @@ class Service
         {
             $error = $response['details'][0];
 
-            $description = $error['internal']['description'];
+            $description = $error['internal']['description'] ?? null;
 
+            // todo: check if change is required here
             if ($this->action === Payment\Action::VALIDATE_VPA)
             {
                 $description = null;
@@ -1047,6 +1055,12 @@ class Service
             case self::TRANSACTION_UPSERT:
                 $traceData += $request[Request::CONTENT];
                 break;
+            case self::VALIDATE_ACCOUNT_PROXY:
+                $traceData += $this->getValidateAccountProxyTraceData($request[Request::CONTENT]);
+                break;
+            case self::VALIDATE_VPA_PROXY:
+                $traceData += $this->getValidateVpaProxyTraceData($request[Request::CONTENT]);
+                break;
             case self::VALIDATE_VPA:
                 $traceData += $this->getValdiateVpaTraceData($request[Request::CONTENT]);
                 break;
@@ -1132,6 +1146,16 @@ class Service
         if ($action === self::VALIDATE_VPA)
         {
             return sprintf('%s/vpa/validate', $version);
+        }
+
+        if ($action === self::VALIDATE_ACCOUNT_PROXY)
+        {
+            return sprintf('%s/payments/validate/account', $version);
+        }
+
+        if ($action === self::VALIDATE_VPA_PROXY)
+        {
+            return sprintf('%s/payments/validate/vpa', $version);
         }
 
         if ($action === self::TRANSACTION_UPSERT)
@@ -1295,6 +1319,26 @@ class Service
      * @return array
      */
     protected function getValdiateVpaTraceData(array $content): array
+    {
+        return [
+            Entity::VPA => mask_by_percentage($content['vpa'], 0.6)
+        ];
+    }
+
+    /**
+     * get trace data for validate vpa proxy action send to UPS
+     *
+     * @param  array $content
+     * @return array
+     */
+    protected function getValidateAccountProxyTraceData(array $content): array
+    {
+        return [
+            Entity::VPA => mask_by_percentage($content['value'], 0.6)
+        ];
+    }
+
+    protected function getValidateVpaProxyTraceData(array $content): array
     {
         return [
             Entity::VPA => mask_by_percentage($content['vpa'], 0.6)

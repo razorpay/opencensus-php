@@ -560,4 +560,44 @@ class Service extends UpiPaymentService
 
         return (in_array($gateway, $gateways, true) === true);
     }
+
+    protected function validateAccountProxy($input)
+    {
+        $result = [];
+        if (is_numeric($input['value']))
+        {
+            $result['vpa_token'] = 'RandomGarbledVpaThatHasBeenEncrypted|RandomGarbledTokenForDecryption';
+            $result['masked_vpa'] = 'r*********@rzp';
+        }
+        else
+        {
+            $result['vpa'] = $input['value'];
+        }
+
+        $result['success'] = true;
+        $result['customer_name'] = 'R******************';
+        $result['error'] = null;
+
+        return [$result, 200];
+    }
+
+    protected function validateVpaProxy($input)
+    {
+        $result = [];
+        if (is_numeric($input['vpa']))
+        {
+            $result['vpa_token'] = 'RandomGarbledVpaThatHasBeenEncrypted|RandomGarbledTokenForDecryption';
+            $result['masked_vpa'] = 'r*********@rzp';
+        }
+        else
+        {
+            $result['vpa'] = $input['vpa'];
+        }
+
+        $result['success'] = true;
+        $result['customer_name'] = 'R******************';
+        $result['error'] = null;
+
+        return [$result, 200];
+    }
 }

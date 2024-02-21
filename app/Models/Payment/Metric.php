@@ -115,6 +115,9 @@ class Metric extends Base\Core
     const AUTO_CAPTURE_SPLIT_PAYMENT_FAILED_COUNT          = 'autocapture_split_payment_failed_count';
     const AUTO_CAPTURE_SPLIT_PAYMENT_REQUEST_TIME          = 'autocapture_split_payment_request_time';
 
+    const VALIDATE_ACCOUNT_UPS_REQUEST_FAILED_COUNT        = 'validate_account_ups_request_failed_count';
+    const VALIDATE_VPA_UPS_REQUEST_FAILED_COUNT            = 'validate_vpa_ups_request_failed_count';
+
     public function pushCreateMetrics(Entity $payment)
     {
         $dimensions = $this->getDefaultDimentions($payment);

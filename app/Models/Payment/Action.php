@@ -41,6 +41,8 @@ class Action
     const GENERATE_CLAIMS               = 'generate_claims';
     const RECONCILE_DEBIT_EMANDATE      = 'reconcile_debit_emandate';
     const VALIDATE_VPA                  = 'validate_vpa';
+    const VALIDATE_ACCOUNT_PROXY        = 'validate_account_proxy';
+    const VALIDATE_VPA_PROXY            = 'validate_vpa_proxy';
     const VALIDATE_PUSH                 = 'validate_push';
     const AUTHORIZE_PUSH                = 'authorize_push';
     const OTP_RESEND                    = 'otp_resend';

@@ -4265,9 +4265,48 @@ class Service extends Base\Service
             unset($input['merchant_id']);
         }
 
+        // Check if we can process the validate VPA request for numeric/non-numeric VPA to UPS directly
+        // For the route named `payment_validate_account`, this check is already happening at
+        // app/Models/Payment/Validation/Vpa.php::processValidation().
+        // We have the same check here for the route named `payment_validate_vpa`
+        if ($this->shouldRouteValidateVpaRequestToUps($merchant))
+        {
+            try
+            {
+                return $this->app['upi.payments']->action(Payment\Action::VALIDATE_VPA_PROXY, $input, "");
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->error(
+                    TraceCode::VALIDATE_VPA_UPS_REQUEST_FAILED,
+                    [
+                        'error_message' => $e->getMessage(),
+                    ]);
+
+                $this->trace->count(Metric::VALIDATE_VPA_UPS_REQUEST_FAILED_COUNT);
+
+                // In case of errors, continue with the old flow
+            }
+        }
+
         $data = $this->getNewProcessor($merchant)->validateVpa($input);
 
         return $data;
+    }
+
+    /**
+     * Check whether to route validate account request to UPS
+     * @return bool
+     */
+    protected function shouldRouteValidateVpaRequestToUps($merchant): bool
+    {
+        $mode = $this->mode ?? Mode::LIVE;
+
+        $merchantId = optional($merchant)->getId() ?? 'default';
+
+        $variant = $this->app->razorx->getTreatment($merchantId, RazorxTreatment::VALIDATE_VPA_REARCH_UPS, $mode);
+
+        return str_starts_with(strtolower($variant), 'on') === true;
     }
 
     public function mandateUpdate($id, $token, $input)
