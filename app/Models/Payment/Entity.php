@@ -6645,6 +6645,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getGatewayAmount()
     {
         $paymentMetaEntity = $this->paymentMeta;
+        
+        // If the entity has a reward we should deduct the reward amount
+        // from the payment amount
+        if ($this->hasReward())
+        {
+            return ($this->getAmount()-$this->reward->getRewardAmount());
+        }
 
         return (($paymentMetaEntity !== null) and
                 ($paymentMetaEntity->getGatewayAmount() !== null) and

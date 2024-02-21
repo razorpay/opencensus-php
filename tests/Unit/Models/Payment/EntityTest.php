@@ -5,6 +5,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Method;
+use RZP\Models\RewardPoint\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\PublicCollection;
 
@@ -127,5 +128,24 @@ class EntityTest extends TestCase
         $actual = $payments->toArrayHosted();
 
         $this->assertEquals([$expected], $actual);
+    }
+
+    public function testRewardAttributePresent() {
+        $payment = $this->fixtures->create('payment:captured');
+        $reward =  (new Entity())->forceFill([
+            'id' => '100000000000',
+            'amount' => 500,
+            'points' => 50
+        ]);
+        $payment->reward()->associate($reward);
+
+        $this->assertEquals(true, $payment->hasReward());
+    }
+
+    public function testRewardAttributeAbsent()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->assertEquals(false, $payment->hasReward());
     }
 }

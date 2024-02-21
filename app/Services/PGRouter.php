@@ -604,7 +604,7 @@ class PGRouter
 
                 $rewardPoint->setExternal(true);
 
-                unset($payment['data']['payment']['reward']);
+                unset($response['body']['data']['payment']['reward']);
             }
 
             if(isset($response['body']['data']['payment']['dcc_offered']) && $response['body']['data']['payment']['dcc_offered'] === true)
@@ -619,7 +619,7 @@ class PGRouter
 
                 $response['body']['data']['payment']['payment_meta_data'] = $pgRouterPaymentMetaData;
             }
-
+            
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
 
 
