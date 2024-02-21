@@ -55,7 +55,7 @@ trait ReverseShadowTrait
             return (($feeCredits > 0) and ($feeCredits >= ($fee-$customerFee-$customerTax)));
         }
 
-        return (($feeCredits > 0) and ($feeCredits >= $fee) and ($payment->isFeeBearerCustomer() === false));
+        return (($feeCredits > 0) and ($feeCredits >= $fee) and ($this->isPaymentFeeBearerCustomer($payment) === false));
     }
 
     protected function isPostPaidDynamicFeeBearerFlag(PaymentEntity $payment,$merchant)
@@ -76,7 +76,7 @@ trait ReverseShadowTrait
 
     protected function isGratisWithoutCustomerFeeBearer($amountCredits ,$amount, PaymentEntity $payment)
     {
-        return (($amountCredits > 0) and ($amount !== 0) and ($payment->isFeeBearerCustomer() === false) and ($amountCredits >= $amount));
+        return (($amountCredits > 0) and ($amount !== 0) and ($this->isPaymentFeeBearerCustomer($payment) === false) and ($amountCredits >= $amount));
     }
 
     protected function isGratis($amountCredits ,$amount): bool
@@ -91,12 +91,17 @@ trait ReverseShadowTrait
 
     protected function isPostPaidWithoutCustomerFeeBearer(PaymentEntity $payment)
     {
-        return (($this->isPostpaid($payment) === true) and ($payment->isFeeBearerCustomer() === false));
+        return (($this->isPostpaid($payment) === true) and ($this->isPaymentFeeBearerCustomer($payment) === false));
     }
 
     protected function isPostpaid(PaymentEntity $payment): bool
     {
         return ($payment->merchant->getFeeModel() === Merchant\FeeModel::POSTPAID);
+    }
+    
+    protected function isPaymentFeeBearerCustomer(PaymentEntity $payment): bool
+    {
+        return ($payment->getAttribute(PaymentEntity::FEE_BEARER) === Merchant\FeeBearer::CUSTOMER);
     }
 
     protected function getPayloadName($transactorId, $transactorEvent): string

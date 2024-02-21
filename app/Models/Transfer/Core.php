@@ -2229,6 +2229,13 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($reversal);
                 }
+                else
+                {
+                    $this->app['trace']->info(TraceCode::TRANSFER_REVERSAL_TRANSACTION_EXISTS, [
+                        'entity'   => 'reversal',
+                        'txn'      => $reversalTxn
+                    ]);
+                }
 
                 if($isRearchRefund)
                 {
@@ -2262,21 +2269,40 @@ class Core extends Base\Core
 
                 $paymentProcessor = new Payment\Processor\Processor($refund->merchant);
 
-                $dummyRefundTxnResponse = $paymentProcessor->scroogeRefundTransactionCreate($refund->payment, $dummyRefundInput);
+                // avoid duplicate txn creation
+                $refundTxn = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
+
+                $refundTxnId = null;
+
+                if(isset($refundTxn) === false)
+                {
+                    $dummyRefundTxnResponse = $paymentProcessor->scroogeRefundTransactionCreate($refund->payment, $dummyRefundInput);
+
+                    $refundTxnId = $dummyRefundTxnResponse['data'][Refund\Constants::TRANSACTION_ID];
+
+                    // associate refund with txn
+                    $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refundId);
+
+                    if ((isset($txn) === true) and ($isRearchRefund === false)) {
+                        $refund->transaction()->associate($txn);
+                        $refund->exists = true;
+                        $this->repo->saveOrFail($refund);
+                    }
+                }
+                else
+                {
+                    $refundTxnId = $refundTxn->getId();
+
+                    $this->app['trace']->info(TraceCode::TRANSFER_REVERSAL_TRANSACTION_EXISTS, [
+                        'entity'   => 'refund',
+                        'txn'      => $refundTxn
+                    ]);
+                }
 
                 $reversalTransactionsList[] = [
                     "reversal_txn_id"     => $reversalTxn->getId(),
-                    "refund_txn_id"       => $dummyRefundTxnResponse['data'][Refund\Constants::TRANSACTION_ID],
+                    "refund_txn_id"       => $refundTxnId,
                 ];
-
-                // associate refund with txn
-                $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refundId);
-
-                if ((isset($txn) === true) and ($isRearchRefund === false)) {
-                    $refund->transaction()->associate($txn);
-                    $refund->exists = true;
-                    $this->repo->saveOrFail($refund);
-                }
 
             }
 
@@ -2304,17 +2330,32 @@ class Core extends Base\Core
 
                 $paymentProcessor = new Payment\Processor\Processor($customerRefund->merchant);
 
-                $customerRefundTxnResponse = $paymentProcessor->scroogeRefundTransactionCreate($sourcePayment, $customerRefundInput);
-
-                $customerRefundTxnId = $customerRefundTxnResponse['data'][Refund\Constants::TRANSACTION_ID];
-
-                // associate customer refund with txn
+                // avoid duplicate txn creation
                 $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($customerRefund->getId());
 
-                if ((isset($txn) === true) and ($isRearchRefund === false)) {
-                    $customerRefund->transaction()->associate($txn);
-                    $customerRefund->exists = true;
-                    $this->repo->saveOrFail($customerRefund);
+                if(isset($txn) === false)
+                {
+                    $customerRefundTxnResponse = $paymentProcessor->scroogeRefundTransactionCreate($sourcePayment, $customerRefundInput);
+
+                    $customerRefundTxnId = $customerRefundTxnResponse['data'][Refund\Constants::TRANSACTION_ID];
+
+                    // associate customer refund with txn
+                    $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($customerRefund->getId());
+
+                    if ((isset($txn) === true) and ($isRearchRefund === false)) {
+                        $customerRefund->transaction()->associate($txn);
+                        $customerRefund->exists = true;
+                        $this->repo->saveOrFail($customerRefund);
+                    }
+                }
+                else
+                {
+                    $customerRefundTxnId = $txn->getId();
+
+                    $this->app['trace']->info(TraceCode::TRANSFER_REVERSAL_TRANSACTION_EXISTS, [
+                        'entity'   => 'customer refund',
+                        'txn'      => $txn
+                    ]);
                 }
             }
 

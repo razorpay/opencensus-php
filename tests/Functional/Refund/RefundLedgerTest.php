@@ -1971,6 +1971,541 @@ class RefundLedgerTest extends TestCase
         $this->assertNotNull($actualLedgerOutboxEntry['idempotency_key']);
     }
 
+    public function testInstantRefundCompleteReversalToBalancePostpaidReverseShadow()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->setFeeModel(Merchant\FeeModel::POSTPAID);
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->andReturn([
+                    "body" => $this->getJournalCreateSuccessResponse()
+                ]
+            );
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->merchant->addFeatures('pg_ledger_reverse_shadow');
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (&$content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $response = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed' => 'optimum',
+                'is_fta' => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertNotNull($refund['transaction_id']);
+        $this->assertNotNull($refund['balance_id']);
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+        $this->assertEquals(RefundSpeed::OPTIMUM, $refund['speed_decisioned']);
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->withArgs(function ($journalPayload, $requestHeaders, $throwException) use ($refund) {
+
+                $this->assertEquals($refund['id'], $journalPayload['transactor_id']);
+                $this->assertEquals('refund_processed', $journalPayload['transactor_event']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn([
+                'code' => 200,
+                "body" =>
+                    [
+                    "id" => "LP6jffEeZejP3v",
+                    "created_at" => "1678295443",
+                    "updated_at" => "1678295443",
+                    "amount" => "3471",
+                    "base_amount" => "3471",
+                    "currency" => "INR",
+                    "tenant" => "PG",
+                    "transactor_id" => $refund['id'],
+                    "transactor_event" => "refund_processed",
+                    "transaction_date" => "0",
+                    "ledger_entry" => [
+                        [
+                            "id" => "LP6jffKNJZ7A4O",
+                            "created_at" => "1678295443",
+                            "updated_at" => "1678295443",
+                            "merchant_id" => "10000000000000",
+                            "journal_id" => "LP6jffEeZejP3v",
+                            "account_id" => "JjpZUD9PmJeNPk",
+                            "amount" => "4179",
+                            "base_amount" => "4179",
+                            "type" => "debit",
+                            "currency" => "INR",
+                            "balance" => "10000",
+                            "balance_updated" => true,
+                            "account_entities" =>
+                                [
+                                    "account_type" => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                        ],
+                        [
+                            "id" => "LP6jffKNJZ7A41",
+                            "created_at" => "1678295443",
+                            "updated_at" => "1678295443",
+                            "merchant_id" => "10000000000000",
+                            "journal_id" => "LP6jffEeZejP3v",
+                            "account_id" => "Iu15tvUXWI1loc",
+                            "amount" => "3471",
+                            "base_amount" => "3471",
+                            "type" => "credit",
+                            "currency" => "INR",
+                            "balance" => "0",
+                            "balance_updated" => false,
+                            "account_entities" =>
+                                [
+                                    "account_type" => ["payable"],
+                                    "fund_account_type" => ["customer_refund"],
+                                ]
+                        ],
+                        [
+                            "id" => "LP6jffKNJZ7A42",
+                            "created_at" => "1678295443",
+                            "updated_at" => "1678295443",
+                            "merchant_id" => "10000000000000",
+                            "journal_id" => "LP6jffEeZejP3v",
+                            "account_id" => "Iu15tvUXWI1loc",
+                            "amount" => "708",
+                            "base_amount" => "708",
+                            "type" => "credit",
+                            "currency" => "INR",
+                            "balance" => "0",
+                            "balance_updated" => false,
+                            "account_entities" =>
+                                [
+                                    "account_type" => ["receivable"],
+                                    "fund_account_type" => ["rzp_commission"],
+                                ]
+                        ],
+                        [
+                            "id" => "LP6jffKNJZ7A43",
+                            "created_at" => "1678295443",
+                            "updated_at" => "1678295443",
+                            "merchant_id" => "10000000000000",
+                            "journal_id" => "LP6jffEeZejP3v",
+                            "account_id" => "Iu15tvUXWI1loc",
+                            "amount" => "108",
+                            "base_amount" => "108",
+                            "type" => "credit",
+                            "currency" => "INR",
+                            "balance" => "0",
+                            "balance_updated" => false,
+                            "account_entities" =>
+                                [
+                                    "account_type" => ["payable"],
+                                    "fund_account_type" => ["rzp_gst"],
+                                ]
+                        ]
+                    ]
+                ]
+            ]);
+
+        // create reversal
+        $this->scroogeUpdateRefundStatus($refund, 'failed_event');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(RefundStatus::REVERSED, $refund['status']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertEquals($reversal['entity_type'], 'refund');
+        $this->assertEquals('rfnd_' . $reversal['entity_id'], $refund['id']);
+        $this->assertEquals($refund['balance_id'], $reversal['balance_id']);
+        $this->assertNotNull(0, $reversal['amount']);
+        $this->assertNull($reversal['transaction_id'], 'reversal txn should not be created in sync');
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" => "10000000000000",
+            "currency" => "INR",
+            "transactor_event" => "refund_reversed",
+            "money_params" => [
+                "reversed_amount" => "3471",
+                "merchant_receivable_amount" => "708",
+                "commission" => "600",
+                "tax" => "108"
+            ],
+            "additional_params" => [
+                'reverse_refund_accounting' => 'instant_refund_reversed_postpaid_balance_complete'
+            ],
+            "ledger_integration_mode" => "reverse-shadow",
+            "identifiers" => [
+                "gateway" => "hdfc"
+            ],
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($reversal['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertNotNull($actualLedgerOutboxEntry['idempotency_key']);
+    }
+
+    public function testInstantRefundCompleteReversalToCreditsPostpaidReverseShadow()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->editRefundCredits('60000', '10000000000000');
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
+        $this->fixtures->merchant->setFeeModel(Merchant\FeeModel::POSTPAID);
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->andReturn([
+                    "body" => $this->getJournalCreateSuccessResponse()
+                ]
+            );
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->merchant->addFeatures('pg_ledger_reverse_shadow');
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (&$content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $response = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed' => 'optimum',
+                'is_fta' => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertNotNull($refund['transaction_id']);
+        $this->assertNotNull($refund['balance_id']);
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+        $this->assertEquals(RefundSpeed::OPTIMUM, $refund['speed_decisioned']);
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->withArgs(function ($journalPayload, $requestHeaders, $throwException) use ($refund) {
+
+                $this->assertEquals($refund['id'], $journalPayload['transactor_id']);
+                $this->assertEquals('refund_processed', $journalPayload['transactor_event']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn([
+                'code' => 200,
+                "body" => [
+                    "id" => "LP6jffEeZejP3v",
+                    "created_at" => "1678295443",
+                    "updated_at" => "1678295443",
+                    "amount" => "3471",
+                    "base_amount" => "3471",
+                    "currency" => "INR",
+                    "tenant" => "PG",
+                    "transactor_id" => $refund['id'],
+                    "transactor_event" => "refund_processed",
+                    "transaction_date" => "0",
+                    "ledger_entry" => [
+                        [
+                            "id" => "LP6jffKNJZ7A4O",
+                            "created_at" => "1678295443",
+                            "updated_at" => "1678295443",
+                            "merchant_id" => "10000000000000",
+                            "journal_id" => "LP6jffEeZejP3v",
+                            "account_id" => "JjpZUD9PmJeNPk",
+                            "amount" => "4179",
+                            "base_amount" => "4179",
+                            "type" => "debit",
+                            "currency" => "INR",
+                            "balance" => "10000",
+                            "balance_updated" => true,
+                            "account_entities" =>
+                                [
+                                    "account_type" => ["payable"],
+                                    "fund_account_type" => ["merchant_refund_credits"]
+                                ]
+                        ],
+                        [
+                            "id" => "LP6jffKNJZ7A41",
+                            "created_at" => "1678295443",
+                            "updated_at" => "1678295443",
+                            "merchant_id" => "10000000000000",
+                            "journal_id" => "LP6jffEeZejP3v",
+                            "account_id" => "Iu15tvUXWI1loc",
+                            "amount" => "3471",
+                            "base_amount" => "3471",
+                            "type" => "credit",
+                            "currency" => "INR",
+                            "balance" => "0",
+                            "balance_updated" => false,
+                            "account_entities" =>
+                                [
+                                    "account_type" => ["payable"],
+                                    "fund_account_type" => ["customer_refund"],
+                                ]
+                        ],
+                        [
+                            "id" => "LP6jffKNJZ7A42",
+                            "created_at" => "1678295443",
+                            "updated_at" => "1678295443",
+                            "merchant_id" => "10000000000000",
+                            "journal_id" => "LP6jffEeZejP3v",
+                            "account_id" => "Iu15tvUXWI1loc",
+                            "amount" => "708",
+                            "base_amount" => "708",
+                            "type" => "credit",
+                            "currency" => "INR",
+                            "balance" => "0",
+                            "balance_updated" => false,
+                            "account_entities" =>
+                                [
+                                    "account_type" => ["receivable"],
+                                    "fund_account_type" => ["rzp_commission"],
+                                ]
+                        ],
+                        [
+                            "id" => "LP6jffKNJZ7A43",
+                            "created_at" => "1678295443",
+                            "updated_at" => "1678295443",
+                            "merchant_id" => "10000000000000",
+                            "journal_id" => "LP6jffEeZejP3v",
+                            "account_id" => "Iu15tvUXWI1loc",
+                            "amount" => "108",
+                            "base_amount" => "108",
+                            "type" => "credit",
+                            "currency" => "INR",
+                            "balance" => "0",
+                            "balance_updated" => false,
+                            "account_entities" =>
+                                [
+                                    "account_type" => ["payable"],
+                                    "fund_account_type" => ["rzp_gst"],
+                                ]
+                        ]
+                    ]
+                ]
+            ]);
+
+        // create reversal
+        $this->scroogeUpdateRefundStatus($refund, 'failed_event');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(RefundStatus::REVERSED, $refund['status']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertEquals($reversal['entity_type'], 'refund');
+        $this->assertEquals('rfnd_' . $reversal['entity_id'], $refund['id']);
+        $this->assertEquals($refund['balance_id'], $reversal['balance_id']);
+        $this->assertNotNull(0, $reversal['amount']);
+        $this->assertNull($reversal['transaction_id'], 'reversal txn should not be created in sync');
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" => "10000000000000",
+            "currency" => "INR",
+            "transactor_event" => "refund_reversed",
+            "money_params" => [
+                'reversed_amount' => '3471',
+                "merchant_receivable_amount" => "708",
+                "commission" => "600",
+                "tax" => "108"
+            ],
+            "additional_params" => [
+                'reverse_refund_accounting' => 'instant_refund_reversed_postpaid_credits_complete'
+            ],
+            "ledger_integration_mode" => "reverse-shadow",
+            "identifiers" => [
+                "gateway" => "hdfc"
+            ],
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($reversal['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertNotNull($actualLedgerOutboxEntry['idempotency_key']);
+    }
+
+    public function getFetchByTransactorResponseBody($refund, $gstAmount, $commissionAmount, $customerRefundAmount, $balanceAmount)
+    {
+        return [
+                "id" => "LP6jffEeZejP3v",
+                "created_at" => "1678295443",
+                "updated_at" => "1678295443",
+                "amount" => "3471",
+                "base_amount" => "3471",
+                "currency" => "INR",
+                "tenant" => "PG",
+                "transactor_id" => $refund['id'],
+                "transactor_event" => "refund_processed",
+                "transaction_date" => "0",
+                "ledger_entry" => [
+                    [
+                        "id" => "LP6jffKNJZ7A4O",
+                        "created_at" => "1678295443",
+                        "updated_at" => "1678295443",
+                        "merchant_id" => "10000000000000",
+                        "journal_id" => "LP6jffEeZejP3v",
+                        "account_id" => "JjpZUD9PmJeNPk",
+                        "amount" => "4179",
+                        "base_amount" => "4179",
+                        "type" => "debit",
+                        "currency" => "INR",
+                        "balance" => "10000",
+                        "balance_updated" => true,
+                        "account_entities" =>
+                            [
+                                "account_type" => ["payable"],
+                                "fund_account_type" => ["merchant_balance"]
+                            ]
+                    ],
+                    [
+                        "id" => "LP6jffKNJZ7A41",
+                        "created_at" => "1678295443",
+                        "updated_at" => "1678295443",
+                        "merchant_id" => "10000000000000",
+                        "journal_id" => "LP6jffEeZejP3v",
+                        "account_id" => "Iu15tvUXWI1loc",
+                        "amount" => "3471",
+                        "base_amount" => "3471",
+                        "type" => "credit",
+                        "currency" => "INR",
+                        "balance" => "0",
+                        "balance_updated" => false,
+                        "account_entities" =>
+                            [
+                                "account_type" => ["payable"],
+                                "fund_account_type" => ["customer_refund"],
+                            ]
+                    ],
+                    [
+                        "id" => "LP6jffKNJZ7A42",
+                        "created_at" => "1678295443",
+                        "updated_at" => "1678295443",
+                        "merchant_id" => "10000000000000",
+                        "journal_id" => "LP6jffEeZejP3v",
+                        "account_id" => "Iu15tvUXWI1loc",
+                        "amount" => "708",
+                        "base_amount" => "708",
+                        "type" => "credit",
+                        "currency" => "INR",
+                        "balance" => "0",
+                        "balance_updated" => false,
+                        "account_entities" =>
+                            [
+                                "account_type" => ["receivable"],
+                                "fund_account_type" => ["rzp_commission"],
+                            ]
+                    ],
+                    [
+                        "id" => "LP6jffKNJZ7A43",
+                        "created_at" => "1678295443",
+                        "updated_at" => "1678295443",
+                        "merchant_id" => "10000000000000",
+                        "journal_id" => "LP6jffEeZejP3v",
+                        "account_id" => "Iu15tvUXWI1loc",
+                        "amount" => "108",
+                        "base_amount" => "108",
+                        "type" => "credit",
+                        "currency" => "INR",
+                        "balance" => "0",
+                        "balance_updated" => false,
+                        "account_entities" =>
+                            [
+                                "account_type" => ["payable"],
+                                "fund_account_type" => ["rzp_gst"],
+                            ]
+                    ]
+                ]
+            ];
+    }
+
     public function testInstantRefundFeeOnlyReversalWithCreditsReverseShadow()
     {
         Mail::fake();

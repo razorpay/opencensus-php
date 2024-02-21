@@ -1113,7 +1113,7 @@ class Core extends Base\Core
                             }
                         }
 
-                        if ($payment->merchant->isFeeBearerCustomer() === false)
+                        if ($payment->isFeeBearerCustomer() === false)
                         {
                             $payment->setFee(0);
                         }

@@ -298,60 +298,62 @@ class Core extends Base\Core
 
     private function fetchMoneyParamsAndLedgerRulesForRefundsDirectSettlement(RefundEntity $refund, $fee, $tax)
     {
+        $merchant = $refund->merchant;
+        $payment = $refund->payment;
         if (($refund->isDirectSettlementRefund() === true) and
             ($refund->isRefundSpeedInstant() === true) and
-            ($this->isRefundCredits($refund->merchant) === true))
+            ($this->isRefundCredits($merchant) === true))
         {
             return $this->fetchDSWithRefundTerminalInstantSpeedRefundCredits($refund, $fee, $tax);
         }
 
         if (($refund->isDirectSettlementRefund() === true) and
             ($refund->isRefundSpeedInstant() === true) and
-            ($this->isRefundCredits($refund->merchant) === false))
+            ($this->isRefundCredits($merchant) === false))
         {
             return $this->fetchDSWithRefundTerminalInstantSpeedMerchantBalance($refund, $fee, $tax);
         }
 
         if (($refund->isDirectSettlementWithoutRefund() === true) and
             ($refund->isRefundSpeedInstant() === true) and
-            ($this->isRefundCredits($refund->merchant) === true))
+            ($this->isRefundCredits($merchant) === true))
         {
             return $this->fetchDSWithoutRefundTerminalInstantSpeedRefundCredits($refund, $fee, $tax);
         }
 
         if (($refund->isDirectSettlementWithoutRefund() === true) and
             ($refund->isRefundSpeedInstant() === true) and
-            ($this->isRefundCredits($refund->merchant) === false))
+            ($this->isRefundCredits($merchant) === false))
         {
             return $this->fetchDSWithoutRefundTerminalInstantSpeedMerchantBalance($refund, $fee, $tax);
         }
 
         if (($refund->isDirectSettlementWithoutRefund() === true) and
             ($refund->isRefundSpeedInstant() === false) and
-            ($this->isRefundCredits($refund->merchant) === true))
+            ($this->isRefundCredits($merchant) === true))
         {
             return $this->fetchDSWithoutRefundTerminalNormalSpeedRefundCredits($refund);
         }
 
         if (($refund->isDirectSettlementWithoutRefund() === true) and
             ($refund->isRefundSpeedInstant() === false) and
-            ($this->isRefundCredits($refund->merchant) === false))
+            ($this->isRefundCredits($merchant) === false))
         {
             return$this->fetchDSWithoutRefundTerminalNormalSpeedMerchantBalance($refund);
         }
 
-        if (($refund->payment->hasBeenCaptured() === false) and
+        if (($payment->hasBeenCaptured() === false) and
             ($refund->isDirectSettlementWithoutRefund() === true) and
             ($refund->isRefundSpeedInstant() === false) and
-            ($this->isRefundCredits($refund->merchant) === true))
+            ($this->isRefundCredits($merchant) === true))
         {
             return $this->fetchAutoDSWithoutRefundTerminalNormalSpeedRefundCredits($refund);
         }
 
-        if (($refund->payment->hasBeenCaptured() === false) and
+        if (($payment->hasBeenCaptured() === false) and
             ($refund->isDirectSettlementWithoutRefund() === true) and
             ($refund->isRefundSpeedInstant() === false) and
-            ($this->isRefundCredits($refund->merchant) === false))
+            ($this->isRefundCredits($merchant) === false))
         {
             return $this->fetchAutoDSWithoutRefundTerminalNormalSpeedMerchantBalance($refund);
         }

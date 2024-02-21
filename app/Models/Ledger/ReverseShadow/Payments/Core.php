@@ -42,6 +42,14 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($payment);
 
+        $this->trace->info(
+            TraceCode::CREATING_FEES_BREAKUP_IN_REVERSE_SHADOW,
+            [
+                'tax'          => $tax,
+                'fee'          => $fee,
+                'fee_split'    => $feesSplit->toArrayPublic(),
+            ]);
+
         if ($payment->isDirectSettlement() === true)
         {
             $moneyParams = $this->generateMoneyParamsForDSPayment($payment, $merchantAccountBalances, $fee, $tax);

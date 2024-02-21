@@ -57,6 +57,9 @@ class Constants
     const REFUND_ID                                         = "refund_id";
     const DISCOUNT                                          = "discount";
 
+    const INSTANT_REFUND_REVERSED_POSTPAID_BALANCE_COMPLETE         = "instant_refund_reversed_postpaid_balance_complete";
+    const INSTANT_REFUND_REVERSED_POSTPAID_CREDITS_COMPLETE         = "instant_refund_reversed_postpaid_credits_complete";
+
     const INSTANT_REFUND_PROCESSED_WITH_CREDITS_POSTPAID_MODEL  = "instant_refund_processed_with_credits_postpaid_model";
     const INSTANT_REFUND_PROCESSED_POSTPAID_MODEL               = "instant_refund_processed_postpaid_model";
 

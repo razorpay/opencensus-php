@@ -82,6 +82,8 @@ class Core extends Base\Core
         $fees  = abs($reversal->getFee());
         $tax = abs($reversal->getTax());
 
+        $merchant = $refund->merchant;
+
         $commission = $fees - $tax;
 
         $ledgerService = $this->app['ledger'];
@@ -170,35 +172,52 @@ class Core extends Base\Core
         }
         else
         {
-            if($refund->getSpeedDecisioned() === speed::NORMAL)
+
+            if ($refund->getSpeedDecisioned() === speed::NORMAL)
             {
                 if ($isRefundCredits === true)
                 {
                     $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::REFUND_REVERSED_CREDITS;
 
-                    $moneyParams[Constants::REVERSED_AMOUNT]     = $strAmount;
-                    $moneyParams[Constants::REFUND_CREDITS]      = $strAmount;
+                    $moneyParams[Constants::REVERSED_AMOUNT] = $strAmount;
+                    $moneyParams[Constants::REFUND_CREDITS] = $strAmount;
                 }
-                else {
-                    $moneyParams[Constants::REVERSED_AMOUNT]            = $strAmount;
-                    $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]     = $strAmount;
+                else
+                {
+                    $moneyParams[Constants::REVERSED_AMOUNT] = $strAmount;
+                    $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = $strAmount;
                 }
             }
             else if ($refund->isRefundSpeedInstant() === true)
             {
-                $moneyParams[Constants::REVERSED_AMOUNT]    = $strAmount;
-                $moneyParams[Constants::COMMISSION]         = strval($commission);
-                $moneyParams[Constants::TAX]                = strval($tax);
+                $moneyParams[Constants::REVERSED_AMOUNT] = $strAmount;
+                $moneyParams[Constants::COMMISSION] = strval($commission);
+                $moneyParams[Constants::TAX] = strval($tax);
 
-                if ($isRefundCredits === true)
+                if($merchant->isPostpaid() === true)
                 {
-                    $rule[Constants::REVERSE_REFUND_ACCOUNTING]     = Constants::INSTANT_REFUND_REVERSED_CREDITS;
-                    $moneyParams[Constants::REFUND_CREDITS]         = strval($reversalAmount + $commission + $tax);
+                    $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($commission + $tax);
                 }
-                else
+
+                if ($isRefundCredits === true && $merchant->isPostpaid() === false)
                 {
-                    $rule[Constants::REVERSE_REFUND_ACCOUNTING]         = Constants::INSTANT_REFUND_REVERSED;
-                    $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($reversalAmount + $commission + $tax);
+                    $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_REVERSED_CREDITS;
+                    $moneyParams[Constants::REFUND_CREDITS] = strval($reversalAmount + $commission + $tax);
+                }
+                else if($isRefundCredits === false && $merchant->isPostpaid() === false)
+                {
+                    $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_REVERSED;
+                    $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($reversalAmount + $commission + $tax);
+                }
+                else if ($isRefundCredits === true && $merchant->isPostpaid() === true)
+                {
+                    $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_REVERSED_POSTPAID_CREDITS_COMPLETE;
+                    $moneyParams[Constants::REFUND_CREDITS] = strval($reversalAmount);
+                }
+                else if($isRefundCredits === false && $merchant->isPostpaid() === true)
+                {
+                    $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_REVERSED_POSTPAID_BALANCE_COMPLETE;
+                    $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($reversalAmount);
                 }
             }
         }

@@ -3,6 +3,8 @@
 namespace RZP\Models\Ledger\ReverseShadow\Transfers\Reversal;
 
 use App;
+use Neves\Events\TransactionalClosureEvent;
+use RZP\Jobs\Transfers\TransferReversalCreateTransaction;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Transaction;
@@ -136,7 +138,15 @@ class Core extends Base\Core
 
         $journals = $this->createJournalInLedger($journalPayload, false, true);
 
-        return $this->pushReversalToKafkaForAPITransactionCreation([[$reversal,$refund]],$sourceRefund, $journals, $isCustomerRefundApplicable, $isRearchRefund);
+        list($reversalAndRefundJournalIds, $producerKey) = $this->createPayloadForAPITransactionCreation([[$reversal,$refund]],$sourceRefund, $journals, $isCustomerRefundApplicable, $isRearchRefund);
+
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($reversalAndRefundJournalIds, $producerKey) {
+
+            TransferReversalCreateTransaction::dispatchNow($this->mode, $reversalAndRefundJournalIds, $producerKey);
+
+        }));
+
+        return $reversalAndRefundJournalIds;
 
     }
 
@@ -174,7 +184,13 @@ class Core extends Base\Core
 
         $journals = $this->createJournalInLedger($journalPayload, false, true);
 
-        $reversalAndRefundJournalIds = $this->pushReversalToKafkaForAPITransactionCreation($results, $customerRefund, $journals, true, $isRearchRefund);
+        list($reversalAndRefundJournalIds, $producerKey) = $this->createPayloadForAPITransactionCreation($results, $customerRefund, $journals, true, $isRearchRefund);
+
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($reversalAndRefundJournalIds, $producerKey) {
+
+            TransferReversalCreateTransaction::dispatchNow($this->mode, $reversalAndRefundJournalIds, $producerKey);
+
+        }));
 
         return $reversalAndRefundJournalIds;
     }
@@ -253,14 +269,12 @@ class Core extends Base\Core
         return [$data, $producerKey];
     }
 
-    private function pushReversalToKafkaForAPITransactionCreation($results, RefundEntity $sourceRefund, $journals, $isCustomerRefundApplicable, $isRearchRefund = false)
+    public function pushReversalToKafkaForAPITransactionCreation($reversalAndRefundJournalIds, $producerKey)
     {
         if (($this->app->runningUnitTests() === true))
         {
             return;
         }
-
-        list($reversalAndRefundJournalIds, $producerKey) = $this->createPayloadForAPITransactionCreation($results, $sourceRefund, $journals, $isCustomerRefundApplicable, $isRearchRefund);
 
         $message = [
             LedgerConstants::KAFKA_MESSAGE_DATA => $reversalAndRefundJournalIds,
@@ -301,6 +315,5 @@ class Core extends Base\Core
 
         }
 
-        return $reversalAndRefundJournalIds;
     }
 }
