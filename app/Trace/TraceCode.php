@@ -4571,6 +4571,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_BATCH_FAILURE                                  = 'LAMBDA_BATCH_FAILURE';
     const INVALID_REPATRIATION_FILE                             = 'INVALID_REPATRIATION_FILE';
     const INVALID_REPATRIATION_AMOUNT                           = 'INVALID_REPATRIATION_AMOUNT';
+    const NO_DATA_IN_REPATRIATION_FILE                          = 'NO_DATA_IN_REPATRIATION_FILE';
     const REPATRIATION_LAMBDA_REQUEST                           = 'REPATRIATION_LAMBDA_REQUEST';
     const REPATRIATION_SUCESS                                   = 'REPATRIATION_SUCESS';
     const REPATRIATION_DETAIL_SAVE                              = 'REPATRIATION_DETAIL_SAVE';

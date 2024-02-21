@@ -654,6 +654,7 @@ class Service extends Base\Service
 
             fseek($handler,0);
             $headers = fgetcsv($handler);
+            $count = 0;
 
             $repatriationEntity = [];
             $settlementIdList = [];
@@ -661,6 +662,7 @@ class Service extends Base\Service
             $merchantIds = [];
             while (!feof($handler))
             {
+                $count++;
                 $row = fgetcsv($handler);
                 if($row[1]=='')
                     continue;
@@ -706,6 +708,16 @@ class Service extends Base\Service
                     array_push($merchantIds, $transaction->getMerchantId());
 
                 }
+            }
+
+            if($count <= 0) {
+                $this->trace->info(TraceCode::NO_DATA_IN_REPATRIATION_FILE, [
+                    'fileDetails'           => $fileDetails,
+                    'countOfRowsWithoutHeader'           => $count
+                ]);
+
+                $response['success'] = true;
+                return $response;
             }
 
             $distinctSettlementIds = array_unique($settlementIdList);
