@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { compose, bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
 import {
   Box,
   Card,
@@ -13,11 +11,34 @@ import {
   Button,
   Heading,
 } from '@razorpay/blade/components';
-import TimeLine from 'merchant/views/Transactions/v2/Payments/components/Timeline';
-import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModalNew';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import * as PaymentActions from 'merchant/reducers/payments/details';
+import { connect } from 'react-redux';
+import { compose, bindActionCreators } from 'redux';
+
+import RefundIcon from 'assets/transactions/refund.svg';
+import { useSplitzService } from 'common/splitz';
 import { deepClone } from 'common/utils/rzp-utils';
+import * as PaymentActions from 'merchant/reducers/payments/details';
+import {
+  fetchInstantRefundFeeFn,
+  fetchTransfersFn,
+  refundPaymentFn,
+  fetchBankTransfer,
+  fetchPaymentIdTimelineData,
+  fetchTransactionTimelineDataFn,
+} from 'merchant/views/Transactions/model';
+import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModalNew';
+import TimeLine from 'merchant/views/Transactions/v2/Payments/components/Timeline';
+import { IconBackground } from 'merchant/views/Transactions/v2/Payments/components/Timeline/styled';
+import {
+  TimelineJourneyPoint,
+  SkipTimelineTransactions,
+} from 'merchant/views/Transactions/v2/Payments/components/Timeline/types';
+import { PaymentsTimeline } from 'merchant/views/Transactions/v2/Payments/types';
+import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
+import { isSettlementRetryTimelineEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import * as ModalActions from 'merchant_common/reducers/modals';
+
+import { IPaymentDetails, IPaymentIdRefundDetail, IBankTransfer } from './types';
 import {
   getSettlementTimelineData,
   getDisputesTimelineData,
@@ -25,19 +46,6 @@ import {
   getPaymentTimelineData,
   isIssueRefundDisabled,
 } from './utils';
-import RefundIcon from 'assets/transactions/refund.svg';
-import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
-import {
-  fetchInstantRefundFeeFn,
-  fetchTransfersFn,
-  refundPaymentFn,
-  fetchBankTransfer,
-  fetchPaymentIdTimelineData,
-} from 'merchant/views/Transactions/model';
-import { IconBackground } from 'merchant/views/Transactions/v2/Payments/components/Timeline/styled';
-import { PaymentsTimeline } from 'merchant/views/Transactions/v2/Payments/types';
-import { TimelineJourneyPoint } from 'merchant/views/Transactions/v2/Payments/components/Timeline/types';
-import { IPaymentDetails, IPaymentIdRefundDetail, IBankTransfer } from './types';
 
 interface PaymentDetailsTimelineProps {
   paymentIdDetails: IPaymentDetails;
@@ -58,9 +66,31 @@ function PaymentDetailsTimeline({
   user,
 }: PaymentDetailsTimelineProps): JSX.Element {
   const [paymentTimelineData, setpaymentTimelineData] = useState<PaymentsTimeline | null>(null);
+  const [skipTransactionTimeline, setSkipTransactionTimeline] =
+    useState<SkipTimelineTransactions | null>(null);
   const [didPaymentTimelineDataError, setdidPaymentTimelineDataError] = useState<boolean>(false);
+  const [didRetryTimelineDataError, setdidRetryTimelineDataError] = useState<boolean>(false);
+
   const [timelineData, settimelineData] = useState<TimelineJourneyPoint[]>([]);
   const [bankTransfer, setbankTransfer] = useState<IBankTransfer | null>(null);
+  const splitz = useSplitzService();
+
+  /**
+   * If Splitz experiment is enabled
+   * & transaction is present in payment details
+   * & settled is true
+   * & settled_at is present
+   * Show Transaction Settlement timeline
+   */
+  const shouldShowRetryTimeline = (): boolean => {
+    const isRetryTimelineEnabled = isSettlementRetryTimelineEnabled(splitz, user);
+    const { transaction } = paymentIdDetails;
+    if (!transaction) {
+      return false;
+    }
+    const { id, settled: isSettled, settled_at } = transaction;
+    return isRetryTimelineEnabled && !!id && !!settled_at && !!!isSettled;
+  };
 
   const updateTimelineWithSettlementData = () => {
     const settlementTimelineData = getSettlementTimelineData(paymentIdDetails);
@@ -89,10 +119,20 @@ function PaymentDetailsTimeline({
   const fetchPaymentsTimelineDataFn = async (): Promise<void> => {
     try {
       const response = await fetchPaymentIdTimelineData(paymentIdDetails.id);
-
       setpaymentTimelineData(response.data);
     } catch (_) {
       setdidPaymentTimelineDataError(true);
+    }
+  };
+
+  const fetchRetryTimeline = async (): Promise<void> => {
+    try {
+      const retryTransaction = await fetchTransactionTimelineDataFn(
+        paymentIdDetails.transaction.id,
+      );
+      setSkipTransactionTimeline(retryTransaction.data);
+    } catch (e) {
+      setdidRetryTimelineDataError(true);
     }
   };
 
@@ -103,6 +143,7 @@ function PaymentDetailsTimeline({
 
   useEffect(() => {
     fetchPaymentsTimelineDataFn();
+    if (shouldShowRetryTimeline()) fetchRetryTimeline();
     if (paymentIdDetails.method === 'bank_transfer') fetchBankTransferFn();
   }, [paymentIdDetails]);
 
@@ -175,6 +216,9 @@ function PaymentDetailsTimeline({
               paymentIdDetails={paymentIdDetails}
               fetchPaymentsTimelineData={fetchPaymentsTimelineDataFn}
               reFetchPageDetails={reFetchPageDetails}
+              skipTransactionTimeline={skipTransactionTimeline}
+              shouldShowRetryTimeline={shouldShowRetryTimeline()}
+              didRetryTimelineDataError={didRetryTimelineDataError}
             />
           </Box>
         ) : didPaymentTimelineDataError ? (

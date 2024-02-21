@@ -66,6 +66,10 @@ export const fetchPaymentIdTimelineData = (id): Promise<any> => {
   return merchantFetch(`merchant/payment/${id}/timeline`);
 };
 
+export const fetchTransactionTimelineDataFn = (id: string): Promise<any> => {
+  return merchantFetch(`settlements/transaction/timeline?id=${id}`);
+};
+
 export const fetchAppDetails = (id): Promise<any> => {
   return merchantFetch(`partner/subm_payment/app_details?payment_id=${id}`);
 };

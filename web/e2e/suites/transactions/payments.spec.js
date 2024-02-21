@@ -8,6 +8,7 @@ import {
   assertRefundDetails,
   assertCollapsibleRefundProcessedTimeline,
   assertIssueRefundButton,
+  assertCollapsibleSettlementRetryTimeline,
 } from './utils';
 import { StorageStatePath, routes } from '../../utils/constants';
 import { getI18FormattedPhoneNumber } from '../../utils';
@@ -195,6 +196,19 @@ test.describe
         page.getByTestId('payment-details-overview').getByText(failureMessage),
       ).toBeVisible();
       await expect(page.getByTestId('timeline').getByText(failureMessage)).toBeVisible();
+    });
+
+    // the settlement retry timeline is only supported for 6 months from the date of creation of transaction.
+    // if this test case is failing please reach out to settlement_dev to create new data for this test case.
+    test('should show transaction timeline details', async ({ page }) => {
+      await navigateToTransactions(page);
+      const id = payments.paymentId.captured.card;
+      await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
+      await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
+      expect(page.getByText('Payment ID')).toBeVisible();
+      expect(page.getByText(id)).toBeVisible();
+      expect(page.getByText('Payment method')).toBeVisible();
+      await assertCollapsibleSettlementRetryTimeline({ page });
     });
   });
 });

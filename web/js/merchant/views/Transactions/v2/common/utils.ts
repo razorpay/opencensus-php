@@ -212,3 +212,15 @@ export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User):
   }
   return isExperimentEnabled(abExperiments.Transactions_Revamp) && user.isOrgRZP;
 };
+
+export const isSettlementRetryTimelineEnabled = (
+  splitz: SpiltzContextState,
+  user: User,
+): boolean => {
+  const { abExperiments } = splitz || { abExperiments: { Transaction_Retry_Timeline: undefined } };
+  if (!abExperiments?.Transaction_Retry_Timeline) return false;
+  if (user.isOrgCurlec) {
+    return false;
+  }
+  return isExperimentEnabled(abExperiments.Transaction_Retry_Timeline) && user.isOrgRZP;
+};

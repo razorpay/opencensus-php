@@ -9,6 +9,7 @@ export const payments = {
       wallet: 'pay_MWb0KQ9xSJPNvk',
       netbanking: 'pay_MWar3gNs2Tzs18',
       upi: 'pay_MWkwOgjXPdZBly',
+      card: 'pay_NaOk9ruBJogGYA',
     },
     created: {
       netbanking: 'pay_MWaxTM6QW05iz9',

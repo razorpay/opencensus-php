@@ -98,3 +98,12 @@ export const assertPaymentDetails = async ({ page, details }) => {
     await expect(page.getByRole('cell', { name: detail })).toBeVisible({ timeout: 3000 });
   }
 };
+
+export const assertCollapsibleSettlementRetryTimeline = async ({ page, count = 0 }) => {
+  await expect(page.getByRole('heading', { name: 'Timeline' })).toBeVisible();
+  const collapsibleSettlementRetryTimeline = page.getByTestId('transaction-timeline').nth(count);
+  collapsibleSettlementRetryTimeline
+    .getByRole('button', { name: 'View previous retry details' })
+    .click();
+  expect(collapsibleSettlementRetryTimeline.getByText('Settlement failed').first()).toBeVisible();
+};

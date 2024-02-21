@@ -10,14 +10,24 @@ import {
   useTheme,
   ChevronRightIcon,
 } from '@razorpay/blade/components';
-import { withRouter } from 'common/deprecated/withRouter';
-import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
-
-import { compose, bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
 import { useBreakpoint } from '@razorpay/blade/utils';
+import { connect } from 'react-redux';
+import { compose, bindActionCreators } from 'redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import Amount from 'common/ui/Amount';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { ERROR_DESCRIPTION_CONTENT_MAP } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/constants';
+import {
+  IPaymentDetails,
+  IBankTransfer,
+} from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/types';
+import { shouldShowCapturePaymentButton } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/utils';
+import TransactionsTimeline from 'merchant/views/Transactions/v2/Payments/components/TransactionTimeline';
 import RefundMiniTimeline from 'merchant/views/Transactions/v2/Refunds/components/RefundMiniTimeline';
+import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
 import {
   StyledJourneyMetadata,
   StyledTimelineContainer,
@@ -29,17 +39,10 @@ import {
   StyledStatusSubText,
   getStatusIcon,
 } from './styled';
+import { TimelineJourneyPoint, SkipTimelineTransactions } from './types';
 import { getHumanReadableTimestamp } from './utils';
-import { TimelineJourneyPoint } from './types';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { shouldShowCapturePaymentButton } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/utils';
-import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
-import { ERROR_DESCRIPTION_CONTENT_MAP } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/constants';
-import {
-  IPaymentDetails,
-  IBankTransfer,
-} from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/types';
+
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 interface EntityStatusTimelineProps extends RouteComponentProps {
   data: TimelineJourneyPoint[];
@@ -49,6 +52,9 @@ interface EntityStatusTimelineProps extends RouteComponentProps {
   fetchPaymentsTimelineData: () => Promise<void>;
   reFetchPageDetails: (id: string) => void;
   showNotification: (args: any) => void;
+  skipTransactionTimeline: SkipTimelineTransactions;
+  shouldShowRetryTimeline: boolean;
+  didRetryTimelineDataError: boolean;
 }
 const EntityStatusTimeline = ({
   data,
@@ -59,6 +65,9 @@ const EntityStatusTimeline = ({
   fetchPaymentsTimelineData,
   reFetchPageDetails,
   showNotification,
+  skipTransactionTimeline,
+  shouldShowRetryTimeline,
+  didRetryTimelineDataError,
   location: { pathname },
 }: EntityStatusTimelineProps): JSX.Element => {
   const [timelineData, setTimelineData] = useState<TimelineJourneyPoint[]>([]);
@@ -282,7 +291,7 @@ const EntityStatusTimeline = ({
             </Text>
           </StyledGradientBox>
         )}
-        <Box testID="collapsible-refunds-timeline" paddingTop="spacing.3" marginBottom="spacing.8">
+        <Box testID="collapsible-refunds-timeline" paddingTop="spacing.3" marginBottom="spacing.2">
           <Collapsible
             direction="bottom"
             onExpandChange={() => {
@@ -334,6 +343,29 @@ const EntityStatusTimeline = ({
     );
   };
 
+  const renderRetryTimeLine = () => {
+    if (!skipTransactionTimeline) return null;
+    return (
+      <Box display="flex" flexDirection="column" position="relative" marginTop="30px">
+        <Box position="absolute" top="-25px" left="-9px">
+          <IconBackground status="not-captured">{getStatusIcon('not-captured')}</IconBackground>
+        </Box>
+        <StyledJourneyStatus>
+          <StyledText>Settlement</StyledText>
+          <StyledStatusSubText>(To be processed)</StyledStatusSubText>
+        </StyledJourneyStatus>
+        <StyledJourneyMetadata>
+          {skipTransactionTimeline?.eligible_at ? (
+            <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+              To be deposited by: {getHumanReadableTimestamp(skipTransactionTimeline.eligible_at)}
+            </Text>
+          ) : null}
+          <TransactionsTimeline skips={skipTransactionTimeline?.skips} />
+        </StyledJourneyMetadata>
+      </Box>
+    );
+  };
+
   const renderTimelineJourneyMeta = (journeyPoint: TimelineJourneyPoint): JSX.Element => {
     switch (journeyPoint.entity) {
       case 'Payment':
@@ -348,13 +380,13 @@ const EntityStatusTimeline = ({
         return <StyledJourneyMetadata />;
     }
   };
-
   return (
     <Box
       display="flex"
       alignItems="flex-start"
       gap="spacing.4"
       padding="spacing.7"
+      paddingBottom="spacing.0"
       marginLeft="-24px"
       testID="timeline"
     >
@@ -382,6 +414,7 @@ const EntityStatusTimeline = ({
               {renderTimelineJourneyMeta(each)}
             </Box>
           ))}
+          {shouldShowRetryTimeline && !didRetryTimelineDataError ? renderRetryTimeLine() : null}
         </Box>
       </StyledTimelineContainer>
     </Box>

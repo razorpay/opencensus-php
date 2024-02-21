@@ -388,6 +388,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'Transaction_Retry_Timeline',
+          experimentId: {
+            beta: 'NC8Dl41iAfVXXf',
+            production: 'NC7wGmgtIeUy7M',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

@@ -22,6 +22,7 @@ import {
   onSearch,
   onPaginate,
   isTransactionsV2Enabled,
+  isSettlementRetryTimelineEnabled,
 } from 'merchant/views/Transactions/v2/common/utils';
 import {
   durationOptionsMap,
@@ -335,6 +336,44 @@ describe('utils', () => {
       };
       const user = { isOrgCurlec: false, isOrgRZP: true };
       const result = isTransactionsV2Enabled(splitz, user);
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('isSettlementRetryTimelineEnabled', () => {
+    test('should return false for SettlementRetryTimelineEnabled if user isOrgCurlec', () => {
+      const splitz = {
+        abExperiments: { Transaction_Retry_Timeline: { variables: { result: 'on' } } },
+      };
+      const user = { isOrgCurlec: true, isOrgRZP: true };
+      const result = isSettlementRetryTimelineEnabled(splitz, user);
+      expect(result).toBe(false);
+    });
+
+    test('should return false for SettlementRetryTimelineEnabled if experiment is not "on"', () => {
+      const splitz = {
+        abExperiments: { Transaction_Retry_Timeline: { variables: { result: 'off' } } },
+      };
+      const user = { isOrgCurlec: false, isOrgRZP: true };
+      const result = isSettlementRetryTimelineEnabled(splitz, user);
+      expect(result).toBe(false);
+    });
+
+    test('should return false for SettlementRetryTimelineEnabled if user is not isOrgRZP', () => {
+      const splitz = {
+        abExperiments: { Transaction_Retry_Timeline: { variables: { result: 'on' } } },
+      };
+      const user = { isOrgCurlec: false, isOrgRZP: false };
+      const result = isSettlementRetryTimelineEnabled(splitz, user);
+      expect(result).toBe(false);
+    });
+
+    test('should return true for valid SettlementRetryTimelineEnabled case', () => {
+      const splitz = {
+        abExperiments: { Transaction_Retry_Timeline: { variables: { result: 'on' } } },
+      };
+      const user = { isOrgCurlec: false, isOrgRZP: true };
+      const result = isSettlementRetryTimelineEnabled(splitz, user);
       expect(result).toBe(true);
     });
   });

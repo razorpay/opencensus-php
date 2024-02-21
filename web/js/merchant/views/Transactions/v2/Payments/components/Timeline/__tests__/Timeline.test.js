@@ -8,6 +8,7 @@ import {
   happyFlowProps,
   paymentCaptureFailedBankTransfer,
   paymentCaptureFlow,
+  retryTimeline,
 } from 'merchant/views/Transactions/v2/Payments/components/Timeline/__tests__/mocks/fixtures/Timeline';
 import { mockPaymentCapture } from 'merchant/views/Transactions/v2/Payments/components/Timeline/__tests__/mocks/handlers';
 import { render, screen, waitFor, userEvent } from 'test-utils';
@@ -103,6 +104,25 @@ describe('Timeline component', () => {
       await waitFor(() => {
         expect(screen.getByText('Collapse timeline')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Should render retry timeline', () => {
+    beforeEach(() => {
+      useBreakpoint.mockReturnValue({
+        matchedDeviceType: 'desktop',
+      });
+    });
+
+    test('should show settlement retry timeline', () => {
+      const props = {
+        ...retryTimeline,
+        shouldShowRetryTimeline: true,
+        didRetryTimelineDataError: false,
+      };
+      render(<App props={props} />, { initialState });
+      expect(screen.getByText('Settlement')).toBeInTheDocument();
+      expect(screen.getByText('View previous retry details')).toBeInTheDocument();
     });
   });
 });
