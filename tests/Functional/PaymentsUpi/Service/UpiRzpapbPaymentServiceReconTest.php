@@ -1,8 +1,12 @@
 <?php
 
-namespace RZP\Tests\Functional\PaymentsUpi\Service;
 
-class UpiRzpapbPaymentServiceTest extends UpiPaymentServiceBase
+namespace Functional\PaymentsUpi\Service;
+
+
+use RZP\Tests\Functional\PaymentsUpi\Service\UpiPaymentServiceReconBase;
+
+class UpiRzpapbPaymentServiceReconTest extends UpiPaymentServiceReconBase
 {
     protected function setUp(): void
     {

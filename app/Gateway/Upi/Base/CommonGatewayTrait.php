@@ -867,6 +867,9 @@ trait CommonGatewayTrait
             'upi'           => $callbackData['upi'],
             'gateway'       => [
                 'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+            ],
+            'merchant'      => [
+                'id'            => ($this->terminal !== null) ? $this->terminal->getMerchantId() : null,
             ]
         ];
 

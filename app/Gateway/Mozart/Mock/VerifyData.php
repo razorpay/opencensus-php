@@ -895,4 +895,66 @@ class VerifyData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function upi_rzpapb($entities)
+    {
+        $paymentId = $entities['payment']['id'];
+        $vpa = $entities['payment']['vpa'];
+
+        $response = [
+            "data" => [
+                "_raw"      => '{"handle_code":null,"is_complaint_eligible":true,"msg_id":"RZP1MyeKggtkZQGDJpM8725943610QPAY02","ref_id":"MyeKdq0E4D3EQd","ref_url":null,"adj_code":null,"currency":"INR","txn_id":"RZP1MyeKggtkZQGDJpT8725943610QPAY02","updated_at":1699592778,"entity":"transaction","mcc":"8062","created_at":1699592750,"cust_ref":"331410790405","error_description":null,"expire_at":1699594550,"flow":"credit","id":"MyeKghXp6PMGzM","adj_flag":null,"amount":12300,"is_check_status_eligible":true,"type":"collect","payer_account_number":"878658698325878","payer_account_type":"SOD","status":"completed","error_code":null,"note":"RzpTestQAMerchant"}',
+                "upi"       => [
+                    "vpa"                 => "rzp@apbl",
+                    "merchant_reference"  => $paymentId,
+                    "npci_reference_id"   => "910501000855",
+                    "npci_txn_id"         => "KMBMABCD426934594264516669306675337",
+                    "gateway_reference"   => "910501000855",
+                    "gateway_status_code" => "00"
+                ],
+                "terminal"  => [
+                    "gateway"   => "upi_rzpapb"
+                ],
+                "payment"   => [
+                    "currency"          => "INR",
+                    "amount_authorized" => 50000
+                ],
+                "status"            => "payment_successful",
+            ],
+            "error"             => null,
+            "next"              => [],
+            "success"           => true,
+            "external_trace_id" => "DUMMY_REQUEST_ID",
+            "mozart_id"         => "DUMMY_MOZART_ID"
+        ];
+
+        if ($vpa === 'unexpectedPayment@rzpapb')
+        {
+            // Mocking amount for validating duplicating unexpected payment for amount mismatch
+            $response['data']['payment']['amount_authorized'] = 1000;
+        }
+
+        $case = $vpa;
+
+        switch ($case) {
+            case 'failedunexpectedpayment@test':
+                $response['success'] = false;
+                $response['error']   = [
+                    'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING,
+                    'gateway_error_code'        => 'T01',
+                    'gateway_error_desc'        => 'Transaction Pending'
+                ];
+                break;
+
+            case 'unexpectedPayment@rzpapb':
+                // Mocking amount for validating duplicating unexpected payment for amount mismatch
+                $response['data']['payment']['amount_authorized'] = 1000;
+                break;
+
+            default:
+                break;
+        }
+
+        return $response;
+    }
 }

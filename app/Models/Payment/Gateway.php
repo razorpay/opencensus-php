@@ -719,6 +719,7 @@ class Gateway
         self::NETBANKING_TMB,
         self::ISG,
         self::UPI_YESBANK,
+        self::UPI_RZPAPB,
     ];
 
     const FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS = [

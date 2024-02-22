@@ -139,7 +139,7 @@ class UpiPaymentServiceReconBase extends TestCase
 
         $content['payment']['amount'] = 1000;
 
-        $content['upi']['vpa'] = 'unexpectedPayment@kotak';
+        $content['upi']['vpa'] = 'unexpectedPayment@'.substr($this->gateway, 4 );;
 
         $response = $this->makeUnexpectedPaymentAndGetContent($content);
 
