@@ -2046,6 +2046,11 @@ class Constants
      */
     const RewardPoints = 'reward_points';
 
+    /**
+     * Feature flag to identify the merchants using optimizer terminals for payments-upi re-arch.
+     */
+    const EXTERNAL_PA_VAS= 'external_pa_vas';
+
     const SHOW_INTL_RISK_ANALYTICS_DASHBOARD = 'show_intl_risk_dashboard';
 
     public static $recurringFeatures = [
@@ -2839,6 +2844,7 @@ class Constants
         self::CREDIT_RISK_BAND_ENABLED               => true,
         self::RewardPoints                           => true,
         self::SHOW_INTL_RISK_ANALYTICS_DASHBOARD          => true,
+        self::EXTERNAL_PA_VAS                        =>  true,
     ];
 
     // Entity type constants

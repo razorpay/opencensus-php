@@ -107,6 +107,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\UpiMandate\Status as UpiMandateStatus;
 use RZP\Models\EMandate\Constants as EmandateConstants;
+use RZP\Services\Dcs\Features\Constants as DcsConstants;
 use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
@@ -11443,6 +11444,14 @@ class Processor
      */
     public function isUpsRearchNonRzpOrgMerchant(): bool
     {
+        // If external_pa_vas or other_payment_gateway_configured feature is enabled on a merchant,
+        // then they can have optimzer terminals. wWe can't route these payments to UPS
+        if ($this->merchant->isAtLeastOneFeatureEnabled([
+            Features::EXTERNAL_PA_VAS, DcsConstants::OtherPaymentGatewayConfigured]) === true)
+        {
+            return false;
+        }
+
         $orgId = $this->merchant->getMerchantOrgId();
 
         $feature = self::ALLOW_NON_RZP_ORG_MERCHANTS_ON_REARCH_UPS . '_org_' . $orgId;
