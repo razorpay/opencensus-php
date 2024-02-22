@@ -1214,5 +1214,15 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function findManyWithRelations($ids, $relations, $columns = array('*'), $useWarehouse = false)
+    {
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::REFUND_FIND_MANY_RELATIONS, $mode);
+        if ($useWarehouse === true && $variant === 'on')
+        {
+            return $this->repo->refund_tidb->findManyWithRelations($ids, $relations, $columns, true);
+        }
 
+        return parent::findManyWithRelations($ids, $relations, $columns, $useWarehouse);
+    }
 }
