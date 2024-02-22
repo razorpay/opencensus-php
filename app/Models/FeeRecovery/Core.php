@@ -1472,4 +1472,164 @@ class Core extends Base\Core
             ]);
         }
     }
+
+    public function updateFeeRecoveryScheduleAdmin(array $input)
+    {
+        $action = $input['action'];
+
+        $balanceId = $input[Entity::BALANCE_ID];
+
+        $task = $this->repo->schedule_task->fetchByTypeAndEntityId(Task\Type::FEE_RECOVERY, $balanceId);
+
+        if ($action === 'dry_run')
+        {
+            $res = [
+                'balance_id'  => $balanceId,
+                'last_run_at' => $task->getLastRunAt(),
+                'next_run_at' => $task->getNextRunAt(),
+                'last_run'    => Carbon::createFromTimestamp($task->getLastRunAt(), Timezone::IST),
+                'next_run'    => Carbon::createFromTimestamp($task->getNextRunAt(), Timezone::IST),
+            ];
+
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_SCHEDULE_FETCH_RESPONSE,
+                [
+                    'input' => $input,
+                    'res'   => $res
+                ]);
+
+            return $res;
+        }
+
+        if ($action === 'update')
+        {
+            (new Validator)->validateInput(Validator::UPDATE_FEE_RECOVERY_SCHEDULE, $input);
+
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_SCHEDULE_UPDATE_REQUEST,
+                [
+                    'input' => $input,
+                ]);
+
+            $newNextRun = $input['next_run_at'];
+            $lastRunAt = $task->getLastRunAt();
+
+            if ($newNextRun < $lastRunAt)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_FEE_RECOVERY_SCHEDULE_NOT_ELIGIBLE,
+                    null,
+                    [
+                        'balance_id'        => $balanceId,
+                        'new_next_run_at'   => $newNextRun,
+                        'last_run_at'       => $lastRunAt
+                    ]);
+            }
+
+            $task->setNextRunAt($newNextRun);
+
+            $this->repo->saveOrFail($task);
+
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_SCHEDULE_UPDATE_SUCCESS,
+                [
+                    'balance_id' => $balanceId,
+                    'new_last_run_at' => $task->getLastRunAt(),
+                    'new_next_run_at' => $task->getNextRunAt()
+                ]);
+
+            return [
+                'balance_id'  => $balanceId,
+                'last_run_at' => $task->getLastRunAt(),
+                'next_run_at' => $task->getNextRunAt(),
+                'last_run'    => Carbon::createFromTimestamp($task->getLastRunAt(), Timezone::IST),
+                'next_run'    => Carbon::createFromTimestamp($task->getNextRunAt(), Timezone::IST),
+            ];
+        }
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_WRONG_FEE_RECOVERY_SCHEDULE_ACTION_SPECIFIED,
+            null,
+            [
+                'balance_id'    => $balanceId,
+                'action'        => $action
+            ]);
+    }
+
+    public function calculateFeeRecoveryAmountAdmin(string $balanceId, int $startTimestamp, int $endTimestamp)
+    {
+        $balance = $this->repo->balance->findOrFailById($balanceId);
+
+        list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance,
+            $startTimestamp,
+            $endTimestamp);
+
+        $amount = $this->getFeesForFeeRecovery($payouts, $failedPayouts, $reversals);
+
+        return [
+            'amount'                => $amount,
+            'start_time'            => $startTimestamp,
+            'end_time'              => $endTimestamp,
+            'payout_count'          => count($payouts),
+            'failed_payout_count'   => count($failedPayouts),
+            'reversal_count'        => count($reversals),
+        ];
+    }
+
+    public function createRecoveryPayoutJobAdmin(array $input)
+    {
+        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_JOB_INITIATED,
+            [
+                'input' => $input
+            ]);
+
+        $balanceId = $input[Entity::BALANCE_ID];
+
+        $balance = $this->repo->balance->find($balanceId);
+
+        if($balance === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BALANCE_NOT_FOUND,
+                null,
+                [
+                    'balance_id' => $balanceId
+                ]);
+        }
+
+        $scheduleTask = $this->repo->schedule_task->fetchByTypeAndEntityId(Task\Type::FEE_RECOVERY, $balanceId);
+
+        //
+        // We are going to run the fee recovery payout for payouts created between lastRunAt and nextRunAt of a
+        // schedule task.
+        //
+        // IMPORTANT : If the task runs 23 min post its current nextRunAt, lastRunAt is still updated to
+        // the current value of nextRunAt. Hence, we don't have to consider any actual delay that happen
+        // when we run the cron.
+        //
+        // Also, we have manually added 1 here because the query is inclusive on both ends. The same route is also
+        // called via admin auth, and keeping the timestamps inclusive makes it less prone to human error.
+        //
+        $lastRunAt = empty($scheduleTask->getLastRunAt()) ? $balance->getCreatedAt() :  $scheduleTask->getLastRunAt() + 1;
+        $nextRunAt = $scheduleTask->getNextRunAt();
+
+        if($nextRunAt > $currentTimeStamp)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FEE_RECOVERY_SCHEDULE_NOT_ELIGIBLE,
+                null,
+                [
+                    'balance_id'    => $balanceId,
+                    'next_run_at'   => $nextRunAt,
+                    'current_time'  => $currentTimeStamp
+                ]);
+        }
+
+        Jobs\FeeRecovery::dispatch($this->mode, null, $balanceId, $lastRunAt, $nextRunAt, $scheduleTask);
+
+        return ['success' => true];
+    }
 }

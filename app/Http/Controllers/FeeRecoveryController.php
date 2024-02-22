@@ -49,4 +49,31 @@ class FeeRecoveryController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateFeeRecoveryScheduleAdmin()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateFeeRecoveryScheduleAdmin($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function calculateFeeRecoveryAmountAdmin()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->calculateFeeRecoveryAmountAdmin($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createRecoveryPayoutJobAdmin()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createRecoveryPayoutJobAdmin($input);
+
+        return ApiResponse::json($response);
+    }
 }

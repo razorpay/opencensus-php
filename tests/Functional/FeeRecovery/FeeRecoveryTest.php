@@ -671,7 +671,7 @@ class FeeRecoveryTest extends TestCase
         $this->startTest();
     }
 
-    public function testFeeRecoveryPayoutCron()
+    private function createPayoutsForFeeRecoveryTests()
     {
         $oldTime = Carbon::create(2020, 1, 4, 8, null, null, Timezone::IST);
 
@@ -725,10 +725,11 @@ class FeeRecoveryTest extends TestCase
 
         Carbon::setTestNow($newTime);
 
-        $this->ba->cronAuth();
+        return [$payout, $payout2, $payout3];
+    }
 
-        $this->startTest();
-
+    private function assertFeeRecoveryEntriesAfterFeeRecoveryJob($payout, $payout2, $payout3)
+    {
         $feeRecoveryPayout = $this->getDbLastEntity('payout');
 
         // Moving this payout to initiated
@@ -805,6 +806,17 @@ class FeeRecoveryTest extends TestCase
         $this->assertEquals(0, $feeRecovery['attempt_number']);
         $this->assertNull($feeRecovery['recovery_payout_id']);
         $this->assertEquals($feeRecovery['type'], FeeRecovery\Type::DEBIT);
+    }
+
+    public function testFeeRecoveryPayoutCron()
+    {
+        [$payout, $payout2, $payout3] = $this->createPayoutsForFeeRecoveryTests();
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $this->assertFeeRecoveryEntriesAfterFeeRecoveryJob($payout, $payout2, $payout3);
     }
 
     public function testCreateFeeRecoveryPayoutForAsyncPayoutProcessingEnabledMerchant()
@@ -3158,6 +3170,161 @@ class FeeRecoveryTest extends TestCase
             ])->toArray();
 
         $this->assertGreaterThan(0, $fourthAttempt);
+    }
+
+    public function testCreateFeeRecoveryRetryManualByAdminAfterThreeFailures() {
+
+        $previousRecoveryRetryPayout = $this->testFeeRecoveryNoRetryAfterThreePayoutFTAReconFailed();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['previous_recovery_payout_id'] = $previousRecoveryRetryPayout->getId();
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest($data);
+
+        $fourthFeeRecoveryPayout = $this->getDbEntityById('payout', $response['id']);
+
+        $this->updateFtaAndSource($fourthFeeRecoveryPayout, Payout\Status::PROCESSED, '933815383830');
+
+        $fourthAttempt = $this->getDbEntities('fee_recovery',
+            [
+                FeeRecoveryEntity::RECOVERY_PAYOUT_ID => $fourthFeeRecoveryPayout->getId(),
+                FeeRecoveryEntity::STATUS             => FeeRecovery\Status::RECOVERED,
+                FeeRecoveryEntity::ATTEMPT_NUMBER     => 4
+            ])->toArray();
+
+        $this->assertGreaterThan(0, $fourthAttempt);
+    }
+
+    public function testCreateFeeRecoveryRetryManualWrongRecoveryPayoutIdByAdminAfterThreeFailures() {
+
+        $this->testFeeRecoveryNoRetryAfterThreePayoutFTAReconFailed();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($data);
+    }
+
+    private function createBalanceAndScheduleTaskForFeeRecovery()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'name'  => 'merchantName',
+            'email' => 'merchant@merchantMail.com'
+        ]);
+
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'       => $merchant->getId(),
+            'type'              => 'banking',
+            'account_type'      => 'direct',
+        ]);
+
+        $feeRecoverySchedule = $this->fixtures->create('schedule_task', [
+            'entity_id'         => $balance->getId(),
+            'entity_type'       => 'balance',
+            'type'              => 'fee_recovery',
+            'last_run_at'       => 1707244199,
+            'next_run_at'       => 1707330599,
+        ]);
+
+        return [$merchant, $balance, $feeRecoverySchedule];
+    }
+
+    public function testGetFeeRecoveryScheduleForBalanceViaAdminAction()
+    {
+        [$merchant, $balance, $feeRecoverySchedule] = $this->createBalanceAndScheduleTaskForFeeRecovery();
+
+        $data = $this->testData[__FUNCTION__];
+        $data['request']['content']['balance_id'] = $balance->getId();
+        $data['response']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest($data);
+    }
+
+    public function testUpdateFeeRecoveryScheduleForBalanceViaAdminAction()
+    {
+        [$merchant, $balance, $feeRecoverySchedule] = $this->createBalanceAndScheduleTaskForFeeRecovery();
+
+        $data = $this->testData[__FUNCTION__];
+        $data['request']['content']['balance_id'] = $balance->getId();
+        $data['response']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest($data);
+    }
+
+    public function testUpdateFeeRecoveryScheduleValidationFailureViaAdminAction()
+    {
+        [$merchant, $balance, $feeRecoverySchedule] = $this->createBalanceAndScheduleTaskForFeeRecovery();
+
+        $data = $this->testData[__FUNCTION__];
+        $data['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest($data);
+    }
+
+    public function testGetFeeRecoveryAmount()
+    {
+        $this->testCreateFeeRecoveryPayout();
+
+        $data = $this->testData[__FUNCTION__];
+        $data['request']['content']['balance_id'] = $this->balance->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest($data);
+    }
+
+    public function testCreateFeeRecoveryPayoutJobViaAdminAction()
+    {
+        [$payout, $payout2, $payout3] = $this->createPayoutsForFeeRecoveryTests();
+
+        $data = $this->testData[__FUNCTION__];
+        $data['request']['content']['balance_id'] = $this->balance->getId();
+
+        $scheduleTaskId = $this->getDbLastEntity('schedule_task')->getId();
+
+        $scheduleTask = $this->fixtures->edit('schedule_task', $scheduleTaskId, [
+            'entity_id'     => $this->balance->getId(),
+            'entity_type'   => 'balance',
+            'merchant_id'   => $this->balance->getMerchantId(),
+            'type'          => 'fee_recovery',
+            'last_run_at'   => 1577864736,
+            'next_run_at'   => 1578469536,
+        ]);
+
+        $oldNextRunAt = $scheduleTask->getNextRunAt();
+
+        $this->ba->adminAuth();
+
+        $dateTime = Carbon::create(2023, 12, 07, 12, 00, 00, Timezone::IST);
+
+        Carbon::setTestNow($dateTime);
+
+        $this->startTest($data);
+
+        $this->assertFeeRecoveryEntriesAfterFeeRecoveryJob($payout, $payout2, $payout3);
+
+        $scheduleTask = $this->getDbEntity('schedule_task', [
+            'entity_id'     => $this->balance->getId(),
+            'entity_type'   => 'balance',
+            'merchant_id'   => $this->balance->getMerchantId(),
+            'type'          => 'fee_recovery',
+        ]);
+
+        $newLastRunAt = $scheduleTask->getLastRunAt();
+        $newNextRunAt = $scheduleTask->getNextRunAt();
+
+        $this->assertEquals($oldNextRunAt, $newLastRunAt);
+        $this->assertEquals($newNextRunAt, 1578508199);
     }
 
     public function testCreateFeeRecoveryRetryManualFailAfterSuccess()

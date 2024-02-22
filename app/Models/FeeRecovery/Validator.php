@@ -11,6 +11,8 @@ use RZP\Exception\BadRequestException;
 class Validator extends Base\Validator
 {
     const CREATE_FEE_RECOVERY_PAYOUT = 'create_fee_recovery_payout';
+    const UPDATE_FEE_RECOVERY_SCHEDULE = 'update_fee_recovery_schedule';
+    const ACTION = 'action';
 
     // Currently fee_recovery is only used by the payouts model
     const ALLOWED_SOURCE_ENTITIES = [
@@ -47,6 +49,22 @@ class Validator extends Base\Validator
         Entity::REVERSAL_IDS . '.*'         => 'required|string|size:14',
         Entity::REFERENCE_NUMBER            => 'sometimes|string|nullable|max:255',
         Entity::DESCRIPTION                 => 'sometimes|string|nullable|max:255',
+    ];
+
+    protected static $updateFeeRecoveryScheduleRules = [
+        self::ACTION                                    => 'required|string|in:update',
+        Entity::BALANCE_ID                              => 'required|string|size:14',
+        \RZP\Models\Schedule\Task\Entity::NEXT_RUN_AT   => 'required|epoch',
+    ];
+
+    protected static $calculateFeeRecoveryAmountRules = [
+        Entity::BALANCE_ID          => 'required|string|size:14',
+        Entity::FROM                => 'required|filled|epoch',
+        Entity::TO                  => 'required|filled|epoch',
+    ];
+
+    protected static $createRecoveryPayoutJobAdminRules = [
+        Entity::BALANCE_ID          => 'required|string|size:14',
     ];
 
     // Function used by admin fetch

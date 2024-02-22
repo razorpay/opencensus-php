@@ -2439,7 +2439,10 @@ class Route
         'fee_recovery_manual_update'               => ['post',     'payouts/fee_recovery/manual',                    'FeeRecoveryController@postManualRecovery'                          ],
         'fee_recovery_payout_manual_retry'         => ['post',     'payouts/fee_recovery_retry/manual',              'FeeRecoveryController@createRecoveryRetryPayoutManually'                        ],
         'fee_recovery_low_balance_cron'            => ['post',     'fee_recovery_low_balance_cron',                  'FeeRecoveryController@processFeeRecoveryBalanceCron'],
-
+        'fee_recovery_schedule_update_admin'       => ['post',     'admin/fee_recovery_schedule_update',             'FeeRecoveryController@updateFeeRecoveryScheduleAdmin'],
+        'fee_recovery_amount_admin'                => ['post',     'admin/fee_recovery_amount',                      'FeeRecoveryController@calculateFeeRecoveryAmountAdmin'],
+        'fee_recovery_retry_admin'                 => ['post',     'admin/fee_recovery_retry',                       'FeeRecoveryController@createRecoveryRetryPayoutManually'],
+        'fee_recovery_payout_create_admin'         => ['post',     'admin/fee_recovery_payout',                      'FeeRecoveryController@createRecoveryPayoutJobAdmin'],
         // Route APIs
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
@@ -8734,6 +8737,10 @@ class Route
         'fee_recovery_payout_admin',
         'fee_recovery_payout_schedule_task',
         'fee_recovery_manual_update',
+        'fee_recovery_schedule_update_admin',
+        'fee_recovery_amount_admin',
+        'fee_recovery_retry_admin',
+        'fee_recovery_payout_create_admin',
 
         // Banking VA
         'virtual_account_bulk_create_for_banking',
@@ -10354,6 +10361,10 @@ class Route
         'admin_fetch_fund_account_validate'         => Permission::ADMIN_FETCH_FUND_ACCOUNT_VALIDATION,
         'create_promotions_events'                  => Permission::CREATE_PROMOTION_EVENT,
         'fee_recovery_payout_admin'                 => Permission::PROCESS_FEE_RECOVERY,
+        'fee_recovery_amount_admin'                 => Permission::PROCESS_FEE_RECOVERY,
+        'fee_recovery_schedule_update_admin'        => Permission::PROCESS_FEE_RECOVERY,
+        'fee_recovery_retry_admin'                  => Permission::PROCESS_FEE_RECOVERY,
+        'fee_recovery_payout_create_admin'          => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_payout_schedule_task'         => Permission::ASSIGN_FEE_RECOVERY_SCHEDULE,
 
         'fund_account_validate_bulk_patch_status'   => Permission::BULK_PATCH_FUND_ACCOUNT_VALIDATION,
@@ -13872,6 +13883,10 @@ class Route
             'feature_onboarding_fetch_responses',
             'fee_recovery_manual_update',
             'fee_recovery_payout_admin',
+            'fee_recovery_amount_admin',
+            'fee_recovery_schedule_update_admin',
+            'fee_recovery_retry_admin',
+            'fee_recovery_payout_create_admin',
             'fee_recovery_payout_manual_retry',
             'fee_recovery_payout_schedule_task',
             'fetch_batch_action_entities',

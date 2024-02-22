@@ -179,4 +179,12 @@ class Repository extends Base\Repository
 
         return  $query->get();
     }
+
+    public function fetchByTypeAndEntityId(string $type, string $entityId)
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, '=', $entityId)
+            ->where(Entity::TYPE, '=', $type)
+            ->first();
+    }
 }

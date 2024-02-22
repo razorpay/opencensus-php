@@ -57,4 +57,29 @@ class Service extends Base\Service
     {
         return $this->core()->processFeeRecoveryBalanceCron();
     }
+
+    public function updateFeeRecoveryScheduleAdmin(array $input)
+    {
+        $response = $this->core()->updateFeeRecoveryScheduleAdmin($input);
+
+        return $response;
+    }
+
+    public function calculateFeeRecoveryAmountAdmin(array $input)
+    {
+        (new Validator())->validateInput('calculate_fee_recovery_amount', $input);
+
+        $response = $this->core()->calculateFeeRecoveryAmountAdmin($input[Entity::BALANCE_ID], $input[Entity::FROM], $input[Entity::TO]);
+
+        return $response;
+    }
+
+    public function createRecoveryPayoutJobAdmin(array $input)
+    {
+        (new Validator())->validateInput('create_recovery_payout_job_admin', $input);
+
+        $response = $this->core()->createRecoveryPayoutJobAdmin($input);
+
+        return $response;
+    }
 }
