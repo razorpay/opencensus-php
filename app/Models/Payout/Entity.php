@@ -391,44 +391,72 @@ class Entity extends Base\PublicEntity
     const DISPATCH_PAYOUTS_SCHEDULED_POST_APPROVAL = 'dispatch_payouts_scheduled_post_approval';
 
     //Smart Routing Payouts Summary
-    const MODE_ALL = 'ALL';
-    
-    const IMPS = 'IMPS';
-    
-    const ACCOUNT_TYPE = 'account_type';
-    
-    const START_TIME = 'start_time';
-    
-    const END_TIME = 'end_time';
-    
-    const QUERY = 'query';
-    
-    const TABLE = 'table';
-    
-    const INPUT = 'input';
-    
-    const BACKEND = 'backend';
-    
-    const PINOT_BACKEND = 'pinot';
-    
-    const PAYOUTS_TABLE = 'payouts';
-    
-    const FTS_REQUEST = 'fts_request';
-    
-    const FTS_RESPONSE = 'fts_response';
-    
-    const SMART_ROUTING_SUMMARY = 'smart_routing_summary';
-    
-    const HARVESTER_PAYLOAD = 'harvester_request_payload';
-    
-    const HARVESTER_RESPONSE = 'harvester_response';
-    
-    const TIME_RANGE_LIST = 'time_range_list';
+    const MODE_ALL                      = 'ALL';
+
+    const IMPS                          = 'IMPS';
+
+    const ACCOUNT_TYPE                  = 'account_type';
+
+    const START_TIME                    = 'start_time';
+
+    const END_TIME                      = 'end_time';
+
+    const QUERY                         = 'query';
+
+    const TABLE                         = 'table';
+
+    const INPUT                         = 'input';
+
+    const BACKEND                       = 'backend';
+
+    const PINOT_BACKEND                 = 'pinot';
+
+    const PAYOUTS_TABLE                 = 'payouts';
+
+    const SMART_ROUTING_FTS_REQUEST     = 'fts_request';
+
+    const FTS_RESPONSE                  = 'fts_response';
+
+    const SMART_ROUTING_SUMMARY         = 'smart_routing_summary';
+
+    const HARVESTER_PAYLOAD             = 'harvester_request_payload';
+
+    const HARVESTER_RESPONSE            = 'harvester_response';
+
+    const TIME_RANGE_LIST               = 'time_range_list';
 
     const PAYOUTS_SUMMARY_ALLOWED_MODES = [
         PayoutMode::IMPS,
         PayoutMode::UPI
     ];
+
+    // Constants for Smart Routing Payouts Summary Response
+    const SUCCESS_RATE_WITH_MAR                                 = 'success_rate_with_mar';
+
+    const SUCCESS_RATE_WITHOUT_MAR                              = 'success_rate_without_mar';
+
+    const TOTAL_PAYOUTS                                         = 'total_payouts';
+
+    const TOTAL_SUCCESSFUL_PRIMARY_PAYOUTS                      = 'total_primary_successful_payouts';
+
+    const TOTAL_SUCCESSFUL_SECONDARY_PAYOUTS                    = 'total_secondary_successful_payouts';
+
+    const TOTAL_PRIMARY_PAYOUTS                                 = 'total_payouts_from_primary_channel';
+
+    const TOTAL_SECONDARY_PAYOUTS                               = 'total_payouts_from_secondary_channel';
+
+    const TOTAL_PAYOUTS_AMOUNT                                  = 'total_payouts_amount';
+
+    const TOTAL_PROCESSED_AMOUNT                                = 'total_payouts_processed_amount';
+
+    const TOTAL_PRIMARY_PAYOUTS_AMOUNT                          = 'total_payouts_amount_from_primary_channel';
+
+    const TOTAL_SECONDARY_PAYOUTS_AMOUNT                        = 'total_payouts_amount_from_secondary_channel';
+
+    const TOTAL_PROCESSED_PRIMARY_PAYOUTS_AMOUNT               = 'total_payouts_processed_amount_from_primary_channel';
+
+    const TOTAL_PROCESSED_SECONDARY_PAYOUTS_AMOUNT             = 'total_payouts_processed_amount_from_secondary_channel';
+
 
     protected $queueFlag = false;
 

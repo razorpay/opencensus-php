@@ -961,14 +961,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'description' => 'Invalid mode received.',
+                    'description' => 'Something went wrong, please try again after sometime.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class' => \Exception::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
 
@@ -985,14 +985,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                    'description' => 'Something went wrong, please try again after sometime.',
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => \Exception::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
 
@@ -1009,14 +1009,78 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'description' => 'The selected account type is invalid.',
+                    'description' => 'Something went wrong, please try again after sometime.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => \Exception::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testSmartRoutingSummary_ModeALL_IMPSDoesNotExistsUPIExists' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'ALL',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "IMPS" => null,
+                "UPI" => [
+                    'success_rate_with_mar' => 100,
+                    'success_rate_without_mar' => 75,
+                    'total_payouts' => 10,
+                    'total_primary_successful_payouts' => 5,
+                    'total_secondary_successful_payouts' => 5,
+                    'total_payouts_from_primary_channel' => 5,
+                    'total_payouts_from_secondary_channel' => 5,
+                    'total_payouts_amount' => 1000,
+                    'total_payouts_processed_amount' => 1000,
+                    'total_payouts_amount_from_primary_channel' => 500,
+                    'total_payouts_amount_from_secondary_channel' => 500,
+                    'total_payouts_processed_amount_from_primary_channel' => 500,
+                    'total_payouts_processed_amount_from_secondary_channel' => 500
+                ],
+            ],
+        ],
+    ],
+
+    'testSmartRoutingSummary_ModeALL_IMPSExistsUPIDoesNotExists' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'ALL',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "IMPS" => [
+                    'success_rate_with_mar' => 100,
+                    'success_rate_without_mar' => 75,
+                    'total_payouts' => 10,
+                    'total_primary_successful_payouts' => 5,
+                    'total_secondary_successful_payouts' => 5,
+                    'total_payouts_from_primary_channel' => 5,
+                    'total_payouts_from_secondary_channel' => 5,
+                    'total_payouts_amount' => 1000,
+                    'total_payouts_processed_amount' => 1000,
+                    'total_payouts_amount_from_primary_channel' => 500,
+                    'total_payouts_amount_from_secondary_channel' => 500,
+                    'total_payouts_processed_amount_from_primary_channel' => 500,
+                    'total_payouts_processed_amount_from_secondary_channel' => 500
+                ],
+                "UPI" => null,
+            ],
         ],
     ],
 ];

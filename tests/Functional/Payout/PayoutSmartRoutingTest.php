@@ -2225,6 +2225,152 @@ class PayoutSmartRoutingTest extends TestCase
         $this->assertTrue($ftsGetPriorityChannelSuccess);
     }
 
+    public function testSmartRoutingSummary_ModeALL_IMPSDoesNotExistsUPIExists()
+    {
+        $this->liveSetUp();
+
+        list($liteBalances, $directBalances) = $this->setupLiteAndDirectAccountsForMerchants(1, 1);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Features::RBL_CA_UPI]);
+
+        $testDataRequest = $this->testData[__FUNCTION__]['request']['content'];
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsGetPriorityChannelSuccess = false;
+
+        $ftsRoutingMockedResponse = [
+            PayoutEntity::ACCOUNT_TYPE => AccountType::DIRECT,
+            PayoutEntity::BALANCE_ID  => [
+                $directBalances[0]->getId() => [
+                    ["start_time" => $testDataRequest['start_time'], "end_time" => $testDataRequest['end_time'] ]
+                ],
+            ],
+        ];
+
+        $this->mockFtsGetPriorityChannel($this->ftsMock, $ftsGetPriorityChannelSuccess, 1, $ftsRoutingMockedResponse,false , true, ['error', 'success']);
+
+
+        //Get list of Balances
+        foreach ($directBalances as $directBalance)
+        {
+            $listBalanceIds[] = $directBalance->getId();
+        }
+        foreach ($liteBalances as $liteBalance)
+        {
+            $listBalanceIds[] = $liteBalance->getId();
+        }
+        sort($listBalanceIds);
+
+        $queryBuilderSuccess = false;
+        $timeRangesList = [ ["start_time" => $testDataRequest['start_time'], "end_time" => $testDataRequest['end_time']] ];
+        if($testDataRequest['mode'] == "ALL")
+        {
+            $expectedQuery1 = $this->payoutSummaryHarvesterQueryBuilder($listBalanceIds, "IMPS", $timeRangesList, $queryBuilderSuccess);
+            $expectedQuery2 = $this->payoutSummaryHarvesterQueryBuilder($listBalanceIds, "UPI", $timeRangesList, $queryBuilderSuccess);
+            $expectedQuery = [$expectedQuery1, $expectedQuery2];
+        }
+        else
+        {
+            $expectedQuery = [$this->payoutSummaryHarvesterQueryBuilder($listBalanceIds, $testDataRequest['mode'], $timeRangesList, $queryBuilderSuccess)];
+        }
+        $harvesterResponse = [];
+        foreach ($listBalanceIds as $balanceId)
+        {
+            $harvesterResponse[] = [
+                'count' => 5,
+                'balance_id' => $balanceId,
+                'status' => "PROCESSED",
+                'amount' => 500
+            ];
+        }
+
+        $harvesterServiceSuccess = false;
+        $this->mockHarvesterService($expectedQuery, $harvesterResponse, $harvesterServiceSuccess, 1);
+
+        $this->startTest();
+
+        $this->assertTrue($ftsGetPriorityChannelSuccess);
+        $this->assertTrue($harvesterServiceSuccess);
+        $this->assertTrue($queryBuilderSuccess);
+
+    }
+
+    public function testSmartRoutingSummary_ModeALL_IMPSExistsUPIDoesNotExists()
+    {
+        $this->liveSetUp();
+
+        list($liteBalances, $directBalances) = $this->setupLiteAndDirectAccountsForMerchants(1, 1);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Features::RBL_CA_UPI]);
+
+        $testDataRequest = $this->testData[__FUNCTION__]['request']['content'];
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsGetPriorityChannelSuccess = false;
+
+        $ftsRoutingMockedResponse = [
+            PayoutEntity::ACCOUNT_TYPE => AccountType::DIRECT,
+            PayoutEntity::BALANCE_ID  => [
+                $directBalances[0]->getId() => [
+                    ["start_time" => $testDataRequest['start_time'], "end_time" => $testDataRequest['end_time'] ]
+                ],
+            ],
+        ];
+
+        $this->mockFtsGetPriorityChannel($this->ftsMock, $ftsGetPriorityChannelSuccess, 1, $ftsRoutingMockedResponse,false , true, ['success', 'error']);
+
+
+        //Get list of Balances
+        foreach ($directBalances as $directBalance)
+        {
+            $listBalanceIds[] = $directBalance->getId();
+        }
+        foreach ($liteBalances as $liteBalance)
+        {
+            $listBalanceIds[] = $liteBalance->getId();
+        }
+        sort($listBalanceIds);
+
+        $queryBuilderSuccess = false;
+        $timeRangesList = [ ["start_time" => $testDataRequest['start_time'], "end_time" => $testDataRequest['end_time']] ];
+        if($testDataRequest['mode'] == "ALL")
+        {
+            $expectedQuery1 = $this->payoutSummaryHarvesterQueryBuilder($listBalanceIds, "IMPS", $timeRangesList, $queryBuilderSuccess);
+            $expectedQuery2 = $this->payoutSummaryHarvesterQueryBuilder($listBalanceIds, "UPI", $timeRangesList, $queryBuilderSuccess);
+            $expectedQuery = [$expectedQuery1, $expectedQuery2];
+        }
+        else
+        {
+            $expectedQuery = [$this->payoutSummaryHarvesterQueryBuilder($listBalanceIds, $testDataRequest['mode'], $timeRangesList, $queryBuilderSuccess)];
+        }
+        $harvesterResponse = [];
+        foreach ($listBalanceIds as $balanceId)
+        {
+            $harvesterResponse[] = [
+                'count' => 5,
+                'balance_id' => $balanceId,
+                'status' => "PROCESSED",
+                'amount' => 500
+            ];
+        }
+
+        $harvesterServiceSuccess = false;
+        $this->mockHarvesterService($expectedQuery, $harvesterResponse, $harvesterServiceSuccess, 1);
+
+        $this->startTest();
+
+        $this->assertTrue($ftsGetPriorityChannelSuccess);
+        $this->assertTrue($harvesterServiceSuccess);
+        $this->assertTrue($queryBuilderSuccess);
+
+    }
+
     protected function mockHarvesterService($expectedContents, $response, &$harvesterServiceSuccess, $times = 1): void
     {
         $index = 0;
@@ -2245,33 +2391,55 @@ class PayoutSmartRoutingTest extends TestCase
         &$ftsGetPriorityChannelSuccess,
         $times = 1,
         $mockedFetchModeResponse = [],
-        $throwError = false)
+        $throwError = false,
+        $customResponse = false,
+        $customResponseArray = [])
     {
-        if ($throwError === false)
+        if(!$customResponse)
         {
-            $ftsMock->shouldReceive('createAndSendRequest')
-                ->andReturnUsing(function(string $endpoint, string $method, array $input) use ($mockedFetchModeResponse, &$ftsGetPriorityChannelSuccess) {
-
-                    self::assertEquals('/routing/priority_route', $endpoint);
-                    self::assertEquals('POST', $method);
-                    self::assertArrayHasKey("merchant_id",$input);
-                    self::assertArrayHasKey("balance_id",$input);
-                    self::assertArrayHasKey("mode",$input);
-                    self::assertArrayHasKey("start_time",$input);
-                    self::assertArrayHasKey("end_time",$input);
-
-                    $ftsGetPriorityChannelSuccess = true;
-
-                    return [
-                        'body' => $mockedFetchModeResponse,
-                        'code' => 200,
-                    ];
-                })->times($times);
+            //for number of $times fill $customResponseArray with success and error based on $throwError
+            for($i = 0; $i < $times; $i++)
+            {
+                if($throwError)
+                {
+                    $customResponseArray[] = 'error';
+                }
+                else
+                {
+                    $customResponseArray[] = 'success';
+                }
+            }
         }
-        else
+
+
+        foreach ($customResponseArray as $responseType)
         {
-            $ftsMock->shouldReceive('createAndSendRequest')
-                ->andThrowExceptions([new \Exception("Server Error")])->times($times);
+            if ($responseType === 'success')
+            {
+                $ftsMock->shouldReceive('createAndSendRequest')
+                    ->andReturnUsing(function(string $endpoint, string $method, array $input) use ($mockedFetchModeResponse, &$ftsGetPriorityChannelSuccess) {
+
+                        self::assertEquals('/routing/priority_route', $endpoint);
+                        self::assertEquals('POST', $method);
+                        self::assertArrayHasKey("merchant_id",$input);
+                        self::assertArrayHasKey("balance_id",$input);
+                        self::assertArrayHasKey("mode",$input);
+                        self::assertArrayHasKey("start_time",$input);
+                        self::assertArrayHasKey("end_time",$input);
+
+                        $ftsGetPriorityChannelSuccess = true;
+
+                        return [
+                            'body' => $mockedFetchModeResponse,
+                            'code' => 200,
+                        ];
+                    })->times(1);
+            }
+            else
+            {
+                $ftsMock->shouldReceive('createAndSendRequest')
+                    ->andThrowExceptions([new \Exception("Server Error")])->times(1);
+            }
         }
 
         $this->app->instance('fts_fund_transfer', $ftsMock);

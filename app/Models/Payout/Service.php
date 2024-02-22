@@ -13,6 +13,7 @@ use RZP\Constants\Product;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Exception\LogicException;
 use RZP\Http\Route;
 
 use RZP\Models\Vpa;
@@ -6116,54 +6117,54 @@ class Service extends Base\Service
 
     /**
      * @throws BadRequestException
-     * @throws BadRequestValidationFailureException
      */
     public function getSmartRoutingSummary($input): array
     {
+        $response = [];
         try
         {
             (new Validator)->validateSmartRoutingSummaryInput($input);
 
             $mode = $input[Entity::MODE];
-            $response = [];
 
-            if($mode === Entity::MODE_ALL)
-            {
-                $modeList = Entity::PAYOUTS_SUMMARY_ALLOWED_MODES;
-            }
-            else
-            {
-                $modeList[] = $mode;
-            }
-
+            $modeList = $mode === Entity::MODE_ALL ? Entity::PAYOUTS_SUMMARY_ALLOWED_MODES : [$mode];
             foreach ($modeList as $mode)
             {
                 $input[Entity::MODE] = $mode;
-                $response[$mode] = $this->core->smartRoutingPayoutsSummary($input);
+                $response[$mode] = $this->core->payoutsSmartRoutingSummary($input);
             }
 
         }
-        catch (Exception\ServerErrorException $e) {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
-                null,
-                null,
-                $e->getMessage()
-            );
-        } catch (BadRequestValidationFailureException $e) {
-            throw new BadRequestValidationFailureException(
-                $e->getMessage(),
-                null,
-                null
-            );
-        }catch (Throwable $e)
+        catch (\Throwable $exception)
         {
-            throw new Exception\ServerErrorException(
-                ErrorCode::SERVER_ERROR,
-                null,
-                null,
-                $e
+            $this->trace->traceException($exception,
+                Trace::ERROR,
+                TraceCode::SMART_ROUTING_SUMMARY_FAILED,
+                $input
             );
+
+        }
+        finally
+        {
+            //if value of all the mode in response is null throw Bad Request Exception
+            $validResponse = false;
+            foreach ($response as $mode => $value)
+            {
+                if ($value != null)
+                {
+                    $validResponse = true;
+                    break;
+                }
+            }
+
+            if(!$validResponse)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null
+                );
+            }
         }
 
         return $response;
