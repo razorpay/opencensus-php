@@ -11,7 +11,7 @@ class Constants
     const MERCHANT_ID  = 'merchant_id';
     const DISPLAY_NAME = 'display_name';
     const PAYER_ACCOUNT_TYPE_MAPPINGS = 'payer_account_type_mappings';
-
+    const DISPLAY_CONTROLS = 'DisplayControls';
     // Timeout related constants
     const TIMEOUTS           = 'timeouts';
     const OLIVE_SDK_TIMEOUT  = 'olive_sdk_timeout';

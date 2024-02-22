@@ -4,6 +4,7 @@ namespace RZP\Models\Feature;
 
 use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
+use RZP\Models\P2p\Preferences\Constants as PreferencesConstants;
 
 class Constants
 {
@@ -1963,6 +1964,9 @@ class Constants
     /** Feature flag to remove/hide RZP branding from all places in checkout UIs for Turbo UPI */
     const REMOVE_RAZORPAY_BRANDING = 'remove_rzp_branding';
 
+    /** Feature flag to disable prefetching of bank account information for Turbo UPI */
+    const PREFETCH_ACCOUNT_DISABLED = 'prefetch_acc_disabled';
+
     /**
      * Feature flag to enable merchants for debit card third party validation
      */
@@ -2162,7 +2166,12 @@ class Constants
     ];
 
     const TURBO_UPI_FEATURES = [
-        self::REMOVE_RAZORPAY_BRANDING,
+        PreferencesConstants::DISPLAY_CONTROLS => [
+            self::REMOVE_RAZORPAY_BRANDING,
+        ],
+        PreferencesConstants::PREFETCH => [
+            DcsConstants::PrefetchAccountsDisabled,
+        ]
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -2818,6 +2827,7 @@ class Constants
         self::OMNI_ENABLED                           => true,
         self::DEBIT_CARD_VALIDATION                  => true,
         self::REMOVE_RAZORPAY_BRANDING               => true,
+        self::PREFETCH_ACCOUNT_DISABLED              => true,
         self::BULK_PAYOUT_WORKFLOW                   => true,
         DcsConstants::ShowSingleDCCCurrency          => true,
         self::ENABLE_JPMC_IMPORT_FLOW                => true,

@@ -20,6 +20,7 @@ use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Services\Dcs\Configurations as DcsConfig;
 use RZP\Models\P2p\BankAccount\Type as AccountType;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Services\Dcs\Features\Constants as DcsConstants;
 
 /**
  *
@@ -380,40 +381,68 @@ class Processor extends Base\Processor
         }
     }
 
+    private function updateFeatureNamesForSDK(&$feature)
+    {
+        if (isset($feature[DcsConstants::PrefetchAccountsDisabled]))
+        {
+            $feature[Feature::PREFETCH_ACCOUNT_DISABLED] = !$feature[DcsConstants::PrefetchAccountsDisabled];
+            unset($feature[DcsConstants::PrefetchAccountsDisabled]);
+        }
+    }
+
     private function setMerchantFeaturesInResponse(&$preferencesResponse)
     {
-        $key     = DcsConfig\Constants::UpiInAppDisplayControls;
-        $fields  = Feature::TURBO_UPI_FEATURES;
-        $merchantId = '';
-        try
+        $mode = app('rzp.mode') ?? Mode::LIVE;
+        $merchantId = $this->context()->getMerchant()->getId();
+        $features = [];
+        $key     = '';
+
+        foreach (Feature::TURBO_UPI_FEATURES as $featureName => $configurations)
         {
-            $mode       = app('rzp.mode') ?? Mode::LIVE;
-            $merchantId = $this->context()->getMerchant()->getId();
-
-            $preferencesResponse[Constants::FEATURES] = app('dcs_config_service')->fetchConfiguration($key, $merchantId, $fields, $mode);
-
-            // If TPV is enabled for the merchant
-            if($this->context()->getMerchant()->isTPVRequired() === true)
+            try
             {
-                // marking is tpv flag as true
-                $preferencesResponse[Constants::FEATURES] [Entity::TPV] = true;
+                switch ($featureName)
+                {
+                    case Constants::DISPLAY_CONTROLS:
+                        $key = DcsConfig\Constants::UpiInAppDisplayControls;
+                        break;
+
+                    case Constants::PREFETCH:
+                        $key = DcsConfig\Constants::UpiInAppPrefetch;
+                        break;
+                }
+
+                $dcsResponse = app('dcs_config_service')->fetchConfiguration($key, $merchantId, $configurations, $mode);
+
+                $features += $dcsResponse;
+
+                $this->updateFeatureNamesForSDK($features);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace()->traceException(
+                    $ex,
+                    Logger::ERROR,
+                    TraceCode::FAILED_TO_FETCH_CONFIGS_FROM_DCS,
+                    [
+                        Constants::MERCHANT_ID => $merchantId,
+                        'mode'                 => $mode,
+                        'fields'               => $configurations
+                    ]
+                );
             }
         }
-        catch (\Throwable $ex)
-        {
-            $this->trace()->traceException(
-                $ex,
-                Logger::ERROR,
-                TraceCode::FAILED_TO_FETCH_CONFIGS_FROM_DCS,
-                [
-                    Constants::MERCHANT_ID => $merchantId ?? null,
-                    'mode'                 => $mode
-                ]
-            );
+
+        // If TPV is enabled for the merchant
+        if ($this->context()->getMerchant()->isTPVRequired()) {
+            // marking is tpv flag as true
+            $features[Entity::TPV] = true;
         }
 
-        $preferencesResponse[Constants::FEATURES][Constants::SUPPORTED_PAYER_ACCOUNT_TYPES]
+        $features[Constants::SUPPORTED_PAYER_ACCOUNT_TYPES]
             = $this->getSupportedPayerAccountTypesForMerchant();
+
+        $preferencesResponse[Constants::FEATURES] = $features;
     }
 
     private function setExperimentsInResponse(&$preferencesResponse)

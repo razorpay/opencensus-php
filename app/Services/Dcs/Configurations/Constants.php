@@ -27,6 +27,7 @@ class Constants
     const CustomUDFFlagConfig = "CustomUDFFlagConfig";
 
     const UpiInAppDisplayControls = "upi_in_app_display_controls";
+    const UpiInAppPrefetch        = "upi_in_app_prefetch";
     const NcOptOutConfiguration   = 'nc_opt_out_configuration';
 
     const AccountingIntegrationConfig = 'accounting_integration_config';
@@ -50,6 +51,7 @@ class Constants
         self::CountryDashboardConfigurations => "rzp/pg/country/dashboard/merchant/UIControls",
         self::AccountingIntegrationConfig    => "rzp/x/merchant/accounting/IntegrationSettings",
         self::DCCCurrencyLevelMarkup         => "rzp/pg/merchant/cross_border/india/DCCConfig",
+        self::UpiInAppPrefetch               => "rzp/pg/merchant/upi/in_app/Prefetch",
     ];
 
 }
