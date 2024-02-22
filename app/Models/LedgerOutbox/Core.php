@@ -980,6 +980,8 @@ class Core extends Base\Core
                             if($transfer->getStatus() === Transfer\Status::PENDING)
                             {
                                 // set transfer as processed
+                                $transferPayment = $transferProcessor->createTransferredEntity($transfer, $sourcePayment);
+
                                 $transfer->setProcessed();
 
                                 $transfer->setErrorCode(null);

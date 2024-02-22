@@ -1823,27 +1823,26 @@ class Core extends Base\Core
         }
     }
 
-    public function createReverseShadowLedgerEntriesForOrderAndPaymentTransfer($transfer, $transferPayment)
+    public function createReverseShadowLedgerEntriesForOrderAndPaymentTransfer($transfer, $transferPaymentMerchant)
     {
-        if (isset($transferPayment) === false)
+        if (isset($transferPaymentMerchant) === false)
         {
             return;
         }
 
         $transferMerchant = $transfer->merchant;
-        $paymentMerchant = $transferPayment->merchant;
 
         if ( ($transferMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
-            or ($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
+            or ($transferPaymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
         {
             return;
         }
 
-        [$fee, $tax] = (new ReverseShadowTransfersCore())->saveOrderAndPaymentTransferReverseShadowLedgerEntriesToOutbox($transfer, $transferPayment);
+        [$fee, $tax] = (new ReverseShadowTransfersCore())->saveOrderAndPaymentTransferReverseShadowLedgerEntriesToOutbox($transfer, $transferPaymentMerchant);
 
         $this->trace->info(TraceCode::TRANSFER_LEDGER_ENTRIES_OUTBOX_PUSH_SUCCESS, [
             LedgerConstants::TRANSFER_ID => $transfer->getId(),
-            LedgerConstants::PAYMENT_ID => $transferPayment->getId(),
+            LedgerConstants::LINKED_ACCOUNT_MERCHANT_ID => $transferPaymentMerchant->getId(),
             LedgerConstants::MERCHANT_ID => $transfer->getMerchantId(),
         ]);
 

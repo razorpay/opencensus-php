@@ -34,11 +34,11 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    public function createBulkTransactionMessageForTransfer($transfer, $transferPayment, $merchantAccountBalances, $fee, $tax): array
+    public function createBulkTransactionMessageForTransfer($transfer, $transferPaymentMerchant, $merchantAccountBalances, $fee, $tax): array
     {
         $transferDebitJournal = $this->createTransactionMessageForDebitJournal($transfer, $merchantAccountBalances, $fee, $tax);
 
-        $transferCreditJournal = $this->createTransactionMessageForCreditJournal($transfer, $transferPayment);
+        $transferCreditJournal = $this->createTransactionMessageForCreditJournal($transfer, $transferPaymentMerchant);
 
         $bulkJournals = [$transferDebitJournal, $transferCreditJournal];
 
@@ -151,11 +151,15 @@ class Core extends Base\Core
         return $rule;
     }
 
-    public function createTransactionMessageForCreditJournal(Transfer\Entity $transfer, Payment\Entity $transferPayment): array
+    public function createTransactionMessageForCreditJournal(Transfer\Entity $transfer, Merchant\Entity $transferPaymentMerchant): array
     {
         $moneyParams = $this->generateMoneyParamsForTransferCredit($transfer);
 
-        $transactionMessage = $this->generateBaseForJournalEntry($transferPayment);
+        $transactionMessage = [
+            Constants::MERCHANT_ID               => $transferPaymentMerchant->getId(),
+            Constants::CURRENCY                  => $transferPaymentMerchant->getCurrency(),
+            Constants::TRANSACTION_DATE          => $transfer->getUpdatedAt(),
+        ];
 
         $transactionMessage[LedgerConstants::MONEY_PARAMS]           = $moneyParams;
         $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS]      = [ LedgerConstants::ENTRY_TYPE => LedgerConstants::ENTRY_TYPE_CREDIT ];
@@ -175,7 +179,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function saveOrderAndPaymentTransferReverseShadowLedgerEntriesToOutbox($transfer, $transferPayment)
+    public function saveOrderAndPaymentTransferReverseShadowLedgerEntriesToOutbox($transfer, $transferPaymentMerchant)
     {
         $ledgerService = $this->app['ledger'];
 
@@ -183,7 +187,7 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($transfer);
 
-        $transactionMessage = $this->createBulkTransactionMessageForTransfer($transfer, $transferPayment, $merchantAccountBalances, $fee, $tax);
+        $transactionMessage = $this->createBulkTransactionMessageForTransfer($transfer, $transferPaymentMerchant, $merchantAccountBalances, $fee, $tax);
 
         $transactorId = $transactionMessage[LedgerConstants::TRANSACTOR_ID];
 
@@ -206,7 +210,7 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($transfer);
 
-        $journalPayload = $this->createBulkTransactionMessageForTransfer($transfer, $transferPayment, $merchantAccountBalances, $fee, $tax);
+        $journalPayload = $this->createBulkTransactionMessageForTransfer($transfer, $transferPayment->merchant, $merchantAccountBalances, $fee, $tax);
 
         $journalResponse = $this->createJournalInLedger($journalPayload, true);
 

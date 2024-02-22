@@ -243,4 +243,6 @@ class Constants
     const LEDGER_ONDEMAND_REVERSED_TRANSACTOR_ID_PREFIX  = "setlodrvrsl_";
 
     const IS_AMOUNT_VALID = "is_amount_valid";
+
+    const LINKED_ACCOUNT_MERCHANT_ID = 'linked_account_merchant_id';
 }

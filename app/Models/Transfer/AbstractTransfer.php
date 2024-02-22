@@ -277,7 +277,7 @@ abstract class AbstractTransfer
 
         try
         {
-            $transfer = $this->repo->transaction(function () use ($payment, $transfer, $processViaReverseShadow)
+            $transfer = $this->repo->transaction(function () use ($payment, $transfer, $processViaReverseShadow, $subMerchant)
             {
                 $core = new Core();
 
@@ -296,9 +296,7 @@ abstract class AbstractTransfer
 
                     if (count($outboxEntries) === 0)
                     {
-                        $transferPayment = $this->createTransferredEntity($transfer, $payment);
-
-                        $transfer = $core->createReverseShadowLedgerEntriesForOrderAndPaymentTransfer($transfer, $transferPayment);
+                        $transfer = $core->createReverseShadowLedgerEntriesForOrderAndPaymentTransfer($transfer, $subMerchant);
                     }
                 }
 
