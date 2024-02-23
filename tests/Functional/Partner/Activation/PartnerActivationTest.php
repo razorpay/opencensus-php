@@ -7,6 +7,7 @@ use Mail;
 use RZP\Models\Partner;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant as Merchant;
+use RZP\Services\Mock\DataLakePresto;
 use Illuminate\Support\Facades\Artisan;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -845,6 +846,61 @@ class PartnerActivationTest extends OAuthTestCase
         return [$expectedFilteredIds, $expectedData];
     }
 
+    private function mockDataLakeToReturnData()
+    {
+        $prestoService = \Mockery::mock(DataLakePresto::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoService->shouldReceive('getDataFromDataLake')
+                      ->andReturnUsing(function (string $query)
+                      {
+                          switch ($query)
+                          {
+                              case str_contains($query, "'activated', 'activated_kyc_pending', 'activated_mcc_pending'"):
+                                  return [["id"=> "10000000000140"], ["id" => "10000000000142"], ["id" => "10000000000141"]];
+                              case str_contains($query, "'rejected'"):
+                                  return [["entity_id" => "10000000000143"]];
+                              case str_contains($query, "'instantly_activated', 'needs_clarification'"):
+                                  return [["merchant_id" => "10000000000110"], ["merchant_id" => "10000000000120"]];
+                              case str_contains($query, "'under_review'"):
+                                  return [["merchant_id" => "10000000000111"]];
+                              case str_contains($query, "md.activation_status IS NULL"):
+                                  return [["subm_count" => 1]];
+                              default:
+                                  throw new \Exception("Unknown Query");
+                          }
+
+                      });
+    }
+
+    public function testSendPartnerWeeklyActivationSummaryEmailsFromDataLake()
+    {
+        Mail::fake();
+
+        $this->mockDataLakeToReturnData();
+
+        $partnerCore = new PartnerCore();
+
+        list($partnerMerchant, $_app) = $this->createPartnerAndApplication(['partner_type' => 'aggregator', 'email' => 'test1@razorpay.com']);
+
+        list($expectedFilteredIds, $expectedData) = $this->createDummyMerchantsForWeeklyActivationSummary($partnerMerchant);
+
+        // Test that submerchants were correctly filtered.
+        $filteredMerchantIds = $partnerCore->getSubmerchantIdsForWeeklyActivationSummaryEmail($partnerMerchant->getId(), "enable");
+        sort($filteredMerchantIds);
+        $this->assertEquals($expectedFilteredIds, $filteredMerchantIds);
+
+        // Test that correct payload data is created
+        $data = $partnerCore->getPayloadForPartnerWeeklyActivationSummaryEmail($partnerMerchant, $filteredMerchantIds, "enable");
+        $this->assertEquals($expectedData, $data);
+
+        // Test that email was queued and received correct data
+        $partnerCore->sendPartnerWeeklyActivationSummaryEmails($partnerMerchant->getId());
+        Mail::assertQueued(PartnerWeeklyActivationSummary::class);
+
+    }
+
     public function testSendPartnerWeeklyActivationSummaryEmails()
     {
         Mail::fake();
@@ -855,14 +911,13 @@ class PartnerActivationTest extends OAuthTestCase
 
         list($expectedFilteredIds, $expectedData) = $this->createDummyMerchantsForWeeklyActivationSummary($partnerMerchant);
 
-        $merchantCountCap = 10;
         // Test that submerchants were correctly filtered.
-        $filteredMerchantIds = $partnerCore->getSubmerchantIdsForWeeklyActivationSummaryEmail($partnerMerchant->getId(), $merchantCountCap);
+        $filteredMerchantIds = $partnerCore->getSubmerchantIdsForWeeklyActivationSummaryEmail($partnerMerchant->getId());
         sort($filteredMerchantIds);
         $this->assertEquals($expectedFilteredIds, $filteredMerchantIds);
 
         // Test that correct payload data is created
-        $data = $partnerCore->getPayloadForPartnerWeeklyActivationSummaryEmail($partnerMerchant, $filteredMerchantIds, $merchantCountCap);
+        $data = $partnerCore->getPayloadForPartnerWeeklyActivationSummaryEmail($partnerMerchant, $filteredMerchantIds);
         $this->assertEquals($expectedData, $data);
 
         // Test that email was queued and received correct data
