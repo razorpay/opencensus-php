@@ -331,12 +331,17 @@ trait RequestResponseFlowTrait
             $request['server'] += $this->transformHeadersToServerVars($request['headers']);
         }
 
+        // if shouldAddPassportJwt is not set already assume passport to be used
+        // any function directly calling this function are requests with 200 status code
+        if (! isset($this->shouldAddPassportJwt)) {
+            $this->shouldAddPassportJwt = true;
+        }
+
         // add passportJWT to request if not present already, only for tests with 200 status codes
         // i.e, tests without any expected error or exception based on request data
         if (empty($request['server']['HTTP_X-Passport-JWT-V1']) && empty($request['server']['HTTP_X-PASSPORT-USABLE']) && $this->shouldAddPassportJwt) {
             // only for private auth and bearer auth for now
-            // TODO: add public auth
-            if (($this->ba->isPrivateAuth() && !$this->ba->isProxyAuth()) || $this->ba->isBearerAuth()) {
+            if (($this->ba->isPrivateAuth() && !$this->ba->isProxyAuth()) || $this->ba->isBearerAuth() || $this->ba->isPublicAuth()) {
                 $request['server'] += $this->transformHeadersToServerVars($this->getPassportJwtHeader($request));
             }
         }

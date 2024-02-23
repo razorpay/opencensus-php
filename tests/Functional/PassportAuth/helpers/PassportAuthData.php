@@ -246,4 +246,26 @@ return [
             'status_code' => 401,
         ],
     ],
+
+    'paymentsCreateAjax' => [
+        'request' => [
+            'url' => '/payments/create/ajax',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'paymentsCreateCheckout' => [
+        'request' => [
+            'url' => '/payments/create/checkout',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
 ];

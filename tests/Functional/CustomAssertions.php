@@ -18,6 +18,16 @@ trait CustomAssertions
         $this->assertInstanceOf($class, $e);
     }
 
+    /**
+     * Asserts that the provided arrays are equal selectively, allowing for partial comparison.
+     *
+     * This function compares the values of two arrays recursively, while considering only the keys present in the expected array.
+     * It uses PHPUnit assertions for array key existence and strict equality comparison.
+     *
+     * @param array $expected The expected array.
+     * @param array $actual The actual array to compare against.
+     * @return void
+     */
     public function assertArraySelectiveEquals(array $expected, array $actual)
     {
         if ((isset($actual['entity'])) and (is_string($actual['entity'])))

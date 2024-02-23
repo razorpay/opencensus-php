@@ -75,6 +75,8 @@ trait PassportTrait
         $impersonation = [];
         $oauth = [];
         $roles = [];
+        $authenticated = true;
+        $identified = true;
 
         // only for private auth (merchant/partner/oauth)
         if (($this->ba->isPrivateAuth() && !$this->ba->isProxyAuth())) {
@@ -97,11 +99,34 @@ trait PassportTrait
             $oauth = $this->getOauthClaims($tokenEntity);
             $roles = $this->getRolesClaims($tokenEntity['scopes']);
         }
+        if ($this->ba->isPublicAuth()) {
+            $authenticated = false;
+            if ($key !== Authorization::DEFAULT_TEST_KEY && $key !== Authorization::DEFAULT_LIVE_KEY) {
+                if (str_contains($key, '_oauth_'))
+                {
+                    $tokenEntity = $this->ba->getOauthTokenEntity()->toArray();
+                    $id = $tokenEntity['merchant_id'];
+                    $mode = $tokenEntity['mode'];
+                    $key = 'rzp_' . $tokenEntity['mode'] . '_oauth_' . $tokenEntity['public_token'];
+                    $publicKey = $key;
+                    $oauth = $this->getOauthClaims($tokenEntity);
+                    $roles = $this->getRolesClaims($tokenEntity['scopes']);
+                } else {
+                    $id = ($type === Authorization::PARTNER) ? $this->ba->getPartnerMerchantId() : $this->getKeyId($key, $mode);
+                }
+            }
+            $accountId = $this->getAccountId($request);
+            if (! empty($accountId)) {
+                $impersonation = $this->getImpersonationClaims($accountId);
+                $publicKey = $key . '-acc_' . $accountId;
+            }
+            $authenticated = false;
+        }
 
         $consumer = ['id' => $id, 'type' => $type];
         $credential = ['username' => $key, 'public_key' => $publicKey];
         return [
-            'HTTP_X-Passport-JWT-V1' => $this->samplePassportJwtBuilder($consumer, $credential, $mode, $impersonation, $oauth, $roles),
+            'HTTP_X-Passport-JWT-V1' => $this->samplePassportJwtBuilder($consumer, $credential, $mode, $impersonation, $oauth, $roles, $identified, $authenticated),
             'HTTP_X-PASSPORT-USABLE' => 'true'
         ];
     }

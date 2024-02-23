@@ -33,7 +33,9 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
     public function testAuthenticatePublicTokenViaKeyIdParam()
     {
-        $this->ba->oauthPublicTokenAuth($this->publicToken);
+        $token = Token\Entity::factory()->create(['type' => 'access_token', 'scopes' => ['read_only']]);
+        $this->ba->setOauthTokenEntity($token);
+        $this->ba->oauthPublicTokenAuth($token->getPublicTokenWithPrefix());
 
         $this->startTest();
     }

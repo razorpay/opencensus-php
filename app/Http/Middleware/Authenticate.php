@@ -171,8 +171,7 @@ class Authenticate
         if ( $this->requestContext->shouldAuthenticateUsingPassport || $this->shouldUsePassportWithInternalAuth($route,$request) )
         {
             $this->isPartnerAuth = ($this->passport->consumer->type == self::PARTNER);
-            // TODO: this logic has to be updated once Edge Passport is usable for other auth schemes as well
-            $passportAuthType = ($this->passport->authenticated === false && $this->passport->identified === true) ? Type::PUBLIC_AUTH : Type::PRIVATE_AUTH;
+            $passportAuthType = $this->getPassportAuthType();
 
             $this->trace->debug(TraceCode::AUTHENTICATING_USING_PASSPORT,
                 [
@@ -469,22 +468,49 @@ class Authenticate
     }
 
     /**
-     * set basic auth contexts from edge passport that are required by business logic
-     *
-     * @param string $authType
-     * @return ApiResponse|null
-     * @throws BadRequestException
+     * set auth type related basic auth contexts from edge passport (auth type, auth flow type, is partner auth)
      */
-    private function setBasicAuthContextsFromPassport(string $authType)
+    private function setAuthTypesBasicAuthContextsFromPassport(string $authType): void
     {
         $this->ba->setBasicType($authType);
         $authFlowType = $this->isPartnerAuth ? self::PARTNER : self::KEY;
         $this->app['request.ctx']->setAuthFlowType($authFlowType);
         $this->ba->setPartnerAuth($this->isPartnerAuth);
+    }
 
+    /**
+     * set and init authCreds class; and sets mode from edge passport
+     */
+    private function setAuthCredsBasicAuthContextFromPassport(): void
+    {
         $authCredsClass = $this->isPartnerAuth ? ClientAuthCreds::class : KeyAuthCreds::class;
         $this->ba->authCreds = new $authCredsClass($this->app, $this->passport->credential->publicKey);
         $this->ba->authCreds->setModeAndDbConnection($this->passport->mode);
+    }
+
+    /**
+     * sets account id from edge passport, set source of it to metrics and remove it from request params
+     */
+    private function setAccountIdFromPassport(): void
+    {
+        $this->ba->authCreds->creds[self::ACCOUNT_ID] = $this->passportUtil->getAccountId();
+        // set source of account id to metrics
+        app('request.ctx')->setAccountIdSource();
+        // remove account id from request params, does not throw any exception if not present
+        // fails payment create validators otherwise
+        $this->passportUtil->removeRequestKey(self::ACCOUNT_ID);
+    }
+
+     /**
+      * set basic auth contexts from edge passport that are common to all auth types
+      *
+      * @return ApiResponse|null
+      * @throws BadRequestException
+      */
+    private function setCommonBasicAuthContextsFromPassport(string $authType)
+    {
+        $this->setAuthTypesBasicAuthContextsFromPassport($authType); // set auth type and auth flow type
+        $this->setAuthCredsBasicAuthContextFromPassport(); // determine and init authCreds class, also sets mode from passport
 
         // split by '-' to remove -acc_ if present in public key to get key
         // get last 14 chars to get key id
@@ -500,12 +526,8 @@ class Authenticate
         }
 
         $this->ba->authCreds->setPublicKey($this->passport->credential->publicKey);
-        $this->ba->authCreds->creds[self::ACCOUNT_ID] = $this->passportUtil->getAccountId();
-        // set source of account id to metrics
-        app('request.ctx')->setAccountIdSource();
-        // remove account id from request params, does not throw any exception if not present
-        // fails payment create validators otherwise
-        $this->passportUtil->removeRequestKey(self::ACCOUNT_ID);
+
+        $this->setAccountIdFromPassport();
 
         $this->ba->setMerchantById($this->passport->consumer->id);
 
@@ -517,6 +539,44 @@ class Authenticate
                 throw $error;
             }
         }
+        return null;
+    }
+
+    /**
+     * for public auth set basic auth contexts from edge passport that are required by business logic
+     *
+     * @return ApiResponse|null
+     * @throws BadRequestException
+     */
+    private function setPublicBasicAuthContextsFromPassport()
+    {
+        // set basic auth contexts from passport, that are common to all auth types
+        $err = $this->setCommonBasicAuthContextsFromPassport(Type::PUBLIC_AUTH);
+        if ($err !== null)
+        {
+            return $err;
+        }
+
+        $this->ba->removeRequestKey(self::KEY_ID);  // Remove 'key_id' from query params
+        $this->ba->authCreds->creds[self::SECRET] = null;  // set auth credential secret to null
+
+        return $this->passportUtil->checkAndSetPartnerMerchantScope();
+    }
+
+    /**
+     * for private auth set basic auth contexts from edge passport that are required by business logic
+     *
+     * @return ApiResponse|null
+     * @throws BadRequestException
+     */
+    private function setPrivateBasicAuthContextsFromPassport()
+    {
+        // set basic auth contexts from passport, that are common to all auth types
+        $ret = $this->setCommonBasicAuthContextsFromPassport(Type::PRIVATE_AUTH);
+        if ($ret !== null)
+        {
+            return $ret;
+        }
 
         // will not throw any error as account id existence is already verified by edge
         $this->ba->checkAndSetAccountScope();
@@ -524,28 +584,54 @@ class Authenticate
         return $this->passportUtil->checkAndSetPartnerMerchantScope();
     }
 
+
     /**
-     * set oauth contexts from edge passport that are required by business logic
+     * set basic auth contexts from edge passport that are required by business logic
      *
      * @param string $authType
      * @return ApiResponse|null
+     * @throws BadRequestException
      */
-    private function setOauthContextsFromPassport(string $authType)
+    private function setBasicAuthContextsFromPassport(string $authType)
+    {
+        switch ($authType)
+        {
+            case Type::PUBLIC_AUTH:
+                return $this->setPublicBasicAuthContextsFromPassport();
+            case Type::PRIVATE_AUTH:
+                return $this->setPrivateBasicAuthContextsFromPassport();
+        }
+    }
+
+    /**
+     * set auth type and auth flow type
+     */
+    private function setAuthTypesOauthContextsFromPassport(string $authType): void
     {
         $this->ba->setBasicType($authType);
         $this->app['request.ctx']->setAuthFlowType(self::OAUTH);
+    }
 
+    /**
+     * set public key from passport oauth
+     */
+    private function setPublicKeyOauthContext(string $authType): void
+    {
         // Public key is used to generate the callback URL parameter that is
         // being sent with the payment create request to the gateway.
         $publicKey = $this->passport->credential->publicKey;;
-        $this->ba->oauthPublicTokenAuth($publicKey, Type::PRIVATE_AUTH);
+        $this->ba->oauthPublicTokenAuth($publicKey, $authType);
+    }
 
-        // authCreds will be initialized by oauthPublicTokenAuth
-        $this->ba->authCreds->setModeAndDbConnection($this->passport->mode);
-
+    private function setMerchantByIdFromPassportOauth(): string|null
+    {
         $merchantId = $this->passport->oauth->ownerId;;
         $this->ba->setMerchantById($merchantId);
+        return $merchantId;
+    }
 
+    private function setUserByIdFromPassportOauth(string $merchantId): string|null
+    {
         $userId = $this->passport->oauth->userId;;
         try
         {
@@ -556,6 +642,24 @@ class Authenticate
             $this->trace->info(TraceCode::USER_CONTEXT_NOT_PRESENT_FOR_OAUTH_REQUEST,
                 [OAuthToken::MERCHANT_ID => $merchantId, 'error' => $ex]);
         }
+        return $userId;
+    }
+
+    /**
+     * set oauth contexts from edge passport that are common to all auth types
+     *
+     * @param string $authType
+     * @return ApiResponse|null
+     */
+    private function setCommonOauthContextsFromPassport(string $authType)
+    {
+        $this->setPublicKeyOauthContext($authType); // set public key and mode from passport
+
+        // authCreds will be initialized by oauthPublicTokenAuth (inside setPublicKeyOauthContext)
+        $this->ba->authCreds->setModeAndDbConnection($this->passport->mode);
+
+        $merchantId = $this->setMerchantByIdFromPassportOauth();
+        $userId     = $this->setUserByIdFromPassportOauth($merchantId);
 
         // keeping the merchant activation check in here as this will be supported by Edge in future
         // this can be removed once edge starts supporting it natively
@@ -564,12 +668,7 @@ class Authenticate
             return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_MERCHANT_NOT_ACTIVATED);
         }
 
-        $this->ba->authCreds->creds[self::ACCOUNT_ID] = $this->passportUtil->getAccountId();
-        // set source of account id to metrics
-        app('request.ctx')->setAccountIdSource();
-        // remove account id from request params, does not throw any exception if not present
-        // fails payment create validators otherwise
-        $this->passportUtil->removeRequestKey(self::ACCOUNT_ID);
+        $this->setAccountIdFromPassport();
 
         // this flow is required for non pure platform partners who use oauth (Client Credentials mostly).
         $error = $this->passportUtil->handleAccountAuthIfApplicable();
@@ -582,24 +681,61 @@ class Authenticate
         $this->ba->setOAuthClientId($this->passport->oauth->clientId);
         $this->ba->setOAuthApplicationId($this->passport->oauth->appId);
         $this->ba->setUserRoleWithUserIdAndMerchantId($merchantId, $userId);
+        $this->ba->setTokenScopes($this->passportUtil->fetchOauthScopes());
 
-        $tokenScopes = $this->passportUtil->fetchOauthScopes();
-        $this->ba->setTokenScopes($tokenScopes);
-
-        // TODO: remove this db op if no requests need this and trace log
         $application = (new Repository())->findOrFail($this->passport->oauth->appId);
         $this->ba->setPartnerMerchantId($application->getMerchantId());
-        if ($this->passport->consumer->id !== $application->getMerchantId()) {
-            $this->trace->info(TraceCode::OAUTH_PARTNER_MERCHANT_MISMATCH,
-                [
-                    self::APP_MERCHANT_ID      => $application->getMerchantId(),
-                    self::PASSPORT_CONSUMER_ID => $this->passport->consumer->id,
-                    self::ROUTE                => $this->router->currentRouteName()
-                ]
-            );
-        }
 
         return null;
+    }
+
+    /**
+     * for public auth set oauth contexts from edge passport that are required by business logic
+     *
+     * @param string $authType
+     * @return ApiResponse|null
+     */
+    private function setPublicOauthContextsFromPassport()
+    {
+        $this->setAuthTypesOauthContextsFromPassport(Type::PUBLIC_AUTH); // set auth type and auth flow type
+
+        // If the request was authenticated with key_id sent in the request params
+        // we remove the key_id attribute before proceeding
+        $this->ba->removeRequestKey(self::KEY_ID);
+
+        // set oauth contexts common to all auth types
+        return $this->setCommonOauthContextsFromPassport(Type::PUBLIC_AUTH);
+    }
+
+    /**
+     * for private auth set oauth contexts from edge passport that are required by business logic
+     *
+     * @param string $authType
+     * @return ApiResponse|null
+     */
+    private function setPrivateOauthContextsFromPassport()
+    {
+        $this->setAuthTypesOauthContextsFromPassport(Type::PRIVATE_AUTH); // set auth type and auth flow type
+
+        // set oauth contexts common to all auth types
+        return $this->setCommonOauthContextsFromPassport(Type::PRIVATE_AUTH);
+    }
+
+    /**
+     * set oauth contexts from edge passport that are required by business logic
+     *
+     * @param string $authType
+     * @return ApiResponse|null
+     */
+    private function setOauthContextsFromPassport(string $authType)
+    {
+        switch ($authType)
+        {
+            case Type::PUBLIC_AUTH:
+                return $this->setPublicOauthContextsFromPassport();
+            case Type::PRIVATE_AUTH:
+                return $this->setPrivateOauthContextsFromPassport();
+        }
     }
 
     /**
@@ -645,6 +781,7 @@ class Authenticate
             return  false;
         }
 
+        //mode in username, doesn't match mode in passport
         if (!$this->validateModeAccess($username, $this->passport->mode))
         {
             //need to reject the request here after logs confirmation
@@ -682,5 +819,13 @@ class Authenticate
     public function validateModeAccess(string $username, string $passportMode):bool
     {
         return substr($username, 4, 4) === $passportMode;
+    }
+
+    // getPassportAuthType evaluate the auth type from the passport
+    //  will not encounter { authenticate: false, identified: false } since edge will terminate request
+    //  TODO: this logic has to be updated once Edge Passport is usable for other auth schemes as well
+    public function getPassportAuthType():string
+    {
+        return ($this->passport->authenticated === false && $this->passport->identified === true) ? Type::PUBLIC_AUTH : Type::PRIVATE_AUTH;
     }
 }

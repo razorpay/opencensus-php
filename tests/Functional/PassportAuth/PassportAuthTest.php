@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\PassportAuth;
 
 use ApiResponse;
+use Illuminate\Support\Facades\App;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Route;
 use RZP\Models\Merchant;
@@ -15,6 +16,7 @@ use RZP\Tests\Functional\Helpers\Edge\PassportTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class PassportAuthTest extends TestCase
 {
@@ -183,6 +185,60 @@ class PassportAuthTest extends TestCase
             $tokenEntity['client_id'], $tokenEntity['application']['id'], ['read_only'], '10000000000000');
     }
 
+    public function testPublicOauthWithInternalAuthAjax()
+    {
+        [$accessToken, $tokenEntity] = $this->generateOAuthAccessTokenForPassport();
+        $tokenEntity = $tokenEntity->toArray();
+
+        $this->fixtures->create('user', ['id' => '20000000000000']);
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_oauth_TheTestAuthKey', 'public_key' => 'rzp_test_oauth_TheTestAuthKey'];
+
+        $oauth = [
+            'app_id' => $tokenEntity['application']['id'],
+            'client_id' => $tokenEntity['client_id'],
+            'access_token_id' => $tokenEntity['id'],
+            'owner_type' => 'merchant',
+            'owner_id' => '10000000000000',
+            'user_id' => '20000000000000',
+            'env' => 'dev'
+        ];
+
+        $roles = ['oauth::scope::read_only'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential, Mode::TEST, [], $oauth, $roles, true, false);
+        $testData = $this->testData['paymentsCreateAjax'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+        $pwd = $pgRouterConfig['secret'];
+
+        [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes] = $this->getCurrentInternalAuthConfigs(
+            'pg_router', 'payment_create_ajax', 'rzp_test', $pwd
+        );
+
+        // create payment_create_ajax route related fixtures
+        $order = $this->createFixturesPaymentCreateAjax();
+
+        // set request content
+        $testData['request']['content'] = $this->getPaymentCreateAjaxRequestContent($order->getId(), $order->getAmount());
+
+        $response = $this->makeRequestParent($testData['request']);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        $this->processAndAssertStatusCode($testData, $response);
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);;
+        $this->assertOauthValues( '10000000000000', 'rzp_test_oauth_TheTestAuthKey', '20000000000000', $tokenEntity['id'],
+            $tokenEntity['client_id'], $tokenEntity['application']['id'], ['read_only'], '10000000000000', '', 'test', 'public');
+    }
+
     public function testOauthWithImpersonationWithAggregatorClient()
     {
         $client = $this->setUpPartnerMerchantAppAndGetClient();
@@ -241,6 +297,38 @@ class PassportAuthTest extends TestCase
         $this->assertBaValues( 'TheLiveAuthKey', '10000000000000', 'rzp_live_TheLiveAuthKey', KeyAuthCreds::class, '', Mode::LIVE);
     }
 
+    public function testPublicMerchantActivationOnLiveModeWithInternalAuth()
+    {
+        $this->fixtures->on(Mode::LIVE)->edit('merchant', '10000000000000', ['activated' => true]);
+
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_live_TheLiveAuthKey', 'public_key' => 'rzp_live_TheLiveAuthKey'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential, Mode::LIVE, authenticated: false);
+        $testData = $this->testData['paymentsCreateCheckout'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+        $pwd = $pgRouterConfig['secret'];
+
+        [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes] = $this->getCurrentInternalAuthConfigs(
+            'pg_router', 'payment_create_checkout', 'rzp_live', $pwd
+        );
+
+        $testData['request']['content'] = $this->getPaymentCreateCheckoutRequestContent();
+
+        $response = $this->makeRequestParent($testData['request']);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        $this->processAndAssertStatusCode($testData, $response);
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        $this->assertBaValues( 'TheLiveAuthKey', '10000000000000', 'rzp_live_TheLiveAuthKey', KeyAuthCreds::class, '', Mode::LIVE, authType: 'public');
+    }
+
     public function testMerchantNotActivationOnLiveMode()
     {
         $this->fixtures->on(Mode::LIVE)->edit('merchant', '10000000000000', ['activated' => false]);
@@ -258,6 +346,41 @@ class PassportAuthTest extends TestCase
         $this->runRequestResponseFlow($testData);
         self::assertTrue($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
         $this->assertBaValues( 'TheLiveAuthKey', '10000000000000', 'rzp_live_TheLiveAuthKey', KeyAuthCreds::class, '', Mode::LIVE);
+    }
+
+    public function testPublicMerchantNotActivatedOnLiveModeWithInternalAuth()
+    {
+        $this->fixtures->on(Mode::LIVE)->edit('merchant', '10000000000000', ['activated' => false]);
+
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_live_TheLiveAuthKey', 'public_key' => 'rzp_live_TheLiveAuthKey'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential, Mode::LIVE, authenticated: false);
+        $testData = $this->testData['paymentsCreateCheckout'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['response']['content']['error']['code'] = PublicErrorCode::BAD_REQUEST_ERROR;
+        $testData['response']['content']['error']['description'] = PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST;
+        $testData['response']['status_code'] = 400;
+        $testData['exception']['class'] = 'RZP\Exception\BadRequestException';
+        $testData['exception']['internal_error_code'] = PublicErrorCode::BAD_REQUEST_ERROR;
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+        $pwd = $pgRouterConfig['secret'];
+
+        [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes] = $this->getCurrentInternalAuthConfigs(
+            'pg_router', 'payment_create_checkout', 'rzp_live', $pwd
+        );
+
+        $testData['request']['content'] = $this->getPaymentCreateCheckoutRequestContent();
+
+        $this->runRequestResponseFlow($testData);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        $this->assertBaValues( 'TheLiveAuthKey', '10000000000000', 'rzp_live_TheLiveAuthKey', KeyAuthCreds::class, '', Mode::LIVE, authType: 'public');
     }
 
     public function testPartnerAuthNotAllowedForPurePlatform()
@@ -365,6 +488,57 @@ class PassportAuthTest extends TestCase
             '', '', null, '', '', Mode::LIVE);
     }
 
+    public function testPublicOauthMerchantNotActivatedOnLiveModeWithInternalAuth()
+    {
+        [$accessToken, $tokenEntity] = $this->generateOAuthAccessTokenForPassport(['mode' => Mode::LIVE]);
+        $tokenEntity = $tokenEntity->toArray();
+
+        $this->fixtures->on(Mode::LIVE)->create('user', ['id' => '20000000000000']);
+        $this->fixtures->on(Mode::LIVE)->create('payment', ['id' => '10000000000000']);
+
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_live_oauth_TheLiveAuthKey', 'public_key' => 'rzp_live_oauth_TheLiveAuthKey'];
+
+        $oauth = [
+            'app_id' => $tokenEntity['application']['id'],
+            'client_id' => $tokenEntity['client_id'],
+            'access_token_id' => $tokenEntity['id'],
+            'owner_type' => 'merchant',
+            'owner_id' => '10000000000000',
+            'user_id' => '20000000000000',
+            'env' => 'prod'
+        ];
+
+        $roles = ['oauth::scope::read_only'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential, Mode::LIVE, [], $oauth, $roles, true, false);
+        $testData = $this->testData['paymentsCreateCheckout'];
+        $testData['request']['status_code'] = 400;
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+        $testData['response']['content']['error']['code'] = PublicErrorCode::BAD_REQUEST_ERROR;
+        $testData['response']['content']['error']['description'] = PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_OAUTH_MERCHANT_NOT_ACTIVATED;
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+        $pwd = $pgRouterConfig['secret'];
+
+        [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes] = $this->getCurrentInternalAuthConfigs(
+            'pg_router', 'payment_create_checkout', 'rzp_live', $pwd
+        );
+
+        $testData['request']['content'] = $this->getPaymentCreateCheckoutRequestContent();
+
+        $this->runRequestResponseFlow($testData);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        $this->assertOauthValues( '10000000000000', 'rzp_live_oauth_TheLiveAuthKey', '20000000000000', '',
+            '', '', null, '', '', Mode::LIVE, 'public');
+    }
+
     public function testOauthSubMerchantNotActivated()
     {
         $client = $this->setUpPartnerMerchantAppAndGetClient();
@@ -406,6 +580,65 @@ class PassportAuthTest extends TestCase
         self::assertTrue($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
         $this->assertOauthValues( '100000Razorpay', $publickey, '20000000000000', '',
             '', '', null, '10000000000000', '100000Razorpay', Mode::LIVE);
+    }
+
+    public function testPublicOauthSubMerchantNotActivatedWithInternalAuth()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient();
+
+        [$accessToken, $tokenEntity] = $this->generateOAuthAccessTokenForPassport(['mode' => Mode::LIVE, 'scopes' => ['rx_read_write', 'read_write'], 'client_id' => $client->getId()], 'dev');
+        $tokenEntity = $tokenEntity->toArray();
+
+        $this->fixtures->on(Mode::LIVE)->create('user', ['id' => '20000000000000']);
+        $this->fixtures->on(Mode::LIVE)->edit('merchant', '10000000000000', ['activated' => true]);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_access_map', ['entity_id'   => $client->getApplicationId(), 'merchant_id' => '100000Razorpay']);
+
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+
+        $username = "rzp_live_oauth_" . $client->getId();
+        $publickey = $username . "-acc_100000Razorpay";
+        $credential = ['username' => $username, 'public_key' => $publickey];
+        $impersonation = ['consumer' => ['id' => '100000Razorpay', 'type' => 'merchant'], 'type' => 'partner'];
+
+        $oauth = [
+            'app_id' => $tokenEntity['application']['id'],
+            'client_id' => $tokenEntity['client_id'],
+            'access_token_id' => $tokenEntity['id'],
+            'owner_type' => 'merchant',
+            'owner_id' => '10000000000000',
+            'user_id' => '20000000000000',
+            'env' => 'prod'
+        ];
+
+        $roles = ['oauth::scope::read_only'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential, Mode::LIVE, $impersonation, $oauth, $roles, true, false);
+
+        $testData = $this->testData['paymentsCreateCheckout'];
+        $testData['request']['status_code'] = 400;
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+        $testData['response']['content']['error']['code'] = PublicErrorCode::BAD_REQUEST_ERROR;
+        $testData['response']['content']['error']['description'] = PublicErrorDescription::BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED;
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+        $pwd = $pgRouterConfig['secret'];
+
+        [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes] = $this->getCurrentInternalAuthConfigs(
+            'pg_router', 'payment_create_checkout', 'rzp_live', $pwd
+        );
+
+        $testData['request']['content'] = $this->getPaymentCreateCheckoutRequestContent();
+
+        $this->runRequestResponseFlow($testData);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        $this->assertOauthValues( '100000Razorpay', $publickey, '20000000000000', '',
+            '', '', null, '10000000000000', '100000Razorpay', Mode::LIVE, 'public');
     }
 
     public function testMerchantAuthWithImpersonationCannotSkipWorkflow()
@@ -643,6 +876,39 @@ class PassportAuthTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id',$response);
     }
 
+    // public auth with merchant key. added test case here so it can be used in future when enabling auth middleware bypass also
+    public function testPublicMerchantAuthWithInternalAuthWithAccess()
+    {
+        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey'];
+        $consumer = ['id'=>'10000000000000','type'=>'merchant'];
+        $passportJWT = $this->samplePassportJwtBuilder(consumer: $consumer, credential: $credential, authenticated: false);
+        $testData = $this->testData['paymentsCreateAjax'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+        $pwd = $pgRouterConfig['secret'];
+
+        [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes] = $this->getCurrentInternalAuthConfigs(
+            'pg_router', 'payment_create_ajax', 'rzp_test', $pwd
+        );
+
+        // create payment_create_ajax route related fixtures
+        $order = $this->createFixturesPaymentCreateAjax();
+
+        // set request content
+        $testData['request']['content'] = $this->getPaymentCreateAjaxRequestContent($order->getId(), $order->getAmount());
+
+        $response = $this->makeRequestParent($testData['request']);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        $this->processAndAssertStatusCode($testData, $response);
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        $this->assertBaValues( 'TheTestAuthKey', '10000000000000', 'rzp_test_TheTestAuthKey', KeyAuthCreds::class, authType: 'public');
+    }
 
     public function testPartnerPublicAuthWithImpersonation()
     {
@@ -680,6 +946,129 @@ class PassportAuthTest extends TestCase
         self::assertEmpty($this->app['request']->input('account_id'));
     }
 
+    public function testPartnerPublicAuthWithImpersonationWithInternalAuth()
+    {
+        // TODO: Complete this function
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->create('key', ['id' => $client->getId(), 'merchant_id' => '10000000000000']);
+        $this->fixtures->create('merchant_access_map', ['entity_id'   => $client->getApplicationId(), 'merchant_id' => '100000Razorpay']);
+
+        $consumer = ['id' => '10000000000000', 'type' => 'partner'];
+        $username = "rzp_test_partner_" . $client->getId();
+        $publickey = $username . "-acc_100000Razorpay";
+        $credential = ['username' => $username, 'public_key' => $publickey];
+        $impersonation = ['consumer' => ['id' => '100000Razorpay', 'type' => 'merchant'], 'type' => 'partner'];
+
+        $testData = $this->testData['paymentsCreateCheckout'];
+        $passportJWT = $this->samplePassportJwtBuilder(
+            consumer: $consumer,
+            credential: $credential,
+            mode: Mode::TEST,
+            impersonation: $impersonation,
+            identified: true,
+            authenticated: false
+        );
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_100000Razorpay';
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+        $pwd = $pgRouterConfig['secret'];
+
+        [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes] = $this->getCurrentInternalAuthConfigs(
+            'pg_router', 'payment_create_checkout', 'rzp_test', $pwd
+        );
+
+        $payment = $this->getPaymentCreateCheckoutRequestContent();
+        $testData['request']['content'] = $payment;
+
+        $response = $this->makeRequestParent($testData['request']);
+        $response->assertViewIs('tokenisation.recurringTokenisationConsentForm');
+
+        $responseContent = $response->getOriginalContent()->getData();
+        $card = $this->app['encrypter']->decrypt($responseContent['input']['card']);
+        $this->assertEquals($payment['card']['number'], $card['number']);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        $this->processAndAssertStatusCode($testData, $response);
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        self::assertEmpty($this->app['request']->input('account_id'));
+
+        $this->assertBaValues(
+            keyId: $client->getId(),
+            consumerId: '100000Razorpay',
+            publicKey: $publickey,
+            authCredsClass: ClientAuthCreds::class,
+            accountId: '100000Razorpay',
+            isPartnerAuth: true,
+            partnerMerchantId: '10000000000000',
+            partnerApplicationId: $client->getApplicationId(),
+            oauthApplicationId: $client->getApplicationId(),
+            authType: 'public'
+        );
+    }
+
+    public function testPublicOauthWithInternalAuth()
+    {
+        [$accessToken, $tokenEntity] = $this->generateOAuthAccessTokenForPassport();
+        $tokenEntity = $tokenEntity->toArray();
+
+        $this->fixtures->create('user', ['id' => '20000000000000']);
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_oauth_TheTestAuthKey', 'public_key' => 'rzp_test_oauth_TheTestAuthKey'];
+
+        $oauth = [
+            'app_id' => $tokenEntity['application']['id'],
+            'client_id' => $tokenEntity['client_id'],
+            'access_token_id' => $tokenEntity['id'],
+            'owner_type' => 'merchant',
+            'owner_id' => '10000000000000',
+            'user_id' => '20000000000000',
+            'env' => 'test'
+        ];
+
+        $roles = ['oauth::scope::read_only'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential, Mode::TEST, [], $oauth, $roles, true, false);
+        $testData = $this->testData['paymentsCreateCheckout'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+        $pwd = $pgRouterConfig['secret'];
+
+        [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes] = $this->getCurrentInternalAuthConfigs(
+            'pg_router', 'payment_create_checkout', 'rzp_test', $pwd
+        );
+
+        $payment = $this->getPaymentCreateCheckoutRequestContent();
+        $testData['request']['content'] = $payment;
+
+        $response = $this->makeRequestParent($testData['request']);
+        $response->assertViewIs('tokenisation.recurringTokenisationConsentForm');
+
+        $responseContent = $response->getOriginalContent()->getData();
+        $card = $this->app['encrypter']->decrypt($responseContent['input']['card']);
+        $this->assertEquals($payment['card']['number'], $card['number']);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        $this->processAndAssertStatusCode($testData, $response);
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);;
+        $this->assertOauthValues( '10000000000000', 'rzp_test_oauth_TheTestAuthKey', '20000000000000', $tokenEntity['id'],
+            $tokenEntity['client_id'], $tokenEntity['application']['id'], ['read_only'], '10000000000000', '', 'test', 'public');
+    }
+
     public function testPublicMerchantAuthWithImpersonation()
     {
         $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
@@ -696,6 +1085,64 @@ class PassportAuthTest extends TestCase
         $response = $this->makeRequestAndGetContent($testData['request']);
         $this->assertArrayHasKey('razorpay_payment_id',$response);
         self::assertEmpty($this->app['request']->input('account_id'));
+    }
+
+    public function testPublicMerchantAuthWithImpersonationWithInternalAuth()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey-acc_100000Razorpay'];
+        $impersonation = ['consumer' => ['id' => '100000Razorpay', 'type' => 'merchant'], 'type' => 'partner'];
+
+        $testData = $this->testData['paymentsCreateAjax'];
+        $passportJWT = $this->samplePassportJwtBuilder(
+            consumer: $consumer,
+            credential: $credential,
+            mode: Mode::TEST,
+            impersonation: $impersonation,
+            identified: true,
+            authenticated: false
+        );
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_100000Razorpay';
+
+        $this->fixtures->create('merchant_access_map', ['entity_id' => '10000000000000', 'merchant_id' => '100000Razorpay']);
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+        $pwd = $pgRouterConfig['secret'];
+
+        [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes] = $this->getCurrentInternalAuthConfigs(
+            'pg_router', 'payment_create_ajax', 'rzp_test', $pwd
+        );
+
+        // create payment_create_ajax route related fixtures
+        $order = $this->createFixturesPaymentCreateAjax();
+
+        // set request content
+        $testData['request']['content'] = $this->getPaymentCreateAjaxRequestContent($order->getId(), $order->getAmount());
+
+        $response = $this->makeRequestParent($testData['request']);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        // TODO: clean this mess
+        $this->processAndAssertStatusCode($testData, $response);
+        $this->processAndAssertResponseData($testData, $response);
+        $this->assertArrayHasKey('payment_id', $response);
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        self::assertEmpty($this->app['request']->input('account_id'));
+
+        $this->assertBaValues(
+            keyId: 'TheTestAuthKey',
+            consumerId: '10000000000000',
+            publicKey: 'rzp_test_TheTestAuthKey-acc_100000Razorpay',
+            authCredsClass: KeyAuthCreds::class,
+            accountId: '100000Razorpay',
+            authType: 'public'
+        );
     }
 
     // key active at Edge but expired at API due to sync delays
@@ -825,4 +1272,94 @@ class PassportAuthTest extends TestCase
         self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
     }
 
+    // TODO: needs better name
+    protected function getCurrentInternalAuthConfigs(string $internalApp, string $passportRoute, string $username, string $pwd)
+    {
+        /* @var route Route */
+        $route = $this->app['api.route'];
+
+        $currentAppConfig = $route::$internalApps[$internalApp];
+        $currentInternalAuthWithPassportRoutes = $route::$internalAuthWithPassportRoutes;
+
+        $route::$internalApps['pg_router'] = [$passportRoute];
+        $route::$internalAuthWithPassportRoutes[] = $passportRoute;
+
+        $this->ba->basicAuth($username, $pwd);
+
+        return [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes];
+    }
+
+    protected function createFixturesPaymentCreateAjax($mid = '10000000000000')
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT, $mid);
+        $order = $this->fixtures->order->create(['merchant_id' => $mid, 'receipt' => 'receipt']);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => $this->getOrderMetaValue(),
+                'type'     => 'one_click_checkout',
+            ]);
+        return $order;
+    }
+
+    protected function getPaymentCreateAjaxRequestContent(string $orderId, int $amount)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment["order_id"] = 'order_'.$orderId;
+        $payment["amount"] = $amount;
+        return $payment;
+    }
+
+    protected function getPaymentCreateCheckoutRequestContent()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['recurring'] = '1';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        return $payment;
+    }
+
+    /**
+     * meta values used to create fixtures for ajax route (payment)
+     * ref: tests/Functional/Payment/OneCcPaymentsTest.php:getOrderMetaValue()
+     */
+    protected function getOrderMetaValue()
+    {
+        $app = App::getFacadeRoot();
+        $shipping_address = [
+            'line1'         => 'some line one',
+            'line2'         => 'some line two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560001',
+            'country'       => 'in',
+            'type'          => 'shipping_address',
+            'primary'       => true
+        ];
+        $billing_address = [
+            'line1'         => 'some line one',
+            'line2'         => 'some line two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560001',
+            'country'       => 'in',
+            'type'          => 'billing_address',
+            'primary'       => true
+        ];
+        $customer = [
+            'contact'           =>'+9191111111111',
+            'email'             =>'john.doe@razorpay.com',
+            'shipping_address'  =>$shipping_address,
+            'billing_address'   =>$billing_address
+        ];
+        return [
+            'cod_fee'           => 100000,
+            'net_price'         => 1100000,
+            'sub_total'         => 1100000,
+            'shipping_fee'      => 10000,
+            'customer_details'  => $app['encrypter']->encrypt($customer),
+            'line_items_total'  => 1000000,
+        ];
+    }
 }

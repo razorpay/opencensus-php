@@ -298,10 +298,10 @@ class TestCase extends ParentTestCase
      * @return void
      */
     protected function assertBaValues($keyId, $consumerId, $publicKey, $authCredsClass, $accountId = '', $mode = 'test', $isPartnerAuth = false,
-                                      $partnerMerchantId = null, $partnerApplicationId = null, $oauthApplicationId = null)
+                                      $partnerMerchantId = null, $partnerApplicationId = null, $oauthApplicationId = null, $authType = 'private')
     {
         $ba = $this->app['basicauth'];
-        $this->assertEquals('private', $ba->getAuthType());
+        $this->assertEquals($authType, $ba->getAuthType());
         $this->assertEquals($ba->isPartnerAuth(), $isPartnerAuth);
         $this->assertEquals($ba->getMode(), $mode);
 
@@ -327,10 +327,10 @@ class TestCase extends ParentTestCase
      * @return void
      */
     protected function assertOauthValues($ownerId, $publicKey, $userId, $accessTokenId, $oauthClientId, $oauthApplicationId, $tokenScopes,
-                                         $partnerMerchantId = '', $accountId = '', $mode = 'test')
+                                         $partnerMerchantId = '', $accountId = '', $mode = 'test', $authType = 'private')
     {
         $ba = $this->app['basicauth'];
-        $this->assertEquals('private', $ba->getAuthType());
+        $this->assertEquals($authType, $ba->getAuthType());
         $this->assertFalse($ba->isPartnerAuth());
         $this->assertTrue($ba->isOauth());
         $this->assertEquals($ba->getMode(), $mode);
