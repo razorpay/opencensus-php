@@ -11293,6 +11293,24 @@ class Core extends Base\Core
         return $hasWebsite;
     }
 
+    public function hasSocialMediaUrls(Merchant\Entity $merchant)
+    {
+        // Get business details for the merchant
+        $businessDetails = $this->repo->merchant_business_detail->getBusinessDetailsForMerchantId($merchant->getId());
+
+        // Check if business details and website details are not empty
+        if (empty($businessDetails) === false && empty($businessDetails->getWebsiteDetails()) === false) {
+            $websiteDetails = $businessDetails->getWebsiteDetails();
+
+            // Check if social media URLs are present
+            if (empty($websiteDetails[DEConstants::SOCIAL_MEDIA_URLS]) === false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function sendSegmentEventForFundsAndPaymentStatus(Merchant\Entity $merchant , array $properties)
     {
         try
@@ -12454,7 +12472,8 @@ class Core extends Base\Core
         $merchantId = $merchant->getId();
 
         $hasBusinessWebsiteOrAppurls = $this->hasBusinessWebsiteOrAppUrls($merchant);
-        $isPosDetailRequiredInCmma = ($hasBusinessWebsiteOrAppurls === true) ? "false": "true";
+        $hasSocialMediaUrls = $this->hasSocialMediaUrls($merchant);
+        $isPosDetailRequiredInCmma = ($hasBusinessWebsiteOrAppurls === true or $hasSocialMediaUrls === true) ? "false": "true";
 
         $kafkaActivationFormSubmissionEventData = $this->constructEventDataForCMMACase($oldMerchantDetail, $merchant, $eventType, $isPosDetailRequiredInCmma);
 

@@ -829,5 +829,6 @@ class Constants
 
     const CMMA_POS_CASE_NC_EVENT_TYPE      = "pos_nc_case_event_type";
     const UNDER_REVIEW                     = 'under_review';
+    const SOCIAL_MEDIA_URLS                = 'social_media_urls';
 }
 
