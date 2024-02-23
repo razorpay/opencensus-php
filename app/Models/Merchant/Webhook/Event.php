@@ -180,6 +180,14 @@ class Event
     const ISSUING_TRANSFER_AUTHORIZED                   = 'issuing.transfer.authorized';
     const ISSUING_TRANSFER_SUCCESS                      = 'issuing.transfer.success';
     const ISSUING_TRANSFER_FAILED                       = 'issuing.transfer.failed';
+    const ISSUING_FASTAG_CREATED                        = 'issuing.fastag.created';
+    const ISSUING_FASTAG_PENDINGACTIVATION              = 'issuing.fastag.pending_activation';
+    const ISSUING_FASTAG_FAILED                         = 'issuing.fastag.failed';
+    const ISSUING_FASTAG_ACTIVE                         = 'issuing.fastag.active';
+    const ISSUING_FASTAG_HOTLISTED                      = 'issuing.fastag.hotlisted';
+    const ISSUING_FASTAG_BLACKLISTED                    = 'issuing.fastag.blacklisted';
+    const ISSUING_FASTAG_LOWBALANCE                     = 'issuing.fastag.lowbalance';
+    const ISSUING_FASTAG_CLOSED                         = 'issuing.fastag.closed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -337,7 +345,15 @@ class Event
         self::ISSUING_TRANSFER_CREATED,
         self::ISSUING_TRANSFER_AUTHORIZED,
         self::ISSUING_TRANSFER_SUCCESS,
-        self::ISSUING_TRANSFER_FAILED
+        self::ISSUING_TRANSFER_FAILED,
+        self::ISSUING_FASTAG_CREATED,
+        self::ISSUING_FASTAG_PENDINGACTIVATION,
+        self::ISSUING_FASTAG_FAILED,
+        self::ISSUING_FASTAG_ACTIVE,
+        self::ISSUING_FASTAG_HOTLISTED,
+        self::ISSUING_FASTAG_BLACKLISTED,
+        self::ISSUING_FASTAG_LOWBALANCE,
+        self::ISSUING_FASTAG_CLOSED
     ];
 
     /**
@@ -502,7 +518,15 @@ class Event
         self::ISSUING_TRANSFER_CREATED,
         self::ISSUING_TRANSFER_AUTHORIZED,
         self::ISSUING_TRANSFER_SUCCESS,
-        self::ISSUING_TRANSFER_FAILED
+        self::ISSUING_TRANSFER_FAILED,
+        self::ISSUING_FASTAG_CREATED,
+        self::ISSUING_FASTAG_PENDINGACTIVATION,
+        self::ISSUING_FASTAG_FAILED,
+        self::ISSUING_FASTAG_ACTIVE,
+        self::ISSUING_FASTAG_HOTLISTED,
+        self::ISSUING_FASTAG_BLACKLISTED,
+        self::ISSUING_FASTAG_LOWBALANCE,
+        self::ISSUING_FASTAG_CLOSED
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -803,7 +827,14 @@ class Event
         self::ISSUING_TRANSFER_AUTHORIZED                 => [Product::PRIMARY, Product::ISSUING],
         self::ISSUING_TRANSFER_SUCCESS                    => [Product::PRIMARY, Product::ISSUING],
         self::ISSUING_TRANSFER_FAILED                     => [Product::PRIMARY, Product::ISSUING],
-
+        self::ISSUING_FASTAG_CREATED                      => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_FASTAG_PENDINGACTIVATION            => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_FASTAG_FAILED                       => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_FASTAG_ACTIVE                       => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_FASTAG_HOTLISTED                    => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_FASTAG_BLACKLISTED                  => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_FASTAG_LOWBALANCE                   => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_FASTAG_CLOSED                       => [Product::PRIMARY, Product::ISSUING],
     ];
 
     /**
@@ -1054,7 +1085,15 @@ class Event
         self::ISSUING_TRANSFER_CREATED                    => Feature\Constants::RAZORPAY_WALLET,
         self::ISSUING_TRANSFER_AUTHORIZED                 => Feature\Constants::RAZORPAY_WALLET,
         self::ISSUING_TRANSFER_SUCCESS                    => Feature\Constants::RAZORPAY_WALLET,
-        self::ISSUING_TRANSFER_FAILED                     => Feature\Constants::RAZORPAY_WALLET
+        self::ISSUING_TRANSFER_FAILED                     => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_FASTAG_CREATED                      => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_FASTAG_PENDINGACTIVATION            => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_FASTAG_FAILED                       => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_FASTAG_ACTIVE                       => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_FASTAG_HOTLISTED                    => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_FASTAG_BLACKLISTED                  => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_FASTAG_LOWBALANCE                   => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_FASTAG_CLOSED                       => Feature\Constants::RAZORPAY_WALLET
     ];
 
     public static array $eventsToPartnerTypeMap = [
