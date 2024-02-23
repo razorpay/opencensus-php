@@ -239,6 +239,20 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($partnerId, $commission['partner_id']);
     }
 
+    public function testImplicitVariableOnPOSPaymentCapture()
+    {
+        $posPaymentAttributes = [
+            'reference13' => 'in_person' // this is the source_channel for payment entity
+        ];
+
+        $testData = $this->setUpCommissionCreate($posPaymentAttributes, false);
+
+        $this->startTest($testData);
+
+        $this->assertEmptyCommission();
+
+    }
+
     public function testImplicitVariableOnPaymentCapture()
     {
         $testData = $this->setUpCommissionCreate();

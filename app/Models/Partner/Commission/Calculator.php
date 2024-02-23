@@ -513,6 +513,12 @@ class Calculator extends Base\Core
             return false;
         }
 
+        // Disable commissions for source entity based on its properties
+        if($this->isCommissionDisabledForSource())
+        {
+            return false;
+        }
+
         if($this->getPartner()->getPartnerType() ===  Merchant\Constants::FULLY_MANAGED)
         {
             // If the partner is of type fully managed then they are not eligible for commissions, no need to add a log for each source entity.
@@ -571,6 +577,17 @@ class Calculator extends Base\Core
 
         return true;
     }
+
+    protected function isCommissionDisabledForSource(): bool
+    {
+        if(in_array($this->getSource()->getSourceChannel(), Constants::DISABLED_PAYMENT_CHANNELS))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 
     protected function isExplicitCommissionApplicable(): bool
     {

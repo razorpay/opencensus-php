@@ -2041,6 +2041,19 @@ class Pricing extends Base
                 'org_id'         => '100000razorpay',
                 'type'           => 'pricing',
             ],
+            [
+                'id'             => '1ABp2Xd3t5aRPY',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => 200,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+                'type'           => 'pricing',
+                'channel'        => 'in_person',
+            ],
+
         ];
 
         return $rows;

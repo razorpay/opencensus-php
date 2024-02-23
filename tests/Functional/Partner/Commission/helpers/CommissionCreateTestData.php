@@ -97,6 +97,19 @@ return [
         ],
     ],
 
+    'testImplicitVariableOnPOSPaymentCapture' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testImplicitVariableOnPaymentCaptureReverseShadow' => [
         'request' => [
             'method' => 'POST',

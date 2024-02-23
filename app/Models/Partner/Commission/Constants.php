@@ -4,6 +4,7 @@ namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Pricing\SourceChannel;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 
 class Constants
@@ -78,6 +79,8 @@ class Constants
     const INVOICE_AUTO_APPROVED     = 'invoice_auto_approved';
 
     const COMMISSION_SYNC_OUTBOX_JOB = 'partnerships.commission_sync.v1';
+
+    const DISABLED_PAYMENT_CHANNELS = [SourceChannel::IN_PERSON];
 
     const VALID_PARTNER_STATUS_EMAIL_TEMPLATES = [
         DetailStatus::ACTIVATED,
