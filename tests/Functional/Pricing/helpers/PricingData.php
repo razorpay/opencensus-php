@@ -3893,16 +3893,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'For international pricing rule, attribute payment_method_type should not be set',
-                ],
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1200,
+                'international'       => true,
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

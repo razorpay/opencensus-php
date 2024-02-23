@@ -859,23 +859,6 @@ class Validator extends Base\Validator
             return;
         }
 
-        $isBuyPricingRule = (isset($input[Entity::TYPE]) and $input[Entity::TYPE] === Type::BUY_PRICING);
-
-        $attrs = array(
-            Entity::PAYMENT_NETWORK,
-            Entity::PAYMENT_ISSUER,
-            Entity::PAYMENT_METHOD_TYPE,
-        );
-
-        foreach ($attrs as $attr)
-        {
-            if ((isset($input[$attr])) and ($input[$attr] !== null) and !$isBuyPricingRule)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    "For international pricing rule, attribute $attr should not be set");
-            }
-        }
-
         if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
         {
             throw new Exception\BadRequestValidationFailureException(
