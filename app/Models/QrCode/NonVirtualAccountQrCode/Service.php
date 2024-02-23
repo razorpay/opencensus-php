@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\QrCode\Metric;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\QrCode\Constants;
 use Razorpay\Trace\Logger as Trace;
@@ -27,7 +28,15 @@ use RZP\Trace\Tracer;
 class Service extends QrCode\Service
 {
     protected $mutex;
-
+    /**
+     * This static array maintains a list of all gateways enabled for status check and reminder service.
+     * @var array A list of supported gateway on status check and reminder service.
+     */
+    public static $qrStatusCheckGateways  = [
+        Gateway::UPI_ICICI,
+        Gateway::UPI_YESBANK,
+        Gateway::UPI_MINDGATE
+    ];
     public function __construct()
     {
         parent::__construct();
@@ -82,11 +91,10 @@ class Service extends QrCode\Service
         $this->handleReminderForQrCode($qrCode);
 
         // Since this is inside NonVirtualAccountQrCode/Service, it is safe to assume that only qrV2 are checked here
+
         if (($qrCode->getUsageType() === UsageType::SINGLE_USE) and
             ($qrCode->getProvider() === QrCode\Type::UPI_QR) and
-            (($gateway === \RZP\Models\Payment\Gateway::UPI_ICICI) or
-             ($gateway === \RZP\Models\Payment\Gateway::UPI_YESBANK) or
-             ($gateway === \RZP\Models\Payment\Gateway::UPI_MINDGATE)) and
+            (in_array($gateway, self::$qrStatusCheckGateways, true) === true) and
             ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->getMerchantId()) === true))
         {
             $this->triggerQrStatusCheckPostCreate($qrCode);
@@ -293,7 +301,9 @@ class Service extends QrCode\Service
                 return $qrCode->toArrayPublic();
             }
 
-            if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON) and (str_contains($qrCode['qr_string'], '@icici') === false))
+            if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON) and
+                (((str_contains($qrCode['qr_string'], '@icici') === true) or
+                  ($qrCode->isRazorpayPosQrCode()===true))===false))
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
             }
@@ -800,9 +810,7 @@ class Service extends QrCode\Service
 
         if (($qrCode->getUsageType() === UsageType::SINGLE_USE) and
             ($qrCode->getProvider() === QrCode\Type::UPI_QR) and
-            (($qrCode->getGatewayFromQrString() === \RZP\Models\Payment\Gateway::UPI_ICICI) or
-             ($qrCode->getGatewayFromQrString() === \RZP\Models\Payment\Gateway::UPI_YESBANK) or
-             ($qrCode->getGatewayFromQrString() === \RZP\Models\Payment\Gateway::UPI_MINDGATE)) and
+            (in_array($qrCode->getGatewayFromQrString(), self::$qrStatusCheckGateways, true) === true) and
             ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->getMerchantId()) === true))
         {
             // Find the env variable QR_CODE_STATUS_CHECK_SPLITZ_EXPERIMENT_ID to find experiment IDs for different envs

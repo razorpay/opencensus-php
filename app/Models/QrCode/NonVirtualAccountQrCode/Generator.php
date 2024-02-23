@@ -197,6 +197,18 @@ class Generator extends QrCode\Generator
 
                 }
 
+                case Gateway::UPI_AIRTEL:
+                {
+                    $vpa = $terminal->getGatewayMerchantId2();
+
+                    if ((empty($vpa) === true) or ($vpa === null))
+                    {
+                        throw new InvalidArgumentException('VPA is required for generating QR');
+                    }
+
+                    return $vpa;
+                }
+
                 default:
                 {
                     if (empty($terminal->getGatewayMerchantId2()) === false)
@@ -256,6 +268,7 @@ class Generator extends QrCode\Generator
                 break;
 
             case Gateway::UPI_KOTAK:
+            case Gateway::UPI_AIRTEL:
                 $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
                 break;
 

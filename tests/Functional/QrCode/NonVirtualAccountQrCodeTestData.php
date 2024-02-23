@@ -432,6 +432,178 @@ return [
         ],
     ],
 
+    'testStatusCheckApiSuccessResponseMultipleAttemptsForUpiAirtel' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testStatusCheckApiSuccessResponseForUpiAirtel' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiPendingResponseForUpiAirtel' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiFailedResponseForUpiAirtel' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiRecordNotFoundResponseForUpiAirtel' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiAirtel' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiAirtelWithEzetapSource' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiAirtel' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiAirtelWithEzetapRequestSource' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiVerifySuccessResponseForUpiAirtel' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiVerifyWhenPaymentIsAlreadyExistsForUpiAirtel' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'            => 'payment',
+                        'amount'            => 300,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'order_id'          => null,
+                        'invoice_id'        => null,
+                        'method'            => 'upi',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'QRv2 Payment',
+                        'email'             => null,
+                        'contact'           => null,
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ]
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testStatusCheckApiPendingResponse' => [
         'request' => [
             'method'  => 'POST',

@@ -4133,6 +4133,58 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDedicatedUpiAirtelTerminal($attributes)
+    {
+        $termId = Shared::UPI_AIRTEL_DEDICATED_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => 'LiveAccountMer',
+            'gateway'                   => 'upi_airtel',
+            'gateway_merchant_id'       => 'razorpayupi',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_merchant_id2'      => 'testvpa@mairtel',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::ONLINE            => '1',
+                Type::COLLECT           => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDedicatedUpiAirtelOfflineTerminal($attributes)
+    {
+        $termId = Shared::UPI_AIRTEL_DEDICATED_OFFLINE_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => 'LiveAccountMer',
+            'gateway'                   => 'upi_airtel',
+            'gateway_merchant_id'       => 'razorpayupiOffline',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_merchant_id2'      => 'testvpaOffline@mairtel',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::OFFLINE            => '1',
+                Type::COLLECT           => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createDedicatedSharpTerminal($attributes)
     {
         $termId = Shared::SHARP_RAZORPAY_TERMINAL;
