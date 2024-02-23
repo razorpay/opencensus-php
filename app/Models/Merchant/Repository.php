@@ -1833,33 +1833,72 @@ class Repository extends Base\Repository
 
     public function fetchUnsuspendedLinkedAccountMids($merchantId, $offset = 0)
     {
-        $childMerchantIds = $this->newQueryWithConnection($this->getSlaveConnection())
-                                 ->select(Entity::ID)
-                                 ->where(Entity::PARENT_ID, $merchantId)
-                                 ->whereNull(Entity::SUSPENDED_AT)
-                                 ->offset($offset)
-                                 ->limit(1000)
-                                 ->get()
-                                 ->pluck(Entity::ID)
-                                 ->toArray();
+        $limit = 1000;
 
-        return $childMerchantIds;
+        if ($this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $merchantId))
+        {
+            if (!$this->repo->isTransactionActive())
+            {
+                return (new Acs\AsvSdkIntegration\Merchant())->fetchUnsuspendedLinkedAccountMids(
+                    $merchantId, $limit, $offset,
+                );
+            }
+            else
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER),
+                );
+            }
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query->select(Entity::ID)
+                     ->where(Entity::PARENT_ID, $merchantId)
+                     ->whereNull(Entity::SUSPENDED_AT)
+                     ->offset($offset)
+                     ->limit($limit)
+                     ->get()
+                     ->pluck(Entity::ID)
+                     ->toArray();
     }
 
     public function fetchLinkedAccountMidsSuspendedDueToParentMerchantSuspension($merchantId, $offset = 0)
     {
-        $childMerchantIds = $this->newQueryWithConnection($this->getSlaveConnection())
-                                 ->select(Entity::ID)
-                                 ->where(Entity::PARENT_ID, $merchantId)
-                                 ->whereNotNull(Entity::SUSPENDED_AT)
-                                 ->where(Entity::HOLD_FUNDS_REASON, Constants::ACCOUNT_SUSPENDED_DUE_TO_PARENT_MERCHANT_SUSPENSION)
-                                 ->offset($offset)
-                                 ->limit(1000)
-                                 ->get()
-                                 ->pluck(Entity::ID)
-                                 ->toArray();
+        $limit  = 1000;
+        $reason = Constants::ACCOUNT_SUSPENDED_DUE_TO_PARENT_MERCHANT_SUSPENSION;
 
-        return $childMerchantIds;
+        if ($this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $merchantId))
+        {
+            if (!$this->repo->isTransactionActive())
+            {
+                return (new Acs\AsvSdkIntegration\Merchant())->fetchLinkedAccountMidsSuspendedDueToParentMerchantSuspension(
+                    $merchantId, $reason, $limit, $offset,
+                );
+            }
+            else
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER),
+                );
+            }
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query->select(Entity::ID)
+                     ->where(Entity::PARENT_ID, $merchantId)
+                     ->whereNotNull(Entity::SUSPENDED_AT)
+                     ->where(Entity::HOLD_FUNDS_REASON, $reason)
+                     ->offset($offset)
+                     ->limit($limit)
+                     ->get()
+                     ->pluck(Entity::ID)
+                     ->toArray();
     }
 
     public function fetchLinkedAccountIdsForParentMerchant(string $parentMerchantId, bool $checkForActivated = false)

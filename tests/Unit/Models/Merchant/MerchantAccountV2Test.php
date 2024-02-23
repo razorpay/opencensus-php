@@ -11,6 +11,8 @@ class MerchantAccountV2Test extends TestCase
 
     protected $merchantEntityMock;
 
+    protected $merchantEmailEntityMock;
+
     protected $merchantDetailEntityMock;
 
     protected $partnerEntityMock;
@@ -27,6 +29,13 @@ class MerchantAccountV2Test extends TestCase
     public function testAccountV2ResponseWhenActivationStatusIsUnderReview()
     {
         $accountResponse = new Response();
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_email')->andReturn($this->merchantEmailEntityMock);
+
+        $this->merchantEmailEntityMock->shouldReceive('getEmailByMerchantId')->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('getMerchantId')->andReturn('10000000000001');
+
 
         $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
 
@@ -52,6 +61,12 @@ class MerchantAccountV2Test extends TestCase
     public function testAccountV2ResponseWhenActivationStatusIsActivated()
     {
         $accountResponse = new Response();
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_email')->andReturn($this->merchantEmailEntityMock);
+
+        $this->merchantEmailEntityMock->shouldReceive('getEmailByMerchantId')->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('getMerchantId')->andReturn('10000000000001');
 
         $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
 
@@ -80,6 +95,12 @@ class MerchantAccountV2Test extends TestCase
     {
         $accountResponse = new Response();
 
+        $this->repoMock->shouldReceive('driver')->with('merchant_email')->andReturn($this->merchantEmailEntityMock);
+
+        $this->merchantEmailEntityMock->shouldReceive('getEmailByMerchantId')->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('getMerchantId')->andReturn('10000000000001');
+
         $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
 
         $this->merchantEntityMock->shouldReceive('isSuspended')->andReturn(false);
@@ -107,6 +128,12 @@ class MerchantAccountV2Test extends TestCase
     {
         $accountResponse = new Response();
 
+        $this->repoMock->shouldReceive('driver')->with('merchant_email')->andReturn($this->merchantEmailEntityMock);
+
+        $this->merchantEmailEntityMock->shouldReceive('getEmailByMerchantId')->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('getMerchantId')->andReturn('10000000000001');
+
         $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
 
         $this->merchantEntityMock->shouldReceive('isSuspended')->andReturn(false);
@@ -131,6 +158,12 @@ class MerchantAccountV2Test extends TestCase
     public function testAccountV2ResponseWhenActivationStatusIsActivatedKycPending()
     {
         $accountResponse = new Response();
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_email')->andReturn($this->merchantEmailEntityMock);
+
+        $this->merchantEmailEntityMock->shouldReceive('getEmailByMerchantId')->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('getMerchantId')->andReturn('10000000000001');
 
         $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
 
@@ -159,6 +192,12 @@ class MerchantAccountV2Test extends TestCase
     {
         $accountResponse = new Response();
 
+        $this->repoMock->shouldReceive('driver')->with('merchant_email')->andReturn($this->merchantEmailEntityMock);
+
+        $this->merchantEmailEntityMock->shouldReceive('getEmailByMerchantId')->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('getMerchantId')->andReturn('10000000000001');
+
         $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
 
         $this->merchantEntityMock->shouldReceive('isSuspended')->andReturn(true);
@@ -185,6 +224,8 @@ class MerchantAccountV2Test extends TestCase
     private function createTestDependencyMocks()
     {
         $this->merchantEntityMock = Mockery::mock('RZP\Models\Merchant\Entity')->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->merchantEmailEntityMock = Mockery::mock('RZP\Models\Merchant\Email\Entity');
 
         $this->merchantDetailEntityMock = Mockery::mock('RZP\Models\Merchant\Detail\Entity')->makePartial();
 

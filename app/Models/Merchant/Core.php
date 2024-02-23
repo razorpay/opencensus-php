@@ -5297,6 +5297,13 @@ class Core extends Base\Core
         return ($mappings->isEmpty() === false);
     }
 
+    /**
+     * @param string $merchantId
+     * @param string $partnerId
+     *
+     * @return bool
+     * @throws BadRequestException
+     */
     public function isMerchantManagedByPartner(string $merchantId, string $partnerId): bool
     {
         $partner = $this->repo->merchant->find($partnerId);

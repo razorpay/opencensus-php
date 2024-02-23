@@ -1785,6 +1785,11 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Transaction\Entity');
     }
 
+    public function getEmailsAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getEmailsAttributeByMerchantId($this, self::MERCHANT);
+    }
+
     /**
      * Different communication emails for various purposes that are stored
      * in merchant_emails table against the merchant.

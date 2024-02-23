@@ -16,7 +16,8 @@ class Merchant extends Base
     const FILTER_TIMEOUT_IN_MICRO_SECONDS = 5000000;
     const MERCHANT_FIND_BY_IDS = 'merchant_find_by_ids';
     const GET_NON_SUSPENDED_MERCHANTS_FROM_IDS = 'get_non_suspended_merchants_from_ids';
-
+    const GET_NON_SUSPENDED_LINKED_ACCOUNTS_FROM_PARENT_ID = 'get_non_suspended_linked_accounts_from_parent_id';
+    const GET_LINKED_ACCOUNTS_SUSPENDED_DUE_TO_PARENT_SUSPENSION_FROM_PARENT_ID = 'get_linked_accounts_suspended_due_to_parent_suspension_from_parent_id';
     const GET_SECOND_FACTOR_AUTH_ENABLED_MERCHANTS_FROM_IDS = 'get_second_factor_auth_enabled_merchants_from_ids';
 
     public function __construct()
@@ -66,6 +67,56 @@ class Merchant extends Base
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
+
+        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+    }
+
+    /**
+     * fetches the linked accounts MIDs associated with a parentID
+     * which were suspended for the given reason
+     *
+     * @param string $parentId
+     * @param string $reason
+     * @param int    $limit
+     * @param int    $offset
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchLinkedAccountMidsSuspendedDueToParentMerchantSuspension(string $parentId, string $reason, int $limit, int $offset): array
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_SUSPENDED_DUE_TO_PARENT_SUSPENSION_FROM_PARENT_ID);
+        $filterRequest->setBindings(
+            json_encode([$parentId, $reason, $limit, $offset])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+    }
+
+    /**
+     * fetches all unsuspended linked account MIDs associated with a parentId
+     *
+     * @param string $parentId
+     * @param int    $limit
+     * @param int    $offset
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchUnsuspendedLinkedAccountMids(string $parentId, int $limit, int $offset): array
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::GET_NON_SUSPENDED_LINKED_ACCOUNTS_FROM_PARENT_ID);
+        $filterRequest->setBindings(
+            json_encode([$parentId, $limit, $offset])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
         return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
     }

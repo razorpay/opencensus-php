@@ -72,28 +72,33 @@ class Core extends Merchant\Core
         (new Merchant\Validator())->validateInput('edit_config', $subMerchantInput);
         (new Detail\Validator())->validateInput('edit', $detailInput);
 
-        $account = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_ENTITIES], function () use ($input, $partner, $isLocOnboardingEnabled) {
+        $account = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_ENTITIES],
+            function () use ($input, $partner, $isLocOnboardingEnabled) {
+                return $this->repo->transactionOnLiveAndTestAndAsv(
+                    function () use ($input, $partner, $isLocOnboardingEnabled): Merchant\Entity
+                    {
+                        $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
 
-        $account = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $partner, $isLocOnboardingEnabled)
-        {
-            $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
+                        if($isLocOnboardingEnabled)
+                        {
+                            CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant(
+                                $partner->getId(),
+                                $subMerchant,
+                            );
 
-            if($isLocOnboardingEnabled)
-            {
-                CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner->getId(), $subMerchant);
+                            $this->capitalSubmerchantUtility()->trackCreateCapitalSubmerchantViaOnboardingAPIsEvent(
+                                $partner,
+                                $subMerchant->getId(),
+                                PartnerConstants::ADD_ACCOUNT_V2_ONBOARDING_API,
+                            );
+                        }
 
-                $this->capitalSubmerchantUtility()->trackCreateCapitalSubmerchantViaOnboardingAPIsEvent($partner, $subMerchant->getId(), PartnerConstants::ADD_ACCOUNT_V2_ONBOARDING_API);
-            }
-
-            unset($input[Constants::IS_IGNORE_TOS_ACCEPTANCE]);
-            return $subMerchant;
+                        unset($input[Constants::IS_IGNORE_TOS_ACCEPTANCE]);
+                        return $subMerchant;
+                    });
         });
 
-            return $account;
-        });
-
-        $merchantDetails = $account->merchantDetail;
-        $dimensions = $this->getDimensionsForAccountV2Metrics($merchantDetails, $partner);
+        $dimensions = $this->getDimensionsForAccountV2Metrics($account, $account->merchantDetail, $partner);
 
         $this->trace->count(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $dimensions);
 
@@ -111,6 +116,12 @@ class Core extends Merchant\Core
         return $account;
     }
 
+    /**
+     * @param string $accountId
+     *
+     * @return null
+     * @throws \Exception
+     */
     public function fetchAccountV2(string $accountId)
     {
         $timeStarted = millitime();
@@ -121,13 +132,9 @@ class Core extends Merchant\Core
 
         Entity::verifyIdAndStripSign($accountId);
 
-        $relations = ['merchantDetail', 'features', 'emails'];
+        $account = $this->repo->merchant->findOrFailPublic($accountId);
 
-        $account = $this->repo->merchant->findOrFailPublicWithRelations($accountId, $relations);
-
-        $merchantDetails = $account->merchantDetail;
-
-        $dimensions = $this->getDimensionsForAccountV2Metrics($merchantDetails, $this->merchant);
+        $dimensions = $this->getDimensionsForAccountV2Metrics($account, $account->merchantDetail, $this->merchant);
 
         $this->trace->count(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $dimensions);
 
@@ -177,7 +184,7 @@ class Core extends Merchant\Core
             return $subMerchant;
         });
 
-        $dimensions = $this->getDimensionsForAccountV2Metrics($subMerchantDetails, $partner);
+        $dimensions = $this->getDimensionsForAccountV2Metrics($account, $account->merchantDetail, $partner);
 
         $this->trace->count(Metric::ACCOUNT_V2_EDIT_SUCCESS_TOTAL, $dimensions);
 
@@ -425,7 +432,7 @@ class Core extends Merchant\Core
             'sub-merchant_id'   => $submerchant->getId(),
             'tag_name'          => Constants::INSTANT_ACTIVATION_SUBM
         ]);
-        $dimension = $this->getDimensionsForAccountV2Metrics($submerchant->merchantDetail, $this->merchant);
+        $dimension = $this->getDimensionsForAccountV2Metrics($submerchant, $submerchant->merchantDetail, $this->merchant);
 
         $this->trace->count(Metric::ACCOUNT_V2_MERCHANT_SIGNUP_INSTANT_ACTIVATION, $dimension);
     }
@@ -589,15 +596,13 @@ class Core extends Merchant\Core
         (new MerchantCore())->attachSubMerchantUser($subMerchantUser->getId(), $subMerchant, $product);
     }
 
-    private function getDimensionsForAccountV2Metrics(Detail\Entity $merchantDetails, Merchant\Entity $partner): array
+    private function getDimensionsForAccountV2Metrics(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Merchant\Entity $partner): array
     {
-        $dimensions = [
+        return [
             'partner_type'              => $partner->getPartnerType(),
-            'account_type'              => ($merchantDetails->merchant->isLinkedAccount() === true) ? Type::ROUTE : Type::STANDARD,
+            'account_type'              => ($merchant->isLinkedAccount() === true) ? Type::ROUTE : Type::STANDARD,
             'submerchant_business_type' => $merchantDetails->getBusinessType()
         ];
-
-        return $dimensions;
     }
 
     /**
