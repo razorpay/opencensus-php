@@ -10,4 +10,7 @@ class Constant
 
     const ONLINE = 'online';
     const SOURCE_CHANNEL = 'source_channel';
+
+    const JPMC_IMPORT_FLOW_GOODS_DESCRIPTION_DEFAULT_OTHER = 'Other';
+
 }

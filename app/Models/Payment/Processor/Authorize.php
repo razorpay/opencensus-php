@@ -22,6 +22,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\NetbankingConfig;
 
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
+use RZP\Models\Payment\Constant;
 use RZP\Services\Shield;
 use RZP\Constants\Procurer;
 use RZP\Gateway\Base\Metric as BaseMetric;
@@ -4216,11 +4217,11 @@ trait Authorize
             );
         }
 
-        // validate notes sent in payment request
+        // If notes is absent, set it.
         if (empty($payment->getNotes()) === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Notes field is required with invoice_number and goods_description.', 'notes');
+            $customNotes = [];
+            $payment->setNotes($customNotes);
         }
 
         $paymentNotes = $payment->getNotes()->toArray();
@@ -4232,11 +4233,11 @@ trait Authorize
                 'Invoice number field is required within the notes.', 'notes.invoice_number');
         }
 
-        // validate if goods_description is present in notes
+        //Defaults goods_description value in paymentNotes.
         if (empty($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_GOODS_DESCRIPTION]) === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Goods Description field is required within the notes.', 'notes.goods_description');
+            $paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_GOODS_DESCRIPTION] = Constant::JPMC_IMPORT_FLOW_GOODS_DESCRIPTION_DEFAULT_OTHER;
+            $payment->setNotes($paymentNotes);
         }
 
         // validate if payment has order
@@ -7741,10 +7742,10 @@ trait Authorize
     }
 
     protected function getFirstPaymentCreatedResponse(array $request, Payment\Entity $payment): array
-    {   
+    {
         $app = \App::getFacadeRoot();
         $paymentMeta = $payment->paymentMeta;
-       
+
         $data['type'] = 'first';
 
         $data['request'] = $request;

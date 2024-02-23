@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Feature\Constants;
+use RZP\Models\Invoice\Constants as InvoiceConstants;
 use RZP\Models\Payment;
 use RZP\Models\Address\Type;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Payment\Constant;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
@@ -1178,6 +1180,7 @@ class CBPaymentCreateTest extends TestCase
         $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
 
         $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'enable_jpmc_import_flow']);
+        $this->fixtures->merchant->enableMethod($merchantId, 'upi');
 
         $merchantDetailAttribute = [
             DetailEntity::MERCHANT_ID => $merchantId,
@@ -1185,26 +1188,54 @@ class CBPaymentCreateTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
 
-        $payment = $this->getDefaultPaymentArray();
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => $merchantId,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => 'jpmc_import_flow',
+            InternationalIntegration\Entity::INTEGRATION_KEY => 'jpmc_import_flow',
+            InternationalIntegration\Entity::NOTES => [
+                'hs_code' => '85238020'
+            ],
+        ]);
+
+        // create order
+        $order = $this->fixtures->create('order',
+            [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'customer_id' => '100000customer',
+            ]);
+
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValue(),
+                'type'     => 'cart_info',
+            ]);
+
+        // create payment
+        $payment = $this->getDefaultUpiPaymentArray();
 
         $payment['amount'] = '1000';
 
+        $payment['currency'] = 'INR';
+
+        $payment['order_id'] = $order->getPublicId();
+
         $payment['notes'] = [
-            'invoice_number' => '1234567890qwertyuiop',
+            'invoice_number' => '1234567890qwertyuiop'
         ];
 
-        $this->makeRequestAndCatchException(function() use ($payment)
-        {
-            $response = $this->doS2SPrivateAuthJsonPayment($payment);
+        $response = $this->doS2SPrivateAuthJsonPayment($payment);
 
-            $error = $response['error'];
-            $this->assertEquals($error['field'], 'notes');
-            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
-            $this->assertEquals($error['description'], 'Goods Description field is required within the notes.');
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
 
-        },
-            \RZP\Exception\BadRequestValidationFailureException::class,
-            'Goods Description field is required within the notes.');
+        // validate payment authorized and details saved
+        $paymentEntity = $this->getDbLastPayment();
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($order->getId(), $paymentEntity['order_id']);
+        $this->assertEquals(Constant::JPMC_IMPORT_FLOW_GOODS_DESCRIPTION_DEFAULT_OTHER, $paymentEntity['notes']['goods_description']);
+
     }
 
     public function testJPMCImportFlowPaymentWithUnsupportedLibrary()
