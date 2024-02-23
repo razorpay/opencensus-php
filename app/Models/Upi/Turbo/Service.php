@@ -44,4 +44,26 @@ class Service extends Base\Service
 
         return $errorMappings;
     }
+
+    public function recordCustomerConsent($input): array
+    {
+        $this->trace->info(TraceCode::UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST);
+
+        $input[Constants::ACKNOWLEDGE] = boolval($input[Constants::ACKNOWLEDGE]);
+
+        (new Validator)->validateInput('customer_record_consent', $input);
+
+        $input[Constants::CUSTOMER_IDENTIFIER_VALUE] = hash('sha256', $input[Constants::CUSTOMER_IDENTIFIER_VALUE]);
+
+        /*
+         * We are logging the consent data temporarily. Once CDP is live with customer consents, we will be saving
+         * the consent data in CDP apart from just logging it here.
+         */
+        $this->trace->info(TraceCode::UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED,
+                           [
+                                'input' => $input
+                           ]);
+
+        return [];
+    }
 }

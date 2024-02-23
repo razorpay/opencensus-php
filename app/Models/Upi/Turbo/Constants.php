@@ -34,4 +34,14 @@ class Constants
     const FALLBACK_ERROR_DESCRIPTION   = "Something went wrong, please try again.";
     const FALLBACK_SOURCE              = "unknown_source";
     const FALLBACK_STEP                = "";
+
+    // Prefetch Constants
+    const TYPE                      = "type";
+    const MESSAGE                   = "message";
+    const CUSTOMER_IDENTIFIER_TYPE  = "customer_identifier_type";
+    const CUSTOMER_IDENTIFIER_VALUE = "customer_identifier_value";
+    const ACKNOWLEDGE               = "acknowledge";
+    const TIMESTAMP                 = "timestamp";
+    const METADATA                  = "metadata";
+    const PREFETCH_BANK             = "prefetch_bank";
 }

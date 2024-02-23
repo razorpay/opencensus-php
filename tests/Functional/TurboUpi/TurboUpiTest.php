@@ -62,6 +62,19 @@ class TurboUpiTest extends TestCase
         $this->startTest();
     }
 
+    public function testRecordTurboUpiCustomerConsent()
+    {
+        $this->ba->publicAuth();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetRawContent($request);
+
+        $this->assertEquals(201, $response->getStatusCode());
+
+        $this->assertEquals([], json_decode($response->getContent()));
+    }
+
     protected function setErrorMappingConfigInRedis()
     {
         $errorMapping = [

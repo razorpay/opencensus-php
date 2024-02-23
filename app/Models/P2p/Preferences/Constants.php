@@ -30,6 +30,8 @@ class Constants
     const FETCH_RETRY        = 'fetch_retry';
     const FETCH_CONCURRENT   = 'fetch_concurrent';
 
+    const FETCH_TIMEOUT      = 'fetch_timeout';
+
     const BANKS              = 'banks';
 
     private static array $defaultTimeouts = [
@@ -262,6 +264,7 @@ class Constants
         self::CONSENT_MESSAGE    => 'Automatically fetch & link my active UPI accounts from top banks',
         self::FETCH_RETRY        => 0,
         self::FETCH_CONCURRENT   => 10,
+        self::FETCH_TIMEOUT      => 5,
     ];
 
     public static function getStaticPopularBanksList(): array

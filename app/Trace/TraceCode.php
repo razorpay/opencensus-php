@@ -11162,6 +11162,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const LEDGER_ACCOUNT_FETCH_MERCHANT_BALANCE_ERROR                    = 'LEDGER_ACCOUNT_FETCH_MERCHANT_BALANCE_ERROR';
 
+    const UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST     = 'UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST';
+    const UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED   = 'UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

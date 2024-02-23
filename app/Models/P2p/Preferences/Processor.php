@@ -477,6 +477,8 @@ class Processor extends Base\Processor
         $preferencesResponse[Constants::PREFETCH] = [
             Constants::CONSENT_MESSAGE    => $dynamicPrefetchConfigs[Constants::CONSENT_MESSAGE] ??
                                              $defaultPrefetchConfigs[Constants::CONSENT_MESSAGE],
+            Constants::FETCH_TIMEOUT      => $dynamicPrefetchConfigs[Constants::FETCH_TIMEOUT] ??
+                                             $defaultPrefetchConfigs[Constants::FETCH_TIMEOUT],
             Constants::FETCH_RETRY        => $dynamicPrefetchConfigs[Constants::FETCH_RETRY] ??
                                              $defaultPrefetchConfigs[Constants::FETCH_RETRY],
             Constants::FETCH_CONCURRENT   => $dynamicPrefetchConfigs[Constants::FETCH_CONCURRENT] ??

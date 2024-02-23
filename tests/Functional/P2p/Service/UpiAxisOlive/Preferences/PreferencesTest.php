@@ -293,6 +293,7 @@ class PreferencesTest extends TestCase
     {
         $config = [
             Constants::CONSENT_MESSAGE    => 'Fetch all my accounts from top banks right now!',
+            Constants::FETCH_TIMEOUT      => 10,
             Constants::FETCH_RETRY        => 1,
             Constants::FETCH_CONCURRENT   => 5,
             Constants::BANKS              => [
