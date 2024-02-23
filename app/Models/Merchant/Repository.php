@@ -483,7 +483,18 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsActivatedBetweenForOrg($from, $to, $orgId)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else {
+                return (new AsvSdkMerchantQuery())->fetchMerchantsActivatedBetweenForOrg($from, $to, $orgId);
+            }
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query
             ->where(Entity::ORG_ID, $orgId)
             ->whereBetween(Entity::ACTIVATED_AT, [$from, $to])
             ->whereNull(Entity::SUSPENDED_AT)
@@ -2585,8 +2596,18 @@ class Repository extends Base\Repository
 
     public function getMerchantsForSettlementsEventsCron($updatedAtFrom, $updateAtTo)
     {
-        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
-                      ->where(Entity::UPDATED_AT, '>=', $updatedAtFrom)
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else {
+                return (new AsvSdkMerchantQuery())->getMerchantsForSettlementsEventsCron($updatedAtFrom, $updateAtTo);
+            }
+        } else {
+            $query = $this->newQueryWithConnection($this->getReportingReplicaConnection());
+        }
+
+        $query = $query->where(Entity::UPDATED_AT, '>=', $updatedAtFrom)
                       ->where(Entity::UPDATED_AT, '<=', $updateAtTo)
                       ->orderBy(Entity::UPDATED_AT, 'asc');
 

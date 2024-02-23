@@ -160,4 +160,35 @@ class Merchant extends Base
 
         return $this->getMerchantCollectionFromResponse($response);
     }
+
+    public function fetchMerchantsActivatedBetweenForOrg($from, $to, $orgId): array
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier('fetch_merchants_activated_between_for_org');
+        $filterRequest->setBindings(
+            json_encode([
+                            $orgId, $from, $to
+                        ])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest);
+
+        return $this->getMerchantCollectionFromResponse($response)->toArray();
+    }
+
+    public function getMerchantsForSettlementsEventsCron($from, $to): array
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier('get_merchants_for_settlements_event_cron');
+        $filterRequest->setBindings(
+            json_encode([
+                            $from, $to
+                        ])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest);
+
+        return $this->getMerchantCollectionFromResponse($response)->toArray();
+    }
+
 }
