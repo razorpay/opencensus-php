@@ -138,8 +138,11 @@ class FileUploader extends Base\Core
     public function getSignedShortUrl($fileId, $duration = 15)
     {
         $signedUrl = $this->getSignedUrl($fileId, $duration);
-
-        return $this->elfin->shorten($signedUrl, ['ptype' => 'file'], false);
+        
+        // removing short url as its getting issue when signed url is > 1kb (1024 lines)
+        // $this->elfin->shorten($signedUrl, ['ptype' => 'file'], false);
+        
+        return $signedUrl;
     }
 
     public function getShortUrl($url, $duration = 15)
