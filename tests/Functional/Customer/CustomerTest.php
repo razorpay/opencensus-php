@@ -61,6 +61,8 @@ class CustomerTest extends TestCase
             'A-B pvt (test) Ltd' => 'test7@test.razorpay.com',
             'M-dash–Name'        => 'test8@test.razorpay.com',                 //Names with m-dash should be valid (–)
             'Underscore_ABC'     => 'test9@test.razorpay.com',
+            'AB s/o BC'          => 'test10@test.razorpay.com',
+            'BC A/P @ SName'     => 'test11@test.razorpay.com',
         ];
 
         $testData = & $this->testData[__FUNCTION__];

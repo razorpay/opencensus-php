@@ -18,9 +18,9 @@ class Validator extends Base\Validator
      * Regular expression for valid names:
      * - Must start with a-z/A-Z/0-9
      * - Must end with a-z/A-Z/0-9/./)
-     * - Can have anything from a-z/A-Z/0-9/'/-/–/./_/(/)/space in between
+     * - Can have anything from a-z/A-Z/0-9/'/-/–/./_/(/)/@///space in between
      */
-    const NAME_REGEX = '/(^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9.)]$)/';
+    const NAME_REGEX = '/(^[a-zA-Z0-9][a-zA-Z0-9-&\'\/@._()\s–]+[a-zA-Z0-9.)]$)/';
 
     protected static $createRules = [
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
