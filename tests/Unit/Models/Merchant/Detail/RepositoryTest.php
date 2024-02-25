@@ -3,6 +3,7 @@
 namespace Unit\Models\Merchant\Detail;
 
 use Config;
+use RZP\Constants\Mode;
 use Google\Protobuf\Int32Value;
 use Google\Protobuf\StringValue;
 use Mockery;
@@ -683,6 +684,20 @@ class RepositoryTest extends RepositoryTestHelper
         $entity = $associatedEntity->$relationName->toArray();
         $entityForFindOrFailArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($entityArray, $entity);
         $this->assertEquals($entityForFindOrFailArray, $entityArray);
+    }
+
+    public function testMerchantAssociationWithMode()
+    {
+        $this->createMerchantInDatabase($this->merchantEntityJson1);
+        $this->createMerchantDetailInDatabase($this->merchantDetailEntityJson1);
+
+        $merchant =  (new \RZP\Models\Merchant\Repository())->connection(Mode::TEST)->find("CzmiCwTPCL3t2K");
+        $merchantDetail =  $merchant->merchantDetail;
+        $this->assertEquals($merchantDetail->getConnectionName(), 'test');
+
+        $merchant =  (new \RZP\Models\Merchant\Repository())->connection(Mode::LIVE)->find("CzmiCwTPCL3t2K");
+        $merchantDetail =  $merchant->merchantDetail;
+        $this->assertEquals($merchantDetail->getConnectionName(), 'live');
     }
 
     /**

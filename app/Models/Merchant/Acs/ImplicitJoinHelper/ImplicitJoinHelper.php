@@ -57,7 +57,23 @@ class ImplicitJoinHelper
             $classInstance->setRelation($relationName, $relationData);
         }
 
+        $this->setParentMode($classInstance, $relationData);
         return $relationData;
+    }
+
+    public function setParentMode($parentInstance, $data): void
+    {
+        try
+        {
+            $parent_mode = $parentInstance->getConnectionName();
+            if($data != null && $parent_mode != null)
+            {
+                $data->setConnection($parent_mode);
+            }
+        } catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR ,TraceCode::SET_PARENT_MODE_FAILURE);
+        }
     }
 
     public function getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, $repositoryInstance, $repositoryMethod, $fetchMethod='getMerchantId')
