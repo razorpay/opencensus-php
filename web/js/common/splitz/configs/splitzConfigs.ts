@@ -938,5 +938,30 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: [
+        /\/paymentpages\/batchpaymentpages\/(.*)\/payments#batchpaymentpages/,
+        /\/(paymentpages|subscription_buttons|paymentbuttons)\/(.*)\/payments/,
+        'payment-handle',
+      ],
+      abExperiments: [
+        {
+          uniqueHashKey: 'NcaPaymentFetch',
+          experimentId: {
+            beta: 'NYeAdZxMitXwPO',
+            production: 'NYe7P2aTFDwvZQ',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

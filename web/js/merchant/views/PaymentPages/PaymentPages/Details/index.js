@@ -12,7 +12,6 @@ import { keysToSentence } from 'common/utils/rzp-utils';
 import {
   fetchPaymentPageEntity,
   fetchStorefrontEntity,
-  fetchPaymentsListForPaymentPage,
   editPaymentPage,
   editStorefrontPage,
   editPaymentPageItem,
@@ -23,6 +22,7 @@ import {
   activateStorefront,
   fetchPendingPayments,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
+import { withSplitzService } from 'common/splitz';
 import Spinner from 'common/ui/Spinner';
 import { updateItem } from 'common/utils/immutable';
 
@@ -36,6 +36,7 @@ import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
 import PaymentPagesV3Entity from 'merchant/views/PaymentPages/PaymentPages/Details/V3';
 
 import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
+import { fetchCapturedPaymentPagePayments } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 @connect((state) => ({ user: state.session.user }), {
   updatePPInReduxList,
@@ -139,7 +140,7 @@ class Details extends React.Component {
   }
 
   fetchEntityPayments(id) {
-    return fetchPaymentsListForPaymentPage(id)
+    return fetchCapturedPaymentPagePayments('page', this.props.splitz, id)
       .then((resp) => {
         if (resp) {
           this.setState({ paymentPagePayments: resp.data.items });
@@ -524,4 +525,4 @@ class Details extends React.Component {
   }
 }
 
-export default withRouter(Details);
+export default withSplitzService(withRouter(Details));

@@ -1,6 +1,5 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import { fetchPayments as fetchPaymentPagesPayments } from 'merchant/reducers/collection';
 import { fetchStorefrontPayments } from 'merchant/reducers/invoices/list';
 
 import ListContainer from 'merchant/containers/ListContainer';
@@ -10,6 +9,11 @@ import EntityTable from 'merchant/components/EntityTable';
 import track from 'merchant/views/PaymentPages/PaymentPages/Details/track';
 import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
+import { withSplitzService } from 'common/splitz';
+import {
+  fetchPaymentPagePayments,
+  isFetchViaNCA,
+} from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 // wrapper to trigger analytics event on click
 const _paymentId = () => {
@@ -34,24 +38,30 @@ const PaymentsTable = (props) => {
 
 @connect(
   (state) => ({ payments: state.payments, storefrontPayments: state.invoices.storefrontPayments }),
-  { fetchPaymentPagesPayments, fetchStorefrontPayments },
+  { fetchPaymentPagePayments, fetchStorefrontPayments },
 )
 class PaymentsList extends ListContainer {
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
-    if (this.props.isStorefrontPage) {
-      return this.props.fetchStorefrontPayments(this.props.paymentPageId, params);
+    const {
+      splitz,
+      isStorefrontPage,
+      fetchPaymentPagePayments,
+      fetchStorefrontPayments,
+      paymentPageId,
+    } = this.props;
+
+    if (isStorefrontPage) {
+      return fetchStorefrontPayments(paymentPageId, params);
     }
 
-    return this.props.fetchPaymentPagesPayments({
-      ...params,
-      payment_link_id: this.props.paymentPageId,
-    });
+    return fetchPaymentPagePayments('page', splitz, paymentPageId, params);
   };
 
   render() {
-    const { children, isStorefrontPage, payments, storefrontPayments, ...restProps } = this.props;
-    const tableData = isStorefrontPage ? storefrontPayments : payments;
+    const { children, isStorefrontPage, payments, storefrontPayments, splitz, ...restProps } =
+      this.props;
+    const tableData = isStorefrontPage || isFetchViaNCA(splitz) ? storefrontPayments : payments;
 
     return (
       <div class="content-wrapper">
@@ -78,4 +88,4 @@ class PaymentsList extends ListContainer {
   }
 }
 
-export default withRouter(PaymentsList);
+export default withSplitzService(withRouter(PaymentsList));

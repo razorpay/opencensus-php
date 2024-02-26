@@ -4,6 +4,24 @@ import { handleInfo } from 'merchant/views/PaymentHandle/__test__/mocks/fixtures
 import { fetchPaymentHandleSuccess } from 'merchant/views/PaymentHandle/__test__/mocks/handlers';
 import { render, screen, server } from 'test-utils';
 
+jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) =>
+    (
+      <Component
+        {...props}
+        splitz={{
+          abExperiments: {
+            NcaPaymentFetch: {
+              variables: {
+                result: 'off',
+              },
+            },
+          },
+        }}
+      />
+    ),
+}));
+
 describe('Payment Handle List View', () => {
   const renderApp = (props = {}) =>
     render(<App {...props} />, {

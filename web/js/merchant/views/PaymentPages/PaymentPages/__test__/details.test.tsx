@@ -307,6 +307,25 @@ describe.skip('update stock flow', () => {
   });
 });
 
+jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) =>
+    (
+      <Component
+        {...props}
+        splitz={{
+          abExperiments: {
+            NcaPaymentFetch: {
+              variables: {
+                result: 'off',
+              },
+            },
+          },
+        }}
+      />
+    ),
+  useSplitzService: () => ({}),
+}));
+
 describe('Batch Payment Pages -> Details page', () => {
   const id = 'pl_LpoFCooJAk0a2j';
   const defaultProps = {

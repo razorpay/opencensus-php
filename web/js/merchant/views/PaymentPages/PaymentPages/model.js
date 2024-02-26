@@ -1,5 +1,6 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 import { generateReportV2 } from 'merchant/reducers/reports';
+import { decodeSensitiveFields } from 'common/utils/rzp-utils';
 
 function pruneReqPayload(reqPayload) {
   if (reqPayload.amount) {
@@ -150,7 +151,7 @@ export const fetchStorefrontPaymentsList = (id, data) => {
   return merchantFetch({
     url: `stores/${id}/payments`,
     method: 'get',
-    data,
+    data: decodeSensitiveFields(data),
     headers: {
       'X-Razorpay-NCA-Transform': '1',
     },

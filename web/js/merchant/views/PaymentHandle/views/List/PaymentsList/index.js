@@ -3,9 +3,13 @@ import { withRouter } from 'common/deprecated/withRouter';
 import track from 'merchant/views/PaymentHandle/track';
 import EntityTable from 'merchant/components/EntityTable';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
 import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 import PaymentsListFilter from 'merchant/views/PaymentHandle/views/List/PaymentsList/PaymentsListFilter';
+import { withSplitzService } from 'common/splitz';
+import {
+  fetchPaymentPagePayments as fetchPaymentHandlePayments,
+  isFetchViaNCA,
+} from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 const _paymentId = {
   title: paymentId.title,
@@ -20,17 +24,22 @@ const PaymentsTable = (props) => {
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
-@connect((state) => state.payments, { fetchAll })
+@connect(
+  (state) => ({ payments: state.payments, ncaPayments: state.invoices.storefrontPayments }),
+  { fetchPaymentHandlePayments },
+)
 class PaymentsList extends ListContainer {
   fetchEntityList = (params) => {
-    return this.props.fetchAll({
-      ...params,
-      payment_link_id: this.props.paymentPageId,
-    });
+    const { paymentPageId, splitz } = this.props;
+
+    return this.props.fetchPaymentHandlePayments('payment_handle', splitz, paymentPageId, params);
   };
 
   render() {
-    const { children, ...restProps } = this.props;
+    const { children, splitz, payments, ncaPayments, ...restProps } = this.props;
+
+    const entityData = isFetchViaNCA(splitz) ? ncaPayments : payments;
+
     return (
       <div class="content-wrapper">
         {children}
@@ -45,10 +54,11 @@ class PaymentsList extends ListContainer {
           skip={this.state.skip}
           paginate={this.paginate}
           {...restProps}
+          {...entityData}
         />
       </div>
     );
   }
 }
 
-export default withRouter(PaymentsList);
+export default withSplitzService(withRouter(PaymentsList));

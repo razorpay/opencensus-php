@@ -1,12 +1,16 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './PaymentsListFilter';
 import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
 import { _paymentId } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
+import { withSplitzService } from 'common/splitz';
+import {
+  fetchPaymentPagePayments,
+  isFetchViaNCA,
+} from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 const PaymentsTable = (props) => {
   const paymentColumns = [
@@ -23,18 +27,22 @@ const PaymentsTable = (props) => {
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
-@connect((state) => state.payments, { fetchAll })
+@connect(
+  (state) => ({ payments: state.payments, ncaPayments: state.invoices.storefrontPayments }),
+  { fetchPaymentPagePayments },
+)
 class PaymentsList extends ListContainer {
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
-    return this.props.fetchAll({
-      ...params,
-      payment_link_id: this.props.paymentPageId,
-    });
+    const { splitz, paymentPageId } = this.props;
+
+    return this.props.fetchPaymentPagePayments('button', splitz, paymentPageId, params);
   };
 
   render() {
-    const { children, ...restProps } = this.props;
+    const { children, splitz, payments, ncaPayments, ...restProps } = this.props;
+
+    const tableData = isFetchViaNCA(splitz) ? ncaPayments : payments;
 
     return (
       <div class="content-wrapper">
@@ -51,10 +59,11 @@ class PaymentsList extends ListContainer {
           skip={this.state.skip}
           paginate={this.paginate}
           {...restProps}
+          {...tableData}
         />
       </div>
     );
   }
 }
 
-export default withRouter(PaymentsList);
+export default withSplitzService(withRouter(PaymentsList));

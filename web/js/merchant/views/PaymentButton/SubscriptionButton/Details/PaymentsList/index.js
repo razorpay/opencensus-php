@@ -1,6 +1,5 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
 import Amount from 'common/ui/Amount';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './PaymentsListFilter';
@@ -10,6 +9,11 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
 import { _paymentId } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
+import { withSplitzService } from 'common/splitz';
+import {
+  fetchPaymentPagePayments,
+  isFetchViaNCA,
+} from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 const PaymentsTable = (props) => {
   const paymentColumns = [
@@ -26,14 +30,22 @@ const PaymentsTable = (props) => {
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
-@connect((state) => state.payments, { fetchAll })
+@connect(
+  (state) => ({
+    payments: state.payments,
+    ncaPayments: state.invoices.storefrontPayments,
+  }),
+  { fetchPaymentPagePayments },
+)
 class PaymentsList extends ListContainer {
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
-    return this.props.fetchAll({
-      ...params,
-      payment_link_id: this.props.entity.id,
-    });
+    const {
+      splitz,
+      entity: { id },
+    } = this.props;
+
+    return this.props.fetchPaymentPagePayments('subscription_button', splitz, id, params);
   };
 
   getStatsTable(entity) {
@@ -50,8 +62,18 @@ class PaymentsList extends ListContainer {
   }
 
   render() {
-    const { children, entity, downloadReport, isExportInProgress, ...restProps } = this.props;
+    const {
+      children,
+      entity,
+      downloadReport,
+      splitz,
+      payments,
+      ncaPayments,
+      isExportInProgress,
+      ...restProps
+    } = this.props;
 
+    const entityData = isFetchViaNCA(splitz) ? ncaPayments : payments;
     return (
       <div>
         <div class="stats">
@@ -107,6 +129,7 @@ class PaymentsList extends ListContainer {
             paginate={this.paginate}
             paymentPageId={entity.id}
             {...restProps}
+            {...entityData}
           />
         </div>
       </div>
@@ -114,4 +137,4 @@ class PaymentsList extends ListContainer {
   }
 }
 
-export default withRouter(PaymentsList);
+export default withSplitzService(withRouter(PaymentsList));

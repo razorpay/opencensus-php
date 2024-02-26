@@ -8,7 +8,6 @@ import { updateItem } from 'common/utils/immutable';
 
 import {
   fetchPaymentPageEntity as fetchsubscriptionButtonEntity,
-  fetchPaymentsListForPaymentPage as fetchPaymentsListForPaymentButton,
   editPaymentPage as editPaymentButton,
   editPaymentPageItem as editPaymentButtonItem,
   activatePaymentPage as activatePaymentButton,
@@ -16,6 +15,7 @@ import {
 import { updateSubscriptionButtonInReduxList } from 'merchant/reducers/subscriptionButtons/list';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { withSplitzService } from 'common/splitz';
 
 import Spinner from 'common/ui/Spinner';
 import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
@@ -23,6 +23,7 @@ import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/M
 
 import Details from './Details';
 import track from './track';
+import { fetchCapturedPaymentPagePayments as fetchPaymentsListForSubscriptionButton } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 @connect(null, {
   showNotification,
@@ -135,7 +136,7 @@ class PaymentButtonDetails extends React.Component {
   }
 
   fetchEntityPayments(id) {
-    return fetchPaymentsListForPaymentButton(id)
+    return fetchPaymentsListForSubscriptionButton('subscription_button', this.props.splitz, id)
       .then((resp) => {
         if (resp) {
           this.setState({ subscriptionButtonPayments: resp.data.items });
@@ -380,4 +381,4 @@ class PaymentButtonDetails extends React.Component {
   }
 }
 
-export default withRouter(PaymentButtonDetails);
+export default withSplitzService(withRouter(PaymentButtonDetails));
