@@ -2,15 +2,15 @@ import React from 'react';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
 import BulkAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkAddMerchant';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { render, screen, userEvent, waitFor } from 'test-utils';
+import { MockBatchValidateSimple } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/__tests__/mocks/fixtures';
 import {
   useCreateBatchSuccessHandler,
   useValidateBatchSuccessHandler,
   useCreateBatchErrorHandler,
 } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/__tests__/mocks/once-handlers';
-import { MockBatchValidateSimple } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/__tests__/mocks/fixtures';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 

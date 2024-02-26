@@ -8,9 +8,12 @@ import CommonFilters, {
   commonValidations,
   RenderFiltersSectionProps,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper/CommonFilters';
+import { PRODUCT_TYPE, INVITE_VIEW_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 import { getFiltersList } from './filters';
 
+const productType = PRODUCT_TYPE.X;
+const inviteView = INVITE_VIEW_TYPE.ACCEPTED;
 export interface AcceptedInvitesFiltersType extends ListFiltersType {
   application_id: string;
   count: number;
@@ -44,7 +47,6 @@ const AcceptedInvitesFiltersSection = ({
       skip: 0,
       count: initState.count,
     });
-    // trackClearAnalytics
     refetch();
   };
   const onSearch = (formData) => {
@@ -54,11 +56,12 @@ const AcceptedInvitesFiltersSection = ({
         count: Number(formData.count),
       });
     }
-    // trackSearchAnalytics
     refetch();
   };
   return (
     <FiltersSectionWrapper
+      productType={productType}
+      inviteView={inviteView}
       initState={initState}
       validationSchema={validationSchema}
       onSearch={onSearch}

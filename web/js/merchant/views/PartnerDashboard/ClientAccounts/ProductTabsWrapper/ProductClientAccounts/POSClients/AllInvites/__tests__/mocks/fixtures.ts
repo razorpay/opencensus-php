@@ -1,20 +1,17 @@
-export const teamMembersData = {
-  role_id: 'partner_agent',
-  merchant_id: 'testUserId',
-  role_name: null,
-  users: [
-    {
-      id: 'testInviter1',
-      name: 'Test Inviter 1',
-      email: 'test1@gmail.com',
-    },
-    {
-      id: 'testInviter2',
-      name: 'Test Inviter 2',
-      email: 'test1@gmail.com',
-    },
-  ],
-};
+export const partnerAgentsData = [
+  {
+    id: 'testInviter1',
+    name: 'Test Inviter 1',
+    email: 'test1@gmail.com',
+    role: 'partner_agent',
+  },
+  {
+    id: 'testInviter2',
+    name: 'Test Inviter 2',
+    email: 'test1@gmail.com',
+    role: 'partner_agent',
+  },
+];
 
 export const allInvitesDataPOS = {
   status_code: 200,
@@ -32,8 +29,8 @@ export const allInvitesDataPOS = {
         contact_status: 'SENT',
         created_at: '2024-01-17T19:55:33Z',
         updated_at: '2024-01-17T19:55:35Z',
-        inviter_user_id: teamMembersData.users[0].id,
-        inviter_email: teamMembersData.users[0].email,
+        inviter_user_id: partnerAgentsData[0].id,
+        inviter_email: partnerAgentsData[0].email,
       },
       {
         id: 'NPno8dzUUxeDy1',
@@ -53,3 +50,5 @@ export const allInvitesDataPOS = {
 };
 
 export { allInvitesDataEmpty as allInvitesDataEmptyPOS } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/fixtures';
+
+export { resendInviteData as resendInviteDataPOS } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/fixtures';

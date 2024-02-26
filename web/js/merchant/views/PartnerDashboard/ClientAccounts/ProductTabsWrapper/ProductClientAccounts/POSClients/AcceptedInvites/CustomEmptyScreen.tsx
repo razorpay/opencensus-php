@@ -1,10 +1,14 @@
 import React from 'react';
 import { SearchIcon, Box, Heading, Text } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+
+import { Org } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 
 type CustomEmptyScreenProps = {
+  org: Org;
   isFilterSearchUsed: boolean;
 };
-const CustomEmptyScreen = ({ isFilterSearchUsed }: CustomEmptyScreenProps): JSX.Element => {
+const CustomEmptyScreen = ({ org, isFilterSearchUsed }: CustomEmptyScreenProps): JSX.Element => {
   return (
     <Box paddingTop="140px" paddingBottom="140px">
       {isFilterSearchUsed ? (
@@ -30,9 +34,9 @@ const CustomEmptyScreen = ({ isFilterSearchUsed }: CustomEmptyScreenProps): JSX.
             <Text weight="bold" size="large" color="feedback.text.notice.lowContrast">
               Did you know?
             </Text>
-            {/* eslint-disable-next-line i18n-rules/no-region-specific-keyword */}
             <Text>
-              You can now opt in to perform KYC for the client when you invite them onto Razorpay
+              You can now opt in to perform KYC for the client when you invite them onto{' '}
+              {org?.business_name}
             </Text>
           </Box>
         </Box>
@@ -40,4 +44,10 @@ const CustomEmptyScreen = ({ isFilterSearchUsed }: CustomEmptyScreenProps): JSX.
     </Box>
   );
 };
-export default CustomEmptyScreen;
+
+export default connect(
+  (state) => ({
+    org: state.session.org,
+  }),
+  null,
+)(CustomEmptyScreen);

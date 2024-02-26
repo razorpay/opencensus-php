@@ -11,7 +11,7 @@ import {
 } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/api';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { trackAllInvitesCta } from './analytics';
+import { trackAccountLevelAllInvitesCta } from './analytics';
 
 type InviteActionButtonProps = {
   invite: SubmerchantInviteItem;
@@ -42,7 +42,7 @@ const InviteActionButton = ({
 
   const onResendInviteClick = () => {
     handleResendInvite(id);
-    trackAllInvitesCta({ name, email, contact_no, productType });
+    trackAccountLevelAllInvitesCta({ name, email, contact_no, productType });
   };
   return (
     <Button variant="secondary" size="small" isLoading={isLoading} onClick={onResendInviteClick}>

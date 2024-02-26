@@ -1,5 +1,7 @@
 import React from 'react';
+import { Text } from '@razorpay/blade/components';
 
+import { DataTableColumn } from 'common/typings';
 import {
   POSAgentsMap,
   POSSubmerchantInviteItem,
@@ -23,10 +25,16 @@ const actionsColumn = {
 
 type customColumnsGetterArgs = { posAgentsMap: POSAgentsMap };
 export const customColumnsGetter = ({ posAgentsMap }: customColumnsGetterArgs): GetColumnsType => {
-  const invitedByColumn = {
+  const invitedByColumn: DataTableColumn = {
     title: 'Invited By',
-    value: (item: POSSubmerchantInviteItem): string =>
-      posAgentsMap[item.inviter_user_id]?.inviterName || item.inviter_email || item.inviter_user_id,
+    value: (item: POSSubmerchantInviteItem) => {
+      const agent = posAgentsMap[item.inviter_user_id];
+      return (
+        <Text truncateAfterLines={1}>
+          {agent?.inviterName || agent?.email || item.inviter_email || item.inviter_user_id}
+        </Text>
+      );
+    },
   };
 
   const getColumns: GetColumnsType = (_args) => [

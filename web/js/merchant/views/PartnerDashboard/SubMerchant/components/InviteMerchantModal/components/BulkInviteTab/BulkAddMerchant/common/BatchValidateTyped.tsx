@@ -1,7 +1,7 @@
 import { ComponentType, ReactNode } from 'react';
 
-import { CommonApiResponse } from 'common/typings';
 import BatchValidateJS from 'merchant/containers/BatchNew/Validate';
+import { CommonSubmerchantBatchResponse } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 
 type BatchValidateProps = {
   batchClass: string;
@@ -16,7 +16,7 @@ type BatchValidateProps = {
   onValidationFail?: (error: Error) => void;
   sampleFileDownloadAnalytics: () => void;
   sampleUrl: string;
-  validateBatch: () => Promise<CommonApiResponse<{ status: boolean }, string[]>>;
+  validateBatch: () => Promise<CommonSubmerchantBatchResponse>;
 };
 
 // Note: here we are re-exporting a JS component with necessary prop types;

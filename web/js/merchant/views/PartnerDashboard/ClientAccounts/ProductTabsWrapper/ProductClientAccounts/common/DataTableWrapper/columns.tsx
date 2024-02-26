@@ -1,8 +1,9 @@
 import React from 'react';
-import { Box, Text } from '@razorpay/blade/components';
+import { Box, Text, Badge } from '@razorpay/blade/components';
 import { Link as RouterLink } from 'react-router-dom';
 
 import { DataTableColumn } from 'common/typings';
+import Time from 'common/ui/Time';
 import { getTime } from 'common/ui/item';
 import { email as maskedEmail } from 'common/ui/item/pair';
 import { SubmerchantInviteItem } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/PaymentsClients/AllInvites/api';
@@ -10,10 +11,31 @@ import {
   PGAcceptedInviteItem,
   POSAcceptedInviteItem,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/api';
+import { isInviteRecentlyAccepted } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
 
-export const addedOnColumn = {
+export const addedOnColumn: DataTableColumn = {
   title: 'Added On',
   value: getTime('created_at', 'll'),
+};
+
+export const inviteAcceptedOn: DataTableColumn = {
+  title: 'Invite Accepted On',
+  value: (item: POSAcceptedInviteItem | PGAcceptedInviteItem) => (
+    <Box minWidth="155px">
+      <Time value={item.created_at} format="ll" />
+      {isInviteRecentlyAccepted(item.created_at) && (
+        <Badge
+          display="inline-block"
+          contrast="high"
+          fontWeight="bold"
+          marginLeft="spacing.3"
+          color="positive"
+        >
+          NEW
+        </Badge>
+      )}
+    </Box>
+  ),
 };
 
 export const appIdColumn: DataTableColumn = {

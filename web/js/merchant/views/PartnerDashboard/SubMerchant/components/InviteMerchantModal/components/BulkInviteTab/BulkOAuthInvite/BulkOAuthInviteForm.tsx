@@ -4,9 +4,10 @@ import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
 import CheckRound from 'assets/check-round.svg';
-import { CommonApiResponse, FormikHandleChange, UseFormikReturnType } from 'common/typings';
+import { FormikHandleChange, UseFormikReturnType } from 'common/typings';
 import { validatePartnerSubmerchantReferralInvitesBatch } from 'merchant/reducers/batches';
 import { OAuthAppDetailsType } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
+import { ValidateReferralInvitesBatchType } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import BatchValidate from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkAddMerchant/common/BatchValidateTyped';
 import { StyledBulkAddForm } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkAddMerchant/common/styled';
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
@@ -27,9 +28,7 @@ type BulkOAuthInviteFormProps = {
   inviteFlow: string;
   onSendInvitesClick: () => void;
   goToAppSelectionStep: () => void;
-  validatePartnerSubmerchantReferralInvitesBatch: () => Promise<
-    CommonApiResponse<{ status: boolean }, string[]>
-  >;
+  validatePartnerSubmerchantReferralInvitesBatch: ValidateReferralInvitesBatchType;
 };
 const BulkOAuthInviteForm = ({
   formik,

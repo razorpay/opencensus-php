@@ -3,16 +3,16 @@ import { Box, Text } from '@razorpay/blade/components';
 
 import { POS_ACTIVATION_STATUS } from 'merchant/views/POS/types';
 import {
-  actionStateType,
-  clarificationReasonsType,
+  parsedActionStatesType,
+  parsedClarificationReasonsType,
 } from 'merchant/views/PartnerDashboard/SubMerchant/POS/TypeDeclares';
 import { parseKycHistoryData } from 'merchant/views/PartnerDashboard/SubMerchant/POS/utils';
 
 import { TimelineStatus } from './TimeLineStatus';
 
 type KycHistoryTimelineProps = {
-  actionState: actionStateType | undefined;
-  clarificationReasons: clarificationReasonsType | undefined;
+  actionState: parsedActionStatesType | undefined;
+  clarificationReasons: parsedClarificationReasonsType | undefined;
 };
 
 export const KycHistoryTimeline = ({
@@ -53,19 +53,19 @@ export const KycHistoryTimeline = ({
                     <Text weight="bold">{getStatus(item.status)}</Text>
                   </Box>
                   <Text size="small" color="surface.text.placeholder.lowContrast">
-                    {item.date}
+                    {item.date || 'N/A'}
                   </Text>
                 </Box>
                 <Box
                   marginY="spacing.2"
                   marginX="spacing.3"
-                  borderLeftWidth="thin"
+                  borderLeftWidth={index === data.length - 1 ? 'none' : 'thin'}
                   borderLeftColor="surface.border.normal.lowContrast"
                   paddingX="spacing.7"
                   paddingBottom="spacing.6"
                   paddingTop="spacing.2"
                 >
-                  <Text size="small">KYC Performed by : {item.performedBy}</Text>
+                  <Text size="small">KYC Performed by : {item.performedBy || 'N/A'}</Text>
                   {item.reason ? (
                     <>
                       <Text>Issues:</Text>

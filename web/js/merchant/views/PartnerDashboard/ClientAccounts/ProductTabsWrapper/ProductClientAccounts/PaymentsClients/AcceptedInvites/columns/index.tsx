@@ -1,10 +1,8 @@
 import React from 'react';
-import { Badge, Box } from '@razorpay/blade/components';
 import { Link as RouterLink } from 'react-router-dom';
 
-import { DataTableColumns, User } from 'common/typings';
+import { DataTableColumn, DataTableColumns, User } from 'common/typings';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
-import Time from 'common/ui/Time';
 import { SubmerchantSettlementLabel } from 'merchant/components/StatusLabel';
 import { handleClientAccountSelected } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/PaymentsClients/AcceptedInvites/analytics';
 import { GetColumnsType } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/DataTableWrapper';
@@ -14,20 +12,15 @@ import {
   addedOnColumn,
   appIdColumn,
   mobileAndEmailColumn,
+  inviteAcceptedOn,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/DataTableWrapper/columns';
 import { PGAcceptedInviteItem } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/api';
 import { getIsInviteFlowEnabled } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/utils/tabsData';
 import SubMerchantKycStatusLabel from 'merchant/views/PartnerDashboard/SubMerchant/components/SubMerchantKycStatusLabel';
-import { isInviteRecentlyAccepted } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 import ActionButtonKYC from './ActionButtonKYC';
 import SwitchMerchant from './SwitchMerchant';
-
-const idColumnWithoutLink = {
-  title: 'Account ID',
-  value: (item) => item.id,
-};
 
 const idColumn = {
   title: 'Account ID',
@@ -43,20 +36,9 @@ const idColumn = {
   ),
 };
 
-const inviteAcceptedOn = {
-  title: 'Invite Accepted On',
-  value: (item) => (
-    <>
-      <Time value={item.created_at} format="ll" />
-      {isInviteRecentlyAccepted(item.created_at) && (
-        <Box display="inline-block">
-          <Badge contrast="high" fontWeight="bold" marginLeft="spacing.3" variant="positive">
-            NEW
-          </Badge>
-        </Box>
-      )}
-    </>
-  ),
+const idColumnWithoutLink = {
+  title: 'Account ID',
+  value: (item) => (!item.name ? idColumn.value(item) : item.id),
 };
 
 const settlementStatus = {
@@ -134,25 +116,18 @@ const activationStatusColumn = {
   ),
 };
 
-// TODO v2: Separate out curlec logic completely
 export const getColumns: GetColumnsType = ({ user, org, experiments }) => {
-  const isInviteFlowEnabled = getIsInviteFlowEnabled(PRODUCT_TYPE.PG, experiments);
+  const { isInviteFlowEnabled } = getIsInviteFlowEnabled(PRODUCT_TYPE.PG, experiments);
   const isSubMerchantKYCAccess = user.isFeatureEnabled('partner_sub_kyc_access');
-
   const conditionalNameColumn = user.isPartner('pure_platform')
     ? purePlatformNameColumn
     : nameColumn;
 
   const conditionalIdColumn = user.isPartner('pure_platform') ? idColumnWithoutLink : idColumn;
-  const actionsColumn = {
+  const actionsColumn: DataTableColumn = {
     title: 'Actions',
-    value: (submerchant) => (
-      <ActionButtonKYC
-        activation_status={submerchant.details.activation_status}
-        kyc_access={submerchant.kyc_access}
-        submerchant={submerchant}
-        isPGProductWithInviteFlow={isInviteFlowEnabled}
-      />
+    value: (submerchant: PGAcceptedInviteItem) => (
+      <ActionButtonKYC submerchant={submerchant} productType={PRODUCT_TYPE.PG} />
     ),
   };
 
@@ -170,7 +145,7 @@ export const getColumns: GetColumnsType = ({ user, org, experiments }) => {
   let conditionalSwitchMerchantColumn = [] as DataTableColumns;
   if (user.isPartner('pure_platform')) {
     conditionalAppIdColumn = [appIdColumn];
-  } else if (user.isPartner('aggregator', 'fully_managed')) {
+  } else if (user.isPartner('aggregator') || user.isPartner('fully_managed')) {
     conditionalSwitchMerchantColumn = [switchMerchantColumn];
   }
 

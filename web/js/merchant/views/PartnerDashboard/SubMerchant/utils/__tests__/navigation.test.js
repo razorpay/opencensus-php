@@ -1,9 +1,9 @@
 import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
-import { createMemoryHistory } from 'history';
 import { server } from 'test-utils';
+
 import { isEasyEnabledHandler } from './mocks/handlers';
 
-let history;
+let navigate;
 
 const submerchantDefaults = {
   id: 'acc_Ao6iPyuWSzc3dr',
@@ -16,15 +16,14 @@ describe('Navigation Utils', () => {
   beforeAll(() => {
     window.open = jest.fn();
     window.EASY_ONBOARDING_URL = 'https://easy.razorpay.com';
-    history = createMemoryHistory();
-    history.push = jest.fn();
+    navigate = jest.fn();
   });
 
   test('should open a new tab to easy onboarding if routing via easy', async () => {
     const is_mweb = false;
     const showNotification = () => {};
     server.use(isEasyEnabledHandler(true));
-    await openKYCFormUtil(is_mweb, history, submerchantDefaults, showNotification);
+    await openKYCFormUtil(is_mweb, navigate, submerchantDefaults, showNotification);
     expect(window.open).toHaveBeenCalledWith(
       'https://easy.razorpay.com/onboarding?account_id=acc_Ao6iPyuWSzc3dr',
       'submerchant_onboarding_via_easy',
@@ -35,8 +34,8 @@ describe('Navigation Utils', () => {
     const is_mweb = true;
     const showNotification = () => {};
     server.use(isEasyEnabledHandler(false));
-    await openKYCFormUtil(is_mweb, history, submerchantDefaults, showNotification);
-    expect(history.push).toHaveBeenCalledWith(
+    await openKYCFormUtil(is_mweb, navigate, submerchantDefaults, showNotification);
+    expect(navigate).toHaveBeenCalledWith(
       `/partners/submerchants/onboarding/acc_Ao6iPyuWSzc3dr/steps`,
     );
   });
@@ -44,9 +43,7 @@ describe('Navigation Utils', () => {
   test('should route to desktop activation route', async () => {
     const is_mweb = false;
     server.use(isEasyEnabledHandler(false));
-    await openKYCFormUtil(is_mweb, history, submerchantDefaults);
-    expect(history.push).toHaveBeenCalledWith(
-      `/partners/submerchants/acc_Ao6iPyuWSzc3dr/activation`,
-    );
+    await openKYCFormUtil(is_mweb, navigate, submerchantDefaults);
+    expect(navigate).toHaveBeenCalledWith(`/partners/submerchants/acc_Ao6iPyuWSzc3dr/activation`);
   });
 });

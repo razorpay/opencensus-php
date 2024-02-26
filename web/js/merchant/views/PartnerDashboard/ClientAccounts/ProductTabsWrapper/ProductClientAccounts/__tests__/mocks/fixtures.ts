@@ -2,8 +2,8 @@ const acceptedInvites = [
   {
     id: 'acc_LAHoz7xV1B1HkW',
     entity: 'merchant',
-    name: 'Kartik Sayani',
-    email: 'kartik.sayani+loc2@razorpay.com',
+    name: 'Test Accepted Invite 1',
+    email: 'test.accepted+invite1@razorpay.com',
     activated: false,
     activated_at: null,
     live: false,
@@ -19,10 +19,10 @@ const acceptedInvites = [
     fee_bearer: 'platform',
     fee_model: 'prepaid',
     refund_source: 'balance',
-    billing_label: 'Kartik Sayani',
+    billing_label: 'Test Accepted Invite 1',
     receipt_email_enabled: true,
     receipt_email_trigger_event: 'authorized',
-    transaction_report_email: ['kartik.sayani+loc2@razorpay.com'],
+    transaction_report_email: ['test.accepted+invite1@razorpay.com'],
     invoice_label_field: null,
     channel: 'axis2',
     convert_currency: false,
@@ -50,12 +50,12 @@ const acceptedInvites = [
     },
     user: {
       id: 'testUserId',
-      email: 'kartik.sayani+loc2@razorpay.com',
+      email: 'test.accepted+invite1@razorpay.com',
       contact_mobile: '8877665588',
     },
     dashboard_access: true,
     application: {
-      id: 'JI2nBG2mwKOxJz',
+      id: 'JI2nBG2mwKapp1',
     },
     kyc_access: null,
     banking_account: {
@@ -104,7 +104,7 @@ const acceptedInvites = [
     },
     dashboard_access: true,
     application: {
-      id: 'JI2nBG2mwKOxJz',
+      id: 'JI2nBG2mwKapp2',
     },
     kyc_access: null,
     banking_account: {
@@ -153,7 +153,7 @@ const acceptedInvites = [
     },
     dashboard_access: true,
     application: {
-      id: 'JI2nBG2mwKOxJz',
+      id: 'JI2nBG2mwKapp3',
     },
     kyc_access: null,
     banking_account: {

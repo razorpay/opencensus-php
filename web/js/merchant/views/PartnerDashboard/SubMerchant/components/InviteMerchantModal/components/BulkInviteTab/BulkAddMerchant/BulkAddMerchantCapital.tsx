@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
-import { CommonApiResponse, ShowNotificationType, User } from 'common/typings';
+import { ShowNotificationType, User } from 'common/typings';
 import { analyticsTrack } from 'common/utils/analytics';
 import {
   validatePartnerSubmerchantCapitalBatch,
   createPartnerSubmerchantCapitalBatch,
 } from 'merchant/reducers/batches';
+import {
+  CommonSubmerchantBatchResponse,
+  CreateSubmerchantsBatchType,
+  ValidateSubmerchantsBatchType,
+} from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -20,13 +25,8 @@ export type BulkAddMerchantCapitalProps = {
   onDismiss: () => void;
   onAddSuccess?: () => void;
   showNotification: ShowNotificationType;
-  createPartnerSubmerchantCapitalBatch: (args: {
-    file_id: string;
-    config: { product: string };
-  }) => Promise<CommonApiResponse<{ status: boolean }, string[]>>;
-  validatePartnerSubmerchantCapitalBatch: () => Promise<
-    CommonApiResponse<{ status: boolean }, string[]>
-  >;
+  createPartnerSubmerchantCapitalBatch: CreateSubmerchantsBatchType;
+  validatePartnerSubmerchantCapitalBatch: ValidateSubmerchantsBatchType;
 };
 const BulkAddMerchantCapital = ({
   user,
@@ -50,7 +50,7 @@ const BulkAddMerchantCapital = ({
     // gaEvents.trackUploadBatch('Partner submerchant');
     setIsSendingInvites(true);
 
-    const handleErrorResponse = ({ errors = [] }) => {
+    const handleErrorResponse = ({ errors = [] }: CommonSubmerchantBatchResponse) => {
       setIsSendingInvites(false);
       showNotification({
         type: 'error',

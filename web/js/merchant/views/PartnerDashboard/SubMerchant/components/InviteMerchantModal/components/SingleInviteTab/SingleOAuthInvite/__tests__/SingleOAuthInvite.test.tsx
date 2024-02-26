@@ -95,8 +95,10 @@ describe('SingleOAuthInvite', () => {
       name,
       email,
       contact_no,
-      product: 'primary',
-      partner_id: 'K0KQSNE7BypZ5VE',
+      productType: 'primary',
+      user: expect.objectContaining({
+        id: 'K0KQSNE7BypZ5VE',
+      }),
       metadata: {
         application_id: 'string_application_id',
         client_id: 'string_client_id',

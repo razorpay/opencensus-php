@@ -5,11 +5,12 @@ import { isEmpty } from 'lodash';
 import * as Yup from 'yup';
 
 import CheckRound from 'assets/check-round.svg';
-import { CommonApiResponse, FormikHandleChange } from 'common/typings';
+import { FormikHandleChange } from 'common/typings';
+import { CommonSubmerchantBatchResponse } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
 
-import { StyledBulkAddForm } from './styled';
 import BatchValidate from './BatchValidateTyped';
+import { StyledBulkAddForm } from './styled';
 
 const validationSchema = Yup.object().shape({
   file_id: Yup.string()
@@ -29,7 +30,7 @@ type BulkAddFormProps = {
   sampleFileDownloadAnalytics: () => void;
   sampleUrl: string;
   showBackButton?: boolean;
-  validateBatch: () => Promise<CommonApiResponse<{ status: boolean }, string[]>>;
+  validateBatch: () => Promise<CommonSubmerchantBatchResponse>;
 };
 const BulkAddForm = ({
   batchType,
@@ -110,6 +111,7 @@ const BulkAddForm = ({
                 <div className="success-message flex-col-between">
                   <div>
                     <p>
+                      {/* eslint-disable i18n-rules/no-region-specific-image */}
                       <img src={CheckRound} alt="Tick icon" /> &nbsp;
                       {bulkContactsCount} contacts have been identified.
                     </p>

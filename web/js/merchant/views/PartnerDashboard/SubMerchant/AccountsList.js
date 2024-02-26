@@ -772,14 +772,7 @@ class ProductSubMerchantsList extends ListContainer {
     }
     const actionsColumn = {
       title: 'Actions',
-      value: (submerchant) => (
-        <ActionButtonKYC
-          activation_status={submerchant.details.activation_status}
-          kyc_access={submerchant.kyc_access}
-          submerchant={submerchant}
-          isPGProductWithInviteFlow={this.isPGProductWithInviteFlow}
-        />
-      ),
+      value: (submerchant) => <ActionButtonKYC productType={product} submerchant={submerchant} />,
     };
     let conditionalAppIdColumn = [];
     let conditionalSwitchMerchantColumn = [];
@@ -997,6 +990,7 @@ class ProductSubMerchantsList extends ListContainer {
                     >
                       <div>
                         <div>
+                          {/* eslint-disable-next-line i18n-rules/no-region-specific-image */}
                           <Image src={AddNewSubMerchants} isWebP />
                         </div>
                         <p>
@@ -1021,6 +1015,7 @@ class ProductSubMerchantsList extends ListContainer {
                     >
                       <div>
                         <div>
+                          {/* eslint-disable-next-line i18n-rules/no-region-specific-image */}
                           <Image src={ShareReferralLink} isWebP />
                         </div>
                         <p>
@@ -1036,6 +1031,7 @@ class ProductSubMerchantsList extends ListContainer {
                               <i class="i i-link line-height-9" /> Copy Link
                             </button>
                           </CustomClipboard>
+                          {/* eslint-disable i18n-rules/no-region-specific-image */}
                           <img
                             src="/img/social-media/fb.png"
                             onClick={() => this.shareReferralOn('fb', referralUrl)}
@@ -1048,6 +1044,7 @@ class ProductSubMerchantsList extends ListContainer {
                             src="/img/social-media/whatsapp.png"
                             onClick={() => this.shareReferralOn('whatsapp', referralUrl)}
                           />
+                          {/* eslint-enable i18n-rules/no-region-specific-image */}
                         </div>
                       </div>
                     </ShowWhen>

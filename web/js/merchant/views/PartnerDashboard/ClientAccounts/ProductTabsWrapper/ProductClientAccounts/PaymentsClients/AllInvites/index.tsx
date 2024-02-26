@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import { User } from 'common/typings';
 import DataTableWrapper from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/DataTableWrapper';
+import useProductActions from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/hooks/useProductActions';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 import FiltersSection from './FiltersSection';
@@ -27,13 +28,14 @@ const AllInvitesTable = ({ user }: AllInvitesTableProps): JSX.Element => {
         ...decodedParams,
       } as FetchInvitesParams,
     );
+  const { shouldRefetchTrigger } = useProductActions();
   const parseDataOnSuccess = (data) => data.data?.items || [];
 
   return (
     <DataTableWrapper<SubmerchantInviteItem, FetchInviteResponse>
       getColumns={getColumns}
       paginationQueryFn={paginationQueryFn}
-      queryKey="filter-pg-all-invites"
+      queryKey={`filter-pg-all-invites-${shouldRefetchTrigger}`}
       parseDataOnSuccess={parseDataOnSuccess}
       renderFiltersSection={({ paginationState, setPagination, refetch }) => (
         <FiltersSection

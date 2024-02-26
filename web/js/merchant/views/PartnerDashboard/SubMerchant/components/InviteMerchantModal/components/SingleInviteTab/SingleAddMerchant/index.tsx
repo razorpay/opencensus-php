@@ -6,11 +6,12 @@ import { compose, bindActionCreators } from 'redux';
 import * as Yup from 'yup';
 
 import { withRouter } from 'common/deprecated/withRouter';
-import { CommonApiResponse, FormikHandleChange, ShowNotificationType, User } from 'common/typings';
+import { FormikHandleChange, ShowNotificationType, User } from 'common/typings';
 import { create as createSubmerchant } from 'merchant/reducers/submerchant';
 import { Org } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
+import { CommonCreateSubmerchantResponse } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { INVITE_TAB_TYPES } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs/constants';
-import { trackSubmerchantReferViaEmail } from 'merchant/views/PartnerDashboard/SubMerchant/utils/analytics';
+import { trackSubmerchantReferViaEmail } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -70,7 +71,7 @@ type SingleAddMerchantProps = {
     contact_mobile?: string;
     product: string;
     isInsertTable?: boolean;
-  }) => Promise<CommonApiResponse<{ status: boolean }, string[]>>;
+  }) => Promise<CommonCreateSubmerchantResponse>;
 };
 const SingleAddMerchant = ({
   user,
@@ -90,7 +91,7 @@ const SingleAddMerchant = ({
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   // Formik logic and Validation
   const handleFormSubmit = (params) => {
-    trackSubmerchantReferViaEmail(params);
+    trackSubmerchantReferViaEmail({ ...params, productType });
     setIsSendingInvite(true);
 
     // TODO v2: need to remove this whole getIsInsertTable logic

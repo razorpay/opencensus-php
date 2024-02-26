@@ -10,9 +10,9 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { DetailsRow } from './Components/DetailsRow';
 import KycActionButton from './Components/KycActionButton';
 import { KycHistoryTimeline } from './Components/KycHistoryTimeline';
-import { PosSubmerchantDetailsResponseDataType } from './TypeDeclares';
+import { parsedResponseDataType } from './TypeDeclares';
 import { fetchPosSubmerchantDetails } from './api';
-import { formatDate } from './utils';
+import { formatDate, parseResponseData } from './utils';
 
 interface PosSubmerchantDetailsProps {
   id: string;
@@ -22,14 +22,14 @@ const POSSubmerchantDetails = ({
   id,
   showNotification,
 }: PosSubmerchantDetailsProps): JSX.Element => {
-  const [responseData, setResponseData] = useState<PosSubmerchantDetailsResponseDataType>();
+  const [responseData, setResponseData] = useState<parsedResponseDataType>();
 
   const { isLoading } = useQuery({
     queryKey: ['get-pos-submerchant-details', id],
     queryFn: () => fetchPosSubmerchantDetails(id),
     refetchOnWindowFocus: false,
     onSuccess: (response) => {
-      setResponseData(response.data);
+      setResponseData(parseResponseData(response.data));
     },
     onError: (err: { errors: Array<string> }) => {
       showNotification?.({
@@ -87,11 +87,11 @@ const POSSubmerchantDetails = ({
                   label="Client's Orders"
                   values={['View Order Details']}
                   isLink
-                  href={`/partners/submerchants/pos/${id}/orders`}
+                  href={`/app/partners/submerchants/pos/${id}/orders`}
                 />
                 <Divider marginY="spacing.4" />
                 <KycHistoryTimeline
-                  actionState={responseData?.pos?.action_state}
+                  actionState={responseData?.pos?.action_states}
                   clarificationReasons={
                     responseData?.details?.kyc_clarification_reasons?.clarification_reasons_v2
                   }

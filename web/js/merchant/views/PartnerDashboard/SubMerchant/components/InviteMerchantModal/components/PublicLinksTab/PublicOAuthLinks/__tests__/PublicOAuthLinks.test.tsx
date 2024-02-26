@@ -1,11 +1,12 @@
 import React from 'react';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
-import { fetchReferralsHandler } from './mocks/once-handlers';
 import PublicOAuthLinks from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/PublicLinksTab/PublicOAuthLinks';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { render, screen, server, waitFor } from 'test-utils';
+
 import { referralData } from './mocks/fixtures';
+import { fetchReferralsHandler } from './mocks/once-handlers';
 
 const isPartner = jest.fn();
 isPartner.mockImplementation((type) => type === 'reseller');

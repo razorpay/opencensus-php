@@ -4,17 +4,13 @@ import { getInitialUserOrgState } from 'common/tests/utils';
 import ClientAccounts from 'merchant/views/PartnerDashboard/ClientAccounts';
 import { fetchReferralsHandler } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/once-handlers';
 import { allInvitesListSuccess } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/handlers';
-import { render, screen, server, waitForLoadingToFinishByLabel } from 'test-utils';
-
-const mockIsConfigTagEnabled = jest.fn();
-jest.mock('common/i18', () => ({
-  __esModule: true,
-  withI18Service: (Component) => (props) =>
-    <Component i18={{ isConfigTagEnabled: mockIsConfigTagEnabled }} {...props} />,
-  useI18Service: () => ({
-    isConfigTagEnabled: mockIsConfigTagEnabled,
-  }),
-}));
+import {
+  render,
+  screen,
+  server,
+  updateUseI18ServiceSpy,
+  waitForLoadingToFinishByLabel,
+} from 'test-utils';
 
 const defaultPartnerDashboardExperiments = {
   isPartnershipsInviteFlowEnabled: false,
@@ -75,7 +71,7 @@ describe('ClientAccounts', () => {
     document.execCommand = jest.fn();
   });
   beforeEach(() => {
-    isPartner.mockImplementation((value = 'reseller') => value === 'reseller');
+    isPartner.mockImplementation((partner_type = 'reseller') => partner_type === 'reseller');
     server.use(fetchReferralsHandler());
   });
   afterEach(() => {
@@ -83,8 +79,7 @@ describe('ClientAccounts', () => {
     mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
   it('should render all the default Affliate accounts tabs', () => {
-    mockIsConfigTagEnabled.mockReturnValue(false);
-
+    updateUseI18ServiceSpy('false-path');
     renderApp({});
     expect(screen.getByText('Payments')).toBeInTheDocument();
     expect(screen.getByText('POS')).toBeInTheDocument();
@@ -120,14 +115,11 @@ describe('ClientAccounts', () => {
 
   describe('should not render RazorpayX if...', () => {
     beforeEach(() => {
-      isPartner.mockImplementation((value) => value === 'reseller');
+      isPartner.mockImplementation((partner_type = 'reseller') => partner_type === 'reseller');
     });
 
     test('...the merchant is not from india (international merchants)', () => {
-      mockIsConfigTagEnabled.mockImplementation((value) => {
-        if (value === 'partnership.razorpay_x_affiliate_account') return true;
-        return false;
-      });
+      updateUseI18ServiceSpy('partnership.razorpay_x_affiliate_account');
       renderApp({});
       expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
     });

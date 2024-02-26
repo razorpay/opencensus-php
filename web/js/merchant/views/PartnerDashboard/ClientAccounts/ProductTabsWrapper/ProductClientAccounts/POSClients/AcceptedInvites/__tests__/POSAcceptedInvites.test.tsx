@@ -3,7 +3,6 @@ import React from 'react';
 import { getInitialUserOrgState } from 'common/tests/utils';
 import * as downloadSubmerchantsActions from 'merchant/reducers/submerchant';
 import POSAcceptedInvites from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/POSClients/AcceptedInvites';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import {
   render,
   screen,
@@ -15,8 +14,6 @@ import {
 
 import { emptyAccountsListResponsePOS, accountsListResponsePOS } from './mocks/fixtures';
 import { acceptedInvitesListHandlerPOS } from './mocks/once-handlers';
-
-const productType = PRODUCT_TYPE.POS;
 
 const defaultPartnerDashboardExperiments = {};
 let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
@@ -70,7 +67,7 @@ describe('POSAcceptedInvites', () => {
     mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
 
-  test(`should render the list once the data is fetched and is not empty for ${productType}`, async () => {
+  test(`should render the list once the data is fetched and is not empty for pos`, async () => {
     renderApp();
     await waitForLoadingToFinishByLabel();
     await waitFor(() => {
@@ -105,7 +102,7 @@ describe('POSAcceptedInvites', () => {
     });
   });
 
-  test(`should render the empty screen once the data is fetched and is empty for ${productType}`, async () => {
+  test(`should render the empty screen once the data is fetched and is empty for pos`, async () => {
     server.use(acceptedInvitesListHandlerPOS(emptyAccountsListResponsePOS));
     renderApp();
     // Wait for data table spinner

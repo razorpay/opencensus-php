@@ -4,7 +4,7 @@ import { getInitialUserOrgState } from 'common/tests/utils';
 import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
 import { INVITE_MERCHANT_STEPS } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/constants';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import { render, screen, userEvent } from 'test-utils';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 const { SELECT_PRODUCT, INVITE_TABS } = INVITE_MERCHANT_STEPS;
 const defaultProps = {
   initialProductType: PRODUCT_TYPE.PG,
@@ -16,6 +16,7 @@ const defaultProps = {
 const defaultPartnerDashboardExperiments = {
   isPartnershipsInviteFlowEnabled: false,
   isPlatformPartnerInviteFlowEnabled: false,
+  isPartnershipsForPosEnabled: false,
 };
 let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
 jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments', () => ({
@@ -24,16 +25,18 @@ jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments'
 }));
 const defaultUserExtra = {
   findTag: jest.fn(),
-  isPartner: (partner_type) => partner_type === 'reseller',
+  isPartner: (partner_type = 'reseller') => partner_type === 'reseller',
   isOrgAllowedFunctionality: () => true,
+  isPartnershipForCapitalEnabled: false,
+  isPartnerAgentRole: false,
 };
 const defaultOrgExtra = {
   business_name: 'Razorpay',
 };
 describe('InviteMerchantModal', () => {
-  const renderApp = (
-    props = {},
+  const renderApp = async (
     { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {},
+    props = {},
     experiments = {},
   ) => {
     mockPartnerDashboardExperiments = { ...defaultPartnerDashboardExperiments, ...experiments };
@@ -44,7 +47,15 @@ describe('InviteMerchantModal', () => {
     });
     // eslint-disable-next-line
     // @ts-ignore
-    render(<InviteMerchantModal {...defaultProps} {...props} />, { initialState: { session } });
+    const response = render(<InviteMerchantModal {...defaultProps} {...props} />, {
+      initialState: { session },
+    });
+
+    // lazy loaded components
+    await waitFor(() => {
+      expect(screen.queryByRole('loader')).not.toBeInTheDocument();
+    });
+    return response;
   };
   afterEach(() => {
     jest.clearAllMocks();
@@ -52,9 +63,9 @@ describe('InviteMerchantModal', () => {
   });
 
   test('should show correct header for partnerships invite flow', async () => {
-    renderApp(
-      { initialProductType: PRODUCT_TYPE.PG },
+    await renderApp(
       {},
+      { initialProductType: PRODUCT_TYPE.PG },
       { isPartnershipsInviteFlowEnabled: true },
     );
     expect(screen.getByText('Add New Clients')).toBeInTheDocument();
@@ -63,25 +74,25 @@ describe('InviteMerchantModal', () => {
   });
 
   test('should update header when product type is changed', async () => {
-    renderApp({ initialStep: SELECT_PRODUCT });
+    await renderApp({}, { initialStep: SELECT_PRODUCT });
     expect(screen.getByText('Add New Merchants')).toBeInTheDocument();
     await userEvent.click(screen.getByText('RazorpayX'));
     await userEvent.click(screen.getByText('Next'));
     expect(screen.getByText('Add New Merchants - RazorpayX')).toBeInTheDocument();
   });
 
-  test('should directly open invite form for capital with initialStep = INVITE_TABS', () => {
-    renderApp(
-      { initialStep: INVITE_TABS, initialProductType: PRODUCT_TYPE.CAPITAL },
+  test('should directly open invite form for capital with initialStep = INVITE_TABS', async () => {
+    await renderApp(
       {
         userExtra: {
           isPartnershipForCapitalEnabled: true,
         },
       },
+      { initialStep: INVITE_TABS, initialProductType: PRODUCT_TYPE.CAPITAL },
     );
     expect(screen.queryByText('Using Email')).not.toBeInTheDocument();
-    expect(screen.getByText('Public Link')).toBeInTheDocument();
     expect(screen.getByText('Bulk Upload')).toBeInTheDocument();
+    expect(screen.getByText('Public Link')).toBeInTheDocument();
     expect(screen.getByText('Add New Merchants - Line Of Credit')).toBeInTheDocument();
   });
 });

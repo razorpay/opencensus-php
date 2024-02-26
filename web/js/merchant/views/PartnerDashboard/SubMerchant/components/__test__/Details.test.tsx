@@ -22,6 +22,15 @@ import { accountsListResponse } from 'merchant/views/PartnerDashboard/ClientAcco
 import Details from 'merchant/views/PartnerDashboard/SubMerchant/components/Details';
 import { PRODUCT_TYPE, NOT_AVAILABLE } from 'merchant/views/PartnerDashboard/constants';
 
+jest.mock('@tanstack/react-query', () => {
+  const actualReactQuery = jest.requireActual('@tanstack/react-query');
+  return {
+    ...actualReactQuery,
+    // Disables retry for useQuery
+    useQuery: (args) => actualReactQuery.useQuery({ ...args, retry: false }),
+  };
+});
+
 const onResendInvite = jest.fn();
 const { items } = accountsListResponse;
 const detailsProps = {
@@ -31,23 +40,16 @@ const detailsProps = {
   product: PRODUCT_TYPE.CAPITAL,
   capitalProducts: { loading: false, data: losProductsResponse.products },
 };
-
-jest.mock('merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments', () => {
-  return {
-    __esModule: true,
-    default: (Component) => (props) =>
-      (
-        <Component
-          {...props}
-          experiments={{
-            isPartnershipCapitalBureauLinkEnabled: true,
-            isPartnershipsInviteFlowEnabled: false,
-            isPlatformPartnerInviteFlowEnabled: false,
-          }}
-        />
-      ),
-  };
-});
+const defaultPartnerDashboardExperiments = {
+  isPartnershipCapitalBureauLinkEnabled: true,
+  isPartnershipsInviteFlowEnabled: false,
+  isPlatformPartnerInviteFlowEnabled: false,
+};
+let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments', () => ({
+  __esModule: true,
+  default: () => mockPartnerDashboardExperiments,
+}));
 
 const getCapitalResponse = (item, index) =>
   capitalApplicationsResponse.response[item.id.replace('acc_', '')].partner_applications[index];
@@ -75,6 +77,7 @@ describe('Submerchant Details', () => {
   };
   afterEach(() => {
     cleanup();
+    mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
 
   test('should render spinner while data is fetching', () => {
@@ -193,8 +196,7 @@ describe('Submerchant Details', () => {
     });
   });
 
-  // todo skipping this for now because it is getting failed because of retry option of react-query.
-  test.skip('should show error when API throws error', async () => {
+  test('should show error when API throws error', async () => {
     server.use(createBureauLinkError());
     renderApp({ ...detailsProps });
     await waitFor(() => {

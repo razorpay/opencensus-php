@@ -18,7 +18,7 @@ import {
   PARTNERSHIPS_WEBSITE_LINKS,
 } from 'merchant/views/PartnerDashboard/constants';
 
-const idColumn = {
+const idColumnWithoutLink = {
   title: 'Account ID',
   value: (item) => item.id,
 };
@@ -101,7 +101,13 @@ export const customColumnsGetter = ({
 
   const getColumns: GetColumnsType = ({ experiments }) => {
     const { isPartnershipCapitalBureauLinkEnabled } = experiments;
-    const capitalColumns = [capitalName, idColumn, emailColumn, addedOnColumn, capitalStatus];
+    const capitalColumns = [
+      capitalName,
+      idColumnWithoutLink,
+      emailColumn,
+      addedOnColumn,
+      capitalStatus,
+    ];
     if (isPartnershipCapitalBureauLinkEnabled) {
       capitalColumns.push(actionsColumn);
     }

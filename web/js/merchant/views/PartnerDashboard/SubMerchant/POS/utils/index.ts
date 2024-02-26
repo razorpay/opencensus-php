@@ -2,9 +2,12 @@ import moment from 'moment';
 
 import {
   actionStateType,
-  clarificationReasonsType,
   kycHistoryObjectType,
   PosSubmerchantDetailsResponseDataType,
+  parsedActionStateType,
+  parsedClarificationReasonsType,
+  parsedResponseDataType,
+  parsedActionStatesType,
 } from 'merchant/views/PartnerDashboard/SubMerchant/POS/TypeDeclares';
 
 export const formatDate = (date: number | undefined, format: string): string => {
@@ -17,8 +20,8 @@ export const formatDate = (date: number | undefined, format: string): string => 
 const getClarificationReasons = (
   previousNCTime: number,
   currentIndex: number,
-  actionState: actionStateType,
-  clarificationReasons: clarificationReasonsType,
+  actionState: parsedActionStatesType,
+  clarificationReasons: parsedClarificationReasonsType,
 ) => {
   return Object.entries(clarificationReasons)
     .map(([key, value]) => {
@@ -41,8 +44,8 @@ const getClarificationReasons = (
 // reason field is optional and is only present for needs_clarification status
 
 export const parseKycHistoryData = (
-  actionState: actionStateType | undefined,
-  clarificationReasons: clarificationReasonsType | undefined = {},
+  actionState: parsedActionStatesType | undefined,
+  clarificationReasons: parsedClarificationReasonsType | undefined = {},
 ): kycHistoryObjectType[] | [] => {
   if (!actionState) return [];
 
@@ -146,5 +149,67 @@ export const getKycActionButtonState = ({
     onClickAction,
     isHidden,
     isKycRejected,
+  };
+};
+
+export const parseActionStates = (actionStates: actionStateType): parsedActionStatesType => {
+  return actionStates.map((actionState) => {
+    return {
+      ...actionState,
+      created_at: parseInt(actionState.created_at, 10),
+      updated_at: parseInt(actionState.updated_at, 10),
+    } as parsedActionStateType;
+  });
+};
+
+export const parseClarificationReasons = (
+  clarification_reasons_v2: PosSubmerchantDetailsResponseDataType['details']['kyc_clarification_reasons']['clarification_reasons_v2'],
+): parsedClarificationReasonsType => {
+  const clarificationReasons = {};
+  if (!clarification_reasons_v2) return clarificationReasons;
+  Object.entries(clarification_reasons_v2).forEach(([key, value]) => {
+    clarificationReasons[key] = value.map((item) => {
+      return {
+        ...item,
+        created_at: parseInt(item.created_at, 10),
+      };
+    });
+  });
+  return clarificationReasons;
+};
+
+const getParsedClarificationReasons = (
+  clarificationReasons: PosSubmerchantDetailsResponseDataType['details']['kyc_clarification_reasons'],
+): parsedResponseDataType['details']['kyc_clarification_reasons'] => {
+  if (!clarificationReasons.clarification_reasons_v2) {
+    return {};
+  }
+
+  return {
+    ...clarificationReasons,
+    clarification_reasons_v2: parseClarificationReasons(
+      clarificationReasons.clarification_reasons_v2,
+    ),
+  };
+};
+
+export const parseResponseData = (
+  responseData: PosSubmerchantDetailsResponseDataType | undefined,
+): parsedResponseDataType => {
+  if (!responseData) {
+    return {} as parsedResponseDataType;
+  }
+  return {
+    ...responseData,
+    details: {
+      ...responseData.details,
+      kyc_clarification_reasons: getParsedClarificationReasons(
+        responseData.details.kyc_clarification_reasons,
+      ),
+    },
+    pos: {
+      ...responseData.pos,
+      action_states: parseActionStates(responseData.pos.action_states),
+    },
   };
 };

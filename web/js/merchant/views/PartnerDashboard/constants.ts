@@ -1,8 +1,20 @@
+export const INVITE_VIEW_TYPE = {
+  ACCEPTED: 'Accepted Invites',
+  ALL: 'All Invites',
+};
+
 export const PRODUCT_TYPE = {
   X: 'banking',
   PG: 'primary',
   POS: 'pos',
   CAPITAL: 'capital',
+};
+
+export const PRODUCT_ROUTE_PREFIX = {
+  [PRODUCT_TYPE.X]: '/x',
+  [PRODUCT_TYPE.PG]: '', // Avoids extra slash getting added
+  [PRODUCT_TYPE.POS]: '/pos',
+  [PRODUCT_TYPE.CAPITAL]: '/capital',
 };
 
 export const ORG_NAME = {
@@ -14,13 +26,6 @@ export const PRODUCT_NAME = {
   [PRODUCT_TYPE.PG]: 'Payments',
   [PRODUCT_TYPE.CAPITAL]: 'Capital',
   [PRODUCT_TYPE.POS]: 'POS',
-};
-
-export const PRODUCT_ROUTE_PREFIX = {
-  [PRODUCT_TYPE.X]: '/partners/submerchants/banking',
-  [PRODUCT_TYPE.PG]: '/partners/submerchants',
-  [PRODUCT_TYPE.POS]: '/partners/submerchants/pos',
-  [PRODUCT_TYPE.CAPITAL]: '/partners/submerchants/capital',
 };
 
 export const ADD_MODE = {

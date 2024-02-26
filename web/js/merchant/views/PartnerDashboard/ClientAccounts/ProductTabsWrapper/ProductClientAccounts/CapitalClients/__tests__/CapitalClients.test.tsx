@@ -8,7 +8,6 @@ import {
   emptyAccountsListResponse,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/fixtures';
 import { acceptedInvitesListHandler } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/once-handlers';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import {
   render,
   screen,
@@ -23,8 +22,6 @@ import {
   createBureauLinkError,
   capitalApplicationsErrorHandler,
 } from './mocks/once-handlers';
-
-const productType = PRODUCT_TYPE.CAPITAL;
 
 const defaultPartnerDashboardExperiments = {
   isPartnershipCapitalBureauLinkEnabled: true,
@@ -76,7 +73,7 @@ describe('CapitalClients', () => {
     jest.clearAllMocks();
     mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
-  test(`should render the list once the data is fetched and is not empty for ${productType}`, async () => {
+  test(`should render the list once the data is fetched and is not empty for capital`, async () => {
     renderApp();
     await waitForLoadingToFinishByLabel();
     await waitFor(() => {
@@ -108,7 +105,7 @@ describe('CapitalClients', () => {
     });
   });
 
-  test(`should render the empty screen once the data is fetched and is empty for ${productType}`, async () => {
+  test(`should render the empty screen once the data is fetched and is empty for capital`, async () => {
     server.use(acceptedInvitesListHandler(emptyAccountsListResponse));
     renderApp();
     // Wait for products spinner

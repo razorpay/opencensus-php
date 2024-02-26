@@ -3,7 +3,7 @@ import React from 'react';
 import AllInvitesFilter from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/components/AllInvitesFilter';
 import { render, screen, waitFor, userEvent } from 'test-utils';
 
-const MOCK_LOCATION = {
+const defaultLocation = {
   key: '',
   pathname: '/submerchants/all',
   hash: '',
@@ -11,7 +11,7 @@ const MOCK_LOCATION = {
   state: {},
 };
 
-let mockLocation = MOCK_LOCATION;
+let mockLocation = defaultLocation;
 jest.mock('react-router-dom', () => {
   return {
     __esModule: true,
@@ -24,7 +24,7 @@ const onSearch = jest.fn();
 
 describe('All Invites Filter', () => {
   beforeEach(() => {
-    mockLocation = MOCK_LOCATION;
+    mockLocation = defaultLocation;
   });
   const renderApp = () => {
     render(<AllInvitesFilter setPagination={handlePagination} count={25} onSearch={onSearch} />, {
@@ -43,7 +43,7 @@ describe('All Invites Filter', () => {
   });
 
   test('should setValue to fields if search is already present in location', async () => {
-    mockLocation = { ...MOCK_LOCATION, search: '?name=ABC123&count=28' };
+    mockLocation = { ...defaultLocation, search: '?name=ABC123&count=28' };
     renderApp();
     await waitFor(() => {
       expect(screen.getByLabelText('Count')).toHaveValue('28');
@@ -56,7 +56,7 @@ describe('All Invites Filter', () => {
 
     const nameField = screen.getByLabelText('Name');
     expect(nameField).toBeInTheDocument();
-    await userEvent.type(nameField, 'ABCUYD');
+    await userEvent.type(nameField, 'Some Name');
 
     const emailField = screen.getByLabelText('Email ID');
     expect(emailField).toBeInTheDocument();
@@ -76,7 +76,7 @@ describe('All Invites Filter', () => {
   });
 
   test('should reset the value to initial state and call the API without any filter when reset is clicked', async () => {
-    mockLocation = { ...MOCK_LOCATION, search: '?name=ABC123&count=28' };
+    mockLocation = { ...defaultLocation, search: '?name=ABC123&count=28' };
     renderApp();
     await waitFor(() => {
       expect(screen.getByLabelText('Count')).toHaveValue('28');

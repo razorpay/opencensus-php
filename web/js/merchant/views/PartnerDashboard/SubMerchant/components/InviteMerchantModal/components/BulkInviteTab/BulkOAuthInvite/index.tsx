@@ -5,9 +5,10 @@ import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 import * as Yup from 'yup';
 
-import { CommonApiResponse, FormikHandleChange, ShowNotificationType } from 'common/typings';
+import { FormikHandleChange, ShowNotificationType } from 'common/typings';
 import { createPartnerSubmerchantReferralInvitesBatch } from 'merchant/reducers/batches';
 import { OAuthAppDetailsType } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
+import { CreateReferralInvitesBatchType } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { INVITE_TAB_TYPES } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs/constants';
 import SuccessScreen from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SingleOAuthInvite/SuccessScreen';
 import {
@@ -41,19 +42,7 @@ type BulkInviteTabProps = {
   onAddSuccess?: () => void;
   goToAppSelectionStep?: () => void;
   showNotification: ShowNotificationType;
-  createPartnerSubmerchantReferralInvitesBatch: (args: {
-    file_id: string;
-    config: {
-      product: string;
-      metadata?: {
-        application_id: string;
-        client_id: string;
-        oauth_referral: boolean;
-        redirect_uri: string;
-        scope: string;
-      };
-    };
-  }) => Promise<CommonApiResponse<{ status: boolean }, string[]>>;
+  createPartnerSubmerchantReferralInvitesBatch: CreateReferralInvitesBatchType;
 };
 const BulkInviteTab = ({
   productType,
@@ -84,6 +73,7 @@ const BulkInviteTab = ({
     trackSubmerchantReferViaBulkUpload({
       bulkContactsCount,
       isKycAssistedSelected: false,
+      productType,
     });
     return createPartnerSubmerchantReferralInvitesBatch({
       file_id,

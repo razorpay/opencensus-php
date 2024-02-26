@@ -4,8 +4,9 @@ import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
 import CheckRound from 'assets/check-round.svg';
-import { CommonApiResponse, FormikHandleChange, UseFormikReturnType } from 'common/typings';
+import { FormikHandleChange, UseFormikReturnType } from 'common/typings';
 import { validatePartnerSubmerchantReferralInvitesBatch } from 'merchant/reducers/batches';
+import { ValidateReferralInvitesBatchType } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
 import KYCAccessCheckbox from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/common/KYCAccessCheckbox';
 import {
@@ -27,9 +28,7 @@ type BulkInviteFormProps = {
   onSendInvitesClick: () => void;
   hasSelectedKycAccess: boolean | null;
   onNextClick: () => void;
-  validatePartnerSubmerchantReferralInvitesBatch: () => Promise<
-    CommonApiResponse<{ status: boolean }, string[]>
-  >;
+  validatePartnerSubmerchantReferralInvitesBatch: ValidateReferralInvitesBatchType;
 };
 const BulkInviteForm = ({
   formik,

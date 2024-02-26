@@ -35,7 +35,7 @@ const InviteNavLinks = ({
   onAcceptedInvitesClick,
   onAllInvitesClick,
 }: InviteNavLinksProps): JSX.Element => {
-  const prefix = PRODUCT_ROUTE_PREFIX[productType];
+  const productRoute = PRODUCT_ROUTE_PREFIX[productType];
   return (
     <StyledInviteNavLinks>
       <Box paddingTop="spacing.6" paddingLeft="spacing.6" paddingRight="spacing.6">
@@ -44,7 +44,7 @@ const InviteNavLinks = ({
           end
           onClick={() => onAcceptedInvitesClick(productType)}
           className="navlink"
-          to={`${prefix}`}
+          to={`/partners/submerchants${productRoute}`}
         >
           Accepted Invites
         </NavLink>
@@ -52,7 +52,7 @@ const InviteNavLinks = ({
           end
           onClick={() => onAllInvitesClick(productType)}
           className="navlink"
-          to={`${prefix}/all`}
+          to={`/partners/submerchants${productRoute}/all`}
         >
           All Invites
         </NavLink>

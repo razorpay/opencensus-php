@@ -8,9 +8,12 @@ import CommonFilters, {
   commonValidations,
   RenderFiltersSectionProps,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper/CommonFilters';
+import { PRODUCT_TYPE, INVITE_VIEW_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 import { getFiltersList } from './filters';
 
+const productType = PRODUCT_TYPE.PG;
+const inviteView = INVITE_VIEW_TYPE.ALL;
 export interface AllInvitesFiltersType extends ListFiltersType {
   name: string;
   email: string;
@@ -54,6 +57,8 @@ const AllInvitesFiltersSection = ({
   };
   return (
     <FiltersSectionWrapper
+      productType={productType}
+      inviteView={inviteView}
       initState={initState}
       validationSchema={validationSchema}
       onSearch={onSearch}

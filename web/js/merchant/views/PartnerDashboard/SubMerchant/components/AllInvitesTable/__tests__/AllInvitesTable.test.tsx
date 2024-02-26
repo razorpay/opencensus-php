@@ -8,6 +8,15 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { allInvitesData, allInvitesDataEmpty } from './mocks/fixtures';
 import { allInvitesListSuccess, allInvitesListError, resendInviteHandler } from './mocks/handlers';
 
+jest.mock('@tanstack/react-query', () => {
+  const actualReactQuery = jest.requireActual('@tanstack/react-query');
+  return {
+    ...actualReactQuery,
+    // Disables retry for useQuery
+    useQuery: (args) => actualReactQuery.useQuery({ ...args, retry: false }),
+  };
+});
+
 const analyticsTrackWithUserInfoSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 const showNotificationsSpy = jest.spyOn(NotificationsActions, 'showNotification');
 const location = {
@@ -107,8 +116,7 @@ describe('AllInvitesTable', () => {
     expect(screen.getByText('Invite is resent successfully')).toBeInTheDocument();
   });
 
-  // todo skipping this for now because it is getting failed because of retry option of react-query.
-  test.skip('should render error notification if invites API throws an error', async () => {
+  test('should render error notification if invites API throws an error', async () => {
     server.use(allInvitesListError());
     renderApp();
     await waitFor(() => {

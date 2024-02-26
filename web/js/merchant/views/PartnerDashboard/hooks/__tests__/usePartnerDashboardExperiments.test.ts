@@ -6,7 +6,7 @@ import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hook
 
 const defaultMockUser = {
   isOrgRZP: true,
-  isPartner: (partner_type) => partner_type === 'reseller',
+  isPartner: (partner_type = 'reseller') => partner_type === 'reseller',
 };
 const userSpy = jest.spyOn(merchantStore, 'getUser');
 userSpy.mockImplementation(() => defaultMockUser);
@@ -96,6 +96,7 @@ describe('usePartnerDashboardExperiments', () => {
     }));
     mockAbExperiments = {
       partnerships_for_pos: variantOn,
+      partnerships_accounts_list_revamp: variantOn,
     };
 
     const {

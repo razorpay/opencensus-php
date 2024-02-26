@@ -1,4 +1,5 @@
 import { rest } from 'msw';
+
 import { server } from 'common/services/test/test-utils';
 import { fileUploadResponse } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 

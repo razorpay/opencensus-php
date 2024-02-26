@@ -83,14 +83,23 @@ describe('SingleInviteTab', () => {
     return { name, email };
   };
 
+  const fillFormOptionals = async () => {
+    const contact_no = '9123123123';
+    await userEvent.type(screen.getByLabelText('Contact number (optional)'), contact_no);
+    return { contact_no };
+  };
+  const fillFirstPageForm = async () => {
+    const { name, email } = await fillFormEssentials();
+    const { contact_no } = await fillFormOptionals();
+    return { name, email, contact_no };
+  };
   test('should correctly render typical partnerships invite flow', async () => {
     getHasSelectedKycAccessSpy.mockImplementation(() => true);
 
     renderApp({}, {}, { isPartnershipsInviteFlowEnabled: true });
 
-    const { name, email } = await fillFormEssentials();
-    const contact_no = '9123123123';
-    await userEvent.type(screen.getByLabelText('Contact number (optional)'), contact_no);
+    const { name, email, contact_no } = await fillFirstPageForm();
+
     await userEvent.click(screen.getByRole('button', { name: 'Send Invite' }));
 
     expect(createSubmerchantInviteSpy).toHaveBeenCalledWith({
@@ -98,8 +107,8 @@ describe('SingleInviteTab', () => {
       email,
       contact_no,
       request_kyc_access: true,
-      product: 'primary',
-      partner_id: 'K0KQSNE7BypZ5VE',
+      user: expect.objectContaining({ id: 'K0KQSNE7BypZ5VE' }),
+      productType: 'primary',
     });
     // Check that we moved to next step
     await waitFor(() => {
@@ -137,8 +146,10 @@ describe('SingleInviteTab', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(defaultProps.onInviteTabsBackClick).toHaveBeenCalled();
 
-    await fillFormEssentials();
+    const { email, contact_no } = await fillFirstPageForm();
+
     expect(trackInviteFlowFieldEditStartedSpy).toHaveBeenCalled();
+
     await userEvent.click(screen.getByRole('button', { name: 'Next' }));
 
     await userEvent.click(screen.getByRole('button', { name: 'Send Invite' }));
@@ -150,7 +161,12 @@ describe('SingleInviteTab', () => {
       ctaClicked: 'Send Invite',
       productType,
     });
-    expect(trackSubmerchantReferViaEmailSpy).toHaveBeenCalled();
+    expect(trackSubmerchantReferViaEmailSpy).toHaveBeenCalledWith({
+      contact_mobile: contact_no,
+      email,
+      productType,
+      isKycAssistedSelected: true,
+    });
 
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();

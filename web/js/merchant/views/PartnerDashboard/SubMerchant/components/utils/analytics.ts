@@ -1,33 +1,53 @@
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { ActivationStatesT } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 
-type SubmerchantPartial = {
+export interface SubmerchantPartial {
   id: string;
   name: string;
   email: string;
-  created_at: string;
-  details: { activation_status: string };
+  created_at: number | string;
+  details: { activation_status: ActivationStatesT };
   user?: { contact_mobile: string };
+}
+
+export const trackListFilterSectionCta = ({
+  productType,
+  inviteView,
+  action,
+}: {
+  productType: string;
+  action: string;
+  inviteView: string;
+}): void => {
+  return analyticsTrackWithUserInfo({
+    objectName: 'Partner Dashboard Affiliates List Filter Section Cta',
+    actionName: 'Clicked',
+    screen: window.location.pathname,
+    properties: {
+      inviteView,
+      action,
+      productType,
+    },
+  });
 };
 
 export const trackAccountLevelAcceptedInvitesCta = (
   submerchant: SubmerchantPartial,
-  { properties = {}, ...args }: { properties: Record<string, string> },
+  { productType, action }: { productType: string; action: string },
 ): void => {
   return analyticsTrackWithUserInfo({
     objectName: 'Partner Dashboard Account Level Accepted Invites Tab Action Cta',
     actionName: 'Clicked',
     screen: window.location.pathname,
-    ...args,
     properties: {
       accountId: submerchant.id,
       accountName: submerchant.name,
-      activationStatus: submerchant.details.activation_status,
-      productType: PRODUCT_TYPE.PG,
+      activationStatus: submerchant.details?.activation_status,
       contactEmail: submerchant.email,
       contactMobile: submerchant.user?.contact_mobile,
       inviteAcceptedON: submerchant.created_at,
-      ...properties,
+      productType,
+      action,
     },
   });
 };

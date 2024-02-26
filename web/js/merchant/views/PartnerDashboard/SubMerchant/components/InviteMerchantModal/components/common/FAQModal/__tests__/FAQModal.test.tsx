@@ -1,8 +1,8 @@
 import React from 'react';
-import FAQModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/common/FAQModal';
-import * as analytics from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
 
+import FAQModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/common/FAQModal';
 import { titlesForTracking } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/common/FAQModal/FAQContent';
+import * as analytics from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { render, screen, userEvent } from 'test-utils';
 

@@ -9,9 +9,12 @@ import CommonFilters, {
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper/CommonFilters';
 import ExportButton from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper/ExportButton';
 import { AcceptedInvitesFiltersType } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/api';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_TYPE, INVITE_VIEW_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 import { getFiltersList } from './filters';
+
+const productType = PRODUCT_TYPE.PG;
+const inviteView = INVITE_VIEW_TYPE.ACCEPTED;
 
 const initState: AcceptedInvitesFiltersType = {
   activation_status: '',
@@ -43,7 +46,6 @@ const AcceptedInvitesFiltersSection = ({
       skip: 0,
       count: initState.count,
     });
-    // trackClearAnalytics
     refetch();
   };
   const onSearch = (formData) => {
@@ -53,13 +55,14 @@ const AcceptedInvitesFiltersSection = ({
         count: Number(formData.count),
       });
     }
-    // trackSearchAnalytics
     refetch();
   };
   return (
-    <Box display="flex" flexDirection="row" gap="spacing.10" justifyContent="center">
+    <Box display="flex" flexDirection="row" gap="spacing.10" justifyContent="space-between">
       <Box>
         <FiltersSectionWrapper
+          productType={productType}
+          inviteView={inviteView}
           initState={initState}
           validationSchema={validationSchema}
           onSearch={onSearch}
@@ -75,7 +78,7 @@ const AcceptedInvitesFiltersSection = ({
         marginRight="spacing.1"
         marginLeft="spacing.2"
       >
-        <ExportButton productType={PRODUCT_TYPE.PG} />
+        <ExportButton productType={productType} />
       </Box>
     </Box>
   );

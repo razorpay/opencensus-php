@@ -1,8 +1,15 @@
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { INVITE_TAB_TYPES } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs/constants';
+import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 const { SINGLE_INVITE, BULK_UPLOAD, PUBLIC_LINK } = INVITE_TAB_TYPES;
 
-export const trackInviteFlowModalLoaded = ({ activeTabId, productType }) =>
+export const trackInviteFlowModalLoaded = ({
+  activeTabId,
+  productType,
+}: {
+  activeTabId: string;
+  productType: string;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'Partner Invite Flow Modal',
     actionName: 'Loaded',
@@ -13,7 +20,15 @@ export const trackInviteFlowModalLoaded = ({ activeTabId, productType }) =>
     },
   });
 
-export const trackEmailFlowCTAClicked = ({ ctaClicked, productType, message = '' }) =>
+export const trackEmailFlowCTAClicked = ({
+  ctaClicked,
+  productType,
+  message = '',
+}: {
+  ctaClicked: string;
+  productType: string;
+  message?: string;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'Partner Invite Email Flow CTA',
     actionName: 'Clicked',
@@ -25,7 +40,15 @@ export const trackEmailFlowCTAClicked = ({ ctaClicked, productType, message = ''
     },
   });
 
-export const trackBulkFlowCTAClicked = ({ ctaClicked, productType, message = '' }) =>
+export const trackBulkFlowCTAClicked = ({
+  ctaClicked,
+  productType,
+  message = '',
+}: {
+  ctaClicked: string;
+  productType: string;
+  message?: string;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'Partner Invite Bulk Upload Flow CTA',
     actionName: 'Clicked',
@@ -37,7 +60,15 @@ export const trackBulkFlowCTAClicked = ({ ctaClicked, productType, message = '' 
     },
   });
 
-export const trackPublicLinkFlowCTAClicked = ({ ctaClicked, productType, message = '' }) =>
+export const trackPublicLinkFlowCTAClicked = ({
+  ctaClicked,
+  productType,
+  message = '',
+}: {
+  ctaClicked: string;
+  productType: string;
+  message?: string;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'Partner Invite Public Flow CTA',
     actionName: 'Clicked',
@@ -53,7 +84,12 @@ export const trackInviteFlowCommonCtaClicked = ({
   ctaClicked,
   productType,
   message = '',
-}) => {
+}: {
+  inviteFlow: string;
+  ctaClicked: string;
+  productType: string;
+  message?: string;
+}): void => {
   switch (inviteFlow) {
     case SINGLE_INVITE:
     default:
@@ -69,7 +105,12 @@ export const trackInviteFlowFieldEditStarted = ({
   productType,
   fieldEdited,
   screen = 'Invite Merchant Modal',
-}) =>
+}: {
+  inviteFlow: string;
+  productType: string;
+  fieldEdited: string;
+  screen?: string;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'Partner Invite Flow Field Edited',
     actionName: 'Started',
@@ -87,7 +128,13 @@ export const trackInviteFlowValidationError = ({
   errorMessage,
   productType,
   screen = 'Invite Merchant Modal',
-}) =>
+}: {
+  inviteFlow: string;
+  productType: string;
+  errorMessage: string | TODO_PD;
+  fieldEdited: string;
+  screen?: string;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'Partner Invite Form Field Validation',
     actionName: 'Error',
@@ -105,7 +152,12 @@ export const trackInviteFlowGenericError = ({
   errorMessage,
   productType,
   screen = 'Invite Merchant Modal',
-}) =>
+}: {
+  inviteFlow: string;
+  productType: string;
+  errorMessage: string | TODO_PD;
+  screen?: string;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'Partner Invite Form Field Generic',
     actionName: 'Error',
@@ -122,7 +174,12 @@ export const trackInviteFlowSuccessfulInvite = ({
   productType,
   screen = 'Invite Merchant Modal',
   isKycAssistedSelected,
-}) =>
+}: {
+  inviteFlow: string;
+  productType: string;
+  isKycAssistedSelected: boolean | null;
+  screen?: string;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'Partner Invite Flow Successful Invite',
     actionName: 'Sent',
@@ -139,7 +196,12 @@ export const trackCopyLinkClicked = ({
   productType,
   screen = 'Invite Merchant Modal',
   isKycAssistedSelected,
-}) =>
+}: {
+  inviteFlow: string;
+  productType: string;
+  isKycAssistedSelected: boolean | null;
+  screen?: string;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'Copy Referal Link',
     actionName: 'Clicked',
@@ -156,7 +218,13 @@ export const trackSocialShareLinkClicked = ({
   socialMedia,
   screen = 'Invite Merchant Modal',
   isKycAssistedSelected,
-}) =>
+}: {
+  inviteFlow: string;
+  productType: string;
+  socialMedia: string;
+  screen?: string;
+  isKycAssistedSelected: boolean | null;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'Social Share Referral Link',
     actionName: 'Clicked',
@@ -169,7 +237,17 @@ export const trackSocialShareLinkClicked = ({
     },
   });
 
-export const trackInviteFlowOptOutForm = ({ inviteFlow, productType, radioValue, customReason }) =>
+export const trackInviteFlowOptOutForm = ({
+  inviteFlow,
+  productType,
+  radioValue,
+  customReason,
+}: {
+  inviteFlow: string;
+  productType: string;
+  radioValue: string;
+  customReason: string;
+}): void =>
   analyticsTrackWithUserInfo({
     objectName: 'KYC Access Opt Out Form',
     actionName: 'Submitted',
@@ -185,11 +263,13 @@ export const trackInviteFlowOptOutForm = ({ inviteFlow, productType, radioValue,
 export const trackSubmerchantReferViaEmail = ({
   contact_mobile,
   email,
+  productType,
   isKycAssistedSelected = false,
 }: {
   contact_mobile: string;
   email: string;
-  isKycAssistedSelected: boolean;
+  productType: string;
+  isKycAssistedSelected?: boolean;
 }): void => {
   return analyticsTrackWithUserInfo({
     objectName: 'Partner Submerchant Refer Via Email',
@@ -199,6 +279,7 @@ export const trackSubmerchantReferViaEmail = ({
       contactEmail: email,
       contactMobile: contact_mobile,
       isKycAssistedSelected,
+      productType,
     },
   });
 };
@@ -206,9 +287,11 @@ export const trackSubmerchantReferViaEmail = ({
 export const trackSubmerchantReferViaBulkUpload = ({
   bulkContactsCount,
   isKycAssistedSelected = false,
+  productType,
 }: {
   bulkContactsCount: number;
-  isKycAssistedSelected: boolean;
+  isKycAssistedSelected?: boolean;
+  productType: string;
 }): void => {
   return analyticsTrackWithUserInfo({
     objectName: 'Partner Submerchant Refer Via Bulk Upload',
@@ -217,6 +300,7 @@ export const trackSubmerchantReferViaBulkUpload = ({
     properties: {
       contactsCount: bulkContactsCount,
       isKycAssistedSelected,
+      productType,
     },
   });
 };

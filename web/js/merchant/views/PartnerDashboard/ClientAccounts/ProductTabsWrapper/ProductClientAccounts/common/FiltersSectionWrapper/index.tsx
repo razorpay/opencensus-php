@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { User, YupObjectSchema } from 'common/typings';
 import { encodeSensitiveFields, stringifyQueryParams } from 'common/utils/rzp-utils';
 import { Org } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
+import { trackListFilterSectionCta } from 'merchant/views/PartnerDashboard/SubMerchant/components/utils/analytics';
 import { PartnerDashboardExperiments } from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 
 import { ListFilterConfig } from './CommonFilters';
@@ -27,8 +28,10 @@ export type GetFiltersType<PickT extends keyof GetFiltersArgs> = (
 export type GetFiltersTypeNoArgs = () => Array<ListFilterConfig>;
 
 interface ListFilterWrapperProps {
+  productType: string;
   children: ReactNode;
   initState: ListFiltersType;
+  inviteView: string;
   onReset: () => void;
   onSearch: (formData: Record<string, string>) => void;
   validationSchema: YupObjectSchema;
@@ -39,8 +42,10 @@ interface ListFilterWrapperProps {
 const FiltersSectionWrapper = ({
   children,
   initState,
+  inviteView,
   onReset,
   onSearch,
+  productType,
   validationSchema,
 }: ListFilterWrapperProps): JSX.Element => {
   const location = useLocation();
@@ -84,10 +89,14 @@ const FiltersSectionWrapper = ({
       search: stringifyQueryParams({}),
       hash: location.hash,
     });
+    trackListFilterSectionCta({ productType, inviteView, action: 'Clear' });
     formik.resetForm();
     onReset();
   };
-
+  const onSearchClick = () => {
+    trackListFilterSectionCta({ productType, inviteView, action: 'Search' });
+    formik.handleSubmit();
+  };
   return (
     <FilterContainer>
       <ListFiltersContext.Provider value={{ handleChange, formik }}>
@@ -95,11 +104,7 @@ const FiltersSectionWrapper = ({
       </ListFiltersContext.Provider>
       {/* TODO v2: use DEFAULT_MAX_FILTER_COUNT_MOBILE to hide filters in more section */}
       <ButtonContainer>
-        <Button
-          variant="secondary"
-          isDisabled={!isEmpty(formik.errors)}
-          onClick={() => formik.handleSubmit()}
-        >
+        <Button variant="secondary" isDisabled={!isEmpty(formik.errors)} onClick={onSearchClick}>
           Search
         </Button>
         <Button variant="tertiary" marginLeft="spacing.4" onClick={handleReset}>

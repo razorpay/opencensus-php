@@ -25,7 +25,9 @@ const InvitedByFilter = ({
   value,
 }: InvitedByFilterProps): JSX.Element => {
   const invitedByFilterMenu = [{ id: user.user?.id as string, name: 'Self' }].concat(
-    posAgents.filter((agent) => agent.id !== user.user?.id),
+    posAgents
+      .filter((agent) => agent.id !== user.user?.id)
+      .map(({ id, name, email }) => ({ id, name: name || email || id })),
   );
   return (
     <Dropdown selectionType="single">

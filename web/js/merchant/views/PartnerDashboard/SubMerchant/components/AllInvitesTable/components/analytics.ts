@@ -1,6 +1,6 @@
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
-export const trackAllInvitesCta = ({
+export const trackAccountLevelAllInvitesCta = ({
   name,
   email,
   contact_no,

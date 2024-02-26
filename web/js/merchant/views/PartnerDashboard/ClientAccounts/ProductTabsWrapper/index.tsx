@@ -95,7 +95,9 @@ const ClientProductsWrapper = ({
   };
 
   return (
-    <ProductActionsContext.Provider value={{ handleAddMerchant, handleShareReferralLink }}>
+    <ProductActionsContext.Provider
+      value={{ handleAddMerchant, handleShareReferralLink, isInviteMerchantModalOpen }}
+    >
       <ProductWrapper
         tabsData={tabsData}
         extra={

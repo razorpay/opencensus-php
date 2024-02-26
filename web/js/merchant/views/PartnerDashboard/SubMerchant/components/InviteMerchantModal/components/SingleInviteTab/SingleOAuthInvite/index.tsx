@@ -7,7 +7,10 @@ import * as Yup from 'yup';
 
 import { FormikHandleChange, ShowNotificationType, User } from 'common/typings';
 import { OAuthAppDetailsType, Org } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
-import { createSubmerchantInvite } from 'merchant/views/PartnerDashboard/SubMerchant/api';
+import {
+  CommonCreateSubmerchantResponse,
+  createSubmerchantInvite,
+} from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { INVITE_TAB_TYPES } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs/constants';
 import {
   trackEmailFlowCTAClicked,
@@ -94,9 +97,10 @@ const SingleOAuthInvite = ({
       email,
       contact_mobile: contact_no,
       isKycAssistedSelected: false,
+      productType,
     });
     setIsSendingInvite(true);
-    const handleErrorResponse = ({ errors = [] }) => {
+    const handleErrorResponse = ({ errors = [] }: CommonCreateSubmerchantResponse) => {
       setIsSendingInvite(false);
       showNotification({
         type: 'error',
@@ -112,8 +116,8 @@ const SingleOAuthInvite = ({
 
     createSubmerchantInvite({
       ...params,
-      product: productType,
-      partner_id: user.id,
+      productType,
+      user,
       metadata: {
         application_id: selectedApp.application_id,
         client_id: selectedApp.client_id,

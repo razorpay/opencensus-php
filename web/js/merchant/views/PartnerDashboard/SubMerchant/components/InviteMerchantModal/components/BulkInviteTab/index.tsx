@@ -5,8 +5,9 @@ import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 import * as Yup from 'yup';
 
-import { CommonApiResponse, FormikHandleChange, ShowNotificationType } from 'common/typings';
+import { FormikHandleChange, ShowNotificationType } from 'common/typings';
 import { createPartnerSubmerchantReferralInvitesBatch } from 'merchant/reducers/batches';
+import { CreateReferralInvitesBatchType } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { INVITE_TAB_TYPES } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs/constants';
 import SuccessScreenOptIn from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SuccessScreenOptIn';
 import SuccessScreenOptOut from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SuccessScreenOptOut';
@@ -49,10 +50,7 @@ type BulkInviteTabProps = {
   onDismiss: () => void;
   onAddSuccess?: () => void;
   showNotification: ShowNotificationType;
-  createPartnerSubmerchantReferralInvitesBatch: (args: {
-    file_id: string;
-    config: { product: string; request_kyc_access: boolean | null };
-  }) => Promise<CommonApiResponse<{ status: boolean }, string[]>>;
+  createPartnerSubmerchantReferralInvitesBatch: CreateReferralInvitesBatchType;
 };
 const BulkInviteTab = ({
   productType,
@@ -85,6 +83,7 @@ const BulkInviteTab = ({
     trackSubmerchantReferViaBulkUpload({
       bulkContactsCount,
       isKycAssistedSelected: request_kyc_access,
+      productType,
     });
     return createPartnerSubmerchantReferralInvitesBatch({
       file_id,

@@ -3,9 +3,13 @@ import React from 'react';
 import { render, screen } from 'common/services/test/test-utils';
 import { KycHistoryTimeline } from 'merchant/views/PartnerDashboard/SubMerchant/POS/Components/KycHistoryTimeline';
 import {
-  actionStateType,
-  clarificationReasonsType,
+  parsedActionStatesType,
+  parsedClarificationReasonsType,
 } from 'merchant/views/PartnerDashboard/SubMerchant/POS/TypeDeclares';
+import {
+  parseActionStates,
+  parseClarificationReasons,
+} from 'merchant/views/PartnerDashboard/SubMerchant/POS/utils';
 
 import {
   actionStateResponse,
@@ -18,8 +22,8 @@ const {
 } = posSubmerchantDetailsResponse;
 describe('KycHistoryTimeline', () => {
   const renderApp = (
-    actionStateResponse: actionStateType | undefined,
-    clarificationReasons: clarificationReasonsType | undefined,
+    actionStateResponse: parsedActionStatesType | undefined,
+    clarificationReasons: parsedClarificationReasonsType | undefined,
   ) => {
     return render(
       <KycHistoryTimeline
@@ -29,7 +33,10 @@ describe('KycHistoryTimeline', () => {
     );
   };
   test('should render the timeline', () => {
-    renderApp(actionStateResponse, details.kyc_clarification_reasons.clarification_reasons_v2);
+    renderApp(
+      parseActionStates(actionStateResponse),
+      parseClarificationReasons(details.kyc_clarification_reasons.clarification_reasons_v2),
+    );
     expect(screen.getByText('Submitted')).toBeInTheDocument();
     expect(screen.getAllByText('Needs Clarification')).toHaveLength(2);
     expect(screen.getByText('aadhar_front: illegible_doc')).toBeInTheDocument();
@@ -40,8 +47,8 @@ describe('KycHistoryTimeline', () => {
 
   test('should render rejected status', () => {
     renderApp(
-      actionStateResponseWithRejected,
-      details.kyc_clarification_reasons.clarification_reasons_v2,
+      parseActionStates(actionStateResponseWithRejected),
+      parseClarificationReasons(details.kyc_clarification_reasons.clarification_reasons_v2),
     );
     expect(screen.getByText('Submitted')).toBeInTheDocument();
     expect(screen.getByText('Rejected')).toBeInTheDocument();

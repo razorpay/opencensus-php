@@ -30,7 +30,6 @@ const AcceptedInvitesTable = ({ user }: AcceptedInvitesTableProps): JSX.Element 
 
   const parseDataOnSuccess = (data) => {
     const parsedData = data.data?.items || [];
-
     if (!isFilterSearchUsed) setIsAcceptedInvitesEmpty(parsedData.length === 0);
     return parsedData;
   };

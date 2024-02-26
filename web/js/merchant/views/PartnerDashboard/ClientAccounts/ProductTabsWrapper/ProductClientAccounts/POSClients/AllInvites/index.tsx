@@ -7,6 +7,7 @@ import { bindActionCreators } from 'redux';
 import { ShowNotificationType, User } from 'common/typings';
 import DataTableWrapper from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/DataTableWrapper';
 import { SpinnerContainer } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/styles';
+import useProductActions from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/hooks/useProductActions';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -18,7 +19,6 @@ import {
   FetchInviteResponse,
   fetchPartnerAgentUsers,
   getPosAgentsMap,
-  POSAgents,
 } from './api';
 import { customColumnsGetter } from './columns';
 
@@ -28,7 +28,7 @@ type AllInvitesTableProps = {
 };
 const spinnerTestId = 'pos-all-invites-spinner';
 const AllInvitesTable = ({ user, showNotification }: AllInvitesTableProps): JSX.Element => {
-  const { isFetching, data: partnerAgentsData } = useQuery({
+  const { isFetching, data: posAgents } = useQuery({
     queryKey: ['partner-agent-users'],
     queryFn: () => fetchPartnerAgentUsers(),
     refetchOnWindowFocus: false,
@@ -39,11 +39,9 @@ const AllInvitesTable = ({ user, showNotification }: AllInvitesTableProps): JSX.
       });
     },
   });
+  const { shouldRefetchTrigger } = useProductActions();
 
-  const posAgentsMap = useMemo(
-    () => getPosAgentsMap(user, partnerAgentsData),
-    [user, partnerAgentsData],
-  );
+  const posAgentsMap = useMemo(() => getPosAgentsMap(user, posAgents), [user, posAgents]);
 
   if (isFetching) {
     return (
@@ -54,7 +52,6 @@ const AllInvitesTable = ({ user, showNotification }: AllInvitesTableProps): JSX.
   }
 
   const getColumns = customColumnsGetter({ posAgentsMap });
-  const posAgents = (partnerAgentsData?.data?.users || []) as POSAgents;
 
   const paginationQueryFn = (paginationState, decodedParams) =>
     fetchInvites(
@@ -71,12 +68,12 @@ const AllInvitesTable = ({ user, showNotification }: AllInvitesTableProps): JSX.
     <DataTableWrapper<POSSubmerchantInviteItem, FetchInviteResponse>
       getColumns={getColumns}
       paginationQueryFn={paginationQueryFn}
-      queryKey="filter-pos-all-invites"
+      queryKey={`filter-pos-all-invites-${shouldRefetchTrigger}`}
       parseDataOnSuccess={parseDataOnSuccess}
       renderFiltersSection={({ paginationState, setPagination, refetch }) => (
         <FiltersSection
           refetch={refetch}
-          posAgents={posAgents}
+          posAgents={posAgents || []}
           paginationState={paginationState}
           setPagination={setPagination}
           user={user}

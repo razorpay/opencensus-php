@@ -3,10 +3,10 @@ import ButtonTrans from '@razorpay/blade-old/src/atoms/Button';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 import DefaultImg from 'assets/partner-dashboard/req-by-email-1.png';
 import WaitingApprovalImg from 'assets/partner-dashboard/waiting-approval.png';
-import { withRouter } from 'common/deprecated/withRouter';
 import { AsyncBtn } from 'common/new-ui/Button';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import Image from 'common/ui/Image';
@@ -23,15 +23,18 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { trackAccountLevelAcceptedInvitesCta } from './utils/analytics';
 
+// Note: this component is PG specific only.
+const productType = PRODUCT_TYPE.PG;
+
 const DetailsAction = ({
   activation_status = null,
   kyc_access = null,
   submerchant,
   isSubMerchantKYCAccess,
-  history,
   user,
   ...props
 }) => {
+  const navigate = useNavigate();
   const { isPartnershipsInviteFlowEnabled } = usePartnerDashboardExperiments();
   const submerchantId = submerchant.id.replace('acc_', '');
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -59,11 +62,9 @@ const DetailsAction = ({
 
       // Note: product type is PG as parent conditionally renders it only for PG.
       if (isPartnershipsInviteFlowEnabled) {
-        trackAccountLevelAcceptedInvitesCta(submerchant, {
-          properties: { action: btnText },
-        });
+        trackAccountLevelAcceptedInvitesCta(submerchant, { productType, action: btnText });
       }
-      openKYCFormUtil(isMWeb, history, submerchant, props.showNotification).then(() => {
+      openKYCFormUtil(isMWeb, navigate, submerchant, props.showNotification).then(() => {
         setIsActionLoading(false);
       });
     }
@@ -76,9 +77,7 @@ const DetailsAction = ({
       });
 
       if (isPartnershipsInviteFlowEnabled) {
-        trackAccountLevelAcceptedInvitesCta(submerchant, {
-          properties: { action: btnText },
-        });
+        trackAccountLevelAcceptedInvitesCta(submerchant, { productType, action: btnText });
       }
 
       await merchantFetch({
@@ -167,6 +166,7 @@ const DetailsAction = ({
         <div className="submerchant-details-action request-access-kyc">
           <div className="icon-container">
             <div className="icon">
+              {/* eslint-disable i18n-rules/no-region-specific-image */}
               <img src="/dist/css/assets/partner-dashboard/razorpay-circle.svg" />
             </div>
           </div>
@@ -175,6 +175,7 @@ const DetailsAction = ({
             <br />
             <p className="description">{description}</p>
             <div className={`${image === WaitingApprovalImg ? 'waiting-approval' : 'default-img'}`}>
+              {/* eslint-disable i18n-rules/no-region-specific-image */}
               <Image src={image} isWebP />
             </div>
             {!isHidden && (
@@ -192,6 +193,7 @@ const DetailsAction = ({
         <div className="submerchant-details-action ">
           <div className="icon-container">
             <div className="icon">
+              {/* eslint-disable i18n-rules/no-region-specific-image */}
               <img src="/dist/css/assets/partner-dashboard/document-circle.svg" />
             </div>
           </div>
@@ -222,6 +224,7 @@ const DetailsAction = ({
         <div className="submerchant-details-action ">
           <div className="icon-container">
             <div className="icon">
+              {/* eslint-disable i18n-rules/no-region-specific-image */}
               <img src="/dist/css/assets/partner-dashboard/rupee-circle.svg" />
             </div>
           </div>
@@ -250,7 +253,7 @@ DetailsAction.propTypes = {
 
 const mapStateToProps = (state) => ({ user: state.session.user });
 
-const getDispatchToProps = (productType = PRODUCT_TYPE.PG) => {
+const getDispatchToProps = () => {
   return {
     fetchSubmerchants: (params) => {
       return fetchSubmerchants({
@@ -262,4 +265,4 @@ const getDispatchToProps = (productType = PRODUCT_TYPE.PG) => {
   };
 };
 
-export default connect(mapStateToProps, getDispatchToProps())(withRouter(DetailsAction));
+export default connect(mapStateToProps, getDispatchToProps())(DetailsAction);

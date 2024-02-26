@@ -1,4 +1,5 @@
-import type { History } from 'history';
+import { NavigateFunction } from 'react-router-dom';
+
 import { merchantFetch } from 'merchant/utils/ajax';
 import { ShowNotificationT } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 
@@ -34,7 +35,7 @@ export const checkIsEasyEnabledForSubmerchant = async (
 
 export const openKYCFormUtil = async (
   isMWeb: boolean,
-  history: History,
+  navigate: NavigateFunction,
   submerchant: SubmerchantPartial,
   showNotification: ShowNotificationT,
 ): Promise<void> => {
@@ -48,8 +49,8 @@ export const openKYCFormUtil = async (
     // Note: this will maintain only one open tab.
     window.open(easyOnboardingUrl, 'submerchant_onboarding_via_easy');
   } else if (isMWeb) {
-    history.push(`/partners/submerchants/onboarding/${submerchant.id}/steps`);
+    navigate(`/partners/submerchants/onboarding/${submerchant.id}/steps`);
   } else {
-    history.push(`/partners/submerchants/${submerchant.id}/activation`);
+    navigate(`/partners/submerchants/${submerchant.id}/activation`);
   }
 };

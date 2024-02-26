@@ -2,6 +2,7 @@ import { CommonApiResponse, PaginationParamsType } from 'common/typings';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { ListFiltersType } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper';
 import { ActivationStatesT } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
+import { SubmerchantPartial } from 'merchant/views/PartnerDashboard/SubMerchant/components/utils/analytics';
 
 export interface AcceptedInvitesFiltersType extends ListFiltersType {
   activation_status?: string;
@@ -14,7 +15,7 @@ export interface AcceptedInvitesFiltersType extends ListFiltersType {
   name: string;
 }
 
-export interface PGAcceptedInviteItem {
+export interface PGAcceptedInviteItem extends SubmerchantPartial {
   activated?: boolean;
   contact_mobile: string;
   created_at: number | string;
@@ -23,11 +24,6 @@ export interface PGAcceptedInviteItem {
   id: string;
   name: string;
   updated_at: number | string;
-  kyc_access: {
-    state: string;
-    rejection_count: number;
-    token_expiry: number;
-  };
   details: {
     activation_status: ActivationStatesT;
   };
@@ -35,6 +31,11 @@ export interface PGAcceptedInviteItem {
     email?: string;
     id: string;
     contact_mobile: string;
+  };
+  kyc_access?: null | {
+    state: string;
+    rejection_count: number;
+    token_expiry: number;
   };
 }
 

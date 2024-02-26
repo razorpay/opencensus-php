@@ -9,8 +9,12 @@ import CommonFilters, {
   commonValidations,
   RenderFiltersSectionProps,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper/CommonFilters';
+import { PRODUCT_TYPE, INVITE_VIEW_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 import { customFiltersGetter } from './filters';
+
+const productType = PRODUCT_TYPE.POS;
+const inviteView = INVITE_VIEW_TYPE.ALL;
 
 export interface AllInvitesFiltersType extends ListFiltersType {
   name: string;
@@ -64,6 +68,8 @@ const AllInvitesFiltersSection = ({
   const getFiltersList = customFiltersGetter({ posAgents });
   return (
     <FiltersSectionWrapper
+      productType={productType}
+      inviteView={inviteView}
       initState={initState}
       validationSchema={validationSchema}
       onSearch={onSearch}

@@ -7,10 +7,7 @@ import {
   emptyAccountsListResponse,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/fixtures';
 import { acceptedInvitesListHandler } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/once-handlers';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { render, screen, server, waitFor, waitForLoadingToFinishByLabel } from 'test-utils';
-
-const productType = PRODUCT_TYPE.X;
 
 const defaultPartnerDashboardExperiments = {};
 let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
@@ -58,7 +55,7 @@ describe('RazorpayXClients', () => {
     jest.clearAllMocks();
     mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
-  test(`should render the list once the data is fetched and is not empty for ${productType}`, async () => {
+  test(`should render the list once the data is fetched and is not empty for RazorpayX`, async () => {
     renderApp();
     await waitForLoadingToFinishByLabel();
     await waitFor(() => {
@@ -81,7 +78,7 @@ describe('RazorpayXClients', () => {
     expect(screen.getByText(items[1].email)).toBeInTheDocument();
   });
 
-  test(`should render the empty screen once the data is fetched and is empty for ${productType}`, async () => {
+  test(`should render the empty screen once the data is fetched and is empty for RazorpayX`, async () => {
     server.use(acceptedInvitesListHandler(emptyAccountsListResponse));
     renderApp();
     // Wait for data table spinner

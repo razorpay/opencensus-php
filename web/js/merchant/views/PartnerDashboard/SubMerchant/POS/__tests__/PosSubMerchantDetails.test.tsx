@@ -33,7 +33,7 @@ describe('PosSubmerchantDetails', () => {
     expect(orderDetailsLink).toBeInTheDocument();
     expect(orderDetailsLink).toHaveAttribute(
       'href',
-      `/partners/submerchants/pos/${data.data.id}/orders`,
+      `/app/partners/submerchants/pos/${data.data.id}/orders`,
     );
     expect(orderDetailsLink).toHaveAttribute('target', '_blank');
   });

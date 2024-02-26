@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
-import { CommonApiResponse, ShowNotificationType } from 'common/typings';
+import { ShowNotificationType } from 'common/typings';
 import {
   validatePartnerSubmerchantBatch,
   createPartnerSubmerchantBatch,
 } from 'merchant/reducers/batches';
+import {
+  CommonSubmerchantBatchResponse,
+  CreateSubmerchantsBatchType,
+  ValidateSubmerchantsBatchType,
+} from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -18,11 +23,8 @@ export type BulkAddMerchantXProps = {
   onDismiss: () => void;
   onAddSuccess?: () => void;
   showNotification: ShowNotificationType;
-  createPartnerSubmerchantBatch: (args: {
-    file_id: string;
-    config: { product: string };
-  }) => Promise<CommonApiResponse<{ status: boolean }, string[]>>;
-  validatePartnerSubmerchantBatch: () => Promise<CommonApiResponse<{ status: boolean }, string[]>>;
+  createPartnerSubmerchantBatch: CreateSubmerchantsBatchType;
+  validatePartnerSubmerchantBatch: ValidateSubmerchantsBatchType;
 };
 const BulkAddMerchantX = ({
   onInviteTabsBackClick,
@@ -42,7 +44,7 @@ const BulkAddMerchantX = ({
     // trackAddNewMerchantEvents('Add Multiple - Invite Contacts');
     // gaEvents.trackUploadBatch('Partner submerchant');
     setIsSendingInvites(true);
-    const handleErrorResponse = ({ errors }) => {
+    const handleErrorResponse = ({ errors }: CommonSubmerchantBatchResponse) => {
       setIsSendingInvites(false);
       showNotification({
         type: 'error',

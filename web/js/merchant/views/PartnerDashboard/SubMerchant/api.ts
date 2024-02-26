@@ -1,14 +1,86 @@
-import { CommonApiResponse } from 'common/typings';
-import { merchantFetch } from 'merchant/utils/ajax';
+import pickBy from 'lodash/pickBy';
 
-export const createSubmerchantInvite = (params) => {
+import { CommonApiResponse, User } from 'common/typings';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+
+interface CreateSubmerchantInvitePayload {
+  contact_no: string;
+  name: string;
+  email: string;
+  request_kyc_access?: boolean | null;
+  partner_id: string;
+  inviter_user_id?: string;
+  inviter_email?: string;
+  product: string;
+  metadata?: {
+    application_id: string;
+    client_id: string;
+    oauth_referral: boolean;
+    redirect_uri: string;
+    scope: string;
+  };
+}
+type createSubmerchantInviteArgs = {
+  user: User;
+  productType: string;
+} & Pick<
+  CreateSubmerchantInvitePayload,
+  'name' | 'email' | 'contact_no' | 'request_kyc_access' | 'metadata'
+>;
+export type CommonCreateSubmerchantResponse = CommonApiResponse<{ success: boolean }, string[]>;
+export const createSubmerchantInvite = ({
+  user,
+  productType,
+  name,
+  email,
+  contact_no,
+  request_kyc_access,
+  metadata,
+}: createSubmerchantInviteArgs): Promise<CommonCreateSubmerchantResponse> => {
+  const partner_id = user.id as string;
+
+  let invite: Partial<CreateSubmerchantInvitePayload> = {
+    name,
+    email,
+    contact_no,
+    partner_id,
+    product: productType,
+    request_kyc_access,
+    metadata,
+  };
+  // additional payload for POS Partner or POS Agent
+  if (productType === PRODUCT_TYPE.POS) {
+    invite = {
+      ...invite,
+      inviter_user_id: user.user?.id,
+      inviter_email: user.user?.email,
+    };
+  }
+  // removed undefined keys
+  invite = pickBy(invite, (v) => v !== undefined);
+
   return merchantFetch({
     url: 'partnerships/twirp/rzp.commissions.invites.v1.InviteAPI/Create',
     mode: 'live',
     method: 'post',
-    data: { invite: params },
+    data: { invite },
   });
 };
+
+export type CommonSubmerchantBatchResponse = CommonApiResponse<{ status: boolean }, string[]>;
+
+export type ValidateReferralInvitesBatchType = () => Promise<CommonSubmerchantBatchResponse>;
+export type CreateReferralInvitesBatchType = (args: {
+  file_id: string;
+  config: Pick<CreateSubmerchantInvitePayload, 'product' | 'metadata' | 'request_kyc_access'>;
+}) => Promise<CommonSubmerchantBatchResponse>;
+
+export type ValidateSubmerchantsBatchType = () => Promise<CommonSubmerchantBatchResponse>;
+export type CreateSubmerchantsBatchType = (args: {
+  file_id: string;
+  config: { product: string };
+}) => Promise<CommonSubmerchantBatchResponse>;
 
 type FetchBureauLinkResponse = CommonApiResponse<{
   bureau_link: string;

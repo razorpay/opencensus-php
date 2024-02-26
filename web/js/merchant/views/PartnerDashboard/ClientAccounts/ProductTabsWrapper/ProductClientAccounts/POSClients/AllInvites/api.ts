@@ -16,37 +16,34 @@ export interface POSSubmerchantInviteItem extends SubmerchantInviteItem {
 
 export type PartnerAgentUser = {
   id: string;
-  name: string;
+  name?: string;
+  email?: string;
+  role: string;
 };
 export type POSAgents = Array<PartnerAgentUser>;
-export type POSAgentsMap = Record<string, PartnerAgentUser & { inviterName: string }>;
-export const getPosAgentsMap = (
-  user: User,
-  partnerAgentsData?: FetchPartnerAgentUsersResponse,
-): POSAgentsMap => {
+export type POSAgentsMap = Record<string, PartnerAgentUser & { inviterName?: string }>;
+export const getPosAgentsMap = (user: User, posAgents?: POSAgents): POSAgentsMap => {
   const posAgentsMap = {} as POSAgentsMap;
   if (user.user) {
     const sessionUser = user.user;
-    posAgentsMap[sessionUser.id] = { inviterName: 'Self', ...sessionUser };
+    const role = user.role as string;
+    posAgentsMap[sessionUser.id] = { inviterName: 'Self', role, ...sessionUser };
   }
-  partnerAgentsData?.data?.users.forEach((agent) => {
+  posAgents?.forEach((agent) => {
     posAgentsMap[agent.id] = { inviterName: agent.name, ...agent };
   });
   return posAgentsMap;
 };
-export type FetchPartnerAgentUsersResponse = CommonApiResponse<{
-  role_id: string;
-  role_name: string | null;
-  merchant_id: string;
-  users: Array<PartnerAgentUser>;
-}>;
-export const fetchPartnerAgentUsers = (): Promise<FetchPartnerAgentUsersResponse> => {
-  return merchantFetch({
+
+const ROLES_TO_DISPLAY = ['owner', 'partner_agent'];
+export type FetchPartnerAgentUsersResponse = CommonApiResponse<POSAgents>;
+export const fetchPartnerAgentUsers = async (): Promise<POSAgents> => {
+  const merchantUsersData: FetchPartnerAgentUsersResponse = await merchantFetch({
     url: 'merchants-users',
     method: 'get',
     mode: 'live',
-    data: {
-      role: 'partner_agent',
-    },
+    data: {},
   });
+  // parse the users data for owners/agents
+  return (merchantUsersData.data || [])?.filter((agent) => ROLES_TO_DISPLAY.includes(agent.role));
 };

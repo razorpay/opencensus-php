@@ -2,17 +2,17 @@ import React from 'react';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
 import BulkOAuthInvite from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkOAuthInvite';
-import * as analytics from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { render, screen, userEvent, waitFor } from 'test-utils';
+import { MockBatchValidate } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/__tests__/mocks/fixtures';
 import {
   useCreateBatchSuccessHandler,
   useCreateBatchErrorHandler,
   useValidateBatchSuccessHandler,
   useValidateBatchErrorHandler,
 } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/__tests__/mocks/once-handlers';
-import { MockBatchValidate } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/__tests__/mocks/fixtures';
+import * as analytics from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 const trackInviteFlowValidationErrorSpy = jest.spyOn(analytics, 'trackInviteFlowValidationError');

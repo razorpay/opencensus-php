@@ -21,8 +21,8 @@ export const actionStateResponse: actionStateType = [
       actor_name: 'KMK admin',
       actor_role: 'admin',
     },
-    created_at: 1663128019,
-    updated_at: 1706515918,
+    created_at: '1663128019',
+    updated_at: '1706515918',
   },
   {
     admin_id: 'Jz9cQaFeNKHvGF',
@@ -34,8 +34,8 @@ export const actionStateResponse: actionStateType = [
       actor_name: 'KMK admin',
       actor_role: 'admin',
     },
-    created_at: 1663228019,
-    updated_at: 1706515918,
+    created_at: '1663228019',
+    updated_at: '1706515918',
   },
   {
     admin_id: '',
@@ -47,8 +47,8 @@ export const actionStateResponse: actionStateType = [
       actor_name: 'KMK agent',
       actor_role: 'partner_agent',
     },
-    created_at: 1706514918,
-    updated_at: 1706514918,
+    created_at: '1706514918',
+    updated_at: '1706514918',
   },
   {
     admin_id: 'Jz9cQaFeNKHvGF',
@@ -60,8 +60,8 @@ export const actionStateResponse: actionStateType = [
       actor_name: 'KMK admin',
       actor_role: 'admin',
     },
-    created_at: 1663229019,
-    updated_at: 1706515918,
+    created_at: '1663229019',
+    updated_at: '1706515918',
   },
   {
     admin_id: 'Jz9cQaFeNKHvGF',
@@ -73,8 +73,8 @@ export const actionStateResponse: actionStateType = [
       actor_name: 'KMK admin',
       actor_role: 'admin',
     },
-    created_at: 1663329019,
-    updated_at: 1706515918,
+    created_at: '1663329019',
+    updated_at: '1706515918',
   },
 ];
 
@@ -89,8 +89,8 @@ export const actionStateResponseWithRejected: actionStateType = [
       actor_name: 'KMK admin',
       actor_role: 'admin',
     },
-    created_at: 1663128019,
-    updated_at: 1706515918,
+    created_at: '1663128019',
+    updated_at: '1706515918',
   },
   {
     admin_id: 'Jz9cQaFeNKHvGF',
@@ -102,8 +102,8 @@ export const actionStateResponseWithRejected: actionStateType = [
       actor_name: 'KMK admin',
       actor_role: 'admin',
     },
-    created_at: 1663228019,
-    updated_at: 1706515918,
+    created_at: '1663228019',
+    updated_at: '1706515918',
   },
 ];
 export const posSubmerchantDetailsResponse: posSubmerchantDetailsMockResponseDataType = {
@@ -126,7 +126,7 @@ export const posSubmerchantDetailsResponse: posSubmerchantDetailsMockResponseDat
             {
               from: 'admin',
               nc_count: 1,
-              created_at: 1663228017,
+              created_at: '1663228017',
               is_current: true,
               reason_code: 'illegible_doc',
               reason_type: 'predefined',
@@ -134,7 +134,7 @@ export const posSubmerchantDetailsResponse: posSubmerchantDetailsMockResponseDat
             {
               from: 'admin',
               nc_count: 1,
-              created_at: 1663229017,
+              created_at: '1663229017',
               is_current: true,
               reason_code: 'test_case',
               reason_type: 'predefined',
@@ -144,7 +144,7 @@ export const posSubmerchantDetailsResponse: posSubmerchantDetailsMockResponseDat
             {
               from: 'admin',
               nc_count: 1,
-              created_at: 1663229017,
+              created_at: '1663229017',
               is_current: true,
               reason_code: 'test_case',
               reason_type: 'predefined',
@@ -171,7 +171,7 @@ export const posSubmerchantDetailsResponse: posSubmerchantDetailsMockResponseDat
     pos: {
       activation_status: 'needs_clarification',
       success: true,
-      action_state: actionStateResponse,
+      action_states: actionStateResponse,
       last_kyc_performed_by: {
         contact_email: 'kmk@rzp.com',
         contact_no: '8143639996',

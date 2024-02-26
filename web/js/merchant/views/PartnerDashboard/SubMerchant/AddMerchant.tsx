@@ -26,6 +26,10 @@ import {
 import { create } from 'merchant/reducers/submerchant';
 import lazy from 'merchant/routes/LazyLoader';
 import { merchantFetch } from 'merchant/utils/ajax';
+import {
+  trackSubmerchantReferViaBulkUpload,
+  trackSubmerchantReferViaEmail,
+} from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
 import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';
 import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/SocialShareGroup';
 import { minLength, getInitialState } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
@@ -41,10 +45,6 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { createSubmerchantInvite } from './api';
 import InputField from './components/InputField';
-import {
-  trackSubmerchantReferViaBulkUpload,
-  trackSubmerchantReferViaEmail,
-} from './utils/analytics';
 
 import type {
   AddMerchantPropsT,
@@ -240,12 +240,12 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
 
     if (this.isPGInviteFlow()) {
       const { contact_mobile, ...rest } = params;
-      trackSubmerchantReferViaEmail(params);
+      trackSubmerchantReferViaEmail({ ...params, productType: merchantType });
       return createSubmerchantInvite({
         ...rest,
         contact_no: contact_mobile,
-        product: merchantType,
-        partner_id: user.id,
+        productType: merchantType,
+        user,
       })
         .then((response) => {
           if (!response.success) return;
@@ -396,7 +396,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
         });
     }
     if (this.isPGInviteFlow()) {
-      trackSubmerchantReferViaBulkUpload({ bulkContactsCount });
+      trackSubmerchantReferViaBulkUpload({ bulkContactsCount, productType: merchantType });
 
       return createReferralInvitesBatch?.({
         file_id,
@@ -876,6 +876,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                     <div className="success-message flex-col-between">
                       <div>
                         <p>
+                          {/* eslint-disable-next-line i18n-rules/no-region-specific-image */}
                           <img src="/dist/css/assets/check-round.svg" alt="Tick icon" /> &nbsp;
                           {bulkContactsCount} contacts have been identified.
                         </p>

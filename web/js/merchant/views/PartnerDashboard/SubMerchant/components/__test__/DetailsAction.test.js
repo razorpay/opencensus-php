@@ -6,10 +6,14 @@ import { submerchantWithKYCAccess as submerchant } from 'merchant/views/PartnerD
 import DetailsAction from 'merchant/views/PartnerDashboard/SubMerchant/components/DetailsAction';
 import * as analyticsUtil from 'merchant/views/PartnerDashboard/SubMerchant/components/utils/analytics';
 import * as navigationUtil from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { render, screen, userEvent } from 'test-utils';
 
 // TODO: only basic render test added, other tests can be added later.
-const trackAcceptedInvitesCtaSpy = jest.spyOn(analyticsUtil, 'trackAccountLevelAcceptedInvitesCta');
+const trackAccountLevelAcceptedInvitesCtaSpy = jest.spyOn(
+  analyticsUtil,
+  'trackAccountLevelAcceptedInvitesCta',
+);
 const openKYCFormUtilSpy = jest.spyOn(navigationUtil, 'openKYCFormUtil');
 
 const defaultPartnerDashboardExperiments = {
@@ -22,7 +26,9 @@ jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments'
   default: () => mockPartnerDashboardExperiments,
 }));
 
+const productType = PRODUCT_TYPE.PG;
 const defaultProps = {
+  productType,
   activation_status: submerchant.details.activation_status,
   kyc_access: submerchant.kyc_access,
   submerchant,
@@ -43,6 +49,7 @@ const renderApp = (props, { isRzpOrg = true, ...extra } = {}) => {
 };
 
 describe('DetailsAction', () => {
+  const productType = PRODUCT_TYPE.PG;
   afterEach(() => {
     jest.clearAllMocks();
     mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
@@ -63,6 +70,7 @@ describe('DetailsAction', () => {
     };
     renderApp(
       {
+        productType,
         isSubMerchantKYCAccess: true,
         kyc_access: { state: 'approved', rejection_count: 1, expiry: notExpiredTime },
       },
@@ -73,8 +81,9 @@ describe('DetailsAction', () => {
     await userEvent.click(performKycButton);
 
     // test tracking
-    expect(trackAcceptedInvitesCtaSpy).toHaveBeenCalledWith(submerchant, {
-      properties: { action: 'Perform KYC' },
+    expect(trackAccountLevelAcceptedInvitesCtaSpy).toHaveBeenCalledWith(submerchant, {
+      productType,
+      action: 'Perform KYC',
     });
     // test redirection
     expect(openKYCFormUtilSpy).toHaveBeenCalled();
@@ -96,8 +105,9 @@ describe('DetailsAction', () => {
     const resendKycButton = screen.getByRole('button', { name: 'Resend KYC request' });
     await userEvent.click(resendKycButton);
 
-    expect(trackAcceptedInvitesCtaSpy).toHaveBeenCalledWith(submerchant, {
-      properties: { action: 'Resend KYC request' },
+    expect(trackAccountLevelAcceptedInvitesCtaSpy).toHaveBeenCalledWith(submerchant, {
+      productType,
+      action: 'Resend KYC request',
     });
     // TODO: mock api calls to partner/kyc_access_request and test response handling
   });
@@ -118,8 +128,9 @@ describe('DetailsAction', () => {
     const resendKycButton = screen.getByRole('button', { name: 'Request for KYC access' });
     await userEvent.click(resendKycButton);
 
-    expect(trackAcceptedInvitesCtaSpy).toHaveBeenCalledWith(submerchant, {
-      properties: { action: 'Request for KYC access' },
+    expect(trackAccountLevelAcceptedInvitesCtaSpy).toHaveBeenCalledWith(submerchant, {
+      productType,
+      action: 'Request for KYC access',
     });
   });
 });

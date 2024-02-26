@@ -233,8 +233,8 @@ describe('AddMerchant', () => {
       name,
       email,
       contact_no,
-      product: 'primary',
-      partner_id: 'K0KQSNE7BypZ5VE',
+      productType: 'primary',
+      user: expect.objectContaining({ id: 'K0KQSNE7BypZ5VE' }),
     });
     // Check that we moved to next step
     await waitFor(() => {

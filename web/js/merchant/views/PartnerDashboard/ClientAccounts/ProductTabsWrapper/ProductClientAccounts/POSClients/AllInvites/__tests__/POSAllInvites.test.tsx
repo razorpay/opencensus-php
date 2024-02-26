@@ -1,12 +1,28 @@
 import React from 'react';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
+import * as analytics from 'common/utils/analytics';
 import POSAllInvites from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/POSClients/AllInvites';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import { render, screen, server, waitFor, waitForLoadingToFinishByLabel } from 'test-utils';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import {
+  render,
+  screen,
+  server,
+  userEvent,
+  waitFor,
+  waitForLoadingToFinishByLabel,
+} from 'test-utils';
 
 import { allInvitesDataPOS, allInvitesDataEmptyPOS } from './mocks/fixtures';
-import { allInvitesListSuccessPOS, fetchPartnerAgentUsersHandler } from './mocks/once-handlers';
+import {
+  allInvitesListSuccessPOS,
+  fetchPartnerAgentUsersHandler,
+  resendInviteHandlerPOS,
+} from './mocks/once-handlers';
+
+const analyticsTrackWithUserInfoSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
+const showNotificationsSpy = jest.spyOn(NotificationsActions, 'showNotification');
 
 const productType = PRODUCT_TYPE.POS;
 
@@ -51,7 +67,7 @@ describe('POSAllInvites', () => {
     jest.clearAllMocks();
     mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
-  test(`should render the list once the data is fetched and is not empty for ${productType}`, async () => {
+  test(`should render the list once the data is fetched and is not empty for pos`, async () => {
     server.use(allInvitesListSuccessPOS());
     renderApp();
     // Wait for agents mapping
@@ -89,7 +105,7 @@ describe('POSAllInvites', () => {
     expect(screen.getAllByRole('button', { name: 'Resend Invite' })).toHaveLength(2);
   });
 
-  test(`should render the empty screen once the data is fetched and is empty for ${productType}`, async () => {
+  test(`should render the empty screen once the data is fetched and is empty for pos`, async () => {
     server.use(allInvitesListSuccessPOS(allInvitesDataEmptyPOS));
     renderApp();
     // Wait for agents mapping
@@ -97,5 +113,97 @@ describe('POSAllInvites', () => {
     // Wait for data table spinner
     await waitForLoadingToFinishByLabel();
     expect(screen.getByText('No Invites Found!')).toBeInTheDocument();
+  });
+  test(`should fire resend api when Resend Invite clicked for pos`, async () => {
+    server.use(allInvitesListSuccessPOS());
+    server.use(resendInviteHandlerPOS());
+
+    renderApp();
+    // Wait for agents mapping
+    await waitForLoadingToFinishByLabel();
+
+    // Wait for data table spinner
+    await waitForLoadingToFinishByLabel();
+
+    await waitFor(() => {
+      // table column should render
+      expect(screen.queryByText('Last Invited On')).toBeInTheDocument();
+    });
+
+    const firstResendButton = screen.queryAllByRole('button', { name: 'Resend Invite' })[0];
+    await userEvent.click(firstResendButton);
+
+    // test tracking event
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        objectName: 'Partner Dashboard Account Level All Invites Tab Action Cta',
+        properties: expect.objectContaining({ productType }),
+      }),
+    );
+
+    // test api response
+    await waitFor(() => {
+      expect(showNotificationsSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'success',
+          message: 'Invite is resent successfully',
+        }),
+      );
+    });
+    expect(screen.getByText('Invite is resent successfully')).toBeInTheDocument();
+  });
+
+  test('should render filtered data after clicking search', async () => {
+    // Load complete data before filter
+    server.use(allInvitesListSuccessPOS());
+    renderApp();
+    // Wait for data table spinner
+    await waitForLoadingToFinishByLabel();
+    await waitFor(() => {
+      expect(screen.getByText('Last Invited On')).toBeInTheDocument();
+    });
+    expect(screen.getByText(allInvitesDataPOS.data.items[0].name)).toBeInTheDocument();
+
+    const emailInput = screen.getByLabelText('Email ID');
+    expect(emailInput).toBeInTheDocument();
+    await userEvent.type(emailInput, 'email1@gmail.com');
+
+    const searchButton = screen.getByRole('button', { name: 'Search' });
+    expect(searchButton).toBeInTheDocument();
+
+    // Render empty data after filter
+    server.use(allInvitesListSuccessPOS(allInvitesDataEmptyPOS));
+
+    await userEvent.click(searchButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('No Invites Found!')).toBeInTheDocument();
+    });
+
+    // test tracking event
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        objectName: 'Partner Dashboard Affiliates List Filter Section Cta',
+        properties: expect.objectContaining({ productType, action: 'Search' }),
+      }),
+    );
+    const clearButton = screen.getByRole('button', { name: 'Clear' });
+    expect(clearButton).toBeInTheDocument();
+
+    // Load complete data again
+    server.use(allInvitesListSuccessPOS());
+    await userEvent.click(clearButton);
+
+    await waitFor(() => {
+      expect(screen.queryByText(allInvitesDataPOS.data.items[0].name)).toBeInTheDocument();
+    });
+
+    // test tracking event
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        objectName: 'Partner Dashboard Affiliates List Filter Section Cta',
+        properties: expect.objectContaining({ productType, action: 'Clear' }),
+      }),
+    );
   });
 });

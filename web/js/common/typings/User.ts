@@ -84,6 +84,7 @@ type UserProperties = {
   contact_mobile: number;
   transaction_report_email: string;
   name: string;
+  role: string;
   user: {
     id: string;
     name: string;

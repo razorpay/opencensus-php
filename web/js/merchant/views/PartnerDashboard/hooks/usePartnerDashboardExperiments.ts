@@ -21,14 +21,19 @@ const isPlatformPartnerInviteFlowEnabled = ({ abExperiments, user }) => {
 };
 
 const isPartnerPlaybookEnabled = ({ abExperiments, user }) => {
-  return user.isOrgRZP && isExperimentEnabled(abExperiments.partnerships_partner_playbook);
+  return (
+    !user.isPartnerAgentRole &&
+    user.isOrgRZP &&
+    isExperimentEnabled(abExperiments.partnerships_partner_playbook)
+  );
 };
 
 const isPartnershipsForPosEnabled = ({ abExperiments, user }) => {
   return (
     user.isPartner('reseller') &&
     user.isOrgRZP &&
-    isExperimentEnabled(abExperiments.partnerships_for_pos)
+    isExperimentEnabled(abExperiments.partnerships_accounts_list_revamp) &&
+    (user.isPartnerAgentRole || isExperimentEnabled(abExperiments.partnerships_for_pos))
   );
 };
 
