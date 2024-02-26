@@ -831,4 +831,6 @@ return array(
     'subcategory_exclusion_for_automation' => env('SUBCATEGORY_EXCLUSION_FOR_AUTOMATION'),
 
     'partnership_unblock_huf_business_type_experiment_id' => env('PARTNERSHIP_UNBLOCK_HUF_BUSINESS_TYPE_EXP_ID'),
+
+    'submerchant_prefill_login_exp_id' => env('SUBMERCHANT_PREFILL_LOGIN_EXP_ID'),
 );

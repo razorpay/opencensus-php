@@ -78,6 +78,7 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
+use RZP\Tests\Functional\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\M2MReferral\Status as M2MEntityStatus;
 use RZP\Models\Merchant\M2MReferral\Entity as M2MReferralEntity;
 use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
@@ -13330,5 +13331,308 @@ class UserTest extends TestCase
         $ravenMock->expects($this->once())->method('verifyOtp');
 
         $this->startTest();
+    }
+
+    public function testMobileOtpLoginForSubmerchantsWithOnboardingSignature()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => false]);
+
+        [$app, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->mockAllSplitzTreatment();
+
+        $testData = $this->testData['testMobileOtpLogin'];
+
+        $clientSecret = $app->getClientDetailsAttribute()['dev']['secret'];
+
+        $signature = $this->createOnboardingSignatureForSubmerchant( PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $clientSecret);
+
+        $content = [
+            'contact_mobile'        => '9012345678',
+            'onboarding_signature'  => $signature,
+            'client_id'             => $app->getClientDetailsAttribute()['dev']['id']
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testMobileVerifyOtpLoginForSubmerchantsWithOnboardingSignature()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['verifyOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => false]);
+
+        [$app, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->mockAllSplitzTreatment();
+
+        $testData = $this->testData['testMobileLoginVerifyOtp'];
+
+        $clientSecret = $app->getClientDetailsAttribute()['dev']['secret'];
+
+        $signature = $this->createOnboardingSignatureForSubmerchant(PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $clientSecret);
+
+        $testData['request']['content']['onboarding_signature'] = $signature;
+        $testData['request']['content']['client_id'] = $app->getClientDetailsAttribute()['dev']['id'];
+        $testData['response']['content']['merchants'][0]['activated'] = true;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        $userEntity = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertTrue($userEntity->isContactMobileVerified());
+    }
+
+    public function testMobileOtpLoginForSubmerchantsWithInvalidOnboardingSignature()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => false]);
+
+        [$app, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->mockAllSplitzTreatment();
+
+        $testData = $this->testData['testMobileLoginForSubmerchantsWithOnboardingSignature'];
+
+        $clientSecret = $app->getClientDetailsAttribute()['dev']['secret'];
+
+        $signature = $this->createOnboardingSignatureForSubmerchant(PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $clientSecret);
+
+        $invalidHexData = $signature . 'abcd';
+
+        $content = [
+            'contact_mobile'        => '9012345678',
+            'onboarding_signature'  => $invalidHexData,
+            'client_id'             => $app->getClientDetailsAttribute()['dev']['id']
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest($testData);
+    }
+
+    public function testMobileVerifyOtpLoginForSubmerchantsWithInvalidOnboardingSignature()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['verifyOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->exactly(0))->method('verifyOtp');
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => false]);
+
+        [$app, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->mockAllSplitzTreatment();
+
+        $testData = $this->testData['testMobileLoginForSubmerchantsWithOnboardingSignature'];
+
+        $clientSecret = $app->getClientDetailsAttribute()['dev']['secret'];
+
+        $signature = $this->createOnboardingSignatureForSubmerchant(PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $clientSecret);
+        $invalidHexData = $signature . 'abcd';
+
+        $testData['request']['url'] = "/users/login/otp/verify";
+        $testData['request']['content'] = [
+            'otp'            => '0007',
+            'token'          => 'Gvt61zZ3Iwzcqy',
+            'contact_mobile' => '9012345678',
+            'captcha'        => 'faked',
+            'onboarding_signature' => $invalidHexData,
+            'client_id' => $app->getClientDetailsAttribute()['dev']['id']
+        ];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        $userEntity = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertFalse($userEntity->isContactMobileVerified());
+    }
+
+    public function testMobileOtpLoginForSubmerchantsWithOnboardingSignatureWithExpDisabled()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => false]);
+
+        [$app, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->mockAllSplitzTreatment([]);
+
+        $testData = $this->testData['testMobileLoginForSubmerchantsWithOnboardingSignature'];
+
+        $clientSecret = $app->getClientDetailsAttribute()['dev']['secret'];
+
+        $signature = $this->createOnboardingSignatureForSubmerchant( PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $clientSecret);
+
+        $content = [
+            'contact_mobile'        => '9012345678',
+            'onboarding_signature'  => $signature,
+            'client_id'             => $app->getClientDetailsAttribute()['dev']['id']
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        $userEntity = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertFalse($userEntity->isContactMobileVerified());
+    }
+
+    public function testMobileVerifyOtpLoginForSubmerchantsWithOnboardingSignatureWithExpDisabled()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['verifyOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->exactly(0))->method('verifyOtp');
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => false]);
+
+        [$app, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->mockAllSplitzTreatment([]);
+
+        $testData = $this->testData['testMobileLoginForSubmerchantsWithOnboardingSignature'];
+
+        $clientSecret = $app->getClientDetailsAttribute()['dev']['secret'];
+
+        $signature = $this->createOnboardingSignatureForSubmerchant(PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $clientSecret);
+
+        $testData['request']['url'] = "/users/login/otp/verify";
+        $testData['request']['content'] = [
+            'otp'            => '0007',
+            'token'          => 'Gvt61zZ3Iwzcqy',
+            'contact_mobile' => '9012345678',
+            'captcha'        => 'faked',
+            'onboarding_signature' => $signature,
+            'client_id' => $app->getClientDetailsAttribute()['dev']['id']
+        ];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        $userEntity = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertFalse($userEntity->isContactMobileVerified());
     }
 }

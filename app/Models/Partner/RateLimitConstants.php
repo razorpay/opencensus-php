@@ -35,5 +35,12 @@ class RateLimitConstants
             self::ERROR_CODE       => ErrorCode::BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_ONBOARDING_EXCEEDED,
             self::METRIC           => Metric::SUBMERCHANT_ONBOARDING_DAILY_LIMIT_EXCEEDED,
         ],
+        Constants::SUBMERCHANT_PREFILL_LOGIN => [
+            self::THRESHOLD        => 2000,
+            self::TRACE_CODE       => TraceCode::RATE_LIMIT_PARTNER_SUBMERCHANT_ONBOARDING,
+            self::ERROR_TRACE_CODE => TraceCode::RATE_LIMIT_PARTNER_SUBMERCHANT_ONBOARDING_EXCEEDED,
+            self::ERROR_CODE       => ErrorCode::BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_ONBOARDING_EXCEEDED,
+            self::METRIC           => Metric::SUBMERCHANT_ONBOARDING_DAILY_LIMIT_EXCEEDED,
+        ],
     ];
 }

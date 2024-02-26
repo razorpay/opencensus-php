@@ -51,9 +51,11 @@ use RZP\Exception\ServerErrorException;
 use libphonenumber\NumberParseException;
 use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Merchant\RazorxTreatment;
+use Razorpay\OAuth\Client as OAuthClient;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Mail\User\OtpSignup as OtpSignup;
 use RZP\Models\Batch\Entity as BatchEntity;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -69,6 +71,7 @@ use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\SubVirtualAccount\Constants as SubVaConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Models\Merchant\Detail\Service as MerchantDetailService;
@@ -1972,7 +1975,7 @@ class Core extends Base\Core
 
         try
         {
-            $receiver = $this->isMobileVerified($receiver);
+            $receiver = $this->isMobileVerified($receiver, $input);
         }
         catch (Throwable $e)
         {
@@ -2069,7 +2072,7 @@ class Core extends Base\Core
         {
             $user = $this->getSingleUserByMobileOrFail($input[Entity::CONTACT_MOBILE]);
 
-            $user = $this->isMobileVerified($user);
+            $user = $this->isMobileVerified($user, $input);
 
             return $user;
         }
@@ -2406,11 +2409,18 @@ class Core extends Base\Core
     {
         $this->getUserEntity()->getValidator()->validateInput('verifyLoginOtp', $input);
 
+        $onboardingSignatureSet = false;
+
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
             $loginMedium = Constants::CONTACT_MOBILE;
 
             $receiver = $input[Entity::CONTACT_MOBILE];
+
+            if (isset($input[PartnerConstants::ONBOARDING_SIGNATURE]))
+            {
+                $onboardingSignatureSet = true;
+            }
         }
         else
         {
@@ -2495,6 +2505,8 @@ class Core extends Base\Core
         $this->applyReferralIfApplicable($input, $user);
 
         $this->checkSecondFactorAuthForOtpLogin($user);
+
+        $this->updateUserContactMobileVerified($user, $onboardingSignatureSet);
 
         return $this->get($user);
     }
@@ -3742,9 +3754,14 @@ class Core extends Base\Core
      * @return Entity
      * @throws BadRequestException
      */
-    protected function isMobileVerified(Entity $user)
+    protected function isMobileVerified(Entity $user, array &$input = [])
     {
         if ($user->isContactMobileVerified() === true)
+        {
+            return $user;
+        }
+
+        if ((new PartnerCore())->isOnboardingSignatureValid($user, $input))
         {
             return $user;
         }
@@ -6940,5 +6957,17 @@ class Core extends Base\Core
             }
         }
 
+    }
+
+    private function updateUserContactMobileVerified(Entity $user, bool $onboardingSignatureSet)
+    {
+        if (!$onboardingSignatureSet)
+        {
+            return;
+        }
+
+        $user->setContactMobileVerified(true);
+
+        $this->repo->user->saveOrFail($user);
     }
 }

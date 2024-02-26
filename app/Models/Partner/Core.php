@@ -8,14 +8,19 @@ use Carbon\Carbon;
 use RZP\Exception;
 use Razorpay\OAuth;
 use RZP\Constants\Mode;
+use phpseclib\Crypt\AES;
 use RZP\Constants\Product;
 use Illuminate\Support\Str;
 use RZP\Constants\Environment;
+use RZP\Gateway\Base\AESCrypto;
 use RZP\Models\Pricing\DefaultPlan;
+use RZP\Encryption\AesGcmEncryption;
+use Razorpay\OAuth\Client as OAuthClient;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Jobs\PartnerMigrationAuditJob;
 use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Jobs\BulkMigrateResellerToAggregatorJob;
 use RZP\Jobs\MigratePurePlatformToResellerPartnerJob;
@@ -2148,4 +2153,121 @@ class Core extends Detail\Core
         return $isExpEnabled;
     }
 
+    public function isOnboardingSignatureValid(UserEntity $user, array &$input) : bool
+    {
+        if (!isset($input[PartnerConstants::ONBOARDING_SIGNATURE]) || empty($input[PartnerConstants::ONBOARDING_SIGNATURE]) ||
+            !isset($input[PartnerConstants::CLIENT_ID]) || empty($input[PartnerConstants::CLIENT_ID]))
+        {
+            return false;
+        }
+
+        if ($this->isLoginAllowedForUnverifiedPhoneNumbers($user->getId()) === false)
+        {
+            return false;
+        }
+
+        $subMRateLimiter = (new PartnershipsRateLimiter(PartnerConstants::SUBMERCHANT_PREFILL_LOGIN));
+
+        $key = $subMRateLimiter->getRateLimitRedisKey($user->getId());
+
+        $rateLimiterUpdated = $subMRateLimiter->rateLimit($key);
+
+        $partnerToken = $input[PartnerConstants::ONBOARDING_SIGNATURE];
+
+        $client  = (new OAuthClient\Repository)->getClientEntity($input[PartnerConstants::CLIENT_ID]);
+
+        if (empty($client))
+        {
+            return false;
+        }
+
+        $data = $this->decryptSignature($partnerToken, $client->getSecret());
+
+        if ($this->isValidUserData($user, $data))
+        {
+            $isSubmerchant = (new Merchant\AccessMap\Core())->isMerchantMappedToApplication($data[PartnerConfig\Constants::SUBMERCHANT_ID], $client->getApplicationId());
+
+            if ($isSubmerchant)
+            {
+                $this->trace->info(TraceCode::ONBOARDING_SIGNATURE_VALID_FOR_LOGIN, [
+                    'client_id'      => $input[PartnerConstants::CLIENT_ID],
+                    'submerchant_id' => $data[PartnerConfig\Constants::SUBMERCHANT_ID],
+                    'rateLimiterUpdated' => $rateLimiterUpdated
+                ]);
+            }
+
+            return $isSubmerchant;
+        }
+
+        unset($input[PartnerConstants::ONBOARDING_SIGNATURE]);
+        unset($input[PartnerConstants::CLIENT_ID]);
+
+        return false;
+    }
+
+    private function isValidUserData(UserEntity $user, array $data) : bool
+    {
+        $merchant = $user->getFirstMerchantEntity();
+
+        if (!isset($data[PartnerConfig\Constants::SUBMERCHANT_ID]) ||
+            empty($data[PartnerConfig\Constants::SUBMERCHANT_ID]) ||
+            $data[PartnerConfig\Constants::SUBMERCHANT_ID] != $merchant->getId())
+        {
+            return false;
+        }
+
+        if (!isset($data[PartnerConstants::TIMESTAMP]) || empty($data[PartnerConstants::TIMESTAMP]))
+        {
+            return false;
+        }
+
+        $currentTimestamp = time();
+
+        $differenceInSeconds = $currentTimestamp - $data[PartnerConstants::TIMESTAMP];
+
+        return $differenceInSeconds <= PartnerConstants::ONBOARDING_SIGNATURE_EXPIRY_IN_SECONDS;
+    }
+
+    private function decryptSignature(String $encryptedData, String $secret) : array
+    {
+        if (empty($encryptedData) || empty($secret))
+        {
+            return [];
+        }
+
+        try
+        {
+            $iv = substr($secret, 0, 12);
+
+            $key = substr($secret, 0, 16);
+
+            $combined = hex2bin($encryptedData);
+
+            $ciphertext = substr($combined, 0, -16);
+
+            $tag = substr($combined, -16);
+
+            $decryptedToken = openssl_decrypt($ciphertext, 'aes-128-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
+
+            $data =  json_decode($decryptedToken, true);
+
+            return empty($data) ? [] : $data;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::ONBOARDING_SIGNATURE_VALIDATION_ERROR, ['error' => $e->getMessage()]);
+        }
+
+        return [];
+    }
+
+    private function isLoginAllowedForUnverifiedPhoneNumbers(String $userId) : bool
+    {
+        $properties = [
+            'id'            => $userId,
+            'experiment_id' => $this->app['config']->get('app.submerchant_prefill_login_exp_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
 }

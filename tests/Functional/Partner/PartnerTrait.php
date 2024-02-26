@@ -4,14 +4,19 @@ namespace RZP\Tests\Functional\Partner;
 
 use Mockery;
 use ApiResponse;
+use DateTimeImmutable;
 use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Models\User\Role;
 use Mockery\MockInterface;
 use WpOrg\Requests\Response;
+use RZP\Gateway\Base\AESCrypto;
 use Mockery\LegacyMockInterface;
 use RZP\Models\Merchant\Referral;
 use RZP\Exception\TwirpException;
+use Lcobucci\JWT\Signer\Key;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\Feature\Constants as FName;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -1084,5 +1089,24 @@ trait PartnerTrait
         $admin->merchants()->attach($merchant);
 
         return $merchant;
+    }
+
+    public function createOnboardingSignatureForSubmerchant(string $subMerchantId, string $clientSecret) : string
+    {
+        $payload = [
+            'submerchant_id' => $subMerchantId,
+            'timestamp'      => time()
+        ];
+
+        $secretKey = substr($clientSecret, 0, 16);
+
+        $iv = substr($clientSecret, 0, 12);
+
+        $tag = '';
+        $tagLength = 16;
+
+        $encryptedData = openssl_encrypt(json_encode($payload), 'aes-128-gcm', $secretKey, OPENSSL_RAW_DATA, $iv, $tag, '', $tagLength);
+
+        return bin2hex($encryptedData . $tag);
     }
 }

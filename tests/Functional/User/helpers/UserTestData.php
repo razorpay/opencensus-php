@@ -7495,5 +7495,26 @@ return [
             'content' => [],
             'status_code' => 200,
         ],
-    ]
+    ],
+
+    'testMobileLoginForSubmerchantsWithOnboardingSignature' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
+        ],
+    ],
 ];

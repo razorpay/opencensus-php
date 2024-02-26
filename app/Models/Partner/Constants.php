@@ -180,4 +180,10 @@ class Constants
         Event::PAYMENT_DISPUTE_UNDER_REVIEW    => self::TRANSACTION_ISOLATION_DISPUTE_EXPERIMENT,
         Event::PAYMENT_DISPUTE_ACTION_REQUIRED => self::TRANSACTION_ISOLATION_DISPUTE_EXPERIMENT,
     ];
+
+    const ONBOARDING_SIGNATURE                    = 'onboarding_signature';
+    const CLIENT_ID                               = 'client_id';
+    const TIMESTAMP                               = 'timestamp';
+    const ONBOARDING_SIGNATURE_EXPIRY_IN_SECONDS  = 86400;
+    const SUBMERCHANT_PREFILL_LOGIN               = 'submerchant_prefill_login';
 }
