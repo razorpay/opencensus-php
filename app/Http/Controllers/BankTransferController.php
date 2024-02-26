@@ -668,6 +668,7 @@ class BankTransferController extends Controller
         if ($corpCode === $xCorpCode)
         {
             $payeeIfsc = Provider::getIFSC(true)[Provider::AXIS];
+            $utr = strtoupper($utr);
         }
         else
         {

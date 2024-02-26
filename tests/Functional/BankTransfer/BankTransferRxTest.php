@@ -107,6 +107,188 @@ class BankTransferRxTest extends TestCase
         $this->fixtures->on('test');
     }
 
+    public function testBankTransferAxisWithCaseSensitiveUtr()
+    {
+        Mail::fake();
+
+        $testData = $this->testData['testValidateBankTransferAxisForX'];
+
+        $testData['request']['content']['UTR'] = 'RazP00010742429600013';
+
+        $terminalAttributes = [ 'id' =>'GENERICBNKAXIS', 'gateway' => Gateway::BT_AXIS, 'gateway_merchant_id' => '9845',
+            'type'                => [
+                Type::NON_RECURRING    => '1',
+                Type::NUMERIC_ACCOUNT  => '1',
+                Type::BUSINESS_BANKING => '1',
+            ],];
+
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => '2224440041626905',
+            'account_type' => 'shared',
+        ]);
+
+        $initialAmount = $balance1->getBalance();
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['business_banking' => 1]);
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    '10000000000000'        => '9845',
+                    Account::SHARED_ACCOUNT => '222444',
+                ]
+            ]);
+
+        $bankAccount = $this->createVirtualAccountForBanking('live');
+
+        $this->assertEquals(VirtualAccount\Provider::AXIS_COMMON_IFSC, $bankAccount['ifsc']);
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+            [
+                'balance_id'           => $balance1->getId(),
+                'status'               => 'approved',
+                'payer_ifsc'           => 'HDFC0000522',
+                'payer_account_number' => '910910910910910'
+            ]);
+
+        $testData['request']['content']['Bene_acc_no'] = $bankAccount['account_number'];
+        $testData['request']['content']['Req_type'] = 'notification';
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/ecollect/validate/axis',
+            'method' => 'post',
+            'server' => $testData['request']['server'],
+            'content' => $testData['request']['content']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('S', $response['Stts_flg']);
+        $this->assertEquals('000', $response['Err_cd']);
+        $this->assertEquals('Success', $response['message']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true, 'live');
+
+        $this->assertEquals(strtoupper($testData['request']['content']['UTR']), $bankTransfer['utr']);
+
+        $this->assertEquals($bankAccount['account_number'], $bankTransfer['payee_account']);
+        $this->assertEquals(VirtualAccount\Provider::AXIS_COMMON_IFSC, $bankTransfer['payee_ifsc']);
+
+        $balance1->reload();
+        $finalAmount = $balance1->getBalance();
+        $this->assertEquals($initialAmount + 300, $finalAmount);
+    }
+
+    public function testValidateBankTransferAxisDuplicateWithCaseSensitiveUtr()
+    {
+        Mail::fake();
+
+        $testData = $this->testData['testValidateBankTransferAxisForX'];
+
+        $testData['request']['content']['UTR'] = 'RazP00010742429600013';
+
+        $terminalAttributes = [ 'id' =>'GENERICBNKAXIS', 'gateway' => Gateway::BT_AXIS, 'gateway_merchant_id' => '9845',
+            'type'                => [
+                Type::NON_RECURRING    => '1',
+                Type::NUMERIC_ACCOUNT  => '1',
+                Type::BUSINESS_BANKING => '1',
+            ],];
+
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => '2224440041626905',
+            'account_type' => 'shared',
+        ]);
+
+        $initialAmount = $balance1->getBalance();
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['business_banking' => 1]);
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    '10000000000000'        => '9845',
+                    Account::SHARED_ACCOUNT => '222444',
+                ]
+            ]);
+
+        $bankAccount = $this->createVirtualAccountForBanking('live');
+
+        $this->assertEquals(VirtualAccount\Provider::AXIS_COMMON_IFSC, $bankAccount['ifsc']);
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+            [
+                'balance_id'           => $balance1->getId(),
+                'status'               => 'approved',
+                'payer_ifsc'           => 'HDFC0000522',
+                'payer_account_number' => '910910910910910'
+            ]);
+
+        $testData['request']['content']['Bene_acc_no'] = $bankAccount['account_number'];
+        $testData['request']['content']['Req_type'] = 'notification';
+
+        $this->ba->directAuth();
+
+        $utr = $testData['request']['content']['UTR'];
+
+        $testData['request']['content']['UTR'] = strtolower($utr);
+
+        $request = [
+            'url' => '/ecollect/validate/axis',
+            'method' => 'post',
+            'server' => $testData['request']['server'],
+            'content' => $testData['request']['content']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('S', $response['Stts_flg']);
+        $this->assertEquals('000', $response['Err_cd']);
+        $this->assertEquals('Success', $response['message']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true, 'live');
+
+        $this->assertEquals(strtoupper($utr), $bankTransfer['utr']);
+
+        $this->assertEquals($bankAccount['account_number'], $bankTransfer['payee_account']);
+        $this->assertEquals(VirtualAccount\Provider::AXIS_COMMON_IFSC, $bankTransfer['payee_ifsc']);
+
+        $balance1->reload();
+        $finalAmount = $balance1->getBalance();
+        $this->assertEquals($initialAmount + 300, $finalAmount);
+
+        $testData['request']['content']['UTR'] = strtolower($testData['request']['content']['UTR']);
+
+        $request = [
+            'url' => '/ecollect/validate/axis',
+            'method' => 'post',
+            'server' => $testData['request']['server'],
+            'content' => $testData['request']['content']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('F', $response['Stts_flg']);
+        $this->assertEquals('002', $response['Err_cd']);
+        $this->assertEquals('Validation failed', $response['message']);
+    }
+
     public function testBankTransferProcessXDemoCron()
     {
         $merchant_id = \RZP\Models\Merchant\Account::X_DEMO_PROD_ACCOUNT;
