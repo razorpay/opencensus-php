@@ -11,7 +11,7 @@ class Constants extends Base\Constants
     const RECIPIENT_EMAILS_MAP = [
         Gateway::ICICI_EMI              => ["icicicards.emi@razorpay.com","settlements@razorpay.com"],
         Gateway::NETBANKING_HDFC        => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
-        Gateway::NETBANKING_ICICI       => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+        Gateway::NETBANKING_ICICI       => ['settlements@razorpay.com'],
         Gateway::NETBANKING_IBK         => ['refunds@razorpay.com', 'settlements@razorpay.com'],
         Gateway::NETBANKING_CBI         => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
         Gateway::NETBANKING_CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
@@ -25,9 +25,10 @@ class Constants extends Base\Constants
         Gateway::UPI_ICICI              => ['settlements@razorpay.com'],
         Gateway::WALLET_AIRTELMONEY     => ['settlements@razorpay.com'],
         Gateway::WALLET_PAYUMONEY       => ['settlements@razorpay.com'],
-        Gateway::PAYLATER_ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+        Gateway::PAYLATER_ICICI         => ['settlements@razorpay.com'],
         Gateway::NETBANKING_JSB         => ['jsb-netbanking.refunds@razorpay.com','settlements@razorpay.com'],
     ];
+    
 
     const HEADER_MAP = [
         Gateway::ICICI_EMI              => 'Icici Emi Refunds File',

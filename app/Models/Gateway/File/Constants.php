@@ -276,7 +276,7 @@ class Constants
             self::HDFC          => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             // todo: Fix the receipients
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
-            self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::ICICI         => ['settlements@razorpay.com'],
             self::PAYLATER_ICICI=> ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
             self::UPI_SBI       => ['refunds@razorpay.com'],
