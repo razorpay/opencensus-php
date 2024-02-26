@@ -16999,6 +16999,7 @@ class Route
             'payment_create_private_json_internal',
             'payment_create_upi',
             'payment_create_private_json',
+            'payment_create_ajax',
             'internal_create_order_bank_account',
             'recon_update_data',
             'internal_payment_pricing',
@@ -19976,6 +19977,7 @@ class Route
         'payment_create_private_json_internal',
         'payment_create_upi',
         'payment_create_private_json',
+        'payment_create_ajax',
     ];
 
 
