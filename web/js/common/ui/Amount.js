@@ -8,6 +8,8 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFormattedAmountByParts, classList } from 'common/utils/rzp-utils';
 import sanitizer from 'common/utils/xss-sanitizer';
 import useViewport, { ViewportProvider } from 'merchant/hooks/useViewPort';
+import { ANALYTICS } from 'common/constant';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const currencies = {
   INR: {
@@ -73,7 +75,22 @@ const Amount = ({
     return 'ltr';
   }, [currency]);
 
-  const currencySymbol = i18nifyGetCurrencySymbol(currency);
+  let currencySymbol;
+
+  try {
+    currencySymbol = i18nifyGetCurrencySymbol(currency);
+  } catch (error) {
+    currencySymbol = currency;
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `${currency}`,
+        error: `${error}`,
+      },
+    });
+  }
 
   const amount = getFormattedAmountByParts(value, currency);
 
@@ -129,11 +146,25 @@ export function AmountTooltipContainer({
   }
 
   const context = useViewport();
+  let currencyInfo, currencySymbol, currencyName;
 
-  const currencyInfo = getCurrencyList()[currency];
-  const currencySymbol = currencyInfo.symbol || currency;
-
-  const currencyName = currencyInfo.name;
+  try {
+    currencyInfo = getCurrencyList()[currency];
+    currencySymbol = currencyInfo.symbol;
+    currencyName = currencyInfo.name;
+  } catch (error) {
+    currencySymbol = currency;
+    currencyName = currency;
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `${currency}`,
+        error: `${error}`,
+      },
+    });
+  }
 
   return (
     <span className={classList('help-content help-content--currency', customClass)}>
