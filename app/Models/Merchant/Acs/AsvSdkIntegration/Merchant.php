@@ -161,6 +161,21 @@ class Merchant extends Base
         return $this->getMerchantCollectionFromResponse($response);
     }
 
+    public function fetchMerchantsCreatedBetween($from, $to): array
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier('fetch_merchants_created_between');
+        $filterRequest->setBindings(
+            json_encode([
+                            $from, $to
+                        ])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+    }
+
     public function fetchMerchantsActivatedBetweenForOrg($from, $to, $orgId): array
     {
         $filterRequest =  new FilterRequest();
@@ -171,7 +186,7 @@ class Merchant extends Base
                         ])
         );
 
-        $response = $this->getFilterResponseFromAsv($filterRequest);
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
         return $this->getMerchantCollectionFromResponse($response)->toArray();
     }
@@ -186,7 +201,7 @@ class Merchant extends Base
                         ])
         );
 
-        $response = $this->getFilterResponseFromAsv($filterRequest);
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
         return $this->getMerchantCollectionFromResponse($response)->toArray();
     }

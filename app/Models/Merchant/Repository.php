@@ -49,6 +49,7 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Modules\Acs\Wrapper\Merchant as MerchantWrapper;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as AsvSdkMerchantQuery;
 
 class Repository extends Base\Repository
 {
@@ -235,8 +236,19 @@ class Repository extends Base\Repository
       array $merchantIds = [],
       array $merchantIdsExcluded = []): array
     {
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->select(Entity::ID)
+
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else {
+                return (new AsvSdkMerchantQuery())->fetchActivatedMerchantsBeforeTimestamp($limit, $skip, $end, $merchantIds, $merchantIdsExcluded);
+            }
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        $query = $query->select(Entity::ID)
                       ->where(Entity::ACTIVATED, '=', 1)
                       ->where(Entity::ACTIVATED_AT, '<=', $end)
                       ->where(function ($query)
@@ -466,8 +478,18 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsCreatedBetween($from, $to)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else {
+                return (new AsvSdkMerchantQuery())->fetchMerchantsCreatedBetween($from, $to);
+            }
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->get()
             ->pluck(Entity::ID)
             ->toArray();
