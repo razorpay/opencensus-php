@@ -6,23 +6,30 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 
 import rzpLogo from 'assets/rzp_logo.jpg';
+import { useSplitzService } from 'common/splitz';
 import { User } from 'common/typings';
-import { ACTIONS, POS_TERMS_AND_CONDITION_DATE } from 'merchant/views/POS/constants';
+import {
+  ACTIONS,
+  DELIVERY_UNAVAILABLE_TEXT,
+  POS_TERMS_AND_CONDITION_DATE,
+} from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import {
   getPayloadForOrderCreate,
   loadCheckoutForPos,
   preCheckoutAdditionalDetails,
 } from 'merchant/views/POS/helpers';
-import { createOrder, createActvationCase } from 'merchant/views/POS/services';
-import { ApiResponse, DeviceConfig } from 'merchant/views/POS/types';
+import { createOrder, createActvationCase, getPincodeInfo } from 'merchant/views/POS/services';
+import { ApiResponse, DeviceConfig, OrderDetailsItem } from 'merchant/views/POS/types';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
+import ConfirmCheckout from './ConfirmCheckout';
 import MissingShopImagesModal from './MissingShopImagesModal';
 
 type CheckoutCtaProps = {
   isDisabled: boolean;
   isLoading: boolean;
+  isSkipCheckout: boolean;
   showNotification: (args) => void;
 };
 
@@ -34,6 +41,7 @@ type AdditionalInfoModal = {
 const CheckoutCta = ({
   isDisabled,
   isLoading,
+  isSkipCheckout,
   showNotification,
 }: CheckoutCtaProps): JSX.Element => {
   const queryClient = useQueryClient();
@@ -47,15 +55,55 @@ const CheckoutCta = ({
   const { user, cartItems, deliveryAddresses } = state;
   const { created_at } = user || {};
   const [isCheckoutLoading, setIsCheckoutLoading] = useState<boolean>(false);
+  const [isConfirmCheckoutOpen, setIsConfirmCheckoutOpen] = useState<boolean>(false);
   const [additionalInfoModal, setAdditionalInfoModal] = useState<AdditionalInfoModal>({
     isRequired: false,
     url: null,
   });
+
+  const { abExperiments } = useSplitzService();
+  const { omniChannelGtm } = abExperiments ?? {};
+  const gtmCities = omniChannelGtm?.variables?.cities;
+  const availableCities = typeof gtmCities === 'string' ? gtmCities.split(',') : [];
+
   const isTermsAndConditionCheck = created_at ? created_at < POS_TERMS_AND_CONDITION_DATE : false;
 
   const handleOnPaymentFailure = (error?: string | null, dimissCheckout?: boolean) => {
     if (!!dimissCheckout) setIsCheckoutLoading(false);
     showNotification({ type: 'error', message: error ?? 'Payment Failed!' });
+  };
+
+  const redirectToOrderStatus = (orderId: string) => {
+    window.location.assign(`/app/pos/order-status/${orderId}`);
+  };
+
+  const handleCheckoutSuccess = async (
+    isCaseCreateRequired: boolean,
+    orderData: OrderDetailsItem,
+  ) => {
+    showNotification({ type: 'success', message: 'Order Successful!' });
+    try {
+      if (isCaseCreateRequired) {
+        const { data: activationData } = await createActvationCase();
+        if (!activationData?.pos_activation_status) {
+          throw new Error();
+        }
+        redirectToOrderStatus(orderData?.id);
+      }
+    } catch {
+      handleOnPaymentFailure('Something went wrong.', true);
+    } finally {
+      dispatch({
+        type: ACTIONS.UPDATE_CART,
+        payload: {
+          cartItems: [],
+        },
+      });
+      setIsCheckoutLoading(false);
+      if (!isCaseCreateRequired) {
+        redirectToOrderStatus(orderData?.id);
+      }
+    }
   };
 
   const handleOnCheckoutClick = async () => {
@@ -75,17 +123,33 @@ const CheckoutCta = ({
       setAdditionalInfoModal(() => ({ isRequired, url }));
       return;
     }
+
+    if (isSkipCheckout && !isConfirmCheckoutOpen) {
+      setIsConfirmCheckoutOpen(true);
+      return;
+    }
+
+    setIsConfirmCheckoutOpen(false);
     setIsCheckoutLoading(true);
+
     try {
       const createOrderPayload = await getPayloadForOrderCreate({ cartItems, deliveryAddresses });
       if (!createOrderPayload || !razorpayKey) throw new Error();
 
-      const { data } = await createOrder(createOrderPayload);
-      if (!data?.order_id || !user) throw new Error();
+      const { data: pincodeInfo } = await getPincodeInfo(
+        createOrderPayload?.delivery_address?.pin_code,
+      );
 
-      if (isCaseCreateRequired) {
-        const { data: activationData } = await createActvationCase();
-        if (!activationData?.pos_activation_status) throw new Error();
+      if (!pincodeInfo || !availableCities.includes(pincodeInfo.city)) {
+        throw new Error(DELIVERY_UNAVAILABLE_TEXT);
+      }
+
+      const { data } = await createOrder(createOrderPayload);
+      if (!data?.id || !user) throw new Error();
+
+      if (data.amount.total === 0 && !data.order_id) {
+        handleCheckoutSuccess(isCaseCreateRequired, data);
+        return;
       }
 
       await loadCheckoutForPos();
@@ -107,22 +171,19 @@ const CheckoutCta = ({
           confirm_close: true,
           ondismiss: () => handleOnPaymentFailure(null, true),
         },
-        handler: () => {
-          dispatch({
-            type: ACTIONS.UPDATE_CART,
-            payload: {
-              cartItems: [],
-            },
-          });
-          setIsCheckoutLoading(false);
-          showNotification({ type: 'success', message: 'Payment Successful!' });
-          window.location.assign(`/app/pos/order-status/${data?.id}`);
-        },
+        handler: () => handleCheckoutSuccess(isCaseCreateRequired, data),
       };
       const razorpayCheckout = new window.Razorpay(options);
       razorpayCheckout.open();
-    } catch {
-      handleOnPaymentFailure('Something went wrong. Please try again', true);
+    } catch (error: unknown) {
+      handleOnPaymentFailure(
+        error instanceof Error && error?.message
+          ? error.message
+          : 'Something went wrong. Please try again',
+        true,
+      );
+    } finally {
+      setIsCheckoutLoading(true);
     }
   };
 
@@ -132,6 +193,11 @@ const CheckoutCta = ({
         isOpen={additionalInfoModal.isRequired}
         externalUrl={additionalInfoModal.url}
         onClose={() => setAdditionalInfoModal({ isRequired: false, url: null })}
+      />
+      <ConfirmCheckout
+        isOpen={isConfirmCheckoutOpen}
+        onDismiss={() => setIsConfirmCheckoutOpen(false)}
+        onSubmit={handleOnCheckoutClick}
       />
       {isTermsAndConditionCheck ? (
         <Text size="small" marginBottom="spacing.5" textAlign="center">

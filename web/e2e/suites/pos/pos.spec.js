@@ -236,6 +236,26 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
         page.getByTestId(`${DEVICE_CODES.androidSmartPos}-monthly-order-item`),
       ).toBeVisible();
     });
+
+    test('should open confirm checkout prompt if amount is 0  @flow=pos-device-ordering @project=pos-onboarding', async ({
+      page,
+    }) => {
+      await navigateTo(page, routes.POS);
+      await waitForPosCatalogToLoad({ page });
+
+      const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
+      await androidSmartPosAddToCartBtn.click();
+
+      const cartItem = page.getByTestId(`${DEVICE_CODES.androidSmartPos}-monthly-cart-item`);
+      await expect(cartItem).toBeVisible();
+      await expect(cartItem.getByTestId('quantity-value')).toHaveText('1');
+      await page.getByText('Place Order').click();
+
+      await page.getByText('Confirm Address & Pay').click();
+      await expect(
+        page.getByText('By clicking on Confirm, your order will be placed!'),
+      ).toBeVisible();
+    });
   });
 
   test.describe('Order Listing and Details without order', () => {

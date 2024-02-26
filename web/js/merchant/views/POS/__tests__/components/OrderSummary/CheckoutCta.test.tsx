@@ -1,10 +1,11 @@
 import React from 'react';
 
 import CheckoutCta from 'merchant/views/POS/OrderSummary/CheckoutCta';
-import { MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
+import { MOCK_USER, MOCK_GTM } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import {
   createActvationCaseHandler,
   createOrderHandler,
+  getPincodeInfoHandler,
   getProductPricingHandler,
 } from 'merchant/views/POS/__tests__/mocks/handlers';
 import { PosStoreInitialState } from 'merchant/views/POS/constants';
@@ -37,10 +38,17 @@ jest.mock('common/utils/rzp-utils', () => ({
   isProductionEnv: () => true,
 }));
 
+jest.mock('common/splitz', () => ({
+  ...(jest.requireActual('common/splitz') as Record<string, string>),
+  useSplitzService: () => ({
+    abExperiments: MOCK_GTM,
+  }),
+}));
+
 describe('<CheckoutCta/>', () => {
   window.Razorpay = CheckoutMock;
 
-  const renderApp = (props = initProps, user = MOCK_USER) => {
+  const renderApp = (props = initProps, user = MOCK_USER, isSkipCheckout = false) => {
     const MOCK_CART_ITEM = {
       code: 'mock-product',
       quantity: 1,
@@ -54,13 +62,18 @@ describe('<CheckoutCta/>', () => {
 
     render(
       <PosDeviceStoreProvider init={initialState as PosDeviceStoreState} user={user}>
-        <CheckoutCta {...props} />
+        <CheckoutCta {...props} isSkipCheckout={isSkipCheckout} />
       </PosDeviceStoreProvider>,
     );
   };
 
   beforeEach(() => {
-    server.use(createOrderHandler(), getProductPricingHandler(), createActvationCaseHandler());
+    server.use(
+      createOrderHandler(),
+      getProductPricingHandler(),
+      createActvationCaseHandler(),
+      getPincodeInfoHandler({ type: 'delivery_available' }),
+    );
     window.EASY_ONBOARDING_URL = 'https://easy.razorpay.com';
   });
 
@@ -77,7 +90,9 @@ describe('<CheckoutCta/>', () => {
     };
     renderApp(newProps);
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
-    expect(screen.getByRole('button')).toBeDisabled();
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeDisabled();
+    });
   });
 
   test('should call order create with correct payload', async () => {
@@ -90,17 +105,19 @@ describe('<CheckoutCta/>', () => {
     renderApp(undefined, user);
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
     await userEvent.click(screen.getByText('Confirm Address & Pay'));
-    expect(createOrderServiceSpy).toHaveBeenCalledWith({
-      delivery_address: {
-        address: 'test operation address',
-        city: 'test operation city',
-        country: 'IN',
-        name: 'Test Name',
-        phone_no: '1234567890',
-        pin_code: '123456',
-        state: 'test operation state',
-      },
-      items: [{ code: 'mock-product', count: 1, period: 'monthly' }],
+    await waitFor(() => {
+      expect(createOrderServiceSpy).toHaveBeenCalledWith({
+        delivery_address: {
+          address: 'test operation address',
+          city: 'test operation city',
+          country: 'IN',
+          name: 'Test Name',
+          phone_no: '1234567890',
+          pin_code: '123456',
+          state: 'test operation state',
+        },
+        items: [{ code: 'mock-product', count: 1, period: 'monthly' }],
+      });
     });
   });
 
@@ -427,6 +444,51 @@ describe('<CheckoutCta/>', () => {
           },
         }),
       );
+    });
+  });
+
+  test('should open checkout confirmation box and trigger checkout once user confirms', async () => {
+    const user = {
+      ...MOCK_USER,
+      submitted: true,
+      business_website: 'www.mock-website.com',
+    };
+    const createOrderServiceSpy = jest.spyOn(posServices, 'createOrder');
+    renderApp(undefined, user, true);
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await userEvent.click(screen.getByText('Confirm Address & Pay'));
+    await waitFor(() => {
+      expect(screen.getByText('Confirm Order')).toBeVisible();
+    });
+    await userEvent.click(screen.getByTestId('pos-checkout-confim-modal-confirm'));
+    await waitFor(() => {
+      expect(createOrderServiceSpy).toHaveBeenCalledWith({
+        delivery_address: {
+          address: 'test operation address',
+          city: 'test operation city',
+          country: 'IN',
+          name: 'Test Name',
+          phone_no: '1234567890',
+          pin_code: '123456',
+          state: 'test operation state',
+        },
+        items: [{ code: 'mock-product', count: 1, period: 'monthly' }],
+      });
+    });
+  });
+
+  test('should show error if city not available in gtm city list', async () => {
+    server.use(getPincodeInfoHandler({ type: 'delivery_unavailable' }));
+    const user = {
+      ...MOCK_USER,
+      submitted: true,
+      business_website: 'www.mock-website.com',
+    };
+    renderApp(undefined, user);
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await userEvent.click(screen.getByText('Confirm Address & Pay'));
+    await waitFor(() => {
+      expect(screen.getByText('Pincode not serviceable! Arriving Soon.')).toBeVisible();
     });
   });
 });

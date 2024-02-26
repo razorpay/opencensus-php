@@ -119,7 +119,11 @@ const OrderSummary = (): JSX.Element => {
                   }
                 />
               ) : null}
-              <CheckoutCta isDisabled={isCheckoutDisabled} isLoading={isLatestOrderLoading} />
+              <CheckoutCta
+                isDisabled={isCheckoutDisabled}
+                isLoading={isLatestOrderLoading}
+                isSkipCheckout={pricing.total === 0}
+              />
             </Box>
           </Box>
         ) : (
@@ -187,7 +191,11 @@ const OrderSummary = (): JSX.Element => {
               />
             ) : null}
 
-            <CheckoutCta isDisabled={isCheckoutDisabled} isLoading={isLatestOrderLoading} />
+            <CheckoutCta
+              isDisabled={isCheckoutDisabled}
+              isLoading={isLatestOrderLoading}
+              isSkipCheckout={pricing.total === 0}
+            />
           </Box>
         )}
       </Box>
