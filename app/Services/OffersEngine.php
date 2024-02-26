@@ -386,12 +386,15 @@ class OffersEngine
 
         $input['publisher_id'] = $this->merchantId;
 
+        $input['channel'] = Constants::CHANNEL_RZP_CHECKOUT;
+
         // set pages if no ids in input
         if (sizeof($ids) === 0)
         {
             $input['page_size'] = 200;
             $input['page'] = 1;
         }
+
 
         $endpoint = self::OffersEngineGetOffers;
 
