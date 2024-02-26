@@ -17531,6 +17531,151 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($fta['fts_transfer_id']);
     }
 
+    public function testDispatchingStuckPayoutsForNonBankingPayouts()
+    {
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], [
+            'type' => 'primary'
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('create_request_submitted', $payout['internal_status']);
+    }
+
+    public function testDispatchingOldStuckPayouts()
+    {
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'created_at' => $currentTime - 3000
+        ]);
+
+        $testData = $this->testData["testDispatchingStuckPayouts"];
+        $testData['response']['content']['dispatched_payouts_count'] = 0;
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('create_request_submitted', $payout['internal_status']);
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertNull($payout['transaction_id']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNull($fta['fts_transfer_id']);
+
+        $testData = $this->testData["testDispatchingStuckPayouts"];
+        $testData['request']['content']['payout_stuck_threshold'] = 2000;
+        $testData['response']['content']['dispatched_payouts_count'] = 0;
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('create_request_submitted', $payout['internal_status']);
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertNull($payout['transaction_id']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNull($fta['fts_transfer_id']);
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'created_at' => $currentTime - 1900
+        ]);
+
+        $testData = $this->testData["testDispatchingStuckPayouts"];
+        $testData['request']['content']['payout_stuck_threshold'] = 2000;
+        $testData['response']['content']['dispatched_payouts_count'] = 1;
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('created', $payout['internal_status']);
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertNotNull($payout['transaction_id']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNotNull($fta['fts_transfer_id']);
+    }
+
+    public function testExpiringOldStuckPayouts()
+    {
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'created_at' => $currentTime - 4000
+        ]);
+
+        $testData = $this->testData["testDispatchingStuckPayouts"];
+        $testData['request']['content']['payout_stuck_threshold'] = 1500;
+        $testData['request']['content']['payout_auto_expire_threshold'] = 1500;
+        $testData['response']['content']['dispatched_payouts_count'] = 0;
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('create_request_submitted', $payout['internal_status']);
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertNull($payout['transaction_id']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNull($fta['fts_transfer_id']);
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'created_at' => $currentTime - 1900
+        ]);
+
+        $testData = $this->testData["testDispatchingStuckPayouts"];
+        $testData['request']['content']['payout_stuck_threshold'] = 1500;
+        $testData['request']['content']['payout_auto_expire_threshold'] = 1500;
+        $testData['response']['content']['dispatched_payouts_count'] = 0;
+        $testData['response']['content']['auto_expire_payouts_count'] = 1;
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('failed', $payout['internal_status']);
+        $this->assertEquals('failed', $payout['status']);
+        $this->assertNull($payout['transaction_id']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNull($fta['fts_transfer_id']);
+    }
+
     /**
      * In this test, we shall process a create_request_submitted payout
      * ( create_request_submitted -> created )

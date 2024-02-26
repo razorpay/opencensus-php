@@ -1462,6 +1462,8 @@ class Base extends BaseCore
                     });
             }
 
+            $this->fundTransferDestination = $payout->fundAccount->account;
+
             if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
                 ($payout->isStatusCreated() === true))
             {

@@ -214,7 +214,9 @@ class Core extends Base\Core
     const PS_DATA_MIGRATION_LIMIT              = 10;
     const MUTEX_LOCK_TIMEOUT_PS_DATA_MIGRATION = 180;
 
-    const DEFAULT_PAYOUT_STUCK_DURATION = 900;
+    const DEFAULT_PAYOUT_STUCK_DURATION  = 900;
+    const DEFAULT_PAYOUT_STUCK_THRESHOLD = 1800;
+    const DEFAULT_PAYOUT_AUTO_EXPIRE_THRESHOLD = 0;
 
     const PARTNER_BANK_HEALTH_REDIS_KEY = "partner_bank_health";
 
@@ -1453,50 +1455,83 @@ class Core extends Base\Core
         $merchantIdsWhitelist = $input['merchant_ids'] ?? [];
         $merchantIdsBlacklist = $input['merchant_ids_not'] ?? [];
 
-        $payoutStuckDuration = $input['payout_stuck_duration'] ?? self::DEFAULT_PAYOUT_STUCK_DURATION;
+        $payoutStuckDuration  = $input['payout_stuck_duration'] ?? self::DEFAULT_PAYOUT_STUCK_DURATION;
+        $payoutStuckThreshold = $input['payout_stuck_threshold'] ?? self::DEFAULT_PAYOUT_STUCK_THRESHOLD;
+        $payoutAutoExpireThreshold =
+            $input['payout_auto_expire_threshold'] ?? self::DEFAULT_PAYOUT_AUTO_EXPIRE_THRESHOLD;
 
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
-        $endTimeStamp = $currentTimeStamp - $payoutStuckDuration;
+        $stuckBeforeTimestamp = $currentTimeStamp - $payoutStuckDuration;
+        $payoutStuckThresholdTimestamp = $stuckBeforeTimestamp - $payoutStuckThreshold;
+        $payoutAutoExpireTimestamp = $payoutStuckThresholdTimestamp - $payoutAutoExpireThreshold;
 
         $payouts = $this->repo->payout->fetchPayoutsWithStatus(
             $statuses,
-            $endTimeStamp,
+            $stuckBeforeTimestamp,
+            $payoutAutoExpireTimestamp,
             $merchantIdsWhitelist,
             $merchantIdsBlacklist);
 
         $dispatchedPayoutCount = 0;
+        $autoExpirePayoutsCount = 0;
 
         /** @var Entity $payout */
         foreach ($payouts as $payout)
         {
             $status = $payout->getStatus();
 
-            if (in_array($status, [
-                    Status::CREATE_REQUEST_SUBMITTED,
-                    Status::CREATED,
-                    Status::INITIATED]) === true)
-            {
-                $payoutQueueFlagDetails = $payout->payoutsDetails;
+            switch ($status) {
 
-                if ($payoutQueueFlagDetails != null and
-                    $payoutQueueFlagDetails->getQueueIfLowBalanceFlag() === true)
-                {
-                    $payout->setQueueFlag(true);
-                }
+                case Status::INITIATED:
+                case Status::CREATED:
+                    if ($payout->getCreatedAt() > $payoutStuckThresholdTimestamp) {
+                        $this->pushPayoutPostCreate($payout);
 
-                PayoutPostCreateProcessLowPriority::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
+                        $dispatchedPayoutCount++;
+                    }
 
-                $dispatchedPayoutCount++;
+                    break;
+
+                case Status::CREATE_REQUEST_SUBMITTED:
+                    if ($payout->getCreatedAt() > $payoutStuckThresholdTimestamp) {
+                        $this->pushPayoutPostCreate($payout);
+
+                        $dispatchedPayoutCount++;
+                    }
+                    else
+                    {
+                        PayoutsAutoExpire::dispatch($this->mode, $payout->getId());
+
+                        $autoExpirePayoutsCount++;
+                    }
+
+                    break;
             }
         }
 
+        $counts = [
+            'dispatched_payouts_count' => $dispatchedPayoutCount,
+            'auto_expire_payouts_count' => $autoExpirePayoutsCount
+        ];
+
         $this->trace->info(
             TraceCode::STUCK_PAYOUTS_DISPATCHED,
-            [
-                'dispatched_payouts_count' => $dispatchedPayoutCount
-            ] + $input);
+            $counts + $input);
 
-        return ['dispatched_payouts_count' => $dispatchedPayoutCount];
+        return $counts;
+    }
+
+    public function pushPayoutPostCreate(Entity $payout)
+    {
+        $payoutQueueFlagDetails = $payout->payoutsDetails;
+
+        if ($payoutQueueFlagDetails != null and
+            $payoutQueueFlagDetails->getQueueIfLowBalanceFlag() === true)
+        {
+            $payout->setQueueFlag(true);
+        }
+
+        PayoutPostCreateProcessLowPriority::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
     }
 
     /**
@@ -3692,6 +3727,7 @@ class Core extends Base\Core
                             break;
 
                         case Status::QUEUED:
+                        case Status::CREATE_REQUEST_SUBMITTED:
                             $this->handlePayoutFailed($payout);
                             break;
 

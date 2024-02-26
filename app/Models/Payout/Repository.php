@@ -2398,11 +2398,12 @@ class Repository extends Base\Repository
     }
 
     public function fetchPayoutsWithStatus(array $statuses,
-                                                 $endTimeStamp = 0,
+                                                 $toTimestamp = 0,
+                                                 $fromTimestamp = 0,
                                            array $merchantIdsWhitelist = [],
                                            array $merchantIdsBlacklist = [])
     {
-        $isPayoutService = $this->dbColumn(Entity::IS_PAYOUT_SERVICE);
+        $isPayoutService = $this->repo->payout->dbColumn(Entity::IS_PAYOUT_SERVICE);
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->select($this->getTableName() . ".*")
@@ -2423,11 +2424,22 @@ class Repository extends Base\Repository
             $query->whereNotIn($merchantIdColumn, $merchantIdsBlacklist);
         }
 
-        $updatedAtCol = $this->dbColumn(Entity::UPDATED_AT);
+        $this->joinQueryBalance($query);
 
-        if ($endTimeStamp != 0)
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $query->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING);
+
+        $createdAtColumn = $this->repo->payout->dbColumn(Entity::CREATED_AT);
+
+        if ($toTimestamp != 0)
         {
-            $query->where($updatedAtCol, '<=', $endTimeStamp);
+            $query->where($createdAtColumn, '<=', $toTimestamp);
+        }
+
+        if ($fromTimestamp != 0)
+        {
+            $query->where($createdAtColumn, '>=', $fromTimestamp);
         }
 
         return $query->limit(self::STUCK_PAYOUTS_FETCH_LIMIT)
