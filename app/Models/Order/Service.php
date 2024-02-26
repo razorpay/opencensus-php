@@ -670,7 +670,7 @@ class Service extends Base\Service
              // checkout service can only accept a single type
              // Hence setting to empty array if it's not a sequential array
              // This is used to fetch eligible offers from offer engine in checkout service
-             if (!is_sequential_array($orderAttributes["offers"])) {
+             if (empty($orderAttributes["offers"]) || !is_sequential_array($orderAttributes["offers"])) {
                  $orderAttributes["offers"] = [];
              }
 

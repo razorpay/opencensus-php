@@ -3,6 +3,7 @@
 namespace RZP\Models\Order;
 
 use App;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Exception\ServerErrorException;
@@ -754,7 +755,7 @@ class Entity extends Base\PublicEntity
         {
             // for running UT offers
             // try to fetch from fallback
-            if ($app->runningUnitTests() === true)
+            if ($app->runningUnitTests() === true || $app['rzp.mode'] === Mode::TEST)
             {
                 $offers = $this->offers()->get();
 
@@ -956,7 +957,7 @@ class Entity extends Base\PublicEntity
         $app = App::getFacadeRoot();
         // for running UT offers
         // try to fetch from fallback
-        if ($app->runningUnitTests() === true)
+        if ($app->runningUnitTests() === true || $app['rzp.mode'] === Mode::TEST)
         {
             $offers = $this->offers()->get();
 
