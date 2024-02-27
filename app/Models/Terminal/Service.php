@@ -352,9 +352,7 @@ class Service extends Base\Service
 
     public function validateTerminalEditV3($id, $input)
     {
-        $terminal = $this->app['terminals_service']->validateTerminalEditV3($id, $input);
-
-        return $terminal->toArrayAdmin();
+        return $this->app['terminals_service']->validateTerminalEditV3($id, $input);
     }
 
     public function editTerminalV3($terminalId, $input)

@@ -1307,7 +1307,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function redactSecretsOnWorkflow(array $redactedInput) {
+    public function redactSecretsOnWorkflow(array $redactedInput) {
         $terminalHiddenFields = (new Entity)->getHidden();
 
         $fieldsRedacted = false;

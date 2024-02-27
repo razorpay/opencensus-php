@@ -16,6 +16,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Terminal\Entity;
+use RZP\Models\Terminal\Core as terminalcore;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
@@ -1310,7 +1311,7 @@ class TerminalsService
         return $this->proxyTerminalService($input, $params[self::METHOD], $path);
     }
 
-    public function validateTerminalEditV3(string $terminalId, array $input)
+    public function validateTerminalEditV3($terminalId,$input)
     {
         $params = self::PARAMS[self::VALIDATE_EDIT_TERMINAL_V3];
 
@@ -1321,11 +1322,17 @@ class TerminalsService
 
     public function editTerminalV3($terminalId,$input)
     {
-        $this->app['workflow']
-            ->setEntityAndId($terminalId, 'terminal')
-            ->handle(["terminal_edit"=> []], [
-                "terminal_edit" => $this->redactSecretsOnWorkflow($input),
-            ]);
+        if(isset($input['trigger_workflow']) && $input['trigger_workflow'])
+        {
+
+            unset($input['trigger_workflow']);
+
+            $this->app['workflow']
+                ->setEntityAndId($terminalId, 'terminal')
+                ->handle(["terminal_edit"=> []], [
+                    "terminal_edit" => (new terminalcore())->redactSecretsOnWorkflow($input),
+                ]);
+        }
 
         $params = self::PARAMS[self::EDIT_TERMINAL_V3];
 
