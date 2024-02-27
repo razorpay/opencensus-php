@@ -4808,7 +4808,8 @@ class Service extends Base\Service
                     {
                         $bannerStatus = (empty($existingTerminalBannerStatus) === false and
                                          ($existingTerminalBannerStatus === DEConstants::PENDING_SEEN or
-                                          $existingTerminalBannerStatus === DEConstants::PENDING_ACK)) ?
+                                          $existingTerminalBannerStatus === DEConstants::PENDING_ACK or
+                                             $existingTerminalBannerStatus === DEConstants::SUCCESS)) ?
                             DEConstants::SUCCESS : DEConstants::NO_BANNER;
                     }
                     else
