@@ -177,7 +177,7 @@ class Core extends Base\Core
 
                     $processor = (new Factory())->getLegalDocumentProcessor();
 
-                    $response = $processor->processLegalDocuments($legalDocumentsInput,
+                    $response = $processor->processLegalDocuments($merchant, $legalDocumentsInput,
                                                             $this->getPlatform($consentDetailForMerchant['consent_for']),
                                                             $isExpEnabled);
 
@@ -258,6 +258,8 @@ class Core extends Base\Core
         }
         catch (LogicException $e)
         {
+            $this->trace->traceException($e);
+
             throw new LogicException($e->getMessage(), $e->getCode());
         }
 
@@ -363,7 +365,7 @@ class Core extends Base\Core
 
         $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
-        $response = $processor->processLegalDocuments($legalDocumentsInput, 'pg', $isExpEnabled);
+        $response = $processor->processLegalDocuments($merchant, $legalDocumentsInput, 'pg', $isExpEnabled);
 
         $responseData = $response->getResponseData();
 

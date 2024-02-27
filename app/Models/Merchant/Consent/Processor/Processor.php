@@ -4,5 +4,5 @@ namespace RZP\Models\Merchant\Consent\Processor;
 
 interface Processor
 {
-    public function processLegalDocuments();
+    public function processLegalDocuments($merchant);
 }

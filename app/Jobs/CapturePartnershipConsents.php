@@ -197,7 +197,7 @@ class CapturePartnershipConsents extends Job
 
             $processor->setMerchant($merchant);
 
-            $response = $processor->processLegalDocuments($legalDocumentsInput, 'pg', $isExpEnabled);
+            $response = $processor->processLegalDocuments($merchant, $legalDocumentsInput, 'pg', $isExpEnabled);
 
             $responseData = $response->getResponseData();
 

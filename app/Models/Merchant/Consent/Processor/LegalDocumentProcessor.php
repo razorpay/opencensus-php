@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\Consent\Processor;
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
+use RZP\Exception\IntegrationException;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Base\RepositoryManager;
@@ -69,38 +71,43 @@ class LegalDocumentProcessor implements Processor
     }
 
     /**
+     * @param null $merchant
      * @param array|null $input
-     * @param string     $platform
-     * @param bool       $isExpEnabled
-     * @param array|null $notificationDetails
-     *
+     * @param string $platform
+     * @param bool $isExpEnabled
      * @return LegalDocumentBaseResponse|ConsentDocumentBaseResponse
+     * @throws IntegrationException
      */
-    public function processLegalDocuments(array $input = null, string $platform = 'pg', bool $isExpEnabled = false): LegalDocumentBaseResponse|ConsentDocumentBaseResponse
+    public function processLegalDocuments($merchant, array $input = null, string $platform = 'pg', bool $isExpEnabled = false): LegalDocumentBaseResponse|ConsentDocumentBaseResponse
     {
+        if ($merchant === null) {
+            $this->trace->info(TraceCode::ERROR_FETCHING_MERCHANT_DETAILS);
+            throw new IntegrationException('Merchant context not present in the request', ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+        }
+
         $documents_detail = $input[DEConstants::DOCUMENTS_DETAIL];
 
         $notificationDetails = $input[DEConstants::NOTIFICATION_DETAILS];
 
         // RazorpayX has no concept of PromoterPan Name during signup so, we will be using merchant name instead.
-        $signatory_name = $platform === 'rx' ? $this->merchant->getName() : ($this->merchant->merchantDetail->getPromoterPanName()) ?? ($this->merchant->getName());
+        $signatory_name = $platform === 'rx' ? $merchant->getName() : ($merchant->merchantDetail->getPromoterPanName()) ?? ($merchant->getName());
 
         if (isset($input[DEConstants::SIGNATORY_NAME]) === true)
         {
             $signatory_name = $input[DEConstants::SIGNATORY_NAME];
         }
 
-        $ownerName = $input[DEConstants::OWNER_NAME] ?? $this->merchant->merchantDetail->getBusinessName();
+        $ownerName = $input[DEConstants::OWNER_NAME] ?? $merchant->merchantDetail->getBusinessName();
 
         $ownerDetails = [
-            "owner_id"             => $this->merchant->getMerchantId(),
+            "owner_id"             => $merchant->getMerchantId(),
             "ip_address"           => $input[DEConstants::IP_ADDRESS] ?? $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
             "acceptance_timestamp" => $input[DEConstants::DOCUMENTS_ACCEPTANCE_TIMESTAMP] ?? Carbon::now()->getTimestamp(),
             "signatory_name"       => $signatory_name,
             "owner_name"           => $ownerName,
-            "contact_number"       => $this->merchant->merchantDetail->getContactMobile(),
-            "email"                => $this->merchant->getEmail(),
-            "time_zone"            => Timezone::getTimeZoneAbbrevation($this->merchant->getTimeZone()),
+            "contact_number"       => $merchant->merchantDetail->getContactMobile(),
+            "email"                => $merchant->getEmail(),
+            "time_zone"            => Timezone::getTimeZoneAbbrevation($merchant->getTimeZone()),
         ];
 
         if($isExpEnabled === true && (new AccessMapCore)->isSubMerchant($ownerDetails['owner_id']) === true)
@@ -139,7 +146,7 @@ class LegalDocumentProcessor implements Processor
                 $body["sms_details"] = $notificationDetails["sms_details"] ?? null;
             }
 
-            $response = app('bvs_legal_document_manager')->createLegalDocumentV2($body, $this->merchant);
+            $response = app('bvs_legal_document_manager')->createLegalDocumentV2($body, $merchant);
 
             $this->trace->info(TraceCode::BVS_RESPONSE_CREATE_CONSENTS_V2, [
                 'id'     => $response->getId(),

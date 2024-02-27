@@ -11,12 +11,13 @@ use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ConsentDocumentBaseResponse;
 class LegalDocumentProcessorMock extends LegalDocumentProcessor
 {
     /**
+     * @param $merchant
      * @param array|null $input
      * @param string $platform
      * @param bool $isExpEnabled
      * @return LegalDocumentBaseResponse|ConsentDocumentBaseResponse
      */
-    public function processLegalDocuments(array $input = null, string $platform = 'pg', bool $isExpEnabled = false): LegalDocumentBaseResponse|ConsentDocumentBaseResponse
+    public function processLegalDocuments($merchant, array $input = null, string $platform = 'pg', bool $isExpEnabled = false): LegalDocumentBaseResponse|ConsentDocumentBaseResponse
     {
         $response = new LegalDocumentsManagerResponse();
 

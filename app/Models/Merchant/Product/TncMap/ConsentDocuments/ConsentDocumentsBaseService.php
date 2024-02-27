@@ -137,7 +137,7 @@ class ConsentDocumentsBaseService extends Base\Service
 
             $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
-            $response = $processor->processLegalDocuments($legalDocumentsInput, DEConstants::PG, $isExpEnabled);
+            $response = $processor->processLegalDocuments($merchant, $legalDocumentsInput, DEConstants::PG, $isExpEnabled);
 
             $responseData = $response->getResponseData();
 

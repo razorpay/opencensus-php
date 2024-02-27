@@ -676,7 +676,7 @@ class Service extends Base\Service
 
                         $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
-                        $response = $processor->processLegalDocuments($legalDocumentsInput, DEConstants::PG, $isExpEnabled);
+                        $response = $processor->processLegalDocuments($merchant, $legalDocumentsInput, DEConstants::PG, $isExpEnabled);
 
                         $responseData = $response->getResponseData();
 
@@ -4576,7 +4576,7 @@ class Service extends Base\Service
 
             $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
-            $response = $processor->processLegalDocuments($legalDocumentsInput, DEConstants::RX);
+            $response = $processor->processLegalDocuments($merchant, $legalDocumentsInput, DEConstants::RX);
 
             $responseData = $response->getResponseData();
 
@@ -5160,7 +5160,7 @@ class Service extends Base\Service
                 if(isset($vcipEntities[0]['details']->weblink_expiry))
                 {
                     $diff = intval($vcipEntities[0]['details']->weblink_expiry) - time();
-    
+
                     if ($diff >= DEConstants::VKYC_CUT_OFF_DURATION)
                     {
                         return $vcipEntities[0];
@@ -5173,7 +5173,7 @@ class Service extends Base\Service
                 return $vcipEntities[0];
             }
         }
-        
+
         $vcipEntity = $this->core->createVCIPEntity($input);
 
         return $vcipEntity;
