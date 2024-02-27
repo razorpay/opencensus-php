@@ -1015,6 +1015,8 @@ final class RazorxTreatment
 
     public const ALLOW_BIN_SERVICE_DUAL_WRITE = 'allow_bin_service_dual_write';
 
+    public const ALLOW_BIN_SERVICE_SHADOW_READS = 'allow_bin_service_shadow_reads';
+    
     const REFUND_FIND_MANY_RELATIONS = 'refund_find_many_relations';
 
     /**

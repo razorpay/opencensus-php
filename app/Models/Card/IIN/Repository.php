@@ -4,6 +4,8 @@ namespace RZP\Models\Card\IIN;
 
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Services\BinService;
+use RZP\Http\Request\Requests;
 use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
@@ -104,5 +106,68 @@ class Repository extends Base\Repository
                     ->toArray();
 
         return $iin;
+    }
+
+    public function find($iin, $columns = array('*'), string $connectionType = null)
+    {
+        $apiServiceIINEntity = parent::find($iin, $columns, $connectionType);
+
+        $iinService = (new Service());
+
+        if ($iinService->shouldReadFromBinService() === true)
+        {
+            $binService = (new BinService());
+
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin);
+        }
+
+        if (!empty($binServiceIINEntity))
+        {
+            $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+        }
+
+        return $apiServiceIINEntity;
+    }
+
+    public function findOrFail($iin, $columns = array('*'), string $connectionType = null)
+    {
+        $apiServiceIINEntity = parent::findOrFail($iin, $columns, $connectionType);
+
+        $iinService = (new Service());
+
+        if ($iinService->shouldReadFromBinService() === true)
+        {
+            $binService = (new BinService());
+
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin);
+        }
+
+        if (!empty($binServiceIINEntity))
+        {
+            $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+        }
+
+        return $apiServiceIINEntity;
+    }
+
+    public function findOrFailPublic($iin, $columns = array('*'), string $connectionType = null)
+    {
+        $apiServiceIINEntity = parent::findOrFailPublic($iin, $columns, $connectionType);
+
+        $iinService = (new Service());
+
+        if ($iinService->shouldReadFromBinService() === true)
+        {
+            $binService = (new BinService());
+
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin);
+        }
+
+        if (!empty($binServiceIINEntity))
+        {
+             $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+        }
+
+        return $apiServiceIINEntity;
     }
 }

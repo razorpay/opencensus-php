@@ -2,10 +2,12 @@
 
 namespace RZP\Services;
 
+use Request;
+use RZP\Models\Card\IIN\Service as IINService;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Mode;
 use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
-use RZP\Exception;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Error;
 
@@ -21,6 +23,10 @@ class BinService
 
     const ERROR             = 'error';
 
+    const UPDATE_IIN        = 'update_iin';
+
+    const FETCH_IIN         = 'fetch_iin';
+
     protected $baseUrl;
 
     protected $config;
@@ -30,6 +36,8 @@ class BinService
     protected $app;
 
     protected $request;
+
+    protected $mode;
 
     private $key;
     /**
@@ -61,11 +69,9 @@ class BinService
         $this->key = $this->config[$keyName];
         $this->secret = $this->config[$secretName];
     }
+
     protected function getRequestHooks()
     {
-        $this->trace->info(TraceCode::BIN_SERVICE_REQUEST, [
-            'action1' => 'update_iin',
-        ]);
         $hooks = new Requests_Hooks();
 
         $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
@@ -73,12 +79,32 @@ class BinService
         return $hooks;
     }
 
-    public function sendRequest($url, $method, $data = null, $namespace =null)
+    public function fetchEntityByIINFromBinService($iin)
     {
-        try {
+        // expand=true helps in fetching flows as well
+        $url = 'iins/' . $iin . '?expand=true';
+
+        // To be removed later, once made non-mandatory field in bin services
+        $namespace = 'RZP/IN/DEBIT';
+
+        $entity = $this->sendRequest($url, Requests::GET, null, $namespace, BinService::FETCH_IIN);
+
+        if(!empty($entity))
+        {
+            return (new IINService())->transformBinServiceEntityToApiServiceEntity($entity);
+        }
+
+        return [];
+    }
+
+    public function sendRequest($url, $method, $data = null, $namespace = null, $action = null)
+    {
+        try 
+        {
             $url = $this->baseUrl . $url;
 
-            if ($data === null) {
+            if ($data === null) 
+            {
                 $data = '';
             }
 
@@ -88,26 +114,33 @@ class BinService
             $headers[self::X_NAMESPACE] = $namespace;
             $headers['X-Razorpay-Mode'] = $this->app['rzp.mode'] ?? Mode::LIVE;
             $headers['Authorization'] = 'Basic ' . base64_encode($this->key . ':' . $this->secret);
+            
+            if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+                $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+            }
 
             $request = [
-                'url' => $url,
-                'method' => $method,
-                'headers' => $headers,
-                'content' => $data
+                'url'       => $url,
+                'method'    => $method,
+                'headers'   => $headers,
+                'content'   => $data
             ];
 
             $this->trace->info(TraceCode::BIN_SERVICE_REQUEST, [
-                'url' => $request['url'],
-                'action' => 'update_iin',
-                'content' => $request['content'],
+                'url'       => $request['url'],
+                'action'    => $action,
+                'content'   => $request['content'],
                 'namespace' => $headers[self::X_NAMESPACE]
             ]);
 
             $response = $this->sendBinServiceRequest($request);
+
             $this->checkErrors($response);
 
             return json_decode($response->body, true);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) 
+        {
             $this->trace->error(
                 TraceCode::BIN_SERVICE_ERROR,
                 [
@@ -130,10 +163,21 @@ class BinService
         {
             try
             {
-                $response = Requests::$method(
-                    $request['url'],
-                    $request['headers'],
-                    json_encode($request['content']));
+                switch($method)
+                {
+                    case  Requests::GET:
+                        $response = Requests::$method(
+                                    $request['url'],
+                                    $request['headers'],
+                                    []);
+                        break;
+                    case Requests::PATCH:
+                        $response = Requests::$method(
+                                    $request['url'],
+                                    $request['headers'],
+                                    json_encode($request['content']));
+                        break;
+                }
 
                 break;
             }

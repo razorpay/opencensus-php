@@ -11,6 +11,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Environment;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\BinService;
 use RZP\Trace\TraceCode;
@@ -796,7 +797,7 @@ class Service extends Base\Service
         ];
 
         $namespace = "RZP/".strtoupper($iin->getCountry())."/".strtoupper($iin->getType());
-        $binService->sendRequest($url, 'PATCH', $request, $namespace);
+        $binService->sendRequest($url, 'PATCH', $request, $namespace, BinService::UPDATE_IIN);
     }
 
     public function disableFlows(&$existingFlowData, $flowsToDisable): void
@@ -824,7 +825,7 @@ class Service extends Base\Service
 
         $namespace = "RZP/".strtoupper($request["country"])."/".strtoupper($request["type"]);
 
-        $binService->sendRequest($url, 'PATCH', $request, $namespace);
+        $binService->sendRequest($url, 'PATCH', $request, $namespace, BinService::UPDATE_IIN);
     }
 
     private function formatRequest($iin, $input)
@@ -898,4 +899,133 @@ class Service extends Base\Service
         return false;
     }
 
+    public function compareBinServiceEntityAndApiServiceEntity($apiServiceEntity, $binServiceEntity, $extraTraceData)
+    { 
+
+        $differences = [];
+
+        // matches the api service IIN entity fields with bin service entity
+        foreach (Constants::COMPARABLE_FIELDS_BETWEEN_IIN_ENTITY_AND_BIN_SERVICE as $field) 
+        {
+            if (isset($apiServiceEntity[$field]) && isset($binServiceEntity[$field])) 
+            {
+                if ($apiServiceEntity[$field] !== $binServiceEntity[$field]) 
+                {
+                    $differences[$field] = [
+                        'api_entity_value'         => $apiServiceEntity[$field],
+                        'bin_service_entity_value' => $binServiceEntity[$field]
+                    ];
+                }
+            } 
+            else 
+            {
+                if (isset($apiServiceEntity[$field]) || isset($binServiceEntity[$field]))
+                {
+                    $differences[$field] = [
+                        'api_entity_value' => isset($apiServiceEntity[$field]) ? $apiServiceEntity[$field] : null,
+                        'bin_service_entity_value' => isset($binServiceEntity[$field]) ? $binServiceEntity[$field] : null
+                    ];
+                }
+            }
+        }
+
+        if(count($differences) !== 0)
+        {
+            $traceData = array_merge($differences, $extraTraceData);
+
+            $this->trace->info(TraceCode::API_BIN_SERVICE_IIN_DATA_MISMATCH, $traceData);
+        }
+    }
+
+    public function transformBinServiceEntityToApiServiceEntity($entity)
+    {
+        foreach (Constants::BIN_SERVICE_ENTITY_TO_API_IIN_ENTITY_KEY_MAPPING as $binServiceKeyName => $apiServiceKeyName)
+        {
+            $entity[$apiServiceKeyName] = $entity[$binServiceKeyName];
+
+            unset($entity[$binServiceKeyName]);
+        }
+
+        if(isset($entity[Constants::FEATURES]) and !empty($entity[Constants::FEATURES]))
+        {
+            // emi, locked, enabled, recurring are now part of features objects in bin service entity
+            $features = $entity[Constants::FEATURES];
+            
+            // flows is now part of features.features object in bin service entity
+            $flows = $features[Constants::FEATURES];
+
+            unset($entity[Constants::FEATURES]);
+
+            unset($features[Constants::FEATURES]);
+
+            foreach($features as $key => $value)
+            {
+                $entity[$key] = isset($value) ? $value : false;
+            }
+
+            // Flow::getHexValue function expects value to be set as 1 to calculate hex
+            // instead of changing it in older function which is getting used at multiple
+            // place transforming the payload to use the same functionality
+            foreach($flows as $flow)
+            {
+                $flows[$flow] = '1';
+            }
+
+            $entity[Entity::FLOWS] = !empty($flows) ? Flow::getHexValue($flows) : 0;
+        }
+
+        $mandateHubs = $entity[Entity::MANDATE_HUBS];
+
+        unset($entity[Entity::MANDATE_HUBS]);
+
+        // MandateHub::getHexValue function expects value to be set as 1 to calculate hex
+        // instead of changing it in older function which is getting used at multiple
+        // place transforming the payload to use the same functionality
+        foreach($mandateHubs as $mandateHub)
+        {
+            $mandateHubs[$mandateHub] = '1';
+        }
+
+        $entity[Entity::MANDATE_HUBS] = !empty($mandateHubs) ? MandateHub::getHexValue($mandateHubs) : 0;
+
+        foreach($entity as $key => $value)
+        {
+            $entity[$key] = $this->transformEmptyStringToNullIfApplicable($value);
+        }
+
+        return $entity;
+    }
+
+    private function transformEmptyStringToNullIfApplicable($val)
+    {
+        if ($val === '')
+        {
+            return null;
+        }
+
+        return $val;
+    }
+
+    public function shouldReadFromBinService() : bool
+    {
+        if (Environment::isTestingEnvironment($this->app['env']) === true)
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ALLOW_BIN_SERVICE_SHADOW_READS, $this->mode);
+
+        $this->trace->info(TraceCode::BIN_SERVICE_SHADOW_READS_VARIANT, [
+            'razorx_variant' => $variant,
+            'mode'           => $this->mode,
+            'env'            => $this->app['env'],
+        ]);
+
+        if (strtolower($variant) === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
