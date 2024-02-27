@@ -24,6 +24,8 @@ class Constants
     const ENTITY_TYPE_PARTNER = "partner";
     const ENTITY_ID           = "entity_id";
     const ENTITY_TYPE         = "entity_type";
+    const MERCHANT_ID         = "merchant_id";
+    const DEFAULT_MERCHANT_ID = "10000razorpay";
 
     const PARTNER_SELF_SERVE = "Partner Self Serve";
 

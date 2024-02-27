@@ -223,7 +223,7 @@ class Core
         $userEmail = 'default@razorpay.in';
         $userType  = 'system';
         $userName  = 'Razorpay';
-        $userRole  = '';
+        $userRole  = 'system';
 
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
@@ -232,6 +232,7 @@ class Core
             $userEmail  = $admin->getEmail();
             $userName   = $admin->getName();
             $userType   = 'admin';
+            $userRole   = 'rzp_admin';
         }
         elseif ($this->app['basicauth']->isProxyAuth() === true &&
                 empty($this->app['basicauth']->getUser()) === false)

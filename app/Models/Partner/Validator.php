@@ -9,11 +9,13 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\Constants;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\AccessMap as AccessMap;
 use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
+use RZP\Models\Merchant\MerchantApplications as MerchantApp;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 
 class Validator extends Base\Validator
@@ -99,7 +101,7 @@ class Validator extends Base\Validator
      */
     public function validateAppTypeChange(string $fromAppType, string $toAppType)
     {
-        $allowedAppTypes = [MerchantApp::REFERRED, MerchantApp::MANAGED];
+        $allowedAppTypes = [MerchantApplicationsEntity::REFERRED, MerchantApplicationsEntity::MANAGED];
 
         if ((in_array($fromAppType, $allowedAppTypes) === false) or
             (in_array($toAppType, $allowedAppTypes) === false) or
@@ -197,6 +199,33 @@ class Validator extends Base\Validator
         if ((new MerchantCore())->isSplitzExperimentEnable($properties, 'enable') !== true)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED, null, ['partner_id' => $partnerId]);
+        }
+    }
+
+    /**
+     * This method checks if there exists a mapping between the partner and sub-merchant
+     *
+     * @param Entity $partner
+     * @param Entity $subMerchant
+     *
+     * @throws BadRequestException
+     */
+    public function validatePartnerSubMerchantMapping(Merchant\Entity $partner, Merchant\Entity $subMerchant)
+    {
+        $appType = (new MerchantApp\Core())->getDefaultAppTypeForPartner($partner);
+
+        $isMapped = (new AccessMap\Core())->isMerchantMappedToPartnerWithAppType($partner, $subMerchant, $appType);
+
+        if ($isMapped === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_MERCHANT_MAPPING_NOT_FOUND,
+                [
+                    Entity::PARTNER_ID  => $partner->getId(),
+                    Entity::MERCHANT_ID => $subMerchant->getId(),
+                    Constants::APP_TYPE => $appType,
+                ]
+            );
         }
     }
 }

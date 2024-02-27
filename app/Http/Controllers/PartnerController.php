@@ -10,6 +10,27 @@ class PartnerController extends Controller
 {
     protected $service = Partner\Service::class;
 
+    public function posGetSubmDefaultDeviceConfig(string $id)
+    {
+        $response = $this->service()->posGetSubmDefaultDeviceConfig($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function posFetchSubmAllDeviceOrder(string $id)
+    {
+        $response = $this->service()->posFetchSubmAllDeviceOrder($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function posFetchSubmLatestOrder(string $id)
+    {
+        $response = $this->service()->posFetchSubmLatestOrder($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function savePartnerActivationDetails()
     {
         $input = Request::all();

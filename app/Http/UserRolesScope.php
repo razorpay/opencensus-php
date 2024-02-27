@@ -302,6 +302,9 @@ class UserRolesScope
             'partner_config_edit_logo'                  => [Role::OWNER, Role::ADMIN],
             'submerchants_fetch_capital_applications'   => Role::allExceptPaymentLinkRoles(),
             'submerchant_partner_feature_check'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'pos_fetch_subm_device_config'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
+            'pos_fetch_subm_all_device_orders'          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
+            'pos_fetch_subm_latest_order'               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
 
 
             'loc_service'                 => [Role::OWNER, Role::ADMIN],

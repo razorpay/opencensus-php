@@ -64,12 +64,8 @@ class BusinessAuth
         'merchant_website_section_save',
         'merchant_website_section_fetch',
         'merchant_website_section_page_load',
-        'pos_fetch_device_order',
-        'pos_fetch_all_device_orders',
-        'pos_fetch_latest_order',
         'payment_handle_get',
         'merchant_activation_business_categories_v2',
-        'fetch_device_config',
     ];
 
     /**

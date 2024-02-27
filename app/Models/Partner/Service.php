@@ -15,10 +15,12 @@ use RZP\Constants\Environment;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
+use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Referral;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Partner\Activation;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Jobs\SubmerchantFirstTransactionEvent;
@@ -28,6 +30,7 @@ use RZP\Http\Controllers\PartnerPGOSProxyController;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 
 class Service extends Base\Service
@@ -42,6 +45,8 @@ class Service extends Base\Service
 
     protected $partnerPGOSProxyController;
 
+    protected $pgosProxyController;
+
     public function __construct()
     {
         $this->core = new Core();
@@ -55,6 +60,8 @@ class Service extends Base\Service
         $this->partnerActivationValidator = new Activation\Validator();
 
         $this->partnerPGOSProxyController = new PartnerPGOSProxyController();
+
+        $this->pgosProxyController = new MerchantOnboardingProxyController();
 
         parent::__construct();
     }
@@ -657,6 +664,116 @@ class Service extends Base\Service
     public function updatePOSDeviceConfig(string $partnerId, array $input): array
     {
         return $this->handlePOSDeviceConfigRequest($partnerId, $input, PartnerPGOSProxyController::PARTNER_POS_DEVICE_CONFIG_UPDATE);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function posGetSubmDefaultDeviceConfig(string $subMerchantId): array
+    {
+        Merchant\Account\Entity::verifyIdAndSilentlyStripSign($subMerchantId);
+        $subMerchant = $this->repo->merchant->findOrFail($subMerchantId);
+
+        $partner = $this->fetchPartner();
+        $this->merchantValidator->validateIsPartner($partner);
+        (new Validator())->validatePartnerSubMerchantMapping($partner, $subMerchant);
+
+        // 10000razorpay - this is default RZP merchant id
+        $input = [
+            PartnerConstants::MERCHANT_ID => PartnerConstants::DEFAULT_MERCHANT_ID
+        ];
+
+        // routing condition is ignored as all POS requests have to be driven thorugh PGOS
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_fetch_device_config', $input, $subMerchant);
+
+        $this->trace->info(
+            TraceCode::SUB_MERCHANT_DEVICE_CONFIG,
+            [
+                'response'    => $response,
+            ]
+        );
+
+        return $response;
+    }
+
+    public function posFetchSubmAllDeviceOrder(string $subMerchantId)
+    {
+        Merchant\Account\Entity::verifyIdAndSilentlyStripSign($subMerchantId);
+        $subMerchant = $this->repo->merchant->findOrFail($subMerchantId);
+
+        $partner = $this->fetchPartner();
+        $this->merchantValidator->validateIsPartner($partner);
+        (new Validator())->validatePartnerSubMerchantMapping($partner, $subMerchant);
+
+        $input = [
+            PartnerConstants::MERCHANT_ID => $subMerchant->getId()
+        ];
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_all_order', $input, $subMerchant);
+
+        $this->trace->info(
+            TraceCode::SUB_MERCHANT_FETCH_ALL_DEVICE_ORDER,
+            [
+                'response'    => $response,
+            ]
+        );
+
+        return $response;
+    }
+
+    public function posFetchSubmLatestOrder(string $subMerchantId)
+    {
+        Merchant\Account\Entity::verifyIdAndSilentlyStripSign($subMerchantId);
+        $subMerchant = $this->repo->merchant->findOrFail($subMerchantId);
+
+        $partner = $this->fetchPartner();
+        $this->merchantValidator->validateIsPartner($partner);
+        (new Validator())->validatePartnerSubMerchantMapping($partner, $subMerchant);
+
+        $input = [
+            PartnerConstants::MERCHANT_ID => $subMerchant->getId()
+        ];
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_latest_order', $input, $subMerchant);
+
+        if ($response === null) {
+            throw new Exception\ServerErrorException( "failed to execute fetch latest order request",
+                ErrorCode::SERVER_ERROR);
+        }
+
+        $this->trace->info(
+            TraceCode::SUB_MERCHANT_FETCH_LATEST_DEVICE_ORDER,
+            [
+                'response'    => $response,
+            ]
+        );
+
+        return $response;
+    }
+
+    /**
+     * @return Entity
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function fetchPartner(): Entity
+    {
+        //
+        // In the context of partners and submerchants -
+        //
+        // $merchant_id here corresponds to the submerchant's id. This is because the merchant_access_map entity maps
+        // the submerchant id to the application entity (entity_type = application and entity_id = application_id),
+        // which makes the submerchant as the primary entity in the merchant_access_map
+        //
+        $partner = $this->merchant;
+
+        if ($partner === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_CONTEXT_NOT_SET,
+                Entity::PARTNER_TYPE);
+        }
+
+        return $partner;
     }
 
 

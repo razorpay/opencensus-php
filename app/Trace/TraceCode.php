@@ -11090,6 +11090,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const POS_MERCHANT_ONBOARDING_REQUEST                       = 'POS_MERCHANT_ONBOARDING_REQUEST';
 
     const MERCHANT_DEVICE_CONFIG                                = 'MERCHANT_DEVICE_CONFIG';
+    const SUB_MERCHANT_DEVICE_CONFIG                            = 'SUB_MERCHANT_DEVICE_CONFIG';
+    const SUB_MERCHANT_FETCH_ALL_DEVICE_ORDER                   = 'SUB_MERCHANT_FETCH_ALL_DEVICE_ORDER';
+    const SUB_MERCHANT_FETCH_LATEST_DEVICE_ORDER                = 'SUB_MERCHANT_FETCH_LATEST_DEVICE_ORDER';
 
     const MERCHANT_CREATE_DEVICE_ORDER                          = 'MERCHANT_CREATE_DEVICE_ORDER';
 
