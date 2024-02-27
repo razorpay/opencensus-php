@@ -859,7 +859,7 @@ class Gateway
         IFSC::VARA,
         IFSC::YESB,
     ];
-    
+
     // Maintaing Map of IFSC Code with Merged Bank IFSC
     const ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING = [
         IFSC::ESMF => IFSC::ESAF,
@@ -3886,7 +3886,8 @@ class Gateway
     public static $upiEditTerminalBulkGateways = [
         self::UPI_ICICI,
         self::UPI_AXIS,
-        self::UPI_YESBANK
+        self::UPI_YESBANK,
+        self::GOOGLE_PAY
     ];
 
     const CURRENCIES_SUPPORTED_BY_INTL_BANK_TRANSFER_BY_MODE = [
