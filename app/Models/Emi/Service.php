@@ -517,6 +517,17 @@ class Service extends Base\Service
             // remove providers which are not enabled
             $enabledProviders = $methods->getEnabledDebitEmiProviders();
 
+            foreach ($enabledProviders as $provider => $enabled)
+            {
+
+                $isDisabledInstrument = in_array($provider, DebitProvider::$disabledDebitEmiBanks, true);
+
+                if ($isDisabledInstrument === true)
+                {
+                    $enabledProviders[$provider] = 0;
+                }
+            }
+
             $sharedDebitEmiPlans = $sharedPlans->reject(function($plan) use ($emiType, $enabledProviders) {
                 if ($plan->type !== $emiType)
                 {

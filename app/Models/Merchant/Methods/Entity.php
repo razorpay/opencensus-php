@@ -1744,7 +1744,19 @@ class Entity extends Base\PublicEntity
 
         $debitEmi = $this->isDebitEmiEnabled();
 
-        return DebitProvider::getConsolidatedEnabledDebitEmiProviders($debitEmi, $networks);
+        $debitEmiProviders = DebitProvider::getConsolidatedEnabledDebitEmiProviders($debitEmi, $networks);
+
+        foreach ($debitEmiProviders as $provider => $enabled)
+        {
+
+            $isDisabledInstrument = in_array($provider, DebitProvider::$disabledDebitEmiBanks, true);
+
+            if ($isDisabledInstrument === true)
+            {
+                $debitEmiProviders[$provider] = 0;
+            }
+        }
+        return $debitEmiProviders;
     }
 
     public function getEnabledCreditEmiProviders(): array

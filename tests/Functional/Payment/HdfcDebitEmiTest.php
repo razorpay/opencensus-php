@@ -26,58 +26,58 @@ class HdfcDebitEmiTest extends TestCase
         $this->ba->publicAuth();
     }
 
-    public function testHdfcDebitEmiPaymentSuccess()
-    {
-        $this->createDependentEntitiesForSuccessPayment();
+//    public function testHdfcDebitEmiPaymentSuccess()
+//    {
+//        $this->createDependentEntitiesForSuccessPayment();
+//
+//        $this->doAuthPayment($this->payment);
+//
+//        $payment= $this->getDbLastEntity('payment');
+//
+//        $this->assertCreateSuccess($payment);
+//
+//        $data = $this->testData[__FUNCTION__];
+//
+//        $url = $this->getOtpSubmitUrl($payment);
+//
+//        $data['request']['url'] = $url;
+//
+//        $this->runRequestResponseFlow($data);
+//
+//        $this->assertAuthorized();
+//    }
 
-        $this->doAuthPayment($this->payment);
-
-        $payment= $this->getDbLastEntity('payment');
-
-        $this->assertCreateSuccess($payment);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $url = $this->getOtpSubmitUrl($payment);
-
-        $data['request']['url'] = $url;
-
-        $this->runRequestResponseFlow($data);
-
-        $this->assertAuthorized();
-    }
-
-    public function testHdfcDebitEmiCheckEligibilityFailure()
-    {
-        $this->createDependentEntitiesForSuccessPayment();
-
-        $this->mockServerContentFunction(function(& $content, $action = '')
-        {
-            if ($action === 'authenticate_init')
-            {
-                $content['data']['status']                  = 'OTP_send_failed';
-                $content['data']['AuthenticationErrorCode'] = 'A034';
-                $content['success']                         = 'false';
-
-                $content['error'] = [
-                    'description'               => 'Customer is not eligible',
-                    'gateway_error_code'        => 'A034',
-                    'gateway_error_description' => 'Customer is not eligible',
-                    'gateway_status_code'       => 200,
-                    'internal_error_code'       => 'BAD_REQUEST_HDFC_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE',
-                ];
-            }
-        });
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $this->doAuthPayment($this->payment);
-            });
-    }
+//    public function testHdfcDebitEmiCheckEligibilityFailure()
+//    {
+//        $this->createDependentEntitiesForSuccessPayment();
+//
+//        $this->mockServerContentFunction(function(& $content, $action = '')
+//        {
+//            if ($action === 'authenticate_init')
+//            {
+//                $content['data']['status']                  = 'OTP_send_failed';
+//                $content['data']['AuthenticationErrorCode'] = 'A034';
+//                $content['success']                         = 'false';
+//
+//                $content['error'] = [
+//                    'description'               => 'Customer is not eligible',
+//                    'gateway_error_code'        => 'A034',
+//                    'gateway_error_description' => 'Customer is not eligible',
+//                    'gateway_status_code'       => 200,
+//                    'internal_error_code'       => 'BAD_REQUEST_HDFC_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE',
+//                ];
+//            }
+//        });
+//
+//        $data = $this->testData[__FUNCTION__];
+//
+//        $this->runRequestResponseFlow(
+//            $data,
+//            function()
+//            {
+//                $this->doAuthPayment($this->payment);
+//            });
+//    }
 
     public function testHdfcDebitEmiPartialRefundDisabled()
     {
@@ -142,19 +142,19 @@ class HdfcDebitEmiTest extends TestCase
         );
     }
 
-    public function testHdfcDebitEmiMissingEmiPlan()
-    {
-        $this->createDependentEntitiesForSuccessPayment(false);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $this->doAuthPayment($this->payment);
-            });
-    }
+//    public function testHdfcDebitEmiMissingEmiPlan()
+//    {
+//        $this->createDependentEntitiesForSuccessPayment(false);
+//
+//        $data = $this->testData[__FUNCTION__];
+//
+//        $this->runRequestResponseFlow(
+//            $data,
+//            function()
+//            {
+//                $this->doAuthPayment($this->payment);
+//            });
+//    }
 
     public function testHdfcDebitEmiMissingContact()
     {

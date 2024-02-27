@@ -28,6 +28,10 @@ class DebitProvider
         self::ICIC => 4,
     ];
 
+    public static $disabledDebitEmiBanks = [
+        self::HDFC,
+    ];
+
     public static function checkProviderValidity($provider)
     {
         if (in_array($provider, self::$providers, true) === false)

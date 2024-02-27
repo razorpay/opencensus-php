@@ -808,7 +808,8 @@ class CheckoutPreferencesTest extends TestCase
 
         $response = $this->getPreferences();
 
-        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
+        //temporarily disabling HDFC DC EMI
+        $this->assertArrayNotHasKey('HDFC_DC', $response['methods']['emi_options']);
         $this->assertArrayHasKey('ICIC_DC', $response['methods']['emi_options']);
 
     }
@@ -821,7 +822,7 @@ class CheckoutPreferencesTest extends TestCase
 
         $response = $this->getPreferences();
 
-        $this->assertArraySelectiveEquals(['HDFC' => 1, 'ICIC' => 1], $response['methods']['debit_emi_providers']);
+        $this->assertArraySelectiveEquals(['HDFC' => 0, 'ICIC' => 1], $response['methods']['debit_emi_providers']);
 
         $this->assertTrue($response['methods']['emi_types']['debit']);
 
@@ -942,7 +943,7 @@ class CheckoutPreferencesTest extends TestCase
 
         $response = $this->getPreferences();
 
-        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
+        $this->assertArrayNotHasKey('HDFC_DC', $response['methods']['emi_options']);
         $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
     }
 

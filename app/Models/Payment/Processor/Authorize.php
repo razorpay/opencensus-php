@@ -17,6 +17,8 @@ use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
+use RZP\Models\Card\Type;
+use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\NetbankingConfig;
@@ -4382,6 +4384,36 @@ trait Authorize
                 ]
             );
         }
+    }
+
+    protected function checkAndValidateDebitEmiProviders(Payment\Entity $payment)
+    {
+        $method = $payment->getMethod();
+
+        if($method == Payment\Method::EMI)
+        {
+            $iinEntity = $payment->card->iinRelation;
+
+            if ($iinEntity === null)
+            {
+                return;
+            }
+
+            $type = $iinEntity->getType();
+            $issuer = $iinEntity->getIssuer();
+
+            $isDisabledInstrument = in_array($issuer, DebitProvider::$disabledDebitEmiBanks, true);
+
+            if ($isDisabledInstrument === true and $type === Type::DEBIT )
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Provider is currently disabled for Debit EMI.',
+                    'provider',
+                    $issuer);
+            }
+
+        }
+
     }
 
     protected function runFraudChecksIfApplicable(Payment\Entity $payment, $input = [])
@@ -10337,6 +10369,9 @@ trait Authorize
         }
 
         $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $payment->card);
+
+        $this->checkAndValidateDebitEmiProviders($payment);
+
     }
 
     protected function verifyUpiEnabled(Payment\Entity $payment)
