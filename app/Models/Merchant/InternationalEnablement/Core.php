@@ -4,6 +4,9 @@ namespace RZP\Models\Merchant\InternationalEnablement;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Entity as MEntity;
+use RZP\Models\Merchant\Detail\Entity as MDEntity;
+use RZP\Models\Merchant\InternationalEnablement\Detail\Entity as MIEDEntity;
 use RZP\Models\Merchant\InternationalEnablement\Document\Constants as DocConstants;
 use RZP\Models\Merchant\InternationalEnablement\Document\Repository as IEDocumentRepository;
 
@@ -73,6 +76,24 @@ class Core extends Base\Core
 
             (new Document\Core)->upsertBulk($oldDetailEntity, $newDetailEntity, $documents, $action, $version);
 
+            if(isset($input[MEntity::PURPOSE_CODE]) || isset($input[MIEDEntity::IMPORT_EXPORT_CODE]))
+            {
+                if ($action === Detail\Constants::ACTION_SUBMIT)
+                {
+                    (new \RZP\Models\Merchant\Service())->patchMerchantPurposeCode([
+                        MEntity::PURPOSE_CODE => $input[MEntity::PURPOSE_CODE],
+                        MDEntity::IEC_CODE    => $input[MIEDEntity::IMPORT_EXPORT_CODE] ?? null,
+                    ], false);
+                }
+                else
+                {
+                    (new \RZP\Models\Merchant\Service())->patchMerchantPurposeCode([
+                        MEntity::PURPOSE_CODE => $input[MEntity::PURPOSE_CODE],
+                        MDEntity::IEC_CODE    => $input[MIEDEntity::IMPORT_EXPORT_CODE] ?? null,
+                    ], true);
+                }
+            }
+
             return $newDetailEntity;
         });
 
@@ -129,6 +150,7 @@ class Core extends Base\Core
             Detail\Entity::SOCIAL_MEDIA_PAGE_LINK,
             Detail\Entity::CUSTOMER_INFO_COLLECTED,
             Detail\Entity::PARTNER_DETAILS_PLUGINS,
+            MEntity::PURPOSE_CODE
         ];
 
         $goodsType = $requiredAttributesForCalculation[Detail\Entity::GOODS_TYPE] ?? '';
@@ -256,6 +278,15 @@ class Core extends Base\Core
         }
 
         $publicAttributes['documents'] = $documents;
+
+        $publicAttributes['purpose_code'] = $this->merchant?->getPurposeCode() ?? null;
+
+        // Overwrite Merchant IEC Code in GET API to avoid conflict in case
+        // updated from admin dashboard
+        if($this->merchant?->getIecCode() !== null)
+        {
+            $publicAttributes['import_export_code'] = $this->merchant?->getIecCode();
+        }
 
         return $publicAttributes;
     }

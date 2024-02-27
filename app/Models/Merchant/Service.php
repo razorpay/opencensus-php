@@ -10867,13 +10867,16 @@ class Service extends Base\Service
      * @throws BadRequestException
      * @throws Exception\LogicException
      */
-    public function patchMerchantPurposeCode(array $input)
+    public function patchMerchantPurposeCode(array $input, bool $isDraft = false)
     {
         $merchantFields[Merchant\Entity::PURPOSE_CODE] = $input['purpose_code'];
         $merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE] = $this->getIecCode($input);
 
-        (new Validator)->validateIecCode($merchantFields[Merchant\Entity::PURPOSE_CODE],
+        if($isDraft === false)
+        {
+            (new Validator)->validateIecCode($merchantFields[Merchant\Entity::PURPOSE_CODE],
             $merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE], $this->merchant->getBankIfsc());
+        }
 
         if (($this->app['basicauth']->isAdminAuth() === false) and
             ($this->merchant->isJpmcImportFlowEnabled() === true))
@@ -10885,15 +10888,22 @@ class Service extends Base\Service
                 "Purpose code cannot be updated for JPMC settlement flow.");
         }
 
-        if(!empty($merchantFields[Merchant\Entity::PURPOSE_CODE])) {
+        if(!empty($merchantFields[Merchant\Entity::PURPOSE_CODE] and
+            $this->merchant->getPurposeCode() !== $merchantFields[Merchant\Entity::PURPOSE_CODE])) 
+        {
             $this->merchant->edit($merchantFields);
             $this->repo->merchant->saveOrFail($this->merchant);
         }
 
-        if($this->merchant->merchantDetail !== NULL and
-            !empty($merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE])) {
-            $this->merchant->merchantDetail->edit($merchantDetailsFields);
-            $this->repo->merchant_detail->saveOrFail($this->merchant->merchantDetail);
+        if($isDraft === false)
+        {
+            if($this->merchant->merchantDetail !== NULL and
+                !empty($merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE]) and 
+                $this->merchant->getIecCode() !== $merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE])
+            {
+                $this->merchant->merchantDetail->edit($merchantDetailsFields);
+                $this->repo->merchant_detail->saveOrFail($this->merchant->merchantDetail);
+            }
         }
 
         $this->trace->info(
@@ -10902,6 +10912,7 @@ class Service extends Base\Service
             Entity::PURPOSE_CODE => $this->merchant->getPurposeCode(),
             Merchant\Detail\Entity::IEC_CODE => $this->merchant->getIecCode(),
         ]);
+
         return ['success' => true];
     }
 

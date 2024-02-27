@@ -25,6 +25,7 @@ return [
                    'payment_gateway',
                 ],
                 'documents' => null,
+                'import_export_code'                  => '1234567891',
             ],
         ],
         'response'  => [
@@ -51,7 +52,7 @@ return [
                 'customer_info_collected'             => null,
                 'partner_details_plugins'             => null,
                 'accepts_intl_txns'                   => false,
-                'import_export_code'                  => null,
+                'import_export_code'                  => '1234567891',
                 'products' => [
                    'payment_gateway',
                 ],
@@ -70,6 +71,7 @@ return [
                 'monthly_sales_intl_cards_min'        => 1500,
                 'accepts_intl_txns'                   => 1,
                 'contact_us_link'                     => null,
+                'import_export_code'                  => '1234567891',
                 'documents' => [
                     'ie_code' => [
                         [
@@ -112,7 +114,7 @@ return [
                 'customer_info_collected'             => null,
                 'partner_details_plugins'             => null,
                 'accepts_intl_txns'                   => true,
-                'import_export_code'                  => null,
+                'import_export_code'                  => '1234567891',
                 'products' => [
                    'payment_gateway',
                 ],
@@ -365,7 +367,7 @@ return [
                 'customer_info_collected'             => null,
                 'partner_details_plugins'             => null,
                 'accepts_intl_txns'                   => false,
-                'import_export_code'                  => null,
+                'import_export_code'                  => '1234567891',
                 'products' => [
                    'payment_gateway',
                 ],
@@ -710,6 +712,185 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testSubmitValidUseCaseWithPurposeCode' => [
+        'request'   => [
+            'url'     => '/international_enablement/submit',
+            'method'  => 'POST',
+            'content' => [
+                'goods_type'         => 'physical_goods',
+                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test',
+                'allowed_currencies' => [
+                    'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
+                'business_txn_size_max'               => 20000,
+                'logistic_partners'                   => 'dhl',
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => 'https://www.test.com',
+                'terms_and_conditions_link'           => 'https://www.test.com',
+                'privacy_policy_link'                 => 'https://www.test.com',
+                'refund_and_cancellation_policy_link' => 'https://www.test.com',
+                'shipping_policy_link'                => 'https://www.test.com',
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => ['test_1'],
+                'customer_info_collected'             => ['test_1'],
+                'partner_details_plugins'             => ['test_1'],
+                'accepts_intl_txns'                   => 1,
+                'import_export_code'                  => '1234567891',
+                'purpose_code'                        => 'P0101',
+                'products' => [
+                    'payment_links',
+                    'payment_pages',
+                    'invoices',
+                ],
+                'documents' => [
+                    'bank_statement_inward_remittance' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'current_payment_partner_settlement_record' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'invoices' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'status_code' => 200,
+            'content'     => [
+                'goods_type'         => 'physical_goods',
+                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test',
+                'allowed_currencies' => [
+                    'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
+                'business_txn_size_max'               => 20000,
+                'logistic_partners'                   => 'dhl',
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => 'https://www.test.com',
+                'terms_and_conditions_link'           => 'https://www.test.com',
+                'privacy_policy_link'                 => 'https://www.test.com',
+                'refund_and_cancellation_policy_link' => 'https://www.test.com',
+                'shipping_policy_link'                => 'https://www.test.com',
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => ['test_1'],
+                'customer_info_collected'             => ['test_1'],
+                'partner_details_plugins'             => ['test_1'],
+                'accepts_intl_txns'                   => true,
+                'import_export_code'                  => '1234567891',
+                'purpose_code'                        => 'P0101',
+                'products' => [
+                    'payment_links',
+                    'payment_pages',
+                    'invoices',
+                ],
+                'documents' => [
+                    'bank_statement_inward_remittance' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'current_payment_partner_settlement_record' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'invoices' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testSubmitV2WithPurposeCodeAndWithoutIecCode' => [
+        'request'   => [
+            'url'     => '/international_enablement/submit',
+            'method'  => 'POST',
+            'content' => [
+                'goods_type'         => 'physical_goods',
+                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test',
+                'allowed_currencies' => [
+                    'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
+                'business_txn_size_max'               => 20000,
+                'logistic_partners'                   => 'dhl',
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => 'https://www.test.com',
+                'terms_and_conditions_link'           => 'https://www.test.com',
+                'privacy_policy_link'                 => 'https://www.test.com',
+                'refund_and_cancellation_policy_link' => 'https://www.test.com',
+                'shipping_policy_link'                => 'https://www.test.com',
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => ['test_1'],
+                'customer_info_collected'             => ['test_1'],
+                'partner_details_plugins'             => ['test_1'],
+                'accepts_intl_txns'                   => 1,
+                'purpose_code'                        => 'P0103',
+                'products' => [
+                    'payment_links',
+                    'payment_pages',
+                    'invoices',
+                ],
+                'documents' => [
+                    'bank_statement_inward_remittance' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'current_payment_partner_settlement_record' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'invoices' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'iec code required for given purpose code',
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'Rzp\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

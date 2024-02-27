@@ -90,7 +90,8 @@ class InternationalEnablementTest extends TestCase
 
         $this->fixtures->on('live')->create('merchant_detail', [
             'merchant_id'                   => $merchant['id'],
-            'international_activation_flow' => 'whitelist']);
+            'international_activation_flow' => 'whitelist',
+        ]);
 
         if (empty($permissionWorkflowNameMap) === true)
         {
@@ -645,7 +646,12 @@ Team Razorpay',
 
         $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
-        $this->fixtures->edit('merchant_detail', $merchant->getId(), [
+        $this->fixtures->on('live')->edit('merchant_detail', $merchant->getId(), [
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'trading',
+        ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', $merchant->getId(), [
             'business_category'     => 'financial_services',
             'business_subcategory'  => 'trading',
         ]);
@@ -690,7 +696,11 @@ Team Razorpay',
 
         $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
-        $this->fixtures->edit('merchant_detail', $merchant->getId(), [
+        $this->fixtures->on('live')->edit('merchant_detail', $merchant->getId(), [
+            'business_type'         => 4
+        ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', $merchant->getId(), [
             'business_type'         => 4
         ]);
 
@@ -1224,7 +1234,7 @@ Team Razorpay',
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
 
         $this->fixtures->edit('merchant', $merchant->getId(), ['product_international' => '11110']);
-        
+
         $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
         $testData = $this->testData['testSubmitProductsPACB'];
@@ -1247,6 +1257,92 @@ Team Razorpay',
             'payment_pages'   => 'approved',
             'invoices'        => 'approved',
             'products_pa_cb'  => 'rejected',
+        ];
+
+        $this->startTest($testData);
+    }
+
+    public function testSubmitV2WithPurposeCodeAndIecCode()
+    {
+        Mail::fake();
+
+        $merchant = $this->createFixtures([
+            Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED  => 'toggle_international_revamped',
+        ], 'test');
+
+        $this->storkMockForUnderReview();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $merchant->getId(), [
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'trading',
+        ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', $merchant->getId(), [
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'trading',
+        ]);
+
+        $testData = $this->testData['testSubmitValidUseCaseWithPurposeCode'];
+
+        $testData['request']['content']['version'] = 'v2';
+
+        $testData['request']['content']['documents']['sebi_certificate'] = [
+            [
+                'id'           => 'doc_10000011111111',
+                'display_name' => 'display_name_1',
+            ],
+        ];
+
+        $this->startTest($testData);
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            if ($mail->view === 'emails.merchant.ie_under_review')
+            {
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    public function testSubmitV2WithPurposeCodeAndWithoutIecCode()
+    {
+        $merchant = $this->createFixtures([
+            Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED  => 'toggle_international_revamped',
+        ], 'test');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $merchant->getId(), [
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'trading',
+            'bank_branch_ifsc'      => 'ICIC0007386'
+        ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', $merchant->getId(), [
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'trading',
+            'bank_branch_ifsc'      => 'ICIC0007386'
+        ]);
+
+        $testData = $this->testData['testSubmitV2WithPurposeCodeAndWithoutIecCode'];
+
+        $testData['request']['content']['version'] = 'v2';
+
+        $testData['request']['content']['documents']['sebi_certificate'] = [
+            [
+                'id'           => 'doc_10000011111111',
+                'display_name' => 'display_name_1',
+            ],
         ];
 
         $this->startTest($testData);

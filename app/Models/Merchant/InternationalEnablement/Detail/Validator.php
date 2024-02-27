@@ -44,6 +44,7 @@ class Validator extends Base\Validator
         Entity::PRODUCTS                            => 'sometimes|array|between:0,4',
         Entity::PRODUCTS . '.*'                     => 'required_with:' . Entity::PRODUCTS . '|string|in:' . Constants::PRODUCTS_VALIDATOR_CSV,
         'documents'                                 => 'nullable|sometimes|array',
+        'purpose_code'                              => 'nullable|sometimes|alpha_num',
     ];
 
     public static $createForSubmitRules = [
@@ -77,6 +78,7 @@ class Validator extends Base\Validator
         Entity::PRODUCTS                            => 'required|array|filled|between:1,4',
         Entity::PRODUCTS . '.*'                     => 'required|string|in:' . Constants::PRODUCTS_VALIDATOR_CSV,
         'documents'                                 => 'nullable|sometimes|array',
+        'purpose_code'                              => 'nullable|sometimes|alpha_num',
     ];
 
     public static $createForDraftValidators = [
