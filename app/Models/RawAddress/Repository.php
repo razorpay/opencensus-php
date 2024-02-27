@@ -27,12 +27,30 @@ class Repository  extends Base\Repository
                     ->get();
     }
 
+    public function fetchCountOfAddressesForContact(string $contact, $status = null) {
+        $contactCol = $this->dbColumn(Entity::CONTACT);
+        $statusCol  = $this->dbColumn(Entity::STATUS);
+
+        $connection = $this->getMasterReplicaConnection();
+        $result = $this->newQueryWithConnection($connection)
+                       ->selectRaw('COUNT(*) AS address_count')
+                       ->where($contactCol, $contact);
+
+        if($status != null )
+        {
+            $result = $result->where($statusCol, $status);
+        }
+
+        return $result->value('address_count');
+    }
+
     public function fetchRawAddressesForContact(string $contact, $status = null)
     {
         $contactCol = $this->dbColumn(Entity::CONTACT);
         $statusCol  = $this->dbColumn(Entity::STATUS);
 
-        $result = $this->newQuery()
+        $connection = $this->getMasterReplicaConnection();
+        $result = $this->newQueryWithConnection($connection)
                        ->selectRaw(Table::RAW_ADDRESS . '.*')
                        ->where($contactCol,$contact);
 

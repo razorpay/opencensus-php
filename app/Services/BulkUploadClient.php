@@ -114,9 +114,28 @@ class BulkUploadClient extends Job
 
     public function uploadAddressesToKafka(array $input)
     {
+
         parent::handle();
+
         foreach ($input as $contact)
         {
+            if($contact['contact'] === "+919999999999" || $contact['contact'] === "+910000000000")
+            {
+                continue;
+            }
+
+            $count = $this->repoManager->raw_address->fetchCountOfAddressesForContact($contact['contact'],
+                self::STATUS_PROCESSING);
+
+            if ($count >= 10000) {
+                $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, [
+                    "Ignoring phone number: " => $contact['contact'],
+                    "count" => $count
+                ]);
+
+                continue;
+            }
+
             $start = $this->getCurrentTimeInMillis();
             $rawAddresses =  $this->repoManager->raw_address->fetchRawAddressesForContact($contact['contact'],
                                                                                        self::STATUS_PROCESSING);
