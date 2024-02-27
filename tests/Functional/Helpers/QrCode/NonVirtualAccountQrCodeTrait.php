@@ -344,6 +344,39 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeS2SCallbackAndGetContent(json_encode($request['content']), $this->gateway);
     }
 
+    private function makeUpiAirtelPayment($qrCodeEntity, $contents = [])
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'url'     => '/callback/upi_airtel',
+            'method'  => 'POST',
+            'content' => [
+                'amount'                     => '3.00',
+                'mid'                        => 'razorpayupi',
+                'rrn'                        => '107611570997',
+                'txnStatus'                  => 'SUCCESS',
+                'hdnOrderID'                 => str_after($qrCodeEntity['id'], 'qr_') . 'qrv2',
+                'messageText'                => 'SUCCESS',
+                'code'                       => '0',
+                'errorCode'                  => '0',
+                'hash'                       => '8e11b31ec34d05b8e6decc63224ae90467332d665db7cfeb2a9038692ecdb393a18d9dc2feb07352d766945280971de1195b203057cf697ebccb7fe9b959be9a',
+                'payerVPA'                   => 'pullak@okhdfcbank',
+                'payeeVPA'                   => 'testvpa@mairtel',
+                'txnRefNo'                   => 'FT220XXXX24791',
+            ],
+            'header'  => [
+                'content_type' => 'application/json',
+            ],
+        ];
+
+        $request['content'] = array_merge($request['content'], $contents);
+
+        $this->gateway = 'upi_airtel';
+
+        return $this->makeS2SCallbackAndGetContent(json_encode($request['content']), $this->gateway);
+    }
+
     private function getIntentParamsFromQRString($qrString)
     {
         $queryString = parse_url($qrString, PHP_URL_QUERY);
@@ -663,6 +696,66 @@ trait NonVirtualAccountQrCodeTrait
         return $content;
     }
 
+    public function getMockedUpiAirtelQrStatusCheckResponse($status, $qrCodeId, $rrn, $pgMerchantId, $amount, $vpa,$gatewayMerchantId2)
+    {
+        $statusBool = false;
+        if ($status === 'U69')
+        {
+            $statusMsg = 'FAILED';
+        }
+        elseif ($status === '01')
+        {
+            $statusMsg = 'PENDING';
+        }
+        elseif($status === '0')
+        {
+            $statusMsg = 'SUCCESS';
+            $statusBool = true;
+        }
+        else
+        {
+            $statusMsg = 'FAILURE';
+
+        }
+        $content = [
+            'data'    => [
+                '_raw'     => 'raw_content',
+                'meta'     => [
+                    'response' => [
+                        'content' => [
+                            'txnStatus' => $statusMsg,
+                        ],
+                    ]
+                ],
+                'payment'  => [
+                    'amount_authorized'  => $amount,
+                    'currency'           => 'INR'
+                ],
+                'status'   => 'verify_successful',
+                'terminal' => [
+                    'gateway'               => 'upi_airtel',
+                    'gateway_merchant_id'   => $pgMerchantId,
+                    'gateway_merchant_id2'  => $gatewayMerchantId2
+                ],
+                'upi'      => [
+                    'gateway_status_code'   => $status,
+                    'status_code'           => $status,
+                    'gateway_payment_id'    => 'FT5748103957835',
+                    'merchant_reference'    => str_after($qrCodeId, 'qr_') . 'qrv2',
+                    'npci_reference_id'     => $rrn,
+                    'npci_txn_id'           => 'APB2443360925859',
+                    'npci_response_code'    => $status,
+                    'vpa'                   => $vpa
+                ],
+                'version'  => 'v2'
+            ],
+            'error'   => null,
+            'success' => $statusBool,
+        ];
+
+        return $content;
+    }
+
     public function runEntityAssertions($response)
     {
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
@@ -729,6 +822,22 @@ trait NonVirtualAccountQrCodeTrait
                     case "multiple_use":
                     {
                         $tr = 'STQ' . substr($response['id'], 3, 14) . 'qrv2';
+                        $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+                        break;
+                    }
+                }
+                break;
+            }
+
+            case Gateway::UPI_AIRTEL:
+            {
+                $vpa = $terminal->getGatewayMerchantId2();
+                switch ($qrCodeEntity['usage'])
+                {
+                    case 'multiple_use':
+                    case 'single_use':
+                    {
+                        $tr = substr($response['id'], 3, 14) . 'qrv2';
                         $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
                         break;
                     }

@@ -114,6 +114,7 @@ class Service extends Base\Service
                 case BaseConstants::UPI_YESBANK:
                 case BaseConstants::UPI_KOTAK:
                 case BaseConstants::UPI_MINDGATE:
+                case BaseConstants::UPI_AIRTEL:
                 {
                     $input = $input['data'];
 

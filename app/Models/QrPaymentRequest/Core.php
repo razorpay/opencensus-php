@@ -92,7 +92,8 @@ class Core extends Base\Core
 
         $terminal = (new Generator())->fetchDedicatedTerminalFromQrString($qrCode);
 
-        if ($terminal->getGateway() === \RZP\Models\Payment\Gateway::UPI_MINDGATE)
+        if (($terminal->getGateway() === \RZP\Models\Payment\Gateway::UPI_MINDGATE) or
+            ($terminal->getGateway() === \RZP\Models\Payment\Gateway::UPI_AIRTEL))
         {
             $terminalArray = $terminal->toArrayWithPassword();
         }

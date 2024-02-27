@@ -2065,4 +2065,716 @@ class QrCodeStatusCheckTest extends TestCase
         $this->assertNull($upi);
     }
 
+    public function createOfflineQr($amount){
+        $qrCode = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => $amount,
+            ],
+            'live',
+            'LiveAccountMer',
+            headers:[
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+        return $qrCode;
+    }
+
+    public  function getPosPricingPlan(){
+        $posQRPricingPlan = [
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'TestMerchantPosUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'offline',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+            'channel'             => 'in_person',
+        ];
+        return $posQRPricingPlan;
+    }
+
+    public function testStatusCheckApiVerifySuccessResponseForUpiAirtel()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->fixtures->create('pricing', $this->getPosPricingPlan());
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $this->mockSplitzTreatmentForStatusCheck();
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode = $this->createOfflineQr(10000);
+
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+        $this->startTest();
+        Queue::assertPushed(QrStatusCheck::class, 1);
+
+    }
+
+    public function testStatusCheckApiVerifyWhenPaymentIsAlreadyExistsForUpiAirtel()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $this->setMockRazorxTreatment(['api_upi_airtel_pre_process_v1' => 'upi_airtel']);
+
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $this->mockSplitzTreatmentForStatusCheck();
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+
+        $response = $this->makeUpiAirtelPayment($qrCodeEntity);
+
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true,'live');
+        $upi = $this->getLastEntity('upi', true,'live');
+        $payment   = $this->getDbLastEntity('payment', 'live');
+        $qrCodeId = $qrCode['id'];;
+
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(substr($qrCodeId, strlen('qr_')), $qrPayment['merchant_reference']);
+        $this->assertEquals(substr($qrCodeId, strlen('qr_')). 'qrv2', $upi['merchant_reference']);
+
+        Queue::fake();
+
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCodeId, $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+
+        $currentTime = Carbon::now();
+        Carbon::setTestNow($currentTime->addMinutes(4));
+        $this->startTest();
+        Queue::assertPushed(QrStatusCheck::class, 0);
+
+    }
+
+    public function testStatusCheckDispatchBeforeThresholdTimeForUpiAirtelPosQr()
+    {
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->fixtures->create('pricing', $this->getPosPricingPlan());
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $this->mockSplitzTreatmentForStatusCheck();
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode = $this->createOfflineQr(10000);
+
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+        $this->startTest();
+        Queue::assertPushed(QrStatusCheck::class, 1);
+    }
+
+    public function testQrStatusCheckDispatchWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiAirtel()
+    {
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $this->mockSplitzTreatmentForStatusCheck();
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+        $this->startTest();
+        Queue::assertPushed(QrStatusCheck::class, 0);
+    }
+
+    public function testQrStatusCheckDispatchWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiAirtel()
+    {
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $currentTime = Carbon::now();
+
+        Carbon::setTestNow($currentTime);
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+
+        Carbon::setTestNow($currentTime->addSeconds(190));
+
+        $this->startTest();
+        Carbon::setTestNow($currentTime->addSeconds(30));
+        $this->startTest();
+
+        // Assert that only one job was pushed.
+        Queue::assertPushed(QrStatusCheck::class, 1);
+    }
+
+    public function testQrStatusCheckDispatchWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiAirtelPosQr()
+    {
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->fixtures->create('pricing', $this->getPosPricingPlan());
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $currentTime = Carbon::now();
+
+        Carbon::setTestNow($currentTime);
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode = $this->createOfflineQr(10000);
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+
+        Carbon::setTestNow($currentTime->addSeconds(190));
+
+        $this->startTest();
+
+        Carbon::setTestNow($currentTime->addSeconds(30));
+        $this->startTest();
+
+        // Its pushing one time only bcz of its QrStatusCheck implements ShouldBeUnique
+        Queue::assertPushed(QrStatusCheck::class, 1);
+    }
+
+    public function testStatusCheckApiSuccessResponseForUpiAirtel()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = '326414338959';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_'). "qrv2";
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiAirtelQrStatusCheckResponse("0", $qrCodeId,
+                    $requestData['content']['BankRRN'],'razorpayupi','4000','ftfdtft@ybl', 'testvpa@mairtel');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runQrPaymentAssertions(str_after($qrCodeId, 'qr_'), $requestData, 'live');
+
+        $this->assertEquals(1, $reminderDeleteCallCount);
+
+    }
+
+    public function testStatusCheckApiSuccessResponseForUpiAirtelOfflineQR()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->fixtures->create('pricing', $this->getPosPricingPlan());
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode = $this->createOfflineQr(4000);
+
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = '326414338959';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_'). "qrv2";
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiAirtelQrStatusCheckResponse("0", $qrCodeId,
+                    $requestData['content']['BankRRN'],'razorpayupi','4000','ftfdtft@ybl', 'testvpaOffline@mairtel');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runQrPaymentAssertions(str_after($qrCodeId, 'qr_'), $requestData, 'live');
+
+        $this->assertEquals(1, $reminderDeleteCallCount);
+
+    }
+
+    public function testStatusCheckApiPendingResponseForUpiAirtel()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = 'NA';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_'). "qrv2";
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiAirtelQrStatusCheckResponse("01", $qrCodeId,
+                    $requestData['content']['BankRRN'],'razorpayupi','4000','ftfdtft@ybl', 'testvpa@mairtel');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runAssertionsForUpiAirtel();
+
+        $this->assertEquals(0, $reminderDeleteCallCount);
+
+    }
+
+    public function testStatusCheckApiPendingResponseForUpiAirtelPosQr()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->fixtures->create('pricing', $this->getPosPricingPlan());
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode = $this->createOfflineQr(4000);
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = 'NA';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_'). "qrv2";
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiAirtelQrStatusCheckResponse("01", $qrCodeId,
+                    $requestData['content']['BankRRN'],'razorpayupi','4000','ftfdtft@ybl', 'testvpaOffline@mairtel');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runAssertionsForUpiAirtel();
+
+        $this->assertEquals(0, $reminderDeleteCallCount);
+
+    }
+
+    public function testStatusCheckApiFailedResponseForUpiAirtel()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = 'NA';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiAirtelQrStatusCheckResponse("U69", $qrCodeId,
+                    $requestData['content']['BankRRN'],'razorpayupi','00','NA', 'NA');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runAssertionsForUpiAirtel();
+        $this->assertEquals(0, $reminderDeleteCallCount);
+
+    }
+
+    public function testStatusCheckApiFailedResponseForUpiAirtelPosQR()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->fixtures->create('pricing', $this->getPosPricingPlan());
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode = $this->createOfflineQr(4000);
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = 'NA';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiAirtelQrStatusCheckResponse("U69", $qrCodeId,
+                    $requestData['content']['BankRRN'],'razorpayupi','00','NA', 'NA');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runAssertionsForUpiAirtel();
+        $this->assertEquals(0, $reminderDeleteCallCount);
+
+    }
+
+    public function testStatusCheckApiRecordNotFoundResponseForUpiAirtel()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = 'NA';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiAirtelQrStatusCheckResponse("RNF", $qrCodeId,
+                    $requestData['content']['BankRRN'],'razorpayupi','00','NA', 'NA');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runAssertionsForUpiMindgate();
+
+        $this->assertEquals(0, $reminderDeleteCallCount);
+
+    }
+
+    public function testStatusCheckApiSuccessResponseMultipleAttemptsForUpiAirtel()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'multiple_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = '326414338959';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_'). "qrv2";;
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiAirtelQrStatusCheckResponse("0", $qrCodeId,
+                    $requestData['content']['BankRRN'],'razorpayupi','4000','ftfdtft@ybl', 'testvpa@mairtel');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runQrPaymentAssertions(str_after($qrCodeId, 'qr_'), $requestData, 'live');
+
+        $this->fixtures->edit('qr_code',str_after($qrCodeId, 'qr_'),['payments_received_count'=>0],'live');
+
+        $qrPaymentCount = count($this->getDbEntities('qr_payment', [],'live'));
+        $paymentCount = count($this->getDbEntities('payment', [],'live'));
+        $qrPaymentReqCount = count($this->getDbEntities('qr_payment_request', [],'live'));
+
+        $this->startTest();
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $this->assertEquals(0, $qrCodeEntity['payments_received_count']);
+        $this->assertEquals($qrPaymentCount, count($this->getDbEntities('qr_payment', [],'live')));
+        $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [],'live')));
+        $this->assertEquals($qrPaymentReqCount + 1, count($this->getDbEntities('qr_payment_request', [],'live')));
+
+        $qrPaymentReqEntity = $this->getDbLastEntity('qr_payment_request', 'live');
+        $this->assertEquals("QR_PAYMENT_DUPLICATE_NOTIFICATION", $qrPaymentReqEntity['failure_reason']);
+
+    }
+
+    public function runAssertionsForUpiAirtel()
+    {
+        $qrPayment        = $this->getDbLastEntity('qr_payment', 'live');
+        $payment          = $this->getDbLastEntity('payment', 'live');
+        $qrPaymentRequest = $this->getDbLastEntity('qr_payment_request', 'live');
+        $upi              = $this->getDbLastEntity('upi', 'live');
+
+        $this->assertNull($qrPayment);
+        $this->assertNull($payment);
+        $this->assertNull($qrPaymentRequest);
+        $this->assertNull($upi);
+    }
+
 }

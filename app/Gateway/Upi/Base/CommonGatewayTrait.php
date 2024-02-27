@@ -20,6 +20,7 @@ use RZP\Constants\Environment;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\BharatQr\GatewayResponseParams as QrGatewayResponseParams;
 /**
  * CommonGatewayTrait
@@ -42,6 +43,15 @@ trait CommonGatewayTrait
      */
     public static $qrCodePaymentGateways = [
         Payment\Gateway::UPI_KOTAK,
+        Payment\Gateway::UPI_AIRTEL,
+    ];
+
+    /**
+     * This static array maintains a list of all gateways where payeevpa stored in gatewaymerchantid2.
+     * @var array A list of supported gateway where payeevpa stored in gatewaymerchantid2.
+     */
+    public static $gatewayMerchantId2VpaGateways = [
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     /************** Payment Actions ************
@@ -1005,7 +1015,7 @@ trait CommonGatewayTrait
                 QrGatewayResponseParams::GATEWAY_MERCHANT_ID   => $inputFields['terminal'][\RZP\Models\Terminal\Entity::GATEWAY_MERCHANT_ID],
                 QrGatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($inputFields['upi'][Entity::MERCHANT_REFERENCE]),
                 QrGatewayResponseParams::PROVIDER_REFERENCE_ID => $inputFields['upi'][Entity::NPCI_REFERENCE_ID],
-                QrGatewayResponseParams::PAYEE_VPA             => $inputFields['terminal'][TerminalEntity::VPA],
+                QrGatewayResponseParams::PAYEE_VPA             => $this->getPayeeVpa($inputFields, $gateway),
             ];
 
             /* NOTE: payer_account_type to be figured out later, as Kotak has not provided any details
@@ -1105,6 +1115,28 @@ trait CommonGatewayTrait
     }
 
     /**
+     * This function get payee vpa based on gateway response from mozart.
+     * List of gateways where the payee vpa present in gatewaymerchantid2 will be stored in list and based on that vpa is extracted from response.
+     *
+     * @param $inputFields
+     * @param $gateway
+     *
+     * @return string
+     */
+    public function getPayeeVpa($inputFields, $gateway)
+    {
+        if (in_array($gateway, self::$gatewayMerchantId2VpaGateways, true) === true)
+        {
+            return $inputFields[EntityConstants::TERMINAL][TerminalEntity::GATEWAY_MERCHANT_ID2];
+        }
+        else
+        {
+            return $inputFields[EntityConstants::TERMINAL][TerminalEntity::VPA];
+        }
+
+    }
+
+    /**
      * This function is used to create the UPI entity for a QR payment during payment authorise step.
      * This is important as we need the UPI entity during refunds.
      * NOTE- upi_icici and upi_yesbank use a different method, they shall be migrated here once holy grail contract is
@@ -1145,5 +1177,99 @@ trait CommonGatewayTrait
                 Payment\Entity::REFERENCE16 => $entity->getNpciReferenceId(),
             ],
         ];
+    }
+
+    public function getQrPaymentStatus($input)
+    {
+
+        $request = [
+            EntityConstants::PAYMENT => [
+                'gateway' => $input[EntityConstants::TERMINAL]['gateway'],
+                'id'      => $this->getMerchantReferenceFromQrCode($input[EntityConstants::QR_CODE]['id']),
+                'amount'  => $input[EntityConstants::QR_CODE]['amount']
+            ],
+            EntityConstants::TERMINAL => $input[EntityConstants::TERMINAL],
+            EntityConstants::MERCHANT => [
+                'id' => $input[EntityConstants::MERCHANT]['id'],
+            ],
+            Constants::QR_STATUS_CHECK => true
+        ];
+
+        $result = $this->upiSendGatewayRequest($request,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            Action::VERIFY
+        );
+
+        if (($result['success'] === true) and
+            (isset($result['data']['upi']) === true) and
+            (isset($result['data']['payment']) === true) and
+            (isset($result['data']['terminal']) === true))
+        {
+
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_MOZART_RESPONSE, [
+                'merchant reference' => $result['data']['upi']['merchant_reference'],
+                'payment'            => $result['data']['payment'],
+                'gateway'            => $input[EntityConstants::TERMINAL]['gateway']
+            ]);
+
+            $response = [
+                'callbackData' =>  $this->parseMozartResp($result['data']),
+                'gateway'      => $input[EntityConstants::TERMINAL]['gateway']
+            ];
+
+            return $response;
+        }
+        else
+        {
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_INVALID_MOZART_RESPONSE, [
+                'response' => $result,
+                'gateway'  => $input[EntityConstants::TERMINAL]['gateway']
+            ]);
+
+            return null;
+        }
+    }
+    public function parseMozartResp($data)
+    {
+        $callbackData = [
+            'data' => [
+                EntityConstants::TERMINAL => $data[EntityConstants::TERMINAL],
+                EntityConstants::UPI      => $data[EntityConstants::UPI],
+                EntityConstants::PAYMENT  => $data[EntityConstants::PAYMENT],
+                'version'                 => 'v2',
+                'status'                  => $data['status']
+            ]
+        ];
+
+        $callbackData[Constants::QR_STATUS_CHECK] = true;
+        $callbackData['success'] = true;
+        $callbackData['error'] = null;
+
+        return $callbackData;
+    }
+
+    /**
+     * This function adds any prefix and suffix in the qr code id to form merchantReference.
+     * Each gateway should override the qrPaymentMerchantPrefix and qrPaymentMerchantSuffix to faciliate this method.
+     *
+     * @param string $qrCodeId
+     *
+     * @return string
+     */
+    public function getMerchantReferenceFromQrCode($qrCodeId)
+    {
+        // We expect gateways to define their own gateway prefix property for QR
+        if (empty($this->qrPaymentMerchantRefPrefix) === false)
+        {
+            $qrCodeId = $this->qrPaymentMerchantRefPrefix . $qrCodeId;
+        }
+
+        // Although the suffix has been hard coded for qrv2 in this trait, gateway classes are free to override the
+        // property when needed. Just make sure that you are using the same suffix during QR code creation as well
+        if ((empty($this->qrPaymentMerchantRefSuffix)) === false)
+        {
+            $qrCodeId = $qrCodeId . $this->qrPaymentMerchantRefSuffix;
+        }
+        return $qrCodeId;
     }
 }

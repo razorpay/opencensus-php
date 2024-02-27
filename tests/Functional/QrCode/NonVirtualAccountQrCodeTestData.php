@@ -456,6 +456,18 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testStatusCheckApiSuccessResponseForUpiAirtelOfflineQR' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
     'testStatusCheckApiPendingResponseForUpiAirtel' => [
         'request' => [
@@ -469,8 +481,32 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testStatusCheckApiPendingResponseForUpiAirtelPosQr' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
     'testStatusCheckApiFailedResponseForUpiAirtel' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testStatusCheckApiFailedResponseForUpiAirtelPosQR' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
@@ -496,7 +532,7 @@ return [
         ],
     ],
 
-    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiAirtel' => [
+    'testQrStatusCheckDispatchWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiAirtel' => [
         'request' => [
             'method'  => 'GET',
             'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
@@ -511,7 +547,7 @@ return [
         ],
     ],
 
-    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiAirtelWithEzetapSource' => [
+    'testStatusCheckDispatchBeforeThresholdTimeForUpiAirtelPosQr' => [
         'request' => [
             'method'  => 'GET',
             'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
@@ -526,7 +562,7 @@ return [
         ],
     ],
 
-    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiAirtel' => [
+    'testQrStatusCheckDispatchWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiAirtel' => [
         'request' => [
             'method'  => 'GET',
             'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
@@ -541,7 +577,7 @@ return [
         ],
     ],
 
-    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiAirtelWithEzetapRequestSource' => [
+    'testQrStatusCheckDispatchWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiAirtelPosQr' => [
         'request' => [
             'method'  => 'GET',
             'url'     => '/payments/qr_codes/RandomQrCodeId/payments',

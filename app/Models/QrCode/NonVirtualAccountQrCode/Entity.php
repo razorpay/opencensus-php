@@ -420,7 +420,10 @@ class Entity extends QrCode\Entity
                 {
                     return 'upi_mindgate';
                 }
-
+                if(isset($vpa[1]) === true && ($vpa[1] === 'mairtel'))
+                {
+                    return 'upi_airtel';
+                }
                 return 'upi_' . $vpa[1];
             }
             else if ($this->getProvider() === Provider::BHARAT_QR)

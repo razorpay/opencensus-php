@@ -35,7 +35,8 @@ class Service extends QrCode\Service
     public static $qrStatusCheckGateways  = [
         Gateway::UPI_ICICI,
         Gateway::UPI_YESBANK,
-        Gateway::UPI_MINDGATE
+        Gateway::UPI_MINDGATE,
+        Gateway::UPI_AIRTEL
     ];
     public function __construct()
     {

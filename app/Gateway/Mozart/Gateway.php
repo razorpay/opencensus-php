@@ -1881,7 +1881,8 @@ class Gateway extends Base\Gateway
                 return $url;
             }
         }
-        if ($gateway === Payment\Gateway::UPI_YESBANK)
+        if (($gateway === Payment\Gateway::UPI_YESBANK) or
+            ($gateway === Payment\Gateway::UPI_AIRTEL))
         {
             if ((isset($input[Constants::QR_STATUS_CHECK]) and
                  $input[Constants::QR_STATUS_CHECK] === true))

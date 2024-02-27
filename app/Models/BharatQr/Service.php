@@ -352,6 +352,7 @@ class Service extends Base\Service
                 return $gatewayResponse['callback_data']['data']['upi'][\RZP\Gateway\Upi\Mindgate\ResponseFields::MERCHANT_REFERENCE];
 
             case Gateway::UPI_KOTAK:
+            case Gateway::UPI_AIRTEL:
                 return $gatewayResponse['callback_data']['data']['upi']['merchant_reference'];
         }
     }
@@ -397,6 +398,10 @@ class Service extends Base\Service
 
             case Gateway::UPI_YESBANK:
                 $terminal = $this->getTerminalForYesBank($gatewayResponse, $gateway);
+                break;
+
+            case Gateway::UPI_AIRTEL:
+                $terminal = $this->getTerminalForAirtelPaymentBank($gatewayResponse, $gateway);
                 break;
 
             default:
@@ -546,4 +551,15 @@ class Service extends Base\Service
     {
         return $this->repo->qr_payment_request->fetchPaymentReference($gatewayQrData[GatewayResponseParams::PROVIDER_REFERENCE_ID]);
     }
+
+    protected function getTerminalForAirtelPaymentBank($gatewayResponse, $gateway)
+    {
+        $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $gatewayResponse[GatewayResponseParams::PAYEE_VPA];
+
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
+
+        return $terminal;
+    }
+
+
 }

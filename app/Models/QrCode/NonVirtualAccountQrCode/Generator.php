@@ -433,6 +433,11 @@ class Generator extends QrCode\Generator
             $gateway = GATEWAY::UPI_MINDGATE;
             $params  = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $vpa);
         }
+        elseif (str_contains($qrCode['qr_string'], '@mairtel') === true)
+        {
+            $gateway = GATEWAY::UPI_AIRTEL;
+            $params  = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $vpa);
+        }
         else
         {
             $gateway = GATEWAY::SHARP;
