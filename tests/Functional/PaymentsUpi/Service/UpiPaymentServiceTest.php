@@ -12,6 +12,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\PaymentVerificationException;
@@ -790,6 +791,7 @@ class UpiPaymentServiceTest extends TestCase
     {
 //        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
         $this->setMockRazorxTreatment(['validate_account_rearch_ups' => 'on']);
+        $this->mockSplitzTreatmentForCheckoutBlacklist();
 
         $input = [
             'entity' => 'vpa',
@@ -820,10 +822,41 @@ class UpiPaymentServiceTest extends TestCase
         $this->assertArraySubset($toAssertResponse, $response);
     }
 
-    public function testValidateAccountProxySuccessForNonNumericVpa()
+    public function testValidateAccountProxyFailureForNumericVpaDueToCheckoutBlacklist()
     {
         //        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
         $this->setMockRazorxTreatment(['validate_account_rearch_ups' => 'on']);
+        $this->mockSplitzTreatmentForCheckoutBlacklist('variant_off');
+
+        $input = [
+            'entity' => 'vpa',
+            'value'  => '9815225341',
+            '_'      => [
+                'library' => 'checkoutjs',
+            ],
+        ];
+
+        $request = [
+            'content' => $input,
+            'url'     => '/v1/payments/validate/account',
+            'method'  => 'post'
+        ];
+
+        $this->ba->publicAuth();
+
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionCode('BAD_REQUEST_ERROR');
+        $this->expectExceptionMessage('Invalid UPI Number. Please enter a valid UPI Number');
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testValidateAccountProxySuccessForNonNumericVpa()
+    {
+        $this->markTestSkipped('Test skipped until non numeric validation in ready on Validate Account Route');
+        //        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+        $this->setMockRazorxTreatment(['validate_account_rearch_ups' => 'on']);
+        $this->mockSplitzTreatmentForCheckoutBlacklist();
 
         $input = [
             'entity' => 'vpa',
@@ -903,6 +936,25 @@ class UpiPaymentServiceTest extends TestCase
 
                                   return strtolower($defaultBehaviour);
                               }));
+    }
+
+    protected function mockSplitzTreatmentForCheckoutBlacklist($expectedTreatment = 'variant_on')
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($expectedTreatment) {
+                return [
+                    "response" => [
+                        "variant" => [
+                            "name" => $expectedTreatment,
+                        ],
+                    ],
+                ];
+            });
     }
 
     protected function createDependentEntitiesForRefund($payment, $status = 'authorized')

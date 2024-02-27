@@ -101,6 +101,12 @@ trait Vpa
                     $input,
                     Payment\Gateway::UPI_ICICI);
 
+                // if the response is already encrypted, return response
+                if (empty($response['vpa_token']) === false)
+                {
+                    return $response;
+                }
+
                 $mode = $this->mode ?? Mode::LIVE;
 
                 $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), 'numeric_mapper_encrypted_vpa', $mode);

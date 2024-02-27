@@ -17,8 +17,18 @@ class Vpa extends Base
     public function processValidation($input)
     {
         // Check if we can process the validate account request for numeric/non-numeric VPA to UPS directly
-        if ($this->shouldRouteValidateAccountRequestToUps())
+        if (is_numeric($input['value']) and
+            $this->shouldRouteValidateAccountRequestToUps())
         {
+            // Adding the blacklist check owned by Checkout here.
+            // We are not passing MID in request to UPS, so it is difficult to maintain the experiment there.
+            // Also, this is supposed to be a temp setup from Checkout team.
+            if(empty($input['_'][Payment\Analytics\Entity::LIBRARY]) === false &&
+                $input['_'][Payment\Analytics\Entity::LIBRARY] === Payment\Analytics\Metadata::CHECKOUTJS)
+            {
+                $this->checkoutValidateContactUpiNumber($input);
+            }
+
             try
             {
                 return $this->app['upi.payments']->action(Payment\Action::VALIDATE_ACCOUNT_PROXY, $input, "");
