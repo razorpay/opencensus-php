@@ -452,4 +452,38 @@ class Repository extends Base\Repository
                     ->pluck(Entity::PRODUCT)
                     ->toArray();
     }
+
+    /**
+     * select `users.email` from `users`
+     *         left join `merchant_users`
+     *         on `users.id` = `merchant_users.user_id`
+     *         where `users.email` in (?, ?)
+     *         and merchant_user.merchant_id = ?;
+     * @param $merchantId
+     * @param $emails
+     *
+     * @return array
+     */
+    public function fetchUserEmailsByMerchantIdAndEmails($merchantId, $emails): array
+    {
+        $userTable = Table::USER;
+
+        $merchantUserIdCol = $this->repo->merchant_user->dbColumn(Entity::USER_ID);
+        $merchantIdCol = $this->repo->merchant_user->dbColumn(Entity::MERCHANT_ID);
+        $productCol = $this->repo->merchant_user->dbColumn(Entity::PRODUCT);
+
+        $userEmail = $this->repo->user->dbColumn(UserEntity::EMAIL);
+        $userIdCol = $this->repo->user->dbColumn(UserEntity::ID);
+
+        return $this->newQuery()
+            ->select($userEmail)
+            ->leftJoin($userTable, $userIdCol, $merchantUserIdCol)
+            ->whereIn($userEmail, $emails)
+            ->where($productCol, '=', ProductType::BANKING)
+            ->where($merchantIdCol, '=', $merchantId)
+            ->get()
+            ->pluck($userEmail)
+            ->toArray();
+    }
+
 }

@@ -1911,11 +1911,20 @@ class Service extends Base\Service
     {
         if ($this->merchant->isSignupViaEmail() === true)
         {
-            $input['email'] = $input['email'] ?? $this->merchant->getEmail();
+            $input['email'] = $this->merchant->getEmail() ?? $this->user->getEmail();
+        }
+
+        $input['name'] = $this->user->getName() ?? $this->merchant->getName();
+
+        $pattern = '/^[a-zA-Z0-9, -]+$/';
+
+        if(preg_match($pattern, $input['custom_fields']['cf_category']) && preg_match($pattern, $input['custom_fields']['cf_requestor_subcategory']) && strlen($input['subject']) < 50)
+        {
+            $input['subject'] = $input['custom_fields']['cf_category'] . " | " . $input['custom_fields']['cf_requestor_subcategory'] . " | " . $this->merchant->getId();
         }
         else
         {
-            $input['name'] = $this->merchant->getName() ?? '';
+            $input['subject'] = "RazorpayX Support Ticket";
         }
 
         $input['phone'] = $input['phone'] ?? $this->merchant->merchantDetail->getContactMobile();
@@ -1926,7 +1935,14 @@ class Service extends Base\Service
 
         $input['status'] = 2;
 
+        $input['cc_emails'] = $this->checkIfCCEmailsAreFromUserList($input);
+
         return $input;
+    }
+
+    protected function checkIfCCEmailsAreFromUserList($input)
+    {
+        return $this->repo->merchant_user->fetchUserEmailsByMerchantIdAndEmails( $this->merchant->getId(), $input[Constants::CC_EMAILS]);
     }
 
     protected function getExpectedFirstResponseDueBy($freshdeskTicket)
