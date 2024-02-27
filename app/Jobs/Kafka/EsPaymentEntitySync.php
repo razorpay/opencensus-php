@@ -3,6 +3,7 @@
 namespace RZP\Jobs\Kafka;
 use RZP\Exception\LogicException;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Service;
 use RZP\Models\Base;
 
 class EsPaymentEntitySync extends Job
@@ -29,6 +30,14 @@ class EsPaymentEntitySync extends Job
         $this->setTaskId($taskId);
 
         parent::handle();
+
+        if ((empty($this->payload[self::ACTION]) === false) &&
+            ($this->payload[self::ACTION] === "risk_notification"))
+
+        {
+            $this->sendRiskNotification();
+            return;
+        }
 
         $this->setEsPayload();
 
@@ -96,6 +105,22 @@ class EsPaymentEntitySync extends Job
             default:
 
                 throw new LogicException('EsSync: Invalid action.');
+        }
+    }
+
+    private function sendRiskNotification()
+    {
+        try
+        {
+            (new Service())->internalRiskNotificationForRearch($this->payload['id'], $this->payload['risk_data']);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::ASYNC_RISK_NOTIFICATION_FAILED,
+                $tracePayload);
         }
     }
 

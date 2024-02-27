@@ -6,9 +6,12 @@ namespace Functional\Jobs\Kafka;
 use Mockery;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\Kafka\EsPaymentEntitySync;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class EsPaymentSyncJobTest extends TestCase
 {
+    use DbEntityFetchTrait;
+
     private $repoManager;
     private $repo;
     private $esRepo;
@@ -66,6 +69,56 @@ class EsPaymentSyncJobTest extends TestCase
 
         $this->assertNotNull($job->getPayload());
     }
+
+    public function testHandleRiskNotification()
+    {
+        $this->fixtures->payment->createStatusCreated(
+            [
+                'cps_route' => 7,
+                'method'    => 'upi',
+                'gateway'   => 'upi_icici'
+            ]
+        );
+
+        $payment = $this->getDbLastPayment();
+
+        $this->payload = [
+            "action" => "risk_notification",
+            "entity" =>  "payment",
+            "id" => $payment->getPublicId(),
+            "rearch" => true,
+            "risk_data" => [
+                "merchant_id" =>  $payment->getMerchantId(),
+                "risk" => [
+                    "fraud_type" => "suspected",
+                    "reason" => "PAYMENT_SUSPECTED_FRAUD_BY_SHEILD",
+                    "risk_score" => 0,
+                    "triggered_rules" => [
+                        "review" => [
+                            [
+                            "id" => 636,
+                            "rule_code" => "INTERNATIONAL_DDOS_RULE",
+                            "rule_description" => "Velocity rule for UPI transactions on hourly basis",
+                            "rule_id" => "rule_LDyogYPu4w6J9C",
+                            ],
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals(7, $payment->getCpsRoute());
+
+        $this->repoManager->shouldReceive('driver')->andReturn($this->repo);
+        $this->esRepo->shouldReceive('bulkUpdate')->with($this->documents)->andReturn(['errors' => false]);
+
+        $job = new EsPaymentEntitySync($this->payload);
+
+        $job->handle();
+
+        $this->assertNotNull($job->getPayload());
+    }
+
     public function testInSufficientPayload()
     {
 
