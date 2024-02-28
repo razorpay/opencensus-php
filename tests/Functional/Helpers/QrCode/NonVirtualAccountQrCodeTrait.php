@@ -832,13 +832,18 @@ trait NonVirtualAccountQrCodeTrait
             case Gateway::UPI_AIRTEL:
             {
                 $vpa = $terminal->getGatewayMerchantId2();
+                $tr = substr($response['id'], 3, 14) . 'qrv2';
                 switch ($qrCodeEntity['usage'])
                 {
-                    case 'multiple_use':
                     case 'single_use':
                     {
-                        $tr = substr($response['id'], 3, 14) . 'qrv2';
                         $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+                        break;
+                    }
+                    case 'multiple_use':
+                    {
+                        $this->assertStringNotContainsString('tr=', $qrCodeEntity['qr_string'], 'Static QR Should not contain tr attribute');
+                        $this->assertStringNotContainsString('mode=', $qrCodeEntity['qr_string'], 'Static QR Should not contain mode attributes');
                         break;
                     }
                 }

@@ -67,16 +67,20 @@ class UpiAirtelQRCodeTest extends TestCase
             $this->assertEquals('testvpaOffline@mairtel', $pa);
         }
         $this->assertStringContainsString('@mairtel', $pa);
-        $this->assertEquals($qrCodeEntity['reference'] . 'qrv2', $tr);
 
         if ($qrCodeEntity['usage'] === 'single_use')
         {
+            $this->assertEquals($qrCodeEntity['reference'] . 'qrv2', $tr);
+
             $amount = $qrCodeEntity['amount'] / 100.00;
             $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
         }
         else
         {
 
+            $mode  = $intentParam['mode'];
+            $this->assertNull($mode,'mode attribute should not be present in static QR String');
+            $this->assertNull($tr,'tr attribute should not be present in static QR String');
             if ($qrCodeEntity['fixed_amount'] === true)
             {
                 $amount = $qrCodeEntity['amount'] / 100.00;
@@ -355,12 +359,12 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->assertEquals($qrCodeEntity['reference'], $qrPayment['qr_code_id']);
         $this->assertEquals($qrCodeEntity['reference'], $qrPayment['merchant_reference']);
         $this->assertEquals($paymentRequestEntity['description'], $qrPayment['notes']);
-        $this->assertEquals($upi['merchant_reference'], $intentParam['tr']);
         $this->assertEquals('pullak@okhdfcbank', $upi['vpa']);
         $this->assertEquals('107611570997', $upi['npci_reference_id']);
 
         if ($qrCodeEntity['usage'] === 'single_use')
         {
+            $this->assertEquals($upi['merchant_reference'], $intentParam['tr']);
             if ($amountMisMatchFlag == true)
             {
                 $this->assertEquals('active', $qrCodeEntity['status']);
@@ -608,4 +612,37 @@ class UpiAirtelQRCodeTest extends TestCase
         // We return success as true in this case
         $this->assertTrue($response['success']);
     }
+    public function testCreateAPBStaticQr(): void
+    {
+        $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $this->runQrCodeEntityAssertions();
+    }
+
+    public function testCreateAPBStaticQrWithEzetapRequestSource(): void
+    {
+        $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer',
+            headers:[
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+
+        $this->runQrCodeEntityAssertions();
+    }
+
 }

@@ -395,6 +395,12 @@ class Generator extends QrCode\Generator
             $content[Base\IntentParams::TRANSACTION_ID] = $qrCode->getId();
         }
 
+        if((str_contains($vpa, '@mairtel') === true) and ($qrCode->getUsageType() === UsageType::MULTIPLE_USE))
+        {
+            unset($content[Base\IntentParams::MODE]);
+            unset($content[Base\IntentParams::TXN_REF_ID]);
+        }
+
         $content = array_merge($content, InvoiceDetails::getTaxDetails($qrCode));
 
         return 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));

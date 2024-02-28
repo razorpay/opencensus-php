@@ -2751,6 +2751,11 @@ class QrCodeStatusCheckTest extends TestCase
         $paymentCount = count($this->getDbEntities('payment', [],'live'));
         $qrPaymentReqCount = count($this->getDbEntities('qr_payment_request', [],'live'));
 
+        $currentTime = Carbon::now();
+
+        // Adding 4 minutes to make sure that sufficient time has passed for dispatch
+        Carbon::setTestNow($currentTime->addMinute(4));
+
         $this->startTest();
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
