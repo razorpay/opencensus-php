@@ -134,8 +134,8 @@ class BankingAccountTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
-        $this->fixtures->on('live')->create('merchant_detail:sane', ['merchant_id'=>'10000000000000']);
-        $this->fixtures->on('test')->create('merchant_detail:sane', ['merchant_id'=>'10000000000000']);
+        $this->fixtures->on('live')->create('merchant_detail:sane', ['merchant_id'=>'10000000000000', 'contact_email' => 'test@razorpay.com']);
+        $this->fixtures->on('test')->create('merchant_detail:sane', ['merchant_id'=>'10000000000000', 'contact_email' => 'test@razorpay.com']);
     }
 
     protected function mockBvsService()
