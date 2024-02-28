@@ -37,6 +37,8 @@ class Constants
     const KEY            = 'key';
     const VALUE          = 'value';
 
+    const POA_ZIP_CODE = 'poa_zip_code';
+
     const MERCHANT_RISK_CONFIG = [
         Detail\Entity::PROMOTER_PAN => [
             'lists' => [
@@ -125,6 +127,12 @@ class Constants
                 self::BLACKLIST,
             ],
             'config_key' => "client_id",
+        ],
+        Detail\Entity::BUSINESS_REGISTERED_PIN => [
+            'lists' => [
+                self::HIGH_RISK_LIST,
+            ],
+            'config_key' => "business_zip_code"
         ],
     ];
 
@@ -318,6 +326,22 @@ class Constants
                 UserEntity::CLIENT_ID => [
                     'list' => self::BLACKLIST,
                     'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_REGISTERED_PIN => [
+                    'list' => self::HIGH_RISK_LIST,
+                    'matchType' => self::EXACT_MATCH
+                ]
+            ],
+        ],
+        [
+            'keysToCheck' => [
+                self::POA_ZIP_CODE => [
+                    'list' => self::HIGH_RISK_LIST,
+                    'matchType' => self::EXACT_MATCH
                 ]
             ],
         ],
