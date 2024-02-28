@@ -129,31 +129,47 @@ class TransferProcess extends Job
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException(
-                $ex,
-                null,
-                TraceCode::TRANSFER_FAILURE,
-                [
-                    'message'     => 'transfer failed',
-                    'payment_id'   => $this->payment,
-                    'transfermode' => $this->transferMode,
-                ]
-            );
-
-            (new Metric())->pushTransferProcessFailedMetrics($ex);
-
             if ($this->isReverseShadow === true)
             {
-                $this->retryTransferTransactionCreation();
+                (new Metric())->pushMetricForTransferTransactionsCreate($ex);
+
+                $this->trace->info(
+                    TraceCode::RETRY_TRANSFER_TXN_IN_REVERSE_SHADOW,
+                    [
+                        'payment_id'    => $this->payment,
+                        'attempt_count' => $this->attempts(),
+                    ]
+                );
+
+                $this->release(600);
 
                 return;
             }
-
-            if ((new Utility)->isRetryableError($ex) === true)
+            else
             {
-                $retryTime = (new Utility)->getDelay($ex);
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::TRANSFER_FAILURE,
+                    [
+                        'message'     => 'transfer failed',
+                        'payment_id'   => $this->payment,
+                        'transfermode' => $this->transferMode,
+                    ]
+                );
 
-                $this->checkRetry($retryTime);
+                (new Metric())->pushTransferProcessFailedMetrics($ex);
+
+                if ((new Utility)->isRetryableError($ex) === true)
+                {
+                    $retryTime = (new Utility)->getDelay($ex);
+
+                    $this->checkRetry($retryTime);
+                }
+                else
+                {
+                    $this->delete();
+                }
             }
         }
     }
@@ -252,43 +268,4 @@ class TransferProcess extends Job
             (new Core())->eventTransferFailed($transfer);
         }
     }
-
-    public function retryTransferTransactionCreation(): void
-    {
-        for ($i = 0; $i < $this->attemptLimit; $i++)
-        {
-            try
-            {
-                $this->trace->info(
-                    TraceCode::RETRY_TRANSFER_TXN_IN_REVERSE_SHADOW,
-                    [
-                        'payment_id'    => $this->payment,
-                        'attempt_count' => $i,
-                    ]
-                );
-
-                (new Transfer\Core)->createTransferTransactionsInReverseShadow($this->payment, $this->transferInput);
-
-                $this->delete();
-
-                return;
-            }
-            catch (Throwable $ex)
-            {
-                (new Metric())->pushMetricForTransferTransactionsCreate($ex);
-
-                $this->trace->traceException($ex);
-            }
-        }
-
-        $this->trace->error(
-            TraceCode::RETRY_TRANSFER_TXN_FAILED_IN_REVERSE_SHADOW,
-            [
-                'payment_id' => $this->payment,
-            ]
-        );
-
-        $this->delete();
-    }
-
 }

@@ -77,7 +77,7 @@ class PaymentTransfer extends  AbstractTransfer
                 ]
             );
 
-            (new Metric())->pushTransferProcessFailedMetrics($e);
+            throw $e;
         }
     }
 }

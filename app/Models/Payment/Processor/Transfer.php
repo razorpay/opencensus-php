@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\Tracer;
@@ -132,6 +133,17 @@ trait Transfer
             Payment\Entity::METHOD          => Payment\Method::TRANSFER,
             Payment\Entity::NOTES           => $input['notes'],
         ];
+
+        $now = Carbon::now()->getTimestamp();
+
+        if ((empty($paymentData[Payment\Entity::ON_HOLD_UNTIL]) === false) &&
+            ($now >= $paymentData[Payment\Entity::ON_HOLD_UNTIL]))
+        {
+            // If the current time has exceeded the on_hold until timestamp set in the transfer, then it is
+            // no longer necessary to keep the payment entity on hold. So the values are unset here.
+            $paymentData[Payment\Entity::ON_HOLD_UNTIL] = null;
+            $paymentData[Payment\Entity::ON_HOLD] = 0;
+        }
 
         if ($originPayment !== null)
         {

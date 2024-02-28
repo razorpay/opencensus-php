@@ -115,65 +115,65 @@ abstract class AbstractTransfer
 
         $failedTransfersToRetry = [];
 
-            foreach ($transfers as $transfer)
+        foreach ($transfers as $transfer)
+        {
+            $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
+
+            try
             {
-                $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
+                $transferProcessStartTime = microtime(true);
 
-                try
+                $this->processTransferWithRetry($payment, $transfer);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    $this->failurecode,
+                    [
+                        'payment_id' => $payment->getPublicId(),
+                        'transfer' => $transfer->toArrayPublic(),
+                        'transfermode' => $this->transfermode,
+                    ]
+                );
+
+                $transfer->setMessage($e->getMessage());
+
+                $this->verifyAndSetErrorCode($transfer, $e->getCode());
+
+                if ((new Utility)->isRetryableError($e) === true)
                 {
-                    $transferProcessStartTime = microtime(true);
-
-                    $this->processTransferWithRetry($payment, $transfer);
+                    $failedTransfersToRetry[] = clone $transfer;
+                    continue;
                 }
-                catch (\Exception $e)
+
+                $transfer->setFailed();
+
+                $transfer->incrementAttempts();
+
+                $this->repo->saveOrFail($transfer);
+
+                $this->fireTransferFailedWebhookIfApplicable($transfer);
+            }
+            finally
+            {
+                if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false) or
+                    ($subMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false ) )
                 {
-                    $this->trace->traceException(
-                        $e,
-                        null,
-                        $this->failurecode,
-                        [
-                            'payment_id' => $payment->getPublicId(),
-                            'transfer' => $transfer->toArrayPublic(),
-                            'transfermode' => $this->transfermode,
-                        ]
+                    //Note: for reverse shadow merchants, this would done from ack worker
+                    $transferProcessEndTime = microtime(true);
+
+                    (new Metric())->pushTransferProcessingTimeInWorkerMetrics(
+                        $transfer->getSourceType(),
+                        ($transferProcessEndTime - $transferProcessStartTime)
                     );
 
-                    $transfer->setMessage($e->getMessage());
-
-                    $this->verifyAndSetErrorCode($transfer, $e->getCode());
-
-                    if ((new Utility)->isRetryableError($e) === true)
-                    {
-                        $failedTransfersToRetry[] = clone $transfer;
-                        continue;
-                    }
-
-                    $transfer->setFailed();
-
-                    $transfer->incrementAttempts();
-
-                    $this->repo->saveOrFail($transfer);
-
-                    $this->fireTransferFailedWebhookIfApplicable($transfer);
+                    (new Core())->trackTransferProcessingTime($transfer, $payment);
                 }
-                finally
-                {
-                    if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false) or
-                        ($subMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false ) )
-                    {
-                        //Note: for reverse shadow merchants, this would done from ack worker
-                        $transferProcessEndTime = microtime(true);
 
-                        (new Metric())->pushTransferProcessingTimeInWorkerMetrics(
-                            $transfer->getSourceType(),
-                            ($transferProcessEndTime - $transferProcessStartTime)
-                        );
-
-                        (new Core())->trackTransferProcessingTime($transfer, $payment);
-                    }
-
-                }
             }
+        }
 
         $endTime = microtime(true);
 
@@ -423,7 +423,18 @@ abstract class AbstractTransfer
         {
             return Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment'], function() use ($transfer, $payment)
             {
-                return $this->createTransferredPayment($transfer, $payment);
+                $transferPayment = $this->createTransferredPayment($transfer, $payment);
+
+                if (($transfer->getOnHold() === true) and ($transferPayment->getOnHold() === false))
+                {
+                    $transfer->setOnHold(false);
+
+                    $transfer->setOnHoldUntil(null);
+
+                    $transfer->saveOrFail();
+                }
+
+                return $transferPayment;
             });
         }
     }

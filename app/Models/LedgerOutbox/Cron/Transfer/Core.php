@@ -41,7 +41,7 @@ class Core extends Base\Core
 
 
     //pg-ledger outbox cron retries journal and txn creation for non-deleted outbox entries in reverse-shadow mode
-    public function retryFailedReverseShadowTransferTransactions($limit, $retryCount) : array
+    public function retryFailedReverseShadowTransferTransactions($limit, $maxRetryCount) : array
     {
         $ledgerService = $this->app['ledger'];
 
@@ -60,7 +60,7 @@ class Core extends Base\Core
         $startTimestamp = $now - Constants::OUTBOX_RETRY_DEFAULT_START_TIME;
         $endTimestamp = $now - Constants::OUTBOX_RETRY_DEFAULT_END_TIME;
 
-        $entries = $this->repo->ledger_outbox->fetchOldOutboxEntriesForRetryByEntityType($limit, $startTimestamp, $endTimestamp, Constants::TRANSFER,  $retryCount);
+        $entries = $this->repo->ledger_outbox->fetchOldOutboxEntriesForRetryByEntityType($limit, $startTimestamp, $endTimestamp, Constants::TRANSFER,  $maxRetryCount);
 
         $this->trace->info(TraceCode::PG_LEDGER_OUTBOX_FETCH,
             [
@@ -74,7 +74,7 @@ class Core extends Base\Core
         {
             $entry->reload();
 
-            if (($entry->isDeleted() === false) && ($entry[Entity::RETRY_COUNT] < $retryCount))
+            if (($entry->isDeleted() === false) && ($entry[Entity::RETRY_COUNT] < $maxRetryCount))
             {
                 $retries = $entry[Entity::RETRY_COUNT] + 1;
 
@@ -112,7 +112,7 @@ class Core extends Base\Core
                         LedgerConstants::TRANSACTOR_ID      => $transactorId,
                         LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
                         Entity::RETRY_COUNT                 => $entry[Entity::RETRY_COUNT],
-                        'max_retry_count'                   => $retryCount,
+                        'max_retry_count'                   => $maxRetryCount,
                         Constants::SOURCE                   => Constants::CRON,
                         Constants::CRON_TYPE                => Constants::TRANSFER
                     ]
@@ -272,7 +272,7 @@ class Core extends Base\Core
 
                         $ledgerOutboxCore->updateRetryCountAndSoftDelete($entry, $retries);
                     }
-                    else if ($retries === LedgerReverseShadowConstants::MAX_RETRY_COUNT_TRANSFER_CRON)
+                    else if ($retries === $maxRetryCount)
                     {
                         $this->trace->count(Metric::PG_LEDGER_OUTBOX_CRON_RETRIES_EXHAUSTED, [
                             LedgerReverseShadowConstants::RETRY_COUNT => $retries,

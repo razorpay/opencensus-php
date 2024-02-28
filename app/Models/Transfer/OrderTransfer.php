@@ -79,7 +79,7 @@ class OrderTransfer extends  AbstractTransfer
                 ]
             );
 
-            (new Metric())->pushTransferProcessFailedMetrics($e);
+            throw $e;
         }
     }
 }

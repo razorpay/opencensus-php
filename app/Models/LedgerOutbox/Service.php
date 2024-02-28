@@ -126,9 +126,9 @@ class Service extends Base\Service
 
         $limit = $input['limit'] ?? Constants::DEFAULT_LIMIT;
 
-        $retryCount = $input['retry_count'] ?? ReverseShadow\Constants::MAX_RETRY_COUNT_TRANSFER_CRON;
+        $maxRetryCount = $input['retry_count'] ?? ReverseShadow\Constants::MAX_RETRY_COUNT_TRANSFER_CRON;
 
-        $response = (new LedgerOutbox\Cron\Transfer\Core())->retryFailedReverseShadowTransferTransactions($limit, $retryCount);
+        $response = (new LedgerOutbox\Cron\Transfer\Core())->retryFailedReverseShadowTransferTransactions($limit, $maxRetryCount);
         return $response;
     }
 

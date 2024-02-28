@@ -14,6 +14,8 @@ class Utility
     ];
 
     protected $errorCodeToRetryDelayInSecsMap = [
+        ErrorCode::BAD_REQUEST_ORDER_TRANSFER_PROCESS_IN_PROGRESS,
+        ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_PROCESS_IN_PROGRESS,
         ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
         ErrorCode::BAD_REQUEST_INVALID_ID,
     ];
