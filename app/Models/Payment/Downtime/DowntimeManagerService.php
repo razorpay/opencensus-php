@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use RZP\Http\Controllers\DowntimeManagerController;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use RZP\Exception\BadRequestException;
@@ -16,6 +17,8 @@ class DowntimeManagerService
     private $baseUrl;
     const REQUEST_TIMEOUT = 30;
     const JSON_METHOD = ['POST', 'PUT', 'PATCH'];
+    const FETCH_ONGOING_PAYMENT_DOWNTIMES_FOR_MERCHANT = 'v2/payments/downtimes/ongoing';
+    const FETCH_PAYMENT_DOWNTIME_BY_ID = 'v2/payments/downtimes/';
 
     private $srConfig;
     private $srBasePath;
@@ -33,6 +36,26 @@ class DowntimeManagerService
         $this->srHost = $this->srConfig['host'];
         $this->srBasePath = $this->srConfig['basePath'];
         $this->app = $app;
+    }
+
+    public function fetchOngoingPaymentDowntimesForMerchant() : array {
+        $path = self::FETCH_ONGOING_PAYMENT_DOWNTIMES_FOR_MERCHANT;
+
+        $response = $this->sendRequest($path, DowntimeManagerController::GET, null, "payment_downtimes");
+
+        unset($response["status_code"]);
+
+        return $response;
+    }
+
+    public function fetchPaymentDowntimeById(string $id) : array {
+        $path = self::FETCH_PAYMENT_DOWNTIME_BY_ID . $id;
+
+        $response = $this->sendRequest($path, DowntimeManagerController::GET, null, "payment_downtimes");
+
+        unset($response["status_code"]);
+
+        return $response;
     }
 
     public function notifyDowntime(DowntimeEntity $downtime, String $status)
@@ -97,9 +120,13 @@ class DowntimeManagerService
             $data = '';
         }
 
-        if ($service === 'SR') {
+        if ($service === 'SR' || $service === 'payment_downtimes') {
             $merchant   = $this->app['basicauth']->getMerchant();
             $headers['merchant_id'] = $merchant->getMerchantId();
+        }
+
+        if ($service === 'payment_downtimes') {
+            $headers['channel'] = 'API';
         }
 
         $headers['Content-Type'] = 'application/json';

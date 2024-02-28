@@ -91,7 +91,7 @@ class BaseProcessor extends Base\Core
                     (new Service())->emailDowntime(Constants::RESOLVED, $downtime);
                 }
 
-                PaymentDowntimeEvent::dispatch($this->mode, Status::RESOLVED, serialize($downtime));
+                //PaymentDowntimeEvent::dispatch($this->mode, Status::RESOLVED, serialize($downtime));
 
                 (new DowntimeManagerService($this->app))->notifyDowntime($downtime, Status::RESOLVED);
                 (new SlackAppService($this->app))->sendDowntimeRequestToSlack($downtime, Status::RESOLVED);

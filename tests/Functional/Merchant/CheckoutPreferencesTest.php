@@ -3661,6 +3661,8 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testTurboPaymentDowntimeInCheckoutPreferences()
     {
+        $this->markTestSkipped("Deprecated: Downtime Manager and checkout calls have moved out of api");
+
         $this->ba->adminAuth();
 
         $this->makeRequestAndGetContent([

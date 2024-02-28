@@ -54,7 +54,9 @@ class Service extends Base\Service
 
     public function getMethodDowntimeDataForMerchant(array $input): array
     {
-        $sendMerchantDowntimesInFetchApi = $this->shouldSendMerchantDowntimes(Constants::FETCH_API);
+        return (new DowntimeManagerService($this->app))->fetchOngoingPaymentDowntimesForMerchant();
+
+        /*$sendMerchantDowntimesInFetchApi = $this->shouldSendMerchantDowntimes(Constants::FETCH_API);
 
         if ($sendMerchantDowntimesInFetchApi &&
             ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GRANULAR_DOWNTIMES) === true))
@@ -72,7 +74,7 @@ class Service extends Base\Service
             $this->removeGranularDowntimeKeysFromCollection($downtimesArrayPublic);
 
             return $downtimesArrayPublic;
-        }
+        }*/
     }
 
     public function fetchOngoingDowntimes(): array
@@ -101,7 +103,9 @@ class Service extends Base\Service
     {
         $id = str_replace("down_", "", $id);
 
-        $downtimes = $this->getRepository()->findOrFailPublic($id);
+        return (new DowntimeManagerService($this->app))->fetchPaymentDowntimeById($id);
+
+        /*$downtimes = $this->getRepository()->findOrFailPublic($id);
 
         $sendMerchantDowntimesInFetchApi = $this->shouldSendMerchantDowntimes(Constants::FETCH_API);
 
@@ -117,7 +121,7 @@ class Service extends Base\Service
             $this->removeGranularDowntimeKeysFromEntity($downtimeArrayPublic);
 
             return $downtimeArrayPublic;
-        }
+        }*/
     }
 
     public function triggerDowntimes(array $input, string $status): array
