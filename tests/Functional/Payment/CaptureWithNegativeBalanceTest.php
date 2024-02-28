@@ -1346,7 +1346,7 @@ class CaptureWithNegativeBalanceTest extends TestCase
                 "merchant_balance_limit" => "500000"
             ],
             'additional_params' => [
-            'merchant_balance_accounting' => "balance_deduct",
+                'merchant_balance_accounting' => "zero_amount_payment",
             ],
             "ledger_integration_mode" =>  "reverse-shadow",
             "tenant" => "PG"

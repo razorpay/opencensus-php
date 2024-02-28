@@ -60,7 +60,7 @@ class Core extends Base\Core
         {
             $moneyParams = $this->generateMoneyParamsForNormalPayment($payment, $merchantAccountBalances, $fee, $tax, $discount);
 
-            $additionalParams = $this->fetchRulesForPaymentCredits($payment, $merchantAccountBalances, $fee, $moneyParams[Constants::BASE_AMOUNT]);
+            $additionalParams = $this->fetchRulesForPaymentCredits($payment, $merchantAccountBalances, $fee, intval($moneyParams[Constants::BASE_AMOUNT]));
         }
 
         $transactorId = $payment->getPublicId();
@@ -325,14 +325,15 @@ class Core extends Base\Core
         {
             // Use case where amount is less than fee charged, hence we need to deduct more money from merchant balance
             // Use case has method as bank transfer
-            if($amount < ($commission + $tax))
-            {
-                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($commission + $tax - $amount);
-            }
+
             // Use case where amount is 0, happens for first payment in emandate subscriptions
-            else if($amount === 0)
+            if($amount === 0)
             {
                 $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($commission + $tax);
+            }
+            else if($amount < ($commission + $tax))
+            {
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($commission + $tax - $amount);
             }
             // Normal use case, amount is greater than (commission and tax)
             // We credit merchant balance in this case after deducting the fee.
