@@ -87,6 +87,7 @@ use RZP\Models\Merchant\Consent\Repository as MerchantConsentRepository;
 use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
 use RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClient as  MccCategorisationClient;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
+use RZP\Models\Merchant\Detail;
 
 class MerchantDetailTest extends OAuthTestCase
 {
@@ -114,6 +115,8 @@ class MerchantDetailTest extends OAuthTestCase
 
     protected $config;
 
+    protected $validator = null;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantDetailTestData.php';
@@ -125,6 +128,7 @@ class MerchantDetailTest extends OAuthTestCase
         $this->esClient =  $this->esDao->getEsClient()->getClient();
 
         $this->config = App::getFacadeRoot()['config'];
+        $this->validator = new Detail\Validator();
     }
 
     protected function enableRazorXTreatmentForRazorX()
@@ -2730,6 +2734,18 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->assertEquals($merchantDetails->getContactMobile(), '+60179164389');
     }
+
+    public function testMerchantDetailsWithInvalidEmailOnCreate()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->validator->validateInput('create', ['transaction_report_email'=>'dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy@gmail.com']);
+    }
+    public function testMerchantDetailsWithInvalidEmailOnUpdate()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->validator->validateInput('edit', ['transaction_report_email'=>'dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy@gmail.com']);
+    }
+
 
     public function testMerchantDetailsEditMobileNumberWithPrefix()
     {
