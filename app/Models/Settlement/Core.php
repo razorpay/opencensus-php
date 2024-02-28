@@ -57,6 +57,8 @@ class Core extends Base\Core
     const DEFAULT_FTS_CHANNEL = Channel::ICICI;
     const DEFAULT_PAYOUT_CHANNEL = Channel::AXIS;
 
+    const PROCESSED_COMMS_EXPERIMENT_KEY        = "app.settlements_processed_comms_experiment_id";
+
     public function retrieveById($id)
     {
         Entity::verifyIdAndStripSign($id);
@@ -617,16 +619,43 @@ class Core extends Base\Core
 
             if ($settlement->isStatusProcessed() === true)
             {
-                $this->triggerSettlementsMail($settlement, $bankAccountNumber, $merchant);
+                // Decision based on experiment; if experiment is ENABLED / TRUE (means all relevant
+                // settlements PROCESSED notifications are already handled via NSS service directly);
+                // don't run below flow OTHERWISE execute below flow.
+                $rampUpExpResult = $this->isProcessedCommunicationExperimentEnabledForMerchant($merchantId,
+                    self::PROCESSED_COMMS_EXPERIMENT_KEY);
 
-                $args = [
-                    'settlement'          => $settlement,
-                    'merchant'            => $merchant,
-                    'bankAccountNumber'   => $bankAccountNumber,
-                    'currency_symbol'     => Currency::getSymbol($merchant->getCurrency()),
-                ];
+                if ($rampUpExpResult === false)
+                {
+                    $this->trace->info(
+                        TraceCode::SETTLEMENT_PROCESSED_NOTIFICATION_VIA_API,
+                        [
+                            'merchant_id'     => $merchant->getId(),
+                            'settlement_id'   => $settlement->getId(),
+                            'currency_symbol' => Currency::getSymbol($merchant->getCurrency()),
+                        ]);
 
-                (new SettlementNotificationHandler($args))->sendForEvent(Events::PROCESSED);
+                    $this->triggerSettlementsMail($settlement, $bankAccountNumber, $merchant);
+
+                    $args = [
+                        'settlement'          => $settlement,
+                        'merchant'            => $merchant,
+                        'bankAccountNumber'   => $bankAccountNumber,
+                        'currency_symbol'     => Currency::getSymbol($merchant->getCurrency()),
+                    ];
+
+                    (new SettlementNotificationHandler($args))->sendForEvent(Events::PROCESSED);
+                }
+                else
+                {
+                    $this->trace->info(
+                        TraceCode::SETTLEMENT_PROCESSED_NOTIFICATION_VIA_NSS,
+                        [
+                            'merchant_id'     => $merchant->getId(),
+                            'settlement_id'   => $settlement->getId(),
+                            'currency_symbol' => Currency::getSymbol($merchant->getCurrency()),
+                        ]);
+                }
             }
             else if ($settlement->isStatusFailed() === true)
             {
@@ -1323,4 +1352,51 @@ class Core extends Base\Core
                 TransferSettlementStatus::DISPATCH_DELAY_SECONDS);
         }
     }
+
+    // check for processed communication experiment
+    protected function isProcessedCommunicationExperimentEnabledForMerchant($merchantId, $experimentKey): bool
+    {
+        $experimentId = $this->app['config']->get($experimentKey);
+
+        // if experiment not found; send notifications as usual from API
+        if (empty($experimentId))
+        {
+            return false;
+        }
+
+        $this->trace->info(TraceCode::SETTLEMENT_PROCESSED_COMMS_EXPERIMENT_REQUEST_LOG, [
+            'experiment_key' => $experimentKey,
+            'experiment_id' => $experimentId,
+            'merchant_id'   => $merchantId,
+        ]);
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant'] ?? [];
+
+        $this->trace->info(TraceCode::SETTLEMENT_PROCESSED_COMMS_EXPERIMENT_RESPONSE_LOG, [
+            'experiment_id' => $experimentId,
+            'merchant_id'   => $merchantId,
+            'splitz_output' => $variant,
+        ]);
+
+        if (empty($variant))
+        {
+            return false;
+        }
+
+        $variables = $variant['variables'];
+
+        if ($variables[0]['key'] === 'enabled' && $variables[0]['value'] === 'true')
+        {
+            return true;
+        }
+        return false;
+    }
+
 }

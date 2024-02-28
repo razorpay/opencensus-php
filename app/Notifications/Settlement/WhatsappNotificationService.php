@@ -3,6 +3,7 @@
 namespace RZP\Notifications\Settlement;
 
 use Carbon\Carbon;
+use RZP\Models\Currency\Currency;
 use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -129,8 +130,9 @@ class WhatsappNotificationService extends BaseNotificationService
 
         if($this->event === Events::PROCESSED)
         {
+            $currencySymbol = $this->args['currency_symbol'] ?? Currency::SYMBOL[Currency::INR];
             $payload['params']['utr']    = $settlement->getUtr();
-            $payload['params']['amount'] = 'Rs.'.$settlement->getAmount()/100;
+            $payload['params']['amount'] = $currencySymbol.' '.$settlement->getAmount()/100;
         }
         else
         {
