@@ -15,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Gateway;
 use RZP\Services\TerminalsService;
@@ -2938,6 +2939,30 @@ class Repository extends Base\Repository
 
         }
 
+    }
+
+    public function isTerminalsTidbReadMigrationEnabled($function = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            $function,
+            RazorxTreatment::TERMINALS_TIDB_QUERIES_MIGRATION,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::TERMINALS_READS_TIDB_MIGRATION_RAMPED,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }

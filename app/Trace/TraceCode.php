@@ -997,6 +997,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KOTAK_NODAL_BALANCE_REQUEST                           = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                          = 'KOTAK_NODAL_BALANCE_RESPONSE';
     const TERMINALS_SERVICE_PAYMENT_TERMINALS                   = 'TERMINALS_SERVICE_PAYMENT_TERMINALS';
+    const TERMINALS_READS_TIDB_MIGRATION_RAMPED                 = 'TERMINALS_READS_TIDB_MIGRATION_RAMPED';
     const X_DASHBOARD_ADMIN_ORG_ID                              = 'X_DASHBOARD_ADMIN_ORG_ID';
     const TERMINAL_SELECTION                                    = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_FOR_RULE_GROUP                     = 'TERMINAL_SELECTION_FOR_RULE_GROUP';
@@ -11172,7 +11173,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const API_BIN_SERVICE_IIN_DATA_MISMATCH                     = 'API_BIN_SERVICE_IIN_DATA_MISMATCH';
     const BIN_SERVICE_SHADOW_READS_VARIANT                      = 'BIN_SERVICE_SHADOW_READS_VARIANT';
-    
+
     const ONBOARDING_SIGNATURE_VALID_FOR_LOGIN                 = 'ONBOARDING_SIGNATURE_VALID_FOR_LOGIN';
     const ONBOARDING_SIGNATURE_VALIDATION_ERROR                = 'ONBOARDING_SIGNATURE_VALIDATION_ERROR';
 

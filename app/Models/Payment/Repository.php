@@ -522,8 +522,6 @@ EOT;
 
     public function fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bank, $type = 'credit')
     {
-        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
-
         $tRepo = $this->repo->terminal;
         $cRepo = $this->repo->card;
 
@@ -545,6 +543,26 @@ EOT;
         $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
+
+        if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
+        {
+            return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                ->join(Terminal\Constants::TS_TIDB_TABLE, $paymentTerminalId, '=', Terminal\Constants::TS_TERMINAL_ID)
+                ->join($cardTableName, $paymentCardIdCol, '=', $cardIdCol)
+                ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                ->where($paymentStatus, '=', Status::CAPTURED)
+                ->where(Entity::BANK, '=', $bank)
+                ->where(Entity::METHOD, '=', Method::EMI)
+                ->where($cardType, '=' ,$type)
+                ->whereRaw('JSON_CONTAINS( ' . Terminal\Constants::TS_METHODS . ', \'["' . Payment\Method::EMI . '"]\')'.'= false')
+                ->whereNull(Terminal\Constants::TS_DELETED_AT)
+                ->with('card.globalCard', 'emiPlan', 'merchant', 'terminal')
+                ->select($paymentData)
+                ->get();
+
+        }
+
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
 
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
@@ -933,8 +951,6 @@ EOT;
 
     public function fetchEmiPaymentsWithRelationsBetween($from, $to, $bank, $relations)
     {
-        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
-
         $tRepo = $this->repo->terminal;
 
         $tTableName = $tRepo->getTableName();
@@ -948,6 +964,23 @@ EOT;
         $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
+
+        if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
+        {
+            return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                ->join(Terminal\Constants::TS_TIDB_TABLE, $paymentTerminalId, '=', Terminal\Constants::TS_TERMINAL_ID)
+                ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                ->where($paymentStatus, '=', Status::CAPTURED)
+                ->where(Entity::BANK, '=', $bank)
+                ->where(Entity::METHOD, '=', Method::EMI)
+                ->whereRaw('JSON_CONTAINS( ' . Terminal\Constants::TS_METHODS . ', \'["' . Payment\Method::EMI . '"]\')'.'= false')
+                ->whereNull(Terminal\Constants::TS_DELETED_AT)
+                ->with($relations)
+                ->select($paymentData)
+                ->get();
+        }
+
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
 
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
@@ -1026,8 +1059,6 @@ EOT;
 
     public function fetchEmiPaymentsOfCobrandingPartnerWithRelationsBetween($from, $to, $cobrandingPartner, $relations)
     {
-        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
-
         $tRepo = $this->repo->terminal;
 
         $tTableName = $tRepo->getTableName();
@@ -1062,6 +1093,28 @@ EOT;
 
         $emiPlanId = $emiPlanRepo->dbColumn(Emi\Entity::ID);
 
+        if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                ->join(Terminal\Constants::TS_TIDB_TABLE, $paymentTerminalId, '=', Terminal\Constants::TS_TERMINAL_ID)
+                ->join($cardTableName, $paymentCardId, '=', $cardId)
+                ->join($emiPlanTableName, $paymentEmiPlanId, '=', $emiPlanId)
+                ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                ->where($paymentStatus, '=', Status::CAPTURED)
+                ->where($network, '=', Card\Network::$fullName[Card\Network::VISA])
+                ->whereIn($issuer, Card\Issuer::getAllOnecardIssuers())
+                ->where(Entity::METHOD, '=', Method::EMI)
+                ->whereRaw('JSON_CONTAINS( ' . Terminal\Constants::TS_METHODS . ', \'["' . Payment\Method::EMI . '"]\')'.'= false')
+                ->whereNull(Terminal\Constants::TS_DELETED_AT)
+                ->where($emiCobrandingPartner, '=', $cobrandingPartner)
+                ->with($relations)
+                ->select($paymentData);
+
+            return $query->get();
+        }
+
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join($tTableName, $paymentTerminalId, '=', $terminalId)
             ->join($cardTableName, $paymentCardId, '=', $cardId)
@@ -1081,8 +1134,6 @@ EOT;
 
     public function fetchEmiPaymentsOfCobrandingPartnerAndBankWithRelationsBetween($from, $to, $cobrandingPartner, $bank, $relations)
     {
-        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
-
         $tRepo = $this->repo->terminal;
 
         $tTableName = $tRepo->getTableName();
@@ -1114,6 +1165,27 @@ EOT;
         $emiCobrandingPartner = $emiPlanRepo->dbColumn(Emi\Entity::COBRANDING_PARTNER);
 
         $emiPlanId = $emiPlanRepo->dbColumn(Emi\Entity::ID);
+
+        if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                ->join(Terminal\Constants::TS_TIDB_TABLE, $paymentTerminalId, '=', Terminal\Constants::TS_TERMINAL_ID)
+                ->join($cardTableName, $paymentCardId, '=', $cardId)
+                ->join($emiPlanTableName, $paymentEmiPlanId, '=', $emiPlanId)
+                ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                ->where($paymentStatus, '=', Status::CAPTURED)
+                ->where(Entity::METHOD, '=', Method::EMI)
+                ->where($paymentBank, '=', $bank)
+                ->whereRaw('JSON_CONTAINS( ' . Terminal\Constants::TS_METHODS . ', \'["' . Payment\Method::EMI . '"]\')'.'= false')
+                ->whereNull(Terminal\Constants::TS_DELETED_AT)
+                ->where($emiCobrandingPartner, '=', $cobrandingPartner)
+                ->with($relations)
+                ->select($paymentData);
+
+            return $query->get();
+        }
+
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
 
         $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join($tTableName, $paymentTerminalId, '=', $terminalId)
@@ -1944,8 +2016,6 @@ EOT;
         string $bankCode,
         $relations = [])
     {
-        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
-
         $paymentAttrs = $this->dbColumn('*');
 
         $terminalRepo = $this->repo->terminal;
@@ -1966,6 +2036,23 @@ EOT;
         $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
         $query = $this->newQueryWithConnection($connectionType);
+
+        if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
+        {
+            return $query
+                ->select($paymentAttrs)
+                ->join(Terminal\Constants::TS_TIDB_TABLE, $pTerminalId, '=', Terminal\Constants::TS_TERMINAL_ID)
+                ->where($pAuthorizedAt, '>=', $from)
+                ->where($pAuthorizedAt, '<=', $to)
+                ->where($pGateway, $gateway)
+                ->whereNotNull($pAuthorizedAt)
+                ->whereNull(Terminal\Constants::TS_DELETED_AT)
+                ->where($pBankCode, $bankCode)
+                ->with($relations)
+                ->get();
+        }
+
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
 
         return $query
                 ->select($paymentAttrs)
@@ -2330,7 +2417,7 @@ EOT;
     {
         $this->joinQueryTerminal($query);
 
-        $query->where(Terminal\Entity::GATEWAY_TERMINAL_ID, $params[Terminal\Entity::GATEWAY_TERMINAL_ID]);
+        $query->where(Terminal\Constants::TS_GATEWAY_TERMINAL_ID, $params[Terminal\Entity::GATEWAY_TERMINAL_ID]);
 
         $query->select($this->getTableName() . '.*');
     }
@@ -3661,9 +3748,7 @@ EOT;
 
     protected function joinQueryTerminal(BuilderEx $query)
     {
-        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
-
-        $terminalTable = Table::getTableNameForEntity(Constants\Entity::TERMINAL);
+        $terminalTable = Terminal\Constants::TS_TIDB_TABLE;
 
         if ($query->hasJoin($terminalTable) === true)
         {
@@ -3671,9 +3756,12 @@ EOT;
         }
 
         $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
-        $terminalId = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+        $terminalId = Terminal\Constants::TS_TERMINAL_ID;
 
         $query->join($terminalTable, $paymentTerminalId, $terminalId);
+
+        $query->whereNull(Terminal\Constants::TS_DELETED_AT);
+
     }
 
     protected function joinWDAQueryTerminal($wdaQueryBuilder)

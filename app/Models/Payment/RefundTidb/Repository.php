@@ -26,8 +26,6 @@ class Repository extends Base\Repository
 
     public function fetchEmiRefundsWithCardTerminalsBetweenFromTidb($from, $to, $bank, $type = 'credit')
     {
-        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
-
         $tRepo = $this->repo->terminal;
 
         $cRepo = $this->repo->card;
@@ -61,6 +59,25 @@ class Repository extends Base\Repository
         $paymentBank = $paymentRepo->dbColumn(Payment\Entity::BANK);
         $paymentMethod = $paymentRepo->dbColumn(Payment\Entity::METHOD);
         $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
+        {
+            return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)
+                ->join(Terminal\Constants::TS_TIDB_TABLE, $paymentTerminalId, '=', Terminal\Constants::TS_TERMINAL_ID)
+                ->join($cardTableName, $paymentCardIdCol, '=', $cardIdCol)
+                ->whereBetween($refundCreatedAt, [$from, $to])
+                ->where($paymentStatus, '=', Payment\Status::REFUNDED)
+                ->where($paymentBank, '=', $bank)
+                ->where($paymentMethod, '=', Payment\Method::EMI)
+                ->whereRaw('JSON_CONTAINS( ' . Terminal\Constants::TS_METHODS . ', \'["' . Payment\Method::EMI . '"]\')'.'= false')
+                ->whereNull(Terminal\Constants::TS_DELETED_AT)
+                ->where($cardType, '=', $type)
+                ->with('payment', 'payment.card.globalCard', 'payment.emiPlan', 'payment.merchant')
+                ->select($refundData)
+                ->get();
+        }
+
 
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)

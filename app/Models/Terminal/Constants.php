@@ -19,4 +19,19 @@ class Constants
     const DELETE = "delete";
 
     const TERMINAL_SYNC_FAILURES_EVENT = "prod-terminal-sync-failures-event";
+
+    const TS_TIDB_TABLE = 'terminalslive.terminals';
+
+    const TS_TERMINAL_ID = 'terminals.terminal_id';
+
+    const TS_DELETED_AT = 'terminals.deleted_at';
+
+    const TS_GATEWAY_TERMINAL_ID = 'terminals.identifiers->\'$.gateway_terminal_id\'';
+
+    const TS_METHODS = 'terminals.methods';
+
+    const TS_NETBANKING_TPV = 'terminals.features->\'$.netbanking.Corporate\'';
+
+    const TS_NETBANKING_CORPORATE = 'terminals.features->\'$.netbanking.Tpv\'';
+
 }
