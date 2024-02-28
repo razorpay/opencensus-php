@@ -6,6 +6,7 @@ use Mail;
 use File;
 use Cache;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -37,6 +38,7 @@ use RZP\Jobs\BankingAccountStatementCleanUp;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\BankingAccountStatementReconNeo;
+use RZP\Jobs\BankingAccountStatementProcessor;
 use RZP\Models\Admin\Validator as AdminValidator;
 use RZP\Jobs\BankingAccountMissingStatementInsert;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -93,6 +95,10 @@ class Core extends Base\Core
     const RETRY_COUNT_FOR_ID_GENERATION = 100;
 
     const DEFAULT_RX_MISSING_STATEMENTS_INSERTION_LIMIT = 100;
+
+    const DEFAULT_BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY = 10;
+
+    const MAX_RETRY_COUNT_FOR_PROCESSING_ACCOUNT_STATEMENT = 2;
 
     const MISSING_STATEMENTS_REDIS_KEY = "missing_statements_%s_%s";
 
@@ -2156,6 +2162,52 @@ class Core extends Base\Core
         }
     }
 
+    protected function dispatchJobForStatementProcessing(array $params, $retryCount = 0): void
+    {
+        $delay = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY]);
+
+        if (empty($delay) == true)
+        {
+            $delay = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY;
+        }
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_DISPATCH_JOB_REQUEST,
+                $params + ['delay' => $delay]);
+
+            unset($params['attempt_number']);
+
+            BankingAccountStatementProcessor::dispatch($this->mode, $params)->delay($delay);
+
+        }
+        catch (\Throwable $e)
+        {
+            if ($retryCount < self::MAX_RETRY_COUNT_FOR_PROCESSING_ACCOUNT_STATEMENT)
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_DISPATCH_JOB_RETRY,
+                    $params +
+                    [
+                        'delay'          => $delay,
+                        'retry_count'    => $retryCount+1,
+                    ]);
+
+                $this->dispatchJobForStatementProcessing($params, $retryCount+1);
+
+                return;
+            }
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FAILED_TO_ENQUEUE_BANKING_ACCOUNT_STATEMENT_PROCESSING_JOB);
+
+            $this->trace->count(Metric::BAS_PROCESSOR_QUEUE_PUSH_FAILURES_TOTAL);
+        }
+    }
+
     public function processStatementForAccountV2(array $input)
     {
         $channel = array_pull($input, Entity::CHANNEL);
@@ -2186,7 +2238,7 @@ class Core extends Base\Core
         {
             $this->mutex->acquireAndRelease(
                 'banking_account_statement_process_' . $accountNumber . '_' . $channel,
-                function () use ($channel, $accountNumber, $input, $limit, $saveLimit, $merchant)
+                function () use ($channel, $accountNumber, $input, $limit, & $saveLimit, $merchant)
                 {
                     $this->setCreditBeforeDebitUtrsFromRedis($accountNumber);
 
@@ -2222,6 +2274,15 @@ class Core extends Base\Core
                 1800,
                 ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
             );
+
+            if ($saveLimit == 0)
+            {
+                $this->dispatchJobForStatementProcessing([
+                    BASDetails\Entity::ACCOUNT_NUMBER => $basDetails->getAccountNumber(),
+                    BASDetails\Entity::CHANNEL        => $basDetails->getChannel(),
+                    BASDetails\Entity::BALANCE_ID     => $basDetails->getBalanceId()
+                ]);
+            }
         }
         catch (Exception\BadRequestException $e)
         {
