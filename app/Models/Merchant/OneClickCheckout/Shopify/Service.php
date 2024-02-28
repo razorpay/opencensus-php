@@ -1066,9 +1066,22 @@ class Service extends Base\Service
             'shipping_country' => Constants\Country::getCountryNameByCode($countryCode) ?? $countryCode
         ];
 
+        $orderStatusUrl = $shopifyOrder['order']['order_status_url'];
+        $newUrl = explode('/authenticate', $orderStatusUrl)[0];
+        $newUrl = $newUrl . '?order_number=' . $shopifyOrder['order']['order_number'];
+        $shopifyCustomer = $shopifyOrder['order']['customer'];
+        if (empty($shopifyCustomer['email']) == false)
+        {
+            $newUrl = $newUrl . '&email=' . $shopifyCustomer['email'];
+        }
+        else if (empty($shopifyCustomer['contact']) == false)
+        {
+            $newUrl = $newUrl . '&phone=' . $shopifyCustomer['contact'];
+        }
+
         // Do not log PII.
         $response['customer_details'] = $orderArray['customer_details'];
-        $response['order_status_url'] = $shopifyOrder['order']['order_status_url'];
+        $response['order_status_url'] = $newUrl;
 
         (new OrderMeta\Service())->updatePostCheckoutDetailsFor1ccOrder([
             'id' => $input['razorpay_order_id'],
