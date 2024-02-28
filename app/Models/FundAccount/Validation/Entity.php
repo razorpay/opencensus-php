@@ -227,6 +227,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::ATTEMPTS, $attempts);
     }
 
+    public function setErrorDescription(string $errorDesc = null)
+    {
+        return $this->setAttribute(self::ERROR_DESCRIPTION, $errorDesc);
+    }
+
     public function setRetryAt($retryAt)
     {
         $this->setAttribute(self::RETRY_AT, $retryAt);

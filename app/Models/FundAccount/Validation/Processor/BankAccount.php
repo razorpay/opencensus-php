@@ -168,7 +168,7 @@ class BankAccount extends Base
 
         $this->validation->setUtr($result->getUtr());
 
-        $this->markValidationAsCompleted(AccountStatus::ACTIVE, null);
+        $this->markValidationAsCompleted(AccountStatus::ACTIVE, errDesc: Constants::CACHE);
     }
 
     protected function initiateFundTransfer()

@@ -192,6 +192,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
         $this->assertEquals('Razorpay Customer', $favUpdated[Entity::REGISTERED_NAME]);
         $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals('Penniless', $favUpdated[Entity::ERROR_DESCRIPTION]);
 
     }
 
@@ -286,6 +287,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
         $this->assertNotNull($fta['narration']);
+        $this->assertEquals(null, $favUpdated[Entity::ERROR_DESCRIPTION]);
     }
 
     public function testPennilessVpaValidationWithNameNull()
@@ -381,6 +383,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
         $this->assertNotNull($fta['narration']);
+        $this->assertEquals(null, $favUpdated[Entity::ERROR_DESCRIPTION]);
     }
 
     public function testPennilessVpaValidationFailed()
@@ -477,6 +480,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
         $this->assertNotNull($fta['narration']);
+        $this->assertEquals(null, $favUpdated[Entity::ERROR_DESCRIPTION]);
     }
 
     public function testPennilessValidationWithWhitelistedBeneBank()
@@ -1334,6 +1338,7 @@ class FundAccountValidationTest extends TestCase
         // There won't be FTA for second FAV
         $this->assertNotEquals($fav['id'], $fta['source']);
         $this->assertNotNull($ftaEntity->getUtr());
+        $this->assertEquals('Cache', $fav[Entity::ERROR_DESCRIPTION]);
     }
 
     public function testFundAccValidationWithAccountNumberThatIsAlreadyProcessedButUtrNeeded()

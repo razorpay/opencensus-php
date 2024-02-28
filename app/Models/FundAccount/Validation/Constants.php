@@ -11,6 +11,10 @@ class Constants
     const IFSC_CODE                      = 'ifsc_code';
     const DEFAULT_INDIA_COUNTRY_CODE     = '+91';
 
+    const CACHE                          = 'Cache';
+
+    const PENNILESS                      = 'Penniless';
+
     protected $slackSettings;
 
     public static function slackSettings()

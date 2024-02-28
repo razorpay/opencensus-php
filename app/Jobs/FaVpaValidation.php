@@ -20,6 +20,7 @@ use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Payment\Service as PaymentService;
 use RZP\Models\FundAccount\Validation\AccountStatus;
 use RZP\Models\FundAccount\Validation\Processor\Factory;
+use RZP\Models\FundAccount\Validation\Constants as FavConstants;
 use RZP\Models\FundAccount\Validation\Processor\Vpa as VpaProcessor;
 
 class FaVpaValidation extends Job
@@ -136,7 +137,8 @@ class FaVpaValidation extends Job
                             $traceable
                         );
 
-                        $vpaProcessor->markValidationAsCompleted($data['account_status']);
+                        $vpaProcessor->markValidationAsCompleted($data['account_status'],
+                            errDesc: FavConstants::PENNILESS);
                     }
                     else
                     {
