@@ -6,6 +6,7 @@ use Database\Connection;
 use DB;
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Base;
@@ -216,22 +217,35 @@ class Repository extends Base\Repository
             ->get();
 
 
-        if($this->repo->refund->isScroogeReadMigrationEnabledTidb() == true){
-            $refundstidb = $this->repo->refund_tidb->fetchCardRefundsForMerchantAndGatewayBetweenFromTidb($from,$to,$merchantIds);
-
+        try{
+        if($this->repo->refund->isScroogeReadMigrationEnabledTidb() == true) {
+            $refundstidb = $this->repo->refund_tidb->fetchCardRefundsForMerchantAndGatewayBetweenFromTidb($from, $to, $merchantIds);
 
             (new Service())->compareRefundsAndLogDifference(
-                $refunds->toArray(), $refundstidb->toArray(), [
-                    'method_name' => __FUNCTION__,
-                    'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
-                ]);
+                $refunds, $refundstidb, [
+                'method_name' => __FUNCTION__,
+                'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_FETCH_CARDS,
+            ]);
 
-            if($this->repo->refund->isScroogeReadMigrationTidb() == true){
+            if ($this->repo->refund->isScroogeReadMigrationTidbForFetchCards() == true) {
                 return $refundstidb;
             }
-        }
+            return $refunds;
 
+        }
+        }catch(\Throwable $ex){
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::SCROOGE_ENTITY_FETCH_FAILURE,
+                [   'from' => $from,
+                    'to'=>$to,
+                    'merchantIds' => $merchantIds,
+                ]);
+            return $refunds;
+        }
         return $refunds;
+
     }
 
     protected function addQueryParamInitiatorId($query, $params)

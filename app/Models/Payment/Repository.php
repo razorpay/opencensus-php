@@ -4929,7 +4929,7 @@ EOT;
     {
         $nowMinus6Months = Carbon::now()->subMonths(6)->getTimestamp();
 
-        $apiResponse =  $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
             ->whereIn(Entity::CONTACT, $contacts)
             ->where(Entity::CREATED_AT, '>=', $nowMinus6Months)
             ->whereNotIn(Entity::METHOD, [Method::TRANSFER])
@@ -4939,28 +4939,6 @@ EOT;
             ->take($count)
             ->latest()
             ->get();
-
-        if($this->repo->refund->isScroogeReadMigrationEnabled2() == false){
-            return $apiResponse;
-        }
-        $tiDBResponse =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-            ->whereIn(Entity::CONTACT, $contacts)
-            ->where(Entity::CREATED_AT, '>=', $nowMinus6Months)
-            ->whereNotIn(Entity::METHOD, [Method::TRANSFER])
-            ->whereNull(Entity::TRANSFER_ID)
-            ->with(['merchant', 'refunds'])
-            ->skip($skip)
-            ->take($count)
-            ->latest()
-            ->get();
-
-        (new Service())->compareRefundsAndLogDifference(
-            $apiResponse->toArray(), $tiDBResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
-
-        if($this->repo->refund->isScroogeReadMigration2() == true){
-            return $tiDBResponse;
-        }
-        return $apiResponse;
     }
 
     public function fetchDebitEmiPaymentsWithRelationsBetween($from, $to, $bank,$gateway)

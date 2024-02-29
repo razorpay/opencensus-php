@@ -71,9 +71,8 @@ trait ExternalScroogeRepo
 
     public function find($refundId, $columns = array('*'), string $connectionType = null)
     {
-        $refundIds=[$refundId];
-        if ($this->repo->refund->isScroogeReadMigrationEnabled2() === true) {
-            $refunds = $this->repo->refund->findRefundByIds($refundIds);
+        if ($this->repo->refund->isScroogeReadMigrationEnabled2() == true) {
+            $refunds = $this->repo->refund->findRefundById($refundId);
             if(empty($refunds) == true){
                 return null;
             }
@@ -621,6 +620,30 @@ trait ExternalScroogeRepo
         return false;
     }
 
+    public function isScroogeReadMigrationTidbForFetchCards($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_FETCH_CARDS,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_FETCH_CARDS,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function validateExternalFetchEnabledForScrooge($id = null)
     {
         $keyName = Entity::getExternalConfigKeyName($this->entityName);
@@ -1048,7 +1071,7 @@ trait ExternalScroogeRepo
 
                 $entity->loadMissing($relations);
 
-                return $entity[0];
+                return $entity->all()[0];
             }
         }
         catch (\Throwable $e)

@@ -568,6 +568,75 @@ class Service extends Base\Service
         }
     }
 
+    public function compareRefundEntitesAndLogDifference(Refund\Entity $apiRefund, Refund\Entity $scroogeRefund,bool $scroogeChecked,array $extraTrace = [])
+    {
+        $apiFieldsNotPopulated = ["attempts", "last_attempted_at"];
+        $timestampFields = ["updated_at", "processed_at"];
+
+
+        foreach ($apiRefund->getAttributes() as $attribute => $value) {
+            if (in_array($attribute, $apiFieldsNotPopulated))
+            {
+                continue;
+            }
+
+            if (in_array($attribute, $timestampFields))
+            {
+                continue;
+            }
+
+            if (empty($scroogeRefundArray[$attribute]) && empty($value)){
+                continue;
+            }
+
+
+            if($attribute == RefundEntity::NOTES || $attribute == RefundEntity::ACQUIRER_DATA){
+
+                if ($apiRefund->$attribute->toArray() != $scroogeRefund->$attribute->toArray() ) {
+                    $differences[$attribute] = [
+                        'api_refund' => $apiRefund->$attribute,
+                        'scrooge_refund' => $scroogeRefund->$attribute,
+                    ];
+                }
+                continue;
+            }
+
+            if (is_array($value) === true)
+            {
+                if ($scroogeRefund->$attribute != $value)
+                {
+                    $differences[$attribute] = [
+                        'api_refund' => $apiRefund->$attribute,
+                        'scrooge_refund' => $scroogeRefund->$attribute,
+                    ];
+                }
+
+                continue;
+            }
+
+            if ($apiRefund->$attribute !== $scroogeRefund->$attribute) {
+                $differences[$attribute] = [
+                    'api_refund' => $apiRefund->$attribute,
+                    'scrooge_refund' => $scroogeRefund->$attribute,
+                ];
+            }
+        }
+
+        if($scroogeChecked == false){
+            $differences = $this->compareRefundEntitesAndLogDifference($scroogeRefund,$apiRefund,true,$extraTrace);
+        }
+
+        if (empty($differences) === false)
+        {
+            $this->trace->info(TraceCode::SCROOGE_AND_API_REFUNDS_INCONSISTENCY, [
+                'diff'        => $differences,
+                'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                'extra_trace' => $extraTrace,
+            ]);
+        }
+        return $differences;
+    }
+
     public function differenceKeysOfRefunds($apiRefundArray, $scroogeRefundArray) : array
     {
         $responseDiff = [];
@@ -579,7 +648,7 @@ class Service extends Base\Service
         {
             if ($key === RefundEntity::NOTES)
             {
-                if ($scroogeRefundArray[$key] != $value)
+                if ($scroogeRefundArray[$key]->toArray() != $value)
                 {
                     $responseDiff[$key]["scrooge"] = $scroogeRefundArray[$key];
                     $responseDiff[$key]["api"] = $value;
@@ -590,8 +659,13 @@ class Service extends Base\Service
 
             if ($key === RefundEntity::ACQUIRER_DATA)
             {
-                // casting this to array as acquirer_data is a spine dictionary object, compare would fail
-                $value = $value->toArray();
+                if ($scroogeRefundArray[$key]->toArray() != $value)
+                {
+                        $responseDiff[$key]["scrooge"] = $scroogeRefundArray[$key];
+                        $responseDiff[$key]["api"] = $value;
+                }
+
+                continue;
             }
 
             if (is_array($value) === true)
@@ -612,6 +686,10 @@ class Service extends Base\Service
 
             if (in_array($key, $timestampFields))
             {
+                continue;
+            }
+
+            if (empty($scroogeRefundArray[$key]) && empty($value)){
                 continue;
             }
 

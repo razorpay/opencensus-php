@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use RZP\Models\Base\PublicCollection;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstants;
@@ -36,11 +37,11 @@ trait ScroogeRepo
                 $apiResponse     = $this->findForPaymentIdFromAPI($paymentId);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    $apiResponse->toArray(), $scroogeResponse->toArray(), ['method_name' => __FUNCTION__]);
+                    $apiResponse->toArray(), $scroogeResponse->all(), ['method_name' => __FUNCTION__]);
 
                 if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
                 {
-                    return $scroogeResponse;
+                    return $scroogeResponse->all();
                 }
                 return $apiResponse;
             }
@@ -79,12 +80,12 @@ trait ScroogeRepo
                 $apiResponse     = $this->findForPaymentAndAmountFromApi($paymentId,$amount);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    $apiResponse->toArray(), $scroogeResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
+                    $apiResponse->toArray(), $scroogeResponse->all(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
                 //Razorx check
                 if ($this->isScroogeReadMigration() == true)
                 {
-                    return $scroogeResponse;
+                    return $scroogeResponse->all();
                 }
                 return $apiResponse;
 
@@ -122,7 +123,7 @@ trait ScroogeRepo
                 $scroogeResponse = $this->fetchRefundByIds($refundIds);
                 $extractedResponse = [];
 
-                foreach ($scroogeResponse as $entry) {
+                foreach ($scroogeResponse->all() as $entry) {
                     // Extract the desired values
                     $extractedResponse[] = [
                         'payment_id' => $entry->payment_id,
@@ -131,11 +132,11 @@ trait ScroogeRepo
                     ];
                 }
                 $scroogeResponse=$extractedResponse;
-
                 $apiResponse     = $this->fetchRefundByRefundIdsFromApi($refundIds);
 
-                (new Service())->compareRefundsAndLogDifference(
+            (new Service())->compareRefundsAndLogDifference(
                     $apiResponse->toArray(), $scroogeResponse, ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
+
 
                 //Razorx check
                 if ($this->isScroogeReadMigration() == true)
@@ -155,6 +156,49 @@ trait ScroogeRepo
                 ]);
         }
         return $this->fetchRefundByRefundIdsFromApi($refundIds);
+    }
+
+    public function findRefundById($refundId , $columns = array('*'))
+    {
+        $this->entityName = $this->entity;
+
+        try
+        {
+            $routeName = $this->route->getCurrentRouteName();
+
+            $this->trace->info(
+                TraceCode::SCROOGE_MISC_QUERIES_MIGRATION,
+                [
+                    'method_name'     => __FUNCTION__,
+                    'route_name'      => $routeName,
+                ]);
+
+            $scroogeResponse = $this->fetchRefundByIds($refundId);
+
+            $apiResponse     = parent::find($refundId,$columns);
+
+            (new Service())->compareRefundEntitesAndLogDifference(
+                $apiResponse->all()[0], $scroogeResponse->all()[0], false, ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
+
+
+            //Razorx check
+            if ($this->isScroogeReadMigration2() == true)
+            {
+                return $scroogeResponse->all()[0];
+            }
+            return $apiResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SCROOGE_ENTITY_FETCH_FAILURE,
+                [
+                    'refund_id' => $refundId
+                ]);
+        }
+        return parent::find($refundId,$columns);
     }
 
     public function findForPaymentByReceiptAndMerchant(string $receipt, string $merchantId)
@@ -177,12 +221,12 @@ trait ScroogeRepo
                 $scroogeResponse = $this->fetchRefundByReceiptAndMerchantId($receipt, $merchantId);
                 $apiResponse     = $this->findByReceiptAndMerchantFromApi($receipt, $merchantId);
 
-                (new Service())->compareRefundsAndLogDifference(
-                    [$apiResponse], $scroogeResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
+            (new Service())->compareRefundEntitesAndLogDifference(
+                $apiResponse, $scroogeResponse->all()[0],false, ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
-                if ($this->isScroogeReadMigration() == true)
+            if ($this->isScroogeReadMigration() == true)
                 {
-                    return $scroogeResponse;
+                    return $scroogeResponse->all();
                 }
                 return $apiResponse;
         }
@@ -222,11 +266,11 @@ trait ScroogeRepo
                 $apiResponse     = $this->findByReversalIdAndMerchantFromApi($reversalId, $accountId, $relations);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    [$apiResponse], $scroogeResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
+                    $apiResponse, $scroogeResponse->all()[0], ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
                 if ($this->isScroogeReadMigration() == true)
                 {
-                    return $scroogeResponse[0];
+                    return $scroogeResponse->all()[0];
                 }
                 return $apiResponse;
 
@@ -269,11 +313,11 @@ trait ScroogeRepo
                 $apiResponse     = $this->findForPaymentAndBaseAmountFromApi($paymentId, $baseAmount);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    $apiResponse->toArray(), $scroogeResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
+                    $apiResponse->toArray(), $scroogeResponse->all(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
                 if ($this->isScroogeReadMigration() == true)
                 {
-                    return $scroogeResponse;
+                    return $scroogeResponse->all();
                 }
                 return $apiResponse;
 
@@ -314,8 +358,9 @@ trait ScroogeRepo
                 $scroogeResponse = $this->fetchFirstRefundByPaymentFromScrooge($paymentId);
                 $apiResponse     = $this->fetchFirstForPaymentIdFromApi($paymentId);
 
-                (new Service())->compareRefundsAndLogDifference(
-                    [$apiResponse], [$scroogeResponse], ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
+
+            (new Service())->compareRefundEntitesAndLogDifference(
+                $apiResponse, $scroogeResponse,false, ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
                 if ($this->isScroogeReadMigration() == true)
                 {
@@ -358,13 +403,14 @@ trait ScroogeRepo
             $scroogeResponse = $this->findByPaymentIdAndReference3FromScrooge($paymentId, $seqNo);
             $apiResponse     = $this->findByPaymentIdAndReference3FromApi($paymentId, $seqNo);
 
-            (new Service())->compareRefundsAndLogDifference(
-                [$apiResponse], $scroogeResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
+            (new Service())->compareRefundEntitesAndLogDifference(
+                $apiResponse, $scroogeResponse->all()[0],false, ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
 
             if ($this->isScroogeReadMigration2() == true)
             {
-                return $scroogeResponse;
+                return $scroogeResponse->all()[0];
             }
+
             return $apiResponse;
         }
         catch (\Throwable $e)
@@ -406,7 +452,7 @@ trait ScroogeRepo
             $apiResponse     = $this->fetchRefundsForGatewaysBetweenTimestampsFromApi($type, $gatewayCodes, $from, $to, $gateway);
 
             (new Service())->compareRefundsAndLogDifference(
-                $apiResponse, $tidbResponse, ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
+                $apiResponse->all(), $tidbResponse->all(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
 
             if ($this->isScroogeReadMigration2() == true)
             {
@@ -504,7 +550,7 @@ trait ScroogeRepo
             $apiResponse     = $this->fetchIrctcDeltaRefundsFromApi($merchantId,$from,$to);
 
             (new Service())->compareRefundsAndLogDifference(
-                $apiResponse->toArray(), $tidbResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
+                $apiResponse->all(), $tidbResponse->all(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
 
             if ($this->isScroogeReadMigration2() == true)
             {
