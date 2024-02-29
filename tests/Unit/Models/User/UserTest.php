@@ -82,6 +82,56 @@ class UserTest extends TestCase
                   ->will($this->returnValue(0));
     }
 
+
+    public function testUserUpdateExceptionOnInValidName()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $content = [
+            'input' => [
+                'user_id' => '100002Razorpay',
+                'business_name' => 'dummy-business',
+                'email' => 'dummy5@example.com',
+            ],
+            'userData' => [
+                'id' => '100002Razorpay',
+                'name' => 'dummy𤨒',
+                'email' => 'dummy5@example.com',
+                'password' => 'blahblah123',
+                'password_confirmation' => 'blahblah123',
+                'contact_mobile' => '9999999999',
+                'confirm_token' => 'hello123',
+                'captcha_disable' => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ],
+            'merchantData' => [
+                'name' => 'dummy𤨒',
+                'email' => 'dummy5@example.com',
+                'org_id' => 'org100razorpay',
+                'signup_source' => 'banking',
+            ],
+        ];
+
+        Mail::fake();
+
+        $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
+
+        $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantRepoMock);
+
+        $this->repoMock->shouldReceive('driver')->with('m2m_referral')->andReturn($this->m2mReferralEntityMock);
+
+        $this->m2mReferralServiceMock->shouldReceive('extractFriendBuyParams')->andReturn([]);
+
+        $this->m2mReferralServiceMock->shouldReceive('sendSignUpEventIfApplicable')->andReturn(true);
+
+        $this->merchantRepoMock->shouldReceive('getByMerchantId')->andReturn('1cXSLlUU8V9sXl');
+
+        $this->merchantServiceMock->shouldReceive('create')->andReturn((new MerchantEntity())->build($content['merchantData'])->toArrayPublic());
+
+        $this->coreMock->shouldReceive('attach')->andReturn(((new Core())->create($content['userData']))->toArrayPublic());
+    }
+    
     public function testUserRegister()
     {
         $content = [

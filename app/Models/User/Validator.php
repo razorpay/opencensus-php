@@ -44,7 +44,7 @@ class Validator extends Base\Validator
 
     const CREATE_COMMON_RULES = [
         Entity::ID                              => 'sometimes|max:14',
-        Entity::NAME                            => 'sometimes|string|max:200',
+        Entity::NAME                            => 'sometimes|string|max:200|utf8',
         Entity::EMAIL                           => 'required|email',
         Entity::PASSWORD                        => 'required|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION           => 'required|between:8,50',
@@ -70,7 +70,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::ID                              => 'sometimes|max:14',
-        Entity::NAME                            => 'sometimes|string|max:200',
+        Entity::NAME                            => 'sometimes|string|max:200|utf8',
         Entity::EMAIL                           => 'required_without:contact_mobile|email',
         Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
         Entity::REMEMBER_TOKEN                  => 'sometimes',
@@ -87,7 +87,7 @@ class Validator extends Base\Validator
 
     protected static $createSubmerchantSignupRules = [
         Entity::ID                              => 'sometimes|max:14',
-        Entity::NAME                            => 'sometimes|string|max:200',
+        Entity::NAME                            => 'sometimes|string|max:200|utf8',
         Entity::EMAIL                           => 'sometimes|string|email',
         Entity::CONTACT_MOBILE                  => 'required|max:15|contact_syntax',
         Entity::SIGNUP_VIA_EMAIL                => 'sometimes|in:0,1',
@@ -144,7 +144,7 @@ class Validator extends Base\Validator
 
     protected static $createOauthRules = [
         Entity::ID                              => 'sometimes|max:14',
-        Entity::NAME                            => 'sometimes|string|max:200',
+        Entity::NAME                            => 'sometimes|string|max:200|utf8',
         Entity::EMAIL                           => 'required|email|unique:users,email',
         Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
         Entity::SETTINGS                        => 'nullable|associative_array',
@@ -155,7 +155,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME                  => 'sometimes|string|max:200',
+        Entity::NAME                  => 'sometimes|string|max:200|utf8',
         Entity::CONTACT_MOBILE        => 'sometimes|nullable|max:15|contact_syntax',
 //        Entity::EMAIL                 => 'sometimes|email|unique:users,email',
         Entity::SETTINGS              => 'nullable|associative_array',
@@ -186,7 +186,7 @@ class Validator extends Base\Validator
 
     protected static $salesforceEventRules = [
         Entity::EMAIL              => 'required|email|string',
-        Entity::NAME               => 'required|string',
+        Entity::NAME               => 'required|string|utf8',
         Entity::COMPANY            => 'required|string',
         Entity::REVENUE            => 'required|string',
     ];
@@ -300,7 +300,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $preSignupRules = [
-        Entity::NAME                  => 'sometimes|alpha_space|max:200',
+        Entity::NAME                  => 'sometimes|alpha_space|max:200|utf8',
         Entity::CONTACT_MOBILE        => 'sometimes|max:15|contact_syntax',
 //        Entity::EMAIL                 => 'sometimes|email'
     ];
@@ -514,7 +514,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $updateUserNameRules = [
-        'name' => 'required|string|min:4|max:200',
+        'name' => 'required|string|min:4|max:200|utf8',
     ];
 
     protected static $teamManagementValidators = [
