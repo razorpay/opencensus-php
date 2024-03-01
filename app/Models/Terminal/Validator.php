@@ -582,6 +582,9 @@ class Validator extends Base\Validator
         Entity::CURRENCY                   => 'sometimes',
         Entity::CAPABILITY                 => 'sometimes',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::EMI                        => 'sometimes',
+        Entity::EMI_DURATION               => 'sometimes',
+        Entity::EMI_SUBVENTION             => 'sometimes',
     ];
 
     protected static $isgTerminalRules = [
