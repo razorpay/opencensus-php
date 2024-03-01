@@ -229,6 +229,36 @@ class Repository extends Base\Repository
         (new Validator)->validatePartnerType($value);
     }
 
+    /**
+     * @param string $legalEntityId
+     *
+     * @return \Illuminate\Database\Eloquent\Collection|PublicCollection
+     * @throws Exception\BadRequestException
+     * @throws Exception\BaseException
+     */
+    public function fetchMerchantsByLegalEntityId(string $legalEntityId): \Illuminate\Database\Eloquent\Collection|PublicCollection
+    {
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                return (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByLegalEntityId($legalEntityId);
+            }
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query->where(Entity::LEGAL_ENTITY_ID, $legalEntityId)->whereNotNull(Entity::LEGAL_ENTITY_ID)->get();
+    }
+
     public function fetchActivatedMerchantsBeforeTimestamp(
       int $limit,
       int $skip,

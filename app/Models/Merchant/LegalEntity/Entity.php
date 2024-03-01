@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\LegalEntity;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper\ImplicitJoinHelper;
 
 class Entity extends Base\PublicEntity
 {
@@ -70,6 +71,16 @@ class Entity extends Base\PublicEntity
     public function getMcc()
     {
         return $this->getAttribute(self::MCC);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMerchantsAttribute(): mixed
+    {
+        return (new ImplicitJoinHelper)->getRelationAttribute(
+            $this, $this->entity, 'merchants', 'merchant', 'fetchMerchantsByLegalEntityId', 'getId'
+        );
     }
 
     public function merchants()

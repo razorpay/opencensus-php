@@ -2,23 +2,32 @@
 
 namespace RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
-use Rzp\Accounts\Merchant\V1\FilterRequest;
 use RZP\Exception\BaseException;
 use Razorpay\Asv\RequestMetadata;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use Rzp\Accounts\Merchant\V1 as MerchantV1;
-use RZP\Models\Base\PublicCollection;
+use Rzp\Accounts\Merchant\V1\FilterRequest;
+use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\Merchant as MerchantProtoMapper;
 
 class Merchant extends Base
 {
     const FILTER_TIMEOUT_IN_MICRO_SECONDS = 5000000;
-    const MERCHANT_FIND_BY_IDS = 'merchant_find_by_ids';
-    const GET_NON_SUSPENDED_MERCHANTS_FROM_IDS = 'get_non_suspended_merchants_from_ids';
-    const GET_NON_SUSPENDED_LINKED_ACCOUNTS_FROM_PARENT_ID = 'get_non_suspended_linked_accounts_from_parent_id';
-    const GET_LINKED_ACCOUNTS_SUSPENDED_DUE_TO_PARENT_SUSPENSION_FROM_PARENT_ID = 'get_linked_accounts_suspended_due_to_parent_suspension_from_parent_id';
-    const GET_SECOND_FACTOR_AUTH_ENABLED_MERCHANTS_FROM_IDS = 'get_second_factor_auth_enabled_merchants_from_ids';
+
+    const MERCHANT_FIND_BY_IDS
+        = 'merchant_find_by_ids';
+    const GET_NON_SUSPENDED_MERCHANTS_FROM_IDS
+        = 'get_non_suspended_merchants_from_ids';
+    const GET_NON_SUSPENDED_LINKED_ACCOUNTS_FROM_PARENT_ID
+        = 'get_non_suspended_linked_accounts_from_parent_id';
+    const GET_LINKED_ACCOUNTS_SUSPENDED_DUE_TO_PARENT_SUSPENSION_FROM_PARENT_ID
+        = 'get_linked_accounts_suspended_due_to_parent_suspension_from_parent_id';
+    const GET_SECOND_FACTOR_AUTH_ENABLED_MERCHANTS_FROM_IDS
+        = 'get_second_factor_auth_enabled_merchants_from_ids';
+    const GET_MERCHANTS_BY_LEGAL_ENTITY_ID
+        = 'get_merchants_by_legal_entity_id';
 
     public function __construct()
     {
@@ -121,6 +130,26 @@ class Merchant extends Base
         return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
     }
 
+    /**
+     * @param string $legalEntityId
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchMerchantsByLegalEntityId(string $legalEntityId): Collection|PublicCollection
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::GET_MERCHANTS_BY_LEGAL_ENTITY_ID);
+        $filterRequest->setBindings(
+            json_encode([$legalEntityId])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantCollectionFromResponse($response);
+    }
+
     public function fetchMerchantsByIds(array $ids)
     {
         $filterRequest =  new FilterRequest();
@@ -134,7 +163,7 @@ class Merchant extends Base
         return $this->getMerchantCollectionFromResponse($response);
     }
 
-    public function getNonSuspendedMerchantsFromIds(array $ids):  PublicCollection|\Illuminate\Database\Eloquent\Collection
+    public function getNonSuspendedMerchantsFromIds(array $ids):  PublicCollection|Collection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::GET_NON_SUSPENDED_MERCHANTS_FROM_IDS);
@@ -146,7 +175,7 @@ class Merchant extends Base
         return $this->getMerchantCollectionFromResponse($response);
     }
 
-    public function getMerchantsWithSecondFactorAuthPresentInIds(array $ids): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    public function getMerchantsWithSecondFactorAuthPresentInIds(array $ids): PublicCollection|Collection
     {
         $filterRequest =  new FilterRequest();
 
