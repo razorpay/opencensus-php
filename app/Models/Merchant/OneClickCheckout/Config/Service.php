@@ -754,7 +754,7 @@ class Service extends Base\Service
         if ($shippingSourceConfig !== null)
         {
             $shippingSource = $shippingSourceConfig->getValue();
-        }  
+        }
 
         $couponsUrlConfig = $this->merchant->getFetchCouponsUrlConfig();
         $couponsUrl = null;
@@ -961,6 +961,7 @@ class Service extends Base\Service
 
     private function add1ccConfigFlags($input, string $type)
     {
+
         if (in_array($type, Constants::CONFIG_FLAGS) === false) {
             return ;
         }
@@ -976,6 +977,21 @@ class Service extends Base\Service
             (new Core)->associateMerchant1ccConfig($type,
                 $updatedConfig
             );
+
+            try
+            {
+                $merchantID = $this->merchant->getId();
+                $input = [
+                    'merchant_id' => $merchantID,
+                ];
+                (new Merchant\OneClickCheckout\MagicCheckoutService\Service())->clearMerchantConfigsFromCache($input);
+
+                (new Merchant\OneClickCheckout\IntegrationService\Service())->clearMerchantConfigsFromCache($input);;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(TraceCode::ONE_CC_CLEAR_MERCHANT_CONFIGS_FAILED, $e->getMessage());
+            }
         }
     }
 

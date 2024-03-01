@@ -20,6 +20,7 @@ class Service extends Base\Service
   const UPDATE_SHIPPING_ADDRESS_PATH = 'v1/checkouts/address';
   const MAGIC_CHECKOUT_SERVICE_THEME_LIQUID_FILES_FETCH_PATH = 'v1/admin/shopify/theme/liquid_files';
   const SHOPIFY_COMPLETE_CHECKOUT_PATH       = 'v1/checkouts/shopify/complete';
+  const CLEAR_MERCHANT_CONFIGS_FROM_CACHE    = 'v1/merchants/configs/cache/invalidate';
   const CHECK_SHOPIFY_COMPLETE_CHECKOUT_PATH = 'v1/checkouts/order_status';
 
   public function __construct()
@@ -119,6 +120,11 @@ class Service extends Base\Service
   public function completeShopifyCheckout(array $input): array
   {
     return $this->app['magic_checkout_service_client']->sendRequest(self::SHOPIFY_COMPLETE_CHECKOUT_PATH, $input, Requests::POST);
+  }
+
+  public function clearMerchantConfigsFromCache(array $input): array
+  {
+      return $this->app['magic_checkout_service_client']->sendRequest(self::CLEAR_MERCHANT_CONFIGS_FROM_CACHE, $input, Requests::POST);
   }
 
   public function getCheckoutOrderStatus(array $input): array

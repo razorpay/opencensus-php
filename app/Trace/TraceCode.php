@@ -10036,6 +10036,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SEGMENT_EVENT_PUSH_FAILED                    = 'BATCH_SEGMENT_EVENT_PUSH_FAILED';
     const DISPUTE_SEGMENT_EVENT_PUSH_FAILED                  = 'DISPUTE_SEGMENT_EVENT_PUSH_FAILED';
 
+    const ONE_CC_CLEAR_MERCHANT_CONFIGS_FAILED               = 'ONE_CC_CLEAR_MERCHANT_CONFIGS_FAILED';
 
     //Relay traces
     const RELAY_REQUEST         = "RELAY_REQUEST";
