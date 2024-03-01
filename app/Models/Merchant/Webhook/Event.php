@@ -1003,8 +1003,6 @@ class Event
         self::ACCOUNT_FUNDS_UNHOLD              => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_INTERNATIONAL_ENABLED     => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_INTERNATIONAL_DISABLED    => Feature\Constants::SUBMERCHANT_ONBOARDING,
-        self::ACCOUNT_INSTANTLY_ACTIVATED       => Feature\Constants::SUBMERCHANT_ONBOARDING,
-        self::ACCOUNT_ACTIVATED_KYC_PENDING     => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_UNDER_REVIEW              => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE, Feature\Constants::COBRANDED_ONBOARDING],
         self::ACCOUNT_NEEDS_CLARIFICATION       => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE, Feature\Constants::COBRANDED_ONBOARDING],
         self::ACCOUNT_ACTIVATED                 => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE, Feature\Constants::COBRANDED_ONBOARDING],

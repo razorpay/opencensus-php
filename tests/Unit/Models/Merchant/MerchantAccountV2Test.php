@@ -119,9 +119,8 @@ class MerchantAccountV2Test extends TestCase
 
         $result = $accountResponse->getAccountResponse($this->partnerEntityMock, $this->merchantEntityMock);
 
-        $this->assertEquals('activated', $result['status']);
+        $this->assertEquals('instantly_activated', $result['status']);
         $this->assertEquals(false, $result['hold_funds']);
-        $this->assertArrayHasKey('activated_at', $result);
     }
 
     public function testAccountV2ResponseWhenActivationStatusIsNeedsClarification()

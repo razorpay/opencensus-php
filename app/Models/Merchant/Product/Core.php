@@ -225,7 +225,7 @@ class Core extends Base\Core
 
         $merchantStatus = $merchantDetails->getActivationStatus();
 
-        if (in_array($merchantStatus, Status::PAYMENT_GATEWAY_TERMINAL_STATUS) === true)
+        if (in_array($merchantStatus, Status::PAYMENT_GATEWAY_NON_ACTIONABLE_STATUS) === true)
         {
             $response[Util\Constants::REQUIREMENTS] = [];
 
@@ -240,7 +240,7 @@ class Core extends Base\Core
                 return $requirementService->fetchRequirements($merchant, $merchantProduct);
             });
 
-            if (count($response[Util\Constants::REQUIREMENTS]) > 0)
+            if (count($response[Util\Constants::REQUIREMENTS]) > 0 && empty($merchantStatus) !== true)
             {
                 $merchantProduct->setActivationStatus(Status::NEEDS_CLARIFICATION);
             }
@@ -272,7 +272,7 @@ class Core extends Base\Core
 
         $merchantStatus = $merchantDetails->getActivationStatus();
 
-        if (in_array($merchantStatus, Status::PAYMENT_GATEWAY_TERMINAL_STATUS) === true)
+        if (in_array($merchantStatus, Status::PAYMENT_GATEWAY_NON_ACTIONABLE_STATUS) === true)
         {
             $response[Util\Constants::REQUIREMENTS] = [];
 

@@ -178,6 +178,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $merchantProductId = $response['id'];
 
+        $this->fixtures->edit('merchant_product',substr($merchantProductId, 4),['activation_status'=> 'activated_mcc_pending']);
+
         $testData = $this->testData['testFetchDefaultPaymentGatewayConfig'];
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;

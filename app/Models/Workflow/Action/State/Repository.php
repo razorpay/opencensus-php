@@ -22,4 +22,13 @@ class Repository extends Base\Repository
                      ->orderByDesc(Entity::UPDATED_AT)
                      ->first();
     }
+
+    public function isActionNameExistsForEntityIdAndType(string $entityId, string $entityType, string $actionName) : bool
+    {
+        return  $this->newQueryWithConnection($this->getMasterReplicaConnection())
+            ->where(ActionState::ENTITY_TYPE, $entityType)
+            ->where(ActionState::ENTITY_ID, $entityId)
+            ->where(ActionState::NAME, $actionName)
+            ->exists();
+    }
 }

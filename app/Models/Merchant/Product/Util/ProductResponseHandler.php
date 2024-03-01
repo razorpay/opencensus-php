@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Product\Util;
 
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Account\Entity;
+use RZP\Models\Merchant\Account\Constants as AccountConstants;
 
 class ProductResponseHandler
 {
@@ -69,6 +70,14 @@ class ProductResponseHandler
         $response[Constants::ACTIVE_CONFIGURATION]    = array_merge($response[Constants::ACTIVE_CONFIGURATION], $activeConfig);
         $response[Constants::REQUESTED_CONFIGURATION] = array_merge($response[Constants::REQUESTED_CONFIGURATION], $pendingConfig);
 
+        // map activation status to public account status
+        if (isset($response[Product\Entity::ACTIVATION_STATUS]) === true )
+        {
+            $merchantProduct->load('merchant');
+            $merchant = $merchantProduct->merchant;
+            $activationStatus = (empty($merchant)=== false && $merchant->isSuspended()) ? AccountConstants::SUSPENDED: $response[Entity::ACTIVATION_STATUS];
+            $response[Entity::ACTIVATION_STATUS] = AccountConstants::ACTIVATION_STATUS_ACCOUNT_STATUS_MAPPING[$activationStatus];
+        }
         return $response;
     }
 

@@ -45,7 +45,9 @@ class Service extends Base\Service
 
         return Tracer::inspan(['name' => HyperTrace::HANDLE_PRODUCT_CONFIG_RESPONSE], function () use ($merchantProduct, $response) {
 
-            return ProductResponseHandler::handleResponse($merchantProduct, $response);
+            $response =  ProductResponseHandler::handleResponse($merchantProduct, $response);
+
+            return $response;
         });
     }
 

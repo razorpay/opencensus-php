@@ -154,7 +154,8 @@ return [
                     'refund'          => [
                         'default_refund_speed' => 'normal'
                     ]
-                ]
+                ],
+                'activation_status'    => 'created'
             ],
         ]
     ],
@@ -207,7 +208,8 @@ return [
                     'refund'          => [
                         'default_refund_speed' => 'normal'
                     ]
-                ]
+                ],
+                'activation_status' => 'activated'
             ],
         ]
     ],

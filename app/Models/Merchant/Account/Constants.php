@@ -150,6 +150,7 @@ class Constants
     const ACTIVE               = 'active';
 
     const CREATED              = 'created';
+    const REQUESTED           = 'requested';
     const SUSPENDED            = 'suspended';
     const SUSPENDED_AT         = 'suspended_at';
 
@@ -183,13 +184,14 @@ class Constants
 
     const ACTIVATION_STATUS_ACCOUNT_STATUS_MAPPING = [
         null                            => self::CREATED,
+        Self::REQUESTED                 => self::CREATED,
         Status::UNDER_REVIEW            => Status::UNDER_REVIEW,
         Status::NEEDS_CLARIFICATION     => Status::NEEDS_CLARIFICATION,
         Status::ACTIVATED               => Status::ACTIVATED,
         Status::REJECTED                => Status::REJECTED,
         Status::ACTIVATED_KYC_PENDING   => Status::ACTIVATED_KYC_PENDING,
         Status::ACTIVATED_MCC_PENDING   => Status::ACTIVATED,
-        Status::INSTANTLY_ACTIVATED     => Status::ACTIVATED
+        Status::INSTANTLY_ACTIVATED     => Status::INSTANTLY_ACTIVATED
     ];
 
     const V2_ONBOARDING_APIS_LIST = [

@@ -517,6 +517,36 @@ class AccountV2Test extends TestCase
         $this->assertTrue($metricCaptured);
     }
 
+    public function testFetchAccountV2WithActivatedMccPending()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $this->fixtures->edit('merchant_detail', $result['id'], ['locked' => true, 'activation_status' => 'activated_mcc_pending']);
+
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+
+        $this->assertTrue($metricCaptured);
+    }
+
     public function testFetchAccountV2WithNullAdditionalWebsites()
     {
         $this->setUpPartnerWithKycHandled();

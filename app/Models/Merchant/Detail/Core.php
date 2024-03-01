@@ -4273,7 +4273,7 @@ class Core extends Base\Core
 
             $status = $input[Entity::ACTIVATION_STATUS];
 
-            if (empty($status) === false)
+            if (empty($status) === false && $this->shouldTriggerActivatedWebhook($merchant, $status))
             {
                 $eventPayload = [
                     ApiEventSubscriber::MAIN => $merchant,
@@ -4362,6 +4362,16 @@ class Core extends Base\Core
         ]);
 
         return $merchantDetails;
+    }
+
+    private function shouldTriggerActivatedWebhook(Merchant\Entity $merchant, string $newStatus = null) : bool
+    {
+        if ($newStatus === Status::ACTIVATED)
+        {
+            $isMerchantAlreadyActivated = $this->repo->action_state->isActionNameExistsForEntityIdAndType($merchant->getId(),Entity::MERCHANT_DETAIL, Status::ACTIVATED_MCC_PENDING);
+            return $isMerchantAlreadyActivated === false;
+        }
+        return true;
     }
 
     public function updatePosActivationStatus(Merchant\Entity $merchant, array $input): Entity

@@ -12,7 +12,7 @@ class Status
         MerchantActivationStatus::REJECTED              => MerchantActivationStatus::REJECTED,
         MerchantActivationStatus::UNDER_REVIEW          => MerchantActivationStatus::UNDER_REVIEW,
         MerchantActivationStatus::NEEDS_CLARIFICATION   => MerchantActivationStatus::NEEDS_CLARIFICATION,
-        MerchantActivationStatus::ACTIVATED_MCC_PENDING => MerchantActivationStatus::ACTIVATED,
+        MerchantActivationStatus::ACTIVATED_MCC_PENDING => MerchantActivationStatus::ACTIVATED_MCC_PENDING,
         MerchantActivationStatus::ACTIVATED_KYC_PENDING => MerchantActivationStatus::ACTIVATED_KYC_PENDING,
     ];
 
@@ -23,6 +23,7 @@ class Status
 
     const PAYMENT_GATEWAY_TERMINAL_STATUS = [MerchantActivationStatus::ACTIVATED, MerchantActivationStatus::REJECTED];
 
+    const PAYMENT_GATEWAY_NON_ACTIONABLE_STATUS = [MerchantActivationStatus::ACTIVATED, MerchantActivationStatus::REJECTED, MerchantActivationStatus::UNDER_REVIEW, MerchantActivationStatus::INSTANTLY_ACTIVATED, MerchantActivationStatus::ACTIVATED_MCC_PENDING];
     const PAYMENT_LINKS_TERMINAL_STATUS = [MerchantActivationStatus::ACTIVATED, MerchantActivationStatus::REJECTED];
 
     const MERCHANT_STATUS_ASSOCIATED_PRODUCTS = [
