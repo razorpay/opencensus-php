@@ -24,6 +24,8 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\EntityToProtoConverter\Facto
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\GetFieldsForEntityFromProto\Factory as GetFieldsForEntityFromProtoFactory;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\GetFieldsForEntityFromProto\GetFieldsForEntityFromProtoInterface;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\Merchant as MerchantProtoMapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantDetail as MerchantDetailProtoMapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantDocument as MerchantDocumentProtoMapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\RequestHeadersHelper\RequestHeadersHelper;
 use RZP\Models\Merchant\Website\Entity;
 use RZP\Trace\TraceCode;
@@ -438,5 +440,47 @@ class Base
         }
 
         return (new \RZP\Models\Merchant\Entity())->newCollection($merchantArray);
+    }
+
+    /**
+     * @param mixed $response
+     * @return \Illuminate\Database\Eloquent\Collection|PublicCollection
+     */
+    public function getMerchantDetailCollectionFromResponse(mixed $response): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    {
+        $merchantDetails = $response->getMerchantDetails();
+        $merchantDetailsArray = [];
+
+        /**
+         * @var $merchantDetail \Rzp\Accounts\Merchant\V1\MerchantDetail
+         */
+        foreach ($merchantDetails as $merchantDetail) {
+            $merchantDetailProtoConvertor = new MerchantDetailProtoMapper($merchantDetail);
+            $merchantDetailEntity = $merchantDetailProtoConvertor->ToEntity();
+            $merchantDetailsArray[] = $merchantDetailEntity;
+        }
+
+        return (new \RZP\Models\Merchant\Detail\Entity())->newCollection($merchantDetailsArray);
+    }
+
+    /**
+     * @param mixed $response
+     * @return \Illuminate\Database\Eloquent\Collection|PublicCollection
+     */
+    public function getMerchantDocumentCollectionFromResponse(mixed $response): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    {
+        $merchantDocuments = $response->getMerchantDocuments();
+        $merchantDocumentsArray = [];
+
+        /**
+         * @var $merchantDetail \Rzp\Accounts\Merchant\V1\MerchantDetail
+         */
+        foreach ($merchantDocuments as $merchantDocument) {
+            $merchantDocumentProtoConvertor = new MerchantDocumentProtoMapper($merchantDocument);
+            $merchantDocumentEntity = $merchantDocumentProtoConvertor->ToEntity();
+            $merchantDocumentsArray[] = $merchantDocumentEntity;
+        }
+
+        return (new \RZP\Models\Merchant\Document\Entity())->newCollection($merchantDocumentsArray);
     }
 }

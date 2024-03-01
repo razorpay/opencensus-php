@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Document;
 
 use RZP\Base\ConnectionType;
 use RZP\Models\Base;
+use Database\Connection;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkIntegration;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
@@ -130,8 +131,18 @@ class Repository extends Base\Repository
      */
     public function findDocumentByFileStoreId(string $fileStoreId)
     {
-        return $this->newQuery()
-                    ->where(Entity::FILE_STORE_ID, '=', $fileStoreId)
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else {
+                return (new MerchantDocumentSDKWrapper())->findDocumentByFileStoreId($fileStoreId);
+            }
+        } else {
+            $query = $this->newQuery();
+        }
+
+        return $query->where(Entity::FILE_STORE_ID, '=', $fileStoreId)
                     ->first();
     }
 
@@ -145,8 +156,18 @@ class Repository extends Base\Repository
      */
     public function findDocumentsForMerchantIdAndValidationId(string $merchantId, string $validationId)
     {
-        return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, $merchantId)
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else {
+                return (new MerchantDocumentSDKWrapper())->findDocumentsForMerchantIdAndValidationId($merchantId, $validationId);
+            }
+        } else {
+            $query = $this->newQuery();
+        }
+
+        return $query->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::VALIDATION_ID, $validationId)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->first();
@@ -314,7 +335,18 @@ class Repository extends Base\Repository
             $connectionType = ConnectionType::REPLICA;
         }
 
-        return $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else {
+                return (new MerchantDocumentSDKWrapper())->findNonDeletedDocumentsForMerchantId($merchantId, $documentTypes);
+            }
+        } else {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+        }
+
+        return $query
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->whereIn(Entity::DOCUMENT_TYPE, $documentTypes)
             ->whereNull(Entity::DELETED_AT)

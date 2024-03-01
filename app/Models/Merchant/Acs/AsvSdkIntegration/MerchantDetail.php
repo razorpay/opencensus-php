@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
 use RZP\Exception\BaseException;
 use Razorpay\Asv\RequestMetadata;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use Rzp\Accounts\Merchant\V1 as MerchantV1;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantDetail as MerchantDetailProtoMapper;

@@ -8,11 +8,15 @@ use Razorpay\Asv\RequestMetadata;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use Rzp\Accounts\Merchant\V1 as MerchantV1;
+use Rzp\Accounts\Merchant\V1\FilterRequest;
 use RZP\Models\Merchant\Document\Entity as MerchantDocumentEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantDocument as MerchantDocumentProtoMapper;
 
 class MerchantDocument extends Base
 {
+
+    const FILTER_TIMEOUT_IN_MICRO_SECONDS = 5000000;
+
     public function __construct()
     {
         parent::__construct();
@@ -144,5 +148,50 @@ class MerchantDocument extends Base
         return function () use ($merchantId, $requestMetadata) {
             return $this->findDocumentByMerchantId($merchantId, $requestMetadata);
         };
+    }
+
+    public function findDocumentByFileStoreId(string $fileStoreId): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier('find_documents_by_filestore_id');
+        $filterRequest->setBindings(
+            json_encode([
+                            $fileStoreId
+                        ])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantDocumentCollectionFromResponse($response);
+    }
+
+    public function findDocumentsForMerchantIdAndValidationId(string $merchantId, string $validationId): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier('find_documents_for_merchant_id_and_validation_id');
+        $filterRequest->setBindings(
+            json_encode([
+                            $merchantId, $validationId
+                        ])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantDocumentCollectionFromResponse($response);
+    }
+
+    public function findNonDeletedDocumentsForMerchantId(string $merchantId, array $documentTypes): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier('find_non_deleted_documents_for_merchant_id');
+        $filterRequest->setBindings(
+            json_encode([
+                            $merchantId, $documentTypes
+                        ])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantDocumentCollectionFromResponse($response);
     }
 }

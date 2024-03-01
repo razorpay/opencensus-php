@@ -30,6 +30,7 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\SplitzConstant;
 use RZP\Modules\Acs\Wrapper\MerchantDetail as MerchantDetailWrapper;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDetail as AsvSdkMerchantDetailQuery;
 
 class Repository extends Base\Repository
 {
@@ -1152,10 +1153,21 @@ class Repository extends Base\Repository
 
     public function findMerchantWithContactNumbersExcludingMerchant(string $merchantIdToBeExcluded, array $numbers)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->whereIn(Entity::CONTACT_MOBILE, $numbers)
-                    ->where(Entity::MERCHANT_ID, '!=', $merchantIdToBeExcluded)
-                    ->first();
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $callingViaTidb = true;
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        $query = $query->whereIn(Entity::CONTACT_MOBILE, $numbers)
+                       ->where(Entity::MERCHANT_ID, '!=', $merchantIdToBeExcluded);
+
+        if (!$callingViaTidb) {
+            event(new QueryShadowModeEvent(__FUNCTION__, $query->toSql(), $query->getBindings()));
+        }
+
+        return $query->first();
     }
 
     public function findMerchantBankDetailsWithIds(array $merchantIds): array
