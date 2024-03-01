@@ -604,7 +604,6 @@ class Payment extends Base
 
         if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_ON_HOLD) === true or
             $merchant->isOpgspImportEnabled() === true or
-            ($this->txnOnHoldForJPMCMerchant($payment, $merchant) === true) or
             self::shouldHoldSubmerchantPayment($payment, $merchant) === true)
         {
             $this->txn->setOnHold(true);

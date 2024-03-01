@@ -4228,13 +4228,6 @@ trait Authorize
 
         $paymentNotes = $payment->getNotes()->toArray();
 
-        // validate if invoice_number is present in notes
-        if (empty($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invoice number field is required within the notes.', 'notes.invoice_number');
-        }
-
         //Defaults goods_description value in paymentNotes.
         if (empty($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_GOODS_DESCRIPTION]) === true)
         {
@@ -4301,29 +4294,33 @@ trait Authorize
             throw new Exception\BadRequestValidationFailureException(
                 'Merchant HSCode is invalid', 'merchant.hs_code');
         }
-
-        $invoiceNumber = trim($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]);
-
-        // validate uniqueness of invoice number
-        $invoice = (new InvoiceService())
-            ->findByMerchantIdDocumentTypeDocumentNumber($payment->getMerchantId(), InvoiceType::JPMC_INVOICE, $invoiceNumber);
-
-        if (isset($invoice) === false) return;
-
-        $existingPayment = $this->repo->payment->findOrFail($invoice->getEntityId());
-
-        if (isset($existingPayment) and $existingPayment->getStatus() !== Status::FAILED)
+        // if invoice_number is present in notes, check uniqueness and save it.
+        if (empty($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]) === false)
         {
-            $this->trace->error(
-                TraceCode::INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW, [
-                    'payment_id'            => $payment->getId(),
-                    'existing_payment_id'   => $existingPayment->getId(),
-                    'message'               => 'Payment already exist with same invoice number'
-                ]
-            );
+            $invoiceNumber = trim($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]);
 
-            throw new Exception\BadRequestValidationFailureException(
-                'Payment already exist with same invoice number.', 'notes.invoice_number');
+            // validate uniqueness of invoice number
+            $invoice = (new InvoiceService())
+                ->findByMerchantIdDocumentTypeDocumentNumber($payment->getMerchantId(), InvoiceType::JPMC_INVOICE, $invoiceNumber);
+
+            if (isset($invoice) === false) return;
+
+            $existingPayment = $this->repo->payment->findOrFail($invoice->getEntityId());
+
+            if (isset($existingPayment) and $existingPayment->getStatus() !== Status::FAILED)
+            {
+                $this->trace->error(
+                    TraceCode::INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW, [
+                        'payment_id'            => $payment->getId(),
+                        'existing_payment_id'   => $existingPayment->getId(),
+                        'message'               => 'Payment already exist with same invoice number'
+                    ]
+                );
+
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payment already exist with same invoice number.', 'notes.invoice_number');
+            }
+
         }
     }
 
@@ -14018,15 +14015,20 @@ trait Authorize
         {
             $paymentNotes = $payment->getNotes()->toArray();
 
-            $invoiceEntity[InvoiceEntity::TYPE] = InvoiceType::JPMC_INVOICE;
+            //Save invoice entity only if invoice_no is present in payment notes.
+            if (empty($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]) === false) {
 
-            $invoice = (new InvoiceService())->createPaymentSupportingDocuments($invoiceEntity, $payment);
+                $invoiceEntity[InvoiceEntity::TYPE] = InvoiceType::JPMC_INVOICE;
 
-            $receipt = trim($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]);
+                $invoice = (new InvoiceService())->createPaymentSupportingDocuments($invoiceEntity, $payment);
 
-            $invoice->setReceipt($receipt);
+                $receipt = trim($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]);
 
-            $this->repo->saveOrFail($invoice);
+                $invoice->setReceipt($receipt);
+
+                $this->repo->saveOrFail($invoice);
+
+            }
         }
         catch (\Throwable $e)
         {
