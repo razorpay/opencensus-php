@@ -657,7 +657,7 @@ class Validator extends Base\Validator
 
     protected static $removeCouponRequestRules = [
         'order_id'                      => 'required|string',
-        'reference_id'                  => 'sometimes|string'
+        'reference_id'                  => 'required|string'
     ];
 
     protected static $applyGiftCardRequestRules = [
