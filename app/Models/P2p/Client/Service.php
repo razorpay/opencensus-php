@@ -2,7 +2,6 @@
 
 namespace RZP\Models\P2p\Client;
 
-use RZP\Exception;
 use RZP\Models\P2p\Base;
 
 /**

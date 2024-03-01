@@ -3,7 +3,8 @@
 namespace RZP\Models\P2p\Base;
 
 use Crypt;
-use phpDocumentor\Reflection\Types\This;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Device;
 use RZP\Exception\LogicException;
@@ -210,6 +211,17 @@ class Processor
         catch (\Throwable $e)
         {
             $this->pushGatewayActionMetric($this->context(), true);
+
+//            Rephrasing error response caught when gateway is down(i.e.
+//                from  -> ...payment failed...
+//                to    -> ...Bank gateway error...)
+            if (
+                ($e->getCode() === ErrorCode::GATEWAY_ERROR_FATAL_ERROR)
+                and ($this->app['api.route']->getCurrentRouteName() === "p2p_turbo_gateway_config")
+            )
+            {
+                $e = new Exception\P2p\GatewayErrorException(ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+            }
 
             throw $e;
         }
