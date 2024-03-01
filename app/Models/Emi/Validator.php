@@ -32,7 +32,7 @@ class Validator extends Base\Validator
     );
 
     // 2 month duration is only valid for bajaj
-    // 36 months duration is only valid for IDFC
+    // 36 months duration is only valid for IDFC and INDB
     protected function validateDuration($input)
     {
         if (isset($input[Entity::DURATION]) && $input[Entity::DURATION] == 2)
@@ -46,7 +46,7 @@ class Validator extends Base\Validator
 
         if (isset($input[Entity::DURATION]) && $input[Entity::DURATION] == 36)
         {
-            if (isset($input[Entity::BANK]) === true && $input[Entity::BANK] === 'IDFB')
+            if (isset($input[Entity::BANK]) === true && ($input[Entity::BANK] === 'IDFB'|| $input[Entity::BANK] === 'INDB'))
             {
                 return;
             }
