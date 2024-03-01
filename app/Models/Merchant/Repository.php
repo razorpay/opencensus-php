@@ -497,7 +497,13 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsCreatedBetweenForOrg($from, $to, $orgId)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        //NOTE: This change is being done for ASV Decomposition (#platform_account_service)
+        //Changing the connection to TiDB as a fallback as no usage was found for this in the past 90 days.
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
+        );
+
+        return $query
             ->where(Entity::ORG_ID, $orgId)
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->get();
@@ -505,16 +511,11 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsActivatedBetweenForOrg($from, $to, $orgId)
     {
-        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
-            if ($this->isTransactionActive()) {
-                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
-            }
-            else {
-                return (new AsvSdkMerchantQuery())->fetchMerchantsActivatedBetweenForOrg($from, $to, $orgId);
-            }
-        } else {
-            $query = $this->newQueryWithConnection($this->getSlaveConnection());
-        }
+        //NOTE: This change is being done for ASV Decomposition (#platform_account_service)
+        //Changing the connection to TiDB as a fallback as no usage was found for this in the past 90 days.
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
+        );
 
         return $query
             ->where(Entity::ORG_ID, $orgId)
