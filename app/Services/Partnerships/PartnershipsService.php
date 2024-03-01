@@ -363,7 +363,7 @@ class PartnershipsService extends Base\Service
             'name'       => 'SIGNUP_SOURCE'
         ];
         $response =  $this->sendRequestWithRetry($parameters, self::GET_SUBM_SIGNUP_SOURCE, Requests::POST);
-        return empty($response) ? "" : $response['value'];
+        return (empty($response) || empty($response['settings'])) ? "" : $response['settings']['value'];
     }
 
     /**

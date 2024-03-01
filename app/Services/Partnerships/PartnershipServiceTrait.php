@@ -19,8 +19,8 @@ trait PartnershipServiceTrait
     );
 
     static array $RouteExcludedKeyMap = [
-        'commissions_invoice_fetch_all'       => array('created_at', 'updated_at', 'pdf','line_items'),
-        'commissions_invoice_fetch'           => array('created_at', 'updated_at', 'pdf'),
+        'commissions_invoice_fetch_all'       => array('created_at', 'updated_at', 'pdf','line_items','notes','tnc'),
+        'commissions_invoice_fetch'           => array('created_at', 'updated_at', 'pdf','notes','tnc'),
         'commissions_get_multiple'            => array('created_at', 'updated_at'),
         'commissions_get'                     => array('created_at', 'updated_at'),
     ];

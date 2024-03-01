@@ -824,7 +824,7 @@ return [
             'driver'      => 'sqs',
             'key'         => env('AWS_KEY_ID'),
             'secret'      => env('AWS_KEY_SECRET'),
-            'prefix'      => 'https://localstack-services.dev.razorpay.in/000000000000/',
+            'prefix'      => 'http://localstack.localstack.svc.cluster.local:4566/000000000000/',
             'queue'       => env('AWS_DEFAULT_QUEUE'),
             'region'      => env('AWS_REGION'),
             //
