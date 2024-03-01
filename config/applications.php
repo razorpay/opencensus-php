@@ -1367,6 +1367,18 @@ return [
                 'password'      => env('WORKFLOWS_PASSWORD'),
             ],
         ],
+        'banking-accounts' => [
+            'live'=>[
+                'url'           => env('APP_BANKING_ACCOUNT_SERVICE_URL_WITHOUT_VERSION'),
+                'username'      => env('BANKING_ACCOUNT_SERVICE_USERNAME'),
+                'password'      => env('BANKING_ACCOUNT_SERVICE_PASSWORD'),
+            ],
+            'test'=>[
+                'url'           => env('APP_BANKING_ACCOUNT_SERVICE_URL_WITHOUT_VERSION'),
+                'username'      => env('BANKING_ACCOUNT_SERVICE_USERNAME'),
+                'password'      => env('BANKING_ACCOUNT_SERVICE_PASSWORD'),
+            ],
+        ],
     ],
 
     'automation' => [

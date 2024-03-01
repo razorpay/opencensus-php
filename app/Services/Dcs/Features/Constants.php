@@ -274,6 +274,8 @@ class Constants
 
     const ShowIntlRiskAnalyticsDashboard = 'show_dashboard';
 
+    const RblBankLmsDashboard = 'rbl_bank_lms_dashboard';
+
     const OtherPaymentGatewayConfigured = 'other_payment_gateway_configured';
     public static $validDcsKeys = [];
 
@@ -516,6 +518,8 @@ class Constants
         self::SourceToPayPro                              => 'rzp/x/merchant/onboarding/PricingTiers',
         self::RemoveEmandateCooloff                       => 'rzp/pg/merchant/recurring/Emandate',
         self::EnableInternationalPricingForAmex           => "rzp/pg/merchant/cross_border/india/Pricing",
+        self::ShowIntlRiskAnalyticsDashboard              => "rzp/pg/merchant/cross_border/india/RiskAnalytics",
+        self::RblBankLmsDashboard                         => 'rzp/x/merchant/onboarding/rbl/RblAccess',
         self::ShowIntlRiskAnalyticsDashboard              => "rzp/pg/merchant/cross_border/india/RiskAnalytics",
         self::OtherPaymentGatewayConfigured               => "rzp/pg/merchant/terminals/banking_program/Identifier"
     ];
@@ -774,6 +778,7 @@ class Constants
         APIFeaturesConstants::REMOVE_EMANDATE_COOLOFF                      => self::RemoveEmandateCooloff,
         APIFeaturesConstants::ENABLE_INTL_PRICING_AMEX                     => self::EnableInternationalPricingForAmex,
         APIFeaturesConstants::SHOW_INTL_RISK_ANALYTICS_DASHBOARD           => self::ShowIntlRiskAnalyticsDashboard,
+        APIFeaturesConstants::RBL_BANK_LMS_DASHBOARD                       => self::RblBankLmsDashboard,
         APIFeaturesConstants::EXTERNAL_PA_VAS                              => self::OtherPaymentGatewayConfigured,
     ];
 
@@ -825,6 +830,7 @@ class Constants
         self::ShowSingleDCCCurrency                   => 'direct',
         self::SkipApprovalForCreator                  => 'client',
         self::DisableWfConfigDimensionsForS2p         => 'client',
+        self::RblBankLmsDashboard                     => 'client',
     ];
 
     /**
@@ -883,6 +889,7 @@ class Constants
         "org"      => [
             "disable_free_credit_unreg"   => "client",
             "show_custom_dcc_disclosures" => "direct",
+            "rbl_bank_lms_dashboard"      => "client",
         ]
     ];
 

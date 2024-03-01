@@ -4075,6 +4075,11 @@ class Constants
             'display_name'  => 'Feature to enable international risk analytics dashboard for merchant',
             'documentation' => '',
         ],
+        self::RBL_BANK_LMS_DASHBOARD => [
+            'feature'       => self::RBL_BANK_LMS_DASHBOARD,
+            'display_name'  => 'Feature to enable RBL Bank LMS dashboard access',
+            'documentation' => '',
+        ],
         self::OMNI_ENABLED => [
             'feature'       => self::OMNI_ENABLED,
             'display_name'  => 'Omni Enabled',
