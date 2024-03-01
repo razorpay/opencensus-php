@@ -2443,6 +2443,7 @@ class Route
         'fee_recovery_amount_admin'                => ['post',     'admin/fee_recovery_amount',                      'FeeRecoveryController@calculateFeeRecoveryAmountAdmin'],
         'fee_recovery_retry_admin'                 => ['post',     'admin/fee_recovery_retry',                       'FeeRecoveryController@createRecoveryRetryPayoutManually'],
         'fee_recovery_payout_create_admin'         => ['post',     'admin/fee_recovery_payout',                      'FeeRecoveryController@createRecoveryPayoutJobAdmin'],
+        'fee_recovery_payout_custom_amount_admin'  => ['post',     'admin/fee_recovery_payout/custom_amount',        'FeeRecoveryController@createRecoveryPayoutCustomAmountAdmin'],
         // Route APIs
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
@@ -8750,6 +8751,7 @@ class Route
         'fee_recovery_amount_admin',
         'fee_recovery_retry_admin',
         'fee_recovery_payout_create_admin',
+        'fee_recovery_payout_custom_amount_admin',
 
         // Banking VA
         'virtual_account_bulk_create_for_banking',
@@ -10377,6 +10379,7 @@ class Route
         'fee_recovery_schedule_update_admin'        => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_retry_admin'                  => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_payout_create_admin'          => Permission::PROCESS_FEE_RECOVERY,
+        'fee_recovery_payout_custom_amount_admin'   => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_payout_schedule_task'         => Permission::ASSIGN_FEE_RECOVERY_SCHEDULE,
 
         'fund_account_validate_bulk_patch_status'   => Permission::BULK_PATCH_FUND_ACCOUNT_VALIDATION,
@@ -13902,6 +13905,7 @@ class Route
             'fee_recovery_schedule_update_admin',
             'fee_recovery_retry_admin',
             'fee_recovery_payout_create_admin',
+            'fee_recovery_payout_custom_amount_admin',
             'fee_recovery_payout_manual_retry',
             'fee_recovery_payout_schedule_task',
             'fetch_batch_action_entities',

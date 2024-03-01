@@ -76,4 +76,13 @@ class FeeRecoveryController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createRecoveryPayoutCustomAmountAdmin()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createRecoveryPayoutCustomAmountAdmin($input);
+
+        return ApiResponse::json($response);
+    }
 }

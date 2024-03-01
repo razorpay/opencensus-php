@@ -82,4 +82,13 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function createRecoveryPayoutCustomAmountAdmin(array $input)
+    {
+        (new Validator())->validateInput('create_recovery_payout_custom_amount', $input);
+
+        $response = $this->core()->createRecoveryPayoutCustomAmountAdmin($input);
+
+        return $response;
+    }
 }

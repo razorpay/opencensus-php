@@ -489,5 +489,53 @@ return [
                 'success'   => true,
             ]
         ]
+    ],
+
+    'testCreateFeeRecoveryPayoutCustomAmountByAdminAction' => [
+        'request'  => [
+            'url'    => '/admin/fee_recovery_payout/custom_amount',
+            'method' => 'POST',
+            'content' => [
+                'amount' => 100,
+                'balance_id' => '10000000000000',
+                'narration' => 'Fee recovery for payouts',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payout',
+                'transaction_id' => null,
+                'notes' => [],
+                'fees' => 0,
+                'tax' => 0,
+                'status' => 'processing',
+                'internal_status' => 'created',
+                'pending_reason' => null,
+                'utr' => null,
+                'user_id' => null,
+                'reference_id' => null,
+                'batch_id' => null,
+                'banking_account_id' => 'bacc_ABCde1234ABCde',
+                'failure_reason' => null,
+                'fee_type' => null,
+                'origin' => 'api',
+                'source_details' => [],
+                'remarks' => null,
+                'cancellation_user_id' => null,
+                'cancellation_user' => [],
+                'status_details' => [
+                    'reason' => null,
+                    'description' => null,
+                    'source' => null,
+                ],
+                'merchant_id' => '10000000000000',
+                'status_details_id' => null,
+                'amount' => 100,
+                'currency' => 'INR',
+                'purpose' => 'rzp_fees',
+                'mode' => 'IFT',
+                'narration' => 'Fee recovery for payouts',
+            ],
+        ],
     ]
 ];

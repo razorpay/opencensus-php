@@ -3327,6 +3327,41 @@ class FeeRecoveryTest extends TestCase
         $this->assertEquals($newNextRunAt, 1578508199);
     }
 
+    public function testCreateFeeRecoveryPayoutCustomAmountByAdminAction() {
+
+        $this->ba->adminAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['balance_id'] = $this->balance->getId();
+
+        $response = $this->makeRequestAndGetContent($data['request']);
+
+        $contact = $this->getDbEntity('contact', [
+            'merchant_id' => $this->balance->getMerchantId(),
+        ])->toArray();
+
+        $this->fixtures->edit('contact', $contact['id'], [
+            'type' => 'rzp_fees',
+        ]);
+
+        $fundAccount = $this->getDbEntity('fund_account', [
+            'source_id' => $contact['id'],
+        ]);
+
+        $data['response']['content']['fund_account_id'] = 'fa_' . $fundAccount['id'];
+
+        $this->assertNotNull($response['id']);
+        $this->assertEquals('fa_' . $fundAccount['id'], $response['fund_account']['id']);
+
+        unset($response['id']);
+        unset($response['fund_account']);
+        unset($response['initiated_at']);
+        unset($response['created_at']);
+
+        $this->assertEquals($data['response']['content'], $response);
+    }
+
     public function testCreateFeeRecoveryRetryManualFailAfterSuccess()
     {
         $previousRecoveryRetryPayout = $this->testFeeRecoveryRetryAfterTwoPayoutFTAReconFailedThirdSuccess();

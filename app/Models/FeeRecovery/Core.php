@@ -1632,4 +1632,128 @@ class Core extends Base\Core
 
         return ['success' => true];
     }
+
+    protected function getPayloadForFeeRecoveryPayoutCustomAmount(Balance\Entity $balance, $amount, string $contactId = null)
+    {
+        $merchant = $balance->merchant;
+
+        if ($contactId === null)
+        {
+            $feeRecoveryContact = $this->fetchOrCreateRzpFeesTypeContact($merchant, $balance);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_CUSTOM_AMOUNT_CONTACT_FETCH_SKIP_INITIATE,
+                [
+                    'input_contact_id' => $contactId,
+                ]);
+
+            $feeRecoveryContact = $this->repo->contact->findByIdAndMerchantId($contactId, $merchant->getId());
+
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_CUSTOM_AMOUNT_CONTACT_FETCH_SKIP_SUCCESS,
+                [
+                    'found_contact_id' => $feeRecoveryContact->getId(),
+                ]);
+        }
+
+        $ifscForFeeRecovery = $this->fetchIfscForFeeRecoveryForChannel($balance->getChannel());
+
+        $feeRecoveryFundAccount = $this->repo->fund_account->fetchRzpFeesFundAccount($merchant->getId(),
+            $feeRecoveryContact->getId(),
+            $ifscForFeeRecovery);
+
+        $fundAccountId = $feeRecoveryFundAccount->getPublicId();
+
+        switch($balance->getChannel())
+        {
+            case Channel::AXIS:
+
+                $payoutMode = Payout\Mode::NEFT;
+                break;
+
+            default:
+                $payoutMode = Payout\Mode::IFT;
+                break;
+        }
+
+        $payoutPayload = [
+            Payout\Entity::FUND_ACCOUNT_ID      => $fundAccountId,
+            Payout\Entity::MODE                 => $payoutMode,
+            Payout\Entity::CURRENCY             => Currency::INR,
+            Payout\Entity::BALANCE_ID           => $balance->getId(),
+            Payout\Entity::PURPOSE              => Payout\Purpose::RZP_FEES,
+            Payout\Entity::QUEUE_IF_LOW_BALANCE => true,
+            Payout\Entity::AMOUNT               => $amount,
+        ];
+
+        return $payoutPayload;
+    }
+
+    public function createRecoveryPayoutCustomAmountAdmin(array $input)
+    {
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_PAYOUT_CUSTOM_AMOUNT_INITIATED,
+            [
+                'input' => $input,
+            ]);
+
+        $balanceId = $input[Entity::BALANCE_ID];
+
+        $balance = $this->repo->balance->findOrFailById($balanceId);
+
+        if (($balance->isTypeBanking() === false) or
+            ($balance->isAccountTypeDirect() === false))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FEE_RECOVERY_INCORRECT_BALANCE,
+                null,
+                [
+                    Balance\Entity::TYPE          => $balance->getType(),
+                    Balance\Entity::ACCOUNT_TYPE  => $balance->getAccountType(),
+                    Balance\Entity::BALANCE_ID    => $balance->getId(),
+                ]);
+        }
+
+        $merchant = $balance->merchant;
+
+        $amount = $input[Entity::AMOUNT];
+
+        $contactId = null;
+
+        if (array_key_exists(Payout\Entity::CONTACT_ID, $input))
+        {
+            $contactId = $input[Payout\Entity::CONTACT_ID];
+        }
+
+        $payoutPayload = $this->getPayloadForFeeRecoveryPayoutCustomAmount($balance, $amount, $contactId);
+
+        if (array_key_exists(Payout\Entity::NARRATION, $input))
+        {
+            $narration = $input[Payout\Entity::NARRATION];
+
+            $payoutPayload[Payout\Entity::NARRATION] = $narration;
+        }
+
+
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_PAYOUT_CREATE_REQUEST,
+            [
+                'payload' => $payoutPayload
+            ]);
+
+        $feeRecoveryPayout = (new Payout\Core)->createPayoutToFundAccount($payoutPayload,
+            $merchant,
+            null,
+            true);
+
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_PAYOUT_CREATED,
+            [
+                'payout_data' => $feeRecoveryPayout->toArrayPublic()
+            ]);
+
+        return $feeRecoveryPayout->toArrayPublic();
+    }
 }

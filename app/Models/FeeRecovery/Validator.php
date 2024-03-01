@@ -67,6 +67,13 @@ class Validator extends Base\Validator
         Entity::BALANCE_ID          => 'required|string|size:14',
     ];
 
+    protected static $createRecoveryPayoutCustomAmountRules = [
+        Entity::AMOUNT                        => 'required|integer',
+        Entity::BALANCE_ID                    => 'required|string|size:14',
+        \RZP\Models\Payout\Entity::NARRATION  => 'required|string',
+        \RZP\Models\Payout\Entity::CONTACT_ID => 'sometimes|string|size:14',
+    ];
+
     // Function used by admin fetch
     public static function getAllSourceEntities()
     {
