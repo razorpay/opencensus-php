@@ -1381,11 +1381,6 @@ class Processor
                 return false;
             }
 
-            if ($this->isExternalAltIdPayment($input)) {
-
-                return true;
-            }
-
             // route all point payments requests via cps
             if (isset($input['card']['reward']) === true)
             {
@@ -1402,6 +1397,12 @@ class Processor
             }
 
             $iin = $this->repo->iin->find($iinId);
+
+            if ($this->isExternalAltIdPayment($input)) {
+                $input[E::CARD][E::TOKEN_REFERENCE_NUMBER ]=  $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null;
+                $input[E::CARD][E::TOKEN_REFERENCE_ID ]= $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID] ?? null;
+                return true;
+            }
 
             // IIN not available
             if (empty($iin) === true)
