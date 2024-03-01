@@ -2478,6 +2478,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TAGS_APPEND_COMPLETED                        = 'MERCHANT_TAGS_APPEND_COMPLETED';
     const MAP_PARTNER_SUBMERCHANT_ENTITY                        = 'MAP_PARTNER_SUBMERCHANT_ENTITY';
     const SUBMERCHANT_CREATE_REQUEST                            = 'SUBMERCHANT_CREATE_REQUEST';
+    const SUBM_RESPONSE_V2_ERROR                                = 'SUBM_RESPONSE_V2_ERROR';
     const ADMIN_SUBMERCHANT_BULK_API_RESOURCES_LIMIT            = 'ADMIN_SUBMERCHANT_BULK_API_RESOURCES_LIMIT';
     const LINKED_ACCOUNT_BUILD_ENTITY                           = 'LINKED_ACCOUNT_BUILD_ENTITY';
     const LINKED_ACCOUNT_DEBUG_LOG_1                            = 'LINKED_ACCOUNT_DEBUG_LOG_1';

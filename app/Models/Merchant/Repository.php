@@ -31,6 +31,7 @@ use RZP\Services\WDAService;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
+use RZP\Exception\BaseException;
 use Rzp\Wda_php\WDAQueryBuilder;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Base\EsRepository;
@@ -39,6 +40,7 @@ use RZP\Models\TrustedBadge\Constants as TrustedBadgeConstants;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\State\Entity as ActionState;
 use RZP\Models\Base\QueryCache\CacheQueries;
@@ -1979,14 +1981,33 @@ class Repository extends Base\Repository
         return $query->pluck(Entity::ID)->toArray();
     }
 
-    public function fetchLinkedAccountsCount($merchantId)
+    /**
+     * @param $merchantId
+     *
+     * @return int
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchLinkedAccountsCount($merchantId): int
     {
-        $childMerchantIds = $this->newQuery()
-                                 ->select(Entity::ID)
-                                 ->where('parent_id', $merchantId)
-                                 ->count();
-
-        return $childMerchantIds;
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                return (new Acs\AsvSdkIntegration\Merchant())->fetchLinkedAccountsCount($merchantId);
+            }
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+        return $query->select(Entity::ID)->where('parent_id', $merchantId)->count();
     }
 
     /**

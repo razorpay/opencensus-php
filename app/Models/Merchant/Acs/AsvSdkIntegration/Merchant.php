@@ -28,6 +28,8 @@ class Merchant extends Base
         = 'get_second_factor_auth_enabled_merchants_from_ids';
     const GET_MERCHANTS_BY_LEGAL_ENTITY_ID
         = 'get_merchants_by_legal_entity_id';
+    const GET_LINKED_ACCOUNT_COUNT
+        = 'get_linked_accounts_count';
 
     public function __construct()
     {
@@ -55,6 +57,24 @@ class Merchant extends Base
         $merchant = $response->getMerchant();
 
         return (new MerchantProtoMapper($merchant))->ToEntity();
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return int
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchLinkedAccountsCount(string $merchantId): int
+    {
+        $filterRequest  =  (new FilterRequest())
+            ->setQueryIdentifier(self::GET_LINKED_ACCOUNT_COUNT)
+            ->setBindings(json_encode([$merchantId]));
+        $response       = $this->getFilterResponseFromAsv($filterRequest);
+        $joins          = $response->getJoins();
+
+        return json_decode($joins[0]->serializeToJsonString(), true)["linked_account_count"];
     }
 
     /**
