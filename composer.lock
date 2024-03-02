@@ -11190,16 +11190,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "v2.0.22",
+            "version": "v2.0.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "7cd45d81a566acda6f223f6c84e57a25428da874"
+                "reference": "5602a7919ebfd6c3f72df7bde941d71e1ff00beb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/7cd45d81a566acda6f223f6c84e57a25428da874",
-                "reference": "7cd45d81a566acda6f223f6c84e57a25428da874",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/5602a7919ebfd6c3f72df7bde941d71e1ff00beb",
+                "reference": "5602a7919ebfd6c3f72df7bde941d71e1ff00beb",
                 "shasum": ""
             },
             "require": {
@@ -11235,9 +11235,9 @@
             "description": "Razorpay IFSC Codes Library",
             "support": {
                 "issues": "https://github.com/razorpay/ifsc/issues",
-                "source": "https://github.com/razorpay/ifsc/tree/v2.0.22"
+                "source": "https://github.com/razorpay/ifsc/tree/v2.0.24"
             },
-            "time": "2024-01-11T13:27:23+00:00"
+            "time": "2024-02-26T09:21:27+00:00"
         },
         {
             "name": "razorpay/lqext",
@@ -19320,5 +19320,5 @@
         "ext-pdo": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
