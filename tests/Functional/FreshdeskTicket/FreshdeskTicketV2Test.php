@@ -1515,6 +1515,56 @@ class FreshdeskTicketV2Test extends TestCase
 
     }
 
+    public function testCreateTicketForUserRzpXWithoutCCEmail()
+    {
+        $frDueBy = time() + self::DAY * 2;
+
+        $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpx',
+            [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'custom_fields' => [
+                    'cf_requester_category'    => 'Merchant',
+                    'cf_requestor_subcategory' => 'Activation',
+                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                ],
+                'email'         => 'user@razorpay.com',
+                'phone'         => '1234567890',
+                'priority'      => 1,
+                'status'        => 2,
+            ],
+            [
+                'id'            => '99',
+                'description'   => 'ticket description',
+                'fr_due_by'     => $frDueByFreshdeskFormat,
+                'custom_fields' => [
+                    'cf_requester_category'    => 'Merchant',
+                    'cf_requestor_subcategory' => 'Activation',
+                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                ],
+                'priority' =>  1,
+            ]);
+
+        $response = $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+        $this->assertNotEquals('99', $response['id']);
+
+        $this->assertEquals($response['id'], $ticket['id']);
+
+        $this->assertEquals('rzpx', $fdInstance);
+
+        $this->assertEquals('RazorpayX | Activation | 10000000000000', $ticket['ticket_details']['ticket_subject']);
+
+    }
+
     public function testCreateTicketFreshdeskError()
     {
         $this->expectFreshdeskRequestAndRespondWith('tickets', 'POST',

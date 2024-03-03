@@ -1916,17 +1916,6 @@ class Service extends Base\Service
 
         $input['name'] = $this->user->getName() ?? $this->merchant->getName();
 
-        $pattern = '/^[a-zA-Z0-9, -]+$/';
-
-        if(preg_match($pattern, $input['custom_fields']['cf_category']) && preg_match($pattern, $input['custom_fields']['cf_requestor_subcategory']) && strlen($input['subject']) < 50)
-        {
-            $input['subject'] = $input['custom_fields']['cf_category'] . " | " . $input['custom_fields']['cf_requestor_subcategory'] . " | " . $this->merchant->getId();
-        }
-        else
-        {
-            $input['subject'] = "RazorpayX Support Ticket";
-        }
-
         $input['phone'] = $input['phone'] ?? $this->merchant->merchantDetail->getContactMobile();
 
         $input['custom_fields']['cf_merchant_id_dashboard'] = $this->getQueryParamMerchantIdForSearchAPI();
@@ -1935,8 +1924,10 @@ class Service extends Base\Service
 
         $input['status'] = 2;
 
-        $input['cc_emails'] = $this->checkIfCCEmailsAreFromUserList($input);
-
+        if (!empty($input[Constants::CC_EMAILS]))
+        {
+            $input['cc_emails'] = $this->checkIfCCEmailsAreFromUserList($input);
+        }
         return $input;
     }
 
