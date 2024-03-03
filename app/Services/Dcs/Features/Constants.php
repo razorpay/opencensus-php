@@ -37,6 +37,10 @@ class Constants
     const DynamicPLOffset                            = 'dynamic_pl_offset';
     const EnablePaymentLinkSign                      = 'enable_payment_link_sign';
     const NotifyViaWhatsappPlink                     = 'notify_via_whatsapp_plink';
+    const PlV2DisableAllSms                          = 'pl_v2_disable_all_sms';
+    const PlV2DisableAllEmail                        = 'pl_v2_disable_all_email';
+    const PlV2DisableReminderSms                     = 'pl_v2_disable_reminder_sms';
+    const PlV2DisableReminderEmail                   = 'pl_v2_disable_reminder_email';
     const EnableMerchantCreateOwnTemplate            = 'payment_page_create_own_template_enabled';
     const EnableCustomerAmount                       = 'payment_page_customer_decide_amount_enabled';
     const ReceiptUniqueEnabled                       = 'receipt_unique_enabled';
@@ -322,6 +326,10 @@ class Constants
         self::DynamicPLOffset                             => "rzp/pg/merchant/paymentlinks/Features",
         self::EnablePaymentLinkSign                       => "rzp/pg/merchant/paymentlinks/Features",
         self::NotifyViaWhatsappPlink                      => "rzp/pg/merchant/paymentlinks/Features",
+        self::PlV2DisableAllSms                           => "rzp/pg/merchant/paymentlinks/Features",
+        self::PlV2DisableAllEmail                         => "rzp/pg/merchant/paymentlinks/Features",
+        self::PlV2DisableReminderSms                      => "rzp/pg/merchant/paymentlinks/Features",
+        self::PlV2DisableReminderEmail                    => "rzp/pg/merchant/paymentlinks/Features",
         self::EnableMerchantCreateOwnTemplate             => "rzp/nocode/merchant/paymentpage/Features",
         self::EnableCustomerAmount                        => "rzp/nocode/merchant/paymentpage/Features",
         self::ReceiptUniqueEnabled                        => "rzp/pg/merchant/order/Features",
@@ -569,6 +577,10 @@ class Constants
         APIFeaturesConstants::DYNAMIC_PL_OFFSET                            => self::DynamicPLOffset,
         APIFeaturesConstants::ENABLE_PAYMENT_LINK_SIGN                     => self::EnablePaymentLinkSign,
         APIFeaturesConstants::NOTIFY_VIA_WHATSAPP_PLINK                    => self::NotifyViaWhatsappPlink,
+        APIFeaturesConstants::PL_V2_DISABLE_ALL_SMS                        => self::PlV2DisableAllSms,
+        APIFeaturesConstants::PL_V2_DISABLE_ALL_EMAIL                      => self::PlV2DisableAllEmail,
+        APIFeaturesConstants::PL_V2_DISABLE_REMINDER_SMS                   => self::PlV2DisableReminderSms,
+        APIFeaturesConstants::PL_V2_DISABLE_REMINDER_EMAIL                 => self::PlV2DisableReminderEmail,
         APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PP                    => self::EnableMerchantExpiryForPP,
         APIFeaturesConstants::ENABLE_CREATE_OWN_TEMPLATE                   => self::EnableMerchantCreateOwnTemplate,
         APIFeaturesConstants::ENABLE_CUSTOMER_AMOUNT                       => self::EnableCustomerAmount,

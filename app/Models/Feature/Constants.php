@@ -1667,6 +1667,14 @@ class Constants
 
     const NOTIFY_VIA_WHATSAPP_PLINK = 'notify_via_whatsapp_plink';
 
+    const PL_V2_DISABLE_ALL_SMS = 'pl_v2_disable_all_sms';
+
+    const PL_V2_DISABLE_ALL_EMAIL = 'pl_v2_disable_all_email';
+
+    const PL_V2_DISABLE_REMINDER_SMS = 'pl_v2_disable_reminder_sms';
+
+    const PL_V2_DISABLE_REMINDER_EMAIL = 'pl_v2_disable_reminder_email';
+
     // form builder
 
     const FILE_UPLOAD_PP = 'file_upload_pp';
@@ -2662,6 +2670,10 @@ class Constants
         self::DYNAMIC_PL_OFFSET                            => true,
         self::ENABLE_PAYMENT_LINK_SIGN                     => true,
         self::NOTIFY_VIA_WHATSAPP_PLINK                    => true,
+        self::PL_V2_DISABLE_ALL_SMS                        => true,
+        self::PL_V2_DISABLE_ALL_EMAIL                      => true,
+        self::PL_V2_DISABLE_REMINDER_SMS                   => true,
+        self::PL_V2_DISABLE_REMINDER_EMAIL                 => true,
         self::WEBSITE_AUTOMATED_CHECKS_FEATURE             => true,
         self::ENABLE_CREATE_OWN_TEMPLATE                   => true,
         self::ENABLE_CUSTOMER_AMOUNT                       => true,
@@ -3988,6 +4000,26 @@ class Constants
         self::NOTIFY_VIA_WHATSAPP_PLINK => [
             'feature'       => self::NOTIFY_VIA_WHATSAPP_PLINK,
             'display_name'  => 'Feature to enable the merchant for notifying payment link via whatsapp ',
+            'documentation' => '',
+        ],
+        self::PL_V2_DISABLE_ALL_SMS => [
+            'feature'       => self::PL_V2_DISABLE_ALL_SMS,
+            'display_name'  => 'Feature to disallow all payment-links SMS notifications ',
+            'documentation' => '',
+        ],
+        self::PL_V2_DISABLE_ALL_EMAIL => [
+            'feature'       => self::PL_V2_DISABLE_ALL_EMAIL,
+            'display_name'  => 'Feature to disallow all payment-links EMAIL notifications ',
+            'documentation' => '',
+        ],
+        self::PL_V2_DISABLE_REMINDER_SMS => [
+            'feature'       => self::PL_V2_DISABLE_REMINDER_SMS,
+            'display_name'  => 'Feature to disallow payment-links reminder SMS notifications ',
+            'documentation' => '',
+        ],
+        self::PL_V2_DISABLE_REMINDER_EMAIL => [
+            'feature'       => self::PL_V2_DISABLE_REMINDER_EMAIL,
+            'display_name'  => 'Feature to disallow payment-links reminder EMAIL notifications ',
             'documentation' => '',
         ],
         self::WEBSITE_AUTOMATED_CHECKS_FEATURE => [
