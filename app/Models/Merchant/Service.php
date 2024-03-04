@@ -7326,19 +7326,24 @@ class Service extends Base\Service
             $this->app->hubspot->skipMerchantOnboardingComm($subMerchant->getEmail());
         }
 
-        Tracer::inspan(['name' => HyperTrace::SEND_MAIL_TO_SUBMERCHANT], function () use ($merchant, $isLinkedAccount, $newUser, $subMerchant, $createdNew, $actualProduct) {
+        \Event::dispatch(new TransactionalClosureEvent(function() use ($merchant, $isLinkedAccount, $newUser, $subMerchant, $createdNew, $actualProduct) {
+            Tracer::inspan(['name' => HyperTrace::SEND_MAIL_TO_SUBMERCHANT], function() use ($merchant, $isLinkedAccount, $newUser, $subMerchant, $createdNew, $actualProduct) {
 
-            // Sends email to marketplace LA dashboard enabled users.
-            if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true))
-            {
-                (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
-            }
-            else if (((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false) and
-                     ($merchant->canCommunicateWithSubmerchant() === true))
-            {
-                $this->communicateSubMerchantCreation($subMerchant, $merchant, $actualProduct, $newUser, $createdNew);
-            }
-        });
+                // Sends email to marketplace LA dashboard enabled users.
+                if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true))
+                {
+                    (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
+                }
+                else
+                {
+                    if (((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false) and
+                        ($merchant->canCommunicateWithSubmerchant() === true))
+                    {
+                        $this->communicateSubMerchantCreation($subMerchant, $merchant, $actualProduct, $newUser, $createdNew);
+                    }
+                }
+            });
+        }));
 
         /**
          *  Slack thread - https://razorpay.slack.com/archives/C021KESTRLH/p1671430073261459
@@ -10889,7 +10894,7 @@ class Service extends Base\Service
         }
 
         if(!empty($merchantFields[Merchant\Entity::PURPOSE_CODE] and
-            $this->merchant->getPurposeCode() !== $merchantFields[Merchant\Entity::PURPOSE_CODE])) 
+            $this->merchant->getPurposeCode() !== $merchantFields[Merchant\Entity::PURPOSE_CODE]))
         {
             $this->merchant->edit($merchantFields);
             $this->repo->merchant->saveOrFail($this->merchant);
@@ -10898,7 +10903,7 @@ class Service extends Base\Service
         if($isDraft === false)
         {
             if($this->merchant->merchantDetail !== NULL and
-                !empty($merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE]) and 
+                !empty($merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE]) and
                 $this->merchant->getIecCode() !== $merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE])
             {
                 $this->merchant->merchantDetail->edit($merchantDetailsFields);

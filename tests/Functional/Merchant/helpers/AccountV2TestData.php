@@ -2770,4 +2770,68 @@ return [
             ],
         ],
     ],
+
+    'testCreateAccountV2RequestForInvalidWebsiteInput' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email'           => 'testcreateaccountaa@razorpay.com',
+                'phone'           => '9999999999',
+                'contact_name'    =>  'contactname',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name'   => 'Acme',
+                'business_type'       => 'individual',
+                'profile' => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => 'FFFFFF',
+                ],
+                'apps' => [
+                    'websites' => [
+                        'https://www.example.com/'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Enter a live/operational URL. You can enter it later if you don't have a live URL now"
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

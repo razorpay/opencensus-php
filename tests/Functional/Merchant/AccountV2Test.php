@@ -5,6 +5,9 @@ namespace Functional\Merchant;
 use Mail;
 
 use RZP\Constants\Mode;
+use Illuminate\Support\Facades\Http;
+use RZP\Models\Feature\Constants as FName;
+use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForPG;
 use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForLOC;
 use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantPartner as CreateSubMerchantPartnerForLOC;
 use RZP\Services\RazorXClient;
@@ -2008,5 +2011,48 @@ class AccountV2Test extends TestCase
         $testData['request']['url'] = '/v2/accounts/' . $result['id'];
 
         $this->startTest($testData);
+    }
+
+    public function testCreateAccountV2RequestForInvalidWebsiteInput()
+    {
+        Mail::fake();
+
+        $features = [
+            FName::KYC_HANDLED_BY_PARTNER,
+            FName::SUBMERCHANT_ONBOARDING,
+        ];
+
+        $this->fixtures->merchant->addFeatures($features);
+
+        $this->setUpNonPurePlatformPartner(MerchantConstants::AGGREGATOR);
+
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->andReturnUsing(function ($input) {
+                 if ($input["experiment_id"] == "NI6yG7xTin7jgY") {
+                     return [
+                         "response" => [
+                             "variant" => [
+                                 "name" => "enable"
+                             ]
+                         ]
+                     ];
+                 } else if ($input["experiment_id"] == "LQzMXMbNCUramd") {
+                     return [
+                         "response" => [
+                             "variant" => [
+                                 "name" => 'live',
+                             ]
+                         ]
+                     ];
+                 }
+                 return [];
+             });
+
+        Http::fake(['https://www.example.com/' => Http::response([], 400, []),]);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(CreateSubMerchantAffiliateForPG::class);
     }
 }
