@@ -710,9 +710,9 @@ class Entity extends Base\PublicEntity
     ];
 
     // Increase txn limit for B2B intl_bank_transfer payments
-    // Higher limit is now Rs 8.5L base amount
-    // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
-    const MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER = 85000000;
+    // Higher limit is now Rs 8.2L base amount
+    // https://razorpay.slack.com/archives/C01LK94TC69/p1708595682462969?thread_ts=1708496760.889379&cid=C01LK94TC69
+    const MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER = 82000000;
 
     public function getMaxPaymentAmountDefault()
     {
