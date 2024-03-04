@@ -111,8 +111,6 @@ class PartnershipsService extends Base\Service
 
     const LOCALSTACK_ENVIRONMENTS = [Environment::BETA];
 
-    const COMMISSION_DUAL_WRITE_QUEUE_CONFIG_KEY = 'prts_commission_create_dual_write';
-
     const COMMISSION_SHADOW_PHASE_QUEUE_CONFIG_KEY = 'prts_commission_create';
 
     const COMMISSION_CAPTURE_SHADOW_PHASE_QUEUE_CONFIG_KEY = 'prts_commission_capture';
@@ -736,7 +734,7 @@ class PartnershipsService extends Base\Service
     public function pushJobWithDelay(array $data, string $queueConfigKey, int $waitTime): string
     {
         $queueName = $this->app['config']->get('queue.' . $queueConfigKey . '.' . $this->app['rzp.mode']);
-        $connection = $this->getQueueConnection();
+        $connection = $this->getQueueConnection($queueConfigKey);
 
         return $this->app['queue']->connection($connection)->later(
             $waitTime, "Create Commission Queue Push", json_encode($data), $queueName
@@ -753,7 +751,7 @@ class PartnershipsService extends Base\Service
     public function pushRawJob(array $data, string $queueConfigKey): string
     {
         $queueName = $this->app['config']->get('queue.' . $queueConfigKey . '.' . $this->app['rzp.mode']);
-        $connection = $this->getQueueConnection();
+        $connection = $this->getQueueConnection($queueConfigKey);
 
         return $this->app['queue']->connection($connection)->pushRaw(json_encode($data), $queueName);
     }
@@ -761,16 +759,10 @@ class PartnershipsService extends Base\Service
     /**
      * Fetches the queue connection to use. If environment is devstack, localstack is used.
      */
-    private function getQueueConnection(): string
+    private function getQueueConnection(string $queueConfigKey): string
     {
-        if (in_array(app('env'), self::LOCALSTACK_ENVIRONMENTS, true) === true)
-        {
-            return 'sqs_localstack';
-        }
-        else
-        {
-            return 'sqs';
-        }
+        $driver = $this->app['config']->get('queue.' . $queueConfigKey . '.' . 'driver' . '_' . $this->app['rzp.mode']);
+        return $driver ?? 'sqs';
     }
 
     /**

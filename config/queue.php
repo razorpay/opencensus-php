@@ -351,21 +351,23 @@ return [
         'test'       => env('AWS_COMMISSION_QUEUE'),
         'live'       => env('AWS_COMMISSION_QUEUE'),
     ],
-    'prts_commission_create_dual_write' => [
-        'test'      => env('AWS_COMMISSION_CREATE_DUAL_WRITE_QUEUE_TEST'),
-        'live'      => env('AWS_COMMISSION_CREATE_DUAL_WRITE_QUEUE_LIVE')
-    ],
     'prts_commission_create' => [
         'test'      => env('AWS_COMMISSION_CREATE_SHADOW_PHASE_QUEUE_TEST'),
-        'live'      => env('AWS_COMMISSION_CREATE_SHADOW_PHASE_QUEUE_LIVE')
+        'live'      => env('AWS_COMMISSION_CREATE_SHADOW_PHASE_QUEUE_LIVE'),
+        'driver_live'    => env('AWS_PARTNERSHIPS_SQS_DRIVER_LIVE'),
+        'driver_test'    => env('AWS_PARTNERSHIPS_SQS_DRIVER_TEST'),
     ],
     'prts_commission_capture' => [
         'test'      => env('AWS_PARTNERSHIPS_COMMISSION_CAPTURE_QUEUE_TEST'),
-        'live'      => env('AWS_PARTNERSHIPS_COMMISSION_CAPTURE_QUEUE_LIVE')
+        'live'      => env('AWS_PARTNERSHIPS_COMMISSION_CAPTURE_QUEUE_LIVE'),
+        'driver_live'    => env('AWS_PARTNERSHIPS_SQS_DRIVER_LIVE'),
+        'driver_test'    => env('AWS_PARTNERSHIPS_SQS_DRIVER_TEST'),
     ],
     'prts_common' => [
         'test'      => env('AWS_PARTNERSHIPS_COMMON_QUEUE_TEST'),
-        'live'      => env('AWS_PARTNERSHIPS_COMMON_QUEUE_LIVE')
+        'live'      => env('AWS_PARTNERSHIPS_COMMON_QUEUE_LIVE'),
+        'driver_live'    => env('AWS_PARTNERSHIPS_SQS_DRIVER_LIVE'),
+        'driver_test'    => env('AWS_PARTNERSHIPS_SQS_DRIVER_TEST'),
     ],
     'fund_account_validation' => [
         'test'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),
@@ -818,6 +820,22 @@ return [
             //
             'timeout'     => 3.0,
             'credentials' => $awsCredentialsCache,
+        ],
+
+        'sqs_devstack' => [
+            'driver'      => 'sqs',
+            'key'         => env('AWS_KEY_ID'),
+            'secret'      => env('AWS_KEY_SECRET'),
+            'prefix'      => env('AWS_QUEUE_PREFIX'),
+            'queue'       => env('AWS_DEFAULT_QUEUE'),
+            'region'      => env('AWS_REGION'),
+            //
+            // This timeout is only used for getting credentials from instance meta server.
+            // This timeout is "not" for normal http operations of sdk, e.g. push sqs job, publish sns message etc
+            // for which there is another argument/option i.e. http.timeout.
+            //
+            'timeout'     => 3.0,
+            'credentials' => new FileCache,
         ],
 
         'sqs_localstack' => [
