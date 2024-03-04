@@ -1275,14 +1275,7 @@ class Gateway extends Mindgate\Gateway
 
     public function getQrPaymentStatus($input)
     {
-        if ((new QrCode\NonVirtualAccountQrCode\Generator())->ifPrefixAdditionExperimentInTREnabled($input['merchant']['id']) === true)
-        {
-            $input[CoreEntity::QR_CODE][QrEntity::ID] = Constants::QR_CODE_V2_YESBANK_PREFIX . $input[CoreEntity::QR_CODE][QrEntity::ID] . Constants::QR_CODE_V2_TR_SUFFIX;
-        }
-        else
-        {
-            $input[CoreEntity::QR_CODE][QrEntity::ID] .= Constants::QR_CODE_V2_TR_SUFFIX;
-        }
+        $input[CoreEntity::QR_CODE][QrEntity::ID] = Constants::QR_CODE_V2_YESBANK_PREFIX . $input[CoreEntity::QR_CODE][QrEntity::ID] . Constants::QR_CODE_V2_TR_SUFFIX;
 
         $request = [
             CoreEntity::PAYMENT             => [
