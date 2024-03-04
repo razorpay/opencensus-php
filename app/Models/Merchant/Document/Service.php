@@ -713,8 +713,8 @@ class Service extends Base\Service
         else
         {
             $currentTimeStamp = Carbon::now(Timezone::IST)->getTimeStamp();
-            $currentMonth = explode('/',date('m/d/Y', $currentTimeStamp))[0];
-            $currentYear = explode('/',date('m/d/Y', $currentTimeStamp))[2];
+            $currentMonth = Carbon::createFromTimestamp($currentTimeStamp, Timezone::IST)->month;;
+            $currentYear = Carbon::createFromTimestamp($currentTimeStamp, Timezone::IST)->year;
 
             $previousMonth = Carbon::now(Timezone::IST)->subMonth();
 
@@ -735,7 +735,8 @@ class Service extends Base\Service
                 $merchantId = $entry[Entity::MERCHANT_ID];
                 $documentDate = $entry[Entity::DOCUMENT_DATE];
 
-                list($month,$date,$year) = explode('/',date('m/d/Y', $documentDate));
+                $month = Carbon::createFromTimestamp($documentDate, Timezone::IST)->month;
+                $year = Carbon::createFromTimestamp($documentDate, Timezone::IST)->year;
 
                 if($month === $currentMonth && $year === $currentYear){
                     continue;
