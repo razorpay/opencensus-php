@@ -29,8 +29,6 @@ app/Http/OAuthCache.php                                       @razorpay/spine-ed
 app/Http/OAuthScopes.php                                      @razorpay/spine-edge
 app/Http/RequestContext.php                                   @razorpay/spine-edge
 app/Http/RequestContextV2.php                                 @razorpay/spine-edge
-app/Http/Route.php                                            @razorpay/spine-edge
-app/Http/P2pRoute.php                                         @razorpay/spine-edge
 
 #
 # Models
