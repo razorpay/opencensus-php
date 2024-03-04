@@ -240,4 +240,47 @@ class Merchant extends Base
         return $this->getMerchantCollectionFromResponse($response)->toArray();
     }
 
+
+    public function fetchMerchantsCountWithPricingPlanId(string $planId): int
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier('fetch_merchants_count_with_pricing_plan_id');
+        $filterRequest->setBindings(
+            json_encode([
+                            $planId
+                        ])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        $count = 0;
+
+        foreach ($response->getJoins() as $join) {
+            $count = json_decode($join->serializeToJsonString(), true)['aggregate'];
+            break;
+        }
+
+        return $count;
+    }
+
+    public function fetchFeeBearersForPlanId(string $planId): array
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier('fetch_fee_bearers_for_plan_id');
+        $filterRequest->setBindings(
+            json_encode([
+                            $planId
+                        ])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        $feeBearersList = [];
+
+        foreach ($response->getJoins() as $join) {
+            $feeBearersList[] = json_decode($join->serializeToJsonString(), true)['fee_bearer'];
+        }
+
+        return $feeBearersList;
+    }
 }

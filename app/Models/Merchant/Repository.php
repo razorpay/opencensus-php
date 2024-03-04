@@ -475,8 +475,18 @@ class Repository extends Base\Repository
 
     public function fetchFeeBearersForPlanId($planId)
     {
-        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
-                    ->where(Entity::PRICING_PLAN_ID, '=', $planId)
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else {
+                return (new AsvSdkMerchantQuery())->fetchFeeBearersForPlanId($planId);
+            }
+        } else {
+            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+        }
+
+        return $query->where(Entity::PRICING_PLAN_ID, '=', $planId)
                     ->select(Entity::FEE_BEARER)
                     ->distinct()
                     ->get()
@@ -486,8 +496,18 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsCountWithPricingPlanId($planId)
     {
-        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
-                    ->where(Entity::PRICING_PLAN_ID, '=', $planId)
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else {
+                return (new AsvSdkMerchantQuery())->fetchMerchantsCountWithPricingPlanId($planId);
+            }
+        } else {
+            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+        }
+
+        return $query->where(Entity::PRICING_PLAN_ID, '=', $planId)
                     ->count();
     }
 
