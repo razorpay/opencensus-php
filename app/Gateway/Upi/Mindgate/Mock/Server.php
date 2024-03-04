@@ -464,7 +464,7 @@ class Server extends Base\Mock\Server
             $upiEntity['gateway_payment_id'],
             $upiEntity['payment_id'],
             $this->formatAmount($payment['amount']),
-            '2017:12:01 00:00:02',
+            '1512086402', //Txn Time
             $status,
             'Transaction success',
             $respCode,

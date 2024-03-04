@@ -326,7 +326,7 @@ trait NonVirtualAccountQrCodeTrait
                 'payeevpa'                   => 'testvpa@kotak',
                 'description'                => 'RazorpayOrdercreatedsuccessfully',
                 'transactionid'              => 'HDF746e74c617b54b97bc36eadc6c89cbe4',
-                'transactionTimestamp'       => '2026-10-19 20:34:06.538',
+                'transactionTimestamp'       => '1792422246',
                 'type'                       => 'PAY',
                 'checksum'                   => 'RandomChecksumaa901b86b07e3531a33b7208f17d38c82b528bd45c44bd6194',
                 'refurl'                     => 'https://upi.hdfcbank.com',

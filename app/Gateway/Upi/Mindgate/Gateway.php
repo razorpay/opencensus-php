@@ -794,40 +794,14 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $inputFields['upi'][ResponseFields::NPCI_REFERENCE_ID],
         ];
 
-
         if(empty($inputFields['payment'][Payment\Entity::PAYER_ACCOUNT_TYPE]) === false)
         {
             $qrData[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE] = $inputFields['payment'][Payment\Entity::PAYER_ACCOUNT_TYPE];
         }
 
-        $transactionTime = null;
-
         if (empty($inputFields['upi']['gateway_timestamp']) === false)
         {
-            try
-            {
-                $transactionTime = Carbon::createFromFormat('Y:m:d H:i:s', $inputFields['upi']['gateway_timestamp'],
-                    Timezone::IST);
-            }
-            catch (InvalidFormatException $e)
-            {
-                // We are only catching this exception and tracing it for now
-                // We know that recon can only send timestamp in Y:m:d format
-                // Thus missing H:i:s data can cause this exception
-                $this->trace->traceException(
-                    $e,
-                    Logger::WARNING,
-                    TraceCode::QR_DATA_TIMESTAMP_DATA_MISSING,
-                    [
-                        'input_timestamp' => $inputFields['upi']['gateway_timestamp'],
-                    ]
-                );
-            }
-
-            if (empty($transactionTime) !== true)
-            {
-                $qrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
-            }
+            $qrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $inputFields['upi']['gateway_timestamp'];
         }
 
         if (isset($input['data']['meta']) === true)

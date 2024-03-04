@@ -1029,7 +1029,7 @@ trait CommonGatewayTrait
 
             $transactionTime = null;
 
-            if (empty($inputFields['gateway_timestamp'] === false))
+            if (empty($inputFields['gateway_timestamp']) === false)
             {
                 // Bad assumption for transaction time format
                 // Making it work for Kotak for now
@@ -1059,6 +1059,10 @@ trait CommonGatewayTrait
                 {
                     $qrData[QrGatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
                 }
+            }
+            else if(empty($inputFields['upi']['gateway_timestamp']) === false)
+            {
+                $qrData[QrGatewayResponseParams::TRANSACTION_TIME] = $inputFields['upi']['gateway_timestamp'];
             }
 
             if (isset($input['data']['meta']) === true)

@@ -234,6 +234,7 @@ class UpiKotakQRCodeTest extends TestCase
 
         $this->closeQrCode($qrCode['id']);
     }
+
     public function runQrPaymentEntityAssertions($expected = true, $paymentRequestEntity = [], $upiRequestEntity = [], $mode = 'test'): void
     {
         $qrPayment        = $this->getLastEntity('qr_payment', true, $mode);
@@ -246,6 +247,7 @@ class UpiKotakQRCodeTest extends TestCase
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals(300, $payment['amount']);
         $this->assertEquals('107611570997', $payment['reference16']);
+        $this->assertNotNull($qrPayment['transaction_time']);
 
         $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
         $this->assertEquals($qrCodeEntity['reference'], $qrPayment['qr_code_id']);

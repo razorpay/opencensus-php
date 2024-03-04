@@ -597,6 +597,7 @@ class PreProcess extends Base\Mock\Server
 
         $response->mergeUpi([
                                 'gateway_payment_id' => $payload['transactionreferencenumber'],
+                                'gateway_timestamp'  => $payload['transactionTimestamp'],
                                 'merchant_reference' => $payload['refid'],
                                 'npci_reference_id'  => $payload['rrn'],
                                 'npci_response_code' => $payload['statusCode'],
@@ -617,8 +618,6 @@ class PreProcess extends Base\Mock\Server
                                ]);
 
         $data = $response->get('data');
-
-        $data['gateway_timestamp'] = $payload['transactionTimestamp'];
 
         $response->setData($data);
 
