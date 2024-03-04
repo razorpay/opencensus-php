@@ -642,7 +642,7 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->fetchCryptogram($input);
     }
 
-    public function fetchCryptogramFromVaultToken($vaultToken, $merchant, $internalServiceRequest = false, $token_type = 'null')
+    public function fetchCryptogramFromVaultToken($vaultToken, $merchant, $internalServiceRequest = false, $token_type = 'null', $card = null)
     {
         $input = [
             'token'                    => $vaultToken,
@@ -652,12 +652,23 @@ class CardVault extends Base\Core
 
         $input = $this->setMerchantDetails($input, $merchant);
 
+        // Use different business name for Nykaa for RuPay cards created before 9 January 2024.
+        // This is because we use merchant business name for tokenisation now leading to fetch cryptogram failures
+        // for older Nykaa tokens which were created with Nykaa as business name.
+        // https://razorpay.slack.com/archives/C7WEGELHJ/p1708395643145509
+        if($card !== null and
+            $card->getNetworkCode() === 'RUPAY' and
+            $card->getCreatedAt() <= 1704794400 and
+            $merchant->getId() === '4uObL8AHBqFNnP') {
+            $input['merchant']['business_name'] = 'Nykaa';
+        }
+
         return $this->app['card.cardVault']->fetchCryptogram($input);
     }
 
-    public function fetchCryptogramForPayment($cardVaultToken, $merchant, $token_type = 'null')
+    public function fetchCryptogramForPayment($cardVaultToken, $merchant, $token_type = 'null', $card = null)
     {
-        $response = $this->fetchCryptogramFromVaultToken($cardVaultToken, $merchant, true, $token_type);
+        $response = $this->fetchCryptogramFromVaultToken($cardVaultToken, $merchant, true, $token_type, $card);
 
         return $response['service_provider_tokens'][0]['provider_data'];
     }

@@ -1351,7 +1351,7 @@ class Processor
                                         'type'      => $card->getType(),
                                     ],
                                 ]);
-                                $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
+                                $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant, 'null', $card);
                                 $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input, $token);
                                 //modify input for cards
                                 $input[Payment\Entity::CARD] = $cardInput;
@@ -1875,7 +1875,7 @@ class Processor
                             'type'      => $card->getType(),
                         ],
                     ]);
-                    $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
+                    $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant, 'null', $card);
                     $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input, $token);
                     //modify input for cards
                     $input[Payment\Entity::CARD] = $cardInput;
