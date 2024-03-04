@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Contacts;
 
+use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Error\Error;
@@ -11,15 +12,14 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Core;
 use RZP\Models\Feature;
 use RZP\Models\Contact\Entity;
+use RZP\Services\KafkaProducerClient;
 use RZP\Services\Pagination\Entity as PaginationEntity;
-use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Core as MerchantCore;
-use RZP\Services\Segment\XSegmentClient;
-use RZP\Services\SplitzService;
 use RZP\Services\VendorPayments\Service;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
 
 class ContactsTest extends TestCase
 {
@@ -882,115 +882,55 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateContactWithObserver()
+    public function testUpdateContactWithTypeVendor()
     {
-        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
+        $this->fixtures->on('live')
+            ->create('contact', [
+                'id'           => '1000000contact',
+                'name'         => 'random',
+                'type'         => 'vendor',
+                'reference_id' => '123'
+            ]);
 
         Carbon::setTestNow(Carbon::now(Timezone::IST)->addMinutes(5));
 
-        $splitzMock = \Mockery::mock(SplitzService::class);
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getVendorByContactId'])
+            ->getMock();
 
-        $splitzMock->shouldReceive("evaluateRequest")->andReturn([
-            "response" => [
-                "variant" => [
-                    "name" => 'disable',
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('getVendorByContactId')
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_1000000contact', 'payment_terms' => 10, 'tds_category' => 8]);
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $kafkaProducerMock = $this->getMockBuilder(KafkaProducerClient::class)
+            ->onlyMethods(['produce'])
+            ->getMock();
+
+        $expectedMessage = [
+            "event_type" => "CONTACT_UPDATED",
+            "data"       => [
+                "id"              => "cont_1000000contact",
+                "fund_account_id" => "",
+                "merchant_id"     => "10000000000000",
+                "change_set"      => [
+                    "reference_id" => "213",
+                    "updated_at"   => Carbon::now()->timestamp
                 ]
             ]
-        ]);
+        ];
 
-        $this->app->instance('splitzService', $splitzMock);
+        $kafkaProducerMock->expects($this->once())
+            ->method('produce')
+            ->with('contact-entity-update-live', stringify($expectedMessage));
 
-        $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
 
-        $metroMock->shouldReceive("publish")->andReturn([]);
-
-        $this->app->instance('metro', $metroMock);
+        $this->ba->proxyAuthLive();
 
         $this->startTest();
-
-        $expectedMetroMessage = [
-            "data" => json_encode([
-                "id" => "cont_1000000contact",
-                "change_set" => ["type" => "employee", "updated_at" => Carbon::now()->getTimestamp()],
-            ]),
-            "attributes" => ["type" => "employee"],
-        ];
-
-        $metroMock->shouldHaveReceived("publish")->withArgs(["contact-entity-update-test", $expectedMetroMessage]);
-
-        // Test negative scenario where publishing to metro fails.
-
-        $splitzMock = \Mockery::mock(SplitzService::class);
-
-        $splitzMock->shouldReceive("evaluateRequest")->andReturn([
-            "response" => [
-                "variant" => [
-                    "name" => 'disable',
-                ]
-            ]
-        ]);
-
-        $this->app->instance('splitzService', $splitzMock);
-
-        $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
-
-        $metroMock->shouldReceive("publish")->andThrow(new \Exception("publishing failure"));
-
-        $this->app->instance('metro', $metroMock);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $data['request']['content']['type'] = 'customer';
-        $data['response']['content']['type'] = 'customer';
-
-        $this->startTest($data);
-
-        $expectedMetroMessage = [
-            "data" => json_encode([
-                "id" => "cont_1000000contact",
-                "change_set" => ["type" => "customer"],
-            ]),
-            "attributes" => ["type" => "customer"],
-        ];
-
-        $metroMock->shouldHaveReceived("publish")->withArgs(["contact-entity-update-test", $expectedMetroMessage]);
-
-        // Test negative scenario where contact type is null.
-
-        $splitzMock = \Mockery::mock(SplitzService::class);
-
-        $splitzMock->shouldReceive("evaluateRequest")->andReturn([
-            "response" => [
-                "variant" => [
-                    "name" => 'disable',
-                ]
-            ]
-        ]);
-
-        $this->app->instance('splitzService', $splitzMock);
-
-        $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
-
-        $metroMock->shouldReceive("publish")->andThrow(new \Exception("publishing failure"));
-
-        $this->app->instance('metro', $metroMock);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $data['request']['content']['type'] = null;
-        $data['response']['content']['type'] = null;
-
-        $this->startTest($data);
-
-        $expectedMetroMessage = [
-            "data" => json_encode([
-                "id" => "cont_1000000contact",
-                "change_set" => ["type" => null],
-            ]),
-            "attributes" => ["type" => ""],
-        ];
-
-        $metroMock->shouldHaveReceived("publish")->withArgs(["contact-entity-update-test", $expectedMetroMessage]);
     }
 
     public function testDeleteContact()

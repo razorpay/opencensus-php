@@ -1187,10 +1187,10 @@ return [
         ]
     ],
 
-    'testUpdateContactWithObserver' => [
+    'testUpdateContactWithTypeVendor' => [
         'request'  => [
             'content' => [
-                'type'         => 'employee',
+                'type'         => 'vendor',
                 'reference_id' => '213',
             ],
             'url'     => '/contacts/cont_1000000contact',
@@ -1200,7 +1200,7 @@ return [
             'content' => [
                 'id'           => 'cont_1000000contact',
                 'entity'       => 'contact',
-                'type'         => 'employee',
+                'type'         => 'vendor',
                 'reference_id' => '213',
             ]
         ]

@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Contact;
 
+use Throwable;
 use Carbon\Carbon;
-use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants;
 use RZP\Models\Base;
@@ -14,9 +14,10 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Traits\TrimSpace;
 use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Pagination\Entity as PaginationEntity;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
 
@@ -124,6 +125,8 @@ class Core extends Base\Core
             ]);
 
         $contact = $this->saveAppSpecificInformation($contact, $input, $merchant);
+
+        $this->PushVendorEvent($contact, Contact\Constants::CONTACT_CREATED_MESSAGE);
 
         return $contact;
     }
@@ -266,6 +269,8 @@ class Core extends Base\Core
         $this->repo->saveOrFail($contact);
 
         $this->updateAppSpecificInformation($contact, $input);
+
+        $this->PushVendorEvent($contact, Contact\Constants::CONTACT_UPDATED_MESSAGE);
 
         return $contact;
     }
@@ -849,5 +854,62 @@ class Core extends Base\Core
         }
 
         return $contacts;
+    }
+
+    /**
+     * Function Pushes the event to Kafka
+     * - Contact Create
+     * - Contact Update - for only this case change set is required by Vendor Payments service
+     * - Fund Account Create
+     * - Fund Account Update
+     */
+    public function PushVendorEvent(Entity $contact, string $eventType, FundAccountEntity $fundAccount = null): void
+    {
+        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+
+        if (($mode !== Mode::LIVE) or
+            (empty($contact->getType()) === true) or
+            ($contact->getType() !== Contact\Type::VENDOR))
+        {
+            return;
+        }
+
+        $fundAccountID = "";
+        if ($fundAccount !== null)
+        {
+            $fundAccountID = $fundAccount->getPublicId();
+        }
+
+        $data = array(
+            Entity::ID              => $contact->getPublicId(),
+            Entity::FUND_ACCOUNT_ID => $fundAccountID,
+            Entity::MERCHANT_ID     => $contact->getMerchantId(),
+        );
+
+        if ($eventType === Contact\Constants::CONTACT_UPDATED_MESSAGE)
+        {
+            $data[Contact\Constants::CHANGE_SET] = $contact->getChanges();
+        }
+
+        $message = [
+            'event_type' => $eventType,
+            'data'       => $data,
+        ];
+
+        try
+        {
+            app('kafkaProducerClient')->produce(Contact\Constants::CONTACT_ENTITY_UPDATE_TOPIC . '-' . $mode, stringify($message));
+
+            $this->trace->info(TraceCode::CONTACT_UPDATED_KAFKA_MESSAGE_PUBLISHED);
+        }
+        catch (Throwable $exception)
+        {
+            $this->trace->count(Metric::CONTACT_UPDATED_TRIGGER_FAILURE);
+
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::CONTACT_UPDATED_MESSAGE_FAILED);
+        }
     }
 }

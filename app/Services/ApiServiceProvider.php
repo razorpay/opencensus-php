@@ -150,11 +150,6 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $entityObserverClass = E::getEntityObserverClass(E::PAYMENT);
         $entityClass::observe($entityObserverClass);
 
-        // attaching contact observer
-        $entityClass = E::getEntityClass(E::CONTACT);
-        $entityObserverClass = E::getEntityObserverClass(E::CONTACT);
-        $entityClass::observe($entityObserverClass);
-
         // attaching merchant observer
         $entityClass = E::getEntityClass(E::MERCHANT);
         $entityClass::observe(RZP\Models\Base\MerchantObserver::class);

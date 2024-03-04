@@ -58,6 +58,8 @@ class Core extends Base\Core
         "/[^a-zA-Z0-9-&\'._()\/]+/";
 
     const DEFAULT_COUNTRY_CODE = '+91';
+    const FUND_ACCOUNT_CREATED_MESSAGE = "FUND_ACCOUNT_CREATED";
+    const FUND_ACCOUNT_UPDATED_MESSAGE = "FUND_ACCOUNT_UPDATED";
 
     protected $vendorPaymentService;
 
@@ -213,6 +215,12 @@ class Core extends Base\Core
         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
         DetailsPropagator::dispatchToQueue($mode, $fundAccount->getPublicId());
+
+        if ((empty($source) === false) and
+            ($source->getEntityName() === Entity::CONTACT))
+        {
+            (new Contact\Core)->PushVendorEvent($source, self::FUND_ACCOUNT_CREATED_MESSAGE, $fundAccount);
+        }
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATED,
             [
@@ -724,6 +732,13 @@ class Core extends Base\Core
         $fundAccount->edit($input);
 
         $this->repo->saveOrFail($fundAccount);
+
+        $source = $fundAccount->source();
+        if (($fundAccount->getSourceType() === Contact\Entity::CONTACT) and
+            ($source instanceof Contact\Entity))
+        {
+            (new Contact\Core)->PushVendorEvent($source, self::FUND_ACCOUNT_UPDATED_MESSAGE, $fundAccount);
+        }
 
         return $fundAccount;
     }
