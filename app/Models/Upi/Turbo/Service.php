@@ -64,6 +64,8 @@ class Service extends Base\Service
                                 'input' => $input
                            ]);
 
-        return [];
+        return [
+            "success" => true
+        ];
     }
 }

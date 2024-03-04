@@ -72,7 +72,7 @@ class TurboUpiTest extends TestCase
 
         $this->assertEquals(201, $response->getStatusCode());
 
-        $this->assertEquals([], json_decode($response->getContent()));
+        $this->assertEquals(true, $response["success"]);
     }
 
     protected function setErrorMappingConfigInRedis()
