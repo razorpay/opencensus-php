@@ -946,7 +946,14 @@ class GatewayController extends Controller
 
         $paymentId = $this->preProcessStaticCallback($method, $gateway, $input, $mode);
 
-        $payment = $this->repo->payment->findOrFail($paymentId);
+        if($mode === Mode::TEST)
+        {
+            $payment = $this->repo->payment->connection(Mode::TEST)->findOrFail($paymentId);
+        }
+        else
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+        }
 
         $mode = $this->app['rzp.mode'];
 
