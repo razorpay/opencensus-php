@@ -47,6 +47,14 @@ class Role
     const CHECKER_L2 = 'checker_l2';
     const CHECKER_L3 = 'checker_l3';
 
+    // Billing  Roles
+    const MARKETING             = 'marketing';
+    const CUSTOMER_SERVICE      = 'customer_service';
+    const STORE_MANAGER         = 'store_manager';
+    const SECURITY              = 'security';
+    const CASHIER               = 'cashier';
+    const IT                    = 'it';
+
     const ALL_ROLES = [
         self::MANAGER,
         self::OPERATIONS,
@@ -107,7 +115,16 @@ class Role
 
     const BILLING_ROLES = [
         self::OWNER,
-        self::ADMIN
+        self::ADMIN,
+        self::CUSTOMER_SERVICE,
+        self::OPERATIONS,
+        self::STORE_MANAGER,
+        self::SECURITY,
+        self::CASHIER,
+        self::FINANCE,
+        self::MARKETING,
+        self::MANAGER,
+        self::IT
     ];
 
     const RBL_ROLES = [
