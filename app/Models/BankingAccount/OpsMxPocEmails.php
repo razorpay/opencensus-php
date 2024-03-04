@@ -19,7 +19,8 @@ class OpsMxPocEmails
         'harshita.nandini@ie.razorpay.com',
         'deepa.m@ie.razorpay.com',
         'samanvi.suvarna@ie.razorpay.com',
-        'daniel.gilbert@ie.razorpay.com'
+        'daniel.gilbert@ie.razorpay.com',
+        'rasheed.abrar@ie.razorpay.com'
     ];
 
     public function checkIfEmailInMxPocEmailsList(string $email): bool
