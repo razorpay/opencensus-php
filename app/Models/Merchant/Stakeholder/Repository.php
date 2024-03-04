@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Stakeholder;
 
 use RZP\Models\Base;
+use RZP\Base\ConnectionType;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
@@ -89,7 +90,9 @@ class Repository extends Base\Repository
 
     public function fetchEsignCompletedMerchants(array $merchantIdList)
     {
-        return $this->newQuery()
+        //NOTE: This change is being done for ASV Decomposition (#platform_account_service)
+        //Changing the connection to TiDB as a fallback as no usage was found for this in the past 90 days.
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->where(Entity::AADHAAR_ESIGN_STATUS, '=', 'verified')
             ->get()

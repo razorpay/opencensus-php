@@ -2198,7 +2198,9 @@ class Repository extends Base\Repository
 
     public function fetchPartnerIdsInBatches($merchantIds = null, $limit = null, $afterId = null)
     {
-        $query = $this->newQuery()
+        //NOTE: This change is being done for ASV Decomposition (#platform_account_service)
+        //Changing the connection to TiDB as a fallback as no usage was found for this in the past 90 days.
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                       ->select(Entity::ID)
                       ->whereNotNull(Entity::PARTNER_TYPE)
                       ->orderBy(Entity::ID);;

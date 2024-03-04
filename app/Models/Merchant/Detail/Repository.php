@@ -314,7 +314,10 @@ class Repository extends Base\Repository
                 // Dynamically generate the queries that have to be run for each product
                 // All such queries will then be UNIONed to run just one single query.
                 //
-                $unionQueryElement = $this->newQueryWithConnection(Mode::LIVE)
+
+                //NOTE: This change is being done for ASV Decomposition (#platform_account_service)
+                //Changing the connection to TiDB as a fallback as no usage was found for this in the past 90 days.
+                $unionQueryElement = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                                           ->select(
                                               Entity::MERCHANT_ID,
                                               DB::raw("'" . $product . "' as product"),

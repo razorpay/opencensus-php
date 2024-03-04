@@ -236,7 +236,9 @@ class Repository extends Base\Repository
 
     public function filterMerchantIdsWithUploadedDocuments(array $merchantIdList, string $documentType)
     {
-        return $this->newQuery()
+        //NOTE: This change is being done for ASV Decomposition (#platform_account_service)
+        //Changing the connection to TiDB as a fallback as no usage was found for this in the past 90 days.
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->where(Entity::DOCUMENT_TYPE, $documentType)
             ->get()
