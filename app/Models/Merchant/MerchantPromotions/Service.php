@@ -689,6 +689,12 @@ class Service extends Base\Service
 
     public function routeRequestForCouponDecomp(string $platform): bool
     {
+        // Magento is directly written in MCS so we must manage test and live mode in MCS.
+        if ($platform === Constants::MAGENTO)
+        {
+            return true;
+        }
+
         if ((app()->isEnvironmentProduction() === true && $this->mode === Mode::TEST))
         {
             return false;
@@ -708,6 +714,12 @@ class Service extends Base\Service
 
     public function routeRequestForRemoveCouponDecomp(string $platform): bool
     {
+        // Magento is directly written in MCS so we must manage test and live mode in MCS.
+        if ($platform === Constants::MAGENTO)
+        {
+            return true;
+        }
+
         if ((app()->isEnvironmentProduction() === true && $this->mode === Mode::TEST))
         {
             return false;
