@@ -3,10 +3,12 @@
 namespace RZP\Services;
 
 use App;
+use Request;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Http\RequestHeader;
 use RZP\Models\Offer\Constants;
 use RZP\Models\Offer\Metric;
 use RZP\Trace\TraceCode;
@@ -147,6 +149,10 @@ class OffersEngine
         $headers['X-User-Type'] = 'advertiser';
 
         $headers['X-Api-Decomp'] = 'shadow';
+
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
 
         $this->headers = $headers;
     }

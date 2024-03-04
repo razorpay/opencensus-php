@@ -421,14 +421,20 @@ class OffersEngine extends Base\Core
         {
             if (isset($subscriptionInput[SubscriptionOfferEntity::REDEMPTION_TYPE]))
             {
-                // mandatory input for subscription offer
-                array_push($discoverConditionWhenArray, 'Subscription.RedemptionType == ' .
-                    Constants::SUBSCRIPTION_TYPE_VALUE_TO_ENUM_MAP[$subscriptionInput[SubscriptionOfferEntity::REDEMPTION_TYPE]]);
-
-                if ($subscriptionInput[SubscriptionOfferEntity::REDEMPTION_TYPE] === Constants::SUBSCRIPTION_TYPE_CYCLE)
-                {
-                    array_push($discoverConditionWhenArray, 'Subscription.NoOfCycles == ' . $subscriptionInput[SubscriptionOfferEntity::NO_OF_CYCLES]);
+                $cycle = 0;
+                switch ($subscriptionInput[SubscriptionOfferEntity::REDEMPTION_TYPE]){
+                    case 'forever':
+                        $cycle = PHP_INT_MAX;
+                        break;
+                    case 'single':
+                        $cycle = 1;
+                        break;
+                    case 'cycle':
+                        $cycle = $subscriptionInput[SubscriptionOfferEntity::NO_OF_CYCLES];
+                        break;
                 }
+                array_push($discoverConditionWhenArray, 'Subscription.NoOfCycles <= ' . $cycle);
+                array_push($discoverConditionWhenArray, 'Subscription.NoOfCycles > 0');
             }
 
         }
@@ -873,7 +879,19 @@ class OffersEngine extends Base\Core
                         Constants::SUBSCRIPTION_TYPE_ENUM_TO_VALUE_MAP[$value];
                     break;
                 case 'Subscription.NoOfCycles':
-                    $subscriptionFields[SubscriptionOfferEntity::NO_OF_CYCLES] = $value;
+                    if ($operator === '>')
+                    {
+                     break;
+                    }
+                    $int = (int)$value;
+                    if ($int === 1){
+                        $subscriptionFields[SubscriptionOfferEntity::REDEMPTION_TYPE] = 'single';
+                    }elseif ($int === PHP_INT_MAX){
+                        $subscriptionFields[SubscriptionOfferEntity::REDEMPTION_TYPE] = 'forever';
+                    }else{
+                        $subscriptionFields[SubscriptionOfferEntity::REDEMPTION_TYPE] = 'cycle';
+                        $subscriptionFields[SubscriptionOfferEntity::NO_OF_CYCLES] = $value;
+                    }
                     break;
             }
         }
