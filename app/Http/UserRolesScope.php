@@ -824,7 +824,7 @@ class UserRolesScope
             'merchant_logs_fetch'                                  => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
             'merchant_activation_business_details'                 => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_company_search'                   => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
-            'merchant_activation_needs_clarification'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_activation_needs_clarification'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
             'merchant_activation_status_partner'                   => [Role::OWNER, Role::ADMIN],
             'merchant_activation_update_partner'                   => [Role::OWNER, Role::ADMIN],
             'merchant_activation_update_website'                   => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
