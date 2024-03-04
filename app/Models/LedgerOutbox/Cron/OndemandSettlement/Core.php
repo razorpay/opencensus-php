@@ -5,6 +5,7 @@ namespace RZP\Models\LedgerOutbox\Cron\OndemandSettlement;
 use App;
 use Exception;
 use Carbon\Carbon;
+use RZP\Models\Feature;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Metric;
@@ -128,7 +129,7 @@ class Core extends Base\Core
 
                     if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
                     {
-                        $this->updateRetryCountAndSoftDelete($entry, $retries);
+                        $ledgerOutboxCore->updateRetryCountAndSoftDelete($entry, $retries);
 
                         $successful++;
 
@@ -136,7 +137,7 @@ class Core extends Base\Core
 
                          if( in_array($transactorEvent, Constants::SETLLEMENT_ONDEMAND_EVENTS, true))
                         {
-                            $this->handleOndemandSettlementEventsOnFailure($transactorEvent, $transactorId);
+                            $ledgerOutboxCore->handleOndemandSettlementEventsOnFailure($transactorEvent, $transactorId);
                         }
                         continue;
                     }
