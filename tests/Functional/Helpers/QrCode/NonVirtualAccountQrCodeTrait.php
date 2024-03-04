@@ -530,7 +530,7 @@ trait NonVirtualAccountQrCodeTrait
         $merchantTranId = $request['content']['merchantTranId'];
 
         $this->assertEquals($rrn, $upi['npci_reference_id']);
-        $this->assertEquals($merchantTranId, $upi['merchant_reference']);
+        $this->assertEquals($merchantTranId , $upi['merchant_reference']);
         $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
         $this->assertEquals(null, $qrPaymentRequest['failure_reason']);
         $this->assertEquals('upi', $payment['method']);

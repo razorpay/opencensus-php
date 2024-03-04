@@ -839,8 +839,6 @@ class Gateway extends Base\Gateway
             unset($input['data']['_raw']);
         }
 
-        $input['data']['upi'][ResponseFields::MERCHANT_REFERENCE] =$this->upiPaymentIdFromServerCallback($input);
-
         return [
             'callback_data' => $input,
             'qr_data'       => $qrData
@@ -2334,7 +2332,7 @@ class Gateway extends Base\Gateway
             $attrs = [
                 Entity::TYPE                    => Base\Type::PAY,
                 Entity::RECEIVED                => true,
-                Entity::MERCHANT_REFERENCE      => $input['payment']['receiver_id'],
+                Entity::MERCHANT_REFERENCE      => $inputFields['upi'][ResponseFields::MERCHANT_REFERENCE],
                 Entity::VPA                     => $inputFields['upi']['vpa'],
                 ResponseFields::UPI_TXN_ID      => $inputFields['upi']['gateway_payment_id'],
                 ResponseFields::NPCI_UPI_TXN_ID => $inputFields['upi'][ResponseFields::NPCI_REFERENCE_ID],

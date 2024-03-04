@@ -446,12 +446,12 @@ class UpiMindgateQRCodeTest extends TestCase
 
         if ($qrCodeEntity['usage'] === 'single_use')
         {
-            $this->assertEquals($upi['merchant_reference'] . 'qrv2', $intentParam['tr']);
+            $this->assertEquals($upi['merchant_reference'] , $intentParam['tr']);
             $this->assertEquals('closed', $qrCodeEntity['status']);
         }
         else
         {
-            $this->assertEquals(QrCode\Constants::QR_CODE_V2_HDFC_PREFIX . $upi['merchant_reference'] . 'qrv2', $intentParam['tr']);
+            $this->assertEquals($upi['merchant_reference'] , $intentParam['tr'] . '!' . $upi['gateway_payment_id']);
             $this->assertEquals('active', $qrCodeEntity['status']);
         }
 

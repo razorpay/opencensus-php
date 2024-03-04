@@ -349,7 +349,8 @@ class Service extends Base\Service
                 return $gatewayResponse['callback_data']['data']['upi'][YesBankFields::MERCHANT_REFERENCE];
 
             case Gateway::UPI_MINDGATE:
-                return $gatewayResponse['callback_data']['data']['upi'][\RZP\Gateway\Upi\Mindgate\ResponseFields::MERCHANT_REFERENCE];
+                $gateway = $this->app['gateway']->gateway($gatewayResponse['qr_data']['gateway']);
+                return $gateway->upiPaymentIdFromServerCallback($gatewayResponse['callback_data']);
 
             case Gateway::UPI_KOTAK:
             case Gateway::UPI_AIRTEL:

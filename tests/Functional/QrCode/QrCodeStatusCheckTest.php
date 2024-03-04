@@ -1510,7 +1510,7 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->assertEquals($qrPayment['payment_id'], $payment['id']);
         $this->assertEquals(substr($qrCodeId, strlen('qr_')), $qrPayment['merchant_reference']);
-        $this->assertEquals(substr($qrCodeId, strlen('qr_')), $upi['merchant_reference']);
+        $this->assertEquals(substr($qrCodeId, strlen('qr_')) . 'qrv2', $upi['merchant_reference']);
 
         Queue::fake();
 
@@ -1776,7 +1776,7 @@ class QrCodeStatusCheckTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
 
         $requestData['content']['BankRRN'] = '326414338959';
-        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_') . 'qrv2';
 
         $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
             if ($action === 'verify')
@@ -1837,7 +1837,7 @@ class QrCodeStatusCheckTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
 
         $requestData['content']['BankRRN'] = 'NA';
-        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_') . 'qrv2';
 
         $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
             if ($action === 'verify')
@@ -1899,7 +1899,7 @@ class QrCodeStatusCheckTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
 
         $requestData['content']['BankRRN'] = 'NA';
-        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_') . 'qrv2';
 
         $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
             if ($action === 'verify')
@@ -1960,7 +1960,7 @@ class QrCodeStatusCheckTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
 
         $requestData['content']['BankRRN'] = 'NA';
-        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_') . 'qrv2';
 
         $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
             if ($action === 'verify')
@@ -2017,7 +2017,7 @@ class QrCodeStatusCheckTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
 
         $requestData['content']['BankRRN'] = '326414338959';
-        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_') . 'qrv2';
 
         $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
             if ($action === 'verify')
