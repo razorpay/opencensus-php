@@ -922,6 +922,8 @@ class Service extends Base\Service
                         {
                             $data[Payment\Entity::GATEWAY_TXN_ID] = $payment->getGatewayTxnId();
                         }
+
+                        $data[RefundConstants::SOURCE_CHANNEL] = $payment->getSourceChannel();
                     }
 
                     $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT][RefundConstants::DATA] = $data;

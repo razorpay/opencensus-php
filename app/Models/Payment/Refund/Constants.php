@@ -245,6 +245,7 @@ class Constants
     const GATEWAY_RZP_INTERNAL     = 'rzp_internal';
 
     const REFUND_DATA               = "refund_data";
+    const SOURCE_CHANNEL    = 'source_channel';
 
 
     // to revert payment attributes on transaction create failure
