@@ -770,6 +770,8 @@ return array(
 
     'pp_brand_color_hex' => env('PP_BRAND_COLOR_HEX'),
 
+    'route_linked_account_2fa_exp_id' => env('ROUTE_LINKED_ACCOUNT_2FA_EXP_ID'),
+
     'transaction_isolation_fallback_query_experiment_id' => env('TRANSACTION_ISOLATION_FALLBACK_QUERY_EXP_ID'),
 
     'es_search_on_created_at_then_on_score_experiment_id' => env('ES_SEARCH_ON_CREATED_AT_THEN_ON_SCORE_EXPERIMENT_ID'),
@@ -835,5 +837,4 @@ return array(
     'submerchant_prefill_login_exp_id' => env('SUBMERCHANT_PREFILL_LOGIN_EXP_ID'),
 
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID')
-
 );

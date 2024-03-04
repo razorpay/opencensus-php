@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 
 return [
 
@@ -147,6 +148,77 @@ return [
             'content' => [
                 'type'  => 'linked_account_create',
                 'name'  => 'LA batch',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'batch',
+                'type'          => 'linked_account_create',
+                'name'          => 'LA batch',
+                'status'        => 'created',
+                'total_count'   => 2,
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountCreateBatchWithMissingOtpAnd2faEnabled' => [
+        'request' => [
+            'url' => '/batches',
+            'method' => 'post',
+            'content' => [
+                'type'  => 'linked_account_create',
+                'name'  => 'LA batch',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The otp field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateLinkedAccountCreateBatchWithInvalidOtpAnd2faEnabled' => [
+        'request' => [
+            'url' => '/batches',
+            'method' => 'post',
+            'content' => [
+                'type'  => 'linked_account_create',
+                'name'  => 'LA batch',
+                'otp'   => '355331'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Verification failed because of incorrect OTP.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
+    'testCreateLinkedAccountCreateBatchWithCorrectOtpAnd2faEnabled' => [
+        'request' => [
+            'url' => '/batches',
+            'method' => 'post',
+            'content' => [
+                'type'  => 'linked_account_create',
+                'name'  => 'LA batch',
+                'otp'   => '123456',
+                'token' => 'tokenabc123'
             ],
         ],
         'response' => [

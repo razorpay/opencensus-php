@@ -629,6 +629,30 @@ class Service extends Base\Service
                 }
             }
 
+            if (($isLinkedAccount === true) and ($this->auth->isProxyAuth() === true))
+            {
+                $properties = [
+                    'id'                   => $merchant->getId(),
+                    'experiment_id'        => $this->app['config']->get('app.route_linked_account_2fa_exp_id'),
+                ];
+
+                $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'variant_on');
+
+                if ($isExpEnabled === true)
+                {
+                    (new Validator())->setStrictFalse()->validateInput(Validator::LINKED_ACCOUNT_CREATE_OTP, $input);
+
+                    $userCore = new User\Core;
+
+                    $userCore->verifyOtp($input,
+                        $this->merchant,
+                        $this->user,
+                        ($this->mode === Mode::TEST));
+
+                    $input = array_except($input, ['otp', 'token', 'action']);
+                }
+            }
+
             $merchantAlreadyExist = false;
 
             $allowInviteExistingCapitalMerchant = $this->isInviteExistingMerchantForLocEnabled();

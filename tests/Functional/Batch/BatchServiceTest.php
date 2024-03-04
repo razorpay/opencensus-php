@@ -2,12 +2,16 @@
 
 namespace RZP\Tests\Functional\Batch;
 
+use Mockery;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Models\Batch\Header;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
+use RZP\Exception\BadRequestException;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 
 class BatchServiceTest extends TestCase
@@ -34,6 +38,40 @@ class BatchServiceTest extends TestCase
         $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
     }
 
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->byDefault()
+            ->andReturn($output);
+    }
+
+    public function mockRavenVerifyOtp($otp, $expectedContext, $receiver = null, $source = 'api')
+    {
+        $ravenMock = Mockery::mock(\RZP\Services\Raven::class, [$this->app])->makePartial();
+
+        $ravenMock->shouldReceive('verifyOtp')
+            ->andReturnUsing(function (array $request) use ($otp, $expectedContext, $receiver, $source) {
+                try {
+                    self::assertEquals($request['receiver'], $receiver);
+                    self::assertEquals($request['context'], $expectedContext);
+                    self::assertEquals($request['source'], $source);
+                    self::assertEquals($request['otp'], $otp);
+                } catch (\Exception $e) {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+                }
+
+                return [
+                    'success' => true
+                ];
+            })->times(1);
+
+        $this->app->instance('raven', $ravenMock);
+    }
 
     public function testBatchServiceIsDown()
     {
@@ -121,6 +159,87 @@ class BatchServiceTest extends TestCase
 
     public function testCreateLinkedAccountCreateBatch()
     {
+        $entries = $this->getFileEntriesForLinkedAccountCreateBatch();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateLinkedAccountCreateBatchWithMissingOtpAnd2faEnabled()
+    {
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $entries = $this->getFileEntriesForLinkedAccountCreateBatch();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateLinkedAccountCreateBatchWithInvalidOtpAnd2faEnabled()
+    {
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $entries = $this->getFileEntriesForLinkedAccountCreateBatch();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateLinkedAccountCreateBatchWithCorrectOtpAnd2faEnabled()
+    {
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $user = $this->getDbLastEntity('user');
+
+        $this->fixtures->edit(
+            'user',
+            $user->getId(),
+            [
+                UserEntity::CONTACT_MOBILE => '123456789',
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            ]);
+
+        $expectedContext = sprintf('%s:%s::%s',
+            10000000000000,
+            $user->getId(),
+            'tokenabc123',
+        );
+
+        $this->mockRavenVerifyOtp('123456', $expectedContext, '123456789');
+
         $entries = $this->getFileEntriesForLinkedAccountCreateBatch();
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);

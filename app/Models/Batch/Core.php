@@ -52,7 +52,7 @@ class Core extends Base\Core
 
         $this->validatePermissionForBatchType($input);
 
-        (new Validator)->validateLinkedAccountBatchActionAllowed($input, $merchant);
+        (new Validator)->validateLinkedAccountBatchActionAllowed($input, $merchant, true);
 
         $batch = (new Entity)->build($input);
 

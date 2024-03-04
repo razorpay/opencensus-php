@@ -111,6 +111,8 @@ class Validator extends Base\Validator
 
     const ADMIN_BATCH = 'worker:batch';
 
+    const LINKED_ACCOUNT_CREATE_OTP = 'linked_account_create_otp';
+
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
         'jpg'   => 'image/jpeg',
@@ -255,6 +257,10 @@ class Validator extends Base\Validator
                                                 'not_regex:"(https?:\/\/)*(w{3}\.)*[a-zA-Z0-9]+(\.)(com|in|net|co\.in|org|us|info|co)+(\ |\/|$|\n)"',
                                                 'not_regex:"(<!doctype>|<!--|<.*>|&[a-z0-9]+;)+"'
                                             ]
+    ];
+
+    protected static $linkedAccountCreateOtpRules = [
+        User\Entity::OTP    =>   'required|min:6|max:6|string|regex:(^[0-9]{6}$)'
     ];
 
     protected static $editConfigRules = [

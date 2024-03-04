@@ -9504,6 +9504,81 @@ return [
         ],
     ],
 
+    'testCreateSubmerchantWithMissingOtpFor2fa' => [
+        'request'   => [
+            'url'     => '/submerchants',
+            'method'  => 'post',
+            'content' => [
+                'name'    => 'Linked Account 1',
+                'code'    => 'la',
+                'account' => true,
+                'email'   => 'linked1@account.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The otp field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubmerchantWithIncorrectOtpFor2fa' => [
+        'request'   => [
+            'url'     => '/submerchants',
+            'method'  => 'post',
+            'content' => [
+                'name'    => 'Linked Account 1',
+                'code'    => 'la',
+                'account' => true,
+                'email'   => 'linked1@account.com',
+                'otp'     => '123456',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Verification failed because of incorrect OTP.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
+    'testCreateSubmerchantWithCorrectOtpFor2fa' => [
+        'request'   => [
+            'url'     => '/submerchants',
+            'method'  => 'post',
+            'content' => [
+                'name'    => 'Linked Account 1',
+                'account' => true,
+                'email'   => 'linked1@account.com',
+                'otp'     => '123456',
+                'token'   => 'tokenabc123',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'      => 'Linked Account 1',
+                'email'     => 'linked1@account.com',
+                'entity'    => 'merchant',
+                'activated' => false,
+            ],
+        ],
+    ],
+
     'testOrgLevelFeatureAccess' => [
         'request'  => [],
         'response' => [

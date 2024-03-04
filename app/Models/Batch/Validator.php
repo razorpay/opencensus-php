@@ -120,6 +120,9 @@ class Validator extends Base\Validator
 
     const EDIT_TERMINAL_BATCH_ROW_RULES = 'edit_terminal_batch_row';
 
+    const LINKED_ACCOUNT_BATCH_UPLOAD = 'linked_account_batch_upload';
+
+
     protected static $validateFileNameRules = [
         'filename'      => 'required|string',
         'batch_type_id' => 'required|string|in:' . Constants::TALLY_PAYOUT_BATCH
@@ -1283,6 +1286,10 @@ class Validator extends Base\Validator
         Header::UPI_ONBOARDED_TERMINAL_EDIT_BILLING_LABEL     =>
             'sometimes|boolean|prohibited_if:' . Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY . ',' . Gateway::UPI_ICICI,
         Header::UPI_ONBOARDED_TERMINAL_EDIT_MOBILE_NUMBER     => 'sometimes|boolean',
+    ];
+
+    protected static $linkedAccountBatchUploadRules = [
+        User\Entity::OTP    =>   'required|min:6|max:6|string|regex:(^[0-9]{6}$)'
     ];
 
     protected function validateMcc($attribute, $value)
@@ -3005,7 +3012,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateLinkedAccountBatchActionAllowed($input, Merchant\Entity $merchant)
+    public function validateLinkedAccountBatchActionAllowed(& $input, Merchant\Entity $merchant, bool $validateOtp = false)
     {
         if(($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) and
             (in_array($merchant->getCategory(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY]) === true) and
@@ -3015,6 +3022,32 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_NOT_ALLOWED
             );
+        }
+
+        if(($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) and
+           (app('basicauth')->isProxyAuth() === true) and
+           ($validateOtp === true))
+        {
+            $properties = [
+                'id'                   => $merchant->getId(),
+                'experiment_id'        => app('config')->get('app.route_linked_account_2fa_exp_id'),
+            ];
+
+            $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'variant_on');
+
+            if ($isExpEnabled === true)
+            {
+                (new Validator())->setStrictFalse()->validateInput(self::LINKED_ACCOUNT_BATCH_UPLOAD, $input);
+
+                $userCore = new User\Core;
+
+                $userCore->verifyOtp($input,
+                    $merchant,
+                    app('basicauth')->getUser(),
+                    ($this->getMode() === Mode::TEST));
+
+                $input = array_except($input, ['otp', 'token', 'action']);
+            }
         }
     }
 

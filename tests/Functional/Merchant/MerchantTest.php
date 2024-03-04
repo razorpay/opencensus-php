@@ -328,7 +328,7 @@ class MerchantTest extends TestCase
             'activation_status'             => 'needs_clarification',
             'submitted_at'                  => 1539543931,
         ]);
-    
+
         $this->fixtures->create('action_state', [
             'entity_type'                   => 'merchant_detail',
             'entity_id'                     => '10000000000000',
@@ -13624,6 +13624,81 @@ Team Razorpay',
         $this->startTest();
     }
 
+    public function testCreateSubmerchantWithMissingOtpFor2fa()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateSubmerchantWithIncorrectOtpFor2fa()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateSubmerchantWithCorrectOtpFor2fa()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $user = $this->getDbLastEntity('user');
+
+        $this->fixtures->edit(
+            'user',
+            $user->getId(),
+            [
+                UserEntity::CONTACT_MOBILE => '123456789',
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            ]);
+
+        $expectedContext = sprintf('%s:%s::%s',
+            10000000000000,
+            $user->getId(),
+            'tokenabc123',
+        );
+
+        $this->mockRavenVerifyOtp($expectedContext, '123456789');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testEditMerchantCategoryShouldResetMethods()
     {
         $this->createMerchant();
@@ -14491,15 +14566,15 @@ Team Razorpay',
             'name'        => 'under_review',
             'created_at'  =>  1539543931
         ]);
-    
+
         $this->fixtures->on('test')->create('action_state', [
           'entity_type'                   => 'merchant_detail',
           'entity_id'                     => '10000000000000',
           'name'                          => 'approved',
           'updated_at'                    => 1639543931,
         ]);
-        
-        
+
+
         foreach ($testCases as $testCase)
         {
             $this->testData[__FUNCTION__]['response'] = $testCase[self::RESPONSE];
