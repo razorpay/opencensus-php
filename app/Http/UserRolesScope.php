@@ -1333,9 +1333,11 @@ class UserRolesScope
             '1cc_download_allowlist'                              => [Role::OWNER,Role::ADMIN],
             '1cc_clear_allowlist'                                 => [Role::OWNER,Role::ADMIN],
             // 1cc shipping engine
+            '1cc_shipping_get_zone_download'                      => [Role::OWNER, Role::ADMIN],
             '1cc_shipping_get_zone'                               => [Role::OWNER, Role::ADMIN],
             '1cc_shipping_create_zone'                            => [Role::OWNER, Role::ADMIN],
             '1cc_shipping_update_zone'                            => [Role::OWNER, Role::ADMIN],
+            '1cc_shipping_update_zone_v2'                         => [Role::OWNER, Role::ADMIN],
             '1cc_shipping_delete_zone'                            => [Role::OWNER, Role::ADMIN],
             '1cc_shipping_fetch_all_countries_with_zone'          => [Role::OWNER, Role::ADMIN],
             '1cc_shipping_get_item_category'                      => [Role::OWNER, Role::ADMIN],

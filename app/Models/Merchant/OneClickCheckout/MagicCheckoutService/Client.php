@@ -61,7 +61,7 @@ class Client
 
             if((isset($input[self::FILE_KEY]) === true) and (is_null($input[self::FILE_KEY]) === false))
             {
-                 return $this->sendMultiPartRequestAndParseResponse($url,$input['file'],$headers);
+                 return $this->sendMultiPartRequestAndParseResponse($url, $method, $input, $headers);
             }
 
             $headers = array_merge($headers, $this->getHeaders());
@@ -190,7 +190,7 @@ class Client
         ];
     }
 
-    protected function sendMultiPartRequestAndParseResponse($url, $input, $headers = [])
+    protected function sendMultiPartRequestAndParseResponse($url, $method, $input, $headers = [])
     {
         try
         {
@@ -201,15 +201,24 @@ class Client
                 Constants::X_Merchant_Id => $this->merchant->getId(),
             ], $headers);
 
-            $response = (new HttpClient)->request('POST', $url,
+            $multipartOption = [
                 [
-                    'multipart' => [
-                        [
-                            'name'     => 'file',
-                            'contents' => file_get_contents($input->getRealPath()),
-                            'filename' => $input->getClientOriginalName(),
-                        ],
-                    ],
+                    'name'     => 'file',
+                    'contents' => file_get_contents($input['file']->getRealPath()),
+                    'filename' => $input['file']->getClientOriginalName(),
+                ],
+            ];
+            foreach ($input['body'] as $key => $value){
+                if ($key === 'file')
+                {
+                    continue;
+                }
+                 array_push($multipartOption,["name" => $key, "contents" => $value]);
+            }
+
+            $response = (new HttpClient)->request($method, $url,
+                [
+                    'multipart' => $multipartOption,
                     self::TIMEOUT => $this->config['timeout'],
                     'headers' => $requestHeaders,
                     'http_errors' => false,
@@ -242,38 +251,4 @@ class Client
             throw $e;
         }
     }
-
-    public function makeFileDownloadRequest($path, $content, $method, $header=[])
-    {
-        $url = $this->getBaseUrl() . $path;
-
-        $data = [
-            'headers' => [
-                self::AUTHORIZATION => $this->getAuthorizationHeader(),
-                self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
-                self::X_PASSPORT_JWT_V1 => $this->auth->getPassportJwt($this->getBaseUrl()),
-                Constants::X_Merchant_Id => $this->merchant->getId(),
-            ],
-        ];
-        if ($method !== 'GET')
-        {
-            $data['body'] = $content;
-        }
-
-        if ($method !== "GET" and $method !== "DELETE")
-        {
-            if (empty($content) === true)
-            {
-                $content = json_encode([], JSON_FORCE_OBJECT);
-            }
-            else
-            {
-                $content = json_encode($content);
-            }
-        }
-        $response =  (new HttpClient)->request($method,$url,$data);
-
-       return $response;
-    }
-
 }

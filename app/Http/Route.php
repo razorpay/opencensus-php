@@ -4675,13 +4675,15 @@ class Route
         // cod engine allowlist pincode
         '1cc_create_allowlist'                            =>['post',      '1cc/shipping/cod/allowlist',                          'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_list_allowlist'                              =>['get',       '1cc/shipping/cod/allowlist',                          'OneClickCheckoutController@handleMerchantDashboardReq'],
-        '1cc_download_allowlist'                          =>['get',       '1cc/shipping/cod/allowlist/download',                 'OneClickCheckoutController@handleMerchantDashboardFileDownloadReq'],
+        '1cc_download_allowlist'                          =>['get',       '1cc/shipping/cod/allowlist/download',                 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_clear_allowlist'                             =>['delete',    '1cc/shipping/cod/allowlist',                          'OneClickCheckoutController@handleMerchantDashboardReq'],
 
         // 1cc shipping engine related routes
+        '1cc_shipping_get_zone_download'                =>['get',       '1cc/shipping/zones/{zone_id}/download',          'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_shipping_get_zone'                         =>['get',       '1cc/shipping/zones/{zone_id}',                   'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_shipping_create_zone'                      =>['post',      '1cc/shipping/zones',                              'OneClickCheckoutController@handleMerchantDashboardReq'],
-        '1cc_shipping_update_zone'                      =>['put',       '1cc/shipping/zones/{zone_id}',                              'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_shipping_update_zone'                      =>['put',       '1cc/shipping/zones/{zone_id}',                    'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_shipping_update_zone_v2'                   =>['post',      '1cc/shipping/zones/{zone_id}',                    'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_shipping_delete_zone'                      =>['delete',    '1cc/shipping/zones/{zone_id}',                    'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_shipping_fetch_all_countries_with_zone'    =>['get',       '1cc/shipping/countries',                         'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_shipping_get_item_category'                =>['get',       '1cc/shipping/item/category/{item_category_id}',  'OneClickCheckoutController@handleMerchantDashboardReq'],
@@ -7643,8 +7645,10 @@ class Route
         '1cc_clear_allowlist',
 
         '1cc_shipping_get_zone',
+        '1cc_shipping_get_zone_download',
         '1cc_shipping_create_zone',
         '1cc_shipping_update_zone',
+        '1cc_shipping_update_zone_v2',
         '1cc_shipping_delete_zone',
         '1cc_shipping_fetch_all_countries_with_zone',
         '1cc_shipping_get_item_category',
@@ -13208,8 +13212,10 @@ class Route
             '1cc_clear_allowlist',
 
             '1cc_shipping_get_zone',
+            '1cc_shipping_get_zone_download',
             '1cc_shipping_create_zone',
             '1cc_shipping_update_zone',
+            '1cc_shipping_update_zone_v2',
             '1cc_shipping_delete_zone',
             '1cc_shipping_fetch_all_countries_with_zone',
             '1cc_shipping_get_item_category',
@@ -15859,8 +15865,10 @@ class Route
 
             // Magic Checkout shipping engine.
             '1cc_shipping_get_zone',
+            '1cc_shipping_get_zone_download',
             '1cc_shipping_create_zone',
             '1cc_shipping_update_zone',
+            '1cc_shipping_update_zone_v2',
             '1cc_shipping_delete_zone',
             '1cc_shipping_fetch_all_countries_with_zone',
             '1cc_shipping_get_item_category',
