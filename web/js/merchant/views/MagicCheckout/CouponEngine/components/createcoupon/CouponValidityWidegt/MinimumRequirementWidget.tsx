@@ -1,5 +1,4 @@
 import React, { useContext, ChangeEvent } from 'react';
-import { useSplitzService } from 'common/splitz';
 
 // ui imports
 import Input from 'common/new-ui/Input';
@@ -8,13 +7,11 @@ import {
   MinimumQuantityWrapper,
   InputIcon,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
-
 // context imports
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
-
 //helpers
-import { onWheelPreventChange } from 'merchant/views/MagicCheckout/helper';
 import { getMinReqWidgetOptions } from 'merchant/views/MagicCheckout/CouponEngine/helpers';
+import { onWheelPreventChange } from 'merchant/views/MagicCheckout/helper';
 
 interface MinimumRequirementWidgetProps {
   couponName: string;
@@ -23,8 +20,6 @@ interface MinimumRequirementWidgetProps {
 const MinimumRequirementWidget: React.FC<MinimumRequirementWidgetProps> = ({ couponName }) => {
   const stateObject = couponName === 'buyx_gety' ? 'productsPurchased' : 'discountDetails';
   const { widgetsData, setWidgetsData } = useContext(ModalContext);
-  const { abExperiments } = useSplitzService();
-  const shouldShowCheckoutV2Changes = abExperiments?.checkout_v2?.variables?.result === 'on';
 
   return (
     <FormGroup>
@@ -34,7 +29,7 @@ const MinimumRequirementWidget: React.FC<MinimumRequirementWidgetProps> = ({ cou
           <Input.Select
             key={widgetsData[stateObject].minimumType}
             name={`${couponName}-selectbox`}
-            options={getMinReqWidgetOptions(couponName, shouldShowCheckoutV2Changes)}
+            options={getMinReqWidgetOptions(couponName)}
             defaultValue={widgetsData[stateObject].minimumType}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => {
               setWidgetsData({

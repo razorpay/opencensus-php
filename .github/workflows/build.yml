@@ -66,8 +66,8 @@ jobs:
   build-web:
     name: Build Dashboard
     runs-on: [non-api-premium]
-    needs: [evaluate]
-    if: contains(needs.evaluate.outputs.affected, 'web')
+    # needs: [evaluate]
+    # if: contains(needs.evaluate.outputs.affected, 'web')
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3

@@ -1,5 +1,12 @@
 /* eslint-disable react/no-unsafe */
+import React, { Component } from 'react';
+import { Ray } from '@razorpay/frontend-care';
+import { connect } from 'react-redux';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
+import { withRouter } from 'common/deprecated/withRouter';
+import { withI18Service } from 'common/i18';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import OffersForYou from 'common/ui/OffersForYou';
@@ -21,18 +28,13 @@ import { toggleMobileMenu } from 'merchant/reducers/app';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
-import rTracking from 'react-tracking';
-import { compose } from 'redux';
+
 import AppSwitcher from './AppSwitcher';
 import NavFragment from './NavFragment';
 import ProfileDropdown from './ProfileDropdown';
 import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
-import { withI18Service } from 'common/i18';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -292,6 +294,9 @@ class HeaderNav extends Component {
                     <AppSwitcher analytics={analytics} {...commonProps} />
                   </li>
                 </ShowWhen>
+                <li style={{ marginTop: '14px' }}>
+                  <Ray user={user} />
+                </li>
                 <li id="profile-dropdown">
                   <ProfileDropdown
                     analytics={analytics}

@@ -573,8 +573,11 @@ class Service extends Base\Service
 
     public function post2faOtp(array $input)
     {
-        $request = new \App\Admin\ApiRequestAny();
-
+        // This API works properly only in live mode, in live mode we used to send the otp request.
+        $request = new \App\Admin\ApiRequestAny([
+          'mode'      => 'live',
+        ]);
+        
         return $request->send('users/2fa', 'POST');
     }
 

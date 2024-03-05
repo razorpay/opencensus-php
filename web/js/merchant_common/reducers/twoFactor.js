@@ -1,7 +1,6 @@
 import { merge } from 'common/utils/immutable';
-import createReducer from './createReducer';
-
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
+import createReducer from './createReducer';
 
 const MARK_TWO_FACTOR_VERIFIED = 'MARK_TWO_FACTOR_VERIFIED';
 const UPDATE_TWO_FACTOR_VERIFIED = 'UPDATE_TWO_FACTOR_VERIFIED';
@@ -12,6 +11,7 @@ export const triggerTwoFactorVerificationOtp = () =>
   merchantFetch({
     url: 'users/2fa',
     method: 'POST',
+    mode: 'live',
   });
 
 export const triggerOtpOnEmail = () =>

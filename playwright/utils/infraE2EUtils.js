@@ -106,6 +106,8 @@ const getSelfPayload = ({ repoName, selfCommit, headRef }) => {
     commit_id: getCommit('web'),
     chart_values: {
       self_serve_image: getCommit('self-serve'),
+      web_requests_memory: '350Mi',
+      web_requests_cpu: '500m',
     },
   };
   return payload;

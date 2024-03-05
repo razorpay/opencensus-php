@@ -1,6 +1,7 @@
-import lazy from 'merchant/routes/LazyLoader';
 import isEmpty from 'lodash/isEmpty';
-
+// ui element imports
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import lazy from 'merchant/routes/LazyLoader';
 //helper imports
 import {
   createCartDiscountPayload,
@@ -9,7 +10,6 @@ import {
   createBulkDiscountPayload,
   createFreeShippingCouponPayload,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads';
-
 // constant imports
 import {
   AVAILABLE_COUPON_TYPES,
@@ -18,9 +18,6 @@ import {
   COUPON_TYPES,
   MINIMUM_PURCHASE_REQUIREMENTS,
 } from 'merchant/views/MagicCheckout/CouponEngine/constants';
-
-// ui element imports
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 const CreateCouponModal = lazy(() =>
   import(
     /* webpackChunkName: 'MagicCouponEngineCreateCouponModal' */ 'merchant/views/MagicCheckout/CouponEngine/components/CreateCouponModal/CreateCouponModal'
@@ -116,12 +113,7 @@ export const createApiData = (couponName, data) => {
   }
 };
 
-export const getMinReqWidgetOptions = (couponName, v2ExperimentEnabled = false) => {
-  // todo: remove it post v2 launch
-  if (!v2ExperimentEnabled) {
-    return [{ label: 'Minimum quantity of items', name: 'min_qty' }];
-  }
-
+export const getMinReqWidgetOptions = (couponName) => {
   if (couponName === COUPON_NAMES.BUYX_GETY) {
     // in case of bxgy we dont want to show no min req
     return MINIMUM_PURCHASE_REQUIREMENTS.filter((item) => item.name !== 'no_min_qty');
