@@ -89,6 +89,7 @@ export const BANK_MAP = {
   ESFB: 'Equitas Small Finance Bank',
   DCBL: 'DCB Bank',
   STCB: 'SBM Bank India',
+  FDRL: 'Federal Bank',
 };
 
 export const WALLET_MAP = {
@@ -178,6 +179,7 @@ export const PaymentIssuersOptions = [
   { label: 'Equitas Small Finance Bank', name: 'ESFB' },
   { label: 'DCB Bank', name: 'DCBL' },
   { label: 'SBM Bank India', name: 'STCB' },
+  { label: 'Federal Bank', name: 'FDRL' },
 ];
 
 export const PaymentNetworksOptions = [
