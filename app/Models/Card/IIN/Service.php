@@ -38,17 +38,18 @@ class Service extends Base\Service
     {
         $iin = $this->repo->iin->findOrFail($id);
 
+        $this->formatEditInput($iin, $input);
+
+        $iin->edit($input);
+
+        $this->repo->saveOrFail($iin);
+
         //adding bin service update for dual write
         if ($this->shouldDualWrite() === true)
         {
             $this->updateBinServiceData($iin, $input);
         }
 
-        $this->formatEditInput($iin, $input);
-
-        $iin->edit($input);
-
-        $this->repo->saveOrFail($iin);
 
         return $iin->toArrayAdmin();
     }
@@ -830,22 +831,27 @@ class Service extends Base\Service
 
     private function formatRequest($iin, $input)
     {
+        $originalIIN = $this->repo->iin->findOrFail($iin['iin']);
         $request = [
             "iin" => $iin['iin'] ?? "",
-            "network" => $input["network"] ?? "",
-            "issuer" => $input["issuer"] ?? "",
-            "issuerName" => $input["issuer_name"] ?? "",
-            "country" => $input["country"] ?? "",
-            "type" => $input["type"] ?? "",
-            "subType" => $input["sub_type"] ?? "",
-            "messageType" => $input["message_type"] ?? "",
-            "category" => $input["category"] ?? "",
+            "network" => $input["network"] ?? $originalIIN["network"],
+            "issuer" => $input["issuer"] ?? $originalIIN["issuer"],
+            "issuerName" => $input["issuer_name"] ?? $originalIIN["issuer_name"],
+            "country" => $input["country"] ?? $originalIIN["country"],
+            "type" => $input["type"] ?? $originalIIN["type"],
+//            "productCode" => $input["type"] ?? $originalIIN["product_code"],
+            "subType" => $input["sub_type"] ?? $originalIIN["sub_type"],
+            "messageType" => $input["message_type"] ?? $originalIIN["message_type"],
+            "category" => $input["category"] ?? $originalIIN["category"],
             "iinLength" => strlen($iin['iin']),
             "trivia" => $iin['trivia'],
-            "features" => $this->getFlows($input)
+            "features" => $this->getFlows($input, $originalIIN)
         ];
 
         $mandates = [];
+        if (empty($input['mandate_hubs']) === true){
+            $input['mandate_hubs'] = $originalIIN['mandate_hubs'];
+        }
         foreach ($input['mandate_hubs'] as $key => $value) {
             if ($value === "1") {
                 $mandates[] = $key;
@@ -856,26 +862,51 @@ class Service extends Base\Service
         return $request;
     }
 
-    private function getFlows($input)
+    private function getFlows($input, $originalIIN)
     {
         $features = [];
+
+        if(empty($input['flows']) === true) {
+            $input['flows'] = $originalIIN['flows'];
+        }
 
         foreach ($input['flows'] as $key => $value) {
             if ($value === "1") {
                 $features[] = $key;
             }
         }
-        if ($input['recurring'] == '1') {
+
+        if (isset($input['recurring']) === false){
+            $input['recurring'] = $originalIIN['recurring'];
+        }
+        if (isset($input['enabled']) === false){
+            $input['enabled'] = $originalIIN['enabled'];
+        }
+        if (isset($input['emi']) === false){
+            $input['emi'] = $originalIIN['emi'];
+        }
+        if (isset($input['locked']) === false){
+            $input['locked'] = $originalIIN['locked'];
+        }
+        if ($input['recurring'] == '1' || $input['recurring']) {
             $data['recurring'] = true;
+        } else {
+            $data['recurring'] = false;
         }
-        if ($input['enabled'] == '1') {
+        if ($input['enabled'] == '1' || $input['enabled']) {
             $data['enabled'] = true;
+        } else {
+            $data['enabled'] = false;
         }
-        if ($input['emi'] == '1') {
+        if ($input['emi'] == '1' || $input['emi']) {
             $data['emi'] = true;
+        } else {
+            $data['emi'] = false;
         }
-        if ($input['locked'] == '1') {
+        if ($input['locked'] == '1' || $input['locked']) {
             $data['locked'] = true;
+        } else {
+            $data['locked'] = false;
         }
 
         $data['features'] = $features;
