@@ -1,42 +1,42 @@
-* @razorpay/merchant-dashboard
+* @razorpay/merchant-dashboard @pcprashant
 
-app/Http/Kernel.php                               @razorpay/spine-edge
-app/Http/routes.php                               @razorpay/spine-edge
-app/Http/Middleware                               @razorpay/spine-edge
-app/Http/Providers                                @razorpay/spine-edge
-app/Http/Session                                  @razorpay/spine-edge
-app/User/Service.php                              @razorpay/spine-edge
-config/admin-auth-routes.php                      @razorpay/spine-edge
-config/auth.php                                   @razorpay/spine-edge
-config/oauth.php                                  @razorpay/spine-edge
-config/oauth-5-laravel.php                        @razorpay/spine-edge
-config/passport.php                               @razorpay/spine-edge
-config/session.php                                @razorpay/spine-edge
-config/user-roles.php                             @razorpay/spine-edge
-web/js/merchant/components/Announcements          @razorpay/platform-growth-fe
-web/js/merchant/models/GrowthService              @razorpay/platform-growth-fe
-web/js/common/ui/AnnouncementBanner               @razorpay/platform-growth-fe
-web/js/common/ui/NotificationsDropdown            @razorpay/platform-growth-fe
-web/js/common/ui/OffersForYou                     @razorpay/platform-growth-fe
-web/js/common/ui/WhatsNew                         @razorpay/platform-growth-fe
-web/js/common/ui/DashboardBanner                  @razorpay/platform-growth-fe
-web/js/common/ui/GrowthServiceModal               @razorpay/platform-growth-fe
-web/js/common/ui/ExclusiveOffer                   @razorpay/platform-growth-fe
-web/js/common/ui/MultiSlider                      @razorpay/platform-growth-fe
-web/js/merchant/Reports                           @joel-jaimon @TanroopSing @asp48
-web/js/merchant/ReportsAsync                      @joel-jaimon @TanroopSing @asp48
-web/js/merchant/reducers/reports                  @joel-jaimon @TanroopSing @asp48
-web/js/merchant/reducers/reports.js               @joel-jaimon @TanroopSing @asp48
-web/js/merchant/models/Reports                    @joel-jaimon @TanroopSing @asp48
-web/js/merchant/PartnerDashboard/Reports          @joel-jaimon @TanroopSing @asp48
-web/js/merchantLA/containers/Reports              @joel-jaimon @TanroopSing @asp48
-web/js/merchant_common/views/Reports              @joel-jaimon @TanroopSing @asp48
-web/js/merchant_common/containers/ReportsAsync    @joel-jaimon @TanroopSing @asp48
-web/js/merchant/views/PartnerDashboard            @razorpay/partnerships-fe @razorpay/merchant-dashboard
-web/js/merchant/views/Settings/PaymentMethods     @amitabh-blade @NarasimhaSwamy
-web/js/merchant/views/Transactions/v1/SuccessRate @amitabh-blade @akash-sachan @NarasimhaSwamy
-web/js/merchant/views/Navigator                   @parth-p-ui @prem-io
-web/js/merchant/views/Optimizer                   @parth-p-ui @prem-io
-config/splitz.php                                 @sandeshdamkondwar @abhayp
-web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe
-web/js/merchant/views/POS                         @amitabh-blade @prashant-kush @nashcheez
+app/Http/Kernel.php                               @razorpay/spine-edge @pcprashant
+app/Http/routes.php                               @razorpay/spine-edge @pcprashant
+app/Http/Middleware                               @razorpay/spine-edge @pcprashant
+app/Http/Providers                                @razorpay/spine-edge @pcprashant
+app/Http/Session                                  @razorpay/spine-edge @pcprashant
+app/User/Service.php                              @razorpay/spine-edge @pcprashant
+config/admin-auth-routes.php                      @razorpay/spine-edge @pcprashant
+config/auth.php                                   @razorpay/spine-edge @pcprashant
+config/oauth.php                                  @razorpay/spine-edge @pcprashant
+config/oauth-5-laravel.php                        @razorpay/spine-edge @pcprashant
+config/passport.php                               @razorpay/spine-edge @pcprashant
+config/session.php                                @razorpay/spine-edge @pcprashant
+config/user-roles.php                             @razorpay/spine-edge @pcprashant
+web/js/merchant/components/Announcements          @razorpay/platform-growth-fe @pcprashant
+web/js/merchant/models/GrowthService              @razorpay/platform-growth-fe @pcprashant
+web/js/common/ui/AnnouncementBanner               @razorpay/platform-growth-fe @pcprashant
+web/js/common/ui/NotificationsDropdown            @razorpay/platform-growth-fe @pcprashant
+web/js/common/ui/OffersForYou                     @razorpay/platform-growth-fe @pcprashant
+web/js/common/ui/WhatsNew                         @razorpay/platform-growth-fe @pcprashant
+web/js/common/ui/DashboardBanner                  @razorpay/platform-growth-fe @pcprashant
+web/js/common/ui/GrowthServiceModal               @razorpay/platform-growth-fe @pcprashant
+web/js/common/ui/ExclusiveOffer                   @razorpay/platform-growth-fe @pcprashant
+web/js/common/ui/MultiSlider                      @razorpay/platform-growth-fe @pcprashant
+web/js/merchant/Reports                           @joel-jaimon @TanroopSing @asp48 @pcprashant
+web/js/merchant/ReportsAsync                      @joel-jaimon @TanroopSing @asp48 @pcprashant
+web/js/merchant/reducers/reports                  @joel-jaimon @TanroopSing @asp48 @pcprashant
+web/js/merchant/reducers/reports.js               @joel-jaimon @TanroopSing @asp48 @pcprashant
+web/js/merchant/models/Reports                    @joel-jaimon @TanroopSing @asp48 @pcprashant
+web/js/merchant/PartnerDashboard/Reports          @joel-jaimon @TanroopSing @asp48 @pcprashant
+web/js/merchantLA/containers/Reports              @joel-jaimon @TanroopSing @asp48 @pcprashant
+web/js/merchant_common/views/Reports              @joel-jaimon @TanroopSing @asp48 @pcprashant
+web/js/merchant_common/containers/ReportsAsync    @joel-jaimon @TanroopSing @asp48 @pcprashant
+web/js/merchant/views/PartnerDashboard            @razorpay/partnerships-fe @razorpay/merchant-dashboard @pcprashant
+web/js/merchant/views/Settings/PaymentMethods     @amitabh-blade @NarasimhaSwamy @pcprashant
+web/js/merchant/views/Transactions/v1/SuccessRate @amitabh-blade @akash-sachan @NarasimhaSwamy @pcprashant
+web/js/merchant/views/Navigator                   @parth-p-ui @prem-io @pcprashant
+web/js/merchant/views/Optimizer                   @parth-p-ui @prem-io @pcprashant
+config/splitz.php                                 @sandeshdamkondwar @abhayp @pcprashant
+web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe @pcprashant
+web/js/merchant/views/POS                         @amitabh-blade @prashant-kush @nashcheez @pcprashant

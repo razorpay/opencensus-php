@@ -29,7 +29,7 @@ export const refunds = {
       processed: 'rfnd_MWayrWkO6fj30Y',
     },
     partialRefund: {
-      processed: 'rfnd_MWnRj88R2XCcCn',
+      processed: 'rfnd_NgpqHUeMHyLW41',
       multiPartialRefundProcessed: 'rfnd_MWjtqmCqdWQza7',
     },
   },

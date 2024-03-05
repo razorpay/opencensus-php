@@ -154,7 +154,7 @@ test.describe
 
     test('should show "captured" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
-      const id = payments.paymentId.captured.upi;
+      const id = payments.paymentId.captured.card;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
       // await expect(page.getByText('Gross amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
       // await expect(page.getByText('Net amount₹ 5,836.80₹ - Indian Rupee (INR)')).toBeVisible();
@@ -162,9 +162,8 @@ test.describe
       await expect(page.getByText('Payment ID')).toBeVisible();
       await expect(page.getByText(id)).toBeVisible();
       await expect(page.getByText('Bank RRN')).toBeVisible();
-      await expect(page.getByText('284395024721')).toBeVisible();
       await expect(page.getByText('Payment method')).toBeVisible();
-      await expect(page.getByText('UPI( shiv@dbs)')).toBeVisible();
+      await expect(page.getByText('Domestic Credit card (xx1111)')).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Refund' })).toBeVisible();
       await expect(page.getByText('No refund issued for this payment')).toBeVisible();
       await expect(page.getByText('Payment created')).toBeVisible();

@@ -98,12 +98,12 @@ test.describe
       // await expect(page.getByText('Net amount₹ 96.58₹ - Indian Rupee (INR)')).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
       await expect(page.getByText('Payment ID')).toBeVisible();
-      await expect(page.getByText('pay_MWb0KQ9xSJPNvk')).toBeVisible();
+      await expect(page.getByText('pay_Lb1dTpEs7VXfkV')).toBeVisible();
       await expect(page.getByText('Order ID')).toBeVisible();
-      await expect(page.getByText('order_MWb0AkF7o284V4')).toBeVisible();
+      await expect(page.getByText('order_Lb1XMcfzt13u4D')).toBeVisible();
       await expect(page.getByText('Payment method')).toBeVisible();
-      await expect(page.getByText('Wallet( Mobikwik )')).toBeVisible();
-      await assertRefundDetails({ page, id, amount: '10.00' });
+      await expect(page.getByText('Net banking( UTIB bank)')).toBeVisible();
+      await assertRefundDetails({ page, id, amount: '250.00' });
       await assertCollapsibleRefundProcessedTimeline({ page });
       await assertIssueRefundButton({ page, testId: 'payment-refund-details' });
       await assertIssueRefundButton({ page, testId: 'payment-details-timeline' });
