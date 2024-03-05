@@ -62,6 +62,8 @@ const ANDROID_SMART_POS: ProductDescription = {
           suffix: '/mo',
           isExtraFee: false,
           isChargeableAtCheckout: false,
+          prevValue: null,
+          nextValue: null,
         },
         {
           key: 'setup_fee',
@@ -70,6 +72,8 @@ const ANDROID_SMART_POS: ProductDescription = {
           suffix: 'setup fee',
           isExtraFee: true,
           isChargeableAtCheckout: true,
+          prevValue: null,
+          nextValue: null,
         },
       ],
     },
@@ -85,6 +89,8 @@ const ANDROID_SMART_POS: ProductDescription = {
           suffix: '',
           isExtraFee: false,
           isChargeableAtCheckout: true,
+          prevValue: null,
+          nextValue: null,
         },
       ],
     },
@@ -214,6 +220,7 @@ const ANDROID_SMART_POS: ProductDescription = {
         'PCI PTS 6.x SRED | EMV L1 & L2 | EMV Contactless L1 | Visa payWave | MasterCard Contactless | UPI qUICS | Amex ExpressPay | Discover D-PAS | JCB J/Speedy | MasterCard TQM | CE | RoHs | ABECS',
     },
   ],
+  offer: null,
 };
 
 export default ANDROID_SMART_POS;

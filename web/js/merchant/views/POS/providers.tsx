@@ -2,6 +2,7 @@ import React, { useReducer, useEffect } from 'react';
 import { Box, Spinner } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
+import { useSplitzService } from 'common/splitz';
 import { User } from 'common/typings';
 import { merge } from 'common/utils/immutable';
 
@@ -9,6 +10,7 @@ import { ACTIONS, PosStoreInitialState } from './constants';
 import { PosDeviceStoreContext } from './context';
 import {
   constructProductDescription,
+  fetchProductOffers,
   getAllDeliveryAddressFromLocalStorage,
   getCartFromLocalStorage,
   saveCartInBrowserStorage,
@@ -19,6 +21,7 @@ import {
   PosDeviceStoreActionType,
   ProductPricingMap,
   ApiResponse,
+  OfferConfig,
 } from './types';
 
 type PosDeviceStoreProviderProps = {
@@ -83,10 +86,20 @@ export const PosDeviceStoreProvider = ({
   const initialState = init ?? PosStoreInitialState;
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const onFetchProductPricing = (response: ApiResponse<Record<'configs', ProductPricingMap>>) => {
+  const { abExperiments } = useSplitzService();
+  const offersInfo = fetchProductOffers({ abExperiments });
+
+  const onFetchProductPricing = (
+    response: ApiResponse<Record<'configs', ProductPricingMap>>,
+    offerConfig: Record<string, OfferConfig> | null,
+  ) => {
     if (response?.data?.configs) {
       const { configs } = response?.data;
-      const productDescriptions = constructProductDescription({ pricingPlanDict: configs });
+      const productDescriptions = constructProductDescription({
+        pricingPlanDict: configs,
+        offerConfig,
+      });
+
       dispatch({
         type: ACTIONS.SET_PRODUCT_DESCRIPTION,
         payload: {
@@ -104,7 +117,7 @@ export const PosDeviceStoreProvider = ({
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: 'always',
-    onSuccess: onFetchProductPricing,
+    onSuccess: (data) => onFetchProductPricing(data, offersInfo?.offers),
   });
 
   const populateDeliveryAddress = ({ user }) => {

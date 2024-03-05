@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Amount, Box, ChevronDownIcon, ChevronUpIcon, Text } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
-import { DetailedPricingContent, DetailedPricingHeader } from './styles';
+import AmountWithStrikeThrough from 'merchant/views/POS/ProductDescription/ProductPriceCards/AmountWithStrikeThrough';
+
+import { DetailedPricingContent, DetailedPricingHeader, PricingRowOfferTag } from './styles';
 
 type PricingProps = {
   id?: string;
@@ -12,11 +14,18 @@ type PricingProps = {
     title: string;
     value: number;
   }[];
+  offerRows?: {
+    title: string;
+    value: number;
+    subTitle?: string;
+    prevValue?: number | null;
+    isRenderValuePlanText?: boolean;
+  }[];
 };
 
-const PricingRow = ({ id, rows, title, value = 0 }: PricingProps): JSX.Element => {
+const PricingRow = ({ id, rows, title, value = 0, offerRows }: PricingProps): JSX.Element => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const isCollapsibleHeader = (rows || []).length > 0;
+  const isCollapsibleHeader = (rows || []).length > 0 || (offerRows || []).length > 0;
 
   return (
     <Box testID={id ?? ''}>
@@ -75,6 +84,50 @@ const PricingRow = ({ id, rows, title, value = 0 }: PricingProps): JSX.Element =
         )}
       </Box>
       <DetailedPricingContent isExpanded={isExpanded}>
+        {isExpanded && (offerRows ?? []).length > 0 ? (
+          <Box
+            backgroundColor="surface.background.level1.lowContrast"
+            marginBottom="spacing.5"
+            padding="spacing.4"
+          >
+            <PricingRowOfferTag>
+              <Text size="small" weight="bold" color="brand.primary.500">
+                Offer Applied
+              </Text>
+            </PricingRowOfferTag>
+            {offerRows?.map(
+              (
+                { title, value, prevValue = null, subTitle, isRenderValuePlanText = false },
+                index,
+              ) => (
+                <Box
+                  key={`${title}-${index}`}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  width="100%"
+                  borderRadius="medium"
+                  marginBottom="spacing.3"
+                >
+                  <Box>
+                    <Text>{title} </Text>
+                    <Text size="small">{subTitle} </Text>
+                  </Box>
+                  <Box>
+                    {prevValue !== null ? (
+                      <AmountWithStrikeThrough value={prevValue} size="body-small-bold" />
+                    ) : null}
+                    {!isRenderValuePlanText ? (
+                      <Amount value={value} isAffixSubtle={false} suffix="none" />
+                    ) : (
+                      <Text>{value}</Text>
+                    )}
+                  </Box>
+                </Box>
+              ),
+            )}
+          </Box>
+        ) : null}
         {isExpanded
           ? rows?.map(({ title, value }, index) => (
               <Box
@@ -85,7 +138,9 @@ const PricingRow = ({ id, rows, title, value = 0 }: PricingProps): JSX.Element =
                 width="100%"
                 marginBottom="spacing.3"
               >
-                <Text>{title} </Text>
+                <Box>
+                  <Text>{title} </Text>
+                </Box>
                 <Amount value={value} isAffixSubtle={false} suffix="none" />
               </Box>
             ))

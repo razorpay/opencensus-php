@@ -5,6 +5,9 @@ import { MainBannerItemStyleProps } from 'merchant/views/POS/types';
 
 export const StyledPriceTagImage = styled.img`
   max-inline-size: 100%;
+  position: relative;
+  left: 4px;
+  z-index: -1;
 `;
 
 export const AndroidPosPriceBadgeImage = styled.div`
@@ -104,6 +107,7 @@ export const MainBannerTileImage = styled.div(
 );
 
 export const StyledMainBannerImage = styled.img`
-  max-width: 214px;
-  max-height: 90%;
+  max-width: 230px;
+  min-width: 150px;
+  height: 90%;
 `;

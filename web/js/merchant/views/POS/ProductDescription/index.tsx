@@ -14,13 +14,12 @@ import { PricingTypes } from 'merchant/views/POS/types';
 import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
 
 import DeliveryInfo from './DeliveryInfo';
-import DetailedPricing from './DetailedPricing';
+import DetailedPricingAndTncWrapper from './DetailedPricingAndTncWrapper';
 import PdpActions from './PdpActions';
 import ProductFeaturesGallery from './ProductFeaturesGallery';
 import ProductInfoBanner from './ProductInfoBanner';
 import ProductPriceCards from './ProductPriceCards';
 import ProductTechnicalSpecs from './ProductTechnicalSpecs';
-import TermsAndConditions from './TermsAndConditions';
 
 type ProductDescription = {
   productName: string;
@@ -123,15 +122,18 @@ const ProductDescription = (): JSX.Element => {
                     color="surface.text.subtle.lowContrast"
                     weight="regular"
                     textAlign={isMobile ? 'center' : 'left'}
+                    marginBottom="spacing.8"
                   >
                     {description}
                   </Heading>
                 </Box>
+
                 <ProductPriceCards
                   productCode={code}
                   selectedPricing={selectedPricing}
                   onPricingPlanChange={handleOnPricingPlanChange}
                 />
+
                 <Link marginY="spacing.4" onClick={onViewPricingClick}>
                   View Pricing & TnC
                 </Link>
@@ -162,17 +164,7 @@ const ProductDescription = (): JSX.Element => {
           </Box>
         </Box>
       </MainContainer>
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        marginX={!isMobile ? 'spacing.5' : 'spacing.0'}
-        paddingTop="55px"
-        ref={pricingTncRef}
-      >
-        <DetailedPricing />
-        <TermsAndConditions />
-      </Box>
+      <DetailedPricingAndTncWrapper productCode={code} ref={pricingTncRef} />
     </React.Fragment>
   );
 };

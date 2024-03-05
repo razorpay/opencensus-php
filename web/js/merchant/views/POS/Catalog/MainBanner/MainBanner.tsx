@@ -14,6 +14,7 @@ import MainBannerTextContent from './MainBannerTextContent';
 import MainBannerTilesGroup from './MainBannerTilesGroup';
 import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
 import { ANDROID_SMART_POS } from 'merchant/views/POS/constants';
+import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
 
 const MainBanner = (): JSX.Element | null => {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ const MainBanner = (): JSX.Element | null => {
 
   if (!productDescription || !productDescription.pricing) return null;
 
-  const { monthly, setupFee } = getPricingByProduct({ productDescription });
+  const { monthly, setupFee, offer } = getPricingByProduct({ productDescription });
 
   const handleNavigateToProduct = () => navigate(`/pos/catalog/${productDescription.code}`);
 
@@ -63,6 +64,17 @@ const MainBanner = (): JSX.Element | null => {
             position="relative"
             width={{ base: '100%', l: 'fit-content' }}
           >
+            {productDescription?.offer?.offerText ? (
+              <Box
+                width="100%"
+                maxWidth="1300px"
+                marginTop="spacing.6"
+                paddingX={{ base: '0px', l: 'spacing.8' }}
+                marginX={{ base: '0px', l: 'spacing.8' }}
+              >
+                <OfferStrip text={productDescription.offer.offerText} type="dark" />
+              </Box>
+            ) : null}
             <Box
               display={{ base: 'flex', l: 'grid' }}
               flexDirection="column"
@@ -77,6 +89,9 @@ const MainBanner = (): JSX.Element | null => {
               <MainBannerTextContent
                 product={productDescription}
                 monthlyFee={monthly}
+                prevMonthlyFee={offer?.prevMonthly}
+                prevSetupFee={offer?.prevSetupFee}
+                nextMonthlyFee={offer?.nextMonthly}
                 setupFee={setupFee}
                 onLearnMoreClick={() => {
                   analytics.track_EXPERIMENTAL(SignUpEvents.websiteCtaClicked, {
@@ -91,7 +106,10 @@ const MainBanner = (): JSX.Element | null => {
                   handleNavigateToProduct();
                 }}
               />
-              <MainBannerProductImage price={monthly} />
+              <MainBannerProductImage
+                price={offer && offer?.nextMonthly !== null ? offer.nextMonthly : monthly}
+                prevPrice={offer?.prevMonthly}
+              />
               <MainBannerTilesGroup />
             </Box>
             <Box

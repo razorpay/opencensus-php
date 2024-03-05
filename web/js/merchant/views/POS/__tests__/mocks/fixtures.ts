@@ -49,6 +49,8 @@ export const MOCK_PRODUCT: ProductDescription = {
           suffix: '/mo',
           isExtraFee: false,
           isChargeableAtCheckout: false,
+          prevValue: null,
+          nextValue: null,
         },
         {
           key: 'setup_fee',
@@ -57,6 +59,8 @@ export const MOCK_PRODUCT: ProductDescription = {
           suffix: 'setup fee',
           isExtraFee: true,
           isChargeableAtCheckout: true,
+          prevValue: null,
+          nextValue: null,
         },
       ],
     },
@@ -72,6 +76,8 @@ export const MOCK_PRODUCT: ProductDescription = {
           suffix: '',
           isExtraFee: false,
           isChargeableAtCheckout: true,
+          prevValue: null,
+          nextValue: null,
         },
       ],
     },
@@ -137,6 +143,7 @@ export const MOCK_PRODUCT: ProductDescription = {
       value: 'Test Technical Spec',
     },
   ],
+  offer: null,
 };
 
 export const MOCK_FEATURE_SCHEMA: ProductFeaturesColumn[][] = [
@@ -262,6 +269,8 @@ export const MOCK_PRICING_WITH_PRICES: ProductDescriptionPricing[] = [
         suffix: '/mo',
         isExtraFee: false,
         isChargeableAtCheckout: false,
+        prevValue: null,
+        nextValue: 700,
       },
       {
         key: 'setup_fee',
@@ -270,6 +279,8 @@ export const MOCK_PRICING_WITH_PRICES: ProductDescriptionPricing[] = [
         suffix: 'setup fee',
         isExtraFee: true,
         isChargeableAtCheckout: true,
+        prevValue: null,
+        nextValue: null,
       },
     ],
   },
@@ -285,6 +296,55 @@ export const MOCK_PRICING_WITH_PRICES: ProductDescriptionPricing[] = [
         suffix: '',
         isExtraFee: false,
         isChargeableAtCheckout: true,
+        prevValue: null,
+        nextValue: null,
+      },
+    ],
+  },
+];
+
+export const MOCK_PRICING_WITH_PRICES_WITH_OFFER: ProductDescriptionPricing[] = [
+  {
+    name: 'Monthly Plan',
+    type: 'monthly',
+    subText: '*Subscription only starts when device gets delivered. GST charges applicable.',
+    breakups: [
+      {
+        key: 'monthly',
+        description: 'Monthly Subscription',
+        value: 100,
+        suffix: '/mo',
+        isExtraFee: false,
+        isChargeableAtCheckout: false,
+        prevValue: 400,
+        nextValue: 700,
+      },
+      {
+        key: 'setup_fee',
+        description: 'Monthly Subscription',
+        value: 1000,
+        suffix: 'setup fee',
+        isExtraFee: true,
+        isChargeableAtCheckout: true,
+        prevValue: 1200,
+        nextValue: null,
+      },
+    ],
+  },
+  {
+    name: 'Lifetime Plan',
+    type: 'lifetime',
+    subText: '*No Setup fees required. GST charges applicable.',
+    breakups: [
+      {
+        key: 'lifetime',
+        description: 'Lifetime Plan',
+        value: 12000,
+        suffix: '',
+        isExtraFee: false,
+        isChargeableAtCheckout: true,
+        prevValue: 30000,
+        nextValue: null,
       },
     ],
   },
@@ -714,4 +774,61 @@ export const MOCK_CMMA_CASE_CREATE_CALL = {
   is_pgos_merchant: true,
   pos_activation_flow: 'whitelist',
   is_pos_details_submitted: true,
+};
+
+export const MOCK_PRODUCT_PRICING_WITH_OFFER_RESPONSE = [
+  {
+    name: 'MOCK PRODUCT',
+    code: 'mock-product',
+    offer: {
+      valid_till: 1707983687,
+      offer_text: 'Mock offer text',
+      prev_rate_config: {
+        monthly: 400,
+        lifetime: 20000,
+        setup_fee: 300,
+      },
+    },
+    rate_config: {
+      monthly: 300,
+      lifetime: 12000,
+      setup_fee: 200,
+    },
+  },
+  {
+    name: 'MOCK PRODUCT NEW',
+    code: 'mock-product-new',
+    offer: {
+      valid_till: 1707983687,
+      offer_text: 'Mock offer text',
+      prev_rate_config: {
+        monthly: 400,
+        lifetime: 20000,
+        setup_fee: 300,
+      },
+    },
+    rate_config: {
+      monthly: 300,
+      lifetime: 12000,
+      setup_fee: 200,
+    },
+  },
+];
+
+//The pricing keys like [monthly, setup_fee] should match the keys with devcie config api
+export const MOCK_PRODUCT_OFFER_CONFIG = {
+  'mock-product': {
+    offerText: 'Mock offer text',
+    pdpOfferText: 'Mock offer text',
+    preRateConfig: {
+      monthly: 400,
+      lifetime: 20000,
+      setup_fee: 300,
+    },
+    nextRateConfig: {
+      monthly: 299,
+      lifetime: null,
+      setup_fee: null,
+    },
+  },
 };

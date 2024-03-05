@@ -62,6 +62,8 @@ const MOBILE_POS: ProductDescription = {
           suffix: '/mo',
           isExtraFee: false,
           isChargeableAtCheckout: false,
+          prevValue: null,
+          nextValue: null,
         },
         {
           key: 'setup_fee',
@@ -70,6 +72,8 @@ const MOBILE_POS: ProductDescription = {
           suffix: 'setup fee',
           isExtraFee: true,
           isChargeableAtCheckout: true,
+          prevValue: null,
+          nextValue: null,
         },
       ],
     },
@@ -85,6 +89,8 @@ const MOBILE_POS: ProductDescription = {
           suffix: '',
           isExtraFee: false,
           isChargeableAtCheckout: true,
+          prevValue: null,
+          nextValue: null,
         },
       ],
     },
@@ -176,6 +182,7 @@ const MOBILE_POS: ProductDescription = {
         'PCI PTS 5.x SRED, EMV® L1 & L2, Visa payWave, Mastercard PayPass, American Express expresspay, Discover D-PAS',
     },
   ],
+  offer: null,
 };
 
 export default MOBILE_POS;

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Button, ShoppingCartIcon } from '@razorpay/blade/components';
+import { Button, IconComponent, ShoppingCartIcon } from '@razorpay/blade/components';
 
 import { ACTIONS, UPDATE_CART_ACTIONS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
@@ -11,6 +11,10 @@ type AddToCartButtonProps = {
   plan: ProductPlans;
   openCartOnUpdate?: boolean;
   size?: 'small' | 'medium' | 'large';
+  btnVariant?: 'primary' | 'secondary';
+  btnText?: string;
+  icon?: IconComponent;
+  iconPosition?: 'left' | 'right';
   onCtaClick?: () => void;
 };
 
@@ -19,7 +23,11 @@ const AddToCartButton = ({
   plan,
   openCartOnUpdate,
   onCtaClick,
+  btnVariant = 'primary',
+  icon,
+  iconPosition = 'left',
   size,
+  btnText = 'Add to cart',
 }: AddToCartButtonProps): JSX.Element => {
   const { state, dispatch } = useContext(PosDeviceStoreContext);
   const { cartItems } = state;
@@ -54,8 +62,15 @@ const AddToCartButton = ({
   };
 
   return (
-    <Button size={size ?? 'large'} type="button" icon={ShoppingCartIcon} onClick={handleAddToCart}>
-      Add to cart
+    <Button
+      variant={btnVariant}
+      size={size ?? 'large'}
+      type="button"
+      icon={icon || ShoppingCartIcon}
+      iconPosition={iconPosition}
+      onClick={handleAddToCart}
+    >
+      {btnText}
     </Button>
   );
 };

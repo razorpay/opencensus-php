@@ -3,12 +3,12 @@ import React from 'react';
 import MainBanner from 'merchant/views/POS/Catalog/MainBanner/MainBanner';
 import { MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import { getProductPricingHandler } from 'merchant/views/POS/__tests__/mocks/handlers';
+import { ANDROID_SMART_POS } from 'merchant/views/POS/constants';
 import * as posHooks from 'merchant/views/POS/hooks';
 import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
-import { screen, render, waitForElementToBeRemoved, userEvent, server } from 'test-utils';
-import { ScrollObserverProvider } from 'merchant/views/POS/utils/ScrollObserver';
 import { setupIntersectionObserverMock } from 'merchant/views/POS/utils/IntersectionObserverMock';
-import { ANDROID_SMART_POS } from 'merchant/views/POS/constants';
+import { ScrollObserverProvider } from 'merchant/views/POS/utils/ScrollObserver';
+import { screen, render, waitForElementToBeRemoved, userEvent, server } from 'test-utils';
 
 const mockedUsedNavigate = jest.fn();
 

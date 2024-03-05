@@ -61,7 +61,7 @@ const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element =
   });
 
   const orderListData = React.useMemo(
-    () => (data?.pages ?? []).flatMap((item) => item.order_list),
+    () => (data?.pages ?? []).flatMap((item) => item?.order_list),
     [data],
   );
 

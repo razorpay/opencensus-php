@@ -36,7 +36,6 @@ const CatalogInfoBanner = (): JSX.Element => {
     >
       <Box
         minHeight="400px"
-        maxWidth="1600px"
         width="100%"
         position="relative"
         display={{ base: 'block', l: 'grid' }}

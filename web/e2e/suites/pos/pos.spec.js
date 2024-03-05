@@ -31,6 +31,13 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
           .getByTestId('android-mini-pos-product-card')
           .getByRole('heading', { name: 'Android Smart Mini POS' }),
       ).toBeVisible();
+
+      await expect(
+        page
+          .getByTestId('android-mini-pos-product-card')
+          .getByText('Limited Time Offer till 31st March'),
+      ).toBeVisible();
+
       await expect(page.getByText('Feature packed and portable')).toBeVisible();
       const mobilePosProductCart = page.getByTestId('mobile-pos-product-card');
       await expect(mobilePosProductCart).toContainText('Mobile POS (mPOS)');
@@ -86,6 +93,8 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await expect(page.getByTestId('pdp-title')).toHaveText(
         PDP_CONTENT[DEVICE_CODES.androidSmartPos].title,
       );
+      await expect(page.getByText('Limited Time Offer till 31st March')).toBeVisible();
+
       await page.getByText('Catalog').click();
 
       const mobilePos = page.getByTestId('mobile-pos-product-card');
@@ -163,6 +172,11 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
       await androidSmartPosAddToCartBtn.click();
 
+      await page.getByTestId('pos-cart-overlay').click();
+
+      const mposAddToCartBtn = page.getByTestId('mobile-pos-product-card').getByText('Add');
+      await mposAddToCartBtn.click();
+
       const cartItem = page.getByTestId(`${DEVICE_CODES.androidSmartPos}-monthly-cart-item`);
       await expect(cartItem).toBeVisible();
       await expect(cartItem.getByTestId('quantity-value')).toHaveText('1');
@@ -172,16 +186,29 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await page.getByText('Device charges').click();
       const deviceCharges = page.getByTestId('device-charges-container');
       await deviceCharges.click();
+      await expect(deviceCharges.getByText('Android Smart POS')).toBeVisible();
+      await expect(deviceCharges.getByText('Monthly Plan | (Qty: 1)')).toBeVisible();
+
       await expect(
-        deviceCharges.getByText('Android Smart POS | Monthly Plan (Qty: 1)'),
+        deviceCharges.getByText('Mobile POS (mPOS) | Monthly Plan (Qty: 1)'),
       ).toBeVisible();
+
       await expect(page.getByText('Shipping')).toBeVisible();
       await expect(page.getByText('Total Order Price')).toBeVisible();
       const rentalCharges = page.getByTestId('rental-charges-container');
       await rentalCharges.getByText('Rental charges').click();
       await expect(
-        rentalCharges.getByText('Android Smart POS | Monthly Plan (Qty: 1)'),
+        rentalCharges.getByText('Monthly Plan - Android Smart POS X 1').nth(1),
       ).toBeVisible();
+
+      await expect(
+        rentalCharges.getByText('Mobile POS (mPOS) | Monthly Plan (Qty: 1)'),
+      ).toBeVisible();
+
+      await expect(rentalCharges.getByText('first 3 months')).toBeVisible();
+      await expect(rentalCharges.getByText('post 3 months')).toBeVisible();
+      await expect(rentalCharges.getByText('MDR (%)')).toBeVisible();
+
       await expect(page.getByText('Renewal')).toBeVisible();
     });
 

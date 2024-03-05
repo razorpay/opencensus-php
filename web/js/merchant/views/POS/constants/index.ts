@@ -13,6 +13,10 @@ import {
   ProductPlans,
   RoutePattern,
   MainBannerTilesItem,
+  OfferCardsStruct,
+  ProductDescriptionPricing,
+  OfferPricing,
+  OfferConfig,
 } from 'merchant/views/POS/types';
 
 import ANDROID_MINI_POS from './AndroidMiniPos';
@@ -355,10 +359,138 @@ export const EASY_DASHBOARD_ROUTES = {
   l2onboardingWithIntent: '/onboarding/l2?intent=pos',
 };
 
+export const OFFER_CARDS_STRUCT: OfferCardsStruct = {
+  monthly: [
+    {
+      pricing: (): OfferPricing => ({
+        currentValue: 0,
+        prevValue: null,
+      }),
+      text: 'rental first 3 months',
+    },
+    {
+      pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
+        const monthlyPricing = pricing.breakups.find((breakup) => breakup.key === 'monthly');
+        return {
+          currentValue: monthlyPricing?.nextValue ?? 0,
+          prevValue: monthlyPricing?.prevValue ?? 0,
+        };
+      },
+      text: 'rental after 3 months',
+    },
+    {
+      pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
+        const setupPricing = pricing.breakups.find((breakup) => breakup.key === 'setup_fee');
+        return {
+          currentValue: setupPricing?.value ?? 0,
+          prevValue: setupPricing?.prevValue ?? 0,
+        };
+      },
+      text: 'setup fee',
+    },
+    {
+      pricing: (): OfferPricing => ({
+        currentValue: 0,
+        prevValue: null,
+      }),
+      text: 'MDR upto 1L transaction',
+    },
+  ],
+  lifetime: [
+    {
+      pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
+        const lifetimePricing = pricing.breakups.find((breakup) => breakup.key === 'lifetime');
+        return {
+          currentValue: lifetimePricing?.value ?? 0,
+          prevValue: lifetimePricing?.prevValue ?? 0,
+        };
+      },
+      text: 'rental first 3 months',
+    },
+    {
+      pricing: (): OfferPricing => ({
+        currentValue: 0,
+        prevValue: null,
+      }),
+      text: 'MDR upto 1L transaction',
+    },
+  ],
+};
+
+export const CART_OFFER_CONTENT: OfferCardsStruct = {
+  monthly: [
+    {
+      pricing: (): OfferPricing => ({
+        currentValue: 0,
+        prevValue: null,
+      }),
+      text: 'rental first 3 months',
+    },
+    {
+      pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
+        const monthlyPricing = pricing.breakups.find((breakup) => breakup.key === 'monthly');
+        return {
+          currentValue: monthlyPricing?.nextValue ?? 0,
+          prevValue: monthlyPricing?.prevValue ?? 0,
+        };
+      },
+      text: 'rental after 3 months',
+    },
+  ],
+  lifetime: [
+    {
+      pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
+        const lifetimePricing = pricing.breakups.find((breakup) => breakup.key === 'lifetime');
+        return {
+          currentValue: lifetimePricing?.value ?? 0,
+          prevValue: lifetimePricing?.prevValue ?? 0,
+        };
+      },
+      text: '',
+    },
+  ],
+};
+
+//The pricing keys like [monthly, setup_fee] should match the keys with devcie config api
+export const PRODUCT_OFFER_CONFIG: Record<string, OfferConfig> = {
+  [ANDROID_SMART_POS.code]: {
+    offerText: 'Limited Time Offer till 31st March',
+    pdpOfferText: 'Offer valid on orders placed before 31st March',
+    preRateConfig: {
+      monthly: 549,
+      lifetime: 12000,
+      setup_fee: 3000,
+    },
+    nextRateConfig: {
+      monthly: 299,
+      lifetime: null,
+      setup_fee: null,
+    },
+  },
+  [ANDROID_MINI_POS.code]: {
+    offerText: 'Limited Time Offer till 31st March',
+    pdpOfferText: 'Offer valid on orders placed before 31st March',
+    preRateConfig: {
+      monthly: 499,
+      lifetime: 10500,
+      setup_fee: 2000,
+    },
+    nextRateConfig: {
+      monthly: 249,
+      lifetime: null,
+      setup_fee: null,
+    },
+  },
+};
+
 export { default as ANDROID_MINI_POS } from './AndroidMiniPos';
 export { default as ANDROID_SMART_POS } from './AndroidSmartPos';
 export { default as MOBILE_POS } from './MobilePos';
 
-export { DETAILED_PRICING, TERMS_AND_CONDITIONS } from './DetailedPricingAndTnc';
+export {
+  DETAILED_PRICING,
+  TERMS_AND_CONDITIONS,
+  OFFER_DETAILED_PRICING,
+} from './DetailedPricingAndTnc';
 export { ORDER_STATUS_META_DATA, ORDER_STATUS_TIMELINE_ITEMS } from './OrderStatus';
 export * from './CommsBanner';

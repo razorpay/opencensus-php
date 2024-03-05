@@ -36,6 +36,7 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     'react/react-in-jsx-scope': 'off',
     'import/no-unresolved': 'off',
+    'import/extensions': 'off',
     'import/order': [
       'warn',
       {

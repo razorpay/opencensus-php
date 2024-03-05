@@ -5,6 +5,7 @@ import {
   MOCK_PRODUCT,
   MOCK_USER,
   MOCK_PRODUCT_PRICING_RESPONSE,
+  MOCK_PRODUCT_OFFER_CONFIG,
 } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import { UPDATE_CART_ACTIONS } from 'merchant/views/POS/constants';
 import {
@@ -53,7 +54,7 @@ describe('helpers', () => {
       quantity: 3,
       selectedPlan: 'lifetime',
     });
-    expect(total).toBe(36000);
+    expect(total.value).toBe(36000);
   });
 
   test('should return cart item total if correct params passed to getCartItemTotal and only consider isChargeableAtCheckout', () => {
@@ -62,7 +63,7 @@ describe('helpers', () => {
       quantity: 1,
       selectedPlan: 'monthly',
     });
-    expect(total).toBe(1200);
+    expect(total.value).toBe(1200);
   });
 
   test('saveCartInBrowserStorage should trigger store to localstorage with correct cart item', () => {
@@ -103,6 +104,15 @@ describe('helpers', () => {
     const monthlyPlan = description?.pricing.find((pricing) => pricing.type === 'monthly');
     const { breakups } = monthlyPlan ?? {};
     expect(breakups?.[0].value).toBe(300);
+  });
+
+  test('getProductDescriptionWithPricingPlan should return product description with offers if exits', () => {
+    const description = getProductDescriptionWithPricingPlan({
+      productCode: 'mock-product',
+      pricingPlanDict: MOCK_PRODUCT_PRICING_RESPONSE,
+      offerConfigForProduct: MOCK_PRODUCT_OFFER_CONFIG['mock-product'],
+    });
+    expect(description?.offer?.offerText).toBe('Mock offer text');
   });
 
   test('getProductDescriptionWithPricingPlan should through error if pricing plan not found', () => {

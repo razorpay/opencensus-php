@@ -11,6 +11,7 @@ import {
   ProductUpdateTypes,
 } from 'merchant/views/POS/types';
 
+import OfferCartItemContent from './OfferCartItemContent';
 import { PricingCard } from './styles';
 
 type CartItemProps = {
@@ -93,7 +94,7 @@ const CartItem = ({
         </Box>
       </Box>
       <Box display={{ base: 'block', l: 'flex' }} gap="spacing.3" marginTop="spacing.5">
-        {pricing.map(({ name, breakups, type }) => (
+        {pricing.map(({ name, breakups, type }, index) => (
           <PricingCard
             key={name}
             aria-selected={type === plan}
@@ -101,22 +102,27 @@ const CartItem = ({
             data-testid={`${type}-card`}
             onClick={() => handlePricingCardClick(type as ProductPlans)}
           >
-            <Text type="subdued">{name}</Text>
-            <Box>
-              {breakups.map(({ key, value, isExtraFee, suffix }) => (
-                <React.Fragment key={key}>
-                  {isExtraFee ? ' (' : null}
-                  {'  '}
-                  <Amount
-                    value={value}
-                    suffix="none"
-                    marginLeft="-2px"
-                    isAffixSubtle={false}
-                  />{' '}
-                  {suffix} {isExtraFee ? ')' : null}
-                </React.Fragment>
-              ))}
-            </Box>
+            <Text type="subdued" marginBottom="spacing.2" weight="bold">
+              {name}
+            </Text>
+            {product?.offer ? (
+              <OfferCartItemContent pricing={pricing[index]} />
+            ) : (
+              <Box>
+                {breakups.map(({ key, value, isExtraFee, suffix }) => (
+                  <React.Fragment key={key}>
+                    {isExtraFee ? ' ( ' : null}
+                    <Amount
+                      value={value}
+                      suffix="none"
+                      marginLeft="-2px"
+                      isAffixSubtle={false}
+                    />{' '}
+                    {suffix} {isExtraFee ? ')' : null}
+                  </React.Fragment>
+                ))}
+              </Box>
+            )}
           </PricingCard>
         ))}
       </Box>
@@ -133,7 +139,7 @@ const CartItem = ({
         <Box>
           <Text>Device charge</Text>
           <Amount
-            value={total ?? 0}
+            value={total.value ?? 0}
             suffix="none"
             size="heading-small-bold"
             isAffixSubtle={false}

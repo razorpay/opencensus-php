@@ -199,7 +199,9 @@ const CartPanel = ({ toggleHelpWidget, isHidden = false }: CartPanelProps): JSX.
           />
         </Modal>
       ) : null}
-      {isCartOpen ? <CartBackdropStyled onClick={handleCartClose} /> : null}
+      {isCartOpen ? (
+        <CartBackdropStyled onClick={handleCartClose} data-testid="pos-cart-overlay" />
+      ) : null}
     </>
   );
 };

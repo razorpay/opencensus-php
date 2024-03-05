@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, Amount, Box, Divider, Heading, Text } from '@razorpay/blade/components';
 
 import { PLAN_NAME_MAPPINGS } from 'merchant/views/POS/constants';
+import { isValidFee } from 'merchant/views/POS/helpers';
 import { OrderPricing as OrderPricingType } from 'merchant/views/POS/types';
 
 import PricingRow from './PricingRow';
@@ -11,6 +12,15 @@ type OrderPricingProps = {
 };
 
 const OrderPricing = ({ pricing }: OrderPricingProps): JSX.Element => {
+  const totalAmountDetailedPricingWithOffers = (pricing?.orderedDevicesWithOffer ?? []).map(
+    ({ productDescription, deviceTotal, plan, quantity, prevDeviceTotal }) => ({
+      title: `${productDescription.productTitle}`,
+      value: deviceTotal ?? 0,
+      prevValue: prevDeviceTotal,
+      subTitle: ` ${PLAN_NAME_MAPPINGS[plan]} | (Qty: ${quantity})`,
+    }),
+  );
+
   const totalAmountDetailedPricing = (pricing?.orderedDevices ?? []).map(
     ({ productDescription, deviceTotal, plan, quantity }) => ({
       title: `${productDescription.productTitle} | ${PLAN_NAME_MAPPINGS[plan]} (Qty: ${quantity})`,
@@ -18,12 +28,40 @@ const OrderPricing = ({ pricing }: OrderPricingProps): JSX.Element => {
     }),
   );
 
+  const totalRentalAmountDetailedPricingWithOffers = (pricing?.rentalDevicesWithOffer ?? []).map(
+    ({ productDescription, rentalAmount, plan, quantity }) => ({
+      title: ` ${PLAN_NAME_MAPPINGS[plan]} - ${productDescription.productTitle} X ${quantity}`,
+      value: rentalAmount ?? 0,
+      subTitle: `first 3 months`,
+    }),
+  );
+
+  const totalRentalAmountDetailedPricingPostOffer = (pricing?.rentalDevicesWithOffer ?? [])
+    .filter(({ nextRentalAmount }) => isValidFee(nextRentalAmount))
+    .map(({ productDescription, nextRentalAmount, plan, quantity, prevRetalAmount }) => ({
+      title: ` ${PLAN_NAME_MAPPINGS[plan]} - ${productDescription.productTitle} X ${quantity}`,
+      value: nextRentalAmount as number,
+      prevValue: prevRetalAmount,
+      subTitle: `post 3 months`,
+    }));
+
   const totalRentalAmountDetailedPricing = (pricing?.rentalDevices ?? []).map(
     ({ productDescription, rentalAmount, plan, quantity }) => ({
       title: `${productDescription.productTitle} | ${PLAN_NAME_MAPPINGS[plan]} (Qty: ${quantity})`,
       value: rentalAmount ?? 0,
     }),
   );
+
+  const rentalOfferItems = [
+    ...totalRentalAmountDetailedPricingWithOffers,
+    ...totalRentalAmountDetailedPricingPostOffer,
+  ];
+
+  const MDR_PRICING_ROW = {
+    title: 'MDR (%)',
+    value: 0,
+    isRenderValuePlanText: true,
+  };
 
   return (
     <Box width="100%" maxWidth="450px">
@@ -33,6 +71,7 @@ const OrderPricing = ({ pricing }: OrderPricingProps): JSX.Element => {
         title="Device charges"
         value={pricing?.deviceCharges}
         rows={totalAmountDetailedPricing}
+        offerRows={totalAmountDetailedPricingWithOffers}
       />
       <PricingRow title="GST @18%" value={pricing?.gstDevice} />
       <PricingRow title="Shipping" value={<Text marginX="spacing.2">{pricing?.shipping}</Text>} />
@@ -68,7 +107,9 @@ const OrderPricing = ({ pricing }: OrderPricingProps): JSX.Element => {
           />
         </React.Fragment>
       ) : null}
-      {(pricing?.rentalDevices || []).length > 0 && !pricing?.refund ? (
+      {((pricing?.rentalDevices || []).length > 0 ||
+        (pricing?.rentalDevicesWithOffer || []).length > 0) &&
+      !pricing?.refund ? (
         <React.Fragment>
           <Divider marginBottom="spacing.4" />
           <PricingRow
@@ -76,6 +117,7 @@ const OrderPricing = ({ pricing }: OrderPricingProps): JSX.Element => {
             title="Rental charges"
             value={pricing?.rentalCharges}
             rows={totalRentalAmountDetailedPricing}
+            offerRows={rentalOfferItems?.length > 0 ? [...rentalOfferItems, MDR_PRICING_ROW] : []}
           />
           <PricingRow title="GST @18%" value={pricing?.gstRental} />
           <PricingRow title="Renewal" value={<Text marginX="spacing.2">Every Month</Text>} />

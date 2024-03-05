@@ -1,16 +1,16 @@
 import React from 'react';
-import { Box } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 import MiniPosMobile from 'assets/pos/main-banner/minipos-mobile.webp';
 import MPos from 'assets/pos/main-banner/mpos-mobile.webp';
+import { ANDROID_MINI_POS, MOBILE_POS } from 'merchant/views/POS/constants';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
 
 import AndroidMiniPos from './AndroidMiniPos';
 import MobileCardContainer from './MobileCardContainer';
 import MobilePos from './MobilePos';
-import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
-import { ANDROID_MINI_POS, MOBILE_POS } from 'merchant/views/POS/constants';
+import { ProductCardsContainer } from './styles';
 
 const ProductCards = (): JSX.Element => {
   const { isMobile } = useBladeBreakpoints();
@@ -26,28 +26,27 @@ const ProductCards = (): JSX.Element => {
   });
 
   return (
-    <Box display="flex" justifyContent="center" ref={foldRef}>
-      <Box maxWidth="1600px" width="100%" display={{ base: 'block', xl: 'flex' }} gap="spacing.5">
-        {isMobile ? (
+    <ProductCardsContainer>
+      {isMobile ? (
+        <React.Fragment>
           <MobileCardContainer
             code={ANDROID_MINI_POS.code}
             image={MiniPosMobile}
             cardDescription="Feature packed and portable"
           />
-        ) : (
-          <AndroidMiniPos />
-        )}
-        {isMobile ? (
           <MobileCardContainer
             code={MOBILE_POS.code}
             image={MPos}
             cardDescription="Pocket Sized and Affordable"
           />
-        ) : (
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <AndroidMiniPos />
           <MobilePos />
-        )}
-      </Box>
-    </Box>
+        </React.Fragment>
+      )}
+    </ProductCardsContainer>
   );
 };
 

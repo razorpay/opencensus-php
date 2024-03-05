@@ -12,18 +12,22 @@ export type Gallery = {
 
 export type PricingBreakupkeys = 'monthly' | 'lifetime' | 'setup_fee';
 
+export type PricingBreakup = {
+  key: PricingBreakupkeys;
+  description: string;
+  value: number;
+  suffix: string;
+  isExtraFee: boolean;
+  isChargeableAtCheckout: boolean;
+  prevValue: number | null;
+  nextValue: number | null;
+};
+
 export type ProductDescriptionPricing = {
   name: string;
-  type: string;
+  type: PricingTypes;
   subText: string;
-  breakups: {
-    key: PricingBreakupkeys;
-    description: string;
-    value: number;
-    suffix: string;
-    isExtraFee: boolean;
-    isChargeableAtCheckout: boolean;
-  }[];
+  breakups: PricingBreakup[];
 };
 
 export type FeatureGallery = {
@@ -59,6 +63,10 @@ export type ProductDescription = {
   featureGallery: FeatureGallery[];
   infoBanner: InfoBanner;
   technicalSpecifications: TechnicalSpecification[];
+  offer: {
+    offerText: string;
+    pdpOfferText: string;
+  } | null;
 };
 
 export type Features =
@@ -281,30 +289,31 @@ export type OrderStatusTimelineItem = {
   variant: 'positive' | 'negative' | 'notice';
 };
 
+type OrderPricingOrderItem = {
+  productDescription: ProductDescription;
+  quantity: number;
+  plan: ProductPlans;
+  deviceTotal: number;
+  rentalAmount: number | null;
+  prevDeviceTotal: number;
+  prevRetalAmount: number | null;
+  nextRentalAmount: number | null;
+};
+
 export type OrderPricing = {
   deviceCharges: number;
-  orderedDevices: {
-    productDescription: ProductDescription;
-    quantity: number;
-    plan: ProductPlans;
-    deviceTotal: number;
-    rentalAmount: number | null;
-  }[];
+  orderedDevices: OrderPricingOrderItem[];
   gstDevice: number;
   shipping: 'Free' | number;
   total: number;
   rentalCharges: number;
-  rentalDevices: {
-    productDescription: ProductDescription;
-    quantity: number;
-    plan: ProductPlans;
-    deviceTotal: number;
-    rentalAmount: number | null;
-  }[];
+  rentalDevices: OrderPricingOrderItem[];
   gstRental: number;
   renewal: string;
   refund?: ProcessedRefundObj | null;
   invoiceUrl?: string | null;
+  orderedDevicesWithOffer: OrderPricingOrderItem[];
+  rentalDevicesWithOffer: OrderPricingOrderItem[];
 };
 
 export type CreateOrderPayload = {
@@ -333,9 +342,13 @@ export type ProcessedRefundObj = {
 
 export type DetailedPricingModel = {
   title: string | null;
+  banner?: 'offer' | 'info';
   rows: {
     name: string;
     value: string | number;
+    prevValue?: string | number;
+    text?: string;
+    isOfferOnlyField?: boolean;
   }[];
 };
 
@@ -437,6 +450,28 @@ export type PosActivationStatusTypes =
   | 'kyc_qualified_unactivated'
   | null;
 
+export type OfferPricing = {
+  prevValue: number | null;
+  currentValue: number;
+};
+
+export type OfferCardItem = {
+  pricing: (pricing: ProductDescriptionPricing) => OfferPricing;
+  text: string;
+};
+
+export type OfferCardsStruct = {
+  [key in PricingTypes]: OfferCardItem[];
+};
+
+export type TncTypes = 'offer' | 'normal' | 'nonOffer';
+
+export type TncObject = {
+  tncType: TncTypes;
+  text: string;
+  subpoints?: string[];
+};
+
 export enum POS_ACTIVATION_STATUS {
   submitted = 'submitted',
   needs_clarification = 'needs_clarification',
@@ -446,3 +481,18 @@ export enum POS_ACTIVATION_STATUS {
   kyc_qualified_stb = 'kyc_qualified_stb',
   kyc_qualified_unactivated = 'kyc_qualified_unactivated',
 }
+
+export type OfferConfig = {
+  offerText: string;
+  pdpOfferText: string;
+  preRateConfig: {
+    monthly: number;
+    lifetime: number;
+    setup_fee: number;
+  };
+  nextRateConfig: {
+    monthly: number | null;
+    lifetime: number | null;
+    setup_fee: number | null;
+  };
+};

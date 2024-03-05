@@ -9,14 +9,14 @@ import { CheckoutValidationError, OrderDetailsItem } from './types';
 
 type breakpoints = string | undefined;
 
-type useBladeBreakpoints = {
+type useBladeBreakpointsTypes = {
   matchedBreakpoint: breakpoints;
   isMobile: boolean;
   isDesktop: boolean;
   isLargeScreen: boolean; //desktop and tablets
 };
 
-export const useBladeBreakpoints = (): useBladeBreakpoints => {
+export const useBladeBreakpoints = (): useBladeBreakpointsTypes => {
   const { theme } = useTheme();
   const { matchedBreakpoint, matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
@@ -74,7 +74,7 @@ export const useIsVisible = ({
     const targetEl = ref.current;
     if (!targetEl) return undefined;
 
-    const observer = new IntersectionObserver(handleVisibilityChange, { threshold: 1 });
+    const observer = new IntersectionObserver(handleVisibilityChange, { threshold: 0.5 });
     observer.observe(targetEl);
 
     return () => {

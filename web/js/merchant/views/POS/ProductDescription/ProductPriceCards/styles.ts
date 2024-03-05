@@ -10,7 +10,16 @@ export const ProductPriceCard = styled.div(
     isSelected ? theme.colors.brand.primary[500] : theme.colors.surface.border.normal.lowContrast
   };
         margin: ${theme.spacing[4]}px 0;
-        min-height: 170px;
         cursor: pointer;
     `,
+);
+
+export const OfferAmountComponentWrapper = styled.span(
+  ({ theme }: { theme: Theme }) => `
+  position: relative;
+  span,
+  div {
+    color: ${theme.colors.surface.text.subdued.lowContrast};
+  }
+`,
 );

@@ -61,6 +61,8 @@ const ANDROID_MINI_POS: ProductDescription = {
           suffix: '/mo',
           isExtraFee: false,
           isChargeableAtCheckout: false,
+          prevValue: null,
+          nextValue: null,
         },
         {
           key: 'setup_fee',
@@ -69,6 +71,8 @@ const ANDROID_MINI_POS: ProductDescription = {
           suffix: 'setup fee',
           isExtraFee: true,
           isChargeableAtCheckout: true,
+          prevValue: null,
+          nextValue: null,
         },
       ],
     },
@@ -84,6 +88,8 @@ const ANDROID_MINI_POS: ProductDescription = {
           suffix: '',
           isExtraFee: false,
           isChargeableAtCheckout: true,
+          prevValue: null,
+          nextValue: null,
         },
       ],
     },
@@ -212,6 +218,7 @@ const ANDROID_MINI_POS: ProductDescription = {
         'PCI PTS 6.x (Android 10), PCI PTS 5.x (Android 8.1) | EMV L1 & L2 | EMV contactless L1 | Visa payWave | Mastercard contactless | UPI qUICS | American Expresspay | Discover D-PAS | JCB J/Speedy | Interac Flash | Mastercard TQM | CE | RoHs | FCC | IC | UL | WPC | BIS | Anatel | ABECS',
     },
   ],
+  offer: null,
 };
 
 export default ANDROID_MINI_POS;

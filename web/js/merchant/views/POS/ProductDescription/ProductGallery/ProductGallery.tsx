@@ -34,6 +34,7 @@ const ProductGallery = ({ gallery, productTitle }: ProductGallery): JSX.Element 
       maxWidth={{ base: '50%', m: '545px' }}
       testID="product-gallery-container"
       minWidth="400px"
+      marginRight={{ base: '0px', l: 'spacing.8' }}
     >
       <Thumbnails thumbnails={thumbnailsArr} onClick={handleOnThumbnailClick} />
       <SelectedImageContainer>

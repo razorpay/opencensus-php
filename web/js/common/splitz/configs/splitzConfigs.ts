@@ -34,6 +34,10 @@ export const splitzConfig: SplitzInitConfig = {
               key: 'result',
               value: 'off',
             },
+            {
+              key: 'offersEnabled',
+              value: 'off',
+            },
           ],
         },
       },

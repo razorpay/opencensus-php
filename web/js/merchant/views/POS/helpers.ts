@@ -18,6 +18,7 @@ import {
   PRODUCT_PLANS,
   FEE_TYPES,
   EASY_DASHBOARD_ROUTES,
+  PRODUCT_OFFER_CONFIG,
 } from './constants';
 import {
   CartItem,
@@ -34,7 +35,12 @@ import {
   ProductPricingMap,
   Product,
   OrderDetailsItem,
+  OfferConfig,
 } from './types';
+
+export const isValidFee = (value: number | null | undefined): boolean => {
+  return value === 0 || (value !== undefined && value !== null);
+};
 
 export const isPosExperimentEnabled = ({
   user,
@@ -55,6 +61,23 @@ export const isPosExperimentEnabled = ({
     isWhitelistedForPos &&
     !isUnregisteredMerchant
   );
+};
+
+type FetchProductOffers = {
+  isEnabled: boolean;
+  offers: Record<string, OfferConfig> | null;
+};
+
+export const fetchProductOffers = ({
+  abExperiments,
+}: {
+  abExperiments: ExperimentInfoType;
+}): FetchProductOffers => {
+  const isEnabled = abExperiments?.pos_onboarding?.variables?.offersEnabled === 'on';
+  return {
+    isEnabled,
+    offers: isEnabled ? PRODUCT_OFFER_CONFIG : null,
+  };
 };
 
 const checkIfMerchantHasOnlinePresence = (user): boolean => {
@@ -80,17 +103,37 @@ type getCartItemTotal = {
   pricing: ProductDescriptionPricing[];
   quantity: number;
   selectedPlan: ProductPlans;
+  isConsiderPrevValue?: boolean;
 };
 
-export const getCartItemTotal = ({ pricing, quantity, selectedPlan }: getCartItemTotal): number => {
+type getCartItemTotalReturnType = {
+  value: number;
+  prevValue: number;
+};
+
+export const getCartItemTotal = ({
+  pricing,
+  quantity,
+  selectedPlan,
+}: getCartItemTotal): getCartItemTotalReturnType => {
   const pricingForPlan = pricing.find(({ type }) => type === selectedPlan);
-  if (!pricingForPlan) return 0;
+  if (!pricingForPlan) return { value: 0, prevValue: 0 };
+
   const { breakups } = pricingForPlan;
-  const total = breakups.reduce(
-    (total, { value, isChargeableAtCheckout }) => total + (isChargeableAtCheckout ? value : 0),
-    0,
-  );
-  return total * quantity;
+
+  const total = breakups.reduce((total, { value, isChargeableAtCheckout }) => {
+    return total + (isChargeableAtCheckout ? value : 0);
+  }, 0);
+
+  const prevTotal = breakups.reduce((total, { value, prevValue, isChargeableAtCheckout }) => {
+    const consideredValue = isValidFee(prevValue) ? (prevValue as number) : value;
+    return total + (isChargeableAtCheckout ? consideredValue : 0);
+  }, 0);
+
+  return {
+    value: total * quantity,
+    prevValue: prevTotal * quantity,
+  };
 };
 
 export const saveCartInBrowserStorage = ({
@@ -118,11 +161,13 @@ export const getCartFromLocalStorage = ({ userId }: { userId: string }): CartIte
 type GetProductDescriptionWithPricingPlan = {
   productCode: string;
   pricingPlanDict: ProductPricingMap;
+  offerConfigForProduct?: OfferConfig | null;
 };
 
 export const getProductDescriptionWithPricingPlan = ({
   productCode,
   pricingPlanDict,
+  offerConfigForProduct,
 }: GetProductDescriptionWithPricingPlan): ProductDescription | null => {
   const productDescription = PRODUCT_DESCRIPTIONS[productCode];
   const productPricingWithValues = pricingPlanDict.find((item) => item.code === productCode);
@@ -133,15 +178,32 @@ export const getProductDescriptionWithPricingPlan = ({
   if (pricing) {
     const newPricingWithValue = pricing.map((plan) => {
       const { breakups } = plan;
-      const newBreakups = breakups.map((breakup) => ({
-        ...breakup,
-        value: productPricingWithValues?.rate_config?.[breakup.key] ?? 0,
-      }));
-      return { ...plan, breakups: newBreakups };
+      const newBreakups = breakups.map((breakup) => {
+        return {
+          ...breakup,
+          value: productPricingWithValues?.rate_config?.[breakup.key] ?? 0,
+          prevValue: offerConfigForProduct
+            ? offerConfigForProduct?.preRateConfig[breakup.key]
+            : null,
+          nextValue: offerConfigForProduct
+            ? offerConfigForProduct?.nextRateConfig[breakup.key]
+            : null,
+        };
+      });
+      return {
+        ...plan,
+        breakups: newBreakups,
+      };
     }, []);
     return {
       ...productDescription,
       pricing: newPricingWithValue,
+      offer: offerConfigForProduct
+        ? {
+            offerText: offerConfigForProduct.offerText ?? null,
+            pdpOfferText: offerConfigForProduct.pdpOfferText ?? null,
+          }
+        : null,
     };
   }
   return productDescription;
@@ -149,14 +211,22 @@ export const getProductDescriptionWithPricingPlan = ({
 
 type ConstructProductDescription = {
   pricingPlanDict: ProductPricingMap;
+  offerConfig?: Record<string, OfferConfig> | null;
 };
 
 export const constructProductDescription = ({
   pricingPlanDict,
+  offerConfig,
 }: ConstructProductDescription): ProductDescription[] => {
   const availableProducts = Object.keys(PRODUCT_DESCRIPTIONS);
   const productDescriptions = availableProducts
-    .map((productCode) => getProductDescriptionWithPricingPlan({ productCode, pricingPlanDict }))
+    .map((productCode) =>
+      getProductDescriptionWithPricingPlan({
+        productCode,
+        pricingPlanDict,
+        offerConfigForProduct: offerConfig?.[productCode] ?? null,
+      }),
+    )
     .filter(Boolean);
 
   return productDescriptions as ProductDescription[];
@@ -501,16 +571,38 @@ export const getPayloadForOrderCreate = ({
 export const getCartItemRental = ({
   pricing,
   quantity,
-}: Omit<getCartItemTotal, 'selectedPlan'>): number => {
+}: Omit<getCartItemTotal, 'selectedPlan'>): {
+  value: number;
+  prevValue: number;
+  nextValue: number | null;
+} => {
   const pricingForPlan = pricing.find(({ type }) => type === PRODUCT_PLANS.MONTHLY);
-  if (!pricingForPlan) return 0;
+  if (!pricingForPlan) return { value: 0, prevValue: 0, nextValue: null };
+
   const { breakups } = pricingForPlan;
   const total = breakups.reduce(
     (total, { value, key }) => total + (key === FEE_TYPES.MONTHLY ? value : 0),
     0,
   );
 
-  return total * quantity;
+  const prevTotal = breakups.reduce((total, { value, prevValue, key }) => {
+    const consideredValue = prevValue && isValidFee(prevValue) ? prevValue : value;
+    return total + (key === FEE_TYPES.MONTHLY ? consideredValue : 0);
+  }, 0);
+
+  const hasValidNextValue = breakups.some(({ nextValue }) => isValidFee(nextValue));
+
+  const nextTotal = hasValidNextValue
+    ? breakups.reduce((total, { nextValue, key }) => {
+        return total + (key === FEE_TYPES.MONTHLY ? Number(nextValue) : 0);
+      }, 0)
+    : null;
+
+  return {
+    value: total * quantity,
+    prevValue: prevTotal * quantity,
+    nextValue: nextTotal ? nextTotal * quantity : null,
+  };
 };
 
 type ProcessPrecheckoutPricing = {
@@ -530,27 +622,51 @@ export const processPrecheckoutPricing = ({
   const orderedDevices = cartItems.map(({ code, plan, quantity }) => {
     const productDescription: ProductDescription = productDescMap[code];
     const isRental = plan === PRODUCT_PLANS.MONTHLY;
+
+    const total = getCartItemTotal({
+      pricing: productDescription.pricing,
+      selectedPlan: plan,
+      quantity,
+    });
+
+    const rentalTotal = isRental
+      ? getCartItemRental({
+          pricing: productDescription.pricing,
+          quantity,
+        })
+      : null;
+
     return {
       productDescription,
       quantity,
       plan,
-      deviceTotal: getCartItemTotal({
-        pricing: productDescription.pricing,
-        selectedPlan: plan,
-        quantity,
-      }),
-      rentalAmount: isRental
-        ? getCartItemRental({
-            pricing: productDescription.pricing,
-            quantity,
-          })
-        : null,
+      deviceTotal: total.value,
+      prevDeviceTotal: total.prevValue,
+      rentalAmount: rentalTotal?.value ?? null,
+      prevRetalAmount: rentalTotal?.prevValue ?? null,
+      nextRentalAmount: rentalTotal?.nextValue ?? null,
     };
   });
+
+  const orderedDevicesWithOffer = orderedDevices.filter(
+    ({ productDescription }) => !!productDescription.offer,
+  );
+
+  const orderedDevicesWithoutOffer = orderedDevices.filter(
+    ({ productDescription }) => !productDescription.offer,
+  );
 
   const rentalDevices = orderedDevices
     .filter(({ plan }) => plan === PRODUCT_PLANS.MONTHLY)
     .filter(Boolean);
+
+  const rentalDevicesWithOffer = rentalDevices.filter(
+    ({ productDescription }) => !!productDescription.offer,
+  );
+
+  const rentalDevicesWithoutOffer = rentalDevices.filter(
+    ({ productDescription }) => !productDescription.offer,
+  );
 
   const baseAmount = orderedDevices.reduce((acc, orderItem) => (acc += orderItem.deviceTotal), 0);
   const gstBaseAmount = Math.floor((18 / 100) * baseAmount);
@@ -562,16 +678,18 @@ export const processPrecheckoutPricing = ({
 
   const pricingObj: OrderPricing = {
     deviceCharges: baseAmount,
-    orderedDevices,
+    orderedDevices: orderedDevicesWithOffer.length ? orderedDevicesWithoutOffer : orderedDevices,
     gstDevice: gstBaseAmount,
     shipping: 'Free',
     total: baseAmount + gstBaseAmount,
     rentalCharges: totalRentalAmount + gstRentalAmount,
-    rentalDevices,
+    rentalDevices: rentalDevicesWithOffer.length ? rentalDevicesWithoutOffer : rentalDevices,
     gstRental: gstRentalAmount,
     renewal: 'Every Month',
     invoiceUrl: '',
     refund: null,
+    orderedDevicesWithOffer,
+    rentalDevicesWithOffer,
   };
 
   return pricingObj;
@@ -623,6 +741,12 @@ type Prices = {
   monthly: number;
   setupFee: number;
   lifetime: number;
+  offer: {
+    prevMonthly: number;
+    prevSetupFee: number;
+    prevLifetime: number;
+    nextMonthly: number;
+  } | null;
 };
 
 export const getPricingByProduct = ({
@@ -633,20 +757,30 @@ export const getPricingByProduct = ({
   const subscriptionPricingBreakups =
     productDescription.pricing.find(({ type }) => type === PRODUCT_PLANS.MONTHLY)?.breakups || [];
 
-  const subscriptionMonthlyAmount =
-    subscriptionPricingBreakups.find(({ key }) => key === FEE_TYPES.MONTHLY)?.value ?? 0;
+  const subscriptionMonthlyAmount = subscriptionPricingBreakups.find(
+    ({ key }) => key === FEE_TYPES.MONTHLY,
+  );
 
-  const subscriptionSetupAmount =
-    subscriptionPricingBreakups.find(({ key }) => key === FEE_TYPES.SETUP_FEE)?.value ?? 0;
+  const subscriptionSetupAmount = subscriptionPricingBreakups.find(
+    ({ key }) => key === FEE_TYPES.SETUP_FEE,
+  );
 
-  const subscriptionLifetimeAmount =
-    productDescription.pricing.find(({ type }) => type === PRODUCT_PLANS.LIFETIME)?.breakups[0]
-      .value ?? 0;
+  const subscriptionLifetimeAmount = productDescription.pricing.find(
+    ({ type }) => type === PRODUCT_PLANS.LIFETIME,
+  )?.breakups[0];
 
   return {
-    monthly: subscriptionMonthlyAmount,
-    setupFee: subscriptionSetupAmount,
-    lifetime: subscriptionLifetimeAmount,
+    monthly: subscriptionMonthlyAmount?.value ?? 0,
+    setupFee: subscriptionSetupAmount?.value ?? 0,
+    lifetime: subscriptionLifetimeAmount?.value ?? 0,
+    offer: productDescription.offer
+      ? {
+          prevMonthly: subscriptionMonthlyAmount?.prevValue ?? 0,
+          prevSetupFee: subscriptionSetupAmount?.prevValue ?? 0,
+          prevLifetime: subscriptionLifetimeAmount?.prevValue ?? 0,
+          nextMonthly: subscriptionMonthlyAmount?.nextValue ?? 0,
+        }
+      : null,
   };
 };
 
@@ -721,40 +855,63 @@ export const getOrderPricingFromOrderDetails = ({
   const orderedDevices = items.map(({ code, count, period }) => {
     const productDescription = productDescMap[code];
     const isRental = period === PRODUCT_PLANS.MONTHLY;
+    const deviceTotal = getCartItemTotal({
+      pricing: productDescription.pricing,
+      selectedPlan: period as ProductPlans,
+      quantity: count,
+    });
+
+    const rentalTotal = getCartItemRental({
+      pricing: productDescription.pricing,
+      quantity: count,
+    });
+
     return {
       productDescription,
       quantity: count,
       plan: period as ProductPlans,
-      deviceTotal: getCartItemTotal({
-        pricing: productDescription.pricing,
-        selectedPlan: period as ProductPlans,
-        quantity: count,
-      }),
-      rentalAmount: isRental
-        ? getCartItemRental({
-            pricing: productDescription.pricing,
-            quantity: count,
-          })
-        : null,
+      deviceTotal: deviceTotal.value,
+      prevDeviceTotal: deviceTotal.prevValue,
+      rentalAmount: isRental ? rentalTotal.value : null,
+      prevRetalAmount: rentalTotal?.prevValue ?? null,
+      nextRentalAmount: rentalTotal?.nextValue ?? null,
     };
   });
+
+  const orderedDevicesWithOffer = orderedDevices.filter(
+    ({ productDescription }) => !!productDescription.offer,
+  );
+
+  const orderedDevicesWithoutOffer = orderedDevices.filter(
+    ({ productDescription }) => !productDescription.offer,
+  );
 
   const rentalDevices = orderedDevices
     .filter(({ plan }) => plan === PRODUCT_PLANS.MONTHLY)
     .filter(Boolean);
 
+  const rentalDevicesWithOffer = rentalDevices.filter(
+    ({ productDescription }) => !!productDescription.offer,
+  );
+
+  const rentalDevicesWithoutOffer = rentalDevices.filter(
+    ({ productDescription }) => !productDescription.offer,
+  );
+
   const pricingObj: OrderPricing = {
     deviceCharges: amount.base,
-    orderedDevices,
+    orderedDevices: orderedDevicesWithOffer.length ? orderedDevicesWithoutOffer : orderedDevices,
     gstDevice: amount.gst,
     shipping: 'Free',
     total: amount.total,
     rentalCharges: rental_amount?.base ?? 0,
-    rentalDevices,
+    rentalDevices: rentalDevicesWithOffer.length ? rentalDevicesWithoutOffer : rentalDevices,
     gstRental: rental_amount?.gst ?? 0,
     renewal: 'Every Month',
     invoiceUrl: '',
+    orderedDevicesWithOffer,
     refund: null,
+    rentalDevicesWithOffer,
   };
 
   const isAmountRefunded = status === 'rejected' && !!refund && refund?.status === 'processed';

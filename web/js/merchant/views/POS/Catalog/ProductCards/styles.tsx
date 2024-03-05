@@ -1,40 +1,47 @@
 import { Theme } from '@razorpay/blade/components';
 import styled from 'styled-components';
 
+export const ProductCardsContainer = styled.div(
+  ({ theme }: { theme: Theme }) => `
+    width: 100%;
+    display: block;
+    gap: ${theme.spacing[5]}px;
+
+    @media screen and (min-width: ${theme.breakpoints.xl + 100}px) {
+      display: flex;
+    }
+  `,
+);
+
 export const AndroidSmartMiniPosContainer = styled.div(
   ({ theme, isHovered }: { theme: Theme; isHovered: boolean }) => `
     width: 100%;
     min-width: 100px;
-    height: 350px;    
+    height: 400px;    
     background-color: ${theme.colors.surface.background.level1.lowContrast};
     position: relative;
     border-radius: ${theme.border.radius.large}px;
     overflow: hidden;
     box-shadow: ${isHovered ? theme.elevation.highRaised : 'none'};
     transition: box-shadow ease 0.5s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     margin-bottom: ${theme.spacing[5]}px;
-    
-    @media screen and (min-width: ${theme.breakpoints.xl}px) {
-      width: 50%;
-    }
+    display:flex;
+    justify-content: center;
   `,
 );
 
-export const AndroidMiniPosImageContainer = styled.div(
-  ({ isHovered }: { isHovered: boolean }) => `
-    position: absolute;
-    z-index: 2;
-    height: 100%;
-    width: 100%;
-    right: 8%;
-    top: 11%;
-    transform: scale(${isHovered ? '1.1' : '1.05'});
-    transition: transform ease 0.5s;
-    transform-origin: bottom left;
-`,
+export const ProductCardLeftImageAnimate = styled.div(
+  ({ isHovered, isOfferExits }: { isHovered: boolean; isOfferExits: boolean }) => `
+  max-width: 540px;
+  min-width: 500px;
+  position: relative;
+  transform: scale(${isHovered ? '1.03' : '1'});
+  transition: transform ease 0.5s;
+  transform-origin: bottom left;
+  position: absolute;
+  bottom: ${isOfferExits ? '-5px' : '0px'};
+  left: 0;
+  `,
 );
 
 export const AndroidPosMiniEllipse1 = styled.div(
@@ -87,7 +94,7 @@ export const MobilePosContainer = styled.div(
   ({ theme, isHovered }: { theme: Theme; isHovered: boolean }) => `
     width: 100%;
     min-width: 330px;
-    height: 350px;    
+    height: 400px;    
     background-color: ${theme.colors.surface.background.level1.lowContrast};
     position: relative;
     border-radius: ${theme.border.radius.large}px;
@@ -99,10 +106,6 @@ export const MobilePosContainer = styled.div(
     align-items: center;
     justify-content: center;
     margin-bottom: ${theme.spacing[5]}px;
-
-    @media screen and (min-width: ${theme.breakpoints.xl}px) {
-      width: 50%;
-    }
   `,
 );
 
@@ -110,10 +113,10 @@ export const MobilePosCardImage = styled.div(
   ({ isHovered }: { isHovered: boolean }) => `
     position: absolute;
     z-index:2;
-    height: 90%;
+    height: 85%;
     width: 100%;
     left: 40%;
-    bottom: 7%;
+    bottom: 4%;
     transform: scale(${isHovered ? 1.04 : 1});
     transition: transform ease 0.5s;
     transform-origin: bottom right;

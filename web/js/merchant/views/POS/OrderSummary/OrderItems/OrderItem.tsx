@@ -81,7 +81,7 @@ const OrderItem = ({ orderItem, isListItem, isOrderDetails }: OrderItem): JSX.El
           </Text>
         ) : null}
         {!isListItem ? (
-          <Amount value={total} isAffixSubtle={false} suffix="none" size="heading-small" />
+          <Amount value={total.value} isAffixSubtle={false} suffix="none" size="heading-small" />
         ) : null}
       </Box>
     </Box>
