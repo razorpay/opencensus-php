@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\QrCodeConfig; 
+namespace RZP\Models\QrCodeConfig;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -97,5 +97,28 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::QR_CODE_CONFIG_DELETED, ['success' => $response]);
 
         return ['success' => $response];
+    }
+
+
+    public function fetchStaticQrCodeConfig($terminal)
+    {
+        $this->trace->info(TraceCode::QR_CODE_CONFIG_FETCH_REQUEST);
+
+        $terminalId = $terminal->getId();
+        $merchantId = $terminal->getMerchantId();
+
+        $configs = $this->core()->fetchStaticQrCodeConfig($merchantId);
+
+        $configs = $this->preProcessOutput($configs);
+
+        $this->trace->info(TraceCode::QR_CODE_CONFIG_FETCHED, $configs);
+        $staticQRs= $configs[Keys::STATIC_QR];
+
+        if($staticQRs !== null)
+        {
+            $dataArray = json_decode($staticQRs,true);
+            return $dataArray[$terminalId];
+        }
+        return null;
     }
 }

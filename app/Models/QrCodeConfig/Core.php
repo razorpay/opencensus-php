@@ -79,4 +79,12 @@ class Core extends Base\Core
         return $config;
     }
 
+    public function fetchStaticQrCodeConfig($merchantId)
+    {
+        $config = $this->repo->findNonDeletedQrCodeConfigsByMerchantIdAndKey($merchantId,
+            Keys::STATIC_QR);
+
+        return $config;
+    }
+
 }

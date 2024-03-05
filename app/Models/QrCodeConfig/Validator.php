@@ -10,12 +10,12 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::KEY          => 'required|string|in:cut_off_time',
+        Entity::KEY          => 'required|string|in:cut_off_time,static_qr',
         Entity::VALUE        => 'sometimes',
     ];
 
     protected static $editRules = [
-        Entity::KEY          => 'required|string|in:cut_off_time',
+        Entity::KEY          => 'required|string|in:cut_off_time,static_qr',
         Entity::VALUE        => 'sometimes',
     ];
 

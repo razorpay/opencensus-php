@@ -881,6 +881,10 @@ final class RazorxTreatment
 
     const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
 
+    const QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS = 'qrv2_static_qr_unrecognised_payment_process';
+
+    const QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS = 'qr_gateway_unrecognised_payment_process';
+
     const HDFC_QR_EXPIRY = 'hdfc_qr_expiry';
 
     // If true, it will select Optimizer mandate hub for card recurring payments.

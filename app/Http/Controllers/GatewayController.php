@@ -50,6 +50,7 @@ use RZP\Models\P2p\Preferences as P2pPreferences;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
 use RZP\Models\Merchant\Repository as MerchantRepository;
+use RZP\Models\QrCodeConfig\Service as QrCodeConfigService;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction as p2pUpiAxisActions;
 use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
@@ -652,6 +653,16 @@ class GatewayController extends Controller
             $isQrV2Payment = true;
         }
 
+        if ($isQrV2Payment === false)
+        {
+            $staticQrId = $this->getStaticQRIdAndSetInputForPayments($input, $gatewayDriver);
+            if ($staticQrId !== null)
+            {
+                $paymentId     = $staticQrId;
+                $isQrV2Payment = true;
+            }
+        }
+
         $mode = $qrRepo->determineLiveOrTestModeByMerchantReference($paymentId);
 
         if ($mode !== null)
@@ -723,6 +734,66 @@ class GatewayController extends Controller
         }
 
         return $data;
+    }
+
+    protected function getTerminalForUnexpectedPayment($input, $gatewayDriver)
+    {
+        $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
+
+        $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gatewayDriver, $data['terminal']);
+
+        return $terminal;
+    }
+
+    protected function getStaticQRIdAndSetInputForPayments(&$input, $gatewayDriver)
+    {
+        $terminal = $this->getTerminalForUnexpectedPayment($input, $gatewayDriver);
+
+        if ($terminal->isQrV2Terminal() === false)
+        {
+            return null;
+        }
+
+        $mode = ($this->app->isProduction() === true) ? Mode::LIVE : Mode::TEST;
+
+        $gatewayVariant = $this->app->razorx->getTreatment($terminal->getGateway(),
+            RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS,
+            $mode);
+
+        if (strtolower($gatewayVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return null;
+        }
+
+        $merchantId = $terminal->getMerchantId();
+
+        $midVariant = $this->app->razorx->getTreatment($merchantId,
+            RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS, $mode);
+
+        if (strtolower($midVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return null;
+        }
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $staticQrId = (new QrCodeConfigService())->fetchStaticQrCodeConfig($terminal);
+
+        if ($staticQrId === null)
+        {
+            return null;
+        }
+
+        $input['data']['meta']['qrCodeId'] = $staticQrId;
+
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+            '$terminal' => $terminal->getId(),
+            '$staticQrId' => $staticQrId,
+            'message'   => 'qrCodeId is set in the Callback meta data for processing unrecognized merchant reference ',
+        ]);
+
+        return $staticQrId;
     }
 
     protected function processMandateServerCallback($input, $gatewayDriver)

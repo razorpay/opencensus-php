@@ -1013,7 +1013,7 @@ trait CommonGatewayTrait
                 QrGatewayResponseParams::VPA                   => $inputFields['upi'][Entity::VPA],
                 QrGatewayResponseParams::METHOD                => Payment\Method::UPI,
                 QrGatewayResponseParams::GATEWAY_MERCHANT_ID   => $inputFields['terminal'][\RZP\Models\Terminal\Entity::GATEWAY_MERCHANT_ID],
-                QrGatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($inputFields['upi'][Entity::MERCHANT_REFERENCE]),
+                QrGatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($inputFields['upi'][Entity::MERCHANT_REFERENCE], $inputFields),
                 QrGatewayResponseParams::PROVIDER_REFERENCE_ID => $inputFields['upi'][Entity::NPCI_REFERENCE_ID],
                 QrGatewayResponseParams::PAYEE_VPA             => $this->getPayeeVpa($inputFields, $gateway),
             ];
@@ -1092,11 +1092,19 @@ trait CommonGatewayTrait
      *
      * @return string
      */
-    public function getQrPaymentMerchantReference($merchantReference)
+    public function getQrPaymentMerchantReference($merchantReference, $inputFields = null)
     {
         //TODO: For the far future, make sure to have a proper length check for merchantReference string
         // This is to avoid any complication due to the ref. string containing the prefix or suffix itself.
         // Though this is very rare, better be safe than sorry.
+
+        //For APB static QR where merchant reference is random value, static QR id to be used will be set in meta qrCodeId field.
+        if ((isset($inputFields) === true) and
+            (isset($inputFields['meta']) === true) and
+            (isset($inputFields['meta']['qrCodeId']) === true))
+        {
+            return $inputFields['meta']['qrCodeId'];
+        }
 
         // We expect gateways to define their own gateway prefix property for QR
         if ((empty($this->qrPaymentMerchantRefPrefix) === false) and
