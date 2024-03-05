@@ -1427,6 +1427,7 @@ return [
         'gatewaytoken_associate_terminals_from_ts' => env('GATEWAYTOKEN_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
         'token_associate_terminals_from_ts' => env('TOKEN_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
         'merchant_associate_terminals_from_ts' => env('MERCHANT_ASSOCIATE_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
+        'enable_log_api_terminal_read_events' => env('ENABLE_LOG_API_TERMINAL_READ_EVENTS',true),
     ],
 
     'pos_app' => [

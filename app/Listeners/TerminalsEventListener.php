@@ -11,14 +11,11 @@ class TerminalsEventListener
     {
         $entity = $event->entity;
 
-        (new Terminal\Service())->logRouteName($entity->getId());
+        (new Terminal\Service())->logRouteName($entity->getId(), "read");
     }
 
     public function onSaved(Terminal\EventSaved $event)
     {
-        $entity = $event->entity;
-
-        (new Terminal\Service())->logRouteName($entity->getId());
     }
 
 }

@@ -1736,20 +1736,28 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function logRouteName(string $terminalId)
+    public function logRouteName(string $terminalId, string $action)
     {
-        $shouldLogRetrievalEvent = false;
+        $app = App::getFacadeRoot();
 
-        if($shouldLogRetrievalEvent === true) {
-            $app = App::getFacadeRoot();
+        $shouldLogRetrievalEvent = $app['config']->get('applications.terminals_service.enable_log_api_terminal_read_events');
 
-            $ba = $app['basicauth'];
+        if($shouldLogRetrievalEvent)
+        {
 
             $routeName =  $app['request.ctx']->getRoute();
+
+            //Nach payments / terminals write will create burst of event logs, as we skip these
+            //We are planning to remove these reads once removed will remove this check
+            if($routeName === "subscription_registration_charge_token" || $routeName === "terminal_create_bulk") {
+                return;
+            }
 
             $this->trace->info(TraceCode::TERMINALS_RETRIEVAL_EVENT, [
                 'terminal_id' => $terminalId,
                 'route_name'  => $routeName,
+                'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8),
+                'action' => $action,
             ]);
         }
     }
