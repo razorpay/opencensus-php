@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
-import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { Box, Title } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
+
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
+import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
+import RizeMarketplaceAppStoreBanner from 'merchant/views/RizeMarketplace/common/components/RizeMarketplaceAppStoreBanner';
+import { useRizeMarketplaceExperiment } from 'merchant/views/RizeMarketplace/common/utils';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 import { partnerProducts } from './data/index';
 
@@ -206,9 +210,15 @@ function PartnerAppCard(props) {
 // Main Component
 function PartnerAppStore(props) {
   const isPartner = props.user.isPartner();
+  const businessName = props.org.business_name;
+  const isRizeMarketplaceEnabled = useRizeMarketplaceExperiment();
 
   return (
-    <div className="PartnerAppStore appstore-shared-styles">
+    <div
+      className={`PartnerAppStore appstore-shared-styles ${
+        isRizeMarketplaceEnabled ? 'rize-marketplace-enabled' : ''
+      }`}
+    >
       <section className="appstore-card">
         {/* Top banner START */}
         <div className="appstore-header text-white">
@@ -219,29 +229,42 @@ function PartnerAppStore(props) {
           </div>
 
           <div className="appstore-info">
-            <h1 className="appstore-heading">
-              Find the <span className="text-teal">right apps</span> for your business needs
-            </h1>
-            <p>Explore powerful applications and tools to get the most out of Razorpay</p>
+            {isRizeMarketplaceEnabled ? (
+              <h1 className="appstore-heading">
+                Find the right <span className="text-teal">Apps & Deals</span> for your Business
+                needs
+              </h1>
+            ) : (
+              <>
+                <h1 className="appstore-heading">
+                  Find the <span className="text-teal">right apps</span> for your business needs
+                </h1>
+                <p>Explore powerful applications and tools to get the most out of {businessName}</p>
+              </>
+            )}
           </div>
-          {props.isMobileResolution ? (
-            <img
-              className="top-shape-green top-shape-green-mobile"
-              src="/dist/css/assets/app-store/mob-banner-shape-green.svg"
-              alt=""
-            />
-          ) : (
-            <img
-              className="top-shape-green"
-              src="/dist/css/assets/app-store/top-shape-green.svg"
-              alt=""
-            />
+          {!isRizeMarketplaceEnabled && (
+            <>
+              {props.isMobileResolution ? (
+                <img
+                  className="top-shape-green top-shape-green-mobile"
+                  src="/dist/css/assets/app-store/mob-banner-shape-green.svg"
+                  alt=""
+                />
+              ) : (
+                <img
+                  className="top-shape-green"
+                  src="/dist/css/assets/app-store/top-shape-green.svg"
+                  alt=""
+                />
+              )}
+              <img
+                className="razorpay-partner-image"
+                src="/dist/css/assets/app-store/razorpay-partner.svg"
+                alt=""
+              />
+            </>
           )}
-          <img
-            className="razorpay-partner-image"
-            src="/dist/css/assets/app-store/razorpay-partner.svg"
-            alt=""
-          />
         </div>
         {/* Top banner ENDS */}
 
@@ -254,17 +277,46 @@ function PartnerAppStore(props) {
             <img className="dots-4" src="/dist/css/assets/app-store/dots.svg" />
           </div>
         )}
-        {/* New banner */}
-        <NewAppBanner {...props} />
+
+        {isRizeMarketplaceEnabled ? (
+          <Box
+            marginTop={{ base: 'spacing.7', l: 'spacing.10' }}
+            marginX={{ base: 'spacing.7', l: '92px' }}
+          >
+            <RizeMarketplaceAppStoreBanner />
+          </Box>
+        ) : (
+          /* New banner */
+          <NewAppBanner {...props} />
+        )}
 
         {/* Main part that holds partner cards */}
         <div className="partner-products-container">
+          {isRizeMarketplaceEnabled && (
+            <Box
+              paddingX={{ base: 'spacing.7', l: 'spacing.5' }}
+              marginBottom={{ base: 'spacing.4', l: 'spacing.1' }}
+            >
+              <Title as="h2" size="small">
+                Explore Apps to get the most out of {businessName}
+              </Title>
+            </Box>
+          )}
           {Object.values(partnerProducts).map((product, index) => {
             if (product.slug === 'whatsapp-bot-payment-link' && !props.user.isAppStoreEnabled) {
               return null;
             }
 
-            return <PartnerAppCard key={`app-${index}`} product={product} {...props} />;
+            return (
+              <PartnerAppCard
+                key={`app-${index}`}
+                product={{
+                  ...product,
+                  isNew: isRizeMarketplaceEnabled ? false : product.isNew,
+                }}
+                {...props}
+              />
+            );
           })}
         </div>
       </section>
@@ -280,6 +332,7 @@ export default connect(
   (state) => ({
     user: state.session.user,
     isMobileResolution: state.app.isMobileResolution,
+    org: state.session.org,
   }),
   { openModal, closeModal },
 )(

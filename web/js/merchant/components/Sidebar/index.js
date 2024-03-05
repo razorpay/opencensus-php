@@ -281,7 +281,7 @@ class Sidebar extends Component {
                 >
                   <div className="open">
                     <MainNavLink
-                      label="App Store"
+                      label="Apps & Deals"
                       icon="i i-app-store text-primary"
                       to="/app-store"
                       customBadge="NEW"

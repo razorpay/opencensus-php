@@ -1,3 +1,9 @@
+/*
+  stylelint-disable -- Disabling Stylelint as the small changes I had made for Rize Marketplace FTX did not have any stylelint issues,
+  and we did not have the bandwidth to resolve the 200+ lint errors in the older parts of this file.
+  Please remove this comment and resolve the stylelint errors when modifying this file in the future.
+*/
+
 $titleColor = #162F56 /* Shade 900 */
 $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
 
@@ -5,12 +11,13 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
   padding: 20px 23px;
   color: $paragraphColor;
 
-  p
+  p:not([data-blade-component])
     color: $paragraphColor;
 
   h1, h2, h3, h4, h5, h6
-    color: $titleColor;
-    font-weight: bold;
+    &:not([data-blade-component])
+      color: $titleColor;
+      font-weight: bold;
 
   section.appstore-card
     background-color: #fff;
@@ -317,6 +324,22 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
       right: 90px;
       top: -110px;
 
+.PartnerAppStore.rize-marketplace-enabled
+  section.appstore-card
+    .appstore-header
+      background-image: url("assets/app-store/top-banner.svg");
+      background-position: top;
+      height: auto;
+
+      .appstore-info
+        width: 700px;
+
+      img.top-banner
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+
 /* AppStore Mobile */
 @media (max-width: 768px)
   .layout--fp
@@ -414,6 +437,18 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
 
           h2
             font-size: 24px;
+
+  .PartnerAppStore.rize-marketplace-enabled
+    section.appstore-card
+      .appstore-header
+        background-position: top left;
+
+        .appstore-info
+          width: 100%;
+          padding-top: 0;
+
+      .partner-products-container
+        padding: 32px 0 50px;
 
 /* AppStore Mobile Styles END */
 
@@ -763,3 +798,4 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
             width: 100%;
             bottom: unset;
             text-align: center;
+

@@ -60,7 +60,7 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   offers: 'Offers',
   api_keys: 'API Keys and Plugins',
   developers: 'Developers',
-  app_store: 'App Store',
+  app_store: 'Apps & Deals',
   payment_metrics: 'Payment Metrics',
   pos: 'POS',
   gcms_programs: 'Programs',

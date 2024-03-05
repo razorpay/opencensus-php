@@ -983,5 +983,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/app-store', /\/rize-marketplace(\/(.)*)?/],
+      abExperiments: [
+        {
+          uniqueHashKey: 'rize_marketplace',
+          experimentId: {
+            beta: 'NajXNUXMrVJU9J',
+            production: 'Nb8H4x6K6yvdX7',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

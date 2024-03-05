@@ -68,6 +68,7 @@ module.exports = {
         ],
       },
     ],
+    'import/extensions': 'off',
   },
   env: {
     browser: true,

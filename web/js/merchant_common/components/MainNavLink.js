@@ -83,7 +83,7 @@ class MainNavLink extends Component {
     });
 
     if (
-      this.props.label === 'App Store' &&
+      this.props.label === 'Apps & Deals' &&
       window.rzpQ &&
       window.rzpQ.onbr().clicked &&
       window.rzp_user.merchant

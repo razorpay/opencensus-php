@@ -15,6 +15,7 @@ export enum Teams {
   CARE = 'Care',
   PARTNERSHIP = 'Partnership',
   RISK = 'Risk',
+  RIZE = 'Rize',
   PG_DASHBOARD = 'PG Dashboard',
   BANKING = 'Banking',
   TERMINAL = 'Terminal',
@@ -178,6 +179,8 @@ export const RoutesConfig = {
   '/reports': Teams.MERCHANT_REPORTING,
   '/reversals': Teams.PG_DASHBOARD,
   '/reversals/batchreversals': Teams.PG_DASHBOARD,
+
+  '/rize-marketplace': Teams.RIZE,
 
   '/route': Teams.APPS,
   '/route/accounts': Teams.APPS,

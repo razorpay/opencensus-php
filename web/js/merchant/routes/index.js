@@ -293,6 +293,18 @@ const PartnerPage = lazy(() =>
   import(/* webpackChunkName: "PartnerPage" */ 'merchant/views/PartnerAppStore/PartnerPage'),
 );
 
+const RizeMarketplacePage = lazy(() =>
+  import(
+    /* webpackChunkName: "RizeMarketplacePage" */ 'merchant/views/RizeMarketplace/Marketplace'
+  ),
+);
+
+const RizeMarketplaceListingPage = lazy(() =>
+  import(
+    /* webpackChunkName: "RizeMarketplaceListingPage" */ 'merchant/views/RizeMarketplace/Listing'
+  ),
+);
+
 const WhatsNewDetailsPage = lazy(() =>
   import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
 );
@@ -737,6 +749,12 @@ const fullPageViewsMap = {
     additionalCondition: (_, extraConfig) => {
       return !extraConfig?.i18?.isConfigTagEnabled('app_store.app_store');
     },
+  },
+  '/rize-marketplace': {
+    component: RizeMarketplacePage,
+  },
+  '/rize-marketplace/:slug': {
+    component: RizeMarketplaceListingPage,
   },
   '/tncform': {
     component: GenerateTnC,
