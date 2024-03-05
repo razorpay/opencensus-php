@@ -1,0 +1,39 @@
+name: Block Specific Users from Merging
+
+on: [push]
+
+jobs:
+  block_merging:
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'hotfix') == false && contains(github.ref, 'revert') == false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install gspread oauth2client
+
+      - name: Check if user is blocked from merging
+        id: check_user_blocked
+        run: python ./ci-assets/block_user.py
+        continue-on-error: true  # Ensure the workflow continues even if this step fails
+        env:
+          GOOGLE_SHEETS_CREDS: ${{ secrets.GOOGLE_SHEETS_CREDS }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          GITHUB_ACTOR: ${{ github.actor }}
+
+      - name: Comment on PR if blocked
+        if: steps.check_user_blocked.outcome == 'failure'
+        run: |
+          echo "User ${{ github.actor }} is blocked from merging this PR. Refer to this [sheet](https://docs.google.com/spreadsheets/d/1Nf5MURrNfvqEPD16v6-rC8_Rwn77DbABNwPXJtoW-p0/#gid=535303587)" | gh pr comment ${{ github.event.pull_request.number }} --body-file=-
+          exit 1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
