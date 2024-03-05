@@ -2,6 +2,7 @@ import { rest } from 'msw';
 import { server } from 'test-utils';
 
 import { timelineResponse } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentDetailsTimeline';
+import { submerchantPaymentAppDetails } from './fixtures/PaymentDetails';
 
 export const mockPaymentIdDetails = ({ error }) => {
   return server.use(
@@ -521,7 +522,7 @@ export const mockfetchHolidayList = () => {
   );
 };
 
-export const mockApplicationDetails = () => {
+export const mockApplicationDetails = ({ data = submerchantPaymentAppDetails }) => {
   return server.use(
     rest.get('*/merchant/api/:mode/partner/subm_payment/app_details', (req, res, ctx) => {
       return res(
@@ -529,14 +530,7 @@ export const mockApplicationDetails = () => {
         ctx.json({
           status_code: 200,
           success: true,
-          data: {
-            application: [
-              {
-                name: 'whatsapp',
-                id: 'whatsappapplicationid',
-              },
-            ],
-          },
+          data,
         }),
         ctx.delay(50),
       );

@@ -7,6 +7,7 @@ import {
   initialState,
   paymentPageProps,
   refundPageProps,
+  submerchantPaymentAppDetails,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentDetails';
 import {
   mockPaymentIdDetails,
@@ -23,6 +24,12 @@ jest.mock('merchant/views/Transactions/v2/Payments/components/PaymentsDetails/ut
   isIssueRefundDisabled: (_) => {
     return false;
   },
+}));
+
+let mockLocation = { pathname: '/' };
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useLocation: () => mockLocation,
 }));
 
 jest.mock(
@@ -66,14 +73,20 @@ jest.mock(
   'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsOverview',
   () => ({
     __esModule: true,
-    default: () => {
-      return <div>Payment Details Overview</div>;
+    default: ({ applicationDetails }) => {
+      return (
+        <div>
+          Payment Details Overview
+          <div data-testid="submerchant-app-id">{applicationDetails?.id || 'empty'}</div>
+        </div>
+      );
     },
   }),
 );
 
 describe('Payment Details component', () => {
   const App = ({ props }) => {
+    mockLocation = props.location;
     return <PaymentsDetails {...props} />;
   };
 
@@ -103,6 +116,21 @@ describe('Payment Details component', () => {
       render(<App props={paymentPageProps} />, { initialState });
       await waitForElementToBeRemoved(() => screen.getByRole('progressbar'));
       expect(screen.getByText('Payment Details Overview')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('submerchant-app-id')).toHaveTextContent(
+          submerchantPaymentAppDetails.application.id,
+        );
+      });
+    });
+    test('should render Payment Details overview with empty app details', async () => {
+      // mock empty app details
+      mockApplicationDetails({ data: { application: [] } });
+      render(<App props={paymentPageProps} />, { initialState });
+      await waitForElementToBeRemoved(() => screen.getByRole('progressbar'));
+      expect(screen.getByText('Payment Details Overview')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('submerchant-app-id')).toHaveTextContent('empty');
+      });
     });
 
     test('should render Payment Details component', async () => {

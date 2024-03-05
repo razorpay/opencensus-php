@@ -50,13 +50,6 @@ describe('Payment Details Section component', () => {
       expect(screen.getByText(`${happyFlowProps.paymentDetails.order_id}`)).toBeInTheDocument();
     });
 
-    test('should render Order Id', () => {
-      render(<App props={happyFlowProps} />);
-
-      expect(screen.getByText('Order ID')).toBeInTheDocument();
-      expect(screen.getByText(`${happyFlowProps.paymentDetails.order_id}`)).toBeInTheDocument();
-    });
-
     test('should render Fee bearer', () => {
       render(<App props={happyFlowProps} />);
 
@@ -64,28 +57,13 @@ describe('Payment Details Section component', () => {
       expect(screen.getByText(`You pay the Razorpay platform fee`)).toBeInTheDocument();
     });
 
-    test('should render App Name', () => {
-      render(<App props={happyFlowProps} />);
-
-      expect(screen.getByText('App Name')).toBeInTheDocument();
-      expect(screen.getByText(`${happyFlowProps.applicationDetails.name}`)).toBeInTheDocument();
-    });
-
-    test('should render App ID', () => {
+    test('should render App ID and Name', () => {
       render(<App props={happyFlowProps} />);
 
       expect(screen.getByText('App ID')).toBeInTheDocument();
       expect(screen.getByText(`${happyFlowProps.applicationDetails.id}`)).toBeInTheDocument();
-    });
-
-    test('should render Customer details', () => {
-      render(<App props={happyFlowProps} />);
-
-      expect(screen.getByText('Customer details')).toBeInTheDocument();
-      expect(screen.getByText(`${happyFlowProps.paymentDetails.email}`)).toBeInTheDocument();
-      expect(
-        screen.getByText(`${formatPhoneNumber(happyFlowProps.paymentDetails.contact)}`),
-      ).toBeInTheDocument();
+      expect(screen.getByText('App Name')).toBeInTheDocument();
+      expect(screen.getByText(`${happyFlowProps.applicationDetails.name}`)).toBeInTheDocument();
     });
 
     test('should render Customer details', () => {

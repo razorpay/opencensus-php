@@ -1,4 +1,6 @@
+import { CommonApiResponse } from 'common/typings';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { ApplicationDetails } from './v2/Payments/components/PaymentsDetails/types';
 
 export const fetchPaymentIdDetails = (id: string): Promise<any> => {
   return merchantFetch({
@@ -70,6 +72,8 @@ export const fetchTransactionTimelineDataFn = (id: string): Promise<any> => {
   return merchantFetch(`settlements/transaction/timeline?id=${id}`);
 };
 
-export const fetchAppDetails = (id): Promise<any> => {
+export const fetchAppDetails = (
+  id: string,
+): Promise<CommonApiResponse<{ application: ApplicationDetails | null }>> => {
   return merchantFetch(`partner/subm_payment/app_details?payment_id=${id}`);
 };

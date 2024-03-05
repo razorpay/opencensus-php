@@ -1,9 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import GoBack from 'merchant/views/Transactions/v2/common/components/GoBack';
-import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
-import { withRouter } from 'common/deprecated/withRouter';
-import PaymentDetailsOverview from './PaymentDetailsOverview';
 import {
   Box,
   useTheme,
@@ -15,11 +10,16 @@ import {
   CardBody,
   Button,
 } from '@razorpay/blade/components';
-import PaymentDetailsTimeline from './PaymentDetailsTimeline';
-import PaymentDetailsSection from './PaymentDetailsSection';
-import PaymentRefundDetails from './PaymentRefundDetails';
 import { useBreakpoint } from '@razorpay/blade/utils';
+import isEmpty from 'lodash/isEmpty';
+import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
+
+import ErrorLoadingImage from 'assets/transactions/error-loading.svg';
+import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { withRouter } from 'common/deprecated/withRouter';
+import { getErrorMessageFromResponse, deepClone } from 'common/utils/rzp-utils';
+import * as PaymentActions from 'merchant/reducers/payments/details';
 import {
   fetchPaymentIdDetails,
   fetchPaymentIdRefundDetails,
@@ -29,24 +29,27 @@ import {
   refundPaymentFn,
   fetchAppDetails,
 } from 'merchant/views/Transactions/model';
+import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModalNew';
+import GoBack from 'merchant/views/Transactions/v2/common/components/GoBack';
+import {
+  trackDetailsClick,
+  trackDetailsPageLoad,
+} from 'merchant/views/Transactions/v2/common/tracking';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+
+import PaymentDetailsOverview from './PaymentDetailsOverview';
+import PaymentDetailsSection from './PaymentDetailsSection';
+import PaymentDetailsTimeline from './PaymentDetailsTimeline';
+import PaymentRefundDetails from './PaymentRefundDetails';
+import { ErrorWrapper, StyledGoBackBtn } from './styled';
 import {
   IPaymentDetails,
   IPaymentIdRefundDetails,
   ICurrentBalance,
   ApplicationDetails,
 } from './types';
-import { getErrorMessageFromResponse, deepClone } from 'common/utils/rzp-utils';
-import ErrorLoadingImage from 'assets/transactions/error-loading.svg';
-import { ErrorWrapper, StyledGoBackBtn } from './styled';
 import { isIssueRefundDisabled } from './utils';
-import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModalNew';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import * as PaymentActions from 'merchant/reducers/payments/details';
-import {
-  trackDetailsClick,
-  trackDetailsPageLoad,
-} from 'merchant/views/Transactions/v2/common/tracking';
 
 const flexDirectionSettings: any = { base: 'column', xl: 'row', l: 'row' };
 
@@ -84,7 +87,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     const isPaymentsRoute = location.pathname.includes('/payments');
     const { id } = params;
     // slicing the pay_ from the payment id
-    const slicedPaymentId = id?.slice(4, id.length + 1);
+    const slicedPaymentId = id?.replace('pay_', '') as string;
     try {
       if (isPaymentsRoute) {
         // payments route - api call flow
@@ -99,7 +102,9 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
 
         try {
           const appDetailsResponse = await fetchAppDetails(slicedPaymentId);
-          setApplicationDetails(appDetailsResponse?.data?.application[0]);
+          let applicationDetails = appDetailsResponse?.data?.application || null;
+          if (isEmpty(applicationDetails)) applicationDetails = null;
+          setApplicationDetails(applicationDetails);
         } catch (err) {
           showNotification({
             type: 'error',

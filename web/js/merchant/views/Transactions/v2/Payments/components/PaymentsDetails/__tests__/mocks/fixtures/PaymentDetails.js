@@ -28,3 +28,10 @@ export const refundPageProps = {
     },
   },
 };
+
+export const submerchantPaymentAppDetails = {
+  application: {
+    name: 'WhatsApp',
+    id: 'testapplicationid',
+  },
+};
