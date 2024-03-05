@@ -5,6 +5,9 @@ namespace RZP\Services;
 use App;
 use Request;
 use RZP\Constants\Mode;
+use RZP\Exception;
+use RZP\Error\Error;
+use RZP\Error\ErrorClass;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
@@ -59,6 +62,8 @@ class OffersEngine
     const OffersEngineGetOfferByID = 'v1/offers/%s';
 
     const OffersEngineGetOffers = 'v1/offers';
+
+    const ValidateOffer = 'v1/offers/validate';
 
     // Requests/responses will be logged by default or if value for path mentioned here is true.
     const REQUEST_LOGGER_MAP = [
@@ -115,11 +120,12 @@ class OffersEngine
         string $endpoint,
         string $method,
         array $data = [],
+        bool $throwExceptionOnFailure = true,
         int $timeout = self::DEFAULT_REQUEST_TIMEOUT)
     {
         $request = $this->generateRequest($endpoint, $method, $data, $timeout);
 
-        return $this->sendOffersEngineRequest($request, $endpoint);
+        return $this->sendOffersEngineRequest($request, $endpoint, $throwExceptionOnFailure);
     }
 
     public function shouldLogResponse(string $endpoint, string $method) :bool
@@ -165,7 +171,7 @@ class OffersEngine
      * @throws ServerErrorException
      * @throws \Throwable
      */
-    protected function sendOffersEngineRequest(array $request, string $endpoint)
+    protected function sendOffersEngineRequest(array $request, string $endpoint, bool $throwExceptionOnFailure = true)
     {
         $this->traceRequest($request);
 
@@ -181,6 +187,7 @@ class OffersEngine
             $parsedResponse = $this->parseAndReturnResponse($response);
 
             $logResponse = $this->shouldLogResponse($endpoint, $request['method']);
+
             if($logResponse === true)
             {
                 $this->trace->info(TraceCode::OFFERS_ENGINE_RESPONSE,
@@ -190,25 +197,7 @@ class OffersEngine
                     ]);
             }
 
-            if ($response->status_code === 400)
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, $parsedResponse);
-            }
-            else if ($response->status_code >= 400)
-            {
-                $traceCode = TraceCode::OFFERS_ENGINE_REQUEST_FAILURE;
-                // don't throw error if update call doesn't have an offer
-                if ($parsedResponse['message'] === "SERVER_ERROR_DB_FETCH_ERROR")
-                {
-                    $traceCode = TraceCode::OFFERS_ENGINE_ID_NOT_FOUND;
-                }
-
-                throw new ServerErrorException(
-                    $traceCode,
-                    ErrorCode::SERVER_ERROR,
-                    $parsedResponse
-                );
-            }
+            return $this->checkAndParseError($parsedResponse, $response->status_code, $throwExceptionOnFailure);
         }
         catch(\Throwable $e)
         {
@@ -224,8 +213,73 @@ class OffersEngine
 
             throw $e;
         }
+    }
 
-        return $parsedResponse;
+    /**
+     * @throws ServerErrorException
+     * @throws BadRequestException
+     */
+    protected function checkAndParseError($response, $statusCode, bool $throwExceptionOnFailure = false, bool $nullResponseAllowed = false): array
+    {
+        if ($statusCode === 200)
+        {
+            if (($response === null && $nullResponseAllowed) || ($response !== null))
+            {
+                return $response;
+            }
+            else
+            {
+                throw new Exception\ServerErrorException('Offers Engine Response cannot be null',
+                    ErrorCode::SERVER_ERROR_OFFERS_ENGINE_SERVICE_FAILURE);
+            }
+
+        }
+
+        $formattedResponse = [];
+
+        if (isset($response['message']))
+        {
+            $error = [
+                'internal_error_code' => $response['message'],
+                'code' => $response['details'][0]['code']
+            ];
+
+            $formattedResponse['error'] = $error;
+        }
+
+        if ($throwExceptionOnFailure === false)
+        {
+            return $formattedResponse;
+        }
+
+        if (in_array($response->status_code, [503], true) === true)
+        {
+            throw new Exception\ServerErrorException('Offers Engine Service is unreachable',
+                ErrorCode::SERVER_ERROR_OFFERS_ENGINE_SERVICE_FAILURE);
+        }
+
+        if ($statusCode === 400)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, $formattedResponse);
+        }
+
+        else if ($statusCode > 400)
+        {
+            $traceCode = TraceCode::OFFERS_ENGINE_REQUEST_FAILURE;
+
+            if ($response['message'] === "SERVER_ERROR_DB_FETCH_ERROR")
+            {
+                $traceCode = TraceCode::OFFERS_ENGINE_ID_NOT_FOUND;
+            }
+
+            throw new ServerErrorException(
+                $traceCode,
+                ErrorCode::SERVER_ERROR,
+                $formattedResponse
+            );
+        }
+
+        return $formattedResponse;
     }
 
     protected function parseAndReturnResponse($response)
@@ -314,6 +368,7 @@ class OffersEngine
     public function createOffer(array $input)
     {
         $this->merchantId = $input['offer']['metadata']['advertiser_id'];
+
         return $this->sendRequest(self::OffersEngineCreateOffer, Requests::POST, $input);
     }
 
@@ -455,5 +510,36 @@ class OffersEngine
 
         }
         return $convertedOffers;
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws ServerErrorException
+     * @throws BadRequestException
+     */
+    public function validateOffer(string $merchantId, array $input)
+    {
+        $this->merchantId = 'rzp.merchant.' . $merchantId;
+
+        $input['publisher_id'] = $this->merchantId;
+
+        $input['channel'] = Constants::CHANNEL_RZP_CHECKOUT;
+
+        $response = $this->sendRequest(self::ValidateOffer, Requests::POST, $input, false);
+
+        if (isset($response['error']))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, [
+                'merchant_id' => $this->merchantId,
+                'input'       => $input,
+                'error'       => $response['error']['internal_error_code']
+            ]);
+        }
+
+        return [
+            'offer_id' => $response['offer']['metadata']['offer_id'],
+            'offer_benefits' => $response['offer_benefits'],
+            'calculated_benefits' => $response['calculated_benefits'],
+        ];
     }
 }

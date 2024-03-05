@@ -762,6 +762,8 @@ return array(
 
     'offers_engine_fetch_offers_exp_id' => env('OFFERS_ENGINE_FETCH_OFFERS_EXP'),
 
+    'offers_engine_validate_offer_exp_id' => env('OFFERS_ENGINE_VALIDATE_OFFER_EXP'),
+
     'fee_based_gating_exp_id' => env('FEE_BASED_GATING_EXP_ID'),
 
     'fee_based_gating_website_exp_id' => env('FEE_BASED_GATING_WEBSITE_EXP_ID'),

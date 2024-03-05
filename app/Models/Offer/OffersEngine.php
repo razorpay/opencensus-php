@@ -10,6 +10,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Emi;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
 use RZP\Models\Order;
 use RZP\Error\ErrorCode;
@@ -19,6 +20,12 @@ use RZP\Models\Payment;
 class OffersEngine extends Base\Core
 {
     private $auth;
+
+    protected $payment;
+
+    protected $order;
+
+    protected $isDummyPayment;
 
     public function __construct()
     {
@@ -193,7 +200,7 @@ class OffersEngine extends Base\Core
         {
             $this->trace->count(Metric::OFFERS_ENGINE_UPDATE_OFFER_FAIL);
             $this->trace->traceException($exception, Logger::ERROR,
-                TraceCode::OFFERS_ENGINE_CREATE_OFFER_FAIL, [
+                TraceCode::OFFERS_ENGINE_UPDATE_OFFER_FAIL, [
                 'api_response' => $offer,
                 'exception' => $exception,
             ]);
@@ -640,6 +647,8 @@ class OffersEngine extends Base\Core
     {
         $offer = new Entity();
 
+        $offer->setExternal(true);
+
         if ($offersEngineResponse[Constants::OFFER] === null || $offersEngineResponse[Constants::PUBLISH] === null)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFERS_ENGINE_RESPONSE_EMPTY, null,
@@ -933,5 +942,147 @@ class OffersEngine extends Base\Core
         }
 
         return $differences;
+    }
+
+    public function validateOffer(string $merchantId, $offerId, Payment\Entity $payment, Order\Entity $order, bool $isDummyPayment, string $cardIin = "")
+    {
+        $this->payment = $payment;
+
+        $this->order = $order;
+
+        $this->isDummyPayment = $isDummyPayment;
+
+        try
+        {
+            $fact = $this->buildValidateFact(false, $cardIin);
+
+            $response = $this->app['offers_engine']->validateOffer($merchantId, [
+                'offer_id' => $offerId,
+                'fact' => $fact,
+            ]);
+
+            if (isset($response['error']))
+            {
+                // if card number is necessary, rebuild the fact and call again
+                if ($response['error']['internal_error_code'] === 'MISSING_CUSTOMER_CARD_NUMBER_FACT')
+                {
+                    $fact = $this->buildValidateFact(true, $cardIin);
+
+                    $response = $this->app['offers_engine']->validateOffer($merchantId, [
+                        'offer_id' => $offerId,
+                        'fact' => $fact,
+                    ]);
+                }
+            }
+
+
+            return $response;
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->count(Metric::OFFERS_ENGINE_VALIDATE_OFFER_FAIL);
+
+            $this->trace->traceException($exception, Logger::ERROR,
+                TraceCode::OFFERS_ENGINE_VALIDATE_OFFER_FAIL, [
+                    'exception' => $exception->getMessage(),
+                ]);
+
+            throw new Exception\ServerErrorException(
+                'Unable to process this request.', ErrorCode::SERVER_ERROR);
+        }
+    }
+
+    private function buildValidateFact(bool $validateWithCardPAR, string $cardIin): array
+    {
+        $fact = array();
+        $instrumentFact = array();
+
+        // ORDER
+        $fact[Constants::ORDER_FACT] = [
+            Constants::ORDER_TOTAL_AMOUNT => $this->order->getAmount(),
+            Constants::ORDER_CURRENCY  => 'INR', // setting default INR as API offers does not have currency
+        ];
+
+        $method = $this->payment->getMethod();
+
+        if ($this->payment->isMethodCardOrEmi() === true)
+        {
+            $instrumentFact = [
+                Constants::CARD_TYPE => strtolower($this->payment->card->getType()),
+                Constants::CARD_NETWORK => $this->payment->card->getNetworkCode(),
+                Constants::IIN => $cardIin,
+                Constants::ISSUER => $this->payment->card->getIssuer(),
+            ];
+        }
+
+        switch ($method)
+        {
+            case Payment\Method::PAYLATER:
+            case Payment\Method::UPI:
+            case Payment\Method::CARD:
+                break;
+            case Payment\Method::EMI:
+                $instrumentFact[Constants::EMI_TENURE] = $this->payment->emiPlan->getDuration();
+                break;
+            case Payment\Method::NETBANKING:
+                $instrumentFact =  [Constants::ISSUER => $this->payment->getBank()];
+                break;
+            case Payment\Method::WALLET:
+                $instrumentFact = [Constants::WALLET =>  $this->payment->getWallet()];
+                break;
+            case Payment\Method::CARDLESS_EMI:
+                $instrumentFact[Constants::PROVIDER] = $this->payment->getIssuer();
+                break;
+        }
+
+        // PAY_LATER, UPI methods do not have any checks other than the method
+        $instrumentFact[Constants::METHOD] = $method;
+
+        // NOTE - card international handling is not considered in oe - fallback to API
+
+        $fact[Constants::PAYMENT_INSTRUMENT_FACT] = $instrumentFact;
+
+        if ($validateWithCardPAR === true)
+        {
+            $fact[Constants::CUSTOMER_FACT] = [
+                Constants::CARD_NUMBER => $this->getCardParValue(),
+            ];
+        }
+
+        // todo - handle subscription
+        return $fact;
+    }
+
+    // getCardParValue fetches par value of card if applicable
+    protected function getCardParValue()
+    {
+        // Skip card usage check if payment method is not card or emi
+        // or if the max payment count is not present
+        if ($this->payment->isMethodCardOrEmi() === false)
+        {
+            return null;
+        }
+        // Offer max usage will only be applicable for cards network which have exposed PAR api
+        if ((new Card\Core())->checkIfFetchingParApplicable($this->payment->card->getNetwork()) === false)
+        {
+            $this->trace->info(
+                TraceCode::OFFER_CARD_USAGE_CHECK,
+                [
+                    'network' => $this->payment->card->getNetwork(),
+                    'message' => 'Max offer usage per card is not applicable on this card'
+                ]);
+            return null;
+        }
+
+        $providerReferenceId = $this->payment->card->getProviderReferenceId();
+
+        // If provider_reference_id is not null, then we just return the same
+        if (empty($providerReferenceId) !== true) {
+            return $providerReferenceId;
+        }
+
+        $core = new Core();
+
+        return $core->getParValue($this->payment, $this->isDummyPayment);
     }
 }

@@ -907,6 +907,7 @@ class ErrorCode
     const BAD_REQUEST_NO_SUBVENTION_PARAMS                                          = 'BAD_REQUEST_NO_SUBVENTION_PARAMS';
     const BAD_REQUEST_OFFERS_ENGINE_RESPONSE_EMPTY                                  = 'BAD_REQUEST_OFFERS_ENGINE_RESPONSE_EMPTY';
     const SERVER_ERROR_OFFERS_ENGINE_MISSING_OFFERS                                 = 'SERVER_ERROR_OFFERS_ENGINE_MISSING_OFFERS';
+    const SERVER_ERROR_OFFERS_ENGINE_SERVICE_FAILURE                                = 'SERVER_ERROR_OFFERS_ENGINE_SERVICE_FAILURE';
 
     const BAD_REQUEST_AVAIL_RULE_GROUP_NOT_FOUND                                    = 'BAD_REQUEST_AVAIL_RULE_GROUP_NOT_FOUND';
     const BAD_REQUEST_BENEFIT_TYPE_NOT_FOUND                                        = 'BAD_REQUEST_BENEFIT_TYPE_NOT_FOUND';

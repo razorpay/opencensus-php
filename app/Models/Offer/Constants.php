@@ -122,7 +122,6 @@ final class Constants
     const THEN = 'then';
 
     const TENURE = 'tenure';
-    const ISSUER = 'issuer';
     const BLOCKING = 'continue_txn_on_failure';
     const OFFER_TYPE = 'offer_type';
     const OFFER_TYPE_STAGE_REGULAR = 'OFFER_TYPE_STAGE_REGULAR';
@@ -151,4 +150,30 @@ final class Constants
     const CREATE_OFFER_DUAL_WRITE_EXP = 'app.offers_engine_dual_write_experiment_id';
 
     const OFFERS_ENGINE_FETCH_EXP = 'app.offers_engine_fetch_offers_exp_id';
+
+    const OFFERS_ENGINE_VALIDATE_OFFER_EXP = 'app.offers_engine_validate_offer_exp_id';
+    // FACT CONSTANTS
+
+    // order fact
+    const ORDER_FACT = 'order';
+    const ORDER_TOTAL_AMOUNT = 'total_amount';
+    const ORDER_CURRENCY = 'currency';
+
+    // payment instrument
+    const PAYMENT_INSTRUMENT_FACT = 'payment_instrument';
+    const ISSUER = 'issuer';
+    const METHOD = 'method';
+    const CARD_TYPE = 'card_type';
+    const CARD_NETWORK = 'card_network';
+    const IIN = 'iin';
+    const WALLET = 'wallet';
+    const PROVIDER = 'provider';
+
+    const EMI_TENURE = 'emi_tenure';
+
+    const CUSTOMER_FACT = 'customer';
+
+    const CARD_NUMBER = 'card_number'; // has card PAR value
+
+    const SUBSCRIPTION_FACT = 'subscription';
 }

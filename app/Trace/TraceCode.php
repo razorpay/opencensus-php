@@ -3646,6 +3646,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_USAGE_CHECK                                     = 'OFFER_USAGE_CHECK';
     const OFFER_MAX_ORDER_AMOUNT_CHECK                          = 'OFFER_MAX_ORDER_AMOUNT_CHECK';
     const OFFER_MIN_ORDER_AMOUNT_CHECK                          = 'OFFER_MIN_ORDER_AMOUNT_CHECK';
+    const OFFER_ISSUER_CHECK_NOT_APPLICABLE                     = 'OFFER_ISSUER_CHECK_NOT_APPLICABLE';
     const OFFER_DEACTIVATE_BULK_RESPONSE                        = 'OFFER_DEACTIVATE_BULK_RESPONSE';
     const OFFER_DEACTIVATE_BULK_EXCEPTION                       = 'OFFER_DEACTIVATE_BULK_EXCEPTION';
     const BAD_REQUEST_ONLY_1500_OFFERS_DEACTIVATE_IN_BULK       = 'BAD_REQUEST_ONLY_1500_OFFERS_DEACTIVATE_IN_BULK';
@@ -3668,6 +3669,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL               = 'OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL';
     const OFFERS_ENGINE_FETCH_FALLBACK                          = 'OFFERS_ENGINE_FETCH_FALLBACK';
     const OFFERS_ENGINE_ID_NOT_FOUND                            = 'OFFERS_ENGINE_ID_NOT_FOUND';
+    const OFFER_VALIDATE_CARD_NUMBER_REQUIRED                   = 'OFFER_VALIDATE_CARD_NUMBER_REQUIRED';
+    const OFFERS_ENGINE_VALIDATE_OFFER_FAIL                     = 'OFFERS_ENGINE_VALIDATE_OFFER_FAIL';
 
     // Charge collections trace codes
     const CHARGE_COLLECTIONS_REQUEST                            = 'CHARGE_COLLECTIONS_REQUEST';

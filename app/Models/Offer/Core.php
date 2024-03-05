@@ -11,10 +11,12 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Customer\Token;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order\ProductType;
@@ -1141,5 +1143,54 @@ class Core extends Base\Core
         }
 
         return $offers_array;
+    }
+
+    public function fetchCardIIN(Payment\Entity $payment): string
+    {
+        $card = $payment->card;
+
+        $cardActualIin = null;
+
+        $cardTokenIin = $card->getTokenIin();
+
+        if (empty($cardTokenIin) === false)
+        {
+            $cardActualIin = (string)Card\IIN\IIN::getTransactingIinforRange($cardTokenIin);
+
+            if (empty($cardActualIin) === true)
+            {
+                $this->trace->info(TraceCode::BIN_MAPPING_FOR_TOKEN_NOT_AVAILABLE);
+            }
+        }
+        // not adding this in else condition because this check is needed even for tokenised cards flow after mapping fails.
+        if (empty($cardActualIin) === true)
+        {
+            $cardActualIin = $card->getIin();
+        }
+
+        return $cardActualIin;
+    }
+
+    public function getParValue(Payment\Entity $payment, bool $dummyPayment) {
+
+        $card = $payment->card;
+        $vaultToken = $card->getVaultToken();
+        $cardNumber = (new Card\CardVault)->getCardNumber($vaultToken);
+
+        $cardInput = (new Token\Core())->buildCardInputForPar($cardNumber, $card);
+
+        // Fetches par value for given card number
+        list($network, $data) = (new Token\Core())->fetchParValue($cardInput, true);
+        $providerReferenceId = $data["fingerprint"];
+
+
+        $card->setProviderReferenceId($providerReferenceId);
+
+        // For dummy payment we will not persist the card entity
+        if ($dummyPayment === false)
+        {
+            $this->repo->card->saveOrFail($card);
+        }
+        return $providerReferenceId;
     }
 }

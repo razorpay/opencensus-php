@@ -327,7 +327,9 @@ class Checker extends Base\Core
 
         if($card !== null)
         {
-            $cardActualIin = $this->fetchCardIIN();
+            $core = new Core();
+
+            $cardActualIin = $core->fetchCardIIN($this->payment);
 
             $iinEntity = $this->repo->iin->find($cardActualIin);
 
@@ -442,7 +444,9 @@ class Checker extends Base\Core
             return true;
         }
 
-       $cardActualIin = $this->fetchCardIIN();
+        $core = new Core();
+
+       $cardActualIin = $core->fetchCardIIN($this->payment);
 
         $result = false;
 
@@ -534,7 +538,9 @@ class Checker extends Base\Core
         // If provider_reference_id is null, then we will call the par api to get the provider_reference_id
         if (empty($providerReferenceId) === true)
         {
-            $providerReferenceId = $this->getParValue();
+            $core = new Core();
+
+            $providerReferenceId = $core->getParValue($this->payment, $this->isDummyPayment);
         }
 
         // If provider_reference_id is not null, we will validate the max usage on the current card
@@ -568,29 +574,6 @@ class Checker extends Base\Core
             return $result;
         }
         return false;
-    }
-
-    protected function getParValue() {
-
-        $card = $this->payment->card;
-        $vaultToken = $card->getVaultToken();
-        $cardNumber = (new Card\CardVault)->getCardNumber($vaultToken);
-
-        $cardInput = (new Token\Core())->buildCardInputForPar($cardNumber, $card);
-
-        // Fetches par value for given card number
-        list($network, $data) = (new Token\Core())->fetchParValue($cardInput, true);
-        $providerReferenceId = $data["fingerprint"];
-
-
-        $card->setProviderReferenceId($providerReferenceId);
-
-        // For dummy payment we will not persist the card entity
-        if ($this->isDummyPayment === false)
-        {
-            $this->repo->card->saveOrFail($card);
-        }
-        return $providerReferenceId;
     }
 
     protected function checkPaymentCountForOffer(array $paymentCountForOffers): bool
@@ -743,29 +726,19 @@ class Checker extends Base\Core
         return true;
     }
 
-    protected function fetchCardIIN(): string
+    // check for co-branding partner of card payment
+    // if it is one card then do not call Offers Engine Validate
+    private function isOneCardPayment(string $iin): bool
     {
-        $card = $this->payment->card;
+        $iinEntity = $this->repo->iin->find($iin);
 
-        $cardActualIin = null;
+        $coBrandingPartner = $iinEntity->getCobrandingPartner();
 
-        $cardTokenIin = $card->getTokenIin();
-
-        if (empty($cardTokenIin) === false)
+        if ($coBrandingPartner === CobrandingPartner::ONECARD)
         {
-            $cardActualIin = (string)Card\IIN\IIN::getTransactingIinforRange($cardTokenIin);
-
-            if (empty($cardActualIin) === true)
-            {
-                $this->trace->info(TraceCode::BIN_MAPPING_FOR_TOKEN_NOT_AVAILABLE);
-            }
-        }
-        // not adding this in else condition because this check is needed even for tokenised cards flow after mapping fails.
-        if (empty($cardActualIin) === true)
-        {
-            $cardActualIin = $card->getIin();
+            return true;
         }
 
-        return $cardActualIin;
+        return false;
     }
 }
