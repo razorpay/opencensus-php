@@ -271,6 +271,7 @@ class Gateway
     const TOKENISATION_HDFC        = 'tokenisation_hdfc';
     const TOKENISATION_AMEX        = 'tokenisation_amex';
     const TOKENISATION_AXIS        = 'tokenisation_axis';
+    const ALT_MASTERCARD           = 'alt_mastercard';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -340,6 +341,16 @@ class Gateway
         self::TOKENISATION_HDFC,
         self::TOKENISATION_AMEX,
         self::TOKENISATION_AXIS,
+    ];
+
+    const CARD_GATEWAYS = [
+        self::TOKENISATION_VISA,
+        self::TOKENISATION_MASTERCARD,
+        self::TOKENISATION_RUPAY,
+        self::TOKENISATION_HDFC,
+        self::TOKENISATION_AMEX,
+        self::TOKENISATION_AXIS,
+        self::ALT_MASTERCARD
     ];
 
     const TOKENISATION_CRYPTOGRAM_NOT_REQUIRED_GATEWAYS = [

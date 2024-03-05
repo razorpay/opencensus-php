@@ -1302,10 +1302,11 @@ class Entity extends Base\PublicEntity
 
             $orgId = 'org_' . $input[self::ORG_ID];  // resulting orgId will be org_{id}
 
-            if ($input[self::GATEWAY] == self::TOKENISATION_MASTERCARD)
+            if (in_array($input[self::GATEWAY], Payment\Gateway::CARD_GATEWAYS) === true)
             {
                 return;
             }
+
             try
             {
 
