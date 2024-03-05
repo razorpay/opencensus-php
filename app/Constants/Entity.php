@@ -93,6 +93,7 @@ class Entity
     const TRANSACTION                = 'transaction';
     const FEE_BREAKUP                = 'fee_breakup';
     const UPI_MANDATE                = 'upi_mandate';
+    const NOTIFICATION               = 'notification';
     const CARD_MANDATE               = 'card_mandate';
     const CARD_MANDATE_NOTIFICATION  = 'card_mandate_notification';
     const PAYOUT_LINK                = 'payout_link';
@@ -1055,6 +1056,7 @@ class Entity
         self::CHECKOUT_ORDER,
         Entity::TERMINAL,
         Entity::REFUND,
+        Entity::NOTIFICATION,
     ];
 
     const ARCHIVED_ENTITIES = [
@@ -1199,6 +1201,7 @@ class Entity
         self::LOW_BALANCE_CONFIG                => \RZP\Models\Merchant\Balance\LowBalanceConfig::class,
         self::PAYOUTS_INTERMEDIATE_TRANSACTIONS => \RZP\Models\Payout\PayoutsIntermediateTransactions::class,
         self::UPI_MANDATE                       => \RZP\Models\UpiMandate::class,
+        self::NOTIFICATION                     => \RZP\Models\Notification::class,
         self::CARD_MANDATE                      => \RZP\Models\CardMandate::class,
         self::CARD_MANDATE_NOTIFICATION         => \RZP\Models\CardMandate\CardMandateNotification::class,
         self::SUB_BALANCE_MAP                   => \RZP\Models\Merchant\Balance\SubBalanceMap::class,

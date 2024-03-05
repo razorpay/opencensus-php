@@ -5,6 +5,9 @@ namespace RZP\Models\UpiMandate;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Models\UpiMandate\Status as UpiMandateStatus;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -101,6 +104,25 @@ class Validator extends Base\Validator
                 'Max amount for UPI recurring payment cannot be less than Rs. 1.00',
                 Entity::MAX_AMOUNT
             );
+        }
+    }
+
+    /**
+     * @param Entity $upiMandate
+     *
+     * @throws BadRequestException
+     */
+    public function validateUpiMandateStatus(Entity $upiMandate)
+    {
+        //mandate status should not be paused or revoked.
+        if($upiMandate->getStatus() === UpiMandateStatus::PAUSED)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MANDATE_PAUSED);
+        }
+
+        if($upiMandate->getStatus() === UpiMandateStatus::REVOKED)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MANDATE_REVOKED);
         }
     }
 }

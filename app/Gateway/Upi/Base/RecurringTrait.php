@@ -100,6 +100,10 @@ trait RecurringTrait
     {
         parent::action($input, Action::PRE_DEBIT);
 
+        if(isset($input['notification']) === true)
+        {
+            return $this->sendUpiAutopayNotificationRequest($input);
+        }
         // PreDebit action for gateway requires a notification
         // First we need check if there is already notify attempted.
         $preDebit = $this->firstOrCreateEntityForRecurring($input, Action::PRE_DEBIT, true);
@@ -326,6 +330,13 @@ trait RecurringTrait
         }
 
         return $this->getResponseForAutoRecurring($input, $response['data'], $upi);
+    }
+
+    protected function sendUpiAutopayNotificationRequest(array $input)
+    {
+        $gateway = $this->getMozartGatewayWithModeSet();
+
+        return $gateway->preDebit($input);
     }
 
     protected function sendPreDebitRequest(array $input, Entity $upi)

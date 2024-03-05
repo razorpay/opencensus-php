@@ -372,6 +372,8 @@ class Table
 
     const UPI_MANDATE          = 'upi_mandates';
 
+    const NOTIFICATION          = 'notifications';
+
     const CARD_MANDATE              = 'card_mandates';
 
     const CARD_MANDATE_NOTIFICATION = 'card_mandate_notifications';

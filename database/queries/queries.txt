@@ -7208,3 +7208,28 @@ CREATE TABLE transfer_payment (
 ALTER TABLE ledger_outbox
     ADD COLUMN entity_type VARCHAR(30) NULL,
     ADD COLUMN entity_id CHAR(14) NULL;
+
+CREATE TABLE notifications (
+  id char(14) PRIMARY KEY,
+  merchant_id char(14) NOT NULL,
+  order_id char(14) NOT NULL,
+  token_id char(14) NOT NULL,
+  status varchar(50)  NOT NULL,
+  payment_after bigint NOT NULL,
+  gateway varchar(30) DEFAULT NULL,
+  gateway_merchant_id varchar(50) DEFAULT NULL,
+  provider varchar(50) DEFAULT NULL,
+  vpa varchar(50) DEFAULT NULL,
+  npci_txn_id varchar(50) DEFAULT NULL,
+  bank_rrn varchar(50) DEFAULT NULL,
+  gateway_request json DEFAULT NULL,
+  gateway_response json DEFAULT NULL,
+  created_at bigint NOT NULL,
+  updated_at bigint NOT NULL,
+  delivered_at bigint DEFAULT NULL,
+  INDEX idx_merchant_id (merchant_id),
+  INDEX idx_order_id (order_id),
+  INDEX idx_token_id (token_id),
+  INDEX idx_created_at (created_at),
+  INDEX idx_updated_at (updated_at)
+);

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -83,11 +84,17 @@ trait UpiRecurring
 
                     $this->processDebitGatewayFailure($payment, $exception);
 
+                    $orderId = $payment->getPublicOrderId();
+
+                    $notificationCount = $this->repo->notification->fetchSuccessfulNotificationCount(
+                        Order\Entity::verifyIdAndSilentlyStripSign($orderId)
+                    );
+
                     // Since the debit for auto recurring is called by reminder service
                     // we do not need to throw exception back as
                     // 1. This is gateway failure and already handled
                     // 2. Reminder service will retry for 5xx and that's not needed
-                    if ($payment->isUpiAutoRecurring() === true)
+                    if ($payment->isUpiAutoRecurring() === true and ($notificationCount === 0))
                     {
                         return;
                     }
@@ -775,9 +782,20 @@ trait UpiRecurring
                 $metadata->setMode(UpiMetadata\Mode::AUTO);
                 $metadata->setType(UpiMetadata\Type::RECURRING);
 
-                // Adding 30 seconds as buffer
-                $metadata->setRemindAt($metadata->freshTimestamp() + 30);
-                $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_PRE_DEBIT);
+                $notificationCount = $this->repo->notification->fetchSuccessfulNotificationCount(
+                    Order\Entity::verifyIdAndSilentlyStripSign($input[Payment\Entity::ORDER_ID]));
+
+                if($notificationCount !== 0)
+                {
+                        $metadata->setRemindAt(null);
+                        $metadata->setInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED);
+                }
+                else
+                {
+                    // Adding 30 seconds as buffer
+                    $metadata->setRemindAt($metadata->freshTimestamp() + 30);
+                    $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_PENDING_FOR_PRE_DEBIT);
+                }
             }
             // Else it is initial recurring
             else
@@ -1042,7 +1060,19 @@ trait UpiRecurring
     {
         if ($payment->isUpiAutoRecurring() === true)
         {
-            $this->updateAutoRecurringEntitiesForUpi($payment, $data);
+            $orderId = $payment->getPublicOrderId();
+
+            $notificationCount = $this->repo->notification->fetchSuccessfulNotificationCount(
+                Order\Entity::verifyIdAndSilentlyStripSign($orderId));
+
+            if ($notificationCount !== 0)
+            {
+                $this->processRecurringDebitForUpi($payment);
+            }
+            else
+            {
+                $this->updateAutoRecurringEntitiesForUpi($payment, $data);
+            }
 
             $data = ['razorpay_payment_id' => $payment->getPublicId()];
 

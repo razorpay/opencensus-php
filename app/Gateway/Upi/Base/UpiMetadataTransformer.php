@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Base;
 
 use App;
 use Carbon\Carbon;
+use RZP\Models\Order;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -264,6 +265,18 @@ class UpiMetadataTransformer extends UpiTransformer
         if ($action === Action::AUTHORIZE and $mode === Mode::AUTO)
         {
             if($this->isSuccess() === true)
+            {
+                return null;
+            }
+
+            $app = \App::getFacadeRoot();
+
+            $orderId = Order\Entity::verifyIdAndSilentlyStripSign($this->input[Entity::PAYMENT]['order_id']);
+
+            $notificationCount = $app['repo']->notification->fetchSuccessfulNotificationCount($orderId);
+
+            //skip retries in case of decoupled flow.
+            if($notificationCount !== 0)
             {
                 return null;
             }

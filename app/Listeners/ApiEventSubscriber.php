@@ -22,6 +22,7 @@ use RZP\Models\PaymentLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\CardMandate;
+use RZP\Models\Notification;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
@@ -736,6 +737,31 @@ class ApiEventSubscriber extends Base\Core
 
         }
 
+    }
+
+    protected function onOrderNotificationDelivered($notification)
+    {
+        $payload = $this->getOrderNotificationPayload($notification);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onOrderNotificationFailed($notification)
+    {
+        $payload = $this->getOrderNotificationPayload($notification);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function getOrderNotificationPayload(Notification\Entity $notification)
+    {
+        $payload = [
+            Constants\Entity::NOTIFICATION => [
+                'entity' => $notification->toArrayWebhook(),
+            ],
+        ];
+
+        return $payload;
     }
 
     protected function onPaymentCreated($payment)

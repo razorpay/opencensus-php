@@ -96,6 +96,7 @@ use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
+use RZP\Models\Notification as Notifications;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Payment\OtpPaymentTest;
 use CodeOrange\RedisCountingSemaphore\Semaphore;
@@ -5841,6 +5842,48 @@ class Processor
         throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
+    protected function validateUpiAutopayDecoupledFlow(array $input)
+    {
+        //fetch notifications for order id if any
+        $notificationCount = $this->repo->notification->fetchNotificationCount(
+            Order\Entity::verifyIdAndSilentlyStripSign($input['order_id'])
+        );
+
+        //return to old flow if no notifications found.
+        if($notificationCount === 0)
+        {
+            return;
+        }
+
+        $notification = $this->repo->notification->findByOrderId(
+            Order\Entity::verifyIdAndSilentlyStripSign($input['order_id'])
+        );
+
+        (new Notifications\Validator())->validateOrderNotification($notification);
+
+        $upiMandate = $this->repo->upi_mandate->findByTokenId(
+            Customer\Token\Entity::verifyIdAndStripSign($input['token']));
+
+        (new UpiMandate\Validator())->validateUpiMandateStatus($upiMandate);
+
+        $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+
+        //order attempt count should not be greater than 10.
+        if($order->getAttempts() > 9)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ATTEMPTS_EXCEEDED);
+        }
+
+        //debit amount should be same as order amount.
+        if($input['amount'] != $order->getAmount())
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Your payment amount is different from your order amount. To pay successfully, please try using right amount.',
+                'amount',
+                ['amount' => $order->getAmount()]);
+        }
+    }
+
     /*
      * This is a temporary measure to block payments for certain merchants who have "block_debit_2k" feature enabled
      * and if the amount is >2k and method is card and type is debit
@@ -8508,6 +8551,12 @@ class Processor
             $this->validateOrderForUpiInitialRecurring($this->order);
         }
 
+        if(($payment->isUpiRecurring() === true) and
+            (empty($input[Payment\Entity::TOKEN]) === false))
+        {
+            $this->validateUpiAutopayDecoupledFlow($input);
+        }
+
         if ($this->isOtmPayment($input) === true)
         {
             $this->validateOrderForUpiOtm($this->order);
@@ -8741,9 +8790,13 @@ class Processor
         // This will handle upi autopay initial retry payment sequence count
         $current = (int) $this->upiMandate->getUsedCount();
 
+        $notificationCount = $this->repo->notification->fetchSuccessfulNotificationCount(
+            Order\Entity::verifyIdAndSilentlyStripSign($input[Payment\Entity::ORDER_ID]));
+
         if(!(($current === 1) and
             ($this->upiMandate->getStatus() === UpiMandateStatus::CONFIRMED) and
-            (isset($input[Payment\Entity::TOKEN]) === false)))
+            (isset($input[Payment\Entity::TOKEN]) === false)) and
+            ($notificationCount === 0))
         {
             $this->upiMandate->incrementUsedCount();
         }

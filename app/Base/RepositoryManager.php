@@ -195,6 +195,7 @@ use Razorpay\Trace\Logger as Trace;
  * @property Models\Merchant\RiskNotes\Repository                     $merchant_risk_note;
  * @property Models\Payout\Batch\Repository                           $payouts_batch;
  * @property Models\UpiMandate\Repository                             $upi_mandate;
+ * @property Models\Notification\Repository                           $notification;
  * @property Models\Merchant\M2MReferral\Repository                   $m2m_referral;
  * @property Models\AMPEmail\Repository                               $amp_email;
  * @property Models\Dispute\Repository                                $dispute;

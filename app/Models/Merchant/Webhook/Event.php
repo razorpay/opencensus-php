@@ -21,6 +21,8 @@ class Event
     const PAYMENT_CAPTURED                  = 'payment.captured';
     const PAYMENT_DISPUTE_CREATED           = 'payment.dispute.created';
     const ORDER_PAID                        = 'order.paid';
+    const ORDER_NOTIFICATION_DELIVERED      = 'order.notification.delivered';
+    const ORDER_NOTIFICATION_FAILED         = 'order.notification.failed';
     const INVOICE_PAID                      = 'invoice.paid';
     const INVOICE_PARTIALLY_PAID            = 'invoice.partially_paid';
     const INVOICE_EXPIRED                   = 'invoice.expired';
@@ -196,6 +198,8 @@ class Event
         self::PAYMENT_CAPTURED,
         self::PAYMENT_DISPUTE_CREATED,
         self::ORDER_PAID,
+        self::ORDER_NOTIFICATION_DELIVERED,
+        self::ORDER_NOTIFICATION_FAILED,
         self::INVOICE_PARTIALLY_PAID,
         self::INVOICE_PAID,
         self::INVOICE_EXPIRED,
@@ -368,6 +372,8 @@ class Event
         self::PAYMENT_CAPTURED,
         self::PAYMENT_DISPUTE_CREATED,
         self::ORDER_PAID,
+        self::ORDER_NOTIFICATION_DELIVERED,
+        self::ORDER_NOTIFICATION_FAILED,
         self::INVOICE_PARTIALLY_PAID,
         self::INVOICE_PAID,
         self::INVOICE_EXPIRED,
@@ -666,6 +672,8 @@ class Event
 
         self::ACCOUNT_MAPPED_TO_PARTNER                   => 61,
         self::ACCOUNT_APP_AUTHORIZATION_REVOKED           => 62,
+        self::ORDER_NOTIFICATION_DELIVERED                => 63,
+        self::ORDER_NOTIFICATION_FAILED                   => 64,
     ];
 
     /**
@@ -680,6 +688,8 @@ class Event
         self::PAYMENT_CAPTURED                  => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_CREATED           => [Product::PRIMARY],
         self::ORDER_PAID                        => [Product::PRIMARY],
+        self::ORDER_NOTIFICATION_DELIVERED      => [Product::PRIMARY],
+        self::ORDER_NOTIFICATION_FAILED         => [Product::PRIMARY],
         self::INVOICE_PAID                      => [Product::PRIMARY],
         self::INVOICE_PARTIALLY_PAID            => [Product::PRIMARY],
         self::INVOICE_EXPIRED                   => [Product::PRIMARY],
@@ -859,6 +869,8 @@ class Event
         self::INVOICE_PARTIALLY_PAID            => Entity::INVOICE,
         self::INVOICE_EXPIRED                   => Entity::INVOICE,
         self::ORDER_PAID                        => Entity::ORDER,
+        self::ORDER_NOTIFICATION_DELIVERED      => Entity::NOTIFICATION,
+        self::ORDER_NOTIFICATION_FAILED         => Entity::NOTIFICATION,
         self::SUBSCRIPTION_AUTHENTICATED        => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_PAUSED               => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_RESUMED              => Entity::SUBSCRIPTION,

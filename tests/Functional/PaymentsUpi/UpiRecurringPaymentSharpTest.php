@@ -337,7 +337,10 @@ class UpiRecurringPaymentSharpTest extends TestCase
 
         $payment = $this->getDefaultUpiRecurringPaymentArray();
 
+        $order = $this->createUpiOrder();
+
         $payment['token'] = $mandate->token->getPublicId();
+        $payment['order_id'] = $order;
 
         $response = $this->doS2SRecurringPayment($payment);
 

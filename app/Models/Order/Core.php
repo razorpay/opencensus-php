@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Services\PGRouter;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Models\Notification;
 use RZP\Constants\Entity as E;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Config;
@@ -506,14 +507,14 @@ class Core extends Base\Core
 
                 $data[Entity::BANK_ACCOUNT] = $bankAccountData;
             }
-            
+
             // mapping merged banks
             if ($tokenRegistration->getMethod() === Methods\Entity::EMANDATE)
             {
                 if(empty($data[Entity::BANK]) === false)
                 {
                     $mappedBank = Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$data[Entity::BANK]] ?? null;
-                    
+
                     if ($mappedBank !== null)
                     {
                         $data[Entity::BANK] = $mappedBank;
@@ -944,6 +945,16 @@ class Core extends Base\Core
         $this->app['basicauth']->setMerchant($merchant);
 
         $orderPostCreateHook->process();
+
+        if(empty($input['notification']) === false)
+        {
+            (new Notification\Core())->validateNotificationData($input, $merchant);
+
+            // create notification
+            $notification = (new Notification\Core())->createNotificationUsingOrder($input, $order);
+
+            $data['notification'] = $notification;
+        }
 
         $token = $order->getTokenRegistration();
 

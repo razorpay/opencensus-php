@@ -18,6 +18,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\UpiMandate;
 use RZP\Models\BankAccount;
+use RZP\Models\Notification;
 use RZP\Models\Payment\Config;
 use RZP\Constants\Entity as E;
 use RZP\Models\Feature\Constants;
@@ -41,6 +42,7 @@ use RZP\Tests\Functional\Order\OrderMeta\OrderMetaTest;
  * @property UpiMandate\Entity $upiMandate
  * @property Product\Entity $products
  * @property OrderMeta\Entity $orderMetas
+ * @property Notification\Entity $notification
  *
  * @property-read Base\PublicCollection $offers
  */
@@ -151,6 +153,8 @@ class Entity extends Base\PublicEntity
     const PAYER_NAME        = 'payer_name';
 
     const TRANSFERS         = 'transfers';
+
+    const NOTIFICATION         = 'notification';
 
     const VIRTUAL_ACCOUNT   = 'virtual_account';
 
@@ -267,6 +271,7 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL_ACCOUNT,
         self::CREATED_AT,
         self::TRANSFERS,
+        self::NOTIFICATION,
         self::CHECKOUT_CONFIG_ID,
         self::TAX_INVOICE,
         OrderMeta\Order1cc\Fields::PROMOTIONS,
@@ -314,6 +319,7 @@ class Entity extends Base\PublicEntity
         self::TAX_INVOICE,
         self::ORDER_META_1CC,
         self::TRANSFERS,
+        self::NOTIFICATION,
     ];
 
     protected $internalSetters = [
@@ -396,6 +402,11 @@ class Entity extends Base\PublicEntity
     public function upiMandate()
     {
         return $this->hasOne('RZP\Models\UpiMandate\Entity');
+    }
+
+    public function notification()
+    {
+        return $this->hasOne('RZP\Models\Notification\Entity');
     }
 
     public function associateOffer(Offer\Entity $offer)
@@ -1115,6 +1126,20 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::TRANSFERS]);
         }
+    }
+
+    public function setPublicNotificationAttribute(array & $array)
+    {
+        $notification = $this->notification;
+
+        if ($notification !== null)
+        {
+            $array[self::NOTIFICATION] = $notification;
+
+            return;
+        }
+
+        unset($array[self::NOTIFICATION]);
     }
 
     public function setInternalTransfersAttribute(array & $array)
