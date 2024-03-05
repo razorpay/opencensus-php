@@ -1,5 +1,6 @@
+import { BASE_PATH, getStorageStatePath } from 'testConstants';
+
 const { test, expect } = require('@playwright/test');
-const { StorageStatePath } = require('../../utils/constants');
 
 const ELEMENT_CONSTANTS = {
   WEBHOOK_SETTINGS_URL: '/app/website-app-settings/webhooks',
@@ -10,7 +11,7 @@ const ELEMENT_CONSTANTS = {
 
 test.describe('Test webhook creation @flow=settings @project=payments', () => {
   test.use({
-    storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
   });
   test.skip('should create webhook @priority=critical', async ({ page }) => {
     // go to the webhook settings tab

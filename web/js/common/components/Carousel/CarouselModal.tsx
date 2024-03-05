@@ -37,19 +37,6 @@ const SubmissionSuccessfull = ({ handleClose }) => {
   );
 };
 
-interface buttonTypes {
-  label: string;
-  id: string;
-  url: string;
-  style: string;
-  target: boolean;
-  reload: boolean;
-}
-interface l2_contentType {
-  bg_image: string;
-  m_image: string;
-  buttons: Array<buttonTypes>;
-}
 const CarouselModal = ({
   modalClose,
   modalOpen,

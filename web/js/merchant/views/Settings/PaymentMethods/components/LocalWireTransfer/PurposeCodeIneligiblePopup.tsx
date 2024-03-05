@@ -1,31 +1,32 @@
 import React, { useState } from 'react';
-import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
-// Redux
+import { Button } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import ModalHeader from 'common/ui/ModalHeader';
+import { closePurposeCodeIneligibleModal } from 'merchant/reducers/b2bExports/actions';
+import lazy from 'merchant/routes/LazyLoader';
+
+// Redux
 ///- Redux
 
 // Actions
+import { PurposeCodeIneligibleProps } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { closePurposeCodeIneligibleModal } from 'merchant/reducers/b2bExports/actions';
 ///- Actions
 
 // Utils
-import { PurposeCodeIneligibleProps } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 ///- Utils
 
 // Components
-import ModalHeader from 'common/ui/ModalHeader';
-import { Button } from '@razorpay/blade/components';
 ///- Components
 
 // Dynamic Component
 const FircFormModal = lazy(
   () =>
     import(
-      /* webpackChunkName: "FircFormModal" */ 'merchant/views/Account/Profile/components/FIRC/FIRCFormModal'
+      /* webpackChunkName: "FIRCFormModal" */ 'merchant/views/Account/Profile/components/FIRC/FIRCFormModal'
     ),
 );
 ///- Dynamic Component

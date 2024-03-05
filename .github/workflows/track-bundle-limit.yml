@@ -38,13 +38,13 @@ jobs:
       - run: npm install -g yarn
 
       - name: Install dependencies with caching
-        uses: ./.github/actions
+        uses: ./.github/actions/package-installer
         with: 
           npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
           
       - name: Build All
-        run: cd web && yarn test:build:merchant
+        run: npx lerna run --scope=web test:build:merchant
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
@@ -52,7 +52,7 @@ jobs:
 
       - name: Size Limit Action - DangerJS
         id: tracksizelimit_dangerjs
-        uses: danger/danger-js@10.6.6
+        uses: danger/danger-js@11.3.0
         with:
           args: "--id tracksizelimit_dangerjs --dangerfile dangerfile-tracklimit.js"
         env:

@@ -1,11 +1,23 @@
 import { createStore, applyMiddleware, compose } from 'redux';
+
+import stateSyncMiddleware, {
+  initialStateSyncMiddleware,
+  syncInitialReduxState,
+} from 'merchant/commonStore/stateSyncMiddleware';
+// import { stateSyncMiddleware } from 'merchant/commonStore';
 import apiAsyncMiddleware from 'merchant_common/middlewares/apiAsyncMiddleware';
+
 import reducers from './reducers';
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 function configureStore() {
-  const store = createStore(reducers, composeEnhancers(applyMiddleware(apiAsyncMiddleware)));
+  const store = createStore(
+    reducers,
+    composeEnhancers(applyMiddleware(apiAsyncMiddleware, stateSyncMiddleware)),
+  );
+
+  syncInitialReduxState(store);
 
   if (module.hot) {
     // Enable Webpack hot module replacement for reducers
@@ -20,8 +32,14 @@ function configureStore() {
 
 const store = configureStore();
 
-export const storeWithInitialState = (initialState) =>
-  createStore(reducers, initialState, composeEnhancers(applyMiddleware(apiAsyncMiddleware)));
+export const storeWithInitialState = (initialState) => {
+  initialStateSyncMiddleware(initialState);
+  return createStore(
+    reducers,
+    initialState,
+    composeEnhancers(applyMiddleware(apiAsyncMiddleware, stateSyncMiddleware)),
+  );
+};
 
 export default store;
 

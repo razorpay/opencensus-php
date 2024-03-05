@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
+import { getStorageStatePath, BASE_PATH } from 'testConstants';
 
 import { navigateToTransactions } from './utils';
-import { StorageStatePath } from '../../utils/constants';
 
 test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
-    storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).TRANSACTIONS_LOGIN_STATE,
   });
 
   test('should show Batch Upload modal in Batch Payments', async ({ page }) => {

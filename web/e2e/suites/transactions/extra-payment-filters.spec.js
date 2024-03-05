@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
 import moment from 'moment';
+import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 
 import { navigateToTransactions } from './utils';
-import { StorageStatePath, routes } from '../../utils/constants';
 
 test.describe.parallel('Payment Filters(Test Mode)  @flow=transactions @project=payments', () => {
   test.use({
-    storageState: StorageStatePath.POS_ORDER_DETAILS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).POS_ORDER_DETAILS_LOGIN_STATE,
   });
 
   test.describe.parallel('Transactions Filters', () => {

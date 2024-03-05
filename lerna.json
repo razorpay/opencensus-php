@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "npmClient": "yarn",
+  "useNx": true,
+  "command": {
+    "bootstrap": {
+      "ignoreScripts": true
+    }
+  }
+}

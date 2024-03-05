@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 function _isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }

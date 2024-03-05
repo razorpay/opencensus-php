@@ -1,0 +1,16 @@
+{
+  "name": "@dashboard/shared-ui",
+  "version": "0.0.1",
+  "dependencies": {
+    "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
+    "@storybook/addon-actions": "6.2.9",
+    "@storybook/react": "6.2.9",
+    "react-dates": "21.8.0"
+  },
+  "scripts": {
+    "test:jest": "jest --config=./jest.config.js",
+    "test:jest:ci": "yarn test:jest --silent --ci --json --coverage --testLocationInResults --outputFile=report.json",
+    "test:jest-watch-changed": "jest --watch",
+    "test:jest-watch": "jest --watchAll --silent=false"
+  }
+}

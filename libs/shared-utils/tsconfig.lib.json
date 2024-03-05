@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "declaration": true,
+    "types": ["node"],
+    "composite": true,
+    "noEmit": false,
+    "noImplicitAny": false
+  },
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../../web/js/merchant/store/zustandStore.ts"
+  ],
+  "references": [
+    {
+      "path": "../../web"
+    }
+  ],
+  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+}

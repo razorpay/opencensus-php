@@ -26,7 +26,6 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd web
           yarn --frozen-lockfile
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}

@@ -1,13 +1,21 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 
-import { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
-import { User } from 'common/typings';
 import Loader from 'common/ui/Loader';
+
+import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
+import type { Store } from 'common/typings';
+
+interface RouteGuardProps extends WithRouterProps {
+  defaultPath?: string;
+  customLoader?: JSX.Element;
+  children: JSX.Element;
+  session: Store['session'];
+}
 
 const TAGS_API_NOT_RESOLVED_YET = 'TAGS_API_NOT_RESOLVED_YET';
 
@@ -110,57 +118,44 @@ export function showWhenUtil(store) {
   };
 }
 
-interface RouteGuardProps extends WithRouterProps {
-  children?: ReactNode;
-  additionalCondition?: (currentUser: User) => boolean;
-}
+export const RouteGuardComponent = withRouter((props: RouteGuardProps) => {
+  const {
+    defaultPath = '/dashboard',
+    session,
+    customLoader,
+    children,
+    location,
+    params,
+    navigate,
+    history,
+    match,
+    ...rest
+  } = props;
+  const i18 = useI18Service();
+  // creating an abstraction of just consuming splitz experiment, rest service should not be accessed via RouteGuard
+  const { abExperiments } = useSplitzService();
 
-export const RouteGuard = withRouter<RouteGuardProps>(
-  connect(
-    ({ session }) => ({ session }),
-    null,
-  )((props) => {
-    const {
-      defaultPath = '/dashboard',
+  const showWhenUtilResult = validateUtil(
+    {
+      options: rest,
       session,
-      customLoader,
-      children,
-      location,
-      params,
-      navigate,
-      history,
-      match,
-      ...rest
-    } = props;
-    const i18 = useI18Service();
-    // creating an abstraction of just consuming splitz experiment, rest service should not be accessed via RouteGuard
-    const { abExperiments } = useSplitzService();
+    },
+    {
+      i18,
+      splitz: { abExperiments },
+    },
+  );
 
-    const showWhenUtilResult = validateUtil(
-      {
-        options: rest,
-        session,
-      },
-      {
-        i18,
-        splitz: { abExperiments },
-      },
-    );
+  if (showWhenUtilResult === TAGS_API_NOT_RESOLVED_YET) {
+    return customLoader || <Loader />;
+  } else if (showWhenUtilResult) {
+    return React.cloneElement(children, { location, params, navigate, history, match });
+  } else {
+    return <Navigate to={defaultPath} state={{ from: location, was404: true }} replace />;
+  }
+});
 
-    if (showWhenUtilResult === TAGS_API_NOT_RESOLVED_YET) {
-      return customLoader || <Loader />;
-    } else if (showWhenUtilResult) {
-      return React.cloneElement(children, { location, params, navigate, history, match });
-    } else {
-      return <Navigate to={defaultPath} state={{ from: location, was404: true }} replace />;
-    }
-  }),
-);
-
-export const ShowWhen = connect(
-  ({ session }) => ({ session }),
-  null,
-)((props) => {
+export const ShowWhenComponent = (props) => {
   const i18 = useI18Service();
   // creating an abstraction of just consuming splitz experiment, rest service should not be accessed via RouteGuard
   const { abExperiments } = useSplitzService();
@@ -184,4 +179,7 @@ export const ShowWhen = connect(
     return children;
   }
   return null;
-});
+};
+
+export const RouteGuard = connect(({ session }) => ({ session }))(RouteGuardComponent);
+export const ShowWhen = connect(({ session }) => ({ session }))(ShowWhenComponent);

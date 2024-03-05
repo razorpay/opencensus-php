@@ -1,4 +1,5 @@
-import { User } from 'common/typings';
+// import User from 'merchant/models/User';
+import User from '../User';
 
 export type Environments = 'test' | 'live';
 

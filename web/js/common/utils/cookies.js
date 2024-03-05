@@ -1,6 +1,7 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 // Taken from MDN https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie/Simple_document.cookie_framework
 
-export const getCookie = key => {
+export const getCookie = (key) => {
   if (!key) return null;
   return (
     decodeURIComponent(
@@ -8,10 +9,10 @@ export const getCookie = key => {
         new RegExp(
           '(?:(?:^|.*;)\\s*' +
             encodeURIComponent(key).replace(/[\-\.\+\*]/g, '\\$&') +
-            '\\s*\\=\\s*([^;]*).*$)|^.*$'
+            '\\s*\\=\\s*([^;]*).*$)|^.*$',
         ),
-        '$1'
-      )
+        '$1',
+      ),
     ) || null
   );
 };
@@ -25,9 +26,7 @@ export const setCookie = (sKey, sValue, vEnd, sPath, sDomain, bSecure) => {
     switch (vEnd.constructor) {
       case Number:
         sExpires =
-          vEnd === Infinity
-            ? '; expires=Fri, 31 Dec 9999 23:59:59 GMT'
-            : '; max-age=' + vEnd;
+          vEnd === Infinity ? '; expires=Fri, 31 Dec 9999 23:59:59 GMT' : '; max-age=' + vEnd;
         break;
       case String:
         sExpires = '; expires=' + vEnd;
@@ -60,13 +59,11 @@ export const removeCookie = (sKey, sPath, sDomain) => {
   return true;
 };
 
-export const hasCookie = sKey => {
+export const hasCookie = (sKey) => {
   if (!sKey) {
     return false;
   }
   return new RegExp(
-    '(?:^|;\\s*)' +
-      encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, '\\$&') +
-      '\\s*\\='
+    '(?:^|;\\s*)' + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, '\\$&') + '\\s*\\=',
   ).test(document.cookie);
 };

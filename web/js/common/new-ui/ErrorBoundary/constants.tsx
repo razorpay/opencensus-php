@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 export enum Ranks {
   P0 = 'P0',
   P1 = 'P1',

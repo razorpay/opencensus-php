@@ -1,9 +1,9 @@
 const { test, expect } = require('@playwright/test');
-const { StorageStatePath, routes } = require('../../utils/constants');
+const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
 
 test.describe('Test wallet reports @flow=reports @project=payments ', () => {
   test.use({
-    storageState: StorageStatePath.WALLET_REPORTS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).WALLET_REPORTS_LOGIN_STATE,
   });
 
   test.beforeEach(async ({ page }) => {

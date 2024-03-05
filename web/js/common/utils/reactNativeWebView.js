@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import errorService from '@razorpay/universe-utils/errorService';
 import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 

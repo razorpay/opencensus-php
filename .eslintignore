@@ -11,15 +11,6 @@ yarn-error.log*
 node_modules
 
 public/dist
-web/entry/merchantLA-entry.js
-web/entry/merchant-entry.js
-web/js/merchant/containers/App.js
-web/js/merchantLA/containers/App.js
-web/js/merchant/chatbot-init.js
-web/entry/merchantTnc-entry.js
-web/entry/pokedex-entry.js
-web/js/pokedex/index.js
-web/entry/razorx-entry.js
 public/js/services.js
 web/js/common/ui/ConfirmModal/ConfirmModalProvider.js
 web/js/merchant/containers/Home/OnboardingCard/Instant/LiveMode.js

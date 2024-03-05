@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, server, userEvent } from 'test-utils';
+import { render, screen, server, userEvent, waitFor } from 'test-utils';
 import * as modalFn from 'merchant_common/reducers/modals';
 import { REPORT_TEST_DASHBOARD } from 'merchant_common/views/Reports/constants';
 import { getOverViewStateWith } from 'merchant_common/views/Reports/features/Overview/__test__/fixtures';

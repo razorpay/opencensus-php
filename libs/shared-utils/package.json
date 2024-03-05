@@ -1,0 +1,18 @@
+{
+  "name": "@dashboard/shared-utils",
+  "version": "0.0.1",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "file-saver": "1.3.8",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz",
+    "xss": "1.0.11"
+  },
+  "main": "./src/index.js",
+  "typings": "./src/index.d.ts",
+  "scripts": {
+    "test:jest": "jest --config=./jest.config.js",
+    "test:jest:ci": "yarn test:jest --silent --ci --json --coverage --testLocationInResults --outputFile=report.json",
+    "test:jest-watch-changed": "jest --watch",
+    "test:jest-watch": "jest --watchAll --silent=false"
+  }
+}

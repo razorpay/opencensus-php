@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 /*
     This file contains a map of Splitz A/B service experiment IDs for all environments
 

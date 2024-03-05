@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { loginByEmail } from '../utils/common';
-import { routes } from '../utils/constants';
-import ENV from '../utils/env';
+import getEnv from 'playwright/utils/env';
+import { routes } from 'testConstants';
+import { loginByEmail } from 'utils/common';
 
 const EASY_ONBOARDING_WEBSITE = 'https://sme-dashboard.dev.razorpay.in/';
+const ENV = getEnv();
 const constants = {
   EASY_ONBOARDING: {
     username: ENV.EASY_ONBOARDING_USERNAME,

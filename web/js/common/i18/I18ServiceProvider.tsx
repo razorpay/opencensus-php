@@ -1,19 +1,16 @@
 import React, { createContext, useMemo } from 'react';
-import { connect } from 'react-redux';
+import { useStore } from 'shell/commonStore';
+
 import { useSplitzService } from 'common/splitz';
 import { CONFIG_TO_TAG_MAPPING, ConfigTagType } from 'merchant/constants/tags';
+
 import { I18ContextStateType } from './types';
 
 export const I18ServiceContext = createContext({} as I18ContextStateType);
-const mapStateToProps = ({ session }) => ({
-  session,
-});
 
-export const I18ServiceProvider = connect(
-  mapStateToProps,
-  null,
-)(({ children, session }) => {
-  const { user } = session;
+export const I18ServiceProvider = ({ children }) => {
+  const user = useStore((state) => state.session.user);
+
   const {
     abExperiments: { config_based_tags },
   } = useSplitzService();
@@ -63,4 +60,4 @@ export const I18ServiceProvider = connect(
       {children}
     </I18ServiceContext.Provider>
   );
-});
+};

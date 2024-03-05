@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { expectSuccessNotification, switchToTestMode } from 'utils';
+import { COMMON_SELECTORS } from 'utils/selectors';
 
 import { paymentLinksUIData } from './constants';
 import {
@@ -13,9 +16,6 @@ import {
   verifyPLCreated,
   verifyPaymentHistory,
 } from './utils';
-import { expectSuccessNotification, switchToTestMode } from '../../utils';
-import { routes, StorageStatePath } from '../../utils/constants';
-import { COMMON_SELECTORS } from '../../utils/selectors';
 
 const SELECTORS = {
   expiryChangeButton:
@@ -25,151 +25,153 @@ const SELECTORS = {
 };
 
 test.setTimeout(2 * 60 * 1000);
-test.describe
-  .parallel('Test Payments Links V2 @flow=payment-links-v1 @project=no-code @project=no-code-roast', () => {
-  test.use({
-    storageState: StorageStatePath.ACTIVATED_NOT_IE_STATE,
-  });
-
-  test.beforeEach(async ({ page }) => {
-    await switchToTestMode({ page });
-    await page.goto(routes.PAYMENT_LINKS);
-    await clickSkipAndStartBtn({ page });
-  });
-
-  // roast test createCompatPaymentLink
-  test('should create PL v1 @priority=critical @suite=nocode-P0-automation', async ({ page }) => {
-    const productData = paymentLinksUIData.default;
-    const referenceId = await createPaymentLink({
-      page,
-      productData,
-      type: 'V1',
+test.describe.parallel(
+  'Test Payments Links V2 @flow=payment-links-v1 @project=no-code @project=no-code-roast',
+  () => {
+    test.use({
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_NOT_IE_STATE,
     });
-    await searchPLAndOpenDetails({ page, referenceId });
-    await verifyPLCreated({ page, productData, referenceId, statusToVerify: 'Issued' });
-  });
 
-  // roast test cancelCompatLink
-  test('should cancel PL v1 @priority=critical @suite=nocode-P1-automation', async ({ page }) => {
-    const productData = paymentLinksUIData.default;
-    const referenceId = await createPaymentLink({
-      page,
-      productData,
-      type: 'V1',
+    test.beforeEach(async ({ page }) => {
+      await switchToTestMode({ page });
+      await page.goto(routes.PAYMENT_LINKS);
+      await clickSkipAndStartBtn({ page });
     });
-    await searchPLAndOpenDetails({ page, referenceId });
-    await cancelPLCreated({ page });
-  });
 
-  // roast test cloneCompatPaymentLink
-  test('should clone PL v1 @priority=critical @suite=nocode-P1-automation', async ({ page }) => {
-    const productData = paymentLinksUIData.default;
-    const referenceId = await createPaymentLink({
-      page,
-      productData,
-      type: 'V1',
+    // roast test createCompatPaymentLink
+    test('should create PL v1 @priority=critical @suite=nocode-P0-automation', async ({ page }) => {
+      const productData = paymentLinksUIData.default;
+      const referenceId = await createPaymentLink({
+        page,
+        productData,
+        type: 'V1',
+      });
+      await searchPLAndOpenDetails({ page, referenceId });
+      await verifyPLCreated({ page, productData, referenceId, statusToVerify: 'Issued' });
     });
-    await searchPLAndOpenDetails({ page, referenceId });
-    await clonePLCreated({ page, productData, referenceId, isClassic: true });
-  });
 
-  // roast test searchByIssuedStatus
-  ['Issued'].forEach((statusToVerify) => {
-    test(`should search PL v1 with ${statusToVerify} status @priority=critical @suite=nocode-P1-automation`, async ({
+    // roast test cancelCompatLink
+    test('should cancel PL v1 @priority=critical @suite=nocode-P1-automation', async ({ page }) => {
+      const productData = paymentLinksUIData.default;
+      const referenceId = await createPaymentLink({
+        page,
+        productData,
+        type: 'V1',
+      });
+      await searchPLAndOpenDetails({ page, referenceId });
+      await cancelPLCreated({ page });
+    });
+
+    // roast test cloneCompatPaymentLink
+    test('should clone PL v1 @priority=critical @suite=nocode-P1-automation', async ({ page }) => {
+      const productData = paymentLinksUIData.default;
+      const referenceId = await createPaymentLink({
+        page,
+        productData,
+        type: 'V1',
+      });
+      await searchPLAndOpenDetails({ page, referenceId });
+      await clonePLCreated({ page, productData, referenceId, isClassic: true });
+    });
+
+    // roast test searchByIssuedStatus
+    ['Issued'].forEach((statusToVerify) => {
+      test(`should search PL v1 with ${statusToVerify} status @priority=critical @suite=nocode-P1-automation`, async ({
+        page,
+      }) => {
+        const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+        await searchAndVerifyByStatus({ container, statusToVerify });
+      });
+    });
+
+    // roast test searchByCompatInvoiceId
+    test('should search PL v1 with invoice id @priority=critical @suite=nocode-P1-automation', async ({
       page,
     }) => {
       const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
-      await searchAndVerifyByStatus({ container, statusToVerify });
+      await searchAndVerifyByPLId({ container });
     });
-  });
 
-  // roast test searchByCompatInvoiceId
-  test('should search PL v1 with invoice id @priority=critical @suite=nocode-P1-automation', async ({
-    page,
-  }) => {
-    const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
-    await searchAndVerifyByPLId({ container });
-  });
-
-  // roast test changeMinDueAmountAndVerifyInCompat
-  test('should change and verify min due amount in PL v1 @priority=critical @suite=nocode-P1-automation', async ({
-    page,
-  }) => {
-    const productData = paymentLinksUIData.default;
-    const referenceId = await createPaymentLink({
+    // roast test changeMinDueAmountAndVerifyInCompat
+    test('should change and verify min due amount in PL v1 @priority=critical @suite=nocode-P1-automation', async ({
       page,
-      productData,
-      type: 'V1',
-    });
-    await searchPLAndOpenDetails({ page, referenceId });
+    }) => {
+      const productData = paymentLinksUIData.default;
+      const referenceId = await createPaymentLink({
+        page,
+        productData,
+        type: 'V1',
+      });
+      await searchPLAndOpenDetails({ page, referenceId });
 
-    const minAmountchangeButton = await page.locator(SELECTORS.minAmountchangeButton);
-    await minAmountchangeButton.click();
-    const newMinAmount = String(productData.first_min_partial_amount / 2);
-    await page.getByPlaceholder('Minimum Due Amount').fill(newMinAmount);
-    await page.getByRole('button', { name: 'Save' }).click();
-    await expectSuccessNotification({
+      const minAmountchangeButton = await page.locator(SELECTORS.minAmountchangeButton);
+      await minAmountchangeButton.click();
+      const newMinAmount = String(productData.first_min_partial_amount / 2);
+      await page.getByPlaceholder('Minimum Due Amount').fill(newMinAmount);
+      await page.getByRole('button', { name: 'Save' }).click();
+      await expectSuccessNotification({
+        page,
+        notificationText: 'Minimum Due Amount is updated successfully',
+      });
+      await expect(
+        await page.$(`//*[contains(@class, "rzp-whole") and contains(text(), "${newMinAmount}")]`),
+      ).toBeDefined();
+    });
+
+    // roast test chaneExpiryToNoExpiryVerifyInCompat
+    test('should change and verify expiry to no expiry in PL v1 @priority=critical @suite=nocode-P1-automation', async ({
       page,
-      notificationText: 'Minimum Due Amount is updated successfully',
-    });
-    await expect(
-      await page.$(`//*[contains(@class, "rzp-whole") and contains(text(), "${newMinAmount}")]`),
-    ).toBeDefined();
-  });
+    }) => {
+      const productData = paymentLinksUIData.default;
+      const referenceId = await createPaymentLink({
+        page,
+        productData,
+        type: 'V1',
+      });
+      await searchPLAndOpenDetails({ page, referenceId });
 
-  // roast test chaneExpiryToNoExpiryVerifyInCompat
-  test('should change and verify expiry to no expiry in PL v1 @priority=critical @suite=nocode-P1-automation', async ({
-    page,
-  }) => {
-    const productData = paymentLinksUIData.default;
-    const referenceId = await createPaymentLink({
+      const expiryChangeButton = await page.locator(SELECTORS.expiryChangeButton);
+      await expiryChangeButton.click();
+
+      await page.locator("//div[contains(text(),'No Expiry')]").click();
+
+      await page.getByRole('button', { name: 'Save' }).click();
+      await expectSuccessNotification({
+        page,
+        notificationText: 'Expire By is updated successfully',
+      });
+    });
+
+    // roast test verifyPostCancelCompatPLStatus
+    test('should cancel and verify PL v1 @priority=critical @suite=nocode-P1-automation', async ({
       page,
-      productData,
-      type: 'V1',
+    }) => {
+      const productData = paymentLinksUIData.default;
+      const referenceId = await createPaymentLink({
+        page,
+        productData,
+        type: 'V1',
+      });
+      await searchPLAndOpenDetails({ page, referenceId });
+      await cancelPLCreated({ page });
     });
-    await searchPLAndOpenDetails({ page, referenceId });
 
-    const expiryChangeButton = await page.locator(SELECTORS.expiryChangeButton);
-    await expiryChangeButton.click();
-
-    await page.locator("//div[contains(text(),'No Expiry')]").click();
-
-    await page.getByRole('button', { name: 'Save' }).click();
-    await expectSuccessNotification({
+    // roast test verifyPaymentHistoryForCompatPartiallyPaidPL
+    test(`should verify Payment History For Partially Paid PL v1 @priority=critical @suite=nocode-P1-automation`, async ({
       page,
-      notificationText: 'Expire By is updated successfully',
+    }) => {
+      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      await searchAndVerifyByStatus({ container, statusToVerify: 'Partially Paid' });
+      await verifyPaymentHistory({ page, container, isPartialPaid: true });
     });
-  });
 
-  // roast test verifyPostCancelCompatPLStatus
-  test('should cancel and verify PL v1 @priority=critical @suite=nocode-P1-automation', async ({
-    page,
-  }) => {
-    const productData = paymentLinksUIData.default;
-    const referenceId = await createPaymentLink({
+    // roast test verifyInvoiceIdPresentInCompatPartialPaidPL
+    test(`should verify Invoice For Partially Paid PL v1 @priority=critical @suite=nocode-P1-automation`, async ({
       page,
-      productData,
-      type: 'V1',
+    }) => {
+      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      await searchAndVerifyByStatus({ container, statusToVerify: 'Partially Paid' });
+      await verifyInvoicePaymentHistory({ page, container, isPartialPaid: true });
     });
-    await searchPLAndOpenDetails({ page, referenceId });
-    await cancelPLCreated({ page });
-  });
-
-  // roast test verifyPaymentHistoryForCompatPartiallyPaidPL
-  test(`should verify Payment History For Partially Paid PL v1 @priority=critical @suite=nocode-P1-automation`, async ({
-    page,
-  }) => {
-    const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
-    await searchAndVerifyByStatus({ container, statusToVerify: 'Partially Paid' });
-    await verifyPaymentHistory({ page, container, isPartialPaid: true });
-  });
-
-  // roast test verifyInvoiceIdPresentInCompatPartialPaidPL
-  test(`should verify Invoice For Partially Paid PL v1 @priority=critical @suite=nocode-P1-automation`, async ({
-    page,
-  }) => {
-    const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
-    await searchAndVerifyByStatus({ container, statusToVerify: 'Partially Paid' });
-    await verifyInvoicePaymentHistory({ page, container, isPartialPaid: true });
-  });
-});
+  },
+);

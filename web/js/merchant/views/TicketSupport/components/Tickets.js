@@ -9,7 +9,6 @@ import TicketBrief from './TicketBrief';
 import { raiseTicket } from 'merchant/views/TicketSupport/utils';
 import FailedScreen from './FailedScreen';
 import { withRouter } from 'common/deprecated/withRouter';
-
 @connect(
   (state) => {
     return {

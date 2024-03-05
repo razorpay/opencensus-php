@@ -31,6 +31,17 @@ module.exports = {
       __dirname,
       'node_modules/@razorpay/blade/build/tokens/index.development.web.js',
     ),
+    '^shell/commonStore': path.resolve(__dirname, './js/merchant/commonStore'),
+    '^shell/SpiltzServiceContext': path.resolve(
+      __dirname,
+      './js/common/splitz/context/SplitzContextProvider',
+    ),
+    '^shell/I18Context': path.resolve(__dirname, './js/common/i18/I18ServiceProvider'),
+    '^shell/components/ShowWhen': path.resolve(
+      __dirname,
+      './js/merchant_common/components/SharedShowWhen',
+    ),
+    '^shell/deprecated/withRouter': path.resolve(__dirname, './js/common/deprecated/withRouter'),
     '@razorpay/i18nify-js/currency': path.resolve(
       __dirname,
       'node_modules/@razorpay/i18nify-js/lib/esm/currency/index.js',

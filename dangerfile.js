@@ -24,5 +24,8 @@ universeDangerJs({
   checkSensitiveFiles: {
     extendIncludePattern: [...frontendSensitiveFiles, ...backendSensitiveFiles],
   },
+  validatePRTitle: {
+    type: 'warn',
+  },
 });
 prReviewGuidelinesCheck();

@@ -389,6 +389,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
+          uniqueHashKey: 'microfrontend_selfserve',
+          experimentId: {
+            beta: 'NKAgVqmbHtVIgN',
+            production: 'NKAbJhHMEqZdd9',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'Transaction_Retry_Timeline',
           experimentId: {
             beta: 'NC8Dl41iAfVXXf',

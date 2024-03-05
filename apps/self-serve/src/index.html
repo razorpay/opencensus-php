@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8" />
+
+    <title>Dashboard Self Serve Apps</title>
+
+    <!-- Responsive meta tag -->
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Icons -->
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      sizes="32x32"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/favicon-32x32.png"
+    />
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      sizes="16x16"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/favicon-16x16.png"
+    />
+
+    <!-- Icons: Specific to iOS/iPadOS -->
+    <link
+      rel="apple-touch-icon"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/apple-icon-180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/apple-icon-180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/apple-icon-180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="167x167"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/apple-icon-180.png"
+    />
+
+    <!-- Icons -->
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      sizes="32x32"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/favicon-32x32.png"
+    />
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      sizes="16x16"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/favicon-16x16.png"
+    />
+
+    <!-- Icons: Specific to iOS/iPadOS -->
+    <link
+      rel="apple-touch-icon"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/apple-icon-180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/apple-icon-180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/apple-icon-180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="167x167"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/apple-icon-180.png"
+    />
+
+    <!-- Splashscreens: Apple iOS/iPadOS specific  -->
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2048-2732.jpg"
+      media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2732-2048.jpg"
+      media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1668-2388.jpg"
+      media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2388-1668.jpg"
+      media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1536-2048.jpg"
+      media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2048-1536.jpg"
+      media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1668-2224.jpg"
+      media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2224-1668.jpg"
+      media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1620-2160.jpg"
+      media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2160-1620.jpg"
+      media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1284-2778.jpg"
+      media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2778-1284.jpg"
+      media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1170-2532.jpg"
+      media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2532-1170.jpg"
+      media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1125-2436.jpg"
+      media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2436-1125.jpg"
+      media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1242-2688.jpg"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2688-1242.jpg"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-828-1792.jpg"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1792-828.jpg"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1242-2208.jpg"
+      media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-2208-1242.jpg"
+      media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-750-1334.jpg"
+      media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1334-750.jpg"
+      media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-640-1136.jpg"
+      media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/splashscreens/apple-splash-1136-640.jpg"
+      media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+    />
+    <style>
+      /* Loading the self Hosted fonts */
+      /* lato-regular - latin */
+      @font-face {
+        font-family: 'Lato';
+        font-style: normal;
+        font-weight: 400;
+        src: local(''),
+          url('<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/fonts/lato-v22-latin-regular.woff2')
+            format('woff2'),
+          /* Chrome 26+, Opera 23+, Firefox 39+ */
+            url('<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/fonts/lato-v22-latin-regular.woff')
+            format('woff');
+        /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+      }
+
+      /* lato-700 - latin */
+      @font-face {
+        font-family: 'Lato';
+        font-style: normal;
+        font-weight: 700;
+        src: local(''),
+          url('<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/fonts/lato-v22-latin-700.woff2')
+            format('woff2'),
+          /* Chrome 26+, Opera 23+, Firefox 39+ */
+            url('<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/fonts/lato-v22-latin-700.woff')
+            format('woff');
+        /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+      }
+
+      .grecaptcha-badge {
+        visibility: hidden;
+      }
+
+      @keyframes blinker {
+        from {
+          opacity: 1;
+          height: 100px;
+        }
+
+        to {
+          opacity: 0;
+          height: 50px;
+        }
+      }
+
+      .blink {
+        animation: blinker 1.2s ease-in-out infinite alternate;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      .animation-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-image: url('<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/vector.svg');
+        background-size: auto;
+        background-repeat: repeat-x;
+        background-color: #0a1d38;
+        height: 100vh;
+      }
+      @media only screen and (min-width: 768px) {
+        .animation-container {
+          background-image: url('<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/dweb-botton-vector.svg');
+          background-position: bottom;
+        }
+      }
+      .copyright {
+        position: fixed;
+        bottom: 48px;
+        right: 48px;
+        display: block;
+        width: 200px;
+      }
+      @media only screen and (max-width: 768px) {
+        .copyright {
+          display: none;
+        }
+      }
+      .copyright-text {
+        font-size: 12px;
+        font-family: Lato, sans-serif;
+        font-weight: 400;
+        line-height: 16px;
+        color: #5ca2f7;
+      }
+      .copyright-link {
+        color: #5ca2f7;
+        text-decoration-color: #213554ab;
+      }
+      a:hover {
+        color: #fff;
+      }
+
+      .sw-iframe {
+        border: none;
+        visibility: hidden;
+        width: 1px;
+        height: 1px;
+        pointer-events: none;
+        position: fixed;
+        bottom: 0;
+      }
+    </style>
+    <% if(process.env.UNIVERSE_PUBLIC_ENV=='production' ) { %>
+    <!-- Hotjar Tracking Code for https://easy.razorpay.com -->
+    <script>
+      (function (h, o, t, j, a, r) {
+        h.hj =
+          h.hj ||
+          function () {
+            (h.hj.q = h.hj.q || []).push(arguments);
+          };
+        h._hjSettings = { hjid: 575141, hjsv: 5 };
+        a = o.getElementsByTagName('head')[0];
+        r = o.createElement('script');
+        r.async = 1;
+        r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
+        a.appendChild(r);
+      })(window, document, 'https://static.hotjar.com/c/hotjar-', '.js?sv=');
+    </script>
+    <% } %>
+  </head>
+
+  <body>
+    <div id="root">
+      <div class="animation-container">
+        <img
+          class="blink"
+          src="<%= process.env.UNIVERSE_PUBLIC_RESOURCE_PATH %>static/logos/splash-logo.svg"
+          alt="splash-logo"
+        />
+      </div>
+    </div>
+  </body>
+
+  <% if(process.env.UNIVERSE_PUBLIC_ENV=='production' ) { %>
+  <!-- loads merchant dashboard service worker -->
+  <iframe
+    title="merchant dashboard"
+    class="sw-iframe"
+    loading="lazy"
+    src="<%= process.env.UNIVERSE_PUBLIC_MERCHANT_DASHBOARD_URL %>/dummyiframe"
+  ></iframe>
+  <% } %> <% if(process.env.UNIVERSE_PUBLIC_ENV=='production' ) { %>
+  <script src="https://app-metrics.razorpay.com/static/blade-analytics.js"></script>
+  <script>
+    window.initBladeCoverageAnalytics?.({ businessUnit: 'payments' });
+  </script>
+  <% } %>
+</html>

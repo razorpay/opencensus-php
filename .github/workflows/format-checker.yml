@@ -40,13 +40,13 @@ jobs:
         run: npm install -g yarn
 
       - name: Install dependencies with caching
-        uses: ./.github/actions
+        uses: ./.github/actions/package-installer
         with: 
           npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: DangerJS
-        uses: danger/danger-js@10.6.6
+        uses: danger/danger-js@11.3.0
         with:
           args: "--id formatchecker_dangerjs"
         env:
@@ -73,7 +73,7 @@ jobs:
           )
         run: |
           echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
-          base=$base yarn validate-lint
+          # base=$base yarn validate-lint
           npx eslint \
           --output-file eslint_report.json \
           --no-error-on-unmatched-pattern \

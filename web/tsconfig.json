@@ -14,9 +14,15 @@
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
+    "composite": true,
     "baseUrl": "js",
     "paths": {
-      "test-utils": ["common/services/test/test-utils"]
+      "test-utils": ["common/services/test/test-utils"],
+      "@dashboard/shared-ui": ["../../libs/shared-ui/src/index.ts"],
+      "@dashboard/shared-utils": ["../../libs/shared-utils/src/index.ts"],
+      "shell/commonStore": ["./merchant/commonStore/index.ts"],
+      "shell/I18Context": ["./common/i18/I18ServiceProvider.tsx"],
+      "shell/SpiltzServiceContext": ["./common/splitz/context/SplitzContextProvider.tsx"]
     },
     "plugins": [
       {
@@ -30,6 +36,7 @@
     "js/newAuth/signin/types.d.ts",
     "js/newAuth/**/*",
     "js/merchant",
+    "js/merchant/**/*.json",
     "js/common",
     "js/merchant_common/"
   ],

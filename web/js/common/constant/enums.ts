@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 export enum Modules {
   AccountAndSettings = 'Account & Settings',
   MyAccount = 'My Account',

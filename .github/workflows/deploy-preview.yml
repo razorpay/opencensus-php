@@ -17,14 +17,15 @@ jobs:
     runs-on: [ self-hosted ]
     if: ${{ github.event_name == 'pull_request' && github.event.head_commit.author.name != 'rzpcibot' }}
     steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
       # Wait for build to finish
-      - name: Wait for tests to succeed
-        uses: lewagon/wait-on-check-action@v1.3.1
+      - name: Wait for dashboard's docker image to be built
+        uses: ./.github/actions/waiting-build
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'Build Dashboard'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 45 
+          commit_id: ${{ github.event.pull_request.head.sha }}
+          workflow_name: "Deploy To Devstack for Preview URL"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Triggers argo workflows webhook to create preview URL
         uses: fjogeleit/http-request-action@52ba495021567f279f4a6577ac8fb73672197af8

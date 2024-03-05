@@ -38,6 +38,7 @@ tmp/
 /web/node_modules
 /web/js/dump.rdb
 /web/build
+libs/shared-ui/node_modules/
 
 # E2E
 /web/screenshots
@@ -64,8 +65,26 @@ web/test-results
 web/e2e/storageState/*
 !web/e2e/storageState/.gitkeep
 
+playwright/storageState/*
+!playwright/storageState/.gitkeep
+
+playwright-report/*
+test-results/*
+
+web/test-results/*
+web/playwright-report/*
+
 # Sonar
 .scannerwork
 
 # debug logs
 yarn-error.log
+
+.nx/cache
+.verdaccio/htpasswd
+
+
+#libs
+dist/
+coverage/
+eslint_report.json

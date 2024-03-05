@@ -1,9 +1,9 @@
 const { test, expect } = require('@playwright/test');
-const { StorageStatePath, routes } = require('../../utils/constants');
+const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
 
 test.describe('Magic Checkout Settings Tab @project=magic-checkout', () => {
   test.use({
-    storageState: StorageStatePath.MAGIC_CHECKOUT_STATE,
+    storageState: getStorageStatePath(BASE_PATH).MAGIC_CHECKOUT_STATE,
   });
 
   test('should render magic checkout settings page correctly', async ({ page }) => {

@@ -1,8 +1,8 @@
 import { expect } from '@playwright/test';
+import { routes } from 'testConstants';
+import { navigateTo } from 'utils/common';
 
 import { METHODS } from './constants';
-import { navigateTo } from '../../utils/common';
-import { routes } from '../../utils/constants';
 
 // helpers - start
 export const clickButton = async (page, buttonText) => {

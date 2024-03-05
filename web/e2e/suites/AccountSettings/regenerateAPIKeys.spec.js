@@ -1,7 +1,8 @@
+import { BASE_PATH, getStorageStatePath } from 'testConstants';
+
 const { test, expect } = require('@playwright/test');
-const { StorageStatePath } = require('../../utils/constants');
-const { expectSuccessNotification } = require('../../utils');
-const { waitAndProceedVerificationPopup } = require('../../utils/verification');
+const { expectSuccessNotification } = require('utils');
+const { waitAndProceedVerificationPopup } = require('utils/verification');
 
 const ELEMENT_CONSTANTS = {
   API_KEYS_SETTINGS_URL: '/app/website-app-settings/api-keys',
@@ -17,7 +18,7 @@ const ELEMENT_CONSTANTS = {
 
 test.describe('Test Regenerate API Keys @flow=account-settings @project=payments', () => {
   test.use({
-    storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).TRANSACTIONS_LOGIN_STATE,
   });
   test.skip('should regenerate API Keys @priority=critical', async ({ page }) => {
     // go to the api keys and settings tab

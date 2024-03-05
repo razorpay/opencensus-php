@@ -1,5 +1,6 @@
 import { useContext } from 'react';
-import { SpiltzContext } from 'common/splitz/context/SplitzContextProvider';
+import { SpiltzContext } from 'shell/SpiltzServiceContext';
+
 import { SpiltzContextState } from 'common/splitz/types';
 
 /**

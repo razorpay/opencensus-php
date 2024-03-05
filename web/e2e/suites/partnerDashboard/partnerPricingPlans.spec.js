@@ -1,4 +1,4 @@
-import { routes, StorageStatePath } from '../../utils/constants';
+import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 
 const { test, expect } = require('@playwright/test');
 
@@ -9,7 +9,7 @@ const SELECTORS = {
 
 test.describe.parallel('Test Partner Pricing Plans page @project=partner-dashboard', () => {
   test.use({
-    storageState: StorageStatePath.RESELLER_PARTNER_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).RESELLER_PARTNER_TEST_LOGIN_STATE,
   });
 
   test('should load the pricing page accurately @priority=critical', async ({ page }) => {

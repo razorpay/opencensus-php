@@ -1,7 +1,9 @@
 import abService from '@razorpay/universe-cli/ab';
-import { evaluatedExperimentParser, evaluatedBulkExperimentsParser } from './utils';
-import { ExperimentType, InitABServiceConfig, VariantAPICallArgs } from './types';
+
+import { evaluatedExperimentParser, evaluatedBulkExperimentsParser } from 'common/splitz/utils';
+
 import { APP_ENV } from './constants';
+import { ExperimentType, InitABServiceConfig, VariantAPICallArgs } from './types';
 
 // for bulk calls, response modified as per our usecase
 export const getVariant = async ({
@@ -9,7 +11,7 @@ export const getVariant = async ({
   experimentId,
   requestData,
 }: VariantAPICallArgs): Promise<ExperimentType> => {
-  return await abService
+  return abService
     .getVariant(
       {
         experimentId: (experimentId[APP_ENV] as string) ?? experimentId.beta,
@@ -50,7 +52,7 @@ export const getVariants = async (
     },
   );
 
-  return await abService
+  return abService
     .getVariants(
       parsedExperiments as unknown as {
         experiment: abService.ABBulkExperiment;

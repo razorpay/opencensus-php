@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { getStorageStatePath, BASE_PATH } from 'testConstants';
 
 import { uploadInvoices } from './constants';
 import {
@@ -7,11 +8,10 @@ import {
   assertSearch,
   navigateToTransactions,
 } from './utils';
-import { StorageStatePath } from '../../utils/constants';
 
 test.describe.parallel('Transactions (Live Mode) @flow=transactionsV1 @project=payments', () => {
   test.use({
-    storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).TRANSACTIONS_LOGIN_STATE,
   });
 
   test('should show payments list in Upload Invoices', async ({ page }) => {

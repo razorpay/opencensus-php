@@ -1,11 +1,12 @@
 import { Component } from 'react';
-import Modal from 'react-modal';
-import { connect } from 'react-redux';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import { withRouter } from 'common/deprecated/withRouter';
 import { isEmpty, isPlainObject } from 'lodash';
 import qs from 'query-string';
+import Modal from 'react-modal';
+import { compose } from 'redux';
+import { withZustand } from 'shell/commonStore';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',
@@ -26,7 +27,6 @@ Modal.defaultStyles.content = {
   borderRadius: '5px',
 };
 
-@connect((state) => ({ ...state.modal, org: state.session.org }), ModalActions)
 class ModalDialog extends Component {
   _prevQueryParams = null;
   defaultOverlayStyle = { ...Modal.defaultStyles.overlay };
@@ -53,7 +53,9 @@ class ModalDialog extends Component {
   };
 
   onModalOpen = () => {
-    const { queryParams } = this.props;
+    const {
+      modal: { queryParams },
+    } = this.props.store;
     if (isPlainObject(queryParams) && !isEmpty(queryParams)) {
       this._prevQueryParams = queryParams;
       this.addQueryParams(queryParams);
@@ -73,10 +75,22 @@ class ModalDialog extends Component {
 
   render() {
     const props = this.props;
-    const { closeOnOverLay = false } = props;
+    const {
+      session: { org },
+      closeModal,
+      modal: {
+        component,
+        overlayStyles,
+        size,
+        closeOnOverLay = false,
+        isNew,
+        disableClose,
+        className,
+      } = {},
+    } = props.store || {};
 
     // to apply the styles passed as props
-    Object.assign(Modal.defaultStyles.overlay, props.overlayStyles);
+    Object.assign(Modal.defaultStyles.overlay, overlayStyles);
 
     /* 
       use your own modal component & the modal reducer for opening closing modal
@@ -84,26 +98,26 @@ class ModalDialog extends Component {
       openModal -> Opens the modal
       closeModal -> Closes the modal
     */
-    if (props.isNew) {
-      return !!props.component && props.component;
+    if (isNew) {
+      return !!component && component;
     }
 
     return (
       <div>
         <Modal
-          isOpen={!!props.component}
-          onRequestClose={props.disableClose ? null : props.closeModal}
+          isOpen={!!component}
+          onRequestClose={disableClose ? null : closeModal}
           closeTimeoutMS={300}
           shouldCloseOnOverlayClick={closeOnOverLay}
-          class={`${props.org?.custom_code} Modal ${props.size ? `Modal--${props.size}` : ''}${
-            props.className ? ` ${props.className}` : ''
+          class={`${org?.custom_code} Modal ${size ? `Modal--${size}` : ''}${
+            className ? ` ${className}` : ''
           }`}
           contentLabel="Modal"
           ariaHideApp={false}
           onAfterClose={this.onModalClose}
           onAfterOpen={this.onModalOpen}
         >
-          <ErrorBoundary resetOnProps>{props.component}</ErrorBoundary>
+          <ErrorBoundary resetOnProps>{component}</ErrorBoundary>
         </Modal>
       </div>
     );
@@ -111,9 +125,15 @@ class ModalDialog extends Component {
 }
 
 ModalDialog.defaultProps = {
-  size: 'regular',
-  disableClose: false,
-  overlayStyles: {},
+  store: {
+    modal: {
+      size: 'regular',
+      disableClose: false,
+      overlayStyles: {},
+    },
+  },
 };
 
-export default withRouter(ModalDialog);
+export default compose(withRouter, (Component) =>
+  withZustand(Component, ['modal', 'closeModal', 'session']),
+)(ModalDialog);

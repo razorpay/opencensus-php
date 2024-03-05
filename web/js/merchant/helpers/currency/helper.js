@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 /**
  * This function takes currency as argument and returns true if currency is 3 decimal
  * @param {*} currency currency to check

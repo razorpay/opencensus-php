@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.lib.json",
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "typings/typecheck.d.ts"
+  ],
+  "references": [],
+  "exclude": [],
+  "compilerOptions": {
+    "composite": false,
+    "types": ["node", "jest"],
+    "paths": {}
+  }
+}

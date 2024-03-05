@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-ui
 import React from 'react';
 import { Link } from 'react-router-dom';
 

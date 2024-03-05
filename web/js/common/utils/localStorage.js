@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 // LocalStorage service that fallbacks to cookies in case of QUOTAEXCEEDED error in Safari Private mode
 import { getCookie, setCookie, removeCookie } from './cookies';
 
@@ -26,7 +27,7 @@ function isQuotaExceeded(e) {
 }
 
 const localStorage = window.localStorage;
-export const getItem = key => {
+export const getItem = (key) => {
   try {
     return localStorage.getItem(key);
   } catch (e) {
@@ -45,7 +46,7 @@ export const setItem = (key, value) => {
   }
 };
 
-export const removeItem = key => {
+export const removeItem = (key) => {
   try {
     return localStorage.removeItem(key);
   } catch (e) {

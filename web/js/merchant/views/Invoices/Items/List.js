@@ -24,6 +24,7 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { withRouter } from 'common/deprecated/withRouter';
 
+@withRouter
 @connect(
   (state) => ({
     ...state.items,

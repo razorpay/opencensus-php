@@ -19,11 +19,19 @@ function merchantEntry() {
     };
 
     websiteAssets.css.forEach((src) => {
-      appendLink(cdnDashboardUrl + src);
+      if (isRedirector) {
+        appendLink(src);
+      } else {
+        appendLink(cdnDashboardUrl + src);
+      }
     });
 
     websiteAssets.js.forEach((src) => {
-      appendScript(cdnDashboardUrl + src);
+      if (isRedirector) {
+        appendScript(src);
+      } else {
+        appendScript(cdnDashboardUrl + src);
+      }
     });
 
     const script = document.createElement('script');

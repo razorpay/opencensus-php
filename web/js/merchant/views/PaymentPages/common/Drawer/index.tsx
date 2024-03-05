@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
-interface IDrawer {
+export interface IDrawer {
   children: React.ReactNode;
   maskClosable?: boolean;
   onClose?: () => void;

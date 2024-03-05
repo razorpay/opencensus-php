@@ -1,9 +1,9 @@
 const { expect } = require('@playwright/test');
-const moment = require('moment');
 const { formatPhoneNumber } = require('@razorpay/i18nify-js');
+const moment = require('moment');
 
-const { routes } = require('./constants');
 const { COMMON_SELECTORS } = require('./selectors');
+const { routes } = require('../constants');
 
 export function getI18FormattedPhoneNumber(contact) {
   try {

@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-ui
 import moment from 'moment';
 
 import Banner from 'common/ui/Banner';

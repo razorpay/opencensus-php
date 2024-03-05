@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import ajax from 'common/utils/ajax';
 import { getMode } from 'merchant/store';
 

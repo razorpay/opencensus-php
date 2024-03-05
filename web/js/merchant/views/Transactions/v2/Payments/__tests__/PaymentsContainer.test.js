@@ -35,14 +35,12 @@ describe('PaymentsContainer', () => {
   });
 
   test('should render the failed payments view when the "failed" route is active', async () => {
+    const pathname = '/failed-payments';
+    const initialEntries = ['/failed-payments'];
     mockPaymentAPIResponse({
       count: 0,
     });
-    renderApp({
-      location: {
-        pathname: '/failed-payments',
-      },
-    });
+    renderApp({}, pathname, initialEntries);
     await waitFor(() => {
       expect(screen.getByText('Track your failed payments')).toBeInTheDocument();
     });

@@ -1,7 +1,8 @@
+/* eslint-disable import/extensions */
 import React from 'react';
 import Button from '@razorpay/blade-old/src/atoms/Button';
-
 import posRefer from 'assets/partner-dashboard/posRefer.svg';
+
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import {
   AddMerchantSource,

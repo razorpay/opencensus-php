@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 export enum BUSINESS_SUBCATEGORIES {
   Aviation = 'aviation',
   Charity = 'charity',
@@ -67,6 +68,7 @@ type Getters = {
   isPartnershipForCapitalEnabled: boolean;
   isInternationalMethodsHidden: boolean;
   isDirectTransferEnabled: boolean;
+  isHidePIDetails: boolean;
   isSubMerchantKycEnabled: boolean;
   isOmniChannelMerchant: boolean;
   isOmniEnabledMerchant: boolean;
@@ -124,6 +126,7 @@ type UserProperties = {
   };
   tags: string[];
   is_pgos_merchant: boolean;
+  configTags: any;
 };
 
 // as user properties are not available initially

@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
 

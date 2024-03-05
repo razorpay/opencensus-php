@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 const debounce = (fn, delay = 0) => {
   let timer = null;
 

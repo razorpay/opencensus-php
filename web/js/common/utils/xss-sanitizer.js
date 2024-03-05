@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import xss from 'xss';
 
 // Customize the handler function for attributes not in the whitelist

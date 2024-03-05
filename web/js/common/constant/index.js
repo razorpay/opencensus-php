@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 export const SENSITIVE_FIELDS = [
   'customer_contact',
   'customer_email',

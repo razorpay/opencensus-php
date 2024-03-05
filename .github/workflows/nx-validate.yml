@@ -1,0 +1,42 @@
+name: NX Validate Workflow
+on: push
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: [self-hosted]
+    continue-on-error: false
+    name: NX Validate
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+
+      - name: Use Node v18.12.1
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18.12.1
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies with caching
+        uses: ./.github/actions/package-installer
+        with:
+          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+      
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      
+      - name: Validate
+        run: |
+          git fetch origin master
+          yarn nx affected -t lint,tsc --base=origin/master --head=${{ steps.extract_branch.outputs.branch }}
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

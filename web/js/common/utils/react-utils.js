@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import React from 'react';
 
 export const isChildSameType = (child, type) => {
@@ -11,14 +12,14 @@ export const checkChildrenType = (children, types) => {
 
   let error = null;
 
-  React.Children.forEach(children, child => {
+  React.Children.forEach(children, (child) => {
     if (error) {
       return error;
     }
 
     let isSameType = false;
 
-    types.forEach(type => {
+    types.forEach((type) => {
       if (isSameType) {
         return;
       }
@@ -27,7 +28,7 @@ export const checkChildrenType = (children, types) => {
     });
 
     if (!isSameType) {
-      const classNames = types.map(classObj => classObj.name);
+      const classNames = types.map((classObj) => classObj.name);
 
       error = new Error(`Children should be one of ${classNames.join(' or ')}`);
     }

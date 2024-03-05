@@ -8,6 +8,8 @@ export type Notification = {
 
 export type ShowNotificationType = (arg0: Notification) => void;
 
+export type HideNotificationType = (arg0: Notification) => void;
+
 export type NotificationReducerState = {
   notifications: Notification[];
   hidePrevious?: boolean;

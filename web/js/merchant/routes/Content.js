@@ -21,6 +21,7 @@ import { RouteGuard } from 'merchant/components/ShowWhen';
 import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
 import Home from 'merchant/containers/Home/Index';
 import { setActiveEntity, setBaseLocation, setSecActiveEntity } from 'merchant/reducers/app';
+
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import {
   isConfigurationViewAllowed,
@@ -40,10 +41,29 @@ import HandleIndex from './HandleIndex';
 import lazy from './LazyLoader';
 
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
+import SelfServeStateWrapper from 'merchant/views/Transactions/SelfServeStateWrapper';
+
+import {
+  isMicrofrontendSelfserveEnabled,
+  isTransactionsV2Enabled,
+} from 'merchant/views/Transactions/v2/common/utils';
 import { withI18Service } from 'common/i18';
+import { importRemote } from 'merchant/utils/dynamic-remotes';
 import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 import { isGCMSExperimentEnabled } from 'merchant/views/GCMS/shared/utils';
+
+console.log('cdnDashboardAssetsUrl :', window.cdnDashboardAssetsUrl);
+
+const loadModule = async (module) =>
+  importRemote({
+    url: window.cdnDashboardAssetsUrl,
+    scope: 'selfserve',
+    module,
+  });
+
+const SelfServe = lazy(() =>
+  /**  webpackChunkName: "SelfServeRouter" */ loadModule('SelfServeRouter'),
+);
 
 const B2bPaymentsList = lazy(() =>
   import(
@@ -546,6 +566,10 @@ class Content extends Component {
     const { splitz, user } = this.props;
     return isSettlementsV3detailsRevamp(splitz, user);
   };
+  checkIsMicrofrontendSelfserveEnabled = () => {
+    const { splitz } = this.props;
+    return isMicrofrontendSelfserveEnabled(splitz);
+  };
 
   setBaseLocation = (location) => {
     const blacklistedDetailsRoutes = ['/payments/:id', '/refunds/:id'];
@@ -679,6 +703,7 @@ class Content extends Component {
     const PaymentMethods = user.isAccountAndSettingsRevampEnabled ? PaymentMethodsV2 : Settings;
     const isTransactionV2Enabled = this.checkIsTransactionsV2Enabled();
     const isSettlementV3RevampEnabled = this.checkIsSettlementsV3RevampEnabled();
+    const isMicrofrontendSelfserveEnabled = this.checkIsMicrofrontendSelfserveEnabled();
     return (
       <Suspense fallback={<Loader />}>
         <Routes location={this.baseLocation}>
@@ -737,18 +762,42 @@ class Content extends Component {
               path="*"
               element={
                 <RouteGuard additionalCondition={(user) => user.isAllowedView('payments')}>
-                  {isTransactionV2Enabled ? <TransactionV2Landing /> : <Transactions />}
+                  {/* put micro app here */}
+                  {isTransactionV2Enabled ? (
+                    isMicrofrontendSelfserveEnabled ? (
+                      <SelfServeStateWrapper>
+                        <SelfServe />
+                      </SelfServeStateWrapper>
+                    ) : (
+                      <TransactionV2Landing />
+                    )
+                  ) : (
+                    <Transactions />
+                  )}
                 </RouteGuard>
               }
             >
-              <Route
-                index
-                element={
-                  <RouteGuard>
-                    {isTransactionV2Enabled ? <PaymentsContainer /> : <PaymentsList />}
-                  </RouteGuard>
-                }
-              />
+              {isTransactionV2Enabled && !isMicrofrontendSelfserveEnabled && (
+                <Route
+                  index
+                  element={
+                    <RouteGuard>
+                      <PaymentsContainer />
+                    </RouteGuard>
+                  }
+                />
+              )}
+
+              {!isTransactionV2Enabled && (
+                <Route
+                  index
+                  element={
+                    <RouteGuard>
+                      <PaymentsList />
+                    </RouteGuard>
+                  }
+                />
+              )}
 
               <Route path="batchuploads/*">
                 <Route

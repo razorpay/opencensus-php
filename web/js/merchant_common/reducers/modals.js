@@ -1,12 +1,25 @@
-import { merge } from 'common/utils/immutable';
+// This utility is used to open and close modal dialogs
+// This is directly updating zustand store for modal actions
+
+import { useStore } from 'shell/commonStore';
+import { getOpenModalState, getCloseModalState } from 'merchant/commonStore/stateActions/modals';
 
 const MODAL_OPEN = 'MODAL_OPEN';
 const MODAL_CLOSE = 'MODAL_CLOSE';
 const SLIDER_OPEN = 'SLIDER_OPEN';
 const SLIDER_CLOSE = 'SLIDER_CLOSE';
-const SETTELMENT_CONFIRMATION = 'SETTELMENT_CONFIRMATION';
+
+const ZUSTAND_STORE_KEY = 'modal';
+
+// Keeping the action response as it as to support
+// existing redux flow in order to prevent any breaking changes
 
 export const openModal = (payload) => {
+  useStore.setState((state) => {
+    return {
+      [ZUSTAND_STORE_KEY]: getOpenModalState(state[ZUSTAND_STORE_KEY], payload),
+    };
+  });
   return {
     type: MODAL_OPEN,
     payload,
@@ -14,7 +27,11 @@ export const openModal = (payload) => {
 };
 
 export const closeModal = (payload) => {
-  document.body.classList.remove('ReactModal__Body--open');
+  useStore.setState(() => {
+    return {
+      [ZUSTAND_STORE_KEY]: getCloseModalState(),
+    };
+  });
   return {
     type: MODAL_CLOSE,
     payload,
@@ -44,17 +61,17 @@ export const closeSlider = (payload) => {
   };
 };
 
-let initialState = {};
+// deprecated not in use anymore
+// TODO: remove this in future, keeping this for reference for now
+// export default (state = initialState, action) => {
+//   switch (action.type) {
+//     case MODAL_OPEN:
+//       return handleOpenModal(state, action);
 
-export default (state = initialState, action) => {
-  switch (action.type) {
-    case MODAL_OPEN:
-      return merge(state, action.payload);
+//     case MODAL_CLOSE:
+//       return initialState;
 
-    case MODAL_CLOSE:
-      return initialState;
-
-    default:
-      return state;
-  }
-};
+//     default:
+//       return state;
+//   }
+// };

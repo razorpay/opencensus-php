@@ -1,7 +1,6 @@
 import { expect } from '@playwright/test';
-
-import { expectSuccessNotification, fillExpiry, generateRandomText } from '../../utils';
-import { COMMON_SELECTORS } from '../../utils/selectors';
+import { expectSuccessNotification, fillExpiry, generateRandomText } from 'utils';
+import { COMMON_SELECTORS } from 'utils/selectors';
 
 const SELECTORS = {
   detailsContainer: '.list-group.details-row-container',

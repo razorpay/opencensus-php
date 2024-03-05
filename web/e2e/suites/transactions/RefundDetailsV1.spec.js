@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { getStorageStatePath, BASE_PATH } from 'testConstants';
 
 import { navigateToTransactions } from './utils';
-import { StorageStatePath } from '../../utils/constants';
 
 const navigateToRefunds = async (page, refundId) => {
   try {
@@ -55,23 +55,25 @@ const assertGatewayResponse = async (page, refundId) => {
   }
 };
 
-test.describe
-  .parallel('Refunds transactions (Test Mode) @flow=transactions @project=payments', () => {
-  test.use({
-    storageState: StorageStatePath.OPTIMIZER_V1_LOGIN_STATE,
-  });
-
-  test.describe.parallel('Refunds details', () => {
-    test('should show "Gateway Error" details', async ({ page }) => {
-      const refundId = 'rfnd_N5QKKDG67Rgnyr';
-      try {
-        await navigateToTransactions(page);
-        await navigateToRefunds(page, refundId);
-        await openRefundDialog(page, refundId);
-        await assertGatewayResponse(page, refundId);
-      } catch (error) {
-        console.error(`Test failed: ${error?.message}`);
-      }
+test.describe.parallel(
+  'Refunds transactions (Test Mode) @flow=transactions @project=payments',
+  () => {
+    test.use({
+      storageState: getStorageStatePath(BASE_PATH).OPTIMIZER_V1_LOGIN_STATE,
     });
-  });
-});
+
+    test.describe.parallel('Refunds details', () => {
+      test('should show "Gateway Error" details', async ({ page }) => {
+        const refundId = 'rfnd_N5QKKDG67Rgnyr';
+        try {
+          await navigateToTransactions(page);
+          await navigateToRefunds(page, refundId);
+          await openRefundDialog(page, refundId);
+          await assertGatewayResponse(page, refundId);
+        } catch (error) {
+          console.error(`Test failed: ${error?.message}`);
+        }
+      });
+    });
+  },
+);

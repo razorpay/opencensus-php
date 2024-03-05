@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 /* TODO : Create a common share util in which first sharing panel
   from navigator share is used & if not present then copyToClipboard 
   is kept as a fallback.

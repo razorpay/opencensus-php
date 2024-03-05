@@ -2,7 +2,7 @@ import { classList } from 'common/utils/rzp-utils';
 import React from 'react';
 import { ShimmerBar } from './styled';
 
-interface ShimmerPropsInterface {
+export interface ShimmerPropsInterface {
   height?: string;
   width?: string;
   styles?: Record<string, string>;

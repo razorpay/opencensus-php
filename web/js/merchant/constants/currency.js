@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import { CURRENCY_FORMATTERS } from 'merchant/helpers/currency/helper';
 
 const currencies = {

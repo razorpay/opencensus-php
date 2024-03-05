@@ -1,0 +1,75 @@
+{
+  "name": "shared-ui",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared-ui/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "nxlint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/shared-ui/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "build": {
+      "executor": "@nx/rollup:rollup",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared-ui",
+        "tsConfig": "libs/shared-ui/tsconfig.lib.json",
+        "project": "libs/shared-ui/package.json",
+        "entryFile": "libs/shared-ui/src/index.ts",
+        "external": ["react", "react-dom", "react/jsx-runtime", "shell"],
+        "rollupConfig": "libs/shared-ui/rollup.config.js",
+        "compiler": "babel",
+        "assets": [
+          {
+            "glob": "libs/shared-ui/README.md",
+            "input": ".",
+            "output": "."
+          }
+        ]
+      }
+    },
+    "production:build": {
+      "command": "echo \"Buliding shared-ui for production\""
+    },
+    "devstack:build": {
+      "command": "echo \"Building shared-ui for devstack...\""
+    },
+    "tsc": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/shared-ui",
+        "commands": ["tsc -p tsconfig.typecheck.json"],
+        "forwardAllArgs": false,
+        "description": "Type check with tsc"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/shared-ui",
+        "commands": ["universe eslint . -- --fix", "universe secretlint \"**/*\""],
+        "parallel": true,
+        "forwardAllArgs": false,
+        "description": "Lint"
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/shared-ui/jest.config.ts",
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "codeCoverage": true
+        }
+      }
+    }
+  }
+}

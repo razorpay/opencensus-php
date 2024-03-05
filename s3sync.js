@@ -50,7 +50,12 @@ glob(
 
       const ext = path.extname(file).slice(1);
 
-      if (file.endsWith('-entry.js') || file.endsWith('.js.map') || ext.startsWith('woff')) {
+      if (
+        file.endsWith('-entry.js') ||
+        file.endsWith('.js.map') ||
+        ext.startsWith('woff') ||
+        file.includes('remoteEntry.js')
+      ) {
         fileParams.CacheControl = 'no-store,must-revalidate';
       }
 

@@ -1,0 +1,35 @@
+{
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": []
+      }
+    }
+  },
+  "affected": {
+    "defaultBase": "master"
+  },
+  "targetDefaults": {
+    "test": {
+      "inputs": ["default", "^default", "{workspaceRoot}/jest.preset.js"]
+    },
+    "tsc": {
+      "dependsOn": ["^tsc"]
+    },
+    "production:build": {
+      "inputs": ["!{workspaceRoot}/**/*.md"],
+      "dependsOn": ["^production:build"]
+    }
+  },
+  "generators": {
+    "@nx/react": {
+      "application": {
+        "babel": true
+      },
+      "library": {
+        "unitTestRunner": "jest"
+      }
+    }
+  }
+}

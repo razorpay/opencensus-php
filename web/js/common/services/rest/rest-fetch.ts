@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import axios, { AxiosRequestConfig, AxiosError } from 'axios';
 import { getMode, ModeT } from 'common/services/mode';
 export const restInstance = axios.create({});

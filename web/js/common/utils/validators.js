@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import { isPresent, isValidGSTIN, getCurrencyConfig } from './rzp-utils';
 
 const rzp_gst = '29AAGCR4375J1ZU';

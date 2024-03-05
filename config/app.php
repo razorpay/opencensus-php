@@ -266,6 +266,7 @@ return array(
 
     'cdn_dashboard_url'            => $cdn_dashboard_url,
     'cdn_base_url'                 => env('CDN_BASE_URL'),
+    'cdn_dashboard_assets_url'     => env('CDN_DASHBOARD_ASSETS_URL'),
     'lj_key'                       => env('LJ_KEY'),
     'banking_service_url'          => env('BANKING_SERVICE_URL'),
     'bank_lms_banking_service_url' => env('BANK_LMS_BANKING_SERVICE_URL', 'https://partner-lms.razorpay.com'),

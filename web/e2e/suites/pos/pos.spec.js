@@ -1,13 +1,13 @@
 const { test, expect } = require('@playwright/test');
+const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
+const { navigateTo } = require('utils/common');
 
 const { MAIN_BANNER_TEXT_CONTENT, PDP_CONTENT, DEVICE_CODES } = require('./constants');
 const { waitForPosCatalogToLoad } = require('./utils');
-const { navigateTo } = require('../../utils/common');
-const { StorageStatePath, routes } = require('../../utils/constants');
 
 test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=payments', () => {
   test.use({
-    storageState: StorageStatePath.POS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).POS_LOGIN_STATE,
   });
   test.describe('POS Catalog Page', () => {
     test('should open pos catalog page when clicked on pos sidebar item', async ({ page }) => {
@@ -276,48 +276,50 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
   });
 });
 
-test.describe
-  .parallel('POS Device Store Order Details with order @flow=pos-device-ordering @project=payments', () => {
-  test.use({
-    storageState: StorageStatePath.POS_ORDER_DETAILS_LOGIN_STATE,
-  });
+test.describe.parallel(
+  'POS Device Store Order Details with order @flow=pos-device-ordering @project=payments',
+  () => {
+    test.use({
+      storageState: getStorageStatePath(BASE_PATH).POS_ORDER_DETAILS_LOGIN_STATE,
+    });
 
-  test.skip('should render order listing screen for ordered items @flow=pos-device-ordering @project=pos-onboarding', async ({
-    page,
-  }) => {
-    await navigateTo(page, routes.POS);
-    await waitForPosCatalogToLoad({ page });
-    await page.getByText('Orders').click();
-    await page.waitForSelector('text=Your Orders', { timeout: 6000 });
-    await expect(page.getByText('Arriving by')).toBeVisible();
-    await expect(page.getByText('ORDER RECEIVED')).toBeVisible();
-    await page.getByText('View Order Details').click();
-    await page.waitForSelector('text=Arriving by', { timeout: 6000 });
-    const orderStatustimeline = page.getByTestId('order-status-timeline-container');
-    await expect(orderStatustimeline.getByText('Order Received')).toBeVisible();
-    await expect(orderStatustimeline.getByText('Order Confirmed')).toBeVisible();
-    await expect(orderStatustimeline.getByText('Delivered')).toBeVisible();
-    await expect(page.getByText('Shipping Address')).toBeVisible();
-    await expect(page.getByText('POS merchant')).toBeVisible();
-    await expect(page.getByText('razorpay sjr, adugodi, Bengaluru, KA-560066')).toBeVisible();
+    test.skip('should render order listing screen for ordered items @flow=pos-device-ordering @project=pos-onboarding', async ({
+      page,
+    }) => {
+      await navigateTo(page, routes.POS);
+      await waitForPosCatalogToLoad({ page });
+      await page.getByText('Orders').click();
+      await page.waitForSelector('text=Your Orders', { timeout: 6000 });
+      await expect(page.getByText('Arriving by')).toBeVisible();
+      await expect(page.getByText('ORDER RECEIVED')).toBeVisible();
+      await page.getByText('View Order Details').click();
+      await page.waitForSelector('text=Arriving by', { timeout: 6000 });
+      const orderStatustimeline = page.getByTestId('order-status-timeline-container');
+      await expect(orderStatustimeline.getByText('Order Received')).toBeVisible();
+      await expect(orderStatustimeline.getByText('Order Confirmed')).toBeVisible();
+      await expect(orderStatustimeline.getByText('Delivered')).toBeVisible();
+      await expect(page.getByText('Shipping Address')).toBeVisible();
+      await expect(page.getByText('POS merchant')).toBeVisible();
+      await expect(page.getByText('razorpay sjr, adugodi, Bengaluru, KA-560066')).toBeVisible();
 
-    const merchantContactContainer = page.getByTestId('merchant-contact-container');
-    await expect(merchantContactContainer.getByText('+913999233214')).toBeVisible();
-    await expect(merchantContactContainer.getByText('omnitest@gmail.com')).toBeVisible();
-  });
+      const merchantContactContainer = page.getByTestId('merchant-contact-container');
+      await expect(merchantContactContainer.getByText('+913999233214')).toBeVisible();
+      await expect(merchantContactContainer.getByText('omnitest@gmail.com')).toBeVisible();
+    });
 
-  test.skip('should show order confirmation screen with confirmation content @flow=pos-device-ordering @project=pos-onboarding', async ({
-    page,
-  }) => {
-    await navigateTo(page, routes.POS);
-    await waitForPosCatalogToLoad({ page });
-    await page.getByText('Orders').click();
-    await page.waitForSelector('text=Your Orders', { timeout: 6000 });
-    await navigateTo(page, `/app/pos/order-status/NBrJW3mPg4xfGY`);
-    await page.waitForSelector('text=Your order is successfully placed!', { timeout: 120000 });
-    await expect(page.getByText('NBrJW3mPg4xfGY')).toBeVisible();
-    await expect(page.getByText('has successfully been placed with us')).toBeVisible();
-    await page.getByText('View Orders').click();
-    await page.waitForSelector('text=Your Orders', { timeout: 5000 });
-  });
-});
+    test.skip('should show order confirmation screen with confirmation content @flow=pos-device-ordering @project=pos-onboarding', async ({
+      page,
+    }) => {
+      await navigateTo(page, routes.POS);
+      await waitForPosCatalogToLoad({ page });
+      await page.getByText('Orders').click();
+      await page.waitForSelector('text=Your Orders', { timeout: 6000 });
+      await navigateTo(page, `/app/pos/order-status/NBrJW3mPg4xfGY`);
+      await page.waitForSelector('text=Your order is successfully placed!', { timeout: 120000 });
+      await expect(page.getByText('NBrJW3mPg4xfGY')).toBeVisible();
+      await expect(page.getByText('has successfully been placed with us')).toBeVisible();
+      await page.getByText('View Orders').click();
+      await page.waitForSelector('text=Your Orders', { timeout: 5000 });
+    });
+  },
+);

@@ -20,7 +20,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 const FircFormModal = lazy(
   () =>
     import(
-      /* webpackChunkName: "FircFormModal" */ 'merchant/views/Account/Profile/components/FIRC/FIRCFormModal'
+      /* webpackChunkName: "FIRCFormModal" */ 'merchant/views/Account/Profile/components/FIRC/FIRCFormModal'
     ),
 );
 

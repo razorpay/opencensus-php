@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import { View } from 'merchant/views/Transactions/v2/common/types';
@@ -9,8 +10,10 @@ import Content from './Content';
 
 const { LOADING, FTUX, FAILED_FTUX, LIST } = View;
 
-const PaymentsContainer = ({ showNotification, location: { pathname } }) => {
+const PaymentsContainer = ({ showNotification }) => {
   const [state, setState] = useState<View>(LOADING);
+  const { pathname } = useLocation();
+
   const shouldShowFailedPayments = pathname === '/failed-payments';
 
   const checkFtuxView = async () => {

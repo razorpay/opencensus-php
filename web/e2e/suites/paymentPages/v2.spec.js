@@ -1,16 +1,16 @@
 import { test } from '@playwright/test';
+import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 
-import { switchToTestMode } from '../../utils';
-import { routes, StorageStatePath } from '../../utils/constants';
 import { PAYMENT_PAGES_TYPES, paymentPagesEcommerceData } from './constants';
-import { clickSkipAndStartBtn } from '../paymentsLinks/utils';
 import { createPaymentPage } from './utils';
+import { switchToTestMode } from '../../utils';
+import { clickSkipAndStartBtn } from '../paymentsLinks/utils';
 
 test.setTimeout(2 * 60 * 1000);
 
 test.describe.parallel('Test Payments Pages V2 @flow=payment-pages-v2 @project=no-code', () => {
   test.use({
-    storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
   });
 
   test.beforeEach(async ({ page }) => {

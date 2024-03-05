@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.lib.json",
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "typings/typecheck.d.ts"
+  ],
+  "exclude": ["jest.config.ts", "node_modules"],
+  "references": [],
+  "compilerOptions": {
+    "composite": false
+  }
+}

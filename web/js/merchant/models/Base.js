@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import { objectDiff, isBlank } from 'common/utils/rzp-utils';
 
 /*
@@ -48,9 +49,7 @@ export default class BaseModel {
   */
   serialize(noPayloadDiffFromStash) {
     let fields =
-      typeof this.resourceFields === 'function'
-        ? this.resourceFields()
-        : this.resourceFields;
+      typeof this.resourceFields === 'function' ? this.resourceFields() : this.resourceFields;
     let serializedModel = {};
 
     for (let i = 0, len = fields.length; i < len; i++) {
@@ -62,9 +61,7 @@ export default class BaseModel {
       return serializedModel;
     }
 
-    return noPayloadDiffFromStash
-      ? serializedModel
-      : objectDiff(this.__stashed__, serializedModel);
+    return noPayloadDiffFromStash ? serializedModel : objectDiff(this.__stashed__, serializedModel);
   }
 
   /*

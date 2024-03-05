@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-
 import { withRouter } from 'common/deprecated/withRouter';
 import Amount from 'common/ui/Amount';
 import { trackRepaymentSuccess } from 'merchant/views/Capital/CashAdvance/TrackEvents/trackEvents';

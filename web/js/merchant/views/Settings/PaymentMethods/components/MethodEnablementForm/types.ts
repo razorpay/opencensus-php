@@ -16,8 +16,8 @@ export type ModalContainerProps = {
   };
   isOpen: ModalProps['isOpen'];
   defaultTab: number;
-  vKycStatus: (typeof V_KYC_STATUS)[keyof typeof V_KYC_STATUS] | null;
-  kycDocumentStatus: (typeof ICProductStates)[keyof typeof ICProductStates] | null;
+  vKycStatus: typeof V_KYC_STATUS[keyof typeof V_KYC_STATUS] | null;
+  kycDocumentStatus: typeof ICProductStates[keyof typeof ICProductStates] | null;
   onDismiss: ModalProps['onDismiss'];
   showNotification: (showNotification: { type: string; message: string }) => void;
   createVCipLink: VideoKycProps['createVCipLink'];

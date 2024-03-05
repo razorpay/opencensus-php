@@ -1,9 +1,8 @@
 import { expect } from '@playwright/test';
+import { routes } from 'testConstants';
+import { navigateTo } from 'utils/common';
 
-import { navigateTo } from '../../utils/common';
-import { routes } from '../../utils/constants';
-
-const { switchToTestMode } = require('../../utils');
+const { switchToTestMode } = require('utils');
 
 export const navigateToTransactions = async (page, mode) => {
   await navigateTo(page, routes.DASHBOARD);

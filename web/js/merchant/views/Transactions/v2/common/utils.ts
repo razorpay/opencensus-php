@@ -213,6 +213,14 @@ export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User):
   return isExperimentEnabled(abExperiments.Transactions_Revamp) && user.isOrgRZP;
 };
 
+export const isMicrofrontendSelfserveEnabled = (splitz: SpiltzContextState): boolean => {
+  const { abExperiments } = splitz || { abExperiments: { microfrontend_selfserve: undefined } };
+
+  if (!abExperiments?.microfrontend_selfserve) return false;
+
+  return isExperimentEnabled(abExperiments.microfrontend_selfserve);
+};
+
 export const isSettlementRetryTimelineEnabled = (
   splitz: SpiltzContextState,
   user: User,

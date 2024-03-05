@@ -22,6 +22,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import { withRouter } from 'common/deprecated/withRouter';
 
+@withRouter
 @connect(
   (state) => {
     return {

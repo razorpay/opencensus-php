@@ -45,7 +45,7 @@ jobs:
         run: npm install -g yarn
 
       - name: Install dependencies with caching
-        uses: ./.github/actions
+        uses: ./.github/actions/package-installer
         with:
           npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
@@ -72,7 +72,7 @@ jobs:
 
       - name: Run DangerJS for I18n Linter
         id: i18n_linter_dangerjs
-        uses: danger/danger-js@10.6.6
+        uses: danger/danger-js@11.3.0
         with:
           args: "--id i18n_linter_dangerjs --dangerfile dangerfile-i18nlinter.js"
         env:

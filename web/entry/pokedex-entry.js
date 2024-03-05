@@ -19,12 +19,22 @@ function PokedexEntry() {
       document.documentElement.appendChild(s);
     };
 
-    websiteAssets.js.forEach((src) => {
-      appendScript(cdnDashboardUrl + src);
-    });
     websiteAssets.css.forEach((src) => {
-      appendLink(cdnDashboardUrl + src);
+      if (isRedirector) {
+        appendLink(src);
+      } else {
+        appendLink(cdnDashboardUrl + src);
+      }
     });
+
+    websiteAssets.js.forEach((src) => {
+      if (isRedirector) {
+        appendScript(src);
+      } else {
+        appendScript(cdnDashboardUrl + src);
+      }
+    });
+
     appendLink('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
   }
   return `${executeJS.toString()} executeJS()`;

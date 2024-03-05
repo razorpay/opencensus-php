@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "playwright/*": ["../../playwright/*"],
+      "testConstants": ["./constants/index.js"],
+      "utils": ["./utils/index.js"],
+      "utils/*": ["./utils/*"]
+    }
+  }
+}

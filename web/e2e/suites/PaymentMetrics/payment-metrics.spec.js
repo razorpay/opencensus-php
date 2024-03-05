@@ -1,10 +1,10 @@
+import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+
 const { test, expect } = require('@playwright/test');
-const { routes } = require('../../utils/constants');
-const { StorageStatePath } = require('../../utils/constants');
 
 test.describe.parallel('Payment Metrics @flow=payments-metrics @project=payments', () => {
   test.use({
-    storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
   });
 
   test.beforeEach(async ({ page }) => {

@@ -1,0 +1,150 @@
+import React from 'react';
+import '@testing-library/jest-dom/extend-expect';
+import moment from 'moment';
+
+import { titleCase } from '@dashboard/shared-utils/rzp-utils';
+import * as SettlementActions from '@dashboard/shared-utils/reducers/settlements';
+import * as ModalActions from '@dashboard/shared-utils/reducers/modals';
+import { render, screen, userEvent, waitFor } from 'apps/self-serve/src/services/test/test-utils';
+import PaymentDetailsOverview from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsOverview';
+import {
+  initialState,
+  capturedPaymentProps,
+  createdPaymentProps,
+  refundedPaymentProps,
+  failedPaymentProps,
+  authorizedPaymentProps,
+} from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentDetailsOverview';
+import {
+  mockfetchHolidayList,
+  mockfetchSchedule,
+  mockfetchSettlementConfig,
+} from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/handlers';
+
+describe('Payment Details Overview component', () => {
+  const App = ({ props }) => {
+    return <PaymentDetailsOverview {...props} />;
+  };
+
+  const fetchHolidayListSpy = jest.spyOn(SettlementActions, 'fetchHolidayList');
+  const fetchScheduleSpy = jest.spyOn(SettlementActions, 'fetchSchedule');
+  const fetchSettlementConfigSpy = jest.spyOn(SettlementActions, 'fetchSettlementConfig');
+  const openModalSpy = jest.spyOn(ModalActions, 'openModal');
+
+  beforeEach(() => {
+    mockfetchHolidayList();
+    mockfetchSchedule();
+    mockfetchSettlementConfig();
+
+    openModalSpy.mockClear();
+    fetchHolidayListSpy.mockClear();
+    fetchScheduleSpy.mockClear();
+    fetchSettlementConfigSpy.mockClear();
+  });
+
+  describe('Render header details', () => {
+    test('should render payment captured status', () => {
+      render(<App props={capturedPaymentProps} />, { initialState });
+      const paymentStatus = capturedPaymentProps.paymentDetails.status;
+      expect(screen.getByText(`${titleCase(paymentStatus)}`)).toBeInTheDocument();
+    });
+
+    test('should render payment created status', () => {
+      render(<App props={createdPaymentProps} />, { initialState });
+      const paymentStatus = createdPaymentProps.paymentDetails.status;
+      expect(screen.getByText(`${titleCase(paymentStatus)}`)).toBeInTheDocument();
+    });
+
+    test('should render payment failed status', () => {
+      render(<App props={failedPaymentProps} />, { initialState });
+      const paymentStatus = failedPaymentProps.paymentDetails.status;
+      expect(screen.getByText(`${titleCase(paymentStatus)}`)).toBeInTheDocument();
+    });
+
+    test('should render payment refunded status', () => {
+      render(<App props={refundedPaymentProps} />, { initialState });
+      const paymentStatus = refundedPaymentProps.paymentDetails.status;
+      expect(screen.getByText(`${titleCase(paymentStatus)}`)).toBeInTheDocument();
+    });
+
+    test('should render payment authorized status', () => {
+      render(<App props={authorizedPaymentProps} />, { initialState });
+      const paymentStatus = authorizedPaymentProps.paymentDetails.status;
+      expect(screen.getByText(`${titleCase(paymentStatus)}`)).toBeInTheDocument();
+    });
+
+    test.skip('should render payment amount', () => {
+      render(<App props={capturedPaymentProps} />, { initialState });
+      const paymentAmount = capturedPaymentProps.paymentDetails.amount;
+      expect(screen.getAllByLabelText('amount-info')).toHaveLength(4);
+      expect(screen.getAllByText(`${paymentAmount / 100}`)).toHaveLength(2);
+    });
+
+    test('should render payment timestamp', () => {
+      render(<App props={capturedPaymentProps} />, { initialState });
+      const paymentCreatedAt = capturedPaymentProps.paymentDetails.created_at;
+      const [createdDay, createdTime] = moment
+        .unix(paymentCreatedAt)
+        .format('ddd MMM D,hh:mma')
+        .split(',');
+      expect(screen.getByText(`Created on ${createdDay},`)).toBeInTheDocument();
+      expect(screen.getByText(`${createdTime}`)).toBeInTheDocument();
+    });
+
+    test('should render the badge with application name', () => {
+      render(<App props={refundedPaymentProps} />, { initialState });
+      const badgeText = `Payment initiated via ${refundedPaymentProps.applicationDetails.name}`;
+      expect(screen.getByText(`${badgeText}`)).toBeInTheDocument();
+    });
+  });
+
+  describe.skip('Render deductions details', () => {
+    test('should render deduction, net amount & gross amount labels', () => {
+      render(<App props={capturedPaymentProps} />, { initialState });
+      expect(screen.getByText('Gross amount')).toBeInTheDocument();
+      expect(screen.getByText('Deductions')).toBeInTheDocument();
+      expect(screen.getByText('Net amount')).toBeInTheDocument();
+    });
+
+    test('should render deduction, net amount & gross amount values', () => {
+      render(<App props={capturedPaymentProps} />, { initialState });
+      const { fee, tax, amount } = capturedPaymentProps.paymentDetails;
+
+      const totalDeductions = Number(tax) + Number(fee);
+
+      expect(screen.getByText(`${totalDeductions / 100}`)).toBeInTheDocument();
+      expect(screen.getByText(`${(amount - totalDeductions) / 100}`)).toBeInTheDocument();
+    });
+
+    test('should toggle deductions view', async () => {
+      render(<App props={capturedPaymentProps} />, { initialState });
+      const toggleBtn = screen.getByTestId(`chevron-down`);
+      expect(toggleBtn).toBeInTheDocument();
+      userEvent.click(toggleBtn);
+      await waitFor(() => {
+        expect(screen.getByTestId(`chevron-up`)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe.skip('Render footer correctly', () => {
+    test('should render settlement cycle cta', () => {
+      render(<App props={capturedPaymentProps} />, { initialState });
+      expect(screen.getByText('settlement cycle')).toBeInTheDocument();
+    });
+
+    test('should render settlement cycle cta', () => {
+      render(<App props={capturedPaymentProps} />, { initialState });
+      expect(screen.getByText('settlement cycle')).toBeInTheDocument();
+    });
+
+    test('should open settlement cycle modal', async () => {
+      render(<App props={capturedPaymentProps} />, { initialState });
+      const settlementCycleCTA = screen.getByText('settlement cycle');
+      userEvent.click(settlementCycleCTA);
+      await waitFor(() => {
+        expect(openModalSpy).toHaveBeenCalled();
+      });
+    });
+  });
+});

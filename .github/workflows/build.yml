@@ -5,9 +5,148 @@ on: push
 #   group: ${{ github.workflow }}-${{ github.ref }}
 #   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
+env:
+  HOME: /actions-runner/_work
+  AWS_STAGE_BETA_CDN_BUCKET: 'rzp-1018-nonprod-betacdn'
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: 'rzp-1018-nonprod-dashboard-assets'
+  AWS_STAGE_COMMON_CACHE_BUCKET: 'rzp-1018-nonprod-actions-cache'
+  AWS_PROD_COMMON_CACHE_BUCKET: 'rzp-actions-cache'
+  BUILD_PATH: build/browser
+  VERSION: ${{ github.sha }}
+
 jobs:
-  build:
+  evaluate:
+    name: Identify Affected Projects
+    runs-on: [non-api-premium]
+    outputs:
+      affected: ${{ steps.set-output.outputs.affected }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+
+      - name: Use Node v18.12.1
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
+      - name: Install libraries for webp conversion
+        run: |
+          apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
+
+      - name: Fetch base branch
+        run: |
+          git fetch origin master
+      
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies with caching
+        uses: ./.github/actions/package-installer
+        with:
+          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Extract current branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Identify Affected Projects
+        id: affected
+        run: |
+          echo "AFFECTED=$(npx nx show projects --affected --json --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} | jq -r 'join(" ")')" >> $GITHUB_ENV
+
+      - name: Check output
+        run: echo ${{ env.AFFECTED }}
+
+      - name: Set affected projects as output
+        id: set-output
+        run: echo "::set-output name=affected::${{ env.AFFECTED }}"
+
+  build-web:
     name: Build Dashboard
+    runs-on: [non-api-premium]
+    needs: [evaluate]
+    if: contains(needs.evaluate.outputs.affected, 'web')
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+
+      - name: Use Node v18.12.1
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
+      - name: Install libraries for webp conversion
+        run: |
+          apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies with caching
+        uses: ./.github/actions/package-installer
+        with:
+          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Build All
+        #Runs in parellel
+        run: npx nx run web:production:build
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          VERSION: ${{ github.sha }}
+      
+      - name: Remove files
+        run: rm -rf .git
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_SECRET: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+
+      - name: Web - Push build to Actions Cache
+        run: |
+          tar czf public.tar.gz public
+          aws s3 cp public.tar.gz s3://rzp-actions-cache/dashboard-${{ github.sha }}.tar.gz
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_SECRET: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+
+      - name: Web - Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+
+      - name: Web - Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Web - PHP Server Build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          tags: c.rzp.io/razorpay/dashboard:${{ github.sha }}
+          push: true
+          file: ./Dockerfile.ci
+          secrets: |
+            git_token=${{ secrets.GIT_TOKEN }}
+          build-args: |
+            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_USERNAME=rzp
+
+  build-micro-apps-devstack:
+    name: Build Dashboard - MFEs - Devstack
     runs-on: [non-api-premium]
     steps:
       - name: Checkout Codebase
@@ -26,18 +165,18 @@ jobs:
         run: npm install -g yarn
 
       - name: Install dependencies with caching
-        uses: ./.github/actions
+        uses: ./.github/actions/package-installer
         with:
           npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
-      - name: Build All
-        # Runs in parellel
-        run: cd web && yarn prod-build-all
+      - name: Build micro apps
+        run: |
+          git fetch origin master
+          yarn nx affected -t devstack:build --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} --exclude=web,dashboard
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          VERSION: ${{ github.sha }}
 
       - name: Remove files
         run: rm -rf .git
@@ -45,51 +184,138 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
+          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+
+        # Run based on output of affected 
+      - name: Micro Apps - Push Artifacts for Devstack
+        run: |-
+          aws s3 cp \
+          --metadata-directive REPLACE \
+          --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
+          apps/self-serve/$BUILD_PATH/selfserve.remoteEntry.js s3://$AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET/dashboard/federated-bundles/selfserve/devstack/$VERSION/$BUILD_PATH/selfserve.remoteEntry.js
+
+          aws s3 sync --cache-control "public,max-age=31536000" apps/self-serve/$BUILD_PATH s3://$AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET/dashboard/federated-bundles/selfserve/devstack/$VERSION/$BUILD_PATH --exclude $BUILD_PATH/selfserve.remoteEntry.js
+
+  build-micro-apps-automation:
+    name: Build Dashboard - MFEs - Automation
+    runs-on: [non-api-premium]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+
+      - name: Use Node v18.12.1
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
+      - name: Install libraries for webp conversion
+        run: |
+          apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies with caching
+        uses: ./.github/actions/package-installer
+        with:
+          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Build micro apps
+        run: |
+          git fetch origin master
+          yarn nx affected -t automation:build --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} --exclude=web,dashboard
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Remove files
+        run: rm -rf .git
+ 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+
+        # Run based on output of affected 
+      - name: Micro Apps - Push Artifacts for Automation
+        run: |-
+          aws s3 cp \
+          --metadata-directive REPLACE \
+          --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
+          apps/self-serve/$BUILD_PATH/selfserve.remoteEntry.js s3://$AWS_STAGE_COMMON_CACHE_BUCKET/dashboard/federated-bundles/selfserve/automation/$VERSION/$BUILD_PATH/selfserve.remoteEntry.js
+
+          aws s3 sync --cache-control "public,max-age=31536000" apps/self-serve/$BUILD_PATH s3://$AWS_STAGE_COMMON_CACHE_BUCKET/dashboard/federated-bundles/selfserve/automation/$VERSION/$BUILD_PATH --exclude $BUILD_PATH/selfserve.remoteEntry.js
+
+  build-micro-apps-production:
+    name: Build Prod Dashboard - MFEs - Production
+    runs-on: [non-api-premium]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+
+      - name: Use Node v18.12.1
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
+      - name: Install libraries for webp conversion
+        run: |
+          apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies with caching
+        uses: ./.github/actions/package-installer
+        with:
+          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Build micro apps
+        run: |
+          git fetch origin master
+          yarn nx affected -t production:build --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} --exclude=web,dashboard
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Remove files
+        run: rm -rf .git
+ 
+      - name: Configure AWS Credentials - Actions Cache
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
           aws-access-key-id: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-        env:
-          AWS_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
-          AWS_ACCESS_SECRET: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
 
-      - name: Push build to github actions cache
-        run: |
-          tar czf public.tar.gz public
-          aws s3 cp public.tar.gz s3://rzp-actions-cache/dashboard-${{ github.sha }}.tar.gz
-        env:
-          AWS_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
-          AWS_ACCESS_SECRET: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+      # TODO: move to shell script and run sync based on affected output
+      - name: Micro Apps - Push Artifacts for Production
+        run: |-
+          aws s3 cp \
+          --metadata-directive REPLACE \
+          --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
+          apps/self-serve/$BUILD_PATH/selfserve.remoteEntry.js s3://$AWS_PROD_COMMON_CACHE_BUCKET/dashboard/federated-bundles/selfserve/production/$VERSION/$BUILD_PATH/selfserve.remoteEntry.js
 
-      - name: Login to Harbor
-        uses: docker/login-action@v1
-        with:
-          registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: build
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          tags: c.rzp.io/razorpay/dashboard:${{ github.sha }}
-          push: true
-          file: ./Dockerfile.ci
-          secrets: |
-            git_token=${{ secrets.GIT_TOKEN }}
-          build-args: |
-            GIT_COMMIT_HASH=${{ github.sha }}
-            GIT_USERNAME=rzp
+          aws s3 sync --cache-control "public,max-age=31536000" apps/self-serve/$BUILD_PATH s3://$AWS_PROD_COMMON_CACHE_BUCKET/dashboard/federated-bundles/selfserve/production/$VERSION/$BUILD_PATH --exclude $BUILD_PATH/selfserve.remoteEntry.js
 
   workflow_status:
     runs-on: [self-hosted]
     name: Update Status Check
-    needs: [build]
+    needs: [build-web]
     continue-on-error: false
     if: always()
     steps:
@@ -114,7 +340,7 @@ jobs:
   build-e2e:
     name: E2E test build
     runs-on: [self-hosted]
-    needs: [build]
+    needs: [build-web]
     steps:
       - uses: actions/checkout@v2
 
@@ -179,3 +405,4 @@ jobs:
                 }
               ]
             }
+

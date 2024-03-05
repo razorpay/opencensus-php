@@ -51,7 +51,6 @@ export {
   CardHeaderCounter,
   CardHeaderBadge,
   CardHeaderIconButton,
-  CardFooterAction,
   CardHeaderText,
   CardHeaderLink,
   Divider,

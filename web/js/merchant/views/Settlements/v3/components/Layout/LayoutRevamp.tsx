@@ -1,20 +1,23 @@
 import React from 'react';
-import { withRouter } from 'common/deprecated/withRouter';
 import { Box } from '@razorpay/blade/components';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { LayoutPropsInterface } from 'merchant/views/Settlements/v3/typings';
 import { StyledGoBackBtn } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import GoBack from 'merchant/views/Transactions/v2/common/components/GoBack';
 
-const Layout = ({ children, history, location }: LayoutPropsInterface): JSX.Element => {
+const Layout = ({ children }: LayoutPropsInterface): JSX.Element => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const { state } = location ?? {};
   const { prevPath = '' } = state ?? {};
 
   const handleGoBack = (): void => {
     if (prevPath) {
-      history.goBack();
+      navigate(-1);
     }
-    history.push('/settlements');
+    navigate('/settlements');
   };
 
   return (
@@ -29,4 +32,4 @@ const Layout = ({ children, history, location }: LayoutPropsInterface): JSX.Elem
   );
 };
 
-export default withRouter(Layout);
+export default Layout;

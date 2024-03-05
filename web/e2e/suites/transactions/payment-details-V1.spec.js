@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test';
-
-import { navigateTo } from '../../utils/common';
-import { StorageStatePath, routes } from '../../utils/constants';
+import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { navigateTo } from 'utils/common';
 
 const searchPaymentId = async (page, paymentId) => {
   try {
@@ -38,29 +37,31 @@ const openPaymentDialog = async (page, paymentId) => {
   }
 };
 
-test.describe
-  .parallel('Payments transactions (Live Mode) @flow=transactionsV1 @project=payments', () => {
-  test.use({
-    storageState: StorageStatePath.OPTIMIZER_LOGIN_STATE,
-  });
-
-  test.describe.parallel('Payment details', () => {
-    // There are payments which happens via external PGs using Optimizer
-    // and these payments are not settled via razorpay
-    // In this case we don't want merchant to create transfer,
-    // so we are hiding create transfer button for these payments
-    test('should not show create transfer button', async ({ page }) => {
-      const PAYMENT_ID = 'pay_KSVCtEwuaVGxjB';
-      try {
-        await navigateTo(page, routes.PAYMENTS);
-        await expect(page).toHaveURL(routes.PAYMENTS);
-        await searchPaymentId(page, PAYMENT_ID);
-        await openPaymentDialog(page, PAYMENT_ID);
-        await expect(page.getByText('Transfer', { exact: true })).toBeVisible();
-        expect(page.getByRole('button', { name: 'Create transfer' })).not.toBeVisible();
-      } catch (error) {
-        throw new Error(`Test failed: ${error?.message}`);
-      }
+test.describe.parallel(
+  'Payments transactions (Live Mode) @flow=transactionsV1 @project=payments',
+  () => {
+    test.use({
+      storageState: getStorageStatePath(BASE_PATH).OPTIMIZER_LOGIN_STATE,
     });
-  });
-});
+
+    test.describe.parallel('Payment details', () => {
+      // There are payments which happens via external PGs using Optimizer
+      // and these payments are not settled via razorpay
+      // In this case we don't want merchant to create transfer,
+      // so we are hiding create transfer button for these payments
+      test('should not show create transfer button', async ({ page }) => {
+        const PAYMENT_ID = 'pay_KSVCtEwuaVGxjB';
+        try {
+          await navigateTo(page, routes.PAYMENTS);
+          await expect(page).toHaveURL(routes.PAYMENTS);
+          await searchPaymentId(page, PAYMENT_ID);
+          await openPaymentDialog(page, PAYMENT_ID);
+          await expect(page.getByText('Transfer', { exact: true })).toBeVisible();
+          expect(page.getByRole('button', { name: 'Create transfer' })).not.toBeVisible();
+        } catch (error) {
+          throw new Error(`Test failed: ${error?.message}`);
+        }
+      });
+    });
+  },
+);

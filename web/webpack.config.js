@@ -1,13 +1,17 @@
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ExternalTemplateRemotesPlugin = require('external-remotes-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
 const WorkbboxWebpackPlugin = require('workbox-webpack-plugin');
 // const ImageminWebpWebpackPlugin = require('imagemin-webp-webpack-plugin');
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+
+const deps = require('./package.json').dependencies;
 
 const isProd = process.env.STAGE !== 'development';
 const project = process.env.PROJECT;
@@ -21,7 +25,7 @@ const PRELOAD_ASSETS_FOR = ['merchant', 'merchantLA'];
 const RZP_CDN_URL = 'https://cdn.razorpay.com/dashboard';
 
 const isRedirector = process.env.REDIRECTOR === 'true';
-const publicPath = '/public/dist/';
+const publicPath = `${isRedirector ? 'https://localhost:8080' : ''}/public/dist/`;
 const rootPublicFolderPath = path.resolve(__dirname, `../public/dist`);
 
 module.exports = {
@@ -29,7 +33,13 @@ module.exports = {
     // *** config.entry *** //
     config.entry = {
       [project]: `./js/${project}/index.js`, // merchant to be replaced by [project]
+      shell: './public-path',
     };
+
+    // TODO: is this needed? copied from sme shell
+    // config.resolve.extensions = [...config.resolve.extensions, '.ts', '.tsx'];
+
+    // TODO: no SentryWebpackPlugin?
 
     if (isProd || isStoryBook) {
       config.cache = false;
@@ -59,7 +69,7 @@ module.exports = {
         };
 
         config.devServer.allowedHosts = 'all';
-        config.devServer.https = true;
+        config.devServer.server = 'https';
         config.devServer.client.webSocketURL.hostname = 'localhost';
         config.devServer.client.webSocketURL.port = '8080';
       }
@@ -67,6 +77,9 @@ module.exports = {
 
     config.experiments.backCompat = false;
     config.parallelism = 500;
+
+    config.output.module = false;
+    config.experiments.outputModule = false;
 
     // *** config.output *** //
     config.output = {
@@ -79,11 +92,66 @@ module.exports = {
     };
 
     // *** config.resolve *** //
+    // TODO: do we need to add './node_modules', '../node_modules'?
     config.resolve.modules.push(path.resolve(__dirname, 'js'));
+    // config.resolve.modules = [
+    //   path.resolve(__dirname, 'src'),
+    //   path.resolve(__dirname, 'static'),
+    //   './node_modules',
+    //   '../node_modules',
+    // ];
+
     config.resolve.alias = {
       v2: path.resolve(__dirname, './v2'),
       react: path.resolve(__dirname, './node_modules/react'),
       assets: path.resolve(__dirname, './css/assets'),
+    };
+
+    config.optimization.runtimeChunk = false;
+    // config.optimization.splitChunks = false;
+
+    config.optimization.splitChunks = {
+      chunks: 'all',
+      cacheGroups: {
+        defaultVendors: {
+          test: new RegExp(/[\\/]node_modules[\\/](react|react-dom|react-router-dom)[\\/]/),
+          name: 'vendor',
+          // `priority` property helps webpack decide which cache group to prioritize. default groups have a negative priority.
+          priority: -15,
+          // chunks `all` means that chunks can be shared even between async and non-async chunks.
+          chunks: 'all',
+          // Webpack reuses existing chunks containing previously split modules instead of generating new ones to optimize chunk.
+          reuseExistingChunk: true,
+          // It ignore splitChunks.minSize, splitChunks.minChunks, splitChunks.maxAsyncRequests
+          // and splitChunks.maxInitialRequests options and always create chunks for this cache group.
+          enforce: true,
+        },
+        common: {
+          name: 'common',
+          minChunks: 10,
+          enforce: true,
+          priority: -15,
+          chunks: 'all',
+          reuseExistingChunk: true,
+          test(module) {
+            // this is required to make module federation work
+            // with split chunks plugin
+            // we exclude chunks managed by the MF plugin
+            /**
+             * https://razorpay.slack.com/archives/C04DEMQ4JQ1/p1692189160082479?thread_ts=1692188286.997909&cid=C04DEMQ4JQ1
+             * https://github.com/module-federation/module-federation-examples/issues/692#issuecomment-1382670317
+             */
+            if (
+              module.type === 'provide-module' ||
+              module.type === 'consume-shared-module' ||
+              module.type === 'remote-module'
+            ) {
+              return false;
+            }
+            return true;
+          },
+        },
+      },
     };
 
     // *** config.module *** //
@@ -167,8 +235,8 @@ module.exports = {
     }
 
     // *** config.plugins *** //
+    // run this only once for merchant as it is common folder
     if (project === 'merchant') {
-      // run this only once for merchant as it is common folder
       config.plugins.push(
         new CopyWebpackPlugin({
           patterns: [
@@ -197,6 +265,7 @@ module.exports = {
               css : ${JSON.stringify(htmlWebpackPlugin.files.css)}
             };
             window.__VERSION__ = ${htmlWebpackPlugin.options.version};
+            window.isRedirector = ${isRedirector};
             ${require(`./entry/${project}-entry`)()}})()`;
         },
       }),
@@ -219,8 +288,107 @@ module.exports = {
         'process.env.PROJECT': JSON.stringify(project),
         'process.env.PUBLIC_ENV': JSON.stringify(process.env.STAGE),
         'process.env.REDIRECTOR': JSON.stringify(isRedirector),
+        'process.env.UNIVERSE_PUBLIC_ENV': JSON.stringify(process.env.STAGE),
       }),
       new NodePolyfillPlugin({}),
+    );
+
+    config.plugins.push(
+      new ModuleFederationPlugin({
+        name: 'shell',
+        filename: `${project}-shell.remoteEntry.js`,
+        // library: {
+        //   name: 'shell',
+        //   type: 'window'
+        // },
+        exposes: {
+          './commonStore': './js/merchant/commonStore/index', // store with common data
+          // ShowWhen uses Splitz and i18 context. Every micro-app will need
+          // their own wrapper for these two providers if we move it to libs.
+          './components/ShowWhen': './js/merchant_common/components/SharedShowWhen',
+
+          // Exposing deprecated component only to make movement of legacy code easier.
+          // New micro-apps are NOT supposed to use this import.
+          './deprecated/withRouter': './js/common/deprecated/withRouter',
+
+          // TODO: remove once Settlements is part of a micro-app
+          './SettlementCycle': './js/merchant/views/Settlements/components/SettlementScheduleV2',
+          // TODO: remove once Navigator is part of a micro-app
+          './Navigator/constants': './js/merchant/views/Navigator/constants',
+          // TODO: remove once Transactions v1 is part of a micro-app
+          './Transactions/v1/DownloadSwiftCopy':
+            './js/merchant/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy/DownloadSwiftCopy',
+          './SpiltzServiceContext': './js/common/splitz/context/SplitzContextProvider',
+          './I18Context': './js/common/i18/I18ServiceProvider',
+          './public-path': './public-path',
+        },
+        shared: [
+          {
+            ...Object.keys(deps).reduce((dependencies, key) => {
+              if (key === 'react-router-dom') {
+                // TODO: also check for other projects
+                if (project !== 'newAuth') {
+                  dependencies['react-router-dom'] = {
+                    requiredVersion: deps['react-router-dom'],
+                    singleton: true,
+                    // eager: true,
+                  };
+                }
+                return dependencies;
+              }
+              dependencies[key] = deps[key];
+              return dependencies;
+            }, {}),
+            xlsx: {
+              singleton: true,
+              version: '0.19.3',
+            },
+            react: {
+              requiredVersion: deps.react,
+              singleton: true,
+              // eager: true,
+            },
+            'react-dom': {
+              requiredVersion: deps['react-dom'],
+              singleton: true,
+              // eager: true,
+            },
+            'react-query': {
+              requiredVersion: deps['react-query'],
+              singleton: true,
+              // eager: true,
+            },
+            'styled-components': {
+              requiredVersion: deps['styled-components'],
+              singleton: true,
+              // eager: true,
+            },
+            zustand: {
+              requiredVersion: deps.zustand,
+              singleton: true,
+              // eager: true,
+            },
+            '@razorpay/blade': {
+              requiredVersion: deps['@razorpay/blade'],
+              singleton: true,
+              // eager: true,
+            },
+            '@razorpay/blade-old': {
+              requiredVersion: deps['@razorpay/blade-old'],
+              singleton: true,
+              // eager: true,
+            },
+            // TODO: optimize this solution in future
+            'common/splitz/utils': { singleton: true },
+          },
+        ],
+        remotes: {
+          shell: `shell@[window.cdnDashboardUrl]${
+            isRedirector ? '/public' : ''
+          }/dist/${project}-shell.remoteEntry.js`,
+        },
+      }),
+      new ExternalTemplateRemotesPlugin(),
     );
 
     if (PROJECTS_USING_WORKBOX.indexOf(project) > -1) {
@@ -231,28 +399,27 @@ module.exports = {
           },
           include: [/\.(js|css)?$/, /\.(woff|woff2)?$/],
           exclude: [/(merchant-entry|merchantLA-entry).js$/],
-          swSrc: './sw/workbox.js',
+          // Added No-Op service worker for Micro frontend release
+          swSrc: './sw/no_op.js',
           swDest: `sw-utils/sw-${project}.js`,
         }),
       );
     }
 
     // TODO: need to be added back once optimisation is fixed
-    if (project === 'merchant') {
-      // config.plugins.push(
-      //   new ImageminWebpWebpackPlugin({
-      //     config: [
-      //       {
-      //         test: /\.(jpe?g|png)/,
-      //         options: {
-      //           quality: 75,
-      //         },
-      //       },
-      //     ],
-      //     strict: isProd,
-      //   })
-      // );
-    }
+    // config.plugins.push(
+    //   new ImageminWebpWebpackPlugin({
+    //     config: [
+    //       {
+    //         test: /\.(jpe?g|png)/,
+    //         options: {
+    //           quality: 75,
+    //         },
+    //       },
+    //     ],
+    //     strict: isProd,
+    //   })
+    // );
 
     if (PRELOAD_ASSETS_FOR.includes(project) && isProd) {
       config.plugins.push(
@@ -339,7 +506,6 @@ module.exports = {
         level: 'error',
       };
     }
-
     return config;
   },
 };

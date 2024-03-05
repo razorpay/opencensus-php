@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import { getItem, setItem } from 'common/utils/localStorage';
 
 let mode: ModeT = 'test';

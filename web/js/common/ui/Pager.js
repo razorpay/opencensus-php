@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-ui
 import { Component } from 'react';
 
 export default class Pager extends Component {

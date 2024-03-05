@@ -95,7 +95,10 @@ class CheckoutRewardsIndex extends Component {
   };
 
   render() {
-    const { user } = this.props;
+    const {
+      user,
+      location: { pathname },
+    } = this.props;
     const { showOnboarding } = this.props.rewardsProductOnBoarding;
 
     if ((!user.isRewardsPageEnabled || showOnboarding) && !user.isOrgAxis) {

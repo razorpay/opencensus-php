@@ -1,9 +1,10 @@
+/* eslint-disable import/order */
 import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
 
-import modalReducer from 'merchant_common/reducers/modals';
+// import modalReducer from 'merchant_common/reducers/modals';
 import sliderReducer from 'merchant_common/reducers/slider';
-import notificationsReducer from 'merchant_common/reducers/notifications';
+// import notificationsReducer from 'merchant_common/reducers/notifications';
 
 import teamReducer from 'merchantLA/reducers/team';
 import sessionReducer from 'merchantLA/reducers/session';
@@ -24,9 +25,9 @@ import {
 } from 'merchantLA/reducers/collection';
 
 export default combineReducers({
-  modal: modalReducer,
+  // modal: modalReducer,
   slider: sliderReducer,
-  notifications: notificationsReducer,
+  // notifications: notificationsReducer,
   form: formReducer,
   session: sessionReducer,
   app: appReducer,

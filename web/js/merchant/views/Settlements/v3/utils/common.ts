@@ -25,6 +25,7 @@ export const getErrorType = (error: string): ERROR_TYPE => {
   return ERROR_TYPE.SERVER_ERROR;
 };
 
+// Todo: delete this function, it's available in @dashboard/shared-utils
 export const validateUnixTimestamp = (timestamp: string): number | null => {
   const unixTime = parseInt(timestamp, 10);
   if (moment(unixTime).isValid()) {

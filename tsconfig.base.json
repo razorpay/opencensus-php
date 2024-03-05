@@ -1,0 +1,47 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "allowJs": true,
+    "rootDir": ".",
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      // Index path needs to be specified separately: https://github.com/microsoft/TypeScript/issues/26859#issuecomment-606585175
+      "@dashboard/shared-ui": ["./libs/shared-ui/src/index"],
+      "@dashboard/shared-ui/*": ["./libs/shared-ui/src/*"],
+      "@dashboard/shared-utils": ["./libs/shared-utils/src/index"],
+      "@dashboard/shared-utils/*": ["./libs/shared-utils/src/*"],
+      "shell/commonStore": ["./web/js/merchant/commonStore/index"],
+      "shell/models/User": ["./web/js/merchant/models/User"],
+      "shell/components/ShowWhen": ["./web/js/merchant_common/components/SharedShowWhen"],
+      "shell/deprecated/withRouter": ["./web/js/common/deprecated/withRouter"],
+      // TODO: move to shared lib
+      "shell/common/utils/ajax": ["./web/js/common/utils/ajax"],
+      "shell/merchant/utils/ajax": ["./web/js/merchant/utils/ajax"],
+      "shell/reducers/collection": ["./web/js/merchant/reducers/collection"],
+      // TOOD: move to Settlements micro-app
+      "shell/SettlementCycle": [
+        "./web/js/merchant/views/Settlements/components/SettlementScheduleV2"
+      ],
+      // TODO: remove once Navigator is part of a micro-app
+      "shell/Navigator/constants": ["./web/js/merchant/views/Navigator/constants"],
+      "shell/Transactions/v1/DownloadSwiftCopy": [
+        "./web/js/merchant/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy/DownloadSwiftCopy"
+      ],
+      "shell/I18Context": ["./web/js/common/i18/I18ServiceProvider"],
+      "shell/SpiltzServiceContext": ["./web/js/common/splitz/context/SplitzContextProvider"]
+    }
+  },
+  "extends": "@razorpay/universe-cli/tsconfig.json",
+  "include": ["libs", "apps", "web"],
+  "exclude": ["node_modules", "tmp"]
+}

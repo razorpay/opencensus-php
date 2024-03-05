@@ -37,7 +37,7 @@ jobs:
         run: npm install -g yarn
 
       - name: Install dependencies with caching
-        uses: ./.github/actions
+        uses: ./.github/actions/package-installer
         with: 
           npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}

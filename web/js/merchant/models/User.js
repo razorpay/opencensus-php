@@ -270,6 +270,11 @@ export default class User {
     return features?.indexOf(feature) > -1;
   }
 
+  isOrgFeatureExist(feature) {
+    const features = getOrg()?.features;
+    return features?.indexOf(feature) > -1;
+  }
+
   /*
    * isAllowedMultiple is for grouped tabs, example: Settings in side bar.
    * If any route is present in moduleNames, it will be treated for view only mode and will make parent group(hood) visible.

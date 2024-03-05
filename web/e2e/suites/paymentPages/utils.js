@@ -1,8 +1,8 @@
 import { expect } from '@playwright/test';
+import { routes } from 'testConstants';
 
 import { PAYMENT_PAGES_TYPES } from './constants';
 import { SELECTORS, BATCH_PP_SELECTORS } from './selectors';
-import { routes } from '../../utils/constants';
 
 export const createPaymentPage = async ({ page, productData, type }) => {
   try {

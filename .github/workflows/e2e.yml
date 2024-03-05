@@ -1,14 +1,10 @@
 name: E2E Tests
 on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled]
   push:
     branches:
       - master
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - labeled
 
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}
@@ -68,8 +64,6 @@ jobs:
 
       - name: Checkout Codebase
         uses: actions/checkout@v3
-        with:
-          ref: ${{ env.COMMIT_ID }}
 
       - name: Use Node v18.12.1
         uses: actions/setup-node@v1
@@ -86,6 +80,36 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Fetch base branch
+        run: |
+          git fetch origin master
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      # TODO: optimize the below step to install depecndencies which are required for nx
+      - name: Install dependencies with caching
+        uses: ./.github/actions/package-installer
+        with:
+          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Extract current branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Validating branch existance
+        run: git fetch origin ${{ steps.extract_branch.outputs.branch }}
+
+      - name: Identify Affected Projects
+        id: affected
+        run: |
+          echo "AFFECTED=$(npx nx show projects --affected --json --base=origin/master --head=origin/${{ steps.extract_branch.outputs.branch }} | jq -r 'join(",")')" >> $GITHUB_ENV
+
+      - name: Echo Affected Projects
+        run: echo ${{ env.AFFECTED }}
+
       - name: Build Docker Image
         uses: docker/build-push-action@v3
         with:
@@ -98,16 +122,17 @@ jobs:
             npm_razorpay_token=${{env.NPM_RAZORPAY_TOKEN}}
           build-args: |
             APP_NAME=${{env.APP_NAME}}
+            AFFFECTED_PROJECTS=${{ env.AFFECTED }}
+            #  TODO: Add project level INCLUDE_GROUPS and EXCLUDE_GROUPS as key value pairs and extract them to pass in playwright getproject config
             INCLUDE_GROUPS=@project=payments|@project=partner-dashboard
             EXCLUDE_GROUPS=
 
       - name: Wait for dashboard's docker image to be built
-        uses: lewagon/wait-on-check-action@v1.3.1
+        uses: ./.github/actions/waiting-build
         with:
-          ref: ${{ env.COMMIT_ID }}
-          check-name: "Build Dashboard"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 30
+          commit_id: ${{ env.COMMIT_ID }}
+          workflow_name: "Run E2E Tests on PR Comment or on master merge"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update downstream dependencies' commits in devstack.json
         # If this steps fails, it's because one of the endpoints in addProdCommits.js threw an error.
@@ -115,11 +140,12 @@ jobs:
         run: npm run add-prod-commits
 
       - name: Initiate E2E Tests via an argo webhook
-        run: npm run test:e2e-infra
+        run:  npm run test:e2e-infra
         env:
           COMMIT_ID: ${{ env.COMMIT_ID }}
           PR_NUMBER: ${{ github.event.issue.number }}
           REPO_NAME: ${{ github.event.repository.name }}
+          GITHUB_HEAD_REF: ${{ steps.extract_branch.outputs.branch }}
           # Required DEVSTACK_CONFIG_PATH, After upgarding universe test version which supports devstack config path
           # DEVSTACK_CONFIG_PATH: ./e2e/devstackConfig/devstack.json
           JOB_URL: "https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard-fe-e2e"

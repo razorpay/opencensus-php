@@ -1,10 +1,11 @@
+/* eslint-disable import/extensions */
 import React, { useEffect } from 'react';
 import { Box, Button, Heading, Text, Link, PlusIcon } from '@razorpay/blade/components';
+import posBackground from 'assets/partner-dashboard/posBannerBackground.svg';
+import posIllustration from 'assets/partner-dashboard/posIllustration.svg';
 import { connect } from 'react-redux';
 import { ActionCreator } from 'redux';
 
-import posBackground from 'assets/partner-dashboard/posBannerBackground.svg';
-import posIllustration from 'assets/partner-dashboard/posIllustration.svg';
 import { User } from 'common/typings';
 import { OpenModalPayload, CloseModalType } from 'common/typings/Store/modal';
 import ModalHeader from 'common/ui/ModalHeader';

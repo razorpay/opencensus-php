@@ -1,23 +1,22 @@
 import React from 'react';
-import { withRouter } from 'common/deprecated/withRouter';
 import { ChevronLeftIcon, ExternalLinkIcon, Heading, Link, Box } from '@razorpay/blade/components';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { LayoutPropsInterface } from 'merchant/views/Settlements/v3/typings';
 
-const Layout = ({
-  children,
-  history,
-  settlementId,
-  location,
-}: LayoutPropsInterface): JSX.Element => {
+const Layout = ({ children, settlementId }: LayoutPropsInterface): JSX.Element => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const { state } = location ?? {};
   const { prevPath = '' } = state ?? {};
 
   const handleGoBack = (): void => {
     if (prevPath) {
-      history.goBack();
+      navigate(-1);
     }
-    history.push('/settlements');
+
+    navigate('/settlements');
   };
 
   return (
@@ -58,4 +57,4 @@ const Layout = ({
   );
 };
 
-export default withRouter(Layout);
+export default Layout;

@@ -1,0 +1,51 @@
+export const loginByMobile = async ({ page, mobile }) => {
+  await page.click('input[type="text"]');
+  await page.fill('input[type="text"]', mobile);
+  await page.click('text="Next"');
+  await page.click('input[id="Enter OTP"]');
+  await page.fill('input[id="Enter OTP"]', '000007');
+  await Promise.all([page.waitForNavigation(), page.click('text="Login"')]);
+};
+
+export const loginByEmail = async ({ page, cred }) => {
+  await page.click('input[type="text"]');
+  console.log('cred.username', cred.username);
+  await page.fill('input[type="text"]', cred.username);
+  await page.click('text="Next"');
+  await page.click('input[type="password"]');
+  await page.fill('input[type="password"]', cred.password);
+  await Promise.all([page.waitForNavigation(), page.click('text="Login"')]);
+};
+
+export const hideCustomBannersFromState = async ({ page }) => {
+  await page.evaluate(() => {
+    const merchantId = window?.rzp_user?.current;
+    if (merchantId) {
+      window.localStorage.setItem(`NOT_INTERESTED-${merchantId}`, '1');
+    }
+  });
+};
+
+export const hideCustomerGluGame = async ({ page }) => {
+  await page.evaluate(() => {
+    window.localStorage.setItem(`CUSTOMER_GLU_E2E`, 'off');
+  });
+};
+
+export const showStreakRewardTileInAccountPage = async ({ page }) => {
+  await page.evaluate(() => {
+    window.localStorage.setItem(`CUSTOMER_GLU_URL_E2E`, 'on');
+  });
+};
+
+export const hideSearchFTUXBannerByLocalStorage = async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'universal-search-ftux',
+      JSON.stringify({
+        count: 3,
+        expireAt: '2023-05-12T15:25:27+05:30',
+      }),
+    );
+  });
+};

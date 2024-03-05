@@ -1,4 +1,4 @@
-const { getDefaultDateRangeForPayments } = require('../../utils');
+const { getDefaultDateRangeForPayments } = require('utils');
 
 export const SEARCH_TERMS_WITH_EXPECTED_RESULTS = [
   {

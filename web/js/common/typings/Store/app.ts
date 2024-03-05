@@ -4,4 +4,6 @@ export type AppReducerState = {
   windowHeight: number;
   isMobileResolution: boolean;
   isWebView: boolean;
+  activeEntityId?: string | null;
+  activeSecEntityId?: string | null;
 };

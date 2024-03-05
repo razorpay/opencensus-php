@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 const screenXS = '767px';
 
-interface IPaymentPagesHeader {
+export interface IPaymentPagesHeader {
   title: string | React.ReactElement;
   actionBtns: React.ReactElement;
   handleClose: () => void;

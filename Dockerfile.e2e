@@ -2,9 +2,11 @@ FROM mcr.microsoft.com/playwright:v1.31.1-focal
 
 ARG INCLUDE_GROUPS
 ARG EXCLUDE_GROUPS
+ARG AFFFECTED_PROJECTS
 
 ENV INCLUDE_GROUPS=$INCLUDE_GROUPS
 ENV EXCLUDE_GROUPS=$EXCLUDE_GROUPS
+ENV AFFFECTED_PROJECTS=$AFFFECTED_PROJECTS
 
 WORKDIR /app
 
@@ -15,7 +17,7 @@ COPY --chown=node:node .npmrc package.json yarn.lock ./
 COPY --chown=node:node ./plugins ./plugins
 
 # Copy dependencies files so we can have better caching as these don't change often
-COPY --chown=node:node ./web/.npmrc ./web/package.json ./web/yarn.lock ./web
+COPY --chown=node:node ./web/.npmrc ./web/package.json ./web
 
 RUN --mount=type=secret,id=github_access_token set -eux && \
   echo "$(cat /run/secrets/github_access_token)" >> ~/.GITHUB_ACCESS_TOKEN
@@ -31,11 +33,15 @@ RUN export GITHUB_ACCESS_TOKEN="$(cat ~/.GITHUB_ACCESS_TOKEN)" && \
 RUN rm -f ~/.GITHUB_ACCESS_TOKEN && \
   rm -f ~/.NPM_RAZORPAY_TOKEN
 
-RUN cd web && npx playwright install --with-deps
+RUN npx playwright install --with-deps
 
 COPY . .
 
 RUN rm -f .npmrc && \
-  rm -f ./web/.npmrc
+  rm -f ./web/.npmrc && \
+  rm -f ./apps/self-serve/.npmrc
 
-CMD cd web && INCLUDE_GROUPS=$INCLUDE_GROUPS EXCLUDE_GROUPS=$EXCLUDE_GROUPS yarn test:e2e
+CMD yarn test:e2e:auth && \
+    INCLUDE_GROUPS=$INCLUDE_GROUPS \
+    EXCLUDE_GROUPS=$EXCLUDE_GROUPS \
+    npx nx run-many --target=test:e2e --projects=$AFFFECTED_PROJECTS

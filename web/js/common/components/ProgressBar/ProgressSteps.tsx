@@ -19,7 +19,7 @@ const ProgressBar: React.FC<ProgressStepsPropsT> = ({
   icon = 'check',
 }) => {
   const renderSteps = () => {
-    const stepsArray: React.ReactNodeArray = [];
+    const stepsArray: React.ReactNode[] = [];
 
     for (let i = 1; i <= totalSteps; i++) {
       stepsArray.push(

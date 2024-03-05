@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 export const acronyms = {
   payment: 'paymt',
   payments: 'paymts',
@@ -17,7 +18,7 @@ export const shortenText = (sentence = '') => {
   const words = sentence.split(/\s+/);
 
   return words
-    .map(word => {
+    .map((word) => {
       return acronyms[word.toLowerCase()] || word;
     })
     .join(' ');

@@ -11,6 +11,7 @@ import { isPresent } from 'common/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { fetchSingleDayAggregate } from 'merchant/reducers/commission';
 
+@withRouter
 @connect((state) => ({ ...state.commAggSingleDay, user: state?.session?.user }), {
   fetchSingleDayAggregate,
 })

@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-utils
 import Settlement from 'merchant/models/Settlement';
 import { set, merge } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';

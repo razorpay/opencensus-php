@@ -18,7 +18,7 @@ const StyledSeparator = styled(View)`
   background-color: ${({ theme }) => getColor(theme, 'shade.920')};
 `;
 
-interface IFAQsProps {
+export interface IFAQsProps {
   activeTab?: string;
 }
 

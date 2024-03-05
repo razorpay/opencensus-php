@@ -1,6 +1,8 @@
 import { render } from 'test-utils';
-import RefundsTable from 'merchant/views/Transactions/v2/Refunds/components/RefundsTable';
+
+// TODO: import/copy from web
 import * as useMobile from 'common/hooks/useMobile/useMobile';
+import RefundsTable from 'merchant/views/Transactions/v2/Refunds/components/RefundsTable';
 import 'jest-location-mock';
 
 export const useMobileSpy = jest.spyOn(useMobile, 'useMobile');

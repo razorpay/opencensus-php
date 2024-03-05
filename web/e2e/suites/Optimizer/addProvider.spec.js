@@ -13,7 +13,8 @@ import {
   selectDropdownOption,
   typeTextIntoElement,
 } from './utils';
-import { StorageStatePath } from '../../utils/constants';
+
+const { BASE_PATH, getStorageStatePath } = require('testConstants');
 
 const ELEMENTS = {
   INSTANT_BETA:
@@ -146,7 +147,7 @@ const assertTPVOption = async (page) => {
 };
 
 test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments', () => {
-  test.use({ storageState: StorageStatePath.OPTIMIZER_V1_LOGIN_STATE });
+  test.use({ storageState: getStorageStatePath(BASE_PATH).OPTIMIZER_V1_LOGIN_STATE });
 
   test('should show optimizer dashboard', async ({ page }) => {
     try {

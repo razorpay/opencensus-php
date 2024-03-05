@@ -1,3 +1,4 @@
+// Todo: delete this file, it's available in @dashboard/shared-ui
 import React, { ReactNode, Suspense } from 'react';
 import Loader, { FullPageLoader, CenterLoader } from 'common/components/Loader';
 

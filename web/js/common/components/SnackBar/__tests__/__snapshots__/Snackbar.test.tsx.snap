@@ -9,7 +9,7 @@ exports[`<Snackbar /> error error 1`] = `
         data-testid="component-wrapper"
       >
         <div
-          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-8y1oax-0 fwqZLT Spaceweb__Space-sc-1abqisc-0 dGGICH"
+          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 iQCSLV Spaceweb__Space-sc-1abqisc-0 dGGICH"
           color="negative.900"
           type="failure"
         >
@@ -46,7 +46,7 @@ exports[`<Snackbar /> error error 1`] = `
                 </svg>
               </div>
               <div
-                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-8y1oax-1 jygvUz Spaceweb__Space-sc-1abqisc-0 kCHaiv"
+                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bhuqZ Spaceweb__Space-sc-1abqisc-0 kCHaiv"
                 color="light.900"
                 data-testid="ds-text"
               >
@@ -92,7 +92,7 @@ exports[`<Snackbar /> error success 1`] = `
         data-testid="component-wrapper"
       >
         <div
-          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-8y1oax-0 mVPUs Spaceweb__Space-sc-1abqisc-0 dGGICH"
+          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 fcQdAW Spaceweb__Space-sc-1abqisc-0 dGGICH"
           color="positive.900"
           type="success"
         >
@@ -135,7 +135,7 @@ exports[`<Snackbar /> error success 1`] = `
                 </svg>
               </div>
               <div
-                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-8y1oax-1 jygvUz Spaceweb__Space-sc-1abqisc-0 kCHaiv"
+                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bhuqZ Spaceweb__Space-sc-1abqisc-0 kCHaiv"
                 color="light.900"
                 data-testid="ds-text"
               >
@@ -181,7 +181,7 @@ exports[`<Snackbar /> showSnackbar hide snackbar 1`] = `
         data-testid="component-wrapper"
       >
         <div
-          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-8y1oax-0 fwqZLT Spaceweb__Space-sc-1abqisc-0 dGGICH"
+          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 iQCSLV Spaceweb__Space-sc-1abqisc-0 dGGICH"
           color="negative.900"
           type="failure"
         >
@@ -218,7 +218,7 @@ exports[`<Snackbar /> showSnackbar hide snackbar 1`] = `
                 </svg>
               </div>
               <div
-                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-8y1oax-1 jygvUz Spaceweb__Space-sc-1abqisc-0 kCHaiv"
+                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bhuqZ Spaceweb__Space-sc-1abqisc-0 kCHaiv"
                 color="light.900"
                 data-testid="ds-text"
               >
@@ -264,7 +264,7 @@ exports[`<Snackbar /> showSnackbar show snackbar 1`] = `
         data-testid="component-wrapper"
       >
         <div
-          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-8y1oax-0 fwqZLT Spaceweb__Space-sc-1abqisc-0 dGGICH"
+          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 iQCSLV Spaceweb__Space-sc-1abqisc-0 dGGICH"
           color="negative.900"
           type="failure"
         >
@@ -301,7 +301,7 @@ exports[`<Snackbar /> showSnackbar show snackbar 1`] = `
                 </svg>
               </div>
               <div
-                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-8y1oax-1 jygvUz Spaceweb__Space-sc-1abqisc-0 kCHaiv"
+                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bhuqZ Spaceweb__Space-sc-1abqisc-0 kCHaiv"
                 color="light.900"
                 data-testid="ds-text"
               >

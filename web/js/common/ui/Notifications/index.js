@@ -1,13 +1,13 @@
 import { Component } from 'react';
-import { connect } from 'react-redux';
-import Notification from './Notification';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { withZustand } from 'shell/commonStore';
+
 import { classList } from 'common/utils/rzp-utils';
 
-@connect((state) => state.notifications, NotificationsActions)
-export default class Notifications extends Component {
+import Notification from './Notification';
+class Notifications extends Component {
   closeNotification = (notification) => {
-    this.props.hideNotification(notification);
+    const { hideNotification } = this.props.store;
+    hideNotification?.(notification);
   };
 
   getExtraClass = (notifications) => {
@@ -19,7 +19,7 @@ export default class Notifications extends Component {
   };
 
   render() {
-    const { notifications, hidePrevious } = this.props;
+    const { notifications: { notifications = [], hidePrevious } = {} } = this.props.store;
 
     if (!notifications.length) {
       return null;
@@ -44,3 +44,5 @@ export default class Notifications extends Component {
     );
   }
 }
+
+export default withZustand(Notifications, ['notifications']);

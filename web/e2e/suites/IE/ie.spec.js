@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { resolve } = require('path');
-const { generateRandomText } = require('../../utils');
-const { StorageStatePath } = require('../../utils/constants');
+const { BASE_PATH, getStorageStatePath } = require('testConstants');
+const { generateRandomText } = require('utils');
 
 const CONSTANTS = {
   IE_TAB_URL: '/app/payment-methods/international-payments',
@@ -15,7 +15,7 @@ const CONSTANTS = {
 
 test.describe.parallel('Test International enablement @flow=ie @project=payments', () => {
   test.use({
-    storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).TRANSACTIONS_LOGIN_STATE,
   });
   // TODO: enable these tests after multiple auth setup is done
   test.skip('should be able to request for IE @priority=normal', async ({ page }) => {

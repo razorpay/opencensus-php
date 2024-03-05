@@ -28,7 +28,7 @@ interface TabsChildProps {
   onClick: () => void;
 }
 
-interface TabsProps {
+export interface TabsProps {
   children: React.ReactElement<TabsChildProps> | React.ReactElement[];
   activeTabId: string | number;
   onChange?: (tabId: string | number) => void;
