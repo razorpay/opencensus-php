@@ -6,14 +6,7 @@ on:
     branches:
       - master
     paths:
-      - 'app/Models/Merchant/Entity.php'
-      - 'app/Models/Merchant/Detail/Entity.php'
-      - 'app/Models/Merchant/Document/Entity.php'
-      - 'app/Models/Merchant/Email/Entity.php'
-      - 'app/Models/Merchant/Stakeholder/Entity.php'
-      - 'app/Models/Merchant/BusinessDetail/Entity.php'
-      - 'app/Models/Merchant/Website/Entity.php'
-      - 'app/Models/Merchant/BusinessDetail/Constants.php'
+      - 'app/Models/Merchant/'
 
 jobs:
   slack-notify:

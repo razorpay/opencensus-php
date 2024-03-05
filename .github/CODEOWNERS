@@ -192,7 +192,9 @@ app/Models/Merchant/Detail/Service.php             @razorpay/tech-banking
 app/Models/Merchant/Consent                        @razorpay/tech-banking
 app/Models/Merchant/Service.php                    @razorpay/tech-banking
 
-
+# Blocking PR merge on merchant package to check correct usages of save or fail with asv
+# Any update on these entities will require explicit approval from @razorpay/identity-core team.
+app/Models/Merchant                                @razorpay/identity-core
 
 # Blocking PR merge on refund files since they are being moved to Scrooge service
 # Any update in these files will require explicit approval from scrooge
