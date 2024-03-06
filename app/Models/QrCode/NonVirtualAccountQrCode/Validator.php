@@ -29,6 +29,7 @@ class Validator extends QrCode\Validator
         Entity::CLOSE_BY       => 'nullable|epoch|custom',
         Entity::TAX_INVOICE    => 'sometimes_if:type,upi_qr|array|custom',
         Entity::REQUEST_SOURCE => 'required',
+        Entity::VPA            => 'sometimes|nullable',
     ];
 
     protected static $createForCheckoutRules = [

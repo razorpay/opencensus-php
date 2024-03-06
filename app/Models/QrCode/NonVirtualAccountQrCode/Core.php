@@ -15,6 +15,7 @@ use RZP\Models\EntityOrigin;
 use RZP\Models\QrCode\Metric;
 use RZP\Constants\HyperTrace;
 use RZP\Constants\Environment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\QrPaymentRequest\Type;
@@ -22,8 +23,10 @@ use RZP\Models\Order\Entity as Order;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Reconciliator\Base\Reconciliate;
+use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\QrPayment\Service as QrPaymentService;
 use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
+use RZP\Models\QrCodeConfig\Service as QrCodeConfigService;
 
 class Core extends QrCode\Core
 {
@@ -53,14 +56,16 @@ class Core extends QrCode\Core
 
         $customer = $this->getCustomerIfGiven($input);
 
+        $terminal = $this->validateAndFetchTerminalIfAvailable($input);
+
         $qrCode->customer()->associate($customer);
 
         $qrCode->merchant()->associate($this->merchant);
 
         $qrCode->source()->associate($order);
 
-        $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($qrCode) {
-            return $this->build($qrCode);
+        $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($terminal, $qrCode) {
+            return $this->build($qrCode, $terminal);
         });
         // Creates entity origin when QR code is created
         // QR code creation won't be failed even if origin is not set.
@@ -70,11 +75,11 @@ class Core extends QrCode\Core
 
     }
 
-    private function build(Entity $qrCode)
+    private function build(Entity $qrCode, $terminal = null)
     {
-        Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_GENERATE_QR_STRING], function () use ($qrCode)
+        Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_GENERATE_QR_STRING], function () use ($terminal, $qrCode)
         {
-            $qrCode->generateQrString();
+            $qrCode->generateQrString($terminal);
         });
 
         Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_SET_SHORT_URL], function () use ($qrCode)
@@ -87,8 +92,63 @@ class Core extends QrCode\Core
             $this->repo->saveOrFail($qrCode);
         });
 
+        $this->addStaticQRinQRCodeConfig($qrCode, $terminal);
 
         return $qrCode;
+    }
+
+    public function fetchTerminalInfoFromQrCode($qrCode)
+    {
+        $vpa     = $qrCode->getQrVpa();
+        $gateway = $qrCode->getGatewayFromQrString();
+        switch ($gateway)
+        {
+            case Gateway::UPI_AIRTEL:
+                $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $vpa;
+
+                return $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
+            default:
+                return null;
+        }
+
+    }
+
+    public function addStaticQRinQRCodeConfig($qrCode, $inputTerminal = null)
+    {
+
+        if ($qrCode->getUsageType() !== UsageType::MULTIPLE_USE)
+        {
+            return null;
+        }
+
+        $gateway = $qrCode->getGatewayFromQrString();
+        if ($gateway === null)
+        {
+            return null;
+        }
+
+        $gatewayVariant = $this->app->razorx->getTreatment($gateway, RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS, $this->mode);
+
+        if (strtolower($gatewayVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return null;
+        }
+
+        $midVariant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS, $this->mode);
+
+        if (strtolower($midVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return null;
+        }
+        $terminal = $inputTerminal === null ? $this->fetchTerminalInfoFromQrCode($qrCode) : $inputTerminal;
+
+        if ($terminal === null)
+        {
+            return null;
+        }
+
+        (new QrCodeConfigService())->createOrUpdateStaticQRCodeConfig($terminal, $qrCode);
+
     }
 
     public function generateQrCodeFile($qrCode)
@@ -309,5 +369,47 @@ class Core extends QrCode\Core
         }
 
         return false;
+    }
+
+    protected function validateAndFetchTerminalIfAvailable(array $input)
+    {
+
+        if ((isset($input['vpa']) === false) or
+            ($input['usage'] !== UsageType::MULTIPLE_USE) or
+            ($input[Entity::REQUEST_SOURCE] !== RequestSource::EZETAP))
+        {
+            return null;
+        }
+
+        $vpa = $input['vpa'];
+        $vpaSplit = (explode("@", $vpa));
+        $gateway  = null;
+
+        if (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'mairtel'))
+        {
+            $gateway = 'upi_airtel';
+        }
+
+        if ($gateway === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $vpa;
+        $terminalDetails[TerminalEntity::MERCHANT_ID]          = $this->merchant->getId();
+
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
+        if (($terminal === null) or
+            ($terminal->isOffline() === false)) // also check static QR type
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+
+        $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_TERMINAL, [
+            '$terminalId' => $terminal->getId(),
+        ]);
+
+        return $terminal;
     }
 }

@@ -107,9 +107,7 @@ class Service extends Base\Service
         $terminalId = $terminal->getId();
         $merchantId = $terminal->getMerchantId();
 
-        $configs = $this->core()->fetchStaticQrCodeConfig($merchantId);
-
-        $configs = $this->preProcessOutput($configs);
+        $configs = $this->fetchStaticQrCodeConfigsWithPreProcess($merchantId);
 
         $this->trace->info(TraceCode::QR_CODE_CONFIG_FETCHED, $configs);
         $staticQRs= $configs[Keys::STATIC_QR];
@@ -120,5 +118,75 @@ class Service extends Base\Service
             return $dataArray[$terminalId];
         }
         return null;
+    }
+
+    private function preProcessStaticQRInput($input)
+    {
+        $processedInput = [
+            Entity::KEY   => Keys::STATIC_QR,
+            Entity::VALUE => $input[Keys::STATIC_QR],
+        ];
+
+        return $processedInput;
+    }
+
+    public function createOrUpdateStaticQRCodeConfig($terminal, $qrCode)
+    {
+        $this->trace->info(TraceCode::QR_CODE_CONFIG_CREATE_REQUEST,
+                           [
+                               'merchantId' => $this->merchant->getId(),
+                               'terminalId' => $terminal->getId(),
+                               'qrCodeId'   => $qrCode->getId()
+                           ]);
+
+        $staticQRs = $this->fetchStaticQrCodeConfigs();
+
+        $staticQRsValue = $staticQRs[Keys::STATIC_QR] ?? null;
+
+        $dataArray = $staticQRsValue !== null ? json_decode($staticQRsValue, true) : [];
+
+        $dataArray[$terminal->getId()] = $qrCode->getId();
+
+        $jsonData = json_encode($dataArray);
+
+        $qrCodeConfigInput = [
+            Keys::STATIC_QR => $jsonData,
+        ];
+
+        $input = $this->preProcessStaticQRInput($qrCodeConfigInput);
+
+        if ($staticQRsValue !== null)
+        {
+            $configs = $this->core()->updateStaticQrCodeConfig($input);
+        }
+        else
+        {
+            $configs = $this->core()->createQrCodeConfigs($input);
+        }
+
+        $configs = $this->preProcessOutput($configs);
+
+        $this->trace->info(TraceCode::QR_CODE_CONFIG_CREATED, $configs);
+
+        return $configs;
+    }
+
+    public function fetchStaticQrCodeConfigs()
+    {
+        $this->trace->info(TraceCode::QR_CODE_CONFIG_FETCH_REQUEST);
+
+        $configs = $this->fetchStaticQrCodeConfigsWithPreProcess($this->merchant->getId());
+
+        $this->trace->info(TraceCode::QR_CODE_CONFIG_FETCHED, $configs);
+
+        return $configs;
+    }
+
+    private function fetchStaticQrCodeConfigsWithPreProcess($merchantId)
+    {
+
+        $configs = $this->core()->fetchStaticQrCodeConfig($merchantId);
+
+        return $this->preProcessOutput($configs);
     }
 }

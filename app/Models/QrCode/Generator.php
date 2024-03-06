@@ -99,7 +99,7 @@ class Generator extends Base\Core
         return $dirPath;
     }
 
-    public function generateQrString(Entity $qrCode)
+    public function generateQrString(Entity $qrCode, $terminal = null)
     {
         $provider = $qrCode->getProvider();
 
@@ -109,14 +109,14 @@ class Generator extends Base\Core
                 return $this->getBharatQrCode($qrCode);
 
             case Type::UPI_QR:
-                return $this->getUpiQrCode($qrCode);
+                return $this->getUpiQrCode($qrCode, $terminal);
 
             default :
                 return '';
         }
     }
 
-    protected function getUpiQrCode(Entity $qrCode)
+    protected function getUpiQrCode(Entity $qrCode, $terminal = null)
     {
         $this->trace->info(TraceCode::GENERATE_UPI_QR_CODE, $qrCode->toArrayPublic());
 

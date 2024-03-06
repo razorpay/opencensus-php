@@ -8,6 +8,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Exception\LogicException;
+use RZP\Models\Terminal\Type;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
@@ -60,18 +61,6 @@ class UpiAirtelQRCodeTest extends TestCase
         );
     }
 
-    public function createQRCodeConfigEntry($terminal, $qrCodeEntity, $mode='test')
-    {
-        $staticQR = $qrCodeEntity['id'];
-        $qrCodeId = substr($staticQR, 3, 14);
-        $this->fixtures->on($mode)->create('qr_code_config',
-            [
-                'merchant_id' => $terminal['merchant_id'],
-                'config_key' => 'static_qr',
-                'config_value' => '{"' . $terminal['id'] . '" : "' . $qrCodeId . '"}',
-            ]
-        );
-    }
 
     public function createPricingForOffline()
     {
@@ -138,7 +127,37 @@ class UpiAirtelQRCodeTest extends TestCase
     }
     public function testCreateStaticAirtelQrWithTerminal(): void
     {
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $qrCode   = $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer');
+
+        $this->runQrCodeEntityAssertions();
+
+        $qrCodeConfig = $this->getLastEntity('qr_code_config', true, 'live');
+        $qrCodeId     = substr($qrCode['id'], 3, 14);
+
+        $this->assertStringContainsString($qrCodeId, $qrCodeConfig['config_value']);
+        $this->assertStringContainsString($terminal['id'], $qrCodeConfig['config_value']);
+
+    }
+
+    public function testCreateStaticAirtelQrWithTerminalWithUnrecognisedPaymentProcessExperimentsDisabled(): void
+    {
         $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $this->setMockRazorxTreatment(
+            [
+                'api_upi_airtel_pre_process_v1'                  => 'upi_airtel',
+                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -148,6 +167,10 @@ class UpiAirtelQRCodeTest extends TestCase
             'LiveAccountMer');
 
         $this->runQrCodeEntityAssertions();
+
+        $qrCodeConfig = $this->getLastEntity('qr_code_config', true, 'live');
+        $this->assertNull($qrCodeConfig);
+
     }
     public function testCreateStaticAirtelQrWithFixedAmount(): void
     {
@@ -301,18 +324,24 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testCreateStaticAirtelQrWithOfflineTerminal(): void
     {
-        $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
-        $this->createQrCode(
-            [
-                'usage' => 'multiple_use',
-                'type'  => 'upi_qr',
-            ],
-            'live',
-            'LiveAccountMer',
-            headers:[
-                'X-Razorpay-Request-Source' => 'ezetap'
-            ]);
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $qrCode   = $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                     ],
+                     'live',
+                     'LiveAccountMer',
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]);
         $this->runQrCodeEntityAssertions();
+
+        $qrCodeConfig = $this->getLastEntity('qr_code_config', true, 'live');
+        $qrCodeId     = substr($qrCode['id'], 3, 14);
+
+        $this->assertStringContainsString($qrCodeId, $qrCodeConfig['config_value']);
+        $this->assertStringContainsString($terminal['id'], $qrCodeConfig['config_value']);
     }
 
     public function testCreateDynamicAPBQrCodeWithOfflineTerminal(): void
@@ -674,8 +703,6 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->runQrCodeEntityAssertions('test');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
-        $this->createQRCodeConfigEntry($terminal, $qrCodeEntity);
-
 
         $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random78']);
 
@@ -710,7 +737,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->runQrCodeEntityAssertions('test');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
-        $this->createQRCodeConfigEntry($terminal, $qrCodeEntity);
+
         $this->makeUpiAirtelPayment($qrCodeEntity,['hdnOrderID'=>'Random78']);
 
         $existingPayment = $this->getDbLastEntity('payment');
@@ -759,6 +786,15 @@ class UpiAirtelQRCodeTest extends TestCase
                 'X-Razorpay-Request-Source' => 'ezetap'
             ]
         );
+
+        $qrCodeConfig = $this->getLastEntity('qr_code_config', true);
+
+        $this->fixtures->on('test')->edit('qr_code_config', $qrCodeConfig['id'], [
+            'merchant_id'  => '10000000000000',
+            'config_key'   => 'static_qr',
+            'config_value' => '{" "}',
+            'deleted_at'   => 1709193726
+        ]);
 
         $this->runQrCodeEntityAssertions('test');
 
@@ -896,13 +932,136 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
 
-        $this->createQRCodeConfigEntry($terminal, $qrCodeEntity);
-
         $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random90']);
 
         $payment = $this->getDbLastEntity('payment');
 
         $this->assertNull($payment);
+    }
+
+    public function testCreateStaticAirtelQrWithVpaInput(): void
+    {
+        // ignore vpa as the request source is not ezetap
+        $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+                'vpa'   => 'testvpaOffline@mairtel',
+            ],
+            'live',
+            'LiveAccountMer');
+
+        $this->runQrCodeEntityAssertions();
+
+    }
+
+    public function testCreateOfflineStaticAirtelQrWithValidVpaInput(): void
+    {
+
+        $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+
+        $this->fixtures->create('terminal:dedicated_upi_airtel_terminal',
+                                ['gateway_merchant_id2' => 'testvpaOfflineVpa@mairtel',
+                                 'type'                 => [
+                                     Type::PAY           => '1',
+                                     Type::NON_RECURRING => '1',
+                                     Type::OFFLINE       => '1',
+                                     Type::COLLECT       => '1',
+                                 ],
+                                ]);
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                         'vpa'   => 'testvpaOfflineVpa@mairtel',
+                     ],
+                     'live',
+                     'LiveAccountMer',
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+
+        $pa = $intentParam['pa'];
+
+        $this->assertEquals('testvpaOfflineVpa@mairtel', $pa);
+    }
+
+    public function testCreateOfflineStaticAirtelQrWithWrongGatewayVpaInput(): void
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+
+        $this->fixtures->create('terminal:dedicated_upi_airtel_terminal',
+                                ['gateway_merchant_id2' => 'testvpaOfflineVpa@mairtel',
+                                 'type'                 => [
+                                     Type::PAY           => '1',
+                                     Type::NON_RECURRING => '1',
+                                     Type::OFFLINE       => '1',
+                                     Type::COLLECT       => '1',
+                                 ],
+                                ]);
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                         'vpa'   => 'testvpaOffline@hdfc',
+                     ],
+                     'live',
+                     'LiveAccountMer',
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+
+    }
+
+    public function testCreateOfflineStaticAirtelQrWithInvalidTerminalVpaInput(): void
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                         'vpa'   => 'testvpaOfflineVpa@mairtel',
+                     ],
+                     'live',
+                     'LiveAccountMer',
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+
+    }
+
+    public function testCreateOfflineStaticAirtelQrWithOnlineTerminalVpaInput(): void
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                         'vpa'   => 'testvpa@mairtel',
+                     ],
+                     'live',
+                     'LiveAccountMer',
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+
     }
 
 }

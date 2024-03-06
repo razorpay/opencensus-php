@@ -37,6 +37,7 @@ class Entity extends QrCode\Entity
     const RESP_IMAGE_CONTENT           = 'image_content';
     const TAX_INVOICE                  = 'tax_invoice';
     const REQUEST_SOURCE               = 'request_source';
+    const VPA                          = 'vpa';
     const GATEWAY                      = 'gateway';
 
     const SHARED_ID = 'FallbackQrCode';
@@ -324,14 +325,14 @@ class Entity extends QrCode\Entity
         return $this->getAttribute(self::DESCRIPTION);
     }
 
-    public function generateQrString()
+    public function generateQrString($terminal = null)
     {
         if ($this->getRequestSource() === RequestSource::FALLBACK)
         {
             return $this;
         }
 
-        $qrString = (new Generator)->generateQrString($this);
+        $qrString = (new Generator)->generateQrString($this, $terminal);
 
         $this->setQrString($qrString);
 

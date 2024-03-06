@@ -87,4 +87,36 @@ class Core extends Base\Core
         return $config;
     }
 
+    public function deletePreviousStaticQrConfig()
+    {
+        $this->trace->info(TraceCode::QR_CODE_CONFIG_DELETE_PREVIOUS_CONFIG);
+
+        $entity = $this->repo->findNonDeletedQrCodeConfigsByMerchantIdAndKey($this->merchant->getId(),
+                                                                             Keys::STATIC_QR);
+        if ($entity == null)
+        {
+            return false;
+        }
+        $entity->setDeletedAt(Carbon::now()->getTimestamp());
+
+        $this->repo->saveOrFail($entity);
+
+        $this->trace->info(TraceCode::QR_CODE_CONFIG_DELETE_PREVIOUS_COMPLETED);
+
+        return true;
+    }
+
+    public function updateStaticQrCodeConfig($input)
+    {
+        $configs = $this->transaction(function() use ($input) {
+
+            $this->deletePreviousStaticQrConfig();
+
+            $configs = $this->createQrCodeConfigs($input);
+
+            return $configs;
+        });
+
+        return $configs;
+    }
 }

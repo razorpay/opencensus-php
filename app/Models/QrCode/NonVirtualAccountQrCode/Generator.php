@@ -239,13 +239,13 @@ class Generator extends QrCode\Generator
      * @return mixed|string
      * @throws \Exception
      */
-    protected function getUpiQrCode(Entity $qrCode)
+    protected function getUpiQrCode(Entity $qrCode, $terminal = null)
     {
         $this->trace->info(TraceCode::GENERATE_UPI_QR_CODE, [
             'id' => $qrCode->getId()
         ]);
 
-        return $this->getVpaForQr($qrCode);
+        return $this->getVpaForQr($qrCode, $terminal);
     }
 
     private function getRefIdForQrCode($qrCode)
@@ -756,13 +756,13 @@ class Generator extends QrCode\Generator
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
-    protected function getVpaForQr(Entity $qrCode)
+    protected function getVpaForQr(Entity $qrCode, $terminal = null)
     {
         $vpa = null;
 
         if ($this->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->merchant->getId()) === true)
         {
-            $terminals = $this->getDedicatedTerminalForQrCreate($qrCode);
+            $terminals = $terminal === null ? $this->getDedicatedTerminalForQrCreate($qrCode) : [0 => $terminal];
 
             $errorMessage = '';
             $errorCode    = '';
