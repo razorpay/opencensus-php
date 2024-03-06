@@ -47,6 +47,7 @@ class Constants
     const EMAIL_SENT            = 'email_sent';
 
     const CONSENT_RETRY_JOB_FAILURE = 'consent_retry_job_failure';
+    const CONSENT_RETRY_JOB_EXECUTED = 'consent_retry_job_executed';
 
     const PLATFORMS = [
         self::RX,

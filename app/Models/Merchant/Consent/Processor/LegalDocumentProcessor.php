@@ -90,7 +90,11 @@ class LegalDocumentProcessor implements Processor
         $notificationDetails = $input[DEConstants::NOTIFICATION_DETAILS];
 
         // RazorpayX has no concept of PromoterPan Name during signup so, we will be using merchant name instead.
-        $signatory_name = $platform === 'rx' ? $merchant->getName() : ($merchant->merchantDetail->getPromoterPanName()) ?? ($merchant->getName());
+        if ($platform === 'rx' or empty($merchant->merchantDetail->getPromoterPanName()) === true) {
+            $signatory_name = $merchant->getName();
+        } else {
+            $signatory_name = $merchant->merchantDetail->getPromoterPanName();
+        }
 
         if (isset($input[DEConstants::SIGNATORY_NAME]) === true)
         {

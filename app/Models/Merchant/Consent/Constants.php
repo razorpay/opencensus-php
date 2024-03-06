@@ -87,6 +87,8 @@ class Constants
     //TODO:: Change it back to 30 after data fix
     const DEFAULT_LAST_CRON_SUB_DAYS = 120;
 
+    const DEFAULT_LAST_ALERT_SUB_DAYS = 1;
+
     const WEBSITE      = 'website';
     const CONSENT_KEYS = self::WEBSITE . '_' . self::CONTACT_US . ',' .
                          self::WEBSITE . '_' . self::TERMS . ',' .

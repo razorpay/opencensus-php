@@ -25,6 +25,7 @@ use RZP\Models\Merchant\Detail\Service as DetailService;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Consent\Details\Entity as DetailEntity;
+use RZP\Models\Merchant\BvsValidation\Constants as BVSConstants;
 
 
 class Core extends Base\Core
@@ -108,10 +109,23 @@ class Core extends Base\Core
 
     public function retryStoreLegalDocuments()
     {
-        $this->trace->info(TraceCode::MERCHANT_STORE_CONSENTS_CRON_RETRY,
+        $this->trace->info(TraceCode::CONSENTS_CRON_RETRY_INITIATED,
                            [
                                'message' => 'Store consents cron retry initiated!'
                            ]);
+
+        //List of unique merchants in T-1 days where consent was not created successfully and retry was also exceeded.
+        $consentsWithRetryExceeded = $this->repo->merchant_consents->getMerchantIdsWithConsentsNotSuccessAndRetryExceeded(
+            Carbon::now()->subDays(Constants::DEFAULT_LAST_ALERT_SUB_DAYS)->getTimestamp(), array_keys(ConsentConstant::VALID_LEGAL_DOC));
+
+        if (empty($consentsWithRetryExceeded) === false)
+        {
+            $this->trace->info(TraceCode::ALERT_TRIGGERED_FOR_CONSENT_FAILURE, [
+                'count'   => count($consentsWithRetryExceeded),
+            ]);
+
+            $this->trace->count(BVSConstants::CONSENT_RETRY_JOB_FAILURE);
+        }
 
         $merchantIdList = $this->repo->merchant_consents->getUniqueMerchantIdsWithConsentsNotSuccess(
             Carbon::now()->subDays(Constants::DEFAULT_LAST_CRON_SUB_DAYS)->getTimestamp(), array_keys(ConsentConstant::VALID_LEGAL_DOC));
@@ -127,6 +141,16 @@ class Core extends Base\Core
             return;
         }
 
+        $this->trace->info(TraceCode::MERCHANTS_PRESENT_FOR_RETRY_CONSENT_JOB, [
+            'count'            => count($merchantIdList),
+            'merchantIdList'   => $merchantIdList,
+        ]);
+
+        //Adding a metric to evaluate how many times we are re-trying consent creation
+        $this->trace->count(BVSConstants::CONSENT_RETRY_JOB_EXECUTED, [
+            'count'            => count($merchantIdList)
+        ]);
+
         $this->processRetryStoreLegalDocuments($merchantIdList);
     }
 
@@ -140,19 +164,22 @@ class Core extends Base\Core
 
         foreach ($merchantIdList as $merchantId)
         {
-            try
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $consentDetailsForMerchant = $this->repo->merchant_consents->getFailedConsentDetailsForMerchants(
+                $merchantId,
+                array_keys(ConsentConstant::VALID_LEGAL_DOC));
+
+            foreach ($consentDetailsForMerchant as $consentDetailForMerchant)
             {
-                $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-                $consentDetailsForMerchant = $this->repo->merchant_consents->getFailedConsentDetailsForMerchants(
-                                                                                $merchantId,
-                                                                                array_keys(ConsentConstant::VALID_LEGAL_DOC));
-
-                foreach ($consentDetailsForMerchant as $consentDetailForMerchant)
+                try
                 {
+                    //Update retry count before processing the consents.
+                    $this->updateRetryCount($merchantId, $consentDetailForMerchant);
+
                     $consents = [
-                        'url'      => $consentDetailForMerchant['url'],
-                        'type'     => $consentDetailForMerchant['consent_for'],
+                        'url' => $consentDetailForMerchant['url'],
+                        'type' => $consentDetailForMerchant['consent_for'],
                         'metadata' => $consentDetailForMerchant['metadata']
                     ];
 
@@ -161,79 +188,91 @@ class Core extends Base\Core
                     $isExpEnabled = (new DetailService())->isMerchantConsentV2ExperimentEnabled($merchantId);
 
                     $documents_detail = (new DetailService())->getDocumentsDetails(
-                                                                    $consentDetails,
-                                                                    $merchant,
-                                                                 $isExpEnabled,
-                                                                 $mapConsentUrlToFileContent, true);
+                        $consentDetails,
+                        $merchant,
+                        $isExpEnabled,
+                        $mapConsentUrlToFileContent, true);
 
-                    $notificationDetail = ($isExpEnabled === true) ?  (new DetailService())->getNotificationDetails($merchant, $consentDetailForMerchant['created_at']) : null;
+                    $notificationDetail = ($isExpEnabled === true) ? (new DetailService())->getNotificationDetails($merchant, $consentDetailForMerchant['created_at']) : null;
 
                     $legalDocumentsInput = [
-                        DEConstants::DOCUMENTS_DETAIL               => $documents_detail,
-                        DEConstants::IP_ADDRESS                     => $consentDetailForMerchant['metadata']['ip_address'],
+                        DEConstants::DOCUMENTS_DETAIL => $documents_detail,
+                        DEConstants::IP_ADDRESS => $consentDetailForMerchant['metadata']['ip_address'],
                         DEConstants::DOCUMENTS_ACCEPTANCE_TIMESTAMP => $consentDetailForMerchant['created_at'],
-                        DEConstants::NOTIFICATION_DETAILS           => $notificationDetail
+                        DEConstants::NOTIFICATION_DETAILS => $notificationDetail
                     ];
 
                     $processor = (new Factory())->getLegalDocumentProcessor();
 
                     $response = $processor->processLegalDocuments($merchant, $legalDocumentsInput,
-                                                            $this->getPlatform($consentDetailForMerchant['consent_for']),
-                                                            $isExpEnabled);
+                        $this->getPlatform($consentDetailForMerchant['consent_for']),
+                        $isExpEnabled);
 
                     $responseData = $response->getResponseData();
 
                     $type = $consentDetailForMerchant['consent_for'];
 
                     $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentForTypeAndDetailsId(
-                                                                                $merchantId,
-                                                                                $type,
-                                                                                $consentDetailForMerchant['details_id']);
+                        $merchantId,
+                        $type,
+                        $consentDetailForMerchant['details_id']);
 
                     $input = [
-                        'status'      => ConsentConstant::INITIATED,
-                        'updated_at'  => Carbon::now()->getTimestamp(),
-                        'request_id'  => $responseData['id'],
-                        'retry_count' => $merchantConsentDetail->retry_count + 1
+                        'status' => ConsentConstant::INITIATED,
+                        'updated_at' => Carbon::now()->getTimestamp(),
+                        'request_id' => $responseData['id'],
                     ];
 
                     //We are changing terms and conditions to Terms of service for L2 consents for regular merchants.
                     // This is to update older consents with the new name.
-                    if ($consentDetailForMerchant['consent_for'] === ConsentConstant::L2_MILESTONE.'_'.ConsentConstant::TERMS_AND_CONDITIONS
-                        and $documents_detail[0]['type'] === ConsentConstant::TERMS_OF_SERVICE)
-                    {
-                        $input['consent_for'] = ConsentConstant::L2_MILESTONE.'_'.ConsentConstant::TERMS_OF_SERVICE;
+                    if ($consentDetailForMerchant['consent_for'] === ConsentConstant::L2_MILESTONE . '_' . ConsentConstant::TERMS_AND_CONDITIONS
+                        and $documents_detail[0]['type'] === ConsentConstant::TERMS_OF_SERVICE) {
+                        $input['consent_for'] = ConsentConstant::L2_MILESTONE . '_' . ConsentConstant::TERMS_OF_SERVICE;
                     }
 
                     //We are changing names for sub-merchant consents based on sub-merchant consent mapping.
                     // This is to update older consents with the new name.
-                    if (in_array($consentDetailForMerchant['consent_for'] , array_keys(ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING))
-                        and $documents_detail[0]['type'] === ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING[$consentDetailForMerchant['consent_for']])
-                    {
-                        if(str_starts_with($consentDetailForMerchant['consent_for'], ConsentConstant::OAUTH) === true)
-                        {
-                            $input['consent_for'] = ConsentConstant::OAUTH.'_'.ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING[$consentDetailForMerchant['consent_for']].'_'.MerchantConstants::TERMS;
-                        }
-                        else if (str_starts_with($consentDetailForMerchant['consent_for'], ConsentConstant::L2_MILESTONE) === true)
-                        {
-                            $input['consent_for'] = ConsentConstant::L2_MILESTONE.'_'.ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING[$consentDetailForMerchant['consent_for']];
+                    if (in_array($consentDetailForMerchant['consent_for'], array_keys(ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING))
+                        and $documents_detail[0]['type'] === ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING[$consentDetailForMerchant['consent_for']]) {
+                        if (str_starts_with($consentDetailForMerchant['consent_for'], ConsentConstant::OAUTH) === true) {
+                            $input['consent_for'] = ConsentConstant::OAUTH . '_' . ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING[$consentDetailForMerchant['consent_for']] . '_' . MerchantConstants::TERMS;
+                        } else if (str_starts_with($consentDetailForMerchant['consent_for'], ConsentConstant::L2_MILESTONE) === true) {
+                            $input['consent_for'] = ConsentConstant::L2_MILESTONE . '_' . ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING[$consentDetailForMerchant['consent_for']];
                         }
                     }
 
                     $this->updateConsentDetails($merchantConsentDetail, $input);
+                } catch (\Throwable $e) {
+                    $this->trace->error(
+                        TraceCode::RETRY_LEGAL_DOCUMENT_SAVE_CRON_FAILED,
+                        [
+                            'message' => $e->getMessage(),
+                            'merchant_id' => $merchantId,
+                        ]
+                    );
                 }
             }
-            catch (\Throwable $e)
-            {
-                $this->trace->error(
-                    TraceCode::RETRY_LEGAL_DOCUMENT_SAVE_CRON_FAILED,
-                    [
-                        'message'     => $e->getMessage(),
-                        'merchant_id' => $merchantId,
-                    ]
-                );
-            }
         }
+    }
+
+    /**
+     * @param $merchantId
+     * @param $consentDetailForMerchant
+     * @throws LogicException
+     */
+    public function updateRetryCount($merchantId, $consentDetailForMerchant)
+    {
+        $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentForTypeAndDetailsId(
+            $merchantId,
+            $consentDetailForMerchant['consent_for'],
+            $consentDetailForMerchant['details_id']);
+
+        $input = [
+            'status' => ConsentConstant::PENDING,
+            'retry_count' => $merchantConsentDetail->retry_count + 1
+        ];
+
+        $this->updateConsentDetails($merchantConsentDetail, $input);
     }
 
     public function updateConsentDetails($merchantConsentDetail, $input)

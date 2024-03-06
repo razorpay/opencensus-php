@@ -41,7 +41,7 @@ class Repository extends Base\Repository
 
     public function getUniqueMerchantIdsWithConsentsNotSuccess($intervalTime, $validLegalDocs)
     {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->select(Entity::MERCHANT_ID)
                     ->where(Entity::STATUS, '<>', Constants::SUCCESS)
                     ->where(Entity::RETRY_COUNT, '<', Constants::STORE_CONSENTS_MAX_ATTEMPT)
@@ -52,6 +52,20 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
+    }
+
+    public function getMerchantIdsWithConsentsNotSuccessAndRetryExceeded($intervalTime, $validLegalDocs)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+            ->select(Entity::MERCHANT_ID)
+            ->where(Entity::STATUS, '<>', Constants::SUCCESS)
+            ->where(Entity::RETRY_COUNT, '>=', Constants::STORE_CONSENTS_MAX_ATTEMPT)
+            ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
+            ->where(Entity::CREATED_AT, '>', $intervalTime)
+            ->distinct()
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
     }
 
     public function getAllConsentDetailsForMerchant(string $merchantId)

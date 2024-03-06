@@ -642,7 +642,7 @@ class Core extends Base\Core
                     {
                         $retryCount = $merchantConsent['retry_count'];
 
-                        $status = $merchantConsent['status'];
+                        $status = $documentDetail['status'];
 
                         $this->trace->info(TraceCode::CRON_ATTEMPT_COMPLETE, [
                             'merchant_id' => $merchantConsent['merchant_id'],
