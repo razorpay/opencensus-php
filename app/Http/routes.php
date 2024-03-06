@@ -169,6 +169,9 @@ Route::group(['middleware' => ['web']], function () {
             ->where(['path' => '.*'])
             ->name('merchant');
 
+        Route::get('/merchant/razorassist/generate_chat_bot_token', 'MerchantController@generateChatBotToken')
+            ->name('generate_chat_bot_token');
+
         Route::get('/cards/token', 'GenerateTokenController@generateToken')
             ->name('card_token');
 

@@ -28,6 +28,7 @@ use App\Session\Entity as AppSession;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\PromiseInterface;
+use App\Services\Razorassist\RazorassistClient;
 
 class Service extends Base\Service
 {
@@ -356,6 +357,27 @@ class Service extends Base\Service
                 400
             );
         }
+
+        return [$error, $data];
+    }
+
+    public function generateChatBotToken()
+    {
+
+        $currentUser = Auth::guard('user')->user();
+
+        $merchant = empty($currentUser) === true ? null: $currentUser->currentMerchant() ;
+
+        // in case merchant is not set in session
+        if (is_null($merchant) == true)
+        {
+            throw new BadRequestError(
+                'Invalid merchant request.',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400);
+        }
+
+        list($error, $data) = (new RazorassistClient())->generateAzureBotDirectLinkToken($merchant->id, $currentUser->name);
 
         return [$error, $data];
     }

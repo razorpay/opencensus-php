@@ -278,6 +278,8 @@ class TraceCode
 
     const INFO_USES_X_SIGNUP_FLOW_V2_HEADER           = 'INFO_USES_X_SIGNUP_FLOW_V2_HEADER';
 
+    const AZURE_BOT_DIRECT_LINE_TOKEN_GENERATE_FAIL  = 'AZURE_BOT_DIRECT_LINE_TOKEN_GENERATE_FAIL';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

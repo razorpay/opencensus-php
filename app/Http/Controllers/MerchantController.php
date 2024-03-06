@@ -99,6 +99,14 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function generateChatBotToken()
+    {
+
+        list($error, $data) = (new Merchant\Service)->generateChatBotToken();
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postActivation()
     {
         $input = ['submit' => true];
@@ -404,7 +412,7 @@ class MerchantController extends Controller
         ];
 
         $targetUrl = (new Api\Service)->handleMagicAnalyticsOAuthCallbackURL($input);
-        
+
         return redirect($targetUrl, 303);
     }
 }
