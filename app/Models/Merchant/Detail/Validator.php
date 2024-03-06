@@ -390,20 +390,20 @@ class Validator extends Base\Validator
     ];
 
     protected static $activationStatusRules = [
-        Entity::ACTIVATION_STATUS               => 'required|string|max:30',
+        Entity::ACTIVATION_STATUS               => 'sometimes|string|max:30|required_without_all:' . Constants::POS_ACTIVATION_STATUS,
         Entity::CLARIFICATION_MODE              => 'filled|string|max:15',
         Entity::REJECTION_REASONS               => 'filled|array',
         Entity::REJECTION_OPTION                => 'sometimes|string|max:30',
-        Constants::POS_ACTIVATION_STATUS        => 'sometimes|string|max:30'
+        Constants::POS_ACTIVATION_STATUS        => 'sometimes|string|max:30|required_without_all:' . Entity::ACTIVATION_STATUS
     ];
 
     protected static $activationStatusInternalRules = [
-        Entity::ACTIVATION_STATUS               => 'required|string|max:30',
+        Entity::ACTIVATION_STATUS               => 'sometimes|string|max:30|required_without_all:' . Constants::POS_ACTIVATION_STATUS,
         Entity::CLARIFICATION_MODE              => 'filled|string|max:15',
         Entity::REJECTION_REASONS               => 'filled|array',
         Entity::REJECTION_OPTION                => 'sometimes|string|max:30',
         Constants::WORKFLOW_MAKER_ADMIN_ID      => 'required|string|max:30',
-        Constants::POS_ACTIVATION_STATUS        => 'sometimes|string|max:30'
+        Constants::POS_ACTIVATION_STATUS        => 'sometimes|string|max:30|required_without_all:' . Entity::ACTIVATION_STATUS
     ];
 
     protected static $merchantConsentRules = [
