@@ -1,17 +1,19 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import rTracking from 'react-tracking';
+import { bindActionCreators } from 'redux';
+
 import Spinner from 'common/ui/Spinner';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { updateUser } from 'merchant_common/reducers/user';
+
 import Primary from './Cards/Primary';
 import Secondary from './Cards/Secondary';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { currentAccountStatuses, analyticsStatusMap } from './Cards/data';
-import rTracking from 'react-tracking';
 import Faq from './Faq';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { getCaState } from './data';
 import { getTimeDiff } from './helpers';
-import { updateUser } from 'merchant_common/reducers/user';
-import { bindActionCreators } from 'redux';
 
 const CaInfo = (props) => {
   const [caAccount, setCaAcccount] = React.useState(null);
@@ -109,7 +111,7 @@ const CaInfo = (props) => {
     setLoading(true);
     if (hasAppliedCa) {
       merchantFetch({
-        url: 'banking_accounts',
+        url: 'banking_accounts?fee_recovery=0',
         mode: 'live',
         method: 'get',
       }).then(({ data }) => {

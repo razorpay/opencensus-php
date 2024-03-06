@@ -1,8 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import isObject from 'is-object';
-import TrackerLeftIllustration from './components/TrackerLeftIllus';
-import TrackerStatus from './components/TrackerStatus';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+
 import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
+import { APIResponseType } from 'common/ui/NotificationsDropdown/Neostone/TypeDeclare/XCATypeDeclare';
+import {
+  getDerivedStatus,
+  getErrorMessage,
+  getICICIApplicationData,
+  getICICIPanStatus,
+} from 'common/ui/NotificationsDropdown/Neostone/common/utils';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { showNotification as showNotificationProp } from 'merchant_common/reducers/notifications';
+
+import {
+  ACTIVE_STATUS_MSGS,
+  BLOCKED_STATUSES,
+  getICICILAStatusData,
+  ICICI_LA_STATUSES,
+  OVERALL_STATUS_MSGS,
+  VERTICAL_STEP_MARKERS,
+} from './ConnectedBankingData';
+import {
+  ICICIKYCStatus,
+  PAN_VERIFICATION_STATUSES,
+  ICICI_PAN_OR_APP,
+  ICICI_ACTIVATE,
+  ICICI_STATUS,
+  caApplicationBlockedICICIStatus,
+} from './ICICITrackerStatus';
 import {
   bankNamesMap,
   RBL_STATUS,
@@ -13,34 +40,9 @@ import {
   caApplicationStatus,
   caApplicationBlockedStatus,
 } from './TrackerConstant';
-import {
-  ICICIKYCStatus,
-  PAN_VERIFICATION_STATUSES,
-  ICICI_PAN_OR_APP,
-  ICICI_ACTIVATE,
-  ICICI_STATUS,
-  caApplicationBlockedICICIStatus,
-} from './ICICITrackerStatus';
 import NeoStoneTrackerShimmer from './components/NeoStoneTrackerShimmer';
-import { merchantFetch } from 'merchant/utils/ajax';
-import {
-  getDerivedStatus,
-  getErrorMessage,
-  getICICIApplicationData,
-  getICICIPanStatus,
-} from 'common/ui/NotificationsDropdown/Neostone/common/utils';
-import { showNotification as showNotificationProp } from 'merchant_common/reducers/notifications';
-import { connect } from 'react-redux';
-import { compose } from 'redux';
-import { APIResponseType } from 'common/ui/NotificationsDropdown/Neostone/TypeDeclare/XCATypeDeclare';
-import {
-  ACTIVE_STATUS_MSGS,
-  BLOCKED_STATUSES,
-  getICICILAStatusData,
-  ICICI_LA_STATUSES,
-  OVERALL_STATUS_MSGS,
-  VERTICAL_STEP_MARKERS,
-} from './ConnectedBankingData';
+import TrackerLeftIllustration from './components/TrackerLeftIllus';
+import TrackerStatus from './components/TrackerStatus';
 
 const getVerticalStep = ({ ...activeState }, statusList, verticalStepMarkers) => {
   let verticalStep = 0;
@@ -166,7 +168,7 @@ const NeoStoneTracker = ({ proceededBank, user, showNotification }) => {
   useEffect(() => {
     if (proceededBank === bankNamesMap.RBL) {
       merchantFetch({
-        url: 'banking_accounts',
+        url: 'banking_accounts?fee_recovery=0',
         mode: 'live',
       })
         .then((resp) => {
