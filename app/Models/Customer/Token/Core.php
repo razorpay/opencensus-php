@@ -3030,20 +3030,7 @@ class Core extends Base\Core
             return false;
         }
 
-        $onboardedNetworks = (new Terminal\Core())->getMerchantTokenisationOnboardedNetworks($token->getMerchantId());
-
-        if (in_array($networkCode, $onboardedNetworks,true) === false && in_array($issuer, $onboardedNetworks,true) === false) {
-
-            $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_NOT_ONBOARDED_FOR_TOKENISATION;
-
-            $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                'token'      => $token->getId()
-            ]);
-
-            $this->updateTokenStatus($token, Token\Constants::FAILED, $errorCode);
-        }
-
-        return in_array($networkCode, $onboardedNetworks, true) || in_array($issuer, $onboardedNetworks, true);
+        return true;
     }
 
     /**

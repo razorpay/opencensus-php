@@ -2464,7 +2464,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('card_' . $token['card_id'], $card['id']);
 
-        $this->assertEquals($card['vault'], 'rzpvault');
+        $this->assertEquals($card['vault'], 'visa');
     }
 
     public function testCreateTokenForRearch()

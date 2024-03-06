@@ -153,6 +153,9 @@ class TokenisationTest extends TestCase
 
     public function testBulkTokenisationWhenValidTokenAndBelongsToMerchantNotOnboardedOnNetworkExpectsTokenisationFailure(): void
     {
+        $this->markTestSkipped();
+        // functionality not in use anymore
+
         $testData = $this->testData['testBulkTokenisation'];
 
         $this->ba->adminAuth();
@@ -490,7 +493,7 @@ class TokenisationTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals($card['vault'], 'rzpvault');
+        $this->assertEquals($card['vault'], 'visa');
     }
 
     public function testAsyncTokenisationWhenTokenBelongsToInternationalCardExpectsTokenisationFailure(): void
