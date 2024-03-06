@@ -681,15 +681,31 @@ class Repository extends Base\Repository
                     ->all(['name', 'email', 'transaction_report_email']);
     }
 
-    public function fetchMerchantIdsInChunk($skip, $limit)
+    /**
+     * @param $skip
+     * @param $limit
+     *
+     * @return array
+     */
+    public function fetchMerchantIdsInChunk($skip, $limit): array
     {
-        return $this->newQuery()
-                    ->where(Entity::LIVE, '=', 1)
-                    ->whereNull(Entity::SUSPENDED_AT)
-                    ->skip($skip)
-                    ->take($limit)
-                    ->pluck(Entity::ID)
-                    ->toArray();
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__))
+        {
+            $query = $this->newQueryWithConnection(
+                $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
+            );
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query->where(Entity::LIVE, '=', 1)
+                     ->whereNull(Entity::SUSPENDED_AT)
+                     ->skip($skip)
+                     ->take($limit)
+                     ->pluck(Entity::ID)
+                     ->toArray();
     }
 
     public function fetchMerchantIdsByOrgId($orgId)
@@ -973,20 +989,64 @@ class Repository extends Base\Repository
             ->get();
     }
 
-    public function findByAccountIdAndParent(
-        string $accountId,
-        Entity $parent,
-        bool $fail = false)
+    /**
+     * Get a linked account by it's id & parent_id
+     *
+     * @param string $accountId
+     * @param Entity $parent
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     */
+    public function findByAccountIdAndParent(string $accountId, Entity $parent): Entity
     {
         Account\Entity::verifyIdAndStripSign($accountId);
 
-        $query   = $this->newQuery()->where(Entity::PARENT_ID, $parent->getId());
-        $account = $fail ? $query->findOrFailPublic($accountId) : $query->find($accountId);
-
-        if ($account !== null)
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
-            $account->parent()->associate($parent);
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                /**
+                 * @var $account Entity
+                 */
+                $account = $this->findOrFailPublicAsv($accountId);
+
+                if ($account !== null)
+                {
+                    if ($account->getParentId() == $parent->getId())
+                    {
+                        $account->parent()->associate($parent);
+                        return $account;
+                    }
+                }
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ID,
+                    null,
+                    [
+                        'model' => $this->getEntityClass(),
+                        'attributes' => $accountId,
+                        'operation' => 'find',
+                    ],
+                );
+
+            }
         }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        $query   = $query->where(Entity::PARENT_ID, $parent->getId());
+        $account = $query->findOrFailPublic($accountId);
+
+        $account?->parent()->associate($parent);
 
         return $account;
     }
@@ -1905,16 +1965,39 @@ class Repository extends Base\Repository
         return $historicalClaimedMerchantIds;
     }
 
-    public function fetchLinkedAccountMids($merchantId)
+    /**
+     * @param $merchantId
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BaseException
+     */
+    public function fetchLinkedAccountMids($merchantId): array
     {
-        $childMerchantIds = $this->newQuery()
-                                 ->select(Entity::ID)
-                                 ->where('parent_id', $merchantId)
-                                 ->get()
-                                 ->pluck(Entity::ID)
-                                 ->toArray();
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                return (new AsvSdkMerchantQuery())->fetchLinkedAccountsFromParentId($merchantId);
+            }
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
 
-        return $childMerchantIds;
+        return $query
+            ->select(Entity::ID)
+            ->where('parent_id', $merchantId)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 
     public function fetchUnsuspendedLinkedAccountMids($merchantId, $offset = 0)
@@ -2107,8 +2190,11 @@ class Repository extends Base\Repository
 
     public function fetchAllActiveLinkedAccounts(int $createdAt=null)
     {
-        $query = $this->newQuery()
-            ->whereNotNull(Entity::PARENT_ID)
+        $query = $this->newQueryWithConnection(
+            $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT)
+        );
+
+        $query = $query->whereNotNull(Entity::PARENT_ID)
             ->select(Entity::ID)
             ->where(Entity::ACTIVATED, 1);
 

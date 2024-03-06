@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use Throwable;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Batch\Helpers\LinkedAccount as Helper;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -47,7 +49,7 @@ class LinkedAccount extends Base
     {
         $this->merchantCore->blockLinkedAccountCreationIfApplicable($this->merchant);
 
-        $account = $this->repo->transactionOnLiveAndTest(function () use (& $entry)
+        $account = $this->repo->transactionOnLiveAndTestAndAsv(function () use (& $entry)
         {
             return $this->createOrUpdateAccountForEntry($entry);
         });
@@ -56,9 +58,11 @@ class LinkedAccount extends Base
     }
 
     /**
-     * @param  array $entry
+     * @param array $entry
      *
      * @return Merchant\Entity|Merchant\Account\Entity
+     * @throws BadRequestException
+     * @throws Throwable
      */
     protected function createOrUpdateAccountForEntry(array & $entry)
     {
@@ -77,7 +81,7 @@ class LinkedAccount extends Base
                             ->findByAccountIdAndParent(
                                 $accountId,
                                 $this->merchant,
-                                true);
+                            );
 
             // Building input for bank core's method
             $buildInput = $this->bankAccountCore

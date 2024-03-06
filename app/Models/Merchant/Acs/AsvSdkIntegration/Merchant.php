@@ -30,6 +30,8 @@ class Merchant extends Base
         = 'get_merchants_by_legal_entity_id';
     const GET_LINKED_ACCOUNT_COUNT
         = 'get_linked_accounts_count';
+    const GET_LINKED_ACCOUNTS_FROM_PARENT_ID
+        = 'get_linked_accounts_from_parent_id';
 
     public function __construct()
     {
@@ -119,6 +121,26 @@ class Merchant extends Base
         $filterRequest->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_SUSPENDED_DUE_TO_PARENT_SUSPENSION_FROM_PARENT_ID);
         $filterRequest->setBindings(
             json_encode([$parentId, $reason, $limit, $offset])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+    }
+
+    /**
+     * @param string $parentId
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchLinkedAccountsFromParentId(string $parentId): array
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_FROM_PARENT_ID);
+        $filterRequest->setBindings(
+            json_encode([$parentId])
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
