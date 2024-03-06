@@ -94,6 +94,56 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         ], $payment);
     }
 
+    public function testUpsPaymentSuccessWithMNOPaymentID($description = 'create_collect_success')
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->payment['description'] = $description;
+
+        $this->setMockGatewayTrue();
+
+        $this->doAjaxPaymentWithUps('terminal:shared_upi_icici_terminal', 'upi_icici');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->gateway = 'upi_icici';
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(4, $payment->getCpsRoute());
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+        });
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $payment['payment_id'] = $payment['id'];
+
+        $upiEntity = [];
+        $upiEntity['created_at'] = $payment['created_at'];
+        $upiEntity['gateway_payment_id'] = '882087011';
+        $upiEntity['gateway_merchant_id'] = '123456';
+        $upiEntity['vpa'] =  'vishnu@icici';
+        $upiEntity['payment_id'] = 'MNO'.$payment['id'];
+
+        $content = $this->mockServer('upi_icici')->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $this->assertArraySubset([
+            Entity::STATUS          => Status::AUTHORIZED,
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
+            Entity::GATEWAY         => $this->gateway,
+            Entity::CPS_ROUTE       => 4,
+        ], $payment);
+    }
+
 
     public function testPaymentCallbackReArch()
     {

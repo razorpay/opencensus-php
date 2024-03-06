@@ -85,6 +85,12 @@ class Gateway extends Base\Gateway
      */
     const PARENT_GATEWAY_MERCHANT_ID = '116798';
 
+    /**
+     * This is the prefix of payment id that we get in case
+     * we're not making gateway call in intent
+     */
+    const ICICI_MERCHANT_REFERENCE_PREFIX = 'MNO';
+
     protected $qrPaymentMerchantRefPrefix = QrCode\Constants::QR_CODE_V2_ICICI_PREFIX;
 
     protected $qrPaymentMerchantRefSuffix = QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
@@ -1469,7 +1475,14 @@ class Gateway extends Base\Gateway
 
         if ($version === 'v2')
         {
-            return $this->upiPaymentIdFromServerCallback($response);
+            $merchantReference = $this->upiPaymentIdFromServerCallback($response);
+
+            if ($this->hasCustomPrefixForIntent($merchantReference) === true) 
+            {
+                $merchantReference = substr($merchantReference, strlen(self::ICICI_MERCHANT_REFERENCE_PREFIX));
+            }
+
+            return $merchantReference;
         }
 
         return $response[Fields::MERCHANT_TRAN_ID];
@@ -1537,6 +1550,12 @@ class Gateway extends Base\Gateway
             // the length as 14. While for recurring payments the merchant reference always has length > 14
             // Example - Hv4iga1CmfWU3F0execte1 (<payment_id><env><action><attempt>)
             $merchantReference = $response['data']['upi']['merchant_reference'] ?? '';
+
+
+            if ($this->hasCustomPrefixForIntent($merchantReference) === true) 
+            {
+                return $response;
+            }
 
             // return if it a actual payment id and not composite payment id.
             if (UniqueIdEntity::verifyUniqueId($merchantReference, false) === true)
@@ -2447,6 +2466,28 @@ class Gateway extends Base\Gateway
         {
             $content[Fields::RESPONSE_CODE] = $content[Fields::TXN_STATUS];
         }
+    }
+
+    /***
+     * This method tells if this is the payment with skipped gateway call in intent
+     *
+     * @param $merchantReference
+     */
+    private function hasCustomPrefixForIntent($merchantReference)
+    {
+        if ((str_starts_with($merchantReference, self::ICICI_MERCHANT_REFERENCE_PREFIX) === true)
+                and (strlen($merchantReference) === 17))
+        {
+            $merchantReference = substr($merchantReference, strlen(self::ICICI_MERCHANT_REFERENCE_PREFIX));
+
+            // return if it a actual payment id and not composite payment id.
+            if (UniqueIdEntity::verifyUniqueId($merchantReference, false) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getQrPaymentMerchantReference($merchantReference)
