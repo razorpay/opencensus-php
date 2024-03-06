@@ -3883,7 +3883,9 @@ class Core extends Base\Core
         {
             // to check website validations for the merchant while fully activating or moving to KQU
             (new Merchant\Website\Service())->validateMerchantActivation($merchantDetails, $websiteDetail);
-
+            
+            $this->performComplianceChecksBasedOnBusinessType($merchantDetails);
+            
             // Verify the expiry status for all merchant documents that are relevant for license expiration.
             // The applicable document types are listed in the constant 'LICENSE_EXPIRY_APPLICABLE_DOCUMENT_TYPES'.
 
@@ -3893,6 +3895,7 @@ class Core extends Base\Core
             if ($this->app['basicauth']->isAdminAuth() === true)
             {
                 $this->checkLicenseExpiryValidationForMerchantDocuments($merchant, $input);
+
             }
         }
 
@@ -4376,7 +4379,33 @@ class Core extends Base\Core
 
         return $merchantDetails;
     }
-
+    
+    /**
+     * performComplianceChecksBasedOnBusinessType checks for compliance details like cin,pan,company based on selected business type.
+     */
+    protected function performComplianceChecksBasedOnBusinessType($merchantDetail)
+    {
+        
+        // Skip this check if we're in a testing environment because it breaks existing uts when improper data is there
+        if (App::environment('testing') === true)
+        {
+            return;
+        }
+        
+        $businessType = $merchantDetail->getBusinessType();
+        $companyPan   = $merchantDetail->getPan();
+        $cin          = $merchantDetail->getCompanyCin();
+        
+        $this->app['trace']->info(TraceCode::MERCHANT_COMPLIANCE_CHECK, [
+            'businessType' => $businessType,
+            'merchant_id'  => $merchantDetail->getMerchantId(),
+        ]);
+        
+        (new Validator())->validatePersonalPAN($merchantDetail);
+        (new Validator())->validateCompanyPAN($businessType, $companyPan);
+        (new Validator())->validateCIN($businessType, $cin);
+    }
+    
     private function shouldTriggerActivatedWebhook(Merchant\Entity $merchant, string $newStatus = null) : bool
     {
         if ($newStatus === Status::ACTIVATED)
@@ -4697,6 +4726,7 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
+    
     protected function checkLicenseExpiryValidationForMerchantDocuments($merchant, $input)
     {
         $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(

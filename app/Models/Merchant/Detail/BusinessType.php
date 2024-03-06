@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Detail;
 
 use RZP\Exception;
 use RZP\Models\Merchant\RazorxTreatment;
+
 class BusinessType
 {
 
@@ -106,7 +107,22 @@ class BusinessType
             self::NOT_YET_REGISTERED,
         ]
     ];
-
+    public static  $businessTypesWithCompanyPanMandatory =  [
+         self::PARTNERSHIP,
+         self::TRUST,
+         self::SOCIETY,
+         self::HUF,
+         self::NGO,
+         self::PRIVATE_LIMITED,
+         self::PUBLIC_LIMITED,
+         self::LLP
+    ];
+    
+    public static $businessTypesWithCinMandatory = [
+        BusinessType::PRIVATE_LIMITED,
+        BusinessType::PUBLIC_LIMITED,
+        BusinessType::LLP
+    ];
     public static    $businessTypeExperiments                           = [
         self::HUF                       => RazorxTreatment::HUF_BUSINESS_TYPE,
         self::EDUCATIONAL_INSTITUTES    => RazorxTreatment::EDUCATION_OTHERS_BUSINESS_TYPE,

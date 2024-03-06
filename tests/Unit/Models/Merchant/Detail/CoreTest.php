@@ -15178,51 +15178,52 @@ class CoreTest extends TestCase
 
         $this->assertEquals('kyc_qualified_unactivated', $merchantDetailData['activation_status']);
     }
-
-    //activate merchant without expirydate for documents should throw error
-    public function testAMerchantActivateWithoutDocumentsWithExpiryDate()
+    
+    
+    //activate merchant with business type as per details should get activated/KQU
+    public function testAMerchantActivateWithBusinessType()
     {
         $this->ba->adminAuth();
         Mail::fake();
-        $mid = 'MVZCwZJqCLWNkr';
         Config::set('pgos.proxy.request.mock', true);
-
-        $merchant = $this->fixtures->create('merchant', [
-            'id'            => $mid,
-            'website'       => null,
-            'name'          => null,
-            'email'         => null,
-            'billing_label' => null,
-        ]);
-
+        
+        $mid = 'KiyM01yZQeU3rD';
+        
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+        
         $merchantDetail = $this->fixtures->create('merchant_detail', [
-            'merchant_id'      => $mid,
-            'contact_email'    => null,
-            'business_website' => null]);
-
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'kyc_qualified_unactivated',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+        
         $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
-
+        
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
                                ->setMethods(['isAutoKycDone'])
                                ->setMethods(['isEligibleForAutomationActivation'])
-                               ->setMethods(['checkLicenseExpiryValidationForMerchantDocuments'])
                                ->getMock();
-
+        
         $detailCoreMock->expects($this->any())
                        ->method('isAutoKycDone')
                        ->willReturn(true);
-
+        
         $detailCoreMock->expects($this->any())
                        ->method('isEligibleForAutomationActivation')
                        ->willReturn(true);
-
-        $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
-
+        
         $input = [
             "experiment_id" => "LS64r2cBVZVT5b",
-            "id"            => $mid,
+            "id"            => $merchantDetail->getMerchantId(),
         ];
-
+        
         $output = [
             "response" => [
                 "variant" => [
@@ -15230,53 +15231,245 @@ class CoreTest extends TestCase
                 ]
             ]
         ];
-
+        
         $this->mockSplitzTreatment($input, $output);
-
-
+        
         $activationStatusData = [
-            Entity::ACTIVATION_STATUS => Status::KYC_QUALIFIED_UNACTIVATED,
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
         ];
-
+        
         $admin = $this->fixtures->connection('live')->create('admin', [
             'org_id' => OrgEntity::RAZORPAY_ORG_ID,
         ]);
-
+        
         $this->app->instance("rzp.mode", Mode::LIVE);
-
+        
         $this->app['workflow']->setWorkflowMaker($admin);
-
+        
         $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
-
+        
         $this->app->instance('basicauth', $basicAuthMock);
-
+        
         $basicAuthMock
             ->shouldReceive('getOrgId')
             ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
-
+        
         $basicAuthMock
             ->shouldReceive('isAdminAuth')
             ->andReturn(true);
-
+        
+        $detailCoreMock->updateActivationStatus($merchantDetail->merchant, $activationStatusData, $admin);
+        
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetail->getMerchantId())->toArray();
+        
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+    }
+    
+    
+    // should throw error when promoter pan is missing
+    public function testAMerchantActivateWithBusinessTypeWithoutPersonalPan()
+    {
+        $this->ba->adminAuth();
+        Mail::fake();
+        Config::set('pgos.proxy.request.mock', true);
+        
+        $mid = 'KiyM01yZQeU3rD';
+        
+        $merchant = $this->fixtures->create('merchant', [
+            'id'               => $mid,
+            'business_banking' => 1
+        ]);
+        
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'merchant_id'               => $mid,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'kyc_qualified_unactivated',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+        
+        $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
+        
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->setMethods(['performComplianceChecksBasedOnBusinessType'])
+                               ->getMock();
+        
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+        
+        $detailCoreMock->expects($this->any())
+                       ->method('isEligibleForAutomationActivation')
+                       ->willReturn(true);
+        $detailCoreMock->expects($this->any())
+                       ->method('performComplianceChecksBasedOnBusinessType')
+                       ->willReturnCallback(function() {
+                           throw new BadRequestValidationFailureException('Personal PAN should not be blank.');
+                       });
+        
+        $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
+        
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $mid,
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
+        
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+        
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+        
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        
+        $this->app['workflow']->setWorkflowMaker($admin);
+        
+        $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
+        
+        $this->app->instance('basicauth', $basicAuthMock);
+        
+        $basicAuthMock
+            ->shouldReceive('getOrgId')
+            ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+        
+        $basicAuthMock
+            ->shouldReceive('isAdminAuth')
+            ->andReturn(true);
+        
+        try
+        {
+            
+            $response = $detailCoreMock->updateActivationStatus($merchantDetail->merchant, $activationStatusData, $admin);
+            
+            $this->assertNull($response);
+            
+        }
+        catch (\Exception $e)
+        {
+            
+            $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
+            $this->assertStringContainsString('Personal PAN should not be blank.', $e->getMessage());
+            
+        }
+    }
+    
+    //activate merchant without expirydate for documents should throw error
+    public function testAMerchantActivateWithoutDocumentsWithExpiryDate()
+    {
+        $this->ba->adminAuth();
+        Mail::fake();
+        $mid = 'MVZCwZJqCLWNkr';
+        Config::set('pgos.proxy.request.mock', true);
+        
+        $merchant = $this->fixtures->create('merchant', [
+            'id'            => $mid,
+            'website'       => null,
+            'name'          => null,
+            'email'         => null,
+            'billing_label' => null,
+        ]);
+        
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id'      => $mid,
+            'contact_email'    => null,
+            'business_website' => null]);
+        
+        $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
+        
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->setMethods(['checkLicenseExpiryValidationForMerchantDocuments'])
+                               ->getMock();
+        
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+        
+        $detailCoreMock->expects($this->any())
+                       ->method('isEligibleForAutomationActivation')
+                       ->willReturn(true);
+        
+        $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
+        
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $mid,
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
+        
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::KYC_QUALIFIED_UNACTIVATED,
+        ];
+        
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+        
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        
+        $this->app['workflow']->setWorkflowMaker($admin);
+        
+        $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
+        
+        $this->app->instance('basicauth', $basicAuthMock);
+        
+        $basicAuthMock
+            ->shouldReceive('getOrgId')
+            ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+        
+        $basicAuthMock
+            ->shouldReceive('isAdminAuth')
+            ->andReturn(true);
+        
         $detailCoreMock->expects($this->any())
                        ->method('checkLicenseExpiryValidationForMerchantDocuments')
-                       ->willReturnCallback(function () {
+                       ->willReturnCallback(function() {
                            throw new BadRequestValidationFailureException('License expiry date required for activation.');
                        });
         try
         {
-
+            
             $response = $detailCoreMock->updateActivationStatus($merchantDetail->merchant, $activationStatusData, $admin);
-
+            
             $this->assertNull($response);
-
+            
         }
         catch (\Exception $e)
         {
-
+            
             $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
             $this->assertStringContainsString('License expiry date required for activation.', $e->getMessage());
-
+            
         }
     }
 

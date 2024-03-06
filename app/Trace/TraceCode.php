@@ -35,6 +35,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WEBSITE_SECTION_RESPONSE                  = 'WEBSITE_SECTION_RESPONSE';
     const WEBSITE_SECTION_ERROR                     = 'WEBSITE_SECTION_ERROR';
     const WEBSITE_ADHERENCE_INFO                    = 'WEBSITE_ADHERENCE_INFO';
+    const MERCHANT_COMPLIANCE_CHECK                 = 'MERCHANT_COMPLIANCE_CHECK';
     const MERCHANT_STORE_CONSENTS_CRON_RETRY        = 'MERCHANT_STORE_CONSENTS_CRON_RETRY';
     const CONSENT_CREATION_ERROR                    = 'CONSENT_CREATION_ERROR';
     const CONSENT_CREATION_ERROR_V2                 = 'CONSENT_CREATION_ERROR_V2';

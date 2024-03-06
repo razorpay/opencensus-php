@@ -22,6 +22,7 @@ use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Models\Merchant\BusinessDetail\Constants as BDConstants;
@@ -50,6 +51,10 @@ class Validator extends Base\Validator
     const INVALID_BANK_BRANCH_CODE_TYPE_MESSAGE         = 'Invalid Bank Branch Code Type';
     const INVALID_INDUSTRY_CATEGORY_CODE_TYPE_MESSAGE   = 'Invalid Industry Category Code Type';
     const INVALID_STATUS_CHANGE_MESSAGE                 = 'Invalid status change';
+    
+    const INVALID_PROMOTER_PAN                          = 'Personal PAN should not be blank.';
+    const INVALID_COMPANY_PAN                           = 'Company PAN should not be blank';
+    const INVALID_CIN_LLPIN                             = 'CIN/LLPIN should not be blank';
     const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
     const INVALID_FILE_NON_NGO_ORGANISATION_TYPE        = 'Invalid file for non NGO organisation type';
     const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
@@ -1934,7 +1939,33 @@ class Validator extends Base\Validator
             'variables'
         );
     }
-
+    
+    public function validatePersonalPAN($merchantDetail)
+    {
+        if (empty($merchantDetail->getPromoterPan()) === true)
+        {
+            throw new BadRequestValidationFailureException(self::INVALID_PROMOTER_PAN);
+        }
+    }
+   
+    public function validateCompanyPAN($businessType, $companyPan)
+    {
+        
+        if (in_array($businessType, BusinessType::$businessTypesWithCompanyPanMandatory) && empty($companyPan) === true)
+        {
+            throw new BadRequestValidationFailureException(sprintf('%s for %s', self::INVALID_COMPANY_PAN, $businessType));
+        }
+    }
+    
+   
+    public function validateCIN($businessType, $cin)
+    {
+        if (in_array($businessType, BusinessType::$businessTypesWithCinMandatory) && empty($cin) === true)
+        {
+            throw new BadRequestValidationFailureException(sprintf('%s for %s', self::INVALID_CIN_LLPIN, $businessType));
+        }
+    }
+    
     public function validatePOSActivationStatusChange($currentStatus, string $newStatus)
     {
         if (empty($currentStatus) === true)
