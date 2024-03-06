@@ -9,6 +9,7 @@ use Request;
 use RZP\Base\ConnectionType;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
+use RZP\Models\Offer\OffersEngine;
 use RZP\Services\Shield;
 use Neves\Events\TransactionalClosureEvent;
 use Route;
@@ -3256,6 +3257,13 @@ class Processor
 
             $this->addUpiDimensions($dimensions, $input, $payment, $isReArchPayment);
 
+            // fail on offers-engine in case where payment entity is not created.
+            // for cases where entity was created fits handled in failPayment function
+            if ($payment != null && $payment->wasRecentlyCreated === false && $payment->getOffer() != null)
+            {
+                (new OffersEngine())->failOnOffersEngine($payment);
+            }
+
             if ($payment instanceof Payment\Entity === true)
             {
                 $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
@@ -3291,6 +3299,7 @@ class Processor
             throw $e;
         }
     }
+
 
 
     protected function convert3ds2BrowserDetails(& $input): void
@@ -5767,6 +5776,30 @@ class Processor
 
             $payment->setAmount($discountedAmount);
 
+            if (isset($payment[Payment\Entity::OFFER_BENEFITS]))
+            {
+                $mismatch = $this->offer->checkDiscountMismatch($orderAmount - $discountedAmount, $payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
+
+                // perform parity
+                if( $mismatch === true)
+                {
+                    $this->trace->count(Offer\Metric::OFFERS_ENGINE_DISCOUNT_MISMATCH,
+                    [
+                        'offer_type' => $this->offer->getOfferType(),
+                        'emi_subvention' => $this->offer->getEmiSubvention(),
+                    ]);
+
+                    $this->trace->info(
+                        TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH,
+                        [
+                            'API_DISCOUNT' => $discountedAmount,
+                            'OFFERS_DISCOUNT' => $payment->getAttribute(Payment\Entity::OFFER_BENEFITS),
+                        ]);
+                };
+            }
+
+            unset($payment[Payment\Entity::OFFER_BENEFITS]);
+
             //setting original order amount to input array to set back the original amount as payment
             //amount in case of offer validation fails.
             $input['order_amount'] = $orderAmount;
@@ -5794,18 +5827,34 @@ class Processor
             $offer = $this->validateAndFetchOffer($payment, $input);
         }
 
+        if ($offer === null)
+        {
+            return;
+        }
+
         $this->offer = $offer;
 
-        if ($this->offer !== null)
-        {
-            $payment->associateOffer($this->offer);
+        $core = New Offer\Core();
 
-            $this->trace->info(TraceCode::OFFER_SELECTED_FOR_PAYMENT, [
-                'offer_id'   => $offer->getPublicId(),
-                'payment_id' => $payment->getPublicId(),
-                'order_id'   => $order->getPublicId(),
-            ]);
+        $resp = $core->validateOnOffersEngine(
+            $payment, $payment->order, $this->offer, false);
+
+        if ($resp[Offer\Constants::VALIDATE_OFFER_CALLED] === true)
+        {
+            $payment->setAttribute(Payment\Entity::OFFER_BENEFITS,
+                $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']);
+
+            (new Offer\OffersEngine())->availOnOffersEngine($payment, $offer,
+                $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']);
         }
+
+        $payment->associateOffer($this->offer);
+
+        $this->trace->info(TraceCode::OFFER_SELECTED_FOR_PAYMENT, [
+            'offer_id'   => $offer->getPublicId(),
+            'payment_id' => $payment->getPublicId(),
+            'order_id'   => $order->getPublicId(),
+        ]);
     }
 
     /**
@@ -5917,30 +5966,36 @@ class Processor
 
     protected function validateAndFetchOffer(Payment\Entity $payment, array $input)
     {
+
         $offerId = $input[Payment\Entity::OFFER_ID];
 
         Offer\Entity::verifyIdAndStripSign($offerId);
+
 
         // TODO: this needs to be checked for shared merchant offers also
         // skipping for now because there aren't any
         $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
 
+
         // if its just a checkout display offer, just return null so that further validations
         // and associations don't happen.
         if ($offer->getCheckoutDisplay() === true)
         {
+
             return null;
         }
 
         // If offer is present in the payment request, we need to validate it against the order.
         if ($payment->order->offers->contains($offerId) === false)
         {
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
             [
                 'offer_id' => Offer\Entity::getSignedId($offerId),
                 'order_id' => $payment->order->getPublicId(),
             ]);
         }
+
 
         return $offer;
     }
@@ -7374,6 +7429,8 @@ class Processor
 
             $offer->lockDecrementCurrentOfferUsage($payment);
         }
+
+        (new OffersEngine())->failOnOffersEngine($payment);
 
         if ($this->sendDopplerFeedback === true)
         {

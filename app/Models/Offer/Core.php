@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\CobrandingPartner;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -267,6 +268,9 @@ class Core extends Base\Core
 
             $this->lockDecrementCurrentOfferUsage($payment);
 
+            //As offer is not applicable, dissociating it
+            (new OffersEngine())->failOnOffersEngine($payment);
+
             if ($offer->shouldBlockPayment() === true)
             {
                 $errorMessage = $offer->getErrorMessage();
@@ -301,7 +305,6 @@ class Core extends Base\Core
             $payment->setBaseAmount($baseAmount);
         }
 
-        //As offer is not applicable, dissociating it
         $payment->dissociateOffer($offer);
     }
 
@@ -691,7 +694,7 @@ class Core extends Base\Core
         {
             $checker = new Checker($offer, $verbose);
 
-            if ($checker->checkApplicabilityForPayment($payment, $order))
+            if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $order))
             {
                 $applicableOffers[] = $offer->getPublicId();
             }
@@ -1192,5 +1195,117 @@ class Core extends Base\Core
             $this->repo->card->saveOrFail($card);
         }
         return $providerReferenceId;
+    }
+
+    public function validateOnOffersEngine(Payment\Entity $payment, Order\Entity $order, Entity $offer, bool $isDummyPayment)
+    {
+        if ($this->shouldRouteToOffersEngine($payment->getMerchantId(), Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP) === true)
+        {
+            $oeValidateCall = true;
+
+            $iin = '';
+
+            // perform checks if we can call offers engine
+            if ($payment->isMethodCardOrEmi() === true)
+            {
+                $iin = $this->fetchCardIIN($payment);
+
+                if ($this->isOneCardPayment($iin) === true)
+                {
+                    $oeValidateCall = false;
+                }
+
+                if ($payment->card->isInternational() === true)
+                {
+                    $oeValidateCall = false;
+                }
+            }
+            if ($oeValidateCall)
+            {
+                try
+                {
+                    $oeResp = $this->offersEngine->validateOffer(
+                        $payment->getMerchantId(),
+                        $offer,
+                        $payment,
+                        $order,
+                        $isDummyPayment,
+                        $iin);
+
+                    return [
+                        Constants::VALIDATE_OFFER_RESPONSE => $oeResp,
+                        Constants::VALIDATE_OFFER_CALLED => true,
+                    ];
+                }
+                catch (\Throwable $e)
+                {
+                    // do nothing
+                    return [
+                        Constants::VALIDATE_OFFER_CALLED => true,
+                    ];
+                }
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::OFFERS_ENGINE_VALIDATE_CHECK_SKIPPED,
+                    [
+                        'offer_id' => $offer->getPublicId(),
+                        'payment_id' => $payment->getId(),
+                    ]
+                );
+            }
+        }
+
+        return [
+            Constants::VALIDATE_OFFER_CALLED => false,
+        ];
+    }
+
+    public function compareValidateOfferResponse($apiResp, $oeResp, Entity $offer)
+    {
+        $mismatch = true;
+
+        // API VALIDATION CHECK PASSED, OE RESPONSE SHOULD HAVE OFFER_ID
+        if ($apiResp === true)
+        {
+            if ($oeResp['offer_id'] === $offer->getPublicId())
+            {
+                $mismatch = false;
+            }
+
+        }
+        // API VALIDATION CHECK FAILED, OE RESPONSE SHOULD HAVE ERROR
+        else
+        {
+            if ($oeResp['error']['description'] !== "No Active offers found")
+            {
+                $mismatch = false;
+            }
+        }
+
+        if ($mismatch === true)
+        {
+            $this->trace->info(TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH, [
+                'API_RESPONSE' => $apiResp,
+                'OE_RESPONSE' => $oeResp
+            ]);
+        }
+    }
+
+    // check for co-branding partner of card payment
+    // if it is one card then do not call Offers Engine Validate
+    private function isOneCardPayment(string $iin): bool
+    {
+        $iinEntity = $this->repo->iin->find($iin);
+
+        $coBrandingPartner = $iinEntity->getCobrandingPartner();
+
+        if ($coBrandingPartner === CobrandingPartner::ONECARD)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -154,6 +154,7 @@ class Checker extends Base\Core
             return false;
         }
 
+        // no parity check here, it happens in payment discount calculation function
         return $this->checkOfferIsValidOrNot();
     }
 
@@ -162,6 +163,9 @@ class Checker extends Base\Core
         $this->payment = $payment;
         $this->isDummyPayment = true;
         $this->order = $order;
+
+        $core = New Core();
+        $oeResp = $core->validateOnOffersEngine($this->payment, $this->order, $this->offer, $this->isDummyPayment);
 
         if(($this->offer->getMaxOfferUsage() !== NULL) and
             ($this->offer->getCurrentOfferUsage() >= $this->offer->getMaxOfferUsage()))
@@ -177,7 +181,15 @@ class Checker extends Base\Core
             return false;
         }
 
-        return $this->checkOfferIsValidOrNot();
+        $apiResp = $this->checkOfferIsValidOrNot();
+
+        // perform parity check
+        if ($oeResp[Constants::VALIDATE_OFFER_CALLED] === true)
+        {
+            $core->compareValidateOfferResponse($apiResp, $oeResp[Constants::VALIDATE_OFFER_RESPONSE], $this->offer);
+        }
+
+        return $apiResp;
     }
 
     private function checkOfferIsValidOrNot()
@@ -724,21 +736,5 @@ class Checker extends Base\Core
         }
 
         return true;
-    }
-
-    // check for co-branding partner of card payment
-    // if it is one card then do not call Offers Engine Validate
-    private function isOneCardPayment(string $iin): bool
-    {
-        $iinEntity = $this->repo->iin->find($iin);
-
-        $coBrandingPartner = $iinEntity->getCobrandingPartner();
-
-        if ($coBrandingPartner === CobrandingPartner::ONECARD)
-        {
-            return true;
-        }
-
-        return false;
     }
 }

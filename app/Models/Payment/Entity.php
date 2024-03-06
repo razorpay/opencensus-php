@@ -371,6 +371,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REWARD_ID                               = "reward_id";
     const REWARD                                  = "reward";
 
+    const OFFER_BENEFITS                          = 'offer_benefits';
+
     const FEE_MODEL_OVERRIDE_MERCHANT_IDS = [Pricing\BuyPricing::BPCL_TEST_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID2, Pricing\BuyPricing::BPCL_MERCHANT_ID3 ];
 
     protected static $sign      = 'pay';
@@ -6645,7 +6647,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getGatewayAmount()
     {
         $paymentMetaEntity = $this->paymentMeta;
-        
+
         // If the entity has a reward we should deduct the reward amount
         // from the payment amount
         if ($this->hasReward())

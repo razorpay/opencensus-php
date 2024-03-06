@@ -3672,6 +3672,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFERS_ENGINE_ID_NOT_FOUND                            = 'OFFERS_ENGINE_ID_NOT_FOUND';
     const OFFER_VALIDATE_CARD_NUMBER_REQUIRED                   = 'OFFER_VALIDATE_CARD_NUMBER_REQUIRED';
     const OFFERS_ENGINE_VALIDATE_OFFER_FAIL                     = 'OFFERS_ENGINE_VALIDATE_OFFER_FAIL';
+    const OFFERS_ENGINE_VALIDATE_CHECK_SKIPPED                  = 'OFFERS_ENGINE_VALIDATE_CHECK_SKIPPED';
+    const VALIDATE_OFFER_RESPONSE_MISMATCH                      = 'VALIDATE_OFFER_RESPONSE_MISMATCH';
+
+    const OFFERS_ENGINE_TRANSACTION_FAILURE                     = 'OFFERS_ENGINE_TRANSACTION_FAILURE';
 
     // Charge collections trace codes
     const CHARGE_COLLECTIONS_REQUEST                            = 'CHARGE_COLLECTIONS_REQUEST';

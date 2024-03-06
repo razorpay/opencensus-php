@@ -8684,6 +8684,8 @@ trait Authorize
             return;
         }
 
+        (new Offer\OffersEngine())->redeemOnOffersEngine($payment, $this->offer);
+
         if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;
@@ -8696,6 +8698,7 @@ trait Authorize
         ];
 
         (new Discount\Service)->create($discountInput, $payment, $this->offer);
+
     }
 
     /**
@@ -11076,7 +11079,7 @@ trait Authorize
 
                 $this->createLedgerEntriesForGatewayCaptureOnAuthorize($payment);
             }
-
+            // todo: redeem the payment on offers engine
             // Appending gateway payment in notes field for payu (nb and upi)
             $this->appendOptimizerPaymentDetailsToNotes($payment, $data);
 

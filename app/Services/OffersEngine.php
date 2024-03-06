@@ -5,9 +5,9 @@ namespace RZP\Services;
 use App;
 use Request;
 use RZP\Constants\Mode;
-use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Error\ErrorClass;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
@@ -38,6 +38,8 @@ class OffersEngine
 
     protected $auth;
 
+    protected $userType;
+
     protected $merchantId;
 
     private $offersEngine;
@@ -63,8 +65,19 @@ class OffersEngine
 
     const OffersEngineGetOffers = 'v1/offers';
 
+    const OffersEngineAvail = 'v1/offers/txn/avail';
+
+    const OffersEngineRedeem = 'v1/offers/txn/redeem';
+
+    const OffersEngineFailed = 'v1/offers/txn/failed';
+
     const ValidateOffer = 'v1/offers/validate';
 
+    const PublisherRoleRoute = [
+        self::OffersEngineAvail,
+        self::OffersEngineFailed,
+        self::OffersEngineRedeem,
+    ];
     // Requests/responses will be logged by default or if value for path mentioned here is true.
     const REQUEST_LOGGER_MAP = [
         Requests::POST => true,
@@ -104,6 +117,8 @@ class OffersEngine
         $this->offersEngine = new \RZP\Models\Offer\OffersEngine();
 
         $this->setHeaders();
+
+        $this->userType = 'advertiser';
     }
 
     /**
@@ -152,7 +167,7 @@ class OffersEngine
 
         $headers['X-User-Id'] = $this->merchantId;
 
-        $headers['X-User-Type'] = 'advertiser';
+        $headers['X-User-Type'] = $this->userType;
 
         $headers['X-Api-Decomp'] = 'shadow';
 
@@ -235,6 +250,13 @@ class OffersEngine
 
         }
 
+        if (in_array($response->status_code, [503], true) === true)
+        {
+            throw new Exception\ServerErrorException('Offers Engine Service is unreachable',
+                ErrorCode::SERVER_ERROR_OFFERS_ENGINE_SERVICE_FAILURE);
+        }
+
+
         $formattedResponse = [];
 
         if (isset($response['message']))
@@ -250,12 +272,6 @@ class OffersEngine
         if ($throwExceptionOnFailure === false)
         {
             return $formattedResponse;
-        }
-
-        if (in_array($response->status_code, [503], true) === true)
-        {
-            throw new Exception\ServerErrorException('Offers Engine Service is unreachable',
-                ErrorCode::SERVER_ERROR_OFFERS_ENGINE_SERVICE_FAILURE);
         }
 
         if ($statusCode === 400)
@@ -350,6 +366,10 @@ class OffersEngine
         ];
 
         $this->setHeaders();
+        if (in_array($endpoint,self::PublisherRoleRoute))
+        {
+             $this->headers['X-User-Type'] = 'publisher';
+        }
 
         $headers = $this->headers;
 
@@ -511,6 +531,27 @@ class OffersEngine
         }
         return $convertedOffers;
     }
+    public function avail(string $merchantId, $input)
+    {
+        $this->merchantId = 'rzp.merchant.' . $merchantId;
+
+        return $this->sendRequest(self::OffersEngineAvail, Requests::POST, $input);
+
+    }
+
+    public function redeem(string $merchantId, $input)
+    {
+        $this->merchantId = 'rzp.merchant.' . $merchantId;
+
+        return $this->sendRequest(self::OffersEngineRedeem, Requests::POST, $input);
+    }
+
+    public function failPayment(string $merchantId, $input)
+    {
+        $this->merchantId = 'rzp.merchant.' . $merchantId;
+
+        return $this->sendRequest(self::OffersEngineFailed, Requests::POST, $input);
+    }
 
     /**
      * @throws \Throwable
@@ -521,6 +562,8 @@ class OffersEngine
     {
         $this->merchantId = 'rzp.merchant.' . $merchantId;
 
+        $this->userType = 'publisher';
+
         $input['publisher_id'] = $this->merchantId;
 
         $input['channel'] = Constants::CHANNEL_RZP_CHECKOUT;
@@ -529,17 +572,27 @@ class OffersEngine
 
         if (isset($response['error']))
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, [
-                'merchant_id' => $this->merchantId,
-                'input'       => $input,
-                'error'       => $response['error']['internal_error_code']
-            ]);
+            if (in_array($response["error"]["internal_error_code"],
+                    ["BAD_REQUEST_NO_ACTIVE_OFFERS_FOUND",
+                    "BAD_REQUEST_MISSING_FACT"], true) === true ||
+            $response['error']['description'] === "No Active offers found")
+            {
+                return $response;
+            }
+            else
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, [
+                    'merchant_id' => $this->merchantId,
+                    'input'       => $input,
+                    'error'       => $response['error']['internal_error_code']
+                ]);
+            }
         }
 
         return [
-            'offer_id' => $response['offer']['metadata']['offer_id'],
-            'offer_benefits' => $response['offer_benefits'],
-            'calculated_benefits' => $response['calculated_benefits'],
+            'offer_id' => $input['offer_id'],
+            'offer_benefits' => $response['offer']['offer_benefits'][0],
+            'calculated_benefits' => $response['offer']['calculated_benefits'][0],
         ];
     }
 }

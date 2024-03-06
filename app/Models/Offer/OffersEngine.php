@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Monolog\Logger;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -16,6 +17,7 @@ use RZP\Models\Order;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
+use Razorpay\Trace\Logger as Trace;
 
 class OffersEngine extends Base\Core
 {
@@ -944,7 +946,118 @@ class OffersEngine extends Base\Core
         return $differences;
     }
 
-    public function validateOffer(string $merchantId, $offerId, Payment\Entity $payment, Order\Entity $order, bool $isDummyPayment, string $cardIin = "")
+    public function redeemOnOffersEngine(Payment\Entity $payment,Entity $offer): void
+    {
+        if ((new Core)->shouldRouteToOffersEngine($payment->getMerchantId(), Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP) === false){
+            return;
+        }
+        $offer = $payment->getOffer();
+
+        if ($offer === null)
+        {
+            return;
+        }
+
+        $input = $this->getDefaultTransactionInput($payment,$offer);
+
+        try
+        {
+            $this->app['offers_engine']->redeem($payment->getMerchantId(),$input);
+        }
+        catch (\Exception $e)
+        {
+            // ignore until this is in shadow mode
+            $this->traceTransactionFailure("redeem", $input, $e);
+
+        }
+    }
+    public function failOnOffersEngine(Payment\Entity $payment): void
+    {
+        if ((new Core)->shouldRouteToOffersEngine($payment->getMerchantId(), Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP) === false){
+            return;
+        }
+
+        $offer = $payment->getOffer();
+
+        if ($offer === null)
+        {
+            return;
+        }
+
+        $input = $this->getDefaultTransactionInput($payment,$offer);
+
+        try
+        {
+            $this->app['offers_engine']->failPayment($payment->getMerchantId(),$input);
+        }
+        catch (\Exception $e)
+        {
+            // ignore until this is in shadow mode,
+            // ignore if transaction is already marked as failed as well
+            $this->traceTransactionFailure("failed", $input, $e);
+
+        }
+    }
+    public function availOnOffersEngine(Payment\Entity $payment, Entity $offer, array $benefitApplied): void
+    {
+
+        $input = $this->getDefaultTransactionInput($payment, $offer);
+
+        if (empty($offer->getMaxPaymentCount()) === false)
+        {
+            $par = (new Core())->getParValue($payment, false);
+
+            if (empty($par) === false)
+            {
+                $input['customer_indentifier'] =
+                    [
+                    // todo: do not persist par here once offers engine ramp up is 100% done
+                    'card_number' => $par,
+                ];
+            }
+        }
+        $input['benefit_applied'] = $benefitApplied;
+
+        try
+        {
+            $this->app['offers_engine']->avail($payment->getMerchantId(), $input);
+        }
+        catch (\Exception $e) {
+            // ignore until this is in shadow mode
+            $this->traceTransactionFailure("avail", $input, $e);
+        }
+    }
+
+    public function getDefaultTransactionInput(Payment\Entity $payment, Entity $offer): array
+    {
+        return [
+            'offer_id'       => $offer->getPublicId(),
+            'transaction_id' => $payment->getPublicId(),
+            'channel'        => Constants::CHANNEL_RZP_CHECKOUT,
+            'check_usage'    => true
+        ];
+    }
+
+    private function traceTransactionFailure(string $action, array $input, \Exception $e)
+    {
+        $this->trace->count(Metric::OFFERS_ENGINE_TRANSACTION_FAILURE, [
+            'action' => $action
+        ]);
+
+        $this->trace->traceException(
+            $e,
+            Logger::ERROR,
+            TraceCode::OFFERS_ENGINE_TRANSACTION_FAILURE,
+            [
+            'action' => $action,
+            'input' => $input,
+        ]);
+    }
+
+    /**
+     * @throws ServerErrorException
+     */
+    public function validateOffer(string $merchantId, Entity $offer, Payment\Entity $payment, Order\Entity $order, bool $isDummyPayment, string $cardIin = "")
     {
         $this->payment = $payment;
 
@@ -954,35 +1067,42 @@ class OffersEngine extends Base\Core
 
         try
         {
-            $fact = $this->buildValidateFact(false, $cardIin);
+            $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin);
 
             $response = $this->app['offers_engine']->validateOffer($merchantId, [
-                'offer_id' => $offerId,
+                'offer_id' => $offer->getPublicId(),
                 'fact' => $fact,
             ]);
 
             if (isset($response['error']))
             {
                 // if card number is necessary, rebuild the fact and call again
-                if ($response['error']['internal_error_code'] === 'MISSING_CUSTOMER_CARD_NUMBER_FACT')
+                if (in_array($response['error']['internal_error_code'],
+                    [Constants::VALIDATE_CARD_NUMBER_REQUIRED_ERROR,
+                    Constants::VALIDATE_MISSING_FACT_ERROR], true) === true )
                 {
-                    $fact = $this->buildValidateFact(true, $cardIin);
+                    $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin);
 
                     $response = $this->app['offers_engine']->validateOffer($merchantId, [
-                        'offer_id' => $offerId,
+                        'offer_id' => $offer->getPublicId(),
                         'fact' => $fact,
                     ]);
                 }
             }
 
-
             return $response;
         }
         catch (\Exception $exception)
         {
-            $this->trace->count(Metric::OFFERS_ENGINE_VALIDATE_OFFER_FAIL);
+            $this->trace->count(Metric::OFFERS_ENGINE_VALIDATE_OFFER_FAIL,
+            [
+                'offer_type' => $offer->getOfferType(),
+                'emi_subvention' => $offer->getEmiSubvention(),
+            ]);
 
-            $this->trace->traceException($exception, Logger::ERROR,
+            $this->trace->traceException(
+                $exception,
+                Logger::ERROR,
                 TraceCode::OFFERS_ENGINE_VALIDATE_OFFER_FAIL, [
                     'exception' => $exception->getMessage(),
                 ]);
@@ -1049,7 +1169,24 @@ class OffersEngine extends Base\Core
             ];
         }
 
-        // todo - handle subscription
+        if ($this->isDummyPayment === true)
+        {
+            $fact[Constants::CUSTOMER_FACT] = [
+                Constants::CARD_NUMBER => Constants::DUMMY_PAYMENT_CARD_NUMBER,
+            ];
+        }
+
+        // todo: subscription handling
+//        if ($this->payment->getSubscriptionId() !== null)
+//        {
+//            $subscription = $this->repo->offer->fetchSubscriptionOfferById($offerId, $merchantId);
+//
+//            $fact[Constants::SUBSCRIPTION_FACT] = [
+//                SubscriptionOfferEntity::REDEMPTION_TYPE => $subscription[SubscriptionOfferEntity::REDEMPTION_TYPE],
+//                SubscriptionOfferEntity::NO_OF_CYCLES => $subscription[SubscriptionOfferEntity::NO_OF_CYCLES],
+//            ];
+//        }
+
         return $fact;
     }
 

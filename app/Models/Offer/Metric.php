@@ -31,4 +31,6 @@ final class Metric
     const OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL          = 'offers_engine_fetch_default_offers_fail';
 
     const OFFERS_ENGINE_VALIDATE_OFFER_FAIL          = 'offers_engine_validate_offer_fail';
+    const OFFERS_ENGINE_DISCOUNT_MISMATCH          = 'offers_engine_discount_mismatch';
+    const OFFERS_ENGINE_TRANSACTION_FAILURE          = 'offers_engine_transaction_failure';
 }

@@ -159,6 +159,9 @@ final class Constants
     const ORDER_TOTAL_AMOUNT = 'total_amount';
     const ORDER_CURRENCY = 'currency';
 
+    const VALIDATE_CARD_NUMBER_REQUIRED_ERROR = 'MISSING_CUSTOMER_CARD_NUMBER_FACT';
+    const VALIDATE_MISSING_FACT_ERROR = 'BAD_REQUEST_MISSING_FACT';
+
     // payment instrument
     const PAYMENT_INSTRUMENT_FACT = 'payment_instrument';
     const ISSUER = 'issuer';
@@ -175,5 +178,11 @@ final class Constants
 
     const CARD_NUMBER = 'card_number'; // has card PAR value
 
+    const DUMMY_PAYMENT_CARD_NUMBER = '4111111111111111'; // for checkout validate call
+
     const SUBSCRIPTION_FACT = 'subscription';
+
+    const VALIDATE_OFFER_CALLED = 'OE_VALIDATE_OFFER_CALLED';
+
+    const VALIDATE_OFFER_RESPONSE = 'VALIDATE_OFFER_RESPONSE';
 }
