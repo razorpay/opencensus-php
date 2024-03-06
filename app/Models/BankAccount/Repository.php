@@ -2,9 +2,11 @@
 
 namespace RZP\Models\BankAccount;
 
+use Carbon\Carbon;
 use DB;
 
 use RZP\Models\Base;
+use RZP\Models\Base\Entity as BaseEntity;
 use Rzp\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\BankAccount;
@@ -27,6 +29,38 @@ class Repository extends Base\Repository
         Entity::TYPE            => 'sometimes|in:customer,merchant',
         Entity::ENTITY_ID       => 'sometimes|alpha_num'
     ];
+
+    public function saveOrFail($entity, array $options = array())
+    {
+        try {
+            $reInsertArchivedEntity = false;
+
+            $originalTimeStampsValue = $entity->timestamps;
+
+            if ((method_exists($entity, 'isArchived') === true) and
+                ($entity->isArchived() === true)) {
+                $reInsertArchivedEntity = true;
+
+                // on reinsert to DB, created_at should remain as the original timestamp and updated_at as the current timestamp
+                $entity->timestamps = false;
+
+                $entity->{BaseEntity::UPDATED_AT} = Carbon::now()->getTimestamp();
+            }
+
+            $this->saveOrFailImplementation($entity, $options, true);
+
+            if ($reInsertArchivedEntity === true) {
+                $entity->setArchived(false);
+
+                $entity->timestamps = $originalTimeStampsValue;
+            }
+        }
+        catch (\Exception $e)
+        {
+            (new BankAccount\Metric())->pushBankAccountCreationFailedMetrics($entity, $e);
+            throw $e;
+        }
+    }
 
     public function getBankAccount($merchant, $type=null)
     {

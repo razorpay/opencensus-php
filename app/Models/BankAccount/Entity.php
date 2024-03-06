@@ -208,13 +208,21 @@ class Entity extends Base\PublicEntity
 
     public function build(array $input = [], string $operation = 'addBankAccount')
     {
-        $this->getValidator()->validateInput($operation, $input);
+        try
+        {
+            $this->getValidator()->validateInput($operation, $input);
 
-        $this->generate($input);
+            $this->generate($input);
 
-        $this->fill($input);
+            $this->fill($input);
 
-        return $this;
+            return $this;
+        }
+        catch (\Exception  $e)
+        {
+            (new Metric())->pushBankAccountCreationFailedMetrics($this, $e);
+            throw $e;
+        }
     }
 
     // we are not doing it via generators as we want to generate only for
