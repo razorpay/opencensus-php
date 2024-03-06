@@ -308,6 +308,11 @@ class Core extends Base\Core
             "credit_amount" => $txn->getCredit(),
         ];
 
+        if ($payment->isCard() === true) {
+            $transactionData["fee_bearer"] =  Merchant\FeeBearer::getValueForBearerString($payment->getFeeBearer());
+            $transactionData["fee_model"] = Merchant\FeeModel::getValueForFeeModelString($payment->merchant->getFeeModel());
+        }
+
         $data = [
             "entity_type" => "transaction",
             "payment_id" => $txn->getEntityId(),
@@ -315,6 +320,10 @@ class Core extends Base\Core
             "mode" => $this->mode
         ];
 
+        $this->dispatchDataToMethodQueues($data, $payment);
+    }
+
+    public function dispatchDataToMethodQueues($data, $payment) {
         if ($this->app->runningUnitTests() === false)
         {
             if ($payment->isCard() === true)
