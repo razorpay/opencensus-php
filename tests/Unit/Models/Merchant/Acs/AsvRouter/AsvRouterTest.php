@@ -154,15 +154,6 @@ class AsvRouterTest extends TestCase
                 "expected_result" => false,
                 "test_id" => "repository_manager",
             ],
-            [
-                "splitz_call_count" => 0,
-                "is_enabled_write_on_entity" => true,
-                "is_enabled_write_on_route" => true,
-                "splitz_exception" => true,
-                "is_write_flow" => false,
-                "expected_result" => false,
-                "test_id" => "repository_manager",
-            ]
         ];
 
         for ($i = 0; $i < count($tests); $i++) {
@@ -174,7 +165,6 @@ class AsvRouterTest extends TestCase
                 ->onlyMethods(["isWriteFlowOrFailure"])
                 ->getMock();
 
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn($test['is_write_flow']);
             $actualResult = $asvRouterMock->shouldCreateTransactionWithAsvAlso();
             $this->assertEquals($test["expected_result"], $actualResult);
         }

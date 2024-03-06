@@ -294,10 +294,6 @@ class AsvRouter
     public function shouldWriteToASVDB($repoClass, $functionName, $id): bool
     {
         try {
-            if ($this->isWriteFlowOrFailure() === false) {
-                return false;
-            }
-
             $experimentName       = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForWriteToASVDB();
             $routeOrWorkerName    = $this->getRouteOrJobName();
             $isRequestRoutedToAsv = $this->splitzHelper->isSplitzOnForWriteByExperimentName(
