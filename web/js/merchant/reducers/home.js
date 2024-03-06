@@ -39,6 +39,8 @@ const FETCH_ELIGIBILITY_FOR_NC_REVAMP = 'FETCH_ELIGIBILITY_FOR_NC_REVAMP';
 const SHOW_PARTNER_KYC_STATUS_MODAL = 'SHOW_PARTNER_KYC_STATUS_MODAL';
 const HIDE_PARTNER_KYC_STATUS_MODAL = 'HIDE_PARTNER_KYC_STATUS_MODAL';
 
+const SET_OPENED_CARE_WIDGET = 'SET_OPENED_CARE_WIDGET';
+
 // Invalid Merchant call
 const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
 
@@ -107,6 +109,7 @@ const initialState = {
     data: {},
   },
   isNcEligibile: false,
+  openedCareWidget: '',
 };
 
 const getTransactionCountData = (data, mode) => {
@@ -329,6 +332,13 @@ export const showTnC = () => ({
 export const hideTnC = () => ({
   type: HIDE_TNC_MODAL,
 });
+
+export const setCareOpenedWidget = (value) => {
+  return {
+    type: SET_OPENED_CARE_WIDGET,
+    payload: value,
+  };
+};
 
 export default function homeReducer(state = initialState, action) {
   switch (action.type) {
@@ -597,6 +607,9 @@ export default function homeReducer(state = initialState, action) {
       return merge(state, {
         isNcEligibile: action.payload.data.nc_revamp_enabled,
       });
+
+    case SET_OPENED_CARE_WIDGET:
+      return set(state, 'openedCareWidget', action.payload);
 
     case INVALID_MERCHANT_CALL:
       return state;

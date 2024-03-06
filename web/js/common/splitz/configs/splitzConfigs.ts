@@ -137,6 +137,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'ray_ai',
+        experimentId: {
+          beta: 'NgMk9aLHhP79nc',
+          production: 'NgMh9RIZ3MoXev',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

@@ -37,6 +37,7 @@ const HelpSection = ({
   org,
   fetchTicketsRaisedByAgents: _fetchTickets,
   isHelpWidgetVisible,
+  openedCareWidget,
 }) => {
   const handleError = ({ error = 'CARE ERROR', rank = Ranks.P2 } = {}) => {
     errorService.captureError(error, {
@@ -165,7 +166,7 @@ const HelpSection = ({
           splitzHost={splitzHost}
           isDev={isDev}
           isPartnerDashboard={isPartnerDashboard}
-          hideSupportIcon={!isHelpWidgetVisible}
+          hideSupportIcon={!isHelpWidgetVisible || openedCareWidget === 'RAY'}
           hideTicketCreationCTA={checkEligibilityForFeeBasedGating(user) || !user.activation_status}
         />
       </Suspense>
@@ -180,6 +181,7 @@ export default withRouter(
         user: state.session.user,
         org: state.session.org,
         isHelpWidgetVisible: state.session.isHelpWidgetVisible,
+        openedCareWidget: state.home.openedCareWidget,
       };
     },
     {

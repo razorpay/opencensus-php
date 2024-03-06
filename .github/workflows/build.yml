@@ -147,7 +147,7 @@ jobs:
 
   build-micro-apps-devstack:
     name: Build Dashboard - MFEs - Devstack
-    runs-on: [non-api-premium]
+    runs-on: [self-hosted]
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
@@ -204,7 +204,7 @@ jobs:
 
   build-micro-apps-automation:
     name: Build Dashboard - MFEs - Automation
-    runs-on: [non-api-premium]
+    runs-on: [self-hosted]
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
@@ -261,7 +261,7 @@ jobs:
 
   build-micro-apps-production:
     name: Build Prod Dashboard - MFEs - Production
-    runs-on: [non-api-premium]
+    runs-on: [self-hosted]
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3

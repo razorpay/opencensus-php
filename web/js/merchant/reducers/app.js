@@ -1,7 +1,6 @@
 import { set } from 'common/utils/immutable';
-import { merchantFetch } from 'merchant/utils/ajax';
-
 import getMobileDetect from 'common/utils/mobileDetect';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const ROW_LUMINATE_ADD = 'ROW_LUMINATE_ADD';
 const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';

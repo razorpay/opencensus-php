@@ -8,6 +8,7 @@ import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { withSplitzService } from 'common/splitz';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import OffersForYou from 'common/ui/OffersForYou';
 import OnboardingCoupons from 'common/ui/OnboardingCoupons';
@@ -25,10 +26,10 @@ import {
   updateModalConfigDetails,
 } from 'merchant/reducers/ModalConfigApi';
 import { toggleMobileMenu } from 'merchant/reducers/app';
+import { setCareOpenedWidget } from 'merchant/reducers/home';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-
 import AppSwitcher from './AppSwitcher';
 import NavFragment from './NavFragment';
 import ProfileDropdown from './ProfileDropdown';
@@ -77,6 +78,16 @@ class HeaderNav extends Component {
       });
     }
   };
+
+  isRAYEnabled() {
+    const { abExperiments } = this.props.splitz || {
+      abExperiments: { ray_ai: undefined },
+    };
+
+    if (abExperiments?.ray_ai?.variables?.result !== 'on') return false;
+
+    return true;
+  }
 
   componentDidMount() {
     const hash = this.props.history.location.hash;
@@ -147,6 +158,14 @@ class HeaderNav extends Component {
     }
   }
 
+  onRAYOpenCallback = () => {
+    this.props.setCareOpenedWidget('RAY');
+  };
+
+  onRAYCloseCallback = () => {
+    this.props.setCareOpenedWidget('');
+  };
+
   render() {
     const {
       user,
@@ -162,6 +181,7 @@ class HeaderNav extends Component {
       referee,
       isMobile,
       i18: { isConfigTagEnabled },
+      openedCareWidget,
     } = this.props;
     const { isSuccessfullyCouponApplied, mtuOfferCount } = this.state;
 
@@ -294,9 +314,16 @@ class HeaderNav extends Component {
                     <AppSwitcher analytics={analytics} {...commonProps} />
                   </li>
                 </ShowWhen>
-                <li style={{ marginTop: '14px' }}>
-                  <Ray user={user} />
-                </li>
+                {this.isRAYEnabled() ? (
+                  <li style={{ top: '18px' }}>
+                    <Ray
+                      user={user}
+                      onRAYOpen={this.onRAYOpenCallback}
+                      onRAYClose={this.onRAYCloseCallback}
+                      isDrawerVisible={openedCareWidget === 'RAY'}
+                    />
+                  </li>
+                ) : null}
                 <li id="profile-dropdown">
                   <ProfileDropdown
                     analytics={analytics}
@@ -335,12 +362,19 @@ const mapStateToProps = (state) => ({
   org: state.session.org,
   referee: state.merchantReferral.data.referee,
   isMobile: state.app.isMobileResolution,
+  openedCareWidget: state.home.openedCareWidget,
 });
 
 const enhancedComponent = compose(
   withRouter,
+  withSplitzService,
   rTracking(() => window.rzpQ.component('HeaderNav')),
-  connect(mapStateToProps, { toggleMobileMenu, openModals: openModal, closeModals: closeModal }),
+  connect(mapStateToProps, {
+    toggleMobileMenu,
+    openModals: openModal,
+    closeModals: closeModal,
+    setCareOpenedWidget,
+  }),
 );
 
 export default enhancedComponent(withI18Service(HeaderNav));
