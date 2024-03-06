@@ -49,13 +49,18 @@ export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
 };
 
-export const fetchSupportTicketsApiCall = (params, filter, isFetchTicketsApiMigrationActive) => {
+export const fetchSupportTicketsApiCall = (
+  params,
+  filter,
+  isFetchTicketsApiMigrationActive,
+  isPosMerchantActivated,
+) => {
   const requestPayload = {
     url: TICKET_BASE_URL,
     mode: 'live',
   };
 
-  if (isFetchTicketsApiMigrationActive) {
+  if (isPosMerchantActivated || isFetchTicketsApiMigrationActive) {
     requestPayload.url = FETCH_TICKETS;
     requestPayload.method = 'post';
     requestPayload.data = {
@@ -298,10 +303,20 @@ export const fetchTicketsRaisedByAgents = (isFetchTicketsApiMigrationActive = fa
   };
 };
 
-export const fetchSupportTickets = (params, filter, isFetchTicketsApiMigrationActive = false) => {
+export const fetchSupportTickets = (
+  params,
+  filter,
+  isFetchTicketsApiMigrationActive = false,
+  isPosMerchantActivated,
+) => {
   return {
     type: FETCH_SUPPORT_TICKETS,
-    payload: fetchSupportTicketsApiCall(params, filter, isFetchTicketsApiMigrationActive),
+    payload: fetchSupportTicketsApiCall(
+      params,
+      filter,
+      isFetchTicketsApiMigrationActive,
+      isPosMerchantActivated,
+    ),
   };
 };
 

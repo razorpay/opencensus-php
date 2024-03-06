@@ -5206,10 +5206,10 @@
     lodash "4.17.15"
     redaxios "0.3.0"
 
-"@razorpay/frontend-care@0.7.10":
-  version "0.7.10"
-  resolved "https://npm.pkg.github.com/download/@razorpay/frontend-care/0.7.10/58d397c40ace4721e11ebb87abf3449e57139fde#58d397c40ace4721e11ebb87abf3449e57139fde"
-  integrity sha512-DOfkwI2RIRscMEMEQWI5JpHRiOcVRzg3Vi+kUYf4uI96okGd5v7jOyiNOMZa1VfOxe2arELA0ribQ5+nooE1qQ==
+"@razorpay/frontend-care@0.7.12":
+  version "0.7.12"
+  resolved "https://npm.pkg.github.com/download/@razorpay/frontend-care/0.7.12/015582d24c5322313751508c7d729fca00855546#015582d24c5322313751508c7d729fca00855546"
+  integrity sha512-vp68UGr0Ss5SpC+DT7tYVMQP40ZAln09/1uRaIzR61JrPruqVaz3EM2cDpiHUBbwuoLlinknqelbSP9RQUeC1w==
   dependencies:
     "@razorpay/blade" "10.23.5"
     botframework-directlinejs "^0.15.5"

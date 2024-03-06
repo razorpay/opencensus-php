@@ -9,6 +9,8 @@ import TicketBrief from './TicketBrief';
 import { raiseTicket } from 'merchant/views/TicketSupport/utils';
 import FailedScreen from './FailedScreen';
 import { withRouter } from 'common/deprecated/withRouter';
+import { withSplitzService } from 'common/splitz';
+import { getPosActivationStatus } from 'merchant/components/Support/utils';
 @connect(
   (state) => {
     return {
@@ -79,24 +81,32 @@ class Tickets extends React.Component {
       if (this.props.match.params.ticketType === 'merchant') {
         filter = null;
       }
+      const splitz = this.props.splitz;
 
       const isFetchTicketsApiMigrationActive = user.isFetchTicketsApiMigration;
-      this.props.fetchSupportTickets(params, filter, isFetchTicketsApiMigrationActive).then(() => {
-        window.rzpAnalytics?.({
-          eventCategory: 'Ticket Dashboard',
-          eventAction: 'support tickets fetched',
-          eventLabel: `Tickets | Status:Success`,
-        });
+      this.props
+        .fetchSupportTickets(
+          params,
+          filter,
+          isFetchTicketsApiMigrationActive,
+          getPosActivationStatus(user, splitz) === 'activated',
+        )
+        .then(() => {
+          window.rzpAnalytics?.({
+            eventCategory: 'Ticket Dashboard',
+            eventAction: 'support tickets fetched',
+            eventLabel: `Tickets | Status:Success`,
+          });
 
-        analyticsTrack({
-          objectName: 'show all tickets',
-          actionName: 'rendered',
-          screen: 'support tickets',
-          properties: {
-            ...getCommonAnalyticsProperties(window.rzp_user),
-          },
+          analyticsTrack({
+            objectName: 'show all tickets',
+            actionName: 'rendered',
+            screen: 'support tickets',
+            properties: {
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
         });
-      });
     }
   };
 
@@ -161,6 +171,10 @@ class Tickets extends React.Component {
         )}
         <div>
           {OPEN_TICKETS.map((ticket, index) => {
+            const isPosMerchant = getPosActivationStatus(user, this.props.splitz) === 'activated';
+            if (ticket?.type === 'Ezetap' && !isPosMerchant) {
+              return null;
+            }
             return (
               <TicketBrief
                 ticketType={this.props.match.params.ticketType || 'merchant'}
@@ -192,6 +206,10 @@ class Tickets extends React.Component {
         )}
         <div>
           {CLOSED_TICKETS.map((ticket, index) => {
+            const isPosMerchant = getPosActivationStatus(user, this.props.splitz) === 'activated';
+            if (ticket?.type === 'Ezetap' && !isPosMerchant) {
+              return null;
+            }
             return (
               <TicketBrief
                 ticketType={this.props.match.params.ticketType || 'merchant'}
@@ -242,4 +260,4 @@ class Tickets extends React.Component {
   }
 }
 
-export default withRouter(Tickets);
+export default withRouter(withSplitzService(Tickets));

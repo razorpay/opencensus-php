@@ -36,6 +36,8 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import FailedScreen from './FailedScreen';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { withSplitzService } from 'common/splitz';
+import { getPosActivationStatus } from 'merchant/components/Support/utils';
 
 const Ticket = lazy(() => import(/* webpackChunkName: 'Ticket' */ './Ticket'));
 
@@ -210,7 +212,10 @@ class Conversations extends React.Component {
       mode: 'live',
     };
 
-    if (user.isGetTicketApiMigration) {
+    if (
+      getPosActivationStatus(user, this.props.splitz) === 'activated' ||
+      user.isGetTicketApiMigration
+    ) {
       requestPayload.url = FETCH_TICKET;
       requestPayload.method = 'post';
       requestPayload.data = {
@@ -569,7 +574,7 @@ class Conversations extends React.Component {
     const ticketTypeUrl = user.isAccountAndSettingsRevampEnabled
       ? `/business-settings/ticket-support/tickets/${ticketType}`
       : `/ticket-support/tickets/${ticketType}`;
-
+    const isRzpPosTicket = ticket?.type === 'Ezetap';
     return (
       <div className="content-wrapper content-sm ticket-support">
         <div className="panel">
@@ -619,7 +624,9 @@ class Conversations extends React.Component {
                 <div className="ticket-replies-container">
                   <div className="q-open">
                     {message}
-                    {!(MESSAGE === 'Closed' || MESSAGE === 'Resolved') && ticket?.status !== 5 ? (
+                    {!isRzpPosTicket &&
+                    !(MESSAGE === 'Closed' || MESSAGE === 'Resolved') &&
+                    ticket?.status !== 5 ? (
                       <div className="row flex flex-wrap">
                         <button
                           onClick={() => {
@@ -739,4 +746,4 @@ class Conversations extends React.Component {
   }
 }
 
-export default withRouter(Conversations);
+export default withRouter(withSplitzService(Conversations));

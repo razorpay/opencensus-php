@@ -6,10 +6,11 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { fetchTicketsRaisedByAgents } from 'merchant/reducers/config';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import { fireCustomEvent } from './utils';
+import { fireCustomEvent, getPosActivationStatus } from './utils';
 import { TicketSystemEmitter } from 'merchant/care/init';
 import { Modal, ModalBody } from 'common/components/Modal';
 import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
+import { useSplitzService } from 'common/splitz';
 
 const Support = lazy(() =>
   import(/* webpackChunkName: 'frontend-care' */ '@razorpay/frontend-care'),
@@ -39,6 +40,7 @@ const HelpSection = ({
   isHelpWidgetVisible,
   openedCareWidget,
 }) => {
+  const splitz = useSplitzService();
   const handleError = ({ error = 'CARE ERROR', rank = Ranks.P2 } = {}) => {
     errorService.captureError(error, {
       tags: {
@@ -155,6 +157,7 @@ const HelpSection = ({
             business_website: user?.business_website,
             isTransacted: user?.isTransacted || false,
             features: user?.features || [],
+            pos_activation_status: getPosActivationStatus(user, splitz),
           }}
           onError={handleError}
           track={analyticsTrack}

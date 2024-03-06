@@ -63,7 +63,7 @@ export default class Ticket extends React.Component {
       ticket?.custom_fields?.cf_new_requester_item ||
       ticket?.custom_fields?.cf_requester_item;
     const ticketConversationsLength = totalConversations?.length;
-
+    const isRzpPosTicket = ticket?.type === 'Ezetap';
     const description =
       workflow?.state === TICKET_STATUS_LABELS.REJECTED
         ? `Rejection Reason: ${
@@ -80,6 +80,12 @@ export default class Ticket extends React.Component {
               <div className="category-container">
                 {isTicketCreatedByAgent ? (
                   <p className="title-text">{ticket?.subject}</p>
+                ) : isRzpPosTicket ? (
+                  <>
+                    <p className="title-text">{'In store/In person'}</p>
+                    {<p className="separator">&#183;</p>}
+                    <p className="title-text">{'RazorpayPOS'}</p>
+                  </>
                 ) : (
                   <>
                     <p className="title-text">{category}</p>

@@ -16,6 +16,7 @@ export default class TicketBriefRevamped extends React.Component {
   render() {
     const ticket = this.props.ticket;
     const isTicketCreatedByAgent = ticket?.custom_fields?.cf_created_by === 'agent';
+    const isRzpPosTicket = ticket?.type === 'Ezetap';
     let subject = ticket.subject;
     subject = subject.replace('[Merchant]', '');
     const formattedDate = moment(ticket.created_at).fromNow();
@@ -40,6 +41,12 @@ export default class TicketBriefRevamped extends React.Component {
                         <p className="ticket-subject">
                           {isTicketCreatedByAgent ? (
                             subject
+                          ) : isRzpPosTicket ? (
+                            <>
+                              {'In store/In person'}
+                              <span className="ticket-detail-separator">•</span>
+                              {'RazorpayPOS'}
+                            </>
                           ) : (
                             <>
                               {ticket.custom_fields?.cf_requestor_subcategory ||
