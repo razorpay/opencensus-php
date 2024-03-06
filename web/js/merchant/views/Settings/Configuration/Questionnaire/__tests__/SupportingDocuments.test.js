@@ -82,7 +82,7 @@ describe('Test <SupportingDocuments /> component', () => {
     // should not call as input is disabled
     expect(saveFormData).not.toHaveBeenCalled();
 
-    const importExportCodeInput = screen.getByPlaceholderText('Enter I/E code here (Optional)');
+    const importExportCodeInput = screen.getByPlaceholderText('Enter I/E code here');
     await userEvent.type(importExportCodeInput, 'IE301');
     await userEvent.click(screen.getByText('SUPPORTING DOCUMENTS')); // simulate blur
     expect(saveFormData).not.toHaveBeenCalled();

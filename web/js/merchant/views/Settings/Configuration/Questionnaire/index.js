@@ -11,6 +11,7 @@ import Spinner from 'common/ui/Spinner';
 import useDebounce from 'common/utils/useDebounce';
 import { LOADING } from 'merchant/components/Activation/Constants';
 import Loader from 'merchant/components/Activation/components/Loader';
+import { getPurposeCodes } from 'merchant/reducers/profile';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
   openModal as openModalFn,
@@ -28,6 +29,7 @@ import {
   trackFormButtonClicked,
   trackModalClosed,
   trackModalOpened,
+  trackPurposeCodeChanged,
 } from './analytics';
 import { initialState, initialStateForRevamp, reducer } from './stateHelpers';
 import {
@@ -39,6 +41,8 @@ import {
   getProductValue,
   modelFormDataBeforeSave,
   getAdditionalDocumentsBasedOnSubCategory,
+  isIecCodeRequired,
+  isAnyIntlProductEnabled,
 } from './utils';
 
 // eslint-disable-next-line no-shadow
@@ -50,10 +54,20 @@ const Questionnaire = ({
   isRevampFlow = false,
   onQuestionnaireSubmitSuccess,
   user,
+  productStatus,
 }) => {
   const initState = isRevampFlow ? initialStateForRevamp : initialState;
   const [state, dispatch] = useReducer(reducer, initState);
-  const { activeTab, isLoading, isSavingForm, initialValues, tabsValidity } = state;
+  const {
+    activeTab,
+    isLoading,
+    isSavingForm,
+    initialValues,
+    tabsValidity,
+    isPurposeCodeSpecial,
+    purposeCodeList,
+    initialPurposeCode,
+  } = state;
   let loaderTimeout;
   const isDisabled = false;
   const tabsData = isRevampFlow ? revampTabs : tabs;
@@ -80,6 +94,14 @@ const Questionnaire = ({
             data.products = getProductValue(triggerSource);
           }
           dispatch({ type: 'FORM_INITIAL_VALUES', payload: data });
+          dispatch({
+            type: 'IS_PURPOSE_CODE_SPECIAL',
+            payload: isIecCodeRequired(data.purpose_code),
+          });
+          dispatch({
+            type: 'SET_INIT_PURPOSE_CODE',
+            payload: data.purpose_code,
+          });
         }
         dispatch({ type: 'LOADING', payload: false });
       })
@@ -258,6 +280,22 @@ const Questionnaire = ({
 
     formData = modelFormDataBeforeSave(formData);
 
+    if (activeTab === 1) {
+      dispatch({
+        type: 'IS_PURPOSE_CODE_SPECIAL',
+        payload: isIecCodeRequired(formData.purpose_code),
+      });
+      setTimeout(() => formikProps.validateForm(), 100);
+    }
+
+    if (activeTab === 1 && formData.purpose_code !== initialPurposeCode) {
+      trackPurposeCodeChanged(formData.purpose_code, initialPurposeCode);
+      dispatch({
+        type: 'SET_INIT_PURPOSE_CODE',
+        payload: formData.purpose_code,
+      });
+    }
+
     if (isRevampFlow) {
       formData.version = 'v2';
       return debouncedFormDataCall(formData, formikProps);
@@ -408,9 +446,25 @@ const Questionnaire = ({
     );
   };
 
+  const fetchPurposeCodes = async () => {
+    if (purposeCodeList.length) return;
+    try {
+      dispatch({ type: 'LOADING', payload: true });
+      const response = await getPurposeCodes();
+      dispatch({ type: 'SET_PURPOSE_CODE_LIST', payload: response.data });
+    } catch (errors) {
+      dispatch({ type: 'LOADING', payload: false });
+      showNotification({
+        type: 'error',
+        message: errors[0] || 'Fetching purpose code list failed.',
+      });
+    }
+  };
+
   const schema = getFormSchema(
     isRevampFlow,
     isAdditionalDocExperimentEnabled ? user.business_type : null,
+    isPurposeCodeSpecial,
   );
 
   // only consider isNextDisabled in revamp
@@ -474,6 +528,9 @@ const Questionnaire = ({
                           saveFormData,
                           isRevampFlow,
                           closeModal,
+                          isAnyIntlProductEnabled: isAnyIntlProductEnabled(productStatus),
+                          fetchPurposeCodes,
+                          purposeCodeList,
                         })}
                       </FormWrapper>
                     </main>

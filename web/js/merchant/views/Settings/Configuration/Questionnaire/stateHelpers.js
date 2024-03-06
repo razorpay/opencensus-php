@@ -14,7 +14,10 @@ export const initialStateForRevamp = {
   isLoading: true,
   isSavingForm: LOADING.INITIAL,
   initialValues: formInitialValues,
-  tabsValidity: [false, false],
+  tabsValidity: [false, false, false],
+  purposeCodeList: [],
+  isPurposeCodeSpecial: false,
+  initialPurposeCode: null,
 };
 
 export const reducer = (state, action) => {
@@ -61,6 +64,22 @@ export const reducer = (state, action) => {
           ...state.initialValues,
           products: getProductValue(action.payload),
         },
+      };
+    case 'SET_PURPOSE_CODE_LIST':
+      return {
+        ...state,
+        purposeCodeList: action.payload,
+        isLoading: false,
+      };
+    case 'IS_PURPOSE_CODE_SPECIAL':
+      return {
+        ...state,
+        isPurposeCodeSpecial: action.payload,
+      };
+    case 'SET_INIT_PURPOSE_CODE':
+      return {
+        ...state,
+        initialPurposeCode: action.payload,
       };
     default:
       return state;

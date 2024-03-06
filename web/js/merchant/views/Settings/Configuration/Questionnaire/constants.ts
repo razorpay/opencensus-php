@@ -146,3 +146,6 @@ export const DOCUMENTS_SCHEMA = {
     [DARPAN_PORTAL.name]: DOCUMENT_SCHEMA,
   }),
 };
+
+export const PAYMENT_PRODUCTS = ['invoices', 'payment_gateway', 'payment_links', 'payment_pages'];
+export const PURPOSE_CODE_DOC_LINK = 'https://razorpay.com/docs/payments/payments/purpose-codes/';

@@ -12,7 +12,11 @@ import { showNotification as showNotificationFn } from 'merchant_common/reducers
 import AdditionalDocuments from './AdditionalDocuments';
 import MultiFileUpload from './MultiFileUpload';
 import { StyledFieldContainer } from './styles';
-import { getAdditionalDocumentsBasedOnSubCategory, getIsOtherDocumentInRevampFlow } from './utils';
+import {
+  getAdditionalDocumentsBasedOnSubCategory,
+  getIsOtherDocumentInRevampFlow,
+  isIecCodeRequired,
+} from './utils';
 
 const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user }) => {
   const [transactionProofDocs, setTransactionProofDocs] = React.useState([]);
@@ -57,7 +61,6 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
         return undefined;
       })
       .catch((err) => {
-        console.error(err);
         showNotification({
           type: 'error',
           message: err.errors,
@@ -205,9 +208,10 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
       />
       <div class="spacer" />
       <Input
+        required={isIecCodeRequired(formikProps.values.purpose_code)}
         name="import_export_code"
         label="Import Export Code"
-        placeholder="Enter I/E code here (Optional)"
+        placeholder="Enter I/E code here"
         info="Example: U67190TN20"
         disabled={disabled}
         onChange={handleImportCodeChange}

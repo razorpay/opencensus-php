@@ -9,6 +9,7 @@ const INT_REQUEST_BUTTON = `${INT_ACTIVATION} request button`;
 const INT_POPUP = `${INT_FORM} popup`;
 const INT_POPUP_BUTTON = `${INT_FORM} popup button`;
 const INT_SAVE_DATA = `${INT_FORM} save data`;
+const INT_PURPOSE_CODE = `${INT_FORM} purpose code`;
 
 //common function
 const track = ({ properties, ...args }) => {
@@ -132,6 +133,17 @@ export const trackFormSubmitted = (formType = 'intl enablement form') => {
     properties: {
       isSubmitted: true,
       formType,
+    },
+  });
+};
+
+export const trackPurposeCodeChanged = (newPurposeCode, oldPurposeCode) => {
+  track({
+    objectName: INT_PURPOSE_CODE,
+    actionName: 'entered',
+    properties: {
+      new_purpose_code: newPurposeCode,
+      old_purpose_code: oldPurposeCode,
     },
   });
 };

@@ -10,7 +10,13 @@ import { defaultFileTypes, getAvailableFileTypes } from './utils';
 import SupportingDocumentsV2 from 'merchant/views/Settings/Configuration/Questionnaire/SupportingDocumentsV2';
 
 // eslint-disable-next-line no-shadow
-const SupportingDocuments = ({ disabled, saveFormData, showNotification, isRevampFlow }) => {
+const SupportingDocuments = ({
+  disabled,
+  saveFormData,
+  showNotification,
+  isRevampFlow,
+  isAnyIntlProductEnabled,
+}) => {
   const formikProps = useFormikContext();
   const [availableFileTypes, preUploadedDocuments] = getAvailableFileTypes(formikProps);
   const [documents, setDocuments] = useState(preUploadedDocuments);
@@ -135,7 +141,13 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification, isRevam
   const formikDocuments = formikProps.values.documents;
 
   if (isRevampFlow) {
-    return <SupportingDocumentsV2 disabled={disabled} saveFormData={saveFormData} />;
+    return (
+      <SupportingDocumentsV2
+        disabled={disabled}
+        saveFormData={saveFormData}
+        isAnyIntlProductEnabled={isAnyIntlProductEnabled}
+      />
+    );
   }
 
   return (
@@ -159,7 +171,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification, isRevam
       <Input
         name="import_export_code"
         label="Import Export Code"
-        placeholder="Enter I/E code here (Optional)"
+        placeholder="Enter I/E code here"
         info="Example: U67190TN20"
         disabled={disabled}
         onBlur={handleChange}

@@ -49,3 +49,18 @@ export type UseAdditionalDocumentsReturn = {
     options: { label: string; name: string; tooltip?: string }[] | undefined,
   ) => { label: string; name: string; tooltip?: string }[];
 };
+
+export type PurposeCodeList = Array<{
+  purposeCode: string;
+  description: string;
+}>;
+
+export type PurposeCodeProps = {
+  isRevampFlow: boolean;
+  isAnyIntlProductEnabled: boolean;
+  purposeCodeList: Array<{
+    purposeGroup: string;
+    codes: PurposeCodeList;
+  }>;
+  fetchPurposeCodes: () => void;
+};

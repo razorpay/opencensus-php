@@ -2,18 +2,22 @@ import * as Yup from 'yup';
 
 import { BUSINESS_SUBCATEGORIES } from 'common/typings/User';
 import { humanize } from 'common/utils/rzp-utils';
+import { SPECIAL_PURPOSE_CODES } from 'merchant/views/Account/Profile/components/FIRC/utility';
 
 import BusinessDetails from './BusinessDetails';
 import SubmitForm from './SubmitForm';
 import SupportingDetails from './SupportingDetails';
 import SupportingDocuments from './SupportingDocuments';
+import PurposeCode from './PurposeCode';
 import {
   ADDITIONAL_DOCUMENTS_FOR_BUSINESS_TYPE,
   FIRC_DOCUMENT,
   SETTLEMENT_RECORD,
   EMPTY_OPTION,
   DOCUMENTS_SCHEMA,
+  PAYMENT_PRODUCTS,
 } from './constants';
+import { ProductWorkflowStatesInBackend } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
 
 export const formInitialValues = {
   products: [],
@@ -25,6 +29,7 @@ export const formInitialValues = {
   accepts_intl_txns: 'false',
   import_export_code: '',
   documents: {},
+  purpose_code: '',
   submit: [],
 };
 
@@ -35,7 +40,7 @@ export const fieldToTabMap = {
   business_use_case: 0,
   business_txn_size: 0,
   about_us_link: 0,
-  existing_risk_checks: 1,
+  purpose_code: 1,
   accepts_intl_txns: 2,
   import_export_code: 2,
   documents: 2,
@@ -65,6 +70,10 @@ export const revampTabs = [
   {
     name: 'Business Details',
     component: <BusinessDetails />,
+  },
+  {
+    name: 'Purpose Code',
+    component: <PurposeCode />,
   },
   {
     name: 'Supporting Details',
@@ -393,7 +402,7 @@ export const getAdditionalDocumentsBasedOnSubCategory = ({ business_subcategory 
   }
 };
 
-export const getFormSchema = (isIERevamp, businessType) => {
+export const getFormSchema = (isIERevamp, businessType, isPurposeCodeSpecial) => {
   const schema = Yup.object().shape({
     products: Yup.string().nullable().required('Please select an option'),
     goods_type: Yup.string().nullable().required('Goods Type is a required field'),
@@ -408,7 +417,16 @@ export const getFormSchema = (isIERevamp, businessType) => {
 
     existing_risk_checks: Yup.string().nullable().required('This is a required field'),
     accepts_intl_txns: Yup.string().nullable().required('This is a required field'),
-    import_export_code: Yup.string().nullable().length(10, 'Must be 10 characters only'),
+    purpose_code: Yup.string().nullable().required('This is a required field'),
+    import_export_code: (() => {
+      let import_export_code = Yup.string().nullable();
+      if (isPurposeCodeSpecial) {
+        import_export_code = import_export_code
+          .length(10, 'This field must be 10 character long')
+          .required('This is a required field.');
+      }
+      return import_export_code;
+    })(),
     submit: Yup.array().required('Please accept the terms and condition'),
   });
 
@@ -465,4 +483,62 @@ export const getAdditionalDocumentsBasedOnBusinessType = ({ businessType, accept
   }
 
   return config;
+};
+
+export const isIecCodeRequired = (purposeCode) => {
+  return SPECIAL_PURPOSE_CODES.includes(purposeCode);
+};
+
+export const computePurposeCodeSearch = (source, str) => {
+  const res = [];
+  if (str.trim() !== '') {
+    str = str.toLowerCase();
+    source.forEach(({ codes }) => {
+      codes.forEach((code) => {
+        const purposeCodeExist = code.purposeCode.toLowerCase().includes(str);
+        const descriptionExist = code.description.toLowerCase().includes(str);
+        if (purposeCodeExist || descriptionExist) res.push(code);
+      });
+    });
+  }
+  return res;
+};
+
+export const getPurposeGroups = (list) => {
+  return list.map((group) => ({
+    label: group.purposeGroup,
+    name: group.purposeGroup,
+  }));
+};
+
+export const computePurposeCodeOptions = (purposeCodes, selectedPurposeCode) => {
+  const selectedCode = purposeCodes.find((item) => item.purposeCode === selectedPurposeCode);
+  if (selectedCode) {
+    const { purposeCode, description } = selectedCode;
+    return [
+      {
+        value: purposeCode,
+        label: `${purposeCode} - ${description}`,
+      },
+    ];
+  }
+  const computedCodes = purposeCodes.map(({ purposeCode, description }) => ({
+    value: purposeCode,
+    label: `${purposeCode} - ${description}`,
+  }));
+  return computedCodes;
+};
+
+export const flattenPurposeCodesList = (purposeCodes) => {
+  return purposeCodes.reduce((acc, item) => acc.concat(item.codes), []);
+};
+
+export const isAnyIntlProductEnabled = (productStatus) => {
+  let isAnyProductEnabled = false;
+  PAYMENT_PRODUCTS.forEach((product) => {
+    if (productStatus?.[product] === ProductWorkflowStatesInBackend.APPROVED) {
+      isAnyProductEnabled = true;
+    }
+  });
+  return isAnyProductEnabled;
 };

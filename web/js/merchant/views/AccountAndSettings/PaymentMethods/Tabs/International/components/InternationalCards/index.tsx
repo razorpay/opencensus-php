@@ -55,6 +55,7 @@ const InternationalCards = ({
         <Questionnaire
           triggerSource={triggerSource}
           onQuestionnaireSubmitSuccess={onQuestionnaireSubmitSuccess}
+          productStatus={productStatus}
           isRevampFlow
         />
       ),

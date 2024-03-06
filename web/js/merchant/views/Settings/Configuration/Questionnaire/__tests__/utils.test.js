@@ -8,6 +8,9 @@ import {
   getIsOtherDocumentInRevampFlow,
   getFormSchema,
   getAdditionalDocumentsBasedOnBusinessType,
+  isAnyIntlProductEnabled,
+  computePurposeCodeSearch,
+  computePurposeCodeOptions,
 } from 'merchant/views/Settings/Configuration/Questionnaire/utils';
 
 describe('Test modelFormData util', () => {
@@ -223,5 +226,116 @@ describe('Test getAdditionalDocumentsBasedOnBusinessType util', () => {
       },
       { label: 'Memorandom of Association', name: 'moa' },
     ]);
+  });
+});
+
+describe('Tests for isAnyIntlProductEnabled', () => {
+  test.each([
+    [undefined, false], // No product status provided
+    [
+      {
+        // None of the products are approved
+        invoices: 'pending',
+        payment_gateway: 'rejected',
+        payment_pages: 'pending',
+      },
+      false,
+    ],
+    [
+      {
+        // At least one product is approved
+        invoices: 'pending',
+        payment_gateway: 'approved',
+        payment_pages: 'rejected',
+      },
+      true,
+    ],
+    [
+      {
+        // All products are approved
+        invoices: 'approved',
+        payment_gateway: 'approved',
+        payment_pages: 'approved',
+      },
+      true,
+    ],
+  ])('should return %s when product status is %p', (productStatus, expectedResult) => {
+    expect(isAnyIntlProductEnabled(productStatus)).toBe(expectedResult);
+  });
+});
+
+describe('computeSearch', () => {
+  const source = [
+    {
+      codes: [
+        { purposeCode: 'P001', description: 'Description 1' },
+        { purposeCode: 'P002', description: 'Description 2' },
+      ],
+    },
+    {
+      codes: [
+        { purposeCode: 'P003', description: 'Description 3' },
+        { purposeCode: 'P004', description: 'Description 4' },
+      ],
+    },
+  ];
+
+  test('returns empty array if search string is empty', () => {
+    const result = computePurposeCodeSearch(source, '');
+    expect(result).toEqual([]);
+  });
+
+  test('returns matching codes based on purposeCode or description', () => {
+    const result1 = computePurposeCodeSearch(source, 'P001');
+    expect(result1).toEqual([{ purposeCode: 'P001', description: 'Description 1' }]);
+
+    const result2 = computePurposeCodeSearch(source, 'Description 4');
+    expect(result2).toEqual([{ purposeCode: 'P004', description: 'Description 4' }]);
+
+    const result3 = computePurposeCodeSearch(source, 'p002');
+    expect(result3).toEqual([{ purposeCode: 'P002', description: 'Description 2' }]);
+  });
+
+  test('returns empty array if no matches are found', () => {
+    const result = computePurposeCodeSearch(source, 'Non-existent');
+    expect(result).toEqual([]);
+  });
+
+  test('ignores case sensitivity in search', () => {
+    const result1 = computePurposeCodeSearch(source, 'p001');
+    expect(result1).toEqual([{ purposeCode: 'P001', description: 'Description 1' }]);
+
+    const result2 = computePurposeCodeSearch(source, 'DESCRIPTION 4');
+    expect(result2).toEqual([{ purposeCode: 'P004', description: 'Description 4' }]);
+  });
+});
+
+describe('computeRadioOptions', () => {
+  const purposeCodes = [
+    { purposeCode: 'P001', description: 'Description 1' },
+    { purposeCode: 'P002', description: 'Description 2' },
+    { purposeCode: 'P003', description: 'Description 3' },
+  ];
+
+  test('returns radio options with selected code', () => {
+    const selectedPurposeCode = 'P002';
+    const result = computePurposeCodeOptions(purposeCodes, selectedPurposeCode);
+    expect(result).toEqual([{ value: 'P002', label: 'P002 - Description 2' }]);
+  });
+
+  test('returns radio options without selected code', () => {
+    const selectedPurposeCode = 'P004';
+    const result = computePurposeCodeOptions(purposeCodes, selectedPurposeCode);
+    expect(result).toEqual([
+      { value: 'P001', label: 'P001 - Description 1' },
+      { value: 'P002', label: 'P002 - Description 2' },
+      { value: 'P003', label: 'P003 - Description 3' },
+    ]);
+  });
+
+  test('returns empty array if purposeCodes is empty', () => {
+    const selectedPurposeCode = 'P001';
+    const result = computePurposeCodeOptions([], selectedPurposeCode);
+    expect(result).toEqual([]);
   });
 });

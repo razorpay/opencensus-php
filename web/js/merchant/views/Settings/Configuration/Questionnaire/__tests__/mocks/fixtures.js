@@ -16,3 +16,15 @@ export const CURRENCY_LIST = {
     name: 'US Dollar',
   },
 };
+
+export const purposeCodeList = [
+  {
+    purposeGroup: 'Mock Group',
+    codes: [
+      { purposeCode: 'Mock Code 1', description: 'Mock Description' },
+      { purposeCode: 'Mock Code 2', description: 'Mock Description' },
+    ],
+  },
+];
+
+export const defaultPurposeCode = { purposeCode: 'Mock Code 2', description: 'Mock Description' };

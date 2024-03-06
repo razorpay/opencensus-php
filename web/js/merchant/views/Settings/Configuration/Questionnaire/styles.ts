@@ -1,3 +1,4 @@
+import { Theme } from '@razorpay/blade/components';
 import styled from 'styled-components';
 
 export const StyledFieldContainer = styled.div`
@@ -57,3 +58,32 @@ export const StyledFieldContainer = styled.div`
     }
   }
 `;
+
+export const StyledPurposeCodeWrapper = styled.div(
+  ({ theme }: { theme: Theme }) => `
+  .Input--radio {
+    @media (max-width: ${theme.breakpoints.s}px) {
+      display: flex;
+      flex-direction: column;
+    }
+    .Input-content {
+      width: unset !important;
+    }
+  }
+
+  .Input--radioLabels {
+    label {
+      display: flex;
+      margin-bottom: ${theme.spacing[5]}px; 
+      
+      input {
+        width: 0;
+      }
+
+      .Input-radio {
+        min-width: 18px;
+      }
+    }
+  }
+`,
+);
