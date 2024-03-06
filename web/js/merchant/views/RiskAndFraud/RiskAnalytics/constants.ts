@@ -1,8 +1,10 @@
+import { AnalyticsEntity, MetricOptions } from './types';
+
 export const ASSETS_PATH = '/dist/css/assets/risk-analytics';
 
-export const FRAUD = 'fraud';
-export const DISPUTES = 'disputes';
-export const RISK_DECLINED = 'risk_declined';
+export const FRAUD: AnalyticsEntity = 'fraud';
+export const DISPUTES: AnalyticsEntity = 'disputes';
+export const RISK_DECLINED: AnalyticsEntity = 'risk_declined';
 
 export const ENTITY_HEADER = {
   [FRAUD]: {
@@ -64,9 +66,9 @@ export const ENTITY_PRESETS = {
 
 export const DEFAULT_PRESET = { [FRAUD]: '14d', [DISPUTES]: '14d', [RISK_DECLINED]: '7d' };
 
-export const METRIC_COUNT = 'count';
-export const METRIC_VALUE = 'amount';
-export const DEFAULT_METRIC = METRIC_VALUE;
+export const METRIC_COUNT: MetricOptions = 'count';
+export const METRIC_VALUE: MetricOptions = 'amount';
+export const DEFAULT_METRIC: MetricOptions = METRIC_VALUE;
 
 export const METRIC_OPTIONS = [
   { label: 'absolute count', value: 'count' },
@@ -82,45 +84,4 @@ export const DEFAULT_CHART_OPTIONS = {
   [FRAUD]: [VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO],
   [DISPUTES]: [VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO],
   [RISK_DECLINED]: [ENTITY_RATIO],
-};
-
-const FRAUD_VALUE_OPTIONS = [
-  { label: 'Total sales value', value: 'total_sales' },
-  { label: 'Value of reported frauds', value: 'entity' },
-  { label: 'Fraud-to-sales ratio', value: 'entity_ratio' },
-];
-
-const FRAUD_COUNT_OPTIONS = [
-  { label: 'Number of transactions', value: 'total_sales' },
-  { label: 'Number of reported frauds', value: 'entity' },
-  { label: 'Fraud-to-sales ratio', value: 'entity_ratio' },
-];
-
-const DISPUTES_VALUE_OPTIONS = [
-  { label: 'Total sales value', value: 'total_sales' },
-  { label: 'Value of reported disputes', value: 'entity' },
-  { label: 'Disputes-to-sales ratio', value: 'entity_ratio' },
-];
-
-const DISPUTES_COUNT_OPTIONS = [
-  { label: 'Number of transactions', value: 'total_sales' },
-  { label: 'Number of reported disputes', value: 'entity' },
-  { label: 'Disputes-to-sales ratio', value: 'entity_ratio' },
-];
-
-const RISK_DECLINED_OPTIONS = [{ label: 'Risk decline rate', value: 'entity_ratio' }];
-
-export const CHART_OPTIONS_MAPPING = {
-  [FRAUD]: {
-    [METRIC_COUNT]: FRAUD_COUNT_OPTIONS,
-    [METRIC_VALUE]: FRAUD_VALUE_OPTIONS,
-  },
-  [DISPUTES]: {
-    [METRIC_COUNT]: DISPUTES_COUNT_OPTIONS,
-    [METRIC_VALUE]: DISPUTES_VALUE_OPTIONS,
-  },
-  [RISK_DECLINED]: {
-    [METRIC_COUNT]: RISK_DECLINED_OPTIONS,
-    [METRIC_VALUE]: RISK_DECLINED_OPTIONS,
-  },
 };

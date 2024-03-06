@@ -1,3 +1,6 @@
+export type AnalyticsEntity = 'fraud' | 'disputes' | 'risk_declined';
+export type MetricOptions = 'count' | 'amount';
+
 export type PresetUnit = 'days' | 'week' | 'month' | 'quarter';
 
 export type PresetValue = '7d' | '14d' | '30d' | '60d' | '90d' | '6m' | '1y' | '2y';
@@ -34,3 +37,9 @@ export type ChartInterval = {
   value: IntervalValue;
   disabled?: boolean;
 };
+
+export interface ChartQueryDataItem {
+  start_date: number;
+  payment: { [metric in MetricOptions]: string };
+  entity_data: { [metric in MetricOptions]: string };
+}
