@@ -130,7 +130,7 @@ export default class CreateOfferWizard extends React.Component {
           disableTabCondition={(tabIndex) => {
             let isDisabled = tabIndex !== 0 && !validTabs[tabIndex - 1];
             // If low cost tenure selected but form is invalid disable next step in sidebar
-            if (tabIndex === 3 && isApplicableOnStepValid()) {
+            if (tabIndex >= 3 && isApplicableOnStepValid()) {
               return true;
             }
             if (tabIndex === 4) {
