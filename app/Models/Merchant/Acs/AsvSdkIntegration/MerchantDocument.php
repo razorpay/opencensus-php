@@ -9,6 +9,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use Rzp\Accounts\Merchant\V1 as MerchantV1;
 use Rzp\Accounts\Merchant\V1\FilterRequest;
+use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\Document\Entity as MerchantDocumentEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantDocument as MerchantDocumentProtoMapper;
 
@@ -16,6 +17,8 @@ class MerchantDocument extends Base
 {
 
     const FILTER_TIMEOUT_IN_MICRO_SECONDS = 5000000;
+
+    const GET_MERCHANT_DOCUMENTS_FROM_MERCHANT_IDS = 'get_merchant_documents_from_merchant_ids';
 
     public function __construct()
     {
@@ -150,7 +153,27 @@ class MerchantDocument extends Base
         };
     }
 
-    public function findDocumentByFileStoreId(string $fileStoreId): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    /**
+     * @param array $merchantIds
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function findDocumentsForMerchantIds(array $merchantIds): Collection|PublicCollection
+    {
+        $filterRequest = (new FilterRequest())
+            ->setQueryIdentifier(self::GET_MERCHANT_DOCUMENTS_FROM_MERCHANT_IDS)
+            ->setBindings(json_encode([$merchantIds]));
+
+        $response = $this->getFilterResponseFromAsv(
+            $filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS
+        );
+
+        return $this->getMerchantDocumentCollectionFromResponse($response);
+    }
+
+    public function findDocumentByFileStoreId(string $fileStoreId): PublicCollection|Collection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier('find_documents_by_filestore_id');
@@ -165,7 +188,7 @@ class MerchantDocument extends Base
         return $this->getMerchantDocumentCollectionFromResponse($response);
     }
 
-    public function findDocumentsForMerchantIdAndValidationId(string $merchantId, string $validationId): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    public function findDocumentsForMerchantIdAndValidationId(string $merchantId, string $validationId): PublicCollection|Collection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier('find_documents_for_merchant_id_and_validation_id');
@@ -180,7 +203,7 @@ class MerchantDocument extends Base
         return $this->getMerchantDocumentCollectionFromResponse($response);
     }
 
-    public function findNonDeletedDocumentsForMerchantId(string $merchantId, array $documentTypes): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    public function findNonDeletedDocumentsForMerchantId(string $merchantId, array $documentTypes): PublicCollection|Collection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier('find_non_deleted_documents_for_merchant_id');

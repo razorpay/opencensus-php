@@ -2,16 +2,19 @@
 
 namespace RZP\Models\Merchant\Document;
 
-use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 use Database\Connection;
-use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkIntegration;
-use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
+use RZP\Base\ConnectionType;
+use RZP\Exception\BaseException;
+use Illuminate\Support\Facades\DB;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkIntegration;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument as MerchantDocumentSDKWrapper;
-use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
-use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class Repository extends Base\Repository
 {
@@ -179,12 +182,25 @@ class Repository extends Base\Repository
      * @param array $merchantIds
      *
      * @return mixed
+     * @throws BadRequestException
+     * @throws BaseException
      */
-    public function findDocumentsForMerchantIds(array $merchantIds)
+    public function findDocumentsForMerchantIds(array $merchantIds): mixed
     {
-        return $this->newQuery()
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
-                    ->get();
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else {
+                return (new MerchantDocumentSDKWrapper())->findDocumentsForMerchantIds($merchantIds);
+            }
+        } else {
+            $query = $this->newQuery();
+        }
+
+        return $query->whereIn(Entity::MERCHANT_ID, $merchantIds)->get();
     }
 
     /**
