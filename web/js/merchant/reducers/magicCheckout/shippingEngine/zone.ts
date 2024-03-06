@@ -7,7 +7,10 @@ import { buildZonesData } from './utils';
 export const createOrUpdateZone = (action, state: ShippingEngineStore): ShippingEngineStore => {
   if (state.selected_profile) {
     let zones = state.shipping_profiles[state.selected_profile]?.zones || [];
-    if (action.type === ACTIONS.CREATE_ZONE_SUCCESS) {
+    if (
+      action.type === ACTIONS.CREATE_ZONE_SUCCESS ||
+      action.type === ACTIONS.CREATE_ZONE_UPLOAD_SUCCESS
+    ) {
       zones = push(
         state.shipping_profiles[state.selected_profile]?.zones || [],
         ...buildZonesData([action.payload.data]),

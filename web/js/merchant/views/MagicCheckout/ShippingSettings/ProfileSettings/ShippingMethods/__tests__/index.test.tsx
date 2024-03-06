@@ -40,7 +40,7 @@ describe('Shipping methods', () => {
     const table = screen.getByRole('table');
     const tableItems = screen.getAllByRole('row');
     const methodName = screen.queryByText(DB_METHOD.description);
-    const addMore = screen.getByRole('button', { name: 'Add shipping method' });
+    const addMore = screen.getAllByRole('button', { name: 'Add shipping method' })[0];
     expect(table).toBeInTheDocument();
     expect(methodName).toBeInTheDocument();
     expect(addMore).toBeInTheDocument();
@@ -49,14 +49,16 @@ describe('Shipping methods', () => {
   test('show show add more view', async () => {
     renderShippingMethods({}, DEFAULT_PROFILE_NAME);
     const table = screen.getByRole('table');
-    const addMore = screen.getByRole('button', { name: 'Add shipping method' });
+    const addMore = screen.getAllByRole('button', { name: 'Add shipping method' })[0];
 
     expect(table).toBeInTheDocument();
     expect(addMore).toBeInTheDocument();
     await userEvent.click(addMore);
     waitFor(() => {
       const addMoreText = screen.queryByText(`Shipping Methods - ${DB_ZONE.name}`);
+      const addMoreText2 = screen.queryByText(`Shipping Methods - Uploaded file 1`);
       expect(addMoreText).toBeInTheDocument();
+      expect(addMoreText2).toBeInTheDocument();
     });
   });
 

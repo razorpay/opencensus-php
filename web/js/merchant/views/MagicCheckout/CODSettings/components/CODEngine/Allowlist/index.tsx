@@ -2,12 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch, AnyAction } from 'redux';
 
-import {
-  Button,
-  TextInput,
-  // DownloadCloudIcon,
-  UploadCloudIcon,
-} from '@razorpay/blade/components';
+import { Button, TextInput, DownloadCloudIcon, UploadCloudIcon } from '@razorpay/blade/components';
 
 import { ValidateModalInfo } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Allowlist/components/ValidateInfoModal';
 import { EmptyComponent as emptyComponent } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Allowlist/components/EmptyComponent';
@@ -47,6 +42,8 @@ import {
   FileUploadResponse,
   PaginationOptions,
 } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Allowlist/types';
+import { downloadFromUrl } from 'merchant/views/MagicCheckout/common/helpers';
+import { useSplitzService } from 'common/splitz';
 
 const CLOSE_URL = '/magic/settings/cod-settings';
 
@@ -58,7 +55,7 @@ const openFileUpload = (validateBatch, openModal) => {
       <BatchUpload
         accept={['csv']}
         closeUrl={CLOSE_URL}
-        title="Upload Allowlist"
+        title="Upload Zipcodes"
         batchType="cod_engine_allowlist_update"
         validateBatch={validateBatch}
         processFile
@@ -81,8 +78,10 @@ const CODEngineAllowlistUpload = (props: CODEngineAllowlistUploadProps) => {
     showNotification,
     closeModal,
     deleteList,
-    // downloadList,
+    downloadList,
   } = props;
+  const { abExperiments } = useSplitzService();
+  const isZoneUploadEnabled = abExperiments?.magic_zones_file_upload?.variables?.result === 'on';
 
   const { error, isLoading, items, total_records }: CODEngineAllowlistUploadConfigs =
     codEngineAllowlistUpload;
@@ -263,26 +262,40 @@ const CODEngineAllowlistUpload = (props: CODEngineAllowlistUploadProps) => {
     });
   };
 
+  const handleDownloadList = () => {
+    downloadList()
+      .then((res) => {
+        const file_link = res.data.file_link;
+        downloadFromUrl(showNotification, file_link);
+      })
+      .catch((err) => {
+        showNotification({
+          type: 'error',
+          message: err?.errors?.[0] || 'Something went wrong while downloading file',
+        });
+      });
+  };
+
   return (
     <AllowlistWrapper>
       <AllowlistContainer>
         <TabHeader>
-          <span className="heading">Allowlist</span>
+          <span className="heading">Zipcode upload</span>
           <span className="pull-right upload-cta" data-testid="upload-order-history-cta">
-            {/* {items?.length ? (
+            {isZoneUploadEnabled && items?.length ? (
               <Button
                 type="button"
                 variant="secondary"
                 color="default"
-                onClick={downloadList}
+                onClick={handleDownloadList}
                 size="medium"
                 iconPosition="left"
                 icon={DownloadCloudIcon}
                 marginRight="spacing.2"
               >
-                Download Allowlist
+                Download Zipcodes
               </Button>
-            ) : null} */}
+            ) : null}
             <Button
               type="button"
               variant="primary"
@@ -292,14 +305,16 @@ const CODEngineAllowlistUpload = (props: CODEngineAllowlistUploadProps) => {
               iconPosition="left"
               icon={UploadCloudIcon}
             >
-              Upload Allowlist
+              Upload Zipcodes
             </Button>
           </span>
           <p className="sub-text">
-            Utilize Allowlist to effortlessly specify preferred pincodes for offering Cash on
+            Utilize Zipcode list to effortlessly specify preferred zipcodes for offering Cash on
             Delivery, tailor-made to your cart conditions as configured in the COD settings.
           </p>
         </TabHeader>
+
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
         {/**@ts-ignore*/}
         <ListFilter
           form={`cod-engine-allowlist-form`}
@@ -336,7 +351,7 @@ const CODEngineAllowlistUpload = (props: CODEngineAllowlistUploadProps) => {
           skip={searchData.skip}
           count={searchData.count}
           paginate={paginate}
-          EmptyComponent={emptyComponent(handleUploadClick, 'Allowlist', searchClicked)}
+          EmptyComponent={emptyComponent(handleUploadClick, 'Zipcode list', searchClicked)}
           hasMoreData={hasMoreData}
         />
       </AllowlistContainer>

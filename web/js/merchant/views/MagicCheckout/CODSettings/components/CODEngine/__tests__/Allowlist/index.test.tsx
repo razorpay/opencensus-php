@@ -35,7 +35,7 @@ describe('testing COD engine allowlist component', () => {
     expect(screen.getByTestId('spinner')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText('No Allowlist Set!')).toBeInTheDocument();
+      expect(screen.getByText('No Zipcode list Set!')).toBeInTheDocument();
     });
   });
 
@@ -84,13 +84,13 @@ describe('testing COD engine allowlist component', () => {
     await waitFor(() => {
       expect(
         screen.getByRole('button', {
-          name: 'Delete Allowlist',
+          name: 'Delete Zipcodes',
         }),
       ).toBeInTheDocument();
     });
 
     const uploadCta = screen.getByRole('button', {
-      name: 'Upload Allowlist',
+      name: 'Upload Zipcodes',
     });
 
     await userEvent.click(uploadCta);
@@ -108,13 +108,13 @@ describe('testing COD engine allowlist component', () => {
     await waitFor(() => {
       expect(
         screen.getByRole('button', {
-          name: 'Delete Allowlist',
+          name: 'Delete Zipcodes',
         }),
       ).toBeInTheDocument();
     });
 
     const deleteCta = screen.getByRole('button', {
-      name: 'Delete Allowlist',
+      name: 'Delete Zipcodes',
     });
 
     await userEvent.click(deleteCta);

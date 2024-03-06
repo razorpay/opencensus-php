@@ -25,7 +25,7 @@ export type CODEngineAllowlistUploadProps = {
   showNotification: ShowNotificationType;
   closeModal: () => void;
   deleteList: () => any;
-  downloadList: () => void;
+  downloadList: () => any;
 };
 
 export type ReducerState = {

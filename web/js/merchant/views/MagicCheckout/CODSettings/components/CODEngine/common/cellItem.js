@@ -1,4 +1,5 @@
-import { TrashIcon, IconButton, EditComposeIcon } from '@razorpay/blade/components';
+import { TrashIcon, IconButton, EditComposeIcon, DownloadIcon } from '@razorpay/blade/components';
+
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 
 export const orderRange = {
@@ -18,6 +19,7 @@ export const zoneName = {
 export const zoneCountry = {
   title: 'Country',
   value: (item) => {
+    if (item.name === 'Zipcodes Uploaded') return 'India';
     if (item.countries?.length > 2) {
       return `${item.countries.slice(0, 2).join(', ')} & more`;
     }
@@ -28,7 +30,7 @@ export const zoneCountry = {
 
 export const zoneStates = {
   title: 'States',
-  value: (item) => item?.state_count,
+  value: (item) => item?.state_count || '-',
   columnClass: 'text-left',
 };
 
@@ -66,12 +68,22 @@ export const productCount = {
   value: (item) => (!item.is_default ? item?.item_count || item?.items?.length : null),
 };
 
-export const actions = ({ onDeleteClick, onEditClick }) => ({
+export const actions = ({ onDeleteClick, onEditClick, downloadable = false }) => ({
   title: 'Action',
   columnClass: 'text-left',
   value: (item) => {
     return item && !item.is_default ? (
       <div className="flex zone-actions">
+        {downloadable && downloadable.showDownloadIcon(item) && (
+          <div className="download-button">
+            <IconButton
+              aria-label="edit"
+              onClick={() => downloadable?.handleDownloadClick(item)}
+              variant="primary"
+              icon={DownloadIcon}
+            />
+          </div>
+        )}
         {onEditClick && <IconButton onClick={onEditClick(item.id)} icon={EditComposeIcon} />}
         {onDeleteClick && (
           <div className="delete-button">

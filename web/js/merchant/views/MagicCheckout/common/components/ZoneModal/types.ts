@@ -33,6 +33,7 @@ export interface Zone {
   locations: Location[];
   state_count?: number | string;
   shipping_methods?: any[];
+  location_count?: number;
 }
 
 export interface Location {

@@ -270,6 +270,16 @@ export const INITIAL_STATE = {
               },
             ],
           },
+          {
+            id: 'BbAB9wKFqJAZmn',
+            merchant_id: '',
+            name: 'Uploaded file 1',
+            type: 'shipping',
+            created_at: 1708001824,
+            updated_at: 1708001824,
+            shipping_methods: [],
+            location_count: 4,
+          },
         ],
       },
       Shirts: {

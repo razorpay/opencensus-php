@@ -14,6 +14,7 @@ export interface Zone {
   id: string;
   name: string;
   shipping_methods: ShippingMethod[];
+  location_count?: number;
 }
 
 export interface ShippingMethod {
@@ -49,3 +50,16 @@ export interface ShippingEngineStore {
   };
   default_profile: DefaultProfile | null;
 }
+
+interface Downloadable {
+  showDownloadIcon: (item: any) => boolean;
+  handleDownloadClick: (item: any) => void;
+}
+
+export interface Actions {
+  handleDeleteClick: (item: any) => () => void;
+  handleEditClick: (item: any) => () => void;
+  downloadable?: Downloadable;
+}
+
+export type ModalState = false | 'FILE_UPLOAD' | 'MANUAL';

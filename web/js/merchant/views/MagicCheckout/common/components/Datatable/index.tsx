@@ -10,6 +10,7 @@ export interface DataTableProps<TData> {
   maxWidth?: string;
   addMoreLabel?: string;
   handleAddMore?: () => void;
+  handleAddMoreViaFileUpload?: () => void;
   EmptyComponent?: React.ReactNode;
 }
 
@@ -20,6 +21,7 @@ export function MagicDataTable<TData>({
   maxWidth = 'auto',
   addMoreLabel,
   handleAddMore,
+  handleAddMoreViaFileUpload,
   EmptyComponent,
 }: DataTableProps<TData>): JSX.Element {
   const columnsWithClassName = columns.map((col) => ({
@@ -37,6 +39,11 @@ export function MagicDataTable<TData>({
       {addMoreLabel && handleAddMore && (
         <AddMoreButton data-testid="magic-add-more-button" onClick={handleAddMore}>
           + Create more {addMoreLabel}
+        </AddMoreButton>
+      )}
+      {addMoreLabel && handleAddMoreViaFileUpload && (
+        <AddMoreButton data-testid="magic-upload-more-button" onClick={handleAddMoreViaFileUpload}>
+          + Upload more {addMoreLabel}
         </AddMoreButton>
       )}
     </DataTableWrapper>

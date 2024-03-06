@@ -76,7 +76,9 @@ export const shippingEngineReducer = (state = initialState, action): ShippingEng
 
     // ZONES
     case ACTIONS.CREATE_ZONE_SUCCESS:
-    case ACTIONS.UPDATE_ZONE_SUCCESS: {
+    case ACTIONS.CREATE_ZONE_UPLOAD_SUCCESS:
+    case ACTIONS.UPDATE_ZONE_SUCCESS:
+    case ACTIONS.UPDATE_ZONE_UPLOAD_SUCCESS: {
       if (state.selected_profile) {
         return createOrUpdateZone(action, state);
       }
@@ -105,7 +107,9 @@ export const shippingEngineReducer = (state = initialState, action): ShippingEng
       return merge(state, { isLoading: { ...state.isLoading, summary: true } });
 
     case ACTIONS.CREATE_ZONE_PENDING:
+    case ACTIONS.CREATE_ZONE_UPLOAD_PENDING:
     case ACTIONS.UPDATE_ZONE_PENDING:
+    case ACTIONS.UPDATE_ZONE_UPLOAD_PENDING:
     case ACTIONS.DELETE_ZONE_PENDING:
       return merge(state, { isLoading: { ...state.isLoading, zones: true } });
     case ACTIONS.CREATE_CATEGORY_PENDING:
@@ -118,7 +122,9 @@ export const shippingEngineReducer = (state = initialState, action): ShippingEng
       return merge(state, { isLoading: { ...state.isLoading, shipping_methods: true } });
     case ACTIONS.FETCH_CONFIG_ERROR:
     case ACTIONS.CREATE_ZONE_ERROR:
+    case ACTIONS.CREATE_ZONE_UPLOAD_ERROR:
     case ACTIONS.UPDATE_ZONE_ERROR:
+    case ACTIONS.UPDATE_ZONE_UPLOAD_ERROR:
     case ACTIONS.DELETE_ZONE_ERROR:
     case ACTIONS.CREATE_CATEGORY_ERROR:
     case ACTIONS.UPDATE_CATEGORY_ERROR:

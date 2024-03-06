@@ -494,6 +494,22 @@ export const splitzConfig: SplitzInitConfig = {
       routesToMatch: [/^\/magic(?:\/.*)?$/i],
       abExperiments: [
         {
+          uniqueHashKey: 'magic_zones_file_upload',
+          experimentId: {
+            beta: 'Nh6mUrfEvCtOyQ',
+            production: 'Nh70AvGOK3wYkz',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'magic_analytics_setting',
           experimentId: {
             beta: 'MWKHCSGKltMkYQ',

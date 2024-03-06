@@ -1,9 +1,16 @@
 import React from 'react';
-import { Box, EditComposeIcon, IconButton, TrashIcon } from '@razorpay/blade/components';
+import {
+  Box,
+  EditComposeIcon,
+  IconButton,
+  TrashIcon,
+  DownloadIcon,
+} from '@razorpay/blade/components';
 import {
   ShippingMethod,
   ShippingProfile,
   Zone,
+  Actions,
 } from 'merchant/reducers/magicCheckout/shippingEngine/types';
 import { ColumnDef } from 'merchant/views/MagicCheckout/common/components/Datatable/types';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
@@ -26,7 +33,7 @@ export const ShippingMethods = {
   title: 'Shipping Methods',
   value: (item: ShippingProfile) => {
     const methods: string[] = [];
-    item.zones?.map((z) => {
+    item.zones?.forEach((z) => {
       if (z?.shipping_methods) {
         methods.push(...(z.shipping_methods.map((method) => method.name) || []));
       }
@@ -53,6 +60,11 @@ export const Action = {
 export const ZoneName = {
   title: 'Name',
   value: (item: Zone) => item?.name || '-',
+};
+
+export const ZipCodes = {
+  title: 'Count',
+  value: (item: Zone) => (item?.location_count ? `${item?.location_count} zipcodes` : '-'),
 };
 
 export const COD = {
@@ -105,11 +117,22 @@ export const ETD = {
   value: (item: ShippingMethod) => item?.etd || '-',
 };
 
-export const actions = ({ handleDeleteClick, handleEditClick }): ColumnDef<any> => ({
+export const actions = ({
+  handleDeleteClick,
+  handleEditClick,
+  downloadable,
+}: Actions): ColumnDef<any> => ({
   title: 'Action',
   value: (item) => {
     return item && !item.is_default ? (
       <Box display="flex" alignItems="center" justifyContent="flex-end" gap="spacing.4">
+        {downloadable && downloadable.showDownloadIcon(item) && (
+          <IconButton
+            accessibilityLabel="download"
+            onClick={() => downloadable?.handleDownloadClick(item)}
+            icon={() => <DownloadIcon size="medium" color="action.icon.link.active" />}
+          />
+        )}
         {handleEditClick && (
           <IconButton
             accessibilityLabel="edit"

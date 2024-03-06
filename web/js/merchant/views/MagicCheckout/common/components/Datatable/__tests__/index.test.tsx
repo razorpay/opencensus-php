@@ -21,23 +21,28 @@ describe('Datatable', () => {
     expect(gender).toBeInTheDocument();
     expect(age).toBeInTheDocument();
     expect(screen.queryByText('+ Create more')).not.toBeInTheDocument();
+    expect(screen.queryByText('+ Upload more')).not.toBeInTheDocument();
   });
   test('Should render data table with add more button', async () => {
     const handleAddMore = jest.fn();
+    const handleAddMoreViaFileUpload = jest.fn();
     renderTable({
       addMoreLabel: 'test',
       handleAddMore,
+      handleAddMoreViaFileUpload,
     });
 
     const name = screen.queryByText(/Akash/i);
     const gender = screen.queryByText('male');
     const age = screen.getByText(/25/i);
     const createButton = screen.getByTestId('magic-add-more-button');
+    const uploadButton = screen.getByTestId('magic-upload-more-button');
 
     expect(name).toBeInTheDocument();
     expect(gender).toBeInTheDocument();
     expect(age).toBeInTheDocument();
     expect(createButton).toBeInTheDocument();
+    expect(uploadButton).toBeInTheDocument();
     await userEvent.click(createButton);
     expect(handleAddMore).toHaveBeenCalled();
   });

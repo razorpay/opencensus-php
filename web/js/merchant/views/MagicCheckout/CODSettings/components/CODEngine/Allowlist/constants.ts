@@ -1,6 +1,6 @@
 export const ALLOWLIST_DELETE_TEXTS = {
-  header: 'Delete Allowlist',
-  desc: 'Deleting will remove all entries from the COD Allowlist.',
+  header: 'Delete Zipcode list',
+  desc: 'Deleting will remove all entries from the COD Zipcode list.',
   abortLabel: 'cancel',
   affirmativeLabel: 'Yes, Delete',
 };

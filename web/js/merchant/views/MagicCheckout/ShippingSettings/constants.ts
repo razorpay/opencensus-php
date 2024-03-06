@@ -1,6 +1,7 @@
 import lazy from 'merchant/routes/LazyLoader';
 
 import { ShippingEngineRoute } from './context/RouteContext';
+import { ModalState } from 'merchant/reducers/magicCheckout/shippingEngine/types';
 
 const PreviewSettings = lazy(
   () => import(/* webpackChunkName: "MagicShippingSettings" */ './Preview'),
@@ -53,4 +54,25 @@ export const AMOUNT_OPTIONS = [
 export const RATE_TYPES = {
   AMOUNT: 'amount',
   WEIGHT: 'weight',
+};
+
+export const DISPLAY_MESSAGES = {
+  process: 'The file is being uploaded. Please wait as this may take some time.',
+  success: 'The file has been uploaded successfully.',
+  error: 'There was an error while uploading the file. Please try again after some time.',
+  exceed: 'The file size exceeds the maximum size limit. Please upload a smaller file.',
+};
+
+export const SAMPLE_FILE_URL =
+  'https://cdn.razorpay.com/static/assets/magic-checkout/sample_pincodes_upload.csv';
+
+export const FILE_UPDATE_NOTIFICATION_MSG =
+  'Uploading a new file, will delete the older one and new records will be saved.';
+
+type MODAL_TYPES = {
+  [key: string]: ModalState;
+};
+export const MODAL_TYPES: MODAL_TYPES = {
+  FILE_UPLOAD: 'FILE_UPLOAD',
+  MANUAL: 'MANUAL',
 };

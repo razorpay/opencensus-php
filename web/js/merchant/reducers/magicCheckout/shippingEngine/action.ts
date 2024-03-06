@@ -1,5 +1,6 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 import { Zone } from 'merchant/views/MagicCheckout/common/components/ZoneModal/types';
+import { ZonePayload } from 'merchant/views/MagicCheckout/ShippingSettings/ProfileSettings/Zones/components/ZonesUpload/types';
 
 const REDUCER_NAMESPACE = 'MAGIC_SHIPPING_ENGINE';
 
@@ -16,10 +17,20 @@ export const ACTIONS = {
   CREATE_ZONE_SUCCESS: `${REDUCER_NAMESPACE}_CREATE_ZONE::SUCCESS`,
   CREATE_ZONE_ERROR: `${REDUCER_NAMESPACE}_CREATE_ZONE::ERROR`,
 
+  CREATE_ZONE_UPLOAD: `${REDUCER_NAMESPACE}_CREATE_ZONE_UPLOAD`,
+  CREATE_ZONE_UPLOAD_PENDING: `${REDUCER_NAMESPACE}_CREATE_ZONE_UPLOAD::PENDING`,
+  CREATE_ZONE_UPLOAD_SUCCESS: `${REDUCER_NAMESPACE}_CREATE_ZONE_UPLOAD::SUCCESS`,
+  CREATE_ZONE_UPLOAD_ERROR: `${REDUCER_NAMESPACE}_CREATE_ZONE_UPLOAD::ERROR`,
+
   UPDATE_ZONE: `${REDUCER_NAMESPACE}_UPDATE_ZONE`,
   UPDATE_ZONE_PENDING: `${REDUCER_NAMESPACE}_UPDATE_ZONE::PENDING`,
   UPDATE_ZONE_SUCCESS: `${REDUCER_NAMESPACE}_UPDATE_ZONE::SUCCESS`,
   UPDATE_ZONE_ERROR: `${REDUCER_NAMESPACE}_UPDATE_ZONE::ERROR`,
+
+  UPDATE_ZONE_UPLOAD: `${REDUCER_NAMESPACE}_UPDATE_ZONE_UPLOAD`,
+  UPDATE_ZONE_UPLOAD_PENDING: `${REDUCER_NAMESPACE}_UPDATE_ZONE_UPLOAD::PENDING`,
+  UPDATE_ZONE_UPLOAD_SUCCESS: `${REDUCER_NAMESPACE}_UPDATE_ZONE_UPLOAD::SUCCESS`,
+  UPDATE_ZONE_UPLOAD_ERROR: `${REDUCER_NAMESPACE}_UPDATE_ZONE_UPLOAD::ERROR`,
 
   DELETE_ZONE: `${REDUCER_NAMESPACE}_DELETE_ZONE`,
   DELETE_ZONE_PENDING: `${REDUCER_NAMESPACE}_DELETE_ZONE::PENDING`,
@@ -101,6 +112,27 @@ export const createZone = (payload: Zone): any => {
   };
 };
 
+export const createZoneUpload = (payload: ZonePayload): any => {
+  if (!payload?.file) return null;
+
+  const { file, itemCategoryId, type, progressTracker } = payload;
+
+  const formData = new FormData();
+  formData.append('file', file);
+  if (itemCategoryId) formData.append('item_category_id', itemCategoryId);
+  formData.append('type', type);
+
+  return {
+    type: ACTIONS.CREATE_ZONE_UPLOAD,
+    payload: merchantFetch({
+      url: '1cc/shipping/zones',
+      method: 'post',
+      data: formData,
+      onUploadProgress: progressTracker,
+    }),
+  };
+};
+
 export const updateZone = (payload) => {
   return {
     type: ACTIONS.UPDATE_ZONE,
@@ -108,6 +140,24 @@ export const updateZone = (payload) => {
       url: `1cc/shipping/zones/${payload.id}`,
       method: 'put',
       data: payload,
+    }),
+  };
+};
+
+export const updateZoneUpload = (payload) => {
+  const { file, itemCategoryId, type, progressTracker, id } = payload;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('item_category_id', itemCategoryId);
+  formData.append('type', type);
+
+  return {
+    type: ACTIONS.UPDATE_ZONE_UPLOAD,
+    payload: merchantFetch({
+      url: `1cc/shipping/zones/${id}`,
+      method: 'post',
+      data: formData,
+      onUploadProgress: progressTracker,
     }),
   };
 };

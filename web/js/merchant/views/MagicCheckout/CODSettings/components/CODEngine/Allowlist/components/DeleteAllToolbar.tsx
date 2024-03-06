@@ -20,7 +20,7 @@ const DeleteAllToolbar = (props: DeleteToolbarProps) => {
         icon={TrashIcon}
         marginRight="spacing.2"
       >
-        Delete Allowlist
+        Delete Zipcodes
       </Button>
     </DeleteAllToolbarContainer>
   );

@@ -12,18 +12,33 @@ import { bindActionCreators } from 'redux';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { deleteZone } from 'merchant/reducers/magicCheckout/shippingEngine/action';
-import { ShippingEngineStore } from 'merchant/reducers/magicCheckout/shippingEngine/types';
+import {
+  ModalState,
+  ShippingEngineStore,
+} from 'merchant/reducers/magicCheckout/shippingEngine/types';
 import lazy from 'merchant/routes/LazyLoader';
-import { ZoneName, actions } from 'merchant/views/MagicCheckout/ShippingSettings/common/cellItem';
-import { ADD_PROFILE, MODAL_TEXTS } from 'merchant/views/MagicCheckout/ShippingSettings/constants';
+import {
+  ZoneName,
+  actions,
+  ZipCodes,
+} from 'merchant/views/MagicCheckout/ShippingSettings/common/cellItem';
+import {
+  ADD_PROFILE,
+  MODAL_TEXTS,
+  MODAL_TYPES,
+} from 'merchant/views/MagicCheckout/ShippingSettings/constants';
 import { SettingsWrapper } from 'merchant/views/MagicCheckout/ShippingSettings/styles';
 import CreateButton from 'merchant/views/MagicCheckout/common/components/CreateButton';
 import MagicDataTable from 'merchant/views/MagicCheckout/common/components/Datatable';
 import PreventDeleteModal from 'merchant/views/MagicCheckout/common/components/PreventDeleteModal';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { UploadZonesButton } from 'merchant/views/MagicCheckout/ShippingSettings/common/styledComponents/common';
 
 import Modal from './Modal';
+import { downloadFromUrl } from 'merchant/views/MagicCheckout/common/helpers';
+import { useSplitzService } from 'common/splitz';
 
 const ConfirmationModal = lazy(
   () =>
@@ -44,9 +59,13 @@ const Zones = ({
   closeModal,
   showNotification,
   deleteZone: deleteZoneAction,
+  validateBatch,
+  fetchList,
 }): JSX.Element => {
+  const { abExperiments } = useSplitzService();
+  const isZoneUploadEnabled = abExperiments?.magic_zones_file_upload?.variables?.result === 'on';
   const { shipping_engine } = settings;
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<ModalState>(false);
   const { selected_profile, shipping_profiles } = shippingEngine as ShippingEngineStore;
   const [selectedZone, setSelectedZone] = useState<string>('');
   const zones =
@@ -79,7 +98,7 @@ const Zones = ({
 
   const handleEditClick = (item) => () => {
     setSelectedZone(item.id);
-    setIsModalOpen(true);
+    setIsModalOpen(item.location_count ? MODAL_TYPES.FILE_UPLOAD : MODAL_TYPES.MANUAL);
   };
 
   const handleDeleteClick = (item) => () => {
@@ -120,7 +139,34 @@ const Zones = ({
 
   const handleCreate = () => {
     setSelectedZone('');
-    setIsModalOpen(true);
+    setIsModalOpen(MODAL_TYPES.FILE_UPLOAD);
+  };
+
+  const handleFileUploadCreate = () => {
+    setSelectedZone('');
+    setIsModalOpen(MODAL_TYPES.FILE_UPLOAD);
+  };
+
+  const showDownloadIcon = (zone) => {
+    return !!zone?.location_count;
+  };
+
+  const handleDownloadClick = (zone) => {
+    if (!zone?.location_count) return;
+    merchantFetch({
+      url: `1cc/shipping/zones/${zone.id}/download`,
+      method: 'get',
+    })
+      .then((res) => {
+        const file_link = res.data.file_link;
+        downloadFromUrl(showNotification, file_link);
+      })
+      .catch((err) => {
+        showNotification({
+          type: 'error',
+          message: err?.errors?.[0] || 'Something went wrong while downloading file',
+        });
+      });
   };
 
   return (
@@ -153,13 +199,34 @@ const Zones = ({
             data={zones}
             addMoreLabel="zones"
             handleAddMore={handleCreate}
-            columns={[ZoneName, actions({ handleDeleteClick, handleEditClick })]}
+            handleAddMoreViaFileUpload={isZoneUploadEnabled ? handleFileUploadCreate : undefined}
+            columns={[
+              ZoneName,
+              ZipCodes,
+              actions({
+                handleDeleteClick,
+                handleEditClick,
+                downloadable: { showDownloadIcon, handleDownloadClick },
+              }),
+            ]}
           />
         ) : (
-          <CreateButton entity="zones" onClick={handleCreate} />
+          <>
+            <CreateButton entity="zones" onClick={handleCreate} />
+            {isZoneUploadEnabled && (
+              <UploadZonesButton onClick={handleFileUploadCreate}>+ Upload zones</UploadZonesButton>
+            )}
+          </>
         )}
         {isModalOpen && (
-          <Modal zoneId={selectedZone} isOpen={isModalOpen} closeModal={handleClose} />
+          <Modal
+            zoneId={selectedZone}
+            isOpen={isModalOpen}
+            closeModal={handleClose}
+            validateBatch={validateBatch}
+            fetchList={fetchList}
+            isModalOpen={isModalOpen}
+          />
         )}
       </SettingsWrapper>
     </Box>

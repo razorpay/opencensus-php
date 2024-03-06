@@ -20,7 +20,7 @@ export const EmptyComponent =
                 iconPosition="left"
                 icon={UploadCloudIcon}
               >
-                Upload Allowlist
+                Upload Zipcodes
               </Button>
             )}
           </>

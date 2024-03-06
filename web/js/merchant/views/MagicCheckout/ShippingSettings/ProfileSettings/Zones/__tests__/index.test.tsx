@@ -16,6 +16,17 @@ import { ShippingSettingsRouteContextProvider } from 'merchant/views/MagicChecko
 
 import ShippingZones from 'merchant/views/MagicCheckout/ShippingSettings/ProfileSettings/Zones';
 
+const variantOn = { variables: { result: 'on' } };
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {
+      magic_zones_file_upload: variantOn,
+    },
+  }),
+  withSplitzService: jest.fn(),
+}));
+
 const renderShippingZones = (newProps = {}, name: string) => {
   const state = getStateWithSelectedProfile(name);
   return render(
@@ -38,15 +49,26 @@ describe('Shipping zones', () => {
     const tableItems = screen.getAllByRole('row');
     const zoneName = screen.queryByText(/North/i);
     const addMore = screen.getByTestId('magic-add-more-button');
+    const uploadMore = screen.getByTestId('magic-upload-more-button');
     expect(table).toBeInTheDocument();
     expect(zoneName).toBeInTheDocument();
     expect(addMore).toBeInTheDocument();
-    expect(tableItems).toHaveLength(2);
+    expect(uploadMore).toBeInTheDocument();
+    expect(tableItems).toHaveLength(3);
+  });
+  test('file upload modal should open when clicked on Upload', async () => {
+    renderShippingZones({}, DEFAULT_PROFILE_NAME);
+    const uploadMore = screen.getByTestId('magic-upload-more-button');
+    await userEvent.click(uploadMore);
+    await waitFor(() => {
+      const zoneName = screen.queryByText(/Upload more zones/i);
+      expect(zoneName).toBeInTheDocument();
+    });
   });
   test('should show edit view', async () => {
     renderShippingZones({}, DEFAULT_PROFILE_NAME);
     const table = screen.getByRole('table');
-    const editButton = screen.getByRole('button', { name: 'edit' });
+    const editButton = screen.getAllByRole('button', { name: 'edit' })[0];
 
     expect(table).toBeInTheDocument();
     expect(editButton).toBeInTheDocument();
@@ -55,6 +77,13 @@ describe('Shipping zones', () => {
       const editText = screen.queryByText(/Edit shipping zones/i);
       expect(editText).toBeInTheDocument();
     });
+  });
+  test('should show download view', () => {
+    renderShippingZones({}, DEFAULT_PROFILE_NAME);
+    const table = screen.getByRole('table');
+    const downloadButton = screen.getByRole('button', { name: 'download' });
+    expect(table).toBeInTheDocument();
+    expect(downloadButton).toBeInTheDocument();
   });
   test('should show add more view', async () => {
     renderShippingZones({}, DEFAULT_PROFILE_NAME);
