@@ -808,6 +808,7 @@ class Constants
     const COMMENTS              = 'comments';
 
     const FROM                             = 'from';
+    const MESSAGE_FROM                     = 'message_from';
     const IS_CURRENT                       = 'is_current';
     const COMMENT_DATA                     = 'comment_data';
     const TEXT                             = 'text';

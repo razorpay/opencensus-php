@@ -15745,40 +15745,54 @@ class CoreTest extends TestCase
     {
 
         $input = [
-            "clarification_details"   => [
-                "pos_nc_count" =>1,
-                "shop_front" => [
+            "clarification_details" => [
+                "pos_nc_count" => 1,
+                "shop_front"   => [
                     "comments" => [
                         [
-                            "nc_count" => 1,
-                            "created_at" => 12132312,
+                            "nc_count"     => 1,
+                            "created_at"   => 12132312,
+                            "message_from" => 'merchant',
                             "comment_data" => [
                                 "text" => "some comment",
-                                "type" => "some type",
+                                "type" => "some type"
                             ]
                         ],
+                        [
+                            "nc_count"     => 1,
+                            "created_at"   => 12132311,
+                            "message_from" => 'admin',
+                            "comment_data" => [
+                                "text" => "admin some comment"
+                            ]
+                        ]
                     ]
                 ]
             ]
         ];
 
-       $response =  (new DetailCore())->getUpdatedPosClarificationResponse($input);
+        $response = (new DetailCore())->getUpdatedPosClarificationResponse($input);
 
-       $expectedResponse = [
-           "clarification_reasons" => [
-               'pos_nc_count' => 1,
-               'shop_front' => [
-                   'from' => 'admin',
-                   'nc_count' => 1,
-                   'is_current' => true,
-                   'created_at' => 12132312,
-                   'reason_code' => 'some comment',
-                   'reason_type' => 'some type'
-               ]
-           ]
-       ];
+        $expectedResponse = [
+            "clarification_reasons" => [
+                'pos_nc_count' => 1,
+                'shop_front'   => [
+                    ['from'        => 'merchant',
+                     'nc_count'    => 1,
+                     'is_current'  => true,
+                     'created_at'  => 12132312,
+                     'reason_code' => 'some comment',
+                     'reason_type' => 'some type'],
+                    ['from'        => 'admin',
+                     'nc_count'    => 1,
+                     'is_current'  => true,
+                     'created_at'  => 12132311,
+                     'reason_code' => 'admin some comment']
+                ]
+            ]
+        ];
 
-        $this->assertEquals( $expectedResponse['clarification_reasons']['pos_nc_count'], $response['clarification_reasons']['pos_nc_count']);
+        $this->assertArraySubset($expectedResponse,$response);
 
     }
 

@@ -12062,7 +12062,7 @@ class Core extends Base\Core
                         foreach ($comments as $comment)
                         {
                             $clarification                           = [];
-                            $clarification[DEConstants::FROM]        = DEConstants::ADMIN;
+                            $clarification[DEConstants::FROM]        = $comment[DEConstants::MESSAGE_FROM];
                             $clarification[DEConstants::NC_COUNT]    = $comment[DEConstants::NC_COUNT];
                             $clarification[DEConstants::IS_CURRENT]  = true;
                             $clarification[DEConstants::CREATED_AT]  = $comment[DEConstants::CREATED_AT];
