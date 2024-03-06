@@ -5911,7 +5911,7 @@ trait Authorize
             $this->setRecurringType($payment, $input, $gatewayInput);
         }
 
-        // select token's terminal id only for upi autopay subsequent debits
+        // select token's terminal id only for upi autopay & nach subsequent debits
         $this->setSelectedTerminalsIdsForAutoDebit($payment, $payment->getGlobalOrLocalTokenEntity(), $gatewayInput);
 
         $this->setPreferredAuthIfApplicable($payment);
@@ -6863,8 +6863,8 @@ trait Authorize
                                                            & $gatewayInput)
     {
         if((($payment->isUpiAutoRecurring() === true) or
-                (($payment->isCardAutoRecurring() === true) and
-                    ($payment->card->isRuPay() === true))) and
+            ($payment->isNachAutoRecurring() === true) or
+            (($payment->isCardAutoRecurring() === true) and ($payment->card->isRuPay() === true))) and
                 ($token !== null))
         {
             $this->trace->info(
@@ -6873,6 +6873,7 @@ trait Authorize
                     'token_id'      => $token->getId(),
                     'terminal_id'   => $token->getTerminalId(),
                     'payment_id'    => $payment->getId(),
+                    'method'        => $payment->getMethod()
                 ]);
 
             $gatewayInput['selected_terminals_ids'] = [$token->getTerminalId()];
