@@ -17280,6 +17280,7 @@ class Route
         ],
 
         'affordability' => [
+            'payment_fetch_by_id_internal',
             'get_affordability_suite',
             'merchant_fetch_methods_internal',
             'get_or_create_customer_internal',

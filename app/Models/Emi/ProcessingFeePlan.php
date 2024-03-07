@@ -36,7 +36,14 @@ class ProcessingFeePlan
                     self::TYPE => self::FIXED,
                     self::AMOUNT => 19900
                 ]
+            ],
+            Type::DEBIT => [
+                self:: DEFAULT => [
+                    self::TYPE => self::FIXED,
+                    self::AMOUNT => 19900
+                ]
             ]
+
         ],
         CreditEmiProvider::SCBL => [
             Type::CREDIT => [

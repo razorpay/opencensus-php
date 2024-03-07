@@ -370,6 +370,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const REWARD_ID                               = "reward_id";
     const REWARD                                  = "reward";
+    const PROCESSING_FEE                          = "processing_fee";
+
 
     const OFFER_BENEFITS                          = 'offer_benefits';
 

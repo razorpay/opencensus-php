@@ -8,6 +8,7 @@ use Mail;
 use Crypt;
 use Config;
 use RZP\Models\Admin;
+use RZP\Models\Emi\ProcessingFeePlan;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
@@ -2506,6 +2507,23 @@ class Service extends Base\Service
             ]);
 
             $entity['order'] = $orderEntity;
+        }
+
+        if ($entity[Payment\Entity::EMI] != null && $entity[Payment\Entity::EMI]['issuer'] != null && $entity[Payment\Entity::EMI]['type'] != null)
+        {
+            $processingFeePlan = (new ProcessingFeePlan())->getProcessingFeePlan($entity[Payment\Entity::EMI]['issuer'], $entity[Payment\Entity::EMI]['type'],$entity[Payment\Entity::EMI]['duration'],$payment->getAmount());
+            if (!empty($processingFeePlan))
+            {
+                $percentageFee = 0;
+                if ($processingFeePlan[ProcessingFeePlan::TYPE] == ProcessingFeePlan::COMBINATION) {
+
+                    $paymentAmount = $payment->getAmount();
+                    $percentageFee = $processingFeePlan[ProcessingFeePlan::PERCENTAGE] * $paymentAmount / 100;
+
+                }
+                $entity[Payment\Entity::EMI][Payment\Entity::PROCESSING_FEE] = max($percentageFee, $processingFeePlan[ProcessingFeePlan::AMOUNT]);
+            }
+
         }
 
         return $entity;

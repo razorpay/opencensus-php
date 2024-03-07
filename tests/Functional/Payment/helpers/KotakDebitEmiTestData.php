@@ -18,6 +18,19 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testKotakDebitEmiPaymentAndPaymentEntityFetchSuccess' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '111111'
+            ]
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
     'testKotakDebitEmiPaymentIncorrectOtp' => [
         'request'   => [
             'method'    => 'POST',

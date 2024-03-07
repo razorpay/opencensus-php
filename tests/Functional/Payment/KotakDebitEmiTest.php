@@ -73,6 +73,75 @@ class KotakDebitEmiTest extends TestCase
         $this->assertAuthorized();
     }
 
+    public function testKotakDebitEmiPaymentAndPaymentEntityFetchSuccess()
+    {
+        $this->createDependentEntitiesForSuccessPayment();
+        $this->enableCpsConfig();
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', \Mockery::type('string'), \Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $content) {
+                switch ($url) {
+                    case 'action/authorize':
+                        $input = $content['input'];
+                        return [
+                            'data' => [
+                                'url' => $input['otpSubmitUrl'],
+                            ]
+                        ];
+                    case 'action/callback':
+                        return [
+                            'data' => [
+                                'acquirer' => [
+                                    'reference2' => 'test12',
+                                ],
+                                'payment' => [
+                                    'reference2' => 'test12',
+                                ],
+                            ]
+                        ];
+                }
+            });
+        $this->doAuthPayment($this->payment);
+
+        $payment= $this->getDbLastEntity('payment');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpSubmitUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+
+        $this->assertAuthorized();
+
+        $this->ba->expressAuth();
+
+        $paymentId = $payment->getPublicId();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     =>  '/payments_internal/'.$paymentId.'?expand[]=emi',
+
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['status'], 'authorized');
+        $this->assertEquals($response['entity'],'payment');
+        $this->assertNotNull($response);
+        $this->assertEquals($response['id'],$paymentId);
+        $this->assertNotNull($response['emi']);
+        $this->assertEquals($response['emi']['processing_fee'],29900);
+        $this->assertEquals($response['emi']['issuer'],'KKBK');
+        $this->assertEquals($response['emi']['type'],'debit');
+
+
+    }
+
     public function testKotakDebitEmiPaymentIncorrectOtp()
     {
         $this->createDependentEntitiesForSuccessPayment();
