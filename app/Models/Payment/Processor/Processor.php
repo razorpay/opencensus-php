@@ -1013,6 +1013,10 @@ class Processor
 
             if ((empty($input[Payment\Entity::OFFER_ID]) === false))
             {
+                $this->trace->info(TraceCode::ROUTING_CARD_PAYMENT_WITH_OFFER_TO_REARCH, [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+
                 $offerId = $input[Payment\Entity::OFFER_ID];
 
                 Offer\Entity::verifyIdAndStripSign($offerId);
@@ -1248,6 +1252,10 @@ class Processor
                     return false;
                 }
 
+                $this->trace->info(TraceCode::ROUTING_CARD_PAYMENT_WITH_TOKEN_TO_REARCH, [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+
                 $tokenId = $input[Payment\Entity::TOKEN];
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
 
@@ -1458,6 +1466,7 @@ class Processor
 
                 $this->trace->info(TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_RESULT, [
                     'canRouteThroughCrossBorderRearchFlow'      =>  $result,
+                    'merchant_id' => $merchant->getId(),
                 ]);
 
                 if($result == false)
@@ -1603,6 +1612,7 @@ class Processor
             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                 'reason' => "not_engaged_in_any_function",
                 'merchant_id' => $merchant->getId(),
+                'razorx_result' => $result,
             ]);
 
             return ($result === 'on');
