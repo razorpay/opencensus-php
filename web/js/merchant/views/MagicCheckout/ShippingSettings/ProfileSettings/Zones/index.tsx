@@ -139,7 +139,7 @@ const Zones = ({
 
   const handleCreate = () => {
     setSelectedZone('');
-    setIsModalOpen(MODAL_TYPES.FILE_UPLOAD);
+    setIsModalOpen(MODAL_TYPES.MANUAL);
   };
 
   const handleFileUploadCreate = () => {
