@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Setting;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Exception\BadRequestException;
 
 return [
 
@@ -124,6 +125,40 @@ return [
                 'success' => true
             ],
         ],
-    ]
+    ],
 
+    'testGetEntityIdsAndValueWithValidModule' => [
+        'request'  => [
+            'url'    => '/settings_internal/pending_approvals/skip_pending_approval_notification',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'entity_id' => '',
+                    'value'     => '{\"invoice\" : true,\"po\" : false}'
+                ]
+            ],
+        ],
+    ],
+
+    'testGetEntityIdsAndValueWithInvalidModule' => [
+        'request'  => [
+            'url'    => '/settings_internal/invalid_module/skip_pending_approval_notification',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The module specified is invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ]
 ];

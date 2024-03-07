@@ -44,6 +44,8 @@ class Module
 
     const IP_WHITELIST_CONFIG  = 'ip_whitelist_config';
 
+    const PENDING_APPROVALS     = 'pending_approvals';
+
 
     /**
      * @param string $module

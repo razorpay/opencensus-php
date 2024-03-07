@@ -1303,4 +1303,12 @@ class Authorization
 
         $this->appAuth('rzp_'. $mode, $pwd);
     }
+
+    public function xperienceAppAuth($mode = 'test'): void
+    {
+        $xperienceServiceConfig = \Config::get('applications.xperience');
+        $pwd = $xperienceServiceConfig['secret'];
+
+        $this->appAuth('rzp_'. $mode, $pwd);
+    }
 }

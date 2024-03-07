@@ -91,4 +91,39 @@ class SettingTest extends TestCase
 
         $this->runRequestResponseFlow($getSettingsData);
     }
+
+    public function testGetEntityIdsAndValueWithValidModule()
+    {
+        $this->setUp();
+
+        $this->ba->xperienceAppAuth();
+
+        $settings = $this->fixtures->create('settings', [
+            'key' => 'skip_pending_approval_notification',
+            'value' => '{\"invoice\" : true,\"po\" : false}',
+            'module' => 'pending_approvals',
+        ]);
+
+        $testData = $this->testData['testGetEntityIdsAndValueWithValidModule'];
+        $testData['response']['content'][0]['entity_id'] = $settings->entity_id;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGetEntityIdsAndValueWithInValidModule()
+    {
+        $this->setUp();
+
+        $this->ba->xperienceAppAuth();
+
+        $settings = $this->fixtures->create('settings', [
+            'key' => 'skip_pending_approval_notification',
+            'value' => '{\"invoice\" : true,\"po\" : false}',
+            'module' => 'pending_approvals',
+        ]);
+
+        $testData = $this->testData['testGetEntityIdsAndValueWithInvalidModule'];
+
+        $this->runRequestResponseFlow($testData);
+    }
 }

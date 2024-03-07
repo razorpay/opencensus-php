@@ -47,4 +47,11 @@ class SettingsController extends Controller
 
         return ApiResponse::json($settings);
     }
+
+    public function getEntityIdsAndValue(string $module, string $key)
+    {
+        $settings = $this->service()->getEntityIdsAndValue($module, $key);
+
+        return ApiResponse::json($settings);
+    }
 }

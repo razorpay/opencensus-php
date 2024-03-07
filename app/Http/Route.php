@@ -1943,6 +1943,9 @@ class Route
         'cost_center_create_admin'                  => ['post',     'admin/xperience/cost-centers/create',      'XperienceController@createCostCenters'],
         'cost_center_update_admin'                  => ['put',      'admin/xperience/cost-centers/{id}',        'XperienceController@updateCostCenter'],
 
+        'pending_entities_approval_email_cron'      => ['post',     'xperience/pending-approval-email',         'XperienceController@pendingEntitiesApprovalEmailCron'],
+
+
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                             => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
@@ -3011,6 +3014,7 @@ class Route
         'settings_fetch'                           => ['get',      'settings/{module}/{key?}',                       'SettingsController@get'                                            ],
         'settings_upsert'                          => ['post',     'settings/{module}',                              'SettingsController@upsert'                                         ],
         'settings_fetch_internal'                  => ['get',      'settings_internal/{module}/',                    'SettingsController@get'                                            ],
+        'settings_fetch_by_key_internal'           => ['get',      'settings_internal/{module}/{key}',               'SettingsController@getEntityIdsAndValue'                                            ],
         'settings_upsert_internal'                 => ['post',     'settings_internal/{module}/',                    'SettingsController@upsert'                                         ],
 
         //Ondemand routes
@@ -6033,6 +6037,7 @@ class Route
         'entity_bulk_update',
         'merchants_access_map_upsert_bulk',
         'settings_fetch_internal',
+        'settings_fetch_by_key_internal',
         'settings_upsert_internal',
         'setl_transaction_replay',
         'setl_execution_reminder',
@@ -6286,6 +6291,7 @@ class Route
         'payout_send_pending_approval_reminder',
         'payouts_pending_push_notification_cron',
         'fee_recovery_low_balance_cron',
+        'pending_entities_approval_email_cron',
 
         'terminal_fill_enabled_wallets',
         'payment_update_reference6',
@@ -11659,6 +11665,7 @@ class Route
 
         'xperience' => [
             'merchant_fetch_internal_users',
+            'settings_fetch_by_key_internal',
         ],
 
         'master_onboarding' => [
@@ -16314,6 +16321,7 @@ class Route
             'merchant_action_notification_cron',
             'merchant_risk_identify_blacklist_country_alerts',
             'payout_send_pending_approval_email',
+            'pending_entities_approval_email_cron',
             'payout_send_pending_approval_reminder',
             'payouts_pending_push_notification_cron',
             'fee_recovery_low_balance_cron',

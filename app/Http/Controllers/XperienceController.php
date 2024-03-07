@@ -171,4 +171,13 @@ class XperienceController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function pendingEntitiesApprovalEmailCron()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->sendPendingApprovalsEmail();
+
+        return ApiResponse::json($response);
+    }
 }

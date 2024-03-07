@@ -16,7 +16,7 @@ class Service extends Base\Service
 
         $settings = Accessor::for($merchant, $module)
                             ->get($key);
-        
+
         return ['settings' => $settings];
     }
 
@@ -82,6 +82,14 @@ class Service extends Base\Service
     public function getSettings(string $entityId, $module, $key)
     {
         return $this->repo->settings->getSettings($entityId, $module, $key);
+    }
+
+    public function getEntityIdsAndValue(string $module, string $key)
+    {
+        Module::validate($module);
+
+        return $this->repo->settings->getEntityIdsAndValueByKeyAndModule($module, $key)
+            ->toArray();
     }
 
 }

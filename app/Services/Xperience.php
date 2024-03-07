@@ -48,6 +48,8 @@ class Xperience
     const SINGLE_COST_CENTER_PATH            = 'v1/cost-centers/%s';
     const DISABLE_COST_CENTER_PATH           = 'v1/cost-centers/%s/disable';
 
+    const PENDING_ENTITIES_SUMMARY_EMAIL_PATH = 'v1/aggregator/send-pending-entities-email';
+
 
     // header constants
     const X_APP_MODE            = 'X-App-Mode';
@@ -546,6 +548,15 @@ class Xperience
             self::EMAIL   => $user->getEmail(),
             self::ROLE    => $ba->getUserRole(),
         ];
+    }
+
+    public function sendPendingApprovalsEmail()
+    {
+        $url = $this->getConstructedUrl(self::PENDING_ENTITIES_SUMMARY_EMAIL_PATH);
+
+        $this->makeRequest($url, [], [], self::GET);
+
+        return ['success' => true];
     }
 }
 

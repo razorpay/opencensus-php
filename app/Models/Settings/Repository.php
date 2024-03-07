@@ -28,4 +28,17 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getEntityIdsAndValueByKeyAndModule(string $module, string $key)
+    {
+        $entityIdColumn = $this->dbColumn(Entity::ENTITY_ID);
+        $valueColumn    = $this->dbColumn(Entity::VALUE);
+        $moduleColumn   = $this->dbColumn(Entity::MODULE);
+        $keyColumn      = $this->dbColumn(Entity::KEY);
+
+        return $this->newQuery()
+                    ->select($entityIdColumn, $valueColumn)
+                    ->where($moduleColumn, '=', $module)
+                    ->where($keyColumn, '=', $key)
+                    ->get();
+    }
 }
