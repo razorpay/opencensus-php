@@ -35,6 +35,8 @@ import ConfigureBankAccountsModal from 'merchant/views/SmartCollect/VirtualAccou
 import BankImage from 'assets/bank.svg';
 import UpiImage from 'assets/upi.svg';
 
+import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import {
   DESCRIPTOR_LENGTH_BANK_ACCOUNT,
   DESCRIPTOR_LENGTH_VPA,
@@ -497,6 +499,11 @@ class CreateVirtualAccount extends React.Component {
   };
 
   render() {
+    const {
+      abExperiments: { enable_smartcollect_vpa_option },
+    } = this.props.splitz;
+    const showVpaSC = isExperimentEnabled(enable_smartcollect_vpa_option); // have added this to diable the VPA option from smart collect create customer identifier
+
     const { customers = [], onClose, va_config, user, isTestMode } = this.props;
 
     const IS_MODAL_VIEW = !!onClose;
@@ -602,7 +609,7 @@ class CreateVirtualAccount extends React.Component {
                     )}
                   </SelectBox>
 
-                  {!isTestMode && (
+                  {!isTestMode && showVpaSC && (
                     <SelectBox
                       name="hasVPA"
                       class="SelectBox--Outline"
@@ -897,4 +904,4 @@ function validateCustomBankAccountNumber(descriptorLimit_BankAccount) {
   };
 }
 
-export default withRouter(CreateVirtualAccount);
+export default withSplitzService(withRouter(CreateVirtualAccount));
