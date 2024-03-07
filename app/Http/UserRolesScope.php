@@ -176,7 +176,7 @@ class UserRolesScope
             'setl_fetch_by_id'    => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
                 [Role::RBL_SUPERVISOR, Role::AGENT]),
             'org_setl_fetch_by_id'    => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
-        [Role::RBL_SUPERVISOR, Role::AGENT]),
+                [Role::RBL_SUPERVISOR, Role::AGENT]),
             // RSR-1970 changes
             'setl_merchant_dashboard_config_get' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
                 [Role::RBL_SUPERVISOR, Role::AGENT, Role::PARTNER,]),
@@ -1429,7 +1429,7 @@ class UserRolesScope
 
             'merchant_vkyc_submit'                                 =>   [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'merchant_edd_details_fetch'                           =>   Role::ALL_ROLES,
-            'rize_marketplace_dashboard'                           => [Role::OWNER, Role::ADMIN],
+            'rize_marketplace_dashboard'                           =>   Role::ALL_ROLES,
             'merchant_fetch_customer_eligibility'                  =>   Role::ALL_ROLES,
 
         ];
