@@ -108,8 +108,6 @@ export default class InstantActivationAnnouncements extends Component {
       this.props.isNcEligibile,
     );
 
-    const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
-
     const expiryDate = getNcExpiryDate(user?.kyc_clarification_reasons);
 
     if (user.isInstantActivationEnabled) {
@@ -121,10 +119,8 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <div class="announcement-container">
               <div class="announcement-info">
-                We cant support your business because it doesnt meet our compliance requirements. If
-                you think this is a mistake please reach out to our support{' '}
-                {L2_dedupe_blocked &&
-                  'In case you have pending settlements, you can raise a ticket and get your funds settled to your account.'}
+                Your current business category is not supported by our banking partners. If you wish
+                to reconsider and update, please reach out to us via support.
               </div>
               <div className="big-circle-seprator" />
               <SupportButton

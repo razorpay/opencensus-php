@@ -2,9 +2,8 @@ export const DEDUPE = {
   title: 'Business not supported',
   old_title: 'Clarification required',
   description:
-    'We cant support your business because it doesnt meet our compliance requirements If you think this is a mistake please reach out to our support.',
-  L2_description:
-    'In case you have pending settlements, you can raise a ticket and get your funds settled to your account.',
+    'Your current business category is not supported by our banking partners. If you wish to reconsider and update, please reach out to us via support.',
+  L2_description: '',
   old_description:
     ' We need some clarification regarding your submitted details. Please contact support to activate your account.',
   buttonText: 'Contact Support',

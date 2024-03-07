@@ -16,7 +16,6 @@ export const kycModalContent = (args = {}, navigate) => {
     args.isUnregisteredBusiness,
     args.isNcEligibile,
   );
-  const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
   const activationFormUrl = args.isActivationFormFullView ? '/kyc' : '/activation';
   const isSignupWithEasyOnboarding = args?.user?.user?.signup_campaign === EASY_ONBOARDING;
   const expiryDate = getNcExpiryDate(args.activationData?.kyc_clarification_reasons);
@@ -29,12 +28,8 @@ export const kycModalContent = (args = {}, navigate) => {
         subtitle: null,
         body: (
           <div>
-            <div>
-              We cant support your business because it doesnt meet our compliance requirements
-            </div>
-            <div>If you think this is a mistake please reach out to our support</div>
-            {L2_dedupe_blocked &&
-              'In case you have pending settlements, you can raise a ticket and get your funds settled to your account.'}
+            Your current business category is not supported by our banking partners. If you wish to
+            reconsider and update, please reach out to us via support.
           </div>
         ),
         background: 'warning',
