@@ -1545,4 +1545,9 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
     }
+
+    public function isUpi()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
+    }
 }

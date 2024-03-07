@@ -10,4 +10,6 @@ class Constants {
     public const FETCH_PAYMENTS_DEFAULT_COUNT = 5;
     public const FETCH_PAYMENTS_DEFAULT_SKIP = 0;
     const OTP_REASON_ACCESS_SAVED_WALLETS= "access_saved_wallets";
+
+    const OTP_REASON_ACCESS_SAVED_VPAS= "access_upi_id";
 }

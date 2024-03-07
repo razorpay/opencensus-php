@@ -3736,4 +3736,23 @@ class Core extends Base\Core
             return false;
         })->values();
     }
+
+    /**
+     * This method takes in the current token collection,
+     * removes non-upi tokens
+     *
+     * @param Base\PublicCollection|array $tokens
+     *
+     * @return Base\PublicCollection|array
+     */
+    public function removeNonUpiTokens(Base\PublicCollection|array $tokens): Base\PublicCollection|array
+    {
+        return $tokens->filter(static function (Entity $token) {
+            if ($token->isUpi()) {
+                return true;
+            }
+
+            return false;
+        })->values();
+    }
 }

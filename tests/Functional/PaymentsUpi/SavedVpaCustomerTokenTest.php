@@ -68,6 +68,15 @@ class SavedVpaCustomerTokenTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCustomerVpaTokensWithSaveVpaFeatureEnabled()
+    {
+        $this->mockSession();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
 
     public function testAddCustomerTokenUpiBulkCron()
     {

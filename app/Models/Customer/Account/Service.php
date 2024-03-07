@@ -770,7 +770,8 @@ class Service extends Base\Service
             'saved_address' => false,
             '1cc_consent_banner_views' => 0,
             'saved_cards_count' => 0,
-            'saved_addresses_count' => 0
+            'saved_addresses_count' => 0,
+            'saved_vpa_count' => 0
         ];
 
         if ($sendOtp === true)
@@ -933,11 +934,16 @@ class Service extends Base\Service
                 if($input['otp_reason']== AccountConstants::OTP_REASON_ACCESS_SAVED_WALLETS){
                     $customerTokensCount=$this->getWalletTokensCountByCustomer($customer, $this->merchant);
                 }
+                else if($input['otp_reason'] == AccountConstants::OTP_REASON_ACCESS_SAVED_VPAS){
+                    $customerTokensCount = $this->getUpiTokensCountByCustomer($customer, $this->merchant);
+                    $data['saved_vpa_count'] = $customerTokensCount;
+                }
                 else{
                     $customerTokensCount = $this->getCardTokensCountByCustomer($customer, $this->merchant);
                     $data['saved_cards_count'] = $customerTokensCount;
                 }
 
+                // If there are no card/vpa/wallet tokens , make saved as false and do not send otp
                 if ($customerTokensCount === 0)
                 {
                     $sendOtp = false;
@@ -1603,5 +1609,23 @@ class Service extends Base\Service
         $result['status'] = $customerConsent;
 
         return $result;
+    }
+
+    /**
+     * Calculates count of all merchant saved upi tokens associated to the customer
+     *
+     * @param Customer\Entity $customer
+     * @param MerchantEntity $merchant
+     * @return integer
+     */
+    public function getUpiTokensCountByCustomer(Customer\Entity $customer, MerchantEntity $merchant): int
+    {
+        $tokenCore = (new Token\Core());
+
+        $tokens = $tokenCore->fetchTokensByCustomerForCheckout($customer, $merchant);
+
+        $tokens = $tokenCore->removeNonUpiTokens($tokens);
+
+        return count($tokens);
     }
 }

@@ -32,6 +32,20 @@ return [
             ]
         ],
     ],
+    'testGetCustomerVpaTokensWithSaveVpaFeatureEnabled' => [
+        'request' => [
+            'url' => '/customers/status/9988776655',
+            'method' => 'get',
+            'content' => [
+                'otp_reason' => 'access_upi_id',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'saved_vpa_count' => 1,
+            ]
+        ],
+    ],
     'testGetCustomerTokensWithSaveVpaFeatureDisabled' => [
         'request' => [
             'url' => '/customers/status/9988776655',
@@ -43,6 +57,7 @@ return [
         'response' => [
             'content' => [
                 'saved' => true,
+                'saved_vpa_count' => 0,
                 'email' => 'test@razorpay.com',
                 'tokens' => [
                     'entity' => 'collection',
