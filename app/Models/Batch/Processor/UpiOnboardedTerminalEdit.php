@@ -154,7 +154,9 @@ class UpiOnboardedTerminalEdit extends Base
         if ($editBillingLabel !== null and
             $editBillingLabel !== '')
         {
-            if ($instrumentsOnUpiFlag === true)
+            // Added special clause for yesbank as it mandatorily wants cc flag
+            if ($instrumentsOnUpiFlag === true and
+                $gateway !== Gateway::UPI_YESBANK)
             {
                 throw new BadRequestValidationFailureException(
                     'Updating other fields with cc_on_upi, wallet_on_upi or credit_line_on_upi is not allowed.'
@@ -170,7 +172,9 @@ class UpiOnboardedTerminalEdit extends Base
         if ($editMobileNumber !== null and
             $editMobileNumber !== '')
         {
-            if ($instrumentsOnUpiFlag === true)
+            // Added special clause for yesbank as it mandatorily wants cc flag
+            if ($instrumentsOnUpiFlag === true and
+                $gateway !== Gateway::UPI_YESBANK)
             {
                 throw new BadRequestValidationFailureException(
                     'Updating other fields with cc_on_upi, wallet_on_upi or credit_line_on_upi is not allowed.'
