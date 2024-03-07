@@ -1279,7 +1279,9 @@ class Validator extends Base\Validator
         Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CC          => 'sometimes|boolean',
         Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_WALLET      => 'sometimes|boolean',
         Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CREDIT_LINE => 'sometimes|boolean',
-        Header::UPI_ONBOARDED_TERMINAL_EDIT_MERCHANT_SIZE     => 'sometimes|numeric',
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_MERCHANT_SIZE     =>
+            'sometimes|numeric|required_if:' . Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY . ',' .
+            Gateway::UPI_YESBANK,
         Header::UPI_ONBOARDED_TERMINAL_EDIT_MCC               =>
             'sometimes|numeric|prohibited_if:' . Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY . ',' .
             Gateway::UPI_YESBANK . '|custom',

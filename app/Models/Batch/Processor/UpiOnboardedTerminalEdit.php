@@ -6,6 +6,7 @@ namespace RZP\Models\Batch\Processor;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 
 class UpiOnboardedTerminalEdit extends Base
@@ -87,7 +88,8 @@ class UpiOnboardedTerminalEdit extends Base
         if ($online !== null and
             $online !== '')
         {
-            if ($instrumentsOnUpiFlag === true)
+            if ($instrumentsOnUpiFlag === true and
+                $gateway !== Gateway::UPI_YESBANK)
             {
                 throw new BadRequestValidationFailureException(
                     'Updating Online type/Merchant Genre with cc_on_upi, wallet_on_upi or credit_line_on_upi is not allowed.'
@@ -129,14 +131,21 @@ class UpiOnboardedTerminalEdit extends Base
         if ($merchantSize !== null and
             $merchantSize !== '')
         {
-            if ($instrumentsOnUpiFlag === true)
+            // Since merchant size is compulsory for UPI Yesbank, we have added a gateway check
+            if ($instrumentsOnUpiFlag === true and
+                $gateway !== Gateway::UPI_YESBANK)
             {
                 throw new BadRequestValidationFailureException(
                     'Updating Merchant Size with cc_on_upi, wallet_on_upi or credit_line_on_upi is not allowed.'
                 );
             }
 
-            $individualFieldEditFieldsCount++;
+            // We are not incrementing this counter for upi yesbank
+            // This is because merchant size is mandatory for UPI Yesbank Edits
+            if ($gateway !== Gateway::UPI_YESBANK)
+            {
+                $individualFieldEditFieldsCount++;
+            }
 
             $emptyInputFlag = false;
             $features['merchant_size'] = (string)$merchantSize;
@@ -176,13 +185,6 @@ class UpiOnboardedTerminalEdit extends Base
 
         if ($emptyInputFlag === true)
         {
-            if ($instrumentsOnUpiFlag === true)
-            {
-                throw new BadRequestValidationFailureException(
-                    'Updating other fields with cc_on_upi, wallet_on_upi or credit_line_on_upi is not allowed.'
-                );
-            }
-
             throw new BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_EMPTY_ROW_UPLOADED
             );
