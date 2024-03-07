@@ -886,7 +886,7 @@ class Core extends Base\Core
             Entity::MERCHANT_ID     => $contact->getMerchantId(),
         );
 
-        if ($eventType === Contact\Constants::CONTACT_UPDATED_MESSAGE)
+        if ($eventType === Contact\Constants::CONTACT_UPDATED_MESSAGE and !empty($contact->getChanges()))
         {
             $data[Contact\Constants::CHANGE_SET] = $contact->getChanges();
         }
