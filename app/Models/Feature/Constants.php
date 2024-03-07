@@ -1671,9 +1671,9 @@ class Constants
 
     const PL_V2_DISABLE_ALL_EMAIL = 'pl_v2_disable_all_email';
 
-    const PL_V2_DISABLE_REMINDER_SMS = 'pl_v2_disable_reminder_sms';
+    const PL_V2_DISABLE_REMINDER_SMS = 'pl_v2_disable_rmndr_sms';
 
-    const PL_V2_DISABLE_REMINDER_EMAIL = 'pl_v2_disable_reminder_email';
+    const PL_V2_DISABLE_REMINDER_EMAIL = 'pl_v2_disable_rmndr_email';
 
     // form builder
 

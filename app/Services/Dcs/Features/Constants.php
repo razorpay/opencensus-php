@@ -39,8 +39,8 @@ class Constants
     const NotifyViaWhatsappPlink                     = 'notify_via_whatsapp_plink';
     const PlV2DisableAllSms                          = 'pl_v2_disable_all_sms';
     const PlV2DisableAllEmail                        = 'pl_v2_disable_all_email';
-    const PlV2DisableReminderSms                     = 'pl_v2_disable_reminder_sms';
-    const PlV2DisableReminderEmail                   = 'pl_v2_disable_reminder_email';
+    const PlV2DisableReminderSms                     = 'pl_v2_disable_rmndr_sms';
+    const PlV2DisableReminderEmail                   = 'pl_v2_disable_rmndr_email';
     const EnableMerchantCreateOwnTemplate            = 'payment_page_create_own_template_enabled';
     const EnableCustomerAmount                       = 'payment_page_customer_decide_amount_enabled';
     const ReceiptUniqueEnabled                       = 'receipt_unique_enabled';
