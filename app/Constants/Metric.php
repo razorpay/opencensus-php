@@ -177,6 +177,12 @@ class Metric
     const PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_FAILURE           = 'pg_ledger_outbox_update_retry_count_failure';
     const LEDGER_ACCOUNT_CREATION_FAILURE                       = 'ledger_account_creation_failure';
 
+    // Pricing
+    const SERVER_ERROR_NO_PRICING_RULE_FOUND                    = 'server_error_no_pricing_rule_found';
+    const SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND             = 'server_error_multiple_pricing_rules_found';
+    const MERCHANT_ON_DEMAND_PRICING_FETCH_PLAN_MISMATCH        = 'merchant_on_demand_pricing_fetch_plan_mismatch';
+
+
     const KAFKA_ADJUSTMENT_API_TXN_PUSH_SUCCESS                 = 'kafka_adjustment_api_txn_push_success';
     const KAFKA_TRANSFER_API_TXN_PUSH_SUCCESS                   = 'kafka_transfer_api_txn_push_success';
     const KAFKA_ADJUSTMENT_API_TXN_PUSH_FAILURE                 = 'kafka_adjustment_api_txn_push_failure';

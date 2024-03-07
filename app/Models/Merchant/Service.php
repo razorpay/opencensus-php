@@ -5071,6 +5071,7 @@ class Service extends Base\Service
                 'Merchant Plan ID :' => $pricingPlanId,
                 'New Plan ID :' => $planID,
             ]);
+            $this->trace->count(ConstantMetric::MERCHANT_ON_DEMAND_PRICING_FETCH_PLAN_MISMATCH);
 
             $pricingPlanId = $planID;
         }

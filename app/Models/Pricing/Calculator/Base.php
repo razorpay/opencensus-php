@@ -18,6 +18,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Models\Transaction;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Payout\Metric;
+use RZP\Constants\Metric as MetricConstants;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base as BaseModel;
@@ -318,6 +319,11 @@ abstract class Base extends BaseModel\Core
 
         if ($rule === null)
         {
+            $this->trace->count(count($pricing) == 0 ? MetricConstants::SERVER_ERROR_NO_PRICING_RULE_FOUND : MetricConstants::SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND,
+                [
+                    'route_name' => $this->app['api.route']->getCurrentRouteName()
+                ]);
+
             throw new Exception\LogicException(
                 'No appropriate pricing rule found for entity ' . $this->entity->getEntity(),
                 ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
@@ -370,6 +376,11 @@ abstract class Base extends BaseModel\Core
                         'route_name' => $this->app['api.route']->getCurrentRouteName(),
                     ]);
             }
+
+            $this->trace->count(MetricConstants::SERVER_ERROR_NO_PRICING_RULE_FOUND,
+                [
+                    'route_name' => $this->app['api.route']->getCurrentRouteName()
+                ]);
 
             throw new Exception\LogicException(
                 'Invalid rule count: 0, Merchant Id: ' . $payment->getMerchantId(),
@@ -580,6 +591,11 @@ abstract class Base extends BaseModel\Core
                 );
             }
 
+            $this->trace->count(count($rules) == 0? MetricConstants::SERVER_ERROR_NO_PRICING_RULE_FOUND : MetricConstants::SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND,
+                [
+                    'route_name' => $this->app['api.route']->getCurrentRouteName()
+                ]);
+
             // Should not reach this case, ever.
             throw new Exception\RuntimeException(
                 'Should not have reached here');
@@ -592,6 +608,11 @@ abstract class Base extends BaseModel\Core
     {
         if (count($pricing) !== 1)
         {
+            $this->trace->count(count($pricing) == 0? MetricConstants::SERVER_ERROR_NO_PRICING_RULE_FOUND : MetricConstants::SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND,
+                [
+                    'route_name' => $this->app['api.route']->getCurrentRouteName()
+                ]);
+
             throw new Exception\LogicException(
                 'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
                 count($pricing) == 0 ? ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT : null);

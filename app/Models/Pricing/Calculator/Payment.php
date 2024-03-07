@@ -130,6 +130,11 @@ class Payment extends Base
 
         if ($rule === null)
         {
+            $this->trace->count(count($pricing) == 0? Metric::SERVER_ERROR_NO_PRICING_RULE_FOUND : Metric:: SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND,
+                [
+                    'route_name' => $this->app['api.route']->getCurrentRouteName()
+                ]);
+
             throw new Exception\LogicException(
                 'No appropriate pricing rule found for entity ' . $this->entity->getEntity(),
                 ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
