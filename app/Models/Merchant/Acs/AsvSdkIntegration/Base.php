@@ -16,6 +16,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Base\Audit\Constants;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
+use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant;
 use RZP\Exception;
 use Razorpay\Asv\DbSource;
@@ -423,9 +424,9 @@ class Base
 
     /**
      * @param mixed $response
-     * @return \Illuminate\Database\Eloquent\Collection|PublicCollection
+     * @return Collection|PublicCollection
      */
-    public function getMerchantCollectionFromResponse(mixed $response): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    public function getMerchantCollectionFromResponse(mixed $response): PublicCollection|Collection
     {
         $merchants = $response->getMerchants();
         $merchantArray = [];
@@ -444,9 +445,9 @@ class Base
 
     /**
      * @param mixed $response
-     * @return \Illuminate\Database\Eloquent\Collection|PublicCollection
+     * @return Collection|PublicCollection
      */
-    public function getMerchantDetailCollectionFromResponse(mixed $response): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    public function getMerchantDetailCollectionFromResponse(mixed $response): PublicCollection|Collection
     {
         $merchantDetails = $response->getMerchantDetails();
         $merchantDetailsArray = [];
@@ -465,15 +466,15 @@ class Base
 
     /**
      * @param mixed $response
-     * @return \Illuminate\Database\Eloquent\Collection|PublicCollection
+     * @return Collection|PublicCollection
      */
-    public function getMerchantDocumentCollectionFromResponse(mixed $response): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    public function getMerchantDocumentCollectionFromResponse(mixed $response): PublicCollection|Collection
     {
         $merchantDocuments = $response->getMerchantDocuments();
         $merchantDocumentsArray = [];
 
         /**
-         * @var $merchantDetail \Rzp\Accounts\Merchant\V1\MerchantDetail
+         * @var $merchantDocument \Rzp\Accounts\Merchant\V1\MerchantDocument
          */
         foreach ($merchantDocuments as $merchantDocument) {
             $merchantDocumentProtoConvertor = new MerchantDocumentProtoMapper($merchantDocument);

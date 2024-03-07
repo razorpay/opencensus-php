@@ -6,9 +6,10 @@ use RZP\Models\Base;
 use Database\Connection;
 use RZP\Base\ConnectionType;
 use RZP\Exception\BaseException;
-use Illuminate\Support\Facades\DB;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
+use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
@@ -206,18 +207,40 @@ class Repository extends Base\Repository
     /**
      * Fetch all the documents by entityId and entityType
      *
-     * @param string $entityId
      * @param string $entityType
+     * @param string $entityId
      *
-     * @return mixed
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
      */
-    public function findDocumentsForEntityTypeAndEntityId(string $entityType, string $entityId)
+    public function findDocumentsForEntityTypeAndEntityId(string $entityType, string $entityId): Collection|PublicCollection
     {
-        return $this->newQuery()
-                    ->where(Entity::ENTITY_ID, $entityId)
-                    ->where(Entity::ENTITY_TYPE, $entityType)
-                    ->orderBy(Entity::CREATED_AT, 'asc')
-                    ->get();
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                return (new MerchantDocumentSDKWrapper())->findDocumentsForEntityTypeAndEntityId(
+                    $entityId, $entityType
+                );
+            }
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query
+            ->where(Entity::ENTITY_ID, $entityId)
+            ->where(Entity::ENTITY_TYPE, $entityType)
+            ->orderBy(Entity::CREATED_AT, 'asc')
+            ->get();
     }
 
     /**
@@ -225,19 +248,43 @@ class Repository extends Base\Repository
      *
      * @param string $merchantId
      * @param string $documentType
-     * @param int $from
-     * @param int $to
-     * @return mixed
+     * @param int    $from
+     * @param int    $to
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
      */
-
-    public function findDocumentsForMerchantIdAndDocumentTypeAndDate(string $merchantId, string $documentType, int $from, int $to)
+    public function findDocumentsForMerchantIdAndDocumentTypeAndDate(
+        string $merchantId, string $documentType, int $from, int $to
+    ): Collection|PublicCollection
     {
-        return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->where(Entity::DOCUMENT_TYPE,$documentType)
-                    ->whereBetween(Entity::DOCUMENT_DATE, [$from, $to])
-                    ->whereNull(Entity::DELETED_AT)
-                    ->get();
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                  $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                return (new MerchantDocumentSDKWrapper())->findDocumentsForMerchantIdAndDocumentTypeAndDate(
+                    $merchantId, $documentType, $from, $to
+                );
+            }
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::DOCUMENT_TYPE,$documentType)
+            ->whereBetween(Entity::DOCUMENT_DATE, [$from, $to])
+            ->whereNull(Entity::DELETED_AT)
+            ->get();
     }
 
     public function findDocumentsForMerchantIdAndDocumentTypesAndDate(string $merchantId, array $documentTypes, int $from, int $to)
@@ -268,11 +315,35 @@ class Repository extends Base\Repository
      * @param string $merchantId
      * @param string $validationId
      *
-     * @return mixed
+     * @return Entity|null
+     * @throws BadRequestException
+     * @throws BaseException
      */
-    public function findNonDeletedDocumentForMerchantIdAndValidationId(string $merchantId, string $validationId)
+    public function findNonDeletedDocumentForMerchantIdAndValidationId(
+        string $merchantId, string $validationId
+    ): ?Entity
     {
-        return $this->newQuery()
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                return (new MerchantDocumentSDKWrapper())->findNonDeletedDocumentForMerchantIdAndValidationId(
+                    $merchantId, $validationId
+                );
+            }
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::VALIDATION_ID, $validationId)
             ->whereNull(Entity::DELETED_AT)

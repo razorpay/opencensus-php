@@ -16,6 +16,19 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\Merch
 class MerchantDocument extends Base
 {
 
+    const FIND_DOCUMENTS_BY_FILESTORE_ID
+        = 'find_documents_by_filestore_id';
+    const FIND_DOCUMENTS_FOR_MERCHANT_ID_AND_VALIDATION_ID
+        = 'find_documents_for_merchant_id_and_validation_id';
+    const FIND_DOCUMENTS_FOR_ENTITY_TYPE_AND_ENTITY_ID
+        = 'find_documents_for_entity_type_and_entity_id';
+    const FIND_NON_DELETED_DOCUMENTS_FOR_MERCHANT_ID
+        = 'find_non_deleted_documents_for_merchant_id';
+    const FIND_DOCUMENTS_FOR_MERCHANT_ID_AND_DOCUMENT_TYPE_AND_DATE
+        = 'find_documents_for_merchant_id_and_document_type_and_date';
+    const FIND_NON_DELETED_DOCUMENT_FOR_MERCHANT_ID_AND_VALIDATION_ID
+         = 'find_non_deleted_document_for_merchant_id_and_validation_id';
+
     const FILTER_TIMEOUT_IN_MICRO_SECONDS = 5000000;
 
     const GET_MERCHANT_DOCUMENTS_FROM_MERCHANT_IDS = 'get_merchant_documents_from_merchant_ids';
@@ -176,7 +189,7 @@ class MerchantDocument extends Base
     public function findDocumentByFileStoreId(string $fileStoreId): PublicCollection|Collection
     {
         $filterRequest =  new FilterRequest();
-        $filterRequest->setQueryIdentifier('find_documents_by_filestore_id');
+        $filterRequest->setQueryIdentifier(self::FIND_DOCUMENTS_BY_FILESTORE_ID);
         $filterRequest->setBindings(
             json_encode([
                             $fileStoreId
@@ -191,7 +204,7 @@ class MerchantDocument extends Base
     public function findDocumentsForMerchantIdAndValidationId(string $merchantId, string $validationId): PublicCollection|Collection
     {
         $filterRequest =  new FilterRequest();
-        $filterRequest->setQueryIdentifier('find_documents_for_merchant_id_and_validation_id');
+        $filterRequest->setQueryIdentifier(self::FIND_DOCUMENTS_FOR_MERCHANT_ID_AND_VALIDATION_ID);
         $filterRequest->setBindings(
             json_encode([
                             $merchantId, $validationId
@@ -206,7 +219,7 @@ class MerchantDocument extends Base
     public function findNonDeletedDocumentsForMerchantId(string $merchantId, array $documentTypes): PublicCollection|Collection
     {
         $filterRequest =  new FilterRequest();
-        $filterRequest->setQueryIdentifier('find_non_deleted_documents_for_merchant_id');
+        $filterRequest->setQueryIdentifier(self::FIND_NON_DELETED_DOCUMENTS_FOR_MERCHANT_ID);
         $filterRequest->setBindings(
             json_encode([
                             $merchantId, $documentTypes
@@ -216,5 +229,85 @@ class MerchantDocument extends Base
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
         return $this->getMerchantDocumentCollectionFromResponse($response);
+    }
+
+    /**
+     * fetches merchant documents by entity type and entity id
+     *
+     * @param string $entityId
+     * @param string $entityType
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function findDocumentsForEntityTypeAndEntityId(
+        string $entityId, string $entityType
+    ): Collection|PublicCollection
+    {
+        $filterRequest = (new FilterRequest())
+            ->setQueryIdentifier(self::FIND_DOCUMENTS_FOR_ENTITY_TYPE_AND_ENTITY_ID)
+            ->setBindings(
+                json_encode([$entityId, $entityType])
+            );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantDocumentCollectionFromResponse($response);
+    }
+
+    /**
+     * fetches merchant documents by passed merchant ID and document type
+     * with document date between `from` and `to`
+     * @param string $merchantId
+     * @param string $documentType
+     * @param int    $from
+     * @param int    $to
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function findDocumentsForMerchantIdAndDocumentTypeAndDate(
+        string $merchantId, string $documentType, int $from, int $to
+    ): Collection|PublicCollection
+    {
+        $filterRequest = (new FilterRequest())
+            ->setQueryIdentifier(
+                self::FIND_DOCUMENTS_FOR_MERCHANT_ID_AND_DOCUMENT_TYPE_AND_DATE
+            )
+            ->setBindings(
+                json_encode([$merchantId, $documentType, $from, $to])
+            );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantDocumentCollectionFromResponse($response);
+    }
+
+
+    /**
+     * @param string $merchantId
+     * @param string $validationId
+     *
+     * @return MerchantDocumentEntity|null
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function findNonDeletedDocumentForMerchantIdAndValidationId(
+        string $merchantId, string $validationId
+    ): ?MerchantDocumentEntity
+    {
+        $filterRequest = (new FilterRequest())
+            ->setQueryIdentifier(
+                self::FIND_NON_DELETED_DOCUMENT_FOR_MERCHANT_ID_AND_VALIDATION_ID
+            )
+            ->setBindings(
+                json_encode([$merchantId, $validationId])
+            );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantDocumentCollectionFromResponse($response)->first();
     }
 }

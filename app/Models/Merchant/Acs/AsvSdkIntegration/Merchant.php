@@ -20,6 +20,8 @@ class Merchant extends Base
         = 'merchant_find_by_ids';
     const GET_NON_SUSPENDED_MERCHANTS_FROM_IDS
         = 'get_non_suspended_merchants_from_ids';
+    const GET_MERCHANTS_BY_PARENT_ID_AND_ACCOUNT_CODE_LIMIT_ONE
+        = 'get_merchants_by_parent_id_and_account_code_limit_one';
     const GET_NON_SUSPENDED_LINKED_ACCOUNTS_FROM_PARENT_ID
         = 'get_non_suspended_linked_accounts_from_parent_id';
     const GET_LINKED_ACCOUNTS_SUSPENDED_DUE_TO_PARENT_SUSPENSION_FROM_PARENT_ID
@@ -59,6 +61,30 @@ class Merchant extends Base
         $merchant = $response->getMerchant();
 
         return (new MerchantProtoMapper($merchant))->ToEntity();
+    }
+
+    /**
+     * Fetches the merchants associated with the passed
+     * parent_id and account_code
+     *
+     * @param string $parentId
+     * @param string $accountCode
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchMerchantsByParentIdAndAccountCode(string $parentId, string $accountCode): Collection|PublicCollection
+    {
+        $filterRequest = (new FilterRequest())
+            ->setQueryIdentifier(self::GET_MERCHANTS_BY_PARENT_ID_AND_ACCOUNT_CODE_LIMIT_ONE)
+            ->setBindings(
+                json_encode([$parentId, $accountCode])
+            );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest);
+
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
     /**

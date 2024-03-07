@@ -2244,13 +2244,46 @@ class Repository extends Base\Repository
         return $this->newQuery()->findManyOrFailPublic($ids);
     }
 
-    public function countAccountCodeForMerchant(string $accountCode, string $parentId)
+    /**
+     * Returns the number of merchants associated with the passed
+     * parent_id and account_code
+     *
+     * @param string $accountCode
+     * @param string $parentId
+     *
+     * @return int
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function countAccountCodeForMerchant(string $accountCode, string $parentId): int
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->where(Entity::PARENT_ID, $parentId)
-                    ->where(Entity::ACCOUNT_CODE, $accountCode)
-                    ->limit(1)
-                    ->count(Entity::ACCOUNT_CODE);
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                $merchants = (new AsvSdkMerchantQuery())->fetchMerchantsByParentIdAndAccountCode(
+                    $parentId, $accountCode
+                );
+
+                return count($merchants);
+            }
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query
+            ->where(Entity::PARENT_ID, $parentId)
+            ->where(Entity::ACCOUNT_CODE, $accountCode)
+            ->limit(1)
+            ->count(Entity::ACCOUNT_CODE);
     }
 
     public function getIdByAccountCodeAndParent(string $accountCode, string $parentId)
