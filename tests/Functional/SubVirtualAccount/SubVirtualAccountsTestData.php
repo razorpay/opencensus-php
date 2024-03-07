@@ -959,4 +959,30 @@ return [
             ],
         ],
     ],
+
+    'testCreateSubVirtualAccountForAccountSubAccountFlowWhenSubMerchantHasNonTerminalPayouts' => [
+        'request' => [
+            'content' => [
+                'master_account_number' => '2323230041626907',
+                'name'                  => 'sample',
+                'sub_account_number'    => '2323230041626906',
+                'sub_account_type'      => 'sub_direct_account'
+            ],
+            'url'    => '/admin/sub_virtual_accounts',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => TraceCode::BAD_REQUEST_SUB_MERCHANT_TERMINAL_PAYOUT_COUNT_NOT_ZERO,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

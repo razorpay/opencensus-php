@@ -334,6 +334,22 @@ class Core extends Base\Core
             );
         }
 
+        $subAccountNonTerminalPayouts = $this->repo->payout->fetchNonTerminalPayoutsForMerchant(
+            $subMerchant->getMerchantId(),
+            $subMerchant->sharedBankingBalance->getId()
+        );
+
+        if (count($subAccountNonTerminalPayouts) > 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                TraceCode::BAD_REQUEST_SUB_MERCHANT_TERMINAL_PAYOUT_COUNT_NOT_ZERO,
+                null,
+                [
+                    'sub_merchant_balance' => $sharedBalanceAmount
+                ]
+            );
+        }
+
         $this->repo->transaction(function() use ($masterMerchant, $subMerchant, $subVirtualAccount)
         {
             if ($subMerchant->isFeatureEnabled(Feature\Constants::ASSUME_SUB_ACCOUNT) === false)

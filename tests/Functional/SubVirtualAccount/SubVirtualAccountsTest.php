@@ -1074,5 +1074,39 @@ class SubVirtualAccountsTest extends TestCase
         return $dcsMock;
     }
 
+    public function testCreateSubVirtualAccountForAccountSubAccountFlowWhenSubMerchantHasNonTerminalPayouts()
+    {
+        $this->ba->adminAuth();
 
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->fixtures->merchant->removeFeatures([Features::SUB_VIRTUAL_ACCOUNT]);
+
+        $subMerchantBalance = $this->getDbEntity('balance', ['merchant_id' => '100abc000abc01']);
+
+        $this->fixtures->edit('balance', $subMerchantBalance->getId(), ['balance' => 1000]);
+
+        $payoutAttributes = [
+            'utr'             => '123456',
+            'balance_id'      => $subMerchantBalance->getId(),
+            'merchant_id'     => '100abc000abc01',
+            'amount'          => '100',
+            'channel'         => 'rbl',
+            'fees'            => '500',
+            'tax'             => '90',
+            'status'          => 'queued',
+        ];
+
+        $payout = $this->fixtures->create('payout', $payoutAttributes);
+
+        $this->fixtures->edit('balance', $subMerchantBalance->getId(), ['balance' => 0]);
+
+        $this->startTest();
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'processed']);
+
+        $this->testData[__FUNCTION__] = &$this->testData['testCreateSubVirtualAccountForAccountSubAccountFlow'];
+
+        $this->startTest();
+    }
 }

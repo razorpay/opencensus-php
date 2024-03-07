@@ -3276,4 +3276,14 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function fetchNonTerminalPayoutsForMerchant($merchantId, $balanceId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::BALANCE_ID, '=', $balanceId)
+                    ->whereNotIn(Entity::STATUS, Status::$finalStates)
+                    ->limit(1)
+                    ->get();
+    }
+
 }
