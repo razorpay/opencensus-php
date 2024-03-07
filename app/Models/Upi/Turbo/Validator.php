@@ -14,6 +14,10 @@ class Validator extends Base\Validator
         Constants::ACKNOWLEDGE                                => 'required|bool',
         Constants::TIMESTAMP                                  => 'required|epoch',
         Constants::METADATA                                   => 'required|array',
-        Constants::METADATA . '.' . Constants::PREFETCH_BANK => 'required|array'
+        Constants::METADATA . '.' . Constants::PREFETCH_BANK  => 'required|array',
+        Constants::METADATA . '.' . Constants::PREFETCH_BANK . '.*.' . Constants::PRIORITY      => 'required|string',
+        Constants::METADATA . '.' . Constants::PREFETCH_BANK . '.*.' . Constants::IIN           => 'required|string',
+        Constants::METADATA . '.' . Constants::PREFETCH_BANK . '.*.' . Constants::DISPLAY_NAME  => 'required|string',
+        Constants::METADATA . '.' . Constants::PREFETCH_BANK . '.*.' . Constants::BANK_LOGO     => 'required|string'
     ];
 }

@@ -7,6 +7,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
@@ -73,6 +74,36 @@ class TurboUpiTest extends TestCase
         $this->assertEquals(201, $response->getStatusCode());
 
         $this->assertEquals(true, $response["success"]);
+    }
+
+    private function testTurboUpiCustomerConsentSpecificExceptionHandling($request, $expectedErrorMessage)
+    {
+        $this->makeRequestAndCatchException(function() use($request)
+        {
+            $this->makeRequestAndGetContent($request);
+        },
+            BadRequestValidationFailureException::class,
+            $expectedErrorMessage);
+    }
+
+//  Test to check prefetch bank list
+    public function testTurboUpiCustomerConsentHandlingExceptions()
+    {
+        $this->ba->publicAuth();
+
+        $all_requests = $this->testData[__FUNCTION__];
+
+        // Testing for invalid type
+        $this->testTurboUpiCustomerConsentSpecificExceptionHandling($all_requests["errorFromType"]['request'], "The selected type is invalid.");
+
+        // Testing for prefetch banks
+        $this->testTurboUpiCustomerConsentSpecificExceptionHandling($all_requests["errorFromPrefetchBank"]['request'], "The metadata.prefetch bank field is required.");
+
+        // Testing for Priority of bank
+        $this->testTurboUpiCustomerConsentSpecificExceptionHandling($all_requests["errorFromBankPriority"]['request'], "The metadata.prefetch_bank.0.priority must be a string.");
+
+        // Testing for Display name
+        $this->testTurboUpiCustomerConsentSpecificExceptionHandling($all_requests["errorFromBankDisplayName"]['request'], "The metadata.prefetch_bank.1.display_name must be a string.");
     }
 
     protected function setErrorMappingConfigInRedis()

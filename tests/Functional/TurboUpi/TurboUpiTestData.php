@@ -139,4 +139,139 @@ return [
             'http_status_code' => 201
         ],
     ],
+
+    'testTurboUpiCustomerConsentHandlingExceptions' => [
+        'errorFromType' => [
+            'request'  => [
+                'url'     => '/upi/turbo/customer/consent',
+                'method'  => 'POST',
+                'content' => [
+                    'type' => 'dumb_type',
+                    'message' => 'Automatically fetch & link my active UPI accounts from top banks',
+                    'customer_identifier_type' => 'mobile_number',
+                    'customer_identifier_value' => '6363123456',
+                    'acknowledge' => true,
+                    'timestamp' => time(),
+                    'metadata' => [
+                        'prefetch_bank' => [
+                            [
+                                "priority"     => "0",
+                                "iin"          => "607153",
+                                "display_name" => "AXIS",
+                                "bank_logo"    => "https://cdn.razorpay.com/bank/UTIB.gif"
+                            ],
+                            [
+                                "priority"     => "1",
+                                "iin"          => "607152",
+                                "display_name" => "HDFC",
+                                "bank_logo"    => "https://cdn.razorpay.com/bank/HDFC.gif"
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+            'response' => [
+                'content' => [],
+                'http_status_code' => 400
+            ]],
+        'errorFromPrefetchBank' => [
+            'request'  => [
+                'url'     => '/upi/turbo/customer/consent',
+                'method'  => 'POST',
+                'content' => [
+                    'type' => 'upi_turbo_prefetch',
+                    'message' => 'Automatically fetch & link my active UPI accounts from top banks',
+                    'customer_identifier_type' => 'mobile_number',
+                    'customer_identifier_value' => '6363123456',
+                    'acknowledge' => true,
+                    'timestamp' => time(),
+                    'metadata' => [
+                        'dumb_banks' => [
+                            [
+                                "priority"     => "0",
+                                "iin"          => "607153",
+                                "display_name" => "AXIS",
+                                "bank_logo"    => "https://cdn.razorpay.com/bank/UTIB.gif"
+                            ],
+                            [
+                                "priority"     => "1",
+                                "iin"          => "607152",
+                                "display_name" => "HDFC",
+                                "bank_logo"    => "https://cdn.razorpay.com/bank/HDFC.gif"
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+            'response' => [
+                'content' => [],
+                'http_status_code' => 400
+            ]],
+        'errorFromBankPriority' => [
+            'request'  => [
+                'url'     => '/upi/turbo/customer/consent',
+                'method'  => 'POST',
+                'content' => [
+                    'type' => 'upi_turbo_prefetch',
+                    'message' => 'Automatically fetch & link my active UPI accounts from top banks',
+                    'customer_identifier_type' => 'mobile_number',
+                    'customer_identifier_value' => '6363123456',
+                    'acknowledge' => true,
+                    'timestamp' => time(),
+                    'metadata' => [
+                        'prefetch_bank' => [
+                            [
+                                "priority"     => 0,
+                                "iin"          => "607153",
+                                "display_name" => "AXIS",
+                                "bank_logo"    => "https://cdn.razorpay.com/bank/UTIB.gif"
+                            ],
+                            [
+                                "priority"     => "1",
+                                "iin"          => "607152",
+                                "display_name" => "HDFC",
+                                "bank_logo"    => "https://cdn.razorpay.com/bank/HDFC.gif"
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+            'response' => [
+                'content' => [],
+                'http_status_code' => 400
+            ]],
+        'errorFromBankDisplayName' => [
+            'request'  => [
+                'url'     => '/upi/turbo/customer/consent',
+                'method'  => 'POST',
+                'content' => [
+                    'type' => 'upi_turbo_prefetch',
+                    'message' => 'Automatically fetch & link my active UPI accounts from top banks',
+                    'customer_identifier_type' => 'mobile_number',
+                    'customer_identifier_value' => '6363123456',
+                    'acknowledge' => true,
+                    'timestamp' => time(),
+                    'metadata' => [
+                        'prefetch_bank' => [
+                            [
+                                "priority"     => "0",
+                                "iin"          => "607153",
+                                "display_name" => "AXIS",
+                                "bank_logo"    => "https://cdn.razorpay.com/bank/UTIB.gif"
+                            ],
+                            [
+                                "priority"     => "1",
+                                "iin"          => "607152",
+                                "display_name" => 123,//"HDFC",
+                                "bank_logo"    => "https://cdn.razorpay.com/bank/HDFC.gif"
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+            'response' => [
+                'content' => [],
+                'http_status_code' => 400
+            ]],
+    ],
 ];

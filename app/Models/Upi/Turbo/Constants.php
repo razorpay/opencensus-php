@@ -44,4 +44,8 @@ class Constants
     const TIMESTAMP                 = "timestamp";
     const METADATA                  = "metadata";
     const PREFETCH_BANK             = "prefetch_bank";
+    const PRIORITY                  = "priority";
+    const DISPLAY_NAME              = "display_name";
+    const IIN                       = "iin";
+    const BANK_LOGO                 = "bank_logo";
 }
