@@ -4500,8 +4500,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return $apiPaymentMeta;
         }
 
-        $app['trace']->info(TraceCode::PAYMENT_API_PAYMENT_META_EMPTY);
-
         try
         {
             $pgRouterPaymentMetaArray = $this->getAttribute('payment_meta_data');
@@ -4531,8 +4529,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
             else
             {
-                $app['trace']->info(TraceCode::PG_ROUTER_PAYMENT_META_EMPTY);
-
                 return null;
             }
         }
