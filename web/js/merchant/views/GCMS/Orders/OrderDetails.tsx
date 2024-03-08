@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Amount,
   Badge,
@@ -25,6 +25,7 @@ import { ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 
 import OrderStatus from './OrderStatus';
 import TransactionDetailsSection from './TransactionDetailsSection';
+import { trackOrdersDetailsPageLoadSuccess } from './events';
 import { fetchOrderDetails, fetchOrderItems } from './queries';
 
 export const OrderCardItemContainer = styled.div(
@@ -78,6 +79,21 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
     }
     return navigate('/gcms/orders');
   };
+
+  //todo need to check the orderDetails object
+  useEffect(() => {
+    if (orderDetails)
+      trackOrdersDetailsPageLoadSuccess({
+        orderId: orderDetails?.id,
+        resellerId: orderDetails?.reseller_id,
+        orderTotalAamount: orderDetails?.total_amount,
+        orderCreatedAt: orderDetails?.created_at,
+        orderUpdatedAt: orderDetails?.updated_at,
+        orderStatus: orderDetails?.status,
+        deliveryStatus: orderDetails?.delivery_status,
+        isMultipleDelivery: orderDetails?.is_multiple_delivery,
+      });
+  }, [orderDetails]);
 
   const orderItemsByPrograms = Array.isArray(orderItems)
     ? groupBy(orderItems, 'program_id')

@@ -19,6 +19,11 @@ export enum OrderStatusEnum {
   CANCELLED = 'cancelled',
 }
 
+export enum ModalTypeEnum {
+  FIXED = 'fixed',
+  CUSTOM = 'custom',
+}
+
 export type Order = {
   id: string;
   updated_at: string;

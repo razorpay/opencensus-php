@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Title, Box, Text, Badge } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
@@ -15,12 +15,22 @@ import { RESELLERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
 
 import ResellersFilter from './ResellersFilters';
+import { trackResellerDetailsPageClicked, trackResellersPageLoadSuccess } from './events';
 import { fetchResellers, LIST_FETCH_BATCH_SIZE } from './queries';
 
 const merchant_name = {
   title: 'Reseller Name',
   value: (item) => (
-    <NavLink key={item.merchant_Id} to={`${item.merchant_id}`}>
+    <NavLink
+      key={item.merchant_Id}
+      to={`${item.merchant_id}`}
+      onClick={() =>
+        trackResellerDetailsPageClicked({
+          resellerId: item.merchant_id,
+          resellerName: item.merchant_name,
+        })
+      }
+    >
       {item.merchant_name}
     </NavLink>
   ),
@@ -79,6 +89,9 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
     setResellerName(resellerName);
     setResellerStatus(status);
   };
+  useEffect(() => {
+    trackResellersPageLoadSuccess();
+  }, []);
 
   return (
     <Wrapper>

@@ -4,6 +4,8 @@ import { Box } from '@razorpay/blade/components';
 import { StyledFilterDiv } from 'merchant/views/GCMS/shared/StyledDiv';
 import { RESELLERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 
+import { trackResellersFiltersCleared, trackResellersFiltersClicked } from './events';
+
 interface ResellersFilterProps {
   onSearch: ({ status, resellerName }) => void;
 }
@@ -14,6 +16,7 @@ const ResellersFilter = ({ onSearch }: ResellersFilterProps) => {
   const [resellerName, setResellerName] = useState('');
 
   const onClear = () => {
+    trackResellersFiltersCleared();
     setStatus('all');
     setResellerName('');
     onSearch({ status: 'all', resellerName: '' });
@@ -28,7 +31,8 @@ const ResellersFilter = ({ onSearch }: ResellersFilterProps) => {
   };
 
   const handleSearch = () => {
-    onSearch({ status, resellerName });
+    trackResellersFiltersClicked({ resellerName, status });
+    onSearch({ resellerName, status });
   };
 
   return (

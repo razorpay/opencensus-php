@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { Box, ChevronLeftIcon, Divider, Heading, Link, Text } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -13,6 +13,8 @@ import {
 import { fetchProgramById } from 'merchant/views/GCMS/Programs/queries';
 import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
+
+import { trackProgramsDetailsPageLoadSuccess } from './events';
 
 const ProgramDetails: React.FC = () => {
   const location = useLocation();
@@ -36,6 +38,10 @@ const ProgramDetails: React.FC = () => {
 
   const contentSections = program ? getProgramContentSections(program) : [];
   const denominationSections = program ? getProgramDenominationSections(program) : [];
+  useEffect(() => {
+    if (program?.id)
+      trackProgramsDetailsPageLoadSuccess({ programId: program?.id, programName: program?.name });
+  }, [program]);
 
   return (
     <Wrapper>

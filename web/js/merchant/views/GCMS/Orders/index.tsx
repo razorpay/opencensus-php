@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Badge, Box, Text, Title } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
@@ -15,13 +15,29 @@ import { ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
 
 import OrdersFilter from './OrdersFilters';
+import { trackOrdersItemClicked, trackOrdersPageLoadSuccess } from './events';
 import { LIST_FETCH_BATCH_SIZE, fetchOrders } from './queries';
 
 const ORDER_LIST_COLUMNS = [
   {
     label: 'Order ID',
     value: (order) => (
-      <NavLink key={order.orderId} to={`${order.id}`}>
+      <NavLink
+        key={order.orderId}
+        to={`${order.id}`}
+        onClick={() =>
+          trackOrdersItemClicked({
+            orderId: order?.id,
+            resellerId: order?.reseller_id,
+            orderTotalAamount: order?.total_amount,
+            orderCreatedAt: order?.created_at,
+            orderUpdatedAt: order?.updated_at,
+            orderStatus: order?.status,
+            deliveryStatus: order?.delivery_status,
+            isMultipleDelivery: order?.is_multiple_delivery,
+          })
+        }
+      >
         {order.id}
       </NavLink>
     ), //TODO: replace with actual order details link
@@ -88,7 +104,9 @@ const Orders = ({ mode }: { mode: ModeT }) => {
     setToDate(date.to);
     setOrderId(orderId);
   };
-
+  useEffect(() => {
+    trackOrdersPageLoadSuccess();
+  }, []);
   return (
     <Wrapper>
       <div className="tabbed-container">

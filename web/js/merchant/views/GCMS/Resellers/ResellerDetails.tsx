@@ -14,12 +14,16 @@ import {
 
 import { ModeT } from 'common/services/mode';
 import { uniqueArray } from 'common/utils/rzp-utils';
+import {
+  trackOrdersCreateCartClicked,
+  trackOrdersCreateClicked,
+} from 'merchant/views/GCMS/Orders/events';
 import { fetchOrderItems, orderCreate } from 'merchant/views/GCMS/Orders/queries';
 import { OrderItem } from 'merchant/views/GCMS/Orders/types';
+import ResellerAccounts from 'merchant/views/GCMS/Resellers/ResellerAccounts';
+import ResellerOrders from 'merchant/views/GCMS/Resellers/ResellerOrders';
 import ResellerPrograms from 'merchant/views/GCMS/Resellers/ResellerPrograms';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
-import ResellerOrders from 'merchant/views/GCMS/Resellers/ResellerOrders';
-import ResellerAccounts from 'merchant/views/GCMS/Resellers/ResellerAccounts';
 import {
   RESELLER_ACCOUNTS_PATH,
   RESELLER_ORDERS_PATH,
@@ -28,6 +32,7 @@ import {
 import { ListApiResponse } from 'merchant/views/Wallet/types';
 
 import ResellerDetailsHeader from './ResellerDetailsHeader';
+import { trackResellersDetailsPageLoadSuccess } from './events';
 
 const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) => {
   const [orderId, setOrderId] = useState<string>('');
@@ -36,10 +41,12 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
   const location = useLocation();
 
   const handleOrderCreate = () => {
+    trackOrdersCreateClicked();
     navigate(`/gcms/orders/create/programs`, { state: { resellerId } });
   };
 
   const handleViewCart = () => {
+    trackOrdersCreateCartClicked();
     navigate(`/gcms/orders/create/cart`, { state: { resellerId } });
   };
 
@@ -63,7 +70,6 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
       orderCreateMutation({ resellerId, merchantId, mode });
     }
   }, [resellerId]);
-
   const orderItemsByProgram = Array.isArray(orderItems)
     ? uniqueArray(orderItems.map((item) => item.program_id))?.length
     : 0;
@@ -76,7 +82,13 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
     }
     return navigate('/gcms/resellers');
   };
-
+  useEffect(() => {
+    if (resellerId && orderId)
+      trackResellersDetailsPageLoadSuccess({
+        resellerId,
+        orderId,
+      });
+  }, [orderId, resellerId]);
   return (
     <Wrapper>
       <Box>

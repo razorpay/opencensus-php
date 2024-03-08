@@ -38,7 +38,13 @@ const OrderFooterSection = ({ items, onClickViewCart }: Props) => {
             </Box>
           </Box>
           <Box>
-            <Button isDisabled={!items} variant="primary" onClick={() => onClickViewCart()}>
+            <Button
+              isDisabled={!items}
+              variant="primary"
+              onClick={() => {
+                onClickViewCart();
+              }}
+            >
               View Cart
             </Button>
           </Box>

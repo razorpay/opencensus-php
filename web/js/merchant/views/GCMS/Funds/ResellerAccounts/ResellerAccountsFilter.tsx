@@ -3,6 +3,12 @@ import { Box } from '@razorpay/blade/components';
 import qs from 'query-string';
 import { useSearchParams } from 'react-router-dom';
 
+import {
+  trackResellerFilterCleared,
+  trackResellerFilterClicked,
+  // eslint-disable-next-line import/namespace
+} from 'merchant/views/GCMS/Funds/events';
+
 import { StyledFilterDiv } from './StyledFilterDiv';
 
 interface ResellerAccountsFilterProps {
@@ -29,12 +35,14 @@ const ResellerAccountsFilter = ({ onSearch }: ResellerAccountsFilterProps): JSX.
   const handleSearchOnClick = () => {
     onSearch({ merchantName: resellerNameQuery });
     setSearchParams({ name: resellerNameQuery });
+    trackResellerFilterClicked({ resellerName: resellerNameQuery });
   };
 
   const handleClearOnClick = () => {
     onSearch({ merchantName: '' });
     setSearchParams({ name: '' });
     setResellerNameQuery('');
+    trackResellerFilterCleared();
   };
 
   return (

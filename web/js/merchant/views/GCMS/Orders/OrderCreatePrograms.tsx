@@ -1,4 +1,4 @@
-import React, { Suspense, useContext, useState } from 'react';
+import React, { Suspense, useContext, useEffect, useState } from 'react';
 import { Box, ChevronLeftIcon, Divider, Heading, Link, Title } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -18,6 +18,11 @@ import { ListApiResponse } from 'merchant/views/Wallet/types';
 
 import OrderFooterSection from './OrderFooterSection';
 import { GCMSOrderSession, OrderSessionContext } from './context';
+import {
+  trackOrdersCreateCartProgramsCartClicked,
+  trackOrdersCreateCartProgramsClicked,
+  trackOrdersCreateCartProgramsPageLoadSuccess,
+} from './events';
 import { fetchOrderItems } from './queries';
 
 const OrderCreateProgramDenominationsModal = lazy(
@@ -59,6 +64,7 @@ const OrderCreatePrograms = () => {
   };
 
   const handleProgramDenominationsModalOpen = (sku): void => {
+    trackOrdersCreateCartProgramsClicked({ resellerId, orderId });
     const items =
       Array.isArray(orderItems) && orderItems.length > 0
         ? orderItems.map((item) => (item.sku_id === sku.id ? item : false)).filter(Boolean)
@@ -69,6 +75,7 @@ const OrderCreatePrograms = () => {
   };
 
   const onClickViewCart = (): void => {
+    trackOrdersCreateCartProgramsCartClicked({ orderId, resellerId });
     navigate('/gcms/orders/create/cart', { state: { resellerId, orderId } });
   };
 
@@ -76,6 +83,9 @@ const OrderCreatePrograms = () => {
     ? uniqueArray(orderItems.map((item) => item.program_id))?.length
     : 0;
 
+  useEffect(() => {
+    trackOrdersCreateCartProgramsPageLoadSuccess({ resellerId, orderId });
+  }, [orderId, resellerId]);
   return (
     <Box>
       <div className="tabbed-container">
@@ -123,7 +133,9 @@ const OrderCreatePrograms = () => {
                       <ProgramsListItem
                         key={sku.id}
                         program={sku}
-                        onClick={() => handleProgramDenominationsModalOpen(sku)}
+                        onClick={() => {
+                          handleProgramDenominationsModalOpen(sku);
+                        }}
                       />
                     ))
                   ) : (

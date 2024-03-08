@@ -4,6 +4,7 @@ import qs from 'query-string';
 
 import DateRangePickerV2, { generatePresets } from 'common/ui/DateRangePickerV2';
 import { DATE_RANGE_PRESETS } from 'merchant/views/GCMS/Funds/constants';
+import { trackBrandFilterCleared, trackBrandFilterClicked } from 'merchant/views/GCMS/Funds/events';
 
 import { StyledFilterDiv } from './StyledDiv';
 
@@ -60,6 +61,7 @@ const BrandAccountFilters = ({ onSearch }: BrandAccountFiltersProps) => {
     setSelectedPreset(presetsForCalendar[0]);
     setReferenceId('');
     onSearch({ date: { from: '', to: '' }, referenceId: '' });
+    trackBrandFilterCleared();
   };
 
   const handleReferenceIdChange = (value) => {
@@ -68,6 +70,11 @@ const BrandAccountFilters = ({ onSearch }: BrandAccountFiltersProps) => {
 
   const handleSearch = () => {
     onSearch({ date, referenceId });
+    trackBrandFilterClicked({
+      referenceId,
+      durationStartDate: date.to,
+      durationEndDate: date.from,
+    });
   };
 
   return (

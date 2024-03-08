@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import DateRangePickerV2, { generatePresets } from 'common/ui/DateRangePickerV2';
-import qs from 'query-string';
 import { Box } from '@razorpay/blade/components';
+import qs from 'query-string';
+
+import DateRangePickerV2, { generatePresets } from 'common/ui/DateRangePickerV2';
 import { DATE_RANGE_PRESETS, ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
+
 import { StyledFilterDiv } from './StyledDiv';
+import { trackOrdersFiltersCleared, trackOrdersFiltersClicked } from './events';
 
 interface OrdersFilterProps {
   onSearch: ({ date, status, resellerName, orderId }) => void;
@@ -63,6 +66,7 @@ const OrdersFilter = ({ onSearch, isResellerOrderFilter = false }: OrdersFilterP
     setResellerName('');
     setOrderId('');
     onSearch({ date: { from: '', to: '' }, status: 'all', resellerName: '', orderId: '' });
+    trackOrdersFiltersCleared();
   };
 
   const handleStatusChange = (value) => {
@@ -79,6 +83,13 @@ const OrdersFilter = ({ onSearch, isResellerOrderFilter = false }: OrdersFilterP
 
   const handleSearch = () => {
     onSearch({ date, status, resellerName, orderId });
+    trackOrdersFiltersClicked({
+      orderId,
+      resellerName,
+      durationStartDate: date?.from,
+      durationEndDate: date?.to,
+      status,
+    });
   };
 
   return (

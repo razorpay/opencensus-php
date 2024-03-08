@@ -17,7 +17,7 @@ import { useMutation } from '@tanstack/react-query';
 import { queryClient } from 'common/components/Bootstrap/Wrapper';
 import { Error } from 'common/new-ui/Input';
 import { getFixedINRAmount, getFormattedAmountNew } from 'common/utils/rzp-utils';
-import { OrderItemDenomination } from 'merchant/views/GCMS/Orders/types';
+import { OrderItemDenomination, ModalTypeEnum } from 'merchant/views/GCMS/Orders/types';
 import { SKU } from 'merchant/views/GCMS/Programs/types';
 import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import { GCMSSession, SessionContext } from 'merchant/views/GCMS/shared/context';
@@ -25,6 +25,11 @@ import { isPositiveInteger } from 'merchant/views/GCMS/shared/utils';
 import { ErrorText } from 'merchant/views/Marketplace/PlatformFee/components/styles';
 
 import { GCMSOrderSession, OrderSessionContext } from './context';
+import {
+  trackOrdersCreateCartProgramsModalCancelled,
+  trackOrdersCreateCartProgramsModalPageLoadSuccess,
+  trackOrdersCreateCartProgramsModalSuccess,
+} from './events';
 import { orderItemsCreate, orderItemsPatch } from './queries';
 
 type Props = {
@@ -51,7 +56,7 @@ const OrderCreateProgramDenominationsModal = ({
   ]);
   const [errorText, setErrorText] = useState('');
   const { mode, merchantId } = useContext<GCMSSession>(SessionContext);
-  const { orderId } = useContext<GCMSOrderSession>(OrderSessionContext);
+  const { orderId, resellerId } = useContext<GCMSOrderSession>(OrderSessionContext);
 
   const {
     mutateAsync: orderItemsCreateMutation,
@@ -80,7 +85,9 @@ const OrderCreateProgramDenominationsModal = ({
   const isProgramDenominationArrayAvailable =
     Array.isArray(sku?.policies?.gift_card_price_denominations) &&
     sku?.policies?.gift_card_price_denominations.length > 0;
-
+  const modalType = isProgramDenominationArrayAvailable
+    ? ModalTypeEnum.FIXED
+    : ModalTypeEnum.CUSTOM;
   useEffect(() => {
     setErrorText('');
     reset();
@@ -116,6 +123,15 @@ const OrderCreateProgramDenominationsModal = ({
           : [{ type: 'custom', quantity: 0, denomination: 0 }],
       );
     }
+    if (isOpen)
+      trackOrdersCreateCartProgramsModalPageLoadSuccess({
+        type: modalType,
+        programId: sku?.program_id,
+        skuId: sku?.id,
+        orderId,
+        resellerId,
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, orderItemsProps, sku?.policies?.gift_card_price_denominations]);
 
   const clear = () => {
@@ -196,11 +212,26 @@ const OrderCreateProgramDenominationsModal = ({
       clear();
       /* eslint-disable-next-line no-empty */
     } catch (ex) {}
+
+    trackOrdersCreateCartProgramsModalSuccess({
+      type: modalType,
+      programId: sku?.program_id,
+      skuId: sku?.id,
+      orderId,
+      resellerId,
+    });
   };
 
   const onCancelClick = () => {
     setIsOpen(false);
     clear();
+    trackOrdersCreateCartProgramsModalCancelled({
+      type: modalType,
+      programId: sku?.program_id,
+      skuId: sku?.id,
+      orderId,
+      resellerId,
+    });
   };
 
   const onSubmitAddCustomOrderItem = () => {

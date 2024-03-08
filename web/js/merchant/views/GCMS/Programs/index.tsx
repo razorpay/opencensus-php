@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Text, Title } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
@@ -13,6 +13,8 @@ import { Program as ProgramType } from 'merchant/views/GCMS/Programs/types';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
 import { ListApiResponse } from 'merchant/views/GCMS/shared/types';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
+
+import { trackProgramsCardClicked, trackProgramsPageLoadSuccess } from './events';
 
 const Programs = ({ mode }: { mode: ModeT }) => {
   const navigate = useNavigate();
@@ -40,6 +42,10 @@ const Programs = ({ mode }: { mode: ModeT }) => {
       count: paginationState.count,
     });
   }, [paginationState.count, paginationState.skip]);
+
+  useEffect(() => {
+    trackProgramsPageLoadSuccess();
+  }, []);
 
   return (
     <Wrapper>
@@ -74,7 +80,13 @@ const Programs = ({ mode }: { mode: ModeT }) => {
                     <ProgramsListItem
                       key={program.id}
                       program={program}
-                      onClick={() => navigate(`/gcms/programs/${program.id}`)}
+                      onClick={() => {
+                        trackProgramsCardClicked({
+                          programId: program?.id,
+                          programName: program?.name,
+                        });
+                        navigate(`/gcms/programs/${program.id}`);
+                      }}
                     />
                   ))
                 ) : (

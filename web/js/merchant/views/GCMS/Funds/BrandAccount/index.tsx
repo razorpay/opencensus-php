@@ -9,6 +9,7 @@ import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import store from 'merchant/store';
 import { ACCOUNT_ID_SUFFIX } from 'merchant/views/GCMS/Funds/constants';
+import { trackFundsPageLoadSuccess } from 'merchant/views/GCMS/Funds/events';
 import {
   fetchBrandBalance,
   fetchBrandTransactions,
@@ -77,6 +78,10 @@ const BrandAccount = (): JSX.Element => {
       setBrandAccountId(brandBalanceData.account_id);
     }
   }, [brandBalanceData?.account_id]);
+
+  useEffect(() => {
+    trackFundsPageLoadSuccess();
+  }, []);
 
   const handleNext = () => {
     setSkip(skip + LIST_FETCH_BATCH_SIZE);

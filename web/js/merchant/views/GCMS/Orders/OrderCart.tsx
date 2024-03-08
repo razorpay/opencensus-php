@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import {
   Title,
   Box,
@@ -24,6 +24,11 @@ import OrderCartItemsSection from './OrderCartItemsSection';
 import OrderCartStatusSection from './OrderCartStatusSection';
 import OrderCartSummarySection from './OrderCartSummarySection';
 import { GCMSOrderSession, OrderSessionContext } from './context';
+import {
+  trackOrderCartPageLoadSuccess,
+  trackOrderCartVerifyFailure,
+  trackOrderCartVerifySuccess,
+} from './events';
 import { orderSubmit, orderUpdate } from './queries';
 
 type Props = {
@@ -40,15 +45,17 @@ const OrderCart = ({ showNotification }: Props) => {
     onSuccess: (data) => {
       navigate(`/gcms/orders/${orderId}`);
       queryClient.setQueryData(['gcms:order', merchantId, orderId, mode], data);
+      trackOrderCartVerifySuccess({ resellerId, orderId });
       showNotification({
         type: 'success',
         message: 'Order has been submitted successfully',
       });
     },
     onError: (error) => {
+      trackOrderCartVerifyFailure({ resellerId, orderId });
       showNotification({
         type: 'error',
-        /* @ts-expect-error */
+        /* @ts-expect-error error-message-check */
         message: error?.message || 'Error submitting the order',
       });
     },
@@ -88,7 +95,9 @@ const OrderCart = ({ showNotification }: Props) => {
   const handleOrderCancel = async () => {
     await orderUpdateMutation({ orderId, merchantId, mode, status: 'cancelled' });
   };
-
+  useEffect(() => {
+    trackOrderCartPageLoadSuccess({ resellerId, orderId });
+  }, [orderId, resellerId]);
   return (
     <Box>
       <div className="tabbed-container">
