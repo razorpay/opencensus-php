@@ -39,3 +39,5 @@ export const PDP_CONTENT = {
       'Android and iOS compatible | PCI PTS 5.x Certified | USB Port for high-speed data transmission | 128 x 64 pixels LCD Display',
   },
 };
+
+export const POS_SELECTOR_TIMEOUT = 30000;
