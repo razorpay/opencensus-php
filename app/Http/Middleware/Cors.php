@@ -137,9 +137,9 @@ class Cors
                 'x-dashboard-merchant-id',
                 'x-dashboard-user-id',
                 'x-razorpay-account',
-                // Adding this to pass application id during phantom signup
-                'x-partner-application-id',
-                'x-partner-oauth-referral',
+                // x-partner-* headers contain meta data used during phantom signup
+                Headers::X_PARTNER_APPLICATION_ID,
+                Headers::X_PARTNER_OAUTH_REFERRAL,
                 'request-start-time',
                 'sentry-trace',
                 'Authorization',

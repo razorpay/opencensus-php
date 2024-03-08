@@ -14,6 +14,7 @@ use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Exception\RequestException;
 
 use App\Http\ApiUrl;
+use App\Http\Headers;
 
 class GraphRequestAny
 {
@@ -190,6 +191,9 @@ class GraphRequestAny
             'rzpctx-dev-serve-user'                 => $devServeHeader,
             'X-Mobile-Debug-Id'                     => $mobileDebugId,
             'X-Razorpay-Account'                    => $rzpAccount,
+            // x-partner-* headers contain meta data used during phantom signup
+            Headers::X_PARTNER_APPLICATION_ID       => Request::header(Headers::X_PARTNER_APPLICATION_ID),
+            Headers::X_PARTNER_OAUTH_REFERRAL       => Request::header(Headers::X_PARTNER_OAUTH_REFERRAL),
         ];
 
         if (app('request.ctx')->isOauthRequest() === true)

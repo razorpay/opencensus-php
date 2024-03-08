@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
 import { ShowNotificationType } from 'common/typings';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -19,9 +19,9 @@ const useOAuthInviteLinks = ({
 }: {
   selectedApp: OAuthAppDetailsType;
   showNotification: ShowNotificationType;
-}) => {
+}): UseQueryResult<SettingsData> => {
   return useQuery({
-    queryKey: ['fetch-oauth-invite-links'],
+    queryKey: ['fetch-oauth-invite-links', selectedApp],
     queryFn: async (): Promise<SettingsData> => {
       const { client_id, application_id, redirect_uri } = selectedApp;
       const { data } = await merchantFetch({

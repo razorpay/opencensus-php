@@ -24,4 +24,10 @@ class Headers
     const X_RAZORPAY_REQUEST_ID = 'X-Razorpay-Request-Id';
     
     const X_ORG_ID              = 'X-Org-Id';
+    
+    // x-partner-* headers contain meta data used during phantom signup
+    const X_PARTNER_APPLICATION_ID      = 'x-partner-application-id';
+    
+    const X_PARTNER_OAUTH_REFERRAL      = 'x-partner-oauth-referral';
+    
 }
