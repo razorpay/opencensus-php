@@ -192,7 +192,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($config);
         // cascade partner level config created to all the apps
-        $apps = (new Application\Repository)->findActiveApplicationsByMerchantIdAndType($partner->getId(), 'partner');
+        $apps = (new Application\Repository)->findActiveApplicationsByMerchantIdAndType($partner->getId());
         foreach ($apps as $app)
         {
             $this->create($app, $input, $subMerchant);
@@ -747,7 +747,7 @@ class Core extends Base\Core
      */
     private function cascadePlatformPartnerConfig(Merchant\Entity $partner, Merchant\Entity $subMerchant = null, array $input): void
     {
-        $apps = (new Application\Repository)->findActiveApplicationsByMerchantIdAndType($partner->getId(), 'partner');
+        $apps = (new Application\Repository)->findActiveApplicationsByMerchantIdAndType($partner->getId());
         foreach ($apps as $app)
         {
             $config = $this->fetch($app, $subMerchant);
