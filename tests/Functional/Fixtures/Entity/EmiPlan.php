@@ -14,6 +14,18 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
             'merchant_payback'  => '518',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
+        ],
+        [
+            'id'                => '10101010101041',
+            'duration'          => '9',
+            'rate'              => '1200',
+            'methods'           => 'debitcard',
+            'bank'              => 'HDFC',
+            'min_amount'        => '300000',
+            'merchant_payback'  => '518',
+            'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'in_person',
         ],
         [
             'id'                => '20101010101010',
@@ -24,6 +36,7 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
             'merchant_payback'  => '518',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '10101010101011',
@@ -33,6 +46,7 @@ class EmiPlan extends Base
             'bank'              => 'UTIB',
             'min_amount'        => '300000',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '10101010101100',
@@ -42,6 +56,7 @@ class EmiPlan extends Base
             'bank'              => 'KKBK',
             'min_amount'        => '300000',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '10101010101101',
@@ -51,6 +66,7 @@ class EmiPlan extends Base
             'bank'              => 'INDB',
             'min_amount'        => '200000',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '10101010101110',
@@ -61,6 +77,7 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
             'issuer_plan_id'    => '85009',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '10101010101111',
@@ -71,6 +88,7 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
             'issuer_plan_id'    => '850092',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '10101010111110',
@@ -81,6 +99,7 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
             'issuer_plan_id'    => '1007773209',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '10101011111110',
@@ -93,6 +112,7 @@ class EmiPlan extends Base
             'subvention'        => 'merchant',
             'merchant_payback'  =>  549,
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '10101111111110',
@@ -102,6 +122,7 @@ class EmiPlan extends Base
             'bank'              => 'YESB',
             'min_amount'        => '250000',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
 
         ],
         [
@@ -114,6 +135,7 @@ class EmiPlan extends Base
             'subvention'        => 'merchant',
             'merchant_payback'  => 549,
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '10111110111110',
@@ -125,6 +147,7 @@ class EmiPlan extends Base
             'merchant_payback'  => '518',
             'bank'              =>  null,
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '11101010111111',
@@ -136,6 +159,7 @@ class EmiPlan extends Base
             'merchant_payback'  => '600',
             'bank'              =>  null,
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '30101010101011',
@@ -145,6 +169,7 @@ class EmiPlan extends Base
             'bank'              => 'SBIN',
             'min_amount'        => '300000',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '40101010101011',
@@ -154,6 +179,7 @@ class EmiPlan extends Base
             'bank'              => 'SBIN',
             'min_amount'        => '300000',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '50101010101011',
@@ -163,6 +189,7 @@ class EmiPlan extends Base
             'bank'              => 'CITI',
             'min_amount'        => '300000',
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
     ];
 
@@ -176,6 +203,7 @@ class EmiPlan extends Base
             'min_amount'        => '25000',
             'merchant_payback'  => '518',
             'merchant_id'       => '10000000000000',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '50101010101012',
@@ -185,6 +213,7 @@ class EmiPlan extends Base
             'bank'              => 'CITI',
             'min_amount'        => '2000000',
             'merchant_id'       => '10000000000000',
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '30111111111110',
@@ -196,6 +225,7 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
             'merchant_id'       => '10000000000000',
             'bank'              => null,
+            'source_channel'    =>  'online',
         ],
         [
             'id'                 => '30111111111112',
@@ -207,6 +237,7 @@ class EmiPlan extends Base
             'min_amount'         => '300000',
             'merchant_id'        => '10000000000000',
             'bank'               => null,
+            'source_channel'    =>  'online',
         ],
         [
             'id'                => '20101010101011',
@@ -218,6 +249,7 @@ class EmiPlan extends Base
             'min_amount'        => 500000,
             'merchant_payback'  => 0,
             'merchant_id'       => '100000Razorpay',
+            'source_channel'    =>  'online',
         ],
     ];
 

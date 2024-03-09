@@ -39,6 +39,8 @@ class Entity extends Base\PublicEntity
     // These are the valid durations that emi plan can have
     const VALID_DURATIONS = [2, 3, 6, 9, 12, 18, 24, 36];
 
+    const SOURCE_CHANNEL = "source_channel";
+
     protected $entity           = 'emi_plan';
 
     protected $generateIdOnCreate = true;
@@ -74,6 +76,7 @@ class Entity extends Base\PublicEntity
         self::ISSUER_PLAN_ID,
         self::SUBVENTION,
         self::MERCHANT_PAYBACK,
+        self::SOURCE_CHANNEL,
     ];
 
     protected $public = [
@@ -93,6 +96,7 @@ class Entity extends Base\PublicEntity
         self::COBRANDING_PARTNER => null,
         self::SUBVENTION         => Subvention::CUSTOMER,
         self::MERCHANT_PAYBACK   => 0,
+        self::SOURCE_CHANNEL     => 'online'
     ];
 
     protected $casts = [

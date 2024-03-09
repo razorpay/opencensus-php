@@ -24,10 +24,13 @@ class Repository extends Base\Repository
         Entity::COBRANDING_PARTNER => 'sometimes|string',
     );
 
+    private const DEFAULT_SOURCE_CHANNEL = 'online';
+
     private function fetchEmiPlansFromCardPaymentsService(string $merchantId): PublicCollection
     {
         $input = [
-            Entity::MERCHANT_ID => $merchantId
+            Entity::MERCHANT_ID => $merchantId,
+            Entity::SOURCE_CHANNEL => self::DEFAULT_SOURCE_CHANNEL
         ];
 
         $plans = (new Migration)->handleMigration(Migration::QUERY, null, '', $input);
@@ -57,6 +60,7 @@ class Repository extends Base\Repository
             $emiPlans = $this->newQuery()
                 ->where([
                     [Entity::MERCHANT_ID, '=', $merchantId],
+                    [Entity::SOURCE_CHANNEL, '=', self::DEFAULT_SOURCE_CHANNEL]
                 ])->get();
         }
 
@@ -109,6 +113,10 @@ class Repository extends Base\Repository
         $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
 
         $cpsQuery[Migration::MERCHANT_IDS] = $merchantIds;
+
+        $query->where(Entity::SOURCE_CHANNEL, '=', self::DEFAULT_SOURCE_CHANNEL);
+
+        $cpsQuery[Entity::SOURCE_CHANNEL] = self::DEFAULT_SOURCE_CHANNEL;
 
         $cpsResp = (new Migration) -> handleMigration(Migration::EMI_QUERY, null, '', $cpsQuery);
 
@@ -169,6 +177,10 @@ class Repository extends Base\Repository
 
             $cpsQuery[Entity::TYPE] = $type;
         }
+
+        $query->where(Entity::SOURCE_CHANNEL, self::DEFAULT_SOURCE_CHANNEL);
+
+        $cpsQuery[Entity::SOURCE_CHANNEL] = self::DEFAULT_SOURCE_CHANNEL;
 
         $cpsResp = (new Migration) -> handleMigration(Migration::EMI_QUERY, null, '', $cpsQuery);
 

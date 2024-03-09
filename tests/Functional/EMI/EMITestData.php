@@ -260,6 +260,33 @@ return [
                 'issuer'           => 'HDFC',
                 'entity'           => 'emi_plan',
                 'admin'            => true,
+                'source_channel'   => 'online',
+            ],
+        ],
+    ],
+
+    'testFetchEmiPlanUsingPlanIdForOfflineEmiPlan' => [
+        'request' => [
+            'content' => [
+            ],
+            'url'    => '/emi/10101010101010',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'bank'             => 'HDFC',
+                'network'          => null,
+                'rate'             => 1200,
+                'duration'         => 9,
+                'methods'          => 'card',
+                'min_amount'       => 500000,
+                'issuer_plan_id'   => null,
+                'subvention'       => 'customer',
+                'merchant_payback' => 518,
+                'issuer'           => 'HDFC',
+                'entity'           => 'emi_plan',
+                'admin'            => true,
+                'source_channel'   => 'in_person',
             ],
         ],
     ],

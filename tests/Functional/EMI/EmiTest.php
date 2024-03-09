@@ -253,6 +253,8 @@ class EmiTest extends TestCase
 
         $this->assertNotContains('SBIN', array_keys($emiPlans));
 
+        $this->assertNotContains('in_person', array_keys($emiPlans));
+
         $this->assertContains('HDFC', array_keys($emiPlans));
 
         // After a few days, when the merchant has been onboarded.
@@ -266,6 +268,17 @@ class EmiTest extends TestCase
     public function testFetchEmiPlanUsingPlanId()
     {
         $this->fixtures->create('emi_plan');
+
+        $this->startTest();
+    }
+
+    public function testFetchEmiPlanUsingPlanIdForOfflineEmiPlan()
+    {
+        $this->fixtures->create(
+            'emi_plan',
+            [
+                'source_channel'    => 'in_person',
+            ]);
 
         $this->startTest();
     }
