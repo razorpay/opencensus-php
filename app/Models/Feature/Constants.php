@@ -355,6 +355,11 @@ class Constants
     const ROUTE_PARTNERSHIPS = 'route_partnerships';
 
     /**
+     * This feature will enable the partner for platform-fee model instead of by-default partner-invoicing model.
+     */
+    const PARTNER_PLAT_FEE_INVOICE = 'partner_plat_fee_invoice';
+
+    /**
      * This feature enables the partner to put the payment settlements of all sub-merchants on hold
      * by default. Later, the partner can release individual payments for settlement using an API
      */
@@ -2786,6 +2791,7 @@ class Constants
         self::AUTO_COMM_INV_DISABLED                       => true,
         self::ADMIN_LEAD_PARTNER                           => true,
         self::ROUTE_PARTNERSHIPS                           => true,
+        self::PARTNER_PLAT_FEE_INVOICE                     => true,
         self::SUBM_MANUAL_SETTLEMENT                       => true,
         DcsConstants::EnableMerchantExpiryForPP            => true,
         DcsConstants::EnableMerchantExpiryForPL            => true,
@@ -3846,6 +3852,11 @@ class Constants
             'display_name'  => 'Enables the partner to create transfer to its linked accounts from its sub-merchants',
             'documentation' => '',
         ],
+        self::PARTNER_PLAT_FEE_INVOICE => [
+            'feature'       => self::PARTNER_PLAT_FEE_INVOICE,
+            'display_name'  => 'Enables the platform-fee model for Route partners',
+            'documentation' => '',
+        ],
         self::SUBM_MANUAL_SETTLEMENT => [
             'feature'       => self::SUBM_MANUAL_SETTLEMENT,
             'display_name'  => 'Enables the partner to hold the sub-merchant payments settlements and later release it',
@@ -4347,7 +4358,8 @@ class Constants
     // partner level for pure platform partner
     const PARTNER_AND_APP_LEVEL_FEATURES = [
         self::ROUTE_PARTNERSHIPS,
-        self::SUBM_MANUAL_SETTLEMENT
+        self::SUBM_MANUAL_SETTLEMENT,
+        self::PARTNER_PLAT_FEE_INVOICE,
     ];
 
     const EARLY_SETTLEMENT_FEATURES = [
