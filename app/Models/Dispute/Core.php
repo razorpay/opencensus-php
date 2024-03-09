@@ -270,7 +270,14 @@ class Core extends Base\Core
 
         $refundIdsString = '';
 
-        $refundIds = $payment->refunds->getIds();
+        $refunds = $payment->refunds;
+
+        $refundIds = [];
+
+        foreach($refunds as $refund)
+        {
+            $refundIds[] = $refund->getId();
+        }
 
         //condition check for sanity purpose
         if (empty($refundIds) === false)
