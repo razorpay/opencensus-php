@@ -1146,9 +1146,11 @@ class Core extends Base\Core
                 'parent_merchant'       => $parentMerchant?->getId(),
             ]);
 
+            // If "partner_plat_fee_invoice" flag is disabled for partner, Partner would land in default partner-invoicing model where TDS isn't applicable.
             if (empty($parentMerchant) === true or
                 in_array($parentMerchant->getPartnerType(), [Merchant\Constants::AGGREGATOR, Merchant\Constants::PURE_PLATFORM]) === false or
-                (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::ROUTE_PARTNERSHIPS, $parentMerchant) === false)
+                (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::ROUTE_PARTNERSHIPS, $parentMerchant) === false or
+                (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::PARTNER_PLAT_FEE_INVOICE, $parentMerchant) === false)
             {
 
                 $this->trace->info(TraceCode::PAYMENT_TRANSFER_TDS_CALCULATION_SKIPPED,

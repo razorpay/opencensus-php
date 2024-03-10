@@ -2199,6 +2199,8 @@ class TransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
 
+        $this->fixtures->merchant->addFeatures(['partner_plat_fee_invoice'], '10000000000000');
+
         $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
 
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;
@@ -2222,6 +2224,8 @@ class TransferTest extends TestCase
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
         $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['partner_plat_fee_invoice'], '10000000000000');
 
         $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
 
@@ -2288,7 +2292,7 @@ class TransferTest extends TestCase
         $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
     }
 
-    public function testCreateDirectTransferTdsWithOAuthForMarketplace()
+    public function testCreateDirectTransferTdsWithOAuthForMarketplaceOnPartnerFeeModel()
     {
         $this->setPurePlatformContext(Mode::TEST);
 
@@ -2309,11 +2313,54 @@ class TransferTest extends TestCase
 
         $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
 
-        $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+        $this->testData['testCreateDirectTransferTdsWithOAuthForMarketplace']['response']['content']['source'] = 'acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
 
         $this->mockAllSplitzTreatment();
 
-        $response = $this->startTest();
+        $response = $this->startTest($this->testData['testCreateDirectTransferTdsWithOAuthForMarketplace']);
+
+        $transfer = $this->getDbEntityById('transfer', $response['id']);
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
+
+        $adjustment = $this->getLastEntity('adjustment', true, 'test');
+
+        $this->assertNull($adjustment, 'adjustment should be null');
+
+    }
+
+    public function testCreateDirectTransferTdsWithOAuthForMarketplaceOnPlatformFeeModel()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', $this->linkedAccountId, ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures(['direct_transfer'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures(['partner_plat_fee_invoice'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => '10000000000001',
+            ], 'test');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
+
+        $this->testData['testCreateDirectTransferTdsWithOAuthForMarketplace']['response']['content']['source'] = 'acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->startTest($this->testData['testCreateDirectTransferTdsWithOAuthForMarketplace']);
 
         $transfer = $this->getDbEntityById('transfer', $response['id']);
 
@@ -2332,7 +2379,6 @@ class TransferTest extends TestCase
         $this->assertNotNull($adjustment['transaction_id'], 'transaction should not be null');
         $this->assertEquals($adjustment['entity_type'], 'payment','entity_type should be payment');
         $this->assertNotNull($adjustment['entity_id'], 'entity_id should not be null');
-
     }
 
     public function testCreateDirectTransferReversalWithPartnerAuthForMarketplace()
