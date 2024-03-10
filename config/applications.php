@@ -1737,6 +1737,14 @@ return [
         'asv_splitz_experiment_tidb_migration' => env('ASV_SPLITZ_EXPERIMENT_TIDB_MIGRATION', ''),
         'asv_splitz_experiment_tidb_comparison' => env('ASV_SPLITZ_EXPERIMENT_TIDB_COMPARISON', ''),
         'asv_enable_tidb_shadow' => env('ASV_ENABLE_TIDB_SHADOW', false),
+        'splitz_experiment_merchant_find' =>  env('ASV_SPLITZ_EXPERIMENT_MERCHANT_FIND', ''),
+        'splitz_experiment_website_find' => env('ASV_SPLITZ_EXPERIMENT_WEBSITE_FIND', ''),
+        'splitz_experiment_merchant_email_find' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_EMAIL_FIND', ''),
+        'splitz_experiment_merchant_business_detail_find' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_BUSINESS_DETAIL_FIND', ''),
+        'splitz_experiment_merchant_document_find' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_DOCUMENT_FIND', ''),
+        'splitz_experiment_address_find' => env('ASV_SPLITZ_EXPERIMENT_ADDRESS_FIND', ''),
+        'splitz_experiment_stakeholder_find' => env('ASV_SPLITZ_EXPERIMENT_STAKEHOLDER_FIND', ''),
+        "splitz_experiment_merchant_detail_find" => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_DETAIL_FIND', ''),
     ],
 
     'recon'         => [

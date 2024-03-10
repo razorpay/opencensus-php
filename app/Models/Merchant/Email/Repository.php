@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Email;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
 use RZP\Modules\Acs\Wrapper\MerchantEmail;
 use RZP\Models\Base\RepositoryUpdateTestAndLiveAndAsv;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
@@ -15,7 +16,7 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantEmail as MerchantEmailSDKW
 class Repository extends Base\Repository
 {
     use RepositoryUpdateTestAndLiveAndAsv;
-    use AsvFetchCommon;
+    use AsvFetchCommon, AsvFindEntity;
     use AsvFind;
 
     protected $entity = 'merchant_email';

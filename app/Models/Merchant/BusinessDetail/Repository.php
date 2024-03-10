@@ -13,12 +13,13 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\BusinessDetail as BusinessDetailSD
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
+use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
 use RZP\Modules\Acs\Wrapper\MerchantBusinessDetail as MerchantBusinessDetailWrapper;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLiveAndAsv;
-    use AsvFetchCommon;
+    use AsvFetchCommon, AsvFindEntity;
     use AsvFind;
 
     protected $entity = 'merchant_business_detail';

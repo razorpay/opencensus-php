@@ -232,39 +232,37 @@ class RepositoryTest extends RepositoryTestHelper
     }
 
     public function testMerchantWebsiteFindOrFailRequestRoutedToAsv() {
-        $repo = new Repository();
-
-        $merchantWebsite = new MerchantWebsite();
 
         $this->createMerchantWebsiteInDatabase($this->websiteEntityJson1);
         $this->createMerchantWebsiteInDatabase($this->websiteEntityJson2);
         $this->createMerchantWebsiteInDatabase($this->websiteEntityJson3);
 
         $websiteEntity1 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson1);
-        $websiteEntity2 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson2);
-        $websiteEntity3 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson3);
 
         $merchantWebsiteProto1 = $this->getMerchantWebsiteProtoForJson($this->websiteEntityJson1);
-        $merchantWebsiteProto2 = $this->getMerchantWebsiteProtoForJson($this->websiteEntityJson2);
-        $merchantWebsiteProto3 = $this->getMerchantWebsiteProtoForJson($this->websiteEntityJson3);
 
         $merchantWebsiteResponse = (new MerchantWebsiteResponse())->setWebsite($merchantWebsiteProto1);
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on.
-        $this->setSplitzWithOutput("true", 0); // Splitz should never be called
-        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 2);
+        $repo = new Repository();
+        $this->setSplitzWithOutput("true", 2); // Splitz should never be called
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 4, false, null);
+        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 4);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($websiteEntity1->toArray(), $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on, asv gives exception.
-        $this->setSplitzWithOutput("true", 0);  // Splitz should never be called
-        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"),"getById", 2);
+        $repo = new Repository();
+        $this->setSplitzWithOutput("true", 3);  // Splitz should never be called
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 5, false, null);
+        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"),"getById", 5);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($websiteEntity1->toArray(), $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on, array of ids.
+        $repo = new Repository();
         $this->setSplitzWithOutput("true", 0);  // Splitz should never be called
         $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 0);
         $response = $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS4"]);
@@ -294,6 +292,42 @@ class RepositoryTest extends RepositoryTestHelper
             $this->getExceptionForFindAndFailPublicDatabase($repo, "K9UzmvitzJwyS6"),
             $this->getExceptionForFindOrFailPublicAsv($repo, "K9UzmvitzJwyS6", new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Not Found"))
         );
+    }
+
+    public function testMerchantWebsiteFindRequestRoutedToAsv() {
+
+        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson1);
+        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson2);
+        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson3);
+
+        $websiteEntity1 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson1);
+
+        $merchantWebsiteProto1 = $this->getMerchantWebsiteProtoForJson($this->websiteEntityJson1);
+
+        $merchantWebsiteResponse = (new MerchantWebsiteResponse())->setWebsite($merchantWebsiteProto1);
+
+        // Find should work fine if splitz is on.
+        $repo = new Repository();
+        $this->setSplitzWithOutput("true", 1); // Splitz should never be called
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 1);
+        $response = $this->getOutputForDbCallsForFind($repo, "K9UzmvitzJwyS4");
+        $this->assertEquals($websiteEntity1->toArray(), $response);
+
+        // Find should work fine if splitz is on, asv gives exception.
+        $repo = new Repository();
+        $this->setSplitzWithOutput("true", 1);  // Splitz should never be called
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"),"getById", 1);
+        $response = $this->getOutputForDbCallsForFind($repo, "K9UzmvitzJwyS4");
+        $this->assertEquals($websiteEntity1->toArray(), $response);
+
+        // Find should work fine if splitz is on, array of ids.
+        $repo = new Repository();
+        $this->setSplitzWithOutput("true", 0);  // Splitz should never be called
+        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 0);
+        $response = $this->getOutputForDbCallsForFind($repo, ["K9UzmvitzJwyS4"]);
+        $this->assertEquals([$websiteEntity1->toArray()], $response);
     }
 
     private function getExceptionForFindOrFailAsv($repo, $id, $grpcError) {
@@ -360,6 +394,24 @@ class RepositoryTest extends RepositoryTestHelper
         return $findOrFailValue->toArray();
     }
 
+    private function getOutputForRawDbCallsForFind($repo, $id, $columns = null, $connectiontype = null) {
+        if($columns == null) {
+            $findValue = $repo->findDatabase($id);
+        } else {
+            $findValue = $repo->findDatabase($id, $columns, $connectiontype);
+        }
+
+        if(is_array($id) && $columns==null ) {
+            for($i = 0; $i < count($findValue); $i++) {
+                $findValue[$i]['audit_id'] = "testtesttest";
+            }
+        } elseif($columns == null) {
+            $findValue['audit_id'] = "testtesttest";
+        }
+
+        return $findValue->toArray();
+    }
+
     private function getOutputForDbCalls($repo, $id, $columns = null, $connectiontype = null) {
         if($columns == null) {
             $findOrFailValue = $repo->findOrFail($id);
@@ -383,6 +435,26 @@ class RepositoryTest extends RepositoryTestHelper
         $this->assertEquals($this->getOutputForRawDbCalls($repo, $id, $columns,$connectiontype), $findOrFailPublicValue->toArray());
 
         return $findOrFailValue->toArray();
+    }
+
+    private function getOutputForDbCallsForFind($repo, $id, $columns = null, $connectiontype = null) {
+        if($columns == null) {
+            $findValue = $repo->find($id);
+        } else {
+            $findValue = $repo->find($id, $columns, $connectiontype);
+        }
+
+        if(is_array($id) && $columns == null) {
+            for($i = 0; $i < count($findValue); $i++) {
+                $findValue[$i]['audit_id'] = "testtesttest";
+            }
+        } elseif($columns == null) {
+            $findValue['audit_id'] = "testtesttest";
+        }
+
+        $this->assertEquals($this->getOutputForRawDbCallsForFind($repo, $id, $columns,$connectiontype), $findValue->toArray());
+
+        return $findValue->toArray();
     }
 
     private function splitzShouldThrowException($count = 1) {

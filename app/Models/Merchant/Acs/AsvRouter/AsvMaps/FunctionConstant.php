@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Acs\AsvRouter\AsvMaps;
 final class FunctionConstant
 {
     const FIND_OR_FAIL = 'FIND_OR_FAIL';
+    const FIND   = 'FIND';
     const FIND_OR_FAIL_PUBLIC = 'FIND_OR_FAIL_PUBLIC';
     const FIND_FOR_IMPLICIT_JOIN = 'FIND_FOR_IMPLICIT_JOIN';
 

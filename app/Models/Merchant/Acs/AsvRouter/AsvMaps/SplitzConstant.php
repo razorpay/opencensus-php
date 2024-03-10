@@ -8,7 +8,10 @@ final class SplitzConstant
     const LIVE_MODE     = 'live';
 
     const SPLITZ_WEBSITE_READ_FIND = "splitz_experiment_website_read_find";
+    const SPLITZ_WEBSITE_FIND = "splitz_experiment_website_find";
+
     const SPLITZ_EMAIL_GET_BY_MERCHANT_ID = 'splitz_experiment_merchant_email_read_by_merchant_id';
+    const SPLITZ_EMAIL_FIND = 'splitz_experiment_merchant_email_find';
 
     const SPLITZ_EMAIL_GET_BY_TYPE_AND_MERCHANT_ID = 'splitz_experiment_merchant_email_read_by_type_and_merchant_id';
 
@@ -16,6 +19,7 @@ final class SplitzConstant
 
     const SPLITZ_BUSINESS_DETAIL_GET_BY_MERCHANT_ID = 'splitz_experiment_merchant_business_detail_read_by_merchant_id';
     const SPLITZ_BUSINESS_DETAIL_GET_BY_ID = 'splitz_experiment_merchant_business_detail_read_by_id';
+    const SPLITZ_BUSINESS_DETAIL_FIND = 'splitz_experiment_merchant_business_detail_find';
 
     const SPLITZ_DOCUMENT_GET_BY_TYPE_AND_MERCHANT_ID = 'splitz_experiment_merchant_document_read_by_type_and_merchant_id';
 
@@ -46,6 +50,8 @@ final class SplitzConstant
 
     const SPLITZ_MERCHANT_FIND_FOR_IMPLICIT_JOIN = 'splitz_experiment_merchant_find_for_implicit_join';
 
+    const SPLITZ_MERCHANT_FIND = 'splitz_experiment_merchant_find';
+
     const SPLITZ_IMPLICIT_JOIN_STAKEHOLDER_BY_MERCHANTID = 'splitz_experiment_implicit_join_stakeholder_by_merchant_id';
 
     const SPLITZ_IMPLICIT_JOIN_DOCUMENT_BY_MERCHANTID = 'splitz_experiment_implicit_join_document_by_merchant_id';
@@ -53,15 +59,19 @@ final class SplitzConstant
     const SPLITZ_MERCHANT_BUSINESS_DETAIL_SAVE_OR_FAIL = 'splitz_experiment_merchant_business_detail_save_or_fail';
 
     const SPLITZ_MERCHANT_DOCUMENT_SAVE_OR_FAIL = 'splitz_experiment_merchant_document_save_or_fail';
+    const SPLITZ_MERCHANT_DOCUMENT_FIND = 'splitz_experiment_merchant_document_find';
 
     const SPLITZ_MERCHANT_DOCUMENT_DELETE_OR_FAIL = 'splitz_experiment_merchant_document_delete_or_fail';
 
     const SPLITZ_MERCHANT_DETAIL_SAVE_OR_FAIL = 'splitz_experiment_merchant_detail_save_or_fail';
+    const SPLITZ_MERCHANT_DETAIL_FIND = 'splitz_experiment_merchant_detail_find';
 
     const SPLITZ_STAKEHOLDER_SAVE_OR_FAIL = 'splitz_experiment_stakeholder_save_or_fail';
+    const SPLITZ_STAKEHOLDER_FIND = 'splitz_experiment_stakeholder_find';
     const SPLITZ_MERCHANT_SAVE_OR_FAIL = 'splitz_experiment_merchant_save_or_fail';
 
     const SPLITZ_ADDRESS_SAVE_OR_FAIL = 'splitz_experiment_address_save_or_fail';
+    const SPLITZ_ADDRESS_FIND = 'splitz_experiment_address_find';
     const SPLITZ_SEND_PARTNER_WRITE_TO_ASV = 'splitz_send_partner_write_to_asv';
 
     const SPLITZ_SEND_WRITE_TO_ASV = 'splitz_send_write_to_asv';

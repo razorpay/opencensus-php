@@ -9,6 +9,7 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
+use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
 use RZP\Models\Merchant\Stakeholder\Entity as MerchantStakeholderEntity;
 use RZP\Modules\Acs\Wrapper\MerchantStakeholder as MerchantStakeholderWrapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
@@ -20,7 +21,7 @@ use RZP\Trace\TraceCode;
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLiveAndAsv;
-    use AsvFetchCommon;
+    use AsvFetchCommon, AsvFindEntity;
     use AsvFind;
 
     protected $entity = 'stakeholder';

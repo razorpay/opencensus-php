@@ -171,7 +171,7 @@ class RepositoryTest extends RepositoryTestHelper
 
     }
 
-    public function testFindById()
+    public function testFindOrFail()
     {
         Config::set('applications.asv_v2.splitz_experiment_merchant_document_read_by_id', 'K1ZaAHZ7Lnumc6');
 
@@ -208,6 +208,47 @@ class RepositoryTest extends RepositoryTestHelper
         $repo             = new Repository();
         $repo->asvRouter  = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentById("randomId");
+        self::assertEquals(null, $merchantDocument);
+
+    }
+
+    public function testFind()
+    {
+        Config::set('applications.asv_v2.splitz_experiment_merchant_document_find', 'K1ZaAHZ7Lnumc6');
+
+        $this->createMerchantDocumentInDatabase($this->merchantDocumentEntityJson1);
+        $this->createMerchantDocumentInDatabase($this->merchantDocumentEntityJson2);
+
+        $merchantDocumentEntity1 = $this->getmerchantDocumentEntityFromJson($this->merchantDocumentEntityJson1);
+
+        $merchantDocumentProto1   = $this->getMerchantDocumentProtoFromJson($this->merchantDocumentEntityJson1);
+        $merchantDocumentResponse = (new MerchantDocumentResponse())->setDocument($merchantDocumentProto1);
+
+        // Test Case 1 - ExclusionFlow true - Request for findById  should not go to account service
+        $this->setSplitzWithOutput("false", 0);
+        $repo                              = new Repository();
+        $repo->asvRouter                   = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, true, null);
+        $merchantDocument                  = $repo->find("JWNkBHL4Waqqf8");
+        $merchantDocumentArray             = $merchantDocument->toArray();
+        $merchantDocumentArray['audit_id'] = 'testtesttestid';
+        $this->assertEquals($merchantDocumentEntity1->toArray(), $merchantDocumentArray);
+
+        // Test Case 2 - ExclusionFlow false - Request for finById  should always go to account service
+        $this->setSplitzWithOutput("true", 1);
+        $this->setMerchantDocumentMockClientWithIdAndResponse("JWNkBHL4Waqqf8", $merchantDocumentResponse, null, "getById", 1);
+        $repo                              = new Repository();
+        $repo->asvRouter                   = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+        $merchantDocument                  = $repo->find("JWNkBHL4Waqqf8");
+        $merchantDocumentArray             = $merchantDocument->toArray();
+        $merchantDocumentArray['audit_id'] = 'testtesttestid';
+        $this->assertEquals($merchantDocumentEntity1->toArray(), $merchantDocumentArray);
+
+        // Test Case 6 - ExclusionFlow false - Splitz on - Request for finById  should always go to account service -Invalid Id
+        $this->setSplitzWithOutput("true", 1);
+        $this->setMerchantDocumentMockClientWithIdAndResponse("randomId", null, new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"), "getById", 1);
+        $repo             = new Repository();
+        $repo->asvRouter  = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+        $merchantDocument = $repo->find("randomId");
         self::assertEquals(null, $merchantDocument);
 
     }

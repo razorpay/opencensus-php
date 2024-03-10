@@ -16,11 +16,12 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkIntegration;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument as MerchantDocumentSDKWrapper;
+use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLiveAndAsv;
-    use AsvFetchCommon;
+    use AsvFetchCommon, AsvFindEntity;
     use AsvFind;
 
     protected $entity             = 'merchant_document';

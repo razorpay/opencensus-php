@@ -319,7 +319,7 @@ class RepositoryTest extends TestCase
         self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
     }
 
-    public function testEmailRepositoryFindById()
+    public function testEmailRepositoryFindOrFail()
     {
         Config::set('applications.asv_v2.splitz_experiment_merchant_email_read_by_id', 'K1ZaAHZ7Lnumc6');
 
@@ -353,36 +353,82 @@ class RepositoryTest extends TestCase
         $merchantEmailResponse = (new MerchantEmailResponse())->setEmail($merchantEmailProto1);
 
         // Test Case 4 - ExclusionFlow false - Splitz should never be called - Request for findOrFail & findOrFailPublic  should go to account service
-        $this->setSplitzWithOutput("true", 0);
+        $this->setSplitzWithOutput("true", 1);
+        $this->setMerchantEmailMockClientWithIdAndResponse("CzmiCwTPCL3t2R", $merchantEmailResponse, null, "getById", 3);
+        $repo = new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
+        $this->assertEquals($merchantEmailEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
+    }
+
+    public function testEmailRepositoryFind()
+    {
+        Config::set('applications.asv_v2.splitz_experiment_merchant_email_find', 'K1ZaAHZ7Lnumc6');
+
+        $this->createMerchantEmailInDatabase($this->merchantEmailEntityJson1);
+        $this->createMerchantEmailInDatabase($this->merchantEmailEntityJson2);
+        $this->createMerchantEmailInDatabase($this->merchantEmailEntityJson3);
+
+        $merchantEmailEntity1 = $this->getMerchantEmailEntityFromJson($this->merchantEmailEntityJson1);
+        $merchantEmailEntity2 = $this->getMerchantEmailEntityFromJson($this->merchantEmailEntityJson2);
+
+        $merchantEmailProto1 = $this->getMerchantEmailProtoFromJson($this->merchantEmailEntityJson1);
+
+        // Test Case 1 - ExclusionFlow false - Column Selection - Request for find should not go to account service
+        $this->setSplitzWithOutput("false", 0);
+        $repo = new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $this->assertEquals(["id" => $merchantEmailEntity1->getId()], $this->getOutputForDbCallsForFind($repo, "CzmiCwTPCL3t2R", ["id"]));
+
+        // Test Case 2 - ExclusionFlow false - Select by multiple Ids - Request for find should not go to account service
+        $this->setSplitzWithOutput("false", 0);
+        $repo = new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([$merchantEmailEntity1->toArray(), $merchantEmailEntity2->toArray()]), $this->getOutputForDbCallsForFind($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"]));
+
+        // Test Case 3 - ExclusionFlow false - Select by multiple Ids, filter by fields - Request for find should not go to account service
+        $this->setSplitzWithOutput("false", 0);
+        $repo = new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([["id" => "CzmiCwTPCL3t2R"], ["id" => "CzmiD0rBAGOort"]]), $this->getOutputForDbCallsForFind($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"], ["id"]));
+
+        $merchantEmailResponse = (new MerchantEmailResponse())->setEmail($merchantEmailProto1);
+
+        // Test Case 4 - ExclusionFlow false - Splitz should never be called - Request for find  should go to account service
+        $this->setSplitzWithOutput("true", 2);
         $this->setMerchantEmailMockClientWithIdAndResponse("CzmiCwTPCL3t2R", $merchantEmailResponse, null, "getById", 2);
         $repo = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
-        $this->assertEquals($merchantEmailEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
+        $this->assertEquals($merchantEmailEntity1->toArray(), $this->getOutputForDbCallsForFind($repo, "CzmiCwTPCL3t2R"));
+    }
 
-        // Test Case 5 -  Match not found Exception from DB and ASV: FindOrFail
+    public function testEmailRepositoryFindOrFailErrors()
+    {
+        Config::set('applications.asv_v2.splitz_experiment_merchant_email_read_by_id', 'K1ZaAHZ7Lnumc6');
+
+        $repo = new Repository();
+        // Test Case 1 -  Match not found Exception from DB and ASV: FindOrFail
         $this->assertEquals(
             $this->getExceptionForFindAndFailDatabase($repo, "K9UzmvitzJwyS6"),
             $this->getExceptionForFindOrFailAsv($repo, "K9UzmvitzJwyS6", new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"))
         );
 
-        // Test Case 6 -  Match not found Exception from DB and ASV: FindOrFailPublic
+        // Test Case 2 -  Match not found Exception from DB and ASV: FindOrFailPublic
         $this->assertEquals(
             $this->getExceptionForFindAndFailPublicDatabase($repo, "K9UzmvitzJwyS6"),
             $this->getExceptionForFindOrFailPublicAsv($repo, "K9UzmvitzJwyS6", new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"))
         );
 
-        // Test Case 7 - Match Invalid Argument Exception from DB and ASV: FindOrFail
+        // Test Case 3 - Match Invalid Argument Exception from DB and ASV: FindOrFail
         $this->assertEquals(
             $this->getExceptionForFindAndFailDatabase($repo, "K9UzmvitzJwyS6"),
             $this->getExceptionForFindOrFailAsv($repo, "K9UzmvitzJwyS6", new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Not Found"))
         );
 
-        // Test Case 8 - Match Invalid Argument Exception from DB and ASV: FindOrFailPublic
+        // Test Case 4 - Match Invalid Argument Exception from DB and ASV: FindOrFailPublic
         $this->assertEquals(
             $this->getExceptionForFindAndFailPublicDatabase($repo, "K9UzmvitzJwyS6"),
             $this->getExceptionForFindOrFailPublicAsv($repo, "K9UzmvitzJwyS6", new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Not Found"))
         );
-
     }
 
     private function getOutputForDbCalls($repo, $id, $columns = null, $connectiontype = null)
@@ -407,6 +453,25 @@ class RepositoryTest extends TestCase
         $this->assertEquals($this->getOutputForRawDbCalls($repo, $id, $columns, $connectiontype), $findOrFailPublicValueArray);
 
         return $findOrFailValueArray;
+    }
+
+    private function getOutputForDbCallsForFind($repo, $id, $columns = null, $connectiontype = null)
+    {
+        if ($columns === null) {
+            $findValue = $repo->find($id);
+        } else {
+            $findValue = $repo->find($id, $columns, $connectiontype);
+        }
+
+        $findValueArray = $findValue->toArray();
+
+        if (is_array($id)) {
+            $findValueArray = $this->convertEntitiesToAssociativeArrayBasedOnId($findValueArray);
+        }
+
+        $this->assertEquals($this->getOutputForRawDbCalls($repo, $id, $columns, $connectiontype), $findValueArray);
+
+        return $findValueArray;
     }
 
     private function getOutputForRawDbCalls($repo, $id, $columns = null, $connectiontype = null)

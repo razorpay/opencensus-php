@@ -258,10 +258,6 @@ class RepositoryTest extends RepositoryTestHelper
 
     public function testMerchantbusinessDetailFindOrFailRequestRoutedToAsv()
     {
-        $repo = new Repository();
-
-        $merchantbusinessDetail = new BusinessDetail();
-
         $this->createMerchantbusinessDetailInDatabase($this->businessDetailEntityJson1);
         $this->createMerchantbusinessDetailInDatabase($this->businessDetailEntityJson2);
         $this->createMerchantbusinessDetailInDatabase($this->businessDetailEntityJson3);
@@ -277,16 +273,17 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantbusinessDetailResponse = (new MerchantbusinessDetailResponse())->setbusinessDetail($merchantbusinessDetailProto1);
 
         // FindOrFail & FindOrFailPublic : Splitz On - Request should always go to asv
-        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0);
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 2);
 
-        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 2);
+        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 4);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($businessDetailEntity1->toArray(), $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
 
         // FindOrFail & FindOrFailpublic : Splitz Off - Request should always go to asv  and fallback to db if failure from asv
-        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0);
-        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"), "getById", 2);
+        $repo = new Repository();
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 3);
+        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"), "getById", 5);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($businessDetailEntity1->toArray(), $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
@@ -298,6 +295,11 @@ class RepositoryTest extends RepositoryTestHelper
         $this->assertEquals([$businessDetailEntity1->toArray()], $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, ["K9UzmvitzJwyS4"]), $response);
 
+    }
+
+    public function testMerchantbusinessDetailFindOrFailErrorRequestRoutedToAsv()
+    {
+        $repo = new Repository();
         // Match not found Exception from DB and ASV: FindOrFail
         $this->assertEquals(
             $this->getExceptionForFindAndFailDatabase($repo, "K9UzmvitzJwyS6"),
@@ -323,6 +325,43 @@ class RepositoryTest extends RepositoryTestHelper
         );
     }
 
+    public function testMerchantbusinessDetailFindRequestRoutedToAsv()
+    {
+        $this->createMerchantbusinessDetailInDatabase($this->businessDetailEntityJson1);
+        $this->createMerchantbusinessDetailInDatabase($this->businessDetailEntityJson2);
+        $this->createMerchantbusinessDetailInDatabase($this->businessDetailEntityJson3);
+
+        $businessDetailEntity1 = $this->getBusinessDetailEntityForJson($this->businessDetailEntityJson1);
+        $businessDetailEntity2 = $this->getBusinessDetailEntityForJson($this->businessDetailEntityJson2);
+        $businessDetailEntity3 = $this->getBusinessDetailEntityForJson($this->businessDetailEntityJson3);
+
+        $merchantbusinessDetailProto1 = $this->getBusinessDetailProtoForJson($this->businessDetailEntityJson1);
+        $merchantbusinessDetailProto2 = $this->getBusinessDetailProtoForJson($this->businessDetailEntityJson2);
+        $merchantbusinessDetailProto3 = $this->getBusinessDetailProtoForJson($this->businessDetailEntityJson3);
+
+        $merchantbusinessDetailResponse = (new MerchantbusinessDetailResponse())->setbusinessDetail($merchantbusinessDetailProto1);
+
+        // Find : Splitz On - Request should always go to asv
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 2);
+
+        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 4);
+        $response = $this->getOutputForDbCallsForFind($repo, "K9UzmvitzJwyS4");
+        $this->assertEquals($businessDetailEntity1->toArray(), $response);
+
+        // FindOrFail : Splitz Off - Request should always go to asv  and fallback to db if failure from asv
+        $repo = new Repository();
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 3);
+        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"), "getById", 5);
+        $response = $this->getOutputForDbCallsForFind($repo, "K9UzmvitzJwyS4");
+        $this->assertEquals($businessDetailEntity1->toArray(), $response);
+
+        // Find should work fine if splitz is on, array of ids : request should go to db
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0);
+        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 0);
+        $response = $this->getOutputForDbCallsForFind($repo, ["K9UzmvitzJwyS4"]);
+        $this->assertEquals([$businessDetailEntity1->toArray()], $response);
+
+    }
 
     public function assertEqualsAssociativeByKey($array1, $array2, $key = "id")
     {
@@ -447,6 +486,25 @@ class RepositoryTest extends RepositoryTestHelper
         return $findOrFailValue->toArray();
     }
 
+    private function getOutputForRawDbCallsForFind($repo, $id, $columns = null, $connectiontype = null)
+    {
+        if ($columns == null) {
+            $findValue = $repo->findDatabase($id);
+        } else {
+            $findValue = $repo->findDatabase($id, $columns, $connectiontype);
+        }
+
+        if (is_array($id) && $columns == null) {
+            for ($i = 0; $i < count($findValue); $i++) {
+                $findValue[$i]['audit_id'] = "testtesttest";
+            }
+        } elseif ($columns == null) {
+            $findValue['audit_id'] = "testtesttest";
+        }
+
+        return $findValue->toArray();
+    }
+
     private function getOutputForDbCalls($repo, $id, $columns = null, $connectiontype = null)
     {
         if ($columns == null) {
@@ -471,6 +529,27 @@ class RepositoryTest extends RepositoryTestHelper
         $this->assertEquals($this->getOutputForRawDbCalls($repo, $id, $columns, $connectiontype), $findOrFailPublicValue->toArray());
 
         return $findOrFailValue->toArray();
+    }
+
+    private function getOutputForDbCallsForFind($repo, $id, $columns = null, $connectiontype = null)
+    {
+        if ($columns == null) {
+            $findValue = $repo->find($id);
+        } else {
+            $findValue = $repo->find($id, $columns, $connectiontype);
+        }
+
+        if (is_array($id) && $columns == null) {
+            for ($i = 0; $i < count($findValue); $i++) {
+                $findValue[$i]['audit_id'] = "testtesttest";
+            }
+        } elseif ($columns == null) {
+            $findValue['audit_id'] = "testtesttest";
+        }
+
+        $this->assertEquals($this->getOutputForRawDbCallsForFind($repo, $id, $columns, $connectiontype), $findValue->toArray());
+
+        return $findValue->toArray();
     }
 
     private function splitzShouldThrowException($count = 1)

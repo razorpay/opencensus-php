@@ -30,11 +30,12 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\SplitzConstant;
 use RZP\Modules\Acs\Wrapper\MerchantDetail as MerchantDetailWrapper;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
+use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDetail as AsvSdkMerchantDetailQuery;
 
 class Repository extends Base\Repository
 {
-    use AsvFind;
+    use AsvFind, AsvFindEntity;
     use Base\RepositoryUpdateTestAndLiveAndAsv
     {
         saveOrFail as saveOrFailTestAndLive;
