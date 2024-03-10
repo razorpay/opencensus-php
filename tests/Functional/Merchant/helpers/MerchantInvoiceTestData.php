@@ -224,6 +224,22 @@ return [
         ],
     ],
 
+    'testInvoiceEntityCreateWithPlatformFeeForPartnerMerchant' => [
+        'platform_fee' => [
+            'amount'    => 850,
+            'tax'       => 153,
+            'gstin'     => '29kjsngjk213922',
+        ],
+    ],
+
+    'testInvoiceEntityCreateWithoutPlatformFeeForPartnerMerchant' => [
+        'platform_fee' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
+    ],
+
     'testEditGstinFailure' => [
         'response'  => [
             'content'     => [

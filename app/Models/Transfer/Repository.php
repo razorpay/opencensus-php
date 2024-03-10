@@ -440,10 +440,8 @@ class Repository extends Base\Repository
         $transfer->source()->associate($order);
     }
 
-    public function fetchPlatformFeeTransferDetailsForMerchant(string $merchantId, array $linkedAccounts, int $month, int $year)
+    public function fetchPlatformFeeTransferDetailsForMerchant(string $merchantId, array $partnerLinkedAccounts, int $beginTimestamp, int $endTimestamp)
     {
-        $startOfMonth   = Carbon::create($year, $month);
-        $endOfMonth     = Carbon::create($year, $month, $startOfMonth->daysInMonth, 23, 59, 59);
 
         $transferIdCol          = $this->dbColumn((Entity::ID));
         $transferToIdCol        = $this->dbColumn(Entity::TO_ID);
@@ -462,13 +460,13 @@ class Repository extends Base\Repository
                       ->join(Table::TRANSACTION, $trxnEntityIdCol, '=', $transferIdCol)
                       ->where($transferToTypeCol, '=', 'merchant')
                       ->whereIn($transferStatusCol, [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED])
-                      ->whereBetween($trxnCreatedAtCol, [$startOfMonth->timestamp, $endOfMonth->timestamp]);
+                      ->whereBetween($trxnCreatedAtCol, [$beginTimestamp, $endTimestamp]);
 
         // for platform transfers, the transfer recipient should not be a linked account of the merchant
         // here, the transfer recipient is actually a linked account of partner
-        if (empty($linkedAccounts) === false)
+        if (empty($partnerLinkedAccounts) === false)
         {
-            $query->whereNotIn($transferToIdCol, $linkedAccounts);
+            $query->whereIn($transferToIdCol, $partnerLinkedAccounts);
         }
 
         return $query->first();

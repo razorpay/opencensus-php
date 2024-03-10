@@ -2084,6 +2084,19 @@ class Repository extends Base\Repository
         return $query->pluck(Entity::ID)->toArray();
     }
 
+    public function fetchLinkedAccountIdsForParentMerchantIds(array $parentMerchantIds)
+    {
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            return (new Acs\AsvSdkIntegration\Merchant())->fetchLinkedAccountsFromMultipleParentIds($parentMerchantIds);
+        }
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Entity::ID)
+            ->whereIn(Entity::PARENT_ID, $parentMerchantIds)
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     /**
      * @param $merchantId
      *

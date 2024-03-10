@@ -35,6 +35,9 @@ class Merchant extends Base
     const GET_LINKED_ACCOUNTS_FROM_PARENT_ID
         = 'get_linked_accounts_from_parent_id';
 
+    const GET_LINKED_ACCOUNTS_FROM_MULTIPLE_PARENT_IDS
+        = 'get_linked_accounts_from_multiple_parent_ids';
+
     public function __construct()
     {
         parent::__construct();
@@ -167,6 +170,26 @@ class Merchant extends Base
         $filterRequest->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_FROM_PARENT_ID);
         $filterRequest->setBindings(
             json_encode([$parentId])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+    }
+
+    /**
+     * @param array $parentIds
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchLinkedAccountsFromMultipleParentIds(array $parentIds): array
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_FROM_MULTIPLE_PARENT_IDS);
+        $filterRequest->setBindings(
+            json_encode([$parentIds])
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);

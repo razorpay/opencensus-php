@@ -8,6 +8,7 @@ use Mockery;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
@@ -26,6 +27,7 @@ class MerchantInvoiceTest extends TestCase
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;
     use FundAccountValidationTrait;
+    use PartnerTrait;
 
     protected $eInvoiceClientMock;
 
@@ -560,6 +562,104 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
         Carbon::setTestNow();
+
+    }
+
+    public function testInvoiceEntityCreateWithPlatformFeeForPartnerMerchant()
+    {
+
+        $oldDateTime = Carbon::create(2017, 7, 27, 12, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createPartnerTransferData();
+
+        // feature for calculating
+        $this->fixtures->merchant->addFeatures(['partner_plat_fee_invoice'], '10000000000002');
+
+        Carbon::setTestNow();
+
+        $this->ba->cronAuth();
+
+        $currentTime = $oldDateTime = Carbon::create(2017, 8, 1, 12, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['merchant_ids' => ['10000000000000']],
+        ];
+
+        $this->mockAllSplitzTreatment();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(9, $entities['count']);
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+        $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
+    }
+
+    public function testInvoiceEntityCreateWithoutPlatformFeeForPartnerMerchant()
+    {
+
+        $oldDateTime = Carbon::create(2017, 7, 27, 12, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createPartnerTransferData();
+
+        Carbon::setTestNow();
+
+        $this->ba->cronAuth();
+
+        $currentTime = $oldDateTime = Carbon::create(2017, 8, 1, 12, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['merchant_ids' => ['10000000000000']],
+        ];
+
+        $this->mockAllSplitzTreatment();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(9, $entities['count']);
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+        $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
     }
 
     public function testInstantRefundsInvoiceEntityCreateForGivenMerchant()
@@ -759,7 +859,7 @@ class MerchantInvoiceTest extends TestCase
     public function testInvoicePdfCreate()
     {
         // currently skipping the test case to find the issue will fix and reenable this
-        $this->markTestSkipped("settlements team will fix this test case");
+        // $this->markTestSkipped("settlements team will fix this test case");
 
         $oldDateTime = Carbon::create(2018, 1, 27, 12, 0, 0, Timezone::IST);
 
@@ -1262,4 +1362,85 @@ class MerchantInvoiceTest extends TestCase
             });
     }
 
+    protected function createPartnerTransferData()
+    {
+        // create partner
+        $this->fixtures->create('merchant',
+            [
+                'id'            => '10000000000002',
+                'email'         => 'testmail1@mail.info',
+                'name'          => 'partner_and_parent',
+                'partner_type'  => 'pure_platform'
+            ]
+        );
+
+        // create partner linked account
+        $this->fixtures->create('merchant',
+            [
+                'id'        => '10000000000001',
+                'email'     => 'testmail2@mail.info',
+                'name'      => 'linked_account',
+                'parent_id' => '10000000000002',
+            ]
+        );
+
+        $this->createData();
+
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], '10000000000002','pure_platform');
+
+        // map partner & sub-merchant
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $client->getApplicationId(),
+            'merchant_id'     => '10000000000000',
+            'entity_owner_id' => '10000000000002',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->fixtures->create('transfer',
+            [
+                'id'            => 'LhV9fg1fXagWCN',
+                'status'        => 'processed',
+                'merchant_id'   => '10000000000000',
+                'source_id'     => 'abacad',
+                'to_id'         => '10000000000001',
+                'amount'        => 1000,
+                'fees'          => 5,
+                'tax'           => 2,
+            ]
+        );
+
+         $this->fixtures->create('transaction',
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => 'LhV9fg1fXagWCN',
+                'type'          => 'transfer',
+                'amount'        => 1000,
+                'fee'           => 5,
+                'tax'           => 2,
+            ]
+        );
+
+        $payment = $this->fixtures->create('payment',
+            [
+                'transfer_id' => 'LhV9fg1fXagWCN',
+                'merchant_id' => '10000000000001',
+                'amount'      => 1000,
+                'gateway'     => 'amex'
+            ]
+        );
+
+        $paymentTrxn = $this->fixtures->create('transaction',
+            [
+                'merchant_id'   => '10000000000001',
+                'entity_id'     => $payment['id'],
+                'type'          => 'payment',
+                'amount'        => 1000
+            ]);
+
+        $this->fixtures->edit('payment', $payment['id'], ['transaction_id' => $paymentTrxn['id']]);
+    }
 }

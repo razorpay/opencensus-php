@@ -1820,14 +1820,17 @@ class Service extends Base\Service
         {
             $reqStartTime = microtime(true);
 
-            $response = (new Merchant\Service())->isFeatureEnabledForPartnerOfSubmerchant(Feature\Constants::ROUTE_PARTNERSHIPS, $merchantId);
+            // fetch partners for which rzp can invoice platform fee to its sub-merchants
+            $partners =  (new Merchant\Service())->getSubmerchantPartnersWithfeatureEnabled(Feature\Constants::PARTNER_PLAT_FEE_INVOICE, $merchantId);
 
-            if ($response['feature_enabled'] !== true)
+            if ($partners->isEmpty() === true)
             {
                 return null;
             }
 
-            $merchantLinkedAccounts = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($merchantId);
+            $partnerIds = $partners->getIds();
+
+            $merchantLinkedAccounts = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchantIds($partnerIds);
 
             $platformFeeTransferDetails = $this->repo->transfer->fetchPlatformFeeTransferDetailsForMerchant($merchantId, $merchantLinkedAccounts, $beginTimestamp, $endTimestamp)->getAttributes();
 
