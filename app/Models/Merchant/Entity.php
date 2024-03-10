@@ -4030,7 +4030,7 @@ class Entity extends Base\PublicEntity
     {
         $app = App::getFacadeRoot();
 
-        $deviceDetail = $app['repo']->user_device_detail->fetchByMerchantIdAndUserRole($this->getId());
+        $deviceDetail = $app['repo']->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($this->getId());
 
         return optional($deviceDetail)->getValueFromMetaData('service');
     }
