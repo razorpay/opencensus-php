@@ -55,7 +55,7 @@ class BillMe
 
         $this->trace = $app['trace'];
 
-        $this->config = $app['config']->get('applications.bill_me');
+        $this->config = $app['config']->get('applications.bill-me');
 
         $this->baseUrl = $this->config['url'];
 
@@ -63,7 +63,7 @@ class BillMe
 
         $this->request = $app['request'];
 
-        $this->secret = $this->config['bill_me_secret'];
+        $this->secret = $this->config['password'];
 
         $this->auth = $app['basicauth'];
 

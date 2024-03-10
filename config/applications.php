@@ -1201,6 +1201,16 @@ return [
         ],
     ],
 
+    'bill-me' => [
+        'url'       => env('BILL_ME_URL'),
+        'password'  => env('BILL_ME_SECRET'),
+    ],
+
+    'bill_me' => [
+        'url'       => env('BILL_ME_URL'),
+        'password'  => env('BILL_ME_SECRET'),
+    ],
+
     'dcs' => [
         'mock'      => env('DCS_MOCK', false),
         'live'       => [
@@ -1253,11 +1263,6 @@ return [
                 'password'  => env('PG_ROUTER_SECRET'),
             ],
         ],
-
-        'bill-me' => [
-                'url'       => env('BILL_ME_URL'),
-                'password'  => env('BILL_ME_SECRET'),
-            ],
 
         'magic-checkout-service' => [
             'live'       => [
