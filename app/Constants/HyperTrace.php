@@ -84,6 +84,8 @@ class HyperTrace
     const EDIT_ACCOUNT_V2_CORE                                 = 'account_v2.edit.core';
     const DELETE_ACCOUNT_V2                                    = 'account_v2.delete.service';
     const ACCOUNT_V2_DISABLE                                   = 'account_v2.delete.disable';
+    const ACCOUNT_V2_SAVE_BMC_ANSWERS                          = 'account_v2.save.bmc_answers';
+    const ACCOUNT_V2_GET_BMC_ANSWERS                           = 'account_v2.get.bmc_answers';
 
     const CREATE_STAKEHOLDER_V2                                 = 'stakeholder_v2.create.service';
     const CREATE_STAKEHOLDER_V2_CORE                            = 'stakeholder_v2.create.core';

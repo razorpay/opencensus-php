@@ -17,10 +17,10 @@ class DocumentResponse extends Detail\Core
     {
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        $fieldsRequired = Tracer::inspan(['name' => HyperTrace::GET_REQUIRED_DOC_TYPES], function () use ($merchantDetails, $entityType) {
+        $fieldsRequired = Tracer::inspan(['name' => HyperTrace::GET_REQUIRED_DOC_TYPES], function () use ($merchantDetails, $entityType, $merchant) {
 
             // get documents required as per business type, category, subcategory
-            return $this->getDocumentsGroupedAndMergedByProofType($merchantDetails, $entityType);
+            return $this->getDocumentsGroupedAndMergedByProofType($merchantDetails, $entityType, $merchant);
         });
 
         // get currently uploaded documents
@@ -34,7 +34,7 @@ class DocumentResponse extends Detail\Core
             $documentsArr[$document->getDocumentType()] = $document;
         }
 
-        $returnData = Tracer::inspan(['name' => HyperTrace::CONSTRUCT_DOCUMENT_V2_RESPONSE], function () use ($fieldsRequired, $documentService, $documentsArr) {
+        $returnData = Tracer::inspan(['name' => HyperTrace::CONSTRUCT_DOCUMENT_V2_RESPONSE], function () use ($fieldsRequired, $documentService, $documentsArr, $merchant) {
 
             // construct documents as per required docs and uploaded docs
             $returnData = [];
@@ -61,7 +61,14 @@ class DocumentResponse extends Detail\Core
         return $returnData;
     }
 
-    public function getDocumentsGroupedAndMergedByProofType(Detail\Entity $merchantDetails, string $entityType): array
+    private function isOnboardingApiBmcEnabled(Merchant\Entity $merchant): bool
+    {
+        $partnerId  = $this->app['basicauth']->getPartnerMerchantId() ??
+            $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchant->getId())->first();
+        return  (new Merchant\Core())->isOnboardingApiBmcEnabled($partnerId);
+    }
+
+    public function getDocumentsGroupedAndMergedByProofType(Detail\Entity $merchantDetails, string $entityType, Merchant\Entity $merchant): array
     {
         $fields = $this->getValidationFields($merchantDetails, true);
 
@@ -103,8 +110,11 @@ class DocumentResponse extends Detail\Core
             $additionalDocuments = $returnData[Document\Type::ADDITIONAL_DOCUMENTS] ?? [];
 
             $returnData[Document\Type::ADDITIONAL_DOCUMENTS]  = array_merge($additionalDocuments , Document\Type::BANK_PROOF_DOCUMENTS);
+            // add bmc documents to additional documents if onboarding api bmc is enabled
+            if ($this->isOnboardingApiBmcEnabled($merchant)) {
+                $returnData[Document\Type::ADDITIONAL_DOCUMENTS] = array_merge($additionalDocuments , Document\Type::BMC_REQUIREMENT_DOCS);
+            }
         }
-
         return $returnData;
     }
 

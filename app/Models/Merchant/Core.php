@@ -5175,11 +5175,11 @@ class Core extends Base\Core
      * @param Entity      $partner
      * @param Entity      $subMerchant
      * @param array       $input
-     * @param User\Entity $subMUser
+     * @param User\Entity|null $subMUser
      *
      * @return array
      */
-    public function getSubmerchantV2(Entity $partner, Entity $subMerchant, array $input, User\Entity $subMUser): array
+    public function getSubmerchantV2(Entity $partner, Entity $subMerchant, array $input, ?User\Entity $subMUser): array
     {
         // The appId is considered for the current created subM
         $appId = $input['merchant_access_map']['entity_id'];
@@ -5242,9 +5242,9 @@ class Core extends Base\Core
         ];
 
         $subMerchantData[Entity::USER] = [
-            User\Entity::EMAIL          => $subMUser->email,
-            User\Entity::CONTACT_MOBILE => $subMUser->contact_mobile,
-            User\Entity::NAME           => $subMUser->name,
+            User\Entity::EMAIL          => optional($subMUser)->email ?? "",
+            User\Entity::CONTACT_MOBILE => optional($subMUser)->contact_mobile ?? "",
+            User\Entity::NAME           => optional($subMUser)->name ?? "",
         ];
 
 
@@ -10972,4 +10972,20 @@ class Core extends Base\Core
 
         return $this->isSplitzExperimentEnable($properties, 'enable');
     }
+
+    public function isOnboardingApiBmcEnabled(?string $partnerId, string $checkVariant = 'enable') : bool
+    {
+        if ( is_null($partnerId) === true )
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.onboarding_api_bmc_experiment_id')
+        ];
+
+        return  $this->isSplitzExperimentEnable($properties, $checkVariant);
+    }
+
 }

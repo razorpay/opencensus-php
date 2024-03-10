@@ -10,6 +10,7 @@ use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Helper as BMCHelper;
 
 class Response extends Core
 {
@@ -24,7 +25,7 @@ class Response extends Core
             Constants::TYPE         => ($account->isLinkedAccount() === true) ? Type::ROUTE : Type::STANDARD,
             Constants::STATUS       => $status,
             Constants::EMAIL        => $account->getEmail(),
-            Constants::PROFILE      => $this->getProfileData($account),
+            Constants::PROFILE      => $this->getProfileData($account, $partner->getId()),
             Constants::NOTES        => $account->getNotes(),
             Constants::CREATED_AT   => $account->getCreatedAt()
         ];
@@ -202,7 +203,7 @@ class Response extends Core
         return $data;
     }
 
-    protected function getProfileData(Merchant\Entity $account): array
+    protected function getProfileData(Merchant\Entity $account, string $partnerId): array
     {
         $accountDetails = $account->merchantDetail;
 
@@ -226,6 +227,14 @@ class Response extends Core
             $data[Constants::BUSINESS_MODEL] = $businessModel;
         }
 
+        if ( $account->isLinkedAccount() === false )
+        {
+            $answers = $this->getBMCAnswers($partnerId);
+            if (is_null($answers) === false)
+            {
+                $data = array_merge($data, BMCHelper::transformInputToAPIInput($answers));
+            }
+        }
         return $data;
     }
 

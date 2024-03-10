@@ -11215,6 +11215,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST     = 'UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST';
     const UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED   = 'UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED';
 
+    const ONBOARDING_API_BMC_SAVED                             = 'ONBOARDING_API_BMC_SAVED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

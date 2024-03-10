@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Product\Requirements;
 
 use App;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -20,7 +21,9 @@ use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Product\TncMap\Acceptance as TncAcceptance;
+use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Questions as BMCQuestionnaire;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields as SelectiveRequiredFields;
+use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Helper as BMCHelper;
 
 class PaymentProductsBaseService extends Base\Service
 {
@@ -220,6 +223,13 @@ class PaymentProductsBaseService extends Base\Service
         {
             $verificationResponse = $this->merchantDetailCore->setVerificationDetails($merchantDetails, $merchant, $verificationResponse, true);
 
+            if ( $merchant->isLinkedAccount() === false )
+            {
+                [$bmcFieldRequirement, $bmcDocRequirement] = $this->getBMCRequirements($merchant->getId(), $merchantProduct, $merchantDetails);
+
+                $requirements = array_merge($requirements, $bmcFieldRequirement, $bmcDocRequirement);
+            }
+
             if ($verificationResponse['can_submit'] === true)
             {
                 if($merchant->isNoDocOnboardingEnabled() === true)
@@ -245,6 +255,7 @@ class PaymentProductsBaseService extends Base\Service
 
                 $optionalRequirements = array_merge($optionalRequirements, $optionalDocumentFieldRequirements, $optionalFieldRequirements);
             }
+
         }
         else if ($merchantDetails->getActivationStatus() === Detail\Status::NEEDS_CLARIFICATION)
         {
@@ -1110,4 +1121,130 @@ class PaymentProductsBaseService extends Base\Service
 
         return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
+
+    public function getBMCRequirements(string $merchantId, Product\Entity $merchantProduct, Detail\Entity $merchantDetails): array
+    {
+        $partnerId  = $this->auth->getPartnerMerchantId() ??
+                      $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchantId)->first();
+
+        $bmcAnswers = (new AccountV2\Core())->getBMCAnswers($partnerId);
+        if (is_null($bmcAnswers) === true)
+        {
+            return [[],[]];
+        }
+
+        $bmcFieldRequirements = [];
+        $bmcQuestionKeys      = BMCHelper::getPendingQuestionsForMerchant($bmcAnswers, $merchantDetails);
+        foreach ($bmcQuestionKeys as $questionKey)
+        {
+            $requirement                             = [];
+            $requirement[Constants::FIELD_REFERENCE] = Account\Constants::PROFILE . '.' . $questionKey;
+            $requirement[Constants::RESOLUTION_URL]  = Constants::ENTITY_RESOLUTION_URL_MAPPING[Entity::MERCHANT][Constants::FIELD];
+            $requirement[Constants::STATUS]          = Constants::REQUIRED;
+            $requirement[Constants::REASON_CODE]     = Constants::FIELD_MISSING;
+
+            $bmcFieldRequirements[] = $requirement;
+        }
+
+        $bmcDocumentRequirements = $this->getBMCDocumentRequirements($merchantProduct, $merchantDetails, $bmcAnswers);
+
+        return [$bmcFieldRequirements, $bmcDocumentRequirements];
+    }
+
+    public function getBMCDocumentRequirements(Product\Entity $merchantProduct, Detail\Entity $merchantDetails, array $bmcAnswers): array
+    {
+        $bmcDocumentTypes = $this->getBMCDocumentTypes($merchantDetails, $bmcAnswers);
+
+        $unUploadedDocTypes = $this->filterUnUploadedDocumentTypes($bmcDocumentTypes, $merchantDetails);
+
+        $docRequirements = [];
+
+        foreach ($unUploadedDocTypes as $documentType) {
+            $requirement = [];
+
+            $requirement[Constants::FIELD_REFERENCE] = Document\Type::DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING[$documentType] . '.' . $documentType;
+            $requirement[Constants::RESOLUTION_URL] = Constants::ENTITY_RESOLUTION_URL_MAPPING[Entity::MERCHANT][Constants::DOCUMENT];
+            $requirement[Constants::STATUS] = Constants::REQUIRED;
+            $requirement[Constants::REASON_CODE] = Constants::DOCUMENT_MISSING;
+
+            $docRequirements[] = $requirement;
+        }
+
+        return $this->updateResolutionUrl($merchantDetails, $merchantProduct, $docRequirements);
+    }
+
+    public function getBMCDocumentTypes(
+        Detail\Entity $merchantDetails, array $bmcAnswers
+    ): array
+    {
+        $bmcDocumentTypes = [];
+
+        foreach ($bmcAnswers as $questionId => $answer) {
+            if ($questionId === BMCQuestionnaire::QUESTION_4 && $answer[0] === BMCQuestionnaire::OPTION_4_1)
+            {
+                $bmcDocumentTypes[] = Document\Type::FSSAI_CERTIFICATE;
+            }
+
+            if ($questionId === BMCQuestionnaire::QUESTION_11)
+            {
+                if (
+                    in_array(BMCQuestionnaire::OPTION_11_1, $answer) ||
+                    in_array(BMCQuestionnaire::OPTION_11_2, $answer) ||
+                    in_array(BMCQuestionnaire::OPTION_11_3, $answer)
+                )
+                {
+                    $bmcDocumentTypes[] = Document\Type::FSSAI_CERTIFICATE;
+                }
+
+                if (in_array(BMCQuestionnaire::OPTION_11_3, $answer))
+                {
+                    $bmcDocumentTypes[] = Document\Type::SLA_DOCUMENT;
+                }
+            }
+
+            if ($questionId === BMCQuestionnaire::QUESTION_11_4_1)
+            {
+                $bmcDocumentTypes[] = Document\Type::LIQUOR_LICENSE;
+
+                if ($answer[0] === BMCQuestionnaire::OPTION_11_4_1_1)
+                {
+                    $bmcDocumentTypes[] = Document\Type::GOVT_AUTHORISATION_LETTER;
+                }
+            }
+
+            if (
+                $questionId === BMCQuestionnaire::QUESTION_43 &&
+                in_array(BMCQuestionnaire::OPTION_43_2, $answer)
+            )
+            {
+                $bmcDocumentTypes[] = Document\Type::GOVT_AUTHORISATION_LETTER;
+            }
+
+            if (
+                $questionId === BMCQuestionnaire::QUESTION_43 &&
+                in_array(BMCQuestionnaire::OPTION_43_1, $answer) &&
+                $merchantDetails->isUnregisteredBusiness()
+            )
+            {
+                $bmcDocumentTypes[] = Document\Type::PROOF_OF_PROFESSION;
+            }
+        }
+
+        return $bmcDocumentTypes;
+    }
+
+    private function filterUnUploadedDocumentTypes(array $documentTypes, Detail\Entity $merchantDetails) : array
+    {
+        if ( count($documentTypes) == 0 ) {
+            return [];
+        }
+
+        $documents = $this->repo->merchant_document->findDocumentsForEntityTypeAndEntityId(
+            'merchant', $merchantDetails->getMerchantId()
+        );
+        $uploadedDocTypes = $documents->pluck(Document\Entity::DOCUMENT_TYPE);
+
+        return array_diff($documentTypes, $uploadedDocTypes->toArray());
+    }
+
 }

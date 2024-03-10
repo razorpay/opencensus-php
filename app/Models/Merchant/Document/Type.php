@@ -312,6 +312,13 @@ class Type
         self::BANK_STATEMENT,
     ];
 
+    const BMC_REQUIREMENT_DOCS = [
+        self::FSSAI_CERTIFICATE,
+        self::SLA_DOCUMENT,
+        self::LIQUOR_LICENSE,
+        self::GOVT_AUTHORISATION_LETTER
+    ];
+
     const VALID_DOCUMENTS = [
         self::SEBI_REGISTRATION_CERTIFICATE,
         self::IRDAI_REGISTRATION_CERTIFICATE,

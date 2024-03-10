@@ -570,9 +570,22 @@ class Core extends Base\Core
                                'basic_auth_merchant_id' => $this->app['basicauth']->getMerchant()->getId(),
                            ]);
 
+        $skipExpEnabled = false;
+
+        if ( $subMerchant->isLinkedAccount() === false )
+        {
+            $skipExpEnabled = (new Merchant\Core())->isOnboardingApiBmcEnabled($subMerchant->getId(), 'skip_requirements_check');
+        }
+
         foreach ($merchantProducts as $merchantProduct)
         {
             $productName = $merchantProduct->getProduct();
+
+            if ( $skipExpEnabled && in_array($productName, [Name::PAYMENT_GATEWAY, Name::PAYMENT_LINKS]) === true )
+            {
+                // skipping submit for pg products
+                continue;
+            }
 
             $terminalStateReached = $this->isTerminalState($merchantProduct);
 

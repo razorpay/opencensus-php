@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
+use Razorpay\Trace\Logger as Trace;
 use Request;
 use RZP\Exception;
 use Lib\PhoneBook;
+use RZP\Models\DeviceDetail;
 use RZP\Models\User;
 use RZP\Trace\Tracer;
 use RZP\Models\Feature;
@@ -29,6 +31,8 @@ use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Partner\Config\Constants as ConfigConstants;
 use RZP\Models\Merchant\Escalations\Constants as EscalationConstants;
+use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Questions as BMCQuestionnaire;
+use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Helper as BMCHelper;
 
 class Core extends Merchant\Core
 {
@@ -40,7 +44,7 @@ class Core extends Merchant\Core
 
         $accountType = $input['type'] ?? null;
 
-        $accountCoreV1->validatePartnerAccess($partner,null, $accountType);
+        $accountCoreV1->validatePartnerAccess($partner, null, $accountType);
 
         $this->checkAndSetPhantomPrefillEnabledContextForPartner($partner, null, $accountType);
 
@@ -48,7 +52,7 @@ class Core extends Merchant\Core
 
         $isLocOnboardingEnabled = $accountCoreV1->isPartnerAllowedToOnboardLOCMerchantViaOnboardingAPIs($partner);
 
-        if($accountType === null && $isLocOnboardingEnabled)
+        if ($accountType === null && $isLocOnboardingEnabled)
         {
             $this->capitalSubmerchantUtility()->trackCapitalPartnerUsingOnboardingAPIsEvent($partner, PartnerConstants::ADD_ACCOUNT_V2_ONBOARDING_API);
 
@@ -57,7 +61,7 @@ class Core extends Merchant\Core
 
         (new Validator)->validateCreateAccount($input, $requestedProduct);
 
-        if($requestedProduct === ProductConstants::CAPITAL)
+        if ($requestedProduct === ProductConstants::CAPITAL)
         {
             $input[Merchant\Entity::PRODUCT]  = ProductConstants::BANKING;
             $input[Constants::ACTUAL_PRODUCT] = ProductConstants::CAPITAL;
@@ -67,19 +71,18 @@ class Core extends Merchant\Core
 
         // Calling downstream validation to be in sync with them. https://razorpay.slack.com/archives/C021KESTRLH/p1647518134264949
         $subMerchantInput = InputHelper::getSubMerchantInput($input);
-        $detailInput = InputHelper::getSubMerchantDetailInput($input);
+        $detailInput      = InputHelper::getSubMerchantDetailInput($input);
 
         (new Merchant\Validator())->validateInput('edit_config', $subMerchantInput);
         (new Detail\Validator())->validateInput('edit', $detailInput);
 
         $account = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_ENTITIES],
-            function () use ($input, $partner, $isLocOnboardingEnabled) {
+            function() use ($input, $partner, $isLocOnboardingEnabled) {
                 return $this->repo->transactionOnLiveAndTestAndAsv(
-                    function () use ($input, $partner, $isLocOnboardingEnabled): Merchant\Entity
-                    {
+                    function() use ($input, $partner, $isLocOnboardingEnabled): Merchant\Entity {
                         $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
 
-                        if($isLocOnboardingEnabled)
+                        if ($isLocOnboardingEnabled)
                         {
                             CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant(
                                 $partner->getId(),
@@ -93,22 +96,27 @@ class Core extends Merchant\Core
                             );
                         }
 
+                        $this->createSignUpCampaignForPhantomPrefill($subMerchant);
+
                         unset($input[Constants::IS_IGNORE_TOS_ACCEPTANCE]);
+
                         return $subMerchant;
                     });
-        });
+            });
+
+        $this->saveBMCAnswers($partner->getId(), $input);
 
         $dimensions = $this->getDimensionsForAccountV2Metrics($account, $account->merchantDetail, $partner);
 
         $this->trace->count(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $dimensions);
 
-        if($account->isLinkedAccount() === true)
+        if ($account->isLinkedAccount() === true)
         {
             $traceCode = ($account->isRouteNoDocKycEnabledForParentMerchant() === true) ? TraceCode::LINKED_ACCOUNT_CREATED_VIA_PUBLIC_API_NO_DOC_KYC :
-                                                                         TraceCode::LINKED_ACCOUNT_CREATED_VIA_PUBLIC_API;
+                TraceCode::LINKED_ACCOUNT_CREATED_VIA_PUBLIC_API;
 
             $this->trace->info($traceCode, [
-                'parent_mid'        =>  $account->parent->getId(),
+                'parent_mid'        => $account->parent->getId(),
                 'linked_account_id' => $account->getId()
             ]);
         }
@@ -159,7 +167,7 @@ class Core extends Merchant\Core
 
         $subMerchantDetails = $this->repo->merchant_detail->findOrFailPublic($accountId);
 
-        if(empty($subMerchantDetails) === false && $subMerchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
+        if (empty($subMerchantDetails) === false && $subMerchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
         {
             (new Validator)->validateEditAccountRequest($input);
         }
@@ -167,13 +175,13 @@ class Core extends Merchant\Core
         $validationDuration = (microtime(true) - $functionStartTime) * 1000;
 
         $this->executeTosAcceptanceExperiment($input, $partner);
-        $account = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $partner, $accountId, $subMerchantDetails)
-        {
-            $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $accountId) {
+        $account = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $partner, $accountId, $subMerchantDetails) {
+            $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function() use ($input, $accountId) {
                 $subMerchant = $this->fillSubMerchant($accountId, $input);
                 $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
 
                 unset($input[Constants::IS_IGNORE_TOS_ACCEPTANCE]);
+
                 return $subMerchant;
             });
 
@@ -183,6 +191,8 @@ class Core extends Merchant\Core
 
             return $subMerchant;
         });
+
+        $this->saveBMCAnswers($partner->getId(), $input);
 
         $dimensions = $this->getDimensionsForAccountV2Metrics($account, $account->merchantDetail, $partner);
 
@@ -207,17 +217,18 @@ class Core extends Merchant\Core
         $subMerchantCreateInput = InputHelper::getSubMerchantCreateInput($input);
 
         // this creates only test balance
-        $subMerchantArray = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_SERVICE], function () use ($subMerchantCreateInput, $partner) {
+        $subMerchantArray = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_SERVICE], function() use ($subMerchantCreateInput, $partner) {
 
             return (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner, PartnerConstants::ADD_ACCOUNT_V2_ONBOARDING_API, true);
         });
 
         $subMerchantId = Entity::verifyIdAndSilentlyStripSign($subMerchantArray[Entity::ID]);
 
-        $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $subMerchantId) {
+        $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function() use ($input, $subMerchantId) {
 
             $subMerchant = $this->fillSubMerchant($subMerchantId, $input);
             $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+
             return $subMerchant;
         });
 
@@ -238,7 +249,7 @@ class Core extends Merchant\Core
 
         $noDocOnboarding = $input[Feature\Constants::NO_DOC_ONBOARDING] ?? false;
 
-        if($noDocOnboarding == true)
+        if ($noDocOnboarding == true)
         {
             if ($this->merchant->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === true)
             {
@@ -248,8 +259,8 @@ class Core extends Merchant\Core
 
                 $mCore->appendTag($subMerchant, DetailConstants::NO_DOC_ONBOARDING_TAG);
 
-                $this->trace->info(TraceCode::NO_DOC_ONBOARDING_ENABLED_FOR_SUBMERCHANT,[
-                    'merchant_id'   => $subMerchantId,
+                $this->trace->info(TraceCode::NO_DOC_ONBOARDING_ENABLED_FOR_SUBMERCHANT, [
+                    'merchant_id' => $subMerchantId,
                 ]);
             }
             else
@@ -295,14 +306,14 @@ class Core extends Merchant\Core
 
         $merchantDetailsCore = new Detail\Core;
 
-        Tracer::inspan(['name' => HyperTrace::VALIDATE_NC_RESPONDED_IF_APPLICABLE], function () use ($subMerchant, $detailInput) {
+        Tracer::inspan(['name' => HyperTrace::VALIDATE_NC_RESPONDED_IF_APPLICABLE], function() use ($subMerchant, $detailInput) {
 
             (new Validator())->validateNeedsClarificationRespondedIfApplicable($subMerchant, $detailInput);
         });
 
         (new Validator())->validateOptionalFieldSubmissionInActivatedKycPendingState($subMerchant, $detailInput);
 
-        Tracer::inspan(['name' => HyperTrace::SAVE_MERCHANT_DETAILS], function () use ($merchantDetailsCore, $detailInput, $subMerchant) {
+        Tracer::inspan(['name' => HyperTrace::SAVE_MERCHANT_DETAILS], function() use ($merchantDetailsCore, $detailInput, $subMerchant) {
 
             $merchantDetailsCore->saveMerchantDetails($detailInput, $subMerchant);
         });
@@ -322,7 +333,7 @@ class Core extends Merchant\Core
 
     protected function executeTosAcceptanceExperiment(&$input, Merchant\Entity $partner)
     {
-        $partnerId = $partner->getId();
+        $partnerId             = $partner->getId();
         $isIgnoreTosAcceptance = $this->app->razorx->getTreatment(
             $partner->getId(),
             Merchant\RazorxTreatment::IGNORE_TOS_ACCEPTANCE,
@@ -358,7 +369,7 @@ class Core extends Merchant\Core
     public function removeNoDocOnboardingFeature(string $subMerchantId)
     {
         $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(Merchant\Constants::MERCHANT,
-            $subMerchantId, Feature\Constants::NO_DOC_ONBOARDING);
+                                                                               $subMerchantId, Feature\Constants::NO_DOC_ONBOARDING);
 
         (new Feature\Core())->delete($feature, true);
     }
@@ -381,7 +392,8 @@ class Core extends Merchant\Core
     }
 
     /**
-     * Add no_doc_partially_activated tag to the sub-merchant when no-doc onboarded merchant reaches activated_kyc_pending state
+     * Add no_doc_partially_activated tag to the sub-merchant when no-doc onboarded merchant reaches
+     * activated_kyc_pending state
      *
      * @param Merchant\Entity $subMerchant
      *
@@ -400,27 +412,28 @@ class Core extends Merchant\Core
     /**
      * Add the instant_activation_subm tag to whitelist sub-merchant for instant activation flow
      * if the sub-m is whitelisted for the no-doc and partner is enabled with the INSTANT_ACTIVATION_V2_API feature.
+     *
      * @param Merchant\Entity $submerchant
-     * @param array $input
+     * @param array           $input
      */
     public function addInstantActivationTagIfApplicable(Merchant\Entity $submerchant, array $input)
     {
         $noDocOnboarding = $input[Feature\Constants::NO_DOC_ONBOARDING] ?? false;
 
-        if($noDocOnboarding == true and $this->merchant->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === true)
+        if ($noDocOnboarding == true and $this->merchant->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === true)
         {
             // instant activation won't be enabled for merchants which are whitelisted for no-doc
-            return ;
+            return;
         }
 
         $properties = [
-            'id' => $this->merchant->getId(),
+            'id'            => $this->merchant->getId(),
             'experiment_id' => $this->app['config']->get('app.partners_excluded_from_instant_act_v2_api_exp_id')
         ];
 
-        $isExpEnable = (new Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
+        $isExpEnable = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
 
-        if($isExpEnable === true)
+        if ($isExpEnable === true)
         {
             //we will be restricting existing partners for now, making it general release for newly onboarded partners.
             return;
@@ -428,9 +441,9 @@ class Core extends Merchant\Core
 
         (new Merchant\Core())->appendTag($submerchant, Constants::INSTANT_ACTIVATION_SUBM);
 
-        $this->trace->info(TraceCode::INSTANT_ACTIVATION_ONBOARDING_API_TAG_APPENDED,[
-            'sub-merchant_id'   => $submerchant->getId(),
-            'tag_name'          => Constants::INSTANT_ACTIVATION_SUBM
+        $this->trace->info(TraceCode::INSTANT_ACTIVATION_ONBOARDING_API_TAG_APPENDED, [
+            'sub-merchant_id' => $submerchant->getId(),
+            'tag_name'        => Constants::INSTANT_ACTIVATION_SUBM
         ]);
         $dimension = $this->getDimensionsForAccountV2Metrics($submerchant, $submerchant->merchantDetail, $this->merchant);
 
@@ -457,7 +470,7 @@ class Core extends Merchant\Core
 
         $needsClarificationCore = new NeedsClarification\Core();
 
-        foreach($input as $field => $value)
+        foreach ($input as $field => $value)
         {
             $needsClarificationCore->updateNCFieldAcknowledged($field, $subMerchantDetails);
         }
@@ -513,7 +526,7 @@ class Core extends Merchant\Core
 
         if ($subMerchant->isSuspended() === true)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_SUSPENDED,  null);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_SUSPENDED, null);
         }
     }
 
@@ -524,7 +537,7 @@ class Core extends Merchant\Core
     {
         $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
 
-        if(isset($input[Detail\Entity::CONTACT_MOBILE]) === true)
+        if (isset($input[Detail\Entity::CONTACT_MOBILE]) === true)
         {
             if (!empty($subMerchant->getEmail()))
             {
@@ -539,9 +552,12 @@ class Core extends Merchant\Core
                     (new User\Core)->edit($subMerchantUser, $payload);
                 }
             }
-            else if ($isPhantomPrefillEnabled)
+            else
             {
-                $this->createUserContactDetails($input, $subMerchant);
+                if ($isPhantomPrefillEnabled)
+                {
+                    $this->createUserContactDetails($input, $subMerchant);
+                }
             }
         }
 
@@ -582,9 +598,9 @@ class Core extends Merchant\Core
         }
 
         $payload = [
-            User\Entity::CONTACT_MOBILE        => $input[Detail\Entity::CONTACT_MOBILE],
-            User\Entity::SIGNUP_VIA_EMAIL      => 0,
-            User\Entity::NAME                  => $input[Detail\Entity::BUSINESS_NAME] ?? '',
+            User\Entity::CONTACT_MOBILE   => $input[Detail\Entity::CONTACT_MOBILE],
+            User\Entity::SIGNUP_VIA_EMAIL => 0,
+            User\Entity::NAME             => $input[Detail\Entity::BUSINESS_NAME] ?? '',
         ];
 
         $isLinkedAccountUser = ($subMerchant->isLinkedAccount() === true);
@@ -617,7 +633,7 @@ class Core extends Merchant\Core
         $threshold = $this->getGmvLimitForNoDocMerchant($merchant);
 
         $escalations = $this->repo->merchant_onboarding_escalations->fetchLiveEscalationForThresholdAndMilestone($merchant->getId(),
-            EscalationConstants::HARD_LIMIT_NO_DOC, $threshold);
+                                                                                                                 EscalationConstants::HARD_LIMIT_NO_DOC, $threshold);
 
         if (empty($escalations) === false)
         {
@@ -644,7 +660,7 @@ class Core extends Merchant\Core
 
         $threshold = EscalationConstants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY;
 
-        if($merchantDetail->getGstinVerificationStatus() === Detail\Constants::VERIFIED)
+        if ($merchantDetail->getGstinVerificationStatus() === Detail\Constants::VERIFIED)
         {
             $threshold = EscalationConstants::HARD_LIMIT_KYC_PENDING_THRESHOLD_3_WAY;
 
@@ -654,29 +670,29 @@ class Core extends Merchant\Core
 
             $accessMap = $accessMaps->first();
 
-            if(empty($accessMap) === false)
+            if (empty($accessMap) === false)
             {
                 $partnerAppId = $accessMap['entity_id'];
 
                 $applicationConfig = $this->repo->partner_config->getApplicationConfig($partnerAppId);
 
-                if(empty($applicationConfig) === false)
+                if (empty($applicationConfig) === false)
                 {
                     $submerchantConfig = $applicationConfig->getSubMerchantConfig();
 
                     //If GMV limit is set in test mode without workflow, the config fetched will be of type string and it needs type conversion to array to be processed further
-                    if(is_string($submerchantConfig) === true)
+                    if (is_string($submerchantConfig) === true)
                     {
                         $submerchantConfig = json_decode($submerchantConfig, true);
                     }
 
-                    if(empty($submerchantConfig) === false and
-                        array_key_exists(ConfigConstants::GMV_LIMIT,$submerchantConfig) === true and
+                    if (empty($submerchantConfig) === false and
+                        array_key_exists(ConfigConstants::GMV_LIMIT, $submerchantConfig) === true and
                         empty($submerchantConfig[ConfigConstants::GMV_LIMIT]) === false)
                     {
                         foreach ($submerchantConfig[ConfigConstants::GMV_LIMIT] as $gmvLimit)
                         {
-                            if($gmvLimit[ConfigConstants::SET_FOR] === ConfigConstants::NO_DOC_SUBMERCHANTS)
+                            if ($gmvLimit[ConfigConstants::SET_FOR] === ConfigConstants::NO_DOC_SUBMERCHANTS)
                             {
                                 $threshold = $gmvLimit[ConfigConstants::VALUE];
 
@@ -687,6 +703,7 @@ class Core extends Merchant\Core
                 }
             }
         }
+
         return $threshold;
     }
 
@@ -700,7 +717,7 @@ class Core extends Merchant\Core
      */
     public function isNoDocEnabledAndGmvLimitExhausted(Merchant\Entity $merchant): bool
     {
-        if($merchant->isNoDocOnboardingFeatureEnabled() === false)
+        if ($merchant->isNoDocOnboardingFeatureEnabled() === false)
         {
             return false;
         }
@@ -739,12 +756,12 @@ class Core extends Merchant\Core
     {
         $merchantId = $merchant->getId();
 
-        if(empty($params) === true or empty($params['threshold']) === true
+        if (empty($params) === true or empty($params['threshold']) === true
             or empty($params['current_gmv']) === true or empty($params['milestone']) === true)
         {
             throw new Exception\RuntimeException('Data sent to trigger webhook for no doc gmv breach warning is not sufficient', [
-                'merchant_id'  => $merchantId,
-                'parameters'   => $params
+                'merchant_id' => $merchantId,
+                'parameters'  => $params
             ]);
         }
 
@@ -761,13 +778,13 @@ class Core extends Merchant\Core
                 switch ($merchant->merchantDetail->getActivationStatus())
                 {
                     case Detail\Status::UNDER_REVIEW :
-                        $message = "You can accept payments upto INR " .max(($threshold - $currentGmv)/100, 0). ". You can continue to accept payments without any limits post full account activation.";
+                        $message = "You can accept payments upto INR " . max(($threshold - $currentGmv) / 100, 0) . ". You can continue to accept payments without any limits post full account activation.";
                         break;
                     case Detail\Status::NEEDS_CLARIFICATION :
-                        $message = "You can accept payments upto INR " .max(($threshold - $currentGmv)/100, 0). ". In order to remove this limit, kindly provide responses to outstanding clarifications for submitted KYC documents.";
+                        $message = "You can accept payments upto INR " . max(($threshold - $currentGmv) / 100, 0) . ". In order to remove this limit, kindly provide responses to outstanding clarifications for submitted KYC documents.";
                         break;
                     case Detail\Status::ACTIVATED_KYC_PENDING :
-                        $message = "You can accept payments upto INR " .max(($threshold - $currentGmv)/100, 0). ". In order to remove this limit, kindly submit the KYC documents.";
+                        $message = "You can accept payments upto INR " . max(($threshold - $currentGmv) / 100, 0) . ". In order to remove this limit, kindly submit the KYC documents.";
                         break;
                 }
                 break;
@@ -785,8 +802,8 @@ class Core extends Merchant\Core
 
         return [
             'acc_id'        => $merchantId,
-            'gmv_limit'     => $threshold/100,
-            'current_gmv'   => $currentGmv/100,
+            'gmv_limit'     => $threshold / 100,
+            'current_gmv'   => $currentGmv / 100,
             'message'       => $message,
             'live'          => $merchant->isLive(),
             'funds_on_hold' => $merchant->isFundsOnHold()
@@ -794,7 +811,7 @@ class Core extends Merchant\Core
     }
 
 
-    public function checkAndSetPhantomPrefillEnabledContextForPartner(Merchant\Entity $partner, string $accountId = null, string $accountType = null) : void
+    public function checkAndSetPhantomPrefillEnabledContextForPartner(Merchant\Entity $partner, string $accountId = null, string $accountType = null): void
     {
         $phantomPrefillEnabled = false;
 
@@ -807,4 +824,109 @@ class Core extends Merchant\Core
 
         Request::instance()->request->add([Constants::PHANTOM_PREFILL_ENABLED => $phantomPrefillEnabled]);
     }
+
+    public function getBMCAnswers(?string $partnerId): array|null
+    {
+        return Tracer::inspan(['name' => HyperTrace::ACCOUNT_V2_GET_BMC_ANSWERS],
+            function() use ($partnerId) {
+                try
+                {
+                    if ( is_null($partnerId) === true)
+                    {
+                        return null;
+                    }
+
+                    if ($this->isOnboardingApiBmcEnabled($partnerId) === false)
+                    {
+                        return null;
+                    }
+
+                    $pgosProxy = $this->getSingletonMerchantOnboardingProxyController();
+                    $response  = $pgosProxy->handlePGOSProxyRequests('get_merchant_bmc_response', [], $this->merchant, true);
+                    $pgosProxy->errorHandler($response);
+
+                    $responseArr = [];
+
+                    foreach ($response["data"] as $questionObj)
+                    {
+                        $responseArr[$questionObj["question_id"]] =  $questionObj["answer"];
+                    }
+
+                    return $responseArr;
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                    );
+                }
+
+                return [];
+            }
+        );
+    }
+
+    public function saveBMCAnswers(string $partnerId, array $input): bool
+    {
+        return Tracer::inspan(['name' => HyperTrace::ACCOUNT_V2_SAVE_BMC_ANSWERS],
+            function() use ($partnerId, $input) {
+                $saved = false;
+                try
+                {
+                    $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+                    if ($isPhantomPrefillEnabled && isset($input[Constants::PROFILE]) === true && $this->isOnboardingApiBmcEnabled($partnerId) === true )
+                    {
+                        $profile = $input[Constants::PROFILE];
+                        $bmcFilteredInput = array_intersect_key($profile, BMCQuestionnaire::API_KEYS_TO_QUESTION_KEYS);
+                        $bmcInput = BMCHelper::transformInputToPGOSInput($bmcFilteredInput);
+
+                        if (count($bmcInput) > 0)
+                        {
+                            $pgosProxy = $this->getSingletonMerchantOnboardingProxyController();
+                            $response  = $pgosProxy->handlePGOSProxyRequests('save_merchant_bmc_response', ["data" => $bmcInput], $this->merchant, true);
+                            $pgosProxy->errorHandler($response);
+                        }
+                        $saved = true;
+                    }
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                    );
+                }
+
+                $this->trace->info(TraceCode::ONBOARDING_API_BMC_SAVED, [
+                    'saved'        => $saved,
+                ]);
+
+                return $saved;
+            }
+        );
+    }
+
+    /**
+     * create signup campaign in case of phantom prefill
+     *
+     * @param Merchant\Entity $subMerchant
+     *
+     * @return void
+     */
+    protected function createSignUpCampaignForPhantomPrefill(Merchant\Entity $subMerchant)
+    {
+        $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+        if($isPhantomPrefillEnabled)
+        {
+            $deviceDetailInput = [
+                DeviceDetail\Entity::MERCHANT_ID => $subMerchant->getId(),
+                DeviceDetail\Entity::USER_ID => $subMerchant->primaryOwner()->getId(),
+                DeviceDetail\Entity::SIGNUP_CAMPAIGN => DeviceDetail\Constants::PHANTOM_ONBOARDING,
+            ];
+            (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
+        }
+    }
+
 }
