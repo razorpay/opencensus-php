@@ -185,6 +185,7 @@ class Constants
     const LIQUILOANS_DIRECT_FEE           = 'liquiloans_direct_fee';
     const RAZORPAY_WALLET                 = 'razorpay_wallet';
     const RAZORPAY_GCMS                   = 'razorpay_gcms';
+    const RAZORPAY_GCMS_RESELLER          = 'razorpay_gcms_reseller';
     const SR_SENSITIVE_BUCKET_1           = 'sr_sensitive_bucket_1';
     const SR_SENSITIVE_BUCKET_2           = 'sr_sensitive_bucket_2';
     const SR_SENSITIVE_BUCKET_3           = 'sr_sensitive_bucket_3';
@@ -1996,6 +1997,9 @@ class Constants
     /* Merchant feature flag to enable GCMS on merchant dashboard*/
     const RazorpayGCMS = 'razorpay_gcms';
 
+    /* Merchant feature flag to enable GCMS Reseller on merchant dashboard*/
+    const RazorpayGCMSReseller = 'razorpay_gcms_reseller';
+
     const SKIP_APPROVAL_FOR_CREATOR = 'skip_approval_for_creator';
 
     /**
@@ -2495,6 +2499,7 @@ class Constants
         self::REWARD_MERCHANT_DASHBOARD                    => true,
         self::RAZORPAY_WALLET                              => true,
         self::RAZORPAY_GCMS                                => true,
+        self::RAZORPAY_GCMS_RESELLER                       => true,
         self::OFFER_ON_SUBSCRIPTION                        => true,
         self::AUTOMATED_LOC_ELIGIBLE                       => true,
         self::PREVENT_TEST_MODE                            => true,
@@ -3921,6 +3926,11 @@ class Constants
         self::RAZORPAY_GCMS => [
             'feature'       => self::RAZORPAY_GCMS,
             'display_name'  => 'Enable GCMS feature',
+            'documentation' => ''
+        ],
+        self::RAZORPAY_GCMS_RESELLER => [
+            'feature'       => self::RAZORPAY_GCMS_RESELLER,
+            'display_name'  => 'Enable GCMS Reseller feature',
             'documentation' => ''
         ],
         self::REFUND_PENDING_STATUS => [
