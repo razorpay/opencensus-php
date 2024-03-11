@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import ModalHeader from 'common/ui/ModalHeader';
-import FileUpload from 'merchant/components/File/Upload';
 import { connect } from 'react-redux';
-import { merchantFetch } from 'merchant/utils/ajax';
+import { bindActionCreators } from 'redux';
+
+import ModalHeader from 'common/ui/ModalHeader';
+import Spinner from 'common/ui/Spinner';
+import { humanize } from 'common/utils/rzp-utils';
+import FileUpload from 'merchant/components/File/Upload';
 import {
   getIirDiscrepancies,
   fetchMerchantInstruments,
   setInstrument,
 } from 'merchant/reducers/instrumentRequests';
-import { closeModal } from 'merchant_common/reducers/modals';
-import Spinner from 'common/ui/Spinner';
-import { bindActionCreators } from 'redux';
+import { merchantFetch } from 'merchant/utils/ajax';
 import {
   WEBSITE_DETAILS,
   MERCHANT_DOCUMENTS,
@@ -18,6 +19,7 @@ import {
   ACTION_REQUIRED,
   REJECTED,
 } from 'merchant/views/Settings/PaymentMethods/constants';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 const tabTitle = {
   [WEBSITE_DETAILS]: 'Website Clarifications',
@@ -40,19 +42,29 @@ const config = {
   },
 };
 
-const UnanswerableClarifications = ({ discrepancy_comment }) => (
-  <div className="clarification-input" key={discrepancy_comment}>
-    <i className="i i-info-circle" />
+const Comment = ({ subCategory, comment }) => (
+  <>
+    <h3>{subCategory}</h3>
+    <p className="input-label">
+      <i className="i i-info-circle" />
+      {comment}
+    </p>
+  </>
+);
+
+const UnanswerableClarifications = ({ comment, subCategory }) => (
+  <div className="clarification-input" key={comment}>
     <div className="input-container">
-      <p className="input-label">{discrepancy_comment}</p>
+      <Comment subCategory={subCategory} comment={comment} />
     </div>
   </div>
 );
 
 const ClarificationInput = (props) => {
   const {
+    subCategory,
     iirDiscrepancyId,
-    label,
+    comment,
     fileUpload,
     handleFileChange,
     onTextChange,
@@ -74,12 +86,10 @@ const ClarificationInput = (props) => {
 
   const discrepancyAnswer = answer ? answer : formFields[iirDiscrepancyId]?.answer_field_value;
   const isDisabled = formFields[iirDiscrepancyId]?.status === 'answered';
-
   return (
     <div className="clarification-input">
-      <i className="i i-info-circle" />
       <div className="input-container">
-        <p className="input-label">{label}</p>
+        <Comment subCategory={subCategory} comment={comment} />
         {config[status].showInput && (
           <>
             <div className="textarea-container">
@@ -287,15 +297,15 @@ const Clarifications = (props) => {
       </div>
       <div className="form-container">
         <ModalHeader title={config[status].header} onCloseClick={onCloseClick} />
-
         {!loading && clarifications && clarifications.length > 0 ? (
           <div className="form">
-            {filteredClarifications.map(({ discrepancy_comment, answerable }) => {
+            {filteredClarifications.map(({ discrepancy_comment, answerable, sub_category }) => {
               if (answerable) return null;
               return (
                 <UnanswerableClarifications
-                  discrepancy_comment={discrepancy_comment}
-                  key={discrepancy_comment}
+                  key={sub_category}
+                  subCategory={humanize(sub_category)}
+                  comment={discrepancy_comment}
                 />
               );
             })}
@@ -308,14 +318,16 @@ const Clarifications = (props) => {
                     iir_discrepancy_id,
                     iir_discrepancy_answer,
                     answerable,
+                    sub_category,
                   }) => {
                     if (!answerable) return null;
                     return (
                       <ClarificationInput
+                        subCategory={humanize(sub_category)}
                         answer={iir_discrepancy_answer?.answer_field_value}
                         iirDiscrepancyId={iir_discrepancy_id}
                         handleFileChange={(file, _) => handleFileChange(file, iir_discrepancy_id)}
-                        label={discrepancy_comment}
+                        comment={discrepancy_comment}
                         key={iir_discrepancy_id}
                         fileUpload={true}
                         onTextChange={onTextChange}
