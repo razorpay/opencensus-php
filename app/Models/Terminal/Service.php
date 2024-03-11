@@ -1808,14 +1808,14 @@ class Service extends Base\Service
 
             //Nach payments / terminals write will create burst of event logs, as we skip these
             //We are planning to remove these reads once removed will remove this check
-            if($routeName === "subscription_registration_charge_token" || $routeName === "terminal_create_bulk") {
+            if($routeName === "terminal_create_bulk") {
                 return;
             }
 
             $this->trace->info(TraceCode::TERMINALS_RETRIEVAL_EVENT, [
                 'terminal_id' => $terminalId,
                 'route_name'  => $routeName,
-                'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8),
+                'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15),
                 'action' => $action,
             ]);
         }
