@@ -1180,6 +1180,65 @@ class Service extends Base\Service
 
     }
 
+
+    public function compareAndSyncTerminalById(string $id)
+    {
+        try
+        {
+
+            $apiTerminal = $this->repo->terminal->findFromAPI($id);
+
+            $tsTerminal = $this->repo->terminal->findFromTS($id);
+
+            if ($apiTerminal != null && Terminal\Service::compareTerminalEntity($apiTerminal, $tsTerminal) === true)
+            {
+                return $tsTerminal;
+            }
+
+            $this->trace->count(Terminal\Metric::TERMINALS_MISMATCH_ON_COMPARE, [
+                "status" => "received",
+            ]);
+
+            if($apiTerminal != null) {
+                $tsTerminal->exists = true;
+            }
+
+            $tsTerminal->removeAttributes(['direct']);
+
+            $this->trace->info(
+                TraceCode::SYNC_TERMINAL_BY_ID, [
+                    "terminal_id" => $tsTerminal->getId(),
+                    "exists" => $tsTerminal->exists
+                ]
+            );
+
+            $this->repo->terminal->saveOrFail($tsTerminal, ['shouldSync' => false]);
+
+            $this->trace->count(Terminal\Metric::TERMINALS_MISMATCH_ON_COMPARE, [
+                "status" => "terminal_synced",
+            ]);
+
+            return $tsTerminal;
+
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex,
+                Trace::ERROR,
+                TraceCode::SYNC_TERMINAL_BY_ID_FAILED,
+                [
+                    'terminal_id'   =>  $id
+                ]);
+
+            throw $ex;
+
+        }
+
+        return;
+
+    }
+
+
     /**
      * This function is the entrypoint for migrating a terminal to Terminals service.
      * All logic will reside here for create and update

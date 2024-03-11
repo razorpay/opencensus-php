@@ -23,6 +23,8 @@ final class Metric
     const TERMINAL_CREDENTIAL_FETCH_FAILURE                  =   'TERMINAL_CREDENTIAL_FETCH_FAILURE';
     const TERMINALS_SYNC_FAILURES_EVENT_FAILED               =   'TERMINALS_SYNC_FAILURES_EVENT_FAILED';
 
+    const TERMINALS_MISMATCH_ON_COMPARE                       =   'TERMINALS_MISMATCH_ON_COMPARE';
+
     //Router Related Metric
     const ROUTER_FALLBACK = 'ROUTER_FALLBACK';
 }

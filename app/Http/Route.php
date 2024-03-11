@@ -679,6 +679,7 @@ class Route
         'terminal_fetch_by_id_internal'            => ['get',      'terminals/{id}',                                 'TerminalController@fetchTerminalById'                              ],
         'terminal_sync'                            => ['put',      'terminals/sync/{id}',                             'TerminalController@syncTerminalById'                              ],
         'terminal_sync_internal'                   => ['put',      'terminals/sync/{id}/internal',                   'TerminalController@syncTerminalById'                               ],
+        'terminal_compare_and_sync_internal'       => ['post',     'terminals/compare_and_sync/{id}/internal',       'TerminalController@compareAndSyncTerminalById'                     ],
         'terminal_onboard'                         => ['post',     'terminals',                                      'TerminalOnboardingController@postCreateTerminal'                   ],
         'initiate_terminal_onboarding'             => ['post',     'terminals/onboard',                              'TerminalOnboardingController@postInitiateOnboarding'               ],
         'terminal_onboard_callback'                => ['post',     'terminals/onboard/{gateway}/callback/{mode}',    'TerminalOnboardingController@postTerminalOnboardCallback'          ],
@@ -6454,6 +6455,8 @@ class Route
         'merchant_fetch_methods_internal',
 
         'terminal_sync_internal',
+
+        'terminal_compare_and_sync_internal',
 
         'get_or_create_customer_internal',
 
@@ -16919,6 +16922,7 @@ class Route
 
         'terminals_service' => [
             'terminal_sync_internal',
+            'terminal_compare_and_sync_internal',
             'merchant_fetch_methods_internal',
             'internal_get_banking_config',
             'feature_get_multiple_internal',
