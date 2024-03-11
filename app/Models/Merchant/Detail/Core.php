@@ -11385,6 +11385,14 @@ class Core extends Base\Core
         $response = $this->pgosProxyController->handlePGOSProxyRequests('get_merchant_eligibility_for_automation_activation',
             $pgosPayload, $this->merchant);
 
+        if (is_null($response) === true)
+        {
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'response' => 'null_response'
+            ]);
+            return false;
+        }
+
         $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
             'response' => $response
         ]);

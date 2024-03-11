@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
+use RZP\Http\Controllers\MerchantOnboardingApiV2ProxyController;
 use Razorpay\Trace\Logger as Trace;
 use Request;
 use RZP\Exception;
@@ -38,6 +39,12 @@ use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Helper as BMCHelper;
 
 class Core extends Merchant\Core
 {
+
+    /**
+     * @var merchantOnboardingApiV2ProxyController
+     */
+    protected MerchantOnboardingApiV2ProxyController $merchantOnboardingApiV2ProxyController;
+
     public function createAccountV2(Merchant\Entity $partner, array $input): Merchant\Entity
     {
         $this->trace->info(TraceCode::ACCOUNT_CREATION_V2_REQUEST, ['input' => $input,]);
@@ -110,7 +117,7 @@ class Core extends Merchant\Core
                     });
             });
 
-        $this->saveBMCAnswers($partner->getId(), $input);
+        $this->saveBMCAnswers($account, $partner->getId(), $input);
 
         $dimensions = $this->getDimensionsForAccountV2Metrics($account, $account->merchantDetail, $partner);
 
@@ -198,7 +205,7 @@ class Core extends Merchant\Core
             return $subMerchant;
         });
 
-        $this->saveBMCAnswers($partner->getId(), $input);
+        $this->saveBMCAnswers($account, $partner->getId(), $input);
 
         $dimensions = $this->getDimensionsForAccountV2Metrics($account, $account->merchantDetail, $partner);
 
@@ -845,10 +852,10 @@ class Core extends Merchant\Core
         Request::instance()->request->add([Constants::PHANTOM_PREFILL_ENABLED => $phantomPrefillEnabled]);
     }
 
-    public function getBMCAnswers(?string $partnerId): array|null
+    public function getBMCAnswers(Merchant\Entity $subMerchant, ?string $partnerId): array|null
     {
         return Tracer::inspan(['name' => HyperTrace::ACCOUNT_V2_GET_BMC_ANSWERS],
-            function() use ($partnerId) {
+            function() use ($subMerchant, $partnerId) {
                 try
                 {
                     if ( is_null($partnerId) === true)
@@ -861,8 +868,8 @@ class Core extends Merchant\Core
                         return null;
                     }
 
-                    $pgosProxy = $this->getSingletonMerchantOnboardingProxyController();
-                    $response  = $pgosProxy->handlePGOSProxyRequests('get_merchant_bmc_response', [], $this->merchant, true);
+                    $pgosProxy = $this->getSingletonMerchantOnboardingApiV2ProxyController();
+                    $response  = $pgosProxy->handlePGOSProxyRequests('get_merchant_bmc_response', [], $subMerchant, true);
                     $pgosProxy->errorHandler($response);
 
                     $responseArr = [];
@@ -887,10 +894,10 @@ class Core extends Merchant\Core
         );
     }
 
-    public function saveBMCAnswers(string $partnerId, array $input): bool
+    public function saveBMCAnswers(Merchant\Entity $subMerchant ,string $partnerId, array $input): bool
     {
         return Tracer::inspan(['name' => HyperTrace::ACCOUNT_V2_SAVE_BMC_ANSWERS],
-            function() use ($partnerId, $input) {
+            function() use ($subMerchant, $partnerId, $input) {
                 $saved = false;
                 try
                 {
@@ -904,8 +911,8 @@ class Core extends Merchant\Core
 
                         if (count($bmcInput) > 0)
                         {
-                            $pgosProxy = $this->getSingletonMerchantOnboardingProxyController();
-                            $response  = $pgosProxy->handlePGOSProxyRequests('save_merchant_bmc_response', ["data" => $bmcInput], $this->merchant, true);
+                            $pgosProxy = $this->getSingletonMerchantOnboardingApiV2ProxyController();
+                            $response  = $pgosProxy->handlePGOSProxyRequests('save_merchant_bmc_response', ["data" => $bmcInput], $subMerchant, true);
                             $pgosProxy->errorHandler($response);
                         }
                         $saved = true;
@@ -965,6 +972,28 @@ class Core extends Merchant\Core
         {
             $this->app->partnerships->createSubMSignupSource($partnerId, $submId, $product);
         }
+    }
+
+    /**
+     * @return MerchantOnboardingApiV2ProxyController
+     */
+    public function getSingletonMerchantOnboardingApiV2ProxyController($merchantOnboardingApiV2ProxyController = null): MerchantOnboardingApiV2ProxyController
+    {
+        if (empty($this->merchantOnboardingApiV2ProxyController) === false)
+        {
+            return $this->merchantOnboardingApiV2ProxyController;
+        }
+
+        if (empty($merchantOnboardingApiV2ProxyController) === false)
+        {
+            $this->merchantOnboardingApiV2ProxyController = $merchantOnboardingApiV2ProxyController;
+
+            return $this->merchantOnboardingApiV2ProxyController;
+        }
+
+        $this->merchantOnboardingApiV2ProxyController = new MerchantOnboardingApiV2ProxyController();
+
+        return $this->merchantOnboardingApiV2ProxyController;
     }
 
 }

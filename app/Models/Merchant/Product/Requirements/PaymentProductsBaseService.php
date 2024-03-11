@@ -24,6 +24,7 @@ use RZP\Models\Merchant\Product\TncMap\Acceptance as TncAcceptance;
 use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Questions as BMCQuestionnaire;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields as SelectiveRequiredFields;
 use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Helper as BMCHelper;
+use RZP\Models\Merchant\Detail\BusinessCategoriesV2;
 
 class PaymentProductsBaseService extends Base\Service
 {
@@ -225,7 +226,7 @@ class PaymentProductsBaseService extends Base\Service
 
             if ( $merchant->isLinkedAccount() === false )
             {
-                [$bmcFieldRequirement, $bmcDocRequirement] = $this->getBMCRequirements($merchant->getId(), $merchantProduct, $merchantDetails);
+                [$bmcFieldRequirement, $bmcDocRequirement] = $this->getBMCRequirements($merchantProduct, $merchant, $merchantDetails);
 
                 $requirements = array_merge($requirements, $bmcFieldRequirement, $bmcDocRequirement);
             }
@@ -1122,12 +1123,12 @@ class PaymentProductsBaseService extends Base\Service
         return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 
-    public function getBMCRequirements(string $merchantId, Product\Entity $merchantProduct, Detail\Entity $merchantDetails): array
+    public function getBMCRequirements(Product\Entity $merchantProduct, Merchant\Entity $merchant, Detail\Entity $merchantDetails): array
     {
         $partnerId  = $this->auth->getPartnerMerchantId() ??
-                      $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchantId)->first();
+                      $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchant->getId())->first();
 
-        $bmcAnswers = (new AccountV2\Core())->getBMCAnswers($partnerId);
+        $bmcAnswers = (new AccountV2\Core())->getBMCAnswers($merchant, $partnerId);
         if (is_null($bmcAnswers) === true)
         {
             return [[],[]];
@@ -1180,54 +1181,61 @@ class PaymentProductsBaseService extends Base\Service
         $bmcDocumentTypes = [];
 
         foreach ($bmcAnswers as $questionId => $answer) {
-            if ($questionId === BMCQuestionnaire::QUESTION_4 && $answer[0] === BMCQuestionnaire::OPTION_4_1)
+            if ($merchantDetails->getBusinessSubcategory() === BusinessCategoriesV2\BusinessSubcategory::GROCERY && $questionId === BMCQuestionnaire::QUESTION_4 && $answer[0] === BMCQuestionnaire::OPTION_4_1)
             {
                 $bmcDocumentTypes[] = Document\Type::FSSAI_CERTIFICATE;
             }
 
-            if ($questionId === BMCQuestionnaire::QUESTION_11)
+            if ($merchantDetails->getBusinessSubcategory() === BusinessCategoriesV2\BusinessSubcategory::RESTAURANT)
             {
-                if (
-                    in_array(BMCQuestionnaire::OPTION_11_1, $answer) ||
-                    in_array(BMCQuestionnaire::OPTION_11_2, $answer) ||
-                    in_array(BMCQuestionnaire::OPTION_11_3, $answer)
-                )
+                if ($questionId === BMCQuestionnaire::QUESTION_11)
                 {
-                    $bmcDocumentTypes[] = Document\Type::FSSAI_CERTIFICATE;
+                    if (
+                        in_array(BMCQuestionnaire::OPTION_11_1, $answer) ||
+                        in_array(BMCQuestionnaire::OPTION_11_2, $answer) ||
+                        in_array(BMCQuestionnaire::OPTION_11_3, $answer)
+                    )
+                    {
+                        $bmcDocumentTypes[] = Document\Type::FSSAI_CERTIFICATE;
+                    }
+
+                    if (in_array(BMCQuestionnaire::OPTION_11_3, $answer))
+                    {
+                        $bmcDocumentTypes[] = Document\Type::SLA_DOCUMENT;
+                    }
                 }
 
-                if (in_array(BMCQuestionnaire::OPTION_11_3, $answer))
+                if ($questionId === BMCQuestionnaire::QUESTION_11_4_1)
                 {
-                    $bmcDocumentTypes[] = Document\Type::SLA_DOCUMENT;
+                    $bmcDocumentTypes[] = Document\Type::LIQUOR_LICENSE;
+
+                    if ($answer[0] === BMCQuestionnaire::OPTION_11_4_1_1)
+                    {
+                        $bmcDocumentTypes[] = Document\Type::GOVT_AUTHORISATION_LETTER;
+                    }
                 }
             }
 
-            if ($questionId === BMCQuestionnaire::QUESTION_11_4_1)
+            if ($merchantDetails->getBusinessSubcategory() === BusinessCategoriesV2\BusinessSubcategory::HOSPITAL)
             {
-                $bmcDocumentTypes[] = Document\Type::LIQUOR_LICENSE;
-
-                if ($answer[0] === BMCQuestionnaire::OPTION_11_4_1_1)
+                if (
+                    $questionId === BMCQuestionnaire::QUESTION_43 &&
+                    in_array(BMCQuestionnaire::OPTION_43_2, $answer)
+                )
                 {
                     $bmcDocumentTypes[] = Document\Type::GOVT_AUTHORISATION_LETTER;
                 }
+
+                if (
+                    $questionId === BMCQuestionnaire::QUESTION_43 &&
+                    in_array(BMCQuestionnaire::OPTION_43_1, $answer) &&
+                    $merchantDetails->isUnregisteredBusiness()
+                )
+                {
+                    $bmcDocumentTypes[] = Document\Type::PROOF_OF_PROFESSION;
+                }
             }
 
-            if (
-                $questionId === BMCQuestionnaire::QUESTION_43 &&
-                in_array(BMCQuestionnaire::OPTION_43_2, $answer)
-            )
-            {
-                $bmcDocumentTypes[] = Document\Type::GOVT_AUTHORISATION_LETTER;
-            }
-
-            if (
-                $questionId === BMCQuestionnaire::QUESTION_43 &&
-                in_array(BMCQuestionnaire::OPTION_43_1, $answer) &&
-                $merchantDetails->isUnregisteredBusiness()
-            )
-            {
-                $bmcDocumentTypes[] = Document\Type::PROOF_OF_PROFESSION;
-            }
         }
 
         return $bmcDocumentTypes;

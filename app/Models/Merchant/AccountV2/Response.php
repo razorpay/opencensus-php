@@ -229,7 +229,7 @@ class Response extends Core
 
         if ( $account->isLinkedAccount() === false )
         {
-            $answers = $this->getBMCAnswers($partnerId);
+            $answers = $this->getBMCAnswers($account, $partnerId);
             if (is_null($answers) === false)
             {
                 $data = array_merge($data, BMCHelper::transformInputToAPIInput($answers));
