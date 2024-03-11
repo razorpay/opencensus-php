@@ -1130,32 +1130,6 @@ class Core extends Base\Core
                              $paymentProcessor->processTransferIfApplicable($payment);
                          }
 
-                         if ($payment->isCard() === true)
-                         {
-                             $variant = $this->app['razorx']->getTreatment($payment->getMerchantId(),
-                                 'ledger_decomp_cards_nfc_api', $this->mode);
-
-                             if ($variant === 'on')
-                             {
-                                 $transactionData = [
-                                     "transaction_id" => $journalId,
-                                     "fee_bearer" => $payment->merchant->getFeeBearer(),
-                                     "fee_model" => $payment->merchant->getFeeModel(),
-                                     "pricing_id" => (new Pricing\Fee)->getZeroPricingPlanRule($payment)->getId(),
-
-                                 ];
-
-                                 $data = [
-                                     "entity_type" => "transaction",
-                                     "payment_id" => $payment->getId(),
-                                     "transaction" => $transactionData,
-                                     "mode" => $this->mode
-                                 ];
-
-                                 (new Transaction\Core)->dispatchDataToMethodQueues($data, $payment);
-                             }
-                         }
-
                          return $txn;
                     });
                 },
