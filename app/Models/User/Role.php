@@ -49,11 +49,16 @@ class Role
 
     // Billing  Roles
     const MARKETING             = 'marketing';
+    const MARKETING_L1          = 'marketing_l1';
+    const MARKETING_L2          = 'marketing_l2';
+    const OPERATIONS_L1         = 'operations_l1';
     const CUSTOMER_SERVICE      = 'customer_service';
     const STORE_MANAGER         = 'store_manager';
     const SECURITY              = 'security';
     const CASHIER               = 'cashier';
     const IT                    = 'it';
+    const IT_L1                 = 'it_l1';
+    const IT_L2                 = 'it_l2';
 
     const ALL_ROLES = [
         self::MANAGER,
@@ -118,13 +123,18 @@ class Role
         self::ADMIN,
         self::CUSTOMER_SERVICE,
         self::OPERATIONS,
+        self::OPERATIONS_L1,
         self::STORE_MANAGER,
         self::SECURITY,
         self::CASHIER,
         self::FINANCE,
         self::MARKETING,
+        self::MARKETING_L1,
+        self::MARKETING_L2,
         self::MANAGER,
-        self::IT
+        self::IT,
+        self::IT_L1,
+        self::IT_L2
     ];
 
     const RBL_ROLES = [
