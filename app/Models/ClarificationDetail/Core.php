@@ -358,10 +358,8 @@ class Core extends Base\Core
             // dual write only for below merchants
             // merchants for whom pgos is serving onboarding requests
             // merchants who are not completely activated
-            // or offline eligible merchant with offline not activated yet
-
-            if(($merchant->getService() === Merchant\Constants::PGOS and $merchant->merchantDetail->getActivationStatus() != Detail\Status::ACTIVATED) or
-               (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant))
+            if ($merchant->getService() === Merchant\Constants::PGOS and
+                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
                 $clarificationDetail = $this->repo->clarification_detail->find($data[Entity::ID]);
 

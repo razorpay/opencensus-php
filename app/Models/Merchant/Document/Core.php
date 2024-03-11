@@ -22,7 +22,6 @@ use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Gateway\File\Constants as GatewayConstants;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 class Core extends Base\Core
@@ -798,10 +797,8 @@ class Core extends Base\Core
             // dual write only for below merchants
             // merchants for whom pgos is serving onboarding requests
             // merchants who are not completely activated
-            // or offline eligible merchant with offline not activated yet
-
-            if (($merchant->getService() === Merchant\Constants::PGOS and $merchant->merchantDetail->getActivationStatus() != Detail\Status::ACTIVATED) or
-                (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant))
+            if ($merchant->getService() === Merchant\Constants::PGOS and
+                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
                 $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
 
@@ -838,7 +835,6 @@ class Core extends Base\Core
             }
         }
     }
-
 
     public function shouldValidateLock(array $input, bool $validateLock) :bool
     {

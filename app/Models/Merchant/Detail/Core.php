@@ -10,7 +10,6 @@ use Lib\PhoneBook;
 use Carbon\Carbon;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\User;
 use RZP\Constants\Mode;
 use Razorpay\Trace\Logger;
@@ -596,7 +595,7 @@ class Core extends Base\Core
 
         if ($this->isNcResponded($merchantPosActivationStatus, Status::UNDER_REVIEW ) === true)
         {
-            $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
+            $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW]);
 
             $this->publishKakfaEventForPOSNeedsClarificationResponded($merchantDetails->getMerchantId());
         }
@@ -3829,16 +3828,6 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        // pos Keys to be filtered out
-        $keysToFilter = array(DEConstants::POS_ACTIVATION_STATUS);
-
-        // Loop through the keys to filter and unset them from the array and merchant details
-        foreach ($keysToFilter as $key)
-        {
-            unset($input[$key]);
-            unset($merchantDetails[$key]);
-        }
-
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
 
         $websiteDetail = $merchantDetails->merchantWebsite;
@@ -4013,8 +4002,6 @@ class Core extends Base\Core
 
             $dbUpdateStartTime = microtime(true);
             $merchantId        = $merchant->getMerchantId();
-
-            $this->app['workflow']->setPermission(PermissionName::EDIT_ACTIVATE_MERCHANT);
 
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
                 ($merchant->isLinkedAccount() === false))
@@ -4416,29 +4403,30 @@ class Core extends Base\Core
         return true;
     }
 
-    public function updatePosActivationStatus(Merchant\Entity $merchant, array $input, PublicEntity $maker, bool $triggerWorkflow = true): ?Entity
+    public function updatePosActivationStatus(Merchant\Entity $merchant, array $input): Entity
     {
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        // online Keys to be filtered out
-        $keysToFilter = array(Entity::ACTIVATION_STATUS);
+        try {
 
-        // Loop through the keys to filter and unset them from the array and merchant details
-        foreach ($keysToFilter as $key)
-        {
-            unset($input[$key]);
-            unset($merchantDetails[$key]);
-        }
-
-        try
-        {
+            unset($input[Entity::ACTIVATION_STATUS]);
 
             $merchantPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
 
             $this->trace->info(TraceCode::PGOS_POS_SUBMIT, [
                 'pos_activation_status' => $merchantPosActivationStatus,
-                'input'                 => $input
+                'input'     => $input
             ]);
+
+            if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::UNDER_REVIEW)
+            {
+                if (($merchantPosActivationStatus === Status::REJECTED) and
+                    (($this->app['basicauth']->isAdminAuth()) === false))
+                {
+                    throw new BadRequestValidationFailureException(
+                        'Rejected merchants are not allowed to submit activation form');
+                }
+            }
 
             $merchantDetails->getValidator()
                             ->validatePOSActivationStatusChange(
@@ -4456,8 +4444,6 @@ class Core extends Base\Core
 
             $rejectionReasons = [];
 
-            $rejectionOption = '';
-
             if (empty($input[Entity::REJECTION_REASONS]) === false)
             {
                 $rejectionReasons = $input[Entity::REJECTION_REASONS];
@@ -4465,192 +4451,112 @@ class Core extends Base\Core
                 unset($input[Entity::REJECTION_REASONS]);
             }
 
-            if (empty($input[Entity::REJECTION_OPTION]) === false)
-            {
-                $rejectionOption = $input[Entity::REJECTION_OPTION];
-
-                unset($input[Entity::REJECTION_OPTION]);
-            }
             $this->repo->transactionOnLiveAndTestAndAsv(function() use (
-                $maker,
                 $merchantDetails,
                 $oldMerchantDetails,
                 $newMerchantDetails,
-                $input,
-                $merchant,
-                $merchantPosActivationStatus,
-                $rejectionOption,
-                $rejectionReasons,
-                $triggerWorkflow
+                $input, $merchant,
+                $merchantPosActivationStatus
             ) {
-                $oldMerchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $merchantPosActivationStatus;
-                $merchantDetails[DEConstants::POS_ACTIVATION_STATUS]    = $input[DEConstants::POS_ACTIVATION_STATUS];
-
-                switch ($input[DEConstants::POS_ACTIVATION_STATUS])
+                $oldMerchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $input[DEConstants::POS_ACTIVATION_STATUS];
+                if (($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB))
                 {
-                    case Status::KYC_QUALIFIED_STB:
-                        if ($triggerWorkflow === true)
+                    $this->app['workflow']
+                        ->setEntity($merchantDetails->getEntity())
+                        ->setOriginal($merchantDetails)
+                        ->setDirty($oldMerchantDetails);
+
+                    try
+                    {
+                        $this->app['workflow']
+                            ->handle();
+                    }
+                    catch (Exception\EarlyWorkflowResponse $e)
+                    {
+                        // Catching exception because we do not want to abort the code flow
+                        $workflowActionData = json_decode($e->getMessage(), true);
+                        $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+                    }
+                }
+
+                if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::REJECTED)
+                {
+                    $this->app['workflow']
+                        ->setEntity($merchantDetails->getEntity())
+                        ->setOriginal($merchantDetails)
+                        ->setDirty($oldMerchantDetails);
+
+                    try
+                    {
+                        $this->app['workflow']
+                            ->handle();
+                    }
+                    catch (Exception\EarlyWorkflowResponse $e)
+                    {
+                        // Catching exception because we do not want to abort the code flow
+                        $workflowActionData = json_decode($e->getMessage(), true);
+                        $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+                    }
+                    $this->sendRejectionEmail($merchant);
+                }
+
+                if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
+                {
+                    $merchantId = $newMerchantDetails->getMerchantId();
+
+                    $posClarificationDetails = (new ClarificationDetailService())->getClarificationDetail($merchantDetails->getMerchantId());
+                    if (empty($posClarificationDetails) === false)
+                    {
+                        $this->trace->info(TraceCode::NC_EMAIL_INITIATED, [
+                            'merchant_id'                => $merchantId,
+                            'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
+                            'pos_activation_status'      => $merchantDetails->getActivationStatus()
+                        ]);
+
+                        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
+                            (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
                         {
-                            try
-                            {
-                                // if there is already a open workflow on same entity with same permission this will throw BadRequestException
-                                // Handle with return without error when the workflow is being executed or approved
-                                // Handle will throw EarlyWorkflowResponse error when workflow is succesfully created
-                                $this->app['workflow']
-                                    ->setEntity($merchantDetails->getEntity())
-                                    ->setOriginal($oldMerchantDetails)
-                                    ->setDirty($merchantDetails)
-                                    ->setPermission(PermissionName::POS_EDIT_ACTIVATE_MERCHANT)
-                                    ->setWorkflowMaker($maker)
-                                    ->setWorkflowMakerType(MakerType::ADMIN)
-                                    ->handle();
-                            }
-                            // catching exception as we do not want to throw error once pos activation workflow is created
-                                // because we have to create online activation workflow in the same flow
-                            catch (Exception\EarlyWorkflowResponse $e)
-                            {
-                                // Catching exception because we do not want to abort the code flow
-                                //$workflowActionData = json_decode($e->getMessage(), true);
-                                //$this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
-
-                                $this->trace->info(TraceCode::POS_ACTIVATION_WORKFLOW_CREATED, [
-                                    'pos_activation_status' => $merchantPosActivationStatus,
-                                    'input'                 => $input,
-                                    'merchant_id'           => $merchant->getId()
-                                ]);
-
-                                // once workflow is created return and do the rest of the processing on workflow approval.
-                                // the same fucntion will be called on workflow approval too but it will not throw error then
-                                return $merchantDetails;
-                            }
-                            // catching exception as we do not want to throw error If there is a workflow already open
-                                // because we have to create online activation workflow in the same flow
-                            catch (Exception\BadRequestException $e)
-                            {
-                                $this->trace->info(TraceCode::POS_ACTIVATION_WORKFLOW_ALREADY_EXISTS, [
-                                    'pos_activation_status' => $merchantPosActivationStatus,
-                                    'input'                 => $input,
-                                    'merchant_id'           => $merchant->getId()
-                                ]);
-
-                                // Catching exception because we do not want to abort the code flow
-                                // If there is a workflow already open
-                                return null;
-                            }
-
+                            $this->sendNeedsClarificationEmail($merchant);
                         }
 
-                        break;
-
-                    case Status::REJECTED:
-                        if ($triggerWorkflow === true)
-                        {
-                            try
-                            {
-                                $rejectionReasonDescriptions = [];
-
-                                foreach ($rejectionReasons as $rejectionReason)
-                                {
-                                    $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? '';
-
-                                    $rejectionReasonDescriptions[] = ($rejectionReason[Reason\Entity::REASON_CATEGORY] ?? 'None')
-                                                                     . ' - ' .
-                                                                     RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
-
-                                    $rejectionReasonCategory[] = $rejectionReason[Reason\Entity::REASON_CATEGORY];
-                                }
-
-                                $merchantDetails[DetailConstants::REJECTION_CATEGORY_REASONS] = $rejectionReasonDescriptions;
-
-                                $merchantDetails[DetailConstants::REJECTION_OPTION] = $rejectionOption;
-
-                                $this->app['workflow']
-                                    ->setEntity($merchantDetails->getEntity())
-                                    ->setOriginal($oldMerchantDetails)
-                                    ->setDirty($merchantDetails)
-                                    ->setPermission(PermissionName::POS_EDIT_ACTIVATE_MERCHANT)
-                                    ->setWorkflowMaker($maker)
-                                    ->setWorkflowMakerType(MakerType::ADMIN)
-                                    ->handle();
-                            }
-                            // catching exception as we do not want to throw error once pos activation workflow is created
-                                // because we have to create online activation workflow in the same flow
-                            catch (Exception\EarlyWorkflowResponse $e)
-                            {
-                                // Catching exception because we do not want to abort the code flow
-                                //$workflowActionData = json_decode($e->getMessage(), true);
-                                //$this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
-
-                                $this->trace->info(TraceCode::POS_ACTIVATION_WORKFLOW_CREATED, [
-                                    'pos_activation_status' => $merchantPosActivationStatus,
-                                    'input'                 => $input,
-                                    'merchant_id'           => $merchant->getId()
-                                ]);
-
-                                // once workflow is created return and do the rest of the processing on workflow approval.
-                                // the same fucntion will be called on workflow approval too but it will not throw error then
-                                return $merchantDetails;
-                            }
-                            // catching exception as we do not want to throw error If there is a workflow already open
-                                // because we have to create online activation workflow in the same flow
-                            catch (Exception\BadRequestException $e)
-                            {
-                                $this->trace->info(TraceCode::POS_ACTIVATION_WORKFLOW_ALREADY_EXISTS, [
-                                    'pos_activation_status' => $merchantPosActivationStatus,
-                                    'input'                 => $input,
-                                    'merchant_id'           => $merchant->getId()
-                                ]);
-
-
-                                // Catching exception because we do not want to abort the code flow
-                                // If there is a workflow already open
-                                return null;
-                            }
-                        }
-
-                        $this->sendRejectionEmail($merchant);
-                        break;
-                    case Status::NEEDS_CLARIFICATION:
-                        $merchantId = $newMerchantDetails->getMerchantId();
-
-                        $posClarificationDetails = (new ClarificationDetailService())->getClarificationDetail($merchantDetails->getMerchantId());
-
-                        if (empty($posClarificationDetails) === false)
-                        {
-                            $this->trace->info(TraceCode::NC_EMAIL_INITIATED, [
-                                'merchant_id'                => $merchantId,
-                                'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
-                                'pos_activation_status'      => $merchantDetails->getActivationStatus()
-                            ]);
-
-                            if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
-                                (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
-                            {
-                                $this->sendNeedsClarificationEmail($merchant);
-                            }
-
-                            $this->trace->info(TraceCode::POS_NC_EMAIL_SENT, [
-                                'merchant_id'           => $merchantId,
-                                'pos_activation_status' => $merchantPosActivationStatus,
-                            ]);
-                        }
-                        break;
+                        $this->trace->info(TraceCode::POS_NC_EMAIL_SENT, [
+                            'merchant_id'           => $merchantId,
+                            'pos_activation_status' => $merchantPosActivationStatus,
+                        ]);
+                    }
                 }
 
                 $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS]);
 
-                //send mail
+                if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
+                {
+                    $this->pgosProxyController->handlePGOSProxyRequests('pos_merchant_config', ["merchant_id" => $merchant->getId()], $merchant, true);
+                }
+
+                $stateData = [
+                    "pos_state"       => $input[DEConstants::POS_ACTIVATION_STATUS],
+                    "merchant_id"     => $merchantDetails->getMerchantId(),
+                    "onboarding_type" => DetailConstants::ONBOARDING_TYPE_POS,
+                    "metadata" => [
+                        "actor_details" => remove_prefix_from_keys($this->getActorDetails(), 'actor_')
+                    ]
+                ];
+
+                $this->pgosProxyController->handlePGOSProxyRequests('update_action_state', $stateData, $merchant, true);
+
+                $newPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
+
+                $args = [
+                    'posActivationStatus'         => $newPosActivationStatus,
+                    'merchant'                 => $merchant,
+                    Merchant\Constants::PARAMS => [
+                        'subMerchantName'  => $merchant->getTrimmedName(25, "..."),
+                        'subMerchantId'    => $merchant->getId(),
+                    ]
+                ];
+
                 try
                 {
-                    $args = [
-                        'posActivationStatus'      => $input[DEConstants::POS_ACTIVATION_STATUS],
-                        'merchant'                 => $merchant,
-                        Merchant\Constants::PARAMS => [
-                            'subMerchantName' => $merchant->getTrimmedName(25, "..."),
-                            'subMerchantId'   => $merchant->getId(),
-                        ]
-                    ];
-
                     Tracer::inSpan(['name' => 'in_person_onboarding_notification_handler_send'], function() use ($args) {
                         (new OnboardingNotificationHandler($args))->sendInPersonNotifications();
                     });
@@ -4661,22 +4567,17 @@ class Core extends Base\Core
                         'MerchantId'   => $merchantId,
                         'ErrorMessage' => $e->getMessage()
                     ]);
-                    return null;
                 }
 
-
-            });
+                return $merchantDetails;
+        });
 
         }
-        catch (\Throwable $e)
-        {
+        catch (\Throwable $e) {
             $this->trace->error(TraceCode::ERROR_PARSING_RESPONSE, [
                 'ErrorMessage' => $e->getMessage()
             ]);
-
-            return null;
         }
-
         return $merchantDetails;
     }
 
@@ -12215,24 +12116,6 @@ class Core extends Base\Core
 
         return $posClarificationReasons;
     }
-    public function AllowDualWritingForPosActivationForm($merchant) :bool
-    {
-
-        $merchantPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchant->merchantDetail);
-
-        $isPosMerchant = $this->fetchPosActivationFlow($merchant) === ActivationFlow::WHITELIST;
-
-        $isPGOSMerchant = $this->isPGOSMerchant($merchant);
-
-        if ($isPGOSMerchant === true and
-            $isPosMerchant === true and
-            $merchantPosActivationStatus != Detail\Status::ACTIVATED)
-        {
-            return true;
-        }
-
-        return false;
-    }
 
     public function isPOSMerchant(BusinessDetailEntity $merchantBusinessDetails): bool
     {
@@ -12282,7 +12165,7 @@ class Core extends Base\Core
     public function fetchMerchantPosActivationStatus(Entity $merchantDetails)
     {
 
-        $shouldMerchantOnboardViaPGOS = $this->app['MerchantOnboardingProxyController']->shouldMerchantOnboardViaPGOS($merchantDetails->getMerchantId());
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantDetails->getMerchantId());
 
         $merchantId = $merchantDetails->getMerchantId();
 
@@ -12299,7 +12182,7 @@ class Core extends Base\Core
                     '$payload' => $payload,
                 ]);
 
-                $response = $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_pgos_fetch_activation_status',
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pgos_fetch_activation_status',
                                                                                 $payload, $merchantDetails->merchant, true);
 
                 $this->trace->info(TraceCode::PGOS_FETCH_POS_ACTIVATION_STATUS_RESPONSE, [
@@ -12327,7 +12210,7 @@ class Core extends Base\Core
 
         $merchantId = $merchantDetails->getMerchantId();
 
-        $shouldMerchantOnboardViaPGOS = $this->app['MerchantOnboardingProxyController']->shouldMerchantOnboardViaPGOS($merchantId);
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
         try
         {
@@ -12343,7 +12226,7 @@ class Core extends Base\Core
                     '$payload' => $payload,
                 ]);
 
-                $response = $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_pgos_update_activation_status',
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pgos_update_activation_status',
                                                                                 $payload, $merchantDetails->merchant, true);
 
                 $this->trace->info(TraceCode::PGOS_UPDATE_POS_ACTIVATION_STATUS_RESPONSE, [
@@ -12376,7 +12259,7 @@ class Core extends Base\Core
 
             $input["onboarding_type"] = DEConstants::ONBOARDING_TYPE_POS;
 
-            $response = $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_pos_state_logs', $input, $merchant);
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_state_logs', $input, $merchant);
 
             $response['success'] = true;
         }
@@ -12398,7 +12281,7 @@ class Core extends Base\Core
         {
             $input['merchant_id'] = $merchant->getId();
 
-            $response = $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_fetch_pos_activation_flow',$input, $merchant );
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_fetch_pos_activation_flow',$input, $merchant );
 
             $this->trace->info(
                 TraceCode::MERCHANT_FETCH_POS_ACTIVATION_FLOW,
@@ -12423,7 +12306,7 @@ class Core extends Base\Core
 
         try
         {
-            $shouldMerchantOnboardViaPGOS =  $this->app['MerchantOnboardingProxyController']->shouldMerchantOnboardViaPGOS($merchant->getId(), $merchant->getCountry());
+            $shouldMerchantOnboardViaPGOS =  $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchant->getId(), $merchant->getCountry());
         }
         catch (\Exception $ex)
         {

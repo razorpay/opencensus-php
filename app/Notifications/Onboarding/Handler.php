@@ -504,7 +504,7 @@ class Handler extends BaseHandler
     {
         $input['merchant_id']     = $merchant->getId();
 
-        $deviceDetailsResponse    = $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests(
+        $deviceDetailsResponse    = (new MerchantOnboardingProxyController())->handlePGOSProxyRequests(
             'merchant_pos_fetch_all_order',$input, $merchant, true);
 
         if (empty($deviceDetailsResponse['order_list']) === true)

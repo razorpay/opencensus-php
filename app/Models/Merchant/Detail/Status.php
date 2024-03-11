@@ -36,7 +36,7 @@ class Status
     const ALLOWED_NEXT_POS_ACTIVATION_STATUSES_MAPPING = [
         self::UNDER_REVIEW              => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED, self::KYC_QUALIFIED_STB],
         self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW],
-        self::REJECTED                  => [],
+        self::REJECTED                  => [self::UNDER_REVIEW],
         self::KYC_QUALIFIED_STB         => [self::ACTIVATED],
         self::ACTIVATED                 => []
     ];
