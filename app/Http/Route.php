@@ -12,7 +12,6 @@ use RZP\Http\Request\Requests;
 use RZP\Foundation\Application;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Base\Database\LagChecker\HeartbeatLagChecker;
@@ -19414,47 +19413,21 @@ class Route
 
         $requestHost = $request->header('Host');
 
-        $requestInjectedHost = $request->getHost();
-
-        $shouldGoViaNewFlow = false;
-
-        try {
-            if ($this->ba->getMerchantId() != null and $this->app->runningUnitTests() === false and app('request.ctx') != null and app('request.ctx')->getMode() != null)
-            {
-                $variantForFeature = $this->razorx->getTreatment($this->ba->getMerchantId(),
-                    RazorxTreatment::STOP_HOST_HEADER_INJECTION, app('request.ctx')->getMode());
-
-                $this->trace->info(
-                    TraceCode::RAZORX_EXPERIMENT_FOR_HOST_INJECTION,
-                    [
-                        'variantForFeature' => strtolower($variantForFeature),
-                        'result' => strtolower($variantForFeature) == RazorxTreatment::RAZORX_VARIANT_ON,
-                    ]
-                );
-
-                $shouldGoViaNewFlow = strtolower($variantForFeature) == RazorxTreatment::RAZORX_VARIANT_ON;
-            }
-        } catch (\Throwable $e) {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::RAZORX_EXPERIMENT_FOR_HOST_INJECTION_FAILED);
-        }
-
-        if ($shouldGoViaNewFlow)
+        if(array_key_exists($requestHost, self::$hostMapping))
         {
-            if(array_key_exists($requestHost, self::$hostMapping))
-            {
-                $host = self::$hostMapping[$requestHost];
-            }
-            else
-            {
-                $host = $requestHost;
-            }
+            $this->trace->info(
+                TraceCode::REQUEST_HOST_UPDATION,
+                [
+                    'host' => $request->header('Host'),
+                    'new_host' => self::$hostMapping[$requestHost],
+                ]
+            );
+
+            $host = self::$hostMapping[$requestHost];
         }
         else
         {
-            $host = $requestInjectedHost;
+            $host = $requestHost;
         }
 
         $this->trace->info(
