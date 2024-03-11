@@ -59,7 +59,7 @@ class Validator extends Base\Validator
         Entity::ENTITY_ID                       => 'sometimes',
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER                  => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35|custom',
-        Entity::BENEFICIARY_NAME                => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:4,120|string',
+        Entity::BENEFICIARY_NAME                => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:3,120|string',
         Entity::ACCOUNT_TYPE                    => 'sometimes|nullable|string|custom',
         Entity::BENEFICIARY_ADDRESS1            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS2            => 'sometimes|max:30',

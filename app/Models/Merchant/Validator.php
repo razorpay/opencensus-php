@@ -251,7 +251,7 @@ class Validator extends Base\Validator
     protected static $linkedAccountNameRules = [
         Entity::NAME                     => [
                                                 'required',
-                                                'min:4',
+                                                'min:3',
                                                 'string',
                                                 'max:200',
                                                 'not_regex:"(https?:\/\/)*(w{3}\.)*[a-zA-Z0-9]+(\.)(com|in|net|co\.in|org|us|info|co)+(\ |\/|$|\n)"',
