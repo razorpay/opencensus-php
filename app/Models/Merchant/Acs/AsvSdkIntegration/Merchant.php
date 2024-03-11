@@ -34,6 +34,8 @@ class Merchant extends Base
         = 'get_linked_accounts_count';
     const GET_LINKED_ACCOUNTS_FROM_PARENT_ID
         = 'get_linked_accounts_from_parent_id';
+    const FILTER_MERCHANTS_WITH_FUNDS_NOT_ON_HOLD
+        = 'filter_merchants_with_funds_not_on_hold';
 
     const GET_LINKED_ACCOUNTS_FROM_MULTIPLE_PARENT_IDS
         = 'get_linked_accounts_from_multiple_parent_ids';
@@ -354,4 +356,19 @@ class Merchant extends Base
 
         return $feeBearersList;
     }
+    public function filterMerchantsWithFundsNotOnHold(array $merchantIds): array
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::FILTER_MERCHANTS_WITH_FUNDS_NOT_ON_HOLD);
+        $filterRequest->setBindings(
+            json_encode([
+                            $merchantIds
+                        ])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+    }
+
 }

@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement;
 
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use Database\Connection;
 use RZP\Models\Merchant as M;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -12,6 +13,7 @@ use RZP\Models\Transfer\SettlementStatus;
 use RZP\Modules\Acs\QueryShadowModeEvent;
 use RZP\Models\Transfer\Entity as TransferEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as AsvSdkMerchantQuery;
 
 class Repository extends Base\Repository
 {
@@ -56,23 +58,48 @@ class Repository extends Base\Repository
 
         $cols = $this->dbColumn('*');
 
-        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
-            $callingViaTidb = true;
-            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        $query = $this->newQuery();
+
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            if ($this->isTransactionActive()) {
+
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+                $setls = $query->select($cols)
+                               ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
+                               ->where(Entity::STATUS, '=', Status::FAILED)
+                               ->whereIn($settlementId, $setlIds)
+                               ->where(M\Entity::HOLD_FUNDS, '=', 0)
+                               ->where(Entity::IS_NEW_SERVICE, '=', 0)
+                               ->with('merchant', 'merchant.bankAccount');
+            }
+            else {
+                $merchantIdsConsidered = $query->select($settlementMerchantId)
+                                               ->whereIn($settlementId, $setlIds)
+                                               ->get()
+                                               ->pluck(Entity::MERCHANT_ID)
+                                               ->toArray();
+
+                if (count($merchantIdsConsidered) > 0) {
+                    $filteredMerchantIds = (new AsvSdkMerchantQuery())->filterMerchantsWithFundsNotOnHold($merchantIdsConsidered);
+
+                    $setls = $query->select($cols)
+                                   ->where(Entity::STATUS, '=', Status::FAILED)
+                                   ->whereIn($settlementId, $setlIds)
+                                   ->whereIn($settlementMerchantId, $filteredMerchantIds)
+                                   ->where(Entity::IS_NEW_SERVICE, '=', 0)
+                                   ->with('merchant', 'merchant.bankAccount');
+                } else {
+                    return [];
+                }
+            }
         } else {
-            $query = $this->newQuery();
-        }
-
-        $setls = $query->select($cols)
-                      ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
-                      ->where(Entity::STATUS, '=', Status::FAILED)
-                      ->whereIn($settlementId, $setlIds)
-                      ->where(M\Entity::HOLD_FUNDS, '=', 0)
-                      ->where(Entity::IS_NEW_SERVICE, '=', 0)
-                      ->with('merchant', 'merchant.bankAccount');
-
-        if (!$callingViaTidb) {
-            event(new QueryShadowModeEvent(__FUNCTION__, $setls->toSql(), $query->getBindings()));
+            $setls = $query->select($cols)
+                           ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
+                           ->where(Entity::STATUS, '=', Status::FAILED)
+                           ->whereIn($settlementId, $setlIds)
+                           ->where(M\Entity::HOLD_FUNDS, '=', 0)
+                           ->where(Entity::IS_NEW_SERVICE, '=', 0)
+                           ->with('merchant', 'merchant.bankAccount');
         }
 
         return $setls->get();
