@@ -530,6 +530,43 @@ class AdminTest extends TestCase
         return $admin;
     }
 
+    public function testDeleteAdmins()
+    {
+        $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+            Admin\Entity::EMAIL  => 'xyz1@rzp.com'
+        ]);
+        $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+            Admin\Entity::EMAIL  => 'xyz2@rzp.com'
+        ]);
+        $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+            Admin\Entity::EMAIL  => 'xyz3@rzp.com'
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testDeleteAdminsFailed()
+    {
+        $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+            Admin\Entity::EMAIL  => 'xyz1@rzp.com'
+        ]);
+        $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+            Admin\Entity::EMAIL  => 'xyz2@rzp.com'
+        ]);
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $this->ba->getAdmin()->id;
+
+        $response = $this->sendRequest($this->testData[__FUNCTION__]['request']);
+        $expected = "[" . json_encode($this->testData[__FUNCTION__]['response']['content']) . "]";
+        $actual = $response->getContent();
+        $this->assertEquals($expected, $actual);
+    }
+
     public function testDeleteAdminFailed()
     {
         $admin = $this->fixtures->create('admin', ['org_id' => $this->orgId]);

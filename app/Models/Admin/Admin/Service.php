@@ -50,6 +50,8 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
+
+        $this->authAdmin = $this->app['basicauth']->getAdmin();
     }
 
     public function authenticate(array $input)
@@ -642,21 +644,53 @@ class Service extends Base\Service
         return $admin;
     }
 
-    public function deleteAdmin(string $adminId)
+    public function handleWorkflowAndDeleteAdmin($admin)
     {
-        $authAdmin = $this->app['basicauth']->getAdmin();
-
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
-
-        $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
-
         // Trigger workflow
-        $this->app['workflow']
-             ->handle($admin, (new \StdClass()));
+        $this->app['workflow']->handle($admin, (new \StdClass()));
 
         $admin->setAuditAction(Action::DELETE_ADMIN);
 
         return $this->core()->delete($admin);
+    }
+
+    public function deleteAdmin(string $adminId)
+    {
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
+
+        $admin->getValidator()->validateSelfEditForbidden($this->authAdmin, $admin);
+
+        return $this->handleWorkflowAndDeleteAdmin($admin);
+    }
+
+    /**
+     * wraps delete admin api and returns array of response with id and deleted status
+     * @param array $input
+     * @return array
+     */
+    public function deleteAdmins(array $input)
+    {
+        $adminEmails = $input['emails'];
+        $adminEmailList = explode(',', $adminEmails);
+        $adminEmailList = array_map('trim', $adminEmailList);
+
+        $responses = array();
+        foreach ($adminEmailList as $adminEmail) {
+            $admin = $this->repo->admin->findByOrgIdAndEmail($this->adminOrgId, $adminEmail);
+            if ($admin === null)
+            {
+                // consider it as deleted if it is not found
+                continue;
+            }
+            try {
+                $admin->getValidator()->validateSelfEditForbidden($this->authAdmin, $admin);
+                $this->handleWorkflowAndDeleteAdmin($admin);
+            } catch (\Throwable $e) {
+                $responses[] = ['id' => $admin->id, 'email' => $adminEmail, 'deleted' => false, 'msg' => $e->getMessage()];
+            }
+         }
+
+        return $responses;
     }
 
     public function fetchMultiple()

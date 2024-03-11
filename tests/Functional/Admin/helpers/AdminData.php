@@ -497,6 +497,36 @@ return [
         ],
     ],
 
+    'testDeleteAdmins' => [
+        'request' => [
+            'url' => '/admins/bulk',
+            'method' => 'delete',
+            'content' => [
+                'emails' => 'xyz1@rzp.com,xyz2@rzp.com,xyz3@rzp.com'
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDeleteAdminsFailed' => [
+        'request' => [
+            'url' => '/admins/bulk',
+            'method' => 'delete',
+            'content' => [
+                'emails' => 'xyz1@rzp.com,admin@razorpay.com'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'NkyqZ6H0PeJ4jN', 'email' => 'admin@razorpay.com', 'deleted' => false, 'msg' => 'Argument $stream must be a valid stream resource.'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteAdminFailed' => [
         'request' => [
             'url' => '/admin/%s',

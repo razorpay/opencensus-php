@@ -128,6 +128,15 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function deleteAdmins()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ADMIN)->deleteAdmins($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchAdminMultiple()
     {
         $data = $this->service(E::ADMIN)->fetchMultiple();
