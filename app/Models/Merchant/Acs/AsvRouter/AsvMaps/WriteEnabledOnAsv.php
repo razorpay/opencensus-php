@@ -10,8 +10,7 @@ use RZP\Models\Merchant\Detail\Repository as MerchantDetailRepository;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Models\Address\Repository as AddressRepository;
 use RZP\Models\Merchant\Stakeholder\Repository as StakeholderRepository;
-
-
+use RZP\Models\Merchant\Account\Repository as AccountRepository;
 
 
 final class WriteEnabledOnAsv {
@@ -28,7 +27,9 @@ final class WriteEnabledOnAsv {
         MerchantDetailRepository::class => true,
         MerchantRepository::class => true,
         AddressRepository::class => true,
-        StakeholderRepository::class => true
+        StakeholderRepository::class => true,
+        AccountRepository::class => true
+
     );
 
     public static array $DELETE_OR_FAIL = array(
