@@ -444,7 +444,7 @@ class ConfigKey
 
     const DEFAULT_PRICING_FOR_SEPA                  = self::PREFIX. 'default_pricing_for_sepa';
 
-    const DEFAULT_PRICING_FOR_BACS                  = self::PREFIX. 'default_pricing_for_bacs';
+    const DEFAULT_PRICING_FOR_FPS                  = self::PREFIX. 'default_pricing_for_fps';
 
     const CURRENCY_METHOD_LEVEL_DCC_MARKUP          = self::PREFIX . 'default_currency_method_level_dcc_markup';
 
@@ -633,7 +633,7 @@ class ConfigKey
         self::RX_CA_MISSING_STATEMENT_DETECTION_ICICI,
         self::DEFAULT_PRICING_FOR_ACH,
         self::DEFAULT_PRICING_FOR_SWIFT,
-        self::DEFAULT_PRICING_FOR_BACS,
+        self::DEFAULT_PRICING_FOR_FPS,
         self::DEFAULT_PRICING_FOR_SEPA,
         self::UPI_TURBO_POPULAR_BANK_LIST,
         self::CURRENCY_METHOD_LEVEL_DCC_MARKUP,

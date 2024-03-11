@@ -325,12 +325,16 @@ class Entity extends Base\PublicEntity
     const MCC_MARKDOWN_PERCENTAGE           = 'mcc_markdown_percentage';
     const INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE    = 'intl_bank_transfer_ach_mcc_markdown_percentage';
     const INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE  = 'intl_bank_transfer_swift_mcc_markdown_percentage';
+    const INTL_BANK_TRANSFER_SEPA_MCC_MARKDOWN_PERCENTAGE   = 'intl_bank_transfer_sepa_mcc_markdown_percentage';
+    const INTL_BANK_TRANSFER_FPS_MCC_MARKDOWN_PERCENTAGE    = 'intl_bank_transfer_fps_mcc_markdown_percentage';
 
 
     const DEFAULT_MCC_MARKDOWNS = [
         self::MCC_MARKDOWN_PERCENTAGE                           =>  self::DEFAULT_MCC_MARKDOWN_PERCENTAGE,
         self::INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE    =>  self::DEFAULT_INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE,
         self::INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE  =>  self::DEFAULT_INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE,
+        self::INTL_BANK_TRANSFER_SEPA_MCC_MARKDOWN_PERCENTAGE   =>  self::DEFAULT_INTL_BANK_TRANSFER_SEPA_MCC_MARKDOWN_PERCENTAGE,
+        self::INTL_BANK_TRANSFER_FPS_MCC_MARKDOWN_PERCENTAGE    =>  self::DEFAULT_INTL_BANK_TRANSFER_FPS_MCC_MARKDOWN_PERCENTAGE,
     ];
 
     const ALLOW_USER_CREATION       = 'allow_user_creation';
@@ -694,6 +698,8 @@ class Entity extends Base\PublicEntity
     const DEFAULT_MCC_MARKDOWN_PERCENTAGE             = 2;
     const DEFAULT_INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE    = 2;
     const DEFAULT_INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE  = 2;
+    const DEFAULT_INTL_BANK_TRANSFER_SEPA_MCC_MARKDOWN_PERCENTAGE   = 2;
+    const DEFAULT_INTL_BANK_TRANSFER_FPS_MCC_MARKDOWN_PERCENTAGE    = 2;
     const DEFAULT_INTL_BANK_TRANSFER_MCC_MARKDOWN_PERCENTAGE = 2;
 
     const COUNTRY_MAXIMUM_AMOUNT = [
@@ -2954,6 +2960,8 @@ class Entity extends Base\PublicEntity
             Method::INTL_BANK_TRANSFER => [
                 PaymentProcessor\IntlBankTransfer::ACH   => self::INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE,
                 PaymentProcessor\IntlBankTransfer::SWIFT => self::INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE,
+                PaymentProcessor\IntlBankTransfer::SEPA  => self::INTL_BANK_TRANSFER_SEPA_MCC_MARKDOWN_PERCENTAGE,
+                PaymentProcessor\IntlBankTransfer::FPS   => self::INTL_BANK_TRANSFER_FPS_MCC_MARKDOWN_PERCENTAGE,
             ],
             "default" => self::MCC_MARKDOWN_PERCENTAGE
         ];

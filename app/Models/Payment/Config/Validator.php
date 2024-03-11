@@ -52,7 +52,8 @@ class Validator extends Base\Validator
     const MCC_MARKDOWN_PERCENTAGE = 'mcc_markdown_percentage';
     const INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE = 'intl_bank_transfer_ach_mcc_markdown_percentage';
     const INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE = 'intl_bank_transfer_swift_mcc_markdown_percentage';
-
+    const INTL_BANK_TRANSFER_SEPA_MCC_MARKDOWN_PERCENTAGE   = 'intl_bank_transfer_sepa_mcc_markdown_percentage';
+    const INTL_BANK_TRANSFER_FPS_MCC_MARKDOWN_PERCENTAGE    = 'intl_bank_transfer_fps_mcc_markdown_percentage';
     const SUPPORTED_LANGUAGE_CODE = [
         'hi',
         'en',
@@ -118,6 +119,8 @@ class Validator extends Base\Validator
         self::MCC_MARKDOWN_PERCENTAGE                           => 'required|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
         self::INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE    => 'sometimes|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
         self::INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE  => 'sometimes|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
+        self::INTL_BANK_TRANSFER_SEPA_MCC_MARKDOWN_PERCENTAGE   => 'sometimes|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
+        self::INTL_BANK_TRANSFER_FPS_MCC_MARKDOWN_PERCENTAGE    => 'sometimes|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
     ];
 
     protected static $editValidators = [

@@ -576,7 +576,7 @@ class Pricing extends Base
                 'feature'             => 'payment',
                 'payment_method'      => 'intl_bank_transfer',
                 'payment_method_type' => null,
-                'payment_network'     => 'bacs',
+                'payment_network'     => 'fps',
                 'payment_issuer'      => null,
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,

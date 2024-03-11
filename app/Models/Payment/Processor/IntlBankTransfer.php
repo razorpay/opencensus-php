@@ -9,13 +9,13 @@ class IntlBankTransfer
 {
     const ACH   = 'ach';
     const SWIFT = 'swift';
-    const BACS = 'bacs';
+    const FPS = 'fps';
     const SEPA = 'sepa';
 
     public static $fullName = [
         self::ACH    => 'ACH',
         self::SWIFT    => 'SWIFT',
-        self::BACS     => 'BACS',
+        self::FPS     => 'FPS',
         self::SEPA      => 'SEPA',
     ];
 

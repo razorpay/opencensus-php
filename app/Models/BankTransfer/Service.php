@@ -1040,7 +1040,7 @@ class Service extends Base\Service
 
         $eddStatus = (new MerchantDetailsCore)->getEDDStatus(['merchant_id' => $merchantId]);
 
-        if ($eddStatus !== MerchantDetailsConstants::VERIFIED) 
+        if ($eddStatus !== MerchantDetailsConstants::VERIFIED)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EDD_STATUS_NOT_VERIFIED, null,
             [
@@ -1100,7 +1100,7 @@ class Service extends Base\Service
                         ]);
         }
 
-        if ($input['va_currency'] === Currency::USD and boolval($input['accept_b2b_tnc']) === false)
+        if (boolval($input['accept_b2b_tnc']) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TERMS_AND_CONDITIONS_NOT_CHECKED, null, [
                 'international'         => $this->merchant->isInternational(),
@@ -1247,15 +1247,31 @@ class Service extends Base\Service
 
         $bankAccount = $this->getFundingAccountDetailsByCurrency($request, $va_currency);
 
-        if(isset($bankAccounts) === false || empty($bankAccounts) === true)
-        {
+        if (!isset($bankAccounts) or empty($bankAccounts)) {
+            // If $bankAccounts is not set or is empty, initialize it as an empty array
             $bankAccounts = array();
-        }
-        else{
-            $bankAccounts = json_decode($bankAccounts);
-        }
-        $bankAccounts[] = $bankAccount;
+        } else {
+            // If $bankAccounts is set and not empty, try to decode it from JSON
+            $bankAccounts = json_decode($bankAccounts, true);
 
+            // Check if json_decode was successful
+            if ($bankAccounts === null) {
+                // Handle the case where decoding failed, possibly log an error or take appropriate action
+                // For example, you might set $bankAccounts to an empty array to avoid issues later
+                $bankAccounts = array();
+            }
+        }
+
+        if (!in_array($bankAccount, $bankAccounts)) {
+            // Check if $bankAccount is not already in $bankAccounts
+            // If not present, add $bankAccount to the end of $bankAccounts
+            $bankAccounts[] = $bankAccount;
+        }
+        else {
+            $this->trace->info(TraceCode::B2B_BANK_ACCOUNT_ALREADY_EXISTS_FOR_GIVEN_CURRENCY,[
+                'va_currency'       => $va_currency
+            ]);
+        }
         $mii = [
             InternationalIntegration\Entity::MERCHANT_ID        => $merchantId,
             InternationalIntegration\Entity::INTEGRATION_ENTITY => Constants\Entity::CURRENCY_CLOUD,
@@ -1461,7 +1477,6 @@ class Service extends Base\Service
         return [$payment, $addresses];
     }
 
-
     public function captureCronForB2BPayments($input)
     {
         if($this->app['env'] != Environment::TESTING)
@@ -1602,14 +1617,12 @@ class Service extends Base\Service
     }
 
     private function fetchDefaultPricing($merchantId, $va_currency): array {
-
-        $mode = IntlBankTransfer::ACH;
-
-        if(strcasecmp($va_currency, Gateway::SWIFT) === 0)
-        {
-            $mode = IntlBankTransfer::SWIFT;
-        }
-
+        $mode = match ($va_currency) {
+            Currency::USD => IntlBankTransfer::ACH,
+            Currency::EUR => IntlBankTransfer::SEPA,
+            Currency::GBP => IntlBankTransfer::FPS,
+            GATEWAY::SWIFT=> IntlBankTransfer::SWIFT,
+        };
         $defaultPricing = [
             PricingEntity::PRODUCT                  =>  Product::PRIMARY,
             PricingEntity::FEATURE                  =>  \RZP\Models\Pricing\Feature::PAYMENT,
@@ -1624,19 +1637,33 @@ class Service extends Base\Service
         // During Swift onboarding, we also have to add 2 default pricing plans(sepa, bacs) along with swift
         if($mode === IntlBankTransfer::SWIFT)
         {
-            $defaultPricingArray = array(array_merge($defaultPricing, $this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::BACS)));
+            $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::FPS;
+            $defaultPricingArray = array(array_merge($defaultPricing, $this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::FPS)));
 
+            $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::SEPA;
             array_push($defaultPricingArray,array_merge($defaultPricing, $this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::SEPA)));
+
+            $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::ACH;
+            array_push($defaultPricingArray,array_merge($defaultPricing, $this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::ACH)));
 
             $defaultPricing = array_merge($defaultPricing,$this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::SWIFT));
             $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::SWIFT;
         }
-        else
+        else if($mode === IntlBankTransfer::ACH)
         {
             $defaultPricing = array_merge($defaultPricing,$this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::ACH));
             $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::ACH;
         }
-
+        else if($mode === IntlBankTransfer::SEPA)
+        {
+            $defaultPricing = array_merge($defaultPricing,$this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::SEPA));
+            $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::SEPA;
+        }
+        else if($mode === IntlBankTransfer::FPS)
+        {
+            $defaultPricing = array_merge($defaultPricing,$this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::FPS));
+            $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::FPS;
+        }
         array_push($defaultPricingArray, $defaultPricing);
 
         return $defaultPricingArray;
@@ -1661,8 +1688,8 @@ class Service extends Base\Service
             case IntlBankTransfer::SEPA:
                 $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_SEPA);
                 break;
-            case IntlBankTransfer::BACS:
-                $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_BACS);
+            case IntlBankTransfer::FPS:
+                $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_FPS);
                 break;
         }
 

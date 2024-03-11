@@ -4165,14 +4165,14 @@ class Gateway
             Currency::CHF, Currency::THB, Currency::GBP, Currency::AED
         ],
         IntlBankTransfer::ACH => [Currency::USD],
-        IntlBankTransfer::BACS => [Currency::GBP],
+        IntlBankTransfer::FPS => [Currency::GBP],
         IntlBankTransfer::SEPA => [Currency::EUR]
     ];
 
     const CURRENCY_TO_MODE_MAPPING_FOR_INTL_BANK_TRANSFER = [
         Currency::USD              => IntlBankTransfer::ACH,
         self::SWIFT                => IntlBankTransfer::SWIFT,
-        Currency::GBP              => IntlBankTransfer::BACS,
+        Currency::GBP              => IntlBankTransfer::FPS,
         Currency::EUR              => IntlBankTransfer::SEPA
     ];
 
@@ -4180,7 +4180,7 @@ class Gateway
         IntlBankTransfer::SWIFT => self::SWIFT,
         IntlBankTransfer::ACH => Currency::USD,
         IntlBankTransfer::SEPA => Currency::EUR,
-        IntlBankTransfer::BACS => Currency::GBP
+        IntlBankTransfer::FPS => Currency::GBP
     ];
 
     const OPGSP_SETTLEMENT_GATEWAYS = [

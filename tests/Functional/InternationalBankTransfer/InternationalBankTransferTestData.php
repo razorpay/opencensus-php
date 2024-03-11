@@ -121,7 +121,7 @@ return [
         ]
     ],
 
-    'testCashManagerTransactionNotificationForCurrencyCloudForBACS' => [
+    'testCashManagerTransactionNotificationForCurrencyCloudForFPS' => [
         'request' => [
             'url' => '/international/virtual_accounts/payment/create',
             'method' => 'post',
@@ -278,7 +278,7 @@ return [
         ]
     ],
 
-    'testTransferCompletedNotificationBACSFromCurrencyCloud' => [
+    'testTransferCompletedNotificationFPSFromCurrencyCloud' => [
         'request' => [
             'url' => '/international/virtual_accounts/payment/create',
             'method' => 'post',

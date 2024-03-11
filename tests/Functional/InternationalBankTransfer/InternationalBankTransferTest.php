@@ -121,7 +121,7 @@ class InternationalBankTransferTest extends TestCase
 
         $request = $this->testData[__FUNCTION__]['request'];
 
-        $request['content']['accept_b2b_tnc'] = 0;
+        $request['content']['accept_b2b_tnc'] = 1;
         $request['content']['va_currency'] = "swift";
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
@@ -184,7 +184,7 @@ class InternationalBankTransferTest extends TestCase
 
         $request = $this->testData[__FUNCTION__]['request'];
 
-        $request['content']['accept_b2b_tnc'] = 0;
+        $request['content']['accept_b2b_tnc'] = 1;
         $request['content']['va_currency'] = "swift";
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
@@ -276,7 +276,7 @@ class InternationalBankTransferTest extends TestCase
 
         $request = $this->testData[__FUNCTION__]['request'];
 
-        $request['content']['accept_b2b_tnc'] = 0;
+        $request['content']['accept_b2b_tnc'] = 1;
         $request['content']['va_currency'] = "swift";
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
@@ -477,7 +477,7 @@ class InternationalBankTransferTest extends TestCase
         return $response;
 
     }
-    public function testCashManagerTransactionNotificationForCurrencyCloudForBACS()
+    public function testCashManagerTransactionNotificationForCurrencyCloudForFPS()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -505,7 +505,7 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('authorized',$paymentEntity['status']);
         $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
-        $this->assertEquals('bacs',$paymentEntity['wallet']);
+        $this->assertEquals('fps',$paymentEntity['wallet']);
         $this->assertEquals(80360000,$paymentEntity['base_amount']);
         $this->assertEquals(8200000,$paymentEntity['amount']);
         $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
@@ -819,7 +819,7 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('captured', $updatedPaymentEntity['status']);
     }
 
-    public function testTransferCompletedNotificationBACSFromCurrencyCloud()
+    public function testTransferCompletedNotificationFPSFromCurrencyCloud()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -847,7 +847,7 @@ class InternationalBankTransferTest extends TestCase
 
         $this->ba->directAuth();
 
-        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloudForBACS']['request'];
+        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloudForFPS']['request'];
         $firstResponse = $this->makeRequestAndGetContent($firstRequest);
 
         $paymentEntity = $this->getLastPayment('payment',true);
