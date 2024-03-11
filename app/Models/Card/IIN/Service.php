@@ -932,39 +932,41 @@ class Service extends Base\Service
 
     public function compareBinServiceEntityAndApiServiceEntity($apiServiceEntity, $binServiceEntity, $extraTraceData)
     { 
-
-        $differences = [];
-
         // matches the api service IIN entity fields with bin service entity
         foreach (Constants::COMPARABLE_FIELDS_BETWEEN_IIN_ENTITY_AND_BIN_SERVICE as $field) 
         {
+            $apiServiceEntityValue = "";
+            $binServiceEntityValue = "";
+
             if (isset($apiServiceEntity[$field]) && isset($binServiceEntity[$field])) 
             {
                 if ($apiServiceEntity[$field] !== $binServiceEntity[$field]) 
                 {
-                    $differences[$field] = [
-                        'api_entity_value'         => $apiServiceEntity[$field],
-                        'bin_service_entity_value' => $binServiceEntity[$field]
-                    ];
+                        $apiServiceEntityValue = $apiServiceEntity[$field];
+                        $binServiceEntityValue  = $binServiceEntity[$field];
                 }
             } 
             else 
             {
                 if (isset($apiServiceEntity[$field]) || isset($binServiceEntity[$field]))
                 {
-                    $differences[$field] = [
-                        'api_entity_value' => isset($apiServiceEntity[$field]) ? $apiServiceEntity[$field] : null,
-                        'bin_service_entity_value' => isset($binServiceEntity[$field]) ? $binServiceEntity[$field] : null
-                    ];
+                    $apiServiceEntityValue = $apiServiceEntity[$field] ?? "";
+                    $binServiceEntityValue  = $binServiceEntity[$field] ?? "";
                 }
             }
-        }
 
-        if(count($differences) !== 0)
-        {
-            $traceData = array_merge($differences, $extraTraceData);
-
-            $this->trace->info(TraceCode::API_BIN_SERVICE_IIN_DATA_MISMATCH, $traceData);
+            if ($apiServiceEntityValue !== $binServiceEntityValue)
+            {
+                $this->trace->info(TraceCode::API_BIN_SERVICE_IIN_DATA_MISMATCH, [
+                    'field'                  => $field,
+                    'iin'                   => $extraTraceData['iin'],
+                    'method'                => $extraTraceData['method_name'],
+                    'apiServiceEntityValue' => $apiServiceEntityValue,
+                    'binServiceEntityValue' => $binServiceEntityValue,
+                    'api_entity_country'    => $apiServiceEntity['country'],
+                    'bin_entity_country'    => $binServiceEntity['country']
+                ]);
+            }
         }
     }
 

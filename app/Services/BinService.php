@@ -89,10 +89,14 @@ class BinService
 
         $entity = $this->sendRequest($url, Requests::GET, null, $namespace, BinService::FETCH_IIN);
 
-        if(!empty($entity))
+        if(isset($entity) && !empty($entity) && isset($entity['iin']))
         {
             return (new IINService())->transformBinServiceEntityToApiServiceEntity($entity);
         }
+
+        $this->trace->info(TraceCode::BIN_SERVICE_IIN_NOT_FOUND, [
+            'iin'       => $iin
+        ]);
 
         return [];
     }

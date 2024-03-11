@@ -11158,6 +11158,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BIN_SERVICE_ERROR                                     = 'BIN_SERVICE_ERROR';
     const BIN_SERVICE_RESPONSE                                  = 'BIN_SERVICE_RESPONSE';
     const BIN_SERVICE_RETRY                                     = 'BIN_SERVICE_RETRY';
+    const BIN_SERVICE_IIN_NOT_FOUND                             = 'BIN_SERVICE_IIN_NOT_FOUND';
+
     const TURBO_UPI_PAYMENT_PAYER_ACCOUNT_TYPE_MISMATCH        = 'TURBO_UPI_PAYMENT_PAYER_ACCOUNT_TYPE_MISMATCH';
 
     const BVS_VIDEO_KYC_EVENTS_JOB_REQUEST                     = 'BVS_VIDEO_KYC_EVENTS_JOB_REQUEST';

@@ -114,14 +114,14 @@ class Repository extends Base\Repository
 
         $iinService = (new Service());
 
-        if ($iinService->shouldReadFromBinService() === true)
+        if (isset($iin) && $iinService->shouldReadFromBinService() === true)
         {
             $binService = (new BinService());
 
             $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin);
         }
 
-        if (!empty($binServiceIINEntity))
+        if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
         {
             $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
         }
@@ -135,14 +135,14 @@ class Repository extends Base\Repository
 
         $iinService = (new Service());
 
-        if ($iinService->shouldReadFromBinService() === true)
+        if (isset($iin) && $iinService->shouldReadFromBinService() === true)
         {
             $binService = (new BinService());
 
             $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin);
         }
 
-        if (!empty($binServiceIINEntity))
+        if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
         {
             $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
         }
@@ -156,14 +156,14 @@ class Repository extends Base\Repository
 
         $iinService = (new Service());
 
-        if ($iinService->shouldReadFromBinService() === true)
+        if (isset($iin) && $iinService->shouldReadFromBinService() === true)
         {
             $binService = (new BinService());
 
             $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin);
         }
 
-        if (!empty($binServiceIINEntity))
+        if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
         {
              $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
         }

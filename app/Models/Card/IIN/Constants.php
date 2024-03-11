@@ -33,7 +33,6 @@ class Constants
         Entity::TYPE,
         Entity::SUBTYPE,
         Entity::ISSUER,
-        Entity::ISSUER_NAME,
         Entity::MESSAGE_TYPE,
         Entity::COBRANDING_PARTNER,
         Entity::EMI,
