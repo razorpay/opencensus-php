@@ -3873,8 +3873,6 @@ class Core extends Base\Core
             // to check website validations for the merchant while fully activating or moving to KQU
             (new Merchant\Website\Service())->validateMerchantActivation($merchantDetails, $websiteDetail);
 
-            $this->performComplianceChecksBasedOnBusinessType($merchantDetails);
-
             // Verify the expiry status for all merchant documents that are relevant for license expiration.
             // The applicable document types are listed in the constant 'LICENSE_EXPIRY_APPLICABLE_DOCUMENT_TYPES'.
 
