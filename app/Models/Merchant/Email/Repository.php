@@ -3,6 +3,12 @@
 namespace RZP\Models\Merchant\Email;
 
 use RZP\Models\Base;
+use Database\Connection;
+use RZP\Exception\BaseException;
+use Razorpay\Asv\RequestMetadata;
+use RZP\Models\Base\PublicCollection;
+use RZP\Exception\BadRequestException;
+use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
@@ -97,18 +103,37 @@ class Repository extends Base\Repository
      * This function does not check for verification status and
      * hence should not be used for getting emails for communication.
      * this function get all the emails by type except 'partner_dummy' type
+     *
      * @param string $merchantId
      *
-     * @return mixed
+     * @return PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
      */
-    public function getEmailByMerchantId(string $merchantId)
+    public function getEmailByMerchantId(string $merchantId): PublicCollection
     {
-        return $this->getEntityDetails(
-            ASVV2Constant::GET_EMAIL_BY_MERCHANT_ID,
-            $this->asvRouter->shouldRouteToAccountService($merchantId, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID),
-            (new MerchantEmailSDKWrapper())->getAllExceptPartnerDummyByMerchantIdCallback($merchantId),
-            $this->getEmailByMerchantIdFromDatabaseCallBack($merchantId)
-        );
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                return $this->getEmailByMerchantIdFromDatabase(
+                    $merchantId, Connection::ASV_WRITER
+                );
+            }
+            else
+            {
+                $requestMetadata = new RequestMetadata();
+                $requestMetadata->setTimeoutInMicroSeconds(
+                    MerchantEmailSDKWrapper::FILTER_TIMEOUT_IN_MICRO_SECONDS
+                );
+
+                return (new MerchantEmailSDKWrapper())->getAllExceptPartnerDummyByMerchantId(
+                    $merchantId, $requestMetadata
+                );
+            }
+        }
+
+        return $this->getEmailByMerchantIdFromDatabase($merchantId);
     }
 
     private function getEmailByMerchantIdFromDatabaseCallBack(string $merchantId): \Closure
@@ -118,9 +143,20 @@ class Repository extends Base\Repository
         };
     }
 
-    public function getEmailByMerchantIdFromDatabase(string $merchantId)
+    public function getEmailByMerchantIdFromDatabase(string $merchantId, string $connectionType = null)
     {
-        return $this->newQuery()
+        if (!is_null($connectionType))
+        {
+            $query = $this->newQueryWithConnection(
+                $this->getConnectionFromType($connectionType)
+            );
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->Where(Entity::TYPE, '<>', Type::PARTNER_DUMMY)
             ->get();
@@ -146,13 +182,36 @@ class Repository extends Base\Repository
     /**
      * @param array $merchantIds
      * @param array $types
-     * @return mixed
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
      */
-    public function getEmailsByMerchantIdsAndTypes(array $merchantIds, array $types)
+    public function getEmailsByMerchantIdsAndTypes(array $merchantIds, array $types): PublicCollection|Collection
     {
-        return $this->newQuery()
-            ->select(Entity::MERCHANT_ID, Entity::TYPE, Entity::EMAIL)
-            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                return (new MerchantEmailSDKWrapper())->getEmailsByMerchantIdsAndTypes(
+                  $merchantIds, $types
+                );
+            }
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query
+            ->select(Base\PublicEntity::MERCHANT_ID, Entity::TYPE, Entity::EMAIL)
+            ->whereIn(Base\PublicEntity::MERCHANT_ID, $merchantIds)
             ->whereIn(Entity::TYPE, $types)
             ->get();
     }

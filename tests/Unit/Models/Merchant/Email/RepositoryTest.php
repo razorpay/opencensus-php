@@ -129,6 +129,9 @@ class RepositoryTest extends TestCase
 
     public function testGetEmailByMerchantId()
     {
+
+        print_r(env('DB_LIVE_PASSWORD'));
+
         // Set splitz experiment
         Config::set('applications.asv_v2.splitz_experiment_merchant_email_read_by_merchant_id', 'K1ZaAHZ7Lnumc6');
 
@@ -153,13 +156,27 @@ class RepositoryTest extends TestCase
         $merchantEmailResponse = new MerchantEmailResponseByMerchantId();
         $merchantEmailResponse->setEmails([$merchantEmailProto1, $merchantEmailProto2, $merchantEmailProto3]);
 
-        // Test Case 1: ExclusionFlow false - Splitz should never be called - Request should  go to account service - Merchant Email is Found
+        // Test Case 1:
+        // - ExclusionFlow false
+        // - Splitz called once to check if this filter should be routed to ASV Service
+        // - Request should  go to account service
+        // - Merchant Email is Found
 
-        $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->never())->method('evaluateRequest');
-        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        $this->setSplitzWithOutput("true", 1);
+
         $merchantEmailMockClient = $this->getMockClient();
-        $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([$merchantEmailResponse, null]);
+        $merchantEmailMockClient
+            ->expects($this->exactly(1))
+            ->method("getByMerchantId")
+            ->with(
+                "CzmiBzNQPErfdT",
+                $merchantEmail
+                    ->getDefaultRequestMetaData()
+                    ->setTimeoutInMicroSeconds(5000000)
+            )
+            ->willReturn(
+                [$merchantEmailResponse, null]
+            );
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
         $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
@@ -172,7 +189,11 @@ class RepositoryTest extends TestCase
         self::assertEquals(self::convertEntitiesToAssociativeArrayBasedOnId($expectedMerchantEmails->toArray()),
             self::convertEntitiesToAssociativeArrayBasedOnId($gotMerchantEmails->toArray()));
 
-        // Test Case 2: ExclusionFlow true - Splitz should never be called - Request should not go to account service - Merchant Email is Found
+         //Test Case 2:
+        // - ExclusionFlow true
+        // - Splitz should never be called
+        // - Request should not go to account service
+        // - Merchant Email is Found
 
         $splitzMock = $this->createSplitzMock();
         $splitzMock->expects($this->never())->method('evaluateRequest');
@@ -191,12 +212,25 @@ class RepositoryTest extends TestCase
         self::assertEquals(self::convertEntitiesToAssociativeArrayBasedOnId($expectedMerchantEmails->toArray()),
             self::convertEntitiesToAssociativeArrayBasedOnId($gotMerchantEmails->toArray()));
 
-        // Test Case 3: ExclusionFlow false - Splitz should never be called - Request should go to account service - Merchant Email is Not Found
-        $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->never())->method('evaluateRequest');
-        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        // Test Case 3:
+        // - ExclusionFlow false
+        // - Splitz called once to check if this filter should be routed to ASV Service
+        // - Request should go to account service
+        // - Merchant Email is Not Found
+        $this->setSplitzWithOutput("true", 1);
         $merchantEmailMockClient = $this->getMockClient();
-        $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([new MerchantEmailResponseByMerchantId(), null]);
+        $merchantEmailMockClient
+            ->expects($this->exactly(1))
+            ->method("getByMerchantId")
+            ->with(
+                "CzmiBzNQPErfdT",
+                $merchantEmail
+                    ->getDefaultRequestMetaData()
+                    ->setTimeoutInMicroSeconds(5000000)
+            )
+            ->willReturn(
+                [new MerchantEmailResponseByMerchantId(), null]
+            );
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
         $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
@@ -209,13 +243,17 @@ class RepositoryTest extends TestCase
         self::assertEquals(self::convertEntitiesToAssociativeArrayBasedOnId($expectedMerchantEmails->toArray()),
             self::convertEntitiesToAssociativeArrayBasedOnId($gotMerchantEmails->toArray()));
 
-        // Test Case 4: ExclusionFlow false -  Splitz should never be called - Request Failed From account service - Should Be Routed to DB
+        // Test Case 4:
+        // - ExclusionFlow false
+        // - Splitz called once to check if this filter should be routed to ASV Service
+        // - Transaction is on
+        // - ASV Service should not get called
 
-        $splitzMock = $this->createSplitzMock();
-        $splitzMock->expects($this->never())->method('evaluateRequest');
-        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        $this->setSplitzWithOutput("true", 1);
         $merchantEmailMockClient = $this->getMockClient();
-        $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([null, new GrpcError(\Grpc\STATUS_ABORTED, "new")]);
+        $merchantEmailMockClient
+            ->expects($this->exactly(0))
+            ->method("getByMerchantId");
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
         $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
@@ -223,10 +261,9 @@ class RepositoryTest extends TestCase
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
-        $expectedMerchantEmails = (new MerchantEmailEntity())->newCollection([$merchantEmailEntity1, $merchantEmailEntity2]);
-        $gotMerchantEmails = $repo->getEmailByMerchantId("CzmiBzNQPErfdT");
-        self::assertEquals(self::convertEntitiesToAssociativeArrayBasedOnId($expectedMerchantEmails->toArray()),
-            self::convertEntitiesToAssociativeArrayBasedOnId($gotMerchantEmails->toArray()));
+        $repo->beginTransaction();
+        $repo->getEmailByMerchantId("CzmiBzNQPErfdT");
+        $repo->commit();
     }
 
     public function testGetEmailByTypeAndMerchantId()

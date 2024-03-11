@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Acs\AsvSdkIntegration;
 use App;
 use Razorpay\Asv\RequestMetadata;
 use Razorpay\Trace\Logger as Trace;
+use Rzp\Accounts\Merchant\V1\Email;
 use Razorpay\Asv\Client as ASVClient;
 use Razorpay\Asv\Error\GrpcError;
 use Rzp\Accounts\Merchant\V1\FilterRequest;
@@ -18,6 +19,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant;
+USE RZP\Models\Merchant;
 use RZP\Exception;
 use Razorpay\Asv\DbSource;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
@@ -27,6 +29,7 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\GetFieldsForEntityFromProto\
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\Merchant as MerchantProtoMapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantDetail as MerchantDetailProtoMapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantDocument as MerchantDocumentProtoMapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantEmail as MerchantEmailProtoMapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\RequestHeadersHelper\RequestHeadersHelper;
 use RZP\Models\Merchant\Website\Entity;
 use RZP\Trace\TraceCode;
@@ -400,11 +403,13 @@ class Base
 
     /**
      * @param FilterRequest $filterRequest
-     * @return mixed
+     * @param int           $timeout
+     *
+     * @return FilterResponse
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function getFilterResponseFromAsv(FilterRequest $filterRequest, int $timeout = 0): mixed
+    public function getFilterResponseFromAsv(FilterRequest $filterRequest, int $timeout = 0): FilterResponse
     {
         $requestMetadata = $this->getRequestMetaData();
         if($timeout != 0){
@@ -423,10 +428,11 @@ class Base
     }
 
     /**
-     * @param mixed $response
-     * @return Collection|PublicCollection
+     * @param FilterResponse $response
+     *
+     * @return PublicCollection|Collection
      */
-    public function getMerchantCollectionFromResponse(mixed $response): PublicCollection|Collection
+    public function getMerchantCollectionFromResponse(FilterResponse $response): PublicCollection|Collection
     {
         $merchants = $response->getMerchants();
         $merchantArray = [];
@@ -440,14 +446,15 @@ class Base
             $merchantArray[] = $merchantEntity;
         }
 
-        return (new \RZP\Models\Merchant\Entity())->newCollection($merchantArray);
+        return (new Merchant\Entity())->newCollection($merchantArray);
     }
 
     /**
-     * @param mixed $response
-     * @return Collection|PublicCollection
+     * @param FilterResponse $response
+     *
+     * @return PublicCollection|Collection
      */
-    public function getMerchantDetailCollectionFromResponse(mixed $response): PublicCollection|Collection
+    public function getMerchantDetailCollectionFromResponse(FilterResponse $response): PublicCollection|Collection
     {
         $merchantDetails = $response->getMerchantDetails();
         $merchantDetailsArray = [];
@@ -461,14 +468,15 @@ class Base
             $merchantDetailsArray[] = $merchantDetailEntity;
         }
 
-        return (new \RZP\Models\Merchant\Detail\Entity())->newCollection($merchantDetailsArray);
+        return (new Merchant\Detail\Entity())->newCollection($merchantDetailsArray);
     }
 
     /**
-     * @param mixed $response
-     * @return Collection|PublicCollection
+     * @param FilterResponse $response
+     *
+     * @return PublicCollection|Collection
      */
-    public function getMerchantDocumentCollectionFromResponse(mixed $response): PublicCollection|Collection
+    public function getMerchantDocumentCollectionFromResponse(FilterResponse $response): PublicCollection|Collection
     {
         $merchantDocuments = $response->getMerchantDocuments();
         $merchantDocumentsArray = [];
@@ -482,6 +490,28 @@ class Base
             $merchantDocumentsArray[] = $merchantDocumentEntity;
         }
 
-        return (new \RZP\Models\Merchant\Document\Entity())->newCollection($merchantDocumentsArray);
+        return (new Merchant\Document\Entity())->newCollection($merchantDocumentsArray);
+    }
+
+    /**
+     * @param FilterResponse $response
+     *
+     * @return Collection|PublicCollection
+     */
+    public function getMerchantEmailCollectionFromResponse(FilterResponse $response): Collection|PublicCollection
+    {
+        $merchantEmails = $response->getMerchantEmails();
+        $merchantEmailsArray = [];
+
+        /**
+         * @var $merchantEmail Email
+         */
+        foreach ($merchantEmails as $merchantEmail) {
+            $merchantEmailProtoConvertor = new MerchantEmailProtoMapper($merchantEmail);
+            $merchantEmailEntity = $merchantEmailProtoConvertor->ToEntity();
+            $merchantEmailsArray[] = $merchantEmailEntity;
+        }
+
+        return (new Merchant\Email\Entity())->newCollection($merchantEmailsArray);
     }
 }

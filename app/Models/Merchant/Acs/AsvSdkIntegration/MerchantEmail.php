@@ -4,16 +4,24 @@ namespace RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Email;
+use RZP\Models\Base\Collection;
 use RZP\Exception\BaseException;
 use Razorpay\Asv\RequestMetadata;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use Rzp\Accounts\Merchant\V1 as MerchantV1;
+use Rzp\Accounts\Merchant\V1\FilterRequest;
 use RZP\Models\Merchant\Email\Entity as MerchantEmailEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantEmail as MerchantEmailProtoMapper;
 
 class MerchantEmail extends Base
 {
+    const FILTER_TIMEOUT_IN_MICRO_SECONDS = 5000000;
+
+    const GET_EMAILS_BY_MERCHANT_IDS_AND_TYPES
+        = 'get_emails_by_merchant_ids_and_types';
+
     public function __construct()
     {
         parent::__construct();
@@ -154,4 +162,33 @@ class MerchantEmail extends Base
             return $this->getAllExceptPartnerDummyByMerchantId($merchantId, $requestMetadata);
         };
     }
+
+    /**
+     * @param array $merchantIds
+     * @param array $types
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function getEmailsByMerchantIdsAndTypes(array $merchantIds, array $types): Collection|PublicCollection
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::GET_EMAILS_BY_MERCHANT_IDS_AND_TYPES);
+        $filterRequest->setBindings(
+            json_encode([$merchantIds, $types])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        $emails = $this->getMerchantEmailCollectionFromResponse($response);
+
+        return (new MerchantEmailEntity())->newCollection(
+            $emails->map->only(
+                [PublicEntity::MERCHANT_ID, MerchantEmailEntity::TYPE, MerchantEmailEntity::EMAIL]
+            )->toArray()
+        );
+    }
 }
+
+
