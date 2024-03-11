@@ -1962,6 +1962,11 @@ class Constants
      */
     const DISABLE_OTP_AUTO_READ_AND_SUBMIT = 'dis_otp_auto_read_submit';
 
+    /**
+     * Feature flag is used to disable otp assist feature on checkout.
+     */
+    const OTP_ASSIST_DISABLED = 'otp_assist_disabled';
+
     const PERSONALISATION_V3_DISABLED = 'p13n_v3_disabled';
 
     const SETTLEMENT_BY_CURRENCY = 'settlement_by_currency';
@@ -2831,6 +2836,7 @@ class Constants
         self::FEE_PAGE_TIMEOUT_CUSTOM                      => true,
         self::SILENT_REFUND_LATE_AUTH                      => true,
         self::DISABLE_OTP_AUTO_READ_AND_SUBMIT             => true,
+        self::OTP_ASSIST_DISABLED                          => true,
         self::WALLET_PAYTM_AUTO_DEBIT                      => true,
         self::ENABLE_APPROVAL_VIA_OAUTH                    => true,
         self::ENABLE_SMART_ROUTING                         => true,
@@ -3825,6 +3831,11 @@ class Constants
         DcsConstants::EmailOptionalOnCheckout => [
             'feature'       => DcsConstants::EmailOptionalOnCheckout,
             'display_name'  => 'Email optional on std/hosted checkout',
+            'documentation' => '',
+        ],
+        self::OTP_ASSIST_DISABLED => [
+            'feature'       => self::OTP_ASSIST_DISABLED,
+            'display_name'  => 'Disable Otp Assist feature',
             'documentation' => '',
         ],
         self::DISABLE_UPI_NUM_CHECKOUT => [
