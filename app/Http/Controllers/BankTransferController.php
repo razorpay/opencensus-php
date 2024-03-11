@@ -675,6 +675,12 @@ class BankTransferController extends Controller
             $payeeIfsc = Provider::getIFSC()[Provider::AXIS];
         }
 
+        if (substr($input['Bene_acc_no'], 0, 4) === Provider::BANK_ACCOUNT_RTPL_PREFIX)
+        {
+            $provider  = Provider::AXIS_RTPL;
+            $payeeIfsc = Provider::IFSC[Provider::AXIS_RTPL];
+        }
+
         return array(
             'input' => [
                 'request_type'   => $input['Req_type'],

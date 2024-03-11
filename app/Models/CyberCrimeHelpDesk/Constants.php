@@ -77,7 +77,7 @@ class Constants
 
     const IST_DIFF_IN_SEC = (5 * 60 + 30) * 60;
 
-    const VIRTUAL_ACCOUNT_PREFIXES = array("2223", "2224", "2226", "3434", "5656", "787878", "VAJSWCA");
+    const VIRTUAL_ACCOUNT_PREFIXES = array("2223", "2224", "2226", "3434", "5656", "787878", "VAJSWCA", "2213");
 
     const REQUESTER_EMAIL = 'requester_mail';
 

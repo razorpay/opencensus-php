@@ -2180,6 +2180,7 @@ class Gateway
         Provider::RBL_JSW   => self::BT_RBL_JSW,
         Provider::HDFC_ECMS => self::BT_HDFC_ECMS,
         Provider::AXIS      => self::BT_AXIS,
+        Provider::AXIS_RTPL => self::BT_AXIS,
     ];
 
     //

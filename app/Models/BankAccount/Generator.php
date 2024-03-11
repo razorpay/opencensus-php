@@ -243,6 +243,11 @@ class Generator extends Base\Core
         Base\PublicEntity $entity,
         string $provider): array
     {
+        $bankAccountSeries = substr($accountNumber, 0, 4);
+        if (VirtualAccount\Provider::PREFIX_PROVIDER[$bankAccountSeries] !== null) {
+            $provider = VirtualAccount\Provider::PREFIX_PROVIDER[$bankAccountSeries];
+        }
+
         $bankAccountInput = VirtualAccount\Provider::DEFAULT_DETAILS[$provider];
 
         $isBalanceTypeBanking = $this->options[self::BANKING] !== null && $this->options[self::BANKING] == true;

@@ -36,6 +36,8 @@ class Provider
     const RBL_JSW   = 'rbl_jsw';
     const HDFC_ECMS = 'hdfc_ecms';
     const AXIS      = 'axis';
+    const AXIS_RTPL = 'axis_rtpl';
+    const BANK_ACCOUNT_RTPL_PREFIX = '2213';
 
     const UPI_ICICI = 'upi_icici';
 
@@ -60,7 +62,8 @@ class Provider
         self::RBL       => 'RATN0VAAPIS',
         self::HDFC_ECMS => 'HDFC0000113',
         self::RBL_JSW   => 'RATN0000001',
-        self::AXIS      => 'UTIB000RAZP'
+        self::AXIS      => 'UTIB000RAZP',
+        self::AXIS_RTPL => 'UTIB0RTPLTD'
     ];
 
     const AXIS_COMMON_IFSC = 'UTIB0CCH274';
@@ -95,6 +98,13 @@ class Provider
         self::AXIS => [
             BankAccount::IFSC_CODE => self::IFSC[self::AXIS],
         ],
+        self::AXIS_RTPL => [
+            BankAccount::IFSC_CODE => self::IFSC[self::AXIS_RTPL],
+        ]
+    ];
+
+    const PREFIX_PROVIDER = [
+        self::BANK_ACCOUNT_RTPL_PREFIX => self::AXIS_RTPL,
     ];
 
     const LIVE_PROVIDERS = [
@@ -140,6 +150,9 @@ class Provider
         ],
         self::AXIS => [
             '*',
+        ],
+        self::AXIS_RTPL => [
+            '*',
         ]
     ];
 
@@ -149,6 +162,7 @@ class Provider
 
     const VALIDATE_CALLBACK_PROVIDERS = [
         self::AXIS,
+        self::AXIS_RTPL,
     ];
 
     public static function getIFSC(bool $useCommonIfsc = false): array
