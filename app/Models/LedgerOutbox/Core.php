@@ -17,6 +17,7 @@ use RZP\Models\Reversal;
 use RZP\Models\Adjustment;
 use RZP\Models\Transfer;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Models\Feature;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
@@ -1155,7 +1156,7 @@ class Core extends Base\Core
                              }
                          }
 
-                        return $txn;
+                         return $txn;
                     });
                 },
                 self::PAYMENT_TRANSACTION_CREATION_MUTEX_TTL,
