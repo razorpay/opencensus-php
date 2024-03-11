@@ -134,11 +134,13 @@ class Event
     const PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION = 'product.payment_gateway.needs_clarification';
     const PAYMENT_GATEWAY_PRODUCT_REJECTED            = 'product.payment_gateway.rejected';
     const PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED = 'product.payment_gateway.instantly_activated';
+    const PAYMENT_GATEWAY_PRODUCT_ACTIVATED_MCC_PENDING = 'product.payment_gateway.activated_mcc_pending';
     const PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          = 'product.payment_links.under_review';
     const PAYMENT_LINKS_PRODUCT_ACTIVATED             = 'product.payment_links.activated';
     const PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   = 'product.payment_links.needs_clarification';
     const PAYMENT_LINKS_PRODUCT_REJECTED              = 'product.payment_links.rejected';
     const PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   = 'product.payment_links.instantly_activated';
+    const PAYMENT_LINKS_PRODUCT_ACTIVATED_MCC_PENDING   = 'product.payment_links.activated_mcc_pending';
     const PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING = 'product.payment_gateway.activated_kyc_pending';
     const PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   = 'product.route.activated_kyc_pending';
     const ROUTE_PRODUCT_UNDER_REVIEW                    = 'product.route.under_review';
@@ -306,8 +308,10 @@ class Event
         self::PAYOUT_CREATION_FAILED,
         self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED,
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_MCC_PENDING,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED,
         self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_MCC_PENDING,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING,
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_LINKS_PRODUCT_REJECTED,
@@ -480,10 +484,12 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED,
         self::PAYOUT_CREATION_FAILED,
         self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_MCC_PENDING,
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING,
         self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED,
         self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_MCC_PENDING,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING,
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_LINKS_PRODUCT_REJECTED,
@@ -674,6 +680,9 @@ class Event
         self::ACCOUNT_APP_AUTHORIZATION_REVOKED           => 62,
         self::ORDER_NOTIFICATION_DELIVERED                => 63,
         self::ORDER_NOTIFICATION_FAILED                   => 64,
+
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_MCC_PENDING => 65,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_MCC_PENDING => 66
     ];
 
     /**
@@ -959,11 +968,13 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_REJECTED            => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_MCC_PENDING => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED             => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_LINKS_PRODUCT_REJECTED              => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_MCC_PENDING => Entity::MERCHANT_PRODUCT,
         self::ROUTE_PRODUCT_UNDER_REVIEW                  => Entity::MERCHANT_PRODUCT,
         self::ROUTE_PRODUCT_ACTIVATED                     => Entity::MERCHANT_PRODUCT,
         self::ROUTE_PRODUCT_NEEDS_CLARIFICATION           => Entity::MERCHANT_PRODUCT,
@@ -1051,11 +1062,13 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_REJECTED            => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_MCC_PENDING => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED             => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_REJECTED              => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_MCC_PENDING => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::ROUTE_PRODUCT_UNDER_REVIEW                  => Feature\Constants::MARKETPLACE,
         self::ROUTE_PRODUCT_ACTIVATED                     => Feature\Constants::MARKETPLACE,
         self::ROUTE_PRODUCT_NEEDS_CLARIFICATION           => Feature\Constants::MARKETPLACE,

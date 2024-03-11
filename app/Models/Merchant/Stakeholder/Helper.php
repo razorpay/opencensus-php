@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Stakeholder;
 
 use RZP\Models\Address;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Account\Constants as AccountConstants;
 
 class Helper
 {
@@ -25,6 +26,13 @@ class Helper
             Entity::AADHAAR_PIN            => Entity::AADHAAR_PIN,
             Entity::BVS_PROBE_ID           => Entity::BVS_PROBE_ID,
         ];
+
+        $isPhantomPrefillEnabled = \Request::all()[AccountConstants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled && !isset($input[Entity::AADHAAR_LINKED]))
+        {
+            $input[Entity::AADHAAR_LINKED] = 0;
+        }
 
         self::addKeyMapFromInput($keyMap, $input, $stakeholderInput);
 

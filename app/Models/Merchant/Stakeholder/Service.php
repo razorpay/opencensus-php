@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
 use RZP\Trace\Tracer;
 use RZP\Models\Merchant\AccountV2\Type;
+use RZP\Models\Merchant\AccountV2\Core as AccountV2Core;
 
 class Service extends Base\Service
 {
@@ -17,6 +18,8 @@ class Service extends Base\Service
         (new Account\Core)->validatePartnerAccess($this->merchant, $accountId);
 
         Account\Entity::verifyIdAndStripSign($accountId);
+
+        (new AccountV2Core())->checkAndSetPhantomPrefillEnabledContextForPartner($this->merchant, $accountId);
 
         $stakeholder = Tracer::inspan(['name' => HyperTrace::CREATE_STAKEHOLDER_V2_CORE], function () use ($accountId, $input) {
 

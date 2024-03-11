@@ -154,4 +154,17 @@ class BusinessParentCategory
             Category::OTHERS,
         ]
     ];
+
+    public static function getParentCategoryFromBusinessCategory(string $businessCategory) : ?string
+    {
+        foreach (self::CATEGORY_MAP as $parentCategory => $businessCategories)
+        {
+            if (in_array($businessCategory, $businessCategories, true) === true)
+            {
+                return $parentCategory;
+            }
+        }
+
+        return null;
+    }
 }

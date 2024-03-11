@@ -42,17 +42,20 @@ class Service extends Base\Service
 
     private function dispatchProductStatusEvent(Entity $merchantProduct, array $data)
     {
-        $eventPayload = [
-            ApiEventSubscriber::MAIN        => $merchantProduct,
-            ApiEventSubscriber::WITH        => $data,
-            ApiEventSubscriber::MERCHANT_ID => $merchantProduct->getMerchantId()
-        ];
+        if ((new Detail\Core())->shouldTriggerActivatedWebhook($merchantProduct->getMerchantId(), $merchantProduct->getStatus()))
+        {
+            $eventPayload = [
+                ApiEventSubscriber::MAIN        => $merchantProduct,
+                ApiEventSubscriber::WITH        => $data,
+                ApiEventSubscriber::MERCHANT_ID => $merchantProduct->getMerchantId()
+            ];
 
-        $this->trace->info(TraceCode::MERCHANT_PRODUCT_STATUS_WEBHOOK_EVENT_PAYLOAD, $eventPayload);
+            $this->trace->info(TraceCode::MERCHANT_PRODUCT_STATUS_WEBHOOK_EVENT_PAYLOAD, $eventPayload);
 
-        $event = 'api.product.' . $merchantProduct->getProduct() . '.' . $merchantProduct->getStatus();
+            $event = 'api.product.' . $merchantProduct->getProduct() . '.' . $merchantProduct->getStatus();
 
-        $this->app['events']->dispatch($event, $eventPayload);
+            $this->app['events']->dispatch($event, $eventPayload);
+        }
     }
 
     private function getPaymentProductsEventData(Entity $merchantProduct): array

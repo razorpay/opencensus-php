@@ -31,6 +31,8 @@ use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Partner\Config\Constants as ConfigConstants;
 use RZP\Models\Merchant\Escalations\Constants as EscalationConstants;
+use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
+use RZP\Models\Merchant\Detail\BusinessCategoriesV2\BusinessParentCategory;
 use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Questions as BMCQuestionnaire;
 use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Helper as BMCHelper;
 
@@ -308,6 +310,8 @@ class Core extends Merchant\Core
 
         $detailInput = InputHelper::getSubMerchantDetailInput($input);
 
+        $this->updateBusinessParentCategoryDetails($detailInput);
+
         $merchantDetailsCore = new Detail\Core;
 
         Tracer::inspan(['name' => HyperTrace::VALIDATE_NC_RESPONDED_IF_APPLICABLE], function() use ($subMerchant, $detailInput) {
@@ -333,6 +337,18 @@ class Core extends Merchant\Core
         ]);
 
         return $subMerchant;
+    }
+
+    private function updateBusinessParentCategoryDetails(&$input)
+    {
+        $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled && isset($input[Detail\Entity::BUSINESS_CATEGORY]))
+        {
+            $parentBusinessCategory = BusinessParentCategory::getParentCategoryFromBusinessCategory($input[Detail\Entity::BUSINESS_CATEGORY]);
+
+            $input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $parentBusinessCategory;
+        }
     }
 
     protected function executeTosAcceptanceExperiment(&$input, Merchant\Entity $partner)

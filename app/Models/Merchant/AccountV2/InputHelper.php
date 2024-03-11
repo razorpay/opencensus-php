@@ -3,14 +3,12 @@
 namespace RZP\Models\Merchant\AccountV2;
 
 use RZP\Constants\IndianStates;
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Detail\Entity as DE;
 use RZP\Models\Merchant\Account\Constants;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 
 class InputHelper
 {
@@ -89,6 +87,8 @@ class InputHelper
     public static function getSubMerchantDetailInput(array $input): array
     {
         $detailInput = [];
+
+        $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
 
         if (isset($input[Constants::BUSINESS_TYPE]) === true)
         {
@@ -193,6 +193,11 @@ class InputHelper
             }
         }
 
+        if ($isPhantomPrefillEnabled && !isset($ownerInfo[Detail\Entity::GSTIN]))
+        {
+            $ownerInfo[Detail\Entity::GSTIN] = "";
+        }
+
         if (isset($input[Constants::APPS][Constants::WEBSITES]) === true)
         {
             $websites = $input[Constants::APPS][Constants::WEBSITES];
@@ -214,6 +219,11 @@ class InputHelper
                     $detailInput[Detail\Entity::BUSINESS_WEBSITE] = $websites[0];
                 }
             }
+
+            if ($isPhantomPrefillEnabled && isset($detailInput[Detail\Entity::BUSINESS_WEBSITE]))
+            {
+                $detailInput[BusinessDetailConstants::WEBSITE_PRESENT] = true;
+            }
         }
 
         $detailInput = array_merge($detailInput, $ownerInfo, ...self::getAddressesFromInput($input));
@@ -225,6 +235,13 @@ class InputHelper
             $android = $input[Constants::APPS][Constants::ANDROID];
 
             $clientApplications[Constants::ANDROID] = $android;
+
+            if ($isPhantomPrefillEnabled)
+            {
+                $detailInput[BusinessDetailConstants::PLAYSTORE_URL] = $android[0]["url"];
+
+                $detailInput[BusinessDetailConstants::ANDROID_APP_PRESENT] = true;
+            }
         }
 
         if (isset($input[Constants::APPS][Constants::IOS]) === true)
@@ -232,6 +249,25 @@ class InputHelper
             $ios = $input[Constants::APPS][Constants::IOS];
 
             $clientApplications[Constants::IOS] = $ios;
+
+            if ($isPhantomPrefillEnabled)
+            {
+                $detailInput[BusinessDetailConstants::APPSTORE_URL] = $ios[0]["url"];
+
+                $detailInput[BusinessDetailConstants::IOS_APP_PRESENT] = true;
+            }
+        }
+
+        if ($isPhantomPrefillEnabled && isset($input[Constants::APPS][BusinessDetailConstants::WHATSAPP_SMS_EMAIL]))
+        {
+            $detailInput[BusinessDetailConstants::WHATSAPP_SMS_EMAIL] = true;
+        }
+        else
+        {
+            if ($isPhantomPrefillEnabled && isset($input[Constants::APPS][BusinessDetailConstants::PHYSICAL_STORE]))
+            {
+                $detailInput[BusinessDetailConstants::PHYSICAL_STORE] = true;
+            }
         }
 
         if (empty($clientApplications) === false)

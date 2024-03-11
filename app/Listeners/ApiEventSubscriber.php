@@ -41,6 +41,7 @@ use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\WebhookV2\Metric as WebhookMetric;
+use RZP\Models\Merchant\Detail as MerchantDetail;
 
 class ApiEventSubscriber extends Base\Core
 {
@@ -260,6 +261,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onProductPaymentGatewayActivatedMccPending($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onProductPaymentLinksActivated($merchantProduct)
     {
         $payload = $this->getMerchantProductPayload($merchantProduct);
@@ -296,6 +304,13 @@ class ApiEventSubscriber extends Base\Core
     }
 
     protected function onProductPaymentLinksActivatedKycPending($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductPaymentLinksActivatedMccPending($merchantProduct)
     {
         $payload = $this->getMerchantProductPayload($merchantProduct);
 
@@ -352,6 +367,13 @@ class ApiEventSubscriber extends Base\Core
     protected function onAccountActivatedMccPending($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
+
+        if (!empty($payload[Constants\Entity::ACCOUNT]["entity"]))
+        {
+            $payload[Constants\Entity::ACCOUNT]["entity"]["merchant_detail"][MerchantDetail\Entity::ACTIVATION_STATUS] = MerchantDetail\Status::ACTIVATED;
+        }
+
+        $this->event = str_replace(MerchantDetail\Status::ACTIVATED_MCC_PENDING, MerchantDetail\Status::ACTIVATED, $this->event);
 
         $this->dispatchEventToStork($payload);
     }
@@ -1739,9 +1761,22 @@ class ApiEventSubscriber extends Base\Core
     {
         $entity = [];
 
+        $merchantProductStatus = $merchantProduct->getStatus();
+
         $entity[Product\Entity::ID]                = $merchantProduct->getPublicId();
         $entity[Product\Entity::MERCHANT_ID]       = AccountEntity::getSignedId($merchantProduct->getMerchantId());
-        $entity[Product\Entity::ACTIVATION_STATUS] = $merchantProduct->getStatus();
+
+        if ($merchantProductStatus == MerchantDetail\Status::ACTIVATED_MCC_PENDING)
+        {
+            $entity[Product\Entity::ACTIVATION_STATUS] = MerchantDetail\Status::ACTIVATED;
+
+            $this->event = str_replace(MerchantDetail\Status::ACTIVATED_MCC_PENDING, MerchantDetail\Status::ACTIVATED, $this->event);
+        }
+        else
+        {
+            $entity[Product\Entity::ACTIVATION_STATUS] = $merchantProductStatus;
+        }
+
 
         $payload = [
             Constants\Entity::MERCHANT_PRODUCT => [

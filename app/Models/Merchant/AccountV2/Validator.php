@@ -16,6 +16,7 @@ use RZP\Constants\Product as ProductConstants;
 use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 
 class Validator extends Merchant\Validator
 {
@@ -167,11 +168,13 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $appsRules = [
-        Constants::WEBSITES       => 'sometimes|array|min:1',
-        Constants::ANDROID        => 'sometimes|array|min:1',
-        Constants::ANDROID . '.*' => 'filled|array',
-        Constants::IOS            => 'sometimes|array|min:1',
-        Constants::IOS . '.*'     => 'filled|array',
+        Constants::WEBSITES                     => 'sometimes|array|min:1',
+        Constants::ANDROID                      => 'sometimes|array|min:1',
+        Constants::ANDROID . '.*'               => 'filled|array',
+        Constants::IOS                          => 'sometimes|array|min:1',
+        Constants::IOS . '.*'                   => 'filled|array',
+        BusinessDetailConstants::PHYSICAL_STORE => 'sometimes|bool',
+        BusinessDetailConstants::WHATSAPP_SMS_EMAIL => 'sometimes|bool'
     ];
 
     protected static $appsAndroidRules = [
