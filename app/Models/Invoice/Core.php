@@ -1717,6 +1717,7 @@ class Core extends Base\Core
                 'invoice_amount'                => $invoice->getAmount(),
                 'invoice_amount_paid_attribute' => $invoice->getAmountPaidAttribute(),
                 'invoice_amount_paid'           => $invoice->getAmountPaid(),
+                'payment_order_amount_paid'     => $payment->order->getAmountPaid(),
                 'invoice_status'                => $invoice->getStatus(),
             ]);
 
