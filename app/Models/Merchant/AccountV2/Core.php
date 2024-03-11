@@ -98,6 +98,10 @@ class Core extends Merchant\Core
 
                         $this->createSignUpCampaignForPhantomPrefill($subMerchant);
 
+                        // create sub signup source incase of prefill
+                        $product = $input[Merchant\Entity::PRODUCT] ?? ProductConstants::PRIMARY;
+                        $this->createSubmSignupSourceForPhantomPrefill($subMerchant->getId(), $partner->getId(), $product);
+
                         unset($input[Constants::IS_IGNORE_TOS_ACCEPTANCE]);
 
                         return $subMerchant;
@@ -926,6 +930,24 @@ class Core extends Merchant\Core
                 DeviceDetail\Entity::SIGNUP_CAMPAIGN => DeviceDetail\Constants::PHANTOM_ONBOARDING,
             ];
             (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
+        }
+    }
+
+
+    /**
+     * create subm signup source in case of phantom prefill
+     *
+     * @param string $submId
+     * @param string $partnerId
+     * @param string $product
+     * @return void
+     */
+    protected function createSubmSignupSourceForPhantomPrefill(string $submId, string $partnerId, string $product)
+    {
+        $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+        if($isPhantomPrefillEnabled)
+        {
+            $this->app->partnerships->createSubMSignupSource($partnerId, $submId, $product);
         }
     }
 
