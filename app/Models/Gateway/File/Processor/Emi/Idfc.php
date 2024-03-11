@@ -96,7 +96,7 @@ class Idfc extends Base
             $formattedData[] = [
                 'Card number'                  => $cardNumber,
                 'Transaction datetime'         => $this->getFormattedDate($emiPayment->getCaptureTimestamp()),
-                'Installment short code'       => 'INSTAP'. $this->numpad($emiPercent, 3) ,
+                'Installment short code'       => $this->getInstallmentCode($emiTenure) ,
                 'Tenure'                       => $this->numpad($emiTenure, 2) ,
                 'Merchant name'                => $businessName ,
                 'Merchant ID'                  => substr(hash("sha256",$emiPayment->merchant['id']), 0, 15),
@@ -305,6 +305,21 @@ class Idfc extends Base
         $name = str_replace($replaceArray, " ", $merchantDetails[Detail\Entity::BUSINESS_NAME]);
 
         return substr($name, 0, 25);
+    }
+
+
+    protected function getInstallmentCode($emiTenure)
+    {
+        $installmentCodeMap = [
+            3 =>  "016",
+            6 =>  "015",
+            9 =>  "015",
+            12 => "016",
+            18 => "016",
+            24 => "016",
+            36 => "016",
+        ];
+        return 'INSTAP'. $installmentCodeMap[$emiTenure];
     }
 
 }
