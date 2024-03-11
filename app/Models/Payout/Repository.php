@@ -2755,8 +2755,18 @@ class Repository extends Base\Repository
             $merchantUserRoleColumn
         ];
 
-        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
-            ->select($this->getTableName() . '.*')
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__))
+        {
+            $query = $this->newQueryWithConnection(
+                $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
+            );
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection($this->getReportingReplicaConnection());
+        }
+
+        $query = $query->select($this->getTableName() . '.*')
             ->select($userAttrs)
             ->selectRaw('COUNT( payouts.' . Entity::ID . ') AS payout_count,
                            SUM( payouts.' . Entity::AMOUNT . ') AS payout_total')
