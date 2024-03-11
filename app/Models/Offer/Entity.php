@@ -550,9 +550,11 @@ class Entity extends Base\PublicEntity
 
     public function checkDiscountMismatch($apiDiscount, $oeBenefits) : bool
     {
+        $stringDisc = strval($apiDiscount);
+
         if (isset($oeBenefits[Constants::DISCOUNT]))
         {
-           if ($oeBenefits[Constants::DISCOUNT][0][Constants::DISCOUNT] !== $apiDiscount)
+           if ($oeBenefits[Constants::DISCOUNT][0][Constants::DISCOUNT] !== $stringDisc)
            {
                return true;
            }
@@ -560,7 +562,7 @@ class Entity extends Base\PublicEntity
 
         if (isset($oeBenefits['cashback']))
         {
-            if ($oeBenefits['cashback'][0][Constants::DISCOUNT] !== $apiDiscount)
+            if ($oeBenefits['cashback'][0][Constants::DISCOUNT] !== $stringDisc)
             {
                 return true;
             }
@@ -568,7 +570,7 @@ class Entity extends Base\PublicEntity
 
         if (isset($oeBenefits['already_discounted']))
         {
-            if ($oeBenefits['already_discounted'][0][Constants::DISCOUNT] !== $apiDiscount)
+            if ($oeBenefits['already_discounted'][0][Constants::DISCOUNT] !== $stringDisc)
             {
                 return true;
             }
@@ -576,7 +578,7 @@ class Entity extends Base\PublicEntity
 
         if (isset($oeBenefits['no_cost_emi']))
         {
-            if ($oeBenefits['no_cost_emi'][0]['calculated_discount'][Constants::DISCOUNT] !== $apiDiscount)
+            if ($oeBenefits['no_cost_emi'][0]['calculated_discount'][Constants::DISCOUNT] !== $stringDisc)
             {
                 return true;
             }
@@ -584,7 +586,7 @@ class Entity extends Base\PublicEntity
 
         if (isset($oeBenefits['low_cost_emi']))
         {
-            if ($oeBenefits['low_cost_emi'][0]['calculated_discount'][Constants::DISCOUNT] !== $apiDiscount)
+            if ($oeBenefits['low_cost_emi'][0]['calculated_discount'][Constants::DISCOUNT] !== $stringDisc)
             {
                 return true;
             }

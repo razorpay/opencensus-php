@@ -5791,7 +5791,7 @@ class Processor
                 $mismatch = $this->offer->checkDiscountMismatch($orderAmount - $discountedAmount, $payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
 
                 // perform parity
-                if( $mismatch === true)
+                if( $mismatch === true )
                 {
                     $this->trace->count(Offer\Metric::OFFERS_ENGINE_DISCOUNT_MISMATCH,
                     [
@@ -5802,17 +5802,21 @@ class Processor
                     $this->trace->info(
                         TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH,
                         [
-                            'API_DISCOUNT' => $discountedAmount,
+                            'API_DISCOUNT' => $orderAmount - $discountedAmount,
                             'OFFERS_DISCOUNT' => $payment->getAttribute(Payment\Entity::OFFER_BENEFITS),
                         ]);
                 };
             }
 
-            unset($payment[Payment\Entity::OFFER_BENEFITS]);
-
             //setting original order amount to input array to set back the original amount as payment
             //amount in case of offer validation fails.
             $input['order_amount'] = $orderAmount;
+        }
+
+        // unset the offer_benefits field after parity checks
+        if (isset($payment[Payment\Entity::OFFER_BENEFITS]))
+        {
+            unset($payment[Payment\Entity::OFFER_BENEFITS]);
         }
     }
 

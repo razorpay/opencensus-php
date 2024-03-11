@@ -1271,6 +1271,7 @@ class Core extends Base\Core
         {
             if ($oeResp['offer_id'] === $offer->getPublicId())
             {
+                // id matched, no mismatch
                 $mismatch = false;
             }
 
@@ -1278,8 +1279,9 @@ class Core extends Base\Core
         // API VALIDATION CHECK FAILED, OE RESPONSE SHOULD HAVE ERROR
         else
         {
-            if ($oeResp['error']['description'] !== "No Active offers found")
+            if ($oeResp['error']['description'] === "No Active offers found")
             {
+                // error desc matched, no mismatch
                 $mismatch = false;
             }
         }
