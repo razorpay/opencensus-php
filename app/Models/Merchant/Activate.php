@@ -1262,7 +1262,7 @@ class Activate extends Base\Core
      */
     private function sendTerminalCreationRequestForUPI($paymentMethod, $merchant, $action, $merchantGenre, $instrument): void
     {
-        if ((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true)
+        if ((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true && $this->shouldDispatchTerminalCreationEvent($merchant))
         {
             $topic = env('PAYMENT_METHOD_ENABLE_KAFKA_TOPIC_NAME');
 
@@ -1339,5 +1339,29 @@ class Activate extends Base\Core
 
             $merchant->getValidator()->validateHasBankAccount();
         }
+    }
+
+    /**
+     * experiment to disable upi terminal creation for partner sub merchants
+     *
+     * @param Entity $merchant
+     * @return bool
+     */
+    protected function shouldDispatchTerminalCreationEvent(Entity $merchant)
+    {
+        // get partner id from merchant
+        $partnerId =  $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchant->getId(), true)->first();
+        // if partner id is not present, then dispatch terminal creation event
+        if (empty($partnerId))
+        {
+            return true;
+        }
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.onboarding_api_upi_terminal_creation_disabled')
+        ];
+
+        return  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === false;
+
     }
 }

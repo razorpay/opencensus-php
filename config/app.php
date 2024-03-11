@@ -838,6 +838,8 @@ return array(
 
     'submerchant_prefill_login_exp_id' => env('SUBMERCHANT_PREFILL_LOGIN_EXP_ID'),
 
+    'onboarding_api_upi_terminal_creation_disabled' => env('ONBOARDING_API_UPI_TERMINAL_CREATION_DISABLED'),
+
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID'),
 
     'onboarding_api_bmc_experiment_id'  => env('ONBOARDING_API_BMC_EXPERIMENT_ID'),
