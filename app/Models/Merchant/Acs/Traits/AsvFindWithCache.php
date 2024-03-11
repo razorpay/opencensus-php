@@ -35,7 +35,6 @@ trait AsvFindWithCache
     public function find($id, $columns = array('*'), string $connectionType = null)
     {
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND);
-
         if ($shouldCallAsv === true)
         {
             return Cache::store('query_cache_live')->tags(strtolower($this->entity) . '_' . $id)->remember($this->getCacheKey($id, $columns, $connectionType), $this->getCacheTtl(), function () use ($id, $columns, $connectionType) {
@@ -48,7 +47,7 @@ trait AsvFindWithCache
 
     public function getCacheKey($id, $columns, string $connectionType = null)
     {
-        $tag = 'asv_'.strtolower($this->entity).'_'.$id;
+        $tag = 'asv:{'.strtolower($this->entity).'_'.$id.'}';
         $columnsString = md5(serialize($columns));
         $connectionSuffix = $connectionType ? ':' . $connectionType : '';
         return "tag:{$tag}:{$columnsString}{$connectionSuffix}:key";
