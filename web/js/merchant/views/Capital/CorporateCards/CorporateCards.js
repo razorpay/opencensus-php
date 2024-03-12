@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import analyticsService from '@razorpay/commander-services/analytics';
-import { connect } from 'react-redux';
-import { Navigate } from 'react-router-dom';
-
 import CCCreditLimit from 'assets/capital/cc-credit-limit.png';
 import CCDeposits from 'assets/capital/cc-deposits.png';
 import CCGetStarted from 'assets/capital/cc-get-started.png';
 import XLogo from 'assets/capital/x-logo.png';
+import { connect } from 'react-redux';
+import { Navigate } from 'react-router-dom';
+
 import Image from 'common/ui/Image';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import LoanEntity from 'merchant/models/Capital/BaseOrigination';
 
@@ -72,7 +72,7 @@ const CorporateCards = ({ user }) => {
       objectName = `Continue Applying ${position}`;
     }
     try {
-      analyticsService.track({
+      analyticsTrack({
         screen: 'PG Dashboard | Corporate Cards | Overview',
         objectName,
         actionName: 'Clicked',

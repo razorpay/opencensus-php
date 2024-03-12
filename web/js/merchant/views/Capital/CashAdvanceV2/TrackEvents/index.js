@@ -1,5 +1,5 @@
+import { analyticsTrack } from 'common/utils/analytics';
 import store from 'merchant/store';
-import analyticsService from '@razorpay/commander-services/analytics';
 
 const trackEvent = (obj) => {
   const {
@@ -7,7 +7,7 @@ const trackEvent = (obj) => {
   } = store.getState();
 
   try {
-    analyticsService.track({
+    analyticsTrack({
       ...obj,
       properties: {
         ...obj.properties,

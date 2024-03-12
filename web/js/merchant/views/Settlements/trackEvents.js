@@ -1,7 +1,8 @@
 import moment from 'moment';
+
+import { analyticsTrack } from 'common/utils/analytics';
 import { getFixedINRAmount } from 'common/utils/rzp-utils';
 import store from 'merchant/store';
-import analyticsService from '@razorpay/commander-services/analytics';
 
 const dateFormat = 'DD MMM YYYY, hh:mm:ss a';
 
@@ -11,7 +12,7 @@ const trackEvent = (obj) => {
   } = store.getState();
 
   try {
-    analyticsService.track({
+    analyticsTrack({
       ...obj,
       properties: {
         ...obj.properties,

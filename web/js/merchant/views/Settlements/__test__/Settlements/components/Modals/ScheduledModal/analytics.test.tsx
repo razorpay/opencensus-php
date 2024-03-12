@@ -1,3 +1,5 @@
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import {
   EVENT_TYPES,
   trackEnableModalRendered,
@@ -9,16 +11,14 @@ import {
   trackSettlementsPageRendered,
   trackEnableSamedayBannerRendered,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/analytics';
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
-import analyticsService from '@razorpay/commander-services/analytics';
 
 test('should trigger correct analytics event for trackEnableNowClicked', () => {
   trackEnableNowClicked({
     screen:
       'Settlements Page || Settle Now Modal || Settlement Successful || Same-day Settlements Modal',
   });
-  expect(analyticsService.track).toBeCalledTimes(1);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(1);
+  expect(analyticsTrack).toBeCalledWith({
     objectName: "'Enable Now' CTA",
     actionName: EVENT_TYPES.CLICKED,
     properties: {
@@ -38,8 +38,8 @@ test('should trigger correct analytics event for trackEnableModalCloseClick', ()
     screen:
       'Settlements Page || Settle Now Modal || Settlement Successful || Same-day Settlements Modal',
   });
-  expect(analyticsService.track).toBeCalledTimes(1);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(1);
+  expect(analyticsTrack).toBeCalledWith({
     objectName: 'Close icon',
     actionName: EVENT_TYPES.CLICKED,
     properties: {
@@ -56,8 +56,8 @@ test('should trigger correct analytics event for trackEnableModalCloseClick', ()
 
 test('should trigger correct analytics event for trackExploreNowClicked', () => {
   trackExploreNowClicked();
-  expect(analyticsService.track).toBeCalledTimes(1);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(1);
+  expect(analyticsTrack).toBeCalledWith({
     objectName: "'Explore Now' CTA",
     actionName: EVENT_TYPES.CLICKED,
     properties: {
@@ -73,8 +73,8 @@ test('should trigger correct analytics event for trackExploreNowClicked', () => 
 
 test('should trigger correct analytics event for trackSettlementsPageRendered', () => {
   trackSettlementsPageRendered();
-  expect(analyticsService.track).toBeCalledTimes(1);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(1);
+  expect(analyticsTrack).toBeCalledWith({
     objectName: 'Settlements Page',
     actionName: EVENT_TYPES.RENDERED,
     properties: {
@@ -90,8 +90,8 @@ test('should trigger correct analytics event for trackSettlementsPageRendered', 
 
 test('should trigger correct analytics event for trackEnableSamedayBannerRendered', () => {
   trackEnableSamedayBannerRendered();
-  expect(analyticsService.track).toBeCalledTimes(1);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(1);
+  expect(analyticsTrack).toBeCalledWith({
     objectName: 'Enable Sameday Settlements Banner',
     actionName: EVENT_TYPES.RENDERED,
     properties: {
@@ -110,8 +110,8 @@ test('should trigger correct analytics event for trackEnableModalRendered', () =
     screen:
       'Settlements Page || Settle Now Modal || Settlement Successful || Same-day Settlements Modal',
   });
-  expect(analyticsService.track).toBeCalledTimes(1);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(1);
+  expect(analyticsTrack).toBeCalledWith({
     objectName: "'Enable Same-day Settlements' Modal",
     actionName: EVENT_TYPES.RENDERED,
     properties: {
@@ -131,8 +131,8 @@ test('should trigger correct analytics event for trackCrossSellBannerRendered', 
     screen:
       'Settlements Page || Settle Now Modal || Settlement Successful || Same-day Settlements Modal',
   });
-  expect(analyticsService.track).toBeCalledTimes(1);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(1);
+  expect(analyticsTrack).toBeCalledWith({
     objectName: 'Cross-Sell Banner',
     actionName: EVENT_TYPES.RENDERED,
     properties: {
@@ -152,8 +152,8 @@ test('should trigger correct analytics event for trackKnowMoreClicked', () => {
     screen:
       'Settlements Page || Settle Now Modal || Settlement Successful || Same-day Settlements Modal',
   });
-  expect(analyticsService.track).toBeCalledTimes(1);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(1);
+  expect(analyticsTrack).toBeCalledWith({
     objectName: "'Know More' CTA on cross-sell banner",
     actionName: EVENT_TYPES.CLICKED,
     properties: {

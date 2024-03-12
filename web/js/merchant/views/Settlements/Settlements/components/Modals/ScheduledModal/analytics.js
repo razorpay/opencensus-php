@@ -1,6 +1,6 @@
 import store from 'merchant/store';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
-import analyticsService from '@razorpay/commander-services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 
 export const EVENT_TYPES = {
   RENDERED: 'Rendered',
@@ -17,7 +17,7 @@ const trackEvent = (obj) => {
   } = store.getState();
 
   try {
-    analyticsService.track({
+    analyticsTrack({
       ...obj,
       properties: {
         ...getCommonSegmentProperties(),

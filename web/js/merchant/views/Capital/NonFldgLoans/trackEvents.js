@@ -1,8 +1,8 @@
-import analyticsService from '@razorpay/commander-services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const trackEvent = (obj) => {
   try {
-    analyticsService.track({
+    analyticsTrack({
       ...obj,
       properties: {
         ...obj.properties,

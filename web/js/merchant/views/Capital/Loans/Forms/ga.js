@@ -1,5 +1,5 @@
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
-import analyticsService from '@razorpay/commander-services/analytics';
 
 export const EVENT_TYPES = {
   RENDERED: 'Rendered',
@@ -16,7 +16,7 @@ const trackSegmentEvent = ({
   properties = {},
 }) => {
   try {
-    analyticsService.track({
+    analyticsTrack({
       objectName,
       actionName,
       screen,

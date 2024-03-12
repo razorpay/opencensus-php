@@ -61,9 +61,7 @@ module.exports = {
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
-  transformIgnorePatterns: [
-    '/node_modules/(?!(@commander|@razorpay|@universe|copy-anything|is-what)/).*/',
-  ],
+  transformIgnorePatterns: ['/node_modules/(?!(@commander|@razorpay|copy-anything|is-what)/).*/'],
 
   // The root directory that Jest should scan for tests and modules within
   rootDir: 'js',

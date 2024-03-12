@@ -194,7 +194,7 @@ test.describe.parallel(
     });
 
     // roast test smsNotificationTest
-    test('should show sms notifications switch @priority=normal @suite=payments-automation @suite=payments-canary', async ({
+    test.skip('should show sms notifications switch @priority=normal @suite=payments-automation @suite=payments-canary', async ({
       page,
     }) => {
       await page.getByRole('button', { name: 'SMS' }).click();

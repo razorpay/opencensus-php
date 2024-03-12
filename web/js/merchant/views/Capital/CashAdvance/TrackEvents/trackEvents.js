@@ -1,6 +1,7 @@
+import { analyticsTrack } from 'common/utils/analytics';
 import { getFixedINRAmount, getCommonSegmentProperties } from 'common/utils/rzp-utils';
+
 import store from '../../../../store';
-import analyticsService from '@razorpay/commander-services/analytics';
 
 export const trackEvent = (obj) => {
   const {
@@ -8,7 +9,7 @@ export const trackEvent = (obj) => {
   } = store.getState();
 
   try {
-    analyticsService.track({
+    analyticsTrack({
       ...obj,
       properties: {
         ...getCommonSegmentProperties(),

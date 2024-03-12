@@ -5167,17 +5167,6 @@
     ts-deepmerge "6.2.0"
     use-presence "1.1.0"
 
-"@razorpay/commander-services@1.0.38":
-  version "1.0.38"
-  resolved "https://npm.pkg.github.com/download/@razorpay/commander-services/1.0.38/c569a917468034013b5c439673816bc43a85de3f"
-  integrity sha512-36V3o+wxrFFq4fPLHi2Z9ZcLfcdBFbRfgMo6Jt8Pf/U48tyoZphkFh6Ed6Rq7baQtV5AisGAgMG1ha4vvWJgJg==
-  dependencies:
-    "@razorpay/commander-utils" "1.5.0"
-    "@segment/analytics-react-native" "1.2.0-beta.0"
-    isomorphic-unfetch "3.1.0"
-    react-native-config "1.3.3"
-    react-native-device-info "5.6.1"
-
 "@razorpay/commander-shield@0.0.1512":
   version "0.0.1512"
   resolved "https://npm.pkg.github.com/download/@razorpay/commander-shield/0.0.1512/341326adeb11892d7a2db9d26be7eeca93398de6#341326adeb11892d7a2db9d26be7eeca93398de6"
@@ -5196,15 +5185,6 @@
     react-transition-group "4.4.1"
     uuid "8.3.2"
     yup "0.28.5"
-
-"@razorpay/commander-utils@1.5.0":
-  version "1.5.0"
-  resolved "https://npm.pkg.github.com/download/@razorpay/commander-utils/1.5.0/7b9d9eb08777c42bea9222b4d5e463c27f51e757"
-  integrity sha512-P9vc3kelZTvqu127f5nZ9fwhvAzOwRTz1xTopuhGrdBxS/cw91RpSZ77G21c9egwPfpWBx82QoeGgvr1mTV5PA==
-  dependencies:
-    "@universe/utils" "1.0.36"
-    lodash "4.17.15"
-    redaxios "0.3.0"
 
 "@razorpay/frontend-care@0.7.12":
   version "0.7.12"
@@ -6296,11 +6276,6 @@
   version "4.2.0"
   resolved "https://registry.npmjs.org/@secretlint/types/-/types-4.2.0.tgz"
   integrity sha512-qFHcd84tvEe/f/aadF0bHxjb0lXk+gjvXczhZ90xKt+RvPEE5CyxhhDO9vn48y0aVZSDH3gPpoV4UpNiGznWrQ==
-
-"@segment/analytics-react-native@1.2.0-beta.0":
-  version "1.2.0-beta.0"
-  resolved "https://registry.npmjs.org/@segment/analytics-react-native/-/analytics-react-native-1.2.0-beta.0.tgz"
-  integrity sha512-C19sKk3OcZABtqaBUCKyP9hw6DIESqy9rgNQfj6cNOR0J86eOHelYtQLgmz3I4nlyPiI0jMpbo+1/fioGqvAvQ==
 
 "@segment/analytics-react-native@1.5.0":
   version "1.5.0"
@@ -10195,14 +10170,6 @@
   version "1.1.2"
   resolved "https://registry.npmjs.org/@ungap/promise-all-settled/-/promise-all-settled-1.1.2.tgz"
   integrity sha512-sL/cEvJWAnClXw0wHk85/2L0G6Sj8UB0Ctc1TEMbKSsmpRosqhwj9gWgFRZSrBr2f9tiXISwNhCPmlfqUqyb9Q==
-
-"@universe/utils@1.0.36":
-  version "1.0.36"
-  resolved "https://registry.razorpay.com/@universe%2futils/-/utils-1.0.36.tgz"
-  integrity sha512-ERc4hZOxbHWu8XMiPAWl83JjUtwxAo8FOYQG61fc2dxviczmFgXrQyOf1OYX5gTDwmu+D0i8U+IP7VDWVuzDpA==
-  dependencies:
-    date-fns "2.7.0"
-    lodash "4.17.15"
 
 "@use-gesture/core@10.2.24":
   version "10.2.24"
@@ -15968,11 +15935,6 @@ data-urls@^3.0.2:
     abab "^2.0.6"
     whatwg-mimetype "^3.0.0"
     whatwg-url "^11.0.0"
-
-date-fns@2.7.0:
-  version "2.7.0"
-  resolved "https://registry.npmjs.org/date-fns/-/date-fns-2.7.0.tgz"
-  integrity sha512-wxYp2PGoUDN5ZEACc61aOtYFvSsJUylIvCjpjDOqM1UDaKIIuMJ9fAnMYFHV3TQaDpfTVxhwNK/GiCaHKuemTA==
 
 date-fns@^1.27.2:
   version "1.30.1"
@@ -29895,16 +29857,6 @@ react-native-animatable@1.3.3:
   dependencies:
     prop-types "^15.7.2"
 
-react-native-config@1.3.3:
-  version "1.3.3"
-  resolved "https://registry.npmjs.org/react-native-config/-/react-native-config-1.3.3.tgz"
-  integrity sha512-uc84IFVLqu2dC7Zutg3OlK6RZYvJlGbIdi0v1ZxjUhU379Nz9IkZR1t8J1L5QSnGV8885mtwWDPJRdQyVNFsAw==
-
-react-native-device-info@5.6.1:
-  version "5.6.1"
-  resolved "https://registry.npmjs.org/react-native-device-info/-/react-native-device-info-5.6.1.tgz"
-  integrity sha512-FxjenoDZJKT53pp/Tl5gMsw5DA82Y5tOuySQlKS5AaDmw+Bu6EqEJjt0z4TRhJOVoqVJ35oCiZ3xViVbz/hB0w==
-
 react-native-device-info@8.4.8:
   version "8.4.8"
   resolved "https://registry.npmjs.org/react-native-device-info/-/react-native-device-info-8.4.8.tgz"
@@ -30610,11 +30562,6 @@ recursive-readdir@^2.2.2:
   integrity sha512-8HrF5ZsXk5FAH9dgsx3BlUer73nIhuj+9OrQwEbLTPOBzGkL1lsFCR01am+v+0m2Cmbs1nP12hLDl5FA7EszKA==
   dependencies:
     minimatch "^3.0.5"
-
-redaxios@0.3.0:
-  version "0.3.0"
-  resolved "https://registry.npmjs.org/redaxios/-/redaxios-0.3.0.tgz"
-  integrity sha512-9C4Wvdp/jn4wwBCGMntqu0JCAw+Kfr/uGfMR+JwC0Bg94ORTRzo2dPdHSIPxwSE9/4ORYKmOjhH28mHiuzZSJA==
 
 redent@^1.0.0:
   version "1.0.0"

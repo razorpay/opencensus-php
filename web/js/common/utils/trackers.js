@@ -1,7 +1,7 @@
-import analyticsService from '@razorpay/commander-services/analytics';
-import _refiner from 'refiner-js';
-import { initAnalytics } from 'common/utils/analytics';
 import moment from 'moment';
+import _refiner from 'refiner-js';
+
+import { initAnalytics } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 export const initSegment = (app, user, callback) => {
@@ -73,7 +73,7 @@ async function fetchWhatsappOptin(data = { source: 'pg.onboarding.presignup' }) 
 }
 
 export const initLumberjack = () => {
-  analyticsService.init({
+  initAnalytics({
     lumberjackAppName: 'pg-dashboard',
     lumberjackApiKey: window.LUMBERJACK_API_KEY,
     lumberjackApiUrl: window.LUMBERJACK_API_URL,

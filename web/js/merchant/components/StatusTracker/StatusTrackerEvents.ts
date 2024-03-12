@@ -1,7 +1,8 @@
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
-import analyticsService from '@razorpay/commander-services/analytics';
 import errorService from '@razorpay/universe-utils/errorService';
+
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 type TrackerParameter = {
   objectName: string;
@@ -16,7 +17,7 @@ export const trackSegmentEvent = ({
   properties = {},
 }: TrackerParameter): void => {
   try {
-    analyticsService.track({
+    analyticsTrack({
       objectName,
       actionName,
       screen,

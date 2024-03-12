@@ -106,14 +106,6 @@ All our tests are governed by the configuration files `web/jest.config.js` and `
    jest.mock('merchant/views/TicketSupport/utils.js', () => ({
      CreateTicketEmitter: jest.fn(),
    }));
-   jest.mock('@razorpay/commander-services/analytics', () => {
-     return {
-       __esModule: true,
-       default: {
-         track: jest.fn(),
-       },
-     };
-   });
    jest.mock('common/utils/analytics', () => ({
      ...jest.requireActual('common/utils/analytics'),
      analyticsTrack: jest.fn(),

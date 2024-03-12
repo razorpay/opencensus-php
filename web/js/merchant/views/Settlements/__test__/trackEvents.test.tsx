@@ -1,3 +1,4 @@
+import { analyticsTrack } from 'common/utils/analytics';
 import {
   trackEnableNow,
   trackConfirmEnableNow,
@@ -14,14 +15,12 @@ import {
   trackSettleNowCancelConfirm,
 } from 'merchant/views/Settlements/trackEvents';
 
-import analyticsService from '@razorpay/commander-services/analytics';
-
 test('should trigger correct analytics event for trackSettleNow', () => {
   let numOfCalls = 0;
 
   trackSettleNowClicked('Home');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Settle Now',
     properties: {
@@ -34,8 +33,8 @@ test('should trigger correct analytics event for trackSettleNow', () => {
   });
 
   trackSettleNowClicked('Settlements');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Settle Now',
     properties: {
@@ -48,8 +47,8 @@ test('should trigger correct analytics event for trackSettleNow', () => {
   });
 
   trackSettleNowClicked('Instant Settlements');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Settle Now',
     properties: {
@@ -62,8 +61,8 @@ test('should trigger correct analytics event for trackSettleNow', () => {
   });
 
   trackSettleNowClicked('Empty State');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Settle Now Empty State',
     objectName: 'Settle Now',
     properties: {
@@ -81,8 +80,8 @@ test('should trigger correct analytics event for trackEnableNow', () => {
   let numOfCalls = 0;
 
   trackEnableNow('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Scheduled ES Enable Now',
     properties: {
@@ -96,8 +95,8 @@ test('should trigger correct analytics event for trackEnableNow', () => {
   });
 
   trackEnableNow('/settlements');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Scheduled ES Enable Now',
     properties: {
@@ -111,8 +110,8 @@ test('should trigger correct analytics event for trackEnableNow', () => {
   });
 
   trackEnableNow('/instantsettlements');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Scheduled ES Enable Now',
     properties: {
@@ -130,8 +129,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   let numOfCalls = 0;
 
   trackConfirmEnableNow('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Scheduled ES Enable Modal Confirm',
     properties: {
@@ -145,8 +144,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackEnableNowClose('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Scheduled ES Enable Modal Close',
     properties: {
@@ -160,8 +159,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleNowClicked('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Settle Now',
     properties: {
@@ -173,8 +172,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleNowInfoHover('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Hovered',
     objectName: 'ES Restricted Info icon',
     properties: {
@@ -186,8 +185,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleAmountUpdated('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Updated',
     objectName: 'Settlement Amount',
     properties: {
@@ -199,8 +198,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleNowShowBreakup('banner', true);
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Show breakup',
     properties: {
@@ -212,8 +211,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleNowCloseClick('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Settle Now Modal Close',
     properties: {
@@ -225,8 +224,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleNowShowBreakup('banner', false);
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Show breakup',
     properties: {
@@ -238,8 +237,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleNowCloseReason('banner', 'test');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Selected',
     objectName: 'Reason for Close',
     properties: {
@@ -251,8 +250,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleNowConfirmClose('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Settle Now Confirm Close',
     properties: {
@@ -264,8 +263,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleNowFirstConfirm('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Settle Now First Confirm',
     properties: {
@@ -277,8 +276,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleNowSecondConfirm('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: 'Settle Now Second Confirm',
     properties: {
@@ -290,8 +289,8 @@ test('should trigger correct analytics event for trackConfirmEnableNow', () => {
   });
 
   trackSettleNowCancelConfirm('banner');
-  expect(analyticsService.track).toBeCalledTimes(++numOfCalls);
-  expect(analyticsService.track).toBeCalledWith({
+  expect(analyticsTrack).toBeCalledTimes(++numOfCalls);
+  expect(analyticsTrack).toBeCalledWith({
     actionName: 'Clicked',
     objectName: "Settle Now No Don't",
     properties: {
