@@ -37,11 +37,11 @@ trait ScroogeRepo
                 $apiResponse     = $this->findForPaymentIdFromAPI($paymentId);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    $apiResponse->toArray(), $scroogeResponse->all(), ['method_name' => __FUNCTION__]);
+                    $apiResponse->toArray(), $scroogeResponse->toArray(), ['method_name' => __FUNCTION__]);
 
                 if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
                 {
-                    return $scroogeResponse->all();
+                    return $scroogeResponse;
                 }
                 return $apiResponse;
             }
