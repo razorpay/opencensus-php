@@ -245,7 +245,7 @@ class RepositoryTest extends RepositoryTestHelper
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on.
         $repo = new Repository();
-        $this->setSplitzWithOutput("true", 2); // Splitz should never be called
+        $this->setSplitzWithOutput("true", 1); // Splitz should never be called
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 4, false, null);
         $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 4);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
@@ -254,7 +254,7 @@ class RepositoryTest extends RepositoryTestHelper
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on, asv gives exception.
         $repo = new Repository();
-        $this->setSplitzWithOutput("true", 3);  // Splitz should never be called
+        $this->setSplitzWithOutput("true", 1);  // Splitz should never be called
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 5, false, null);
         $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"),"getById", 5);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
@@ -268,8 +268,12 @@ class RepositoryTest extends RepositoryTestHelper
         $response = $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS4"]);
         $this->assertEquals([$websiteEntity1->toArray()], $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, ["K9UzmvitzJwyS4"]), $response);
+    }
 
-        // Match not found Exception from DB and ASV: FindOrFail
+    public function testStakholderRepositoryFindOrFailErrors()
+    {
+        $repo = new Repository();
+         //Match not found Exception from DB and ASV: FindOrFail
         $this->assertEquals(
             $this->getExceptionForFindAndFailDatabase($repo, "K9UzmvitzJwyS6"),
             $this->getExceptionForFindOrFailAsv($repo, "K9UzmvitzJwyS6", new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"))

@@ -273,7 +273,7 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantbusinessDetailResponse = (new MerchantbusinessDetailResponse())->setbusinessDetail($merchantbusinessDetailProto1);
 
         // FindOrFail & FindOrFailPublic : Splitz On - Request should always go to asv
-        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 2);
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true",    1);
 
         $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 4);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
@@ -282,7 +282,7 @@ class RepositoryTest extends RepositoryTestHelper
 
         // FindOrFail & FindOrFailpublic : Splitz Off - Request should always go to asv  and fallback to db if failure from asv
         $repo = new Repository();
-        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 3);
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 1);
         $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"), "getById", 5);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($businessDetailEntity1->toArray(), $response);
@@ -342,16 +342,16 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantbusinessDetailResponse = (new MerchantbusinessDetailResponse())->setbusinessDetail($merchantbusinessDetailProto1);
 
         // Find : Splitz On - Request should always go to asv
-        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 2);
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 1);
 
-        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 4);
+        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 1);
         $response = $this->getOutputForDbCallsForFind($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($businessDetailEntity1->toArray(), $response);
 
         // FindOrFail : Splitz Off - Request should always go to asv  and fallback to db if failure from asv
         $repo = new Repository();
-        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 3);
-        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"), "getById", 5);
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 1);
+        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"), "getById", 1);
         $response = $this->getOutputForDbCallsForFind($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($businessDetailEntity1->toArray(), $response);
 
