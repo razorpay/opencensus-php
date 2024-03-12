@@ -245,4 +245,23 @@ class Constants
     const IS_AMOUNT_VALID = "is_amount_valid";
 
     const LINKED_ACCOUNT_MERCHANT_ID = 'linked_account_merchant_id';
+    const MERCHANT_BALANCE_FUND_ACCOUNT                = 'merchant_balance';
+
+    const CREATED_AT                                   = 'created_at';
+
+    const UPDATED_AT                                   = 'updated_at';
+
+    const RZP_COMMISSION                               = 'rzp_commission';
+
+    const RZP_TRANSFER_FEE                             = 'rzp_transfer_fee';
+
+    const RZP_GST                                      = 'rzp_gst';
+
+    const RECEIVABLE                                   = 'receivable';
+
+    const CASH                                         = 'cash';
+
+    const BALANCE_UPDATED                              = 'balance_updated';
+
+    const MERCHANT_INVOICE                             = 'merchant_invoice';
 }

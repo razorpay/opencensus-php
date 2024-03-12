@@ -6,22 +6,24 @@ use App;
 use Exception;
 use RZP\Error\Error;
 use Ramsey\Uuid\Uuid;
-use RZP\Models\Feature;
 use RZP\Constants\Metric;
-use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Transaction;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\RefundSource;
+use RZP\Models\Transaction\CreditType;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\Processor as PaymentProcessor;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\LedgerOutbox\Entity as LedgerOutboxEntity;
 use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
 use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
+use function PHPUnit\Framework\assertCount;
 
 trait ReverseShadowTrait
 {
@@ -98,7 +100,7 @@ trait ReverseShadowTrait
     {
         return ($payment->merchant->getFeeModel() === Merchant\FeeModel::POSTPAID);
     }
-    
+
     protected function isPaymentFeeBearerCustomer(PaymentEntity $payment): bool
     {
         return ($payment->getAttribute(PaymentEntity::FEE_BEARER) === Merchant\FeeBearer::CUSTOMER);
@@ -684,5 +686,145 @@ trait ReverseShadowTrait
         }
 
         return [$tax+$commission, $tax, $isAmountCreditsUsed];
+    }
+
+    public function transformJournalResponseToTransactionEntityBase($journalResponse)
+    {
+        $transactorPublicId = $journalResponse[Constants::TRANSACTOR_ID];
+
+        $ledgerOutboxCore = new LedgerOutboxCore();
+
+        $transactorInfo = $ledgerOutboxCore->determineTransactionType($transactorPublicId);
+
+        $transactionType = $transactorInfo[Constants::TYPE];
+
+        $transactorId =  $transactorInfo[Constants::ID];
+
+        $merchantBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_BALANCE_FUND_ACCOUNT);
+
+        $merchantFeeCreditsLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_FEE_CREDITS);
+
+        $merchantAmountCreditsLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::REWARD);
+
+        $commissionLedgerEntry = $this->getCommisionLedgerEntryForTransactionTypeFromJournal($journalResponse, $transactionType);
+
+        $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::RZP_GST);
+
+        $merchantReceivableLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::MERCHANT_INVOICE);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantBalanceLedgerEntry[Constants::MERCHANT_ID]);
+
+        $credit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_CREDIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
+
+        $debit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_DEBIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
+
+        $fees = $commissionLedgerEntry[Constants::AMOUNT] + $taxBalanceLedgerEntry[Constants::AMOUNT];
+
+        $tax =  $taxBalanceLedgerEntry[Constants::AMOUNT];
+
+        $feeCredits =  $merchantFeeCreditsLedgerEntry !== null ?  $merchantFeeCreditsLedgerEntry[Constants::AMOUNT] : 0;
+
+        $creditType = CreditType::DEFAULT;
+
+        if ($merchantFeeCreditsLedgerEntry !== null)
+        {
+            $creditType = CreditType::FEE;
+        }
+        else if ($merchantAmountCreditsLedgerEntry !== null)
+        {
+            $creditType = CreditType::AMOUNT;
+        }
+
+        $feeModel = $merchantReceivableLedgerEntry !== null ? Merchant\FeeModel::POSTPAID : Merchant\FeeModel::PREPAID;
+
+        $transaction = [
+            TransactionEntity::ID               => $journalResponse[Constants::ID],
+            TransactionEntity::ENTITY_ID        => $transactorId,
+            TransactionEntity::TYPE             => $transactionType,
+            TransactionEntity::MERCHANT_ID      => $merchantBalanceLedgerEntry[Constants::MERCHANT_ID],
+            TransactionEntity::AMOUNT           => (int) $journalResponse[Constants::BASE_AMOUNT], // check this
+            TransactionEntity::CURRENCY         => $merchantBalanceLedgerEntry[Constants::CURRENCY],
+            TransactionEntity::CREDIT           => (int) $credit,
+            TransactionEntity::DEBIT            => (int) $debit,
+            TransactionEntity::BALANCE          => (int) $merchantBalanceLedgerEntry[Constants::BALANCE],
+            TransactionEntity::FEE              => (int) $fees,
+            TransactionEntity::TAX              => (int) $tax,
+            TransactionEntity::CHANNEL          => $merchant->getChannel(),
+            TransactionEntity::CREDITS          => (int) $feeCredits,
+            TransactionEntity::CREDIT_TYPE      => $creditType,
+            TransactionEntity::BALANCE_ID       => null,
+            TransactionEntity::CREATED_AT       => $journalResponse[Constants::CREATED_AT],
+            TransactionEntity::UPDATED_AT       => $journalResponse[Constants::UPDATED_AT],
+            TransactionEntity::BALANCE_UPDATED  => $merchantBalanceLedgerEntry[Constants::BALANCE_UPDATED],
+            TransactionEntity::FEE_BEARER       => Merchant\FeeBearer::NA,
+            TransactionEntity::FEE_MODEL        => $feeModel,
+            TransactionEntity::API_FEE          => 0,
+            TransactionEntity::MDR              => null,
+            TransactionEntity::GRATIS           => $merchantAmountCreditsLedgerEntry !== null,
+        ];
+
+        $txn = new TransactionEntity();
+
+        $txn->forceFill($transaction);
+
+        return $txn;
+    }
+
+    private function getCommisionLedgerEntryForTransactionTypeFromJournal($journalResponse, $transactorType)
+    {
+        if ($transactorType === Transaction\Type::TRANSFER)
+        {
+            $commissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::CASH, Constants::RZP_TRANSFER_FEE);
+        }
+        else
+        {
+            $commissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::RZP_COMMISSION);
+        }
+
+        return $commissionLedgerEntry;
+    }
+
+    private function getSpecificLedgerEntryFromJournal($journalResponse,$accountType ,$fundAccountType)
+    {
+        // check if the transaction is on shared or direct balance from ledger's response
+        foreach($journalResponse[Constants::LEDGER_ENTRY] as $ledgerEntry)
+        {
+            if ((empty($ledgerEntry[Constants::ACCOUNT_ENTITIES]) === false) and
+                (empty($ledgerEntry[Constants::ACCOUNT_ENTITIES][Constants::ACCOUNT_TYPE]) === false) and
+                (empty($ledgerEntry[Constants::ACCOUNT_ENTITIES][Constants::FUND_ACCOUNT_TYPE]) === false))
+            {
+
+                if ($ledgerEntry[Constants::ACCOUNT_ENTITIES][Constants::ACCOUNT_TYPE][0] !== $accountType)
+                {
+                    continue;
+                }
+
+                if ($ledgerEntry[Constants::ACCOUNT_ENTITIES][Constants::FUND_ACCOUNT_TYPE][0] === $fundAccountType)
+                {
+                    return $ledgerEntry;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabled($merchant): bool
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_LEDGER_JOURNAL,
+            $this->mode
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
+            [
+                'merchant'               => $this->merchant->getId(),
+                'isExperimentEnabled'    => $isExperimentEnabled,
+            ]);
+
+        return $isExperimentEnabled;
     }
 }

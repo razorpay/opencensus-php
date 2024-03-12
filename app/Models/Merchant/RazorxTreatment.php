@@ -934,6 +934,12 @@ final class RazorxTreatment
      */
     const FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED = 'fail_created_and_pending_transfers_if_payment_refunded';
 
+    /**
+     * Experiment to dispatch transactions to settlements service using ledger journals in ledger reverse
+     * shadow mode for route transfer transactions and transfer payment transactions
+     */
+    const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_LEDGER_JOURNAL = 'early_dispatch_of_txns_for_settlements_using_ledger_journal';
+
 
     // FeatureFlag to toggle Pricing Rule Fee Model override for BPCL
     const FEE_MODEL_OVERRIDE = 'FEE_MODEL_OVERRIDE';

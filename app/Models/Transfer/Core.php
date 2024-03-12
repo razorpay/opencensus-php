@@ -10,6 +10,7 @@ use RZP\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
+use RZP\Jobs\AsyncBalanceUpdateForTransfer;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Trace\Tracer;
@@ -1990,20 +1991,130 @@ class Core extends Base\Core
         }
     }
 
-    public function updateBalanceAsyncForTransferTxn($transaction)
+    public function updateBalanceAsyncForTransferTxn($transfer)
     {
-        $this->repo->transaction(function () use ($transaction) {
-            $txnCore = (new Transaction\Core());
+        try
+        {
+            $transaction = $this->repo->transaction->findByEntityId($transfer->getId(), $transfer->merchant);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::ASYNC_BALANCE_UPDATE_TRANSFER_TXN_NOT_FOUND,
+                [
+                    'message'          => 'Transaction not found',
+                    'transfer_id'      => $transfer->getId(),
+                ]
+            );
 
-            $txnCore->updateBalances($transaction, false, true);
+            throw $ex;
+        }
 
-            $transaction->setBalanceUpdated(true);
+        if ($transaction->isBalanceUpdated() === true)
+        {
+            $this->trace->info(TraceCode::TRANSACTION_BALANCE_ALREADY_UPDATED,
+                [
+                    'transfer_id'      => $transfer->getId(),
+                    'transaction_id'   => $transaction->getId(),
+                ]
+            );
 
-            $transaction->setBalance(null, 0, true); // Check if needed
+            return;
+        }
 
-            $this->repo->saveOrFail($transaction);
+        $txnCore = (new Transaction\Core());
 
-        });
+        $merchantBalance = $this->repo->balance->getMerchantBalance($transfer->merchant);
+
+        $transfer->getValidator()->validateMerchantBalanceForTransfer($transfer->merchant, $merchantBalance);
+
+        $txnCore->updateCredits($transaction, $transfer);
+
+        $txnCore->updateBalances($transaction, false, true);
+
+        $transaction->setBalanceUpdated(true);
+
+        $this->repo->saveOrFail($transaction);
+
+        $this->trace->info(TraceCode::ASYNC_BALANCE_UPDATE_TRANSFER_TXN_SUCCESSFUL,
+            [
+                'transfer_id'      => $transfer->getId(),
+                'transfer_status'  => $transfer->getStatus(),
+            ]
+        );
+    }
+
+    public function updateBalanceAsyncForTransferPaymentTxn($transfer)
+    {
+        try
+        {
+            $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::TRANSFER_PAYMENT_NOT_FOUND,
+                [
+                    'message'          => 'Transaction not found',
+                    'transfer_id'      => $transfer->getId(),
+                ]
+            );
+
+            throw $ex;
+        }
+
+        try
+        {
+            $transaction = $this->repo->transaction->findByEntityId($transferPayment->getId(), $transferPayment->merchant);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::ASYNC_BALANCE_UPDATE_TRANSFER_PAYMENT_TXN_NOT_FOUND,
+                [
+                    'message'          => 'Transaction not found',
+                    'transfer_id'      => $transfer->getId()
+                ]
+            );
+
+            throw $ex;
+        }
+
+        if ($transaction->isBalanceUpdated() === true)
+        {
+            $this->trace->info(TraceCode::TRANSACTION_BALANCE_ALREADY_UPDATED,
+                [
+                    'transfer_id'      => $transfer->getId(),
+                    'la_payment_id'    => $transferPayment->getId(),
+                    'transaction_id'   => $transaction->getId(),
+                ]
+            );
+
+            return;
+        }
+
+        $txnCore = (new Transaction\Core());
+
+        $txnCore->updateCredits($transaction, $transferPayment);
+
+        $txnCore->updateBalances($transaction, false, true);
+
+        $transaction->setBalanceUpdated(true);
+
+        $this->repo->saveOrFail($transaction);
+
+        $this->trace->info(TraceCode::ASYNC_BALANCE_UPDATE_TRANSFER_PAYMENT_TXN_SUCCESSFUL,
+            [
+                'transfer_id'      => $transfer->getId(),
+                'transfer_status'  => $transfer->getStatus(),
+            ]
+        );
     }
 
     private function isSyncProcessingEnabled($merchant)
@@ -2038,7 +2149,7 @@ class Core extends Base\Core
         return true;
     }
 
-    public function fetchJournalIdFromLedgerForTransfer(Transfer\Entity $transfer, string $merchant)
+    public function fetchJournalFromLedgerForTransfer(Transfer\Entity $transfer, string $merchant)
     {
         $requestHeaders = [
             Ledger\Base::LEDGER_TENANT_HEADER => 'PG',
@@ -2052,7 +2163,14 @@ class Core extends Base\Core
 
         $response = $this->app['ledger']->fetchByTransactor($ledgerInput, $requestHeaders, true);
 
-        return (new LedgerOutbox\Core)->determineJournalIdForAPITransaction($response, "merchant_balance", "merchant_balance");
+        return $response;
+    }
+
+    public function fetchJournalIdFromLedgerForTransfer(Transfer\Entity $transfer, string $merchant)
+    {
+        $journal = $this->fetchJournalFromLedgerForTransfer($transfer, $merchant);
+
+        return (new LedgerOutbox\Core)->determineJournalIdForAPITransaction($journal, "merchant_balance", "merchant_balance");
     }
 
     public function fetchJournalIdFromLedgerForTransferReversal(string $publicReversalId, string $merchantId )
@@ -2424,17 +2542,43 @@ class Core extends Base\Core
 
     public static function getTransferProcessingMutexResource($transferType)
     {
-        if ($transferType == Transfer\Constant::ORDER)
-        {
+        if ($transferType == Transfer\Constant::ORDER) {
             return 'order_transfer_process_';
-        }
-        else if ($transferType == Transfer\Constant::PAYMENT)
-        {
+        } else if ($transferType == Transfer\Constant::PAYMENT) {
             return 'payment_transfer_process_';
-        }
-        else
-        {
+        } else {
             throw new Exception\LogicException('Unsupported transfer type');
+        }
+    }
+
+    public function pushTransferForAsyncBalanceUpdateIfApplicable($transfer): void
+    {
+        // TODO: Remove this check once Airtel is onboarded to reverse shadow
+        if (($transfer->isProcessed() === true) and ($transfer->merchant->getId() === 'EtHJCtiuRSZRCz'))
+        {
+            AsyncBalanceUpdateForTransfer::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
+
+            $this->trace->info(
+                TraceCode::ASYNC_BALANCE_UPDATE_TXN_DISPATCHED,
+                [
+                    'transfer_id'         => $transfer->getId(),
+                    'merchant_id'         => $transfer->getMerchantId(),
+                ]);
+
+            return;
+        }
+
+        if (in_array($transfer->getStatus(), [
+            Status::PROCESSED, Status::PARTIALLY_REVERSED, Status::REVERSED]) === true)
+        {
+            AsyncBalanceUpdateForTransfer::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
+
+            $this->trace->info(
+                TraceCode::ASYNC_BALANCE_UPDATE_TXN_DISPATCHED,
+                [
+                    'transfer_id'         => $transfer->getId(),
+                    'merchant_id'         => $transfer->getMerchantId(),
+                ]);
         }
     }
 }

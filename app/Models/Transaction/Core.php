@@ -1739,7 +1739,7 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
-    protected function getSettledAtTimestamp(Payment\Entity $payment)
+    public function getSettledAtTimestamp(Payment\Entity $payment)
     {
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
 

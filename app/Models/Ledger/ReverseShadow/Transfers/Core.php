@@ -2,15 +2,21 @@
 
 namespace RZP\Models\Ledger\ReverseShadow\Transfers;
 
+use App;
+use Carbon\Carbon;
 use RZP\Constants\Metric;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use Ramsey\Uuid\Uuid;
 use RZP\Models\Ledger\Constants;
+use RZP\Models\Feature;
+use RZP\Models\Currency;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Transfer;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Transaction;
@@ -19,6 +25,7 @@ use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
+use function PHPUnit\Framework\assertEquals;
 
 class Core extends Base\Core
 {
@@ -419,4 +426,166 @@ class Core extends Base\Core
         return $moneyParams;
     }
 
+    public function createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal)
+    {
+        $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+
+        $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+
+        $transferMerchant = $transfer->merchant;
+
+        $paymentMerchant = $transferPayment->merchant;
+
+        if (($transferMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            or ($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
+        {
+            return;
+        }
+
+        $transferTxn = $this->createTransferTransactionFromLedgerJournal($debitJournal, $transfer);
+
+        $transferPaymentTxn = $this->createTransferPaymentTransactionFromLedgerJournal($creditJournal, $transferPayment);
+
+        $txnCore = (new Transaction\Core());
+
+        $txnCore->dispatchForSettlementBucketing($transferTxn);
+
+        $txnCore->dispatchForSettlementBucketing($transferPaymentTxn);
+
+        (new Transfer\Core())->pushTransferForAsyncBalanceUpdateIfApplicable($transfer);
+
+        $this->trace->info(TraceCode::TRANSFER_REVERSE_SHADOW_TXN_CREATION_SUCCESS,
+            [
+                'transfer_id'               => $transfer->getId(),
+                'transfer_txn_id'           => $transferTxn->getId(),
+                'transfer_payment_txn_id'   => $transferPaymentTxn->getId(),
+            ]);
+    }
+
+    public function createTransferTransactionFromLedgerJournal($journal, $transfer)
+    {
+        $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
+
+        $merchant = $transfer->merchant;
+
+        $txn->sourceAssociate($transfer);
+
+        $txn->merchant()->associate($merchant);
+
+        if ($txn->isGratis() === true && $txn->getCreditType() === Transaction\CreditType::AMOUNT)
+        {
+            $pricingRuleId = (new Fee)->getZeroPricingPlanRule($transfer)->getId();
+
+            $txn->setPricingRule($pricingRuleId);
+        }
+        else
+        {
+            $amount = $txn->getAmount();
+
+            $fee = $txn->getFee();
+
+            $isPrepaid = $merchant->isPrepaid();
+
+            // Add fee to debit only for prepaid merchants
+            $debit  = ($isPrepaid === true) ? abs($amount + $fee) : $amount;
+
+            $txn->setDebit($debit);
+        }
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ($transfer->getSourceType() === Transfer\Constant::PAYMENT)
+        {
+            $paymentTxn = $transfer->source->transaction;
+
+            // Setting current timestamp to transfer settled_at when $paymentTxn->getSettledAt() is null to support async_txn_fill_details feature
+            // Slack ref - https://razorpay.slack.com/archives/CNXC0JHQF/p1649241605237939?thread_ts=1648804095.677009&cid=CNXC0JHQF
+            if ($paymentTxn->isSettled() === false && $paymentTxn->getSettledAt() !== null)
+            {
+                $settledAt = $paymentTxn->getSettledAt();
+            }
+        }
+
+        $values = [
+            Transaction\Entity::GATEWAY_FEE     => 0,
+            Transaction\Entity::RECONCILED_AT   => time(),
+            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
+            Transaction\Entity::SETTLED         => 0,
+            Transaction\Entity::SETTLED_AT      => $settledAt,
+            Transaction\Entity::CHANNEL         => $transfer->merchant->getChannel(),
+        ];
+
+        $txn->fill($values);
+
+        $txn->setBalanceUpdated(false);
+
+        $this->repo->saveOrFail($txn);
+
+        $this->repo->saveOrFail($transfer);
+
+        $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
+            [
+                'txn_id'                => $txn->getId(),
+                'transfer_id'           => $transfer->getId(),
+                'transfer_source_id'    => $transfer->getSourceId(),
+                'transfer_source_type'  => $transfer->getSourceType(),
+            ]);
+
+        return $txn;
+    }
+
+    public function createTransferPaymentTransactionFromLedgerJournal($journal, $transferPayment)
+    {
+        $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
+
+        if ($transferPayment->hasTransaction() === true)
+        {
+            $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($transferPayment);
+        }
+        else
+        {
+            $txn->sourceAssociate($transferPayment);
+
+            $txn->merchant()->associate($transferPayment->merchant);
+        }
+
+        $txnData = [
+            Transaction\Entity::CHANNEL         => $transferPayment->merchant->getChannel(),
+        ];
+
+        if ($transferPayment->getGateway() === Payment\Gateway::WALLET_OPENWALLET)
+        {
+            $txnData[Transaction\Entity::RECONCILED_AT]     = time();
+            $txnData[Transaction\Entity::RECONCILED_TYPE]   = ReconciledType::NA;
+        }
+
+        $txn->fill($txnData);
+
+        $settledAt = (new Transaction\Core())->getSettledAtTimestamp($transferPayment);
+
+        $onHold = $transferPayment->getOnHold() ?? false;
+
+        $txn->setReconciledAt(time());
+
+        $txn->setReconciledType(ReconciledType::NA);
+
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $txn->setAttribute(Transaction\Entity::ON_HOLD, $onHold);
+
+        $txn->setBalanceUpdated(false);
+
+        $this->repo->saveOrFail($txn);
+
+        $this->repo->saveOrFail($transferPayment);
+
+        $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
+            [
+                'txn_id'                => $txn->getId(),
+                'payment_id'            => $transferPayment->getId(),
+                'transfer_id'           => $transferPayment->getTransferId(),
+            ]);
+
+        return $txn;
+    }
 }

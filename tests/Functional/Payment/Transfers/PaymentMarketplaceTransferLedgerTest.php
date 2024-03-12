@@ -2,17 +2,22 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Transfer\Core;
 use RZP\Jobs\TransferProcess;
 use RZP\Models\Ledger\ReverseShadow;
 use RZP\Models\Payment;
 use RZP\Services\KafkaMessageProcessor;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Functional\TestCase;
+use RZP\Services\Settlements;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -26,6 +31,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
     use PaymentTrait;
     use PartnerTrait;
     use TransferTrait;
+    use SettlementTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
     use ReverseShadow\ReverseShadowTrait;
@@ -39,6 +45,10 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         parent::setUp();
 
         $this->initializeTestSetup();
+
+        $mockTransferCore = $this->createMock(Core::class);
+        $mockTransferCore->method('createTransferTransactionsInReverseShadow')
+            ->will($this->throwException(new \Exception("Some error occurred")));
     }
 
     protected function initializeTestSetup()
@@ -57,6 +67,63 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
 
         $this->ba->privateAuth();
+    }
+
+    protected function mockSns($debitTxnPayload, $creditTxnPayload)
+    {
+        $sns = Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->with(Mockery::type('string'), Mockery::type('string'))
+            ->andReturnUsing(function ($input) use ($creditTxnPayload, $debitTxnPayload)
+            {
+                $json_decoded_input = json_decode($input, true);
+
+                if ($json_decoded_input['id'] === $debitTxnPayload['id'])
+                {
+                    $this->assertEquals($debitTxnPayload['merchant_id'], $json_decoded_input['merchant_id']);
+                    $this->assertEquals($debitTxnPayload['source_id'], $json_decoded_input['source_id']);
+                    $this->assertEquals($debitTxnPayload['source_type'], $json_decoded_input['source_type']);
+                    $this->assertEquals($debitTxnPayload['balance_type'], $json_decoded_input['balance_type']);
+                    $this->assertEquals($debitTxnPayload['currency'], $json_decoded_input['currency']);
+                    $this->assertEquals($debitTxnPayload['credit'], $json_decoded_input['credit']);
+                    $this->assertEquals($debitTxnPayload['debit'], $json_decoded_input['debit']);
+                    $this->assertEquals($debitTxnPayload['fee'], $json_decoded_input['fee']);
+                    $this->assertEquals($debitTxnPayload['tax'], $json_decoded_input['tax']);
+                    $this->assertEquals($debitTxnPayload['settled_by'], $json_decoded_input['settled_by']);
+                    $this->assertEquals($debitTxnPayload['on_hold'], $json_decoded_input['on_hold']);
+                    $this->assertEquals($debitTxnPayload['on_hold_reason'], $json_decoded_input['on_hold_reason']);
+                    $this->assertEquals($debitTxnPayload['meta']['source_type'], $json_decoded_input['meta']['source_type']);
+                    $this->assertEquals($debitTxnPayload['meta']['source_id'], $json_decoded_input['meta']['source_id']);
+                    $this->assertEquals($debitTxnPayload['meta']['source_method'], $json_decoded_input['meta']['source_method']);
+                    $this->assertEquals($debitTxnPayload['meta']['source_settled'], $json_decoded_input['meta']['source_settled']);
+                    $this->assertEquals($debitTxnPayload['meta']['international'], $json_decoded_input['meta']['international']);
+                }
+                else if ($json_decoded_input['id'] === $creditTxnPayload['id'])
+                {
+                    $this->assertEquals($creditTxnPayload['merchant_id'], $json_decoded_input['merchant_id']);
+                    $this->assertEquals($creditTxnPayload['source_id'], $json_decoded_input['source_id']);
+                    $this->assertEquals($creditTxnPayload['source_type'], $json_decoded_input['source_type']);
+                    $this->assertEquals($creditTxnPayload['balance_type'], $json_decoded_input['balance_type']);
+                    $this->assertEquals($creditTxnPayload['currency'], $json_decoded_input['currency']);
+                    $this->assertEquals($creditTxnPayload['credit'], $json_decoded_input['credit']);
+                    $this->assertEquals($creditTxnPayload['debit'], $json_decoded_input['debit']);
+                    $this->assertEquals($creditTxnPayload['fee'], $json_decoded_input['fee']);
+                    $this->assertEquals($creditTxnPayload['tax'], $json_decoded_input['tax']);
+                    $this->assertEquals($creditTxnPayload['settled_by'], $json_decoded_input['settled_by']);
+                    $this->assertEquals($creditTxnPayload['on_hold'], $json_decoded_input['on_hold']);
+                    $this->assertEquals($creditTxnPayload['on_hold_reason'], $json_decoded_input['on_hold_reason']);
+                    $this->assertEquals($creditTxnPayload['meta']['method'], $json_decoded_input['meta']['method']);
+                    $this->assertEquals($creditTxnPayload['meta']['international'], $json_decoded_input['meta']['international']);
+                    $this->assertEquals($creditTxnPayload['meta']['origin_method'], $json_decoded_input['meta']['origin_method']);
+                }
+
+                return $input;
+            });
+
+        $this->app->instance('sns', $sns);
     }
 
     public function initialiseLedger($merchantBalance = 0, $feeCredits = 0, $amountCredits = 0, $fetchAccountRequests = 1)
@@ -1673,6 +1740,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $newDestnMarketBalance = $this->getAccountBalance($destnMID);
         $this->assertEquals($oldDestnMarketBalance + $transfer->getAmount(), $newDestnMarketBalance, 'destn balance not deeducted');
 
+        return $transferId;
     }
 
     public function testGetFeeTaxFromTransferJournal()
@@ -2919,23 +2987,23 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $creditJournal = $this->getCreditJournalForTransfer($dummyTransferData['id'], $debitJID, $creditJID, $sourceMID, $dummyTransferData['to_id'], $dummyTransferData['amount']);
 
         $mockLedger->expects('fetchByTransactor')
-                   ->times(1)
-                   ->andReturns($debitJournal);
+            ->times(1)
+            ->andReturns($debitJournal);
 
         $mockLedger->expects('fetchByTransactor')
-                   ->times(1)
-                   ->andReturns($creditJournal);
+            ->times(1)
+            ->andReturns($creditJournal);
 
         $transferIds = $this->runRequestResponseFlow($data);
 
-        $transfer = $this->getLastEntity('transfer', true);
-        $dummyPayment = $this->getLastEntity('payment', true);
-        $transaction = $this->getLastEntity('transaction', true);
+        $transfer = $this->getDbEntity('transfer', ['id' => "AnyRandomID123"]);
+        $dummyPayment = $this->getDbEntity('payment', ['transfer_id' => $transfer['id']]);
+        $dummyPaymentTxn = $this->getDbEntity('transaction', ['type' => 'payment', 'entity_id' => $dummyPayment['id']]);
 
-        $this->assertEquals($transfer['transaction_id'], 'txn_'.$debitJID);
+        $this->assertEquals($transfer['transaction_id'], $debitJID);
         $this->assertEquals($dummyTransferData['id'], $transferIds[0]);
         $this->assertEquals($dummyPayment['transaction_id'], $creditJID);
-        $this->assertEquals($transaction['id'], 'txn_'.$dummyPayment['transaction_id']);
+        $this->assertEquals($dummyPaymentTxn['id'], $dummyPayment['transaction_id']);
     }
 
     /* Partial feature check */
@@ -2949,21 +3017,21 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
 
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
-        $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
+        $this->assertGreaterThanOrEqual($this->payment['amount'], $oldMarketBalance);
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => 50000,
-            'currency'=> 'INR',
+            'amount' => 50000,
+            'currency' => 'INR',
         ];
 
         $expected = [
             'count' => 1,
             'items' => [
                 [
-                    'source'          => $this->payment['id'],
-                    'recipient'       => 'acc_10000000000001',
-                    'amount'          => 50000,
+                    'source' => $this->payment['id'],
+                    'recipient' => 'acc_10000000000001',
+                    'amount' => 50000,
                     'amount_reversed' => 0,
                     'status' => 'pending',
                 ],
@@ -2981,7 +3049,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         // transfer entity exists
         $transfer = $this->getDbLastEntity('transfer');
         $this->assertNotNull($transfer);
-        $this->assertEquals($transferId, sprintf('trf_%s',$transfer['id']));
+        $this->assertEquals($transferId, sprintf('trf_%s', $transfer['id']));
 
         // dummy payment entity exists
         $transferPayment = $this->getDbEntity('payment', ['transfer_id' => $transfer['id']]);
@@ -3000,7 +3068,6 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         // fetch transfer journal payload from ledger_outbox
         $ledgerOutboxEntity = $this->getDbLastEntity('ledger_outbox');
         $this->assertNull($ledgerOutboxEntity);
-
     }
 
     public function testReverseShadowCronRetryForPaymentTransferProcessedEventFailureWrongRoute()
@@ -3205,5 +3272,170 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertEquals($transferId, $transfer['id']);
         $this->assertEquals('failed', $transfer['status']);
         $this->assertEquals(1, $transfer['attempts']);
+    }
+
+    public function testEarlyDispatchOfTxnsInReverseShadowUsingLedgerJournal()
+    {
+        $sourceMID = '10000000000000';
+        $destnMID = '10000000000001';
+
+        $this->assertNotNull($this->payment);
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], $destnMID);
+
+        $oldDestnMarketBalance = $this->getAccountBalance($destnMID);
+        $this->assertEquals(0, $oldDestnMarketBalance);
+
+        $oldSourceMarketBalance = $this->getAccountBalance($sourceMID);
+        $this->assertGreaterThanOrEqual($this->payment['amount'],$oldSourceMarketBalance);
+
+        $this->initialiseLedger(1000000, 0, 0);
+
+        // create transfer
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 50000,
+            'currency'=> 'INR',
+        ];
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+
+        $this->assertNotNull($content);
+
+        $this->assertEquals($transfers[0]["amount"], $content['items'][0]["amount"]);
+
+        $publicTransferId = $content['items'][0]['id'];
+
+        $transferId =  str_replace('trf_', '', $publicTransferId);
+
+        $transfer = $this->getDbEntity('transfer', ['id'=>$transferId]);
+        $this->assertNotNull($transfer, 'transfer entity does nit exist');
+        $this->assertNull($transfer['transaction_id'], 'transfer txn created in sync');
+
+        // create dummy payment
+        $this->fixtures->payment->create(
+            [
+                'id'          => 'dummyN3uSlFkHT',
+                'merchant_id' => '10000000000001',
+                'transfer_id' => $transferId,
+                'amount'      => 50000,
+                'currency'    => 'INR',
+                'method'      => 'transfer',
+                'status'      => 'captured',
+                'captured_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+                'fee'         => 0,
+                'tax'         => 0,
+            ]
+        );
+
+        $debitTxnPayload = [
+            'id'                    => 'LsqR14zUg9dbDB',
+            'merchant_id'           => '10000000000000',
+            'source_id'             => $transferId,
+            'source_type'           => 'transfer',
+            'balance_type'          => 'PRIMARY',
+            'currency'              => 'INR',
+            'credit'                => 0,
+            'debit'                 => 50000,
+            'fee'                   => 0,
+            'tax'                   => 0,
+            'settled_by'            => 'Razorpay',
+            'on_hold'               => null,
+            'on_hold_reason'        => '',
+            'meta'                  => [
+                'source_type'    => 'payment',
+                'source_id'      => explode('_', $this->payment['id'])[1],
+                'source_method'  => 'card',
+                'source_settled' => false,
+                'international'  => false,
+            ]
+        ];
+
+        $creditTxnPayload = [
+            'id'                    => 'LsqR157oYgCrCR',
+            'merchant_id'           => '10000000000001',
+            'source_id'             => 'dummyN3uSlFkHT',
+            'source_type'           => 'payment',
+            'balance_type'          => 'PRIMARY',
+            'currency'              => 'INR',
+            'credit'                => 50000,
+            'debit'                 => 0,
+            'fee'                   => 0,
+            'tax'                   => 0,
+            'settled_by'            => 'Razorpay',
+            'on_hold'               => false,
+            'on_hold_reason'        => '',
+            'meta'                  => [
+                'method'        => 'transfer',
+                'origin_method' => 'card',
+                'international' => false,
+            ]
+        ];
+
+        $this->mockSns($debitTxnPayload, $creditTxnPayload);
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_LEDGER_JOURNAL, 'on');
+
+        $debitJID = 'LsqR14zUg9dbDB' ;
+        $creditJID = 'LsqR157oYgCrCR';
+
+        $journal = $this->getPaymentTransferJournalResponsePayload($publicTransferId, $debitJID, $creditJID, $sourceMID, $destnMID, $transfers[0]['amount']);
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        // run test
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        // fetch transfer again to check if txn id associated
+        $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+        $this->assertNotNull($transfer, 'transfer not found');
+        $this->assertNotNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
+        $this->assertEquals('processed', $transfer['status'], 'transfer status not marked processed');
+        $this->assertEquals('pending', $transfer['settlement_status'], 'transfer settlement status not marked processed');
+        $this->assertEquals($debitJID, $transfer['transaction_id'], 'transfer txn_id not equal to debit journal_id');
+
+        // fetch source_payment again to check if amount_transferred updated
+        $sourcePayment = $this->getDbEntity('payment', ['id' => str_replace('pay_', '', $this->payment['id'])]);
+        $newTransferPaymentEntity = $this->getLastEntity('transfer_payment', true);
+        $this->assertNotNull($sourcePayment, 'source payment not found');
+        $this->assertEquals($transfer['amount'], $newTransferPaymentEntity['amount_transferred'], 'amount_transferred incorrect in source_payment ');
+
+        // fetch transfer payment again to check if txn id associated
+        $transferPayment = $this->getDbEntity('payment', ['id' => 'dummyN3uSlFkHT']);
+        $this->assertNotNull($transferPayment, 'transfer_payment not found');
+        $this->assertEquals('captured', $transferPayment['status'], 'transfer_payment not captured');
+        $this->assertEquals($creditJID, $transferPayment['transaction_id'], 'transfer_payment txn_id not equal to credit journal_id');
+
+        // fetch transfer txn
+        $transferTxn = $this->getDbEntity('transaction', ['type' => 'transfer', 'entity_id' => $transferId]);
+        $this->assertNotNull($transferTxn, 'transfer_txn not found');
+        $this->assertEquals($debitJID, $transferTxn['id'], 'transfer_txn_id does not match debit journalId');
+        $this->assertNotNull($transferTxn['balance_id'], ' balance not updated in transfer_txn');
+        $this->assertNotNull($transferTxn['debit'], 'amount not debited from transfer Txn');
+
+        $debitAMount = $transferTxn['debit'];
+
+        // fetch transfer_payment txn
+        $transferPaymentTxn = $this->getDbEntity('transaction', ['type' => 'payment', 'entity_id' => $transferPayment['id']]);
+        $this->assertNotNull($transferPaymentTxn, 'transfer_payment_txn not found');
+        $this->assertEquals($creditJID, $transferPaymentTxn['id'], 'transfer_payment_txn_id does not match credit journal_id');
+        $this->assertNotNull($transferPaymentTxn['balance_id'], 'balance not updated in transfer_payment_txn');
+        $this->assertNotNull($transferPaymentTxn['credit'], 'amount not credited from transfer_payment_txn');
+        $this->assertEquals($debitAMount, $transferPaymentTxn['credit'], 'debit amount not equal to credit amount');
+
+        // fetch  outbox entry
+        $ledgerOutboxEntities = $this->getTrashedDbEntities('ledger_outbox', ['payload_name' => $publicTransferId.'-'.'transfer_processed']);
+        $this->assertCount(1,$ledgerOutboxEntities, ' ledger_outbox entry for transfer_processed event not found');
+        $this->assertEquals( $ledgerOutboxEntities[0]['is_deleted'], 1, 'outbox entry not soft deleted');
+        $this->assertNotNull( $ledgerOutboxEntities[0]['deleted_at'], 'outbox entry not soft deleted');
+
+        // check new source balance
+        $newSourceMarketBalance = $this->getAccountBalance($sourceMID);
+        $this->assertEquals($oldSourceMarketBalance - $transfer->getAmount(), $newSourceMarketBalance, 'source balance not deeducted');
+
+        // check new destn balance
+        $newDestnMarketBalance = $this->getAccountBalance($destnMID);
+        $this->assertEquals($oldDestnMarketBalance + $transfer->getAmount(), $newDestnMarketBalance, 'destn balance not deeducted');
     }
 }

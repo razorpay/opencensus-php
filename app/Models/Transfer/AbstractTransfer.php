@@ -354,7 +354,7 @@ abstract class AbstractTransfer
 
             try
             {
-                $this->pushTransferTxnForAsyncBalanceUpdateIfApplicable($transfer);
+                (new Core())->pushTransferForAsyncBalanceUpdateIfApplicable($transfer);
             }
             catch (\Exception $ex)
             {
@@ -724,22 +724,5 @@ abstract class AbstractTransfer
         $config['lock_timeout_sec'] = (int) ($config['lock_timeout_sec'] ?? self::MUTEX_LOCK_TIMEOUT);
 
         return $config;
-    }
-
-    protected function pushTransferTxnForAsyncBalanceUpdateIfApplicable($transfer): void
-    {
-        if (($transfer->isProcessed() === true) and ($transfer->merchant->getId() === 'EtHJCtiuRSZRCz'))
-        {
-            $txn = $transfer->transaction;
-
-            AsyncBalanceUpdateForTransfer::dispatch($this->mode, $txn->getId(), $transfer->getId())->delay(10 * 60);
-
-            $this->trace->info(
-                TraceCode::ASYNC_BALANCE_UPDATE_TXN_DISPATCHED,
-                [
-                    'transfer_id'         => $transfer->getId(),
-                    'transaction_id'      => $txn->getId(),
-                ]);
-        }
     }
 }

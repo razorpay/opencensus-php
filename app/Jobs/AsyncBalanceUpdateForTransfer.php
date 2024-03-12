@@ -4,7 +4,9 @@ namespace RZP\Jobs;
 
 use App;
 use Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Transfer\Core;
+use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\Transfer\Metric;
@@ -13,20 +15,12 @@ use RZP\Models\Transfer\Status;
 use Illuminate\Foundation\Application;
 
 /**
- * Job class to update the balance for the transfer transaction.
- * Supported only for EtHJCtiuRSZRCz (Airtel) as of now
+ * Job class to update the balance for the transfer transaction and transfer payment transactions
  *
  */
 class AsyncBalanceUpdateForTransfer extends Job
 {
     protected $queueConfigKey = 'transfer_process_capital_float';
-
-    /**
-     * The transaction ID
-     *
-     * @var string
-     */
-    protected $transactionId;
 
     /**
      * The transfer ID
@@ -55,15 +49,24 @@ class AsyncBalanceUpdateForTransfer extends Job
      */
     protected $repo;
 
-    public function __construct(string $mode, $transactionId, $transferId)
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
+
+    const MUTEX_LOCK_TIMEOUT_SEC = 1200;
+
+    const MUTEX_RETRY_COUNT = 10;
+
+    const MUTEX_MIN_RETRY_DELAY_MS = 1000;
+
+    const MUTEX_MAX_RETRY_DELAY_MS = 5000;
+
+    public function __construct(string $mode, $transferId)
     {
         parent::__construct($mode);
 
-        $this->transactionId = $transactionId;
-
         $this->transferId = $transferId;
-
-        $this->merchantId = 'EtHJCtiuRSZRCz';
     }
 
     public function handle()
@@ -74,19 +77,21 @@ class AsyncBalanceUpdateForTransfer extends Job
 
         $this->repo = $this->app['repo'];
 
+        $this->mutex = $this->app['api.mutex'];
+
         $startTime = microtime(true);
 
         $this->trace->info(
-            TraceCode::ASYNC_BALANCE_UPDATE_FOR_TRANSFER_TRANSACTION,
+            TraceCode::ASYNC_BALANCE_UPDATE_FOR_TRANSFER,
             [
-                'transaction_id'   => $this->transactionId,
-                'transfer_id'      => $this->transferId
+                'transfer_id'      => $this->transferId,
+                'attempt_count'    => $this->attempts()
             ]
         );
 
         try
         {
-            $transfer = $this->repo->transfer->findByIdAndMerchantId($this->transferId, $this->merchantId);
+            $transfer = $this->repo->transfer->findOrFail($this->transferId);
         }
         catch (\Exception $ex)
         {
@@ -96,37 +101,24 @@ class AsyncBalanceUpdateForTransfer extends Job
                 TraceCode::ASYNC_BALANCE_UPDATE_TRANSFER_NOT_FOUND,
                 [
                     'message'          => 'Transfer not found',
-                    'transaction_id'   => $this->transactionId,
                     'transfer_id'      => $this->transferId,
                 ]
             );
 
-            (new Metric())->pushAsyncBalanceUpdateForTransferTxnFailedMetrics(true, false, false);
+            (new Metric())->pushAsyncBalanceUpdateForTransferFailedMetrics($ex);
 
             return;
         }
 
-        if ($transfer->merchant->getId() !== $this->merchantId)
-        {
-            $this->trace->info(TraceCode::ASYNC_BALANCE_UPDATE_CALLED_FOR_NON_ENABLED_MERCHANT,
-                [
-                    'transaction_id'   => $this->transactionId,
-                    'transfer_id'      => $this->transferId,
-                    'merchant_id'      => $transfer->merchant->getId()
-                ]
-            );
-
-            return;
-        }
-
-        if ($transfer->getStatus() === Status::PENDING)
+        if ($transfer->getStatus() === Status::PENDING ||
+            $transfer->getStatus() === Status::CREATED ||
+            $transfer->getStatus() === Status::FAILED)
         {
             $this->trace->info(TraceCode::ASYNC_BALANCE_UPDATE_TXN_SKIPPED,
                 [
-                    'transaction_id'   => $this->transactionId,
                     'transfer_id'      => $this->transferId,
                     'merchant_id'      => $transfer->merchant->getId(),
-                    'transfer_status'  => Status::PENDING
+                    'transfer_status'  => $transfer->getStatus()
                 ]
             );
 
@@ -135,66 +127,37 @@ class AsyncBalanceUpdateForTransfer extends Job
 
         try
         {
-            $transaction = $this->repo->transaction->findByIdAndMerchantId($this->transactionId, $this->merchantId);
+            $this->mutex->acquireAndRelease('async_bal_update_' . $transfer->getPublicId(),
+                function () use ($transfer, $startTime)
+                {
+                    (new Core())->updateBalanceAsyncForTransferTxn($transfer);
+
+                    (new Core())->updateBalanceAsyncForTransferPaymentTxn($transfer);
+                },
+                self::MUTEX_LOCK_TIMEOUT_SEC,
+                ErrorCode::BAD_REQUEST_TRANSFER_ASYNC_BALANCE_UPDATE_IN_PROGRESS,
+                self::MUTEX_RETRY_COUNT,
+                self::MUTEX_MIN_RETRY_DELAY_MS,
+                self::MUTEX_MAX_RETRY_DELAY_MS
+            );
+
+            (new Metric())->pushAsyncBalanceUpdateForTransferSuccessMetrics($startTime);
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException(
                 $ex,
                 null,
-                TraceCode::ASYNC_BALANCE_UPDATE_TXN_NOT_FOUND,
-                [
-                    'message'          => 'Transaction not found',
-                    'transaction_id'   => $this->transactionId,
-                    'transfer_id'      => $this->transferId,
-                ]
-            );
-
-            (new Metric())->pushAsyncBalanceUpdateForTransferTxnFailedMetrics(false, true, false);
-
-            return;
-        }
-
-        if ($transaction->isBalanceUpdated() === true)
-        {
-            $this->trace->info(TraceCode::TRANSACTION_BALANCE_ALREADY_UPDATED,
-                [
-                    'transaction_id'   => $this->transactionId,
-                    'transfer_id'      => $this->transferId
-                ]
-            );
-
-            return;
-        }
-
-        try
-        {
-            (new Core())->updateBalanceAsyncForTransferTxn($transaction);
-
-            (new Metric())->pushAsyncBalanceUpdateForTransferTxnSuccessMetrics($startTime);
-
-            $this->trace->info(TraceCode::ASYNC_BALANCE_UPDATE_TXN_SUCCESSFUL,
-                [
-                    'transaction_id'   => $this->transactionId,
-                    'transfer_id'      => $this->transferId,
-                    'transfer_status'  => $transfer->getStatus(),
-                ]
-            );
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                null,
-                TraceCode::ASYNC_BALANCE_UPDATE_FAILED_FOR_TRANSFER_TXN,
+                TraceCode::ASYNC_BALANCE_UPDATE_FAILED_FOR_TRANSFER,
                 [
                     'message'          => 'Async balance update failed',
-                    'transaction_id'   => $this->transactionId,
                     'transfer_id'      => $this->transferId,
                 ]
             );
 
-            (new Metric())->pushAsyncBalanceUpdateForTransferTxnFailedMetrics(false, false, true);
+            (new Metric())->pushAsyncBalanceUpdateForTransferFailedMetrics($ex);
+
+            $this->release(300);
         }
     }
 }

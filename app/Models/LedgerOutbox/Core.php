@@ -176,6 +176,7 @@ class Core extends Base\Core
             ]);
 
             $this->softDelete($transactorId, $transactorEvent);
+
             return;
         }
 
@@ -996,12 +997,17 @@ class Core extends Base\Core
 
                                 $transferCore->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
 
-                                // set fee and tax from journal in transfer
-                                $filteredJournal = array_filter($journal, function ($item) use ($debitJournalId) {
+                                $filteredDebitJournal = array_filter($journal, function ($item) use ($debitJournalId) {
                                     return $item['id'] === $debitJournalId;
                                 });
 
-                                $debitJournal = reset($filteredJournal);
+                                $filteredCreditJournal = array_filter($journal, function ($item) use ($creditJournalId) {
+                                    return $item['id'] === $creditJournalId;
+                                });
+
+                                $debitJournal = reset($filteredDebitJournal);
+
+                                $creditJournal = reset($filteredCreditJournal);
 
                                 [$fees, $tax, $isAmountCreditsUsed] = $this->getFeeAndTaxFromJournal($debitJournal,"rzp_transfer_fee","rzp_gst");
 
@@ -1015,17 +1021,28 @@ class Core extends Base\Core
 
                                 $transferProcessor->fireTransferProcessedWebhookIfApplicable($transfer);
 
-                                // in txn creation - check if transfer has txn created, duplicate txn check
+                                $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabled($transfer->merchant);
 
-                                $input = [
-                                    LedgerConstants::DEBIT_TRANSACTION_ID  => $debitJournalId,
-                                    LedgerConstants::CREDIT_TRANSACTION_ID => $creditJournalId,
-                                    LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
-                                    LedgerConstants::SOURCE                => $source,
-                                ];
+                                if ($isExpEnabled === true)
+                                {
+                                    // create txns without balance update and dispatch for settlement if experiment is enabled
+                                    // balance update is done asynchronously via AsyncBalanceUpdateForTransfer job
+                                    $reverseShadowTransfersCore = new ReverseShadow\Transfers\Core();
 
-                                // dispatch to queue again for txn creation
-                                $transferCore->dispatchForTransferProcessing($transfer->getSourceType(), $sourcePayment, 30, true, $input);
+                                    $reverseShadowTransfersCore->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
+                                }
+                                else
+                                {
+                                    // dispatch to queue again for creating txns asynchronously
+                                    $input = [
+                                        LedgerConstants::DEBIT_TRANSACTION_ID  => $debitJournalId,
+                                        LedgerConstants::CREDIT_TRANSACTION_ID => $creditJournalId,
+                                        LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
+                                        LedgerConstants::SOURCE                => $source,
+                                    ];
+
+                                    $transferCore->dispatchForTransferProcessing($transfer->getSourceType(), $sourcePayment, 30, true, $input);
+                                }
 
                                 $this->trace->info(
                                     TraceCode::TRANSFER_PROCCESSED_SUCCESSFULLY_IN_REVERSE_SHADOW,
@@ -1035,8 +1052,6 @@ class Core extends Base\Core
                                         LedgerConstants::TAX  => $transfer->getTax(),
                                         'transfer_input_to_queue'     => $input
                                     ]);
-
-                            // transfer transactions created via queue in async
                             }
                             else
                             {
