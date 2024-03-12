@@ -110,11 +110,15 @@ class Service extends QrCode\Service
 
     public function createForCheckout($input)
     {
+        $startTimeMs = microtime(true) * 1000;
+
         $this->trace->info(TraceCode::QR_CODE_CHECKOUT_CREATE_REQUEST, $input);
 
         (new Validator())->validateInput('createForCheckout', $input);
 
         $errorMessage = null;
+
+        $metric = new Metric();
 
         try
         {
@@ -180,6 +184,12 @@ class Service extends QrCode\Service
         }
 
         $this->trace->info(TraceCode::QR_CODE_CHECKOUT_CREATED, $qrCode->toArrayPublic());
+
+        $createInput = $this->computeInputForQrOnCheckout($input);
+
+        $createInput[Entity::GATEWAY] = $qrCode->getGatewayFromQrString();
+
+        $metric->pushCreateLatencyMetrics($createInput, $startTimeMs, $qrCode->getGatewayLatencyForQrCreate());
 
         return $qrCode->toArrayPublic();
     }
