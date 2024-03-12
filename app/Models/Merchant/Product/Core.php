@@ -581,12 +581,6 @@ class Core extends Base\Core
         {
             $productName = $merchantProduct->getProduct();
 
-            if ( $skipExpEnabled && in_array($productName, [Name::PAYMENT_GATEWAY, Name::PAYMENT_LINKS]) === true )
-            {
-                // skipping submit for pg products
-                continue;
-            }
-
             $terminalStateReached = $this->isTerminalState($merchantProduct);
 
             if ($terminalStateReached === false)
@@ -596,6 +590,11 @@ class Core extends Base\Core
                 if ($requirementService->isNonTerminalStatusApplicable($merchantDetails) === true)
                 {
                     $this->autoUpdateNonTerminalStatus($subMerchant, $merchantDetails);
+                }
+
+                if ( $skipExpEnabled && in_array($productName, [Name::PAYMENT_GATEWAY, Name::PAYMENT_LINKS]) === true )
+                {
+                    continue;
                 }
 
                 [$requirements, $optionalRequirements] = $requirementService->getRequirements($subMerchant, $merchantDetails, $merchantProduct);
