@@ -625,11 +625,14 @@ trait Capture
     protected function captureOnGateway($data, $autoCaptured = false)
     {
         //mutex for order id to avoid multiple capture for same order at the same time.
+        $fee = null;
+        $tax = null;
+
         if ($this->payment->hasOrder())
         {
             $captureGatewayStartTime = microtime(true);
 
-            $this->mutex->acquireAndRelease(
+            [$fee, $tax] = $this->mutex->acquireAndRelease(
                 $this->payment->getApiOrderId(),
                 function() use ($data, $autoCaptured, $captureGatewayStartTime)
                 {
@@ -647,7 +650,9 @@ trait Capture
                     // In case of a failure (marking the payment as failed),
                     // we won't record this capture since we throw the exception
                     // after marking the payment as failed.
-                    $this->recordCapture($autoCaptured);
+                    [$fee, $tax] = $this->recordCapture($autoCaptured);
+
+                    return [$fee, $tax];
                 }
             );
         }
@@ -662,10 +667,10 @@ trait Capture
             // In case of a failure (marking the payment as failed),
             // we won't record this capture since we throw the exception
             // after marking the payment as failed.
-            $this->recordCapture($autoCaptured);
+            [$fee, $tax] = $this->recordCapture($autoCaptured);
         }
 
-        $this->triggerPaymentCapturedEvents();
+        $this->triggerPaymentCapturedEvents($fee, $tax);
 
         $this->publishMessageToSqsBarricade($this->payment);
 
@@ -902,8 +907,11 @@ trait Capture
         /** @var Payment\Entity $payment */
         $payment = $this->payment;
 
-        $this->repo->transaction(function() use ($payment, $autoCaptured)
+        [$fee, $tax] = $this->repo->transaction(function() use ($payment, $autoCaptured)
         {
+            $commission = null;
+            $tax = null;
+
             $this->lockForUpdateAndReload($payment);
 
             if ($payment->hasBeenCaptured() === true)
@@ -944,16 +952,13 @@ trait Capture
             {
                 $discount = $this->getDiscountIfApplicableForLedger($payment);
 
-                [$fee, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
+                [$commission, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
 
                 $this->trace->info(TraceCode::PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW, [
-                    LedgerConstants::PAYMENT_ID =>  $payment->getId(),
-                    LedgerConstants::FEES       =>  $fee,
-                    LedgerConstants::TAX        =>  $tax
+                    LedgerConstants::PAYMENT_ID       =>  $payment->getId(),
+                    LedgerConstants::COMMISSION       =>  $commission,
+                    LedgerConstants::TAX              =>  $tax
                 ]);
-
-                $payment->setFee($fee+$tax);
-                $payment->setTax($tax);
 
                 $this->repo->payment->saveOrFail($payment);
             }
@@ -988,6 +993,8 @@ trait Capture
             // we are updating orders which lies in PG Router service now.
             // This has been done to temporarily handle the distributed transaction failures.
             $this->updateOrderAfterCapture($payment,$originalPaymentFee);
+
+            return [$commission + $tax, $tax];
         });
 
         if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
@@ -1020,7 +1027,12 @@ trait Capture
             }
         }
 
-        $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
+        $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS,[
+            LedgerConstants::FEES       =>  $fee,
+            LedgerConstants::TAX        =>  $tax
+        ]);
+
+        return [$fee, $tax];
     }
 
     public function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn = null)
@@ -1265,8 +1277,23 @@ trait Capture
      * - api.order.paid
      * - api.invoice.paid
      */
-    protected function triggerPaymentCapturedEvents()
+    protected function triggerPaymentCapturedEvents($fee, $tax)
     {
+        if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $this->payment->setFee($fee);
+            $this->payment->setTax($tax);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_EVENT_FEES_IN_REVERSE_SHADOW,
+                [
+                    LedgerConstants::PAYMENT_ID  =>  $this->payment->getId(),
+                    LedgerConstants::FEES        =>  $this->payment->getFee(),
+                    LedgerConstants::TAX         =>  $this->payment->getTax(),
+                ]);
+
+        }
+
         $this->eventPaymentCaptured();
 
         $this->eventOrderPaid();
@@ -2020,9 +2047,9 @@ trait Capture
         $payment->setLateBalanceUpdate();
 
         //calling record capture to retry the capture
-        $this->recordCapture(true);
+        [$fee, $tax] = $this->recordCapture(true);
 
-        $this->triggerPaymentCapturedEvents();
+        $this->triggerPaymentCapturedEvents($fee, $tax);
 
         $this->publishMessageToSqsBarricade($this->payment);
 

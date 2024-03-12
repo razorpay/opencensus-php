@@ -1598,6 +1598,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEES_BREAKUP_ALREADY_EXISTS                           = 'FEES_BREAKUP_ALREADY_EXISTS';
     const CREATING_FEES_BREAKUP                                 = 'CREATING_FEES_BREAKUP';
     const CREATING_FEES_BREAKUP_IN_REVERSE_SHADOW               = 'CREATING_FEES_BREAKUP_IN_REVERSE_SHADOW';
+    const PAYMENT_EVENT_FEES_IN_REVERSE_SHADOW                  = 'PAYMENT_EVENT_FEES_IN_REVERSE_SHADOW';
     const FEES_BREAKUP_CREATION_FAILED                          = 'FEES_BREAKUP_CREATION_FAILED';
     const FEES_BREAKUP_CREATED                                  = 'FEES_BREAKUP_CREATED';
     const FEES_BREAKUP_DETAILS                                  = 'FEES_BREAKUP_DETAILS';

@@ -768,6 +768,9 @@ class Core extends Base\Core
                     ->findByPublicIdAndMerchant($transactorPublicId, $this->merchant, []);
 
                 $txn = $this->createTransactionFromCapturedPaymentInReverseShadow($payment, $journalId, $transactorEvent);
+
+                // Todo: Once transaction in API is decomposed, we need to set fee and tax to payment entity
+                // and save it as that is curretly taken care of by the transaction module.
             }
         }
         else if($transactionType === Constants::CREDIT_LOADING)
@@ -1114,11 +1117,6 @@ class Core extends Base\Core
                             {
                                 throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
                             }
-                        }
-
-                        if ($payment->isFeeBearerCustomer() === false)
-                        {
-                            $payment->setFee(0);
                         }
 
                         list($txn, $merchantBalance) = $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);
