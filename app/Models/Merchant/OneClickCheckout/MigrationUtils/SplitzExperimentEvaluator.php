@@ -96,6 +96,13 @@ class SplitzExperimentEvaluator extends Base\Core
         );
     }
 
+    public function isShippingInfoDecompEnabled(): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.one_cc_shipping_info_decomp');
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
     public function useMCSToPollForShippingRates(): bool
     {
         $input = $this->merchantIdBasedPayload('app.magic_poll_shipping_rates_experiment_id');

@@ -12,6 +12,7 @@ use RZP\Exception\IntegrationException;
 use RZP\Jobs\OneCCReviewCODOrder;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils as OneCcUtils;
 use RZP\Models\Order\OrderMeta\Order1cc;
@@ -117,8 +118,17 @@ class Service extends \RZP\Models\Base\Service
                 $taxesApplied = [];
 
                 try {
+                    $useMCS = (new SplitzExperimentEvaluator())->isShippingInfoDecompEnabled();
+                    if ($useMCS === true) {
+                        $merchant_id = $this->merchant->getId();
+                        $shippingInfoReq['merchant_id'] = $merchant_id;
+                        $shippingInfoReq['addresses'][0]['country_code'] = $country;
+                        $shippingInfoResponse  = (new MagicCheckoutService\Service())->getTaxDetailsAndShippingOptions($shippingInfoReq);
+                    }
+                    else {
+                        $shippingInfoResponse = (new ShippingInfo\Service())->getShippingInfo($shippingInfoReq);
+                    }
 
-                    $shippingInfoResponse = (new ShippingInfo\Service())->getShippingInfo($shippingInfoReq);
                     $addresses = $shippingInfoResponse['addresses'];
                     $shippingInfo = $addresses[0];
                     $taxesApplied = $shippingInfoResponse['tax_details'] ?? [];

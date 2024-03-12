@@ -22,8 +22,8 @@ class Service extends Base\Service
   const SHOPIFY_COMPLETE_CHECKOUT_PATH       = 'v1/checkouts/shopify/complete';
   const CLEAR_MERCHANT_CONFIGS_FROM_CACHE    = 'v1/merchants/configs/cache/invalidate';
   const CHECK_SHOPIFY_COMPLETE_CHECKOUT_PATH = 'v1/checkouts/order_status';
-
-  public function __construct()
+  const TAX_DETAILS_AND_SHIPPING_OPTIONS_PATH = 'v1/internal/shipping/options';
+ public function __construct()
   {
       parent::__construct();
   }
@@ -105,6 +105,11 @@ class Service extends Base\Service
   public function getShippingOptions(array $input): array
   {
       return $this->app['magic_checkout_service_client']->sendRequest(self::SHIPPING_OPTIONS_PATH, $input, Requests::POST);
+  }
+
+  public function getTaxDetailsAndShippingOptions(array $input): array
+  {
+        return $this->app['magic_checkout_service_client']->sendRequest(self::TAX_DETAILS_AND_SHIPPING_OPTIONS_PATH, $input, Requests::POST);
   }
 
   public function pollForShippingRates(array $input): array

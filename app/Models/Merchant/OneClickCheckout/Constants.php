@@ -36,6 +36,9 @@ class Constants
     const ONE_CC_WHITELIST_COUPONS          = 'one_cc_whitelist_coupons';
     const ONE_CC_CACHE_COUPONS              = 'one_cc_cache_coupons';
     const ONE_CC_HANDLE_DIGITAL_PRODUCT     = 'one_cc_handle_digital_product';
+    const ONE_CC_TAX_INCLUSION              = 'one_cc_tax_inclusion';
+    const ONE_CC_OPT_SHIPPING_TAX          = 'one_cc_opt_shipping_tax';
+    const ONE_CC_SHOPIFY_MULTIPLE_SHIPPING = 'one_cc_multiple_shipping';
     const ONE_CC_GUPSHUP_CREDENTIALS        = 'one_cc_gupshup_credentials';
     const ONE_CC_ENABLE_GUPSHUP             = 'one_cc_enable_gupshup';
     const COD_ENGINE                        = 'cod_engine';
@@ -275,6 +278,9 @@ class Constants
 
     const INTERNAL_CONFIGS = [
         self::ONE_CC_ADDRESS_SYNC_OFF,
+        self::ONE_CC_OPT_SHIPPING_TAX,
+        self::ONE_CC_TAX_INCLUSION,
+        self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING
     ];
 
     const SHOPIFY_RESETTABLE_CONFIGS = [
