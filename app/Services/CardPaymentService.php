@@ -432,7 +432,7 @@ class CardPaymentService
         {
             $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
 
-             if ( isset($input[Entity::PAYMENT]) and $input[Entity::PAYMENT][self::GATEWAY] === Gateway::PAYSECURE  )
+             if ( isset($input[Entity::PAYMENT]) and ($input[Entity::PAYMENT][self::GATEWAY] === Gateway::PAYSECURE || $input[Entity::PAYMENT][self::GATEWAY] === Gateway::ISG))
              {
                   $rupayRazorxCacheKey =  implode('_', ["rupay_alt_id_razorx_result",$input[Entity::PAYMENT]['id']]);
 

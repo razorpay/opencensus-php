@@ -801,7 +801,7 @@ trait Authorize
                         {
 
                         // paysecure rupay save=1 flow and recurring  will happen via token pan and cryptogram
-                            if ($payment->card->isRuPay() === true &&  $payment->getGateway() === GATEWAY::PAYSECURE)
+                            if ($payment->card->isRuPay() === true &&  ($payment->getGateway() === GATEWAY::PAYSECURE || $payment->getGateway() === GATEWAY::ISG))
                             {
 
                                 $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
@@ -1956,7 +1956,7 @@ trait Authorize
     protected function buildGatewayOtpResponse(& $response, $payment)
     {
         //BEPG - Native OTP Page
-        if (($payment->getGateway() === Payment\Gateway::PAYSECURE) and
+        if ((($payment->getGateway() === Payment\Gateway::PAYSECURE) || ($payment->getGateway() === Payment\Gateway::ISG)) and
             ($payment->getAuthType() === Payment\AuthType::OTP))
         {
             //Disable Go to Bank's Page
@@ -9649,7 +9649,7 @@ trait Authorize
                     }
                 }
 
-                if($this->canRunPaysecureOTP($payment) === true or ($this->canRunAxisTokenHQOTP($payment) === true) or ($this->canRunICICIOTP($payment) === true))
+                if($this->canRunPaysecureOTP($payment) === true or ($this->canRunAxisTokenHQOTP($payment) === true) or ($this->canRunICICIOTP($payment) === true) or ($this->canRunISGBepgOTP($payment) === true))
                 {
                     return true;
                 }
@@ -9771,6 +9771,16 @@ trait Authorize
     protected function canRunICICIOTP(Payment\Entity $payment)
     {
         if ($payment->getGateway() === Payment\Gateway::ICICI)
+        {
+            return true;
+        }
+
+        return false;
+    }
+    protected function canRunISGBepgOTP(Payment\Entity $payment)
+    {
+        if (($payment->getGateway() === Payment\Gateway::ISG) and
+            ($payment->getAuthType() === Payment\AuthType::OTP))
         {
             return true;
         }

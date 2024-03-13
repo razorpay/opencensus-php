@@ -547,7 +547,7 @@ trait Callback
 
 
             // if razorx was enabled  and stored in cache during create payment call  then we will fetch alt id and process the payment using alt id for  rupay
-        if(isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false && $payment->getGateway() === Gateway::PAYSECURE )
+        if(isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false && ($payment->getGateway() === Gateway::PAYSECURE || $payment->getGateway() === Gateway::ISG))
                  {
 
                      $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
@@ -622,6 +622,9 @@ trait Callback
             try
             {
                 $payData = $this->callGatewayPay($input);
+
+                // set auth ref no. in case of a Rupay card
+                $this->setAuthenticationReferenceNumberIfApplicable($payment->card, $payData);
 
                 //For Cred we receive the discount in the callback event.
                 $this->addDiscountToPaymentIfApplicable($payment, $payData);
