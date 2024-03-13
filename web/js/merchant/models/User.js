@@ -1508,6 +1508,22 @@ export default class User {
     return this.isFeatureEnabled('feature_bbps');
   }
 
+  get isPlV2DisableAllSmsEnabled() {
+    return this.isFeatureEnabled('pl_v2_disable_all_sms');
+  }
+
+  get isPlV2DisableAllEmailEnabled() {
+    return this.isFeatureEnabled('pl_v2_disable_all_email');
+  }
+
+  get isPlV2DisableReminderSmsEnabled() {
+    return this.isFeatureEnabled('pl_v2_disable_rmndr_sms');
+  }
+
+  get isPlV2DisableReminderEmailEnabled() {
+    return this.isFeatureEnabled('pl_v2_disable_rmndr_email');
+  }
+
   get isAppSwitcherEnabled() {
     return this.getExpStatus('app_switcher');
   }

@@ -4,14 +4,24 @@ import ContentToggler from 'common/ui/Toggler/ContentToggler';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
-export default ({ channels, onChannelChange }) => (
+const isReminderChannelDisabled = ({ user, channel }) => {
+  if (channel === 'sms') {
+    return user.isPlV2DisableAllSmsEnabled || user.isPlV2DisableReminderSmsEnabled;
+  } else if (channel === 'email') {
+    return user.isPlV2DisableAllEmailEnabled || user.isPlV2DisableReminderEmailEnabled;
+  }
+
+  return false;
+};
+
+export default ({ channels, onChannelChange, user }) => (
   <div class="setting">
     <ContentToggler show>
       Advanced settings
       <div>
         <EntityDetailRow label="Channels">
           <Input.Group required class="InputGroup--inline InputGroup--near">
-            <div class="Input-content">
+            <div className="Input-content">
               {Object.keys(channels).map((channelName) => (
                 <Input.Check
                   key={channelName}
@@ -22,8 +32,26 @@ export default ({ channels, onChannelChange }) => (
                 />
               ))}
             </div>
+            {Object.keys(channels)
+              .map((channelName) => {
+                return {
+                  label: channelName === 'email' ? 'Email' : channelName.toUpperCase(),
+                  channelName,
+                };
+              })
+              .map(
+                (channel) =>
+                  channels[channel.channelName] &&
+                  isReminderChannelDisabled({ user, channel: channel.channelName }) && (
+                    <div className="m" key={channel.channelName}>
+                      <small style={{ color: 'red' }}>
+                        {channel.label} disabled. Contact support to enable.
+                      </small>
+                    </div>
+                  ),
+              )}
 
-            <div class="m-t">
+            <div className="m-t">
               <small>
                 Customers will receive email or SMS only if the details are mentioned during the
                 creation of a payment link

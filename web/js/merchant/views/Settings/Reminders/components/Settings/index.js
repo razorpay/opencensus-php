@@ -221,7 +221,7 @@ class ReminderSettings extends React.Component {
 
   render() {
     const { settings, isEnabled, withExpireByConfigs, withOutExpireByConfigs } = this.state;
-    const { type, totalUnpaidLinks, maxReminderCount } = this.props;
+    const { type, totalUnpaidLinks, maxReminderCount, user } = this.props;
 
     return (
       <div class={`setting-item ${isEnabled ? 'enabled' : 'disabled'}`}>
@@ -261,6 +261,7 @@ class ReminderSettings extends React.Component {
                 <AdvancedSettings
                   {...settings.advancedSettings}
                   onChannelChange={this.handleChannelChange}
+                  user={user}
                 />
 
                 <Footer

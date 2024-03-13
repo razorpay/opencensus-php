@@ -47,9 +47,17 @@ class Notify extends React.Component {
     }
   };
 
+  shouldShowSmsDisabledMessage = ({ user, defaultContactValue }) => {
+    return user.isPlV2DisableAllSmsEnabled && defaultContactValue === '1';
+  };
+
+  shouldShowEmailDisabledMessage = ({ user, defaultEmailValue }) => {
+    return user.isPlV2DisableAllEmailEnabled && defaultEmailValue === '1';
+  };
+
   render() {
     const { props } = this;
-    const { user, splitz, featureStatus } = props;
+    const { user, splitz, featureStatus, defaultEmailValue, defaultContactValue, disabled } = props;
     const { isFeatureLoading, isNotificationShow, title, CtaText, businessProviderName } =
       getWhatsPLNotificationStatus({
         user,
@@ -60,37 +68,60 @@ class Notify extends React.Component {
     return (
       <>
         <Input.Group
-          class="InputGroup--inline InputGroup--near customer-notify hidden-xs"
-          disabled={props.disabled}
+          className={'InputGroup--inline InputGroup--near customer-notify hidden-xs'}
+          disabled={disabled}
         >
-          <div class="Input-content">
+          <div className={'Input-content'}>
             <Input.Check
               autoRender
               name="email_notify"
               fieldLabel="Notify via Email"
               onClick={this.handleEmailNotify}
-              defaultValue={props.defaultEmailValue}
+              defaultValue={defaultEmailValue}
             />
             <Input.Check
               autoRender
               name="sms_notify"
               fieldLabel="Notify via SMS"
               onClick={this.handleSmsNotify}
-              defaultValue={props.defaultContactValue}
+              defaultValue={defaultContactValue}
             />
           </div>
-          <ShowWhen
-            additionalCondition={() =>
-              !this.props.i18.isConfigTagEnabled('app_store.app_store') &&
-              !this.props.i18.isConfigTagEnabled('documentation.documentation')
+        </Input.Group>
+        {(this.shouldShowEmailDisabledMessage({ user, defaultEmailValue }) ||
+          this.shouldShowSmsDisabledMessage({ user, defaultContactValue })) && (
+          <Input.Group className={'InputGroup InputGroup--near hidden-xs'}>
+            <div className={'Input-content'}>
+              <span style={{ color: 'red', display: 'inline-block', width: '50%' }}>
+                {this.shouldShowEmailDisabledMessage({ user, defaultEmailValue }) && (
+                  <small>Email disabled. Contact support to enable.</small>
+                )}
+              </span>
+              <span style={{ color: 'red', display: 'inline-block', width: '50%' }}>
+                {this.shouldShowSmsDisabledMessage({ user, defaultContactValue }) && (
+                  <small>SMS disabled. Contact support to enable.</small>
+                )}
+              </span>
+            </div>
+          </Input.Group>
+        )}
+        <Input.Group className={'InputGroup--inline InputGroup--near hidden-xs'}>
+          <div className={'Input-content'}>
+            {
+              <ShowWhen
+                additionalCondition={() =>
+                  !this.props.i18.isConfigTagEnabled('app_store.app_store') &&
+                  !this.props.i18.isConfigTagEnabled('documentation.documentation')
+                }
+              >
+                <DocsLink
+                  title="More ways to notify"
+                  url="https://razorpay.com/app-store/"
+                  style={{ paddingLeft: '0' }}
+                />
+              </ShowWhen>
             }
-          >
-            <DocsLink
-              title="More ways to notify"
-              url="https://razorpay.com/app-store/"
-              style={{ paddingLeft: '0' }}
-            />
-          </ShowWhen>
+          </div>
         </Input.Group>
         {!isFeatureLoading && isNotificationShow ? (
           <Alert

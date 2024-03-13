@@ -501,8 +501,8 @@ class CreateNewContainer extends React.Component {
     }
 
     const notes = onChangeNotes(pairs);
-    /* If refering from prevState this is breaking UI 
-    on prod as prevState.dirty is coming null or 
+    /* If refering from prevState this is breaking UI
+    on prod as prevState.dirty is coming null or
     undefined , reverting back to previous code. */
     this.setState({
       dirty: {
@@ -524,7 +524,7 @@ class CreateNewContainer extends React.Component {
     }
 
     const IS_MODAL_VIEW = this.props.onClose;
-    const { tracking } = this.props;
+    const { tracking, user } = this.props;
 
     this.setState({
       parentFormLock: true,
@@ -533,11 +533,11 @@ class CreateNewContainer extends React.Component {
     let notificationMSG = 'Payment link created successfully.';
     const notifyMedium = [];
 
-    if (this.state.dirty.sms_notify) {
+    if (this.state.dirty.sms_notify && !user.isPlV2DisableAllSmsEnabled) {
       notifyMedium.push('SMS');
     }
 
-    if (this.state.dirty.email_notify) {
+    if (this.state.dirty.email_notify && !user.isPlV2DisableAllEmailEnabled) {
       notifyMedium.push('Email');
     }
 
@@ -567,7 +567,7 @@ class CreateNewContainer extends React.Component {
       delete reqPayload.reminder_enable;
     }
 
-    if (this.props.user.isCustomNotesDropdownEnabled) {
+    if (user.isCustomNotesDropdownEnabled) {
       const { type } = getCustomNotesOptions();
 
       reqPayload.notes = {
@@ -575,7 +575,7 @@ class CreateNewContainer extends React.Component {
       };
     }
 
-    const extraFields = this.props.user.paymentLinkCreationFormExtraFields;
+    const extraFields = user.paymentLinkCreationFormExtraFields;
 
     extraFields.forEach((field) => {
       if (field.addAt.as === 'prefix') {

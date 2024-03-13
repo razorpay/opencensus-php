@@ -295,11 +295,11 @@ class PaymentLinkCreateV2 extends React.Component {
     let notificationMSG = 'Payment link created successfully.';
     const notifyMedium = [];
 
-    if (reqPayload.sms_notify) {
+    if (reqPayload.sms_notify && !user.isPlV2DisableAllSmsEnabled) {
       notifyMedium.push('SMS');
     }
 
-    if (reqPayload.email_notify) {
+    if (reqPayload.email_notify && !user.isPlV2DisableAllEmailEnabled) {
       notifyMedium.push('Email');
     }
 
