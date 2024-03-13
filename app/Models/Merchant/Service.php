@@ -9150,13 +9150,11 @@ class Service extends Base\Service
     {
         $currentDate = Carbon::now(Timezone::IST)->format('Y-m-d');
         $fileName = 'tokenhq_merchant_onboard' . '_' . $currentDate;
-        $dataLakeQuery1 = sprintf(TokenConstants::DATA_LAKE_TOKEN_HQ_ONBOARD_MERCHANT,$currentDate);
+//        $dataLakeQuery1 = sprintf(TokenConstants::DATA_LAKE_TOKEN_HQ_ONBOARD_MERCHANT,$currentDate);
         $dataLakeQuery2 = sprintf(TokenConstants::DATA_LAKE_TOKEN_HQ_PENDING_MERCHANT,$currentDate);
 
-        $merchantIds1 =[];
         $merchantIds2 =[];
         try {
-            $merchantIds1 = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery1);
             $merchantIds2 = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery2);
         }
         catch (\Exception $e){
@@ -9166,34 +9164,34 @@ class Service extends Base\Service
                 []);
         }
 
-        $combinedMerchantIds = array_merge($merchantIds1, $merchantIds2);
-        $uniqueMerchantIds = collect($combinedMerchantIds)->unique('merchant_id')->toArray();
-        $additionalColumns = ['Gateway', 'Category', 'terminal_gateway', 'gateway_terminal_id', 'provider_name', 'provider_type'];
-        $tokenisationGateways = ['tokenisation_mastercard', 'tokenisation_visa', 'tokenisation_rupay'];
+        $additionalColumns = ['terminal_gateway', 'gateway_terminal_id', 'provider_name', 'provider_type'];
         $tokenisationType = 'tokenisation';
         $Category = 'live';
+        $terminalGateway = '';
+        $gatewayTerminalId = '';
+        $providerName = '';
+        $providerType = '';
 
-        $resultWithAdditionalColumns = collect($uniqueMerchantIds)->flatMap(function ($item) use ($additionalColumns, $tokenisationGateways, $Category, $tokenisationType) {
-            return collect($tokenisationGateways)->map(function ($gateway) use ($item, $additionalColumns, $Category, $tokenisationType) {
+        $resultWithAdditionalColumns = collect($merchantIds2)->map(function ($item) use ($Category, $tokenisationType, $terminalGateway, $gatewayTerminalId, $providerName, $providerType) {
+            return collect($Category)->map(function ($category) use ($item, $tokenisationType, $terminalGateway, $gatewayTerminalId, $providerName, $providerType) {
                 $newItem = $item;
-                foreach ($additionalColumns as $column) {
-                    $newItem[$column] = null;
-                }
-                $newItem['Gateway'] = $gateway;
-                $newItem['Category'] = $Category;
-                $newItem['org_id'] = $item['org_id'];
+                $newItem['category'] = $category;
                 $newItem['terminal_type'] = $tokenisationType;
+                $newItem['terminal_gateway'] = $terminalGateway;
+                $newItem['gateway_terminal_id'] = $gatewayTerminalId;
+                $newItem['provider_name'] = $providerName;
+                $newItem['provider_type'] = $providerType;
 
                 return $newItem;
             });
         })->toArray();
-
 
         $results = [];
 
         foreach($resultWithAdditionalColumns as $record) {
             $results[] = $record;
         }
+
 
         $url = $this->createCsvFile($results , $fileName, null, 'files/batch');
 
