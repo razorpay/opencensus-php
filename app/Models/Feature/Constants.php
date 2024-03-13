@@ -2079,6 +2079,11 @@ class Constants
 
     const SHOW_INTL_RISK_ANALYTICS_DASHBOARD = 'show_intl_risk_dashboard';
 
+   /**
+    * Feature flag to enable show the collective settlement amount(DS and Non-DS) on the merchant dashboard.
+    */
+    const DISPLAY_DS_SETT_AMT ='display_ds_sett_amt';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2846,6 +2851,7 @@ class Constants
         self::PERSONALISATION_V3_DISABLED                  => true,
         self::DIRECT_DEBIT_VIA_TOKEN_BATCH                 => true,
         DcsConstants::PassCustomUdfFss                     => true,
+        self::DISPLAY_DS_SETT_AMT                     => true,
         self::SETTLEMENT_BY_CURRENCY                       => true,
         self::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION     => true,
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT                => true,
