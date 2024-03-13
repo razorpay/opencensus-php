@@ -44,6 +44,7 @@ use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 
 class Core extends Base\Core
 {
@@ -1014,6 +1015,9 @@ class Core extends Base\Core
                     $methods->setAttribute($key, $value);
             }
         }
+
+        //Setting default disabled banks upon activation and mcc update flows.
+        $methods->setDisabledBanks(NetbankingProcessor::DEFAULT_DISABLED_BANKS);
 
         $this->repo->saveOrFail($methods);
 

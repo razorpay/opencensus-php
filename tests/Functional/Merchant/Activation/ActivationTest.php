@@ -61,6 +61,7 @@ use \RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
 use RZP\Models\Workflow\Observer\Constants as ObserverConstants;
 use RZP\Models\Workflow\Observer\MerchantActivationStatusObserver;
+use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
@@ -1080,6 +1081,7 @@ class ActivationTest extends OAuthTestCase
             'phonepe'       => false,
             'cardless_emi'  => false,
             'debit_emi_providers'=> [],
+            'disabled_banks'    => NetbankingProcessor::DEFAULT_DISABLED_BANKS,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
