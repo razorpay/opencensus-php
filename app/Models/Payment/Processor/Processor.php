@@ -2117,7 +2117,7 @@ class Processor
                 return false;
             }
 
-            if ($this->isUpiPaymentReArchBVTRequest() === true)
+            if ($this->isUpiPaymentReArchBVTRequest($isUpiDfb) === true)
             {
                 return true;
             }
@@ -5724,7 +5724,7 @@ class Processor
         return $variant;
     }
 
-    protected function isUpiPaymentReArchBVTRequest(): bool
+    protected function isUpiPaymentReArchBVTRequest(bool & $isDFBPayment): bool
     {
         $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
         if(empty($rzpTestCaseID) === true)
@@ -5732,8 +5732,22 @@ class Processor
             return false;
         }
 
-        return (((app()->isEnvironmentQA() === true) or (app()->isEnvironmentBeta() === true)) &&
+        $isBVTRequest = (((app()->isEnvironmentQA() === true) or (app()->isEnvironmentBeta() === true)) &&
                 (str_ends_with($rzpTestCaseID,'_rearchUPSPayments')) === true);
+
+        if ($isBVTRequest === false) {
+            return $isBVTRequest;
+        }
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if ($merchant->isFeeBearerDynamic() === true) {
+            $isDFBPayment = true;
+        }
+
+        return $isBVTRequest;
+
+
     }
 
     protected function setPaymentService(Payment\Entity $payment, $variant)
