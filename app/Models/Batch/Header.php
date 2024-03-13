@@ -1664,6 +1664,11 @@ class Header
     const TERMINAL_BATCH_CREATION_PROVIDER_TYPE = "provider_type";
     const ORG_ID = "org_id";
 
+    // headers for bvs bulk kyc verification
+    const BVS_BULK_KYC_VERIFICATION_DOCUMENT = 'Document';
+    const BVS_BULK_KYC_VERIFICATION_ENRICHMENT_TYPE = 'Enrichment Type';
+    const BVS_BULK_KYC_VERIFICATION_ACCOUNT_ID = 'Account Id';
+
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
         Header::WALLET_ACCOUNTS_NAME,
@@ -5698,6 +5703,14 @@ class Header
                 self::ERROR_DESCRIPTION,
             ]
         ],
+        Type::BVS_BULK_KYC_VERIFICATION => [
+            self::INPUT => [
+                self::BVS_BULK_KYC_VERIFICATION_DOCUMENT,
+                self::BVS_BULK_KYC_VERIFICATION_ACCOUNT_ID,
+                self::BVS_BULK_KYC_VERIFICATION_ENRICHMENT_TYPE,
+            ],
+            self::OUTPUT => []
+        ]
     ];
 
     /**

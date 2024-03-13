@@ -101,6 +101,7 @@ class Limit
         Type::CREATE_WALLET_USER_CONTAINERS         => 1000000,
         Type::CREATE_WALLET_CONTAINER_LOADS         => 1000000,
         Type::ALT_ID_TERMINAL_ONBOARD              => 1000000,
+        Type::BVS_BULK_KYC_VERIFICATION             => 50000,
     ];
 
     /**

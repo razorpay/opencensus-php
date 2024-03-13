@@ -530,6 +530,12 @@ class Validator extends Base\Validator
         Entity::TYPE                    => 'required|in:capture_setting',
         Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE,
     ];
+
+    protected static $bvsBulkKycVerificationCreateRules = [
+        Entity::TYPE                    => 'required|in:bvs_bulk_kyc_verification',
+        Entity::FILE                    => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file',
+    ];
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -865,6 +871,12 @@ class Validator extends Base\Validator
         Header::HDFC_NB_GATEWAY_MERCHANT_ID  => 'required|string|max:30|alpha_dash_space',
         Header::HDFC_NB_CATEGORY             => 'required',
         Header::HDFC_NB_TPV                  => 'sometimes|nullable|in:0,1,2',
+    ];
+
+    protected static $bvsBulkKycVerficationTypeRowRules = [
+        Header::BVS_BULK_KYC_VERIFICATION_ACCOUNT_ID            => 'required|string|size:14',
+        Header::BVS_BULK_KYC_VERIFICATION_DOCUMENT              => 'required|string',
+        Header::BVS_BULK_KYC_VERIFICATION_ENRICHMENT_TYPE       => 'sometimes|nullable|string',
     ];
 
     protected static $sendMailRules = [
@@ -3164,6 +3176,28 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_CONTACTS);
+            }
+
+            $existingKeys[] = $key;
+        }
+    }
+
+    public function validateBvsBulkKycVerificationEntries(array &$entries, array $params, ME $merchant)
+    {
+        $existingKeys = [];
+
+        foreach ($entries as $entry) {
+            $this->validateInput('bvsBulkKycVerficationTypeRow', $entry);
+
+            $accountId = $entry[Header::BVS_BULK_KYC_VERIFICATION_ACCOUNT_ID] ?? '';
+            $document = $entry[Header::BVS_BULK_KYC_VERIFICATION_DOCUMENT] ?? '';
+
+            $key = strtolower($accountId . $document);
+
+            // Batch File should not contain multiple entries for the same key
+            if (in_array($key, $existingKeys)) {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_MERCHANT_ID);
             }
 
             $existingKeys[] = $key;

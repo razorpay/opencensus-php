@@ -290,6 +290,8 @@ class Type
 
     const PARTNER_SUBMERCHANT_REFERRAL_INVITE = 'partner_submerchant_referral_invite';
 
+    const BVS_BULK_KYC_VERIFICATION = 'bvs_bulk_kyc_verification';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -375,6 +377,7 @@ class Type
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
         self::EZETAP_SETTLEMENT,
         self::MERCHANT_UPLOAD_MIQ,
+        self::BVS_BULK_KYC_VERIFICATION
     ];
 
     /**
@@ -609,7 +612,8 @@ class Type
         self::IRCTC_SETTLEMENT,
         self::CREATE_WALLET_CONTAINER_REVERSALS,
         self::CREATE_BULK_GIFT_CARDS,
-        self::GCMS_UPLOAD_BULK_EMAILS
+        self::GCMS_UPLOAD_BULK_EMAILS,
+        self::BVS_BULK_KYC_VERIFICATION
     ];
 
     /**
@@ -709,7 +713,8 @@ class Type
         self::CREATE_WALLET_USER_CONTAINERS,
         self::CREATE_WALLET_CONTAINER_REVERSALS,
         self::CREATE_BULK_GIFT_CARDS,
-        self::GCMS_UPLOAD_BULK_EMAILS
+        self::GCMS_UPLOAD_BULK_EMAILS,
+        self::BVS_BULK_KYC_VERIFICATION
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -809,7 +814,8 @@ class Type
         self::ICICI_STP_MIS                       => Name::ADMIN_BATCH_CREATE,
         self::PAYMENT_TRANSFER_RETRY              => Name::ADMIN_BATCH_CREATE,
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS => Name::ADMIN_BATCH_CREATE,
-        self::LINKED_ACCOUNT                      => Name::ADMIN_BATCH_CREATE
+        self::LINKED_ACCOUNT                      => Name::ADMIN_BATCH_CREATE,
+        self::BVS_BULK_KYC_VERIFICATION           => Name::ADMIN_BATCH_CREATE
     ];
 
     public static $workflowApplicableBatchTypes = [
