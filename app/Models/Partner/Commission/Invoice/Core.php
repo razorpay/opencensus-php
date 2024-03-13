@@ -25,6 +25,7 @@ use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Metric;
+use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Services\KafkaProducer;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Commission;
@@ -1081,18 +1082,16 @@ class Core extends Base\Core
         return true;
     }
 
-    private function checkPartnerActivationStatus(Merchant\Entity $partner, Merchant\Detail\Entity $merchantDetail): bool
+    private function checkPartnerActivationStatus(Merchant\Entity $partner, MerchantDetail\Entity $merchantDetail): bool
     {
         $partnerType = $partner->getPartnerType();
-        $isActivated = $partner->getActivated();
-        $activationStatus = $merchantDetail->getActivationStatus();
 
-        if (($partnerType === Merchant\Constants::RESELLER) and (empty($activationStatus) === true)) {
+        if ($partnerType === Merchant\Constants::RESELLER)  {
             $activationStatus = ($partner->partnerActivation !== null) ? $partner->partnerActivation->getActivationStatus() : null;
-            $isActivated = $activationStatus === PartnerActivationConstants::ACTIVATED;
+            return $activationStatus === PartnerActivationConstants::ACTIVATED;
         }
 
-        return $isActivated;
+        return $merchantDetail->getActivationStatus() === MerchantDetail\Status::ACTIVATED;
     }
 
     public function canPartnerApproveInvoice(): array
