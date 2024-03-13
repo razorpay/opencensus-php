@@ -417,6 +417,11 @@ class Processor
     const ALLOW_DFB_MERCHANTS_ON_REARCH_UPS = 'allow_dfb_merchants_on_rearch_ups';
 
     /**
+     * Razorx flag to allow DFB merchants with fee on re-arch flow
+     */
+    const ALLOW_DFB_FEE_MERCHANTS_ON_REARCH_UPS = 'allow_dfb_fee_merchants_on_rearch_ups';
+
+    /**
      * Razorx flag to allow fee_config_id on re-arch flow
      */
     const ALLOW_FEE_CONFIG_ID_MERCHANTS_ON_REARCH_UPS = 'allow_fee_config_id_merchants_on_rearch_ups';
@@ -2307,7 +2312,7 @@ class Processor
         if ($merchant->isFeeBearerPlatform() === false)
         {
             // is UPS supported fee bearer merchant
-            if ($this->isUpsRearchFeeBearerMerchant($response) === false)
+            if ($this->isUpsRearchFeeBearerMerchant($response, $input['fee']) === false)
             {
                 $routeViaReArch = false;
                 $dimensions[12] = 1;
@@ -11520,28 +11525,16 @@ class Processor
 
     /**
      * isUpsRearchFeeBearerMerchant checks FeeBearer is supported in Rearch
+     * @param array $response
+     * @param $fee
      * @return bool
      */
-    public function isUpsRearchFeeBearerMerchant(array & $response): bool
+    public function isUpsRearchFeeBearerMerchant(array & $response, $fee): bool
     {
         if ($this->merchant->isFeeBearerCustomer() === false)
         {
 
-            if ($this->merchant->isFeeBearerDynamic() === false)
-            {
-                return false;
-            }
-
-            $shouldAllowDfb = $this->shouldAllowDfb();
-
-            if ($shouldAllowDfb === false)
-            {
-                return false;
-            }
-
-            $response['is_dfb'] = true;
-
-            return true;
+            return $this->shouldAllowDfbOnRearch($fee, $response);
 
         }
 
@@ -11698,6 +11691,34 @@ class Processor
 
     }
 
+    /**
+     * shouldAllowDfbOnRearch checks if the DFB merchant's payment should be allowed on ReArch
+     * @param $fee
+     * @param array $response
+     * @return bool
+     */
+    private function shouldAllowDfbOnRearch($fee, array & $response): bool
+    {
+        if ($this->merchant->isFeeBearerDynamic() === false) {
+            return false;
+        }
+
+        $shouldAllowDfb = $this->shouldAllowDfb();
+
+        if ($shouldAllowDfb === false) {
+            return false;
+        }
+
+        // temporary function to disable DFB-CFB until we fix UPS entity fetch
+        if ($this->shouldAllowDfbCfb($fee) === false) {
+            return false;
+        }
+
+        $response['is_dfb'] = true;
+
+        return true;
+    }
+
 
     /**
      * shouldAllowDfb checks if DFB merchant is ramped
@@ -11714,6 +11735,35 @@ class Processor
             'mode'        => $this->mode,
             'feature'     => self::ALLOW_DFB_MERCHANTS_ON_REARCH_UPS,
         ]);
+
+        return str_starts_with($variant, 'on');
+    }
+
+
+    /**
+     * shouldAllowDfbCfb checks if merchant is enabled for DFB flow with input fee
+     * @param $fee
+     * @return bool
+     */
+    private function shouldAllowDfbCfb($fee): bool
+    {
+
+        // we don't need to evaluate if fee is not set
+        if (isset($fee) === false)
+        {
+            return true;
+        }
+
+        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),
+                self::ALLOW_DFB_FEE_MERCHANTS_ON_REARCH_UPS, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_DFB_FEE_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant' => $variant,
+            'mode'    => $this->mode,
+            'feature' => self::ALLOW_DFB_FEE_MERCHANTS_ON_REARCH_UPS,
+        ]);
+
 
         return str_starts_with($variant, 'on');
     }
