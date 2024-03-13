@@ -48,14 +48,6 @@ The scope of this document is for local setup only. If you have already done the
   localStorage.getItem('npm');
   ```
 
-- Open `~/.bashrc` or `~/.zshrc` in your editor and add this line -
-
-  ```bash
-  # At the end of your ~/.bashrc or ~/.zshrc file
-
-  export NPM_RAZORPAY_TOKEN="<YOUR_TOKEN>"
-  ```
-
 - Run `source ~/.bashrc` or `source ~/.zshrc` based on the file where you added your npm token.
 
 ### 2. Common Setup

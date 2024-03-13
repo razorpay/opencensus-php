@@ -7,10 +7,10 @@ on: push
 
 env:
   HOME: /actions-runner/_work
-  AWS_STAGE_BETA_CDN_BUCKET: 'rzp-1018-nonprod-betacdn'
-  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: 'rzp-1018-nonprod-dashboard-assets'
-  AWS_STAGE_COMMON_CACHE_BUCKET: 'rzp-1018-nonprod-actions-cache'
-  AWS_PROD_COMMON_CACHE_BUCKET: 'rzp-actions-cache'
+  AWS_STAGE_BETA_CDN_BUCKET: "rzp-1018-nonprod-betacdn"
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
+  AWS_STAGE_COMMON_CACHE_BUCKET: "rzp-1018-nonprod-actions-cache"
+  AWS_PROD_COMMON_CACHE_BUCKET: "rzp-actions-cache"
   BUILD_PATH: build/browser
   VERSION: ${{ github.sha }}
 
@@ -36,14 +36,13 @@ jobs:
       - name: Fetch base branch
         run: |
           git fetch origin master
-      
+
       - name: Setup yarn
         run: npm install -g yarn
 
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
         with:
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Extract current branch name
@@ -87,17 +86,15 @@ jobs:
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
         with:
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build All
         #Runs in parellel
         run: npx nx run web:production:build
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           VERSION: ${{ github.sha }}
-      
+
       - name: Remove files
         run: rm -rf .git
 
@@ -167,7 +164,6 @@ jobs:
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
         with:
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build micro apps
@@ -175,7 +171,6 @@ jobs:
           git fetch origin master
           yarn nx affected -t devstack:build --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} --exclude=web,dashboard
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Remove files
@@ -192,7 +187,7 @@ jobs:
           AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
 
-        # Run based on output of affected 
+        # Run based on output of affected
       - name: Micro Apps - Push Artifacts for Devstack
         run: |-
           aws s3 cp \
@@ -224,7 +219,6 @@ jobs:
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
         with:
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build micro apps
@@ -232,12 +226,11 @@ jobs:
           git fetch origin master
           yarn nx affected -t automation:build --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} --exclude=web,dashboard
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Remove files
         run: rm -rf .git
- 
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -249,7 +242,7 @@ jobs:
           AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
 
-        # Run based on output of affected 
+        # Run based on output of affected
       - name: Micro Apps - Push Artifacts for Automation
         run: |-
           aws s3 cp \
@@ -281,7 +274,6 @@ jobs:
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
         with:
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build micro apps
@@ -289,12 +281,11 @@ jobs:
           git fetch origin master
           yarn nx affected -t production:build --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} --exclude=web,dashboard
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Remove files
         run: rm -rf .git
- 
+
       - name: Configure AWS Credentials - Actions Cache
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -405,4 +396,3 @@ jobs:
                 }
               ]
             }
-

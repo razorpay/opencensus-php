@@ -22,16 +22,11 @@ COPY --chown=node:node ./web/.npmrc ./web/package.json ./web
 RUN --mount=type=secret,id=github_access_token set -eux && \
   echo "$(cat /run/secrets/github_access_token)" >> ~/.GITHUB_ACCESS_TOKEN
 
-RUN --mount=type=secret,id=npm_razorpay_token set -eux && \
-  echo "$(cat /run/secrets/npm_razorpay_token)">> ~/.NPM_RAZORPAY_TOKEN
-
 RUN export GITHUB_ACCESS_TOKEN="$(cat ~/.GITHUB_ACCESS_TOKEN)" && \
-  export NPM_RAZORPAY_TOKEN="$(cat ~/.NPM_RAZORPAY_TOKEN)" && \
   yarn config set unsafe-perm true && \
   HUSKY=0 yarn --frozen-lockfile
 
-RUN rm -f ~/.GITHUB_ACCESS_TOKEN && \
-  rm -f ~/.NPM_RAZORPAY_TOKEN
+RUN rm -f ~/.GITHUB_ACCESS_TOKEN
 
 RUN npx playwright install --with-deps
 
@@ -42,6 +37,6 @@ RUN rm -f .npmrc && \
   rm -f ./apps/self-serve/.npmrc
 
 CMD yarn test:e2e:auth && \
-    INCLUDE_GROUPS=$INCLUDE_GROUPS \
-    EXCLUDE_GROUPS=$EXCLUDE_GROUPS \
-    npx nx run-many --target=test:e2e --projects=$AFFFECTED_PROJECTS
+  INCLUDE_GROUPS=$INCLUDE_GROUPS \
+  EXCLUDE_GROUPS=$EXCLUDE_GROUPS \
+  npx nx run-many --target=test:e2e --projects=$AFFFECTED_PROJECTS

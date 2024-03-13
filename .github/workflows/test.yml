@@ -1,5 +1,8 @@
 name: Unit Tests Workflow
-on: push
+on:
+  push:
+    paths-ignore:
+      - "*.md"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,7 +38,6 @@ jobs:
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
         with:
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Fetch base branch
@@ -46,11 +48,15 @@ jobs:
         shell: bash
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
-        
+
       - name: Test Codebase
         # Automatically installs npm ci in web too
         run: |
           yarn nx affected -t test:jest --silent --base=origin/master --head=${{ steps.extract_branch.outputs.branch }}
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          REPORT_PORTAL_HOST: ${{ secrets.REPORT_PORTAL_HOST }}
+          REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
+          COMMIT_ID: ${{ github.sha }}
+          REPORT_PORTAL_LAUNCH_NAME: "Dashboard UTs-${{ steps.extract_branch.outputs.branch }}"

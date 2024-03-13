@@ -28,7 +28,6 @@ jobs:
         run: |
           yarn --frozen-lockfile
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
       - name: Push Build To Chromatic
         # Storybook builds inside web folder, Chromatic references that
@@ -37,5 +36,4 @@ jobs:
           CHROMATIC_TOKEN=$CHROMATIC_TOKEN yarn chromatic
         env:
           CHROMATIC_TOKEN: ${{secrets.CHROMATIC_PROJECT_TOKEN}}
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

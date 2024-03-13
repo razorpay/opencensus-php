@@ -9,14 +9,13 @@ concurrency:
 env:
   HOME: /actions-runner/_work
   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
   VERSION: ${{ github.event.deployment.ref }}
   STAGE: ${{ github.event.deployment.environment }}
   BUILD_PATH: build/browser
-  AWS_STAGE_COMMON_CACHE_BUCKET: 'rzp-1018-nonprod-actions-cache'
-  AWS_PROD_COMMON_CACHE_BUCKET: 'rzp-actions-cache'
-  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: 'rzp-1018-nonprod-dashboard-assets'
-  AWS_PROD_DASHBOARD_ASSETS_CDN_BUCKET: 'rzp-1415-prod-dashboard-assets'
+  AWS_STAGE_COMMON_CACHE_BUCKET: "rzp-1018-nonprod-actions-cache"
+  AWS_PROD_COMMON_CACHE_BUCKET: "rzp-actions-cache"
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
+  AWS_PROD_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1415-prod-dashboard-assets"
   AWS_DEFAULT_REGION: ap-south-1
   APP_NAME: ${{ github.event.deployment.payload.microfrontend }}
   AWS_S3_PROD_ROLE: arn:aws:iam::141592612890:role/gha-prod-dashboard_action
@@ -48,7 +47,7 @@ jobs:
           AWS_ACCESS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
           AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-      
+
       - name: Download Automation Build from S3 Cache
         run: |
           aws s3 cp s3://${AWS_STAGE_COMMON_CACHE_BUCKET}/dashboard/federated-bundles/${APP_NAME}/automation/${VERSION} ./ --recursive
@@ -62,7 +61,7 @@ jobs:
 
           # Sync whole folder to S3 excluding above assets
           aws s3 sync --cache-control "public,max-age=31536000" ${BUILD_PATH} s3://$AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET/dashboard/federated-bundles/${APP_NAME}/$BUILD_PATH --exclude ${BUILD_PATH}/${APP_NAME}.remoteEntry.js --exclude ${BUILD_PATH}/${APP_NAME}.remoteEntry.js.map --exclude ${BUILD_PATH}/${APP_NAME}.remoteEntry.js.gz
-  
+
   production-dashboard-mfes-deploy:
     name: Production Deploy - Dashboard MFEs
     runs-on: self-hosted

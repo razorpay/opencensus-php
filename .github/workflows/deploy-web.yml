@@ -13,7 +13,7 @@ jobs:
   deploy:
     name: Deploy
     runs-on: [self-hosted]
-    if: ${{ github.event.deployment.payload.deploymentModule == 'web' }} 
+    if: ${{ github.event.deployment.payload.deploymentModule == 'web' }}
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v2
@@ -82,9 +82,8 @@ jobs:
           CDN_PATH: ${{ github.event.deployment.payload.CDN_PATH }}
           AWS_KEY: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET: ${{ secrets.PROD_AWS_ACCESS_SECRET }}
-          AWS_CDN_BUCKET: 'rzp-1415-prod-checkout-live'
-          AWS_REGION: 'ap-south-1'
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          AWS_CDN_BUCKET: "rzp-1415-prod-checkout-live"
+          AWS_REGION: "ap-south-1"
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
         run: |
           # Requirements for running s3sync.js
@@ -99,9 +98,8 @@ jobs:
         env:
           AWS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
           AWS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
-          AWS_CDN_BUCKET: 'rzp-1018-nonprod-betacdn'
-          AWS_REGION: 'ap-south-1'
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          AWS_CDN_BUCKET: "rzp-1018-nonprod-betacdn"
+          AWS_REGION: "ap-south-1"
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           # CDN_PATH for beta: dashboard, for zeta dashboard/zeta, for automation dashboard/qa
           # Expecting payload with CDN_PATH from spinakker
@@ -124,4 +122,3 @@ jobs:
               "environment": "staging",
               "state": "success"
             }'
-

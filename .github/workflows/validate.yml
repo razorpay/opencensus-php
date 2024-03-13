@@ -25,7 +25,6 @@ jobs:
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
         with:
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Validate
@@ -34,5 +33,4 @@ jobs:
           yarn lint
           npx lerna run --scope=web tsc
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

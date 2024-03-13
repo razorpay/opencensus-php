@@ -2,7 +2,7 @@
 // removed all external package dependencies
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+// const { execSync } = require('child_process');
 
 async function triggerJob(payload) {
   const url = process.env.JOB_URL;
@@ -80,6 +80,7 @@ function getConfig() {
   const author = process.env.GITHUB_ACTOR?.toLowerCase();
   const selfCommit = process.env.COMMIT_ID;
   const headRef = process.env.GITHUB_HEAD_REF || '^HEAD';
+  const affectedProjects = process.env.AFFECTED_PROJECTS;
   return {
     repository,
     repoName,
@@ -87,18 +88,23 @@ function getConfig() {
     author,
     selfCommit,
     headRef,
+    affectedProjects,
   };
 }
 
-function nxAffected(headRef) {
-  const args = ['--affected', '--json', `--base=origin/master`, `--head=origin/${headRef}`];
-  const stdout = execSync(`npx nx show projects ${args.join(' ')}`, { encoding: 'utf8' });
-  return JSON.parse(stdout);
+function nxAffected(affectedProjects) {
+  // Using affectedProjects from env in case of CI
+  return affectedProjects.trim().split(',');
+
+  // TIP: Script to get affected projects, For reference only or if you want to use it in local
+  // const args = ['--affected', '--json', `--base=origin/master`, `--head=origin/${headRef}`];
+  // const stdout = execSync(`npx nx show projects ${args.join(' ')}`, { encoding: 'utf8' });
+  // return JSON.parse(stdout);
 }
 
-const getSelfPayload = ({ repoName, selfCommit, headRef }) => {
-  const nxAffectedList = nxAffected(headRef);
-
+const getSelfPayload = ({ repoName, selfCommit, affectedProjects }) => {
+  const nxAffectedList = nxAffected(affectedProjects);
+  console.log('nxAffectedList', nxAffectedList);
   const getCommit = (project) => (nxAffectedList.indexOf(project) > -1 ? selfCommit : 'latest');
 
   const payload = {
@@ -114,7 +120,7 @@ const getSelfPayload = ({ repoName, selfCommit, headRef }) => {
 };
 
 async function devstackDeploy() {
-  const { repository, repoName, pullNumber, selfCommit, headRef } = getConfig();
+  const { repository, repoName, pullNumber, selfCommit, affectedProjects } = getConfig();
 
   const depCommits = await getDevstackConfigContent();
   const dependencies = getDependencies(depCommits);
@@ -122,7 +128,7 @@ async function devstackDeploy() {
   const self = getSelfPayload({
     repoName,
     selfCommit,
-    headRef,
+    affectedProjects,
   });
 
   const payload = {
@@ -136,7 +142,7 @@ async function devstackDeploy() {
 }
 
 async function runE2ETests() {
-  const { repository, repoName, pullNumber, author, selfCommit, headRef } = getConfig();
+  const { repository, repoName, pullNumber, author, selfCommit, affectedProjects } = getConfig();
 
   const depCommits = await getDevstackConfigContent();
   const dependencies = getDependencies(depCommits);
@@ -150,7 +156,7 @@ async function runE2ETests() {
   const self = getSelfPayload({
     repoName,
     selfCommit,
-    headRef,
+    affectedProjects,
   });
   const payload = {
     ...deployData,

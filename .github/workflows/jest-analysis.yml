@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
   APP_NAME: dashboard
   HOME: /actions-runner/_work
@@ -41,13 +40,14 @@ jobs:
 
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
-        with: 
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+        with:
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
-          
+
       - name: Code coverage
         id: coverage
         uses: artiomtr/jest-coverage-report-action@v2.1.2
+        env:
+          DISABLE_REPORT_PORTAL_INTEGRATION: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           test-script: yarn test:jest:ci

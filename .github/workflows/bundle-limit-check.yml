@@ -2,9 +2,8 @@ name: Bundle Asset Checker
 
 on:
   pull_request:
-    types: [ edited, opened, synchronize, reopened ]
-    # branches:
-    #   - master
+    branches:
+      - master
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,17 +33,14 @@ jobs:
         run: |
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
       - run: npm install -g yarn
-
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
         with:
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build All
         run: npx lerna run --scope=web test:build:merchant
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           VERSION: ${{ github.sha }}
 
@@ -55,8 +51,7 @@ jobs:
           args: "--id sizelimit_dangerjs --dangerfile dangerfile-bundlelimit.js"
         env:
           GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-          DANGER_DISABLE_TRANSPILATION: 'true'
+          DANGER_DISABLE_TRANSPILATION: "true"
 
       - name: Print PR Report
         run: echo "PR Report - ${{ steps.sizelimit_dangerjs.outputs.bundleSizeReport }}"

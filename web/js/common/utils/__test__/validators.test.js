@@ -134,15 +134,21 @@ const MY_MOBILE_NUMBER = [
 
 describe('test for isMobile function', () => {
   describe('test scenarios for india', () => {
-    test.each(IN_MOBILE_NUMBER)('', ({ number, isValid }) => {
-      expect(isMobile(number)).toBe(isValid);
-      expect(isMobile(number, 'IN')).toBe(isValid);
-    });
+    test.each(IN_MOBILE_NUMBER)(
+      'should be valid mobile number for india',
+      ({ number, isValid }) => {
+        expect(isMobile(number)).toBe(isValid);
+        expect(isMobile(number, 'IN')).toBe(isValid);
+      },
+    );
   });
   describe('test scenarios for malaysia', () => {
-    test.each(MY_MOBILE_NUMBER)('', ({ number, isValid }) => {
-      expect(isMobile(number, 'MY')).toBe(isValid);
-    });
+    test.each(MY_MOBILE_NUMBER)(
+      'should be valid mobile number for malaysia',
+      ({ number, isValid }) => {
+        expect(isMobile(number, 'MY')).toBe(isValid);
+      },
+    );
   });
 });
 

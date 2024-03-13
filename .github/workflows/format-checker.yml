@@ -2,16 +2,7 @@ name: Format Checker Workflow
 
 on:
   pull_request:
-    types:
-      [
-        edited,
-        opened,
-        synchronize,
-        reopened,
-        assigned,
-        labeled,
-        review_requested,
-      ]
+    types: [opened, reopened, synchronize, labeled]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -41,17 +32,8 @@ jobs:
 
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
-        with: 
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
-
-      - name: DangerJS
-        uses: danger/danger-js@11.3.0
         with:
-          args: "--id formatchecker_dangerjs"
-        env:
-          GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          DANGER_DISABLE_TRANSPILATION: "true"
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Get changed files
         id: changed-files
@@ -82,7 +64,6 @@ jobs:
           ${{ steps.changed-files.outputs.all_modified_files }}
         continue-on-error: true
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           base: origin/${{ github.base_ref }}
 
@@ -125,7 +106,6 @@ jobs:
           -o stylelint-report.json \
           ${{ steps.changed-stylus-files.outputs.all_modified_files }}
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Annotate Stylus Linting Results

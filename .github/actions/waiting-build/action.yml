@@ -31,7 +31,8 @@ runs:
       with:
         ref: ${{ inputs.commit_id }}
         running-workflow-name: ${{ inputs.workflow_name }}
-        check-regexp: Build Dashboard.*
+        # TODO: Keeping this for now, fix in separate PR
+        check-name: "Build Dashboard"
         repo-token: ${{ inputs.github_token }}
         allowed-conclusions: success,skipped
         wait-interval: 45

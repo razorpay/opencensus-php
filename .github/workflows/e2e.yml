@@ -14,7 +14,6 @@ env:
   APP_NAME: dashboard
   HOME: /actions-runner/_work
   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
   DOCKER_USERNAME: ${{ secrets.HARBOR_DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
   DOCKER_REGISTRY: c.rzp.io
@@ -22,13 +21,16 @@ env:
   ImageOS: ubuntu20
 
 jobs:
-  build-and-run-e2e:
+  build-fe-e2e:
     name: Run E2E Tests on PR Comment or on master merge
     if: |
       (!!(github.event.pull_request) && contains(github.event.pull_request.labels.*.name, 'pr-ready-for-e2e')) ||
       (github.ref == 'refs/heads/master')
     timeout-minutes: 60
     runs-on: [non-api-premium]
+    outputs:
+      affected: ${{ steps.set-affected-output.outputs.affected }}
+      commit_id: ${{ steps.set-commit-id.outputs.commit_id }}
     steps:
       - name: Set Commit ID on PR
         if: ${{ !!(github.event.pull_request) && contains(github.event.pull_request.labels.*.name, 'pr-ready-for-e2e') }}
@@ -47,6 +49,10 @@ jobs:
       - name: Echo COMMIT_ID for changes
         run: |
           echo "COMMIT_ID: ${{ env.COMMIT_ID }}"
+
+      - name: Set COMMIT_ID in Output
+        id: set-commit-id
+        run: echo "::set-output name=commit_id::${{ env.COMMIT_ID }}"
 
       - name: Preparing Workflow Link
         id: e2e_github_workflow_action
@@ -91,7 +97,6 @@ jobs:
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
         with:
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Extract current branch name
@@ -110,6 +115,10 @@ jobs:
       - name: Echo Affected Projects
         run: echo ${{ env.AFFECTED }}
 
+      - name: Set Affected Projects Output
+        id: set-affected-output
+        run: echo "::set-output name=affected::${{ env.AFFECTED }}"
+
       - name: Build Docker Image
         uses: docker/build-push-action@v3
         with:
@@ -119,7 +128,6 @@ jobs:
           file: ./Dockerfile.e2e
           secrets: |
             github_access_token=${{env.GITHUB_ACCESS_TOKEN}}
-            npm_razorpay_token=${{env.NPM_RAZORPAY_TOKEN}}
           build-args: |
             APP_NAME=${{env.APP_NAME}}
             AFFFECTED_PROJECTS=${{ env.AFFECTED }}
@@ -127,10 +135,38 @@ jobs:
             INCLUDE_GROUPS=@project=payments|@project=partner-dashboard
             EXCLUDE_GROUPS=
 
+  trigger-fe-e2e-webhook:
+    name: Fire FE E2E Webhook
+    runs-on: [self-hosted]
+    needs: [build-fe-e2e]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+
+      - name: Use Node v18.12.1
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18.12.1
+
+      - name: Setup yarn
+        run: npm install -g yarn
+      
+      - name: Echo Commit ID
+        run: echo "Commit ID is ${{ needs.build-fe-e2e.outputs.commit_id }}"
+      
+      - name: Echo Affected Projects
+        run: echo "Commit ID is ${{ needs.build-fe-e2e.outputs.affected }}"
+
+      # TODO: optimize the below step to install depecndencies which are required for nx
+      # - name: Install dependencies with caching
+      #   uses: ./.github/actions/package-installer
+      #   with:
+      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+
       - name: Wait for dashboard's docker image to be built
         uses: ./.github/actions/waiting-build
         with:
-          commit_id: ${{ env.COMMIT_ID }}
+          commit_id: ${{ needs.build-fe-e2e.outputs.commit_id }}
           workflow_name: "Run E2E Tests on PR Comment or on master merge"
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -140,12 +176,13 @@ jobs:
         run: npm run add-prod-commits
 
       - name: Initiate E2E Tests via an argo webhook
-        run:  npm run test:e2e-infra
+        run: npm run test:e2e-infra
         env:
-          COMMIT_ID: ${{ env.COMMIT_ID }}
+          COMMIT_ID: ${{ needs.build-fe-e2e.outputs.commit_id }}
           PR_NUMBER: ${{ github.event.issue.number }}
           REPO_NAME: ${{ github.event.repository.name }}
           GITHUB_HEAD_REF: ${{ steps.extract_branch.outputs.branch }}
+          AFFECTED_PROJECTS: ${{ needs.build-fe-e2e.outputs.affected }}
           # Required DEVSTACK_CONFIG_PATH, After upgarding universe test version which supports devstack config path
           # DEVSTACK_CONFIG_PATH: ./e2e/devstackConfig/devstack.json
           JOB_URL: "https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard-fe-e2e"

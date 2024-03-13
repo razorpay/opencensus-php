@@ -39,14 +39,12 @@ jobs:
 
       - name: Install dependencies with caching
         uses: ./.github/actions/package-installer
-        with: 
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+        with:
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
-          
+
       - name: Build All
         run: npx lerna run --scope=web test:build:merchant
         env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           VERSION: ${{ github.sha }}
 
@@ -57,7 +55,6 @@ jobs:
           args: "--id tracksizelimit_dangerjs --dangerfile dangerfile-tracklimit.js"
         env:
           GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           DANGER_DISABLE_TRANSPILATION: "true"
 
       - name: Print Bundle Size Report

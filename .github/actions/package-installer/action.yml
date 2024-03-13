@@ -1,8 +1,6 @@
 name: Package installer with caching
 
 inputs:
-  npm_razorpay_token:
-    required: true
   github_access_token:
     required: true
 
@@ -30,5 +28,4 @@ runs:
         HUSKY=0 yarn --frozen-lockfile # Automatically installs modules in all packages too
       shell: bash
       env:
-        NPM_RAZORPAY_TOKEN: ${{ inputs.npm_razorpay_token }}
         GITHUB_ACCESS_TOKEN: ${{ inputs.github_access_token }}

@@ -1,14 +1,12 @@
 // For a detailed explanation regarding each configuration property, visit:
 // https://jestjs.io/docs/en/configuration.html
 const path = require('path');
-
 module.exports = {
   // Automatically clear mock calls and instances between every test
   clearMocks: true,
 
   // The directory where Jest should output its coverage files
   coverageDirectory: 'coverage',
-
   // An array of file extensions your modules use
   moduleFileExtensions: ['web.js', 'js', 'json', 'jsx', 'ts', 'tsx'],
 
@@ -72,8 +70,31 @@ module.exports = {
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   setupFilesAfterEnv: ['<rootDir>/common/services/test/setupTests.js'],
 
-  // Use this configuration option to add custom reporters to Jest
-  reporters: [['jest-silent-reporter', { useDots: true, showPaths: true }], 'jest-sonar'],
+  reporters: [
+    ['jest-silent-reporter', { useDots: true, showPaths: true }],
+    'jest-sonar',
+    ...(process.env.CI === 'true' && !process.env.DISABLE_REPORT_PORTAL_INTEGRATION
+      ? [
+          [
+            '@reportportal/agent-js-jest',
+            {
+              token: process.env.REPORT_PORTAL_TOKEN,
+              endpoint: `${process.env.REPORT_PORTAL_HOST}/api/v1`,
+              project: process.env.REPORT_PORTAL_PROJECT,
+              launch: process.env.REPORT_PORTAL_LAUNCH_NAME,
+              logLaunchLink: true,
+              debug: true,
+              attributes: [
+                {
+                  key: 'build',
+                  value: `${process.env.COMMIT_ID}`,
+                },
+              ],
+            },
+          ],
+        ]
+      : []),
+  ],
 
   // Indicates whether the coverage information should be collected while executing the test
   collectCoverage: true,
