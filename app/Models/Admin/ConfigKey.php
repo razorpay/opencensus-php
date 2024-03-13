@@ -320,6 +320,8 @@ class ConfigKey
 
     const RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING = self::PREFIX . 'rx_globally_whitelisted_payer_accounts_for_fund_loading';
 
+    const ACCOUNT_STATEMENT_SKIP_VALIDATE_BALANCE = self::PREFIX . 'account_statement_skip_validate_balance';
+
     // This will be used to get the number of records to save at once in bulk
     const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE = self::PREFIX . 'account_statement_records_to_save_at_once';
 

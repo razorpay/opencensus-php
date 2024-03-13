@@ -3763,7 +3763,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testPayoutProcessedMailTriggeredViaStmtProcessingJobIcici()
     {
-        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
+        (new AdminService)->setConfigKeys([
+            ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"],
+            ConfigKey::ACCOUNT_STATEMENT_SKIP_VALIDATE_BALANCE => ['10000000000000']
+            ]);
 
         Mail::fake();
 

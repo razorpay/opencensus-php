@@ -2234,6 +2234,8 @@ class Core extends Base\Core
 
         $merchant = $basDetails->merchant;
 
+        $this->isBalanceValidationRequired($basDetails->getMerchantId());
+
         try
         {
             $this->mutex->acquireAndRelease(
@@ -2308,6 +2310,29 @@ class Core extends Base\Core
         }
     }
 
+    protected int $isBalanceValidationRequired = 0;
+    protected function isBalanceValidationRequired(string $merchantId): bool
+    {
+        if ($this->isBalanceValidationRequired == 0)
+        {
+            if (!$this->shouldValidateBalanceForStatements($merchantId))
+            {
+                $this->isBalanceValidationRequired = 2;
+            }
+            else
+            {
+                $this->isBalanceValidationRequired = 1;
+            }
+        }
+
+        if ($this->isBalanceValidationRequired == 2)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     protected function setCreditBeforeDebitUtrsFromRedis(string $accountNumber)
     {
         $creditBeforeDebitUtrsRedis = (new AdminService)->getConfigKey(['key' => ConfigKey::BAS_CREDIT_BEFORE_DEBIT_UTRS]);
@@ -2379,6 +2404,8 @@ class Core extends Base\Core
         $totalRecordCount = 0;
         $initialOffset = 0;
 
+        $validateBalance = $this->isBalanceValidationRequired($basDetails->getMerchantId());
+
         foreach ($bankTransactions as $bankTransaction)
         {
             $basEntity = (new Entity)->build($bankTransaction);
@@ -2411,17 +2438,33 @@ class Core extends Base\Core
                     'is_processing'       => false,
                 ]);
 
-                throw new Exception\LogicException('Statement record balance is not in correct order',
-                    ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_STATEMENT_BALANCES_DO_NOT_MATCH,
-                    [
-                        'account_number'    => $accountNumber,
-                        'merchant_id'       => $merchant->getId(),
-                        'channel'           => $channel,
-                        'row_balance'       => $basEntity->getBalance(),
-                        'previous_balance'  => $previousClosingBalance,
-                        'bas_amount'        => $basEntity->getAmount(),
-                        'bas_type'          => $basEntity->getType(),
-                    ]);
+                if ($validateBalance)
+                {
+                    throw new Exception\LogicException('Statement record balance is not in correct order',
+                        ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_STATEMENT_BALANCES_DO_NOT_MATCH,
+                        [
+                            'account_number'    => $accountNumber,
+                            'merchant_id'       => $merchant->getId(),
+                            'channel'           => $channel,
+                            'row_balance'       => $basEntity->getBalance(),
+                            'previous_balance'  => $previousClosingBalance,
+                            'bas_amount'        => $basEntity->getAmount(),
+                            'bas_type'          => $basEntity->getType(),
+                        ]);
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_BALANCES_DO_NOT_MATCH,
+                        [
+                            'account_number'    => $accountNumber,
+                            'merchant_id'       => $merchant->getId(),
+                            'channel'           => $channel,
+                            'row_balance'       => $basEntity->getBalance(),
+                            'previous_balance'  => $previousClosingBalance,
+                            'bas_amount'        => $basEntity->getAmount(),
+                            'bas_type'          => $basEntity->getType(),
+                        ]);
+                }
             }
 
             $previousClosingBalance = $basEntity->getBalance();
@@ -2519,6 +2562,27 @@ class Core extends Base\Core
 
             (new BASDetails\Core)->createOrUpdate($basDetailInput);
         }
+    }
+
+    protected function shouldValidateBalanceForStatements(string $merchantId): bool
+    {
+        try {
+            $merchantIds = (new AdminService)->getConfigKey(
+                ['key' => ConfigKey::ACCOUNT_STATEMENT_SKIP_VALIDATE_BALANCE]);
+        }
+        catch (\Throwable $exception)
+        {
+            $merchantIds = [];
+        }
+
+
+        if ((in_array('*', $merchantIds, true) === true) or
+            (in_array($merchantId, $merchantIds, true) === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function checkAndUpdateBalanceForExistingAccounts($lastBankTxn, $bankTransactions, & $previousClosingBalance, $merchant)
@@ -2938,11 +3002,24 @@ class Core extends Base\Core
 
     protected function saveAccountStatementV2(Base\PublicCollection $basEntities, Merchant\Entity $merchant)
     {
+        /** @var Entity $basEntity */
         foreach ($basEntities as $basEntity)
         {
+            $basEntity->setConnection($this->mode);
+
             try
             {
                 list($sourceEntity, $isSourceAlreadyCreated) = $this->linkAccountStatementRecord($basEntity, $merchant);
+
+                // trigger mail only if account type is of direct , transaction is created, payout is in processed state
+                if (($sourceEntity->getEntityName() === Constants\Entity::PAYOUT) and
+                    ($sourceEntity->isBalanceAccountTypeDirect() === true) and
+                    ($sourceEntity->isOfMerchantTransaction() === true) and
+                    ($sourceEntity->getStatus() === Status::PROCESSED))
+                {
+                    $event = "payout.processed";
+                    (new Transaction\Notifier($sourceEntity->transaction, $event))->notify();
+                }
 
                 // for statement under fix we send event to ledger after inserting all the missing statements outside the transaction
                 if ($this->isStatementUnderFix === false)
@@ -3400,15 +3477,6 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payout);
 
-        // trigger mail only if account type is of direct , transaction is created, payout is in processed state
-        if ( ($payout->isBalanceAccountTypeDirect() === true) and
-             ($payout->isOfMerchantTransaction() === true) and
-             ($payout->getStatus() === Status::PROCESSED))
-        {
-            $event = "payout.processed";
-            (new Transaction\Notifier($payout->transaction, $event))->notify();
-        }
-
         return $payout;
     }
 
@@ -3791,61 +3859,8 @@ class Core extends Base\Core
             return null;
         }
 
-        $startTime = microtime(true);
+        return null;
 
-        // we are checking both linked and unlinked payouts because debit row might have already been
-        // processed.
-        $payouts = $this->repo->payout->fetchPayoutsFromCmsRefNumberinTimeRange(
-            $bankTxnId,
-            $basEntity->getPostedDate(),
-            $bankTimeBeforePostedDateForNonIFT,
-            $basEntity->getAmount(),
-            $balance->getId());
-
-        $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING, [
-            'cms_ref_no'                                              => $bankTxnId,
-            'payout_ids'                                              => $payouts->getQueueableIds(),
-            'bas_id'                                                  => $basEntity->getId(),
-            'account_number'                                          => $basEntity->getAccountNumber(),
-            'merchant_id'                                             => $basEntity->getMerchantId(),
-            'payouts_fetched_via_cms_ref_no_for_non_ift_mapping_time' => (microtime(true) - $startTime) * 1000,
-        ]);
-
-        if ($payouts->count() === 1)
-        {
-            return $payouts->first();
-        }
-
-        if ($payouts->count() > 1)
-        {
-            $createExternalSource = true;
-
-            $remarks = 'multiple payouts found with same cms ref no for non IFT for credit mapping';
-
-            $data = [
-                'channel'     => $basEntity->getChannel(),
-                'amount'      => $basEntity->getAmount(),
-                'payout_ids'  => $payouts->getQueueableIds(),
-                'merchant_id' => $basEntity->getMerchantId(),
-                'cms_ref_no'  => $bankTxnId
-            ];
-
-            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING, [
-                'data' => $data,
-            ]);
-
-            $operation = 'multiple payouts found with same cms ref no for non IFT for credit mapping in account statement fetch';
-
-            (new SlackNotification)->send(
-                $operation,
-                $data,
-                null,
-                1,
-                'rx_ca_rbl_alerts');
-
-            return null;
-
-        }
         // we are removing the search on return_utr. The detailed reasoning is present here
         // https://razorpay.slack.com/archives/C01CX0EC34M/p1613643176033700
     }
@@ -4103,53 +4118,7 @@ class Core extends Base\Core
             return null;
         }
 
-        $startTime = microtime(true);
-
-        // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
-        // record with payout.
-        $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromCmsRefNumber(
-                                                                        $bankTxnId,
-                                                                        $basEntity->getAmount(),
-                                                                        $balance->getId());
-
-        $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_DEBIT_MAPPING, [
-            'cms_ref_no'                                              => $bankTxnId,
-            'payout_ids'                                              => $payouts->getQueueableIds(),
-            'bas_id'                                                  => $basEntity->getId(),
-            'account_number'                                          => $basEntity->getAccountNumber(),
-            'merchant_id'                                             => $basEntity->getMerchantId(),
-            'payouts_fetched_via_cms_ref_no_for_non_ift_mapping_time' => (microtime(true) - $startTime) * 1000
-        ]);
-
-        if ($payouts->count() > 1)
-        {
-            $createExternalSource = true;
-            $remarks                = 'multiple payouts found with same cms ref no for non IFT for debit mapping';
-
-            $data = [
-                'channel'     => $basEntity->getChannel(),
-                'amount'      => $basEntity->getAmount(),
-                'merchant_id' => $basEntity->getMerchantId(),
-                'payout_ids'  => $payouts->getQueueableIds(),
-            ];
-
-            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING, [
-                'data' => $data,
-            ]);
-
-            $operation = 'multiple payouts found with same cms ref no for non IFT for debit mapping in account statement fetch';
-
-            (new SlackNotification)->send(
-                $operation,
-                $data,
-                null,
-                1,
-                'rx_ca_rbl_alerts');
-
-            return null;
-        }
-
-        return $payouts->first();
+        return null;
     }
 
     protected function validateBalance(Entity $basEntity, Base\PublicEntity $sourceEntity)
@@ -4165,18 +4134,39 @@ class Core extends Base\Core
                 'is_processing'       => true,
             ]);
 
-            throw new Exception\LogicException(
-                'Balance at channel does not match with our balance',
-                ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_STATEMENT_BALANCES_DO_NOT_MATCH,
-                [
-                    'rzp_balance'     => $balanceCalculated,
-                    'channel_balance' => $balanceAtBankSide,
-                    'merchant_id'     => $basEntity->getMerchantId(),
-                    'account_number'  => $basEntity->getAccountNumber(),
-                    'bank_txn_id'     => $basEntity->getBankTransactionId(),
-                ]
-            );
+            if ($this->isBalanceValidationRequired($basEntity->getMerchantId()))
+            {
+                throw new Exception\LogicException(
+                    'Balance at channel does not match with our balance',
+                    ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_STATEMENT_BALANCES_DO_NOT_MATCH,
+                    [
+                        'rzp_balance'     => $balanceCalculated,
+                        'channel_balance' => $balanceAtBankSide,
+                        'merchant_id'     => $basEntity->getMerchantId(),
+                        'account_number'  => $basEntity->getAccountNumber(),
+                        'bank_txn_id'     => $basEntity->getBankTransactionId(),
+                    ]
+                );
+            }
+            else
+            {
+                $this->updateBalanceAccordingToStatement($basEntity, $sourceEntity->transaction);
+            }
         }
+    }
+
+    protected function updateBalanceAccordingToStatement(Entity $bas, Transaction\Entity $transaction)
+    {
+        $transaction->setBalance($bas->getBalance(), 0, false);
+
+        /** @var Merchant\Balance\Entity $balance */
+        $balance = $transaction->accountBalance;
+
+        $balance->setBalance($bas->getBalance());
+
+        $this->repo->balance->saveOrFail($balance);
+        $this->repo->transaction->saveOrFail($transaction);
+
     }
 
     protected function checkAndTraceForStaleResponse(int $bankTxnCount, int $processedCount, string $accountNumber)

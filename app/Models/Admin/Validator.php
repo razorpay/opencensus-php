@@ -227,6 +227,7 @@ class Validator extends Base\Validator
         ConfigKey::RX_LIMIT_STATEMENT_FIX_ENTITIES_UPDATE                              => 'filled|integer',
         ConfigKey::RX_POSTED_DATE_WINDOW_FOR_PREVIOUS_BAS_SEARCH                       => 'filled|integer',
         ConfigKey::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING             => 'filled|array',
+        ConfigKey::ACCOUNT_STATEMENT_SKIP_VALIDATE_BALANCE                                  => 'array',
         ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE                           => 'filled|integer',
         ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL                          => 'filled|integer',
         ConfigKey::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS                               => 'filled|integer',

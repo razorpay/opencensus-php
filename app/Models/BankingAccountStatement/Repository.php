@@ -191,7 +191,7 @@ class Repository extends Base\Repository
 
     public function fetchUnlinkedBasRecords(string $accountNumber, string $channel, $limit)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
                     ->where(Entity::CHANNEL, $channel)
                     ->whereNull(Entity::TRANSACTION_ID)
