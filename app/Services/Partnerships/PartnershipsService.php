@@ -360,7 +360,7 @@ class PartnershipsService extends Base\Service
             'entity_type'=> 'merchant',
             'name'       => 'SIGNUP_SOURCE'
         ];
-        $response =  $this->sendRequestWithRetry($parameters, self::GET_SUBM_SIGNUP_SOURCE, Requests::POST);
+        $response =  $this->sendRequestWithRetry($parameters, self::GET_SUBM_SIGNUP_SOURCE, Requests::POST, Mode::LIVE);
         return (empty($response) || empty($response['settings'])) ? "" : $response['settings']['value'];
     }
 
@@ -578,7 +578,7 @@ class PartnershipsService extends Base\Service
                             'payload'  => $jobPayload,
                         ]
                     );
-                    $messageId = $this->pushRawJob($jobPayload, 'prts_common');
+                    $messageId = $this->pushRawJob($jobPayload, 'prts_common', Mode::LIVE);
                     $this->trace->info(TraceCode::PRTS_CREATE_SIGNUP_SOURCE_DISPATCHED, [
                         'payload'   => $jobPayload,
                         'messageId' => $messageId
@@ -748,9 +748,10 @@ class PartnershipsService extends Base\Service
      *
      * @return  string
      */
-    public function pushRawJob(array $data, string $queueConfigKey): string
+    public function pushRawJob(array $data, string $queueConfigKey, string $mode = null): string
     {
-        $queueName = $this->app['config']->get('queue.' . $queueConfigKey . '.' . $this->app['rzp.mode']);
+        $mode = $mode ?? $this->app['rzp.mode'];
+        $queueName = $this->app['config']->get('queue.' . $queueConfigKey . '.' . $mode);
         $connection = $this->getQueueConnection($queueConfigKey);
 
         return $this->app['queue']->connection($connection)->pushRaw(json_encode($data), $queueName);
