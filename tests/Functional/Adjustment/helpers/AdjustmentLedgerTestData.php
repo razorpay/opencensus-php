@@ -154,7 +154,7 @@ return [
     ],
     'testMissingAdjustmentTransactionsCreateCron' => [
         'request' => [
-            'url' => '/ledger_outbox/adjustments/txn/create',
+            'url' => '/ledger_outbox/missing/txn/create',
             'method' => 'POST',
             'content' => [
                 "init"  => "start"

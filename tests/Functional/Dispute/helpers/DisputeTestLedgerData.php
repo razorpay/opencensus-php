@@ -191,5 +191,29 @@ return [
             "internal_error_code" => "BAD_REQUEST_ERROR"
         ],
     ],
+
+    'testDisputeDeductMissingTransactionCreation' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 1000,
+                'deduct_at_onset'      => 1,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'             => 1000,
+                'amount_deducted'    => 1000,
+                'currency'           => 'INR',
+                'phase'              => 'chargeback',
+                'status'             => 'open',
+                'reason_code'        => 'KFRER_R',
+            ],
+        ],
+    ],
 ];
 

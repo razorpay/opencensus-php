@@ -1706,29 +1706,37 @@ class Core extends Base\Core
 
     public function validateAndCreateMissingAdjustmentTransaction(Adjustment\Entity $adjustment)
     {
-        $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
-            EntityConstants::MERCHANT,
-            $adjustment->getMerchantId(),
-            Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
-
-        if($feature === null)
-        {
-            return [
-                "adjustment_id" => $adjustment->getId(),
-                "message"   => "reverse shadow not enabled"
-            ];
-        }
 
         if($adjustment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
         {
             $this->trace->info(TraceCode::REVERSE_SHADOW_NOT_ENABLED, [
-                "merchant_id"   => $adjustment->getMerchantId()
+                "merchant_id"   => $adjustment->getMerchantId(),
+                "adjustment_id" => $adjustment->getId(),
             ]);
 
             throw(new \Exception(TraceCode::REVERSE_SHADOW_NOT_ENABLED));
         }
 
-        $transactorEvent = Constants::ADJUSTMENT_PROCESSED;
+        $balanceId = $adjustment->getBalanceId();
+
+        $balance = $this->repo->balance->findByIdAndMerchant($balanceId, $adjustment->merchant);
+
+        if($balance->getType() != Constants::PRIMARY)
+        {
+            $this->trace->info(TraceCode::MISSING_TRANSACTION_ONLY_CREATED_ON_PRIMARY_BALANCE, [
+                "merchant_id"   => $adjustment->getMerchantId(),
+                "adjustment_id" => $adjustment->getId(),
+            ]);
+
+            throw(new \Exception(TraceCode::MISSING_TRANSACTION_ONLY_CREATED_ON_PRIMARY_BALANCE));
+        }
+
+        $transactorEvent = LedgerConstants::POSITIVE_ADJUSTMENT;
+
+        if ($adjustment->getAmount() < 0)
+        {
+            $transactorEvent =  LedgerConstants::NEGATIVE_ADJUSTMENT;
+        }
 
         $ledgerService = $this->app['ledger'];
 
@@ -1737,6 +1745,15 @@ class Core extends Base\Core
         if($adjustment->getEntityType() === "dispute")
         {
             $publicId = "disp_".$adjustment->getEntityId();
+
+            if ($adjustment->getAmount() < 0)
+            {
+                $transactorEvent =  LedgerConstants::RAZORPAY_DISPUTE_DEDUCT;
+            }
+            else
+            {
+                $transactorEvent = LedgerConstants::RAZORPAY_DISPUTE_REVERSAL;
+            }
         }
 
         $journal = $this->getJournalByTransactorInfo($publicId, $transactorEvent, $ledgerService);

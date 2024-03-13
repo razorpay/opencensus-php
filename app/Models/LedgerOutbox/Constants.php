@@ -17,6 +17,7 @@ class Constants
     const CRON_TYPE         = "cron_type";
     const CODE              = "code";
     const MSG               = "msg";
+    const PRIMARY           = "primary";
 
     const LEDGER_ACCOUNT_NOT_FOUND                     = "ledger_account_not_found";
     const ERROR_TYPE                                   = "error_type";

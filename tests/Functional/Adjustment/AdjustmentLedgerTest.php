@@ -925,7 +925,7 @@ class AdjustmentLedgerTest extends TestCase
             "currency"=> "INR",
             "tenant"=> "PG",
             "transactor_id"=> "adj_LLJMDzXXyjd7UI",
-            "transactor_event"=> "adjustment_processed",
+            "transactor_event"=> "positive_adjustment",
             "transaction_date"=> 1677466530,
             "ledger_entry"=> [
                 [

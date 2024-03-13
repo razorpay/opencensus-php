@@ -67,7 +67,8 @@ class DisputeLedgerTest extends TestCase
             "money_params"          => [
                 "merchant_balance_amount"       => "1000",
                 "base_amount"                   => "1000",
-                "gateway_dispute_payable_amount"=> "1000"
+                "gateway_dispute_payable_amount"=> "1000",
+                "merchant_balance_limit"        => "0",
             ]
         ];
 
@@ -1070,6 +1071,238 @@ class DisputeLedgerTest extends TestCase
             $this->assertEquals( $dispute['amount_reversed'], 0);
 
         }
+    }
+
+    public function testDisputeDeductMissingTransactionCreation()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $testData = $this->updateCreateTestData();
+
+        $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->ba->adminAuth();
+
+        $expectedJournalPayload = [
+            "merchant_id"           => "10000000000000",
+            "currency"              => "INR",
+            "transaction_date"      => "", // any
+            "transactor_id"         => "", // any
+            "transactor_event"      => "razorpay_dispute_deduct",
+            "money_params"          => [
+                "merchant_balance_amount"       => "1000",
+                "base_amount"                   => "1000",
+                "gateway_dispute_payable_amount"=> "1000",
+                "merchant_balance_limit"        => "0",
+            ]
+        ];
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload) {
+                $this->assertArrayHasKey('transaction_date',$journalPayload);
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['money_params'], $journalPayload['money_params']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn([
+                'code' => 200,
+                'body' => [
+                    "id"=> "LO8XsENYT8eoLp",
+                    "created_at"=> "1678083477",
+                    "updated_at"=> "1678083477",
+                    "amount"=> "1000",
+                    "base_amount"=> "1000",
+                    "currency"=> "INR",
+                    "tenant"=> "PG",
+                    "transactor_id"=> "disp_LO8XoBzYDF42Qf",
+                    "transactor_event"=> "razorpay_dispute_deduct",
+                    "transaction_date"=> "1678083475",
+                    "ledger_entry"=> [
+                        [
+                            "id"=> "LO8XsEY2FgCgvg",
+                            "created_at"=> "1678083477",
+                            "updated_at"=> "1678083477",
+                            "merchant_id"=> "10000000000000",
+                            "journal_id"=> "LO8XsENYT8eoLp",
+                            "account_id"=> "JjpZUD9PmJeNPk",
+                            "amount"=> "1000",
+                            "base_amount"=> "1000",
+                            "type"=> "debit",
+                            "currency"=> "INR",
+                            "balance"=> "540189.000000",
+                            "balance_updated"=> true,
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_balance"
+                                ]
+                            ]
+                        ],
+                        [
+                            "id"=> "LO8XsEY3C4sdPg",
+                            "created_at"=> "1678083477",
+                            "updated_at"=> "1678083477",
+                            "merchant_id"=> "10000000000000",
+                            "journal_id"=> "LO8XsENYT8eoLp",
+                            "account_id"=> "LO89uSsPrzZHUe",
+                            "amount"=> "1000",
+                            "base_amount"=> "1000",
+                            "type"=> "credit",
+                            "currency"=> "INR",
+                            "balance"=> "",
+                            "balance_updated"=> false,
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "gateway_dispute"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ]);
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotNull($response, 'response should not be null');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'   => 1000,
+            'internal_status'   => 'open',
+        ], $dispute);
+
+        $this->assertEqualsWithDelta($dispute['created_at'] + self::SECONDS_IN_DAY * 10, $dispute['internal_respond_by'], 5);
+
+        $adjustment = $this->getLastEntity('adjustment', true);
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+        $this->assertEquals('10000000000000', $adjustment['merchant_id']);
+        $this->assertEquals(-1000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
+        $this->assertNull($adjustment['transaction_id'], 'transaction should be null');
+        $this->assertEquals($adjustment['entity_type'], 'dispute','entity_type should be dispute');
+        $this->assertNotNull($adjustment['entity_id'], 'entity_id should not be null');
+
+        $txn = $this->getDbEntity('transaction', ['type'=>'adjustment']);
+        // transaction is not created yet
+        $this->assertNull($txn, 'transaction should be null');
+
+        $createdAtTimestamp = (int)((millitime()-32400000)/1000);
+
+        $this->fixtures->edit("adjustment", $adjustment['id'], ["created_at" => $createdAtTimestamp]);
+
+        $adjustment = $this->getLastEntity('adjustment', true);
+
+        $journal = $this->getJournal();
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andReturn([
+                    "body" => $journal
+                ]
+            );
+
+        $request = [
+            'url' => '/ledger_outbox/missing/txn/create',
+            'method' => 'POST',
+            'content' => [
+                "init"  => "start"
+            ]
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->assertNull($txn);
+    }
+
+    private function getJournal()
+    {
+
+        return [
+            "id"=> "LLJMDzXXytv87X",
+            "created_at"=> 1677466532,
+            "updated_at"=> 1677466532,
+            "amount"=> "100",
+            "base_amount"=> "100",
+            "currency"=> "INR",
+            "tenant"=> "PG",
+            "transactor_id"=> "adj_LLJMDzXXyjd7UI",
+            "transactor_event"=> "positive_adjustment",
+            "transaction_date"=> 1677466530,
+            "ledger_entry"=> [
+                [
+                    "id"=> "LLJMDzXXyjC93B",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "Jk3pWyD5WaSSPP",
+                    "amount"=> "100",
+                    "base_amount"=> "100",
+                    "type"=> "credit",
+                    "currency"=> "INR",
+                    "balance"=> "100.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "receivable"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_balance"
+                        ]
+                    ]
+                ],
+                [
+                    "id"=> "LLJMDzXYypsmcx",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "JjpZUAEYlvYbEG",
+                    "amount"=> "100",
+                    "base_amount"=> "100",
+                    "type"=> "debit",
+                    "currency"=> "INR",
+                    "balance"=> "100.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "fund_account_type"=> [
+                            "adjustment_payable"
+                        ]
+                    ]
+                ]
+            ]
+        ];
     }
 
 }
