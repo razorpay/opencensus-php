@@ -146,15 +146,15 @@ class PaperNachIcici extends Base
         {
             $count = 0;
 
-            $key = Carbon::now()->getTimestamp();
-            $mandateCreateDateEnabled = $this->isMandateCreateDateRazorxEnabled($key);
-
             foreach ($data as $token)
             {
                 // files are grouped based on 50 registrations i.e 150 files
-                $dirName = $this->prepareFilesForToken($token, $count, $mandateCreateDateEnabled);
+                $dirName = $this->prepareFilesForToken($token, $count);
 
-                $count++;
+                if(empty($dirName) === false)
+                {
+                    $count++;
+                }
             }
 
             // For the last set of files that need to be zipped
@@ -288,7 +288,7 @@ class PaperNachIcici extends Base
         return number_format($amount / 100, 2, '.', '');
     }
 
-    protected function prepareFilesForToken($token, $count, $mandateCreateDateEnabled): string
+    protected function prepareFilesForToken($token, $count): string
     {
         $fileNo = $count + 1;
 
@@ -308,9 +308,15 @@ class PaperNachIcici extends Base
 
         $jpgFileName = $baseFileName . '_detailfront.jpg';
 
-        $formGenerationDate = $this->generateImages($token, $dirName, $tiffFileName, $jpgFileName);
+        [$formGenerationDate, $isImageGenerated] = $this->generateImages($token, $dirName, $tiffFileName, $jpgFileName);
 
-        $this->generateXml($token, $dirName, $baseFileName, $formGenerationDate, $mandateCreateDateEnabled);
+        // if image is not generated, no need to proceed for xml file generation
+        if($isImageGenerated === false)
+        {
+            return "";
+        }
+
+        $this->generateXml($token, $dirName, $baseFileName, $formGenerationDate);
 
         // zip file can contain max 150 files (50 registrations - 1 xml, 2 images)
         if (($count % $this->zipFileSize) === ($this->zipFileSize - 1))
@@ -327,7 +333,7 @@ class PaperNachIcici extends Base
     /*
      * Generates the image and returns the date when paper mandate form was generated
      */
-    protected function generateImages($token, $dirName, $tiffName, $jpgName)
+    protected function generateImages($token, $dirName, $tiffName, $jpgName): array
     {
         $paymentId = $token['payment_id'];
 
@@ -345,6 +351,15 @@ class PaperNachIcici extends Base
 
         try
         {
+            // If url is null then return.
+            // One such instance is when multiple payments are created again same invoice, but each invoice is attached to only one
+            // subscription_registration entity. When it tries to fetch subscription_registration entity using token_id, then for one of
+            // the payments, it will return null
+            if ($url === null)
+            {
+                return [$formGenerationDate, false];
+            }
+
             $jpgFileContents = file_get_contents($url);
 
             $image = new Imagick();
@@ -386,10 +401,10 @@ class PaperNachIcici extends Base
         Storage::put($filePath . $jpgName ,  $jpgFileContents);
         Storage::put($filePath . $tiffName, $tiffFileContents);
 
-        return $formGenerationDate;
+        return [$formGenerationDate, true];
     }
 
-    protected function generateXml($token, $dirName, $fileName, $formGenerationEpoch, $mandateCreateDateEnabled)
+    protected function generateXml($token, $dirName, $fileName, $formGenerationEpoch)
     {
         $merchant = $token->merchant;
 
@@ -455,10 +470,8 @@ class PaperNachIcici extends Base
 
         $occurences->addChild(RequestFields::FREQUENCY, Constants::ADHOC);
 
-        if($mandateCreateDateEnabled === true){
-            $formGenerationDate = Carbon::createFromTimestamp($formGenerationEpoch, Timezone::IST)->format('Y-m-d');
-            ($occurences->addChild(RequestFields::DRTN))->addChild(RequestFields::FORM_DATE, $formGenerationDate);
-        }
+        $formGenerationDate = Carbon::createFromTimestamp($formGenerationEpoch, Timezone::IST)->format('Y-m-d');
+        ($occurences->addChild(RequestFields::DRTN))->addChild(RequestFields::FORM_DATE, $formGenerationDate);
 
         $occurences->addChild(RequestFields::FIRST_COLLECTION_DATE, $firstCollectionDate);
 
@@ -586,11 +599,4 @@ class PaperNachIcici extends Base
         return $accountTypeMap[$accountType] ?? 'savings';
     }
 
-    private function isMandateCreateDateRazorxEnabled($key): bool
-    {
-        $status = $this->app['razorx']->getTreatment($key,
-            RazorxTreatment::ICICI_PNACH_MANDATE_CREATION_DATE_RAZORX, $this->mode);
-
-        return (strtolower($status) === 'on');
-    }
 }

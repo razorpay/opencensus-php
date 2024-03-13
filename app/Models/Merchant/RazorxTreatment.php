@@ -603,9 +603,6 @@ final class RazorxTreatment
     // Experiment to control Emandate Nach payments processing for async balance merchants through worker queues
     const EMANDATE_ASYNC_PAYMENT_WITH_ASYNC_BAL_ENABLED = 'emandate_async_payment_with_async_balance';
 
-    // Experiment to send emandate esign payment's on signdesk gateway's new service
-    const ESIGN_REQUEST_ON_NEW_SERVICE_ENABLED = 'esign_request_on_new_service_enabled';
-
     // Experiment to cache terminals for bank Transfer
     const SMART_COLLECT_TERMINAL_CACHING = 'smart_collect_terminal_caching';
 
@@ -959,9 +956,6 @@ final class RazorxTreatment
      */
     const SKIP_UPI_ICICI_CALLBACK_FOR_BT = 'skip_upi_icici_callback_for_bt';
     const RECURRING_SIHUB_CANCEL_WEBHOOK_ENABLED = 'recurring_sihub_webhook_enabled';
-
-    // Experiment to pass mandate date creation in icici paper nach registration files
-    const ICICI_PNACH_MANDATE_CREATION_DATE_RAZORX = 'icici_pnach_mandate_creation_date_razorx';
 
     const APPEND_GATEWAY_PAYMENT_ID_PAYU = 'append_gateway_payment_id_payu';
 

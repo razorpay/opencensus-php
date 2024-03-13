@@ -156,41 +156,54 @@ class CombinedNachIcici extends Debit\Base
 
             $utilityCode = $token->terminal->getGatewayMerchantId2();
 
-            $data = $this->getNachDebitData($token, $paymentId);
+            list($data, $isValid) = $this->getNachDebitData($token, $paymentId);
 
-            $row = [
-                Headings::ACH_TRANSACTION_CODE             => Fields::ACH_TRANSACTION_CODE,
-                Headings::CONTROL_9S                       => Fields::CONTROL_9,
-                Headings::DESTINATION_ACCOUNT_TYPE         => $data[Fields::ACCOUNT_TYPE_VALUE],
-                Headings::LEDGER_FOLIO_NUMBER              => Fields::LEDGER_FOLIO_NUMBER,
-                Headings::CONTROL_15S                      => Fields::CONTROL_15,
-                Headings::BENEFICIARY_ACCOUNT_HOLDER_NAME  => $data[Fields::ACCOUNT_NAME],
-                Headings::CONTROL_9SS                      => Fields::CONTROL_9,
-                Headings::CONTROL_7S                       => Fields::CONTROL_7,
-                Headings::USER_NAME                        => $data[Fields::USERNAME],
-                Headings::CONTROL_13S                      => Fields::CONTROL_13,
-                Headings::AMOUNT                           => $data[Fields::AMOUNT],
-                Headings::ACH_ITEM_SEQ_NO                  => Fields::ACH_ITEM_SEQ_NUMBER,
-                Headings::CHECKSUM                         => Fields::CHECK_SUM,
-                Headings::FLAG                             => Fields::FLAG,
-                Headings::REASON_CODE                      => Fields::REASON_CODE,
-                Headings::DESTINATION_BANK_IFSC            => $data[Fields::IFSC],
-                Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER  => $data[Fields::ACCOUNT_NUMBER],
-                Headings::SPONSOR_BANK_IFSC                => $data[Fields::SPONSER_BANK],
-                Headings::USER_NUMBER                      => $data[Fields::UTILITY_CODE],
-                Headings::TRANSACTION_REFERENCE            => $data[Fields::TRANSACTION_REFERENCE],
-                Headings::PRODUCT_TYPE                     => Fields::PRODUCT_TYPE,
-                Headings::BENEFICIARY_AADHAR_NUMBER        => Fields::BENEFICIARY_AADHAR_NUMBER,
-                Headings::UMRN                             => $data[Fields::UMRN],
-                Headings::FILLER                           => Fields::FILLER,
-            ];
+            if ($isValid === true)
+            {
+                $row = [
+                    Headings::ACH_TRANSACTION_CODE             => Fields::ACH_TRANSACTION_CODE,
+                    Headings::CONTROL_9S                       => Fields::CONTROL_9,
+                    Headings::DESTINATION_ACCOUNT_TYPE         => $data[Fields::ACCOUNT_TYPE_VALUE],
+                    Headings::LEDGER_FOLIO_NUMBER              => Fields::LEDGER_FOLIO_NUMBER,
+                    Headings::CONTROL_15S                      => Fields::CONTROL_15,
+                    Headings::BENEFICIARY_ACCOUNT_HOLDER_NAME  => $data[Fields::ACCOUNT_NAME],
+                    Headings::CONTROL_9SS                      => Fields::CONTROL_9,
+                    Headings::CONTROL_7S                       => Fields::CONTROL_7,
+                    Headings::USER_NAME                        => $data[Fields::USERNAME],
+                    Headings::CONTROL_13S                      => Fields::CONTROL_13,
+                    Headings::AMOUNT                           => $data[Fields::AMOUNT],
+                    Headings::ACH_ITEM_SEQ_NO                  => Fields::ACH_ITEM_SEQ_NUMBER,
+                    Headings::CHECKSUM                         => Fields::CHECK_SUM,
+                    Headings::FLAG                             => Fields::FLAG,
+                    Headings::REASON_CODE                      => Fields::REASON_CODE,
+                    Headings::DESTINATION_BANK_IFSC            => $data[Fields::IFSC],
+                    Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER  => $data[Fields::ACCOUNT_NUMBER],
+                    Headings::SPONSOR_BANK_IFSC                => $data[Fields::SPONSER_BANK],
+                    Headings::USER_NUMBER                      => $data[Fields::UTILITY_CODE],
+                    Headings::TRANSACTION_REFERENCE            => $data[Fields::TRANSACTION_REFERENCE],
+                    Headings::PRODUCT_TYPE                     => Fields::PRODUCT_TYPE,
+                    Headings::BENEFICIARY_AADHAR_NUMBER        => Fields::BENEFICIARY_AADHAR_NUMBER,
+                    Headings::UMRN                             => $data[Fields::UMRN],
+                    Headings::FILLER                           => Fields::FILLER,
+                ];
 
-            $rows[$utilityCode][] = $row;
+                $rows[$utilityCode][] = $row;
+            }
+            else
+            {
+                $this->trace->warning(
+                    TraceCode::NACH_DEBIT_REQUEST_ERROR,
+                    [
+                        'payment_id' => $paymentId,
+                    ]
+                );
+            }
+
         }
 
         return $rows;
     }
-    
+
     /**
      * @throws GatewayErrorException
      */
@@ -205,37 +218,37 @@ class CombinedNachIcici extends Debit\Base
                       ->files()
                       ->whereIn(FileStore\Entity::ID, $this->fileStore)
                       ->get();
-        
+
         $this->sendFilesInBatches($files, 1);
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
-        
+
         $type = Constants::COMBINED_NACH_ICICI . '_' . self::STEP;
 
         $mailable = new NachMail(['mailData' => $this->mailData], $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
     }
-    
+
     protected function sendFilesBulk($files)
     {
         $fileInfo = [];
-        
+
         foreach ($files as $file)
         {
             $fullFileName = $file->getName() . '.' . $file->getExtension();
-            
+
             $fileInfo[] = $fullFileName;
         }
-        
+
         $beamResponse = $this->beamPushRequest($fileInfo);
-        
+
         if ((isset($beamResponse['success']) === false) or
             ($beamResponse['success'] === null) or
             ($beamResponse['failed'] !== null))
         {
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
-            
+
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -318,11 +331,15 @@ class CombinedNachIcici extends Debit\Base
         return $rows;
     }
 
-    public function getNachDebitData(
-        Token\Entity $token,
-        string $paymentId
-    ): array
+    public function getNachDebitData(Token\Entity $token, string $paymentId): array
     {
+        $isValid = $this->validateData($token);
+
+        if ($isValid === false)
+        {
+            return ["", false];
+        }
+
         $accountTypeValue = $this->getAccountTypeValue($token);
 
         $accountName = $token->getBeneficiaryName();
@@ -365,7 +382,7 @@ class CombinedNachIcici extends Debit\Base
         $sponserBank = $this->getPaddedValue($sponserBank, $size, ' ', STR_PAD_RIGHT);
 
 
-        return [
+        return [[
             Fields::ACCOUNT_TYPE_VALUE       => $accountTypeValue,
             Fields::ACCOUNT_NAME             => $accountName,
             Fields::USERNAME                 => $userName,
@@ -376,7 +393,7 @@ class CombinedNachIcici extends Debit\Base
             Fields::UTILITY_CODE             => $utilityCode,
             Fields::TRANSACTION_REFERENCE    => $transactionReference,
             Fields::SPONSER_BANK             => $sponserBank,
-        ];
+        ], true];
     }
 
     public function getPaddedValue($value, $fieldLength, $padString, $padType)
@@ -524,7 +541,7 @@ class CombinedNachIcici extends Debit\Base
         catch (\Throwable $e)
         {
             $this->generateMetricForEmandate(Metric::EMANDATE_DATA_ENTITY_ERROR);
-            
+
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
                 [
@@ -601,7 +618,7 @@ class CombinedNachIcici extends Debit\Base
     {
         RuntimeManager::setMemoryLimit('2048M');
     }
-    
+
     /**
      * @param $fileInfo
      * @param int $batch_size
@@ -612,20 +629,20 @@ class CombinedNachIcici extends Debit\Base
     protected function sendFilesInBatches($fileInfo, $batch_size = 1)
     {
         $pendingBatches = $fileInfo->chunk($batch_size);
-        
+
         $sentFiles = $failedFiles = $timeoutFiles = [];
-        
+
         foreach($pendingBatches as $pendingBatch)
         {
             $response = $this->sendEachFileBatch($pendingBatch);
-            
+
             $sentFiles = array_merge($sentFiles, $response['sent_files']);
-            
+
             $failedFiles = array_merge($failedFiles, $response['failed_files']);
-            
+
             $timeoutFiles = array_merge($timeoutFiles, $response['timeout_files']);
         }
-        
+
         $response = [
             'gateway_id' => $this->gatewayFile->getId(),
             'target' => $this->gatewayFile->getTarget(),
@@ -634,15 +651,15 @@ class CombinedNachIcici extends Debit\Base
             "sent_files"    => $sentFiles,
             "timeout_files" => $timeoutFiles
         ];
-        
+
         if(count($sentFiles) !== count($fileInfo))
         {
             if($this->gatewayFile->getAttempts() >= 4)
             {
                 $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
-                
+
                 $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
-                
+
                 $this->trace->info(
                     TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
                     [
@@ -650,7 +667,7 @@ class CombinedNachIcici extends Debit\Base
                         'type' => $this->gatewayFile->getType()
                     ]);
             }
-            
+
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -658,10 +675,10 @@ class CombinedNachIcici extends Debit\Base
                 $response
             );
         }
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_STATUS, [ $response ]);
     }
-    
+
     /**
      * @param $pendingFiles
      * @return array
@@ -671,13 +688,13 @@ class CombinedNachIcici extends Debit\Base
     protected function sendEachFileBatch($pendingFiles): array
     {
         $sentFiles = $failedFiles = $timeoutFiles = [];
-        
+
         $configKey = $this->gatewayFile->getType() . "_" . Payment\Gateway::ICICI;
-        
+
         $retry = Constants::EMANDATE_RETRY_CONFIG_MAP[$configKey] ?? false;
-        
+
         $filterStatusList = $retry ? [Constants::FILE_SENT] : [Constants::FILE_SENT, Constants::FILE_TIMEOUT];
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_PENDING,
             [
                 "pendingFiles"      => $this->getFileNames($pendingFiles),
@@ -685,49 +702,49 @@ class CombinedNachIcici extends Debit\Base
                 "retry"             => $retry,
                 "filterStatusList"  => $filterStatusList
             ]);
-        
+
         $this->filterFiles($pendingFiles, $sentFiles, $filterStatusList);
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_FILTERED,
             [
                 "pendingFiles" => $this->getFileNames($pendingFiles),
                 'gateway' => $this->gatewayFile->getTarget()
             ]);
-        
+
         if(count($pendingFiles) > 0)
         {
             $beamFiles = $this->getFileNames($pendingFiles);
-            
+
             $beamResponse = $this->beamPushRequest($beamFiles);
-            
+
             $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_RESPONSE,
                 [
                     "beam_response" => $beamResponse,
                     'gateway' => $this->gatewayFile->getTarget()
                 ]);
-            
+
             if($beamResponse !== null and
                 isset($beamResponse['failed']) === true or
                 isset($beamResponse['success']) === true)
             {
                 $beamSuccessFiles = $beamResponse['success'] ?? [];
-                
+
                 foreach ($pendingFiles as $pendingFile)
                 {
                     $pendingFileName = $this->getSingleFileName($pendingFile);
-                    
+
                     if(in_array($pendingFileName, $beamSuccessFiles))
                     {
                         $this->setFilesBeamStatus([$pendingFile], Constants::FILE_SENT);
-                        
+
                         $sentFiles[] = $pendingFileName;
                     }
                     else
                     {
                         $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
-                        
+
                         $this->setFilesBeamStatus([$pendingFile], Constants::FILE_FAILED);
-                        
+
                         $failedFiles[] = $pendingFileName;
                     }
                 }
@@ -735,41 +752,41 @@ class CombinedNachIcici extends Debit\Base
             else
             {
                 $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
-                
+
                 if($beamResponse === null)
                 {
-                    
+
                     $this->setFilesBeamStatus($pendingFiles, Constants::FILE_TIMEOUT);
                 }
                 else
                 {
-                    
+
                     $this->setFilesBeamStatus($pendingFiles, Constants::FILE_UNKNOWN);
                 }
             }
         }
-        
+
         return [
             "failed_files"  => $failedFiles,
             "sent_files"    => $sentFiles,
             "timeout_files" => $timeoutFiles
         ];
     }
-    
+
     protected function beamPushRequest($beamFiles)
     {
         $bucketConfig = $this->getBucketConfig(FileStore\Type::ICICI_NACH_COMBINED_DEBIT);
-        
+
         $data = [
             BeamService::BEAM_PUSH_FILES         => $beamFiles,
             BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::ICICI_ENACH_NB_JOB_NAME,
             BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
             BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
         ];
-        
+
         // In seconds
         $timelines = [];
-        
+
         $mailInfo = [
             'fileInfo'  => $beamFiles,
             'channel'   => 'nach',
@@ -777,7 +794,7 @@ class CombinedNachIcici extends Debit\Base
             'subject'   => 'File Send failure',
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
         ];
-        
+
         return $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
     }
 }

@@ -15,7 +15,6 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Settlement\Holidays;
 use RZP\Gateway\Enach\Base\CategoryCode;
-use RZP\Models\Merchant\RazorxTreatment;
 
 class Gateway extends Base\Gateway
 {
@@ -32,20 +31,9 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $routeToNewService = $this->routeToNewEsignService($input['merchant']['id'], $this->mode);
+        $request = $this->getMandateCreationRequestArray($input);
 
-        $request = $this->getMandateCreationRequestArray($input, $routeToNewService);
-
-        if ($routeToNewService === true)
-        {
-            $request['url'] = Url::LIVE_DOMAIN_V2 . Url::CREATE;
-            $this->trace->info(
-                TraceCode::EMANDATE_ROUTE_TO_NEW_SIGNDESK_SERVICE,
-                [
-                    'url'    => $request['url']
-                ]
-            );
-        }
+        $request['url'] = Url::LIVE_DOMAIN_V2 . Url::CREATE; // route all requests to new service url of signdesk gateway
 
         $traceContent = $request;
 
@@ -189,18 +177,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content, 'POST', 'fetch', true);
 
-        $routeToNewService = $this->routeToNewEsignService($input['merchant']['id'], $this->mode);
-
-        if ($routeToNewService === true)
-        {
-            $request['url'] = Url::LIVE_DOMAIN_V2 . Url::FETCH;
-            $this->trace->info(
-                TraceCode::EMANDATE_ROUTE_TO_NEW_SIGNDESK_SERVICE,
-                [
-                    'url'    => $request['url']
-                ]
-            );
-        }
+        $request['url'] = Url::LIVE_DOMAIN_V2 . Url::FETCH; // route all requests to new service of signdesk gateway
 
         $traceContent = $request;
 
@@ -310,7 +287,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getMandateCreationRequestArray(array $input, bool $newService = false)
+    protected function getMandateCreationRequestArray(array $input)
     {
         $nextWorkingDt = $this->getNextWorkingDate($input)->format('Y-m-d');
 
@@ -328,7 +305,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::REFERENCE_ID               => $input['payment']['id'],
             RequestFields::DEBTOR_ACCOUNT_TYPE        => Constants::DEBTOR_ACCOUNT_TYPE_SAVINGS,
-            RequestFields::PHONE_NUMBER               => $input['payment']['contact'],
+            RequestFields::MOBILE_NUMBER              => $input['payment']['contact'],
             RequestFields::DEBTOR_ACCOUNT_ID          => $input['token']->getAccountNumber(),
             RequestFields::INSTRUCTED_AGENT_ID_TYPE   => Constants::INSTRUCTED_AGENT_ID_TYPE_IFSC,
             RequestFields::INSTRUCTED_AGENT_ID        => $destinationBankIfsc,
@@ -338,7 +315,7 @@ class Gateway extends Base\Gateway
             RequestFields::FIRST_COLLECTION_DATE      => $nextWorkingDt,
             RequestFields::COLLECTION_AMOUNT_TYPE     => Constants::COLLECTION_AMOUNT_TYPE_MAXIMUM,
             RequestFields::AMOUNT                     => $input['token']->getMaxAmount() / 100,
-            RequestFields::MANDATE_TYPE_CATEGORY_CODE => 'C001', // as of now Legaldesk is only accepting this.
+            RequestFields::MANDATE_TYPE_CATEGORY_CODE => CategoryCode::getCategoryCodeFromMcc($mcc), // pass appropriate cat code to Legaldesk.
             RequestFields::INSTRUCTED_AGENT_CODE      => $bank,
             RequestFields::ESIGN_TYPE                 => Constants::ESIGN_TYPE_OTP,
             RequestFields::AUTHENTICATION_MODE        => Constants::DEFAULT_AUTHENTICATION_MODE,
@@ -356,13 +333,6 @@ class Gateway extends Base\Gateway
         if ($input['payment']['auth_type'] === Payment\AuthType::AADHAAR_FP)
         {
             $content[RequestFields::ESIGN_TYPE] = Constants::ESIGN_TYPE_BIOMETRIC;
-        }
-
-        if ($newService === true)
-        {
-            unset($content[RequestFields::PHONE_NUMBER]);
-            $content[RequestFields::MOBILE_NUMBER] = $input['payment']['contact'];
-            $content[RequestFields::MANDATE_TYPE_CATEGORY_CODE] = CategoryCode::getCategoryCodeFromMcc($mcc);
         }
 
         return $this->getStandardRequestArray($content, 'POST', 'create');
@@ -474,23 +444,4 @@ class Gateway extends Base\Gateway
         return $this->app['repo']->$gateway;
     }
 
-    private function routeToNewEsignService($merchantId, $mode): bool
-    {
-        try
-        {
-            $status = $this->app['razorx']->getTreatment($merchantId,
-                RazorxTreatment::ESIGN_REQUEST_ON_NEW_SERVICE_ENABLED, $mode);
-
-            return (strtolower($status) === 'on');
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::EMANDATE_SIGNDESK_NEW_SERVICE_RZRX_FAILURE
-            );
-        }
-        return false;
-    }
 }

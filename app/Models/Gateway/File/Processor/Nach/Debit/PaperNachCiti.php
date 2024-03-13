@@ -306,16 +306,16 @@ class PaperNachCiti extends Debit\Base
         {
             $this->fileStore = $this->fetchFilestoreIds($this->gatewayFile);
         }
-        
+
         $files = $this->gatewayFile
             ->files()
             ->whereIn(FileStore\Entity::ID, $this->fileStore)
             ->get();
-        
+
         $this->sendFilesInBatches($files, 2);
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
-        
+
         $mailData = $this->formatDataForMail($files);
 
         $type = static::GATEWAY . '_' . static::STEP;
@@ -323,7 +323,7 @@ class PaperNachCiti extends Debit\Base
         $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
-        
+
         $this->sendMail($files);
     }
 
@@ -345,10 +345,10 @@ class PaperNachCiti extends Debit\Base
             ($beamResponse['failed'] !== null))
         {
             $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
-            
+
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
-            
-            
+
+
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -399,7 +399,7 @@ class PaperNachCiti extends Debit\Base
                         'target' => $this->gatewayFile->getTarget(),
                         'type'   => $this->gatewayFile->getType()
                     ]);
-                
+
                 $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
             }
 
@@ -417,13 +417,13 @@ class PaperNachCiti extends Debit\Base
     protected function sendEachFileBatch($pendingFiles): array
     {
         $sentFiles = $failedFiles = $timeoutFiles = [];
-        
+
         $configKey = $this->gatewayFile->getType() . "_" . Payment\Gateway::ACQUIRER_CITI;
-        
+
         $retry = Constants::EMANDATE_RETRY_CONFIG_MAP[$configKey] ?? false;
-        
+
         $filterStatusList = $retry ? [Constants::FILE_SENT] : [Constants::FILE_SENT, Constants::FILE_TIMEOUT];
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_PENDING,
             [
                 "pendingFiles"      => $this->getFileNames($pendingFiles),
@@ -431,9 +431,9 @@ class PaperNachCiti extends Debit\Base
                 "retry"             => $retry,
                 "filterStatusList"  => $filterStatusList
             ]);
-        
+
         $this->filterFiles($pendingFiles, $sentFiles, $filterStatusList);
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_FILTERED,
             [
                 "pendingFiles" => $this->getFileNames($pendingFiles),
@@ -483,7 +483,7 @@ class PaperNachCiti extends Debit\Base
                     $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
 
                     $this->setFilesBeamStatus($pendingFiles, Constants::FILE_TIMEOUT);
-                    
+
                     $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
                 }
                 else
@@ -491,7 +491,7 @@ class PaperNachCiti extends Debit\Base
                     $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
 
                     $this->setFilesBeamStatus($pendingFiles, Constants::FILE_UNKNOWN);
-                    
+
                     $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
                 }
             }
@@ -834,9 +834,9 @@ class PaperNachCiti extends Debit\Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
         }
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         foreach ($tokens as $key => $token)
@@ -894,16 +894,6 @@ class PaperNachCiti extends Debit\Base
         RuntimeManager::setMaxExecTime(7200);
     }
 
-    protected function validateData(Token\Entity $token): bool
-    {
-        if (strlen($token->getGatewayToken()) !== 20)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     protected function getDate(): string
     {
         return Carbon::now(Timezone::IST)->format('dmY');
@@ -912,7 +902,7 @@ class PaperNachCiti extends Debit\Base
     protected function getHeaderDate(): string
     {
         $offset = (int) $this->gatewayFile->getSubType();
-        
+
         return Carbon::now(Timezone::IST)->addDays($offset)->format('dmY');
     }
 

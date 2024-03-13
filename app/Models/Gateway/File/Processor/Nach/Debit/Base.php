@@ -53,9 +53,9 @@ abstract class Base extends Nach\Base
         }
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
-        
+
         $this->trace->info(
             TraceCode::NACH_DEBIT_REQUEST,
             [
@@ -86,5 +86,15 @@ abstract class Base extends Nach\Base
         $accountType = $token->getAccountType() ?? 'savings';
 
         return $accountTypeMap[$accountType];
+    }
+
+    public function validateData(Token\Entity $token): bool
+    {
+        if (strlen($token->getGatewayToken()) !== 20)
+        {
+            return false;
+        }
+
+        return true;
     }
 }
