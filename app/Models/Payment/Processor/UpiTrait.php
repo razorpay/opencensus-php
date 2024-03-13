@@ -271,7 +271,7 @@ trait UpiTrait
 
         $aesEncryptor = (new AesGcmEncryption($params));
 
-        $decryptedVpa = $aesEncryptor->decrypt($cipherText);
+        $decryptedVpa = $aesEncryptor->decryptForUpiVpa($cipherText);
 
         return $decryptedVpa;
     }

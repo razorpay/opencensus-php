@@ -31,6 +31,15 @@ class AesGcmEncryption extends Encryption
         return bin2hex($encrypted . $tag);
     }
 
+    public function encryptForUpiVpa(string $data): string
+    {
+        $tag = '';
+
+        $encrypted = openssl_encrypt($data, self::CIPHER, hex2bin($this->secret), OPENSSL_RAW_DATA, hex2bin($this->iv), $tag);
+
+        return bin2hex($encrypted . $tag);
+    }
+
     public function decrypt(string $data): string
     {
         $data = hex2bin($data);
@@ -40,6 +49,17 @@ class AesGcmEncryption extends Encryption
         $data = substr($data, 0, -16);
 
         return openssl_decrypt($data, self::CIPHER, $this->secret, OPENSSL_RAW_DATA, $this->iv, $tag);
+    }
+
+    public function decryptForUpiVpa(string $data): string
+    {
+        $data = hex2bin($data);
+
+        $tag = substr($data, -16);
+
+        $data = substr($data, 0, -16);
+
+        return openssl_decrypt($data, self::CIPHER, hex2bin($this->secret), OPENSSL_RAW_DATA, hex2bin($this->iv), $tag);
     }
 
     protected function validateParams(array $params)

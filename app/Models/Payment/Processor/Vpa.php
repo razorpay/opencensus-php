@@ -442,7 +442,7 @@ trait Vpa
 
         $aesGcmEncryptor = (new AesGcmEncryption($params));
 
-        $encryptedVpa = $aesGcmEncryptor->encrypt($response['vpa']).'|'.$params[AesGcmEncryption::IV];
+        $encryptedVpa = $aesGcmEncryptor->encryptForUpiVpa($response['vpa']).'|'.$params[AesGcmEncryption::IV];
 
         $encryptedResponse =  [
                 'vpa_token'         => $encryptedVpa,
