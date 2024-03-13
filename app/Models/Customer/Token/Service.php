@@ -2119,7 +2119,7 @@ class Service extends Base\Service
             $customer = $payment->globalCustomer;
         }
 
-        if ($customer->isGlobal() === true)
+        if ($customer !== null && $customer->isGlobal() === true)
         {
             $customer->merchant()->associate($payment->merchant);
         }
@@ -2156,26 +2156,33 @@ class Service extends Base\Service
 
         $token = null;
 
-        if ($customer != null)
+        try
         {
-            try
+            if ($customer != null)
             {
                 $token = (new Token\Core)->create($customer, $saveMethodInput, null, true);
             }
-            catch (\Exception $e)
+            else
             {
-                $this->trace->traceException($e);
-
-                throw new Exception\BadRequestException(
-                    ErrorCode::API_CUSTOMER_TOKEN_CREATION_ERROR);
+                $token = (new Token\Core)->createWithoutCustomer($saveMethodInput, $payment->merchant, null, true);
             }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::API_CUSTOMER_TOKEN_CREATION_ERROR);
         }
 
         $core = (new Token\Core());
 
         $core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
 
-        $customer->merchant()->associate($this->repo->merchant->getSharedAccount());
+        if ($customer !== null)
+        {
+            $customer->merchant()->associate($this->repo->merchant->getSharedAccount());
+        }
 
         $token->incrementUsedCount();
 
