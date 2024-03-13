@@ -47,6 +47,10 @@ module.exports = {
     },
     {
       files: ['**/*.{ts,tsx}'],
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+        project: './tsconfig.eslint.json',
+      },
       rules: {
         '@typescript-eslint/no-unnecessary-condition': ['off'],
         '@typescript-eslint/explicit-function-return-type': ['off'],

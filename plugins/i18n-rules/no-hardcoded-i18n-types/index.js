@@ -33,10 +33,19 @@
  *     - ``const message = `Event date: ${eventDate}`;`` // Passes
  */
 
+const isFlagImageFound = require('./flag');
 const isDateHardCoded = require('./date');
 const isDialCodeHardCoded = require('./dialCode');
+const isBrandDetailsHardCoded = require('./branding');
+const isRegionNameOrCodeHardCoded = require('./region');
 
-const hardCodedCheckFunctionsList = [isDateHardCoded, isDialCodeHardCoded];
+const hardCodedCheckFunctionsList = [
+  isDateHardCoded,
+  isDialCodeHardCoded,
+  isRegionNameOrCodeHardCoded,
+  isBrandDetailsHardCoded,
+  isFlagImageFound,
+];
 
 module.exports = {
   meta: {
@@ -66,7 +75,7 @@ module.exports = {
       if (typeof value !== 'string') return;
 
       hardCodedCheckFunctionsList.forEach((reportFunction) => {
-        const message = reportFunction(value);
+        const message = reportFunction(value, node);
         if (message) {
           context.report({ node, message });
         }

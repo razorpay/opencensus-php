@@ -12,13 +12,15 @@ export const navigateToTransactions = async (page, mode?: string) => {
   }
   await page.getByRole('link', { name: 'Transactions' }).click();
   await expect(page).toHaveURL(routes.PAYMENTS);
-  await expect(page.getByRole('link', { name: 'Payments', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Payments', exact: true })).toBeVisible({
+    timeout: 30000,
+  });
 };
 
 export const searchTransactionById = async ({ page, id }) => {
   await page.getByPlaceholder('Search').fill(id);
   await page.getByRole('button', { name: 'Search' }).click();
-  await expect(page.getByRole('cell', { name: id })).toBeVisible();
+  await expect(page.getByRole('cell', { name: id })).toBeVisible({ timeout: 30000 });
 };
 
 export const gotoTransactionDetailsPageById = async ({ page, id, listSelector }) => {

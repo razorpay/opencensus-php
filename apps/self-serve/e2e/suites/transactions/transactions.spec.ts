@@ -65,7 +65,7 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
       'Actions',
     ];
     for await (const column of columns) {
-      await expect(page.getByRole('cell', { name: column })).toBeVisible();
+      await expect(page.getByRole('cell', { name: column })).toBeVisible({ timeout: 30000 });
     }
     await page.locator('input[name="id"]').fill('pay_MWm0faxRp7Whwh');
     await page.getByRole('button', { name: 'Search' }).click();

@@ -7,7 +7,9 @@ type MobileDetect = {
   isWebView: () => boolean;
 };
 
-const getMobileDetect = (userAgent: string = navigator.userAgent): MobileDetect => {
+type GetMobileDetect = (userAgent?: string) => MobileDetect;
+
+const getMobileDetect: GetMobileDetect = (userAgent = navigator.userAgent): MobileDetect => {
   const isAndroid = (): boolean => Boolean(userAgent.match(/Android/i));
   const isIos = (): boolean => Boolean(userAgent.match(/iPhone|iPad|iPod/i));
   const isOpera = (): boolean => Boolean(userAgent.match(/Opera Mini/i));

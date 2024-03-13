@@ -1,4 +1,9 @@
 const path = require('path');
+const {
+  rules: smartLinterRules,
+  pluginName: smartLinterPluginName,
+  overrides: smartLinterOverrides,
+} = require('../smart-linter');
 
 module.exports = {
   extends: [
@@ -9,7 +14,7 @@ module.exports = {
     'plugin:yml/standard',
   ],
   root: true,
-  plugins: ['no-relative-import-paths'],
+  plugins: ['no-relative-import-paths', smartLinterPluginName],
   ignorePatterns: ['.eslintrc.js'],
   rules: {
     'no-shadow': 'off',
@@ -68,6 +73,7 @@ module.exports = {
         ],
       },
     ],
+    ...smartLinterRules,
     'import/extensions': 'off',
   },
   env: {
@@ -188,6 +194,7 @@ module.exports = {
         'import/no-restricted-paths': 'off',
       },
     },
+    ...smartLinterOverrides,
   ],
   settings: {
     'import/resolver': {

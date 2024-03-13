@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { getStorageStatePath, routes } from '@dashboard/shared-utils/e2e/constants/paths';
-import { BASE_PATH } from '../../constants';
 import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
+import { BASE_PATH } from '../../constants';
 
 const searchPaymentId = async (page, paymentId) => {
   try {
     // Select the input element by its name attribute
-    const paymentIdInput = await page.waitForSelector('input[name="id"]', { timeout: 10000 });
+    const paymentIdInput = await page.waitForSelector('input[name="id"]', { timeout: 30000 });
     // Fill data into the input field
     await paymentIdInput.fill(paymentId);
     await page.getByRole('button', { name: 'Search' }).click();

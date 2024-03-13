@@ -183,6 +183,10 @@ jobs:
                     {
                       "type": "mrkdwn",
                       "text": "*Warnings for Images:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noRegionSpecificImages }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*i18n Variable Errors:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noVariableChecks }}"
                     }
                   ]
                 }

@@ -1,87 +1,104 @@
 /**
- * Function to remove deprecated specifiers from an import statement while ensuring correct formatting.
- * This function checks if all specifiers in an import statement are deprecated and either removes the entire statement
- * or selectively removes only the deprecated specifiers. It also adjusts commas as necessary to maintain the correct syntax.
- *
- * @param {ASTNode} node - The ImportDeclaration node being modified. Represents the import statement in the AST.
- * @param {SourceCode} sourceCode - The ESLint SourceCode object, used to access the text and tokens related to the AST nodes.
- * @param {ASTNode[]} deprecatedSpecifiers - An array of ImportSpecifier nodes marked as deprecated and to be removed.
- * @param {RuleFixer} fixer - The fixer utility provided by ESLint, used to apply changes to the code.
- * @returns {RuleFix | RuleFix[] | null} A single fix, an array of fixes to be applied by ESLint, or null if no action is necessary.
+ * Finds an import declaration for a specific package.
  */
-const deprecatedSpecifiersFixer = (node, sourceCode, deprecatedSpecifiers, fixer) => {
-  if (deprecatedSpecifiers.length === 0) {
-    return null; // No deprecated specifiers, no action required.
-  }
-
-  if (node.specifiers.length === deprecatedSpecifiers.length) {
-    // All specifiers are deprecated; remove the entire import statement.
-    return fixer.remove(node);
-  }
-
-  // Only some specifiers are deprecated. Remove them individually and adjust commas.
-  return deprecatedSpecifiers.map((specifier) => {
-    const isLastSpecifier = node.specifiers.indexOf(specifier) === node.specifiers.length - 1;
-    let textToRemove = sourceCode.getText(specifier);
-
-    if (!isLastSpecifier) {
-      const nextToken = sourceCode.getTokenAfter(specifier);
-      if (nextToken && nextToken.value === ',') {
-        textToRemove += ','; // Remove following comma with the specifier.
-      }
-    } else {
-      const prevToken = sourceCode.getTokenBefore(specifier);
-      if (prevToken && prevToken.value === ',') {
-        textToRemove = ',' + textToRemove; // Remove preceding comma with the specifier.
-      }
-    }
-
-    return fixer.removeRange([
-      specifier.range[0] - (textToRemove[0] === ',' ? 1 : 0),
-      specifier.range[1] + (textToRemove.endsWith(',') ? 1 : 0),
-    ]);
-  });
-};
-
-/**
- * Ensures that specific imports are present from a given package. If the import statement is missing, it adds it.
- * If the import statement exists but does not include the specified imports, it updates the statement accordingly.
- *
- * @param {RuleFixer} fixer - The fixer utility provided by ESLint.
- * @param {SourceCode} sourceCode - The ESLint SourceCode object, providing access to the code's AST and text.
- * @param {string} packageName - The name of the package from which the imports should come.
- * @param {string[]} importsToEnsure - The names of imports to ensure are present from the specified package.
- * @returns {RuleFix | null} A fix to be applied by ESLint, or null if no fix is needed.
- */
-function ensureImportsFromPackage(fixer, sourceCode, packageName, importsToEnsure) {
-  const importDeclaration = sourceCode.ast.body.find(
+function findImportDeclaration(sourceCode, packageName) {
+  return sourceCode.ast.body.find(
     (node) => node.type === 'ImportDeclaration' && node.source.value === packageName,
   );
-
-  if (!importDeclaration) {
-    // Import statement for the package is missing; add it with the specified imports.
-    const importStatement = `import { ${importsToEnsure.join(', ')} } from '${packageName}';\n`;
-    return fixer.insertTextBefore(sourceCode.ast.body[0], importStatement);
-  }
-
-  // Import statement exists. Update it to include missing specified imports.
-  const existingImports = importDeclaration.specifiers
-    .filter((specifier) => specifier.type === 'ImportSpecifier')
-    .map((specifier) => specifier.imported.name);
-  const missingImports = importsToEnsure.filter(
-    (importName) => !existingImports.includes(importName),
-  );
-
-  if (missingImports.length > 0) {
-    const newImportsList = [...existingImports, ...missingImports].join(', ');
-    const newImportStatement = `import { ${newImportsList} } from '${packageName}';\n`;
-    return fixer.replaceText(importDeclaration, newImportStatement);
-  }
-
-  return null; // All specified imports are already present; no action required.
 }
 
+/**
+ * Processes import declarations to remove deprecated specifiers and ensure required imports.
+ *
+ * @param {Object} options - Configuration and context for processing.
+ * @param {SourceCode} options.sourceCode - ESLint's source code object.
+ * @param {RuleFixer} options.fixer - ESLint's fixer utility.
+ * @param {string} options.deprecatedSpecifiersFrom - The package name of the deprecated specifiers.
+ * @param {string[]} options.deprecatedSpecifiers - The specifiers to be deprecated and removed.
+ * @param {string} options.importPackageFrom - The package name to ensure is imported.
+ * @param {string} options.specifierToImport - The specifiers to ensure are imported.
+ * @returns {RuleFix[] | null} A list of fixes to be applied, or null if no fixes are necessary.
+ */
+function processImports({
+  sourceCode,
+  fixer,
+  deprecatedSpecifiersFrom,
+  deprecatedSpecifiers,
+  importPackageFrom,
+  specifierToImport,
+  node,
+}) {
+  const fixes = [];
+  if (node.specifiers.length === deprecatedSpecifiers.length) {
+    fixes.push(fixer.remove(node));
+  } else {
+    if (deprecatedSpecifiersFrom !== importPackageFrom) {
+      node.specifiers.forEach((specifier) => {
+        if (deprecatedSpecifiers.includes((specifier.local || specifier.imported).name)) {
+          let rangeStart = specifier.range[0];
+          let rangeEnd = specifier.range[1];
+          const nextToken = sourceCode.getTokenAfter(specifier);
+          const prevToken = sourceCode.getTokenBefore(specifier);
+
+          if (nextToken && nextToken.value === ',') {
+            rangeEnd += 1;
+          } else if (prevToken && prevToken.value === ',') {
+            rangeStart -= 1;
+          }
+
+          fixes.push(fixer.removeRange([rangeStart, rangeEnd]));
+        }
+      });
+    }
+  }
+
+  // Ensure or update required import declaration
+  const importDeclarationToEnsure = findImportDeclaration(sourceCode, importPackageFrom);
+  if (!importDeclarationToEnsure) {
+    // If the import declaration doesn't exist, create and insert a new one
+    const newImportStatement = `import { ${specifierToImport} } from '${importPackageFrom}';\n`;
+    fixes.push(fixer.insertTextBefore(sourceCode.ast.body[0], newImportStatement));
+  } else {
+    // Update existing import declaration if it's missing specified imports
+    const existingImports = importDeclarationToEnsure.specifiers
+      .map((specifier) => (specifier.local || specifier.imported).name)
+      // Filtering the deprecatedSpecifiers and specifierToImport from the existingImports
+      .filter((specifier) => !deprecatedSpecifiers.includes(specifier) || !specifierToImport);
+
+    const updatedImports = [...existingImports, specifierToImport].join(', ');
+    const updatedImportStatement = `import { ${updatedImports} } from '${importPackageFrom}';\n`;
+    fixes.push(fixer.replaceText(importDeclarationToEnsure, updatedImportStatement));
+  }
+
+  return fixes.length > 0 ? fixes : null;
+}
+
+const createConfigForDeprecatedFunction = ({
+  deprecatedSpecifiers,
+  deprecatedSpecifiersFrom,
+  importPackageFrom,
+  specifierToImport,
+}) => {
+  return {
+    deprecatedSpecifiers,
+    deprecatedSpecifiersFrom,
+    importPackageFrom,
+    specifierToImport,
+    message: `Use "${specifierToImport}" from "${importPackageFrom}" instead of "${deprecatedSpecifiers}" from "${deprecatedSpecifiersFrom}"`,
+    processImports: (node, sourceCode, fixer) =>
+      processImports({
+        node,
+        sourceCode,
+        fixer,
+        importPackageFrom,
+        specifierToImport,
+        deprecatedSpecifiers,
+        deprecatedSpecifiersFrom,
+      }),
+  };
+};
+
 module.exports = {
-  deprecatedSpecifiersFixer,
-  ensureImportsFromPackage,
+  createConfigForDeprecatedFunction,
+  findImportDeclaration,
 };

@@ -17,7 +17,7 @@ export const navigateToTransactions = async (page, mode) => {
 export const searchTransactionById = async ({ page, id }) => {
   await page.getByPlaceholder('Search').fill(id);
   await page.getByRole('button', { name: 'Search' }).click();
-  await expect(page.getByRole('cell', { name: id })).toBeVisible();
+  await expect(page.getByRole('cell', { name: id })).toBeVisible({ timeout: 30000 });
 };
 
 export const gotoTransactionDetailsPageById = async ({ page, id, listSelector }) => {

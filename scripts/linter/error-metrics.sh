@@ -11,6 +11,7 @@ noCurrencyHardcodingErrors=0
 noDeprecatedFunctions=0
 noHardcodingi18nTypes=0
 noRegionSpecificImages=0
+noVariableChecks=0
 
 # Iterate through each entry in the JSON array, encode to base64
 for encoded_entry in $(echo "${i18n_errors}" | jq -r '.[] | @base64'); do
@@ -40,27 +41,27 @@ for encoded_entry in $(echo "${i18n_errors}" | jq -r '.[] | @base64'); do
             "i18n-rules/no-href-hardcoding")
                 noHrefHardcodingErrors=$((noHrefHardcodingErrors + 1))
                 ;;
+            "i18n-rules/no-hardcoded-i18n-types")
+                noHardcodingi18nTypes=$((noHardcodingi18nTypes + 1))
+                ;;
             "i18n-rules/no-currency-hardcoding")
                 noCurrencyHardcodingErrors=$((noCurrencyHardcodingErrors + 1))
                 ;;
             "i18n-rules/no-region-specific-image")
                 noRegionSpecificImages=$((noRegionSpecificImages + 1))
                 ;;
+            "i18n-rules/no-i18n-variable-checks")
+                noVariableChecks=$((noVariableChecks + 1))
+                ;;
             "i18n-rules/no-use-of-deprecated-functions")
                 noDeprecatedFunctions=$((noDeprecatedFunctions + 1))
-                ;;
-            "i18n-rules/no-region-specific-image")
-                noRegionSpecificImages=$((noRegionSpecificImages + 1))
-                ;;
-            "i18n-rules/no-hardcoded-i18n-types")
-                noHardcodingi18nTypes=$((noHardcodingi18nTypes + 1))
                 ;;
         esac
     done
 done
 
 # Output the result
-output_result="{\"totalFoundErrors\": ${totalFoundErrors},\"noRegionSpecificKeywordErrors\": ${noRegionSpecificKeywordErrors},\"noHrefHardcodingErrors\": ${noHrefHardcodingErrors},\"noCurrencyHardcodingErrors\": ${noCurrencyHardcodingErrors}, \"noRegionSpecificImages\": ${noRegionSpecificImages}, \"noHardcodingi18nTypes\": ${noHardcodingi18nTypes},\"noDeprecatedFunctions\": ${noDeprecatedFunctions}}"
+output_result="{\"totalFoundErrors\": ${totalFoundErrors},\"noRegionSpecificKeywordErrors\": ${noRegionSpecificKeywordErrors},\"noHrefHardcodingErrors\": ${noHrefHardcodingErrors},\"noCurrencyHardcodingErrors\": ${noCurrencyHardcodingErrors}, \"noRegionSpecificImages\": ${noRegionSpecificImages}, \"noHardcodingi18nTypes\": ${noHardcodingi18nTypes},\"noDeprecatedFunctions\": ${noDeprecatedFunctions}, \"noVariableChecks\": ${noVariableChecks}}"
 
 echo "$output_result"
 
