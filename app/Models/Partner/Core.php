@@ -3,7 +3,9 @@
 namespace RZP\Models\Partner;
 
 use App;
+use Request;
 use Throwable;
+use Lib\PhoneBook;
 use Carbon\Carbon;
 use RZP\Exception;
 use Razorpay\OAuth;
@@ -2153,7 +2155,134 @@ class Core extends Detail\Core
         return $isExpEnabled;
     }
 
-    public function isOnboardingSignatureValid(UserEntity $user, array &$input) : bool
+    public function getSubmerchantDetails(array $input): ?array
+    {
+        $subMerchantDetails = null;
+
+        $contactNumber = $this->getSubMerchantContactUsingOnboardingSignatureIfApplicable($input);
+
+        if($contactNumber !== null)
+        {
+            $subMerchantDetails["contact_number"] = $contactNumber;
+        }
+
+        $this->trace->info(TraceCode::FETCH_SUBMERCHANT_DETAILS_ONBOARDING_PREFILL, [
+            'is_contact_details_empty' => empty($subMerchantDetails)
+        ]);
+
+        return $subMerchantDetails;
+    }
+
+    /**
+     * This function takes application Id, client Id & Onboarding signature within $input.
+     * It decrypts the onboarding signature and takes out sub-merchant Id. It then fetches its contact number
+     * to be passed in response. This feature is meant to Prefill contact number on Phantom dashboard during login.
+     *
+     * @param array $input
+     *
+     * @return string|null
+     */
+    protected function getSubMerchantContactUsingOnboardingSignatureIfApplicable(array $input): ?string
+    {
+        $onboardingSignature = Request::header(PartnerConstants::ONBOARDING_SIGNATURE)?? null;
+
+        /*
+         * Below checks :
+         * 1. The application_id must be present to check submerchant mapping.
+         * 2. client_id must exist to decrypt signature via its secret.
+         * 3. $onboardingSignature must exist to actually validate timestamp & get submerchant Id.
+         * 4. Fetching sub-merchant details via Onboarding signature is required using Public Auth.
+         *
+         * */
+        if (empty($input[Constants::APPLICATION_ID]) === true
+            || empty($input[PartnerConstants::CLIENT_ID]) === true
+            || empty($onboardingSignature) === true
+            || $this->app['request.ctx']->isDashboardGuest() === false
+            || $this->isContactMobilePrefillExpEnabled($input[Constants::APPLICATION_ID]) === false)
+        {
+            return null;
+        }
+
+        try
+        {
+            $client = (new OAuthClient\Repository)->getClientEntity($input[PartnerConstants::CLIENT_ID]);
+
+            if (empty($client))
+            {
+                return null;
+            }
+
+            $merchantId = $this->getSubmerchantIdFromOnboardingSignature($client->getSecret(), $onboardingSignature);
+
+            $this->trace->info(TraceCode::ONBOARDING_SIGNATURE_VALID_FOR_LOGIN, [
+                'application_id' => $input[Constants::APPLICATION_ID],
+                'merchant_id'    => $merchantId,
+                'step'           => 'Phantom prefill contact number'
+            ]);
+
+            if($merchantId !== null)
+            {
+                $isSubmerchant = (new Merchant\AccessMap\Core())->isMerchantMappedToApplication($merchantId, $input[Constants::APPLICATION_ID]);
+
+                if ($isSubmerchant === true)
+                {
+                    $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                    $merchantDetail = $subMerchant->merchantDetail;
+
+                    $number = new PhoneBook($merchantDetail->getContactMobile());
+
+                    $phoneNumber = $number->format(PhoneBook::DOMESTIC);
+
+                    $subMerchantUser = $this->repo->user->findByMobile($phoneNumber)->first();
+
+                    if (!empty($subMerchantUser))
+                    {
+                        return $phoneNumber;
+                    }
+                }
+            }
+            return null;
+        }
+        catch (\Throwable $e) {
+            $this->trace->info(TraceCode::ONBOARDING_SIGNATURE_VALIDATION_ERROR,
+                [
+                    'error' => $e->getMessage(),
+                    'step'  => 'Phantom prefill contact number'
+                ]);
+
+            return null;
+        }
+    }
+
+    private function isContactMobilePrefillExpEnabled(String $submerchantId) : bool
+    {
+        $properties = [
+            'id'            => $submerchantId,
+            'experiment_id' => $this->app['config']->get('app.phantom_prefill_contact_number_exp_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    public function getSubmerchantIdFromOnboardingSignature(string $clientSecret, string $onboardingSignature)
+    {
+        if (empty($onboardingSignature) || empty($clientSecret))
+        {
+            return null;
+        }
+
+        $data = $this->decryptSignature($onboardingSignature, $clientSecret);
+
+        if($this->isValidOnboardingSignature($data))
+        {
+            return $data[PartnerConfig\Constants::SUBMERCHANT_ID];
+        }
+
+        return null;
+    }
+
+    public function isOnboardingSignatureValid(UserEntity $user, array &$input, bool $checkRateLimiting = true) : bool
     {
         if (!isset($input[PartnerConstants::ONBOARDING_SIGNATURE]) || empty($input[PartnerConstants::ONBOARDING_SIGNATURE]) ||
             !isset($input[PartnerConstants::CLIENT_ID]) || empty($input[PartnerConstants::CLIENT_ID]))
@@ -2217,6 +2346,21 @@ class Core extends Detail\Core
         }
 
         if (!isset($data[PartnerConstants::TIMESTAMP]) || empty($data[PartnerConstants::TIMESTAMP]))
+        {
+            return false;
+        }
+
+        $currentTimestamp = time();
+
+        $differenceInSeconds = $currentTimestamp - $data[PartnerConstants::TIMESTAMP];
+
+        return $differenceInSeconds <= PartnerConstants::ONBOARDING_SIGNATURE_EXPIRY_IN_SECONDS;
+    }
+
+    private function isValidOnboardingSignature(array $data) : bool
+    {
+        if (empty($data[PartnerConfig\Constants::SUBMERCHANT_ID])
+            || empty($data[PartnerConstants::TIMESTAMP]))
         {
             return false;
         }

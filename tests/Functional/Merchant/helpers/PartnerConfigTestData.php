@@ -1585,6 +1585,78 @@ return [
         ],
     ],
 
+    'testFetchSubmerchantDetailsWithApplicationIdByDashboardGuestAppAuth' => [
+        'request'  => [
+            'url'     => '/partner_config_guest',
+            'method'  => 'GET',
+            'headers' => [
+                'onboarding_signature'  => 'testSignature',
+            ],
+            'content' => [
+                'application_id'        => 'DefaultPartner',
+                'client_id'             => 'testClient',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '0000FF',
+                    'text_color'  => '000FFF',
+                    'brand_name'  => 'google'
+                ],
+                'submerchant_details' => [
+                  'contact_number' => '9123456789',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMerchantDetailsWithApplicationIdByDashboardGuestAppAuth' => [
+        'request'  => [
+            'url'     => '/partner_config_guest',
+            'method'  => 'GET',
+            'headers' => [
+                'onboarding_signature'  => 'testSignature',
+            ],
+            'content' => [
+                'application_id'        => 'DefaultPartner',
+                'client_id'             => 'testClient',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '0000FF',
+                    'text_color'  => '000FFF',
+                    'brand_name'  => 'google'
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchSubmerchantDetailsWithApplicationIdByAdminAuth' => [
+        'request'  => [
+            'url'     => '/partner_configs',
+            'method'  => 'GET',
+            'headers' => [
+                'onboarding_signature'  => 'testSignature',
+            ],
+            'content' => [
+                'application_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'submerchant_id' => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'client_id'            => 'randomClientId'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'merchant',
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_id'   => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'origin_type' => 'application',
+            ],
+        ],
+    ],
+
     'testFetchPartnerConfigWithApplicationIdByAuthServiceAppAuth' => [
         'request'  => [
             'url'     => '/partner_config_guest',

@@ -1093,9 +1093,14 @@ trait PartnerTrait
 
     public function createOnboardingSignatureForSubmerchant(string $subMerchantId, string $clientSecret) : string
     {
+        return $this->createOnboardingSignatureForSubmerchantWithCustomTime($subMerchantId, $clientSecret, time());
+    }
+
+    public function createOnboardingSignatureForSubmerchantWithCustomTime(string $subMerchantId, string $clientSecret, int $time) : string
+    {
         $payload = [
             'submerchant_id' => $subMerchantId,
-            'timestamp'      => time()
+            'timestamp'      => $time
         ];
 
         $secretKey = substr($clientSecret, 0, 16);

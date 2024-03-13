@@ -1876,6 +1876,206 @@ class PartnerConfigTest extends OAuthTestCase
         $this->checkResponseFieldsForProxyOrInternalAuth($response);
     }
 
+    public function testFetchSubmerchantDetailsWithApplicationIdByDashboardGuestAppAuth()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $this->createSubMerchant($partner, $app, ['id' => '101submerchant']);
+
+        $this->fixtures->user->createUserForMerchant('101submerchant', ['contact_mobile' => '9123456789']);
+
+        $client = $this->getAppClientByEnv($app);
+
+        $partnerMeteData = [
+            'brand_color' => '0000FF',
+            'text_color'  => '000FFF',
+            'brand_name'  => 'google'
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+        $testData['request']['content']['client_id'] = $client->getId();
+
+        $signature = $this->createOnboardingSignatureForSubmerchant( '101submerchant', $client->getSecret());
+        $testData['request']['headers']['onboarding_signature'] = $signature;
+
+        $response = $this->startTest($testData);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    public function testFetchSubmerchantDetailsWithApplicationIdAndExpiredSignature()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $this->createSubMerchant($partner, $app, ['id' => '101submerchant']);
+
+        $this->fixtures->user->createUserForMerchant('101submerchant', ['contact_mobile' => '9123456789']);
+
+        $client = $this->getAppClientByEnv($app);
+
+        $partnerMeteData = [
+            'brand_color' => '0000FF',
+            'text_color'  => '000FFF',
+            'brand_name'  => 'google'
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData['testFetchMerchantDetailsWithApplicationIdByDashboardGuestAppAuth'];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+        $testData['request']['content']['client_id'] = $client->getId();
+
+        $signature = $this->createOnboardingSignatureForSubmerchantWithCustomTime( '101submerchant', $client->getSecret(), time() - 90000);
+        $testData['request']['headers']['onboarding_signature'] = $signature;
+
+        $response = $this->startTest($testData);
+
+        $this->assertNull($response["submerchant_details"]);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    public function testFetchSubmerchantDetailsWithApplicationIdAndInvalidSignature()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $this->createSubMerchant($partner, $app, ['id' => '101submerchant']);
+
+        $this->fixtures->user->createUserForMerchant('101submerchant', ['contact_mobile' => '9123456789']);
+
+        $client = $this->getAppClientByEnv($app);
+
+        $partnerMeteData = [
+            'brand_color' => '0000FF',
+            'text_color'  => '000FFF',
+            'brand_name'  => 'google'
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData['testFetchMerchantDetailsWithApplicationIdByDashboardGuestAppAuth'];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+        $testData['request']['content']['client_id'] = $client->getId();
+
+        $signature = $this->createOnboardingSignatureForSubmerchant( '101submerchant', $client->getSecret());
+        $testData['request']['headers']['onboarding_signature'] = $signature . 'abcd';
+
+        $response = $this->startTest($testData);
+
+        $this->assertNull($response["submerchant_details"]);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    public function testFetchUnlinkedMerchantDetailsWithApplicationIdByDashboardGuestAppAuth()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $client = $this->getAppClientByEnv($app);
+
+        $partnerMeteData = [
+            'brand_color' => '0000FF',
+            'text_color'  => '000FFF',
+            'brand_name'  => 'google'
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData['testFetchMerchantDetailsWithApplicationIdByDashboardGuestAppAuth'];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+        $testData['request']['content']['client_id'] = $client->getId();
+
+        $signature = $this->createOnboardingSignatureForSubmerchant( Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $client->getSecret());
+        $testData['request']['headers']['onboarding_signature'] = $signature;
+
+        $response = $this->startTest($testData);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    public function testFetchSubmerchantDetailsWithApplicationIdByAdminAuth()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_type' => 'application',
+            ]
+        );
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'entity_type'     => 'merchant',
+                'entity_id'       => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_type'     => 'application',
+                'origin_id'       => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerConfigWithApplicationIdByAuthServiceAppAuth()
     {
         list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);

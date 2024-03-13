@@ -18,6 +18,7 @@ use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Feature as Feature;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Partner\Config\Constants as PartnerConfigConstants;
 
@@ -205,6 +206,13 @@ class Service extends Base\Service
         {
             $config     = $core->fetch($application, $subMerchant);
             $configData = optional($config)->toArrayPublic();
+        }
+
+        $subMerchantDetail = (new PartnerCore())->getSubmerchantDetails($input);
+
+        if($subMerchantDetail !== null)
+        {
+            $configData["submerchant_details"] = $subMerchantDetail;
         }
 
         return $configData;
