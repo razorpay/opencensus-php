@@ -11,6 +11,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Jobs\OneCCReviewCODOrder;
 use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\OneClickCheckout\Shopify\RzpOrders;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
@@ -18,6 +19,7 @@ use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils as OneCcUtils;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Merchant\ShippingInfo;
 use RZP\Models\Merchant\Metric;
+use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Services\LocationService;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
@@ -186,6 +188,15 @@ class Service extends \RZP\Models\Base\Service
                 $orderMetaInput = array_merge($orderMetaInput, [
                     Order1cc\Fields::SHIPPING_METHOD => $shippingMethod,
                 ]);
+                $platformConfig = $this->merchant->getMerchantPlatformConfig();
+                $platform = "";
+                if ($platformConfig !== null) {
+                    $platform = $platformConfig->getValue();
+                }
+                if ($platform ===  Merchant1ccConfig\Type::WOOCOMMERCE)
+                {
+                    $this->updateOrderNotesWithShippingMethodName($orderId, $shippingMethod[Order1cc\Fields::NAME]);
+                }
             }
             $result = (new OneClickCheckoutCore)->update1CcOrder($orderId, $orderMetaInput);
 
@@ -202,6 +213,12 @@ class Service extends \RZP\Models\Base\Service
         finally {
             $this->traceUpdateCustomerDetailsLogs($orderId, $input, $result, $ex);
         }
+    }
+
+    private function updateOrderNotesWithShippingMethodName(string $orderId, string $shippingMethodName) {
+        $order = (new RzpOrders)->findOrderByIdAndMerchant($orderId);
+        $newNotes = array_merge($order->getNotes()->toArray(), ['shipping_method_name' => $shippingMethodName]);
+        (new RzpOrders)->updateOrderNotes($orderId, $newNotes);
     }
 
     /**
