@@ -6,12 +6,13 @@ import {
   ListItem,
   Text,
   Link,
+  Checkbox,
+  ListItemLink,
   ExternalLinkIcon,
 } from '@razorpay/blade/components';
 import { connect, ConnectedProps } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import Input from 'common/new-ui/Input';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ModalHeader from 'common/ui/ModalHeader';
 import {
@@ -34,6 +35,7 @@ import {
 import { activateAccount } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
 import { AcknowledgementPopupProps } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 import { hasMCCInEligibleError } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/utils';
+import { STANDARD_PRICING_URL } from 'merchant/views/Settings/PaymentMethods/constants';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -76,8 +78,8 @@ const AcknowledgementPopup: React.FC<
   const popupContent = useMemo(() => ACTIVATION_POPUP_CONTENT[account], [account]);
 
   //functions
-  const onChange = ({ target }) => {
-    setIsChecked(target.checked);
+  const onChange = ({ isChecked }) => {
+    setIsChecked(isChecked);
   };
 
   const onOpenMCCIneligiblePopup = (error: string) => {
@@ -143,12 +145,19 @@ const AcknowledgementPopup: React.FC<
           {popupContent.faqs.map((item) => (
             <ListItem key={item}>{item}</ListItem>
           ))}
+          <ListItem>
+            Default payment charges will be applied for these transactions. (Refer International
+            Payments{' '}
+            <ListItemLink href={STANDARD_PRICING_URL} target="_blank" rel="noopener">
+              Pricing
+            </ListItemLink>
+            )
+          </ListItem>
         </List>
 
         {showTnC ? (
-          <div className="checkbox-wrapper">
-            <Input.Check checked={isChecked} onChange={onChange} autoRender />
-            <span>
+          <Box marginTop="spacing.4">
+            <Checkbox isChecked={isChecked} onChange={onChange}>
               I agree to the{' '}
               <Link
                 target="_blank"
@@ -159,8 +168,8 @@ const AcknowledgementPopup: React.FC<
               >
                 Terms and Conditions
               </Link>
-            </span>
-          </div>
+            </Checkbox>
+          </Box>
         ) : null}
 
         <Box marginTop="spacing.4">

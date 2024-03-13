@@ -19,6 +19,27 @@ const SET_LOADING = 'SET_LOADING';
 const GET_DISCREPANCY_CATEGORIES = 'GET_DISCREPANCY_CATEGORIES';
 const GET_IIR_DISCREPANCIES = 'GET_IIR_DISCREPANCIES';
 
+const GBP_BANK_ACCOUNT = {
+  name: 'GBP Bank Account',
+  description: 'Accept payments via FPS transfer',
+  message: 'Share the below details with your UK customers to accept GBP payments via FPS transfer',
+  vaCurrency: 'GBP',
+  status: 'greyed',
+  slug: 'international.gbp',
+  icon: 'https://cdn.razorpay.com/static/assets/instrument-request/gbp.svg',
+};
+
+const EUR_BANK_ACCOUNT = {
+  name: 'EUR Bank Account',
+  description: 'Accept payments via SEPA transfer',
+  message:
+    'Share the below details with your European customers to accept EUR payments via SEPA transfer',
+  vaCurrency: 'EUR',
+  status: 'greyed',
+  slug: 'international.eur',
+  icon: 'https://cdn.razorpay.com/static/assets/instrument-request/eur.svg',
+};
+
 export const clearIntermediateInstrument = () => {
   return {
     type: CLEAR_INTERMEDIATE_INSTRUMENT,
@@ -942,6 +963,8 @@ export const initialState = {
                   slug: 'international.usd',
                   icon: 'https://cdn.razorpay.com/static/assets/instrument-request/usd.svg',
                 },
+                GBP_BANK_ACCOUNT,
+                EUR_BANK_ACCOUNT,
               ],
             },
             {

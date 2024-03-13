@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -11,7 +11,6 @@ import withBankTransferConfig from 'merchant/views/Settings/PaymentMethods/compo
 import InstrumentRow from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/InstrumentRow';
 import { trackTandCPopupOpened } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
 import {
-  VA_USD,
   VA_SWIFT,
   DISABLE_REQUEST_TOOLTIP,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
@@ -40,17 +39,13 @@ const SwiftBankTransfer = ({ leafList, config, showNotification, openModal, ...d
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  const isUSDAccountActivated = useMemo(() => {
-    return Boolean(accounts?.find((account) => account?.va_currency === VA_USD));
-  }, [accounts]);
-
   const onRequest = () => {
     trackTandCPopupOpened(VA_SWIFT);
     openModal({
       size: 'medium',
       component: (
         <SuspenseWithLoader>
-          <AcknowledgementPopup account={VA_SWIFT} showTnC={!isUSDAccountActivated} />
+          <AcknowledgementPopup account={VA_SWIFT} />
         </SuspenseWithLoader>
       ),
     });

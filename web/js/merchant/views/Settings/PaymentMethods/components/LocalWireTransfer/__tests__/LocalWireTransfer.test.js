@@ -6,6 +6,7 @@ import LocalWireTransfer from 'merchant/views/Settings/PaymentMethods/components
 import {
   getLeafListData,
   getAccounts,
+  VIRTUAL_ACCOUNTS,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/__tests__/mocks/fixtures';
 import {
   GREYED,
@@ -247,49 +248,17 @@ describe('When purpose code provided is not valid for ACH', () => {
   });
 });
 
-describe('Tests for showMorePaymentMethodsSection', () => {
-  test('Should show request button in disabled state if showMorePaymentMethodsSection is true and account is not created', () => {
-    const leafList = getLeafListData(GREYED);
-    renderComponent(
-      { leafList },
-      {
-        unlockIntlPaymentMethods: {
-          showMorePaymentMethodsSection: true,
-        },
-      },
-    );
+describe.each(VIRTUAL_ACCOUNTS)('Test %s virtual account', (currency, data) => {
+  test.each(data)('should show correct state for virtual account', ({ input, output }) => {
+    const { input1, input2 } = input();
+    renderComponent(input1, input2);
 
-    expect(screen.getByRole('button', { name: 'Request' })).toBeDisabled();
-  });
-
-  test('Should show request button in enabled state if showMorePaymentMethodsSection is false and account is not created', () => {
-    const leafList = getLeafListData(GREYED);
-    renderComponent(
-      { leafList },
-      {
-        unlockIntlPaymentMethods: {
-          showMorePaymentMethodsSection: false,
-        },
-        profile: { fircDetails: { data: { purpose_code: '12121' } } },
-        session: { user: { promoter_pan_name: 'sanchit' } },
-      },
-    );
-
-    expect(screen.getByRole('button', { name: 'Request' })).not.toBeDisabled();
-  });
-
-  test('should show activated if is accounts are activated and showMorePaymentMethods is true', () => {
-    renderComponent(
-      { leafList: getLeafListData(ACTIVATED) },
-      {
-        profile: { fircDetails: { data: { purpose_code: '12121' } } },
-        session: { user: { promoter_pan_name: 'sanchit' } },
-        unlockIntlPaymentMethods: {
-          showMorePaymentMethodsSection: true,
-        },
-      },
-    );
-
-    expect(screen.getByText('Activated')).toBeInTheDocument();
+    if (output.disabled) {
+      expect(screen.getByRole('button', { name: 'Request' })).toBeDisabled();
+    } else if (output.activated) {
+      expect(screen.getByText('Activated')).toBeInTheDocument();
+    } else {
+      expect(screen.getByRole('button', { name: 'Request' })).not.toBeDisabled();
+    }
   });
 });

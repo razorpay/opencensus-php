@@ -113,6 +113,14 @@ function b2bExportsAccountsReducer(
       isActivating: false,
       error: null,
     },
+    localBankTransferGBP: {
+      isActivating: false,
+      error: null,
+    },
+    localBankTransferEUR: {
+      isActivating: false,
+      error: null,
+    },
     intBankTransfer: {
       isActivating: false,
       error: null,

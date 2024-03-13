@@ -65,13 +65,13 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
    * acknowledgement popup is opened to get T&C approval from merchant
    * before account activation
    */
-  const onRequest = () => {
+  const onRequest = (data: { vaCurrency: string }) => {
     trackTandCPopupOpened(VA_USD);
     openModal({
       size: 'medium',
       component: (
         <SuspenseWithLoader>
-          <AcknowledgementPopup />
+          <AcknowledgementPopup account={data.vaCurrency} />
         </SuspenseWithLoader>
       ),
     });

@@ -9,6 +9,13 @@ export const DETAIL_FIELDS: Array<DetailFieldType> = [
   { label: 'Beneficiary Address', key: 'Bank Address' },
 ];
 
+export const VIRTUAL_ACCOUNTS = {
+  USD: 'USD',
+  SWIFT: 'SWIFT',
+  GBP: 'GBP',
+  EUR: 'EUR',
+} as const;
+
 export const ACTIVATED = 'activated';
 export const DEACTIVATED = 'deactivated';
 export const VA_USD = 'USD';
@@ -17,8 +24,10 @@ export const RAZORPAY_SUPPORT_LINK = 'https://razorpay.com/support/#request';
 export const B2B_EXPORTS_TNC_LINK = 'https://razorpay.com/terms/local-bank-transfer';
 
 export const REQUEST_ACCOUNT_TYPE = {
-  [VA_USD]: 'localBankTransfer',
-  [VA_SWIFT]: 'intBankTransfer',
+  [VIRTUAL_ACCOUNTS.USD]: 'localBankTransfer',
+  [VIRTUAL_ACCOUNTS.SWIFT]: 'intBankTransfer',
+  [VIRTUAL_ACCOUNTS.GBP]: 'localBankTransferGBP',
+  [VIRTUAL_ACCOUNTS.EUR]: 'localBankTransferEUR',
 };
 
 const USD_ACCOUNT_ACTIVATION_INFO = [
@@ -34,17 +43,29 @@ const SWIFT_ACCOUNT_ACTIVATION_INFO = [
 ];
 
 export const ACTIVATION_POPUP_CONTENT = {
-  [VA_USD]: {
+  [VIRTUAL_ACCOUNTS.USD]: {
     title: 'Request for USD Currency Bank Account',
     description:
       'You will be able to accept USD payments via ACH bank transfer with your local currency bank account.',
     faqs: USD_ACCOUNT_ACTIVATION_INFO,
   },
-  [VA_SWIFT]: {
+  [VIRTUAL_ACCOUNTS.SWIFT]: {
     title: 'Request for International Bank Account',
     description:
       'You will be able to accept SWIFT payments via International bank transfer with your International bank account.',
     faqs: SWIFT_ACCOUNT_ACTIVATION_INFO,
+  },
+  [VIRTUAL_ACCOUNTS.GBP]: {
+    title: 'Request for GBP Currency Bank Account',
+    description:
+      'You will be able to accept GBP payments via FPS bank transfer with your local currency bank account.',
+    faqs: USD_ACCOUNT_ACTIVATION_INFO,
+  },
+  [VIRTUAL_ACCOUNTS.EUR]: {
+    title: 'Request for EUR Currency Bank Account',
+    description:
+      'You will be able to accept EUR payments via SEPA bank transfer with your local currency bank account.',
+    faqs: USD_ACCOUNT_ACTIVATION_INFO,
   },
 };
 
