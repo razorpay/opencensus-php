@@ -447,3 +447,15 @@ export const AddCollectionsCta = styled.div`
     margin-right: 4px;
   }
 `;
+
+export const CheckboxLabelWithInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  i {
+    font-style: normal;
+    margin-top: 2px;
+    font-size: 12px;
+  }
+`;

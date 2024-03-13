@@ -8,7 +8,9 @@ import {
   CouponName,
   FormGroup,
   CheckboxGroup,
+  CheckboxLabelWithInfo,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 // context imports
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
@@ -113,7 +115,21 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'creat
                   onChange={(e) => handleInputChange(e, 'couponDiscoveryEnabled')}
                   autoRender
                 />
-                <span>Enable coupon discovery at checkout</span>
+                <CheckboxLabelWithInfo>
+                  <span>Enable coupon as an unavailable coupon</span>
+                  <i className="i i-info-outline">
+                    <Popover theme="dark">
+                      <PopoverBody>
+                        <div>
+                          If you enable this option, this coupon will be shown as an Unavailable
+                          coupon (disabled state) when the cart conditions or eligibility conditions
+                          are not met by the users. As soon as the conditions are fulfilled, this
+                          coupon gets enabled automatically. The users can then use this coupon.{' '}
+                        </div>
+                      </PopoverBody>
+                    </Popover>
+                  </i>
+                </CheckboxLabelWithInfo>
               </CheckboxGroup>
             )}
 
