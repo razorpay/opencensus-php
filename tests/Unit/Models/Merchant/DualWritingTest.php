@@ -20,6 +20,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Services\Mock\DruidService as MockDruidService;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\AutoKyc\Escalations\Core as EscalationCore;
 use RZP\Models\Merchant\AutoKyc\Escalations\Constants as EscalationConstant;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -510,6 +511,93 @@ class DualWritingTest extends TestCase
         $this->assertNull($doc2);
 
     }
+    public function testSavePosDocumentsPGOSDataToAPI()
+    {
+        $this->createAndFetchMocks('OPMRlog41YXkli');
+        $merchantDetail = $this->fixtures->edit('merchant_detail','OPMRlog41YXkli', [
+            'activation_status'      => 'activated']);
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('shouldMerchantOnboardViaPGOS')
+                                              ->andReturn(true);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_fetch_pos_activation_flow';
+                                              })->andReturn(["pos_activation_flow"=>'whitelist']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pgos_fetch_activation_status';
+                                              })->andReturn(["pos_activation_status"=>'under_review']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pos_fetch_all_order';
+                                              })->andReturn(["order_list"     => []]);
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        //insert
+        $data = [
+            "database"            => "stage-pg_onboarding_service",
+            "table"               => "documents",
+            "type"                => "insert",
+            "ts"                  => 1673248693,
+            "xid"                 => 1389385481,
+            "commit"              => true,
+            "position"            => "mysql-bin-changelog.008996=>7826736",
+            "primary_key_columns" => [
+                "id"
+            ],
+            "data"                => [
+                "id"                 => "L0QSK3lNI9nl37",
+                "deleted_at"         => null,
+                "merchant_id"        => "OPMRlog41YXkli",
+                "document_type"      => "shop_front",
+                "file_store_id"      => "L0QSJzjt0UMwSG",
+                "upload_by_admin_id" => null
+            ],
+            "old"                 => []
+        ];
+
+        (new Service)->savePGOSDataToAPI($data);
+
+        $doc1 = $this->getDbLastEntity('merchant_document', 'live');
+
+        $this->assertArraySubset(["document_type" => "shop_front",
+                                  "file_store_id" => "L0QSJzjt0UMwSG",
+                                  "deleted_at"    => null,
+                                  "merchant_id"   => "OPMRlog41YXkli"],
+                                 $doc1->toArray());
+
+        //update
+        $data = [
+            "database"            => "stage-pg_onboarding_service",
+            "table"               => "documents",
+            "type"                => "insert",
+            "ts"                  => 1673248693,
+            "xid"                 => 1389385481,
+            "commit"              => true,
+            "position"            => "mysql-bin-changelog.008996=>7826736",
+            "primary_key_columns" => [
+                "id"
+            ],
+            "data"                => [
+                "id"                 => "L0QSK3lNI9nl37",
+                "deleted_at"         => 1673248693,
+                "merchant_id"        => "OPMRlog41YXkli",
+                "document_type"      => "shop_front",
+                "file_store_id"      => "L0QSJzjt0UMwSG",
+                "upload_by_admin_id" => null
+            ],
+            "old"                 => []
+        ];
+
+        (new Service)->savePGOSDataToAPI($data);
+
+        $doc2 = (new \RZP\Models\Merchant\Document\Repository)->findDocumentByFileStoreId('L0QSJzjt0UMwSG');
+
+        $this->assertNull($doc2);
+
+    }
 
     public function testSaveWebsiteDataToAPI()
     {
@@ -590,6 +678,122 @@ class DualWritingTest extends TestCase
         $mid='LKDtR1ECoLNx5g';
 
         $this->createAndFetchMocks($mid);
+
+        $data = [
+            "database"            => "stage-pg_onboarding_service",
+            "table"               => "clarification_details",
+            "type"                => "update",
+            "ts"                  => 1673248693,
+            "xid"                 => 1389385481,
+            "commit"              => true,
+            "position"            => "mysql-bin-changelog.008996=>7826736",
+            "primary_key_columns" => [
+                "id"
+            ],
+            "data"                => [
+                "id"            => "LOe7ZFgd9eOawB",
+                "status"        => "submitted",
+                "metadata"      =>
+                    [
+                        "nc_count"    => 1,
+                        "admin_email" => "abhishek.m@razorpay.com"
+                    ],
+                "group_name"    => "contact_name",
+                "merchant_id"   => $mid,
+                "comment_data"  => [
+                    "text" => "provide_poc",
+                    "type" => "predefined"
+                ],
+                "message_from"  => "admin",
+                "field_details" => [
+                    "contact_name" => "spicy chaii"
+                ]
+            ],
+            "old"                 => []
+        ];
+
+        (new Service)->savePGOSDataToAPI($data);
+
+        $clarificationDetail = (new \RZP\Models\ClarificationDetail\Repository)->find('LOe7ZFgd9eOawB')->ToArray();
+
+        $this->assertArraySubset([
+                                     "id"            => "LOe7ZFgd9eOawB",
+                                     "status"        => "submitted",
+                                     "metadata"      =>
+                                         [
+                                             "nc_count"    => 1,
+                                             "admin_email" => "abhishek.m@razorpay.com"
+                                         ],
+                                     "group_name"    => "contact_name",
+                                     "merchant_id"   => $mid,
+                                     "comment_data"  => [
+                                         "text" => "provide_poc",
+                                         "type" => "predefined"
+                                     ],
+                                     "message_from"  => "admin",
+                                     "field_details" => [
+                                         "contact_name" => "spicy chaii"
+                                     ]
+                                 ], $clarificationDetail);
+
+        $merchantDetail1 = (new \RZP\Models\Merchant\Detail\Repository)->find($mid);
+
+        $this->assertArraySubset([
+                                     "clarification_reasons"    =>
+                                         [
+                                             "contact_name" =>
+                                                 [
+                                                     [
+                                                         "from"        => "admin",
+                                                         "nc_count"    => 1,
+                                                         "is_current"  => true,
+                                                         "reason_code" => "provide_poc",
+                                                         "reason_type" => "predefined"
+                                                     ]
+                                                 ]
+                                         ],
+                                     "clarification_reasons_v2" => [
+                                         "contact_name" => [
+                                             [
+                                                 "from"        => "admin",
+                                                 "nc_count"    => 1,
+                                                 "is_current"  => true,
+                                                 "reason_code" => "provide_poc",
+                                                 "reason_type" => "predefined"
+                                             ]
+                                         ]
+                                     ],
+                                     "nc_count"                 => 1
+                                 ], $merchantDetail1->getKycClarificationReasons());
+    }
+    public function testSavePosClarificationDetailsToAPI()
+    {
+        $mid='LKDtR1ECoLNx5g';
+
+        $this->createAndFetchMocks($mid);
+        $merchantDetail = $this->fixtures->on('live')->edit('merchant_detail',$mid, [
+            'activation_status'      => 'activated']);
+        $merchantDetail = $this->fixtures->on('test')->edit('merchant_detail',$mid, [
+            'activation_status'      => 'activated']);
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('shouldMerchantOnboardViaPGOS')
+                                              ->andReturn(true);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_fetch_pos_activation_flow';
+                                              })->andReturn(["pos_activation_flow"=>'whitelist']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pgos_fetch_activation_status';
+                                              })->andReturn(["pos_activation_status"=>'under_review']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pos_fetch_all_order';
+                                              })->andReturn(["order_list"     => []]);
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
 
         $data = [
             "database"            => "stage-pg_onboarding_service",

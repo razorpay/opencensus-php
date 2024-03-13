@@ -11,6 +11,7 @@ use Swift_Mailer;
 use Buzz\Client\MultiCurl;
 use Razorpay\Asv\Config as AsvSdkConfig;
 use Razorpay\Asv\Client as AsvSdkClient;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use Razorpay\Outbox\Job\Core;
 use Razorpay\OAuth\Application;
@@ -503,6 +504,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('merchantRiskClient', function ($app)
         {
             return new MerchantRiskClient();
+        });
+
+        $this->app->singleton('MerchantOnboardingProxyController', function ($app)
+        {
+            return new MerchantOnboardingProxyController();
         });
 
         $this->app->singleton('gateway_file', function($app)
