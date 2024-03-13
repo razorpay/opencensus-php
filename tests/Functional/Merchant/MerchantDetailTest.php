@@ -11367,15 +11367,22 @@ We look forward to transacting with you!
     public function fillPgKyc(bool $businessBanking = false, string $businessType = '1')
     {
         Mail::fake();
-
+        
         $merchantId = self::DEFAULT_MERCHANT_ID;
-
+        
         $website = 'http://abc.com';
-
+        
         $this->fixtures->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['abc.com'], 'business_banking' => $businessBanking]);
-
-        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website, 'issue_fields' => 'business_website', "submitted" => true, Entity::BUSINESS_TYPE => $businessType]);
-
+        
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id'         => $merchantId,
+            'business_website'    => $website,
+            'issue_fields'        => 'business_website',
+            "submitted"           => true,
+            Entity::BUSINESS_TYPE => $businessType,
+            'promoter_pan_name'   => 'Test123',
+            'promoter_pan'        => 'AAAPA1234J']);
+        
         $pricingPlanId = $this->fixtures->create('pricing', [
             'product'        => 'banking',
             'id'             => '1zE31zbybacac1',
@@ -11387,48 +11394,48 @@ We look forward to transacting with you!
             'org_id'         => '100000razorpay',
             'type'           => 'pricing',
         ]);
-
-        $this->fixtures->edit('merchant',$merchantId, [
-            'name'             => ' Kill Bill Pandey ',
-            'billing_label'    => ' AB ',
-            'pricing_plan_id'  => $pricingPlanId['plan_id'],
-            'activated'        => false,
-            'international'    => 0,
-            'category2'        => null
+        
+        $this->fixtures->edit('merchant', $merchantId, [
+            'name'            => ' Kill Bill Pandey ',
+            'billing_label'   => ' AB ',
+            'pricing_plan_id' => $pricingPlanId['plan_id'],
+            'activated'       => false,
+            'international'   => 0,
+            'category2'       => null
         ]);
-
+        
         $this->fixtures->create('merchant_website', [
             'merchant_id' => '10000000000000',
         ]);
-
+        
         $this->fixtures->on('live')->create('merchant_attribute', [
-            'merchant_id'    =>  '10000000000000',
-            'type'           =>  'X',
-            'value'          =>  'true',
-            'group'          =>  'products_enabled',
-            'product'        =>  'banking',
+            'merchant_id' => '10000000000000',
+            'type'        => 'X',
+            'value'       => 'true',
+            'group'       => 'products_enabled',
+            'product'     => 'banking',
         ]);
-
-        $testData = & $this->testData['testPgKycActivation'];
-
+        
+        $testData = &$this->testData['testPgKycActivation'];
+        
         $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
-
-        $this->fixtures->on('live')->edit('terminal','BANKACC3DSN3DT',
-            ['gateway_merchant_id' => '456456']);
-
-        $this->fixtures->on('live')->edit('terminal','BANKACC3DSN3DZ',
-            ['gateway_merchant_id' => '232323']);
-
-        $this->fixtures->on('test')->edit('terminal','BANKACC3DSN3DT',
-            ['gateway_merchant_id' => '456456']);
-
-        $this->fixtures->on('test')->edit('terminal','BANKACC3DSN3DZ',
-            ['gateway_merchant_id' => '232323']);
-
+        
+        $this->fixtures->on('live')->edit('terminal', 'BANKACC3DSN3DT',
+                                          ['gateway_merchant_id' => '456456']);
+        
+        $this->fixtures->on('live')->edit('terminal', 'BANKACC3DSN3DZ',
+                                          ['gateway_merchant_id' => '232323']);
+        
+        $this->fixtures->on('test')->edit('terminal', 'BANKACC3DSN3DT',
+                                          ['gateway_merchant_id' => '456456']);
+        
+        $this->fixtures->on('test')->edit('terminal', 'BANKACC3DSN3DZ',
+                                          ['gateway_merchant_id' => '232323']);
+        
         $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
-
+        
         $this->startTest($testData);
-
+        
         return $merchantDetail;
     }
 

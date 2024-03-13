@@ -3893,7 +3893,8 @@ class Core extends Base\Core
             if ($this->app['basicauth']->isAdminAuth() === true)
             {
                 $this->checkLicenseExpiryValidationForMerchantDocuments($merchant, $input);
-
+                
+                $this->performComplianceChecksBasedOnBusinessType($merchantDetails);
             }
         }
 
@@ -4383,10 +4384,25 @@ class Core extends Base\Core
      */
     protected function performComplianceChecksBasedOnBusinessType($merchantDetail)
     {
-
-        // Skip this check if we're in a testing environment because it breaks existing uts when improper data is there
-        if (App::environment('testing') === true)
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            =>  $merchantDetail->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.enable_compliance_checks_on_admin_activation_workflows'),
+            ],
+            'variables'
+        );
+        
+        if($isExpEnabled === false)
         {
+            return;
+        }
+        
+        if ($this->mcore->isMerchantEligibleForComplianceCheck($merchantDetail->merchant) === false)
+        {
+            $this->app['trace']->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_SKIP, [
+                'merchant_id' => $merchantDetail->getMerchantId(),
+            ]);
+            
             return;
         }
 
@@ -4402,6 +4418,7 @@ class Core extends Base\Core
         (new Validator())->validatePersonalPAN($merchantDetail);
         (new Validator())->validateCompanyPAN($businessType, $companyPan);
         (new Validator())->validateCIN($businessType, $cin);
+        
     }
 
     public function shouldTriggerActivatedWebhook(string $merchantId, string $newStatus = null) : bool

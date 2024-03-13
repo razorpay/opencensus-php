@@ -2713,33 +2713,37 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1X4hRFHFx4UiXt';
 
         $merchantAttributes = [
-            'website' => 'abc.com',
-            'category' => 1100,
-            'billing_label' => 'labore',
+            'website'                  => 'abc.com',
+            'category'                 => 1100,
+            'billing_label'            => 'labore',
             'transaction_report_email' => 'test@razorpay.com',
-            'created_at' => 1670889499
+            'created_at'               => 1670889499
         ];
-
+        
         $this->fixtures->edit('merchant', $merchantId, $merchantAttributes);
 
         $this->fixtures->on('live')->edit('merchant_detail', $merchantId, [
-            'submitted'           => true,
-            'bank_branch_ifsc'    => 'CBIN0281697',
-            'bank_account_number' => '0002020000304030434',
-            'bank_account_name'   => 'random name',
-            'contact_mobile'      => '9999999999',
-            'business_category'   => 'financial_services',
-            'business_subcategory'=> 'accounting',
+            'submitted'            => true,
+            'bank_branch_ifsc'     => 'CBIN0281697',
+            'bank_account_number'  => '0002020000304030434',
+            'bank_account_name'    => 'random name',
+            'contact_mobile'       => '9999999999',
+            'business_category'    => 'financial_services',
+            'business_subcategory' => 'accounting',
+            'promoter_pan_name'    => 'Test123',
+            'promoter_pan'         => 'AAAPA1234J',
         ]);
 
         $this->fixtures->on('test')->edit('merchant_detail', $merchantId, [
-            'submitted'           => true,
-            'bank_branch_ifsc'    => 'CBIN0281697',
-            'bank_account_number' => '0002020000304030434',
-            'bank_account_name'   => 'random name',
-            'contact_mobile'      => '9999999999',
-            'business_category'   => 'financial_services',
-            'business_subcategory'=> 'accounting',
+            'submitted'            => true,
+            'bank_branch_ifsc'     => 'CBIN0281697',
+            'bank_account_number'  => '0002020000304030434',
+            'bank_account_name'    => 'random name',
+            'contact_mobile'       => '9999999999',
+            'business_category'    => 'financial_services',
+            'business_subcategory' => 'accounting',
+            'promoter_pan_name'    => 'Test123',
+            'promoter_pan'         => 'AAAPA1234J',
         ]);
 
         $activationRequest = [
@@ -2751,7 +2755,7 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->fixtures->create('merchant_website', [
-            'merchant_id'              => $merchantId,
+            'merchant_id' => $merchantId,
         ]);
 
         $this->ba->adminAuth();

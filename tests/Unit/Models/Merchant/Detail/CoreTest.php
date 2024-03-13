@@ -7904,6 +7904,8 @@ class CoreTest extends TestCase
             'activation_form_milestone' => 'L2',
             'poi_verification_status'   => 'verified',
             'promoter_pan'              => 'AAAPA1234J',
+            'company_pan'               => 'AAACA1234J',
+            'company_cin'               => 'U67190TN2014PTC096978',
             'activation_status'         => 'under_review',
             'submitted'                 => true,
             'business_Website'          => null
@@ -8194,6 +8196,8 @@ class CoreTest extends TestCase
             'activation_form_milestone' => 'L2',
             'poi_verification_status'   => 'verified',
             'promoter_pan'              => 'AAAPA1234J',
+            'company_pan'               => 'AAACA1234J',
+            'company_cin'               => 'U67190TN2014PTC096978',
             'activation_status'         => 'kyc_qualified_unactivated',
             'submitted'                 => true,
             'business_Website'          => null
@@ -9557,6 +9561,7 @@ class CoreTest extends TestCase
             'activation_status'         => 'under_review',
             'submitted'                 => true,
             'business_website'          => 'https://google.com',
+            'company_pan'              => "AAACA1234J"
         ]);
 
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
@@ -15085,9 +15090,9 @@ class CoreTest extends TestCase
         $this->ba->adminAuth();
         Mail::fake();
         Config::set('pgos.proxy.request.mock', true);
-
+        
         $mid = 'KiyM01yZQeU3rD';
-
+        
         $merchant = $this->fixtures->create('merchant', [
             'id'            => $mid,
             'website'       => null,
@@ -15095,34 +15100,36 @@ class CoreTest extends TestCase
             'email'         => null,
             'billing_label' => null,
         ]);
-
+        
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             'merchant_id'      => $mid,
             'contact_email'    => null,
+            'promoter_pan'     => 'ABCPE1234E',
+            'business_type'    => 11,
             'business_website' => null]);
-
+        
         $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
-
+        
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
                                ->setMethods(['isAutoKycDone'])
                                ->setMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
-
+        
         $detailCoreMock->expects($this->any())
                        ->method('isAutoKycDone')
                        ->willReturn(true);
-
+        
         $detailCoreMock->expects($this->any())
                        ->method('isEligibleForAutomationActivation')
                        ->willReturn(true);
-
+        
         $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
-
+        
         $input = [
             "experiment_id" => "LS64r2cBVZVT5b",
             "id"            => $mid,
         ];
-
+        
         $output = [
             "response" => [
                 "variant" => [
@@ -15130,52 +15137,52 @@ class CoreTest extends TestCase
                 ]
             ]
         ];
-
+        
         $this->mockSplitzTreatment($input, $output);
-
+        
         $input = [
             "experiment_id" => "MVNSQzGiHM965H",
             "id"            => $mid,
         ];
-
+        
         $output = [
             "response" => [
                 "variant" => [
-
+                
                 ]
             ]
         ];
-
+        
         $this->mockSplitzTreatment($input, $output);
-
+        
         $activationStatusData = [
             Entity::ACTIVATION_STATUS => Status::KYC_QUALIFIED_UNACTIVATED,
         ];
-
+        
         $admin = $this->fixtures->connection('live')->create('admin', [
             'org_id' => OrgEntity::RAZORPAY_ORG_ID,
         ]);
-
+        
         $this->app->instance("rzp.mode", Mode::LIVE);
-
+        
         $this->app['workflow']->setWorkflowMaker($admin);
-
+        
         $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
-
+        
         $this->app->instance('basicauth', $basicAuthMock);
-
+        
         $basicAuthMock
             ->shouldReceive('getOrgId')
             ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
-
+        
         $basicAuthMock
             ->shouldReceive('isAdminAuth')
             ->andReturn(true);
-
+        
         $detailCoreMock->updateActivationStatus($merchantDetail->merchant, $activationStatusData, $admin);
-
+        
         $merchantDetailData = $this->getDbEntityById('merchant_detail', $mid)->toArray();
-
+        
         $this->assertEquals('kyc_qualified_unactivated', $merchantDetailData['activation_status']);
     }
 
@@ -15444,7 +15451,223 @@ class CoreTest extends TestCase
         $this->assertEquals(true, $res);
 
     }
-
+    
+    //activate merchant with business type as per details should get activated/KQU
+    public function testAMerchantActivateWithBusinessType()
+    {
+        $this->ba->adminAuth();
+        Mail::fake();
+        Config::set('pgos.proxy.request.mock', true);
+        
+        $mid = 'KiyM01yZQeU3rD';
+        
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+        
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 11,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'kyc_qualified_unactivated',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+        
+        $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
+        
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->getMock();
+        
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+        
+        $detailCoreMock->expects($this->any())
+                       ->method('isEligibleForAutomationActivation')
+                       ->willReturn(true);
+        
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $merchantDetail->getMerchantId(),
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
+        
+        $input1 = [
+            "experiment_id" => "NlqlZNbm3BZHs3",
+            "id"            => $merchantDetail->getMerchantId(),
+        ];
+        
+        $output1 = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input1, $output1);
+        
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+        
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+        
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        
+        $this->app['workflow']->setWorkflowMaker($admin);
+        
+        $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
+        
+        $this->app->instance('basicauth', $basicAuthMock);
+        
+        $basicAuthMock
+            ->shouldReceive('getOrgId')
+            ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+        
+        $basicAuthMock
+            ->shouldReceive('isAdminAuth')
+            ->andReturn(true);
+        
+        $detailCoreMock->updateActivationStatus($merchantDetail->merchant, $activationStatusData, $admin);
+        
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetail->getMerchantId())->toArray();
+        
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+    }
+    
+    
+    // should throw error when promoter pan is missing
+    public function testAMerchantActivateWithBusinessTypeWithoutPersonalPan()
+    {
+        $this->ba->adminAuth();
+        Mail::fake();
+        Config::set('pgos.proxy.request.mock', true);
+        
+        $mid = 'KiyM01yZQeU3rD';
+        
+        $merchant = $this->fixtures->create('merchant', [
+            'id'               => $mid,
+            'business_banking' => 1
+        ]);
+        
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'merchant_id'               => $mid,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'company_pan'               => 'AAAPA1234J',
+            'activation_status'         => 'kyc_qualified_unactivated',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+        
+        $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
+        
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->getMock();
+        
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+        
+        $detailCoreMock->expects($this->any())
+                       ->method('isEligibleForAutomationActivation')
+                       ->willReturn(true);
+        
+        $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
+        
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $mid,
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
+        
+        $input1 = [
+            "experiment_id" => "NlqlZNbm3BZHs3",
+            "id"            => $merchantDetail->getMerchantId(),
+        ];
+        
+        $output1 = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input1, $output1);
+        
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+        
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+        
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        
+        $this->app['workflow']->setWorkflowMaker($admin);
+        
+        $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
+        
+        $this->app->instance('basicauth', $basicAuthMock);
+        
+        $basicAuthMock
+            ->shouldReceive('getOrgId')
+            ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+        
+        $basicAuthMock
+            ->shouldReceive('isAdminAuth')
+            ->andReturn(true);
+        
+        try
+        {
+            
+            $response = $detailCoreMock->updateActivationStatus($merchantDetail->merchant, $activationStatusData, $admin);
+            
+            $this->assertNull($response);
+            
+        }
+        catch (\Exception $e)
+        {
+            
+            $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
+            $this->assertStringContainsString('Personal PAN should not be blank.', $e->getMessage());
+            
+        }
+    }
+    
     public function testIsMerchantApplicableForWebsiteSections_BankingNotPrimary()
     {
 

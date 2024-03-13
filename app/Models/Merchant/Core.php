@@ -10,6 +10,7 @@ use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
 use Illuminate\Support\Str;
+use RZP\Models\Card\IIN\Country;
 use Illuminate\Http\JsonResponse;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PartnerMigrationAuditJob;
@@ -9300,6 +9301,77 @@ class Core extends Base\Core
         $isSubMerchant = (new AccessMapCore)->isSubMerchant($merchant->getMerchantId());
 
         return !$isSubMerchant;
+    }
+    
+    
+    public function isMerchantEligibleForComplianceCheck(Entity $merchant): bool
+    {
+        // Linked Accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $this->trace->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_SKIP, [
+                'merchant_id' => $merchant->getId(),
+                'linked_account'=>true
+            ]);
+            
+            return false;
+        }
+        
+        if(\RZP\Constants\Country::matches($merchant->getCountry() , Country::IN) === false)
+        {
+            $this->trace->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_SKIP, [
+                'merchant_id' => $merchant->getId(),
+                'country_code'=> $merchant->getCountry()
+            ]);
+            
+            return false;
+        }
+        
+        // Partnership Merchant
+        if ($merchant->isPartner() === true)
+        {
+            $this->trace->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_SKIP, [
+                'merchant_id' => $merchant->getId(),
+                'patnership_account'=> true
+            ]);
+            return false;
+        }
+        
+        // subMerchant
+        $isSubMerchant = (new AccessMapCore)->isSubMerchant($merchant->getMerchantId());
+        
+        if ($isSubMerchant === true)
+        {
+            $this->trace->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_ELIGIBLE, [
+                'merchant_id' => $merchant->getId(),
+                'submerchant'=> true
+            ]);
+            return true;
+        }
+        
+        // RazorpayX
+        if ($merchant->isBusinessBankingEnabled() === true)
+        {
+            $this->trace->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_ELIGIBLE, [
+                'merchant_id' => $merchant->getId(),
+                'business_banking'=> true
+            ]);
+            return true;
+        }
+        
+        
+        if ($merchant->isRazorpayOrgId() === true)
+        {
+            $this->trace->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_ELIGIBLE, [
+                'merchant_id' => $merchant->getId(),
+                'razorpay_org'=> true
+            ]);
+            return true;
+        }
+        $this->trace->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_SKIP, [
+            'merchant_id' => $merchant->getId(),
+        ]);
+        return false;
     }
 
     /*
