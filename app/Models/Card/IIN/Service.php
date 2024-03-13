@@ -964,7 +964,8 @@ class Service extends Base\Service
                     'apiServiceEntityValue' => $apiServiceEntityValue,
                     'binServiceEntityValue' => $binServiceEntityValue,
                     'api_entity_country'    => $apiServiceEntity['country'],
-                    'bin_entity_country'    => $binServiceEntity['country']
+                    'bin_entity_country'    => $binServiceEntity['country'],
+                    'mapped_iin'            => $binServiceEntity['mappedIin'] ?? "",
                 ]);
             }
         }

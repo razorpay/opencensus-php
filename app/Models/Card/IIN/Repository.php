@@ -114,7 +114,7 @@ class Repository extends Base\Repository
 
         $iinService = (new Service());
 
-        if (isset($iin) && $iinService->shouldReadFromBinService() === true)
+        if (!empty($iin) && $iinService->shouldReadFromBinService() === true)
         {
             $binService = (new BinService());
 
@@ -135,7 +135,7 @@ class Repository extends Base\Repository
 
         $iinService = (new Service());
 
-        if (isset($iin) && $iinService->shouldReadFromBinService() === true)
+        if (!empty($iin) && $iinService->shouldReadFromBinService() === true)
         {
             $binService = (new BinService());
 
@@ -156,7 +156,7 @@ class Repository extends Base\Repository
 
         $iinService = (new Service());
 
-        if (isset($iin) && $iinService->shouldReadFromBinService() === true)
+        if (!empty($iin) && $iinService->shouldReadFromBinService() === true)
         {
             $binService = (new BinService());
 
