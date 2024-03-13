@@ -1080,11 +1080,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        if ($this->isPartialPaymentAllowed() === false) {
-            return $this->getAmount() == $payment->getAmount();
-        }
-
-        return $this->getAmount() == $this->getAmountPaid();
+        return $this->getAmount() == $payment->order->getAmountPaid();
     }
 
     public function getAllowedLineItemTypes()
