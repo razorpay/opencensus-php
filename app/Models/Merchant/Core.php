@@ -9876,6 +9876,52 @@ class Core extends Base\Core
         return false;
     }
 
+    public function isSplitzExperimentVariableEnabled(array $properties , string $checkVariable = 'value', string $checkValue = 'on', string $checkVariant = null): bool
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ( is_null($variant) === true )
+            {
+                return false;
+            }
+
+            $isVariantMatch = true;
+
+            if ( is_null($checkVariant) === false)
+            {
+                $isVariantMatch = $variant === $checkVariant;
+            }
+
+            if ( $isVariantMatch )
+            {
+                $variantObj = $response['response']['variant'];
+                foreach ( $variantObj['variables'] as $variable )
+                {
+                    if ( $variable['key'] === $checkVariable && $variable['value'] === $checkValue )
+                    {
+                        return true;
+                    }
+                }
+            }
+
+//            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+        }
+
+        return false;
+    }
+
     public function addMerchantDetailsOfToken(
         Entity $merchant,
         array &$merchantsList,
@@ -11045,7 +11091,7 @@ class Core extends Base\Core
         return $this->isSplitzExperimentEnable($properties, 'enable');
     }
 
-    public function isOnboardingApiBmcEnabled(?string $partnerId, string $checkVariant = 'enable') : bool
+    public function isOnboardingApiBmcEnabled(?string $partnerId, string $checkVariable = 'value') : bool
     {
         if ( is_null($partnerId) === true )
         {
@@ -11057,7 +11103,7 @@ class Core extends Base\Core
             'experiment_id' => $this->app['config']->get('app.onboarding_api_bmc_experiment_id')
         ];
 
-        return  $this->isSplitzExperimentEnable($properties, $checkVariant);
+        return  $this->isSplitzExperimentVariableEnabled($properties, $checkVariable);
     }
 
 }

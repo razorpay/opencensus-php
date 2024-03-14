@@ -11488,8 +11488,15 @@ class Core extends Base\Core
 
         $pgosPayload = [];
 
+        $proxyForSubMerchant = false;
+        $partnerIds = (new AccessMapCore)->getPartnerIds($this->merchant->getId());
+        if ( count($partnerIds) > 0 && (new Merchant\Core())->isOnboardingApiBmcEnabled($partnerIds[0], 'subm_auto_activation') === true )
+        {
+            $proxyForSubMerchant = true;
+        }
+
         $response = $this->pgosProxyController->handlePGOSProxyRequests('get_merchant_eligibility_for_automation_activation',
-            $pgosPayload, $this->merchant);
+            $pgosPayload, $this->merchant, $proxyForSubMerchant);
 
         if (is_null($response) === true)
         {

@@ -714,4 +714,9 @@ class Core extends Base\Core
 
         return empty($merchant) === false;
     }
+
+    public function getPartnerIds(string $merchantId) : array
+    {
+        return $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchantId, true)->toArray();
+    }
 }
