@@ -24,6 +24,15 @@ export default function PartnerNavLinks() {
       />
 
       <MainNavLink
+        label="Partner Playbook"
+        icon="i i-partner-playbook text-notice"
+        to="/partners/playbook"
+        isNew={true}
+        additionalCondition={() => isPartnerPlaybookEnabled}
+        end
+      />
+
+      <MainNavLink
         label="Earnings"
         icon="i i-earnings text-primary"
         to="/partners/earnings/daily"
@@ -70,15 +79,6 @@ export default function PartnerNavLinks() {
         isPending={false}
         // disabling for reseller partner not having partner configs
         additionalCondition={(user) => !user.isPartner('reseller') || user.isHavingPartnerConfigs}
-      />
-
-      <MainNavLink
-        label="Partner Playbook"
-        icon="i i-partner-playbook text-notice"
-        to="/partners/playbook"
-        isNew={true}
-        additionalCondition={() => isPartnerPlaybookEnabled}
-        end
       />
     </>
   );

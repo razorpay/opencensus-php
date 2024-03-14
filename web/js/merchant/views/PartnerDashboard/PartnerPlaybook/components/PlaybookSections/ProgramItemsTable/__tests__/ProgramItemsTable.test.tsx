@@ -80,7 +80,7 @@ describe('ProgramItemsTable', () => {
       sectionHeader: growYourBusinessSection.header,
     });
     // expand the first folder
-    expect(screen.getAllByLabelText('download')).toHaveLength(8);
+    expect(screen.getAllByLabelText('download')).toHaveLength(2);
     await userEvent.click(screen.getAllByLabelText('download')[0]);
 
     expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
@@ -91,7 +91,7 @@ describe('ProgramItemsTable', () => {
           section: 'Grow Your Business',
           pageFold: 3,
           folderName: 'Marketing Assets',
-          title: 'Razorpay Logo',
+          title: 'E-commerce Pitch',
           ctaClicked: 'download',
         }),
       }),

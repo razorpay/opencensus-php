@@ -28,10 +28,10 @@ describe('ProgramFolders', () => {
   test('folder expand/collapse behavior', async () => {
     renderApp();
     expect(screen.getByText('Marketing Assets')).toBeInTheDocument();
-    expect(screen.queryByText('Ecommerce Banner')).toBeNull();
+    expect(screen.queryByText('E-commerce Banner')).toBeNull();
     // Test view all click
     await userEvent.click(screen.getAllByText('View all')[0]);
-    expect(screen.getByText('Ecommerce Banner')).toBeInTheDocument();
+    expect(screen.getByText('E-commerce Banner')).toBeInTheDocument();
     expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         objectName: 'Partner Playbook Page Section Cta',
@@ -57,6 +57,6 @@ describe('ProgramFolders', () => {
       }),
     );
     // Should collapse again
-    expect(screen.queryByText('Ecommerce Banner')).toBeNull();
+    expect(screen.queryByText('E-commerce Banner')).toBeNull();
   });
 });

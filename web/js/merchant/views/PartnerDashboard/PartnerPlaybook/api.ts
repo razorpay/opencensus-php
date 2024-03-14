@@ -1,5 +1,4 @@
 import { delay } from 'common/utils/timeout';
-
 import {
   PlaybookFiltersType,
   FetchPlaybookItemsResponse,
@@ -68,7 +67,7 @@ export const handleSearch = (
       // patch folder items with id -
       matchedFolder.items = matchedItems.map((item) => ({
         ...item,
-        id: `${item.title?.slice(0, 8)}#${sectionItem.header.hash}`,
+        id: `${item.download_url}#${sectionItem.header.hash}`,
       }));
 
       if (matchedItems.length > 0) {

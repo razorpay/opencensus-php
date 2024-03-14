@@ -36,7 +36,7 @@ export type ProgramFolder = {
   items: Array<ProgramItem>;
 };
 
-type ProgramFolderStore = {
+export type ProgramFolderStore = {
   header: null | Omit<ProgramFolderHeader, 'count'>;
   items: Array<Omit<ProgramItem, 'id'>>;
 };
@@ -66,6 +66,18 @@ export type PlaybookItemsStore = Array<{
   sectionKey: ProgramHeader;
   sectionItem: ProgramSectionStore;
 }>;
+
+export type PlaybookItemsStoreInitial = Array<{
+  sectionKey: ProgramHeader;
+  sectionItem: {
+    header: Omit<ProgramSectionStore['header'], 'total'>;
+    folders: Array<{
+      header: null | Omit<ProgramFolderHeader, 'count' | 'total'>;
+      items: ProgramSectionStore['folders'][0]['items'];
+    }>;
+  };
+}>;
+
 export type FetchPlaybookItemsResponse = CommonApiResponse<PlaybookItems>;
 
 export type PlaybookFiltersType = {

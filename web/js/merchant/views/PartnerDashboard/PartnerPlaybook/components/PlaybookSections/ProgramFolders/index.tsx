@@ -3,6 +3,7 @@ import { Badge, Box, Text, ChevronDownIcon, ChevronUpIcon, Link } from '@razorpa
 import styled from 'styled-components';
 
 import ProgramFolderIcon from 'assets/partner-dashboard/partner-playbook/program-folder.svg';
+import { isMobileResolution } from 'common/utils/rzp-utils';
 import { trackPageSectionCtaClicked } from 'merchant/views/PartnerDashboard/PartnerPlaybook/analytics';
 import ProgramItemsTable from 'merchant/views/PartnerDashboard/PartnerPlaybook/components/PlaybookSections/ProgramItemsTable';
 import {
@@ -30,6 +31,8 @@ const ProgramHeader = ({
   hash,
   header: { title, description, count },
 }: ProgramHeaderProps): JSX.Element => {
+  const isMobile = isMobileResolution();
+
   return (
     <StyledProgramHeader onClick={onFolderHeaderClick}>
       <Box
@@ -48,9 +51,11 @@ const ProgramHeader = ({
           <Text weight="bold">{title}</Text>
         </Box>
 
-        <Box flexBasis="42%">
-          <Text>{description}</Text>
-        </Box>
+        {!isMobile ? (
+          <Box flexBasis="42%">
+            <Text>{description}</Text>
+          </Box>
+        ) : null}
         <Box flexBasis="10%">
           <Badge testID={`badge-${hash}-${folderIndex}`} variant="blue" size="large">
             {count} {count === 1 ? 'item' : 'items'}
@@ -59,6 +64,7 @@ const ProgramHeader = ({
 
         <Box flexBasis="8%">
           <Link variant="button" onClick={onViewAllClick} marginBottom="spacing.2">
+            {/* eslint-disable-next-line */}
             {/* @ts-ignore TS2322 Link only accepts string children */}
             <Box display="flex" flexDirection="row" alignItems="center">
               <Box> View all</Box>

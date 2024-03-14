@@ -71,6 +71,7 @@ const ItemActions = ({
       ) : null}
       {shouldShowDownloadButton ? (
         <Link href={download_url} target="_blank" download rel="noreferrer noopener">
+          {/* eslint-disable-next-line */}
           {/* @ts-ignore TS2322 Link only accepts string children */}
           <IconButton
             icon={() => <DownloadIcon size="large" color="action.icon.secondary.default" />}
