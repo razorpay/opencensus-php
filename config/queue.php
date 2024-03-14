@@ -671,6 +671,11 @@ return [
         'live'       => env('AWS_NACH_BATCH_PROCESS_ASYNC_BAL_LIVE_QUEUE'),
     ],
 
+    'upi_autopay_notification' => [
+        'test'       => env('AWS_UPI_AUTOPAY_NOTIFICATION_TEST_QUEUE'),
+        'live'       => env('AWS_UPI_AUTOPAY_NOTIFICATION_LIVE_QUEUE'),
+    ],
+
     'art_recon_entity_update'  => [
         'test'       => env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE'),
         'live'       => env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE'),

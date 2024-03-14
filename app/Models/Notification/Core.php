@@ -110,6 +110,8 @@ class Core extends Base\Core
 
         $this->validateToken($token);
 
+        $this->validatePaymentMethod($input, $token);
+
         $upiMandate = $this->repo->upi_mandate->findByTokenId($token->getId());
 
         $this->validateOrderAmount($input, $upiMandate);
@@ -118,6 +120,15 @@ class Core extends Base\Core
 
         $this->validateMandateFrequency($upiMandate);
 
+    }
+
+    protected function validatePaymentMethod($input, $token)
+    {
+        if((isset($input['method']) === true) and ($input['method'] !== 'upi'))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Notification is not supported for other methods');
+        }
     }
 
     protected function validateMandateFrequency($upiMandate)
@@ -156,6 +167,12 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestValidationFailureException(
                 "token is not in confirmed status");
+        }
+
+        if($token->getMethod() !== 'upi')
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid UPI token');
         }
     }
 
@@ -202,13 +219,6 @@ class Core extends Base\Core
         ];
 
         $terminal = (new TerminalProcessor)->getTerminalFromTerminalIds($terminalIds);
-
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            [
-                'terminal'        => $terminal,
-            ]
-        );
 
         // Update used count and sequence number in mandate table
         $this->updateSequenceNumberOrUsedCount($token->getId());
@@ -413,6 +423,14 @@ class Core extends Base\Core
             $notification->setVpa($gatewayRequest['payment']['vpa']);
             $notification->setGatewayResponse($payerResponseCodeDes);
         }
+    }
+
+    /**
+     * @return Entity
+     */
+    public function findDeliveredNotification($orderId)
+    {
+        return $this->repo->notification->findDeliveredNotificationByOrderId($orderId);
     }
 
     protected function getProviderBank($vpa)

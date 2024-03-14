@@ -10,6 +10,7 @@ use Razorpay\Trace\Logger;
 use RZP\Models\UpiMandate;
 use RZP\Models\PaymentsUpi;
 use RZP\Constants\Timezone;
+use RZP\Models\Notification;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Mozart\Gateway;
 use RZP\Gateway\Upi\Base\Entity;
@@ -555,10 +556,18 @@ trait RecurringTrait
             // If this is debit call then make sure sequence no must be same with pre-debit call in case of auto
             // recurring payments
             $preDebitUpiEntity = null;
+            $notificationEntity = null;
             if(($input['payment']['recurring_type'] === Payment\RecurringType::AUTO) and
                 ($action === Action::AUTHORIZE))
             {
                 $preDebitUpiEntity = $this->getUpiEntityForAction($input, Action::PRE_DEBIT);
+
+                if($preDebitUpiEntity === null)
+                {
+                    $notification = new Notification\Core;
+
+                    $notificationEntity = $notification->findDeliveredNotification($input['payment']['order_id']);
+                }
             }
 
             if((($preDebitUpiEntity instanceof Entity) === true) and
@@ -566,6 +575,12 @@ trait RecurringTrait
                 (empty($preDebitUpiEntity->getGatewayData()[Constants::SEQUENCE]) === false))
             {
                 $sequenceNo = $preDebitUpiEntity->getGatewayData()[Constants::SEQUENCE];
+            }
+            else if ((($notificationEntity instanceof Notification\Entity) === true) and
+                (empty($notificationEntity->getGatewayRequest()) === false) and
+                (empty($notificationEntity->getGatewayRequest()['seqNo']) === false))
+            {
+                $sequenceNo = $notificationEntity->getGatewayRequest()['seqNo'];
             }
             else if (isset($input['upi_mandate']['sequence_number']) === true)
             {

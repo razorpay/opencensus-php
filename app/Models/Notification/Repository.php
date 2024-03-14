@@ -19,6 +19,16 @@ class Repository extends Base\Repository
         return $notification;
     }
 
+    public function findDeliveredNotificationByOrderId(string $orderId)
+    {
+        $notification = $this->newQuery()
+            ->where(Entity::ORDER_ID, '=', $orderId)
+            ->where(Entity::STATUS, '=', 'delivered')
+            ->first();
+
+        return $notification;
+    }
+
     public function findByOrderIdAndMerchantId(string $orderId, Merchant\Entity $merchant)
     {
         $notification = $this->newQuery()
