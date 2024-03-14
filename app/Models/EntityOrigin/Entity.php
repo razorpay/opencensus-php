@@ -72,4 +72,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ORIGIN_ID);
     }
+
+    public function getOriginType()
+    {
+        return $this->getAttribute(self::ORIGIN_TYPE);
+    }
 }

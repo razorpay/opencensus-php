@@ -2657,6 +2657,12 @@ class CommissionCreateTest extends TestCase
             "response" => [
                 "variant" => [
                     "name" => 'enable',
+                    "variables"=> [
+                        [
+                            "key" => "payment",
+                            "value" => "on"
+                        ]
+                    ]
                 ]
             ]
         ];

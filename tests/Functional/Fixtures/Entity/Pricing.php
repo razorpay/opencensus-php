@@ -600,6 +600,35 @@ class Pricing extends Base
         return $rows;
     }
 
+    public function createTransferOauthDefaultPlan()
+    {
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
+
+        $rows = [
+            [
+            'id'             => '2zE31zbyeGCTd4',
+            'plan_id'        => $pricingPlanId,
+            'plan_name'      => 'testDefaultPlan',
+            'feature'        => 'transfer',
+            'payment_method' => 'account',
+            'percent_rate'   => 200,
+            'fixed_rate'     => 0,
+            'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '2zE31zbyeGCTd5',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'testDefaultPlan',
+                'feature'        => 'transfer',
+                'payment_method' => 'customer',
+                'percent_rate'   => 200,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ]
+        ];
+        $this->addPricingRulesToDb( $rows);
+    }
+
     public function createTestPlanForNoOndemandAndEsAutomaticPricing()
     {
         $pricingPlanId = '1BFFkd38fFGbnh';

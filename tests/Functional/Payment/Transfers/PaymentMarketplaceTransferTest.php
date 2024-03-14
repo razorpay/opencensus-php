@@ -1177,6 +1177,70 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $transfer = $this->getDbEntityById('transfer', $response['items'][0]['id']);
 
+        $this->assertEquals(0, $transfer->getFee());
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
+    }
+
+    public function testCreatePaymentTransferWithOAuthForMarketplaceWithOauthPricing()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->setupMarketPlace(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->removeFeatures(['route_partnerships'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->fixtures->create('feature',
+            [
+                'name' => 'route_partnerships',
+                'entity_id' => $merchantApplication['application_id'],
+                'entity_type' => 'application',
+            ]
+        );
+
+        // create 2% pricing for transfers using oauth
+        $this->fixtures->pricing->createTransferOauthDefaultPlan();
+
+        $this->createConfigForPartnerApp($merchantApplication['application_id']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->splitzMock = Mockery::mock(SplitzService::class, [$this->app])->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn([
+                "response" => [
+                    "variant" => [
+                        "name" => 'enable',
+                        "variables"=> [
+                            [
+                                "key" => "transfer",
+                                "value" => "on"
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['items'][0]['id']);
+
+        $this->assertEquals(2, $transfer->getFee());
+
         $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
 
         $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);

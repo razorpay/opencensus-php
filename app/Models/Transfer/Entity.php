@@ -241,6 +241,14 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    /**
+     * Points to the pivot table entity `entityOrigin` for the transfer
+     */
+    public function entityOrigin()
+    {
+        return $this->morphOne(\RZP\Models\EntityOrigin\Entity::class, 'entity');
+    }
+
     public function source()
     {
         return $this->morphTo();

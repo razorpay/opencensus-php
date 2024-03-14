@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Pricing;
 
+use Razorpay\OAuth\Application as OAuthApp;
+
 use RZP\Constants\Environment;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -52,6 +54,11 @@ class Fee extends Base\Core
     const DEFAULT_AFFORDABILITY_WIDGET_PLAN_ID = 'L4teuQy3rngjPm';
     const DEFAULT_CC_ON_UPI_PLAN_ID            = 'Lwxtwg54MYaNTw';
     const DEFAULT_PPI_WALLET_ON_UPI_PLAN_ID   = 'MWb8N1erLG7ca1';
+
+    const ALLOWED_ENTITIES_FOR_CUSTOM_PRICING = [
+        EntityConstants::PAYMENT,
+        EntityConstants::TRANSFER
+    ];
 
     public function __construct()
     {
@@ -585,8 +592,11 @@ class Fee extends Base\Core
             {
                 $entityOrigin = $entityOriginCore->fetchEntityOrigin($entity);
             }
+            if (empty($entityOrigin) === true) {
+                return null;
+            }
 
-            $origin     = optional($entityOrigin)->origin;
+            $origin     =(new OAuthApp\Repository)->find($entityOrigin->getOriginId());
             $originType = optional($origin)->getEntityName();
 
             if (empty($origin) === true || ($originType !== EntityOrigin\Constants::APPLICATION))
@@ -599,7 +609,7 @@ class Fee extends Base\Core
                 'experiment_id' => app('config')->get('app.platform_partner_oauth_custom_pricing_plan')
             ];
 
-            $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+            $isExpEnabled = (new Merchant\Core())->isSplitzExperimentVariableEnabled($properties, $entity->getEntityName());
 
             if ($isExpEnabled)
             {
@@ -644,7 +654,7 @@ class Fee extends Base\Core
 
     public function getCustomPricingPlan(PublicEntity $entity)
     {
-        if (($entity->getEntityName() === EntityConstants::PAYMENT))
+        if (in_array($entity->getEntityName(), self::ALLOWED_ENTITIES_FOR_CUSTOM_PRICING) === true)
         {
             return $this->getCustomPricingPlanForOauth($entity);
         }
