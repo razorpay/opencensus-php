@@ -1,4 +1,5 @@
 import { isExperimentEnabled } from 'common/splitz/utils';
+import { User } from 'common/typings';
 import { isMobileResolution } from 'common/utils/rzp-utils';
 import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
 import { ConfigTagType } from 'merchant/constants/tags';
@@ -248,6 +249,12 @@ export const PRODUCTS_DATA = {
       isExperimentEnabled(abExperiments.razorpay_gcms) &&
       user.isIssuingGcmsEnabled,
   },
+  riskAndFraud: {
+    icon: 'i-triangle-alert',
+    additionalCondition: (user: User): boolean => {
+      return user.isRiskAndFraudEnabled;
+    },
+  },
 };
 
 export const COMMON_PRODUCTS = [
@@ -290,6 +297,11 @@ export const COMMON_PRODUCTS = [
     title: SIDEEBAR_PRODUCTS_TITLES.internationalPaymentsBtn,
     product_id: 'internationalPaymentsBtn',
     type: 'linkButton',
+    tags: [],
+  },
+  {
+    title: SIDEEBAR_PRODUCTS_TITLES.riskAndFraud,
+    product_id: 'riskAndFraud',
     tags: [],
   },
 ];

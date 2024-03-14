@@ -1,6 +1,7 @@
 const ROUTE_REG = {
   accountsettings:
     /^\/(account-settings|payment-methods|checkout-settings|notification-settings|website-app-settings|payments-and-refunds-settings|business-settings|bank-accounts-settlements|international-settings)/,
+  riskAndFraud: /^\/(risk-and-fraud|risk-analytics)/,
   transactions: /^\/(payments|refunds|orders|batch-refunds|disputes|success-rate)/,
   // eslint-disable-next-line prettier/prettier
   settlements:
@@ -90,6 +91,7 @@ export const BASE_ROUTES = {
   gcms_orders: '/gcms/orders',
   gcms_funds: '/gcms/funds',
   gcms_reports: '/gcms/reports',
+  riskAndFraud: '/risk-and-fraud',
 };
 
 export const initializeRoutes = (location, user) => {
@@ -148,6 +150,8 @@ export const initializeRoutes = (location, user) => {
     routes.gcms_funds = pathname.match(ROUTE_REG.gcms_funds)[0];
   } else if (ROUTE_REG.gcms_reports.test(pathname)) {
     routes.gcms_reports = pathname.match(ROUTE_REG.gcms_reports)[0];
+  } else if (ROUTE_REG.riskAndFraud.test(pathname)) {
+    routes.riskAndFraud = pathname.match(ROUTE_REG.riskAndFraud)[0];
   }
   return routes;
 };

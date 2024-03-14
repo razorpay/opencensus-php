@@ -451,6 +451,10 @@ export default class User {
     return this.isFeatureEnabled('enbl_create_own_tmpl');
   }
 
+  get isRiskAndFraudEnabled() {
+    return this.isFeatureEnabled('show_intl_risk_dashboard');
+  }
+
   get isNoExpiryMandatoryPP() {
     const orgFeatureEnabled = this.isOrgFeatureEnabled('hide_no_expiry_for_pp');
     const merchantFeatureEnabled = this.isMerchantExpiryPPEnabled;

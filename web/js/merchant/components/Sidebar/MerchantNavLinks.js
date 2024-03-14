@@ -100,6 +100,14 @@ function MerchantNavLinks(props) {
         additionalCondition={(currentUser) => currentUser.isShowInternationalPaymentBtnExpEnabled}
       />
 
+      <MainNavLink
+        label="Risk and Fraud"
+        icon="i i-external-link text-primary"
+        type="general"
+        to="/risk-and-fraud"
+        additionalCondition={(currentUser) => currentUser.isRiskAndFraudEnabled}
+      />
+
       <div class="divider" />
 
       <MainNavLink

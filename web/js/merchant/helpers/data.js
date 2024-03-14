@@ -141,6 +141,7 @@ export const RZPFeatures = {
   OPTIMIZER: 'optimizer',
   PH: 'payment_handle',
   MAGIC_COUPON_ENGINE: 'magic_coupon_engine',
+  RISK_AND_FRAUD: 'risk_and_fraud',
 };
 
 export const UPI_AVL_LIMIT = 20000000;

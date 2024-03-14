@@ -66,6 +66,7 @@ const {
   x_payroll,
   cash_advance,
   magic_checkout,
+  riskAndFraud,
 } = PRODUCTS_DATA;
 
 const paymentMethodCondition = ({ instruments, user, mode, paymentMethod }): boolean =>
@@ -1122,6 +1123,15 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     icon: line_of_credit.icon,
     additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
       line_of_credit.additionalCondition(user, extraConfig),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.riskAndFraud,
+    url: SEARCH_PRODUCTS_URL.riskAndFraud,
+    tags: [{ value: 'Disputes' }, { value: 'Risk' }, { value: 'Fraud' }, { value: 'Analytics' }],
+    icon: riskAndFraud.icon,
+    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
+      riskAndFraud.additionalCondition(user),
     apiCondition: false,
   },
 ];

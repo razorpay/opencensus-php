@@ -38,6 +38,46 @@ export type ChartInterval = {
   disabled?: boolean;
 };
 
+export type GetOnboardingSliderDots = {
+  closeOnboarding: () => void;
+  riskAndFraudProductOnBoarding: {
+    isTour: boolean;
+  };
+};
+
+export type RiskAndFraudOnboardingProps = {
+  active: boolean;
+  riskAndFraudProductOnBoarding: GetOnboardingSliderDots['riskAndFraudProductOnBoarding'];
+  org: { business_name: string };
+  closeOnboarding: () => void;
+};
+
+export type GetIsRiskAndFraudEnabled = {
+  isEnabled: boolean;
+};
+
+export type QuickGuideStepProps = {
+  title: string;
+  onCloseClick: () => void;
+  tiles: Array<{
+    title: string;
+    content: string;
+  }>;
+};
+
+export type RiskAndFraudQuickGuideProps = {
+  handleProductQuickGuide: (data: RiskAndFraudQuickGuideProps['currentOnboarding']) => void;
+  currentOnboarding: {
+    feature: string;
+    showOnboarding: boolean;
+    isQuickGuideOpen: boolean;
+    isTour: boolean;
+    isEnabled: boolean;
+  };
+  org: {
+    business_name: string;
+  };
+};
 export interface ChartQueryDataItem {
   start_date: number;
   payment: { [metric in MetricOptions]: string };
