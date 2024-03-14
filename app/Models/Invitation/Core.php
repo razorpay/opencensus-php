@@ -374,7 +374,11 @@ class Core extends Base\Core
 
         if (strtolower($variant) === 'on')
         {
-            $merchantCollections = $user->merchants()->get();
+            if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv('InvitationCoreAccept')) {
+                $merchantCollections = $user->getMerchantsFromAsvWithPivot(1000);
+            } else {
+                $merchantCollections = $user->merchants()->get();
+            }
 
             $merchantInvited = $this->repo->merchant->findOrFailPublic($invitation->getMerchantId());
 

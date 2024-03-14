@@ -7405,7 +7405,7 @@ class Core extends Base\Core
 
         foreach ($users as $user)
         {
-            $merchantIds = $user->merchants()->distinct()->get()->pluck(Entity::ID)->toArray();
+            $merchantIds = $user->getUniqueMerchantIds();
 
             if (count($merchantIds) !== 1)
             {

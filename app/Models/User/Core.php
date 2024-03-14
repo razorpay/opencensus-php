@@ -4009,9 +4009,7 @@ class Core extends Base\Core
             'limit'     => $limit,
         ]);
 
-
-        if(!$this->repo->isTransactionActive() && (new AsvRouter())->shouldRouteWriteRequestToAccountService($this::class, __function__, $user->getId()))
-        {
+        if ((new AsvRouter())->shouldRouteFilterToAsv('UserCoreGet')) {
             $merchantEntities = $user->getNonSuspendedMerchants($limit);
         } else {
             $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take($limit)->get();
@@ -6221,7 +6219,11 @@ class Core extends Base\Core
                      ->user
                      ->getUserFromEmailOrFail($input['email']);
 
-        $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchantEntities = $user->getNonSuspendedMerchants(1000);
+        } else {
+            $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
+        }
 
         $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
 
@@ -6327,7 +6329,11 @@ class Core extends Base\Core
      */
     protected function getMerchantDetailsForPayroll(Entity $user): array
     {
-        $merchants = $user->merchants()->orderBy('created_at')->limit(10)->get();
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchants = $user->getMerchantsFromAsvWithPivot(10);
+        } else {
+            $merchants = $user->merchants()->orderBy('created_at')->limit(10)->get();
+        }
 
         // if there is no merchant details then return empty result
         if (empty($merchants))

@@ -3063,41 +3063,73 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function findMerchantsByIds(array $ids) {
-        if (!$this->repo->isTransactionActive() && sizeof($ids) > 0 && $this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $ids[0]))
+    public function findMerchantsByIds(array $ids)
+    {
+        if (sizeof($ids) > 0)
         {
-            try {
-                $this->trace->info(TraceCode::ACCOUNT_SERVICE_FILTER_REQUEST, [
-                    "identifier" => __FUNCTION__
-                ]);
-                return (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($ids);
-            } catch (\Exception $e) {
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FILTER_QUERY_EXCEPTION, [
-                    "identifier" => __FUNCTION__
-                ]);
+            if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+            {
+                if ($this->repo->isTransactionActive())
+                {
+                    return $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER))->findMany($ids, array('*'));
+                }
+                else
+                {
+                    try {
+                        $this->trace->info(TraceCode::ACCOUNT_SERVICE_FILTER_REQUEST, [
+                            "identifier" => __FUNCTION__
+                        ]);
+                        return (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($ids);
+                    }
+                    catch (\Exception $e) {
+                        $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FILTER_QUERY_EXCEPTION, [
+                            "identifier" => __FUNCTION__
+                        ]);
+                    }
+                    return $this->findMany($ids);
+                }
+            }
+            else
+            {
+                return $this->findMany($ids);
             }
         }
-        return $this->findMany($ids);
+        return [];
     }
 
     public function getNonSuspendedMerchantsFromIds(array $ids)
     {
         if (sizeof($ids) > 0 )
         {
-            try {
-                $this->trace->info(TraceCode::ACCOUNT_SERVICE_FILTER_REQUEST, [
-                    "identifier" => __FUNCTION__
-                ]);
+            if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+            {
+                if ($this->repo->isTransactionActive())
+                {
+                    return $this->newQuery(Connection::ASV_WRITER)->findMany($ids)->where(Entity::SUSPENDED_AT, null);
+                }
+                else
+                {
+                    try {
+                        $this->trace->info(TraceCode::ACCOUNT_SERVICE_FILTER_REQUEST, [
+                            "identifier" => __FUNCTION__
+                        ]);
 
-                return (new Acs\AsvSdkIntegration\Merchant())->getNonSuspendedMerchantsFromIds($ids);
-            } catch (\Exception $e) {
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FILTER_QUERY_EXCEPTION, [
-                    "identifier" => __FUNCTION__
-                ]);
+                        return (new Acs\AsvSdkIntegration\Merchant())->getNonSuspendedMerchantsFromIds($ids);
+                    }
+                    catch (\Exception $e) {
+                        $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FILTER_QUERY_EXCEPTION, [
+                            "identifier" => __FUNCTION__
+                        ]);
+                    }
+                    return $this->newQuery()->findMany($ids)->where(Entity::SUSPENDED_AT, null);
+                }
+            }
+            else
+            {
+                return $this->newQuery()->findMany($ids)->where(Entity::SUSPENDED_AT, null);
             }
 
-            return $this->newQuery()->findMany($ids)->where(Entity::SUSPENDED_AT, null);
         }
-        return null;
+        return [];
     }
 }

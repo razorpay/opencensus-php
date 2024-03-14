@@ -24,6 +24,7 @@ use RZP\Services\Dcs\Features\Constants as DcsConstants;
 use RZP\Services\Dcs\Features\Service as DCSService;
 use RZP\Services\Dcs\Features\Type;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as AsvSdkMerchantQuery;
 
 class Entity extends Base\PublicEntity
 {
@@ -285,22 +286,8 @@ class Entity extends Base\PublicEntity
 
         $uniqueMerchantIds = array_values(array_unique($merchantIds));
         $merchants =  (new Merchant\Repository)->getNonSuspendedMerchantsFromIds($uniqueMerchantIds);
-        $merchantsWithPivot = [];;
 
-
-        foreach ($merchants as $merchant) {
-            $mergedMerchant = $merchant->getAttributes();
-            $mergedMerchant['pivot'] = [];
-
-            foreach ($merchantUsers as $merchantUser) {
-                if ($merchantUser['merchant_id'] === $merchant['id']) {
-                    $mergedMerchant['pivot'] = (object) $merchantUser;
-                    $mE = new Merchant\Entity();
-                    $mE->setRawAttributes($mergedMerchant, true);
-                    $merchantsWithPivot[] = $mE;
-                }
-            }
-        }
+        $merchantsWithPivot = $this->addPivot($merchantUsers, $merchants);
 
         $userEmail = $this->getAttribute(self::EMAIL);
         usort($merchantsWithPivot, function ($a, $b) use ($userEmail) {
@@ -332,6 +319,24 @@ class Entity extends Base\PublicEntity
         });
 
         return new Base\PublicCollection($merchantsWithPivot);;
+    }
+
+    protected function addPivot($merchantUsers, $merchants) {
+        $merchantsWithPivot = [];
+        foreach ($merchants as $merchant) {
+            $mergedMerchant = $merchant->getAttributes();
+            $mergedMerchant['pivot'] = [];
+
+            foreach ($merchantUsers as $merchantUser) {
+                if ($merchantUser['merchant_id'] === $merchant['id']) {
+                    $mergedMerchant['pivot'] = (object) $merchantUser;
+                    $mE = new Merchant\Entity();
+                    $mE->setRawAttributes($mergedMerchant, true);
+                    $merchantsWithPivot[] = $mE;
+                }
+            }
+        }
+        return $merchantsWithPivot;
     }
 
 
@@ -577,7 +582,28 @@ class Entity extends Base\PublicEntity
     protected function getMerchants()
     {
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1000);
-        return(new Merchant\Repository)->findMerchantsByIds($merchantIds);
+        return (new Merchant\Repository)->findMerchantsByIds($merchantIds);
+    }
+
+    public function getMerchantsFromAsvWithPivot($limit = 100)
+    {
+        $merchantUsers  = (new MerchantUser\Repository)->returnMerchantUsersForUserIdOrderByRole($this->getAttribute(self::ID), $limit);
+        $merchantIds    = [];
+
+        foreach ($merchantUsers as $merchantUser) {
+            $merchantIds[] = $merchantUser[MerchantUser\Entity::MERCHANT_ID];
+        }
+
+        $uniqueMerchantIds = array_values(array_unique($merchantIds));
+
+        $merchants = (new Merchant\Repository)->findMerchantsByIds($uniqueMerchantIds);
+
+        return $this->addPivot($merchantUsers, $merchants);
+    }
+
+    public function getUniqueMerchantIds()
+    {
+        return (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1000);
     }
 
     protected function getOrgEnforcedSecondFactorAuthAttribute(): bool
