@@ -2299,7 +2299,9 @@ class Gateway extends Base\Gateway
     {
         $version = $input['data']['version'] ?? '';
 
-        if ($version === 'v2')
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if ($version === 'v2' or $routeName === 'payment_callback_bharatqr_internal')
         {
             $inputFields = $input['data'];
 
