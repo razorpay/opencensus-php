@@ -11233,6 +11233,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ONBOARDING_API_BMC_SAVED                             = 'ONBOARDING_API_BMC_SAVED';
 
+    const ONBOARDING_API_CATEGORY_ACTIVATION_STATUS            = 'ONBOARDING_API_CATEGORY_ACTIVATION_STATUS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

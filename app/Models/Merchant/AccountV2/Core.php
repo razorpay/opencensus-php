@@ -26,6 +26,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Constants\Product as ProductConstants;
 use RZP\Models\Merchant\CapitalSubmerchantUtility;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -36,6 +37,7 @@ use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Models\Merchant\Detail\BusinessCategoriesV2\BusinessParentCategory;
 use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Questions as BMCQuestionnaire;
 use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Helper as BMCHelper;
+use RZP\Models\Merchant\Detail\BusinessCategoriesV2\BusinessSubCategoryMetaData as SubcategoryV2;
 
 class Core extends Merchant\Core
 {
@@ -319,6 +321,8 @@ class Core extends Merchant\Core
 
         $this->updateBusinessParentCategoryDetails($detailInput);
 
+        $this->updateBlacklistedCategoryIfApplicable($subMerchant, $detailInput);
+
         $merchantDetailsCore = new Detail\Core;
 
         Tracer::inspan(['name' => HyperTrace::VALIDATE_NC_RESPONDED_IF_APPLICABLE], function() use ($subMerchant, $detailInput) {
@@ -355,6 +359,52 @@ class Core extends Merchant\Core
             $parentBusinessCategory = BusinessParentCategory::getParentCategoryFromBusinessCategory($input[Detail\Entity::BUSINESS_CATEGORY]);
 
             $input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $parentBusinessCategory;
+        }
+    }
+
+    protected function updateBlacklistedCategoryIfApplicable(Merchant\Entity $subMerchant, &$input)
+    {
+        $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled)
+        {
+            $partnerId  = $this->app['basicauth']->getPartnerMerchantId() ??
+                          $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($subMerchant->getId())->first();
+
+            $isExpEnabled = (new MerchantCore())->isOnboardingApiBmcEnabled($partnerId, 'skip_blacklisted_category_check');
+
+            if (isset($input[Detail\Entity::BUSINESS_CATEGORY]) && isset($input[Detail\Entity::BUSINESS_SUBCATEGORY]))
+            {
+                $category = $input[Detail\Entity::BUSINESS_CATEGORY];
+
+                $subcategory = $input[Detail\Entity::BUSINESS_SUBCATEGORY];
+
+                $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($category, $subcategory);
+
+                $activationFlow = $subcategoryMetaData[Detail\Entity::ACTIVATION_FLOW];
+
+                $unregisteredActivationFlow = $subcategoryMetaData[SubcategoryV2::NON_REGISTERED_ACTIVATION_FLOW];
+
+                $businessType = $input[Detail\Entity::BUSINESS_TYPE];
+
+                $isUnregisteredBusiness = Detail\BusinessType::isUnregisteredBusinessIndex($businessType);
+
+                $this->trace->info(TraceCode::ONBOARDING_API_CATEGORY_ACTIVATION_STATUS, [
+                    'partner_id' => $partnerId,
+                    'merchant_id' => $subMerchant->getId(),
+                    'subcategory' => $subcategory,
+                    'activation_flow' => $activationFlow,
+                    'unregistered_activation_flow' => $unregisteredActivationFlow,
+                    'is_unregistered_business' => $isUnregisteredBusiness,
+                    "is_exp_enabled" => $isExpEnabled
+                ]);
+
+                if ($isExpEnabled && (($isUnregisteredBusiness && $unregisteredActivationFlow == ActivationFlow::WHITELIST) ||
+                    (!$isUnregisteredBusiness && $activationFlow == ActivationFlow::WHITELIST)))
+                {
+                    $input[BusinessDetailEntity::BLACKLISTED_PRODUCTS_CATEGORY] = "none of the above";
+                }
+            }
         }
     }
 
