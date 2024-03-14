@@ -78,6 +78,8 @@ class Processor extends VirtualAccount\Processor
         //yesbank prefixes
         '787878',
         '456456',
+        //axis prefixes
+        '9845'
     ];
 
     /**
