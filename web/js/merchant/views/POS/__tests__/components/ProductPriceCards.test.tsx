@@ -2,7 +2,10 @@ import React from 'react';
 
 import ProductPriceCards from 'merchant/views/POS/ProductDescription/ProductPriceCards';
 import { MOCK_USER, MOCK_PRODUCT_OFFER_CONFIG } from 'merchant/views/POS/__tests__/mocks/fixtures';
-import { getProductPricingHandler } from 'merchant/views/POS/__tests__/mocks/handlers';
+import {
+  getProductPricingHandler,
+  getPartnerProductPricingHandler,
+} from 'merchant/views/POS/__tests__/mocks/handlers';
 import { PRODUCT_PLANS, PosStoreInitialState } from 'merchant/views/POS/constants';
 import * as posHelpers from 'merchant/views/POS/helpers';
 import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
@@ -56,15 +59,21 @@ describe('<ProductPriceCards/>', () => {
 
 describe('<ProductPriceCards/> with offer', () => {
   beforeEach(() => {
-    server.use(getProductPricingHandler());
-  });
-
-  test('should  render offer price cards if offer exists for a product', async () => {
     const fetchOffersSpy = jest.spyOn(posHelpers, 'fetchProductOffers');
     fetchOffersSpy.mockReturnValue({
       isEnabled: true,
       offers: MOCK_PRODUCT_OFFER_CONFIG,
     });
+  });
+  test('should  render offer price cards if offer exists for a product', async () => {
+    server.use(getProductPricingHandler());
+    renderApp();
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    expect(screen.getAllByTestId('pos-offer-price-cards').length).toBe(2);
+  });
+
+  test('should  render partner offer price cards if offer exists for a product', async () => {
+    server.use(getPartnerProductPricingHandler());
     renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
     expect(screen.getAllByTestId('pos-offer-price-cards').length).toBe(2);

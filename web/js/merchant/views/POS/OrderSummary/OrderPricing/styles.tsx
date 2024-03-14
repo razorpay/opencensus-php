@@ -13,13 +13,17 @@ export const DetailedPricingContent = styled.div(
 );
 
 export const PricingRowOfferTag = styled.div(
-  ({ theme }: { theme: Theme }) => `
+  ({ theme, isPartnerPricing }: { theme: Theme; isPartnerPricing?: boolean }) => `
   padding: ${theme.spacing[3]}px;
   margin-bottom: ${theme.spacing[3]}px;
   border-radius: ${theme.border.radius.medium}px;
   width: fit-content;
   display: flex;
-  background: linear-gradient(90deg, rgba(21, 102, 241, 0.18) 0.31%, rgba(21, 102, 241, 0.00) 108.4%);
+  background:${
+    isPartnerPricing
+      ? 'linear-gradient(90deg,hsla(36, 83%, 84%, 1), hsla(36, 100%, 76%, 0))'
+      : 'linear-gradient(90deg, rgba(21, 102, 241, 0.18) 0.31%, rgba(21, 102, 241, 0.00) 108.4%)'
+  } ;
   > p {
     font-style: italic;
   }

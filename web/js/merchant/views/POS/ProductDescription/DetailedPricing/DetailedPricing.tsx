@@ -10,9 +10,33 @@ type DetailedPricingProps = {
   product: ProductDescription;
 };
 
+type ShowOfferProps = {
+  banner: 'offer' | 'info';
+  offer: {
+    offerText: string;
+    partnerOfferText: string;
+  };
+  isPartnerPricing: boolean;
+};
+const ShowOffer = ({ banner, offer, isPartnerPricing }: ShowOfferProps): JSX.Element => {
+  let offerText = offer.offerText;
+  if (banner === 'info') {
+    offerText = isPartnerPricing
+      ? 'Offer ends after 3 months'
+      : 'After 1L GMV, Below Rates to Apply';
+  } else if (isPartnerPricing) {
+    offerText = offer.partnerOfferText;
+  }
+  return (
+    <Box marginBottom="spacing.3">
+      <OfferStrip text={offerText} variant={banner} isPartnerPricing={isPartnerPricing} />
+    </Box>
+  );
+};
 const DetailedPricing = ({ product }: DetailedPricingProps): JSX.Element => {
   const { isMobile } = useBladeBreakpoints();
   const isShowOffer = !!product?.offer;
+  const isPartnerPricing = product?.isPartnerPricing;
 
   return (
     <Box
@@ -30,16 +54,11 @@ const DetailedPricing = ({ product }: DetailedPricingProps): JSX.Element => {
         ({ title, rows, banner }, index) => (
           <Box key={title ?? `heading-${index}`}>
             {banner && product?.offer ? (
-              <Box marginBottom="spacing.3">
-                <OfferStrip
-                  text={
-                    banner === 'info'
-                      ? 'After 1L GMV, Below Rates to Apply'
-                      : product.offer.offerText
-                  }
-                  variant={banner}
-                />
-              </Box>
+              <ShowOffer
+                banner={banner}
+                offer={product.offer}
+                isPartnerPricing={isPartnerPricing}
+              />
             ) : null}
             {title ? (
               <Text weight="bold" size="large" marginBottom="spacing.5">

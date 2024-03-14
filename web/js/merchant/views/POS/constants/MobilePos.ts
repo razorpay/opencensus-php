@@ -95,6 +95,7 @@ const MOBILE_POS: ProductDescription = {
       ],
     },
   ],
+  isPartnerPricing: false,
   featureGallery: [
     {
       image: Thumbnail3,

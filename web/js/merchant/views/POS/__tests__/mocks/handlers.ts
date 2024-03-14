@@ -14,6 +14,7 @@ import {
   MOCK_REJECTED_WITH_REFUND_INITIATED,
   MOCK_REJECTED_WITH_REFUND_COMPLETED,
   MOCK_CMMA_CASE_CREATE_CALL,
+  MOCK_PARTNER_PRODUCT_PRICING_RESPONSE,
 } from './fixtures';
 
 const delivery_available_pincode = {
@@ -64,6 +65,20 @@ export const getProductPricingHandler = (customProductPricing?: ProductPricingMa
     data: {
       rzp_key: 'rzp_test_mockKey',
       configs: [...MOCK_PRODUCT_PRICING_RESPONSE, ...(customProductPricing || [])],
+    },
+  };
+  return rest.get('*/merchant/api/*/merchant/device_config', (_, res, ctx) =>
+    res(ctx.status(200), ctx.json(response), ctx.delay(50)),
+  );
+};
+
+export const getPartnerProductPricingHandler = (customProductPricing?: ProductPricingMap) => {
+  const response = {
+    status_code: 200,
+    success: true,
+    data: {
+      rzp_key: 'rzp_test_mockKey',
+      configs: [...MOCK_PARTNER_PRODUCT_PRICING_RESPONSE, ...(customProductPricing || [])],
     },
   };
   return rest.get('*/merchant/api/*/merchant/device_config', (_, res, ctx) =>

@@ -2,7 +2,10 @@ import React from 'react';
 
 import MainBanner from 'merchant/views/POS/Catalog/MainBanner/MainBanner';
 import { MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
-import { getProductPricingHandler } from 'merchant/views/POS/__tests__/mocks/handlers';
+import {
+  getProductPricingHandler,
+  getPartnerProductPricingHandler,
+} from 'merchant/views/POS/__tests__/mocks/handlers';
 import { ANDROID_SMART_POS, PRODUCT_OFFER_CONFIG } from 'merchant/views/POS/constants';
 import * as posHelpers from 'merchant/views/POS/helpers';
 import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
@@ -53,10 +56,10 @@ describe('<MainBanner/> with offer', () => {
       offers: PRODUCT_OFFER_CONFIG,
     });
     setupIntersectionObserverMock();
-    server.use(getProductPricingHandler(MOCK_PRODUCT_PRICING));
   });
 
   test('should render offer strip with text', async () => {
+    server.use(getProductPricingHandler(MOCK_PRODUCT_PRICING));
     renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
     expect(screen.getByText('Limited Time Offer till 31st March')).toBeVisible();
@@ -69,9 +72,23 @@ describe('<MainBanner/> with offer', () => {
   });
 
   test('should render price tag with previous amount', async () => {
+    server.use(getProductPricingHandler(MOCK_PRODUCT_PRICING));
     renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
     expect(screen.getByTestId('price-tag-prev-amount')).toHaveTextContent('549');
     expect(screen.getByTestId('price-tag-amount')).toHaveTextContent('299');
+  });
+
+  test('should render partner offer strip with text when entity is partner', async () => {
+    const PARTNER_MOCK_PRODUCT_PRICING = [
+      {
+        ...MOCK_PRODUCT_PRICING[0],
+        entity_type: 'partner',
+      },
+    ];
+    server.use(getPartnerProductPricingHandler(PARTNER_MOCK_PRODUCT_PRICING));
+    renderApp();
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    expect(screen.getByText('Partner Exclusive Time Offer till 31st March')).toBeVisible();
   });
 });

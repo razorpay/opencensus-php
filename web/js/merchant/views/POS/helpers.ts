@@ -202,8 +202,11 @@ export const getProductDescriptionWithPricingPlan = ({
         ? {
             offerText: offerConfigForProduct.offerText ?? null,
             pdpOfferText: offerConfigForProduct.pdpOfferText ?? null,
+            partnerOfferText: offerConfigForProduct.partnerOfferText ?? null,
+            partnerPdpOfferText: offerConfigForProduct.partnerPdpOfferText ?? null,
           }
         : null,
+      isPartnerPricing: productPricingWithValues.entity_type === 'partner',
     };
   }
   return productDescription;
@@ -619,6 +622,9 @@ export const processPrecheckoutPricing = ({
     {},
   );
 
+  const isPartnerPricing = productDescriptions.some(
+    (productDescription) => productDescription.isPartnerPricing === true,
+  );
   const orderedDevices = cartItems.map(({ code, plan, quantity }) => {
     const productDescription: ProductDescription = productDescMap[code];
     const isRental = plan === PRODUCT_PLANS.MONTHLY;
@@ -690,6 +696,7 @@ export const processPrecheckoutPricing = ({
     refund: null,
     orderedDevicesWithOffer,
     rentalDevicesWithOffer,
+    isPartnerPricing,
   };
 
   return pricingObj;
@@ -851,7 +858,9 @@ export const getOrderPricingFromOrderDetails = ({
     (acc, description) => ({ ...acc, [description.code]: description }),
     {},
   );
-
+  const isPartnerPricing = productDescriptions.some(
+    (productDescription) => productDescription.isPartnerPricing === true,
+  );
   const orderedDevices = items.map(({ code, count, period }) => {
     const productDescription = productDescMap[code];
     const isRental = period === PRODUCT_PLANS.MONTHLY;
@@ -912,6 +921,7 @@ export const getOrderPricingFromOrderDetails = ({
     orderedDevicesWithOffer,
     refund: null,
     rentalDevicesWithOffer,
+    isPartnerPricing,
   };
 
   const isAmountRefunded = status === 'rejected' && !!refund && refund?.status === 'processed';

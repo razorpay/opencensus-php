@@ -1,6 +1,7 @@
 import React from 'react';
 import { Amount, Box } from '@razorpay/blade/components';
 
+import PartnerPosPriceTagImage from 'assets/partner-dashboard/PartnerPosPriceTag.svg';
 import MainBannerAndroidSmartPosImg from 'assets/pos/main-banner/androidpos.webp';
 import PricingTagImage from 'assets/pos/main-banner/pricetag.webp';
 import AmountWithStrikeThrough from 'merchant/views/POS/ProductDescription/ProductPriceCards/AmountWithStrikeThrough';
@@ -10,9 +11,14 @@ import { StyledPriceTagImage, StyledMainBannerImage } from './styles';
 type MainBannerProductImageProps = {
   price: number;
   prevPrice?: number;
+  isPartnerPricing: boolean;
 };
 
-const PriceTag = ({ price, prevPrice }: MainBannerProductImageProps): JSX.Element => {
+const PriceTag = ({
+  price,
+  prevPrice,
+  isPartnerPricing,
+}: MainBannerProductImageProps): JSX.Element => {
   return (
     <Box
       position="absolute"
@@ -49,12 +55,19 @@ const PriceTag = ({ price, prevPrice }: MainBannerProductImageProps): JSX.Elemen
           />
         ) : null}
       </Box>
-      <StyledPriceTagImage src={PricingTagImage} alt="product price tag" />
+      <StyledPriceTagImage
+        src={isPartnerPricing ? PartnerPosPriceTagImage : PricingTagImage}
+        alt="product price tag"
+      />
     </Box>
   );
 };
 
-const MainBannerProductImage = ({ price, prevPrice }: MainBannerProductImageProps): JSX.Element => {
+const MainBannerProductImage = ({
+  price,
+  prevPrice,
+  isPartnerPricing,
+}: MainBannerProductImageProps): JSX.Element => {
   return (
     <Box
       position="relative"
@@ -71,7 +84,7 @@ const MainBannerProductImage = ({ price, prevPrice }: MainBannerProductImageProp
         right={{ base: '0px', l: '10px' }}
         marginRight={{ base: '0px', l: 'spacing.5' }}
       >
-        <PriceTag price={price} prevPrice={prevPrice} />
+        <PriceTag price={price} prevPrice={prevPrice} isPartnerPricing={isPartnerPricing} />
         <StyledMainBannerImage src={MainBannerAndroidSmartPosImg} alt="android pos image" />
       </Box>
     </Box>

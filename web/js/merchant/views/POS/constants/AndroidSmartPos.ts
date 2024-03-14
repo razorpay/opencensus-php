@@ -95,6 +95,7 @@ const ANDROID_SMART_POS: ProductDescription = {
       ],
     },
   ],
+  isPartnerPricing: false,
   featureGallery: [
     {
       image: MainMobile2,

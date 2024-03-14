@@ -1,13 +1,19 @@
 import React, { useContext, useState } from 'react';
 import { Box, Text, Link, Amount, Title } from '@razorpay/blade/components';
-import { useNavigate } from 'react-router-dom';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
+import { useNavigate } from 'react-router-dom';
 
 import MobilePosImage from 'assets/pos/main-banner/mpos.webp';
+import { useSplitzService } from 'common/splitz';
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
+import { PartnerExclusivePriceContainer } from 'merchant/views/POS/PartnerExclusiveContainer';
 import { PRODUCT_DESCRIPTIONS, PRODUCT_PLANS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
-import { getPricingByProduct, getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
+import {
+  getPricingByProduct,
+  getProductFromProductDescriptions,
+  fetchProductOffers,
+} from 'merchant/views/POS/helpers';
 
 import {
   MobilePosCardEllipse1,
@@ -21,7 +27,8 @@ const MobilePos = (): JSX.Element | null => {
   const [isHovered, setIsHovered] = useState(false);
   const { state } = useContext(PosDeviceStoreContext);
   const navigate = useNavigate();
-
+  const { abExperiments } = useSplitzService();
+  const { isEnabled: isOfferEnabled } = fetchProductOffers({ abExperiments });
   const { productDescriptions } = state;
   const productDescription = getProductFromProductDescriptions({
     code: PRODUCT_DESCRIPTIONS.d180.code,
@@ -58,23 +65,30 @@ const MobilePos = (): JSX.Element | null => {
               Pocket-sized and affordable
             </Text>
             <Box marginTop={{ xl: 'spacing.11', base: 'spacing.4' }}>
-              <Text weight="bold" testID="pricing-details-text">
-                <Amount
-                  value={monthly}
-                  suffix="none"
-                  size="body-medium-bold"
-                  isAffixSubtle={false}
-                />{' '}
-                /month +{' '}
-                <Amount
-                  value={setupFee}
-                  suffix="none"
-                  size="body-medium-bold"
-                  isAffixSubtle={false}
-                />{' '}
-                setup fee
-              </Text>
-              <Text color="surface.text.subtle.lowContrast">*Lifetime Pricing also available.</Text>
+              <PartnerExclusivePriceContainer
+                isPartnerPricing={productDescription?.isPartnerPricing && !isOfferEnabled}
+                type="PRODUCT_CARD"
+              >
+                <Text weight="bold" testID="pricing-details-text">
+                  <Amount
+                    value={monthly}
+                    suffix="none"
+                    size="body-medium-bold"
+                    isAffixSubtle={false}
+                  />{' '}
+                  /month +{' '}
+                  <Amount
+                    value={setupFee}
+                    suffix="none"
+                    size="body-medium-bold"
+                    isAffixSubtle={false}
+                  />{' '}
+                  setup fee
+                </Text>
+                <Text color="surface.text.subtle.lowContrast">
+                  *Lifetime Pricing also available.
+                </Text>
+              </PartnerExclusivePriceContainer>
               <Box display="flex" marginTop="spacing.5" alignItems="center">
                 <AddToCartButton
                   productCode={PRODUCT_DESCRIPTIONS.d180.code}

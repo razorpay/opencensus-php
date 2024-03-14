@@ -21,9 +21,17 @@ type PricingProps = {
     prevValue?: number | null;
     isRenderValuePlanText?: boolean;
   }[];
+  isPartnerPricing?: boolean;
 };
 
-const PricingRow = ({ id, rows, title, value = 0, offerRows }: PricingProps): JSX.Element => {
+const PricingRow = ({
+  id,
+  rows,
+  title,
+  value = 0,
+  offerRows,
+  isPartnerPricing,
+}: PricingProps): JSX.Element => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const isCollapsibleHeader = (rows || []).length > 0 || (offerRows || []).length > 0;
 
@@ -90,9 +98,13 @@ const PricingRow = ({ id, rows, title, value = 0, offerRows }: PricingProps): JS
             marginBottom="spacing.5"
             padding="spacing.4"
           >
-            <PricingRowOfferTag>
-              <Text size="small" weight="bold" color="brand.primary.500">
-                Offer Applied
+            <PricingRowOfferTag isPartnerPricing={isPartnerPricing}>
+              <Text
+                size="small"
+                weight="bold"
+                color={isPartnerPricing ? 'feedback.text.notice.lowContrast' : 'brand.primary.500'}
+              >
+                {isPartnerPricing ? 'Partner Offer Applied' : 'Offer Applied'}
               </Text>
             </PricingRowOfferTag>
             {offerRows?.map(

@@ -29,12 +29,10 @@ const renderApp = () => {
 };
 
 describe('<MobilePos/>', () => {
-  beforeEach(async () => {
+  test('should render Mobile POS card with content and CTAs', async () => {
     server.use(getProductPricingHandler(MOCK_PRODUCT_PRICING));
     renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
-  });
-  test('should render Mobile POS card with content and CTAs', () => {
     expect(screen.getByText('Mobile POS (mPOS)')).toBeVisible();
     expect(screen.getByText('Pocket-sized and affordable')).toBeVisible();
 
@@ -47,5 +45,20 @@ describe('<MobilePos/>', () => {
     expect(screen.getByText('Learn More')).toBeVisible();
 
     expect(screen.getByAltText('mobile pos image')).toBeVisible();
+  });
+
+  test('should render Mobile POS Card with content for partner pricing', async () => {
+    const MOCK_PARTNER_PRODUCT_PRICING = [
+      {
+        ...MOCK_PRODUCT_PRICING[0],
+        entity_type: 'partner',
+      },
+    ];
+    server.use(getProductPricingHandler(MOCK_PARTNER_PRODUCT_PRICING));
+    renderApp();
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    expect(screen.getByText('Mobile POS (mPOS)')).toBeVisible();
+    expect(screen.getByText('Pocket-sized and affordable')).toBeVisible();
+    expect(screen.getByAltText('Partner Exclusive')).toBeVisible();
   });
 });

@@ -1,9 +1,14 @@
 import React, { useContext } from 'react';
 import { Amount, Box, CheckIcon, CloseIcon, Heading, Text } from '@razorpay/blade/components';
 
+import { useSplitzService } from 'common/splitz';
 import { ProductListFeatureIcon } from 'merchant/views/POS/Catalog/ProductFeatureTable/styles';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
-import { getPricingByProduct, getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
+import {
+  getPricingByProduct,
+  getProductFromProductDescriptions,
+  fetchProductOffers,
+} from 'merchant/views/POS/helpers';
 import { Feature, ProductFeaturesColumn, ProductTableProduct } from 'merchant/views/POS/types';
 
 type CustomRow = {
@@ -26,24 +31,36 @@ const BOX_SIZE_MAP = {
 
 const CustomRow = ({ feature, boxSize, code }): JSX.Element | null => {
   const { state } = useContext(PosDeviceStoreContext);
+  const { abExperiments } = useSplitzService();
+  const { isEnabled: isOfferEnabled } = fetchProductOffers({ abExperiments });
   const { productDescriptions } = state;
+
   switch (feature.name) {
     case 'Pricing Plan': {
       const product = getProductFromProductDescriptions({ code, productDescriptions });
       if (!product?.pricing) return null;
-
+      const isPartnerPricing = product?.isPartnerPricing && !isOfferEnabled;
       const pricings = getPricingByProduct({ productDescription: product });
+      const amountTextIntent = isPartnerPricing ? 'notice' : undefined;
       return (
         <Box paddingX="spacing.5" height={`${BOX_SIZE_MAP[boxSize ?? 'medium']}px`}>
           <Heading weight="regular" marginX="spacing.2">
             Subscription Pricing:
           </Heading>
-          <Heading weight="regular">
+          <Heading
+            weight="regular"
+            color={
+              isPartnerPricing
+                ? 'feedback.text.notice.lowContrast'
+                : 'surface.text.normal.lowContrast'
+            }
+          >
             <Amount
               value={pricings.monthly}
               suffix="none"
               size="heading-small"
               isAffixSubtle={false}
+              intent={amountTextIntent}
             />
             /month +{' '}
             <Amount
@@ -51,6 +68,7 @@ const CustomRow = ({ feature, boxSize, code }): JSX.Element | null => {
               suffix="none"
               size="heading-small"
               isAffixSubtle={false}
+              intent={amountTextIntent}
             />{' '}
             setup fee
           </Heading>
@@ -61,6 +79,7 @@ const CustomRow = ({ feature, boxSize, code }): JSX.Element | null => {
               suffix="none"
               size="heading-small"
               isAffixSubtle={false}
+              intent={amountTextIntent}
             />
           </Heading>
         </Box>

@@ -72,6 +72,7 @@ const OrderPricing = ({ pricing }: OrderPricingProps): JSX.Element => {
         value={pricing?.deviceCharges}
         rows={totalAmountDetailedPricing}
         offerRows={totalAmountDetailedPricingWithOffers}
+        isPartnerPricing={pricing?.isPartnerPricing}
       />
       <PricingRow title="GST @18%" value={pricing?.gstDevice} />
       <PricingRow title="Shipping" value={<Text marginX="spacing.2">{pricing?.shipping}</Text>} />
@@ -118,6 +119,7 @@ const OrderPricing = ({ pricing }: OrderPricingProps): JSX.Element => {
             value={pricing?.rentalCharges}
             rows={totalRentalAmountDetailedPricing}
             offerRows={rentalOfferItems?.length > 0 ? [...rentalOfferItems, MDR_PRICING_ROW] : []}
+            isPartnerPricing={pricing?.isPartnerPricing}
           />
           <PricingRow title="GST @18%" value={pricing?.gstRental} />
           <PricingRow title="Renewal" value={<Text marginX="spacing.2">Every Month</Text>} />

@@ -82,6 +82,7 @@ export const MOCK_PRODUCT: ProductDescription = {
       ],
     },
   ],
+  isPartnerPricing: false,
   featureGallery: [
     {
       image: '',
@@ -446,6 +447,7 @@ export const MOCK_PRODUCT_PRICING_RESPONSE = [
   {
     name: 'MOCK PRODUCT',
     code: 'mock-product',
+    entity_type: 'merchant',
     rate_config: {
       monthly: 300,
       lifetime: 12000,
@@ -455,6 +457,30 @@ export const MOCK_PRODUCT_PRICING_RESPONSE = [
   {
     name: 'MOCK PRODUCT NEW',
     code: 'mock-product-new',
+    entity_type: 'merchant',
+    rate_config: {
+      monthly: 300,
+      lifetime: 12000,
+      setup_fee: 200,
+    },
+  },
+];
+
+export const MOCK_PARTNER_PRODUCT_PRICING_RESPONSE = [
+  {
+    name: 'MOCK PRODUCT',
+    code: 'mock-product',
+    entity_type: 'partner',
+    rate_config: {
+      monthly: 300,
+      lifetime: 12000,
+      setup_fee: 200,
+    },
+  },
+  {
+    name: 'MOCK PRODUCT NEW',
+    code: 'mock-product-new',
+    entity_type: 'partner',
     rate_config: {
       monthly: 300,
       lifetime: 12000,
@@ -820,6 +846,8 @@ export const MOCK_PRODUCT_OFFER_CONFIG = {
   'mock-product': {
     offerText: 'Mock offer text',
     pdpOfferText: 'Mock offer text',
+    partnerOfferText: 'Mock partner offer text',
+    partnerPdpOfferText: 'Mock partner pdp offer text',
     preRateConfig: {
       monthly: 400,
       lifetime: 20000,

@@ -1,20 +1,20 @@
 import React, { useContext } from 'react';
 import { BladeProvider, Box } from '@razorpay/blade/components';
 import { paymentTheme } from '@razorpay/blade/tokens';
-import { useNavigate } from 'react-router-dom';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
+import { useNavigate } from 'react-router-dom';
 
 import MainBannerBackdropImage from 'assets/pos/main-banner/mainbannerbackground.webp';
+import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
+import { ANDROID_SMART_POS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { getPricingByProduct, getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
 
 import MainBannerProductImage from './MainBannerProductImage';
 import MainBannerTextContent from './MainBannerTextContent';
 import MainBannerTilesGroup from './MainBannerTilesGroup';
-import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
-import { ANDROID_SMART_POS } from 'merchant/views/POS/constants';
-import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
 
 const MainBanner = (): JSX.Element | null => {
   const navigate = useNavigate();
@@ -43,6 +43,8 @@ const MainBanner = (): JSX.Element | null => {
 
   const handleNavigateToProduct = () => navigate(`/pos/catalog/${productDescription.code}`);
 
+  const isPartnerPricing = productDescription?.isPartnerPricing;
+
   return (
     <BladeProvider themeTokens={paymentTheme} colorScheme="dark">
       <div data-testid="main-banner-wrapper" onClick={() => isMobile && handleNavigateToProduct()}>
@@ -64,7 +66,7 @@ const MainBanner = (): JSX.Element | null => {
             position="relative"
             width={{ base: '100%', l: 'fit-content' }}
           >
-            {productDescription?.offer?.offerText ? (
+            {productDescription?.offer ? (
               <Box
                 width="100%"
                 maxWidth="1300px"
@@ -72,7 +74,15 @@ const MainBanner = (): JSX.Element | null => {
                 paddingX={{ base: '0px', l: 'spacing.8' }}
                 marginX={{ base: '0px', l: 'spacing.8' }}
               >
-                <OfferStrip text={productDescription.offer.offerText} type="dark" />
+                <OfferStrip
+                  text={
+                    isPartnerPricing
+                      ? productDescription.offer.partnerOfferText
+                      : productDescription.offer.offerText
+                  }
+                  type="dark"
+                  isPartnerPricing={isPartnerPricing}
+                />
               </Box>
             ) : null}
             <Box
@@ -107,8 +117,13 @@ const MainBanner = (): JSX.Element | null => {
                 }}
               />
               <MainBannerProductImage
-                price={offer && offer?.nextMonthly !== null ? offer.nextMonthly : monthly}
+                price={
+                  productDescription?.offer && offer && offer?.nextMonthly !== null
+                    ? offer.nextMonthly
+                    : monthly
+                }
                 prevPrice={offer?.prevMonthly}
+                isPartnerPricing={isPartnerPricing}
               />
               <MainBannerTilesGroup />
             </Box>

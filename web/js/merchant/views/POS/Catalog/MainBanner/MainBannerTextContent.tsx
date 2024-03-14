@@ -15,6 +15,7 @@ import {
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
+import { PartnerExclusivePriceContainer } from 'merchant/views/POS/PartnerExclusiveContainer';
 import AmountWithStrikeThrough from 'merchant/views/POS/ProductDescription/ProductPriceCards/AmountWithStrikeThrough';
 import { PRODUCT_PLANS, ANDROID_SMART_POS } from 'merchant/views/POS/constants';
 import { isValidFee } from 'merchant/views/POS/helpers';
@@ -126,99 +127,105 @@ const MainBannerTextContent = ({
       ) : null}
 
       <MainBannerFooter>
-        {isValidOffer ? (
-          <Box display={{ base: 'block', l: 'flex' }}>
+        <PartnerExclusivePriceContainer
+          isPartnerPricing={product?.isPartnerPricing && !isValidOffer}
+          type="MAIN_BANNER"
+          isMobile={isMobile}
+        >
+          {isValidOffer ? (
+            <Box display={{ base: 'block', l: 'flex' }}>
+              <Heading
+                color="surface.text.muted.highContrast"
+                size={isMobile ? 'medium' : 'small'}
+                textAlign={isMobile ? 'center' : 'left'}
+                marginRight="spacing.6"
+                weight="regular"
+              >
+                <Amount
+                  value={nextMonthlyFee as number}
+                  suffix="none"
+                  isAffixSubtle={false}
+                  size="heading-large-bold"
+                  testID="monthly-amount"
+                />
+                {'  '}
+                <AmountWithStrikeThrough
+                  value={prevMonthlyFee as number}
+                  size="heading-small-bold"
+                  testID="prev-monthly"
+                />{' '}
+                /month after 3 months*
+              </Heading>
+              <Heading
+                color="surface.text.muted.highContrast"
+                size={isMobile ? 'medium' : 'small'}
+                textAlign={isMobile ? 'center' : 'left'}
+                marginRight="spacing.6"
+                weight="regular"
+              >
+                <Amount
+                  value={setupFee}
+                  suffix="none"
+                  isAffixSubtle={false}
+                  size="heading-large-bold"
+                  testID="setup-amount"
+                />
+                {'  '}
+                <AmountWithStrikeThrough
+                  value={prevSetupFee as number}
+                  size="heading-small-bold"
+                  testID="prev-setup"
+                />
+                {'  '}
+                setup fee
+              </Heading>
+            </Box>
+          ) : (
             <Heading
-              color="surface.text.muted.highContrast"
+              color="surface.text.normal.highContrast"
               size={isMobile ? 'medium' : 'small'}
               textAlign={isMobile ? 'center' : 'left'}
-              marginRight="spacing.6"
-              weight="regular"
             >
               <Amount
-                value={nextMonthlyFee as number}
+                value={monthlyFee}
                 suffix="none"
                 isAffixSubtle={false}
                 size="heading-large-bold"
                 testID="monthly-amount"
-              />
-              {'  '}
-              <AmountWithStrikeThrough
-                value={prevMonthlyFee as number}
-                size="heading-small-bold"
-                testID="prev-monthly"
               />{' '}
-              /month after 3 months*
+              monthly subscription
             </Heading>
-            <Heading
-              color="surface.text.muted.highContrast"
-              size={isMobile ? 'medium' : 'small'}
-              textAlign={isMobile ? 'center' : 'left'}
-              marginRight="spacing.6"
-              weight="regular"
-            >
-              <Amount
-                value={setupFee}
-                suffix="none"
-                isAffixSubtle={false}
-                size="heading-large-bold"
-                testID="setup-amount"
-              />
-              {'  '}
-              <AmountWithStrikeThrough
-                value={prevSetupFee as number}
-                size="heading-small-bold"
-                testID="prev-setup"
-              />
-              {'  '}
-              setup fee
-            </Heading>
-          </Box>
-        ) : (
-          <Heading
-            color="surface.text.normal.highContrast"
-            size={isMobile ? 'medium' : 'small'}
-            textAlign={isMobile ? 'center' : 'left'}
-          >
-            <Amount
-              value={monthlyFee}
-              suffix="none"
-              isAffixSubtle={false}
-              size="heading-large-bold"
-              testID="monthly-amount"
-            />{' '}
-            monthly subscription
-          </Heading>
-        )}
+          )}
 
-        <Box display={{ base: 'block', m: 'flex' }} alignItems="center" marginBottom="spacing.7">
-          {!product.offer && !prevSetupFee ? (
+          <Box display={{ base: 'block', m: 'flex' }} alignItems="center" marginBottom="spacing.6">
+            {!product.offer && !prevSetupFee ? (
+              <Text
+                color="surface.text.normal.highContrast"
+                size={isMobile ? 'medium' : 'small'}
+                textAlign={isMobile ? 'center' : 'left'}
+                marginBottom="spacing.1"
+                marginRight="spacing.2"
+              >
+                +{' '}
+                <Amount
+                  value={setupFee}
+                  suffix="none"
+                  isAffixSubtle={false}
+                  size={isMobile ? 'body-medium-bold' : 'body-small-bold'}
+                  testID="setup-amount"
+                />{' '}
+                one time setup fee.
+              </Text>
+            ) : null}
             <Text
-              color="surface.text.normal.highContrast"
-              size={isMobile ? 'medium' : 'small'}
+              size="small"
+              color="surface.text.muted.highContrast"
               textAlign={isMobile ? 'center' : 'left'}
-              marginBottom="spacing.1"
-              marginRight="spacing.2"
             >
-              +{' '}
-              <Amount
-                value={setupFee}
-                suffix="none"
-                isAffixSubtle={false}
-                size={isMobile ? 'body-medium-bold' : 'body-small-bold'}
-                testID="setup-amount"
-              />{' '}
-              one time setup fee.
+              *Lifetime Pricing also available.
             </Text>
-          ) : null}
-          <Text
-            size="small"
-            color="surface.text.muted.highContrast"
-            textAlign={isMobile ? 'center' : 'left'}
-          >
-            *Lifetime Pricing also available.
-          </Text>
-        </Box>
+          </Box>
+        </PartnerExclusivePriceContainer>
         <Box
           display="flex"
           position="relative"

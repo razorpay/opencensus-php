@@ -34,7 +34,12 @@ const initProps: OrderPricingProps = {
       {
         ...MOCK_PRODUCT,
         pricing: MOCK_PRICING_WITH_PRICES_WITH_OFFER,
-        offer: { offerText: 'Mock Offer', pdpOfferText: 'Mock PDP offer' },
+        offer: {
+          offerText: 'Mock Offer',
+          pdpOfferText: 'Mock PDP offer',
+          partnerOfferText: 'mock partner offer',
+          partnerPdpOfferText: 'mock partner pdp offer',
+        },
       },
     ],
   }),
@@ -86,6 +91,68 @@ describe('<OrderPricing/> with offer', () => {
     await userEvent.click(screen.getByText('Rental charges'));
 
     expect(within(deviceChargesContainer).getByText('Offer Applied')).toBeVisible();
+    expect(
+      within(deviceChargesContainer).getAllByText('Monthly Plan - Mock Product X 3').length,
+    ).toBe(2);
+    expect(within(deviceChargesContainer).getByText(/post 3 months/)).toBeVisible();
+    expect(within(deviceChargesContainer).getByText('first 3 months')).toBeVisible();
+    expect(within(deviceChargesContainer).getByText('300')).toBeVisible();
+    expect(within(deviceChargesContainer).getByText('354')).toBeVisible();
+    expect(within(deviceChargesContainer).getByText('MDR (%)')).toBeVisible();
+  });
+
+  test('should render toggle detailed device charges and partner offer tag on screen', async () => {
+    const pricing = processPrecheckoutPricing({
+      cartItems: MOCK_CART_ITEMS,
+      productDescriptions: [
+        {
+          ...MOCK_PRODUCT,
+          pricing: MOCK_PRICING_WITH_PRICES_WITH_OFFER,
+          offer: {
+            offerText: 'Mock Offer',
+            pdpOfferText: 'Mock PDP offer',
+            partnerOfferText: 'mock partner offer',
+            partnerPdpOfferText: 'mock partner pdp offer',
+          },
+          isPartnerPricing: true,
+        },
+      ],
+    });
+    renderApp({ pricing, isLoading: false });
+    const deviceChargesContainer = screen.getByTestId('device-charges-container');
+    expect(within(deviceChargesContainer).queryByText('Mock Product')).toBeNull();
+
+    await userEvent.click(screen.getByText('Device charges'));
+
+    expect(within(deviceChargesContainer).getByText('Partner Offer Applied')).toBeVisible();
+    expect(within(deviceChargesContainer).getAllByText('Mock Product').length).toBe(2);
+    expect(within(deviceChargesContainer).getByText('Monthly Plan | (Qty: 3)')).toBeVisible();
+  });
+
+  test('should render toggle detailed rental charges and partner offer tag on screen', async () => {
+    const pricing = processPrecheckoutPricing({
+      cartItems: MOCK_CART_ITEMS,
+      productDescriptions: [
+        {
+          ...MOCK_PRODUCT,
+          pricing: MOCK_PRICING_WITH_PRICES_WITH_OFFER,
+          offer: {
+            offerText: 'Mock Offer',
+            pdpOfferText: 'Mock PDP offer',
+            partnerOfferText: 'mock partner offer',
+            partnerPdpOfferText: 'mock partner pdp offer',
+          },
+          isPartnerPricing: true,
+        },
+      ],
+    });
+    renderApp({ pricing, isLoading: false });
+    const deviceChargesContainer = screen.getByTestId('rental-charges-container');
+    expect(within(deviceChargesContainer).queryByText('Mock Product')).toBeNull();
+
+    await userEvent.click(screen.getByText('Rental charges'));
+
+    expect(within(deviceChargesContainer).getByText('Partner Offer Applied')).toBeVisible();
     expect(
       within(deviceChargesContainer).getAllByText('Monthly Plan - Mock Product X 3').length,
     ).toBe(2);

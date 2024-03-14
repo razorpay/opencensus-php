@@ -456,6 +456,8 @@ export const PRODUCT_OFFER_CONFIG: Record<string, OfferConfig> = {
   [ANDROID_SMART_POS.code]: {
     offerText: 'Limited Time Offer till 31st March',
     pdpOfferText: 'Offer valid on orders placed before 31st March',
+    partnerOfferText: 'Partner Exclusive Time Offer till 31st March',
+    partnerPdpOfferText: 'Partner offer valid on orders placed before 31st March',
     preRateConfig: {
       monthly: 549,
       lifetime: 12000,
@@ -470,6 +472,8 @@ export const PRODUCT_OFFER_CONFIG: Record<string, OfferConfig> = {
   [ANDROID_MINI_POS.code]: {
     offerText: 'Limited Time Offer till 31st March',
     pdpOfferText: 'Offer valid on orders placed before 31st March',
+    partnerOfferText: 'Partner Exclusive Time Offer till 31st March',
+    partnerPdpOfferText: 'Partner offer valid on orders placed before 31st March',
     preRateConfig: {
       monthly: 499,
       lifetime: 10500,

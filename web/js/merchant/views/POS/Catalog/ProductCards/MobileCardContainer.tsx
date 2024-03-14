@@ -3,12 +3,18 @@ import { Box, Title, Heading, Text, Amount } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
 
 import MainBannerBackdropImage from 'assets/pos/main-banner/mainbannerbackground.webp';
+import { useSplitzService } from 'common/splitz';
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
+import { PartnerExclusivePriceContainer } from 'merchant/views/POS/PartnerExclusiveContainer';
 import AmountWithStrikeThrough from 'merchant/views/POS/ProductDescription/ProductPriceCards/AmountWithStrikeThrough';
 import { PRODUCT_PLANS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
-import { getPricingByProduct, getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
+import {
+  getPricingByProduct,
+  getProductFromProductDescriptions,
+  fetchProductOffers,
+} from 'merchant/views/POS/helpers';
 
 import { MobileEllpise, StyledProductCardImage } from './styles';
 
@@ -27,7 +33,8 @@ const MobileCardContainer = ({
   const navigate = useNavigate();
   const { productDescriptions } = state;
   const productDescription = getProductFromProductDescriptions({ code, productDescriptions });
-
+  const { abExperiments } = useSplitzService();
+  const { isEnabled: isOfferEnabled } = fetchProductOffers({ abExperiments });
   if (!productDescription || !productDescription.pricing) return null;
 
   const { monthly, setupFee, offer } = getPricingByProduct({ productDescription });
@@ -43,6 +50,7 @@ const MobileCardContainer = ({
     navigate(`/pos/catalog/${productDescription.code}`);
   };
 
+  const isPartnerPricing = productDescription?.isPartnerPricing;
   return (
     <div onClick={handleOnCardClick}>
       <Box
@@ -55,7 +63,15 @@ const MobileCardContainer = ({
       >
         {productDescription?.offer ? (
           <Box marginBottom="spacing.5">
-            <OfferStrip text={productDescription.offer.offerText} type="light" />
+            <OfferStrip
+              text={
+                isPartnerPricing
+                  ? productDescription.offer.partnerOfferText
+                  : productDescription.offer.offerText
+              }
+              type="light"
+              isPartnerPricing={isPartnerPricing}
+            />
           </Box>
         ) : null}
         <Title size="medium" textAlign="center">
@@ -64,68 +80,74 @@ const MobileCardContainer = ({
         <Heading size="medium" textAlign="center" marginBottom="spacing.8" type="subdued">
           {cardDescription}
         </Heading>
-        <Box marginBottom="spacing.7">
-          {isValidOffer ? (
-            <React.Fragment>
-              <Heading
-                textAlign="center"
-                weight="regular"
-                type="subtle"
-                testID="monthly-offer-amount-text"
-              >
-                <Amount
-                  value={offer?.nextMonthly}
-                  isAffixSubtle={false}
-                  suffix="none"
-                  size="heading-large-bold"
-                />{' '}
-                <AmountWithStrikeThrough value={offer?.prevMonthly} size="heading-small-bold" />{' '}
-                /month after 3 months*
-              </Heading>
-              <Text
-                textAlign="center"
-                marginBottom="spacing.3"
-                type="subtle"
-                testID="setup-offer-amount-text"
-              >
-                {' '}
-                <Amount
-                  value={setupFee}
-                  suffix="none"
-                  isAffixSubtle={false}
-                  size="heading-small-bold"
-                />{' '}
-                <AmountWithStrikeThrough value={offer?.prevSetupFee} size="heading-small-bold" />{' '}
-                setup fee
-              </Text>
-            </React.Fragment>
-          ) : (
-            <React.Fragment>
-              <Heading textAlign="center">
-                <Amount
-                  value={monthly}
-                  isAffixSubtle={false}
-                  suffix="none"
-                  size="heading-large-bold"
-                />{' '}
-                monthly subscription
-              </Heading>
-              <Text textAlign="center" marginBottom="spacing.3">
-                +{' '}
-                <Amount
-                  value={setupFee}
-                  suffix="none"
-                  isAffixSubtle={false}
-                  size="body-medium-bold"
-                />{' '}
-                one time setup fee
-              </Text>
-            </React.Fragment>
-          )}
-          <Text textAlign="center" type="muted" size="small">
-            *Lifetime Pricing also available.
-          </Text>
-        </Box>
+        <PartnerExclusivePriceContainer
+          isPartnerPricing={isPartnerPricing && !isOfferEnabled}
+          type="PRODUCT_CARD"
+          isMobileCard
+        >
+          <Box marginBottom="spacing.7">
+            {isValidOffer ? (
+              <React.Fragment>
+                <Heading
+                  textAlign="center"
+                  weight="regular"
+                  type="subtle"
+                  testID="monthly-offer-amount-text"
+                >
+                  <Amount
+                    value={offer?.nextMonthly}
+                    isAffixSubtle={false}
+                    suffix="none"
+                    size="heading-large-bold"
+                  />{' '}
+                  <AmountWithStrikeThrough value={offer?.prevMonthly} size="heading-small-bold" />{' '}
+                  /month after 3 months*
+                </Heading>
+                <Text
+                  textAlign="center"
+                  marginBottom="spacing.3"
+                  type="subtle"
+                  testID="setup-offer-amount-text"
+                >
+                  {' '}
+                  <Amount
+                    value={setupFee}
+                    suffix="none"
+                    isAffixSubtle={false}
+                    size="heading-small-bold"
+                  />{' '}
+                  <AmountWithStrikeThrough value={offer?.prevSetupFee} size="heading-small-bold" />{' '}
+                  setup fee
+                </Text>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Heading textAlign="center">
+                  <Amount
+                    value={monthly}
+                    isAffixSubtle={false}
+                    suffix="none"
+                    size="heading-large-bold"
+                  />{' '}
+                  monthly subscription
+                </Heading>
+                <Text textAlign="center" marginBottom="spacing.3">
+                  +{' '}
+                  <Amount
+                    value={setupFee}
+                    suffix="none"
+                    isAffixSubtle={false}
+                    size="body-medium-bold"
+                  />{' '}
+                  one time setup fee
+                </Text>
+              </React.Fragment>
+            )}
+            <Text textAlign="center" type="muted" size="small">
+              *Lifetime Pricing also available.
+            </Text>
+          </Box>
+        </PartnerExclusivePriceContainer>
         <Box
           display="flex"
           justifyContent="center"

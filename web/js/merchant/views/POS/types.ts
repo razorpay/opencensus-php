@@ -59,6 +59,7 @@ export type ProductDescription = {
   description: string;
   cartImage: string;
   pricing: ProductDescriptionPricing[];
+  isPartnerPricing: boolean;
   maxOrder: number;
   featureGallery: FeatureGallery[];
   infoBanner: InfoBanner;
@@ -66,6 +67,8 @@ export type ProductDescription = {
   offer: {
     offerText: string;
     pdpOfferText: string;
+    partnerOfferText: string;
+    partnerPdpOfferText: string;
   } | null;
 };
 
@@ -314,6 +317,7 @@ export type OrderPricing = {
   invoiceUrl?: string | null;
   orderedDevicesWithOffer: OrderPricingOrderItem[];
   rentalDevicesWithOffer: OrderPricingOrderItem[];
+  isPartnerPricing?: boolean;
 };
 
 export type CreateOrderPayload = {
@@ -362,6 +366,7 @@ export interface ApiResponse<T> {
 export type ProductPricingMap = {
   name: string;
   code: string;
+  entity_type?: string;
   rate_config: {
     monthly: number;
     lifetime: number;
@@ -485,6 +490,8 @@ export enum POS_ACTIVATION_STATUS {
 export type OfferConfig = {
   offerText: string;
   pdpOfferText: string;
+  partnerOfferText: string;
+  partnerPdpOfferText: string;
   preRateConfig: {
     monthly: number;
     lifetime: number;

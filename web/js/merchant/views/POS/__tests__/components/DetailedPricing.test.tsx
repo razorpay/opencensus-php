@@ -6,6 +6,7 @@ import {
   MOCK_PRICING_WITH_PRICES,
   MOCK_PRODUCT_OFFER_CONFIG,
   MOCK_PRODUCT_PRICING_RESPONSE,
+  MOCK_PARTNER_PRODUCT_PRICING_RESPONSE,
 } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import { getProductDescriptionWithPricingPlan } from 'merchant/views/POS/helpers';
 import { ProductDescription } from 'merchant/views/POS/types';
@@ -41,6 +42,19 @@ describe('<DetailedPricing/>', () => {
     render(<DetailedPricing product={description as ProductDescription} />);
     expect(screen.getByText('Mock offer text')).toBeVisible();
     expect(screen.getByText('After 1L GMV, Below Rates to Apply')).toBeVisible();
+    expect(screen.getByText(/charges upto ₹1L transactions/)).toBeVisible();
+  });
+
+  test('should render Detailed pricing with partner offer content if offer exists on screen', () => {
+    const description = getProductDescriptionWithPricingPlan({
+      productCode: 'mock-product',
+      pricingPlanDict: MOCK_PARTNER_PRODUCT_PRICING_RESPONSE,
+      offerConfigForProduct: MOCK_PRODUCT_OFFER_CONFIG['mock-product'],
+    });
+
+    render(<DetailedPricing product={description as ProductDescription} />);
+    expect(screen.getByText('Mock partner offer text')).toBeVisible();
+    expect(screen.getByText('Offer ends after 3 months')).toBeVisible();
     expect(screen.getByText(/charges upto ₹1L transactions/)).toBeVisible();
   });
 });

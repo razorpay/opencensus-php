@@ -1,15 +1,17 @@
 import React, { useContext } from 'react';
-import { Amount, Box, Divider, Text } from '@razorpay/blade/components';
+import { Amount, Box, Divider, Text, BoxProps } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
+import PosCatalogPartnerExclusivePrice from 'assets/partner-dashboard/PosCatalogPartnerExclusivePrice.svg';
+import { useSplitzService } from 'common/splitz';
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
-import { getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
+import { getProductFromProductDescriptions, fetchProductOffers } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 import { PricingTypes } from 'merchant/views/POS/types';
 
 import OfferPriceCardContent from './OfferPriceCardContent';
-import { ProductPriceCard } from './styles';
+import { ProductPriceCard, PartnerExclusivePriceImage } from './styles';
 
 type ProductPriceCards = {
   selectedPricing: PricingTypes;
@@ -24,6 +26,8 @@ const ProductPriceCards = ({
 }: ProductPriceCards): JSX.Element | null => {
   const { matchedBreakpoint } = useBladeBreakpoints();
   const { state } = useContext(PosDeviceStoreContext);
+  const { abExperiments } = useSplitzService();
+  const { isEnabled: isOfferEnabled } = fetchProductOffers({ abExperiments });
   const { productDescriptions } = state;
   const product = getProductFromProductDescriptions({ code: productCode, productDescriptions });
 
@@ -43,11 +47,15 @@ const ProductPriceCards = ({
   if (!product || !product.pricing) return null;
 
   const { pricing, offer } = product;
-
+  const isPartnerPricing = product?.isPartnerPricing;
   return (
     <Box>
       {product?.offer?.pdpOfferText ? (
-        <OfferStrip text={product.offer.pdpOfferText} type="light" />
+        <OfferStrip
+          text={isPartnerPricing ? product.offer.partnerPdpOfferText : product.offer.pdpOfferText}
+          type="light"
+          isPartnerPricing={isPartnerPricing}
+        />
       ) : null}
       <Box
         display={matchedBreakpoint === 'xl' ? 'flex' : 'block'}
@@ -58,28 +66,40 @@ const ProductPriceCards = ({
         {pricing.map((pricing) => {
           const { type, breakups, subText } = pricing;
           const isShowOfferPriceCard = !!offer;
+          const isSelected = selectedPricing === type;
+          const shouldShowPartnerPricing = isPartnerPricing && isSelected && !isOfferEnabled;
+          let priceContainerBackground: BoxProps['backgroundColor'] =
+            'surface.background.level2.lowContrast';
 
+          if (shouldShowPartnerPricing) {
+            priceContainerBackground = 'transparent';
+          } else if (isSelected) {
+            priceContainerBackground = 'surface.background.level3.lowContrast';
+          }
           return (
             <ProductPriceCard
               key={type}
-              isSelected={selectedPricing === type}
+              isSelected={isSelected}
               onClick={() => handleOnPricingCardSelect(type)}
-              aria-selected={selectedPricing === type}
+              aria-selected={isSelected}
               data-testid={`${type}-price-card`}
+              shouldShowPartnerPricing={shouldShowPartnerPricing}
             >
+              {shouldShowPartnerPricing ? (
+                <PartnerExclusivePriceImage
+                  src={PosCatalogPartnerExclusivePrice}
+                  alt="Pos Catalog Partner Exclusive"
+                />
+              ) : null}
               <Box
-                backgroundColor={
-                  selectedPricing === type
-                    ? 'surface.background.level3.lowContrast'
-                    : 'surface.background.level2.lowContrast'
-                }
-                paddingY="spacing.5"
+                backgroundColor={priceContainerBackground}
+                paddingY={shouldShowPartnerPricing ? 'spacing.2' : 'spacing.5'}
                 paddingX="spacing.3"
-                height="100%"
+                height={shouldShowPartnerPricing ? 'auto' : '100%'}
                 position="relative"
                 display="flex"
                 flexDirection="column"
-                justifyContent="space-between"
+                justifyContent="center"
                 borderRadius="large"
               >
                 {isShowOfferPriceCard ? (

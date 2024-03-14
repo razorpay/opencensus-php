@@ -114,3 +114,33 @@ describe('<MainBanner/>', () => {
     expect(mockedUsedNavigate).toHaveBeenCalledWith(`/pos/catalog/${ANDROID_SMART_POS.code}`);
   });
 });
+
+describe('<MainBanner/> - partner pricing', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  const MOCK_PARTNER_PRODUCT_PRICING = [
+    {
+      ...MOCK_PRODUCT_PRICING[0],
+      entity_type: 'partner',
+    },
+  ];
+  beforeEach(() => {
+    setupIntersectionObserverMock();
+    server.use(getProductPricingHandler(MOCK_PARTNER_PRODUCT_PRICING));
+  });
+  test('should render partner exclusive pricing', async () => {
+    jest.spyOn(posHooks, 'useBladeBreakpoints').mockReturnValue({
+      matchedBreakpoint: 'l',
+      isMobile: false,
+      isDesktop: true,
+      isLargeScreen: false,
+    });
+    renderApp();
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    expect(screen.getByText('Android Smart POS')).toBeVisible();
+    expect(screen.getByText('All-in-one POS to support all your payment needs')).toBeVisible();
+    expect(screen.getByAltText('Partner Exclusive')).toBeVisible();
+  });
+});

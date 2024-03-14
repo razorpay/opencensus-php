@@ -4,7 +4,10 @@ import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import { setupIntersectionObserverMock } from 'merchant/views/POS/utils/IntersectionObserverMock';
 import ProductDescription from 'merchant/views/POS/ProductDescription';
 import { MOCK_USER, MOCK_GTM } from 'merchant/views/POS/__tests__/mocks/fixtures';
-import { getProductPricingHandler } from 'merchant/views/POS/__tests__/mocks/handlers';
+import {
+  getProductPricingHandler,
+  getPartnerProductPricingHandler,
+} from 'merchant/views/POS/__tests__/mocks/handlers';
 import { PosStoreInitialState } from 'merchant/views/POS/constants';
 import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
 import { ScrollObserverProvider } from 'merchant/views/POS/utils/ScrollObserver';
@@ -100,5 +103,17 @@ describe('<ProductDescription/>', () => {
         l2FunnelStage: 'POS Product Description',
       });
     });
+  });
+});
+
+describe('<ProductDescription/> with partner pricing', () => {
+  beforeEach(() => {
+    setupIntersectionObserverMock();
+    server.use(getPartnerProductPricingHandler());
+  });
+  test('should render partner exclusive image', async () => {
+    renderApp();
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    expect(screen.getByAltText('Pos Catalog Partner Exclusive')).toBeVisible();
   });
 });

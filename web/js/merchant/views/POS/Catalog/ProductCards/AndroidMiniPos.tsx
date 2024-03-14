@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import AndroidMiniPosImage from 'assets/pos/main-banner/minipos.webp';
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
+import { PartnerExclusivePriceContainer } from 'merchant/views/POS/PartnerExclusiveContainer';
 import AmountWithStrikeThrough from 'merchant/views/POS/ProductDescription/ProductPriceCards/AmountWithStrikeThrough';
 import { PRODUCT_PLANS, ANDROID_MINI_POS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
@@ -42,6 +43,7 @@ const AndroidMiniPos = (): JSX.Element | null => {
     offer?.prevSetupFee !== null &&
     offer?.nextMonthly !== null;
 
+  const isPartnerPricing = productDescription?.isPartnerPricing;
   return (
     <AndroidSmartMiniPosContainer
       isHovered={isHovered}
@@ -69,7 +71,15 @@ const AndroidMiniPos = (): JSX.Element | null => {
         >
           <Box marginTop="spacing.4" padding="spacing.2">
             {productDescription?.offer ? (
-              <OfferStrip text={productDescription.offer.offerText} type="light" />
+              <OfferStrip
+                text={
+                  isPartnerPricing
+                    ? productDescription.offer.partnerOfferText
+                    : productDescription.offer.offerText
+                }
+                type="light"
+                isPartnerPricing={isPartnerPricing}
+              />
             ) : null}
           </Box>
           <ProductCardLeftImageAnimate
@@ -92,48 +102,53 @@ const AndroidMiniPos = (): JSX.Element | null => {
             Feature packed and portable
           </Text>
           <Box marginTop={{ base: 'spacing.4', xl: 'spacing.11' }}>
-            {isValidOffer ? (
-              <Box>
-                <Text marginBottom="spacing.2" testID="monthy-pricing-text">
+            <PartnerExclusivePriceContainer
+              isPartnerPricing={isPartnerPricing && !isValidOffer}
+              type="PRODUCT_CARD"
+            >
+              {isValidOffer ? (
+                <Box>
+                  <Text marginBottom="spacing.2" testID="monthy-pricing-text">
+                    <Amount
+                      value={offer.nextMonthly}
+                      suffix="none"
+                      size="heading-small-bold"
+                      isAffixSubtle={false}
+                    />{' '}
+                    <AmountWithStrikeThrough value={offer.prevMonthly} size="body-medium-bold" />{' '}
+                    /month after 3 months*
+                  </Text>
+                  <Text marginBottom="spacing.3" testID="setup-pricing-text">
+                    <Amount
+                      value={setupFee}
+                      suffix="none"
+                      size="heading-small-bold"
+                      isAffixSubtle={false}
+                    />{' '}
+                    <AmountWithStrikeThrough value={offer.prevSetupFee} size="body-medium-bold" />{' '}
+                    setup fee
+                  </Text>
+                </Box>
+              ) : (
+                <Text weight="bold" testID="pricing-details-text">
                   <Amount
-                    value={offer.nextMonthly}
+                    value={monthly}
                     suffix="none"
-                    size="heading-small-bold"
+                    size="body-medium-bold"
                     isAffixSubtle={false}
                   />{' '}
-                  <AmountWithStrikeThrough value={offer.prevMonthly} size="body-medium-bold" />{' '}
-                  /month after 3 months*
-                </Text>
-                <Text marginBottom="spacing.3" testID="setup-pricing-text">
+                  /month +{' '}
                   <Amount
                     value={setupFee}
                     suffix="none"
-                    size="heading-small-bold"
+                    size="body-medium-bold"
                     isAffixSubtle={false}
                   />{' '}
-                  <AmountWithStrikeThrough value={offer.prevSetupFee} size="body-medium-bold" />{' '}
                   setup fee
                 </Text>
-              </Box>
-            ) : (
-              <Text weight="bold" testID="pricing-details-text">
-                <Amount
-                  value={monthly}
-                  suffix="none"
-                  size="body-medium-bold"
-                  isAffixSubtle={false}
-                />{' '}
-                /month +{' '}
-                <Amount
-                  value={setupFee}
-                  suffix="none"
-                  size="body-medium-bold"
-                  isAffixSubtle={false}
-                />{' '}
-                setup fee
-              </Text>
-            )}
-            <Text color="surface.text.subtle.lowContrast">*Lifetime Pricing also available.</Text>
+              )}
+              <Text color="surface.text.subtle.lowContrast">*Lifetime Pricing also available.</Text>
+            </PartnerExclusivePriceContainer>
             <Box display="flex" marginTop="spacing.5" alignItems="center">
               <AddToCartButton
                 productCode={ANDROID_MINI_POS.code}
