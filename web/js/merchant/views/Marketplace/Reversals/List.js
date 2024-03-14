@@ -24,10 +24,10 @@ import { navItems } from 'merchant/views/Marketplace/NavItems';
 )
 class ReversalsListContainer extends ListContainer {
   render() {
-    const { isPlatformFeeTabEnabled } = this.props;
+    const { isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled } = this.props;
     return (
       <ProductWrapper
-        tabsData={navItems(isPlatformFeeTabEnabled)}
+        tabsData={navItems(isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
         extra={
           <>
             <TakeATourButton feature={RZPFeatures.ROUTE} />

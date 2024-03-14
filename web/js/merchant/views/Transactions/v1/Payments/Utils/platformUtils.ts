@@ -1,9 +1,9 @@
 type platformFeeCalculatorReturnType = {
   totalFeeAmount: number;
   totalFee: number;
-  totalRazorpayFee: number;
+  totalPaymentFee: number;
   totalTax: number;
-  platformFee: number;
+  partnerFee: number;
 };
 type platformFeeCalculatorProps = {
   fee: number;
@@ -11,26 +11,33 @@ type platformFeeCalculatorProps = {
   amount_transferred: number;
   loading: boolean;
   items: { tax: number; fees: number; amount: number; amount_reversed: number }[];
+  isPartnerPlatformFeeEnabled: boolean;
 };
 export const platformFeeCalculator = ({
   fee,
   tax,
   loading,
   items,
+  isPartnerPlatformFeeEnabled,
 }: platformFeeCalculatorProps): platformFeeCalculatorReturnType => {
   let totalFeeAmount = fee;
-  const totalRazorpayFee = fee;
+  const totalPaymentFee = fee;
   const totalFee = fee - tax;
   const totalTax = tax;
-  let platformFee = 0;
+  let partnerFee = 0;
 
   if (!loading && items.length > 0) {
     items.forEach((item) => {
-      totalFeeAmount += item.fees + item.amount - item.amount_reversed;
-      platformFee += item.amount + item.fees - item.amount_reversed;
+      if (isPartnerPlatformFeeEnabled) {
+        totalFeeAmount += item.fees + item.amount - item.amount_reversed;
+        partnerFee += item.amount + item.fees - item.amount_reversed;
+      } else {
+        totalFeeAmount += item.fees;
+        partnerFee += item.amount - item.amount_reversed;
+      }
     });
   }
-  return { totalFeeAmount, totalFee, totalRazorpayFee, totalTax, platformFee };
+  return { totalFeeAmount, totalFee, totalPaymentFee, totalTax, partnerFee };
 };
 
 interface isPlatformTransactionProps {

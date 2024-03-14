@@ -21,7 +21,7 @@ export default connect((state) => ({ ...state.mpPayments, user: state.session.us
   }, [props.isPlatformFeeTabEnabled, props.user.id]);
   return (
     <ProductWrapper
-      tabsData={navItems(props.isPlatformFeeTabEnabled)}
+      tabsData={navItems(props.isPlatformFeeTabEnabled, props.isPartnerPlatformFeeEnabled)}
       extra={
         <>
           {RZPFeatures.ROUTE ? <TakeATourButton feature={RZPFeatures.ROUTE} /> : null}

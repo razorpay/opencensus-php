@@ -1,8 +1,9 @@
 import React from 'react';
 import PlatformFeeDetails from 'merchant/views/Transactions/v1/Payments/components/PlatformFeeDetails';
-import { render, screen, userEvent, waitFor } from 'test-utils';
+import { render, screen, userEvent, waitFor, server } from 'test-utils';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import * as analytics from 'common/utils/analytics';
+import { partnerPlatformFeeFeatureHandler } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/handlers';
 
 jest.mock('common/ui/LoaderDots', () => () => <>loading</>);
 
@@ -21,6 +22,9 @@ const state = {
   session: {
     user: {
       id: 'testUserId',
+    },
+    org: {
+      business_name: 'Razorpay',
     },
   },
 };
@@ -82,6 +86,8 @@ describe('PlatformFeeDetails', () => {
     items[1].amount -
     items[1].amount_reversed;
 
+  const partnerTotalFeeAmount = payment.fee + items[0].fees + items[1].fees;
+
   const platformFee =
     items[0].amount +
     items[0].fees -
@@ -90,16 +96,30 @@ describe('PlatformFeeDetails', () => {
     items[1].fees -
     items[1].amount_reversed;
 
+  const partnerFee =
+    items[0].amount - items[0].amount_reversed + items[1].amount - items[1].amount_reversed;
+
   const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
 
+  const partnerPlatformFeeFeatureResponse = {
+    data: {
+      feature_enabled: true,
+    },
+  };
   const renderApp = ({ transfer, payments }: PlatformFeeProps) => {
     return render(<PlatformFeeDetails payment={payments} transfers={transfer} />, {
       initialState: state,
     });
   };
 
-  test('should render Razorpay Fee and platform fee details when transfers and payments are present', async () => {
+  test('should render Razorpay Fee and platform fee details when transfers and payments are present and partnerPlatformFee feature is enabled', async () => {
+    server.use(partnerPlatformFeeFeatureHandler(partnerPlatformFeeFeatureResponse));
     renderApp({ transfer: { ...transfers }, payments: { ...payment } });
+    await waitFor(() => {
+      expect(
+        screen.getByText(`Razorpay Fee & Taxes = ${paiseToRupees(payment.fee)}`),
+      ).toBeInTheDocument();
+    });
     expect(screen.getByText(paiseToRupees(totalFeeAmount))).toBeInTheDocument();
 
     await userEvent.click(screen.getByText(`Razorpay Fee & Taxes = ${paiseToRupees(payment.fee)}`));
@@ -122,11 +142,18 @@ describe('PlatformFeeDetails', () => {
   });
 
   test('should render no transactions if transfer are empty', async () => {
+    server.use(partnerPlatformFeeFeatureHandler(partnerPlatformFeeFeatureResponse));
     renderApp({ transfer: { ...transfers, items: [] }, payments: { ...payment } });
+    await waitFor(() => {
+      expect(
+        screen.getByText(`Razorpay Fee & Taxes = ${paiseToRupees(payment.fee)}`),
+      ).toBeInTheDocument();
+    });
     await userEvent.click(screen.getByText('Platform Fee = 0'));
     expect(screen.getByText('No Transactions Found'));
   });
   test('should capture tab opened event', async () => {
+    server.use(partnerPlatformFeeFeatureHandler(partnerPlatformFeeFeatureResponse));
     renderApp({ transfer: { ...transfers }, payments: { ...payment } });
     await waitFor(() => {
       expect(analyticsTrackMock).toHaveBeenCalledWith({
@@ -139,5 +166,29 @@ describe('PlatformFeeDetails', () => {
         toLumberjack: true,
       });
     });
+  });
+  test('should render Payment Fee and partner fee details when transfers and payments are present', async () => {
+    const data = { ...partnerPlatformFeeFeatureResponse, data: { feature_enabled: false } };
+    server.use(partnerPlatformFeeFeatureHandler(data));
+    renderApp({ transfer: { ...transfers }, payments: { ...payment } });
+    await waitFor(() => {
+      expect(
+        screen.getByText(`Payments Fee & Taxes = ${paiseToRupees(payment.fee)}`),
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByText(paiseToRupees(partnerTotalFeeAmount))).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText(`Payments Fee & Taxes = ${paiseToRupees(payment.fee)}`));
+    expect(screen.getByText(`GST = ${paiseToRupees(payment.tax)}`)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText(`Partner Fee = ${paiseToRupees(partnerFee)}`));
+
+    expect(
+      screen.getByText(
+        `Payment to ${items[0].recipient_details.name} = ${
+          items[0].amount - items[0].amount_reversed
+        }`,
+      ),
+    ).toBeInTheDocument();
   });
 });

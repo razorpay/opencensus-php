@@ -185,3 +185,12 @@ export const paymentHandlers = [
     );
   }),
 ];
+
+export const partnerPlatformFeeFeatureHandler = (response) => {
+  return rest.get(
+    '*/submerchant/partner_feature_check/partner_plat_fee_invoice',
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(response));
+    },
+  );
+};

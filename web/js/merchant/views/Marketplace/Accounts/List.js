@@ -263,14 +263,21 @@ class AccountsListContainer extends ListContainer {
   };
 
   render() {
-    const { loading, accounts, user, showNotification, isPlatformFeeTabEnabled } = this.props;
+    const {
+      loading,
+      accounts,
+      user,
+      showNotification,
+      isPlatformFeeTabEnabled,
+      isPartnerPlatformFeeEnabled,
+    } = this.props;
     const status = this.state.status;
     const feeBearer = user.merchant.fee_bearer;
     const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
     const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled || isCustomerFeeBearer;
     return (
       <ProductWrapper
-        tabsData={navItems(isPlatformFeeTabEnabled)}
+        tabsData={navItems(isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
         extra={
           <>
             <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>

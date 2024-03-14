@@ -43,10 +43,10 @@ const settlementStatus = {
 )
 class TransfersListContainer extends ListContainer {
   render() {
-    const { isPlatformFeeTabEnabled, user } = this.props;
+    const { isPlatformFeeTabEnabled, user, isPartnerPlatformFeeEnabled } = this.props;
     return (
       <ProductWrapper
-        tabsData={navItems(isPlatformFeeTabEnabled)}
+        tabsData={navItems(isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
         extra={
           <>
             <TakeATourButton feature={RZPFeatures.ROUTE} />

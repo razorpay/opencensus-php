@@ -13,23 +13,37 @@ describe('platformFee calculator', () => {
       { tax: 10, fees: 60, amount: 20000, amount_reversed: 0 },
       { tax: 2, fees: 15, amount: 5000, amount_reversed: 5000 },
     ],
+    isPartnerPlatformFeeEnabled: true,
   };
-  const returnData = {
+  const returnPlatformFeeData = {
     totalFeeAmount: 20282,
     totalFee: 175,
-    totalRazorpayFee: 207,
+    totalPaymentFee: 207,
     totalTax: 32,
-    platformFee: 20075,
+    partnerFee: 20075,
   };
-  test('should return calculated values', () => {
+  const returnPartnerFeeData = {
+    totalFeeAmount: 282,
+    totalFee: 175,
+    totalPaymentFee: 207,
+    totalTax: 32,
+    partnerFee: 20000,
+  };
+
+  test('should return returnPlatformFeeData if isPartnerPlatformFeeEnabled ', () => {
     expect(platformFeeCalculator(data)).toStrictEqual({
-      ...returnData,
+      ...returnPlatformFeeData,
+    });
+  });
+  test('should return returnPartnerFeeData if isPartnerPlatformFeeEnabled is not enabled ', () => {
+    expect(platformFeeCalculator({ ...data, isPartnerPlatformFeeEnabled: false })).toStrictEqual({
+      ...returnPartnerFeeData,
     });
   });
   test('should return calculated values if items are empty', () => {
     expect(platformFeeCalculator({ ...data, loading: true, items: [] })).toStrictEqual({
-      ...returnData,
-      platformFee: 0,
+      ...returnPlatformFeeData,
+      partnerFee: 0,
       totalFeeAmount: 207,
     });
   });

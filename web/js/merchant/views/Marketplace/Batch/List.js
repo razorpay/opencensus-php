@@ -46,7 +46,7 @@ const BatchTypeFilterField = () => (
 })
 export default class BatchListContainer extends Component {
   render() {
-    const { isPlatformFeeTabEnabled } = this.props;
+    const { isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled } = this.props;
     return (
       <BatchList
         form="batchListFilter"
@@ -57,7 +57,7 @@ export default class BatchListContainer extends Component {
         extraColumns={[typeColumn]}
         multiBatch
         emptyResultsDescription={emptyResultsDescription}
-        propsTabData={navItems(isPlatformFeeTabEnabled)}
+        propsTabData={navItems(isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
         {...this.props}
       />
     );

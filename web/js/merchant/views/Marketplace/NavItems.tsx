@@ -12,12 +12,15 @@ const isNewTab = (tabName: string): JSX.Element => (
     <span className="badge bg-success">New</span>
   </span>
 );
-export const navItems = (isPlatformFeeTabEnabled: boolean): NavItemsReturnType[] => {
+export const navItems = (
+  isPlatformFeeTabEnabled: boolean,
+  isPartnerPlatformFeeEnabled: boolean,
+): NavItemsReturnType[] => {
   const tabsData = [
     { title: 'Payments', url: '/route/payments' },
     { title: 'Transfers', url: '/route/transfers' },
     {
-      title: 'Platform Fee',
+      title: isPartnerPlatformFeeEnabled ? 'Platform Fee' : 'Partner Fee',
       url: '/route/platformfee',
       hidden: !isPlatformFeeTabEnabled,
     },

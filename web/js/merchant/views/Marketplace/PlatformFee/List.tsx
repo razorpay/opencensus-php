@@ -55,6 +55,7 @@ interface PlatformFeeProps {
   history: History;
   location: Location;
   isPlatformFeeTabEnabled: boolean;
+  isPartnerPlatformFeeEnabled: boolean;
   user: User;
 }
 
@@ -77,6 +78,7 @@ const PlatformFee = ({
   location,
   isPlatformFeeTabEnabled,
   user,
+  isPartnerPlatformFeeEnabled,
 }: PlatformFeeProps): JSX.Element => {
   const [paginationState, setPagination] = useState({
     skip: 0,
@@ -131,7 +133,7 @@ const PlatformFee = ({
 
   return (
     <ProductWrapper
-      tabsData={navItems(isPlatformFeeTabEnabled)}
+      tabsData={navItems(isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
       extra={
         <>
           <TakeATourButton feature={RZPFeatures.ROUTE} />
