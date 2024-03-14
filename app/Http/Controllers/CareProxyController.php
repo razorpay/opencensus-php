@@ -40,7 +40,7 @@ class CareProxyController extends Controller
     const MERCHANT_POPULAR_PRODUCTS = 'twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/PostMerchantPopularProducts';
     const PAYMENT_SUMMARY_PUSH_NOTIFICATION = 'twirp/rzp.care.notification.v1.NotificationService/SendPaymentSummaryPushNotification';
     const TRANSACTION_SUMMARY_WHATSAPP_NOTIFICATION = 'twirp/rzp.care.notification.v1.NotificationService/SendTransactionSummaryWhatsappNotification';
-    
+
     //MyOperator
     const IN_CALL    = 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook';
     const AFTER_CALL = 'twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook';
@@ -175,6 +175,10 @@ class CareProxyController extends Controller
 
     const SAV_FETCH_ANALYSIS = 'twirp/rzp.care.sav.v1.AutomationService/FetchAnalysis';
 
+    const SAV_FETCH_TICKET_ANALYSIS = 'twirp/rzp.care.sav.v1.TicketAnalysisService/FetchTicketAnalysis';
+
+    const SAV_FETCH_TICKET_FOR_ANALYSIS = 'twirp/rzp.care.sav.v1.TicketAnalysisService/FetchTicketIdsForAnalysis';
+
     const SAV_CREATE_ANALYSIS_GRAPH =  'twirp/rzp.care.sav.v1.AutomationService/CreateAnalysisGraph';
 
     const SAV_LIST_ANALYSIS_GRAPHS_BY_TYPE =  'twirp/rzp.care.sav.v1.AutomationService/ListAnalysisGraphs';
@@ -244,6 +248,9 @@ class CareProxyController extends Controller
         self::SAV_FETCH_SR_ANALYSIS_LOGS              => Name::VIEW_ALL_ENTITY,
         self::SAV_CREATE_ANALYSIS_GRAPH               => Name::CONFIGURE_SAV_ANALYSIS_GRAPH,
         self::SAV_FETCH_ANALYSIS                      => Name::VIEW_SAV_ANALYSIS,
+        self::SAV_FETCH_TICKET_FOR_ANALYSIS           => Name::VIEW_SAV_ANALYSIS,
+        self::SAV_FETCH_TICKET_ANALYSIS               => Name::VIEW_SAV_ANALYSIS,
+
         self::SAV_LIST_ANALYSIS_GRAPHS_BY_TYPE        => Name::VIEW_SAV_ANALYSIS,
         self::SAV_FETCH_LATEST_ANALYSIS_GRAPH_BY_TYPE => Name::VIEW_SAV_ANALYSIS,
     ];
@@ -366,6 +373,8 @@ class CareProxyController extends Controller
         self::SAV_FETCH_SR_ANALYSIS_LOGS,
         self::SAV_CREATE_ANALYSIS_GRAPH,
         self::SAV_FETCH_ANALYSIS,
+        self::SAV_FETCH_TICKET_ANALYSIS,
+        self::SAV_FETCH_TICKET_FOR_ANALYSIS,
         self::SAV_FETCH_LATEST_ANALYSIS_GRAPH_BY_TYPE,
         self::SAV_LIST_ANALYSIS_GRAPHS_BY_TYPE,
     ];
