@@ -382,11 +382,18 @@ class Processor
      * Razorx flag to indicate if a payment with save option should go via PG Router and CPS or just via API service
      */
     const SAVED_CARD_PAYMENTS_VIA_PGROUTER = 'saved_card_payments_via_pg_router';
-
     /**
      * Razorx flag to indicate if a payment with save option on custom/razorpayjs should go via PG Router and CPS or just via API service
      */
     const SAVED_CARD_PAYMENTS_VIA_PGROUTER_V2 = 'saved_card_payments_via_pg_router_v2';
+    /**
+     * Razorx flag to indicate if a payment with save option on diners should go via PG Router and CPS or just via API service
+     */
+    const SAVED_CARD_PAYMENTS_VIA_PGROUTER_V3 = 'saved_card_payments_via_pg_router_v3';
+    /**
+     * Razorx flag to indicate if a payment with save option on s2s should go via PG Router and CPS or just via API service
+     */
+    const SAVED_CARD_PAYMENTS_VIA_PGROUTER_V4 = 'saved_card_payments_via_pg_router_v4';
     /**
      * Razorx flag to indicate if a payment with charge account should go via PG Router and CPS or just via API service
      */
@@ -1510,7 +1517,9 @@ class Processor
             {
                 if ($iin->getNetworkCode() === Card\Network::DICL)
                 {
-                    return false;
+                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER_V3, $this->mode);
+
+                    return ($result === 'on');
                 }
 
                 $library = null;
@@ -1525,6 +1534,12 @@ class Processor
                     if ($library === Payment\Analytics\Metadata::CUSTOM || $library === Payment\Analytics\Metadata::RAZORPAYJS)
                     {
                         $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER_V2, $this->mode);
+
+                        return ($result === 'on');
+                    }
+                    if ($library === Payment\Analytics\Metadata::S2S)
+                    {
+                        $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER_V4, $this->mode);
 
                         return ($result === 'on');
                     }
