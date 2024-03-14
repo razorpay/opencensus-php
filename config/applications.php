@@ -1200,6 +1200,13 @@ return [
             'test' => env('NBPLUS_PAYMENT_SERVICE_TEST_URL'),
         ],
     ],
+    
+    'emandate_service' => [
+        'mock'      => env('EMANDATE_SERVICE_MOCK', false),
+        'username'  => env('EMANDATE_SERVICE_KEY'),
+        'secret'    => env('EMANDATE_SERVICE_SECRET'),
+        'password'  => env('EMANDATE_SERVICE_SECRET'),
+    ],
 
     'bill-me' => [
         'url'       => env('BILL_ME_URL'),

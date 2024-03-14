@@ -1354,6 +1354,7 @@ class Route
         'customer_fetch_tokens_internal'           => ['get',      'internal/customers/tokens',                      'TokenController@fetchCustomerTokensInternal'                       ],
         'customer_delete_token'                    => ['delete',   'customers/{id}/tokens/{token}',                  'CustomerController@deleteToken'                                    ],
         'customer_cancel_token'                    => ['put',      'customers/{id}/tokens/{token}/cancel',           'CustomerController@cancelToken'                                    ],
+        'customer_fetch_token_emandate_internal'   => ['get',      'internal/customers/{id}/tokens/{token}',         'CustomerController@fetchTokenEmandate'                             ],
         'customer_get_saved_status'                => ['get',      'customers/status/{contact}',                     'CustomerController@fetchGlobalCustomerStatus'                      ],
         'customer_logout_global'                   => ['delete',   'apps/logout',                                    'CustomerController@logoutCustomer'                                 ],
         'customer_create_global_address'           => ['post',     'customers/addresses',                            'CustomerController@createGlobalAddress'                            ],
@@ -6520,6 +6521,9 @@ class Route
         // Billme
         'user_create_proxy',
         'user_roles_mapping_bulk_proxy',
+        
+        // emandate service internal auth
+        'customer_fetch_token_emandate_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -16998,6 +17002,11 @@ class Route
             'internal_merchant_risk_notification',
             'pricing_fetch_plan'
         ],
+        
+        'emandate_service' => [
+            'internal_payment_pricing',
+            'customer_fetch_token_emandate_internal',
+        ],
 
         'workflows' => [
             'payout_approve_internal',
@@ -19430,7 +19439,6 @@ class Route
         {
             $host = $requestHost;
         }
-
         $this->trace->info(
             TraceCode::HEADER_LOGGER_FOR_PARITY,
             [

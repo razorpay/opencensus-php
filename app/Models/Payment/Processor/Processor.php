@@ -2620,6 +2620,24 @@ class Processor
             return false;
         }
 
+        // for e2e tests
+        if(app()->isEnvironmentQA() === true  || app()->isEnvironmentBeta() === true)
+        {
+            $serviceName = "emandate-service";
+
+            $serviceHeader = $this->app['request']->header("app-service");
+
+            if(empty($serviceHeader) === false
+                && strtolower($serviceHeader) === $serviceName)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         if(empty($input[Constants::TOKEN_ENTITY]) === false)
         {
             $token = $input[Constants::TOKEN_ENTITY];
@@ -5747,6 +5765,7 @@ class Processor
     protected function isUpiPaymentReArchBVTRequest(bool & $isDFBPayment): bool
     {
         $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
+
         if(empty($rzpTestCaseID) === true)
         {
             return false;

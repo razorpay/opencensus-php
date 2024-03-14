@@ -1351,6 +1351,11 @@ class Entity extends Base\PublicEntity
         return ($this->getMethod() === Payment\Method::NACH);
     }
 
+    public function isEmandateToken()
+    {
+        return ($this->getMethod() === Payment\Method::EMANDATE);
+    }
+
     public function getTokenLengthWithNetwork($network)
     {
         $tokenLength = 9;
@@ -1365,6 +1370,15 @@ class Entity extends Base\PublicEntity
                 $tokenLength = 6;
         }
         return $tokenLength;
+    }
+    
+    public function toArrayInternalToken()
+    {
+        $internalArray = parent::toArrayInternal();
+        
+        $internalArray[self::TERMINAL_ID] = $this->getTerminalId();
+        
+        return $internalArray;
     }
 
     public function toArrayPublicTokenizedCard($serviceProviderTokens)

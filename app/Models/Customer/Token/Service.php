@@ -172,6 +172,32 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch emandate details associated with a token
+     * - Used by emandate service to do validation on payment create
+     * - on subsequent payments right now might extend to init payment in future
+     * - Checks for local tokens, by token id or gateway token.
+     *
+     * @param string $id customer_id
+     * @param string $tokenId token id
+     * @return array token
+     * @throws Exception\BadRequestException
+     */
+    public function fetchEmandate($customerId, $tokenId)
+    {
+        $token = $this->core->getByTokenIdAndCustomerId($tokenId, $customerId);
+
+        if (($token->isRecurring() === false) &&
+            (($token->isNachToken() === false) || ($token->isEmandateToken() === false)))
+        {
+            $errorCode = $token->getInternalErrorCode() ?? ErrorCode::BAD_REQUEST_TOKEN_NOT_FOUND;
+
+            throw new Exception\BadRequestException($errorCode);
+        }
+        
+        return $token->toArrayInternalToken();
+    }
+
+    /**
      * Fetch card details associated with a token
      * - Used by subcriptions service to populate mail data.
      * - Checks for local tokens, then global ones.

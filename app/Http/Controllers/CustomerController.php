@@ -158,6 +158,13 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchTokenEmandate($customerId, $tokenId)
+    {
+        $data = $this->service(E::TOKEN)->fetchEmandate($customerId, $tokenId);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchTokenCard($id)
     {
         $data = $this->service(E::TOKEN)->fetchCard($id);
