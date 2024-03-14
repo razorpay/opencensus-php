@@ -309,7 +309,18 @@ class Base extends BaseCore
             if (($payout->getQueuePayoutCreateRequest() === true) and
                 ($payout->getPurpose() !== Payout\Purpose::RZP_FEES))
             {
+                $createRequestEnqueueStartTime = millitime();
+
                 $this->dispatchForPreCreatedPayouts($payout);
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_CREATE_REQUEST_ENQUEUE_DURATION,
+                    [
+                        'payout_id' => $payout->getId(),
+                        'time'      => (millitime() - $createRequestEnqueueStartTime),
+                        'merchant_id' => $payout->getMerchantId(),
+                        'balance_id'  => $payout->getBalanceId(),
+                    ]);
 
                 $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
 
@@ -395,7 +406,17 @@ class Base extends BaseCore
 
             // Assuming that only DownstreamProcessor\FundAccountPayout\Shared\Base will be used.
             // the function processPayoutThroughLedger() only exists in this class
+            $ledgerProcessCallStartTime = millitime();
+
             $downstreamProcessor->processPayoutThroughLedger();
+
+            $this->trace->info(
+                TraceCode::PAYOUT_LEDGER_PROCESS_CALL_DURATION,
+                [
+                    'payout_id' => $payout->getId(),
+                    'time'      => (millitime() - $ledgerProcessCallStartTime)
+                ]);
+
         }
 
         (new Payout\Core)->processLedgerPayout($payout);
@@ -450,6 +471,14 @@ class Base extends BaseCore
         {
             return;
         }
+
+        $this->trace->info(
+            TraceCode::SET_QUEUED_FEE_RECOVERY_PAYOUT_FLAG,
+            [
+                'payout_id'         => $payout->getId(),
+                Entity::BALANCE_ID  => $payout->getBalanceId(),
+                Entity::MERCHANT_ID => $payout->getMerchantId(),
+            ]);
 
         $redis = $this->app['redis']->connection();
         $redisKey = self::QUEUED_FEE_RECOVERY_PAYOUT . $payout->getBalanceId();
@@ -784,6 +813,12 @@ class Base extends BaseCore
             }
             else
             {
+                $this->trace->info(TraceCode::SYNC_FTS_FAILED_FTA_EMPTY,
+                    [
+                        'payout_id'   => $payout->getId(),
+                        'merchant_id' => $payout->getMerchantId(),
+                        'balance_id'  => $payout->getBalanceId(),
+                    ]);
                 return;
             }
         }
@@ -864,6 +899,13 @@ class Base extends BaseCore
             }
             // If any exception is raised while making sync call, we push the fta to queue as fall back.
             (new Initiator)->sendFTSFundTransferRequest($fta, $otp);
+            $this->trace->info(TraceCode::SYNC_FTS_FALLBACK_FTA_QUEUE_PUSH,
+                [
+                    'payout_id'   => $payout->getId(),
+                    'fta_id'      => $fta->getId(),
+                    'merchant_id' => $payout->getMerchantId(),
+                    'balance_id'  => $payout->getBalanceId(),
+                ]);
         }
     }
 
@@ -2430,6 +2472,8 @@ class Base extends BaseCore
      */
     protected function createPayoutEntity(array $input)
     {
+        $this->trace->info(TraceCode::PAYOUT_CREATE_REQUEST_RECEIVED, $input);
+
         $payout = (new Payout\Entity);
 
         $queuePayoutCreateRequest = array_pull($input, Payout\Entity::QUEUE_PAYOUT_CREATE_REQUEST, false);
@@ -2505,6 +2549,8 @@ class Base extends BaseCore
         {
             (new Payout\Schedule)->updateScheduleTimeToStartOfHour($payout);
         }
+
+        $this->trace->info(TraceCode::PAYOUT_CREATE_REQUEST_PROCESSED, $payout->toArray());
 
         return $payout;
     }
@@ -4345,6 +4391,13 @@ class Base extends BaseCore
 
                     break;
             }
+
+            $this->trace->info(
+                TraceCode::VA_TO_VA_INFO_FETCH_FOR_PAYOUT_SERVICE,
+                [
+                    'destination_merchant_id' => $destinationMerchantId,
+                    'fund_account_id'         => $fundAccountId,
+                ]);
 
             return [$destinationMerchantId, $doesVpaBelongsToVa];
         }

@@ -468,6 +468,14 @@ class Core extends Base\Core
                        ->setPayoutBalance($input, $balance)
                        ->createPayout($input);
 
+        $this->trace->info(
+            TraceCode::PAYOUT_TO_FUND_ACCOUNT_CREATE_RESPONSE,
+            [
+                'payout_id' => $payout->getId(),
+                'merchant_id' => $merchant->getId(),
+                'amount_info' => $amountInfo
+            ]);
+
         if ($payout->getIsPayoutService() === false)
         {
             $this->postCreationForPayouts($payout);
