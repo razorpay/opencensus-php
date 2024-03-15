@@ -1057,8 +1057,6 @@ class Repository extends Base\Repository
      * Used for Marketplace, dashboard:
      * Fetch entities for a CSV report of all linked accounts under a marketplace merchant
      *
-     * @todo: Move this to Merchant/Account/Repository when account onboarding is merged.
-     *
      * @param       $merchantId
      * @param       $from       (unused)
      * @param       $to         (unused)
@@ -1067,20 +1065,51 @@ class Repository extends Base\Repository
      * @param array $relations
      *
      * @return mixed
+     * @throws BadRequestException
+     * @throws BaseException
+     * @todo: Move this to Merchant/Account/Repository when account onboarding is merged.
+     *
      */
-    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = []): Base\PublicCollection
     {
-        $query =  $this->newQuery()
-                       ->where(Entity::PARENT_ID, $merchantId);
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                $merchants = (new AsvSdkMerchantQuery())->fetchLinkedAccountsFromParentIdWithLimitOffset(
+                    $merchantId, $count, $skip
+                );
+
+                if (count($relations) > 0)
+                {
+                    $merchants->load(...$relations);
+                }
+
+                return $merchants;
+            }
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        $merchants = $query
+            ->where(Entity::PARENT_ID, $merchantId)
+            ->take($count)
+            ->skip($skip);
 
         if (count($relations) > 0)
         {
-            $query->with(...$relations);
+            $merchants->with(...$relations);
         }
 
-        return $query->take($count)
-                     ->skip($skip)
-                     ->get();
+        return $merchants->get();
     }
 
     /**
@@ -2072,11 +2101,41 @@ class Repository extends Base\Repository
                      ->toArray();
     }
 
-    public function fetchLinkedAccountIdsForParentMerchant(string $parentMerchantId, bool $checkForActivated = false)
+    /**
+     * @param string $parentMerchantId
+     * @param bool   $checkForActivated
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchLinkedAccountIdsForParentMerchant(
+        string $parentMerchantId, bool $checkForActivated = false
+    ): array
     {
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->select(Entity::ID)
-                      ->where(Entity::PARENT_ID, $parentMerchantId);
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                return (new AsvSdkMerchantQuery())->fetchLinkedAccountIdsFromParentIdWithActivated(
+                    $parentMerchantId, $checkForActivated
+                );
+            }
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        $query = $query
+            ->select(Entity::ID)
+            ->where(Entity::PARENT_ID, $parentMerchantId);
 
         if ($checkForActivated === true)
         {
@@ -2301,33 +2360,88 @@ class Repository extends Base\Repository
             ->count(Entity::ACCOUNT_CODE);
     }
 
+    /**
+     * @param string $accountCode
+     * @param string $parentId
+     *
+     * @return Collection|string|null
+     * @throws BadRequestException
+     * @throws BaseException
+     */
     public function getIdByAccountCodeAndParent(string $accountCode, string $parentId)
     {
-        $id = $this->dbColumn(Entity::ID);
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                return (new AsvSdkMerchantQuery())
+                    ->fetchMerchantsByParentIdAndAccountCode(
+                        $parentId, $accountCode
+                    )
+                    ->pluck(Entity::ID)
+                    ->pop();
+            }
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection(
+                $this->getSlaveConnection()
+            );
+        }
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->select($id)
-                      ->where(Entity::PARENT_ID, $parentId)
-                      ->where(Entity::ACCOUNT_CODE, $accountCode)
-                      ->limit(1)
-                      ->get()
-                      ->pluck(Entity::ID);
-
-        return $query->pop();
+        return $query
+            ->select($this->dbColumn(Entity::ID))
+            ->where(Entity::PARENT_ID, $parentId)
+            ->where(Entity::ACCOUNT_CODE, $accountCode)
+            ->limit(1)
+            ->get()
+            ->pluck(Entity::ID)
+            ->pop();
     }
 
-    public function getAccountCodeById(string $id)
+    /**
+     * @param string $id
+     *
+     * @return string|null
+     * @throws BadRequestException
+     * @throws BaseException
+     * @throws \Exception
+     */
+    public function getAccountCodeById(string $id): ?string
     {
-        $accountCode = $this->dbColumn(Entity::ACCOUNT_CODE);
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                return (new AsvSdkMerchantQuery())->getByIdForFindOrFail($id)?->getAccountCode();
+            }
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection(
+                $this->getSlaveConnection()
+            );
+        }
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->select($accountCode)
-                      ->where(Entity::ID, $id)
-                      ->limit(1)
-                      ->get()
-                      ->pluck(Entity::ACCOUNT_CODE);
-
-        return $query->pop();
+        return $query
+            ->select($this->dbColumn(Entity::ACCOUNT_CODE))
+            ->where(Entity::ID, $id)
+            ->limit(1)
+            ->get()
+            ->pluck(Entity::ACCOUNT_CODE)
+            ->pop();
     }
 
     public function fetchPartnerIdsInBatches($merchantIds = null, $limit = null, $afterId = null)

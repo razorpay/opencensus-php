@@ -34,11 +34,14 @@ class Merchant extends Base
         = 'get_linked_accounts_count';
     const GET_LINKED_ACCOUNTS_FROM_PARENT_ID
         = 'get_linked_accounts_from_parent_id';
+    const GET_LINKED_ACCOUNTS_FROM_PARENT_ID_WITH_LIMIT_OFFSET
+        = 'get_linked_accounts_from_parent_id_with_limit_offset';
     const FILTER_MERCHANTS_WITH_FUNDS_NOT_ON_HOLD
         = 'filter_merchants_with_funds_not_on_hold';
-
     const GET_LINKED_ACCOUNTS_FROM_MULTIPLE_PARENT_IDS
         = 'get_linked_accounts_from_multiple_parent_ids';
+    const FETCH_LINKED_ACCOUNT_IDS_FROM_PARENT_ID_WITH_ACTIVATED
+        = 'fetch_linked_account_ids_from_parent_id_with_activated';
 
     public function __construct()
     {
@@ -66,6 +69,50 @@ class Merchant extends Base
         $merchant = $response->getMerchant();
 
         return (new MerchantProtoMapper($merchant))->ToEntity();
+    }
+
+    /**
+     * @param string $parentId
+     * @param bool   $checkForActivated
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchLinkedAccountIdsFromParentIdWithActivated(string $parentId, bool $checkForActivated): array
+    {
+        if (!$checkForActivated)
+        {
+            return $this->fetchLinkedAccountsFromParentId($parentId);
+        }
+
+        $filterRequest = new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::FETCH_LINKED_ACCOUNT_IDS_FROM_PARENT_ID_WITH_ACTIVATED);
+        $filterRequest->setBindings(json_encode([$parentId, 1]));
+
+        $response = $this->getFilterResponseFromAsv($filterRequest);
+
+        return $this->getMerchantCollectionFromResponse($response)->pluck(MerchantEntity::ID)->toArray();
+    }
+
+    /**
+     * @param string $parentId
+     * @param int    $limit
+     * @param int    $offset
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchLinkedAccountsFromParentIdWithLimitOffset(string $parentId, int $limit, int $offset): Collection|PublicCollection
+    {
+        $filterRequest = (new FilterRequest())
+            ->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_FROM_PARENT_ID_WITH_LIMIT_OFFSET)
+            ->setBindings(json_encode([$parentId, $limit, $offset]));
+
+        $response = $this->getFilterResponseFromAsv($filterRequest);
+
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
     /**
