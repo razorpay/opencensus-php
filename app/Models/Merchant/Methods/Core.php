@@ -626,7 +626,11 @@ class Core extends Base\Core
 
         if (empty($recurringUpiTerminals) === false)
         {
-            $recurringData['upi'] = true;
+            $recurringData['upi'] = true;   //this is deprecated and on frontend we'll not use the upi field
+            $recurringData['upi_autopay'] = [
+                UpiType::COLLECT => $recurringUpiTerminals->isCollectTerminal(),
+                UpiType::INTENT => $recurringUpiTerminals->isPay(),
+            ];
         }
     }
 

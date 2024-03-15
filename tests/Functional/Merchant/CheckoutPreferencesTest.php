@@ -1073,6 +1073,43 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals(["MasterCard","Visa","RuPay"], $response['methods']['recurring']['card']['prepaid']);
     }
 
+    public function testGetCheckoutPreferencesForUpiRecurring()
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+        $this->fixtures->merchant->enableupi();
+
+        $this->fixtures->terminal->create([
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_icici',
+            'upi'                       => 1,
+            'gateway_merchant_id'       => 'razorpay axis_genius',
+            'gateway_terminal_id'       => 'nodal account axis_genius',
+            'gateway_terminal_password' => 'razorpay_password',
+            'type'                      => [
+                'recurring_3ds'      => '1',
+                'recurring_non_3ds'  => '1',
+                'pay'                => '1',
+                'collect'            => '1',
+            ]]);
+
+        $request = [
+            'url'     => '/internal/methods_offers/checkout',
+            'method'  => 'POST',
+            'content' => [
+                'currency' => [
+                    'INR'
+                ],
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals(true, $response['methods']['recurring']['upi_autopay']['collect']);
+        $this->assertEquals(true, $response['methods']['recurring']['upi_autopay']['intent']);
+    }
+
     public function testGetCheckoutPreferencesAfterFilterForMinimumAmount()
     {
         $this->fixtures->merchant->enablePayLater();
