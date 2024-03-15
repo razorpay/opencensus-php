@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Models\Merchant;
+use RZP\Http\RequestHeader;
 use RZP\Models\Feature as Feature;
 use RZP\Models\Partner\Config\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -1912,7 +1913,7 @@ class PartnerConfigTest extends OAuthTestCase
         $testData['request']['content']['client_id'] = $client->getId();
 
         $signature = $this->createOnboardingSignatureForSubmerchant( '101submerchant', $client->getSecret());
-        $testData['request']['headers']['onboarding_signature'] = $signature;
+        $testData['request']['headers'][RequestHeader::X_ONBOARDING_SIGNATURE] = $signature;
 
         $response = $this->startTest($testData);
 
@@ -1955,7 +1956,7 @@ class PartnerConfigTest extends OAuthTestCase
         $testData['request']['content']['client_id'] = $client->getId();
 
         $signature = $this->createOnboardingSignatureForSubmerchantWithCustomTime( '101submerchant', $client->getSecret(), time() - 90000);
-        $testData['request']['headers']['onboarding_signature'] = $signature;
+        $testData['request']['headers'][RequestHeader::X_ONBOARDING_SIGNATURE] = $signature;
 
         $response = $this->startTest($testData);
 
@@ -2000,7 +2001,7 @@ class PartnerConfigTest extends OAuthTestCase
         $testData['request']['content']['client_id'] = $client->getId();
 
         $signature = $this->createOnboardingSignatureForSubmerchant( '101submerchant', $client->getSecret());
-        $testData['request']['headers']['onboarding_signature'] = $signature . 'abcd';
+        $testData['request']['headers'][RequestHeader::X_ONBOARDING_SIGNATURE] = $signature . 'abcd';
 
         $response = $this->startTest($testData);
 
@@ -2041,7 +2042,7 @@ class PartnerConfigTest extends OAuthTestCase
         $testData['request']['content']['client_id'] = $client->getId();
 
         $signature = $this->createOnboardingSignatureForSubmerchant( Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $client->getSecret());
-        $testData['request']['headers']['onboarding_signature'] = $signature;
+        $testData['request']['headers'][RequestHeader::X_ONBOARDING_SIGNATURE] = $signature;
 
         $response = $this->startTest($testData);
 

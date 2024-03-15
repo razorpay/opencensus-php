@@ -1590,7 +1590,7 @@ return [
             'url'     => '/partner_config_guest',
             'method'  => 'GET',
             'headers' => [
-                'onboarding_signature'  => 'testSignature',
+                'x-onboarding-signature'  => 'testSignature',
             ],
             'content' => [
                 'application_id'        => 'DefaultPartner',
@@ -1616,7 +1616,7 @@ return [
             'url'     => '/partner_config_guest',
             'method'  => 'GET',
             'headers' => [
-                'onboarding_signature'  => 'testSignature',
+                'x-onboarding-signature'  => 'testSignature',
             ],
             'content' => [
                 'application_id'        => 'DefaultPartner',
@@ -1639,7 +1639,7 @@ return [
             'url'     => '/partner_configs',
             'method'  => 'GET',
             'headers' => [
-                'onboarding_signature'  => 'testSignature',
+                'x-onboarding-signature'  => 'testSignature',
             ],
             'content' => [
                 'application_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,

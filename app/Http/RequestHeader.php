@@ -121,4 +121,6 @@ class RequestHeader
     const X_MOBILE_OAUTH                 = 'x-mobile-oauth';
 
     const ACCEPT_VERSION                 = 'Accept-Version';
+
+    const X_ONBOARDING_SIGNATURE         = 'x-onboarding-signature';
 }

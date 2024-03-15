@@ -12,6 +12,7 @@ use Razorpay\OAuth;
 use RZP\Constants\Mode;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Product;
+use RZP\Http\RequestHeader;
 use Illuminate\Support\Str;
 use RZP\Constants\Environment;
 use RZP\Gateway\Base\AESCrypto;
@@ -2184,7 +2185,7 @@ class Core extends Detail\Core
      */
     protected function getSubMerchantContactUsingOnboardingSignatureIfApplicable(array $input): ?string
     {
-        $onboardingSignature = Request::header(PartnerConstants::ONBOARDING_SIGNATURE)?? null;
+        $onboardingSignature = Request::header(RequestHeader::X_ONBOARDING_SIGNATURE) ?? null;
 
         /*
          * Below checks :
