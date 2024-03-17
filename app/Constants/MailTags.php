@@ -152,6 +152,7 @@ class MailTags
 
     const EMI_FILE                         = 'emi_file';
     const ICICI_EMI_REFUNDS_MAIL           = 'icici_emi_refunds_mail';
+    const CARDLESS_EMI_LIQUILOANS_REFUNDS_MAIL = 'cardless_emi_liquiloans_refunds_mail';
 
     const SCORECARD                        = 'scorecard';
     const BANKING_SCORECARD                = 'banking_scorecard';
@@ -331,7 +332,7 @@ class MailTags
     const MERCHANT_ADD_ADDITIONAL_WEBSITE_REJECTION_REASON       = 'merchant_add_additional_website_rejection_reason';
 
     const B2B_UPLOAD_INVOICE = 'b2b_upload_invoice';
-    
+
     const IE_PRODUCTS_PA_CB_ENABLEMENT_NEEDS_CLARIFICATION                      = 'ie_products_pa_cb_enablement_needs_clarification';
 
     const IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW                             = 'ie_products_pa_cb_enablement_under_review';

@@ -88,6 +88,7 @@ class Gateway
     const NETBANKING_IBK         = 'netbanking_ibk';
     const NETBANKING_IDBI        = 'netbanking_idbi';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
+    const CARDLESS_EMI_LIQUILOANS = 'cardless_emi_liquiloans';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
     const NETBANKING_KOTAK       = 'netbanking_kotak';

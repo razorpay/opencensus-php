@@ -19,7 +19,7 @@ class CardlessEmiLiquiloans extends Base
     const FILE_NAME              = 'Razorpay Cancellation ';
     const EXTENSION              = FileStore\Format::XLSX;
     const FILE_TYPE              = FileStore\Type::LIQUILOANS_CARDLESS_EMI_REFUND;
-    const GATEWAY                = Payment\Gateway::CARDLESS_EMI;
+    const GATEWAY                = Payment\Gateway::CARDLESS_EMI_LIQUILOANS;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::WALLET;
     const ACQUIRER               = Payment\Processor\CardlessEmi::LIQUILOANS;
     const CARDLESS_EMI            = Payment\Gateway::CARDLESS_EMI;
@@ -106,6 +106,11 @@ class CardlessEmiLiquiloans extends Base
         }
 
         return $input;
+    }
+
+    protected function addGatewayEntitiesToDataWithPaymentIds(array $data, array $paymentIds)
+    {
+        return $data;
     }
 
     protected function shouldRefundsBeFetchedFromScrooge(): bool
