@@ -1,0 +1,66 @@
+name: Identify Affected Projects with NX
+
+inputs:
+  NPM_RAZORPAY_TOKEN:
+    required: true
+  GITHUB_ACCESS_TOKEN:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Use Node v18.12.1
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.12.1
+
+    - name: Fetch base branch
+      shell: bash
+      run: |
+        git fetch origin master
+
+    - name: Setup yarn
+      shell: bash
+      run: npm install -g yarn
+
+    - name: Install dependencies with caching
+      uses: ./.github/actions/package-installer
+      with:
+        npm_razorpay_token: ${{ inputs.NPM_RAZORPAY_TOKEN }}
+        github_access_token: ${{ inputs.GITHUB_ACCESS_TOKEN }}
+
+    - name: Extract current branch name
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: extract_branch
+
+    - name: Identify Affected Projects for Master
+      if: contains(github.ref, 'master')
+      id: affected-master
+      shell: bash
+      run: |
+        echo "AFFECTED=$(npx nx show projects --affected --json --base=remotes/origin/master~1 --head=master | jq -r 'join(" ")')" >> $GITHUB_ENV
+
+    - name: Identify Affected Projects for PRs
+      if: "!contains(github.ref, 'master')"
+      id: affected
+      shell: bash
+      run: |
+        echo "AFFECTED=$(npx nx show projects --affected --json --base=origin/master --head=origin/${{ steps.extract_branch.outputs.branch }} | jq -r 'join(",")')" >> $GITHUB_ENV
+
+    # TODO: For changes in PHP backend code
+    # Check based on ${{ inputs.BACKEND_CHANGES }}
+    # Check changes files from current commit to master
+    # [app, environment, ...] SET -> env.AFFECTED = [put list of all projects] or equivalent
+    # - name: Check changes in PHP backend code
+    #   shell: bash
+    #   run: echo ${{ env.AFFECTED }}
+
+    - name: Check output
+      shell: bash
+      run: echo ${{ env.AFFECTED }}
+
+    - name: Set affected projects as output
+      id: set-output
+      shell: bash
+      run: echo "::set-output name=affected::${{ env.AFFECTED }}"

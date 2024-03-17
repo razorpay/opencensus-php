@@ -16,10 +16,6 @@
     },
     "tsc": {
       "dependsOn": ["^tsc"]
-    },
-    "production:build": {
-      "inputs": ["!{workspaceRoot}/**/*.md"],
-      "dependsOn": ["^production:build"]
     }
   },
   "generators": {

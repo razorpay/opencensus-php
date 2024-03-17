@@ -7,61 +7,16 @@ on: push
 
 env:
   HOME: /actions-runner/_work
-  AWS_STAGE_BETA_CDN_BUCKET: "rzp-1018-nonprod-betacdn"
-  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
-  AWS_STAGE_COMMON_CACHE_BUCKET: "rzp-1018-nonprod-actions-cache"
-  AWS_PROD_COMMON_CACHE_BUCKET: "rzp-actions-cache"
+  AWS_STAGE_BETA_CDN_BUCKET: 'rzp-1018-nonprod-betacdn'
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: 'rzp-1018-nonprod-dashboard-assets'
+  AWS_STAGE_COMMON_CACHE_BUCKET: 'rzp-1018-nonprod-actions-cache'
+  AWS_PROD_COMMON_CACHE_BUCKET: 'rzp-actions-cache'
+  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
   BUILD_PATH: build/browser
   VERSION: ${{ github.sha }}
 
 jobs:
-  evaluate:
-    name: Identify Affected Projects
-    runs-on: [non-api-premium]
-    outputs:
-      affected: ${{ steps.set-output.outputs.affected }}
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v3
-
-      - name: Use Node v18.12.1
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.12.1
-
-      - name: Install libraries for webp conversion
-        run: |
-          apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
-
-      - name: Fetch base branch
-        run: |
-          git fetch origin master
-
-      - name: Setup yarn
-        run: npm install -g yarn
-
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
-        with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
-
-      - name: Extract current branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
-
-      - name: Identify Affected Projects
-        id: affected
-        run: |
-          echo "AFFECTED=$(npx nx show projects --affected --json --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} | jq -r 'join(" ")')" >> $GITHUB_ENV
-
-      - name: Check output
-        run: echo ${{ env.AFFECTED }}
-
-      - name: Set affected projects as output
-        id: set-output
-        run: echo "::set-output name=affected::${{ env.AFFECTED }}"
-
   build-web:
     name: Build Dashboard
     runs-on: [non-api-premium]
@@ -144,7 +99,7 @@ jobs:
 
   build-micro-apps-devstack:
     name: Build Dashboard - MFEs - Devstack
-    runs-on: [self-hosted]
+    runs-on: [non-api-premium]
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
@@ -158,20 +113,19 @@ jobs:
         run: |
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
 
-      - name: Setup yarn
-        run: npm install -g yarn
-
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
+      # Sets env.AFFECTED
+      - name: Get affected projects
+        uses: ./.github/actions/affected-projects
         with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Check output
+        run: echo ${{ env.AFFECTED }}
 
       - name: Build micro apps
         run: |
-          git fetch origin master
-          yarn nx affected -t devstack:build --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} --exclude=web,dashboard
-        env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          yarn nx run-many --target devstack:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
 
       - name: Remove files
         run: rm -rf .git
@@ -199,7 +153,7 @@ jobs:
 
   build-micro-apps-automation:
     name: Build Dashboard - MFEs - Automation
-    runs-on: [self-hosted]
+    runs-on: [non-api-premium]
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
@@ -213,20 +167,19 @@ jobs:
         run: |
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
 
-      - name: Setup yarn
-        run: npm install -g yarn
-
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
+      # Sets env.AFFECTED
+      - name: Get affected projects
+        uses: ./.github/actions/affected-projects
         with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Check output
+        run: echo ${{ env.AFFECTED }}
 
       - name: Build micro apps
         run: |
-          git fetch origin master
-          yarn nx affected -t automation:build --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} --exclude=web,dashboard
-        env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          yarn nx run-many --target automation:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
 
       - name: Remove files
         run: rm -rf .git
@@ -242,7 +195,7 @@ jobs:
           AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
 
-        # Run based on output of affected
+      # Run based on output of affected 
       - name: Micro Apps - Push Artifacts for Automation
         run: |-
           aws s3 cp \
@@ -254,7 +207,8 @@ jobs:
 
   build-micro-apps-production:
     name: Build Prod Dashboard - MFEs - Production
-    runs-on: [self-hosted]
+    runs-on: [non-api-premium]
+    if: ${{ contains(github.ref, 'master') || contains(github.ref, 'hotfix') }}
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
@@ -268,20 +222,19 @@ jobs:
         run: |
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
 
-      - name: Setup yarn
-        run: npm install -g yarn
-
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
+      # Sets env.AFFECTED
+      - name: Get affected projects
+        uses: ./.github/actions/affected-projects
         with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Check output
+        run: echo ${{ env.AFFECTED }}
 
       - name: Build micro apps
         run: |
-          git fetch origin master
-          yarn nx affected -t production:build --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} --exclude=web,dashboard
-        env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          yarn nx run-many --target production:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
 
       - name: Remove files
         run: rm -rf .git

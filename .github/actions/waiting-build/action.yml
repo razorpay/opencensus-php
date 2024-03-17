@@ -16,15 +16,16 @@ runs:
       with:
         node-version: 18.12.1
 
-    - name: Wait for fetching Affected Projects
-      uses: lewagon/wait-on-check-action@v1.3.1
-      with:
-        ref: ${{ inputs.commit_id }}
-        running-workflow-name: ${{ inputs.workflow_name }}
-        check-name: "Identify Affected Projects"
-        repo-token: ${{ inputs.github_token }}
-        allowed-conclusions: success
-        wait-interval: 45
+    # Not required for now, will use in future
+    # - name: Wait for fetching Affected Projects
+    #   uses: lewagon/wait-on-check-action@v1.3.1
+    #   with:
+    #     ref: ${{ inputs.commit_id }}
+    #     running-workflow-name: ${{ inputs.workflow_name }}
+    #     check-name: "Identify Affected Projects"
+    #     repo-token: ${{ inputs.github_token }}
+    #     allowed-conclusions: success
+    #     wait-interval: 45
 
     - name: Wait for dashboard's docker image to be built
       uses: lewagon/wait-on-check-action@v1.3.1

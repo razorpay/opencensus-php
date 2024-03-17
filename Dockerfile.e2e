@@ -22,6 +22,7 @@ COPY --chown=node:node ./web/.npmrc ./web/package.json ./web
 RUN --mount=type=secret,id=github_access_token set -eux && \
   echo "$(cat /run/secrets/github_access_token)" >> ~/.GITHUB_ACCESS_TOKEN
 
+# TODO: optimize the below step to install depecndencies which are required for nx
 RUN export GITHUB_ACCESS_TOKEN="$(cat ~/.GITHUB_ACCESS_TOKEN)" && \
   yarn config set unsafe-perm true && \
   HUSKY=0 yarn --frozen-lockfile
