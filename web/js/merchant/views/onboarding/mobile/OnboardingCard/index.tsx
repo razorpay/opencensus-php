@@ -1,30 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import View from '@razorpay/blade-old/src/atoms/View';
-import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import Text from '@razorpay/blade-old/src/atoms/Text';
-import Space from '@razorpay/blade-old/src/atoms/Space';
-import Button from '@razorpay/blade-old/src/atoms/Button';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
+import Button from '@razorpay/blade-old/src/atoms/Button';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import View from '@razorpay/blade-old/src/atoms/View';
 import { spacings } from '@razorpay/blade-old/src/tokens';
-import { ProgressBar } from 'common/components/ProgressBar';
+import FormIcon from 'assets/onboarding/form_icon.svg';
+import styled from 'styled-components';
+
 import Card from 'common/components/Card';
+import { ProgressBar } from 'common/components/ProgressBar';
+import { useApp } from 'common/context/App';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
+import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/ActivationModals';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
+import useEligibility from 'merchant/views/onboarding/mobile/hooks/useEligibility';
 import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
-import CurrentActivationProgress from './CurrentActivationProgress';
-import OnboardingCardShimmer from './OnboardingCardShimmer';
 import {
   checkIfDedupe,
   isUnregisteredBusiness,
   setLocalStorage,
 } from 'merchant/views/onboarding/mobile/services/utils';
-import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/ActivationModals';
-import { useApp } from 'common/context/App';
-import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
-import useTrackEvents from 'merchant/hooks/useTrackEvents';
-import useEligibility from 'merchant/views/onboarding/mobile/hooks/useEligibility';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import FormIcon from 'assets/onboarding/form_icon.svg';
+
+import CurrentActivationProgress from './CurrentActivationProgress';
+import OnboardingCardShimmer from './OnboardingCardShimmer';
 
 const Separator = styled(View)`
   height: 1px;

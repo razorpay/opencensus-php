@@ -1,25 +1,28 @@
 import React, { ReactNode, useState } from 'react';
-import styled from 'styled-components';
-import View from '@razorpay/blade-old/src/atoms/View';
-import Space from '@razorpay/blade-old/src/atoms/Space';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import { analyticsTrack } from 'common/services/tracking/segment';
-import { useApp } from 'common/context/App';
-import NeedsClarification from './icons/NC.svg';
-import UnderReview from './icons/UnderReview.svg';
-import PaymentEnable from './icons/PaymentActivated.svg';
-import MerchantBlocked from './icons/MerchantBlocked.svg';
-import PaymentLimitRemoved from './icons/LimitRemoved.svg';
-import FillKyc from './icons/FillKyc.svg';
-import PaymentPaused from './icons/PaymentPaused.svg';
-import * as Message from './Constant';
-import { SAMPLE_TICKET } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import useTrackEvents from 'merchant/hooks/useTrackEvents';
-import VideoModal from 'merchant/components/VideoModal';
-import { getNcExpiryDate } from 'merchant/views/onboarding/mobile/services/utils';
-import { isMobileDevice } from 'merchant/components/Home/data';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
 import ImgNcKyc from 'assets/onboarding/ncKyc.svg';
+import styled from 'styled-components';
+
+import { useApp } from 'common/context/App';
+import { analyticsTrack } from 'common/services/tracking/segment';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import VideoModal from 'merchant/components/VideoModal';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
+import { SAMPLE_TICKET } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { getNcExpiryDate } from 'merchant/views/onboarding/mobile/services/utils';
+
+import * as Message from './Constant';
+import FillKyc from './icons/FillKyc.svg';
+import PaymentLimitRemoved from './icons/LimitRemoved.svg';
+import MerchantBlocked from './icons/MerchantBlocked.svg';
+import NeedsClarification from './icons/NC.svg';
+import PaymentEnable from './icons/PaymentActivated.svg';
+import PaymentPaused from './icons/PaymentPaused.svg';
+import UnderReview from './icons/UnderReview.svg';
 
 export type ModalTypeT =
   | 'dedupe'
@@ -172,6 +175,8 @@ export const getModalContent = (
     const formUrl = submerchantId
       ? `partners/submerchants/${submerchantId}/activation`
       : activationFormUrl;
+    const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
+
     if (submerchantId) {
       history.push(formUrl);
     } else {
@@ -179,11 +184,7 @@ export const getModalContent = (
         activationState: modalType,
         formName: title,
       });
-      window.open(
-        `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`,
-        '_self',
-        'noopener',
-      );
+      window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
     }
   };
 

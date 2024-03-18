@@ -1,10 +1,15 @@
+import React, { useEffect, useState, useRef } from 'react';
 import { Text, TextArea } from '@razorpay/blade/components';
-import { allowedVideoExtensions } from 'merchant/components/File/constants';
+import { connect } from 'react-redux';
+import { bindActionCreators, compose } from 'redux';
+
 import FileUpload from 'merchant/components/File/Upload';
+import { allowedVideoExtensions } from 'merchant/components/File/constants';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { MAX_FILE_SIZE_LIMIT } from 'merchant/views/Account/constants';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
+import { MAX_FILE_SIZE_LIMIT } from 'merchant/views/Account/constants';
 import BottomActions from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/BottomActions';
 import { StyledDivider } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/common/styled';
 import LoadingStep from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/steps/components/LoadingStep/LoadingStep';
@@ -16,14 +21,11 @@ import {
   WorkflowConfigInterface,
 } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
 import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
+import { trackIEEvent } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/utils/track';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
-import React, { useEffect, useState, useRef } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators, compose } from 'redux';
+
 import MessagePrompt from './MessagePrompt';
 import NcShimmer from './NcShimmer';
-import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
-import { trackIEEvent } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/utils/track';
 import { StyledNeedsClarification, StyledUploadContainer, UploadContainer } from './styled';
 
 const NeedsClarification = ({

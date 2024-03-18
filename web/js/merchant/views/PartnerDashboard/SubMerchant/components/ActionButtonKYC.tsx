@@ -92,15 +92,16 @@ const ActionButtonKYC = ({
       btnText = 'Rejected Multiple times';
     }
   }
-  if (activation_status === 'needs_clarification') {
-    btnText = 'Resubmit KYC details';
-    action = openKYCForm;
-  }
   if (isSubMerchantKYCAccess) {
     btnText = 'Perform KYC';
     action = openKYCForm;
     isFullRejected = false;
     isDisabled = false;
+  }
+
+  if (activation_status === 'needs_clarification') {
+    btnText = 'Resubmit KYC details';
+    action = openKYCForm;
   }
 
   if (

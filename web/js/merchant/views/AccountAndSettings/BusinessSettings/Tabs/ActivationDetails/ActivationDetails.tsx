@@ -1,22 +1,24 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { Link } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
+
 import { useI18Service } from 'common/i18';
-import ShowWhen from 'merchant/components/ShowWhen';
-import DetailRow from 'merchant/components/DetailRow';
-import Time from 'common/ui/Time';
-import { ProgressBar } from 'common/ui/ProgressBar';
+import LoaderDots from 'common/ui/LoaderDots';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
-import { isMobileDevice } from 'merchant/components/Home/data';
+import { ProgressBar } from 'common/ui/ProgressBar';
+import Time from 'common/ui/Time';
 import { analyticsTrack } from 'common/utils/analytics';
+import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import DetailRow from 'merchant/components/DetailRow';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
-import LoaderDots from 'common/ui/LoaderDots';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
 import { accountAccessHoverDescription } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
 
 const ActivationDetails = (props): JSX.Element => {
   const {
@@ -68,7 +70,8 @@ const ActivationDetails = (props): JSX.Element => {
       },
       includeScreenResolution: true,
     });
-    window.open(`${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`);
+    const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
+    window.open(needsClarificationOnEasyUrl);
   };
 
   return (

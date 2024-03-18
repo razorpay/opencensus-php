@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
+import ImgNcKyc from 'assets/onboarding/ncKyc.svg';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';
 
-import ImgNcKyc from 'assets/onboarding/ncKyc.svg';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
 import Image from 'common/ui/Image';
 import {
@@ -18,6 +18,7 @@ import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Inst
 import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import * as EventsActions from 'merchant/reducers/trackEvents';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
@@ -86,7 +87,7 @@ const KYCStatusModal = ({
   };
 
   const goToNCOnEasy = () => {
-    const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
+    const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
     trackEvents({
       objectName: 'NC Resolve Now',
       actionName: 'Clicked',

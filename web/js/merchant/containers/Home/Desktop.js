@@ -1,5 +1,5 @@
-import moment from 'moment';
 import React, { Component, Suspense } from 'react';
+import moment from 'moment';
 import AsyncButton from 'react-async-button';
 import LazyLoad from 'react-lazyload';
 import { connect } from 'react-redux';
@@ -11,22 +11,6 @@ import { withI18Service } from 'common/i18';
 import { withSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
-import Announcement from 'merchant/components/Announcements/Instant';
-import InternationalFormStatusAnnouncement from 'merchant/components/Announcements/InternationalFormStatus';
-import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
-import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
-import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
-import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
-import CreditPullModal from 'merchant/containers/CreditPullModal';
-import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
-import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
-import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
-import ProductOnboardingCard from 'merchant/containers/Home/ProductOnboardingCard';
-import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
-import { fetchCarouselBanner as fetchCarouselBannerProp } from 'merchant/reducers/growthService';
-import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
-import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
-
 import DashboardBanner from 'common/ui/DashboardBanner';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import Group, { GroupItem } from 'common/ui/Group';
@@ -55,7 +39,13 @@ import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import CatalystCampaignBannerPhase2 from 'merchant/components/Announcements/CatalystCampaignBannerPhase2';
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
 import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCampaign';
+import Announcement from 'merchant/components/Announcements/Instant';
+import InternationalFormStatusAnnouncement from 'merchant/components/Announcements/InternationalFormStatus';
+import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
 import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaymentsAnnouncement';
+import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
+import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
+import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import WebsiteComplianceBanner from 'merchant/components/Announcements/WebsiteCompliance';
 import EasterEgg from 'merchant/components/EasterEgg';
@@ -63,7 +53,13 @@ import DedupeModal from 'merchant/components/Home/DedupeModal';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import ShowWhen from 'merchant/components/ShowWhen';
+import CreditPullModal from 'merchant/containers/CreditPullModal';
+import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
+import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
+import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
+import ProductOnboardingCard from 'merchant/containers/Home/ProductOnboardingCard';
+import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
 import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommendationnCard/IntlPaymentsRecommendation';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Traffic from 'merchant/containers/Home/Traffic';
@@ -71,6 +67,7 @@ import {
   fetchInternationalProductsStatus as fnFetchInternationalProductsStatus,
   fetchInternationalSettingStatus as fnFetchInternationalSettingStatus,
 } from 'merchant/reducers/config';
+import { fetchCarouselBanner as fetchCarouselBannerProp } from 'merchant/reducers/growthService';
 import {
   fetchEscalations as fnFetchEscalations,
   showKYCStatusModal,
@@ -82,6 +79,8 @@ import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reduc
 import * as EventActions from 'merchant/reducers/trackEvents';
 import lazy from 'merchant/routes/LazyLoader';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
 import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.desktop';
 import {
   isPolicyWizardV2Enabled,
@@ -89,9 +88,11 @@ import {
 } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
+import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import DateRangeTooltip from './DateRangeTooltip';
@@ -103,7 +104,6 @@ import {
   trackSettlementsClick,
 } from './ga';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
-import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -563,7 +563,7 @@ class AnalyticsDesktop extends Component {
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
-      const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
+      const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
       onNcModalClose();
       window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
     };

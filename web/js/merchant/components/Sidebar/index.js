@@ -1,31 +1,30 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 
+import { withRouter } from 'common/deprecated/withRouter';
+import { withI18Service } from 'common/i18';
+import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import ShowWhen from 'merchant/components/ShowWhen';
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
-
+import { isOrgFeatureExist } from 'merchant/models/User';
 import { toggleMobileMenu } from 'merchant/reducers/app';
-import * as EventsActions from 'merchant/reducers/trackEvents';
 import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
-
+import * as EventsActions from 'merchant/reducers/trackEvents';
 import {
   checkEligibilityForFeeBasedGating,
   handleFeeBasedGatingNavigation,
 } from 'merchant/utils/feeBasedGatingUtils';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import MainNavLink from 'merchant_common/components/MainNavLink';
 
 import ActivationProgress from './ActivationProgress';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import MainNavLink from 'merchant_common/components/MainNavLink';
 import MainNavLinkGroup from './MainNavLinkGroup';
 import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { isOrgFeatureExist } from 'merchant/models/User';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
-import { withI18Service } from 'common/i18';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds|success-rate)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
@@ -177,7 +176,7 @@ class Sidebar extends Component {
     });
 
     if (this.props.isNcEligibile && user.activation_status === 'needs_clarification') {
-      const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
+      const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
       this.props.trackEvents({
         objectName: 'NC Easy',
         actionName: 'Redirect',

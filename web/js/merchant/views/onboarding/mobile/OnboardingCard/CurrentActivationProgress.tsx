@@ -1,11 +1,24 @@
 import React from 'react';
-import styled from 'styled-components';
-import { connect } from 'react-redux';
-import { compose } from 'redux';
-import { Link as Redirect } from 'react-router-dom';
 import Links from '@razorpay/blade-old/src/atoms/Link';
+import { connect } from 'react-redux';
+import { Link as Redirect } from 'react-router-dom';
+import { compose } from 'redux';
+import styled from 'styled-components';
+
+import { useApp } from 'common/context/App';
 import { withRouter } from 'common/deprecated/withRouter';
-import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { getMode, switchMode } from 'common/services/mode';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
+import { showProductsModal } from 'merchant/reducers/home';
+import {
+  checkEligibilityForFeeBasedGating,
+  handleFeeBasedGatingNavigation,
+} from 'merchant/utils/feeBasedGatingUtils';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
+import useEligibility from 'merchant/views/onboarding/mobile/hooks/useEligibility';
 import {
   isUnregisteredBusiness,
   checkIfDedupe,
@@ -13,21 +26,12 @@ import {
   getFormatedCurrency,
   getNcExpiryDate,
 } from 'merchant/views/onboarding/mobile/services/utils';
-import { showProductsModal } from 'merchant/reducers/home';
-import { getMode, switchMode } from 'common/services/mode';
-import Info from './Info';
+
 import Buttons from './Buttons';
 import * as Messages from './Constants';
-import { useApp } from 'common/context/App';
-import useTrackEvents from 'merchant/hooks/useTrackEvents';
-import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import useEligibility from 'merchant/views/onboarding/mobile/hooks/useEligibility';
-import {
-  checkEligibilityForFeeBasedGating,
-  handleFeeBasedGatingNavigation,
-} from 'merchant/utils/feeBasedGatingUtils';
+import Info from './Info';
+
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 const InlineText = styled.span`
   color: #162f5661;
@@ -99,6 +103,8 @@ const CurrentActivationProgress: React.FC<
   };
 
   const goToNcFlow = (trackProps = {}) => {
+    const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
+
     if (isEasyNcEnabled) {
       trackEvents({
         objectName: 'NC Resolve Now',
@@ -113,7 +119,7 @@ const CurrentActivationProgress: React.FC<
           ...trackProps,
         },
       });
-      window.open(`${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`);
+      window.open(needsClarificationOnEasyUrl);
     } else if (submerchantId) {
       history.push(`/partners/submerchants/acc_${submerchantId}/activation`);
     } else {
@@ -311,11 +317,7 @@ const CurrentActivationProgress: React.FC<
       const titleColor = 'positive.960';
       const description =
         'We are working to take your account live in the next 2-3 days and you will be able to start accepting payments immediately post that. There is no action required from your end. We thank you for your patience.';
-      return (
-        <>
-          <Info title={title} titleColor={titleColor} description={description} />
-        </>
-      );
+      return <Info title={title} titleColor={titleColor} description={description} />;
     }
 
     if (data.activation_status === 'needs_clarification') {

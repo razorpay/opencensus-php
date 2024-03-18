@@ -93,6 +93,7 @@ type UserProperties = {
     name: string;
     email?: string;
     contact_mobile?: string;
+    signup_campaign?: string;
   };
   merchant: {
     id: string;

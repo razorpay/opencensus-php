@@ -42,6 +42,8 @@ describe('SidebarV2', () => {
   beforeEach(() => {
     fetchNavigationSpy.mockClear();
     fetchNavItemsCacheSpy.mockClear();
+    window.rzp_user = {};
+    window.EASY_ONBOARDING_URL = 'EASY_ONBOARDING_URL';
   });
 
   test('should call fetch items on mount', async () => {
@@ -206,7 +208,6 @@ describe('SidebarV2', () => {
               isAllowedMultiple: () => true,
               isAllowedView: () => true,
               findTag: () => false,
-
               user: {
                 signup_campaign: EASY_ONBOARDING,
               },
@@ -227,8 +228,61 @@ describe('SidebarV2', () => {
       });
       await userEvent.click(activationBtn);
       await new Promise((r) => setTimeout(r, 1000));
+
       await waitFor(() => {
         expect(window.open).toHaveBeenCalledWith(window.EASY_ONBOARDING_URL, '_self', 'noopener');
+      });
+    });
+
+    test('should redirect merchant to phantom NC flow if merchant signed up via phantom_onboarding', async () => {
+      const signup_campaign = 'phantom_onboarding';
+      window.rzp_user = {
+        user: {
+          signup_campaign,
+        },
+      };
+      renderApp({
+        initialState: {
+          ...state,
+          session: {
+            user: {
+              ...state.session.user,
+              activation_status: 'needs_clarification',
+              isActivationFormFullView: false,
+              isAllowedMultiple: () => true,
+              isAllowedView: () => true,
+              findTag: () => false,
+              user: {
+                signup_campaign,
+              },
+            },
+          },
+          leftNav: {
+            loading: false,
+            error: 'Error',
+            data: [],
+          },
+          home: {
+            instantActivations: {
+              showAcceptPayments: false,
+            },
+            isNcEligibile: true,
+          },
+        },
+      });
+      await waitFor(() => {
+        expect(screen.getByText('Activation Progress Bar')).toBeInTheDocument();
+      });
+      const activationBtn = screen.getByRole('button', {
+        name: 'Click Activation',
+      });
+      await userEvent.click(activationBtn);
+      await waitFor(() => {
+        expect(window.open).toHaveBeenCalledWith(
+          `${window.EASY_ONBOARDING_URL}/sub-merchant/onboarding/needs-clarification`,
+          '_self',
+          'noopener',
+        );
       });
     });
   });

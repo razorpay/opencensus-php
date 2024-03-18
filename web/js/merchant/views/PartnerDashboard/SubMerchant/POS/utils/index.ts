@@ -122,10 +122,6 @@ export const getKycActionButtonState = ({
       isKycRejected = true;
     }
   }
-  if (activation_status === 'needs_clarification') {
-    buttonText = 'Resubmit KYC details';
-    onClickAction = openKYCForm;
-  }
   if (
     [
       'activated',
@@ -141,6 +137,12 @@ export const getKycActionButtonState = ({
     buttonText = 'Perform KYC';
     onClickAction = openKYCForm;
   }
+
+  if (activation_status === 'needs_clarification') {
+    buttonText = 'Resubmit KYC details';
+    onClickAction = openKYCForm;
+  }
+
   if (isKycRejected) {
     buttonText = 'Request Not Accepted';
   }

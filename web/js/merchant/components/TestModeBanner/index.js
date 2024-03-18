@@ -1,14 +1,17 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { setItem } from 'common/utils/localStorage';
-import Banner from 'common/ui/Banner';
-import { trackLinkClick } from './ga';
 import RTracking from 'react-tracking';
+
+import Banner from 'common/ui/Banner';
 import { analyticsTrack } from 'common/utils/analytics';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { setItem } from 'common/utils/localStorage';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+
+import { trackLinkClick } from './ga';
 
 @RTracking(() => window.rzpQ.component('TestModeBanner'))
 class TestModeBanner extends Component {
@@ -34,7 +37,7 @@ class TestModeBanner extends Component {
       },
       includeScreenResolution: true,
     });
-    const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
+    const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
     window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
   };
 

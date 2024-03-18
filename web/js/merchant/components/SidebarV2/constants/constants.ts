@@ -1,7 +1,6 @@
 export const RZP_LOGO_URL = 'https://cdn.razorpay.com/logo_invert.svg';
 export const DASHBOARD_LANDING_URL = '/dashboard';
 export const ONBOARDING_STEPS_URL = '/onboarding/steps';
-export const EASY_DASHBOARD_NC_LANDING_URL = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
 export const KYC_URL = '/kyc';
 export const ACTIVATION_URL = '/activation';
 

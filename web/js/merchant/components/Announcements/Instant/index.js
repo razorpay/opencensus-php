@@ -20,6 +20,7 @@ import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
 
 @connect(
   (state) => ({
@@ -93,7 +94,7 @@ export default class InstantActivationAnnouncements extends Component {
       shouldShowTnCBannerForAxis = false,
     } = this.props;
     const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-    const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
+    const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
     const commonSettlementBanner = {
       theme: 'success',
       title: 'Account Activated',

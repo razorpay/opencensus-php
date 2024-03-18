@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
 import { BladeProvider, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import { analyticsTrack } from 'common/utils/analytics';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -17,24 +17,19 @@ import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { hideAcceptPaymentsModal } from 'merchant/reducers/home';
 import { fetchLeftNavItems as fetchNavigationItems } from 'merchant/reducers/leftNav';
-
 import { trackEvents } from 'merchant/reducers/trackEvents';
 import {
   checkEligibilityForFeeBasedGating,
   handleFeeBasedGatingNavigation,
 } from 'merchant/utils/feeBasedGatingUtils';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+
 import Divider from './components/Divider';
 import NavLinkItem from './components/NavLinkItem';
 import { Typo, Icon } from './components/NavLinkItem/styled';
 import NavLinkProduct from './components/NavLinkProduct';
-import {
-  RZP_LOGO_URL,
-  ONBOARDING_STEPS_URL,
-  KYC_URL,
-  ACTIVATION_URL,
-  EASY_DASHBOARD_NC_LANDING_URL,
-} from './constants/constants';
+import { RZP_LOGO_URL, ONBOARDING_STEPS_URL, KYC_URL, ACTIVATION_URL } from './constants/constants';
 import {
   SidebarContainer,
   SidebarSection,
@@ -98,7 +93,8 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
         },
         includeScreenResolution: true,
       });
-      window.open(EASY_DASHBOARD_NC_LANDING_URL, '_self', 'noopener');
+      const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
+      window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
     } else if (checkEligibilityForFeeBasedGating(user)) {
       handleFeeBasedGatingNavigation({ ctaLocation: 'Sidebar' });
     } else if (isSignupWithEasyOnboarding) {
