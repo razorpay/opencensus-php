@@ -8,12 +8,13 @@ import { setKycDocumentStatus } from 'merchant/reducers/unlockIntlPaymentMethods
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { ICProductStates } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
+import { trackVkycStatusResponse } from 'merchant/views/Settings/PaymentMethods/components/MethodEnablementForm/analytics';
 import { openModal } from 'merchant_common/reducers/modals';
 
 import TimelineView from './TimelineView';
 import { ALERT_STATUS_MAPPING } from './constants';
 import { DEFAULT_STATE } from './labels';
-import { UnlockMoreMethodsProps } from './types';
+import { UnlockMoreMethodsProps, fetchEddDetailsResponse } from './types';
 import { getDefaultTab } from './utils';
 
 const MethodEnablementForm = React.lazy(
@@ -38,6 +39,7 @@ const UnlockMoreMethods = ({
   setIsMethodEnablementFormOpen,
   setKycDocumentStatus,
   openModal,
+  showNotification,
 }: UnlockMoreMethodsProps) => {
   const kycAlert = ALERT_STATUS_MAPPING[kycDocumentStatus as ICProductStates];
 
@@ -70,8 +72,26 @@ const UnlockMoreMethods = ({
   };
 
   const memoizedFetchEddDetails = useCallback(
-    (productStatus) => {
-      fetchEddDetails(productStatus);
+    async (productStatus) => {
+      try {
+        const response: fetchEddDetailsResponse = await fetchEddDetails(productStatus);
+        if (response?.error) {
+          const errorMessage = JSON.parse(response.error.message ?? '');
+          trackVkycStatusResponse(
+            user.business_type,
+            '',
+            errorMessage?.statusCode,
+            errorMessage?.message,
+          );
+        } else {
+          trackVkycStatusResponse(user.business_type, response?.payload?.vKycStatus ?? '');
+        }
+      } catch {
+        showNotification({
+          type: 'error',
+          message: 'Something went wrong. Please try again later!',
+        });
+      }
     },
     [fetchEddDetails],
   );

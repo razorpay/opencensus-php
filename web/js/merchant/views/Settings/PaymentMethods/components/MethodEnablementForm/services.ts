@@ -1,5 +1,7 @@
+import { User } from 'common/typings';
 import { merchantFetch } from 'merchant/utils/ajax';
 
+import { trackIntlMethodEnablementFormData } from './analytics';
 import { ApiDataType, FormikValues } from './types';
 import { formatApiResponse, generateApiData } from './utils';
 
@@ -15,12 +17,15 @@ export const fetchAdditionalDocumentFormData = async (): Promise<ApiDataType> =>
 export const saveAdditionalDocumentFormData = async (
   apiData: ApiDataType,
   formData: FormikValues,
+  user: User,
 ): Promise<void> => {
   try {
+    const data = generateApiData(apiData, formData);
+    trackIntlMethodEnablementFormData(user?.business_type, data);
     await merchantFetch({
       url: 'international_enablement/draft',
       method: 'post',
-      data: generateApiData(apiData, formData),
+      data,
     });
   } catch {
     throw new Error("Data couldn't be saved because of some intermittent issue! Please try again.");

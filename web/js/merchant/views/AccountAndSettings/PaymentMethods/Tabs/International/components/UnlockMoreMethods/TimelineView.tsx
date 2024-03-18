@@ -6,6 +6,7 @@ import { bindActionCreators } from 'redux';
 import { V_KYC_STATUS } from 'merchant/reducers/unlockIntlPaymentMethods/initialState';
 import { setIsMethodEnablementFormOpen } from 'merchant/reducers/unlockIntlPaymentMethods/reducer';
 import { ICProductStates } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
+import { trackVideoKycRetryClick } from 'merchant/views/Settings/PaymentMethods/components/MethodEnablementForm/analytics';
 
 import {
   UNLOCK_METHODS_STEPS,
@@ -35,6 +36,9 @@ const TimelineView = ({
       isOpen: true,
       defaultTab: stepId === VIDEO_KYC ? 2 : defaultTab,
     });
+    if (stepId === VIDEO_KYC && vKycStatus === V_KYC_STATUS.REJECTED) {
+      trackVideoKycRetryClick(user.business_type);
+    }
   };
 
   const getVkycDescription = (step) => {

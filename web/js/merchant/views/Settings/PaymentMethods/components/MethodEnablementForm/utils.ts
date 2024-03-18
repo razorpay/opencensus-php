@@ -53,3 +53,13 @@ export const formatApiResponse = (apiData: ApiDataType & IntlFormDataType): ApiD
   delete apiData?.created_at;
   return apiData;
 };
+
+export const formatIntlFormDataTrackingObject = (data: ApiDataType = {}): ApiDataType => {
+  const formattedData: ApiDataType = { ...data };
+  Object.keys(data.documents ?? {}).forEach((document) => {
+    if (data.documents?.[document]) {
+      formattedData[document] = true;
+    }
+  });
+  return formattedData;
+};

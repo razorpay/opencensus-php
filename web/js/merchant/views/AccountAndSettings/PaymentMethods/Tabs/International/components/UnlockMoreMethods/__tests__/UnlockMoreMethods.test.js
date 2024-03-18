@@ -17,7 +17,9 @@ const instrument = {
 };
 
 const renderComponent = (props) => {
-  return render(<UnlockMoreMethods instrument={instrument} {...props} />);
+  return render(
+    <UnlockMoreMethods instrument={instrument} user={{ business_type: '1' }} {...props} />,
+  );
 };
 
 describe('Tests for UnlockMoreMethods component', () => {

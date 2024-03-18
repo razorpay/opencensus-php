@@ -51,7 +51,7 @@ const AdditionalDocuments = ({ user, showNotification }: AdditionalDocumentsProp
   } = useAdditionalDocuments({
     user,
     saveFormData: (formData) => {
-      saveAdditionalDocumentFormData(apiData as ApiDataType, formData.values);
+      saveAdditionalDocumentFormData(apiData as ApiDataType, formData.values, user);
     },
     showNotification,
   });

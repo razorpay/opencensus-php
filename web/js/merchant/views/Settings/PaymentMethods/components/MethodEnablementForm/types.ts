@@ -27,6 +27,7 @@ export type ModalContainerProps = {
 
 export type VideoKycProps = REDUCER_INITIAL_STATE & {
   promoterPanName: string | undefined;
+  businessType: string | undefined;
   createVCipLink: (name: string | undefined) => VcipLinkGenerationResponse;
   showNotification: (showNotification: { type: string; message: string }) => void;
 };

@@ -21,6 +21,11 @@ import {
 import { V_KYC_STATUS } from 'merchant/reducers/videoKYCBanner';
 import { ICProductStates } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
 import {
+  trackPrerequisiteClicked,
+  trackSubmitForVerificationClicked,
+  trackVideoKycLinkGeneration,
+} from 'merchant/views/Settings/PaymentMethods/components/MethodEnablementForm/analytics';
+import {
   TABS,
   FORM_INITIAL_VALUES,
   FORMIK_FORM_KEYS,
@@ -70,7 +75,11 @@ const ModalContainer = ({
   const onButtonClick = async () => {
     setIsLoading(true);
     try {
+      if (selectedTab === 0) {
+        trackPrerequisiteClicked(user.business_type);
+      }
       if (selectedTab === 1) {
+        trackSubmitForVerificationClicked(user.business_type);
         await submitAdditionalDocumentFormData(apiData as ApiDataType, values);
         setKycDocumentStatus(ICProductStates.UNDER_REVIEW);
         if (
@@ -84,8 +93,23 @@ const ModalContainer = ({
       }
       if (selectedTab === 2 && values[FORMIK_FORM_KEYS.SIGNATORY] === '1') {
         const vcipLink: VcipLinkGenerationResponse = await createVCipLink(user?.promoter_pan_name);
-        window.open(vcipLink?.payload?.details?.weblink, '_blank');
-        setIsMethodEnablementFormOpen({ isOpen: false });
+        if (vcipLink.error) {
+          const errorMessage = JSON.parse(vcipLink.error.message ?? '');
+          trackVideoKycLinkGeneration(
+            user.business_type,
+            false,
+            errorMessage?.statusCode,
+            errorMessage?.message,
+          );
+          showNotification({
+            type: 'error',
+            message: errorMessage?.message as string,
+          });
+        }
+        if (vcipLink?.payload?.details?.weblink) {
+          window.open(vcipLink?.payload?.details?.weblink, '_blank');
+          setIsMethodEnablementFormOpen({ isOpen: false });
+        }
       }
       if (selectedTab === 2 && values[FORMIK_FORM_KEYS.SIGNATORY] === '0') {
         setIsMethodEnablementFormOpen({ isOpen: false });

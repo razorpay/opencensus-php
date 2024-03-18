@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators } from 'redux';
 
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchEddDetails } from 'merchant/reducers/unlockIntlPaymentMethods/actions';
 import { setIsMethodEnablementFormOpen } from 'merchant/reducers/unlockIntlPaymentMethods/reducer';
 import UnlockMoreMethods from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/UnlockMoreMethods/UnlockMoreMethods';
@@ -25,6 +26,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => {
     {
       fetchEddDetails,
       setIsMethodEnablementFormOpen,
+      showNotification,
     },
     dispatch,
   );

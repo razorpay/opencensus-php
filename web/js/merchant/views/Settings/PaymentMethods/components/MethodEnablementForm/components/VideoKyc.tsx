@@ -15,6 +15,7 @@ import { bindActionCreators } from 'redux';
 import { createVCipLink as createVCipLinkAction } from 'merchant/reducers/unlockIntlPaymentMethods/actions';
 import { FORMIK_FORM_KEYS } from 'merchant/views/Settings/PaymentMethods/components/MethodEnablementForm/constants';
 import useFormContext from 'merchant/views/Settings/PaymentMethods/components/MethodEnablementForm/hooks/useFormContext';
+import { trackVideoKycLinkGeneration } from 'merchant/views/Settings/PaymentMethods/components/MethodEnablementForm/analytics';
 import {
   FormikValues,
   VideoKycProps,
@@ -23,6 +24,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 const VideoKyc = ({
   promoterPanName,
+  businessType,
   isCreatingLink,
   createVCipLink,
   showNotification,
@@ -34,11 +36,19 @@ const VideoKyc = ({
   const handleGenerate = async () => {
     try {
       const vKycLink = await createVCipLink(promoterPanName);
-      if (vKycLink.error)
+      if (vKycLink.error) {
+        const errorMessage = JSON.parse(vKycLink.error.message ?? '');
+        trackVideoKycLinkGeneration(
+          businessType,
+          false,
+          errorMessage.statusCode,
+          errorMessage.message,
+        );
         showNotification({
           type: 'error',
-          message: vKycLink.error.message as string,
+          message: errorMessage.message as string,
         });
+      }
       const webLink = vKycLink?.payload?.details?.weblink;
       if (webLink) {
         setVideoKycLink(webLink);
@@ -124,6 +134,7 @@ const VideoKyc = ({
 };
 
 const mapStateToProps = ({ session, unlockIntlPaymentMethods }) => ({
+  businessType: session.user?.business_type,
   promoterPanName: session.user?.promoter_pan_name,
   isCreatingLink: unlockIntlPaymentMethods.isCreatingLink,
 });

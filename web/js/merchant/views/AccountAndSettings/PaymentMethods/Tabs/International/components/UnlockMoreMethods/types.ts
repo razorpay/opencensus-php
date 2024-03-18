@@ -25,10 +25,11 @@ export type UnlockMoreMethodsProps = REDUCER_INITIAL_STATE & {
   productPaCbStatus: MerchantICProductStatus['products_pa_cb'] | undefined;
   isInstantBankTransferActivated: boolean;
   isMoneySaverAccountsActivated: boolean;
-  fetchEddDetails: (workflowStatus: string | undefined) => void;
+  fetchEddDetails: (workflowStatus: string | undefined) => fetchEddDetailsResponse;
   setIsMethodEnablementFormOpen: (data: { isOpen: boolean; defaultTab?: number }) => void;
   setKycDocumentStatus: (status: string) => void;
   openModal: (payload: { size: string; component: JSX.Element }) => void;
+  showNotification: (payload: { type: string; message: string }) => void;
 };
 
 export type TimelineViewProps = REDUCER_INITIAL_STATE & {
@@ -37,4 +38,13 @@ export type TimelineViewProps = REDUCER_INITIAL_STATE & {
   user: User;
   onLoadEddDetails: () => void;
   setIsMethodEnablementFormOpen: (data: { isOpen: boolean; defaultTab?: number }) => void;
+};
+
+export type fetchEddDetailsResponse = {
+  error?: {
+    message: string;
+  };
+  payload?: {
+    vKycStatus: string;
+  };
 };

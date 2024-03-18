@@ -7,6 +7,7 @@ import {
   generateApiData,
   getFormData,
   formatApiResponse,
+  formatIntlFormDataTrackingObject,
 } from 'merchant/views/Settings/PaymentMethods/components/MethodEnablementForm/utils';
 
 describe('Tests for getAdditionalDocumentsBasedOnBusinessType', () => {
@@ -161,5 +162,31 @@ describe('Tests for formatApiResponse', () => {
   test('Should return empty object when apiData is undefined', () => {
     const result = formatApiResponse(undefined);
     expect(result).toEqual(undefined);
+  });
+});
+
+describe('Tests for formatIntlFormDataTrackingObject', () => {
+  test('Should not throw an error if nothing is passed', () => {
+    expect(formatIntlFormDataTrackingObject()).toBeDefined();
+  });
+
+  test('Should format the passed object', () => {
+    const data = {
+      name: 'dummy name',
+      documents: {
+        dummy_doc: 'true',
+      },
+    };
+    expect(formatIntlFormDataTrackingObject(data)).toStrictEqual({
+      ...data,
+      dummy_doc: true,
+    });
+  });
+
+  test('Should return same object if documents doesnt exist', () => {
+    const data = {
+      name: 'dummy name',
+    };
+    expect(formatIntlFormDataTrackingObject(data)).toStrictEqual(data);
   });
 });

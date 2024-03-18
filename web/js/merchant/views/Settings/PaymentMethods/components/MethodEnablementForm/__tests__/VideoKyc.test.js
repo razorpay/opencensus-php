@@ -52,6 +52,7 @@ describe('Tests for VideoKyc component - MethodEnablementForm', () => {
 
   test('Should show link when Get Link button is clicked', async () => {
     const weblink = 'Dummy link';
+    const business_type = '1';
     const createVCipLinkMock = jest.fn(() => () => ({ payload: { details: { weblink } } }));
     jest.spyOn(actions, 'createVCipLink').mockImplementation(createVCipLinkMock);
     useFormikContextSpy.mockReturnValue({
@@ -59,7 +60,10 @@ describe('Tests for VideoKyc component - MethodEnablementForm', () => {
       values: { signatory: '0' },
     });
     mockContextData({ isLoading: false });
-    renderComponent({}, { session: { user: { promoter_pan_name: promoterPanName } } });
+    renderComponent(
+      {},
+      { session: { user: { promoter_pan_name: promoterPanName, business_type } } },
+    );
 
     await expect(screen.getByRole('button', { name: 'Get Link' })).toBeVisible();
     await userEvent.click(screen.getByRole('button', { name: 'Get Link' }));
