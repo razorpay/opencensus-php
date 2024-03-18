@@ -644,23 +644,18 @@ class Service extends Base\Service
         return $admin;
     }
 
-    public function handleWorkflowAndDeleteAdmin($admin)
-    {
-        // Trigger workflow
-        $this->app['workflow']->handle($admin, (new \StdClass()));
-
-        $admin->setAuditAction(Action::DELETE_ADMIN);
-
-        return $this->core()->delete($admin);
-    }
-
     public function deleteAdmin(string $adminId)
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
 
         $admin->getValidator()->validateSelfEditForbidden($this->authAdmin, $admin);
 
-        return $this->handleWorkflowAndDeleteAdmin($admin);
+        // Trigger workflow
+        $this->app['workflow']->handle($admin, (new \StdClass()));
+
+        $admin->setAuditAction(Action::DELETE_ADMIN);
+
+        return $this->core()->delete($admin);
     }
 
     /**
@@ -674,17 +669,20 @@ class Service extends Base\Service
         $adminEmailList = explode(',', $adminEmails);
         $adminEmailList = array_map('trim', $adminEmailList);
 
+        // TODO: add a bulk workflow wrapper
         $responses = array();
         foreach ($adminEmailList as $adminEmail) {
             $admin = $this->repo->admin->findByOrgIdAndEmail($this->adminOrgId, $adminEmail);
             if ($admin === null)
             {
-                // consider it as deleted if it is not found
+                $responses[] = ['id' => '', 'email' => $adminEmail, 'deleted' => false, 'msg' => 'entity not found'];
                 continue;
             }
+
             try {
                 $admin->getValidator()->validateSelfEditForbidden($this->authAdmin, $admin);
-                $this->handleWorkflowAndDeleteAdmin($admin);
+                $admin->setAuditAction(Action::DELETE_ADMIN);
+                $this->core()->delete($admin);
             } catch (\Throwable $e) {
                 $responses[] = ['id' => $admin->id, 'email' => $adminEmail, 'deleted' => false, 'msg' => $e->getMessage()];
             }
