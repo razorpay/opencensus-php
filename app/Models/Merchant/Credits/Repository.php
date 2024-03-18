@@ -474,6 +474,44 @@ class Repository extends Base\Repository
 
         return $data;
     }
+
+    public function getTypeAggregatedMerchantCreditsWithoutLock(string $merchantId): array
+    {
+        $merchantsCredits = $this->newQuery()
+            ->merchantId($merchantId)
+            ->get();
+
+        $creditsFiltered = $merchantsCredits->filter(function ($item) {
+            return ($item->getUnusedCredits() > 0) and (($item->getExpiredAt() == null) or
+                    ($item->getExpiredAt() > time()));
+        });
+
+        $creditIds = $creditsFiltered->getStringAttributesByKey('id');
+
+        $creditIds = array_keys($creditIds);
+
+        $data = [];
+
+        if (count($creditIds) > 0)
+        {
+            $credits = $this->newQuery()
+                ->whereIn(Entity::ID, $creditIds)
+                ->get();
+
+            foreach ($credits as $credit)
+            {
+                if (isset($data[$credit->getType()]) === false)
+                {
+                    $data[$credit->getType()] = 0;
+                }
+
+                $data[$credit->getType()] += $credit->getUnusedCredits();
+            }
+        }
+
+        return $data;
+    }
+
     public function getTypeAggregatedMerchantCreditsForProductForDashboard(string $merchantId, string $product): array
     {
         $results =  $this->newQuery()

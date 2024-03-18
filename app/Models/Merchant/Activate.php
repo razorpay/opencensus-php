@@ -450,33 +450,35 @@ class Activate extends Base\Core
     {
         if ($this->shouldOnboardToLedger($merchant) === true)
         {
-            $balance = $this->repo->balance->getBalanceLockForUpdate(
-                $merchant->getId());
+            $merchantId = $merchant->getId();
+
+            $primaryBalance = $this->repo->balance->getMerchantBalanceByType($merchantId, BalanceType::PRIMARY);
+            $primaryBalanceAmount =  isset($primaryBalance) ? $primaryBalance->getBalance() : 0;
 
             //fetches fee and amount credits from credits table
-            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchant->getId());
+            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsWithoutLock($merchant->getId());
 
-            $reserveBalance = $this->repo->balance->getBalanceLockForUpdateBasedOnType($merchant->getId(), BalanceType::RESERVE_PRIMARY);
+            $reserveBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), BalanceType::RESERVE_PRIMARY);
 
             $reserveBalanceAmount =  isset($reserveBalance) ? $reserveBalance->getBalance() : 0;
 
             $isPgLedgerAccountCreated = (new LedgerCore())->createPGLedgerAccount(
                 $merchant,
                 $this->mode,
-                $balance->getBalance(),
+                $primaryBalanceAmount,
                 $creditBalances,
                 $reserveBalanceAmount
             );
 
             $isESOndemandAccountCreated = (new LedgerCore())->createLedgerOndemandSettlementAccount($merchant, $this->mode);
 
-            if ($isPgLedgerAccountCreated === true and $isESOndemandAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+            if ($isPgLedgerAccountCreated === true and $isESOndemandAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW) === false)
             {
                 (new FeatureCore)->create(
                     [
                         FeatureEntity::ENTITY_TYPE   => EntityConstants::MERCHANT,
                         FeatureEntity::ENTITY_ID     => $merchant->getId(),
-                        FeatureEntity::NAME          => Constants::PG_LEDGER_JOURNAL_WRITES,
+                        FeatureEntity::NAME          => Constants::PG_LEDGER_REVERSE_SHADOW,
                     ]);
             }
 
@@ -494,7 +496,7 @@ class Activate extends Base\Core
 
         if($isExperimentEnabledForLedgerPGMerchant === true and $merchant->getCountry() === "IN")
         {
-            if ($merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+            if ($merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW) === false)
             {
                 return true;
             }

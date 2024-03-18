@@ -19,6 +19,7 @@ use RZP\Models\BankingAccount\Gateway\Fields;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Modules\Manager as ModuleManager;
+use RZP\Services\Dcs\Features\Service;
 use RZP\Services\Mock;
 use RZP\Models\Comment;
 use RZP\Diag\EventCode;
@@ -2017,6 +2018,53 @@ class MerchantTest extends TestCase
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
         $this->assertNull($response);
+    }
+
+    public function testUpdateLedgerForNormalMerchant()
+    {
+        $this->app['rzp.mode'] = "test";
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(2)
+            ->andReturn([
+                'body' => [
+                    "accounts" => [
+                        "pg_merchant_onboarding" => null
+                    ]
+                ],
+                'code' => 200
+            ]);
+
+        $this->mockDCS();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
+
+        $response = (new Merchant\Activate)->updateLedger($merchant);
+
+        $feature = $this->getDbEntity('feature', ["name" => 'pg_ledger_reverse_shadow']);
+
+        $this->assertNotNull($feature);
+    }
+
+    public function mockDCS()
+    {
+        $dcsMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['editFeature'])
+            ->getMock();
+
+        $this->app->instance('dcs', $dcsMock);
+
+        $dcsMock->expects($this->any())->method('editFeature')->willReturn(null);
+
+        return $dcsMock;
     }
 
     public function testEditMerchantEditGroups()
