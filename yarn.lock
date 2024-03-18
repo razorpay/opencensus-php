@@ -5186,10 +5186,10 @@
     uuid "8.3.2"
     yup "0.28.5"
 
-"@razorpay/frontend-care@0.7.12":
-  version "0.7.12"
-  resolved "https://npm.pkg.github.com/download/@razorpay/frontend-care/0.7.12/015582d24c5322313751508c7d729fca00855546#015582d24c5322313751508c7d729fca00855546"
-  integrity sha512-vp68UGr0Ss5SpC+DT7tYVMQP40ZAln09/1uRaIzR61JrPruqVaz3EM2cDpiHUBbwuoLlinknqelbSP9RQUeC1w==
+"@razorpay/frontend-care@0.7.15":
+  version "0.7.15"
+  resolved "https://npm.pkg.github.com/download/@razorpay/frontend-care/0.7.15/63c11a541e1b29ed0e864484a9318e26776d99dc#63c11a541e1b29ed0e864484a9318e26776d99dc"
+  integrity sha512-7QYqolvhFvMcJsKDF3wh70aPjOgFCH9NeQsbiRqizwJaFRGJ0WMjtROsrgZ+BdUclQiX7cHLX8mkM7GeonrTBg==
   dependencies:
     "@razorpay/blade" "10.23.5"
     botframework-directlinejs "^0.15.5"
