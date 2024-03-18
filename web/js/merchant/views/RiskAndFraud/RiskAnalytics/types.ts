@@ -3,7 +3,7 @@ export type MetricOptions = 'count' | 'amount';
 
 export type PresetUnit = 'days' | 'week' | 'month' | 'quarter';
 
-export type PresetValue = '7d' | '14d' | '30d' | '60d' | '90d' | '6m' | '1y' | '2y';
+export type PresetValue = '7d' | '14d' | '30d' | '60d' | '90d' | '6m' | '1y' | '2y' | 'custom';
 
 export type Duration = 7 | 14 | 30 | 60 | 90 | 6 | 1 | 2;
 
