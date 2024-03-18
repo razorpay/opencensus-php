@@ -913,6 +913,191 @@ class AdjustmentLedgerTest extends TestCase
         $this->assertNotNull($txn);
     }
 
+    public function testReserveBalanceNegativeAdjustmentCreateSuccess()
+    {
+        Mail::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow'], '100abc000abc00');
+
+        $this->fixtures->create(
+            'balance',
+            [
+                'id'            => '100efg000efg00',
+                'balance'       => 1000,
+                'type'          => 'reserve_primary',
+                'merchant_id'   => '100abc000abc00'
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $expectedJournalPayload = [
+            "merchant_id"           => "100abc000abc00",
+            "currency"              => "INR",
+            "transaction_date"      => "", // any
+            "transactor_id"         => "", // any
+            "transactor_event"      => "negative_adjustment",
+            "money_params"          => [
+                "reserve_balance_amount"   => "500",
+                "base_amount"               => "500",
+                "adjustment_amount"         => "500",
+                "merchant_balance_limit"    => "0"
+            ],
+            "additional_params"     => [
+                "balance_type"  => "reserve_balance"
+            ]
+        ];
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload) {
+
+                $this->assertArrayHasKey('transaction_date',$journalPayload);
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['money_params'], $journalPayload['money_params']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn([
+                'code' => 200,
+                'body' => [
+                    "id"=> "LN5BWCGvLdPu7T",
+                    "created_at"=> "1677853302",
+                    "updated_at"=> "1677853302",
+                    "amount"=> "500",
+                    "base_amount"=> "500",
+                    "currency"=> "INR",
+                    "tenant"=> "PG",
+                    "transactor_id"=> "adj_LN5BW4fDCb1Sn7",
+                    "transactor_event"=> "negative_adjustment",
+                    "transaction_date"=> "1677853302",
+                    "ledger_entry"=> [
+                        [
+                            "id"=> "LN5BWCaS5FKndm",
+                            "created_at"=> "1677853302",
+                            "updated_at"=> "1677853302",
+                            "merchant_id"=> "100abc000abc00",
+                            "journal_id"=> "LN5BWCGvLdPu7T",
+                            "account_id"=> "JjpZUD9PmJeNPk",
+                            "amount"=> "500",
+                            "base_amount"=> "500",
+                            "type"=> "debit",
+                            "currency"=> "INR",
+                            "balance"=> "500.000000",
+                            "balance_updated"=> true,
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_reserve_balance"
+                                ]
+                            ]
+                        ],
+                        [
+                            "id"=> "LN5BWCaUJA3TfB",
+                            "created_at"=> "1677853302",
+                            "updated_at"=> "1677853302",
+                            "merchant_id"=> "100abc000abc00",
+                            "journal_id"=> "LN5BWCGvLdPu7T",
+                            "account_id"=> "LN22CRUSOTIIBG",
+                            "amount"=> "500",
+                            "base_amount"=> "500",
+                            "type"=> "credit",
+                            "currency"=> "INR",
+                            "balance"=> "1000.000000",
+                            "balance_updated"=> true,
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "adjustment_payable"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ]);
+
+        $response = $this->startTest();
+
+        $adjId = $response['id'];
+
+        $adjustment = $this->getDbEntityById('adjustment', $adjId);
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+        $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
+        $this->assertEquals(-500, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
+        $this->assertNull($adjustment['transaction_id'], 'transaction should be null');
+
+        $balanceId = $adjustment['balance_id'];
+        $this->assertEquals('100efg000efg00', $balanceId);
+
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $this->assertNotNull($balance, 'balance should not be null');
+        $this->assertEquals('reserve_primary', $balance['type']);
+        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
+        // balance not updated as transaction not created yet
+        $this->assertEquals(1000, $balance['balance']);
+
+        $txn = $this->getDbLastEntity('transaction');
+        // transaction is not created yet
+        $this->assertNull($txn, 'transaction should be null');
+
+        // create transaction for adjustement
+
+        $request = [
+            'url' => '/adjustments/transaction_create',
+            'method' => 'POST',
+            'content' => [
+                'id'        =>  str_replace("adj_", "", $adjId),
+                'transaction_id' =>  'LN5BWCGvLdPu7T',
+            ]
+        ];
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->ba->pgRouterAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response);
+
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $this->assertNotNull($balance, 'balance should not be null');
+        $this->assertEquals('reserve_primary', $balance['type']);
+        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
+        // balance  debited with negative adj amount as transaction should be created
+        $this->assertEquals(500, $balance['balance']);
+
+        $txn = $this->getDbEntityById('transaction', 'LN5BWCGvLdPu7T');
+        // transaction is not created yet
+        $this->assertNotNull($txn, 'transaction should not be null');
+        $this->assertEquals(str_replace("adj_", "", $adjId), $txn['entity_id']);
+        $this->assertEquals(500, $txn['debit']);
+        $this->assertEquals('adjustment', $txn['type']);
+        $this->assertEquals('100abc000abc00', $txn['merchant_id']);
+        $this->assertEquals(500, $txn['amount']);
+        $this->assertEquals($balanceId, $txn['balance_id']);
+
+    }
+
     private function getJournal()
     {
 

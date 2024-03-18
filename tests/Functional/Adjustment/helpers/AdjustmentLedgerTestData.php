@@ -23,6 +23,28 @@ return [
         ]
     ],
 
+    'testReserveBalanceNegativeAdjustmentCreateSuccess' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount' => -500,
+                'type' => 'reserve_primary',
+                'merchant_id' => '100abc000abc00',
+                'currency' => 'INR',
+                'description' => 'debit reserve primary balance in reverse shadow'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'adjustment',
+                'amount' => -500,
+                'currency' => 'INR',
+                'description' => 'debit reserve primary balance in reverse shadow'
+            ],
+        ]
+    ],
+
     'testAdjustmentTransactionCreate' => [
         'request' => [
             'url' => '/adjustments/transaction_create',

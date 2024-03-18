@@ -101,11 +101,8 @@ class Core extends Base\Core
         else if (($balanceType === Balance\Type::RESERVE_BANKING) or
             ($balanceType === Balance\Type::RESERVE_PRIMARY))
         {
-            if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
-            {
                 [$balance, $sendReserveBalanceMail] = (new Balance\Core)->createOrFetchReserveBalance($merchant,
                     $balanceType, $this->mode);
-            }
         }
         else
         {

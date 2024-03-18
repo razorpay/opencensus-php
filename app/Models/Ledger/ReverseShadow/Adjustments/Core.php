@@ -124,6 +124,39 @@ class Core extends Base\Core
         $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
     }
 
+    public function createLedgerEntryForManualReservePrimaryNegativeAdjustmentReverseShadow(Entity $adjustment, string $publicId)
+    {
+        $adjustmentAmount = $adjustment->getAmount() != null ? abs($adjustment->getAmount()) : 0;
+
+        $transactorId = $publicId;
+
+        $transactorEvent = Constants::NEGATIVE_ADJUSTMENT;
+
+        $transactionMessage = $this->generateBaseForJournalEntry($adjustment);
+
+        $maxNegativeLimit = $this->getMaxNegativeLimitForAdjustment($adjustment, Balance\Type::RESERVE_PRIMARY);
+
+        $manualAdjData = array(
+            Constants::TRANSACTOR_ID                => $transactorId,
+            Constants::TRANSACTOR_EVENT             => $transactorEvent,
+            Constants::MONEY_PARAMS                 => [
+                Constants::RESERVE_BALANCE_AMOUNT           => strval($adjustmentAmount),
+                Constants::BASE_AMOUNT                       => strval($adjustmentAmount),
+                Constants::ADJUSTMENT_AMOUNT                 => strval($adjustmentAmount),
+                Constants::MERCHANT_BALANCE_LIMIT            => strval($maxNegativeLimit)
+            ],
+            Constants::ADDITIONAL_PARAMS            => [
+                Constants::BALANCE_TYPE => Constants::RESERVE_BALANCE
+            ]
+        );
+
+        $journalPayload = array_merge($transactionMessage, $manualAdjData);
+
+        $journal = $this->createJournalInLedger($journalPayload);
+
+        $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
+    }
+
     private function pushAdjustmentToKafkaForAPITransactionCreation(Entity $adjustment,  $journal)
     {
         if (($this->app->runningUnitTests() === true))
@@ -182,9 +215,8 @@ class Core extends Base\Core
         }
     }
 
-    private function getMaxNegativeLimitForAdjustment(Entity $adjustment): int
+    private function getMaxNegativeLimitForAdjustment(Entity $adjustment, $balanceType = Balance\Type::PRIMARY): int
     {
-        $balanceType = Balance\Type::PRIMARY;
         $txnType = Transaction\Type::ADJUSTMENT;
 
         $balanceConfigCore = new Balance\BalanceConfig\Core();

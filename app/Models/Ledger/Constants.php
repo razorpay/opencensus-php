@@ -245,6 +245,8 @@ class Constants
     const IS_AMOUNT_VALID = "is_amount_valid";
 
     const LINKED_ACCOUNT_MERCHANT_ID = 'linked_account_merchant_id';
+    const BALANCE_TYPE               = 'balance_type';
+    
     const MERCHANT_BALANCE_FUND_ACCOUNT                = 'merchant_balance';
 
     const CREATED_AT                                   = 'created_at';

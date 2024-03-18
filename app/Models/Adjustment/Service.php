@@ -75,6 +75,18 @@ class Service extends Base\Service
                     }
                 }
 
+                if (($adj->getBalanceType() === Balance\Type::RESERVE_PRIMARY) 
+                    and ($adj->getAmount()<0) 
+                    and ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                )
+                {
+                    (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualReservePrimaryNegativeAdjustmentReverseShadow($adj, $publicId);
+
+                    $adj->setStatus(Status::PROCESSED);
+
+                    $this->repo->saveOrFail($adj);
+                }
+
                 return $adj;
             }
         );
