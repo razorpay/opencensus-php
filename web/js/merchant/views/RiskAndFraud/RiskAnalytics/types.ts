@@ -38,6 +38,15 @@ export type ChartInterval = {
   disabled?: boolean;
 };
 
+export interface Ratios {
+  fraud_to_sales_ratio: number;
+  disputes_to_sales_ratio: number;
+  risk_declined_to_sales_ratio: number;
+  industry_fraud_to_sales_ratio: number;
+  industry_disputes_to_sales_ratio: number;
+  industry_risk_declined_to_sales_ratio: number;
+}
+
 export type GetOnboardingSliderDots = {
   closeOnboarding: () => void;
   riskAndFraudProductOnBoarding: {
@@ -78,6 +87,7 @@ export type RiskAndFraudQuickGuideProps = {
     business_name: string;
   };
 };
+
 export interface ChartQueryDataItem {
   start_date: number;
   payment: { [metric in MetricOptions]: string };

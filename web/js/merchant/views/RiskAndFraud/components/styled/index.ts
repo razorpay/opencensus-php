@@ -9,6 +9,49 @@ export const StyledButtonText = styled.button`
   cursor: pointer;
 `;
 
+export const TooltipWrapper = styled.span`
+  & > div {
+    vertical-align: middle;
+    cursor: pointer;
+  }
+`;
+
+export const StyledTabButton = styled.button(
+  ({ theme, isActive }: { theme: Theme; isActive: boolean }) => `
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: ${theme.spacing[7]}px ${theme.spacing[6]}px ${theme.spacing[7]}px ${
+    theme.spacing[6]
+  }px;
+    height: 140px;
+    background-color: ${
+      isActive
+        ? theme.colors.surface.background.level2.lowContrast
+        : theme.colors.surface.background.level3.lowContrast
+    };
+    border-color: ${theme.colors.surface.border.subtle.lowContrast};
+    border-width: 0px;
+    border-right-width: ${theme.border.width.thick}px;
+    border-style: solid;
+    cursor: pointer;
+    pointer-events: all;
+    &:hover {
+      background-color: ${theme.colors.surface.background.level2.lowContrast};
+    }
+    &:first-child {
+      border-top-left-radius: ${theme.border.radius.medium}px;
+      border-bottom-left-radius: ${theme.border.radius.medium}px;
+    }
+
+    &:last-child {
+      border-top-right-radius: ${theme.border.radius.medium}px;
+      border-bottom-right-radius: ${theme.border.radius.medium}px;
+      border-right-width: 0px
+    }
+  `,
+);
+
 const getOverlayStyles = css`
   position: absolute;
   top: 0;
