@@ -56,22 +56,19 @@ class Service extends Base\Service
                 {
                     $currentRefundId = $refundsArr[$i];
 
-                    $refund = $this->repo->refund->findOrFail($currentRefundId);
-
-                    $this->core->validateAndCreateMissingRefundTransaction($refund);
+                    $this->createMissingRefundTransaction($currentRefundId);
 
                     array_push($successIds, $currentRefundId);
                 }
                 catch(\Exception $e)
                 {
                     $this->trace->traceException($e, [
-                        "msg"   => $e->getMessage(),
+                        "msg"       => $e->getMessage(),
                         "refund_id" => $refundsArr[$i],
                     ]);
 
                     array_push($failureIds, [$refundsArr[$i] => $e->getMessage()]);
                 }
-
             }
 
             $response->push([
@@ -82,9 +79,61 @@ class Service extends Base\Service
             return $response;
         }
 
+        $currentTimestamp = time();
+
+        $startDateTimestamp = strtotime('-7 days', $currentTimestamp);
+
+        $endDateTimestamp = strtotime('-4 days', $currentTimestamp);
+
+        $refundsWithMissingTxn = $this->core->fetchRefundWithMissingTransactions($startDateTimestamp, $endDateTimestamp);
+
+        for ($i = 0; $i < count($refundsWithMissingTxn); $i++)
+        {
+            try
+            {
+                $currentRefund = $refundsWithMissingTxn[$i];
+
+                $currentRefundId = $currentRefund["id"];
+                $this->createMissingRefundTransaction($currentRefundId);
+
+                array_push($successIds, $currentRefundId);
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e, [
+                    "msg"       => $e->getMessage(),
+                    "refund_id" => $refundsWithMissingTxn[$i],
+                ]);
+
+                array_push($failureIds, [$refundsWithMissingTxn[$i] => $e->getMessage()]);
+            }
+        }
+
         $this->trace->info(TraceCode::NO_REFUND_IN_INPUT, $input);
 
         return [];
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function createMissingRefundTransaction(string $refundId)
+    {
+        try
+        {
+            $refund = $this->repo->refund->findOrFail($refundId);
+
+            return $this->core->validateAndCreateMissingRefundTransaction($refund);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, [
+                "msg"       => $e->getMessage(),
+                "refund_id" => $refundId,
+            ]);
+
+            throw $e;
+        }
     }
 
     public function createMissingTransactionsForReverseShadowAdjustments(array $input)

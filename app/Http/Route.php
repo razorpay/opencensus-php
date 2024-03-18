@@ -16062,6 +16062,7 @@ class Route
             'settlement_cron_for_b2b_payments',
             'merchant_onboarding_crons',
             'merchant_risk_crons',
+            'missing_refund_transactions_create',
             'missing_transaction_create',
             'banking_account_statement_insert_missing_cron',
             'banking_account_statement_fetch_missing_cron',
@@ -17019,7 +17020,6 @@ class Route
         ],
 
         'pg_router' => [
-            'missing_refund_transactions_create',
             'internal_currency_rates_update',
             'api_entity_fetch',
             'internal_payment_authorize_refund',

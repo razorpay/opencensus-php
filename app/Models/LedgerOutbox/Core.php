@@ -1675,15 +1675,15 @@ class Core extends Base\Core
             }
 
             $transactionCreateInput = [
-                "id" => $refund->getId(),
-                "payment_id" => $refund->getPaymentId(),
-                "amount" => $refund->getAmount(),
-                "base_amount" => $refund->getBaseAmount(),
-                "speed_decisioned" => $refund->getSpeedDecisioned(),
-                "gateway" => $refund->getGateway(),
-                "fee" => $refund->getFee(),
-                "tax" => $refund->getTax(),
-                "journal_id" => $journal['id']
+                "id"                => $refund->getId(),
+                "payment_id"        => $refund->getPaymentId(),
+                "amount"            => $refund->getAmount(),
+                "base_amount"       => $refund->getBaseAmount(),
+                "speed_decisioned"  => $refund->getSpeedDecisioned(),
+                "gateway"           => $refund->getGateway(),
+                "fee"               => $refund->getFee(),
+                "tax"               => $refund->getTax(),
+                "journal_id"        => $journal['id']
             ];
 
             if($refund->getModeRequested() != null)
@@ -1702,6 +1702,54 @@ class Core extends Base\Core
         return [
             "refund_id" => $refund->getId()
         ];
+    }
+
+    public function fetchRefundWithMissingTransactions($startTime, $endTime)
+    {
+        $MISSING_TRANSACTIONS_QUERY = "
+            SELECT
+              id AS refund_id,
+              amount,
+              base_amount,
+              fee,
+              tax,
+              payment_id,
+              gateway,
+              speed_decisioned,
+              status,
+              created_at,
+              merchant_id,
+              transaction_id
+            FROM
+              realtime_scrooge_live.refunds
+            WHERE
+                created_at > %d AND created_at < %d
+              AND status = 'processed'
+              AND payment_captured_at IS NOT NULL
+              AND (
+                transaction_id IS NULL
+                OR transaction_id NOT IN (
+                  SELECT
+                    id
+                  FROM
+                    realtime_hudi_api.transactions
+                  WHERE
+                    type = 'refund'
+                    AND created_at >= %d
+                )
+              )
+              ";
+
+        $dataLakeQuery      = sprintf($MISSING_TRANSACTIONS_QUERY, $startTime, $endTime, $startTime);
+
+        $lakeData           = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        $this->trace->info(TraceCode::REFUNDS_WITH_MISSING_TRANSACTION_FETCHED_FROM_LAKE, [
+            "refunds_count" => count($lakeData)
+        ]);
+
+        return $lakeData;
+
     }
 
     public function validateAndCreateMissingAdjustmentTransaction(Adjustment\Entity $adjustment)

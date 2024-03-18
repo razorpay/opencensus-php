@@ -4253,7 +4253,6 @@ class RefundLedgerTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $createdAt = $payment['created_at'];
         $paymentId = $payment['id'];
         if (substr($paymentId, 0, 4) === "pay_") {
             $paymentId = substr($paymentId, 4);
@@ -4270,8 +4269,13 @@ class RefundLedgerTest extends TestCase
 
         $refund = $this->fixtures->create('refund', $refundArray)->toArray();
 
+        $currentTimestamp = time();
 
-        $lastTxn = $this->getLastEntity('transaction', true);
+        $refundCreatedAt = strtotime('-5 days', $currentTimestamp);
+
+        $this->fixtures->edit('refund', $refund['id'], [
+           "created_at" => $refundCreatedAt,
+        ]);
 
         $this->fixtures->merchant->addFeatures('pg_ledger_reverse_shadow');
 
@@ -4279,11 +4283,13 @@ class RefundLedgerTest extends TestCase
             'refunds_arr'               => $refund['id']
         ];
 
-        $this->ba->pgRouterAuth();
+        $this->ba->cronAuth();
 
         $this->startTest($testData);
 
         $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($txn);
 
         $this->assertEquals("rfnd_".$refund['id'], $txn['entity_id']);
         $this->assertEquals("refund", $txn['type']);
