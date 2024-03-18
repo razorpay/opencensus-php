@@ -48,6 +48,22 @@ jobs:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           DISABLE_REPORT_PORTAL_INTEGRATION: true
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v9.3
+        with:
+          files: |
+            .(js|jsx|ts|tsx)$
+
+      - name: Run Eslint for files
+        continue-on-error: true
+        run: |
+          npx eslint \
+            --output-file eslint_report.json \
+            --no-error-on-unmatched-pattern \
+            --format ./sonarqube_formatter.js \
+            ${{ steps.changed-files.outputs.all_modified_files }}
+
       - name: Run SonarQube PR analysis on Dev Project
         id: pr_sonarqube_analysis
         uses: sonarsource/sonarcloud-github-action@v1.6
