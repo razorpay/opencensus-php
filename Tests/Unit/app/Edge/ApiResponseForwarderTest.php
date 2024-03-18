@@ -53,12 +53,10 @@ class ApiResponseForwarderTest extends BaseTestCase
     {
         $edgeResponseForwarder = new ApiResponseForwarder();
         $edgeResponseForwarder->setHeaders('users/login', 'post', [
-            'set-cookie' => ['value'],
+            'Set-Cookie' => ['value'],
             'other' => ['other_value']
         ]);
-        $this->assertSame([
-            'set-cookie' => ['value']
-        ], $edgeResponseForwarder->getHeaders());
+        $this->assertSame([], $edgeResponseForwarder->getHeaders());
     }
 
     public function testSetHeadersNonWhitelistedRouteAndWhitelistedHeaders()
@@ -76,5 +74,45 @@ class ApiResponseForwarderTest extends BaseTestCase
         $edgeResponseForwarder = new ApiResponseForwarder();
         $edgeResponseForwarder->setHeaders('invalid/path', 'get', []);
         $this->assertEmpty($edgeResponseForwarder->getHeaders());
+    }
+
+    public function testSetHeadersSetsCookiesForCookieHeaders()
+    {
+        $edgeResponseForwarder = new ApiResponseForwarder();
+        $edgeResponseForwarder->setHeaders('users/login', 'post', [
+            'Set-Cookie' => 'rzp_access_token=token_value',
+            'Content-Type' => 'application/json'
+        ]);
+        $cookies = $edgeResponseForwarder->getCookies();
+        $this->assertCount(1, $cookies);
+        $this->assertEquals('rzp_access_token', $cookies[0]->getName());
+        $this->assertEquals('token_value', $cookies[0]->getValue());
+
+    }
+
+    public function testSetHeadersDoesntSetsCookiesHeaderValues()
+    {
+        $edgeResponseForwarder = new ApiResponseForwarder();
+        $edgeResponseForwarder->setHeaders('users/login', 'post', [
+            'Content-Type' => 'application/json'
+        ]);
+        $cookies = $edgeResponseForwarder->getCookies();
+        $this->assertCount(0, $cookies);
+
+    }
+
+    public function testSetHeadersSetsCookiesForMultipleCookieHeaders()
+    {
+        $edgeResponseForwarder = new ApiResponseForwarder();
+        $edgeResponseForwarder->setHeaders('users/login', 'post', [
+            'Set-Cookie' => ['rzp_access_token=token_value', 'rzp_refresh_token=refresh_token_value'],
+            'Content-Type' => 'application/json'
+        ]);
+        $cookies = $edgeResponseForwarder->getCookies();
+        $this->assertCount(2, $cookies);
+        $this->assertEquals('rzp_access_token', $cookies[0]->getName());
+        $this->assertEquals('token_value', $cookies[0]->getValue());
+        $this->assertEquals('rzp_refresh_token', $cookies[1]->getName());
+        $this->assertEquals('refresh_token_value', $cookies[1]->getValue());
     }
 }

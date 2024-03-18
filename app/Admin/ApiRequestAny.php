@@ -711,8 +711,15 @@ class ApiRequestAny
             }
 
             $response = json_decode($clientBody, true);
-            app('edgeResponseForwarder')->setHeaders($path, $method, $client->getheaders());
-            app('edgeMismatchRecorder')->setEdgeData($path, $method, $client->getheaders());
+            try {
+                app('edgeResponseForwarder')->setHeaders($path, $method, $client->getheaders());
+                app('edgeMismatchRecorder')->setEdgeData($path, $method, $client->getheaders());
+            } catch (\Throwable $e) {
+                app('trace')->warning(TraceCode::EDGE_USER_AUTH_MISC_CODE, [
+                    'trace' => $e->getTrace() ?? "unknown_trace",
+                    'message' => $e->getMessage() ?? "unknown_message"
+                ]);
+            }
 
             return [null, $response, $httpCode];
         }

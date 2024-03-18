@@ -5,6 +5,7 @@ use Gate;
 use Closure;
 use App\Http\AppResponse;
 use Illuminate\Contracts\Auth\Guard;
+use App\Trace\TraceCode;
 use Razorpay\Api\Request as ApiRequest;
 
 class Authenticate {
@@ -63,6 +64,17 @@ class Authenticate {
 					ApiRequest::addHeader('X-Dashboard-User-Role', $currentMerchant->role);
 				}
 
+                try {
+                    // Sets the dashboard verified data to record mismatches (if any) in merchant and user verification.
+                    app('edgeMismatchRecorder')->setDashboardVerifiedData($user->id, $currentMerchant->id ?? null);
+                    app('edgeMismatchRecorder')->recordMismatches($request, "post_login");
+                } catch (\Throwable $e) {
+                    app('trace')->warning(TraceCode::EDGE_USER_AUTH_MISC_CODE, [
+                        'trace' => $e->getTrace() ?? "unknown_trace",
+                        'message' => $e->getMessage() ?? "unknown_message"
+                    ]);
+                }
+
 				if (!Gate::has($routeName))
 				{
 					return $next($request);
@@ -76,6 +88,17 @@ class Authenticate {
 		            return response('Unauthorized.', 401);
 		        }
 			}
+            else
+            {
+                try {
+                    app('edgeMismatchRecorder')->recordMismatches($request, "post_login");
+                } catch (\Throwable $e) {
+                    app('trace')->warning(TraceCode::EDGE_USER_AUTH_MISC_CODE, [
+                        'trace' => $e->getTrace() ?? "unknown_trace",
+                        'message' => $e->getMessage() ?? "unknown_message"
+                    ]);
+                }
+            }
 		}
 	}
 }

@@ -300,7 +300,7 @@ class SessionMismatchRecorderTest extends BaseTestCase
         $trace->shouldReceive('error')->times(0);
         $trace->shouldReceive('warning')->times(0);
         $trace->shouldReceive('info')->times(0);
-        $edgeMismatchRecorder->recordMismatches($request);
+        $edgeMismatchRecorder->recordMismatches($request, "login");
     }
 
     /**
@@ -318,7 +318,7 @@ class SessionMismatchRecorderTest extends BaseTestCase
         $trace->shouldReceive('error')->times(0);
         $trace->shouldReceive('warning')->times(0);
         $trace->shouldReceive('info')->times(0);
-        $edgeMismatchRecorder->recordMismatches($request);
+        $edgeMismatchRecorder->recordMismatches($request, "login");
     }
 
     /**
@@ -339,7 +339,7 @@ class SessionMismatchRecorderTest extends BaseTestCase
         $trace->shouldReceive('error')->times(0);
         $trace->shouldReceive('warning')->times(0);
         $trace->shouldReceive('info')->times(1);
-        $edgeMismatchRecorder->recordMismatches($request);
+        $edgeMismatchRecorder->recordMismatches($request, "login");
     }
 
     /**
@@ -356,7 +356,7 @@ class SessionMismatchRecorderTest extends BaseTestCase
         $trace->shouldReceive('error')->times(0);
         $trace->shouldReceive('warning')->times(0);
         $trace->shouldReceive('info')->times(0);
-        $edgeMismatchRecorder->recordMismatches($request);
+        $edgeMismatchRecorder->recordMismatches($request, "login");
     }
 
     /**
@@ -373,6 +373,6 @@ class SessionMismatchRecorderTest extends BaseTestCase
         $trace->shouldReceive('error')->times(0);
         $trace->shouldReceive('warning')->times(0);
         $trace->shouldReceive('info')->times(0);
-        $edgeMismatchRecorder->recordMismatches($request);
+        $edgeMismatchRecorder->recordMismatches($request, "login");
     }
 }

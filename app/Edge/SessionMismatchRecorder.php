@@ -15,13 +15,26 @@ class SessionMismatchRecorder
 {
 
     // prometheus metric name used to record mismatches
-    const METRIC_SESSION_MISMATCH_COUNT = 'session_mismatch_total';
+    const METRIC_LOGIN_SESSION_MISMATCH_COUNT = 'login_session_mismatch_total';
+
+    const METRIC_POST_LOGIN_SESSION_MISMATCH_COUNT = 'post_login_session_mismatch_total';
 
     // temporary headers sent in response by Edge for mismatch metrics
     // should be small-case due to PHP parsing
     // definition exists in user-session plugin in Edge repo
     const HEADER_KEY_EDGE_MERCHANT_ID = "x-edge-jwt-merchant-id";
     const HEADER_KEY_EDGE_USER_ID = "x-edge-jwt-user-id";
+
+    // Headers used by JWE post login verification flows to ensure
+    // user_id and merchant_id identified by edge matches the user id and merchant id
+    // verified by dashboard backend from the session token.
+    const HEADER_KEY_EDGE_VERIFIED_MERCHANT_ID = "x-edge-verified-merchant-id";
+    const HEADER_KEY_EDGE_VERIFIED_USER_ID = "x-edge-verified-user-id";
+
+
+    const LOGIN_FLOW = 'login';
+
+    const POST_LOGIN = 'post_login';
 
     /**
      * used to set legacy data
@@ -36,6 +49,20 @@ class SessionMismatchRecorder
      * @var array
      */
     private $edgeData = [];
+
+    /**
+     * used to set verified data
+     * from dashboard session token.
+     * @var array
+     */
+    private $dashboardVerified = [];
+
+    /**
+     * used to set verified data
+     * from edge headers for post login verification.
+     * @var array
+     */
+    private $edgeVerified = [];
 
     /**
      * concatenates method with path (eg. POST /users/login)
@@ -64,9 +91,31 @@ class SessionMismatchRecorder
      * checks if there are any mismatches between oldData and newData
      * @return bool
      */
-    private function hasMismatches() : bool {
+    private function hasLoginMismatches() : bool {
+        if (empty($this->edgeData) || empty($this->legacyData)) {
+            return false;
+        }
+
         return $this->legacyData["merchant_id"] !== $this->edgeData["merchant_id"] ||
             $this->legacyData["user_id"] !== $this->edgeData["user_id"];
+    }
+
+    /**
+     * checks if there are any mismatches between edge verified user and merchant info and
+     * dashboard verified user and merchant info
+     * @return bool
+     */
+    private function hasPostLoginMismatches() : bool {
+        if (empty($this->dashboardVerified) && empty($this->edgeVerified)) {
+            return false;
+        }
+
+        if (empty($this->dashboardVerified)) {
+            return true;
+        }
+
+        return $this->dashboardVerified["merchant_id"] !== $this->edgeVerified["merchant_id"] ||
+            $this->dashboardVerified["user_id"] !== $this->edgeVerified["user_id"];
     }
 
     /**
@@ -79,11 +128,10 @@ class SessionMismatchRecorder
     public function setEdgeData(string $path, string $method, array|null $headers) : void
     {
         // if no headers received, exits early
-        if (empty($headers))
-        {
+        if (empty($headers)) {
             app('trace')->error(TraceCode::SESSION_MISMATCH_NEW_DATA_SKIPPED, [
                 "api_route" => $this->getRoute($path, $method),
-                "message"   => "malformed headers",
+                "message" => "malformed headers",
             ]);
             return;
         }
@@ -101,20 +149,19 @@ class SessionMismatchRecorder
         // validates that both userHeader and merchantHeader
         // are sequential arrays (with integer indexes)
         if ((!empty($userHeader) && !isset($userHeader[0])) ||
-            (!empty($merchantHeader) && !isset($merchantHeader[0])))
-        {
+            (!empty($merchantHeader) && !isset($merchantHeader[0]))) {
             app('trace')->error(TraceCode::SESSION_MISMATCH_NEW_DATA_SKIPPED, [
-                "api_route"       => $this->getRoute($path, $method),
-                "message"         => "malformed edge headers",
-                "user_header"     => $userHeader,
+                "api_route" => $this->getRoute($path, $method),
+                "message" => "malformed edge headers",
+                "user_header" => $userHeader,
                 "merchant_header" => $merchantHeader,
             ]);
             return;
         }
 
         $this->edgeData = [
-            "merchant_id"   => empty($merchantHeader) ? "" : $merchantHeader[0],
-            "user_id"       => empty($userHeader) ? "" : $userHeader[0],
+            "merchant_id" => empty($merchantHeader) ? "" : $merchantHeader[0],
+            "user_id" => empty($userHeader) ? "" : $userHeader[0],
         ];
 
     }
@@ -133,11 +180,10 @@ class SessionMismatchRecorder
             return;
 
         // skips if session user object is not present
-        if (empty($user))
-        {
+        if (empty($user)) {
             app('trace')->error(TraceCode::SESSION_MISMATCH_OLD_DATA_SKIPPED, [
                 "api_route" => $this->getRoute($path, $method),
-                "message"   => "malformed generic user",
+                "message" => "malformed generic user",
             ]);
             return;
         }
@@ -145,8 +191,51 @@ class SessionMismatchRecorder
         // finds current merchant for user session object
         $currentMerchant = $user->currentMerchant();
         $this->legacyData = [
-            "merchant_id"   => (empty($currentMerchant) || empty($currentMerchant->id)) ? "" : $currentMerchant->id,
-            "user_id"       => $user->id ?? "",
+            "merchant_id" => (empty($currentMerchant) || empty($currentMerchant->id)) ? "" : $currentMerchant->id,
+            "user_id" => $user->id ?? "",
+        ];
+    }
+
+    /**
+     * sets dashboardVerified data from session token in Authenticate middleware
+     * @param string $userId user id from session token
+     * @param string $merchantId merchant id from session token
+     * @return void
+     */
+    public function setDashboardVerifiedData(string $userId, string $merchantId) : void {
+
+         if (empty($this->edgeVerified)) {
+             return;
+         }
+
+         if (empty($userId) && empty($merchantId)) {
+             return;
+         }
+
+         $this->dashboardVerified = [
+             "merchant_id" => $merchantId,
+             "user_id" => $userId,
+         ];
+    }
+
+    /**
+     * sets edgeVerified data from headers added by edge to match edge verified data
+     * with dashboard verified data.
+     * @param \Illuminate\Http\Request $request
+     * @return void
+     */
+    public function setEdgeVerifiedData($request) : void {
+
+        $userId = $request->headers->get(self::HEADER_KEY_EDGE_VERIFIED_USER_ID);
+        $merchantId = $request->headers->get(self::HEADER_KEY_EDGE_VERIFIED_MERCHANT_ID);
+
+        if (empty($userId) && empty($merchantId)) {
+            return;
+        }
+
+        $this->edgeVerified = [
+            "merchant_id"   => $merchantId,
+            "user_id"       => $userId,
         ];
     }
 
@@ -156,36 +245,29 @@ class SessionMismatchRecorder
      * @param \Illuminate\Http\Request $request
      * @return void
      */
-    public function recordMismatches($request) : void {
-        try
-        {
+    public function recordMismatches($request, string $flow) : void {
 
-            $dimensions = $this->getMetricDimensions($request);
+        $dimensions = $this->getMetricDimensions($request);
 
-            // if no data is set, no need to compare
-            // it can happen for non-whitelisted API routes
-            // or some error (check logs for root cause)
-            if (empty($this->legacyData) || empty($this->edgeData))
-                return;
-
-            // checks if there are any mismatches
-            // skips if there is none
-            if (!$this->hasMismatches())
-                return;
-
-            app('metrics')->count(self::METRIC_SESSION_MISMATCH_COUNT, 1, $dimensions);
+        if ($flow === self::LOGIN_FLOW  && $this->hasLoginMismatches()) {
+            app('metrics')->count(self::METRIC_LOGIN_SESSION_MISMATCH_COUNT, 1, $dimensions);
             app('trace')->info(TraceCode::SESSION_MISMATCH, [
-               "old_data" => $this->legacyData,
-               "new_data" => $this->edgeData,
-               "dimensions" => $dimensions,
+                "flow" => self::LOGIN_FLOW,
+                "old_data" => $this->legacyData,
+                "new_data" => $this->edgeData,
+                "dimensions" => $dimensions,
             ]);
+            return;
         }
-        catch (\Throwable $throwable)
-        {
-            app('trace')->warning(TraceCode::RECORD_SESSION_MISMATCH_FAILED, [
-                'message' => $throwable->getMessage() ?? 'unknown_message',
+
+        if ($flow === self::POST_LOGIN && $this->hasPostLoginMismatches()) {
+            app('metrics')->count(self::METRIC_POST_LOGIN_SESSION_MISMATCH_COUNT, 1, $dimensions);
+            app('trace')->info(TraceCode::SESSION_MISMATCH, [
+                "flow" => self::POST_LOGIN,
+                "dashboard_verified" => $this->dashboardVerified,
+                "edge_verified" => $this->edgeVerified,
+                "dimensions" => $dimensions,
             ]);
         }
     }
-
 }

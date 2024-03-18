@@ -2,6 +2,8 @@
 
 namespace App\Edge;
 
+use GuzzleHttp\Cookie\SetCookie as CookieParser;
+use App\Trace\TraceCode;
 /**
  * manages response headers received from API
  * which needs to be forwarded
@@ -19,16 +21,20 @@ class ApiResponseForwarder
      */
     const ROUTE_TO_RESPONSE_HEADERS = [
         'POST users/login' => [
-            'set-cookie' => true
+            "Set-Cookie" => true,
         ]
     ];
 
+    const COOKIE_HEADER = "Set-Cookie";
 
     /**
      * Headers to be forwarded back to client from API
      * @var array
      */
     protected $headers = array(
+    );
+
+    protected $cookies = array(
     );
 
     /**
@@ -40,16 +46,74 @@ class ApiResponseForwarder
      */
     public function setHeaders(string $path, string $method, array $allHeaders): void
     {
-        $apiRoute = strtoupper($method) . ' ' . $path;
-        if (!array_key_exists($apiRoute, self::ROUTE_TO_RESPONSE_HEADERS)) {
-            return;
+        try {
+                $apiRoute = strtoupper($method) . ' ' . $path;
+                if (!array_key_exists($apiRoute, self::ROUTE_TO_RESPONSE_HEADERS)) {
+                    return;
+                }
+
+                // array_intersect_key is being used as $allHeaders has both header key and values
+                $whitelistedHeaders = array_intersect_key($allHeaders,
+                    self::ROUTE_TO_RESPONSE_HEADERS[$apiRoute]
+                );
+
+                foreach ($whitelistedHeaders as $key => $value) {
+                    if ($key === self::COOKIE_HEADER) {
+
+                        if (is_array($value)) {
+                            foreach ($value as $cookie) {
+                                $this->setCookies($cookie);
+                            }
+                        } else {
+                            $this->setCookies($value);
+                        }
+
+                    } else {
+                        $this->headers[] = [$key => $value];
+                    }
+                }
+
+        } catch (\Exception $e) {
+            app('trace')->error(TraceCode::EDGE_SETTING_HEADERS_FROM_API_FAILED, [
+                "path"    => $path,
+                "method"  => $method,
+                "error" => $e->getMessage() ?? "unknown error",
+            ]);
         }
 
-        // array_intersect_key is being used as $allHeaders has both header key and values
-        $whitelistedHeaders = array_intersect_key($allHeaders,
-            self::ROUTE_TO_RESPONSE_HEADERS[$apiRoute]
-        );
-        $this->headers = $whitelistedHeaders;
+    }
+
+    /**
+     * sets all whitelisted cookies to be forwarded in response as cookies after parsing.
+     * @param string $path
+     * @param string $method
+     * @param array $allHeaders
+     * @return void
+     */
+    private function setCookies(string $cookieString): void
+    {
+        try {
+            $setCookie = CookieParser::fromString($cookieString);
+
+            $maxAgeInMinutes = $setCookie->getMaxAge() === null ? 0 : (int)($setCookie->getMaxAge()/60);
+
+            $cookie = cookie(
+                $setCookie->getName(),
+                $setCookie->getValue(),
+                $maxAgeInMinutes,
+                $setCookie->getPath(),
+                $setCookie->getDomain(),
+                $setCookie->getSecure(),
+                $setCookie->getHttpOnly()
+            );
+            $this->cookies[] = $cookie;
+
+        } catch (\Exception $e) {
+            app('trace')->error(TraceCode::EDGE_COOKIE_PARSING_FAILED, [
+                "cookie"    => $cookieString ?? "unknown cookie",
+                "error" => $e->getMessage() ?? "unknown error",
+            ]);
+        }
     }
 
     /**
@@ -59,6 +123,11 @@ class ApiResponseForwarder
     public function getHeaders(): array
     {
         return $this->headers;
+    }
+
+    public function getCookies(): array
+    {
+        return $this->cookies;
     }
 
 }

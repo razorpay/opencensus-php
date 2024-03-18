@@ -875,6 +875,15 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::USER_LOGIN, $traceData);
 
+        try {
+            app('edgeMismatchRecorder')->setLegacyData('users/login', 'POST', $genericUser);
+        } catch (\Throwable $e) {
+            app('trace')->warning(TraceCode::EDGE_USER_AUTH_MISC_CODE, [
+                'trace' => $e->getTrace() ?? "unknown_trace",
+                'message' => $e->getMessage() ?? "unknown_message"
+            ]);
+        }
+        
         return [$error, $this->addAccessTokenAndMidToResponse($res, $genericUser), $httpCode];
     }
 
@@ -2412,7 +2421,6 @@ class Service extends Base\Service
         }
 
 
-        app('edgeMismatchRecorder')->setLegacyData($route, $httpVerb, $genericUser);
         return [$error, $genericUser, $httpCode];
     }
 
