@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Request\Requests;
 use RZP\Http\Response\StatusCode;
@@ -112,7 +113,10 @@ class Service extends Base\Service
         $this->merchant->getValidator()->validateBusinessBankingActivated();
 
         $input[Entity::TYPE] = Type::RX_TRANSACTIONS;
-
+        if ($this->isChargeCollectionsInvoicingExptEnabledForX($this->merchant->getId()))
+        {
+            $input[Entity::TYPE] = [Type::RX_TRANSACTIONS, Type::X_CHARGE_COLLECTIONS];
+        }
         $invoices = $this->repo->merchant_invoice->fetch($input, $this->merchant->getId());
 
         $invoices = $invoices->toArrayPublic();
@@ -542,5 +546,15 @@ class Service extends Base\Service
             ]);
 
         return $result;
+    }
+
+    private function isChargeCollectionsInvoicingExptEnabledForX($mid): bool
+    {
+        $properties = [
+            'id' => $mid,
+            'experiment_id' => $this->app['config']->get('app.charge_collections_invoicing_x_experiment_id'),
+            'request_data'  => json_encode(['mid' => $mid]),
+        ];
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 }

@@ -56,7 +56,17 @@ class PgEInvoice extends Core
 
             // TODO: CRN/DBN needs to be evaluated properly here as we might have to send the 0
             // as tax rate or something different
-            if(in_array(Invoice\Type::getTypeFromDescription($invoiceItem[InvoiceReport::DESCRIPTION]), Invoice\Type::$taxablePrimaryCommissionTypes) === false)
+
+            $invoiceItemType = Invoice\Type::getTypeFromDescription($invoiceItem[InvoiceReport::DESCRIPTION]);
+            // For dynamic descriptions above method will return empty and we fetch type from description from DB
+            if (empty($invoiceItemType))
+            {
+                $invoiceLineItem = $this->repo
+                    ->merchant_invoice
+                    ->fetchInvoiceReportDataByDescriptionForPrimary($eInvoiceEntity->merchant->getId(), $input['month'], $input['year'], $invoiceItem[InvoiceReport::DESCRIPTION]);
+                $invoiceItemType = $invoiceLineItem->getType();
+            }
+            if(in_array($invoiceItemType, Invoice\Type::$taxablePrimaryCommissionTypes) === false)
             {
                 $gstRate = 0;
             }

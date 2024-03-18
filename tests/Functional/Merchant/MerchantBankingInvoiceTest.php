@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
 use RZP\Models\Admin\Permission;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -18,6 +19,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class MerchantBankingInvoiceTest extends TestCase
 {
+    use MocksSplitz;
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
 
@@ -517,6 +519,8 @@ class MerchantBankingInvoiceTest extends TestCase
             'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
         ];
 
+        $this->mockAllSplitzTreatment();
+
         $this->makeRequestAndGetContent($request);
 
         $entities = $this->getEntities('merchant_invoice', [], true);
@@ -537,8 +541,10 @@ class MerchantBankingInvoiceTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $data['rx_transactions']['balance_id'] = $balanceId;
+        $data['x_charge_collections']['balance_id'] = $balanceId;
 
         $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+        $this->assertArraySelectiveEquals($invoiceEntities['x_charge_collections'], $data['x_charge_collections']);
 
         Carbon::setTestNow();
     }
@@ -989,6 +995,8 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->ba->cronAuth();
 
+        $this->mockAllSplitzTreatment();
+
         $request = [
             'url'     => '/merchants/invoice/create',
             'method'  => 'POST',
@@ -1079,6 +1087,8 @@ class MerchantBankingInvoiceTest extends TestCase
             'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
         ];
 
+        $this->mockAllSplitzTreatment();
+
         $expectedContent = $this->testData[__FUNCTION__]['expectedContent'];
 
         $this->setupEInvoiceClientResponse($expectedContent);
@@ -1107,8 +1117,10 @@ class MerchantBankingInvoiceTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $data['rx_transactions']['balance_id'] = $balanceId;
+        $data['x_charge_collections']['balance_id'] = $balanceId;
 
         $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+        $this->assertArraySelectiveEquals($invoiceEntities['x_charge_collections'], $data['x_charge_collections']);
 
         $this->assertEquals('10000000000000', $eInvoiceEntities['merchant_id']);
         $this->assertEquals(2, $eInvoiceEntities['month']);
@@ -1163,6 +1175,24 @@ class MerchantBankingInvoiceTest extends TestCase
             'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
         ];
 
+        $this->mockAllSplitzTreatment();
+
+        $this->app['config']->set('applications.charge_collections.mock', false);
+        $mockChargeCollections = \Mockery::mock('RZP\Services\ChargeCollections')->makePartial();
+        $this->app->instance('charge_collections', $mockChargeCollections);
+
+        $response = [];
+        $response['items'] = [];
+        $lineItem1 =  [
+            'name' => 'Line Item 1',
+            'amount' => 0,
+            'tax' => 0,
+        ];
+        array_push($response['items'], $lineItem1);
+
+        $mockChargeCollections->shouldReceive('getReceiptForInvoice')
+            ->andReturn($response);
+
         $this->makeRequestAndGetContent($request);
 
         $entities = $this->getEntities('merchant_invoice', [], true);
@@ -1187,8 +1217,10 @@ class MerchantBankingInvoiceTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $data['rx_transactions']['balance_id'] = $balanceId;
+        $data['x_charge_collections']['balance_id'] = $balanceId;
 
         $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+        $this->assertArraySelectiveEquals($invoiceEntities['x_charge_collections'], $data['x_charge_collections']);
 
         $this->assertEmpty($eInvoiceEntities);
 
@@ -2249,6 +2281,8 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->ba->cronAuth();
 
+        $this->mockAllSplitzTreatment();
+
         $request = [
             'url'     => '/merchants/invoice/create',
             'method'  => 'POST',
@@ -2298,6 +2332,8 @@ class MerchantBankingInvoiceTest extends TestCase
         $this->createDataForFetchingBankingInvoices();
 
         $this->ba->cronAuth();
+
+        $this->mockAllSplitzTreatment();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -3173,7 +3209,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $pdfMock = \Mockery::mock('RZP\Models\Invoice\PdfGenerator')->makePartial();
         $this->app->instance('invoice_pdf_generator', $pdfMock);
-        
+
         if (empty($expectedData))
         {
             $pdfMock->shouldReceive('generateBankingInvoice')->andReturn('testFile.txt');
@@ -3185,7 +3221,7 @@ class MerchantBankingInvoiceTest extends TestCase
                     $this->assertArraySelectiveEquals($expectedData, $data);
                     return true;
                 })->andReturn('testFile.txt');
-        }      
+        }
 
         $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
         $this->app->instance('ufh.service', $ufhService);

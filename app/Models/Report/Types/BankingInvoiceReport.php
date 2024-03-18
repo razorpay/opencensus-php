@@ -50,7 +50,7 @@ class BankingInvoiceReport extends BaseReport
     const COMBINED                  = 'combined';
     const E_INVOICE_DETAILS         = 'e_invoice_details';
     const SELLER_ENTITY             = 'seller_entity';
-    
+
     const RZPL   = 'RZPL';
     const SELLER = 'seller';
 
@@ -67,8 +67,9 @@ class BankingInvoiceReport extends BaseReport
     ];
 
     public $documentTypeMap         = [
-        Type::RX_TRANSACTIONS   =>    DocumentTypes::INV,
-        Type::RX_ADJUSTMENTS    =>    DocumentTypes::CRN
+        Type::RX_TRANSACTIONS       =>    DocumentTypes::INV,
+        Type::RX_ADJUSTMENTS        =>    DocumentTypes::CRN,
+        Type::X_CHARGE_COLLECTIONS  =>    DocumentTypes::INV
     ];
 
     protected $month;
@@ -213,7 +214,7 @@ class BankingInvoiceReport extends BaseReport
         $this->trace->info(TraceCode::MERCHANT_BANKING_INVOICE_REPORT_REQUEST_BY_SELLER, $input);
 
         (new JitValidator)->rules(self::VALIDATION_RULES_BY_SELLER)->input($input)->validate();
-        
+
         $this->month = $input['month'];
 
         $this->year = $input['year'];

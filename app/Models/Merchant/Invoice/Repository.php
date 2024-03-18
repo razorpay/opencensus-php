@@ -51,7 +51,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->whereIn($typeColumn, [Type::RX_TRANSACTIONS, Type::RX_ADJUSTMENTS])
+                    ->whereIn($typeColumn, [Type::RX_TRANSACTIONS, Type::RX_ADJUSTMENTS, Type::X_CHARGE_COLLECTIONS])
                     ->where(Entity::MONTH, '=', $month)
                     ->where(Entity::YEAR, '=', $year)
                     ->get();
@@ -63,7 +63,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->whereIn($typeColumn, [Type::RX_TRANSACTIONS, Type::RX_ADJUSTMENTS])
+            ->whereIn($typeColumn, [Type::RX_TRANSACTIONS, Type::RX_ADJUSTMENTS, Type::X_CHARGE_COLLECTIONS])
             ->where(Entity::MONTH, '=', $month)
             ->where(Entity::YEAR, '=', $year)
             ->where(Entity::INVOICE_NUMBER, '=', $invoiceNumber)
@@ -186,9 +186,45 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::BALANCE_ID, '=', $balanceId)
-            ->whereIn($typeColumn, [Type::RX_TRANSACTIONS, Type::RX_ADJUSTMENTS])
+            ->whereIn($typeColumn, [Type::RX_TRANSACTIONS, Type::RX_ADJUSTMENTS, Type::X_CHARGE_COLLECTIONS])
             ->where(Entity::MONTH, '=', $month)
             ->where(Entity::YEAR, '=', $year)
             ->get();
+    }
+
+    // Gets all invoice entities for a merchant for given month and year by description
+    public function fetchInvoiceReportDataByDescriptionForPrimary(string $merchantId, int $month, int $year, $description = null)
+    {
+        $balanceIdCol   = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeCol = $this->repo->balance->dbColumn(Entity::TYPE);
+
+        $merchantInvoiceBalanceIdCol = $this->dbColumn(Entity::BALANCE_ID);
+
+        $result = $this->newQuery()
+            ->selectRaw(Table::MERCHANT_INVOICE . '.*')
+            ->join(Table::BALANCE, $merchantInvoiceBalanceIdCol , '=', $balanceIdCol)
+            ->merchantId($merchantId)
+            ->where(Entity::YEAR, '=', $year)
+            ->where(Entity::MONTH, '=', $month)
+            ->where(Entity::DESCRIPTION, '=', $description)
+            ->where($balanceTypeCol, '=', Product::PRIMARY);
+
+        return $result->first();
+    }
+
+    public function addQueryParamType($query, $params)
+    {
+        $type = $params[Entity::TYPE];
+
+        $typeColumn = $this->repo->merchant_invoice->dbColumn(Entity::TYPE);
+
+        if (is_array($type) === true)
+        {
+            $query->whereIn($typeColumn, $type);
+        }
+        else if (is_string($type) === true)
+        {
+            $query->where($typeColumn, '=', $type);
+        }
     }
 }

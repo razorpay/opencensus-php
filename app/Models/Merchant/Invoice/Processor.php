@@ -70,6 +70,19 @@ class Processor extends Base\Core
 
     const CACHE_TTL = 86400; // 24 hours
 
+    // Charge collections response keys
+    const REQUEST_MONTH         = 'month';
+    const REQUEST_YEAR          = 'year';
+    const REQUEST_MERCHANT_ID   = 'merchantId';
+    const REQUEST_NAMESPACE     = 'namespace';
+
+    const REQUEST_NAMESPACE_PG  = 'PG';
+    const REQUEST_NAMESPACE_X   = 'X';
+
+    const RESPONSE_ITEMS    = 'items';
+    const RESPONSE_NAME     = 'name';
+    const RESPONSE_AMOUNT   = 'amount';
+
     public function __construct(string $merchantId, int $month, int $year, string $cacheTag = '')
     {
         parent::__construct();
@@ -363,9 +376,10 @@ class Processor extends Base\Core
             foreach ($details as $type => $feeDetails)
             {
                 // charge collections handles collection for multiple products
-                if ($type == Type::CHARGE_COLLECTIONS)
+                if (($type == Type::CHARGE_COLLECTIONS) or ($type == Type::X_CHARGE_COLLECTIONS))
                 {
-                    if ($this->isChargeCollectionsInvoicingExptEnabled() === true) {
+                    if ((($type == Type::CHARGE_COLLECTIONS) and ($this->isChargeCollectionsInvoicingExptEnabled() === true))
+                        or (($type == Type::X_CHARGE_COLLECTIONS) and ($this->isChargeCollectionsInvoicingExptEnabledForX() === true))) {
                         foreach ($feeDetails as $feeDetail) {
                             $params = [
                                 Entity::MONTH => $this->month,
@@ -623,6 +637,39 @@ class Processor extends Base\Core
                 $bankingReversalsFeeAmount);
         }
 
+        if (($type === Type::X_CHARGE_COLLECTIONS) and ($this->isChargeCollectionsInvoicingExptEnabledForX() === true))
+        {
+            $chargeCollectionsFeeResponse = $this->app->charge_collections->getReceiptForInvoice([
+                self::REQUEST_MONTH         => $this->month,
+                self::REQUEST_YEAR          => $this->year,
+                self::REQUEST_MERCHANT_ID   => $this->merchantId,
+                self::REQUEST_NAMESPACE     => self::REQUEST_NAMESPACE_X,
+            ]);
+
+            $this->logMerchantInvoiceResult(
+                $type,
+                'banking_invoice_' . $type,
+                'x_charge_collections_fee_amount',
+                $chargeCollectionsFeeResponse,
+                $balanceId
+            );
+
+            // prepare response
+            $response = [];
+            // taxable type
+            foreach ($chargeCollectionsFeeResponse[self::RESPONSE_ITEMS] as $item)
+            {
+                $responseItem = [
+                    Entity::DESCRIPTION     => $item[self::RESPONSE_NAME],
+                    Entity::AMOUNT          => $item[self::RESPONSE_AMOUNT],
+                    Entity::TAX             => (int) round($item[self::RESPONSE_AMOUNT] * Constants::GST_PERCENTAGE),
+                ];
+                array_push($response, $responseItem);
+            }
+
+            return $response;
+        }
+
         return $formattedFeesForTypeAndBalance;
     }
 
@@ -649,7 +696,12 @@ class Processor extends Base\Core
         }
         else {
             // else running the query and storing in cache
-            $chargeCollectionsFeeResponse = $this->app->charge_collections->getReceiptForInvoice(['month' => $this->month, 'year' => $this->year, 'merchantId' => $this->merchantId]);
+            $chargeCollectionsFeeResponse = $this->app->charge_collections->getReceiptForInvoice([
+                self::REQUEST_MONTH         => $this->month,
+                self::REQUEST_YEAR          => $this->year,
+                self::REQUEST_MERCHANT_ID   => $this->merchantId,
+                self::REQUEST_NAMESPACE     => self::REQUEST_NAMESPACE_PG,
+            ]);
 
             $this->storeResultsInCache($cacheKey, $chargeCollectionsFeeResponse);
         }
@@ -666,12 +718,12 @@ class Processor extends Base\Core
         // prepare response
         $response = [];
         // taxable type
-        foreach ($chargeCollectionsFeeResponse['items'] as $item)
+        foreach ($chargeCollectionsFeeResponse[self::RESPONSE_ITEMS] as $item)
         {
             $responseItem = [
-                Entity::DESCRIPTION => $item['name'],
-                Entity::AMOUNT => $item['amount'],
-                Entity::TAX => (int) round($item['amount'] * Constants::GST_PERCENTAGE),
+                Entity::DESCRIPTION => $item[self::RESPONSE_NAME],
+                Entity::AMOUNT      => $item[self::RESPONSE_AMOUNT],
+                Entity::TAX         => (int) round($item[self::RESPONSE_AMOUNT] * Constants::GST_PERCENTAGE),
             ];
             array_push($response, $responseItem);
         }
@@ -1470,6 +1522,16 @@ class Processor extends Base\Core
         $properties = [
             'id' => $this->merchantId,
             'experiment_id' => $this->app['config']->get('app.charge_collections_invoicing_experiment_id'),
+            'request_data'  => json_encode(['mid' => $this->merchantId]),
+        ];
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    private function isChargeCollectionsInvoicingExptEnabledForX(): bool
+    {
+        $properties = [
+            'id' => $this->merchantId,
+            'experiment_id' => $this->app['config']->get('app.charge_collections_invoicing_x_experiment_id'),
             'request_data'  => json_encode(['mid' => $this->merchantId]),
         ];
         return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');

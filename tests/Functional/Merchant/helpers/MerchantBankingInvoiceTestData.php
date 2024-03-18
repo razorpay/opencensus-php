@@ -10,6 +10,10 @@ return [
             'amount' => 500,
             'tax'    => 90,
         ],
+        'x_charge_collections' => [
+            'amount' => 10000,
+            'tax'    => 1800,
+        ],
     ],
     'testBankingInvoiceEntityCreateWithEInvoice' => [
         'rx_transactions' => [
@@ -232,11 +236,11 @@ return [
                 'address1' => 'abc street',
             ],
             'value_details' => [
-                'total_assessable_value' => '5.00',
-                'total_invoice_value' => '5.90',
+                'total_assessable_value' => '100.00',
+                'total_invoice_value' => '118.00',
                 'total_igst_value' => '0.00',
-                'total_sgst_value' => '0.45',
-                'total_cgst_value' => '0.45',
+                'total_sgst_value' => '9.00',
+                'total_cgst_value' => '9.00',
             ],
             'item_list' => [
                 [
@@ -245,14 +249,14 @@ return [
                     'hsn_code' => '997158',
                     'unit' => 'OTH',
                     'quantity' => 1,
-                    'unit_price' => '5.00',
-                    'total_amount' => '5.00',
-                    'assessable_value' => '5.00',
+                    'unit_price' => '100.00',
+                    'total_amount' => '100.00',
+                    'assessable_value' => '100.00',
                     'gst_rate' => 18,
                     'igst_amount' => '0.00',
-                    'sgst_amount' => '0.45',
-                    'cgst_amount' => '0.45',
-                    'total_item_value' => '5.90',
+                    'sgst_amount' => '9.00',
+                    'cgst_amount' => '9.00',
+                    'total_item_value' => '118.00',
                 ],
             ],
         ]
@@ -261,6 +265,10 @@ return [
         'rx_transactions' => [
             'amount' => 500,
             'tax'    => 90,
+        ],
+        'x_charge_collections' => [
+            'amount' => 10000,
+            'tax'    => 1800,
         ],
         'expectedContent' => [
             'transaction_details' => [
@@ -313,6 +321,10 @@ return [
     ],
     'testBankingInvoiceEntityCreateWithEInvoiceForZeroAmountLineItem' => [
         'rx_transactions' => [
+            'amount' => 0,
+            'tax'    => 0,
+        ],
+        'x_charge_collections' => [
             'amount' => 0,
             'tax'    => 0,
         ],
@@ -533,8 +545,8 @@ return [
                     [
                         'month'          => 7,
                         'year'           => 2019,
-                        'amount'         => 1400,
-                        'tax'            => 252,
+                        'amount'         => 21400,
+                        'tax'            => 3852,
                     ],
                 ],
             ],
@@ -577,14 +589,14 @@ return [
                     [
                         'month'          => 8,
                         'year'           => 2019,
-                        'amount'         => 0,
-                        'tax'            => 0,
+                        'amount'         => 20000,
+                        'tax'            => 3600,
                     ],
                     [
                         'month'          => 7,
                         'year'           => 2019,
-                        'amount'         => 1400,
-                        'tax'            => 252,
+                        'amount'         => 21400,
+                        'tax'            => 3852,
                     ],
                 ],
             ],

@@ -261,7 +261,7 @@ class InvoiceReport extends BaseReport
                         ]
                     );
                 }
-                
+
                 // TODO: keep this edge case until a solution is finalised on this
                 continue;
             }

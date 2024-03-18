@@ -19,6 +19,9 @@ class Type
     // Adjustment on Razorpay-X Transactions
     const RX_ADJUSTMENTS        = 'rx_adjustments';
 
+    // Commission on Razorpay-X fee charged by products onboarded on charge collections
+    const X_CHARGE_COLLECTIONS    = 'x_charge_collections';
+
     // Commission on All Validations
     const VALIDATION            = 'validation';
 
@@ -66,6 +69,7 @@ class Type
         self::PLATFORM_FEE          => 997158,
         self::RX_TRANSACTIONS       => 997158,
         self::RX_ADJUSTMENTS        => 997158,
+        self::X_CHARGE_COLLECTIONS  => 997158,
         self::INSTANT_REFUNDS       => 997158,
         // This is kept to support older invoice
         self::NON_CARD              => 997158,
@@ -147,6 +151,7 @@ class Type
         return [
             self::RX_TRANSACTIONS,
             self::RX_ADJUSTMENTS,
+            self::X_CHARGE_COLLECTIONS,
         ];
     }
 
