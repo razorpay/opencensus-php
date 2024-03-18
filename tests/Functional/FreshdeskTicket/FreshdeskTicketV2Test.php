@@ -1565,6 +1565,24 @@ class FreshdeskTicketV2Test extends TestCase
 
     }
 
+    public function testCreateTicketForUserRzpXWithInvalidSubject()
+    {
+        $response = $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+        $this->assertEquals($response['id'], $ticket['id']);
+
+        $this->assertEquals('rzpx', $fdInstance);
+
+        $this->assertEquals('RazorpayX Support Ticket', $ticket['ticket_details']['ticket_subject']);
+
+    }
+
     public function testCreateTicketFreshdeskError()
     {
         $this->expectFreshdeskRequestAndRespondWith('tickets', 'POST',

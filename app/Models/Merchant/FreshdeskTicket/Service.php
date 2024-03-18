@@ -1914,6 +1914,19 @@ class Service extends Base\Service
             $input['email'] = $this->merchant->getEmail() ?? $this->user->getEmail();
         }
 
+        $pattern = '/^[a-zA-Z0-9,| -]+$/';
+
+        $subject = $input[Constants::SUBJECT];
+
+        if (empty($subject))
+        {
+            $input[Constants::SUBJECT] = 'RazorpayX Support Ticket';
+        }
+        else if (!preg_match($pattern, $subject) || strlen($subject) > 100)
+        {
+            $input[Constants::SUBJECT] = 'RazorpayX Support Ticket';
+        }
+
         $input['name'] = $this->user->getName() ?? $this->merchant->getName();
 
         $input['phone'] = $input['phone'] ?? $this->merchant->merchantDetail->getContactMobile();

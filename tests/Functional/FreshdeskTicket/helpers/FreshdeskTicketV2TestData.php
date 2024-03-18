@@ -901,6 +901,29 @@ return [
         ],
     ],
 
+    'testCreateTicketForUserRzpXWithInvalidSubject' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard_x/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket | subject | @#$%^&*',
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation',
+                    'cf_merchant_id'              => 'test123',
+                    'cf_category'                 => 'RazorpayX'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
+
     'testCreateTicketFreshdeskError' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',
