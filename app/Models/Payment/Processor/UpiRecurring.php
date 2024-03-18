@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Services\Reminders;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Notification;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
@@ -958,6 +959,13 @@ trait UpiRecurring
             $upiMandate->setGatewayData($upiMandateGatewayData);
 
             $this->repo->saveOrFail($upiMandate);
+        }
+
+        if(($payment->isUpiAutoRecurring() === true) and ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED))
+        {
+            $notificationCore = new Notification\Core();
+
+            $notificationCore->updateNotificationEntityIfApplicable($payment->getApiOrderId(), null, $internalStatus);
         }
 
         // For Auto Recurring

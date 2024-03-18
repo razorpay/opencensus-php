@@ -18,6 +18,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
 use RZP\Models\Discount;
+use RZP\Models\Notification;
 use RZP\Models\Order\ProductType;
 use RZP\Models\Upi\Turbo\Utils;
 use RZP\Models\Vpa\Entity as VpaEntity;
@@ -5831,7 +5832,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
         else if ($this->isUpiAutoRecurring() === true)
         {
-            return self::PAYMENT_TIMEOUT_UPI_RECURRING;
+            $notificationCore = new Notification\Core();
+
+            $notificationCount = $notificationCore->fetchNotificationCount($this->getApiOrderId());
+
+            if($notificationCount === 0)
+            {
+                return self::PAYMENT_TIMEOUT_UPI_RECURRING;
+            }
         }
         else if ($this->isCardMandateRecurringAutoPayment() === true)
         {

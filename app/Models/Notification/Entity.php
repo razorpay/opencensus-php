@@ -153,6 +153,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::NPCI_TXN_ID, $value);
     }
 
+    public function setBankRRN($value)
+    {
+        return $this->setAttribute(self::BANK_RRN, $value);
+    }
+
     public function setGatewayRequest($value)
     {
         return $this->setAttribute(self::GATEWAY_REQUEST, $value);

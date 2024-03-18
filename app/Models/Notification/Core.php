@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Payment;
 use RZP\Services\Mutex;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -332,15 +333,42 @@ class Core extends Base\Core
         $gateway = $terminal->getGateway();
 
         $gatewayRequest = [
-            'seqNo'             => $this->upiMandate['sequence_number'],
-            'merchantTranId'    => $this->createMerchantTranId($notification),
-            'flow'              => $this->upiMandate['gateway_data']['flow']
+            Constants::SEQUENCE_NUMBER  => $this->upiMandate['sequence_number'],
+            Constants::MERCHANT_TRAN_ID => $this->createMerchantTranId($notification),
+            Constants::FLOW             => $this->upiMandate['gateway_data']['flow'],
+            Constants::PAYMENT_SUCCESS  => false,
         ];
 
         $notification->setGatewayMerchantId($terminal->getGatewayMerchantId());
         $notification->setGateway($gateway);
         $notification->setGatewayRequest($gatewayRequest);
         $this->repo->saveOrFail($notification);
+    }
+
+    public function updateNotificationEntityIfApplicable($orderId, $attempts = null, $internalStatus = null)
+    {
+        $notificationCount = $this->fetchNotificationCount($orderId);
+
+        if($notificationCount > 0)
+        {
+            $notification = $this->findNotification($orderId);
+
+            $gatewayRequest = $notification->getGatewayRequest();
+
+            if(($internalStatus !== null) and ($internalStatus === Payment\UpiMetadata\InternalStatus::AUTHORIZED))
+            {
+                $gatewayRequest[Constants::PAYMENT_SUCCESS] = true;
+            }
+
+            if($attempts !== null)
+            {
+                $gatewayRequest[Constants::PAYMENT_ATTEMPTS] = $attempts;
+            }
+
+            $notification->setGatewayRequest($gatewayRequest);
+
+            $this->repo->saveOrFail($notification);
+        }
     }
 
     protected function prepareGatewayRequest($terminal, $notification)
@@ -421,6 +449,8 @@ class Core extends Base\Core
 
             $notification->setProvider($provider);
             $notification->setVpa($gatewayRequest['payment']['vpa']);
+            $notification->setNpciTxnId($response['upi']['npci_txn_id']);
+            $notification->setBankRRN($response['upi']['npci_reference_id']);
             $notification->setGatewayResponse($payerResponseCodeDes);
         }
     }
@@ -431,6 +461,22 @@ class Core extends Base\Core
     public function findDeliveredNotification($orderId)
     {
         return $this->repo->notification->findDeliveredNotificationByOrderId($orderId);
+    }
+
+    /**
+     * @return Entity
+     */
+    public function findNotification($orderId)
+    {
+        return $this->repo->notification->findByOrderId($orderId);
+    }
+
+    /**
+     * @return int
+     */
+    public function fetchNotificationCount($orderId)
+    {
+        return $this->repo->notification->fetchNotificationCount($orderId);
     }
 
     protected function getProviderBank($vpa)

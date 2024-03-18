@@ -5982,6 +5982,15 @@ class Processor
 
         (new UpiMandate\Validator())->validateUpiMandateStatus($upiMandate);
 
+        //a new payment can't be created, if a payment already exists which is not in failed state.
+        $paymentCount = $this->repo->payment->fetchNonFailedPaymentCountByOrder(
+            Order\Entity::verifyIdAndSilentlyStripSign($input['order_id']));
+
+        if($paymentCount > 0)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PRIOR_PAYMENT_IN_PROGRESS);
+        }
+
         $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
 
         //order attempt count should not be greater than 10.
@@ -8702,6 +8711,16 @@ class Processor
                 'attempts'      => $this->order->getAttempts(),
             ]);
 
+        if(($payment->isUpiRecurring() === true) and
+            (empty($input[Payment\Entity::TOKEN]) === false))
+        {
+           $notificationCore = new Notifications\Core();
+
+           $notificationCore->updateNotificationEntityIfApplicable(
+               $this->order->getId(),
+               $this->order->getAttempts());
+        }
+
         if ($this->order->isExternal() === false)
         {
             $this->repo->saveOrFail($this->order);
@@ -9816,17 +9835,23 @@ class Processor
 
                 if (strtolower($variant) === 'on')
                 {
-                    $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO;
+                    $notificationCore = new Notifications\Core();
 
-                    $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($payment->getId(),$payment->merchant->getId());
+                    $notificationCount = $notificationCore->fetchNotificationCount($payment['order_id']);
 
-                    if ($canRetry === true)
+                    if($notificationCount === 0)
                     {
-                        $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_TIMEOUT_FOR_UPI_RECURRING_AUTO_DEBIT_RETRIES;
-                    }
+                        $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO;
 
-                    if ($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry) $autoTimeoutDuration = $defaultUpiAutoCaptureExpiry;
-                    if ($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry) $manualTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                        $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($payment->getId(), $payment->merchant->getId());
+
+                        if ($canRetry === true) {
+                            $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_TIMEOUT_FOR_UPI_RECURRING_AUTO_DEBIT_RETRIES;
+                        }
+
+                        if ($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry) $autoTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                        if ($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry) $manualTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                    }
                 }
 
             } elseif ($payment->getMethod() === Constants::CARD)
