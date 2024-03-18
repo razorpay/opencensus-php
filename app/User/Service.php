@@ -577,7 +577,7 @@ class Service extends Base\Service
         $request = new \App\Admin\ApiRequestAny([
           'mode'      => 'live',
         ]);
-        
+
         return $request->send('users/2fa', 'POST');
     }
 
@@ -2748,7 +2748,14 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::GET_PARTNER_CONFIG_GUEST, $input);
 
-        return $this->requestAPI($input,'partner_config_guest', 'GET');
+        $options = [];
+
+        if (Request::header(Headers::ONBOARDING_SIGNATURE))
+        {
+            $options['headers'][Headers::ONBOARDING_SIGNATURE] = Request::header(Headers::ONBOARDING_SIGNATURE);
+        }
+
+        return $this->requestAPI($input,'partner_config_guest', 'GET', $options);
     }
 
     protected function checkAccessOfUserOnMerchant($merchantId)
