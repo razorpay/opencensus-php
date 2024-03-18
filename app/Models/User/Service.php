@@ -248,7 +248,8 @@ class Service extends Base\Service
             }
 
             try {
-                if ($operation == 'createOauth' and (empty($signupCampaign) === false))
+                if (($operation == 'createOauth' or $input[Entity::SIGNUP_VIA_EMAIL] === 1)
+                     and (empty($signupCampaign) === false))
                 {
                     $merchant = $this->repo->merchant->findOrFail($merchantId);
 

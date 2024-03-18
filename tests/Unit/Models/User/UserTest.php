@@ -131,7 +131,7 @@ class UserTest extends TestCase
 
         $this->coreMock->shouldReceive('attach')->andReturn(((new Core())->create($content['userData']))->toArrayPublic());
     }
-    
+
     public function testUserRegister()
     {
         $content = [
@@ -163,6 +163,10 @@ class UserTest extends TestCase
         $orgRepoMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
 
         $mailMock = Mockery::mock('RZP\Mail');
+
+        $pgosProxyController = Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
+
+        $pgosProxyController->shouldReceive('handlePGOSProxyRequests');
 
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
 
