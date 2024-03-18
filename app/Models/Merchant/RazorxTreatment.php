@@ -1033,4 +1033,8 @@ final class RazorxTreatment
 
     const TERMINALS_TIDB_QUERIES_MIGRATION = 'terminals_tidb_queries_migration';
 
+    /**
+     * Razorx flag to route fetch order to PG-Router Test Service
+     */
+    const ROUTE_ORDER_FETCH_TO_PG_ROUTER_TEST = 'route_order_fetch_to_pg_router_test';
 }

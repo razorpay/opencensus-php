@@ -1520,6 +1520,14 @@ return [
         'secret'              => env('API_PG_ROUTER_SECRET'),
     ],
 
+    'pg_router_test' => [
+        'mock'                => env('PG_ROUTER_TEST_MOCK', false),
+        'url'                 => env('PG_ROUTER_TEST_URL'),
+        'pg_router_key'       => env('PG_ROUTER_TEST_KEY'),
+        'pg_router_secret'    => env('PG_ROUTER_TEST_SECRET'),
+        'secret'              => env('API_PG_ROUTER_TEST_SECRET'),
+    ],
+
     // This username & password already added in API is used by API to communicate with payments upi service
     'upi_payment_service' => [
         'mock'      => env('UPI_PAYMENT_SERVICE_MOCK', false),

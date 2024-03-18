@@ -9,6 +9,7 @@ use RZP\Error\Error;
 use RZP\Http\RequestHeader;
 use RZP\Models\Card;
 use RZP\Models\Emi;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -169,11 +170,15 @@ class PGRouter
 
         $this->trace = $app['trace'];
 
-        $this->config = $app['config']->get('applications.pg_router');
+        $this->mode = (isset($app['rzp.mode']) === true) ? $app['rzp.mode'] : Mode::LIVE;
+
+        if ($this->mode == Mode::LIVE) {
+            $this->config = $app['config']->get('applications.pg_router');
+        } else {
+            $this->config = $app['config']->get('applications.pg_router_test');
+        }
 
         $this->baseUrl = $this->config['url'];
-
-        $this->mode = (isset($app['rzp.mode']) === true) ? $app['rzp.mode'] : Mode::LIVE;
 
         $this->request = $app['request'];
 
@@ -619,7 +624,7 @@ class PGRouter
 
                 $response['body']['data']['payment']['payment_meta_data'] = $pgRouterPaymentMetaData;
             }
-            
+
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
 
 
@@ -661,9 +666,23 @@ class PGRouter
     public function fetchOrder(string $id, string $merchantId, array $input)
     {
         if ((app()->isEnvironmentProduction() === true) and
-            ($this->mode === Mode::TEST))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            ($this->mode === Mode::TEST)) {
+            $shouldGoViaNewFlow = false;
+            try {
+                if (empty($merchantId) === false) {
+                    $variantForFeature = $this->app->razorx->getTreatment($merchantId,
+                        RazorxTreatment::ROUTE_ORDER_FETCH_TO_PG_ROUTER_TEST, $this->mode);
+                    $shouldGoViaNewFlow = strtolower($variantForFeature) == RazorxTreatment::RAZORX_VARIANT_ON;
+                }
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::RAZORX_EXPERIMENT_FOR_PG_ROUTER_TEST_FAILED);
+            }
+            if (!$shouldGoViaNewFlow) {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            }
         }
 
         $endpoint = 'v1/orders/' . $id;
