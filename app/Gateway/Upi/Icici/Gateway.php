@@ -1783,7 +1783,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::VPA                   => $input[Fields::PAYER_VA],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[Fields::MERCHANT_ID],
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($input[Fields::MERCHANT_TRAN_ID]),
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($input[Fields::MERCHANT_TRAN_ID], $input),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
         ];
 
@@ -2490,8 +2490,16 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    public function getQrPaymentMerchantReference($merchantReference)
+    public function getQrPaymentMerchantReference($merchantReference, $inputFields = null)
     {
+        if ((isset($inputFields) === true) and
+            (isset($inputFields['data']) === true) and
+            (isset($inputFields['data']['meta']) === true) and
+            (isset($inputFields['data']['meta']['qrCodeId']) === true))
+        {
+            return $inputFields['data']['meta']['qrCodeId'];
+        }
+
         if ((empty($this->qrPaymentMerchantRefPrefix) === false) and
             (str_starts_with($merchantReference, $this->qrPaymentMerchantRefPrefix)))
         {

@@ -139,7 +139,7 @@ trait NonVirtualAccountQrCodeTrait
         return $response;
     }
 
-    private function makeUpiIciciPayment($request)
+    private function makeUpiIciciPayment($request, $expected = 'true')
     {
         $this->ba->directAuth();
 
@@ -151,7 +151,7 @@ trait NonVirtualAccountQrCodeTrait
 
         if (isset($response['success']) === true)
         {
-            $this->assertEquals('true', $response['success']);
+            $this->assertEquals($expected, $response['success']);
         }
         else
         {

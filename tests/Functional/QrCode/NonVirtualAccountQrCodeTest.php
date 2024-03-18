@@ -2288,4 +2288,86 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $this->fetchQrPayment('qr_' . $qrCodeId));
     }
 
+    public function testProcessPaymentOnStaticQrWithoutTransactionReference(): void
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON
+            ]
+        );
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $qrCodeId = $qrCodeEntity['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+        $this->fixtures->on('test')->create('qr_code_config',
+                                            [
+                                                'merchant_id'  => $terminal['merchant_id'],
+                                                'config_key'   => 'static_qr',
+                                                'config_value' => '{"' . $terminal['id'] . '" : "' . $qrCodeId . '"}',
+                                            ]);
+
+        $request                              = $this->testData['testProcessIciciQrPayment'];
+        $rrn                                  = '000011100101';
+        $request['content']['BankRRN']        = $rrn;
+        $request['content']['merchantId']     = $terminal->getGatewayMerchantId();
+        $request['content']['merchantTranId'] = strtoupper(random_alphanum_string(22));
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true);
+        $payment   = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($qrCodeEntity['id'], 'qr_' . $qrPayment['qr_code_id']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testProcessPaymentOnStaticQrWithoutTransactionReferenceWithRazorxDisabled(): void
+    {
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $qrCodeId = $qrCodeEntity['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+        $this->fixtures->on('test')->create('qr_code_config',
+                                            [
+                                                'merchant_id'  => $terminal['merchant_id'],
+                                                'config_key'   => 'static_qr',
+                                                'config_value' => '{"' . $terminal['id'] . '" : "' . $qrCodeId . '"}',
+                                            ]);
+
+        $request                              = $this->testData['testProcessIciciQrPayment'];
+        $rrn                                  = '000011100101';
+        $request['content']['BankRRN']        = $rrn;
+        $request['content']['merchantId']     = $terminal->getGatewayMerchantId();
+        $request['content']['merchantTranId'] = strtoupper(random_alphanum_string(22));
+
+        $this->makeUpiIciciPayment($request, false);
+
+    }
+
 }
