@@ -74,14 +74,3 @@ export const METRIC_OPTIONS = [
   { label: 'absolute count', value: 'count' },
   { label: 'value (in ₹)', value: 'amount' },
 ];
-
-export const TOTAL_SALES_VALUE = 'total_sales';
-export const VALUE_OF_REPORTED_ENTITY = 'entity';
-export const ENTITY_RATIO = 'entity_ratio';
-export const CHART_ORDER = [TOTAL_SALES_VALUE, VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO];
-
-export const DEFAULT_CHART_OPTIONS = {
-  [FRAUD]: [VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO],
-  [DISPUTES]: [VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO],
-  [RISK_DECLINED]: [ENTITY_RATIO],
-};

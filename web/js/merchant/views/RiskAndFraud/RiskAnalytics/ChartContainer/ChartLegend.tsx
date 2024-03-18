@@ -1,12 +1,12 @@
 import React from 'react';
 import { Box, Text, TrendingUpIcon } from '@razorpay/blade/components';
-import styled from 'styled-components';
 import { getCurrencySymbol as i18nifyGetCurrencySymbol } from '@razorpay/i18nify-js/currency';
+import styled from 'styled-components';
 
-import { ENTITY_RATIO, METRIC_VALUE } from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
+import { METRIC_VALUE } from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
 import { AnalyticsEntity, MetricOptions } from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
 
-import { CHART_OPTIONS_MAPPING, LEGEND_COLORS_MAPPING } from './constants';
+import { ENTITY_RATIO, CHART_OPTIONS_MAPPING, LEGEND_COLORS_MAPPING } from './constants';
 
 type ChartLegendProps = {
   entity: AnalyticsEntity;

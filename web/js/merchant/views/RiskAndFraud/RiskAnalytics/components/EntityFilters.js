@@ -10,12 +10,14 @@ import {
 } from '@razorpay/blade/components';
 import moment from 'moment';
 
-import { CHART_OPTIONS_MAPPING } from 'merchant/views/RiskAndFraud/RiskAnalytics/ChartContainer/constants';
+import {
+  CHART_OPTIONS_MAPPING,
+  CHART_ORDER,
+} from 'merchant/views/RiskAndFraud/RiskAnalytics/ChartContainer/constants';
 import {
   RISK_DECLINED,
   ENTITY_PRESETS,
   METRIC_OPTIONS,
-  CHART_ORDER,
 } from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
 
 const EntityFilters = (props) => {

@@ -6,13 +6,16 @@ import {
   DISPUTES,
   RISK_DECLINED,
   DEFAULT_METRIC,
-  DEFAULT_CHART_OPTIONS,
   METRIC_OPTIONS,
+} from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
+import { render, screen, userEvent } from 'test-utils';
+
+import {
+  DEFAULT_CHART_OPTIONS,
   TOTAL_SALES_VALUE,
   VALUE_OF_REPORTED_ENTITY,
   ENTITY_RATIO,
-} from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
-import { render, screen, userEvent } from 'test-utils';
+} from '../../ChartContainer/constants';
 
 const entitiesToTest = [FRAUD, DISPUTES, RISK_DECLINED];
 
@@ -91,7 +94,7 @@ describe('EntityFilters', () => {
     expect(select.value).toEqual(defaultMetric);
   });
 
-  test('should render metric with selected preset value', async () => {
+  test('should render metric with selected metric value', async () => {
     renderComponent();
     const select = screen.getByRole('combobox', { name: 'Metric' });
     expect(select).toBeInTheDocument();
@@ -100,7 +103,7 @@ describe('EntityFilters', () => {
     expect(handleMetricChange).toHaveBeenCalledWith('count');
   });
 
-  test('should render metric with selected preset value', async () => {
+  test('should render graph options with selected values', async () => {
     renderComponent();
     const select = screen.getByRole('combobox', { name: 'Graph Options' });
     expect(select).toBeInTheDocument();

@@ -89,7 +89,8 @@ export type RiskAndFraudQuickGuideProps = {
 };
 
 export interface ChartQueryDataItem {
-  start_date: number;
+  start_date: string;
+  end_date: string;
   payment: { [metric in MetricOptions]: string };
   entity_data: { [metric in MetricOptions]: string };
 }

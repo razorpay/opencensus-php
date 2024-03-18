@@ -5,12 +5,19 @@ import {
   METRIC_COUNT,
   METRIC_VALUE,
 } from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
+
 import { generateChartOptions } from './utils';
 
 export const TOTAL_SALES_VALUE = 'total_sales';
 export const VALUE_OF_REPORTED_ENTITY = 'entity';
 export const ENTITY_RATIO = 'entity_ratio';
 export const CHART_ORDER = [TOTAL_SALES_VALUE, VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO];
+
+export const DEFAULT_CHART_OPTIONS = {
+  [FRAUD]: [VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO],
+  [DISPUTES]: [VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO],
+  [RISK_DECLINED]: [ENTITY_RATIO],
+};
 
 const FRAUD_VALUE_OPTIONS = [
   'Total sales value',
@@ -78,4 +85,47 @@ export const CHART_COLORS_MAPPING = {
 export const LEGEND_COLORS_MAPPING = {
   ...CHART_COLORS_MAPPING,
   [ENTITY_RATIO]: 'brand.primary.500', // Blade icon will only accept theme color
+};
+
+export const FRAUD_CHART_LABEL = {
+  [METRIC_COUNT]: {
+    x: 'fraud_ratio_analytics',
+    y1: 'Number of transactions / reported frauds',
+    y2: 'Fraud-to-sales ratio (in %)',
+  },
+  [METRIC_VALUE]: {
+    x: 'fraud_ratio_analytics',
+    y1: 'Volume of total sales / frauds (in ₹)',
+    y2: 'Fraud-to-sales ratio (in %)',
+  },
+};
+
+export const DISPUTES_CHART_LABEL = {
+  [METRIC_COUNT]: {
+    x: 'disputes_ratio_analytics',
+    y1: 'Number of transactions / reported disputes',
+    y2: 'Fraud-to-sales ratio (in %)',
+  },
+  [METRIC_VALUE]: {
+    x: 'disputes_ratio_analytics',
+    y1: 'Volume of total sales / disputes (in ₹)',
+    y2: 'Fraud-to-sales ratio (in %)',
+  },
+};
+
+export const RISK_DECLINED_CHART_LABEL = {
+  [METRIC_COUNT]: {
+    x: 'risk_declined_ratio_analytics',
+    y1: 'Dispute-to-sales ratio (in %)',
+  },
+  [METRIC_VALUE]: {
+    x: 'risk_declined_ratio_analytics',
+    y1: 'Dispute-to-sales ratio (in %)',
+  },
+};
+
+export const CHART_LABELS_MAPPING = {
+  [FRAUD]: FRAUD_CHART_LABEL,
+  [DISPUTES]: DISPUTES_CHART_LABEL,
+  [RISK_DECLINED]: RISK_DECLINED_CHART_LABEL,
 };
