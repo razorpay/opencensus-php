@@ -21,11 +21,11 @@ class ApiResponseForwarder
      */
     const ROUTE_TO_RESPONSE_HEADERS = [
         'POST users/login' => [
-            "Set-Cookie" => true,
+            "set-cookie" => true,
         ]
     ];
 
-    const COOKIE_HEADER = "Set-Cookie";
+    const COOKIE_HEADER = "set-cookie";
 
     /**
      * Headers to be forwarded back to client from API
@@ -38,7 +38,7 @@ class ApiResponseForwarder
     );
 
     /**
-     * sets all whitelisted headers to be forwarded in response
+     * sets all whitelisted headers and cookies to be forwarded in response
      * @param string $path request path for request to API backend
      * @param string $method HTTP verb for request to API backend
      * @param array $allHeaders all response headers from API backend

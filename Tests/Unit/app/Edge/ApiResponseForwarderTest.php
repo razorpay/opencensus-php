@@ -53,7 +53,7 @@ class ApiResponseForwarderTest extends BaseTestCase
     {
         $edgeResponseForwarder = new ApiResponseForwarder();
         $edgeResponseForwarder->setHeaders('users/login', 'post', [
-            'Set-Cookie' => ['value'],
+            'set-cookie' => ['value'],
             'other' => ['other_value']
         ]);
         $this->assertSame([], $edgeResponseForwarder->getHeaders());
@@ -80,7 +80,7 @@ class ApiResponseForwarderTest extends BaseTestCase
     {
         $edgeResponseForwarder = new ApiResponseForwarder();
         $edgeResponseForwarder->setHeaders('users/login', 'post', [
-            'Set-Cookie' => 'rzp_access_token=token_value',
+            'set-cookie' => 'rzp_access_token=token_value',
             'Content-Type' => 'application/json'
         ]);
         $cookies = $edgeResponseForwarder->getCookies();
@@ -105,7 +105,7 @@ class ApiResponseForwarderTest extends BaseTestCase
     {
         $edgeResponseForwarder = new ApiResponseForwarder();
         $edgeResponseForwarder->setHeaders('users/login', 'post', [
-            'Set-Cookie' => ['rzp_access_token=token_value', 'rzp_refresh_token=refresh_token_value'],
+            'set-cookie' => ['rzp_access_token=token_value', 'rzp_refresh_token=refresh_token_value'],
             'Content-Type' => 'application/json'
         ]);
         $cookies = $edgeResponseForwarder->getCookies();
