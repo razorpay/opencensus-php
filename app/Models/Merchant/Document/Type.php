@@ -460,6 +460,7 @@ class Type
     const VALID_POS_DOCUMENTS = [
         self::SHOP_FRONT_IMAGE,
         self::SHOP_INTERIOR_IMAGE,
+        self::BANK_STATEMENT,
     ];
 
     const DOCUMENT_TYPE_VALIDATIONS = [
