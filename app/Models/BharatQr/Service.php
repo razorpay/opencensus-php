@@ -26,6 +26,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Gateway\Mozart\Gateway as MozartGateway;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use \RZP\Gateway\Upi\Yesbank\Fields as YesBankFields;
+use RZP\Models\QrCodeConfig;
 
 class Service extends Base\Service
 {
@@ -191,6 +192,23 @@ class Service extends Base\Service
             $terminalDetails = $gatewayClass->getTerminalDetailsFromCallbackIfApplicable($input);
         }
 
+        $inputJson = $input;
+        if (is_array($input) === false)
+        {
+            $inputJson = json_decode($input, true);
+        }
+
+        if (($terminalDetails === null) and (isset($inputJson['data']['terminal']) === true))
+        {
+            if (($gateway === Gateway::UPI_AIRTEL) and
+                (isset($inputJson['data']['terminal']['vpa']) === true))
+            {
+                unset($inputJson['data']['terminal']['vpa']);
+                $terminalDetails = $inputJson['data']['terminal'];
+            }
+
+        }
+
         $terminal = null;
 
         if ($terminalDetails !== null)
@@ -206,7 +224,12 @@ class Service extends Base\Service
         }
         else
         {
-            $gatewayResponse = $gatewayClass->getQrData(json_decode($input, true), $gateway);
+            $inputJson = json_decode($input, true);
+
+            $this->updateQrCodeInCallbackIfApplicable($inputJson, $terminal);
+
+            $gatewayResponse = $gatewayClass->getQrData($inputJson, $gateway);
+
         }
 
         $qrData = $gatewayResponse['qr_data'];
@@ -562,5 +585,51 @@ class Service extends Base\Service
         return $terminal;
     }
 
+    public function updateQrCodeInCallbackIfApplicable(&$input, $terminal)
+    {
+        if ($terminal === null)
+        {
+            return null;
+        }
 
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;;
+
+        $gatewayVariant = $this->app->razorx->getTreatment($terminal->getGateway(),
+                                                           RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS,
+                                                           $mode);
+
+        if (strtolower($gatewayVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return null;
+        }
+
+        $merchantId = $terminal->getMerchantId();
+
+        $midVariant = $this->app->razorx->getTreatment($merchantId,
+                                                       RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS, $mode);
+
+        if (strtolower($midVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return null;
+        }
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $staticQrId = (new QrCodeConfig\Service())->fetchStaticQrCodeConfig($terminal);
+
+        if ($staticQrId === null)
+        {
+            return null;
+        }
+
+        $input['data']['meta']['qrCodeId'] = $staticQrId;
+
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+            '$terminal' => $terminal->getId(),
+            '$staticQrId' => $staticQrId,
+            'message'   => 'qrCodeId is set in the Callback meta data for processing unrecognized merchant reference ',
+        ]);
+
+        return $staticQrId;
+    }
 }

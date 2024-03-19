@@ -36,6 +36,10 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['qr_codes']);
 
+        $this->fixtures->merchant->activate();
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
         $this->fixtures->merchant->createAccount('LiveAccountMer');
 
         $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['activated' => true, 'live' => true]);
@@ -407,7 +411,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->runQrCodeEntityAssertions();
     }
 
-    public function runQrPaymentEntityAssertions($expected = true, $paymentRequestEntity = [], $upiRequestEntity = [], $mode = 'test', $amount = 300, $amountMisMatchFlag = false ): void
+    public function runQrPaymentEntityAssertions($expected = true, $paymentRequestEntity = [], $upiRequestEntity = [], $mode = 'test', $amount = 300, $amountMisMatchFlag = false, $rrn = '107611570997', $fallbackQrCode = false): void
     {
         $qrPayment        = $this->getLastEntity('qr_payment', true, $mode);
         $payment          = $this->getLastEntity('payment', true, $mode);
@@ -418,14 +422,22 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals($amount, $payment['amount']);
-        $this->assertEquals('107611570997', $payment['reference16']);
+        $this->assertEquals($rrn, $payment['reference16']);
 
         $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
-        $this->assertEquals($qrCodeEntity['reference'], $qrPayment['qr_code_id']);
-        $this->assertEquals($qrCodeEntity['reference'], $qrPayment['merchant_reference']);
+        if($fallbackQrCode === true)
+        {
+            $this->assertEquals('FallbackQrCode', $qrPayment['qr_code_id']);
+            $this->assertEquals('RandomQrId', $qrPayment['merchant_reference']);
+        }
+        else
+        {
+            $this->assertEquals($qrCodeEntity['reference'], $qrPayment['qr_code_id']);
+            $this->assertEquals($qrCodeEntity['reference'], $qrPayment['merchant_reference']);
+        }
         $this->assertEquals($paymentRequestEntity['description'], $qrPayment['notes']);
         $this->assertEquals('pullak@okhdfcbank', $upi['vpa']);
-        $this->assertEquals('107611570997', $upi['npci_reference_id']);
+        $this->assertEquals($rrn, $upi['npci_reference_id']);
 
         if ($qrCodeEntity['usage'] === 'single_use')
         {
@@ -1062,6 +1074,246 @@ class UpiAirtelQRCodeTest extends TestCase
                      ]
         );
 
+    }
+
+    public function testProcessAirtelQrReconInternalWithoutPayment(): void
+    {
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $request = $this->testData['testProcessAirtelQrPaymentInternal'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['npci_reference_id'] = (string) random_int(100000000000, 999999999999);
+        $request['content']['data']['upi']['gateway_payment_id'] = (string) random_int(100000000000, 999999999999);
+        $request['content']['data']['terminal']['gateway_merchant_id2'] = $this->terminal['gateway_merchant_id2'];
+        $request['content']['data']['terminal']['gateway_merchant_id'] = $this->terminal['gateway_merchant_id'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+        $rrn = $request['content']['data']['upi']['npci_reference_id'];
+
+        $this->runQrPaymentEntityAssertions(true, [], [], 'live', 300, false, $rrn);
+
+    }
+
+    public function testProcessAirtelQrReconInternalWithExistingPayment(): void
+    {
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $this->makeUpiAirtelPayment($qrCodeEntity);
+        $existingPayment = $this->getDbLastEntity('payment', 'live');
+
+        $request = $this->testData['testProcessAirtelQrPaymentInternal'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['npci_reference_id'] = $existingPayment['reference16'];
+        $request['content']['data']['terminal']['gateway_merchant_id2'] = $this->terminal['gateway_merchant_id2'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $rrn = $request['content']['data']['upi']['npci_reference_id'];
+
+        $this->runQrPaymentEntityAssertions(true, [], [], 'live', 300, false, $rrn);
+
+        $this->assertEquals($existingPayment['id'], $payment['id']);
+    }
+
+    public function testProcessAirtelQrReconInternalWithoutPaymentForStaticQR(): void
+    {
+
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+        $this->createPricingForOffline();
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                     ],
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+
+        $this->runQrCodeEntityAssertions('test');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+
+        $request = $this->testData['testProcessAirtelQrPaymentInternalStaticQR'];
+
+        $request['content']['data']['upi']['npci_reference_id'] = (string) random_int(100000000000, 999999999999);
+        $request['content']['data']['upi']['gateway_payment_id'] = (string) random_int(100000000000, 999999999999);
+        $request['content']['data']['terminal']['gateway_merchant_id2'] = $terminal['gateway_merchant_id2'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+        $rrn = $request['content']['data']['upi']['npci_reference_id'];
+
+        $this->runQrPaymentEntityAssertions(true, [], [], 'test', 300, false, $rrn);
+
+        $upi = $this->getDbLastEntity('upi');
+        $this->assertEquals($upi['merchant_reference'],  $request['content']['data']['upi']['merchant_reference']);
+        $qr_payment = $this->getDbLastEntity('qr_payment', 'test');
+        $qrCodeId     = substr($qrCodeEntity['id'], 3, 14);
+        $this->assertEquals($qr_payment['merchant_reference'],  $qrCodeId);
+    }
+
+    public function testProcessAirtelQrReconInternalSQRDuplicate(): void
+    {
+
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+        $this->createPricingForOffline();
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                     ],
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+
+        $this->runQrCodeEntityAssertions('test');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+
+        $request = $this->testData['testProcessAirtelQrPaymentInternalStaticQR'];
+
+        $request['content']['data']['upi']['npci_reference_id'] = (string) random_int(100000000000, 999999999999);
+        $request['content']['data']['upi']['gateway_payment_id'] = (string) random_int(100000000000, 999999999999);
+        $request['content']['data']['terminal']['gateway_merchant_id2'] = $terminal['gateway_merchant_id2'];
+
+        $this->makeUpiPaymentInternal($request);
+        //2nd call
+        $response = $this->makeUpiPaymentInternal($request);
+        $rrn = $request['content']['data']['upi']['npci_reference_id'];
+
+        $this->runQrPaymentEntityAssertions(true, [], [], 'test', 300, false, $rrn);
+
+        $upi = $this->getDbLastEntity('upi');
+        $this->assertEquals($upi['merchant_reference'],  $request['content']['data']['upi']['merchant_reference']);
+        $qr_payment = $this->getDbLastEntity('qr_payment');
+        $qrCodeId     = substr($qrCodeEntity['id'], 3, 14);
+        $this->assertEquals($qr_payment['merchant_reference'],  $qrCodeId);
+    }
+
+    // invalid qr code id is passed in payload
+    // so create a payment against dummy qr code and refund it
+    public function testProcessAirtelQrReconInternalStaticQRWithUnrecognisedPaymentProcessExperimentsDisabled(): void
+    {
+
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->setMockRazorxTreatment(
+            [
+                'api_upi_airtel_pre_process_v1' => 'upi_airtel',
+                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+        $this->createPricingForOffline();
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                     ],
+                     'live',
+                     'LiveAccountMer',
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+
+        $this->runQrCodeEntityAssertions();
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+
+        $request = $this->testData['testProcessAirtelQrPaymentInternalStaticQR'];
+
+        $request['content']['data']['upi']['npci_reference_id'] = (string) random_int(100000000000, 999999999999);
+        $request['content']['data']['upi']['gateway_payment_id'] = (string) random_int(100000000000, 999999999999);
+        $request['content']['data']['terminal']['gateway_merchant_id2'] = $terminal['gateway_merchant_id2'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+        $rrn = $request['content']['data']['upi']['npci_reference_id'];
+
+        $this->runQrPaymentEntityAssertions(false, [], [], 'live', 300, false, $rrn, true);
+
+        $this->assertArrayHasKey('refunds', $response);
+
+        $this->assertEquals($response['payment']['id'], $response['refunds'][0]['payment_id']);
+        $this->assertEquals($response['payment']['amount'], $response['refunds'][0]['amount']);
+    }
+
+    // payment is not found against single use qr code data so create a new payment
+    // but qr code amount is not matching so initiate refund during recon
+    public function testProcessAirtelQrPaymentInternalWithRefund(): void
+    {
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 3000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $request = $this->testData['testProcessAirtelQrPaymentInternal'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['npci_reference_id'] = (string) random_int(100000000000, 999999999999);
+        $request['content']['data']['upi']['gateway_payment_id'] = (string) random_int(100000000000, 999999999999);
+        $request['content']['data']['terminal']['gateway_merchant_id2'] = $this->terminal['gateway_merchant_id2'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+        $rrn = $request['content']['data']['upi']['npci_reference_id'];
+
+        $this->runQrPaymentEntityAssertions(false, [], [], 'live', 300, true, $rrn);
+
+        $this->assertArrayHasKey('refunds', $response);
+
+        $this->assertEquals($response['payment']['id'], $response['refunds'][0]['payment_id']);
+        $this->assertEquals($response['payment']['amount'], $response['refunds'][0]['amount']);
     }
 
 }

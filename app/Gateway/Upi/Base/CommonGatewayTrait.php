@@ -1018,6 +1018,12 @@ trait CommonGatewayTrait
                 QrGatewayResponseParams::PAYEE_VPA             => $this->getPayeeVpa($inputFields, $gateway),
             ];
 
+            if (($gateway === Payment\Gateway::UPI_AIRTEL) and
+                (isset($qrData[QrGatewayResponseParams::GATEWAY_MERCHANT_ID]) === false))
+            {
+                unset($qrData[QrGatewayResponseParams::GATEWAY_MERCHANT_ID]);
+            }
+
             /* NOTE: payer_account_type to be figured out later, as Kotak has not provided any details
             $payerAccountType = $this->getInternalPayerAccountType($inputFields);
 

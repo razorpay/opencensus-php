@@ -636,6 +636,7 @@ class GatewayController extends Controller
         $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
 
         $isQrV2Payment = false;
+        $terminal = null;
         // this checks will only be applicable for static QR code. For dynamic QR code,
         // bank will send the ref id generated during QR creation
         if ((strlen($paymentId) >= ($suffixLength + QrCode\Entity::ID_LENGTH)) and
@@ -652,14 +653,23 @@ class GatewayController extends Controller
 
             $isQrV2Payment = true;
         }
-
-        if ($isQrV2Payment === false)
+        else
         {
-            $staticQrId = $this->getStaticQRIdAndSetInputForPayments($input, $gatewayDriver);
-            if ($staticQrId !== null)
+            $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
+            $data         = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
+
+            $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gatewayDriver, $data['terminal']);
+
+            if (($terminal !== null) and ($terminal->isQrV2Terminal() === true))
             {
-                $paymentId     = $staticQrId;
                 $isQrV2Payment = true;
+
+                $staticQrId = (new BharatQr\Service)->updateQrCodeInCallbackIfApplicable($input, $terminal);
+
+                if ($staticQrId !== null)
+                {
+                    $paymentId     = $staticQrId;
+                }
             }
         }
 
@@ -668,24 +678,6 @@ class GatewayController extends Controller
         if ($mode !== null)
         {
             $this->app['basicauth']->setModeAndDbConnection($mode);
-
-            if ($isQrV2Payment === false)
-            {
-                $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
-                $data         = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
-
-                $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gatewayDriver, $data['terminal']);
-
-                if ($terminal === null)
-                {
-                    throw new Exception\LogicException('No terminal found for QR Code Payment', null, $data);
-                }
-
-                if ($terminal->isQrV2Terminal() === true)
-                {
-                    $isQrV2Payment = true;
-                }
-            }
 
             if ($isQrV2Payment === true)
             {
@@ -734,66 +726,6 @@ class GatewayController extends Controller
         }
 
         return $data;
-    }
-
-    protected function getTerminalForUnexpectedPayment($input, $gatewayDriver)
-    {
-        $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
-
-        $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
-        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gatewayDriver, $data['terminal']);
-
-        return $terminal;
-    }
-
-    protected function getStaticQRIdAndSetInputForPayments(&$input, $gatewayDriver)
-    {
-        $terminal = $this->getTerminalForUnexpectedPayment($input, $gatewayDriver);
-
-        if ($terminal->isQrV2Terminal() === false)
-        {
-            return null;
-        }
-
-        $mode = ($this->app->isProduction() === true) ? Mode::LIVE : Mode::TEST;
-
-        $gatewayVariant = $this->app->razorx->getTreatment($terminal->getGateway(),
-            RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS,
-            $mode);
-
-        if (strtolower($gatewayVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return null;
-        }
-
-        $merchantId = $terminal->getMerchantId();
-
-        $midVariant = $this->app->razorx->getTreatment($merchantId,
-            RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS, $mode);
-
-        if (strtolower($midVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return null;
-        }
-
-        $this->app['basicauth']->setModeAndDbConnection($mode);
-
-        $staticQrId = (new QrCodeConfigService())->fetchStaticQrCodeConfig($terminal);
-
-        if ($staticQrId === null)
-        {
-            return null;
-        }
-
-        $input['data']['meta']['qrCodeId'] = $staticQrId;
-
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-            '$terminal' => $terminal->getId(),
-            '$staticQrId' => $staticQrId,
-            'message'   => 'qrCodeId is set in the Callback meta data for processing unrecognized merchant reference ',
-        ]);
-
-        return $staticQrId;
     }
 
     protected function processMandateServerCallback($input, $gatewayDriver)

@@ -640,6 +640,69 @@ return [
         ],
     ],
 
+    'testProcessAirtelQrPaymentInternal' => [
+        'url'     => '/payment/callback/bharatqr/upi_airtel/internal',
+        'method'  => 'post',
+        'content' => [
+            'data'    =>
+                [
+                    'payment'           =>
+                        [
+                            'amount_authorized' => 300,
+                            'currency'          => 'INR',
+                        ],
+                    'status'            => 'payment_successful',
+                    'terminal'          =>
+                        [
+                            'gateway'              => 'upi_airtel',
+                            'gateway_merchant_id2' => 'RandomVPA',
+                            'vpa'                  => 'RandomVPA',
+                            'gateway_merchant_id'  => 'MerchantId',
+                        ],
+                    'upi'               =>
+                        [
+                            'merchant_reference' => 'RandomQrId',
+                            'npci_reference_id'  => 'RandomRRN',
+                            'vpa'                => 'pullak@okhdfcbank',
+                            'gateway_timestamp'  =>'1678261341'
+                        ],
+
+                ],
+            'success' => true,
+        ],
+    ],
+
+    'testProcessAirtelQrPaymentInternalStaticQR' => [
+        'url'     => '/payment/callback/bharatqr/upi_airtel/internal',
+        'method'  => 'post',
+        'content' => [
+            'data'    =>
+                [
+                    'payment'           =>
+                        [
+                            'amount_authorized' => 300,
+                            'currency'          => 'INR',
+                        ],
+                    'status'            => 'payment_successful',
+                    'terminal'          =>
+                        [
+                            'gateway'              => 'upi_airtel',
+                            'gateway_merchant_id2' => 'RandomVPA',
+                            'vpa'                  => 'RandomVPA'
+                        ],
+                    'upi'               =>
+                        [
+                            'merchant_reference' => 'RandomQrId',
+                            'npci_reference_id'  => 'RandomRRN',
+                            'vpa'                => 'pullak@okhdfcbank',
+                            'gateway_timestamp'  => '1678261341'
+                        ],
+
+                ],
+            'success' => true,
+        ],
+    ],
+
     'testStatusCheckApiPendingResponse' => [
         'request' => [
             'method'  => 'POST',
