@@ -354,11 +354,20 @@ class FundTransfer extends Base
 
     protected function addMerchantCategory(array $request) : array
     {
+        $source = $this->fta->source;
+
         $category = $this->fta->source->merchant->getCategory2();
         $mcc = $this->fta->source->merchant->getCategory();
+
+        /* @var $balance Balance\Entity */
         $balance = $this->fta->source->balance;
 
-        if ($balance !== null)
+        $isAxisCustomerWalletPayout = ((method_exists($source, 'isCustomerPayout') === true) and
+                                       ($source->isCustomerPayout() === true) and
+                                       ($source->getChannel() === Channel::AXIS));
+
+        if (($balance !== null) and
+            ($isAxisCustomerWalletPayout === false))
         {
             $bankingAcc = $this->repo->banking_account->getFromBalanceId($balance->getId());
             $onboardingTime = optional($bankingAcc)->getCreatedAt();

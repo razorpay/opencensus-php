@@ -113,6 +113,7 @@ use RZP\Tests\Functional\Helpers\PayoutAttachmentTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Adjustment\Entity as AdjustmentEntity;
 use RZP\Models\Payout\PayoutsIntermediateTransactions;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -4145,6 +4146,554 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbEntityById('payout', $payout['id']);
 
         return $payout;
+    }
+
+    public function testCreateCustomerWalletPayout_WithFts()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::AXIS_MIGRATION_CUSTOMER_WALLET_PAYOUT => 'on']);
+
+        $this->liveSetUp();
+
+        $this->app['rzp.mode'] = 'live';
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])
+                          ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $ftsTransferSuccess = false;
+
+        $ftsMock->shouldReceive('createAndSendRequest')
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
+
+                    self::assertEquals('/transfer', $endpoint);
+                    self::assertEquals('POST', $method);
+
+                    self::assertEquals('payout_refund', $input[FTSConstants::PRODUCT]);
+                    self::assertEquals('axis', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_CHANNEL]);
+                    self::assertNull($input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_MODE]);
+
+                    $ftsTransferSuccess = true;
+
+                    return [
+                        FTSConstants::BODY => [
+                            FTSConstants::STATUS           => FTSConstants::STATUS_CREATED,
+                            FTSConstants::MESSAGE          => 'fund transfer sent to fts.',
+                            FTSConstants::FUND_TRANSFER_ID => random_integer(2),
+                            FTSConstants::FUND_ACCOUNT_ID  => random_integer(2),
+                        ]
+                    ];
+                })->times(1);
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->fixtures
+            ->on(Mode::LIVE)
+            ->create('bank_account',
+                     [
+                         'ifsc_code'        => 'ORBC0101685',
+                         'account_number'   => '2224440041626905',
+                         'beneficiary_name' => 'Ambar',
+                         'type'             => 'customer',
+                         'entity_id'        => 'GHz4VlBkkiUBwh',
+                     ]);
+
+        $bankAccount = $this->getDbLastEntity('bank_account', Mode::LIVE);
+
+        $this->fixtures->on(Mode::LIVE)
+                       ->edit('fund_account', '100000000000fa',
+                              [
+                                  'account_id' => $bankAccount->getId()
+                              ]);
+
+        $customerBalance = $this->fixtures->on(Mode::LIVE)
+                                          ->create('customer_balance',
+                                                   ['customer_id' => '100000customer', 'balance' => 1000]);
+
+        $primaryBalance = $this->fixtures->on(Mode::LIVE)
+                                         ->edit('balance', '10000000000000', ['balance' => 1000]);
+
+        $initialPayoutCount = count($this->getDbEntities('payout', [], Mode::LIVE));
+
+        $payoutResponse = $this->startTest($this->testData['createCustomerWalletPayout']);
+
+        $finalPayoutCount = count($this->getDbEntities('payout', [], Mode::LIVE));
+
+        // Asserting that payout got created
+        $this->assertEquals(1, $finalPayoutCount - $initialPayoutCount);
+
+        $this->assertTrue($ftsTransferSuccess);
+
+        $id = $payoutResponse[PayoutEntity::ID];
+
+        PayoutEntity::stripSignWithoutValidation($id);
+
+        /* @var $payout PayoutEntity */
+        $payout = $this->getDbEntityById('payout', $id, 'live');
+        $fundTransferAttempt = $payout->fundTransferAttempts()->first();
+
+        $this->assertTrue($fundTransferAttempt->getIsFts());
+        $this->assertEquals("initiated", $fundTransferAttempt->getStatus());
+        $this->assertEquals("initiated", $payout->getStatus());
+        $this->assertEquals("customer_transaction", $payout['transaction_type']);
+        $this->assertEquals(600, $payout['fees']);
+        $this->assertEquals(92, $payout['tax']);
+
+        $this->assertNull($payout->getMode());
+        $this->assertNull($fundTransferAttempt->getMode());
+
+        $customerBalance->reload();
+        $primaryBalance->reload();
+        $this->assertEquals(1000 - $payout->getAmount(), $customerBalance->getBalance());
+        $this->assertEquals(1000 - $payout->getFees(), $primaryBalance->getBalance());
+
+        /* @var $adjustment AdjustmentEntity */
+        $adjustment = $this->getDbLastEntity('adjustment', 'live');
+
+        $expectedAdjustmentAttributes = [
+            'currency'    => 'INR',
+            'amount'      => -600,
+            'description' => 'Debit wallet withdrawal fee amount',
+            'entity_id'   => $payout->getId(),
+            'entity_type' => $payout->getEntityName(),
+            'balance_id'  => $primaryBalance->getId(),
+        ];
+
+        $this->assertArraySelectiveEquals($expectedAdjustmentAttributes, $adjustment->getAttributes());
+
+        $customerTxn = $this->getDbLastEntity('customer_transaction', 'live');
+
+        $expectedCustomerTxnAttributes = [
+            'currency'    => 'INR',
+            'amount'      => 800,
+            'debit'       => 800,
+            'type'        => 'withdrawal',
+            'entity_id'   => $payout->getId(),
+            'entity_type' => $payout->getEntityName(),
+            'customer_id' => '100000customer',
+            'balance'     => 200,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCustomerTxnAttributes, $customerTxn->getAttributes());
+
+        return $payout;
+    }
+
+    public function testCreateCustomerWalletPayout_WithFts_AndReceiveProcessedWebhook()
+    {
+        $payout = $this->testCreateCustomerWalletPayout_WithFts();
+
+        $payoutId = $payout->getId();
+
+        $this->fixtures->stripSign($payoutId);
+
+        $this->ba->ftsAuth('live');
+
+        // Processed Webhook sent from FTS
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'NODAL',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'AXIS',
+            'extra_info'          => [
+                'beneficiary_name' => 'Ambar',
+                'cms_ref_no'       => '',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => random_integer(2),
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => 'Customer Wallet Payout',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 15691231,
+            'source_id'           => $payoutId,
+            'source_type'         => 'payout',
+            'status'              => 'PROCESSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->expectWebhookEvent('payout.updated');
+        $this->expectWebhookEvent('payout.processed');
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+        $fundTransferAttempt = $payout->fundTransferAttempts()->first();
+
+        $this->assertEquals(Payout\Status::PROCESSED, $updatedPayout[Payout\Entity::STATUS]);
+        $this->assertNotNull($updatedPayout[Payout\Entity::PROCESSED_AT]);
+        $this->assertEquals(Channel::AXIS, $updatedPayout[Payout\Entity::CHANNEL]);
+        $this->assertEquals(Payout\Mode::IMPS, $updatedPayout[Payout\Entity::MODE]);
+
+        $this->assertEquals(Payout\Status::PROCESSED, $fundTransferAttempt[Payout\Entity::STATUS]);
+        $this->assertEquals(Channel::AXIS, $fundTransferAttempt->getChannel());
+        $this->assertEquals(Payout\Mode::IMPS, $fundTransferAttempt->getMode());
+
+        return $payout;
+    }
+
+    public function testCreateCustomerWalletPayout_WithFts_AndReceiveReversedWebhook()
+    {
+        $payout = $this->testCreateCustomerWalletPayout_WithFts();
+
+        $payoutId = $payout->getId();
+
+        $this->fixtures->stripSign($payoutId);
+
+        $this->ba->ftsAuth('live');
+
+        // Processed Webhook sent from FTS
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'NODAL',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'AXIS',
+            'extra_info'          => [
+                'beneficiary_name' => 'Ambar',
+                'cms_ref_no'       => '',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => random_integer(2),
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => 'Customer Wallet Payout',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 15691231,
+            'source_id'           => $payoutId,
+            'source_type'         => 'payout',
+            'status'              => 'REVERSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->expectWebhookEvent('payout.updated');
+        $this->expectWebhookEvent('payout.reversed');
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId);
+        $fundTransferAttempt = $payout->fundTransferAttempts()->first();
+
+        $this->assertEquals(Payout\Status::REVERSED, $updatedPayout->getStatus());
+        $this->assertNotNull($updatedPayout->getReversedAt());
+        $this->assertEquals(Channel::AXIS, $updatedPayout->getChannel());
+        $this->assertEquals(Payout\Mode::IMPS, $updatedPayout->getMode());
+
+        $this->assertEquals(Payout\Status::REVERSED, $fundTransferAttempt[Payout\Entity::STATUS]);
+        $this->assertEquals(Channel::AXIS, $fundTransferAttempt->getChannel());
+        $this->assertEquals(Payout\Mode::IMPS, $fundTransferAttempt->getMode());
+
+        $customerBalance = $this->getDbEntity('customer_balance', ['customer_id' => '100000customer'], 'live');
+
+        $primaryBalance = $this->getDbEntityById('balance', '10000000000000', 'live');
+
+        // Money reversed by a credit customer_transaction and a positive adjustment
+        $this->assertEquals(1000, $customerBalance->getBalance());
+        $this->assertEquals(1000, $primaryBalance->getBalance());
+
+        /* @var $reversal ReversalEntity */
+        $reversal = $this->getDbLastEntity('reversal', 'live');
+
+        $customerTxn = $this->getDbLastEntity('customer_transaction', 'live');
+
+        /* @var $adjustment AdjustmentEntity */
+        $adjustment = $this->getDbLastEntity('adjustment', 'live');
+
+        $expectedReversalAttributes = [
+            'currency'         => 'INR',
+            'amount'           => 800,
+            'fee'              => 0,
+            'tax'              => 0,
+            'entity_id'        => $payout->getId(),
+            'entity_type'      => $payout->getEntityName(),
+            'transaction_type' => 'customer_transaction',
+            'transaction_id'   => $customerTxn->getId(),
+            'customer_id'      => '100000customer',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedReversalAttributes, $reversal->getAttributes());
+
+        $expectedAdjustmentAttributes = [
+            'currency'    => 'INR',
+            'amount'      => 600,
+            'description' => 'Credit wallet withdrawal fee amount for payout reversal',
+            'entity_id'   => $reversal->getId(),
+            'entity_type' => $reversal->getEntityName(),
+            'balance_id'  => $primaryBalance->getId(),
+        ];
+
+        $this->assertArraySelectiveEquals($expectedAdjustmentAttributes, $adjustment->getAttributes());
+
+        $expectedCustomerTxnAttributes = [
+            'currency'    => 'INR',
+            'amount'      => 800,
+            'credit'      => 800,
+            'type'        => 'reversal',
+            'entity_id'   => $reversal->getId(),
+            'entity_type' => $reversal->getEntityName(),
+            'customer_id' => '100000customer',
+            'balance'     => 1000,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCustomerTxnAttributes, $customerTxn->getAttributes());
+    }
+
+    public function testCreateCustomerWalletPayout_WithFts_AndReceiveFailedWebhook()
+    {
+        $payout = $this->testCreateCustomerWalletPayout_WithFts();
+
+        $payoutId = $payout->getId();
+
+        $this->fixtures->stripSign($payoutId);
+
+        $this->ba->ftsAuth('live');
+
+        // Processed Webhook sent from FTS
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'NODAL',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'AXIS',
+            'extra_info'          => [
+                'beneficiary_name' => 'Ambar',
+                'cms_ref_no'       => '',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => random_integer(2),
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => 'Customer Wallet Payout',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 15691231,
+            'source_id'           => $payoutId,
+            'source_type'         => 'payout',
+            'status'              => 'FAILED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->expectWebhookEvent('payout.updated');
+        $this->expectWebhookEvent('payout.reversed');
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId);
+        $fundTransferAttempt = $payout->fundTransferAttempts()->first();
+
+        $this->assertEquals(Payout\Status::REVERSED, $updatedPayout->getStatus());
+        $this->assertNotNull($updatedPayout->getReversedAt());
+        $this->assertEquals(Channel::AXIS, $updatedPayout->getChannel());
+        $this->assertEquals(Payout\Mode::IMPS, $updatedPayout->getMode());
+
+        $this->assertEquals(Payout\Status::FAILED, $fundTransferAttempt[Payout\Entity::STATUS]);
+        $this->assertEquals(Channel::AXIS, $fundTransferAttempt->getChannel());
+        $this->assertEquals(Payout\Mode::IMPS, $fundTransferAttempt->getMode());
+
+        $customerBalance = $this->getDbEntity('customer_balance', ['customer_id' => '100000customer'], 'live');
+
+        $primaryBalance = $this->getDbEntityById('balance', '10000000000000', 'live');
+
+        // Money reversed by a credit customer_transaction and a positive adjustment
+        $this->assertEquals(1000, $customerBalance->getBalance());
+        $this->assertEquals(1000, $primaryBalance->getBalance());
+
+        /* @var $reversal ReversalEntity */
+        $reversal = $this->getDbLastEntity('reversal', 'live');
+
+        $customerTxn = $this->getDbLastEntity('customer_transaction', 'live');
+
+        /* @var $adjustment AdjustmentEntity */
+        $adjustment = $this->getDbLastEntity('adjustment', 'live');
+
+        $expectedReversalAttributes = [
+            'currency'         => 'INR',
+            'amount'           => 800,
+            'fee'              => 0,
+            'tax'              => 0,
+            'entity_id'        => $payout->getId(),
+            'entity_type'      => $payout->getEntityName(),
+            'transaction_type' => 'customer_transaction',
+            'transaction_id'   => $customerTxn->getId(),
+            'customer_id'      => '100000customer',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedReversalAttributes, $reversal->getAttributes());
+
+        $expectedAdjustmentAttributes = [
+            'currency'    => 'INR',
+            'amount'      => 600,
+            'description' => 'Credit wallet withdrawal fee amount for payout reversal',
+            'entity_id'   => $reversal->getId(),
+            'entity_type' => $reversal->getEntityName(),
+            'balance_id'  => $primaryBalance->getId(),
+        ];
+
+        $this->assertArraySelectiveEquals($expectedAdjustmentAttributes, $adjustment->getAttributes());
+
+        $expectedCustomerTxnAttributes = [
+            'currency'    => 'INR',
+            'amount'      => 800,
+            'credit'      => 800,
+            'type'        => 'reversal',
+            'entity_id'   => $reversal->getId(),
+            'entity_type' => $reversal->getEntityName(),
+            'customer_id' => '100000customer',
+            'balance'     => 1000,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCustomerTxnAttributes, $customerTxn->getAttributes());
+    }
+
+    public function testCreateCustomerWalletPayout_WithFts_AndReceiveProcessedThenReversedWebhook()
+    {
+        $payout = $this->testCreateCustomerWalletPayout_WithFts_AndReceiveProcessedWebhook();
+
+        $payoutId = $payout->getId();
+
+        $this->fixtures->stripSign($payoutId);
+
+        $this->ba->ftsAuth('live');
+
+        // Processed Webhook sent from FTS
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'NODAL',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'AXIS',
+            'extra_info'          => [
+                'beneficiary_name' => 'Ambar',
+                'cms_ref_no'       => '',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => random_integer(2),
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => 'Customer Wallet Payout',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 15691231,
+            'source_id'           => $payoutId,
+            'source_type'         => 'payout',
+            'status'              => 'REVERSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->expectWebhookEvent('payout.updated');
+        $this->expectWebhookEvent('payout.reversed');
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId);
+        $fundTransferAttempt = $payout->fundTransferAttempts()->first();
+
+        $this->assertEquals(Payout\Status::REVERSED, $updatedPayout->getStatus());
+        $this->assertNotNull($updatedPayout->getReversedAt());
+        $this->assertEquals(Channel::AXIS, $updatedPayout->getChannel());
+        $this->assertEquals(Payout\Mode::IMPS, $updatedPayout->getMode());
+
+        $this->assertEquals(Payout\Status::REVERSED, $fundTransferAttempt[Payout\Entity::STATUS]);
+        $this->assertEquals(Channel::AXIS, $fundTransferAttempt->getChannel());
+        $this->assertEquals(Payout\Mode::IMPS, $fundTransferAttempt->getMode());
+
+        $customerBalance = $this->getDbEntity('customer_balance', ['customer_id' => '100000customer'], 'live');
+
+        $primaryBalance = $this->getDbEntityById('balance', '10000000000000', 'live');
+
+        // Money reversed by a credit customer_transaction and a positive adjustment
+        $this->assertEquals(1000, $customerBalance->getBalance());
+        $this->assertEquals(1000, $primaryBalance->getBalance());
+
+        /* @var $reversal ReversalEntity */
+        $reversal = $this->getDbLastEntity('reversal', 'live');
+
+        $customerTxn = $this->getDbLastEntity('customer_transaction', 'live');
+
+        /* @var $adjustment AdjustmentEntity */
+        $adjustment = $this->getDbLastEntity('adjustment', 'live');
+
+        $expectedReversalAttributes = [
+            'currency'         => 'INR',
+            'amount'           => 800,
+            'fee'              => 0,
+            'tax'              => 0,
+            'entity_id'        => $payout->getId(),
+            'entity_type'      => $payout->getEntityName(),
+            'transaction_type' => 'customer_transaction',
+            'transaction_id'   => $customerTxn->getId(),
+            'customer_id'      => '100000customer',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedReversalAttributes, $reversal->getAttributes());
+
+        $expectedAdjustmentAttributes = [
+            'currency'    => 'INR',
+            'amount'      => 600,
+            'description' => 'Credit wallet withdrawal fee amount for payout reversal',
+            'entity_id'   => $reversal->getId(),
+            'entity_type' => $reversal->getEntityName(),
+            'balance_id'  => $primaryBalance->getId(),
+        ];
+
+        $this->assertArraySelectiveEquals($expectedAdjustmentAttributes, $adjustment->getAttributes());
+
+        $expectedCustomerTxnAttributes = [
+            'currency'    => 'INR',
+            'amount'      => 800,
+            'credit'      => 800,
+            'type'        => 'reversal',
+            'entity_id'   => $reversal->getId(),
+            'entity_type' => $reversal->getEntityName(),
+            'customer_id' => '100000customer',
+            'balance'     => 1000,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCustomerTxnAttributes, $customerTxn->getAttributes());
     }
 
     public function testCreateCustomerWalletPayoutWithOldNewIfsc()

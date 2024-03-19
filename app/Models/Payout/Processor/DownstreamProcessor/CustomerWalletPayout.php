@@ -8,10 +8,12 @@ use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class CustomerWalletPayout extends Base
 {
@@ -23,7 +25,28 @@ class CustomerWalletPayout extends Base
 
         $this->blockYesbankCustomerWalletPayoutsIfRequired($channel, $payout, $this->mode);
 
+        $this->checkIfAxisMigrationIsEnabled($payout, $channel);
+
         $payout->setChannel($channel);
+    }
+
+    public function checkIfAxisMigrationIsEnabled($payout, &$channel)
+    {
+        $variant = $this->app->razorx->getTreatment(
+            $payout->getMerchantId(),
+            RazorxTreatment::AXIS_MIGRATION_CUSTOMER_WALLET_PAYOUT,
+            $this->mode ?? Mode::LIVE
+        );
+
+        $this->trace->info(TraceCode::AXIS_MIGRATION_CUSTOMER_WALLET_PAYOUT, [
+            'variant' => $variant,
+            'mode'    => $this->mode
+        ]);
+
+        if ($variant == RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $channel = Channel::AXIS;
+        }
     }
 
     public function blockYesbankCustomerWalletPayoutsIfRequired($channel, $payout, $mode)

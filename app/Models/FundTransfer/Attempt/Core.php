@@ -936,6 +936,12 @@ class Core extends Base\Core
             return [true, $source->getChannel()];
         }
 
+        if (($source->isCustomerPayout() === true) and
+            ($channel === Settlement\Channel::AXIS))
+        {
+            return [true, $source->getChannel()];
+        }
+
         return [false, $source->getChannel()];
     }
 
