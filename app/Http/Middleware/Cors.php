@@ -140,6 +140,7 @@ class Cors
                 // x-partner-* headers contain meta data used during phantom signup
                 Headers::X_PARTNER_APPLICATION_ID,
                 Headers::X_PARTNER_OAUTH_REFERRAL,
+                Headers::ONBOARDING_SIGNATURE,
                 'request-start-time',
                 'sentry-trace',
                 'Authorization',
