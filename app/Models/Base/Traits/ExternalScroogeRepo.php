@@ -716,6 +716,30 @@ trait ExternalScroogeRepo
         return false;
     }
 
+    public function isScroogeReadMigrationTidbEnabledForLaReversals($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            'SCROOGE_MISC_QUERIES_MIGRATION_TIDB_ENABLED_LA_REVERSALS',
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_LA_REVERSALS,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function validateExternalFetchEnabledForScrooge($id = null)
     {
         $keyName = Entity::getExternalConfigKeyName($this->entityName);

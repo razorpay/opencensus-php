@@ -5,6 +5,7 @@ namespace RZP\Models\Reversal;
 use DB;
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 use RZP\Constants\Table;
@@ -44,6 +45,40 @@ class Repository extends Base\Repository
      * @return array|mixed
      */
     public function fetchLaReversalsOfTransfer(string $transferId, string $merchantId)
+    {
+        try {
+            if ($this->repo->refund->isScroogeReadMigrationTidbEnabledForLaReversals() === true) {
+                $newValue = $this->repo->refund_tidb->fetchLaReversalsOfTransferFromTidb($transferId, $merchantId);
+
+                if($this->repo->refund->isScroogeReadMigrationTidbForLaReversals() === true){
+                    return $newValue;
+                }
+
+                $oldValue = $this->fetchLaReversalsOfTransferFromApi($transferId,$merchantId);
+
+                (new Refund\Service())->compareRefundsAndLogDifference($oldValue->all(),$newValue->all(),['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_LA_REVERSALS]);
+
+                return $oldValue;
+            }
+        }catch (\Throwable $e){
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SCROOGE_ENTITY_FETCH_FAILURE,
+                [
+                    'transferId' => $transferId,
+                    'merchantId' =>$merchantId,
+                ]);
+        }
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchLaReversalsOfTransfer',
+        ]);
+
+        return $this->fetchLaReversalsOfTransferFromApi($transferId,$merchantId);
+    }
+
+    public function fetchLaReversalsOfTransferFromApi(string $transferId, string $merchantId)
     {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchLaReversalsOfTransfer',

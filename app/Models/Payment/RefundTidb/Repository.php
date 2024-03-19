@@ -235,62 +235,62 @@ class Repository extends Base\Repository
 
     }
 
-//    public function fetchLaReversalsOfTransferFromTidb(string $transferId, string $merchantId)
-//    {
-//        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
-//            'method'       => 'fetchLaReversalsOfTransferFromTidb',
-//        ]);
-//
-//        $reversalColumns = $this->repo->reversal->dbColumn('*');
-//
-//        $reversalEntityType = $this->repo->reversal->dbColumn(ReversalEntity::ENTITY_TYPE);
-//
-//        $reversalEntityId = $this->repo->reversal->dbColumn(ReversalEntity::ENTITY_ID);
-//
-//        $refundMerchantId = $this->repo->refund->dbColumn(Refund\Entity::MERCHANT_ID);
-//
-//        $reversals = $this->repo->reversal->newQuery()
-//            ->select($reversalColumns)
-//            ->where($reversalEntityId, $transferId)
-//            ->where($reversalEntityType, 'transfer')
-//            ->get();
-//
-//
-//        if ($reversals->isEmpty()) {
-//            return [];
-//        }
-//
-//
-//      TODO: ADD CONDITION FOR REVERSAL ID
-//
-//        $refunds = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-//            ->where($refundMerchantId, $merchantId)
-//            ->get();
-//
-//        {
-//            $combinedDataCollection = new Base\PublicCollection(); // Initialize an empty collection
-//
-//            foreach ($refunds as $refund) {
-//                // Find the matching reversal based on some common attribute, e.g., reversal_id
-//                foreach ($reversals as $reversal) {
-//                    // Assuming 'id' is the common attribute and 'entity_id' is the property in reversal
-//                    if ($reversal['id'] == $refund['reversal_id']) {
-//                        // Set attributes from reversal
-//
-//                        // Add specific data from refund, e.g., notes
-//                        $reversal['notes'] = $refund['notes'];
-//
-//                        // Add the combined data to the collection
-//                        $combinedDataCollection->add($reversal);
-//
-//                        break; // Assuming each refund matches only one reversal, we can break after finding the match
-//                    }
-//                }
-//            }
-//
-//            // Now you have $combinedDataCollection containing the combined data as Eloquent model instances
-//            return $combinedDataCollection;
-//        }
-//
-//    }
+    public function fetchLaReversalsOfTransferFromTidb(string $transferId, string $merchantId)
+    {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchLaReversalsOfTransferFromTidb',
+        ]);
+
+        $reversalColumns = $this->repo->reversal->dbColumn('*');
+
+        $reversalId = $this->repo->refund->dbColumn(Refund\Entity::REVERSAL_ID);
+
+        $reversalEntityType = $this->repo->reversal->dbColumn(ReversalEntity::ENTITY_TYPE);
+
+        $reversalEntityId = $this->repo->reversal->dbColumn(ReversalEntity::ENTITY_ID);
+
+        $refundMerchantId = $this->repo->refund->dbColumn(Refund\Entity::MERCHANT_ID);
+
+        $reversals = $this->repo->reversal->newQuery()
+            ->select($reversalColumns)
+            ->where($reversalEntityId, $transferId)
+            ->where($reversalEntityType, ReversalEntity::TRANSFER)
+            ->get();
+
+
+        if ($reversals->isEmpty()) {
+            return new Base\PublicCollection();
+        }
+
+        $refunds = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->where($refundMerchantId, $merchantId)
+            ->whereIn($reversalId,$reversals->getIds())
+            ->get();
+
+        {
+            $combinedDataCollection = new Base\PublicCollection(); // Initialize an empty collection
+
+            foreach ($refunds as $refund) {
+                // Find the matching reversal based on some common attribute, e.g., reversal_id
+                foreach ($reversals as $reversal) {
+                    // Assuming 'id' is the common attribute and 'entity_id' is the property in reversal
+                    if ($reversal['id'] == $refund['reversal_id']) {
+                        // Set attributes from reversal
+
+                        // Add specific data from refund, e.g., notes
+                        $reversal['notes'] = $refund['notes'];
+
+                        // Add the combined data to the collection
+                        $combinedDataCollection->add($reversal);
+
+                        break; // Assuming each refund matches only one reversal, we can break after finding the match
+                    }
+                }
+            }
+
+            // Now you have $combinedDataCollection containing the combined data as Eloquent model instances
+            return $combinedDataCollection;
+        }
+
+    }
 }
