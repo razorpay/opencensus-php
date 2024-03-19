@@ -8,6 +8,7 @@ use RZP\Constants\Metric;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Jobs\AsyncBalanceUpdateForTransfer;
 use RZP\Models\Base;
 use Ramsey\Uuid\Uuid;
 use RZP\Models\Ledger\Constants;
@@ -452,8 +453,15 @@ class Core extends Base\Core
 
         $txnCore->dispatchForSettlementBucketing($transferPaymentTxn);
 
-        (new Transfer\Core())->pushTransferForAsyncBalanceUpdateIfApplicable($transfer);
+        AsyncBalanceUpdateForTransfer::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
 
+        $this->trace->info(
+            TraceCode::ASYNC_BALANCE_UPDATE_TXN_DISPATCHED,
+            [
+                'transfer_id'         => $transfer->getId(),
+                'merchant_id'         => $transfer->getMerchantId(),
+            ]);
+        
         $this->trace->info(TraceCode::TRANSFER_REVERSE_SHADOW_TXN_CREATION_SUCCESS,
             [
                 'transfer_id'               => $transfer->getId(),

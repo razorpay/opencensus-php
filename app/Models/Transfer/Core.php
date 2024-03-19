@@ -2012,7 +2012,7 @@ class Core extends Base\Core
             throw $ex;
         }
 
-        if ($transaction->isBalanceUpdated() === true)
+        if ($transaction->isBalanceUpdated() === true || $transaction->getBalanceId() !== null)
         {
             $this->trace->info(TraceCode::TRANSACTION_BALANCE_ALREADY_UPDATED,
                 [
@@ -2086,7 +2086,7 @@ class Core extends Base\Core
             throw $ex;
         }
 
-        if ($transaction->isBalanceUpdated() === true)
+        if ($transaction->isBalanceUpdated() === true || $transaction->getBalanceId() !== null)
         {
             $this->trace->info(TraceCode::TRANSACTION_BALANCE_ALREADY_UPDATED,
                 [
@@ -2555,21 +2555,6 @@ class Core extends Base\Core
     {
         // TODO: Remove this check once Airtel is onboarded to reverse shadow
         if (($transfer->isProcessed() === true) and ($transfer->merchant->getId() === 'EtHJCtiuRSZRCz'))
-        {
-            AsyncBalanceUpdateForTransfer::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
-
-            $this->trace->info(
-                TraceCode::ASYNC_BALANCE_UPDATE_TXN_DISPATCHED,
-                [
-                    'transfer_id'         => $transfer->getId(),
-                    'merchant_id'         => $transfer->getMerchantId(),
-                ]);
-
-            return;
-        }
-
-        if (in_array($transfer->getStatus(), [
-            Status::PROCESSED, Status::PARTIALLY_REVERSED, Status::REVERSED]) === true)
         {
             AsyncBalanceUpdateForTransfer::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
 

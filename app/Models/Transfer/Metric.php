@@ -160,7 +160,7 @@ class Metric extends Base\Core
 
     public function pushAsyncBalanceUpdateForTransferFailedMetrics($exception)
     {
-        $this->trace->pushExceptionMetrics($exception, self::ASYNC_BALANCE_UPDATE_FOR_TRANSFER_FAILED, $this->getCreateDefaultDimensions());
+        $this->pushExceptionMetrics($exception, self::ASYNC_BALANCE_UPDATE_FOR_TRANSFER_FAILED, $this->getCreateDefaultDimensions());
     }
 
     public function pushAsyncBalanceUpdateForTransferSuccessMetrics($startTime)
