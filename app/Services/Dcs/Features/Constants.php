@@ -253,8 +253,9 @@ class Constants
     const SrSensitiveBucket3 = 'sr_sensitive_bucket_3';
     const SrSensitiveBucket4 = 'sr_sensitive_bucket_4';
 
-    const RemoveRazorpayBranding = 'remove_rzp_branding';
+    const RemoveRazorpayBranding   = 'remove_rzp_branding';
     const PrefetchAccountsDisabled = 'prefetch_accounts_disabled';
+    const CustomerRewardsEnabled   = 'customer_rewards_enabled';
 
     const RestrictOnePaymentOnOneOrder = 'restrict_one_payment_on_one_order';
 
@@ -515,6 +516,7 @@ class Constants
         self::SrSensitiveBucket4                          => 'rzp/pg/merchant/router/CostBasedRouting',
         self::RemoveRazorpayBranding                      => 'rzp/pg/merchant/upi/in_app/DisplayControls',
         self::PrefetchAccountsDisabled                    => 'rzp/pg/merchant/upi/in_app/Prefetch',
+        self::CustomerRewardsEnabled                      => 'rzp/pg/merchant/upi/in_app/RewardConfigs',
         self::BulkPayoutWorkflow                          => 'rzp/x/merchant/dashboard_experience/bulk_payouts/Workflows',
         self::RtbWidgetEnabled                            => 'rzp/pg/merchant/checkout/Rtb',
         self::ShowSingleDCCCurrency                       => 'rzp/pg/merchant/payments/in_international/DCCFeatures',
@@ -778,7 +780,8 @@ class Constants
         APIFeaturesConstants::SR_SENSITIVE_BUCKET_3                        => self::SrSensitiveBucket3,
         APIFeaturesConstants::SR_SENSITIVE_BUCKET_4                        => self::SrSensitiveBucket4,
         APIFeaturesConstants::REMOVE_RAZORPAY_BRANDING                     => self::RemoveRazorpayBranding,
-        APIFeaturesConstants::PREFETCH_ACCOUNT_DISABLED                   => self::PrefetchAccountsDisabled,
+        APIFeaturesConstants::PREFETCH_ACCOUNT_DISABLED                    => self::PrefetchAccountsDisabled,
+        APIFeaturesConstants::CUSTOMER_REWARDS_ENABLED                     => self::CustomerRewardsEnabled,
         APIFeaturesConstants::BULK_PAYOUT_WORKFLOW                         => self::BulkPayoutWorkflow,
         self::ShowSingleDCCCurrency                                        => self::ShowSingleDCCCurrency,
         APIFeaturesConstants::SKIP_APPROVAL_FOR_CREATOR                    => self::SkipApprovalForCreator,
@@ -837,6 +840,7 @@ class Constants
         self::OmniMerchantEnabled                     => 'direct',
         self::DebitCardValidation                     => 'direct',
         self::RemoveRazorpayBranding                  => 'direct',
+        self::CustomerRewardsEnabled                  => 'direct',
         self::PrefetchAccountsDisabled                => 'direct',
         self::RtbWidgetEnabled                        => 'direct',
         self::ShowSingleDCCCurrency                   => 'direct',

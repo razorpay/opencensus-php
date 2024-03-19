@@ -1986,6 +1986,9 @@ class Constants
     /** Feature flag to disable prefetching of bank account information for Turbo UPI */
     const PREFETCH_ACCOUNT_DISABLED = 'prefetch_acc_disabled';
 
+    /** Feature flag to facilitates rewards to the end customer for Turbo UPI */
+    const CUSTOMER_REWARDS_ENABLED = 'customer_rewards_enabled';
+
     /**
      * Feature flag to enable merchants for debit card third party validation
      */
@@ -2198,6 +2201,9 @@ class Constants
         ],
         PreferencesConstants::PREFETCH => [
             DcsConstants::PrefetchAccountsDisabled,
+        ],
+        PreferencesConstants::REWARD_CONFIGS => [
+            DcsConstants::CustomerRewardsEnabled,
         ]
     ];
 
@@ -2863,6 +2869,7 @@ class Constants
         self::DEBIT_CARD_VALIDATION                  => true,
         self::REMOVE_RAZORPAY_BRANDING               => true,
         self::PREFETCH_ACCOUNT_DISABLED              => true,
+        self::CUSTOMER_REWARDS_ENABLED               => true,
         self::BULK_PAYOUT_WORKFLOW                   => true,
         DcsConstants::ShowSingleDCCCurrency          => true,
         self::ENABLE_JPMC_IMPORT_FLOW                => true,

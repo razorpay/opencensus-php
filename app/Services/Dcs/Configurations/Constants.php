@@ -28,6 +28,7 @@ class Constants
 
     const UpiInAppDisplayControls = "upi_in_app_display_controls";
     const UpiInAppPrefetch        = "upi_in_app_prefetch";
+    const UpiInAppRewardConfigs   = "upi_in_app_rewards_configs";
     const NcOptOutConfiguration   = 'nc_opt_out_configuration';
 
     const AccountingIntegrationConfig = 'accounting_integration_config';
@@ -47,11 +48,12 @@ class Constants
         self::OrgDefaultIIR                  => "rzp/pg/org/admindashboard/banking_program/InstrumentRequest",
         self::CustomUDFFlagConfig            => "rzp/pg/org/cards/banking_program/CardsConfig",
         self::UpiInAppDisplayControls        => "rzp/pg/merchant/upi/in_app/DisplayControls",
-        self::NcOptOutConfiguration          =>"rzp/platform/partner/optout/NeedsClarification",
+        self::NcOptOutConfiguration          => "rzp/platform/partner/optout/NeedsClarification",
         self::CountryDashboardConfigurations => "rzp/pg/country/dashboard/merchant/UIControls",
         self::AccountingIntegrationConfig    => "rzp/x/merchant/accounting/IntegrationSettings",
         self::DCCCurrencyLevelMarkup         => "rzp/pg/merchant/cross_border/india/DCCConfig",
         self::UpiInAppPrefetch               => "rzp/pg/merchant/upi/in_app/Prefetch",
+        self::UpiInAppRewardConfigs         => "rzp/pg/merchant/upi/in_app/RewardConfigs",
     ];
 
 }

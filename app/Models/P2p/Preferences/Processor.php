@@ -410,6 +410,9 @@ class Processor extends Base\Processor
                     case Constants::PREFETCH:
                         $key = DcsConfig\Constants::UpiInAppPrefetch;
                         break;
+                    case Constants::REWARD_CONFIGS:
+                        $key = DcsConfig\Constants::UpiInAppRewardConfigs;
+                        break;
                 }
 
                 $dcsResponse = app('dcs_config_service')->fetchConfiguration($key, $merchantId, $configurations, $mode);
