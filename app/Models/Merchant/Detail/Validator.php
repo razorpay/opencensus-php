@@ -51,7 +51,7 @@ class Validator extends Base\Validator
     const INVALID_BANK_BRANCH_CODE_TYPE_MESSAGE         = 'Invalid Bank Branch Code Type';
     const INVALID_INDUSTRY_CATEGORY_CODE_TYPE_MESSAGE   = 'Invalid Industry Category Code Type';
     const INVALID_STATUS_CHANGE_MESSAGE                 = 'Invalid status change';
-    
+
     const INVALID_PROMOTER_PAN                          = 'Personal PAN should not be blank.';
     const INVALID_COMPANY_PAN                           = 'Company PAN should not be blank';
     const INVALID_CIN_LLPIN                             = 'CIN/LLPIN should not be blank';
@@ -395,21 +395,22 @@ class Validator extends Base\Validator
     ];
 
     protected static $activationStatusRules = [
-        Entity::ACTIVATION_STATUS               => 'sometimes|string|max:30|required_without_all:' . Constants::POS_ACTIVATION_STATUS,
+        Entity::ACTIVATION_STATUS               => 'required|string|max:30',
         Entity::CLARIFICATION_MODE              => 'filled|string|max:15',
         Entity::REJECTION_REASONS               => 'filled|array',
         Entity::REJECTION_OPTION                => 'sometimes|string|max:30',
-        Constants::POS_ACTIVATION_STATUS        => 'sometimes|string|max:30|required_without_all:' . Entity::ACTIVATION_STATUS
+        Constants::POS_ACTIVATION_STATUS        => 'sometimes|string|max:30'
     ];
 
     protected static $activationStatusInternalRules = [
-        Entity::ACTIVATION_STATUS               => 'sometimes|string|max:30|required_without_all:' . Constants::POS_ACTIVATION_STATUS,
+        Entity::ACTIVATION_STATUS               => 'required|string|max:30',
         Entity::CLARIFICATION_MODE              => 'filled|string|max:15',
         Entity::REJECTION_REASONS               => 'filled|array',
         Entity::REJECTION_OPTION                => 'sometimes|string|max:30',
         Constants::WORKFLOW_MAKER_ADMIN_ID      => 'required|string|max:30',
-        Constants::POS_ACTIVATION_STATUS        => 'sometimes|string|max:30|required_without_all:' . Entity::ACTIVATION_STATUS
+        Constants::POS_ACTIVATION_STATUS        => 'sometimes|string|max:30'
     ];
+
 
     protected static $merchantConsentRules = [
         'consents'                              => 'filled|array',
@@ -1939,7 +1940,7 @@ class Validator extends Base\Validator
             'variables'
         );
     }
-    
+
     public function validatePersonalPAN($merchantDetail)
     {
         if (empty($merchantDetail->getPromoterPan()) === true)
@@ -1947,17 +1948,17 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(self::INVALID_PROMOTER_PAN);
         }
     }
-   
+
     public function validateCompanyPAN($businessType, $companyPan)
     {
-        
+
         if (in_array($businessType, BusinessType::$businessTypesWithCompanyPanMandatory) && empty($companyPan) === true)
         {
             throw new BadRequestValidationFailureException(sprintf('%s for %s', self::INVALID_COMPANY_PAN, $businessType));
         }
     }
-    
-   
+
+
     public function validateCIN($businessType, $cin)
     {
         if (in_array($businessType, BusinessType::$businessTypesWithCinMandatory) && empty($cin) === true)
@@ -1965,7 +1966,7 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(sprintf('%s for %s', self::INVALID_CIN_LLPIN, $businessType));
         }
     }
-    
+
     public function validatePOSActivationStatusChange($currentStatus, string $newStatus)
     {
         if (empty($currentStatus) === true)

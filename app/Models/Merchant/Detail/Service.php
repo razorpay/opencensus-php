@@ -1697,8 +1697,6 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        $merchantDetails=null;
-
         /**
          *  In some cases where only pos activation status has to be updated and pg activation status
          *  is empty in those cases we only have to update pos case and return response.
@@ -1706,14 +1704,15 @@ class Service extends Base\Service
         if (empty($input[DEConstants::POS_ACTIVATION_STATUS]) === false)
         {
             $merchantDetails = (new Core)->updatePosActivationStatus($merchant, $input,$admin);
+
+            if (empty($input[Entity::ACTIVATION_STATUS]) === true) {
+                return $merchantDetails->toArrayPublic();
+            }
         }
 
-        if (empty($input[Entity::ACTIVATION_STATUS]) === false)
-        {
-            $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $admin);
-        }
+        $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $admin);
 
-        return empty($merchantDetails) ? [] : $merchantDetails->toArrayPublic();
+        return $merchantDetails->toArrayPublic();
     }
 
     /**
@@ -1731,8 +1730,7 @@ class Service extends Base\Service
 
     public function updateActivationStatusInternal(string $merchantId, array $input): array
     {
-        $merchant        = $this->repo->merchant->findOrFailPublic($merchantId);
-        $merchantDetails = null;
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL, [
             DetailConstants::INPUT => $input,
@@ -1740,29 +1738,37 @@ class Service extends Base\Service
 
         ]);
 
-        $merchant->merchantDetail->getValidator()->validateInput('activationStatusInternal', $input);
-
-        $maker = $this->repo->admin->findOrFailPublic(Admin\Admin\Entity::stripDefaultSign($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]));
-        unset($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]);
-
-        $this->app['basicauth']->setOrgId($merchant->getOrgId());
+        $maker = $this->repo->admin->findOrFailPublic( Admin\Admin\Entity::stripDefaultSign($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]));
 
         $this->app['workflow']->setMakerFromAuth(false);
         $this->app['workflow']->setWorkflowMaker($maker);
         $this->app['workflow']->setWorkflowMakerType(MakerType::ADMIN);
 
+        $this->app['basicauth']->setOrgId($merchant->getOrgId());
+
         if (empty($input[DEConstants::POS_ACTIVATION_STATUS]) === false)
         {
-            $merchantDetails = (new Core)->updatePosActivationStatus($merchant, $input, $maker);
+            $this->app['workflow']->setPermission(PermissionName::POS_EDIT_ACTIVATE_MERCHANT);
+            $merchantDetails = (new Core)->updatePosActivationStatus($merchant, $input,$maker);
 
+            if (empty($input[Entity::ACTIVATION_STATUS]) === true)
+            {
+                return $merchantDetails->toArrayPublic();
+            }
         }
 
-        if (empty($input[Entity::ACTIVATION_STATUS]) === false)
+        $merchant->merchantDetail->getValidator()->validateInput('activationStatusInternal', $input);
+
+        if (empty($input[DEConstants::POS_ACTIVATION_STATUS]) === true)
         {
-            $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $maker);
+            unset($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]);
         }
 
-        return empty($merchantDetails) ? [] : $merchantDetails->toArrayPublic();
+        $this->app['workflow']->setPermission(PermissionName::EDIT_ACTIVATE_MERCHANT);
+
+        $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $maker);
+
+        return $merchantDetails->toArrayPublic();
     }
 
 

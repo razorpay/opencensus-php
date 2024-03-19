@@ -3829,15 +3829,11 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        // pos Keys to be filtered out
-        $keysToFilter = array(DEConstants::POS_ACTIVATION_STATUS);
-
-        // Loop through the keys to filter and unset them from the array and merchant details
-        foreach ($keysToFilter as $key)
-        {
-            unset($input[$key]);
-            unset($merchantDetails[$key]);
-        }
+        // We're editing merchant details using the input data and attempting to save it in the API database.
+        // However, this approach will lead to issues when transitioning merchants to the NC status for both online and POS cases from the CMMA dashboard.
+        // Hence Removing POS_ACTIVATION_STATUS is necessary due to the absence of the POS_ACTIVATION_STATUS column in the API database.
+        unset($input[DEConstants::POS_ACTIVATION_STATUS]);
+        unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
 
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
 
@@ -3893,7 +3889,7 @@ class Core extends Base\Core
             if ($this->app['basicauth']->isAdminAuth() === true)
             {
                 $this->checkLicenseExpiryValidationForMerchantDocuments($merchant, $input);
-                
+
                 $this->performComplianceChecksBasedOnBusinessType($merchantDetails);
             }
         }
@@ -4012,8 +4008,6 @@ class Core extends Base\Core
 
             $dbUpdateStartTime = microtime(true);
             $merchantId        = $merchant->getMerchantId();
-
-            $this->app['workflow']->setPermission(PermissionName::EDIT_ACTIVATE_MERCHANT);
 
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
                 ($merchant->isLinkedAccount() === false))
@@ -4391,18 +4385,18 @@ class Core extends Base\Core
             ],
             'variables'
         );
-        
+
         if($isExpEnabled === false)
         {
             return;
         }
-        
+
         if ($this->mcore->isMerchantEligibleForComplianceCheck($merchantDetail->merchant) === false)
         {
             $this->app['trace']->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_SKIP, [
                 'merchant_id' => $merchantDetail->getMerchantId(),
             ]);
-            
+
             return;
         }
 
@@ -4418,7 +4412,7 @@ class Core extends Base\Core
         (new Validator())->validatePersonalPAN($merchantDetail);
         (new Validator())->validateCompanyPAN($businessType, $companyPan);
         (new Validator())->validateCIN($businessType, $cin);
-        
+
     }
 
     public function shouldTriggerActivatedWebhook(string $merchantId, string $newStatus = null) : bool
@@ -4505,7 +4499,6 @@ class Core extends Base\Core
                                     ->setEntity($merchantDetails->getEntity())
                                     ->setOriginal($oldMerchantDetails)
                                     ->setDirty($merchantDetails)
-                                    ->setPermission(PermissionName::POS_EDIT_ACTIVATE_MERCHANT)
                                     ->setWorkflowMaker($maker)
                                     ->setWorkflowMakerType(MakerType::ADMIN)
                                     ->handle();
@@ -4573,7 +4566,6 @@ class Core extends Base\Core
                                     ->setEntity($merchantDetails->getEntity())
                                     ->setOriginal($oldMerchantDetails)
                                     ->setDirty($merchantDetails)
-                                    ->setPermission(PermissionName::POS_EDIT_ACTIVATE_MERCHANT)
                                     ->setWorkflowMaker($maker)
                                     ->setWorkflowMakerType(MakerType::ADMIN)
                                     ->handle();
@@ -12235,6 +12227,12 @@ class Core extends Base\Core
 
         return $posClarificationReasons;
     }
+
+    // Avoid using this function for dual writing on tables like merchant_details and merchants tables.
+    // While it's suitable for handling documents and clarification reasons,
+    // there are scenarios, such as updating bank account information from the dashboard flow after the merchant is activated, where this approach can lead to issues.
+    // For instance, if the API has the latest bank account data while the PGOS has outdated information,
+    // allowing dual writing could result in the PGOS system's outdated data overriding the latest data in the API.
     public function AllowDualWritingForPosActivationForm($merchant) :bool
     {
 
@@ -12243,9 +12241,8 @@ class Core extends Base\Core
         $isPosMerchant = $this->fetchPosActivationFlow($merchant) !== ActivationFlow::BLACKLIST;
 
         $isPGOSMerchant = $this->isPGOSMerchant($merchant);
-
         if ($isPGOSMerchant === true and
-            $isPosMerchant === true and
+            $isPosMerchant===true and
             $merchantPosActivationStatus != Detail\Status::ACTIVATED)
         {
             return true;
