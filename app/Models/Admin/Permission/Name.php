@@ -716,6 +716,15 @@ class Name
 
     // xperience service
     const MIGRATE_BULK_PAYOUTS           = 'migrate_bulk_payouts';
+    const VIEW_GROUP_TYPE                = 'view_group_type';
+    const CREATE_GROUP_TYPE              = 'create_group_type';
+    const VIEW_USER_GROUP                = 'view_user_group';
+    const CREATE_USER_GROUP              = 'create_user_group';
+    const UPDATE_USER_GROUP              = 'update_user_group';
+    const REMOVE_USER_GROUP              = 'remove_user_group';
+    const VIEW_USER_GROUP_MAPPING        = 'view_user_group_mapping';
+    const CREATE_USER_GROUP_MAPPING      = 'create_user_group_mapping';
+    const REMOVE_USER_GROUP_MAPPING      = 'remove_user_group_mapping';
 
     // self serve workflow
     const SELF_SERVE_WORKFLOW_CONFIG     = 'self_serve_workflow_config';
@@ -1178,7 +1187,7 @@ class Name
 
     const CREATE_COST_CENTER = 'create_cost_center';
     const VIEW_COST_CENTER   = 'view_cost_center';
-    
+
     const INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT = 'international_products_pa_cb_enablement';
 
     public static $actionMap = [

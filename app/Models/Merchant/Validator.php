@@ -113,6 +113,8 @@ class Validator extends Base\Validator
 
     const LINKED_ACCOUNT_CREATE_OTP = 'linked_account_create_otp';
 
+    const SEARCH_MERCHANT_USERS_INTERNAL = 'search_merchant_users_internal';
+
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
         'jpg'   => 'image/jpeg',
@@ -828,6 +830,13 @@ class Validator extends Base\Validator
 
     protected static array $fetchAssociatedAccountsRules = [
         Reporting::REPORT_TYPE => 'sometimes|nullable|string|in:partner,merchant'
+    ];
+
+    protected static array $searchMerchantUsersInternalRules = [
+        'product'  => 'required|string|in:banking,primary',
+        'role'     => 'sometimes|string|nullable',
+        'emails'   => 'sometimes|array|nullable',
+        'user_ids' => 'sometimes|array|nullable',
     ];
 
     /**

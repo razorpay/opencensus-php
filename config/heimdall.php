@@ -2415,6 +2415,43 @@ return [
                 'assignable'    => true,
             ],
         ],
+
+        //User Groups
+        PermissionCategory::USER_GROUP    => [
+            Permission::VIEW_GROUP_TYPE           => [
+                'description' => 'view_group_type',
+                'assignable'  => true,
+            ],
+            Permission::CREATE_GROUP_TYPE               => [
+                'description' => 'create_group_type',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_USER_GROUP             => [
+                'description' => 'view_user_group',
+                'assignable'  => true,
+            ],
+            Permission::CREATE_USER_GROUP               => [
+                'description' => 'create_user_group',
+                'assignable'  => true,
+            ],
+            Permission::UPDATE_USER_GROUP             => [
+                'description' => 'update_user_group',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_USER_GROUP_MAPPING => [
+                'description' => 'view_user_group_mapping',
+                'assignable'  => true,
+            ],
+            Permission::CREATE_USER_GROUP_MAPPING => [
+                'description' => 'create_user_group_mapping',
+                'assignable'  => true,
+            ],
+            Permission::REMOVE_USER_GROUP_MAPPING => [
+                'description' => 'remove_user_group_mapping',
+                'assignable'  => true,
+            ],
+        ],
+
     ],
 
     'workflows' => [

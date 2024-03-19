@@ -5,16 +5,14 @@ namespace RZP\Services;
 use Config;
 use Illuminate\Http\Request;
 use Razorpay\Edge\Passport\Passport;
+use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Environment;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Http\Request\Requests;
 use RZP\Http\RequestHeader;
-use RZP\Http\Response\StatusCode;
 use RZP\Models\Feature\Constants as Features;
-use RZP\Models\User\Core as UserCore;
 use RZP\Trace\TraceCode;
 
 /**
@@ -47,6 +45,20 @@ class Xperience
     const GET_COST_CENTERS_PATH              = 'v1/cost-centers';
     const SINGLE_COST_CENTER_PATH            = 'v1/cost-centers/%s';
     const DISABLE_COST_CENTER_PATH           = 'v1/cost-centers/%s/disable';
+    const SINGLE_USER_DETAILS_PATH           = 'v1/users/%s';
+    const LIST_USER_DETAILS_PATH             = 'v1/users';
+    const ADD_USER_PATH                      = 'v1/users';
+    const LIST_GROUPS_OF_USER                = 'v1/user/%s/groups';
+    const LIST_USERS_OF_GROUP                = 'v1/group/%s/users';
+    const REMOVE_GROUP_OF_USERS              = 'v1/users/group';
+    const ADD_GROUP_FOR_USERS                = 'v1/users/group';
+    const SINGLE_GROUP                       = 'v1/groups/%s';
+    const LIST_GROUPS                        = 'v1/groups';
+    const CREATE_GROUP                       = 'v1/groups';
+    const LIST_GROUP_TYPES                   = 'v1/group-types';
+    const CREATE_GROUP_TYPE                  = 'v1/group-types';
+    const GET_MULTIPLE_USER_DETAILS_PATH     = 'v1/users';
+    const USER_INVITE_ACCEPTED_PATH          = 'v1/users/callbacks/invite-accepted';
 
     const PENDING_ENTITIES_SUMMARY_EMAIL_PATH = 'v1/aggregator/send-pending-entities-email';
 
@@ -68,6 +80,7 @@ class Xperience
     const GET    = 'GET';
     const PUT    = 'PUT';
     const DELETE = 'DELETE';
+    const PATCH  = 'PATCH';
 
     // parameter constants
     const IS_BULK_WORKFLOW_ENABLED = 'is_bulk_workflow_enabled';
@@ -239,7 +252,7 @@ class Xperience
         }
         else
         {
-            $requestData = json_encode($data);
+            $requestData = !empty($data) ? json_encode($data) : null;
         }
 
         $this->trace->info(TraceCode::XPERIENCE_SERVICE_REQUEST,
@@ -279,7 +292,7 @@ class Xperience
                     'status_code' => $response->status_code,
                 ]);
         }
-        else
+        else if ($response->status_code >= 400)
         {
             $this->trace->error(
                 TraceCode::XPERIENCE_SERVICE_CLIENT_ERROR,
@@ -287,32 +300,29 @@ class Xperience
                     'response' => $response->body,
                 ]);
 
-            if ($response->status_code >= 400)
+            if ($response->status_code == 400)
             {
-                if ($response->status_code == 400)
+                if (isset($parsedResponse['message']) and !empty($parsedResponse['message']))
                 {
-                    if (isset($parsedResponse['message']) and !empty($parsedResponse['message']))
-                    {
-                        $description = $parsedResponse['message'];
+                    $description = $parsedResponse['message'];
 
-                        throw new BadRequestException(
-                            ErrorCode::BAD_REQUEST_ERROR, null,
-                            [
-                                'errorDetail' => $response->body,
-                                'status_code' => $response->status_code,
-                            ], $description);
-                    }
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR, null,
+                        [
+                            'errorDetail' => $response->body,
+                            'status_code' => $response->status_code,
+                        ], $description);
                 }
-
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_ERROR, null,
-                    [
-                        'errorDetail' => $response->body,
-                        'status_code' => $response->status_code,
-                    ], 'Something went wrong. Please try again.');
             }
-        }
 
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null,
+                [
+                    'errorDetail' => $response->body,
+                    'status_code' => $response->status_code,
+                ], 'Something went wrong. Please try again.');
+        }
+        
         return json_decode($response->body, true);
     }
 
@@ -410,6 +420,15 @@ class Xperience
         ];
 
         $response = $this->makeRequest($url, $request);
+
+        return $response;
+    }
+
+    public function userInviteAccepted(array $input)
+    {
+        $url = $this->getConstructedUrl(self::USER_INVITE_ACCEPTED_PATH);
+
+        $response = $this->makeRequest($url, $input);
 
         return $response;
     }
@@ -524,6 +543,111 @@ class Xperience
         $url = $this->getConstructedUrl(sprintf(self::PROCESS_BULK_PAYOUT_PATH, $bulkPayoutId));
 
         return $this->makeRequest($url, $input);
+    }
+
+    public function addUser(array $input)
+    {
+        $url = $this->getConstructedUrl(self::ADD_USER_PATH);
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function deleteUser(string $id)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::SINGLE_USER_DETAILS_PATH, $id));
+
+        return $this->makeRequest($url, [], [], self::DELETE);
+    }
+
+    public function editUser(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::SINGLE_USER_DETAILS_PATH, $id));
+
+        return $this->makeRequest($url, $input, [], self::PATCH);
+    }
+
+    public function getUser(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::SINGLE_USER_DETAILS_PATH, $id));
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function listUsers(array $input)
+    {
+        $url = $this->getConstructedUrl(self::LIST_USER_DETAILS_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function listGroupsOfUser(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::LIST_GROUPS_OF_USER, $id));
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function listUsersOfGroup(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::LIST_USERS_OF_GROUP, $id));
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function removeGroupOfUsers(array $input)
+    {
+        $url = $this->getConstructedUrl(self::REMOVE_GROUP_OF_USERS);
+
+        return $this->makeRequest($url, $input, [], self::DELETE);
+    }
+
+    public function addGroupForUsers(array $input)
+    {
+        $url = $this->getConstructedUrl(self::ADD_GROUP_FOR_USERS);
+
+        return $this->makeRequest($url, $input, [], self::POST);
+    }
+
+    public function updateGroup(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::SINGLE_GROUP, $id));
+
+        return $this->makeRequest($url, $input, [], self::PATCH);
+    }
+
+    public function listGroups(array $input)
+    {
+        $url = $this->getConstructedUrl(self::LIST_GROUPS);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function getGroup(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::SINGLE_GROUP, $id));
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function createGroup(array $input)
+    {
+        $url = $this->getConstructedUrl(self::CREATE_GROUP);
+
+        return $this->makeRequest($url, $input, [], self::POST);
+    }
+
+    public function listGroupTypes(array $input)
+    {
+        $url = $this->getConstructedUrl(self::LIST_GROUP_TYPES);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function createGroupType(array $input)
+    {
+        $url = $this->getConstructedUrl(self::CREATE_GROUP_TYPE);
+
+        return $this->makeRequest($url, $input, [], self::POST);
     }
 
     protected function isBulkPayoutsWorkflowEnabled(): bool

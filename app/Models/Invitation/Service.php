@@ -223,6 +223,15 @@ class Service extends Base\Service
         return $invitation->toArrayPublic();
     }
 
+    public function createXperienceUserInvitation(array $input): array
+    {
+        $input[Entity::PRODUCT] = Product::BANKING;
+
+        $invitation = $this->core()->createXperienceUserInvitation($input);
+
+        return $invitation->toArrayInternal();
+    }
+
     /**
      * Email Invitation Mail
      *
@@ -257,5 +266,4 @@ class Service extends Base\Service
 
         return $this->core()->resendXAccountingIntegrationInvites($request['to_email_id']);
     }
-
 }

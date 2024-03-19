@@ -1637,6 +1637,22 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * This is similar to getInternalUsers function, but uses a POST payload and offers more options for filtering users.
+     *
+     * @param $merchantId
+     *
+     * @return mixed
+     */
+    public function searchMerchantUsersInternal($merchantId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->searchMerchantUsersInternal($merchantId, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getGSTDetails()
     {
         $response = $this->service()->getGSTDetails();

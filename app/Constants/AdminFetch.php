@@ -717,6 +717,8 @@ class AdminFetch
                         'auth_link',
                         'recurring_charge',
                         'recurring_charge_bulk',
+                        's2p_groups_onboarding',
+                        's2p_users_onboarding',
                     ],
                 ],
             ],

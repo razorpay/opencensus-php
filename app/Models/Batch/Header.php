@@ -1669,6 +1669,25 @@ class Header
     const BVS_BULK_KYC_VERIFICATION_ENRICHMENT_TYPE = 'Enrichment Type';
     const BVS_BULK_KYC_VERIFICATION_ACCOUNT_ID = 'Account Id';
 
+    // S2P Groups Onboarding headers
+    const S2P_GROUPS_ONBOARDING_MERCHANT_ID = "MID (Mandatory) 14 character merchant ID";
+    const S2P_GROUPS_ONBOARDING_GROUP_TYPE_ID = "Group Type ID (Mandatory) ID of the group type created for the MID";
+    const S2P_GROUPS_ONBOARDING_NAME = "Group Name (Mandatory) Name of group to be added within the group type";
+    const S2P_GROUPS_ONBOARDING_GROUP_HEAD_EMAIL = "Head of group - email ID (Optional) Email ID of head of group (they should already be added to the MID)";
+    const S2P_GROUPS_ONBOARDING_REFERENCE_ID = "Reference ID (Optional) Any reference ID used internally";
+    const S2P_GROUPS_ONBOARDING_DESCRIPTION = "Description (Optional) Any reference details used internally";
+
+    // S2P Users Onboarding headers
+    const S2P_USERS_ONBOARDING_MERCHANT_ID = "MID (Mandatory) 14 character merchant ID";
+    const S2P_USERS_ONBOARDING_FIRST_NAME = "First Name (Mandatory) Team Member first name";
+    const S2P_USERS_ONBOARDING_LAST_NAME = "Last Name (Mandatory) Team member last name";
+    const S2P_USERS_ONBOARDING_EMAIL_ID = "Email ID (Mandatory) Team member work email ID";
+    const S2P_USERS_ONBOARDING_USER_ROLE = "User Role (Mandatory) User role defining access & permissions on RazorpayX (role should already be present for the MID)";
+    const S2P_USERS_ONBOARDING_DESIGNATION = "Designation (Optional) Team member internal designation";
+    const S2P_USERS_ONBOARDING_EMPLOYEE_ID = "Employee ID (Optional) Team member internal reference ID";
+    const S2P_USERS_ONBOARDING_MANAGER_EMAIL_ID = "Reporting Manager Email ID (Optional) Team member reporting manager email ID (they should already be added to the MID)";
+    const S2P_USERS_ONBOARDING_GROUP_IDS = "Groups (Optional) User groups that the team member is a part of (groups should already be added to the MID)";
+
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
         Header::WALLET_ACCOUNTS_NAME,
@@ -5226,6 +5245,31 @@ class Header
                 self::STP_T3_DATE,
                 self::STP_HELPDESK_SR_STATUS,
                 self::STP_HELPDESK_SR,
+            ]
+        ],
+
+        Type::S2P_GROUPS_ONBOARDING => [
+            self::INPUT => [
+                self::S2P_GROUPS_ONBOARDING_MERCHANT_ID,
+                self::S2P_GROUPS_ONBOARDING_GROUP_TYPE_ID,
+                self::S2P_GROUPS_ONBOARDING_NAME,
+                self::S2P_GROUPS_ONBOARDING_GROUP_HEAD_EMAIL,
+                self::S2P_GROUPS_ONBOARDING_REFERENCE_ID,
+                self::S2P_GROUPS_ONBOARDING_DESCRIPTION,
+            ]
+        ],
+
+        Type::S2P_USERS_ONBOARDING => [
+            self::INPUT => [
+                self::S2P_USERS_ONBOARDING_MERCHANT_ID,
+                self::S2P_USERS_ONBOARDING_FIRST_NAME,
+                self::S2P_USERS_ONBOARDING_LAST_NAME,
+                self::S2P_USERS_ONBOARDING_EMAIL_ID,
+                self::S2P_USERS_ONBOARDING_USER_ROLE,
+                self::S2P_USERS_ONBOARDING_DESIGNATION,
+                self::S2P_USERS_ONBOARDING_EMPLOYEE_ID,
+                self::S2P_USERS_ONBOARDING_MANAGER_EMAIL_ID,
+                self::S2P_USERS_ONBOARDING_GROUP_IDS,
             ]
         ],
 

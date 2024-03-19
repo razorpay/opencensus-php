@@ -1495,6 +1495,34 @@ class Service extends Base\Service
         return $this->user->toArrayPublic();
     }
 
+    public function editInternal(string $id, array $input)
+    {
+        (new Validator())->validateInput(Validator::EDIT_USER_INTERNAL, $input);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($id, $input)
+        {
+            $updatedName = $input[Entity::NAME];
+
+            unset($input[Entity::NAME]);
+
+            if (!empty($updatedName))
+            {
+                $this->edit($id, [
+                    Entity::NAME => $updatedName,
+                ]);
+            }
+
+            if (!empty($input[Entity::ACTION]))
+            {
+                $this->updateMerchantManageTeam($id, $input);
+            }
+        });
+
+        $user = $this->repo->user->findOrFail($id);
+
+        return $user->toArrayPublic();
+    }
+
     public function confirm(string $id): array
     {
         $user = $this->repo->user->findOrFailPublic($id);

@@ -2,139 +2,124 @@
 
 namespace RZP\Models\Merchant;
 
-use App;
-use Mail;
-use Config;
-use Throwable;
 use ApiResponse;
+use App;
 use Carbon\Carbon;
-use Monolog\Logger;
-use Illuminate\Support\Str;
+use Config;
 use RZP\Models\Card\IIN\Country;
 use Illuminate\Http\JsonResponse;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Jobs\PartnerMigrationAuditJob;
-use RZP\Models\Merchant\BusinessDetail;
-use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
-use Razorpay\OAuth\Client\Repository as OAuthRepo;
-use \WpOrg\Requests\Exception as RequestsException;
-
-use RZP\Http\RequestHeader;
-use RZP\Constants\Entity as E;
-use RZP\Constants\Environment;
-use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Http\BasicAuth\ClientAuthCreds;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Http\Route;
-use RZP\Constants\HyperTrace;
-use RZP\Models\VirtualAccount;
-use RZP\Jobs\SyncStakeholder;
-use RZP\Mail\User as UserMail;
-use RZP\Jobs\CapturePartnershipConsents;
-use RZP\Models\BankingAccount;
-use RZP\Exception\LogicException;
-use RZP\Listeners\ApiEventSubscriber;
-use RZP\Exception\BadRequestValidationFailureException;
-use Razorpay\OAuth\Application as OAuthApp;
-use RZP\Constants\Entity as EntityConstants;
-use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Exception;
-use RZP\Models\Emi;
-use RZP\Models\Base;
-use RZP\Models\User;
-use RZP\Models\User\Core as UserCore;
-use RZP\Jobs\EsSync;
-use RZP\Models\Batch;
-use RZP\Models\Partner;
-use RZP\Models\Terminal;
-use RZP\Models\Pricing;
-use RZP\Diag\EventCode;
-use RZP\Constants\Mode;
-use RZP\Models\Feature;
-use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
-use RZP\Models\Settings;
-use RZP\Models\User\Role;
-use RZP\Constants\Product;
-use RZP\Jobs\MerchantSync;
-use RZP\Models\BankAccount;
-use RZP\Models\Admin\Group;
-use RZP\Constants\Timezone;
-use RZP\Models\Transaction;
-use RZP\Models\Admin\Admin;
-use RZP\Base\RuntimeManager;
-use RZP\Models\Admin\Action;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
+use Mail;
+use Monolog\Logger;
+use Razorpay\OAuth\Application as OAuthApp;
+use Razorpay\OAuth\Exception\DBQueryException;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\BankingDemo;
 use RZP\Constants\Entity as CE;
-use RZP\Jobs\MailingListUpdate;
-use RZP\Models\Admin\AdminLead;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Terminal\Category;
-use RZP\Models\User\BankingRole;
-use RZP\Models\Admin\Permission;
-use RZP\Models\Settlement\Bucket;
-use RZP\Models\Settings\Accessor;
-use RZP\Models\Partner\Activation;
-use RZP\Models\BankingAccountService;
-use RZP\Mail\Merchant as MerchantMail;
-use RZP\Models\Merchant\Attribute;
-use RZP\Models\Order;
-use RZP\Models\Adjustment;
-use RZP\Models\Payment\Refund;
-use RZP\Jobs\MerchantHoldFundsSync;
-use RZP\Models\Merchant\LegalEntity;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Merchant\Balance\Type;
+use RZP\Constants\Entity as E;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Constants\HyperTrace;
+use RZP\Constants\Mode;
+use RZP\Constants\Product;
+use RZP\Constants\Timezone;
+use RZP\Diag\EventCode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Exception\BadRequestException;
-use RZP\Mail\Merchant\PartnerOnBoarded;
-use RZP\Models\Admin\Org\Entity as Org;
-use RZP\Mail\Payout\Payout as PayoutMail;
-use RZP\Jobs\BackFillReferredApplication;
-use RZP\Jobs\BackFillMerchantApplications;
-use RZP\Models\Comment\Core as CommentCore;
-use RZP\Models\Merchant\Fraud\HealthChecker;
-use RZP\Models\Merchant\MerchantApplications;
-use RZP\Models\Schedule\Task as ScheduleTask;
-use Razorpay\OAuth\Exception\DBQueryException;
-use RZP\Models\Comment\Entity as CommentEntity;
-use RZP\Models\Partner\Config as PartnerConfig;
-use RZP\Jobs\BulkMigrateAggregatorToResellerJob;
-use RZP\Jobs\SubMerchantSupportEntitiesCreateJob;
-use RZP\Models\Workflow\Action as WorkflowAction;
-use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
-use RZP\Models\Feature\Service as FeatureService;
-use RZP\Models\Merchant\Request as MerchantRequest;
-use RZP\Services\Segment\EventCode as SegmentEvent;
-use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Models\Partner\Validator as PartnerValidator;
-use RZP\Models\Partner\Constants as PartnerConstants;
-use RZP\Services\Segment\Constants as SegmentConstants;
-use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\LogicException;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
-use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
-use RZP\Models\Merchant\Detail\InternationalActivationFlow;
-use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
+use RZP\Http\Route;
+use RZP\Jobs\BackFillMerchantApplications;
+use RZP\Jobs\BackFillReferredApplication;
+use RZP\Jobs\BulkMigrateAggregatorToResellerJob;
+use RZP\Jobs\CapturePartnershipConsents;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
+use RZP\Jobs\EsSync;
+use RZP\Jobs\MailingListUpdate;
+use RZP\Jobs\MerchantHoldFundsSync;
+use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
+use RZP\Jobs\MerchantSync;
+use RZP\Jobs\PartnerMigrationAuditJob;
+use RZP\Jobs\SubMerchantSupportEntitiesCreateJob;
+use RZP\Jobs\SyncStakeholder;
+use RZP\Listeners\ApiEventSubscriber;
+use RZP\Mail\Merchant as MerchantMail;
+use RZP\Mail\Merchant\CreditsAdditionSuccess;
+use RZP\Mail\Merchant\PartnerOnBoarded;
+use RZP\Mail\Merchant\ReserveBalanceAdditionSuccess;
 use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
-use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
+use RZP\Mail\Payout\Payout as PayoutMail;
+use RZP\Mail\User as UserMail;
+use RZP\Models\Adjustment;
+use RZP\Models\Admin\Action;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\AdminLead;
+use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Admin\Permission;
+use RZP\Models\BankAccount;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccountService;
+use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Batch;
+use RZP\Models\Comment\Core as CommentCore;
+use RZP\Models\Comment\Entity as CommentEntity;
+use RZP\Models\Emi;
+use RZP\Models\Feature;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Feature\Service as FeatureService;
+use RZP\Models\Ledger\ReverseShadow\ReserveBalanceLoading;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
+use RZP\Models\Merchant\Analytics\Constants as AnalyticsConstants;
+use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
+use RZP\Models\Merchant\Balance\Type;
+use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
+use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\InternationalActivationFlow;
+use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
+use RZP\Models\Merchant\Fraud\HealthChecker;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
-use RZP\Models\Merchant\Credits;
-use RZP\Models\BankAccount\Entity as BankAccountEntity;
-use RZP\Mail\Merchant\CreditsAdditionSuccess;
-use RZP\Mail\Merchant\ReserveBalanceAdditionSuccess;
-use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
-use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
-use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Models\Order;
+use RZP\Models\Partner;
+use RZP\Models\Partner\Activation;
+use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Partner\Config\Core as PartnerConfigCore;
-use RZP\Models\Merchant\Consent\Constants as MerchantConsentConstants;
-use RZP\Trace\Tracer;
-use RZP\Models\Ledger\ReverseShadow\ReserveBalanceLoading;
-use RZP\Models\Typeform\Core as TypeformCore;
+use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\Partner\Validator as PartnerValidator;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Pricing;
+use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
+use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Settings;
+use RZP\Models\Settings\Accessor;
+use RZP\Models\Settlement\Bucket;
+use RZP\Models\Terminal;
+use RZP\Models\Terminal\Category;
+use RZP\Models\Transaction;
 use RZP\Models\Typeform\Constants as TypeformConstant;
-use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
-use RZP\Models\Merchant\Analytics\Constants as AnalyticsConstants;
+use RZP\Models\Typeform\Core as TypeformCore;
+use RZP\Models\User;
+use RZP\Models\User\BankingRole;
+use RZP\Models\User\Core as UserCore;
+use RZP\Models\User\Role;
+use RZP\Models\VirtualAccount;
+use RZP\Models\Workflow\Action as WorkflowAction;
+use RZP\Services\Segment\Constants as SegmentConstants;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
+use Throwable;
 
 class Core extends Base\Core
 {
@@ -2724,6 +2709,33 @@ class Core extends Base\Core
             ->callOnEveryItem('toArrayMerchant');
 
         return $users;
+    }
+
+    public function searchMerchantUsers(Entity $merchant,
+                                        array  $filters)
+    {
+        $queryBuilder = $merchant->users();
+
+        if (!empty($filters['product']))
+        {
+            $queryBuilder = $queryBuilder->wherePivot(User\Entity::PRODUCT, $filters['product']);
+        }
+        if (!empty($filters['role']))
+        {
+            $queryBuilder = $queryBuilder->wherePivot(User\Entity::ROLE, $filters['role']);
+        }
+        if (!empty($filters['emails']))
+        {
+            $queryBuilder = $queryBuilder->whereIn(User\Entity::EMAIL, $filters['emails']);
+        }
+        if (!empty($filters['user_ids']))
+        {
+            $queryBuilder = $queryBuilder->whereIn(User\Entity::ID, $filters['user_ids']);
+        }
+
+        return $queryBuilder
+            ->get()
+            ->callOnEveryItem('toArrayMerchant');
     }
 
     /**

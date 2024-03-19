@@ -40,7 +40,8 @@ class Validator extends Base\Validator
     const DISABLE_CAPTCHA_SECRET                 = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
     const CAPTCHA_MODE_HEADER                    = 'X-RECAPTCHA-MODE';
     const MAX_ALLOWED_CAPTCHA_REQUEST_ATTEMPTS   =  3;
-    const UPDATE_UNVERIFIED_MOBILE_NUMBER_OTP   =  'updateUnverifiedMobileNumberOtp';
+    const UPDATE_UNVERIFIED_MOBILE_NUMBER_OTP    = 'updateUnverifiedMobileNumberOtp';
+    const EDIT_USER_INTERNAL                     = 'editUserInternal';
 
     const CREATE_COMMON_RULES = [
         Entity::ID                              => 'sometimes|max:14',
@@ -159,6 +160,12 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE        => 'sometimes|nullable|max:15|contact_syntax',
 //        Entity::EMAIL                 => 'sometimes|email|unique:users,email',
         Entity::SETTINGS              => 'nullable|associative_array',
+    ];
+
+    protected static $editUserInternalRules = [
+        Entity::ACTION      => 'sometimes|custom',
+        Entity::NAME        => 'sometimes|string|max:200',
+        Entity::ROLE        => 'sometimes|string|custom',
     ];
 
     protected static $oauthRequestRules = [
@@ -591,6 +598,13 @@ class Validator extends Base\Validator
         $app = App::getFacadeRoot();
 
         $dashboardUser = $app['basicauth']->getUser();
+
+        if (empty($dashboardUser) && $app['basicauth']->isXperienceApp())
+        {
+            $userId = $app['request']->headers->get(\RZP\Services\Xperience::X_RAZORPAY_USER_ID);
+
+            $dashboardUser = (new Repository())->find($userId);
+        }
 
         if ((empty($dashboardUser) === true) or ($input['user_id'] === $dashboardUser->getId()))
         {

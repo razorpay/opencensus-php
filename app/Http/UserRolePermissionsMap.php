@@ -209,6 +209,16 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_USER_WRITE,
 
                  Permission::MERCHANT_ONBOARDING,
+
+                 //T&D Permissions
+                 Permission::VIEW_USER_GROUP_MAPPING,
+                 Permission::REMOVE_USER_GROUP_MAPPING,
+                 Permission::CREATE_USER_GROUP_MAPPING,
+                 Permission::UPDATE_USER_GROUP,
+                 Permission::VIEW_USER_GROUP,
+                 Permission::CREATE_USER_GROUP,
+                 Permission::VIEW_GROUP_TYPE,
+                 Permission::CREATE_GROUP_TYPE,
              ],
 
              BankingRole::ADMIN => [
@@ -370,6 +380,16 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_USER_WRITE,
 
                  Permission::MERCHANT_ONBOARDING,
+
+                 //T&D Permissions
+                 Permission::VIEW_USER_GROUP_MAPPING,
+                 Permission::REMOVE_USER_GROUP_MAPPING,
+                 Permission::CREATE_USER_GROUP_MAPPING,
+                 Permission::UPDATE_USER_GROUP,
+                 Permission::VIEW_USER_GROUP,
+                 Permission::CREATE_USER_GROUP,
+                 Permission::VIEW_GROUP_TYPE,
+                 Permission::CREATE_GROUP_TYPE,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -505,6 +525,11 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_USER_WRITE,
 
                  Permission::MERCHANT_ONBOARDING,
+
+                 //T&D Permissions
+                 Permission::VIEW_USER_GROUP_MAPPING,
+                 Permission::VIEW_USER_GROUP,
+                 Permission::VIEW_GROUP_TYPE,
              ],
 
              BankingRole::OPERATIONS => [
@@ -591,6 +616,11 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_USER_WRITE,
 
                  Permission::MERCHANT_ONBOARDING,
+
+                 //T&D Permissions
+                 Permission::VIEW_USER_GROUP_MAPPING,
+                 Permission::VIEW_USER_GROUP,
+                 Permission::VIEW_GROUP_TYPE,
              ],
 
              BankingRole::CHARTERED_ACCOUNTANT => [
@@ -646,6 +676,11 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_USER_WRITE,
 
                  Permission::MERCHANT_ONBOARDING,
+
+                 //T&D Permissions
+                 Permission::VIEW_USER_GROUP_MAPPING,
+                 Permission::VIEW_USER_GROUP,
+                 Permission::VIEW_GROUP_TYPE,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -710,6 +745,11 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_USER_WRITE,
 
                  Permission::MERCHANT_ONBOARDING,
+
+                 //T&D Permissions
+                 Permission::VIEW_USER_GROUP_MAPPING,
+                 Permission::VIEW_USER_GROUP,
+                 Permission::VIEW_GROUP_TYPE,
              ],
 
              BankingRole::VENDOR => [

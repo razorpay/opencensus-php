@@ -83,4 +83,5 @@ class Category
     const MERCHANT_FUND_MANAGEMENT     = 'merchant_fund_management';
     const COST_CENTER                  = 'cost_center';
     const RZP_KMS                       = 'rzp_kms';
+    const USER_GROUP                   = 'user_group';
 }

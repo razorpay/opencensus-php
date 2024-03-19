@@ -518,6 +518,7 @@ class Route
         'merchant_edit_free_credits'               => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                     => ['get',      'merchants-users',                                'MerchantController@getUsers',                                      ],
         'merchant_fetch_internal_users'            => ['get',      'merchants/{id}/internal-users',                  'MerchantController@getInternalUsers',                              ],
+        'merchant_search_users_internal'           => ['post',     'internal/merchants/{id}/users',                  'MerchantController@searchMerchantUsersInternal',                     ],
         'merchant_fetch_rm_details'                => ['get',      'merchants/{mid}/rm_details',                     'MerchantController@getMerchantRMDetails'],
         'merchant_put_rm_details'                  => ['put',      'merchants/{mid}/rm_details',                     'MerchantController@putMerchantRMDetails'],
         'merchant_patch_rm_details'                => ['patch',    'merchants/{mid}/rm_details',                     'MerchantController@patchMerchantRMDetails'],
@@ -1945,6 +1946,38 @@ class Route
         'cost_center_create_admin'                  => ['post',     'admin/xperience/cost-centers/create',      'XperienceController@createCostCenters'],
         'cost_center_update_admin'                  => ['put',      'admin/xperience/cost-centers/{id}',        'XperienceController@updateCostCenter'],
 
+        'xps_add_user'                              => ['post',     'xperience/users',                          'XperienceController@addUser'],
+        'xps_add_user_admin'                        => ['post',     'xperience/admin/users',                    'XperienceController@addUser'],
+        'xps_delete_user'                           => ['delete',   'xperience/users/{id}',                     'XperienceController@deleteUser'],
+        'xps_delete_user_admin'                     => ['delete',   'xperience/admin/users/{id}',               'XperienceController@deleteUser'],
+        'xps_edit_user'                             => ['patch',    'xperience/users/{id}',                     'XperienceController@editUser'],
+        'xps_edit_user_admin'                       => ['patch',    'xperience/admin/users/{id}',               'XperienceController@editUser'],
+        'xps_get_user'                              => ['get',      'xperience/users/{id}',                     'XperienceController@getUser'],
+        'xps_get_user_admin'                        => ['get',      'xperience/admin/users/{id}',               'XperienceController@getUser'],
+        'xps_list_users'                            => ['get',      'xperience/users',                          'XperienceController@listUsers'],
+        'xps_list_users_admin'                      => ['get',      'xperience/admin/users',                    'XperienceController@listUsers'],
+        'list_groups_of_user'                       => ['get',      'xperience/user/{id}/groups',               'XperienceController@listGroupsOfUser'],
+        'list_groups_of_user_admin'                 => ['get',      'xperience/admin/user/{id}/groups',         'XperienceController@listGroupsOfUser'],
+        'list_users_of_group'                       => ['get',      'xperience/group/{id}/users',               'XperienceController@listUsersOfGroup'],
+        'list_users_of_group_admin'                 => ['get',      'xperience/admin/group/{id}/users',         'XperienceController@listUsersOfGroup'],
+        'remove_group_of_users'                     => ['delete',   'xperience/users/group',                    'XperienceController@removeGroupOfUsers'],
+        'remove_group_of_users_admin'               => ['delete',   'xperience/admin/users/group',              'XperienceController@removeGroupOfUsers'],
+        'add_group_for_users'                       => ['post',     'xperience/users/group',                    'XperienceController@addGroupForUsers'],
+        'add_group_for_users_admin'                 => ['post',     'xperience/admin/users/group',              'XperienceController@addGroupForUsers'],
+        'update_group'                              => ['patch',    'xperience/groups/{id}',                    'XperienceController@updateGroup'],
+        'update_group_admin'                        => ['patch',    'xperience/admin/groups/{id}',              'XperienceController@updateGroup'],
+        'list_groups'                               => ['get',      'xperience/groups',                         'XperienceController@listGroups'],
+        'list_groups_admin'                         => ['get',      'xperience/admin/groups',                   'XperienceController@listGroups'],
+        'get_group'                                 => ['get',      'xperience/groups/{id}',                    'XperienceController@getGroup'],
+        'get_group_admin'                           => ['get',      'xperience/admin/groups/{id}',              'XperienceController@getGroup'],
+        'create_group'                              => ['post',     'xperience/groups',                         'XperienceController@createGroup'],
+        'create_group_admin'                        => ['post',     'xperience/admin/groups',                   'XperienceController@createGroup'],
+        'list_group_types'                          => ['get',      'xperience/group-types',                    'XperienceController@listGroupTypes'],
+        'list_group_types_admin'                    => ['get',      'xperience/admin/group-types',              'XperienceController@listGroupTypes'],
+        'create_group_type'                         => ['post',     'xperience/group-types',                    'XperienceController@createGroupType'],
+        'create_group_type_admin'                   => ['post',     'xperience/admin/group-types',              'XperienceController@createGroupType'],
+
+
         'pending_entities_approval_email_cron'      => ['post',     'xperience/pending-approval-email',         'XperienceController@pendingEntitiesApprovalEmailCron'],
 
 
@@ -2560,6 +2593,7 @@ class Route
         'user_all_roles'                           => ['get',      'users/{id}/roles/{merchant_id}',                 'UserController@getUserRoles'                                       ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
         'user_fetch_by_verified_contact_internal'  => ['post',     'users_internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
+        'user_edit_internal'                       => ['patch',    'users_internal/{id}',                            'UserController@editUserInternal'                                   ],
 
         //b2b flow
         'create_international_virtual_accounts'             => ['post',     'international/virtual_accounts',                 'BankTransferController@createAccountForCurrencyCloud'          ],
@@ -2603,7 +2637,7 @@ class Route
         'user_verify_email'                        => ['post',     'users/verify_email',                             'UserController@verifyEmailWithOtp'                                 ],
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_account_unlock'                      => ['put',      'users/account/{id}/{action}',                    'UserController@accountLockUnlock'                                  ],
-        'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
+        'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMapping'                                   ],
         'user_roles_mapping_bulk'                  => ['put',      'users/roles-mapping/bulk',                       'UserController@bulkUpdateUserMapping'                              ],
         'user_roles_mapping_bulk_proxy'            => ['put',      'users_proxy/roles-mapping/bulk',                 'UserController@bulkUpdateUserMapping'                              ],
         'user_send_x_mobile_app_link'              => ['post',     'users/mobile_app_link',                          'UserController@sendXMobileAppDownloadLinkSms'                      ],
@@ -2684,6 +2718,9 @@ class Route
         //Vendor portal invitation
         'invite_to_vendor_portal'                  => ['post',     'vendor_portal_invitation',                        'InvitationController@createVendorPortalInvitation'                  ],
         'resend_invite_to_vendor_portal'           => ['post',     'resend_vendor_portal_invitation',                 'InvitationController@resendVendorPortalInvitation'                  ],
+
+        // User invitation via Xperience service
+        'xperience_invite_user'                    => ['post',     'xperience_user_invitation',                       'InvitationController@createXperienceUserInvitation'                  ],
 
         // Risk Routes
         'customer_flagging_entity_details'         => ['get',      'customer_flagging/entity_details/{id}',          'RiskController@getEntityDetails'                                   ],
@@ -5576,6 +5613,7 @@ class Route
         'gstin_e_invoice_cron',
         'fix_merchant_data_cron',
         'tax_payments_internal_icici_action',
+        'user_edit_internal',
         // crons for autoKYC'd merchants who have not been verified manually yet
         'merchant_autokyc_soft_limit',
         'merchant_autokyc_hard_limit',
@@ -5723,6 +5761,8 @@ class Route
         'merchant_tags_batch',
         'merchant_associated_accounts_fetch',
         'merchant_fetch_internal_users',
+        'merchant_search_users_internal',
+        'xperience_invite_user',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_enroll',
         'mock_hdfc_payment',
@@ -7772,6 +7812,22 @@ class Route
         'cost_center_update',
         'cost_center_disable',
 
+        'xps_add_user',
+        'xps_delete_user',
+        'xps_edit_user',
+        'xps_get_user',
+        'xps_list_users',
+        'list_groups_of_user',
+        'list_users_of_group',
+        'remove_group_of_users',
+        'add_group_for_users',
+        'update_group',
+        'list_groups',
+        'get_group',
+        'create_group',
+        'list_group_types',
+        'create_group_type',
+
         'payout_partner_bank_status',
 
         // Checkout Service Routes
@@ -9143,6 +9199,25 @@ class Route
         'cost_center_list_admin',
         'cost_center_create_admin',
         'cost_center_update_admin',
+
+        // xps user routes
+        'xps_add_user_admin',
+        'xps_delete_user_admin',
+        'xps_edit_user_admin',
+        'xps_get_user_admin',
+        'xps_list_users_admin',
+
+        // xps groups & groupTypes routes
+        'list_groups_of_user_admin',
+        'list_users_of_group_admin',
+        'remove_group_of_users_admin',
+        'add_group_for_users_admin',
+        'update_group_admin',
+        'list_groups_admin',
+        'get_group_admin',
+        'create_group_admin',
+        'list_group_types_admin',
+        'create_group_type_admin',
 
         //1cc rto model configs
         '1cc_rto_mlmodel_configs_create_admin',
@@ -10764,6 +10839,22 @@ class Route
         'cost_center_create_admin'                  => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'cost_center_update_admin'                  => Permission::SELF_SERVE_WORKFLOW_CONFIG,
 
+        'xps_add_user_admin'                        => Permission::SELF_SERVE_WORKFLOW_CONFIG, // TODO: check if this is correct permission to use
+        'xps_delete_user_admin'                     => Permission::SELF_SERVE_WORKFLOW_CONFIG, // TODO: check if this is correct permission to use
+        'xps_edit_user_admin'                       => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'xps_get_user_admin'                        => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'xps_list_users_admin'                      => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'list_groups_of_user_admin'                 => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'list_users_of_group_admin'                 => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'remove_group_of_users_admin'               => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'add_group_for_users_admin'                 => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'update_group_admin'                        => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'list_groups_admin'                         => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'get_group_admin'                           => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'create_group_admin'                        => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'list_group_types_admin'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'create_group_type_admin'                   => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+
         'salesforce_event_admin'                    => Permission::VIEW_ACTIVATION_FORM,
         'salesforce_event_admin_one_ca'             => Permission::SUBMIT_ONE_CA,
 
@@ -11337,6 +11428,21 @@ class Route
         'cost_center_get'                           => Permission::VIEW_COST_CENTER,
         'cost_center_update'                        => Permission::CREATE_COST_CENTER,
         'cost_center_disable'                       => Permission::CREATE_COST_CENTER,
+        'xps_add_user'                              => Permission::CREATE_INVITATION,
+        'xps_delete_user'                           => Permission::UPDATE_USER_ROLE,
+        'xps_edit_user'                             => Permission::UPDATE_USER_ROLE,
+        'xps_get_user'                              => Permission::VIEW_USER,
+        'xps_list_users'                            => Permission::VIEW_USER,
+        'list_groups_of_user'                       => Permission::VIEW_USER_GROUP_MAPPING,
+        'list_users_of_group'                       => Permission::VIEW_USER_GROUP_MAPPING,
+        'remove_group_of_users'                     => Permission::REMOVE_USER_GROUP_MAPPING,
+        'add_group_for_users'                       => Permission::CREATE_USER_GROUP_MAPPING,
+        'update_group'                              => Permission::UPDATE_USER_GROUP,
+        'list_groups'                               => Permission::VIEW_USER_GROUP,
+        'get_group'                                 => Permission::VIEW_USER_GROUP,
+        'create_group'                              => Permission::CREATE_USER_GROUP,
+        'list_group_types'                          => Permission::VIEW_GROUP_TYPE,
+        'create_group_type'                         => Permission::CREATE_GROUP_TYPE,
 
         'payout_partner_bank_status'                  => Permission::CREATE_PAYOUT,
     ];
@@ -11674,6 +11780,10 @@ class Route
 
         'xperience' => [
             'merchant_fetch_internal_users',
+            'merchant_search_users_internal',
+            'user_edit_internal',
+            'user_fetch_internal',
+            'xperience_invite_user',
             'settings_fetch_by_key_internal',
         ],
 
@@ -13329,6 +13439,21 @@ class Route
             'cost_center_update',
             'cost_center_disable',
 
+            'xps_add_user',
+            'xps_delete_user',
+            'xps_edit_user',
+            'xps_get_user',
+            'xps_list_users',
+            'list_groups_of_user',
+            'list_users_of_group',
+            'remove_group_of_users',
+            'add_group_for_users',
+            'update_group',
+            'list_groups',
+            'get_group',
+            'create_group',
+            'list_group_types',
+            'create_group_type',
 
             'get_all_country_dashboard_config',
             'get_country_dashboard_config',
@@ -15774,6 +15899,25 @@ class Route
             'cost_center_list_admin',
             'cost_center_create_admin',
             'cost_center_update_admin',
+
+            // xps user routes
+            'xps_add_user_admin',
+            'xps_delete_user_admin',
+            'xps_edit_user_admin',
+            'xps_get_user_admin',
+            'xps_list_users_admin',
+
+            // xps group and groupType routes
+            'list_groups_of_user_admin',
+            'list_users_of_group_admin',
+            'remove_group_of_users_admin',
+            'add_group_for_users_admin',
+            'update_group_admin',
+            'list_groups_admin',
+            'get_group_admin',
+            'create_group_admin',
+            'list_group_types_admin',
+            'create_group_type_admin',
 
             '1cc_configs_update',
             '1cc_configs_get',
@@ -18517,6 +18661,21 @@ class Route
         'cost_center_get',
         'cost_center_update',
         'cost_center_disable',
+        'xps_add_user',
+        'xps_delete_user',
+        'xps_edit_user',
+        'xps_get_user',
+        'xps_list_users',
+        'list_groups_of_user',
+        'list_users_of_group',
+        'remove_group_of_users',
+        'add_group_for_users',
+        'update_group',
+        'list_groups',
+        'get_group',
+        'create_group',
+        'list_group_types',
+        'create_group_type',
     ];
 
     const PAYOUT_LINKS_SPECIFIC_PUBLIC_ROUTES = [

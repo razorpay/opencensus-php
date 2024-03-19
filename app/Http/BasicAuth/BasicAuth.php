@@ -2011,6 +2011,11 @@ class BasicAuth
         return $this->internalApp === 'master_onboarding';
     }
 
+    public function isXperienceApp()
+    {
+        return $this->internalApp == 'xperience';
+    }
+
     public function isDashboardApp()
     {
         /*

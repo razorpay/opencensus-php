@@ -2536,6 +2536,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION                  = 'MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION';
     const MERCHANT_RAS_SIGNUP_FRAUD                             = 'MERCHANT_RAS_SIGNUP_FRAUD';
     const MERCHANT_EMAIL_EDIT_FAILED                            = 'MERCHANT_EMAIL_EDIT_FAILED';
+    const XPERIENCE_USER_INVITE_ACCEPTED_REQUEST                = 'XPERIENCE_USER_INVITE_ACCEPTED_REQUEST';
+    const XPERIENCE_USER_INVITE_ACCEPTED_RESPONSE               = 'XPERIENCE_USER_INVITE_ACCEPTED_RESPONSE';
+    const XPERIENCE_USER_INVITE_ACCEPTED_ERROR                  = 'XPERIENCE_USER_INVITE_ACCEPTED_ERROR';
     const PAYOUT_RETRY_REQUEST                                  = 'PAYOUT_RETRY_REQUEST';
     const PAYOUT_QUEUE_DISPATCH_INIT                            = 'PAYOUT_QUEUE_DISPATCH_INIT';
     const PAYOUT_QUEUE_DISPATCH_COMPLETE                        = 'PAYOUT_QUEUE_DISPATCH_COMPLETE';
@@ -3889,6 +3892,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVITATION_CREATE_FAILED                              = 'INVITATION_CREATE_FAILED';
     const INVITATION_ACCEPT_FAILED                              = 'INVITATION_ACCEPT_FAILED';
     const INVITATION_SEND_NOTIFICATION_TO_OWNER_FAILED          = 'INVITATION_SEND_NOTIFICATION_TO_OWNER_FAILED';
+    const INVITATION_ALREADY_EXISTS                             = 'INVITATION_ALREADY_EXISTS';
 
     // Trace codes for gateway load rules
     const GATEWAY_RULE_CREATE_REQUEST                           = 'GATEWAY_RULE_CREATE_REQUEST';

@@ -21,7 +21,9 @@ class Entity extends Base\PublicEntity
     const ROLE_NAME    = 'role_name';
     const DELETED_AT   = 'deleted_at';
     const PRODUCT      = 'product';
+
     const INVITATIONTYPE = 'invitation_type';
+    const INVITATION_DETAILS = 'invitation_details';
 
     // Other constants
     const ACTION        = 'action';
@@ -164,6 +166,15 @@ class Entity extends Base\PublicEntity
         {
             $attributes[self::ROLE_NAME] = $app['repo']->roles->fetchRoleName($this->getAttribute(self::ROLE));
         }
+
+        return $attributes;
+    }
+
+    public function toArrayInternal()
+    {
+        $attributes = $this->toArrayPublic();
+
+        $attributes[self::TOKEN] = $this->getAttribute(self::TOKEN);
 
         return $attributes;
     }

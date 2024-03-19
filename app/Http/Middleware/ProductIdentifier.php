@@ -30,7 +30,7 @@ class ProductIdentifier
 {
     const SECRET = 'secret';
 
-    const bankingApps = ['vendor_payments', 'payout_links', 'fts', 'workflows','xpayroll', 'payout_link_customer_page', 'master_onboarding'];
+    const bankingApps = ['vendor_payments', 'payout_links', 'fts', 'workflows','xpayroll', 'payout_link_customer_page', 'master_onboarding', 'xperience'];
 
     protected $app;
 
@@ -201,6 +201,16 @@ class ProductIdentifier
         {
             $product = ProductType::BANKING;
             $this->ba->setRequestOriginProduct($product);
+        }
+
+        /**
+         * Flows accessedby Xperience app resolve product from RequestOriginProduct attribute,
+         * hence adding this condition here.
+         */
+        if ($product === ProductType::BANKING and
+            $this->internalAppName === 'xperience')
+        {
+            $this->ba->setRequestOriginProduct(ProductType::BANKING);
         }
 
         $this->ba->setProduct($product);

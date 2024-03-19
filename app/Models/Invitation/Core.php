@@ -16,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Request\Requests;
+use RZP\Jobs\XperienceUserInviteAcceptedRequestJob;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\OrgWiseConfig;
 use RZP\Mail\Invitation\Invite as InvitationMail;
@@ -130,7 +131,8 @@ class Core extends Base\Core
             $isIntegrationInvite = true;
         }
 
-        $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $isIntegrationInvite);
+        $invitationDetails = $input[Entity::INVITATION_DETAILS] ?? [];
+        $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $isIntegrationInvite, $invitationDetails);
 
         $this->pushSelfServeSuccessEventsToSegmentForMemberInvitation();
 
@@ -473,7 +475,12 @@ class Core extends Base\Core
         }
     }
 
-    protected function sendEmail(Entity $invitation, string $senderName, bool $invitedUserExists, Collection $allMerchantsForInvitedUser = null, bool $isIntegrationInvite = false)
+    protected function sendEmail(Entity     $invitation,
+                                 string     $senderName,
+                                 bool       $invitedUserExists,
+                                 Collection $allMerchantsForInvitedUser = null,
+                                 bool       $isIntegrationInvite = false,
+                                 array      $invDetails = null)
     {
         $product = $invitation->getProduct();
 
@@ -519,7 +526,7 @@ class Core extends Base\Core
             if (empty($merchantIds) === false && $this->merchant->getId() === $merchantIds[0])
                 $inviteMailer = new BankLmsInvite($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole());
             else
-                $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole(), $isIntegrationInvite);
+                $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole(), $isIntegrationInvite, $invDetails);
 
             Mail::queue($inviteMailer);
 
@@ -561,6 +568,15 @@ class Core extends Base\Core
                         'invitation' => $invitation->toArrayPublic(),
                         'user'    => $user->toArrayPublic()
                     ]);
+
+                // Send callback to Xperience service
+                XperienceUserInviteAcceptedRequestJob::dispatch(
+                    [
+                        'merchant_id'  => $invitation->getMerchantId(),
+                        'user_id'      => $user->getId(),
+                        'invite_token' => $invitation->getToken(),
+                    ]
+                );
             }
         }
     }
@@ -855,6 +871,11 @@ class Core extends Base\Core
             /* @var BasicAuth $ba */
             $ba  = $this->app['basicauth'];
 
+            // User context won't be present when the invitation is created from admin / internal auth, so we don't send the notification
+            if ($ba->isAppAuth() or $ba->isAdminAuth()) {
+                return;
+            }
+
             $owner = $this->merchant->owners(Product::BANKING)->firstOrFail();
 
             $data = [
@@ -876,5 +897,31 @@ class Core extends Base\Core
                 'invitation' => $invitation,
             ]);
         }
+    }
+
+    public function createXperienceUserInvitation(array $input)
+    {
+        // Creating dummy entity as validator expects it for retrieving merchant details. Remove this if there's a better way.
+        $invitation = new Entity;
+        $invitation->merchant()->associate($this->merchant);
+
+        (new Validator($invitation))->setStrictFalse()->validateInput(Validator::CREATE_XPERIENCE_INVITATION, $input);
+
+        $invitation = $this->merchant->invitations()
+            ->where(Entity::EMAIL, $input[Entity::EMAIL])
+            ->where(Entity::PRODUCT, $input[Entity::PRODUCT])
+            ->first();
+
+        if (!empty($invitation)) {
+            $this->trace->info(TraceCode::INVITATION_ALREADY_EXISTS, [
+                'email'      => $input[Entity::EMAIL],
+                'product'    => $input[Entity::PRODUCT],
+                'invitation' => $invitation,
+            ]);
+
+            return $invitation;
+        }
+
+        return $this->create($input);
     }
 }

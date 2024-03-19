@@ -418,6 +418,18 @@ class Validator extends Base\Validator
         Entity::CONFIG      => 'filled|array',
     ];
 
+    protected static $s2pGroupsOnboardingCreateRules = [
+        Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:s2p_groups_onboarding',
+        Entity::CONFIG      => 'filled|array',
+    ];
+
+    protected static $s2pUsersOnboardingCreateRules = [
+        Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:s2p_users_onboarding',
+        Entity::CONFIG      => 'filled|array',
+    ];
+
     protected static $virtualBankAccountCreateRules = [
         Entity::TYPE                 => 'required|in:virtual_bank_account',
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,

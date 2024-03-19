@@ -7517,4 +7517,15 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
         ],
     ],
+
+    'testUpdateMerchantUserMappingXperienceService' => [
+        'request' => [
+            'url'       => 'users_internal/{id}',
+            'method'    => 'PATCH',
+            'content'   => []
+        ],
+        'response'  => [
+            'content'   => []
+        ]
+    ],
 ];

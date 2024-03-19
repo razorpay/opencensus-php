@@ -6,6 +6,7 @@ use App;
 use RZP\Constants\Product;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Models\Invitation\Constants as InvitationConstants;
 use RZP\Models\User\Role;
 
 class Invite extends Mailable
@@ -28,6 +29,8 @@ class Invite extends Mailable
 
     const INVITE_LINK_FORMAT = '%s/auth?invitation=%s';
 
+    const INVITE_LINK_FORMAT_S2P = '%s/auth?invitation=%s&invDetails=%s';
+
     protected $invitation;
 
     protected $invitationId;
@@ -42,7 +45,15 @@ class Invite extends Mailable
 
     protected $role;
 
-    public function __construct($invitationId, $senderName, bool $invitedUserExists, bool $isAnExistingUserOnX, $role = null, bool $isIntegrationInvite = false)
+    protected $invDetails;
+
+    public function __construct($invitationId,
+                                $senderName,
+                                bool $invitedUserExists,
+                                bool $isAnExistingUserOnX,
+                                $role = null,
+                                bool $isIntegrationInvite = false,
+                                array $invDetails = null)
     {
         parent::__construct();
 
@@ -61,6 +72,8 @@ class Invite extends Mailable
         $this->isIntegrationInvite = $isIntegrationInvite;
 
         $this->role = $role;
+
+        $this->invDetails = $invDetails;
     }
 
     protected function addSender()
@@ -101,7 +114,18 @@ class Invite extends Mailable
 
         $bankingUrl = $config['applications.banking_service_url'];
 
-        $inviteLink = sprintf(self::INVITE_LINK_FORMAT, $bankingUrl, $invitation->getToken());
+        if (!empty($this->invDetails)) {
+            $invDetailsArr = [
+                InvitationConstants::INVITATION_DETAILS_INPUT_FIRST_NAME_SHORT => $this->invDetails[InvitationConstants::INVITATION_DETAILS_INPUT_FIRST_NAME],
+                InvitationConstants::INVITATION_DETAILS_INPUT_LAST_NAME_SHORT  => $this->invDetails[InvitationConstants::INVITATION_DETAILS_INPUT_LAST_NAME],
+            ];
+            $invDetailsString = json_encode($invDetailsArr);
+            $invDetailsString = base64_encode($invDetailsString);
+            $invDetailsString = urlencode($invDetailsString);
+            $inviteLink = sprintf(self::INVITE_LINK_FORMAT_S2P, $bankingUrl, $invitation->getToken(), $invDetailsString);
+        } else {
+            $inviteLink = sprintf(self::INVITE_LINK_FORMAT, $bankingUrl, $invitation->getToken());
+        }
 
         $roleName = $this->getRoleName($invitation);
 

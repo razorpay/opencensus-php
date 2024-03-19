@@ -245,6 +245,10 @@ class Type
 
     const EMANDATE_DEBIT_AXIS         = 'emandate_debit_axis';
 
+    const S2P_GROUPS_ONBOARDING       = 's2p_groups_onboarding';
+
+    const S2P_USERS_ONBOARDING        = 's2p_users_onboarding';
+
 
 
     //
@@ -347,6 +351,8 @@ class Type
         self::RBL_BULK_UPLOAD_COMMENTS,
         self::ICICI_BULK_UPLOAD_COMMENTS,
         self::ICICI_VIDEO_KYC_BULK_UPLOAD,
+        self::S2P_GROUPS_ONBOARDING,
+        self::S2P_USERS_ONBOARDING,
         self::NACH_MIGRATION,
         self::PGOS_RMDETAILS_BULK,
         self::MERCHANT_ACTIVATION,
@@ -805,17 +811,19 @@ class Type
         self::CREATE_PAYMENT_FRAUD               => Name::ADMIN_BATCH_CREATE,
         self::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS => Name::ADMIN_BATCH_CREATE,
         self::RBL_BULK_UPLOAD_COMMENTS           => Name::ADMIN_BATCH_CREATE,
-        self::ICICI_BULK_UPLOAD_COMMENTS          => Name::ADMIN_BATCH_CREATE,
-        self::ICICI_VIDEO_KYC_BULK_UPLOAD         => Name::ADMIN_BATCH_CREATE,
-        self::BANKING_ACCOUNT_ACTIVATION_COMMENTS => Name::ADMIN_BATCH_CREATE,
-        self::IRCTC_REFUND                        => Name::MERCHANT_BATCH_UPLOAD,
-        self::IRCTC_DELTA_REFUND                  => Name::MERCHANT_BATCH_UPLOAD,
-        self::IRCTC_SETTLEMENT                    => Name::MERCHANT_BATCH_UPLOAD,
-        self::ICICI_STP_MIS                       => Name::ADMIN_BATCH_CREATE,
-        self::PAYMENT_TRANSFER_RETRY              => Name::ADMIN_BATCH_CREATE,
+        self::ICICI_BULK_UPLOAD_COMMENTS              => Name::ADMIN_BATCH_CREATE,
+        self::ICICI_VIDEO_KYC_BULK_UPLOAD             => Name::ADMIN_BATCH_CREATE,
+        self::BANKING_ACCOUNT_ACTIVATION_COMMENTS     => Name::ADMIN_BATCH_CREATE,
+        self::IRCTC_REFUND                            => Name::MERCHANT_BATCH_UPLOAD,
+        self::IRCTC_DELTA_REFUND                      => Name::MERCHANT_BATCH_UPLOAD,
+        self::IRCTC_SETTLEMENT                        => Name::MERCHANT_BATCH_UPLOAD,
+        self::ICICI_STP_MIS                           => Name::ADMIN_BATCH_CREATE,
+        self::PAYMENT_TRANSFER_RETRY                  => Name::ADMIN_BATCH_CREATE,
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS => Name::ADMIN_BATCH_CREATE,
-        self::LINKED_ACCOUNT                      => Name::ADMIN_BATCH_CREATE,
-        self::BVS_BULK_KYC_VERIFICATION           => Name::ADMIN_BATCH_CREATE
+        self::LINKED_ACCOUNT                          => Name::ADMIN_BATCH_CREATE,
+        self::BVS_BULK_KYC_VERIFICATION               => Name::ADMIN_BATCH_CREATE,
+        self::S2P_GROUPS_ONBOARDING                   => Name::ADMIN_BATCH_CREATE,
+        self::S2P_USERS_ONBOARDING                    => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [

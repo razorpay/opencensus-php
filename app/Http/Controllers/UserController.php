@@ -103,6 +103,15 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function editUserInternal(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->editInternal($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function removeIncorrectPasswordCount()
     {
         $input = Request::all();
@@ -180,7 +189,7 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateUserMaping(string $id, string $action)
+    public function updateUserMapping(string $id, string $action)
     {
         $input = Request::all();
 

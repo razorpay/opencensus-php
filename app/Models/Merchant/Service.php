@@ -5835,6 +5835,17 @@ class Service extends Base\Service
         return $users;
     }
 
+    public function searchMerchantUsersInternal($merchantId, $input)
+    {
+        (new Validator)->validateInput(Validator::SEARCH_MERCHANT_USERS_INTERNAL, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $users = $this->core()->searchMerchantUsers($merchant, $input);
+
+        return $users;
+    }
+
     public function getInternalUsersByRole($merchantId, $product, $roleId)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

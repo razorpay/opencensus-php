@@ -13637,4 +13637,92 @@ class UserTest extends TestCase
 
         $this->assertFalse($userEntity->isContactMobileVerified());
     }
+
+    public function testUpdateMerchantUserMappingXperienceService()
+    {
+        $merchantRepo = (new \RZP\Models\Merchant\Repository());
+
+        // 1. create merchant and it's owner
+        $ownerUser= $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchant->getId(),
+            'user_id'       => $ownerUser->getId(),
+            'role'          => Role::OWNER,
+            'product'       => Product::BANKING,
+        ]);
+
+        $this->ba->xperienceServiceAppAuth();
+
+        // 2. attach another user to merchant & update role via API
+        $user = $this->fixtures->create('user', [
+            Entity::NAME => 'testUser',
+        ]);
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchant->getId(),
+            'user_id'       => $user->getId(),
+            'role'          => Role::MANAGER,
+            'product'       => Product::BANKING,
+        ]);
+
+        $dataToReplace = [
+            'request' => [
+                'url'       => '/users_internal/' . $user->getId(),
+                'server'    => [
+                    'HTTP_X-Razorpay-Account'   => 'acc_' . $merchant->getId(),
+                    'HTTP_X-Razorpay-User-Id'   => $ownerUser->getId(),
+                ],
+                'content'   => [
+                    'action'    => 'update',
+                    'role'      => Role::OPERATIONS,
+                    'name'      => 'updatedName'
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+
+        // 3. assert role and name updated correctly
+        $merchantUser = $merchantRepo->getMerchantUserMapping($merchant->getId(), $user->getId(), Role::OPERATIONS, Product::BANKING);
+
+        $this->assertNotEmpty($merchantUser);
+
+        $this->assertEquals($merchantUser->getName(), 'updatedName');
+
+        // 4. detach user from MID
+        $dataToReplace = [
+            'request' => [
+                'url'       => '/users_internal/' . $user->getId(),
+                'server'    => [
+                    'HTTP_X-Razorpay-Account'   => 'acc_' . $merchant->getId(),
+                    'HTTP_X-Razorpay-User-Id'   => $ownerUser->getId(),
+                ],
+                'content'   => [
+                    'action'    => 'detach'
+                ]
+            ]
+        ];
+
+        $authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $authServiceMock->expects($this->exactly(1))
+            ->method('sendRequest')
+            ->with('applications', 'GET',[
+                'type'          => 'mobile_app',
+                'merchant_id'   => $merchant->getId(),
+            ])
+            ->willReturn([
+                'items' => []
+            ]);
+
+        $this->startTest($dataToReplace);
+
+        // 5. assert that user is detached
+        $merchantUser = $merchantRepo->getMerchantUserMapping($merchant->getId(), $user->getId(), null, Product::BANKING);
+
+        $this->assertNull($merchantUser);
+    }
 }

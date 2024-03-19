@@ -14,17 +14,28 @@ use RZP\Models\Admin\Role;
 
 class Validator extends Base\Validator
 {
-    const CREATE_BANK_LMS_USER = 'createBankLmsUser';
-    const CREATE_INVITATION_VERIFY_OTP = 'createInvitationVerifyOtp';
+    const CREATE_BANK_LMS_USER          = 'createBankLmsUser';
+    const CREATE_XPERIENCE_INVITATION   = 'createXperienceInvitation';
+    const CREATE_INVITATION_VERIFY_OTP  = 'createInvitationVerifyOtp';
 
     protected static $createRules = [
-        Entity::ROLE        => 'required|string|custom',
-        Entity::EMAIL       => 'required|max:255|email|custom',
-        Entity::TOKEN       => 'required|string',
-        Entity::SENDER_NAME => 'sometimes|string',
-        Entity::PRODUCT     => 'sometimes|string|in:primary,banking',
-        Entity::IS_DRAFT    => 'sometimes|boolean|',
-        Entity::INVITATIONTYPE => 'sometimes|string',
+        Entity::ROLE               => 'required|string|custom',
+        Entity::EMAIL              => 'required|max:255|email|custom',
+        Entity::TOKEN              => 'required|string',
+        Entity::SENDER_NAME        => 'sometimes|string',
+        Entity::PRODUCT            => 'sometimes|string|in:primary,banking',
+        Entity::IS_DRAFT           => 'sometimes|boolean|',
+        Entity::INVITATIONTYPE     => 'sometimes|string',
+        Entity::INVITATION_DETAILS => 'sometimes|array|custom',
+    ];
+
+    protected static $createXperienceInvitationRules = [
+        Entity::ROLE               => 'required|string|custom',
+        Entity::EMAIL              => 'required|max:255|email',
+        Entity::SENDER_NAME        => 'sometimes|string',
+        Entity::PRODUCT            => 'sometimes|string|in:primary,banking',
+        Entity::IS_DRAFT           => 'sometimes|boolean|',
+        Entity::INVITATION_DETAILS => 'array|custom',
     ];
 
     protected static $createInvitationVerifyOtpRules = [
@@ -85,6 +96,24 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateInvitationDetails(string $attribute, array $invitationDetails)
+    {
+        if (empty($invitationDetails) === true)
+        {
+            return;
+        }
+
+        if (array_key_exists(Constants::INVITATION_DETAILS_INPUT_FIRST_NAME, $invitationDetails) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVITATION_DETAILS_FIRST_NAME_MISSING);
+        }
+
+        if (array_key_exists(Constants::INVITATION_DETAILS_INPUT_LAST_NAME, $invitationDetails) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVITATION_DETAILS_LAST_NAME_MISSING);
+        }
+    }
+
     protected function validateRole(string $attribute, string $role)
     {
         /** @var Merchant\Entity $merchant */
@@ -118,8 +147,7 @@ class Validator extends Base\Validator
             $dashboardRoles = array_values(array_diff(User\Role::ALL_ROLES, [User\Role::OWNER]));
         }
 
-        if ($merchant->isTagAdded('enable_rbl_role') === true)
-        {
+        if ($merchant->isTagAdded('enable_rbl_role') === true) {
             $dashboardRoles = array_merge($dashboardRoles, User\Role::RBL_ROLES);
         }
 

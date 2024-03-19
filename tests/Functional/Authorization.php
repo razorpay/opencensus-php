@@ -499,6 +499,11 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function xperienceServiceAppAuth($user = 'rzp_test')
+    {
+        $this->appAuth($user, \Config::get('applications.xperience')['secret']);
+    }
+
     public function addProxyAuthHeaders($user)
     {
         if ($user === null)

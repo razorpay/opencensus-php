@@ -172,6 +172,139 @@ class XperienceController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function addUser()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->addUser($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteUser(string $id)
+    {
+        $response = $this->xperience->deleteUser($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function editUser(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->editUser($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getUser(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getUser($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listUsers()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listUsers($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listGroupsOfUser(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listGroupsOfUser($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listUsersOfGroup(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listUsersOfGroup($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function removeGroupOfUsers()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->removeGroupOfUsers($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function addGroupForUsers()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->addGroupForUsers($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateGroup(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->updateGroup($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listGroups()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listGroups($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getGroup(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getGroup($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createGroup()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->createGroup($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listGroupTypes()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listGroupTypes($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createGroupType()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->createGroupType($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function pendingEntitiesApprovalEmailCron()
     {
         $input = Request::all();
