@@ -646,28 +646,6 @@ class Service extends Base\Service
 
         foreach ($apiRefundArray as $key => $value)
         {
-            if ($key === RefundEntity::NOTES)
-            {
-                if ($scroogeRefundArray[$key]->toArray() != $value)
-                {
-                    $responseDiff[$key]["scrooge"] = $scroogeRefundArray[$key];
-                    $responseDiff[$key]["api"] = $value;
-                }
-
-                continue;
-            }
-
-            if ($key === RefundEntity::ACQUIRER_DATA)
-            {
-                if ($scroogeRefundArray[$key]->toArray() != $value)
-                {
-                        $responseDiff[$key]["scrooge"] = $scroogeRefundArray[$key];
-                        $responseDiff[$key]["api"] = $value;
-                }
-
-                continue;
-            }
-
             if (is_array($value) === true)
             {
                 if ($scroogeRefundArray[$key] != $value)
@@ -690,6 +668,17 @@ class Service extends Base\Service
             }
 
             if (empty($scroogeRefundArray[$key]) && empty($value)){
+                continue;
+            }
+
+            if ($key === RefundEntity::NOTES || $key === RefundEntity::ACQUIRER_DATA)
+            {
+                if ($scroogeRefundArray[$key]->toArray() != $value)
+                {
+                    $responseDiff[$key]["scrooge"] = $scroogeRefundArray[$key];
+                    $responseDiff[$key]["api"] = $value;
+                }
+
                 continue;
             }
 

@@ -152,7 +152,7 @@ class Repository extends Base\Repository
             $refundstidb = $this->repo->refund_tidb->fetchEmiRefundsWithCardTerminalsBetweenFromTidb($from,$to,$bank,$type);
 
             (new Service())->compareRefundsAndLogDifference(
-                $refunds->toArray(), $refundstidb->toArray(), [
+                $refunds->all(), $refundstidb->all(), [
                 'method_name' => __FUNCTION__,
                 'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
             ]);

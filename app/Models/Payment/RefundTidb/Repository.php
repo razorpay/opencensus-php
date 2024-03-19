@@ -16,6 +16,8 @@ use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Base\Traits\ExternalScroogeRepo;
 use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Trace\TraceCode;
+use stdClass;
 
 class Repository extends Base\Repository
 {
@@ -121,36 +123,6 @@ class Repository extends Base\Repository
             ->select($refundData)
             ->get();
     }
-
-    /*public function fetchLaReversalsOfTransferFromTidb(string $transferId, string $merchantId)
-    {
-        $paymentRepo = $this->repo->payment;
-
-        $reversalColumns = $this->repo->reversal->dbColumn('*');
-
-        $reversalId = $this->repo->refund_tidb->dbColumn(Refund\Entity::REVERSAL_ID);
-
-        $reversalsId = $this->repo->reversal->dbColumn(ReversalEntity::ID);
-
-        $refundNotes = $this->repo->refund_tidb->dbColumn(Refund\Entity::NOTES);
-
-        $reversalTable = $this->repo->reversal->getTableName();
-
-        $reversalEntityType = $this->repo->reversal->dbColumn(ReversalEntity::ENTITY_TYPE);
-
-        $reversalEntityId = $this->repo->reversal->dbColumn(ReversalEntity::ENTITY_ID);
-
-        $refundMerchantId = $this->repo->refund_tidb->dbColumn(Refund\Entity::MERCHANT_ID);
-
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-            ->join($reversalTable, $reversalsId, '=', $reversalId)
-            ->select($refundNotes, $reversalColumns)
-            ->where($reversalEntityId, $transferId)
-            ->where($reversalEntityType, ReversalEntity::TRANSFER)
-            ->where($refundMerchantId, $merchantId)
-            ->get();
-    }
-*/
 
     public function fetchRefundsForGatewaysBetweenTimestampsFromTidb($type, $gatewayCodes, $from, $to, $gateway)
     {
@@ -262,4 +234,63 @@ class Repository extends Base\Repository
         return $query->get();
 
     }
+
+//    public function fetchLaReversalsOfTransferFromTidb(string $transferId, string $merchantId)
+//    {
+//        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+//            'method'       => 'fetchLaReversalsOfTransferFromTidb',
+//        ]);
+//
+//        $reversalColumns = $this->repo->reversal->dbColumn('*');
+//
+//        $reversalEntityType = $this->repo->reversal->dbColumn(ReversalEntity::ENTITY_TYPE);
+//
+//        $reversalEntityId = $this->repo->reversal->dbColumn(ReversalEntity::ENTITY_ID);
+//
+//        $refundMerchantId = $this->repo->refund->dbColumn(Refund\Entity::MERCHANT_ID);
+//
+//        $reversals = $this->repo->reversal->newQuery()
+//            ->select($reversalColumns)
+//            ->where($reversalEntityId, $transferId)
+//            ->where($reversalEntityType, 'transfer')
+//            ->get();
+//
+//
+//        if ($reversals->isEmpty()) {
+//            return [];
+//        }
+//
+//
+//      TODO: ADD CONDITION FOR REVERSAL ID
+//
+//        $refunds = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+//            ->where($refundMerchantId, $merchantId)
+//            ->get();
+//
+//        {
+//            $combinedDataCollection = new Base\PublicCollection(); // Initialize an empty collection
+//
+//            foreach ($refunds as $refund) {
+//                // Find the matching reversal based on some common attribute, e.g., reversal_id
+//                foreach ($reversals as $reversal) {
+//                    // Assuming 'id' is the common attribute and 'entity_id' is the property in reversal
+//                    if ($reversal['id'] == $refund['reversal_id']) {
+//                        // Set attributes from reversal
+//
+//                        // Add specific data from refund, e.g., notes
+//                        $reversal['notes'] = $refund['notes'];
+//
+//                        // Add the combined data to the collection
+//                        $combinedDataCollection->add($reversal);
+//
+//                        break; // Assuming each refund matches only one reversal, we can break after finding the match
+//                    }
+//                }
+//            }
+//
+//            // Now you have $combinedDataCollection containing the combined data as Eloquent model instances
+//            return $combinedDataCollection;
+//        }
+//
+//    }
 }

@@ -158,7 +158,7 @@ trait ScroogeRepo
         return $this->fetchRefundByRefundIdsFromApi($refundIds);
     }
 
-    public function findRefundById($refundId , $columns = array('*'))
+    public function findRefundById($refundId , $connectionType,$columns = array('*'))
     {
         $this->entityName = $this->entity;
 
@@ -182,7 +182,7 @@ trait ScroogeRepo
 
 
             //Razorx check
-            if ($this->isScroogeReadMigration2() == true)
+            if ($this->isScroogeReadMigrationForFetchById() == true)
             {
                 return $scroogeResponse->all()[0];
             }
@@ -198,7 +198,7 @@ trait ScroogeRepo
                     'refund_id' => $refundId
                 ]);
         }
-        return parent::find($refundId,$columns);
+        return parent::find($refundId,$columns,$connectionType);
     }
 
     public function findForPaymentByReceiptAndMerchant(string $receipt, string $merchantId)

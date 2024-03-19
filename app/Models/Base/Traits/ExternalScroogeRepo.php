@@ -71,14 +71,14 @@ trait ExternalScroogeRepo
 
     public function find($refundId, $columns = array('*'), string $connectionType = null)
     {
-        if ($this->repo->refund->isScroogeReadMigrationEnabled2() == true) {
-            $refunds = $this->repo->refund->findRefundById($refundId);
+        if ($this->repo->refund->isScroogeReadMigrationEnabledForFetchById() == true) {
+            $refunds = $this->repo->refund->findRefundById($refundId,$connectionType, $columns);
             if(empty($refunds) == true){
                 return null;
             }
             return $refunds[0];
         }else{
-            return parent::find($refundId,$columns);
+            return parent::find($refundId,$columns, $connectionType);
         }
     }
 
@@ -523,6 +523,54 @@ trait ExternalScroogeRepo
         return false;
     }
 
+    public function isScroogeReadMigrationEnabledForFetchById($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            'SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_FOR_FETCH_BY_ID',
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_FOR_FETCH_BY_ID,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isScroogeReadMigrationForFetchById($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            'SCROOGE_MISC_QUERIES_MIGRATION_FOR_FETCH_BY_ID',
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_FOR_FETCH_BY_ID,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isScroogeReadMigrationForIrctc($id = null)
     {
         $mode = $this->app['rzp.mode'] ?? 'live';
@@ -631,6 +679,30 @@ trait ExternalScroogeRepo
 
         $this->trace->info(
             TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_FETCH_CARDS,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isScroogeReadMigrationTidbForLaReversals($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            'SCROOGE_MISC_QUERIES_MIGRATION_TIDB_LA_REVERSALS',
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_LA_REVERSALS,
             [
                 'result'    => $result,
                 'mode'      => $mode,
