@@ -124,6 +124,7 @@ class Constants
         "VG",
         "VI",
         "YE",
-        "ZW"
+        "ZW",
+        "KW"
     ];
 }

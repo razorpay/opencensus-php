@@ -8813,15 +8813,15 @@
     "country_code": "KW",
     "states": [
       {
-        "name": "Al Ahmadi Governorate",
+        "name": "Al Ahmadi",
         "state_code": "AH"
       },
       {
-        "name": "Al Farwaniyah Governorate",
+        "name": "Al Farwaniyah",
         "state_code": "FA"
       },
       {
-        "name": "Al Jahra Governorate",
+        "name": "Al Jahra",
         "state_code": "JA"
       },
       {
@@ -8829,11 +8829,11 @@
         "state_code": "KU"
       },
       {
-        "name": "Hawalli Governorate",
+        "name": "Hawalli",
         "state_code": "HA"
       },
       {
-        "name": "Mubarak Al-Kabeer Governorate",
+        "name": "Mubarak Al-Kabeer",
         "state_code": "MU"
       }
     ]
