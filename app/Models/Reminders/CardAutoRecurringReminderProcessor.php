@@ -116,6 +116,19 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         {
             $gatewayInput['payment_analytics'] = $this->repo->payment_analytics->findByPaymentID($payment->getId());
             $payment->setMetadataKey('payment_analytics', $gatewayInput['payment_analytics']);
+
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            $this->trace->info(
+                TraceCode::RECURRING_SET_TERMINAL_FROM_TOKEN,
+                [
+                    'token_id'      => $token->getId(),
+                    'terminal_id'   => $token->getTerminalId(),
+                    'payment_id'    => $payment->getId(),
+                    'method'        => $payment->getMethod()
+                ]);
+
+            $gatewayInput['selected_terminals_ids'] = [$token->getTerminalId()];
         }
 
         $processor->gatewayRelatedProcessing($payment, [], $gatewayInput);
