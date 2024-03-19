@@ -4255,7 +4255,7 @@ trait Authorize
         }
 
         // validate if order has customer shipping address
-        if($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false)
+        if(($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false) && ($this->mode === Mode::LIVE))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Payment order does not have a customer shipping address.', 'order.customer_details');

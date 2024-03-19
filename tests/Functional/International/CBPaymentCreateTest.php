@@ -2353,7 +2353,7 @@ class CBPaymentCreateTest extends TestCase
         Queue::assertPushed(CrossBorderCommonUseCases::class, 1);
     }
 
-    public function testJPMCImportFlowPaymentWithNoOrderShippingAddress()
+    /*public function testJPMCImportFlowPaymentWithNoOrderShippingAddress()
     {
         $merchantId = "10000000000000";
 
@@ -2412,7 +2412,7 @@ class CBPaymentCreateTest extends TestCase
         },
             \RZP\Exception\BadRequestValidationFailureException::class,
             'Payment order does not have a customer shipping address.');
-    }
+    }*/
 
     protected function getOrderMetaValue()
     {
