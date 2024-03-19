@@ -865,14 +865,17 @@ class Service extends Base\Service
     private function getFlows($input, $originalIIN)
     {
         $features = [];
-
         if(empty($input['flows']) === true) {
-            $input['flows'] = $originalIIN['flows'];
-        }
-
-        foreach ($input['flows'] as $key => $value) {
-            if ($value === "1") {
-                $features[] = $key;
+            $features = Flow::getEnabledFlows($originalIIN['flows']);
+            $this->trace->info(TraceCode::BIN_SERVICE_REQUEST, [
+                'message' => 'Empty Features',
+                'features' => $features
+            ]);
+        } else {
+            foreach ($input['flows'] as $key => $value) {
+                if ($value === "1") {
+                    $features[] = $key;
+                }
             }
         }
 
@@ -931,22 +934,22 @@ class Service extends Base\Service
     }
 
     public function compareBinServiceEntityAndApiServiceEntity($apiServiceEntity, $binServiceEntity, $extraTraceData)
-    { 
+    {
         // matches the api service IIN entity fields with bin service entity
-        foreach (Constants::COMPARABLE_FIELDS_BETWEEN_IIN_ENTITY_AND_BIN_SERVICE as $field) 
+        foreach (Constants::COMPARABLE_FIELDS_BETWEEN_IIN_ENTITY_AND_BIN_SERVICE as $field)
         {
             $apiServiceEntityValue = "";
             $binServiceEntityValue = "";
 
-            if (isset($apiServiceEntity[$field]) && isset($binServiceEntity[$field])) 
+            if (isset($apiServiceEntity[$field]) && isset($binServiceEntity[$field]))
             {
-                if ($apiServiceEntity[$field] !== $binServiceEntity[$field]) 
+                if ($apiServiceEntity[$field] !== $binServiceEntity[$field])
                 {
                         $apiServiceEntityValue = $apiServiceEntity[$field];
                         $binServiceEntityValue  = $binServiceEntity[$field];
                 }
-            } 
-            else 
+            }
+            else
             {
                 if (isset($apiServiceEntity[$field]) || isset($binServiceEntity[$field]))
                 {
@@ -984,7 +987,7 @@ class Service extends Base\Service
         {
             // emi, locked, enabled, recurring are now part of features objects in bin service entity
             $features = $entity[Constants::FEATURES];
-            
+
             // flows is now part of features.features object in bin service entity
             $flows = $features[Constants::FEATURES];
 
