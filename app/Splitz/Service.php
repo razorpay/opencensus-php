@@ -61,28 +61,28 @@ class Service extends Base\Service
 
     public function generateCacheKey($merchantId, $input)
     {
-        $encrypedInput = md5(json_encode($input));
+        $encrypedInput = hash('sha256', json_encode($input));
 
         $sanitizedMerchantId = trim($merchantId);
-        
+
         $cacheKey = "splitz_cache_" . $sanitizedMerchantId . "_" . $encrypedInput;
-        
+
         return $cacheKey;
     }
 
     public function getKeysByPattern($pattern) {
         $keys = [];
-        
+
         $cursor = null;
-        
+
         $patternWithPrefix = Constants::REDIS_CACHE_PREFIX . $pattern;
-        
+
         do {
             [$cursor, $batch] = Redis::scan($cursor, 'MATCH', $patternWithPrefix);
 
             $keys = array_merge($keys, $batch);
         } while ($cursor !== '0');
-        
+
         return $keys;
     }
 

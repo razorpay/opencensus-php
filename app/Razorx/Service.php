@@ -61,7 +61,7 @@ class Service extends Base\Service
 
     public function generateCacheKey($merchantId, $input)
     {
-        $encrypedInput = md5(json_encode($input));
+        $encrypedInput = hash('sha256', json_encode($input));
 
         $sanitizedMerchantId = trim($merchantId);
 
