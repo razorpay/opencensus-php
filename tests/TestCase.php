@@ -306,4 +306,14 @@ class TestCase extends IlluminateTestCase
     {
         (new Admin\Service())->setConfigKeys([Admin\ConfigKey::SCROOGE_0LOC_ENABLED => 0]);
     }
+
+    public function enableTokensRelationalLoadConfig()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::TOKENS_SERVICE_ENABLED => 1]);
+    }
+
+    public function disableTokensRelationalLoadConfig()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::TOKENS_SERVICE_ENABLED => 0]);
+    }
 }

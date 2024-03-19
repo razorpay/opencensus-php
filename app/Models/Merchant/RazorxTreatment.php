@@ -4,6 +4,9 @@ namespace RZP\Models\Merchant;
 
 final class RazorxTreatment
 {
+   //Experiment to enable tokens fetch from external tokens service
+    const ENTITY_RELATIONAL_LOAD_FROM_TOKENS_SERVICE = 'entity_relational_load_from_tokens_service';
+
     const GIFU_CUSTOM = 'gifu_custom';
 
     const WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION         = 'WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION';

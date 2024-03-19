@@ -2017,4 +2017,20 @@ return [
         'razorpay_priv_key'    => env('OPGSP_JPMC_RZP_PRIV_KEY'),
         'razorpay_passphrase'  => env('OPGSP_JPMC_RZP_PASSPHRASE'),
     ],
+
+    'tokens' => [
+        'mock'   => env('TOKENS_MOCK', false),
+        'url'    => [
+            'test' => env('TOKENS_TEST_URL'),
+            'live' => env('TOKENS_LIVE_URL'),
+        ],
+        'key'    => [
+            'test' => env('TOKENS_TEST_KEY'),
+            'live' => env('TOKENS_LIVE_KEY'),
+        ],
+        'secret' => [
+            'test' => env('TOKENS_TEST_SECRET'),
+            'live' => env('TOKENS_LIVE_SECRET'),
+        ],
+    ]
 ];

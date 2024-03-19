@@ -883,6 +883,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerMagicCheckoutPluginService();
 
         $this->registerSlackClient();
+
+        $this->registerTokens();
     }
 
     protected function registerCacheManager()
@@ -2744,6 +2746,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('magic_checkout_plugin_service', function($app)
         {
             return new MagicCheckoutPluginService($app);
+        });
+    }
+
+    protected function registerTokens()
+    {
+        $this->app->singleton('tokens', function($app)
+        {
+            if ($app['config']->get('applications.tokens.mock') === true)
+            {
+                return new Mock\Tokens($app);
+            }
+            return new Tokens($app);
         });
     }
 }

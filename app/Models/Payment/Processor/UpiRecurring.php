@@ -678,7 +678,7 @@ trait UpiRecurring
     {
         try
         {
-            $token = $this->repo->token->find($payment->getTokenId());
+            $token = $this->repo->token->findOrFail($payment->getTokenId());
 
             if(($token === null) or
                ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
@@ -719,7 +719,7 @@ trait UpiRecurring
     {
         try
         {
-            $token = $this->repo->token->find($payment->getTokenId());
+            $token = $this->repo->token->findOrFail($payment->getTokenId());
 
             if(($token === null) or
                ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))

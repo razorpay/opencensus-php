@@ -1631,6 +1631,7 @@ class Entity
         self::REFUND  => 'scrooge',
         self::OFFER   => 'offers_engine',
         self::REWARD_POINT  => 'card.payments',
+        self::TOKEN   => 'tokens',
     ];
 
     protected static $externalRepoConfigKey = [
@@ -1639,6 +1640,7 @@ class Entity
         self::ORDER   => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
         self::REFUND  => Models\Admin\ConfigKey::SCROOGE_0LOC_ENABLED,
         self::OFFER   => Models\Admin\ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED,
+        self::TOKEN   => Models\Admin\ConfigKey::TOKENS_SERVICE_ENABLED,
     ];
 
     public static $archivalFallbackConfigKey = [

@@ -23,9 +23,11 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\ServerErrorException;
 use Rzp\Wda_php\WDARegisterQueryRequestBuilder;
+use RZP\Models\Base\Traits\ExternalTokensRepo;
 
 class Repository extends Base\Repository
 {
+    use ExternalTokensRepo;
     protected $entity = 'token';
 
     protected $appFetchParamRules = [
@@ -52,6 +54,11 @@ class Repository extends Base\Repository
                 Merchant\RazorxTreatment::PASS_REJECTED_UNUSED_TOKENS,
                 $mode
             );
+        }
+
+        if($withVpas and $isPassUnusedRejectedTokensExperimentEnabled != 'on')
+        {
+            return $this->getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas);
         }
 
         return $this->newQuery()
@@ -94,7 +101,7 @@ class Repository extends Base\Repository
         return $token;
     }
 
-    public function getByTokenAndCustomer($token, Customer\Entity $customer)
+    public function getByTokenAndCustomerFromApi($token, Customer\Entity $customer)
     {
         $token = $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
@@ -109,7 +116,7 @@ class Repository extends Base\Repository
         return $token;
     }
 
-    public function getByTokenAndMerchant($token, Merchant\Entity $merchant)
+    public function getByTokenAndMerchantFromAPI($token, Merchant\Entity $merchant)
     {
         $token = $this->newQuery()
             ->where(Token\Entity::MERCHANT_ID, '=', $merchant->getId())
@@ -124,7 +131,7 @@ class Repository extends Base\Repository
         return $token;
     }
 
-    public function getByToken(string $tokenId)
+    public function getByTokenFromAPI(string $tokenId)
     {
         $token = $this->newQuery()
             ->where(Token\Entity::TOKEN, '=', $tokenId)
@@ -133,7 +140,8 @@ class Repository extends Base\Repository
         return $token;
     }
 
-    public function getByTokenAndCustomerId(string $token, string $customerId)
+    //TODO Similar function getByTokenAndCustomerFromAPI REMOVE ONE
+    public function getByTokenAndCustomerIdFromAPI(string $token, string $customerId)
     {
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
@@ -142,7 +150,7 @@ class Repository extends Base\Repository
     }
 
 
-    public function getByTokenIdAndCustomerId(string $tokenId, string $customerId)
+    public function getByTokenIdAndCustomerIdFromAPI(string $tokenId, string $customerId)
     {
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
@@ -209,7 +217,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getByMethodAndMerchant($method, $merchant)
+    public function getByMethodAndMerchantFromAPI($method, $merchant)
     {
        return $this->newQuery()
                     ->where(Entity::METHOD, '=', $method)
@@ -219,7 +227,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getByMethodAndCustomerId($method, $customer)
+    public function getByMethodAndCustomerIdFromAPI($method, $customer)
     {
         return $this->newQuery()
                     ->where(Entity::METHOD, '=', $method)
@@ -260,7 +268,7 @@ class Repository extends Base\Repository
      *
      * @return mixed
      */
-    public function getByMethodCustomerIdAndVpaId($method, $customer, $vpaId)
+    public function getByMethodCustomerIdAndVpaIdFromAPI($method, $customer, $vpaId)
     {
 	return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
 		->where(Entity::METHOD, '=', $method)
@@ -887,7 +895,7 @@ class Repository extends Base\Repository
               ->get();
     }
 
-    public function getByPublicIdAndMerchant(string $id, Merchant\Entity $merchant)
+    public function getByPublicIdAndMerchantFromAPI(string $id, Merchant\Entity $merchant)
     {
         Entity::verifyIdAndStripSign($id);
 
@@ -896,7 +904,7 @@ class Repository extends Base\Repository
                     ->find($id);
     }
 
-    public function findOrFailByPublicIdAndMerchant(string $id, Merchant\Entity $merchant)
+    public function findOrFailByPublicIdAndMerchantFromAPI(string $id, Merchant\Entity $merchant)
     {
         Entity::verifyIdAndStripSign($id);
 
@@ -935,7 +943,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findOrFailTrashedById($tokenId)
+    public function findOrFailTrashedByIdFromAPI($tokenId)
     {
         return $this->newQuery()
                     ->withTrashed()

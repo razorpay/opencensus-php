@@ -466,6 +466,53 @@ return [
         ],
     ],
 
+    'testEntityLoadFailureFromTokensService' => [
+        'request' => [
+            'url'     => '/customers/cust_100000customer/tokens/101externaltok',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
+        ],
+    ],
+
+    'testGetCustomerTokensFromTokensService' => [
+        'request' => [
+            'url' => '/customers/cust_100077customer/tokens',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        'token'          => '100001upitoken',
+                        'method'         => 'upi',
+                        'vpa'            => [
+                            'handle'     => 'oksbi',
+                            'name'       => 'satyanand prasad',
+                            'received_at'=> 1709615226,
+                            'status'     => 'valid',
+                            'username'   => 'api_user'
+                        ]
+
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+
     'testGetCustomerTokens' => [
         'request' => [
             'url' => '/customers/cust_100000customer/tokens',

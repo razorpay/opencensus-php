@@ -460,6 +460,8 @@ class ConfigKey
 
     const PENNILESS_WHITELISTED_BANKS_LIST          = self::PREFIX . 'penniless_whitelisted_banks_list';
 
+    CONST TOKENS_SERVICE_ENABLED                    = self::PREFIX . 'tokens_service_enabled';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,
@@ -643,6 +645,7 @@ class ConfigKey
         self::UPI_TURBO_PAYMENT_ID_BY_GATEWAY_TXN_TTL,
         self::UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE,
         self::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT,
+        self::TOKENS_SERVICE_ENABLED
     ];
 
     const REDIS_CONFIG_MAP = [
