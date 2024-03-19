@@ -836,17 +836,9 @@ class Core extends Base\Core
         {
             $this->repo->transaction(function () use ($reversal, $refund, $feeOnlyReversal, $isReversalForVirtualRefund) {
 
-                if($isReversalForVirtualRefund === true)
-                {
-                    $this->stripRefundRelationIfApplicable($reversal);
-                }
-
+                $this->stripRefundRelationIfApplicable($reversal);
                 $this->repo->saveOrFail($reversal);
-
-                if($isReversalForVirtualRefund === true)
-                {
-                    $this->associateRefundIfApplicable($reversal, $refund);
-                }
+                $this->associateRefundIfApplicable($reversal, $refund);
 
 //               Note: If merchant has Reverse Shadow flag enabled, create reversal entity and ledger entries only.
 //               reversal txn will be created in async via acknowledgement worker
@@ -855,12 +847,14 @@ class Core extends Base\Core
         }
         else
         {
-            $reversal = $this->repo->transaction(function () use ($reversal, $txnCore, $feeOnlyReversal) {
+            $reversal = $this->repo->transaction(function () use ($reversal, $txnCore, $feeOnlyReversal, $refund) {
                 list($txn, $feesSplit) = $txnCore->createFromRefundReversal($reversal);
 
                 $this->repo->saveOrFail($txn);
 
+                $this->stripRefundRelationIfApplicable($reversal);
                 $this->repo->saveOrFail($reversal);
+                $this->associateRefundIfApplicable($reversal, $refund);
 
                 $txnCore->saveFeeDetails($txn, $feesSplit);
 

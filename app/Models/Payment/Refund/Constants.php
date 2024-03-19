@@ -35,7 +35,8 @@ class Constants
     const REFUND_GATEWAY                       = 'refund_gateway';
     const UNDISPUTED_PAYMENT                   = 'undisputed_payment';
     const REFUND_AUTHORIZED_PAYMENT            = 'refund_authorized_payment';
-    const CAPTURE_REFUNDED_PAYMENT            = 'capture_refunded_payment';
+    const CAPTURE_REFUNDED_PAYMENT             = 'capture_refunded_payment';
+    const SKIP_REVERSE_REFUND                  = 'skip_reverse_refund';
 
     /**
      * We get the last 10 days refunds created of a gateway.
@@ -259,6 +260,7 @@ class Constants
     const PG_LEDGER_REVERSE_SHADOW                  = 'pg_ledger_reverse_shadow';
     const JOURNAL_ID                                = 'journal_id';
     const FEE_ONLY_REVERSAL                         = 'fee_only_reversal';
+    const FULL_REVERSAL                             = 'full_reversal';
     const SPEED_DECISIONED                          = "speed_decisioned";
     const FEE                                       = "fee";
     const TAX                                       = "tax";

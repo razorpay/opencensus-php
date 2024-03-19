@@ -257,6 +257,15 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createRefundReversal(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createRefundReversal($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postGatewayRefundCall(string $id)
     {
         $input = Request::all();

@@ -433,6 +433,15 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function findReversalsByRefundId(string $refundId)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::ENTITY_TYPE, E::REFUND)
+            ->where(Entity::ENTITY_ID, $refundId);
+
+        return $query->get();
+    }
+
     public function fetchPlatformFeeReversalDetailsForMerchant(string $merchantId, array $linkedAccounts, int $beginTimestamp, int $endTimestamp)
     {
         $transferIdCol          = $this->repo->transfer->dbColumn((TransferEntity::ID));

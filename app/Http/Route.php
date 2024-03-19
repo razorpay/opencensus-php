@@ -369,6 +369,7 @@ class Route
         'refund_set_unprocessed_config'            => ['put',      'refunds/set_unprocessed_config',                 'RefundController@setUnprocessedRefundsConfig'                      ],
         // We will change this in the future when we want to update more things than just marking it as processed.
         'refund_update_status'                     => ['put',      'refunds/{id}/update_status',                     'RefundController@updateScroogeRefundStatus'                        ],
+        'refund_create_reversal'                   => ['post',     'refunds/{id}/reverse_refund',                    'RefundController@createRefundReversal'                             ],
         'refund_fetch_status'                      => ['get',      'refunds/{id}/status',                            'RefundController@getRefundEntity'                                  ],
         'refund_cancel_batch'                      => ['post',     'refunds/batch/{batchId}/cancel',                 'RefundController@cancelRefundsBatch'                               ],
         // Both the following routes refund_verify_call, refund_gateway_call must always point to master DB
@@ -5792,6 +5793,7 @@ class Route
         'reconciliate',
         'refund_generate_excel',
         'refund_update_status',
+        'refund_create_reversal',
         'refund_gateway_call',
         'refund_verify_call',
         'scrooge_verify_refund_call',
@@ -16767,6 +16769,7 @@ class Route
             'refunds_reversal_create',
             'internal_merchant_fetch',
             'refund_update_status',
+            'refund_create_reversal',
             'refund_gateway_call',
             'scrooge_refund_create',
             'refunds_reconcile_bulk',

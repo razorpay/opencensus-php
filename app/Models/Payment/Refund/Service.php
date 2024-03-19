@@ -72,6 +72,7 @@ use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 
 const TRANSACTION_NOT_FOUND = 'TRANSACTION_NOT_FOUND';
+const REFUND_REVERSAL_MUTEX_KEY = 'refund_reversal_create_';
 
 class Service extends Base\Service
 {
@@ -2335,6 +2336,8 @@ class Service extends Base\Service
 
                         $processor = $this->getNewProcessor($refund->merchant);
 
+                        $skipReverseRefund = $input[RefundConstants::SKIP_REVERSE_REFUND] ?? false;
+
                         switch ($input['event'])
                         {
                             case Refund\ScroogeEvents::PROCESSED_EVENT:
@@ -2363,30 +2366,40 @@ class Service extends Base\Service
 
                             case Refund\ScroogeEvents::FAILED_EVENT:
 
-                                $processor->reverseRefund($refund);
-
-                                if ($refund->payment->hasBeenCaptured() === true)
+                                if ($skipReverseRefund === false)
                                 {
-                                    $variant = $this->app->razorx->getTreatment($refundId,
-                                        RefundConstants:: RAZORX_KEY_SKIP_PAYMENT_ENTITY_UPDATE_FOR_REVERSAL,
-                                        $this->mode
-                                    );
+                                    $processor->reverseRefund($refund);
 
-                                    $this->trace->info(
-                                        TraceCode::PAYMENT_STATUS_UPDATE_REQUEST,
-                                        [
-                                            'razorx_variant'               => $variant,
-                                            'refund_id'                    => $refundId,
-                                            'payment_id'                   => $refund->payment->getId(),
-                                            'payment_status'               => $refund->payment->getStatus(),
-                                            'payment_refund_status'        => $refund->payment->getRefundStatus(),
-                                            'payment_amount_refunded'      => $refund->payment->getAmountRefunded(),
-                                            'payment_base_amount_refunded' => $refund->payment->getBaseAmountRefunded(),
-                                        ]);
+                                    if ($refund->payment->hasBeenCaptured() === true) {
+                                        $variant = $this->app->razorx->getTreatment($refundId,
+                                            RefundConstants:: RAZORX_KEY_SKIP_PAYMENT_ENTITY_UPDATE_FOR_REVERSAL,
+                                            $this->mode
+                                        );
 
-                                    if ($variant !== RefundConstants::RAZORX_VARIANT_ON)
+                                        $this->trace->info(
+                                            TraceCode::PAYMENT_STATUS_UPDATE_REQUEST,
+                                            [
+                                                'razorx_variant' => $variant,
+                                                'refund_id' => $refundId,
+                                                'payment_id' => $refund->payment->getId(),
+                                                'payment_status' => $refund->payment->getStatus(),
+                                                'payment_refund_status' => $refund->payment->getRefundStatus(),
+                                                'payment_amount_refunded' => $refund->payment->getAmountRefunded(),
+                                                'payment_base_amount_refunded' => $refund->payment->getBaseAmountRefunded(),
+                                            ]);
+
+                                        if ($variant !== RefundConstants::RAZORX_VARIANT_ON) {
+                                            $processor->revertPaymentToRefundableState($refund);
+                                        }
+                                    }
+                                }
+                                else if ($refund->payment->hasBeenCaptured() === true && $refund->isStatusReversed() === false)
+                                {
+                                    $refund->setFee(0);
+                                    $refund->setTax(0);
+                                    if ($refund->isDirectSettlementRefund() === false)
                                     {
-                                        $processor->revertPaymentToRefundableState($refund);
+                                        $refund->setStatus(Payment\Refund\Status::REVERSED);
                                     }
                                 }
 
@@ -2410,15 +2423,24 @@ class Service extends Base\Service
                                 //
                                 if ($refund->isDirectSettlementRefund() === true)
                                 {
-                                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund);
+                                    if ($skipReverseRefund === false)
+                                    {
+                                        $this->getNewProcessor($refund->merchant)->reverseRefund($refund);
+                                    }
 
                                     $refund->setSettledBy($refund->payment->getSettledBy());
                                 }
                                 else
                                 {
-                                    $feeOnlyReversal = true;
-
-                                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund, $feeOnlyReversal);
+                                    if ($skipReverseRefund === false)
+                                    {
+                                        $this->getNewProcessor($refund->merchant)->reverseRefund($refund, true);
+                                    }
+                                    else if ($refund->payment->hasBeenCaptured() === true && $refund->isStatusReversed() === false && $refund->getFee() !== 0)
+                                    {
+                                        $refund->setFee(0);
+                                        $refund->setTax(0);
+                                    }
                                 }
 
                                 $refund->setSpeedProcessed(RefundSpeed::NORMAL);
@@ -2486,6 +2508,60 @@ class Service extends Base\Service
         }
 
         return $refund;
+    }
+
+    public function createRefundReversal(string $refundId, array $input)
+    {
+        try
+        {
+            return $this->mutex->acquireAndRelease(
+                REFUND_REVERSAL_MUTEX_KEY . $refundId,
+                function () use ($refundId, $input)
+                {
+                    $reversal = null;
+                    $refund = $this->repo->refund->findOrFailPublic($refundId);
+
+                    $processor = $this->getNewProcessor($refund->merchant);
+                    $refund->setFee($refund->transaction->getFee());
+                    $refund->setTax($refund->transaction->getTax());
+
+                    switch ($input['event'])
+                    {
+                        case Refund\Constants::FEE_ONLY_REVERSAL:
+
+                            // In optimum flow - we would have debit amount + fees in the transaction,
+                            // on failure - we have to reverse the whole amount since, gateway will directly settle
+                            // in case of DirectSettlementRefund - but the refund status will remain as is and not change
+                            if ($refund->isDirectSettlementRefund() === true)
+                            {
+                                $reversal = $this->getNewProcessor($refund->merchant)->reverseRefund($refund, false, false);
+                            }
+                            else
+                            {
+                                $reversal = $processor->reverseRefund($refund, true, false);
+                            }
+                            break;
+                        case Refund\Constants::FULL_REVERSAL:
+                            $reversal = $processor->reverseRefund($refund, false, false);
+                            break;
+                    }
+
+                    if ($reversal === null)
+                    {
+                        return null;
+                    }
+                    return $reversal->toArrayPublic();
+                },
+                1800,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+            );
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::REFUND_REVERSAL_FAILED, ['refund_id' => $refundId]);
+
+            throw $ex;
+        }
     }
 
     /**

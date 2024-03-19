@@ -1214,7 +1214,7 @@ trait Refund
         return $txn;
     }
 
-    public function reverseRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal = false)
+    public function reverseRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal = false, bool $updateRefund = true)
     {
         $this->trace->info(
             TraceCode::REFUND_REVERSAL_INITIATED,
@@ -1226,6 +1226,39 @@ trait Refund
         if (($refund->payment->hasBeenCaptured() === false) or (($feeOnlyReversal === true) and ($refund->getFee() === 0)))
         {
             return null;
+        }
+
+        //This is needed since refund will be fetched from scrooge and will have updated fee and tax.
+        if ($updateRefund === false)
+        {
+            $reversals = $this->repo->reversal->findReversalsByRefundId($refund->getId());
+            if ($reversals != null && count($reversals) > 0)
+            {
+                $taxReversed = 0;
+                $feeReversed = 0;
+                $amountReversed = 0;
+                foreach ($reversals as $reversal)
+                {
+                    $taxReversed += $reversal->getTax();
+                    $feeReversed += $reversal->getFee();
+                    $amountReversed += $reversal->getAmount();
+                }
+
+                if ($feeOnlyReversal === true && $feeReversed !== 0)
+                {
+                    return null;
+                }
+                else if ($feeOnlyReversal === false && $amountReversed !== 0)
+                {
+                    return null;
+                }
+                else if($feeReversed !== 0)
+                {
+                    //Setting this to 0 since fee is already reversed
+                    $refund->setFee(0);
+                    $refund->setTax(0);
+                }
+            }
         }
 
         // If PG_LEDGER_REVERSE_SHADOW flag is enabled, check if refund transaction exists, else return null
@@ -1241,7 +1274,7 @@ trait Refund
             }
         }
 
-        if (($refund->isStatusReversed() === true)) {
+        if ($refund->isStatusReversed() === true && $updateRefund === true) {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,
                 null,
@@ -1256,37 +1289,41 @@ trait Refund
         try
         {
             $reversal = $this->repo->transaction(
-                function () use ($refund, $feeOnlyReversal) {
+                function () use ($refund, $feeOnlyReversal, $updateRefund) {
+
                     $reversal = (new Reversal\Core)->reverseForRefund($refund, $feeOnlyReversal);
 
-                    $fee = $refund->getFees();
-
-                    $tax = $refund->getTax();
-
-                    $refund->setFee(0);
-
-                    $refund->setTax(0);
-
-                    //
-                    // [Instant Refunds] - optimum flow
-                    // In case of direct settlement refunds we are creating a reversal transaction -
-                    // to reverse the fees and amount, since gateway will settle the amount directly
-                    //
-                    if (($feeOnlyReversal === false) and
-                        ($refund->isDirectSettlementRefund() === false))
+                    if ($updateRefund === true)
                     {
-                        $refund->setStatus(Payment\Refund\Status::REVERSED);
+                        $fee = $refund->getFees();
+
+                        $tax = $refund->getTax();
+
+                        $refund->setFee(0);
+
+                        $refund->setTax(0);
+
+                        //
+                        // [Instant Refunds] - optimum flow
+                        // In case of direct settlement refunds we are creating a reversal transaction -
+                        // to reverse the fees and amount, since gateway will settle the amount directly
+                        //
+                        if (($feeOnlyReversal === false) and
+                            ($refund->isDirectSettlementRefund() === false))
+                        {
+                            $refund->setStatus(Payment\Refund\Status::REVERSED);
+                        }
+
+                        $this->repo->saveOrFail($refund);
+
+                        $this->trace->info(
+                            TraceCode::REFUND_FEE_AND_TAX_RESET_TO_ZERO,
+                            [
+                                'refund_id'    => $refund->getId(),
+                                'previous_fee' => $fee,
+                                'previous_tax' => $tax,
+                            ]);
                     }
-
-                    $this->repo->saveOrFail($refund);
-
-                    $this->trace->info(
-                        TraceCode::REFUND_FEE_AND_TAX_RESET_TO_ZERO,
-                        [
-                            'refund_id'    => $refund->getId(),
-                            'previous_fee' => $fee,
-                            'previous_tax' => $tax,
-                        ]);
 
                     return $reversal;
                 });
@@ -4725,7 +4762,7 @@ trait Refund
 
                         // creates virtual customer refund entity from input
                         $customerRefund = $this->createVirtualRefundEntity($payment, $customerRefundInput);
-    
+
                         $compenstatePayment = false;
                         try
                         {
