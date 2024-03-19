@@ -3,6 +3,7 @@
 namespace Unit\Models\Merchant\Detail;
 
 use App;
+use Database\Connection;
 use Queue;
 use Config;
 use Mockery;
@@ -9454,54 +9455,34 @@ class CoreTest extends TestCase
         /*we don't have all urls in merchant_website fixture, once updation is done ,
          then we have to check expected urls are updated in merchant_website entity
         */
-        $this->fixtures->on('live')->create('merchant_website', [
-            'id'                       => 'LGjQP2ZQxa02as',
-            'merchant_id'              => $merchant->getId(),
-            'status'                   => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
+        $attributes = [
+            'id' => 'LGjQP2ZQxa02as',
+            'merchant_id' => $merchant->getId(),
+            'status' => 'submitted',
+            "shipping_period" => "3-5 days",
+            "refund_request_period" => "3-5 days",
+            "refund_process_period" => "3-5 days",
+            "additional_data" => [
                 "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
+                "support_email" => "kakarla.vasanthi@razorpay.com"
             ],
             "merchant_website_details" => [
-                "terms"    => [
+                "terms" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
                 ],
                 "about_us" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
                 ]
             ]
-        ]);
-        $this->fixtures->on('test')->create('merchant_website', [
-            'id'                       => 'LGjQP2ZQxa02as',
-            'merchant_id'              => $merchant->getId(),
-            'status'                   => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
-                "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
-            ],
-            "merchant_website_details" => [
-                "terms"    => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
-                ],
-                "about_us" => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
-                ]
-            ]
-        ]);
+        ];
+        $this->fixtures->on('live')->create('merchant_website', $attributes);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_website', $attributes);
+        $this->fixtures->on('test')->create('merchant_website', $attributes);
+
 
         $this->fixtures->create('merchant_verification_detail', [
             'id'                  => 'LGjQP2ZQxa02aZ',
@@ -11514,64 +11495,38 @@ class CoreTest extends TestCase
         /*we don't have all urls in merchant_website fixture, once updation is done ,
          then we have to check expected urls are updated in merchant_website entity
         */
-        $this->fixtures->on('live')->create('merchant_website', [
-            'id'                   => 'LGjQP2ZQxa02as',
-            'merchant_id'           => $merchant->getId(),
-            'status'      => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
+        $attributes = [
+            'id' => 'LGjQP2ZQxa02as',
+            'merchant_id' => $merchant->getId(),
+            'status' => 'submitted',
+            "shipping_period" => "3-5 days",
+            "refund_request_period" => "3-5 days",
+            "refund_process_period" => "3-5 days",
+            "additional_data" => [
                 "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
+                "support_email" => "kakarla.vasanthi@razorpay.com"
             ],
             "merchant_website_details" => [
                 "terms" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
                 ],
                 "about_us" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
                 ],
                 "privacy" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/privacy"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/privacy"
                 ],
             ]
-        ]);
-        $this->fixtures->on('test')->create('merchant_website', [
-            'id'                   => 'LGjQP2ZQxa02as',
-            'merchant_id'           => $merchant->getId(),
-            'status'      => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
-                "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
-            ],
-            "merchant_website_details" => [
-                "terms" => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
-                ],
-                "about_us" => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
-                ],
-                "privacy" => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/privacy"
-                ]
-            ]
-        ]);
+        ];
+        $this->fixtures->on('live')->create('merchant_website', $attributes);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_website', $attributes);
+        $this->fixtures->on('test')->create('merchant_website', $attributes);
 
         $businessDetail = $this->getDbEntity('merchant_business_detail', ['merchant_id' => $merchant->getId()]);
 
@@ -11916,7 +11871,7 @@ class CoreTest extends TestCase
         /*we don't have all urls in merchant_website fixture, once updation is done ,
          then we have to check expected urls are updated in merchant_website entity
         */
-        $this->fixtures->on('live')->create('merchant_website', [
+        $websiteAttributes = [
             'id'                       => 'LGjQP2ZQxa02as',
             'merchant_id'              => $merchant->getId(),
             'status'                   => 'submitted',
@@ -11944,36 +11899,10 @@ class CoreTest extends TestCase
                     "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/privacy"
                 ],
             ]
-        ]);
-        $this->fixtures->on('test')->create('merchant_website', [
-            'id'                       => 'LGjQP2ZQxa02as',
-            'merchant_id'              => $merchant->getId(),
-            'status'                   => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
-                "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
-            ],
-            "merchant_website_details" => [
-                "terms"    => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
-                ],
-                "about_us" => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
-                ],
-                "privacy"  => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/privacy"
-                ]
-            ]
-        ]);
+        ];
+        $this->fixtures->on('live')->create('merchant_website', $websiteAttributes);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_website', $websiteAttributes);
+        $this->fixtures->on('test')->create('merchant_website', $websiteAttributes);
 
         $businessDetail = $this->getDbEntity('merchant_business_detail', ['merchant_id' => $merchant->getId()]);
 
@@ -12352,64 +12281,38 @@ class CoreTest extends TestCase
         /*we don't have all urls in merchant_website fixture, once updation is done ,
          then we have to check expected urls are updated in merchant_website entity
         */
-        $this->fixtures->on('live')->create('merchant_website', [
-            'id'                       => 'LGjQP2ZQxa02as',
-            'merchant_id'              => $merchant->getId(),
-            'status'                   => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
+        $attributes = [
+            'id' => 'LGjQP2ZQxa02as',
+            'merchant_id' => $merchant->getId(),
+            'status' => 'submitted',
+            "shipping_period" => "3-5 days",
+            "refund_request_period" => "3-5 days",
+            "refund_process_period" => "3-5 days",
+            "additional_data" => [
                 "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
+                "support_email" => "kakarla.vasanthi@razorpay.com"
             ],
             "merchant_website_details" => [
-                "terms"    => [
+                "terms" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
                 ],
                 "about_us" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
                 ],
-                "privacy"  => [
+                "privacy" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/privacy"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/privacy"
                 ],
             ]
-        ]);
-        $this->fixtures->on('test')->create('merchant_website', [
-            'id'                       => 'LGjQP2ZQxa02as',
-            'merchant_id'              => $merchant->getId(),
-            'status'                   => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
-                "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
-            ],
-            "merchant_website_details" => [
-                "terms"    => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
-                ],
-                "about_us" => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
-                ],
-                "privacy"  => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/privacy"
-                ]
-            ]
-        ]);
+        ];
+        $this->fixtures->on('live')->create('merchant_website', $attributes);
+        $this->fixtures->on(COnnection::ASV_WRITER)->create('merchant_website', $attributes);
+        $this->fixtures->on('test')->create('merchant_website', $attributes);
 
         $businessDetail = $this->getDbEntity('merchant_business_detail', ['merchant_id' => $merchant->getId()]);
 
@@ -12744,54 +12647,34 @@ class CoreTest extends TestCase
         /*we don't have all urls in merchant_website fixture, once updation is done ,
          then we have to check expected urls are updated in merchant_website entity
         */
-        $this->fixtures->on('live')->create('merchant_website', [
-            'id'                       => 'LGjQP2ZQxa02as',
-            'merchant_id'              => $merchant->getId(),
-            'status'                   => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
+        $attributes = [
+            'id' => 'LGjQP2ZQxa02as',
+            'merchant_id' => $merchant->getId(),
+            'status' => 'submitted',
+            "shipping_period" => "3-5 days",
+            "refund_request_period" => "3-5 days",
+            "refund_process_period" => "3-5 days",
+            "additional_data" => [
                 "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
+                "support_email" => "kakarla.vasanthi@razorpay.com"
             ],
             "merchant_website_details" => [
-                "terms"    => [
+                "terms" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
                 ],
                 "about_us" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
                 ]
             ]
-        ]);
-        $this->fixtures->on('test')->create('merchant_website', [
-            'id'                       => 'LGjQP2ZQxa02as',
-            'merchant_id'              => $merchant->getId(),
-            'status'                   => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
-                "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
-            ],
-            "merchant_website_details" => [
-                "terms"    => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
-                ],
-                "about_us" => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
-                ]
-            ]
-        ]);
+        ];
+        $this->fixtures->on('live')->create('merchant_website', $attributes);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_website', $attributes);
+        $this->fixtures->on('test')->create('merchant_website', $attributes);
+
 
         $businessDetail = $this->getDbEntity('merchant_business_detail', ['merchant_id' => $merchant->getId()]);
 
@@ -15090,9 +14973,9 @@ class CoreTest extends TestCase
         $this->ba->adminAuth();
         Mail::fake();
         Config::set('pgos.proxy.request.mock', true);
-        
+
         $mid = 'KiyM01yZQeU3rD';
-        
+
         $merchant = $this->fixtures->create('merchant', [
             'id'            => $mid,
             'website'       => null,
@@ -15100,36 +14983,36 @@ class CoreTest extends TestCase
             'email'         => null,
             'billing_label' => null,
         ]);
-        
+
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             'merchant_id'      => $mid,
             'contact_email'    => null,
             'promoter_pan'     => 'ABCPE1234E',
             'business_type'    => 11,
             'business_website' => null]);
-        
+
         $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
-        
+
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
                                ->setMethods(['isAutoKycDone'])
                                ->setMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
-        
+
         $detailCoreMock->expects($this->any())
                        ->method('isAutoKycDone')
                        ->willReturn(true);
-        
+
         $detailCoreMock->expects($this->any())
                        ->method('isEligibleForAutomationActivation')
                        ->willReturn(true);
-        
+
         $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
-        
+
         $input = [
             "experiment_id" => "LS64r2cBVZVT5b",
             "id"            => $mid,
         ];
-        
+
         $output = [
             "response" => [
                 "variant" => [
@@ -15137,52 +15020,52 @@ class CoreTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockSplitzTreatment($input, $output);
-        
+
         $input = [
             "experiment_id" => "MVNSQzGiHM965H",
             "id"            => $mid,
         ];
-        
+
         $output = [
             "response" => [
                 "variant" => [
-                
+
                 ]
             ]
         ];
-        
+
         $this->mockSplitzTreatment($input, $output);
-        
+
         $activationStatusData = [
             Entity::ACTIVATION_STATUS => Status::KYC_QUALIFIED_UNACTIVATED,
         ];
-        
+
         $admin = $this->fixtures->connection('live')->create('admin', [
             'org_id' => OrgEntity::RAZORPAY_ORG_ID,
         ]);
-        
+
         $this->app->instance("rzp.mode", Mode::LIVE);
-        
+
         $this->app['workflow']->setWorkflowMaker($admin);
-        
+
         $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
-        
+
         $this->app->instance('basicauth', $basicAuthMock);
-        
+
         $basicAuthMock
             ->shouldReceive('getOrgId')
             ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
-        
+
         $basicAuthMock
             ->shouldReceive('isAdminAuth')
             ->andReturn(true);
-        
+
         $detailCoreMock->updateActivationStatus($merchantDetail->merchant, $activationStatusData, $admin);
-        
+
         $merchantDetailData = $this->getDbEntityById('merchant_detail', $mid)->toArray();
-        
+
         $this->assertEquals('kyc_qualified_unactivated', $merchantDetailData['activation_status']);
     }
 
@@ -15451,18 +15334,18 @@ class CoreTest extends TestCase
         $this->assertEquals(true, $res);
 
     }
-    
+
     //activate merchant with business type as per details should get activated/KQU
     public function testAMerchantActivateWithBusinessType()
     {
         $this->ba->adminAuth();
         Mail::fake();
         Config::set('pgos.proxy.request.mock', true);
-        
+
         $mid = 'KiyM01yZQeU3rD';
-        
+
         $this->fixtures->create('merchant', ['business_banking' => 1]);
-        
+
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             'business_type'             => 11,
             'business_category'         => 'financial_services',
@@ -15475,27 +15358,27 @@ class CoreTest extends TestCase
             'submitted'                 => true,
             'business_Website'          => null
         ]);
-        
+
         $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
-        
+
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
                                ->setMethods(['isAutoKycDone'])
                                ->setMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
-        
+
         $detailCoreMock->expects($this->any())
                        ->method('isAutoKycDone')
                        ->willReturn(true);
-        
+
         $detailCoreMock->expects($this->any())
                        ->method('isEligibleForAutomationActivation')
                        ->willReturn(true);
-        
+
         $input = [
             "experiment_id" => "LS64r2cBVZVT5b",
             "id"            => $merchantDetail->getMerchantId(),
         ];
-        
+
         $output = [
             "response" => [
                 "variant" => [
@@ -15503,14 +15386,14 @@ class CoreTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockSplitzTreatment($input, $output);
-        
+
         $input1 = [
             "experiment_id" => "NlqlZNbm3BZHs3",
             "id"            => $merchantDetail->getMerchantId(),
         ];
-        
+
         $output1 = [
             "response" => [
                 "variant" => [
@@ -15518,55 +15401,55 @@ class CoreTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockSplitzTreatment($input1, $output1);
-        
+
         $activationStatusData = [
             Entity::ACTIVATION_STATUS => Status::ACTIVATED,
         ];
-        
+
         $admin = $this->fixtures->connection('live')->create('admin', [
             'org_id' => OrgEntity::RAZORPAY_ORG_ID,
         ]);
-        
+
         $this->app->instance("rzp.mode", Mode::LIVE);
-        
+
         $this->app['workflow']->setWorkflowMaker($admin);
-        
+
         $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
-        
+
         $this->app->instance('basicauth', $basicAuthMock);
-        
+
         $basicAuthMock
             ->shouldReceive('getOrgId')
             ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
-        
+
         $basicAuthMock
             ->shouldReceive('isAdminAuth')
             ->andReturn(true);
-        
+
         $detailCoreMock->updateActivationStatus($merchantDetail->merchant, $activationStatusData, $admin);
-        
+
         $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetail->getMerchantId())->toArray();
-        
+
         $this->assertEquals('activated', $merchantDetailData['activation_status']);
     }
-    
-    
+
+
     // should throw error when promoter pan is missing
     public function testAMerchantActivateWithBusinessTypeWithoutPersonalPan()
     {
         $this->ba->adminAuth();
         Mail::fake();
         Config::set('pgos.proxy.request.mock', true);
-        
+
         $mid = 'KiyM01yZQeU3rD';
-        
+
         $merchant = $this->fixtures->create('merchant', [
             'id'               => $mid,
             'business_banking' => 1
         ]);
-        
+
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             'business_type'             => 4,
             'merchant_id'               => $mid,
@@ -15579,29 +15462,29 @@ class CoreTest extends TestCase
             'submitted'                 => true,
             'business_Website'          => null
         ]);
-        
+
         $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
-        
+
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
                                ->setMethods(['isAutoKycDone'])
                                ->setMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
-        
+
         $detailCoreMock->expects($this->any())
                        ->method('isAutoKycDone')
                        ->willReturn(true);
-        
+
         $detailCoreMock->expects($this->any())
                        ->method('isEligibleForAutomationActivation')
                        ->willReturn(true);
-        
+
         $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
-        
+
         $input = [
             "experiment_id" => "LS64r2cBVZVT5b",
             "id"            => $mid,
         ];
-        
+
         $output = [
             "response" => [
                 "variant" => [
@@ -15609,14 +15492,14 @@ class CoreTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockSplitzTreatment($input, $output);
-        
+
         $input1 = [
             "experiment_id" => "NlqlZNbm3BZHs3",
             "id"            => $merchantDetail->getMerchantId(),
         ];
-        
+
         $output1 = [
             "response" => [
                 "variant" => [
@@ -15624,50 +15507,50 @@ class CoreTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockSplitzTreatment($input1, $output1);
-        
+
         $activationStatusData = [
             Entity::ACTIVATION_STATUS => Status::ACTIVATED,
         ];
-        
+
         $admin = $this->fixtures->connection('live')->create('admin', [
             'org_id' => OrgEntity::RAZORPAY_ORG_ID,
         ]);
-        
+
         $this->app->instance("rzp.mode", Mode::LIVE);
-        
+
         $this->app['workflow']->setWorkflowMaker($admin);
-        
+
         $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
-        
+
         $this->app->instance('basicauth', $basicAuthMock);
-        
+
         $basicAuthMock
             ->shouldReceive('getOrgId')
             ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
-        
+
         $basicAuthMock
             ->shouldReceive('isAdminAuth')
             ->andReturn(true);
-        
+
         try
         {
-            
+
             $response = $detailCoreMock->updateActivationStatus($merchantDetail->merchant, $activationStatusData, $admin);
-            
+
             $this->assertNull($response);
-            
+
         }
         catch (\Exception $e)
         {
-            
+
             $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
             $this->assertStringContainsString('Personal PAN should not be blank.', $e->getMessage());
-            
+
         }
     }
-    
+
     public function testIsMerchantApplicableForWebsiteSections_BankingNotPrimary()
     {
 

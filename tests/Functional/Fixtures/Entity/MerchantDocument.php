@@ -6,7 +6,7 @@ class MerchantDocument extends Base
 {
     public function create(array $attributes = array())
     {
-        $merchantDocument = $this->createEntityInTestAndLive('merchant_document', $attributes);
+        $merchantDocument = $this->createEntityInTestAndLiveAndAsv('merchant_document', $attributes);
 
         return $merchantDocument;
     }

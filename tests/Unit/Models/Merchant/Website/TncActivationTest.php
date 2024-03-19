@@ -2,6 +2,7 @@
 
 namespace Unit\Models\Merchant\Website;
 
+use Database\Connection;
 use DB;
 use Hash;
 use Config;
@@ -313,6 +314,8 @@ class TncActivationTest extends TestCase
         $merchantWebsite = $this->fixtures->on('live')->create('merchant_website', $input);
 
         $input["id"] = $merchantWebsite->getId();
+
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_website', $input);
 
         $merchantWebsite = $this->fixtures->on('test')->create('merchant_website', $input);
 
@@ -1132,54 +1135,33 @@ class TncActivationTest extends TestCase
         /*we don't have all urls in merchant_website fixture, once updation is done ,
          then we have to check expected urls are updated in merchant_website entity
         */
-        $this->fixtures->on('live')->create('merchant_website', [
-            'id'                   => 'LGjQP2ZQxa02as',
-            'merchant_id'           => $merchant->getId(),
-            'status'      => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
+        $websiteAttributes = [
+            'id' => 'LGjQP2ZQxa02as',
+            'merchant_id' => $merchant->getId(),
+            'status' => 'submitted',
+            "shipping_period" => "3-5 days",
+            "refund_request_period" => "3-5 days",
+            "refund_process_period" => "3-5 days",
+            "additional_data" => [
                 "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
+                "support_email" => "kakarla.vasanthi@razorpay.com"
             ],
             "merchant_website_details" => [
                 "terms" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
                 ],
                 "about_us" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
                 ]
             ]
-        ]);
-        $this->fixtures->on('test')->create('merchant_website', [
-            'id'                   => 'LGjQP2ZQxa02as',
-            'merchant_id'           => $merchant->getId(),
-            'status'      => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
-                "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
-            ],
-            "merchant_website_details" => [
-                "terms" => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
-                ],
-                "about_us" => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
-                ]
-            ]
-        ]);
+        ];
+        $this->fixtures->on('live')->create('merchant_website', $websiteAttributes);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_website', $websiteAttributes);
+        $this->fixtures->on('test')->create('merchant_website', $websiteAttributes);
 
         $merchantWebsiteDetail = (new Merchant\Website\Service)->getAdminWebsiteSection($merchant->getId());
 
@@ -1221,54 +1203,33 @@ class TncActivationTest extends TestCase
         /*we don't have all urls in merchant_website fixture, once updation is done ,
          then we have to check expected urls are updated in merchant_website entity
         */
-        $this->fixtures->on('live')->create('merchant_website', [
-            'id'                       => 'LGjQP2ZQxa02as',
-            'merchant_id'              => $merchant->getId(),
-            'status'                   => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
+        $attributes = [
+            'id' => 'LGjQP2ZQxa02as',
+            'merchant_id' => $merchant->getId(),
+            'status' => 'submitted',
+            "shipping_period" => "3-5 days",
+            "refund_request_period" => "3-5 days",
+            "refund_process_period" => "3-5 days",
+            "additional_data" => [
                 "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
+                "support_email" => "kakarla.vasanthi@razorpay.com"
             ],
             "merchant_website_details" => [
-                "terms"    => [
+                "terms" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
                 ],
                 "about_us" => [
                     "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
                 ]
             ]
-        ]);
-        $this->fixtures->on('test')->create('merchant_website', [
-            'id'                       => 'LGjQP2ZQxa02as',
-            'merchant_id'              => $merchant->getId(),
-            'status'                   => 'submitted',
-            "shipping_period"          => "3-5 days",
-            "refund_request_period"    => "3-5 days",
-            "refund_process_period"    => "3-5 days",
-            "additional_data"          => [
-                "support_contact_number" => "9980004017",
-                "support_email"          => "kakarla.vasanthi@razorpay.com"
-            ],
-            "merchant_website_details" => [
-                "terms"    => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
-                ],
-                "about_us" => [
-                    "section_status" => 3,
-                    "status"         => "submitted",
-                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
-                ]
-            ]
-        ]);
+        ];
+        $this->fixtures->on('live')->create('merchant_website', $attributes);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_website', $attributes);
+        $this->fixtures->on('test')->create('merchant_website', $attributes);
 
         $response = (new Merchant\Website\Service)->getPublicWebsiteSectionPageLinks("LGjQP2ZQxa02as");
 

@@ -380,10 +380,6 @@ trait RepositoryUpdateTestAndLive
     {
         try {
 
-            if ((new AsvMaps\WriteEnabledOnAsv)->checkIfWriteEnabled($this::class, $function) === false) {
-                return false;
-            }
-
             return ($this->asvRouter)->shouldWriteToASVDB(
                 $this::class, $function, $entity->getId()
             );

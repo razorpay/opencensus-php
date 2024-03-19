@@ -8,6 +8,6 @@ class MerchantEmail extends Base
 {
     public function create(array $attributes = array())
     {
-        return $this->createEntityInTestAndLive(E::MERCHANT_EMAIL, $attributes);
+        return $this->createEntityInTestAndLiveAndAsv(E::MERCHANT_EMAIL, $attributes);
     }
 }

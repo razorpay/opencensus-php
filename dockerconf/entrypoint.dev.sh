@@ -70,10 +70,13 @@ configure_db_dev(){
   php artisan payments_upi:dbr
   echo "$(date) Seeding Test database"
   APP_ENV=testing_docker php artisan rzp:dbr --install
+  echo "$(date) Seeding Account service database"
+  php artisan asv:dbr
   echo "$(date) Seeding Auth Live database"
   php artisan migrate --database auth --path vendor/razorpay/oauth/database/migrations
   echo "$(date) Seeding Auth Test database"
   APP_ENV=testing_docker php artisan migrate --database auth --path vendor/razorpay/oauth/database/migrations
+
 }
 
 start_apache(){

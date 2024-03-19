@@ -33,6 +33,7 @@ AT=
 # ERROR_MODULE repo info
 ERROR_MODULE_GIT_URL := "https://github.com/razorpay/"
 GIT_TOKEN := "$(cat /run/secrets/git_token)"
+
 DRONE_ERROR_MODULE_GIT_URL := "https://$(GIT_TOKEN)@github.com/razorpay/error-mapping-module"
 ifneq ($(GIT_TOKEN),)
 ERROR_MODULE_GIT_URL = $(DRONE_ERROR_MODULE_GIT_URL)

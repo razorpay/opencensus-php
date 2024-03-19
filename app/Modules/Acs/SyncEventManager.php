@@ -2,6 +2,7 @@
 
 namespace RZP\Modules\Acs;
 
+use Database\Connection;
 use Illuminate\Foundation\Application;
 
 use Razorpay\Trace\Logger as Trace;
@@ -13,6 +14,7 @@ use RZP\Models\Consumer\Service as Consumer;
 use RZP\Trace\TraceCode;
 use Razorpay\Outbox\Job\Core as Outbox;
 use RZP\Models\Merchant\Acs\AsvClient;
+use function Symfony\Component\String\b;
 
 /**
  * Class SyncEventManager
@@ -146,6 +148,8 @@ class SyncEventManager
                 break;
             case Mode::TEST:
                 $this->mergeOutboxJobs($this->testAccountIds, $accountId, $outboxJobs);
+                break;
+            case Connection::ASV_WRITER:
                 break;
             default:
                 $this->trace->count(

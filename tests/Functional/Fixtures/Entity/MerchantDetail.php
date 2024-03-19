@@ -16,14 +16,14 @@ class MerchantDetail extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $merchantDetail = $this->createEntityInTestAndLive('merchant_detail', $attributes);
+        $merchantDetail = $this->createEntityInTestAndLiveAndAsv('merchant_detail', $attributes);
 
         return $merchantDetail;
     }
 
     public function createAssociateMerchant(array $attributes = array())
     {
-        return $this->createEntityInTestAndLive('merchant_detail', $attributes);
+        return $this->createEntityInTestAndLiveAndAsv('merchant_detail', $attributes);
     }
 
     public function createSane(array $attributes = [])

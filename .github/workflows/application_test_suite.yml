@@ -57,6 +57,8 @@ jobs:
           DB_LIVE_DATABASE: api_live
           DB_TEST_DATABASE: api_test
           DB_AUTH_DATABASE: api_auth
+          ACCOUNT_SERVICE_HOST: mysql
+          ACCOUNT_SERVICE_DATABASE: account-service
           REDIS_HOST: redis
           QUERY_CACHE_REDIS_HOST: redis
           QUERY_CACHE_REDIS_PORT: 6379

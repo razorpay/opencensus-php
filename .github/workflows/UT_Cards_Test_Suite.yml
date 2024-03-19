@@ -55,6 +55,8 @@ jobs:
           DB_LIVE_DATABASE: api_live
           DB_TEST_DATABASE: api_test
           DB_AUTH_DATABASE: api_auth
+          ACCOUNT_SERVICE_HOST: mysql
+          ACCOUNT_SERVICE_DATABASE: account-service
           DB_UPI_PAYMENTS_MOCKED: "false"
           DB_UPI_PAYMENTS_LIVE_HOST: mysql
           DB_UPI_PAYMENTS_TEST_HOST: mysql

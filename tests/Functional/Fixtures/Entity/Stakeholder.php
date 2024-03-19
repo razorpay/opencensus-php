@@ -8,6 +8,6 @@ class Stakeholder extends Base
 {
     public function create(array $attributes = array())
     {
-        return $this->createEntityInTestAndLive(E::STAKEHOLDER, $attributes);
+        return $this->createEntityInTestAndLiveAndAsv(E::STAKEHOLDER, $attributes);
     }
 }

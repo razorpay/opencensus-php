@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Partner\Commission\Base;
 
+use Database\Connection;
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -37,6 +38,7 @@ class Setup
         $data['merchant_detail']['merchant_id'] = $data['id'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $data['merchant_detail']);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $data['merchant_detail']);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $data['merchant_detail']);
 
         $appData = [

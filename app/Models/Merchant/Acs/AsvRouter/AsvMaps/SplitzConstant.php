@@ -80,7 +80,5 @@ final class SplitzConstant
 
     const ASV_SPLITZ_EXPERIMENT_TIDB_MIGRATION = 'asv_splitz_experiment_tidb_migration';
 
-    const SPLITZ_SEND_WRITE_TO_ASV_DB = 'splitz_send_write_to_asv_db';
-
     const ASV_SPLITZ_EXPERIMENT_TIDB_COMPARISON = 'asv_splitz_experiment_tidb_comparison';
 }

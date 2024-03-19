@@ -1826,6 +1826,10 @@ class Entity
         self::ROLE_ACCESS_POLICY_MAP,
     ];
 
+    protected static $syncedInLiveAndTestAndASV = [
+        self::MERCHANT,
+    ];
+
     protected static $externalEntities = [
         self::SUBSCRIPTION,
         self::PAYOUT_LINK
@@ -2064,6 +2068,11 @@ class Entity
     public static function isEntitySyncedInLiveAndTest($entity)
     {
         return in_array($entity, self::$syncedInLiveAndTest, true);
+    }
+
+    public static function isEntitySyncedInLiveAndTestAndAsv($entity)
+    {
+        return in_array($entity, self::$syncedInLiveAndTestAndASV, true);
     }
 
     /**

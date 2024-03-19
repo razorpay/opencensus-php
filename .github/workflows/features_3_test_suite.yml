@@ -55,6 +55,8 @@ jobs:
           DB_LIVE_DATABASE: api_live
           DB_TEST_DATABASE: api_test
           DB_AUTH_DATABASE: api_auth
+          ACCOUNT_SERVICE_HOST: mysql
+          ACCOUNT_SERVICE_DATABASE: account-service
           REDIS_HOST: redis
           QUERY_CACHE_REDIS_HOST: redis
           QUERY_CACHE_REDIS_PORT: 6379
@@ -70,7 +72,7 @@ jobs:
           ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
-          LQEXT_TESTING_TXN_SKIP_COUNT: 3
+          LQEXT_TESTING_TXN_SKIP_COUNT: 4
           API_DOCS_FILE_NAME: feature_3_test_suite.json
           GIT_COMMIT_HASH: ${{ github.sha }}
           API_UI_TEST_SUMO_COLLECTION_URL_TEMP: ${{ secrets.API_UI_TEST_SUMO_COLLECTION_URL_TEMP }}
@@ -186,6 +188,8 @@ jobs:
           DB_LIVE_DATABASE: api_live
           DB_TEST_DATABASE: api_test
           DB_AUTH_DATABASE: api_auth
+          ACCOUNT_SERVICE_HOST: mysql
+          ACCOUNT_SERVICE_DATABASE: account-service
           REDIS_HOST: redis
           QUERY_CACHE_REDIS_HOST: redis
           QUERY_CACHE_REDIS_PORT: 6379
@@ -201,7 +205,7 @@ jobs:
           ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
-          LQEXT_TESTING_TXN_SKIP_COUNT: 3
+          LQEXT_TESTING_TXN_SKIP_COUNT: 4
           API_DOCS_FILE_NAME: feature_3_1_test_suite.json
           GIT_COMMIT_HASH: ${{ github.sha }}
           API_UI_TEST_SUMO_COLLECTION_URL_TEMP: ${{ secrets.API_UI_TEST_SUMO_COLLECTION_URL_TEMP }}

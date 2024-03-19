@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant\Partner;
 
+use Database\Connection;
 use DB;
 use Mail;
 use Event;
@@ -2750,6 +2751,13 @@ class PartnerTest extends OAuthTestCase
         $app = $this->createResellerApp();
 
         $this->fixtures->on('test')->create('merchant_detail:sane',[
+            'merchant_id' => $app->merchant_id,
+            'contact_name'=> 'randomName',
+            'contact_mobile'=> '9123456789',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane',[
             'merchant_id' => $app->merchant_id,
             'contact_name'=> 'randomName',
             'contact_mobile'=> '9123456789',

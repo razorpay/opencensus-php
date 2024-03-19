@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Partner;
 
+use Database\Connection;
 use Mockery;
 use ApiResponse;
 use DateTimeImmutable;
@@ -430,6 +431,7 @@ trait PartnerTrait
         $subMerchantDetails = $this->fixtures->merchant_detail->createMerchantDetail($subMerchantDetails);
 
         $this->fixtures->on('live')->merchant_detail->createSane($subMerchantDetails);
+        $this->fixtures->on(Connection::ASV_WRITER)->merchant_detail->createSane($subMerchantDetails);
         $this->fixtures->on('test')->merchant_detail->createSane($subMerchantDetails);
 
         $accessMapData = [

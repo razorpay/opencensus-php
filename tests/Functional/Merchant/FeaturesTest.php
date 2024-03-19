@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Database\Connection;
 use Mail;
 use Event;
 use Mockery;
@@ -1819,7 +1820,7 @@ Regards,
         $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $detailsAttributes);
-
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $detailsAttributes);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $detailsAttributes);
 
         $this->fixtures->user->createUserForMerchant($merchantId, [
@@ -2393,7 +2394,7 @@ Regards,
         $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $detailsAttributes);
-
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $detailsAttributes);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $detailsAttributes);
 
         $user = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'live');

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\OAuth;
 
+use Database\Connection;
 use Mockery;
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Client;
@@ -308,6 +309,7 @@ trait OAuthTrait
         ];
         $partnerDetails = $this->fixtures->merchant_detail->createMerchantDetail($partnerDetails);
         $this->fixtures->on('live')->merchant_detail->createSane($partnerDetails);
+        $this->fixtures->on(Connection::ASV_WRITER)->merchant_detail->createSane($partnerDetails);
         $this->fixtures->on('test')->merchant_detail->createSane($partnerDetails);
 
         $partnerUser = $partnerMerchant->primaryOwner();
@@ -339,7 +341,9 @@ trait OAuthTrait
 
         $subMerchantDetails = $this->fixtures->merchant_detail->createMerchantDetail($subMerchantDetails);
         $this->fixtures->on('live')->merchant_detail->createSane($subMerchantDetails);
+        $this->fixtures->on(Connection::ASV_WRITER)->merchant_detail->createSane($subMerchantDetails);
         $this->fixtures->on('test')->merchant_detail->createSane($subMerchantDetails);
+
 
         if ($userCreate)
         {

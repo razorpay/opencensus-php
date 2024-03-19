@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Partner\Commission;
 
+use Database\Connection;
 use DB;
 
 use App;
@@ -260,6 +261,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -292,6 +294,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -327,6 +330,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -355,6 +359,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -383,6 +388,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -444,6 +450,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -482,6 +489,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -520,7 +528,9 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
 
         $this->createConfigForPartnerApp(
             Constants::DEFAULT_PLATFORM_APP_ID,
@@ -559,6 +569,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -629,6 +640,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -768,6 +780,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -1193,6 +1206,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -1302,6 +1316,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -1390,6 +1405,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['created_at' => Invoice\Constants::INVOICE_TNC_UPDATED_TIMESTAMP]);
 
@@ -1439,6 +1455,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['created_at' => (Invoice\Constants::INVOICE_TNC_UPDATED_TIMESTAMP-1000)]);
 
@@ -1588,6 +1605,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -2450,6 +2468,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->startTest($testData);
@@ -2473,6 +2492,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -2513,6 +2533,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -2625,6 +2646,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->startTest($testData);
@@ -2724,6 +2746,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->createConfigForPartnerApp(
@@ -2930,6 +2953,7 @@ class CommissionCreateTest extends TestCase
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $merchantDetail);
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
 
         $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,

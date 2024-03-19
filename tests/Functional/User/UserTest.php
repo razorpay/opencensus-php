@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\User;
 
+use Database\Connection;
 use DB;
 use App;
 use Mail;
@@ -10853,6 +10854,7 @@ class UserTest extends TestCase
             'contact_name'=> 'Aditya',
             'business_type' => 2
         ]);
+
 
         $dummyReferralLink = $this->fixtures->create('referrals', ["product" => 'capital', 'merchant_id' => $dummyPartnerId]);
 

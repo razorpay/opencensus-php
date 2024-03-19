@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant\Partner;
 
 use Config;
+use Database\Connection;
 use DB;
 use Mail;
 use Event;
@@ -2048,6 +2049,10 @@ class PartnerExperienceTest extends OAuthTestCase
             'merchant_id' => $app->merchant_id
         ]);
 
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
         $this->fixtures->on('live')->create('merchant_detail:sane', [
             'merchant_id' => $app->merchant_id
         ]);
@@ -2399,6 +2404,7 @@ class PartnerExperienceTest extends OAuthTestCase
         ];
         $merchantDetails = $this->fixtures->merchant_detail->createMerchantDetail($merchantDetails);
         $this->fixtures->on('live')->merchant_detail->createSane($merchantDetails);
+        $this->fixtures->on(Connection::ASV_WRITER)->merchant_detail->createSane($merchantDetails);
         $this->fixtures->on('test')->merchant_detail->createSane($merchantDetails);
     }
 
@@ -3184,6 +3190,14 @@ class PartnerExperienceTest extends OAuthTestCase
             'contact_email'     => 'test@example.com',
         ]);
 
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane',[
+            'merchant_id'      => $app->merchant_id,
+            'contact_name'     => 'randomName',
+            'contact_mobile'   => '9123456789',
+            'business_type'    => 2,
+            'contact_email'    => 'test@example.com',
+        ]);
+
         $this->fixtures->on('live')->create('merchant_detail:sane',[
             'merchant_id'      => $app->merchant_id,
             'contact_name'     => 'randomName',
@@ -3191,6 +3205,7 @@ class PartnerExperienceTest extends OAuthTestCase
             'business_type'    => 2,
             'contact_email'    => 'test@example.com',
         ]);
+
 
         $userProduct = $product;
 

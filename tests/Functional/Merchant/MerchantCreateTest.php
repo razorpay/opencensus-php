@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Database\Connection;
 use DB;
 use App;
 use Mail;
@@ -1130,9 +1131,14 @@ class MerchantCreateTest extends TestCase
             'merchant_id' => $app->merchant_id
         ]);
 
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
         $this->fixtures->on('live')->create('merchant_detail:sane', [
             'merchant_id' => $app->merchant_id
         ]);
+
 
         $configAttributes = [
             PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
@@ -1191,6 +1197,10 @@ class MerchantCreateTest extends TestCase
             'merchant_id' => $app->merchant_id
         ]);
 
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
         $this->fixtures->on('live')->create('merchant_detail:sane', [
             'merchant_id' => $app->merchant_id
         ]);
@@ -1240,6 +1250,10 @@ class MerchantCreateTest extends TestCase
         $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator', '10000000000000', 'MY');
 
         $this->fixtures->on('test')->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', [
             'merchant_id' => $app->merchant_id
         ]);
 

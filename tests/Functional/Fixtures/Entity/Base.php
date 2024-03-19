@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Config;
+use Database\Connection;
 use Eloquent;
 use RZP\Models;
 use RZP\Constants\Entity as E;
@@ -133,8 +134,7 @@ class Base
 
     public function createEntity($entity, array $attributes = array())
     {
-        if (E::isEntitySyncedInLiveAndTest($entity))
-        {
+        if (E::isEntitySyncedInLiveAndTest($entity)) {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
 
@@ -172,6 +172,10 @@ class Base
 
     public function createEntityInTestAndLive($entity, $attributes = [])
     {
+        if (E::isEntitySyncedInLiveAndTestAndAsv($entity)) {
+            return $this->createEntityInTestAndLiveAndAsv($entity, $attributes);
+        }
+
         $this->eloquentUnguard();
 
         $entity = E::getEntityClass($entity);
@@ -196,11 +200,15 @@ class Base
 
     public function editEntityInTestAndLive($entity, $id, $attributes = array())
     {
+
+        if (E::isEntitySyncedInLiveAndTestAndAsv($entity)) {
+            return $this->editEntityInTestAndLiveAndAsv($entity, $id, $attributes);
+        }
+
         $this->eloquentUnguard();
 
         $entity = E::getEntityClass($entity);
         $entity = $entity::findOrFail($id);
-
         foreach ($attributes as $key => $value)
         {
             $entity[$key] = $value;
@@ -209,6 +217,35 @@ class Base
         $testEntity = clone $entity;
         $liveEntity = clone $entity;
 
+        $testEntity->setConnection('test')->saveOrFail();
+        $liveEntity->setConnection('live')->saveOrFail();
+
+        $entity->setRawAttributes($liveEntity->getAttributes(), true);
+
+        $this->eloquentReguard();
+
+        $this->fixtures->setDefaultConn();
+
+        return $entity;
+    }
+
+    public function editEntityInTestAndLiveAndAsv($entity, $id, $attributes = array())
+    {
+
+        $this->eloquentUnguard();
+
+        $entity = E::getEntityClass($entity);
+        $entity = $entity::findOrFail($id);
+        foreach ($attributes as $key => $value)
+        {
+            $entity[$key] = $value;
+        }
+
+        $testEntity = clone $entity;
+        $liveEntity = clone $entity;
+        $asvEntity = clone $entity;
+
+        $asvEntity->setConnection(Connection::ASV_WRITER)->saveOrFail();
         $testEntity->setConnection('test')->saveOrFail();
         $liveEntity->setConnection('live')->saveOrFail();
 
@@ -308,4 +345,31 @@ class Base
     {
         return substr(get_called_class(), 0, strrpos(get_called_class(), '\\'));
     }
+
+    public function createEntityInTestAndLiveAndAsv($entity, $attributes = [])
+    {
+        $this->eloquentUnguard();
+
+        $entity = E::getEntityClass($entity);
+
+        $entity = Factory::build($entity, $attributes);
+
+        $asvEntity = unserialize(serialize($entity));
+        $testEntity = unserialize(serialize($entity));
+        $liveEntity = unserialize(serialize($entity));
+
+        $testEntity->setConnection('test')->saveOrFail();
+        $asvEntity->setConnection(Connection::ASV_WRITER)->saveOrFail();
+        $liveEntity->setConnection('live')->saveOrFail();
+
+        $entity->exists = true;
+        $entity->setRawAttributes($liveEntity->getAttributes(), true);
+
+        $this->eloquentReguard();
+
+        $this->fixtures->setDefaultConn();
+
+        return $entity;
+    }
 }
+

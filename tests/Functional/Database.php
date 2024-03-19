@@ -26,6 +26,7 @@ class Database
      */
     protected static $dbConnections = [
         'live',
+        'account_service_writer',
         'test',
         'auth',
     ];
@@ -38,8 +39,8 @@ class Database
 
         if ($this->isPaymentUpiMocked() === false)
         {
-            self::$dbConnections[3] = 'payments_upi_live';
-            self::$dbConnections[4] = 'payments_upi_test';
+            self::$dbConnections[4] = 'payments_upi_live';
+            self::$dbConnections[5] = 'payments_upi_test';
         }
     }
 
@@ -157,6 +158,9 @@ class Database
         Artisan::call('migrate', ['--database' => 'live_migration', '--path' => 'database/migrations/p2p', '--force' => true]);
         Artisan::call('migrate', ['--database' => 'test_migration', '--path' => 'database/migrations/p2p', '--force' => true]);
 
+        // Run account service migration
+        Artisan::call('migrate', ['--database' => 'account_service_writer', '--path' => 'database/migrations/asv', '--force' => true]);
+
         if ($this->isPaymentUpiMocked() === false)
         {
             $path = 'database/migrations/payments_upi';
@@ -195,6 +199,9 @@ class Database
 
         $authDb = env('DB_AUTH_DATABASE', 'auth');
         $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$authDb}`");
+
+        $accountServiceDb = env('ACCOUNT_SERVICE_DATABASE', 'account_service');
+        $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$accountServiceDb}`");
 
         if ($this->isPaymentUpiMocked() === false)
         {
