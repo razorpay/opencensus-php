@@ -92,8 +92,6 @@ class Core extends Base\Core
 
         Entity::DEBIT_EMI_PROVIDERS  => [
 
-            DebitProvider::ICIC => '1'
-
         ]
     ];
 
