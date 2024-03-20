@@ -224,6 +224,8 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
     private const     MERCHANT_WHITELISTED_DOMAINS         = 'merchant.whitelisted_domains';
     private const     MERCHANT_WHITELISTED_IPS_LIVE        = 'merchant.whitelisted_ips_live';
     private const     MERCHANT_WHITELISTED_IPS_TEST        = 'merchant.whitelisted_ips_test';
+    private const     MERCHANT_COUNTRY_CODE                = 'merchant.country_code';
+    private const     MERCHANT_CURRENCY                    = 'merchant.currency';
     private const     RESPONSE_FIELDS_ROLE_MAPPING         = [
 
         self::CONTACT_NAME                             => [
@@ -1338,6 +1340,20 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
             Role::SELLERAPP
         ],
         self::MERCHANT_WHITELISTED_IPS_TEST            => [
+
+            Role::OPERATIONS,
+            Role::FINANCE,
+            Role::SUPPORT,
+            Role::SELLERAPP
+        ],
+        self::MERCHANT_COUNTRY_CODE                    => [
+
+            Role::OPERATIONS,
+            Role::FINANCE,
+            Role::SUPPORT,
+            Role::SELLERAPP
+        ],
+        self::MERCHANT_CURRENCY                        => [
 
             Role::OPERATIONS,
             Role::FINANCE,
