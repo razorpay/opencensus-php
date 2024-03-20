@@ -1331,7 +1331,7 @@ class Service extends Base\Service
 
         // slack details to send
         $link = "https://admin-dashboard.razorpay.com/admin/entity/ufh.files/". $this->app['rzp.mode']. "/" . $response[GatewayConstants::ID];
-        $team = "<!subteam^S039KPJ0LTS>"; // cb oncall
+        $team = "<!subteam^S039KPJ0LTS> <!subteam^S06G1542BME> <!subteam^S01AKDC3XJ4> "; // @cross-border-oncall, @cross-border-product, @finops_settlements in order
         $text = $team . " JPMC Reverse File Received: ". "<$link>";
         $data = [
             'ufh_file_id'   => $response[GatewayConstants::ID],
