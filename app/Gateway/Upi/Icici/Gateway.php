@@ -50,6 +50,7 @@ class Gateway extends Base\Gateway
     const VPA_LENGTH                    = 20;
     const QR_CODE_TIME_FORMAT           = 'd/m/Y H:i:s';
     const QR_NOT_UPDATE                 = 'N';
+    const RAZORPAY                      = 'Razorpay';
 
     use AuthorizeFailed;
     use Base\RecurringTrait;
@@ -2023,7 +2024,7 @@ class Gateway extends Base\Gateway
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $merchantReference,
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
-            Fields::ONLINE_REFUND                   => $this->isOnlineRefund($refund),
+            Fields::ONLINE_REFUND                   => $this->isOnlineRefund($refund, $payment['settled_by'] ?? ''),
         ];
 
         return $data;
@@ -2072,11 +2073,17 @@ class Gateway extends Base\Gateway
      *
      * @return string
      */
-    protected function isOnlineRefund(array $refund)
+    protected function isOnlineRefund(array $refund, $settledBy)
     {
-        if ($refund['attempts'] < 3)
+
+        // Allow OnlineRefund only for DS Merchants
+        if ((empty($settledBy) === false) and
+            ($settledBy !== self::RAZORPAY))
         {
-            return 'Y';
+            if ($refund['attempts'] < 3)
+            {
+                return 'Y';
+            }
         }
 
         return 'N';
