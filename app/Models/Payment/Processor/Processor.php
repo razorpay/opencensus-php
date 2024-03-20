@@ -10894,6 +10894,19 @@ class Processor
             $isReminderTimeoutPayment = false;
         }
 
+        if($payment->isUpiAutoRecurring() === true)
+        {
+            // it will send pre-debit notification, no verify call required for pre-debit
+            // but if notification is already created then will set verify reminder
+            $notificationCore = new Notifications\Core();
+            $notificationCount = $notificationCore->fetchNotificationCount($payment->getApiOrderId());
+
+            if($notificationCount === 0)
+            {
+                $isReminderVerifyPayment = false;
+            }
+        }
+
         if (in_array($method, Payment\Method::$timeoutDisabledMethods) === true)
         {
             $isReminderTimeoutPayment = false;

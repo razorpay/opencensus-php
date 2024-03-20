@@ -67,6 +67,16 @@ trait UpiRecurring
                 try
                 {
                     $response = $this->callGatewayFunction(Payment\Action::DEBIT, $input);
+                    
+                    if(($payment->getIsPushedToKafka() === null) or ($payment->getIsPushedToKafka() === Constants::TIMEOUT_VIA_SCHEDULER))
+                    {
+                        // As we haven't set verify payment at the time of pre-debit, We will set it now for debit
+                        $startTime = microtime(true);
+                        (new Payment\Core())->pushPaymentToKafka($payment, $startTime, false, true);
+
+                        // As timeout was already set at the time of payment creation
+                        $payment->setIsPushedToKafka(Constants::VERIFY_AND_TIMEOUT_VIA_SCHEDULER);
+                    }
 
                     return $this->processDebitGatewaySuccess($payment, $response);
                 }
