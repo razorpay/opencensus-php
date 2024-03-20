@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Balance\AccountType;
 
 class Mode
@@ -16,19 +17,27 @@ class Mode
     const IFT       = 'IFT';
     const UPI       = 'UPI';
     const AMAZONPAY = 'amazonpay';
+    const DUITNOW   = 'duitnow';
+    const IBG       = 'IBG';
 
     // We will be storing mode 'card' for payouts through
     // M2P, but we will be supporting 'Card', 'cArd', 'CaRD' etc in request body
     const CARD  = 'card';
 
     protected static $allSupportedModes = [
-        self::RTGS,
-        self::IMPS,
-        self::NEFT,
-        self::IFT,
-        self::UPI,
-        self::AMAZONPAY,
-        self::CARD,
+        Constants\Country::IN => [
+            self::RTGS,
+            self::IMPS,
+            self::NEFT,
+            self::IFT,
+            self::UPI,
+            self::AMAZONPAY,
+            self::CARD,
+        ],
+        Constants\Country::MY => [
+            self::DUITNOW,
+            self::IBG,
+        ]
     ];
 
     protected static $supportedModesForSmartRouting = [
@@ -39,9 +48,9 @@ class Mode
         self::UPI,
     ];
 
-    public static function validateMode(string $mode)
+    public static function validateMode(string $mode, $merchantCountry = Constants\Country::IN)
     {
-        if (self::isValid($mode) === false)
+        if (self::isValid($mode, $merchantCountry) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_INVALID_MODE,
@@ -201,6 +210,12 @@ class Mode
                         self::IFT,
                     ],
                 ],
+                Settlement\Channel::OCBC    => [
+                    Constants\Entity::BANK_ACCOUNT  => [
+                        self::DUITNOW,
+                        self::IBG,
+                    ]
+                ],
             ],
             AccountType::DIRECT => [
                 Settlement\Channel::RBL   => [
@@ -271,17 +286,18 @@ class Mode
         ];
     }
 
-    protected static function isValid(string $mode): bool
+    protected static function isValid(string $mode, string $merchantCountry): bool
     {
-        return (in_array($mode, self::$allSupportedModes) === true);
+        return (in_array($mode, self::$allSupportedModes[$merchantCountry]) === true);
     }
 
     public static function validateChannelAndModeForPayouts(string $channel = null,
                                                             string $destinationType = null,
                                                             string $mode = null,
-                                                            string $accountType = null) : bool
+                                                            string $accountType = null,
+                                                            Merchant $merchant = null) : bool
     {
-        Settlement\Channel::validate($channel);
+        Settlement\Channel::validate($channel, $merchant);
 
         $allChannelsWithModes = [];
         $modesSupportedForChannel = [];

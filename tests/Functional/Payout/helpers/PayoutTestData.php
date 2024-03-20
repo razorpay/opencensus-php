@@ -34,6 +34,174 @@ return [
                 'entity'          => 'payout',
                 'amount'          => 2000000,
                 'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+    'testCreatePayoutMY' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                "account_number" => "2224440041626905",
+                "amount" => 1000,
+                "currency" => "MYR",
+                "mode" => "duitnow",
+                "purpose" => "payout",
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "ifsc" => "SBIN0005943",
+                        "name" => "Gaurav Kumar",
+                        "bank_identifier" => "RAZRB000000",
+                        "account_number" => "1121431121541121"
+                    ],
+                    "contact" => [
+                        "name" => "Gaurav Kumar",
+                        "email" => "gaurav.kumar@example.com",
+                        "contact" => "9876543210",
+                        "type" => "employee",
+                        "reference_id" => "Acme Contact ID 12345",
+                        "notes" => [
+                            "notes_key_1" => "Tea, Earl Grey, Hot",
+                            "notes_key_2" => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "queue_if_low_balance" => true,
+                "reference_id" => "Acme Transaction ID 12345",
+                "narration" => "Acme Corp Fund Transfer",
+                "notes" => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 1000,
+                'currency'        => 'MYR',
+                'narration'       => 'Acme Corp Fund Transfer',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'mode'            => 'duitnow',
+                'tax'             => 0,
+                'fees'            => 500,
+                'notes'           => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ],
+            ],
+        ],
+    ],
+    'testCreatePayoutPassingBothIFSCAndBankIdentifierCode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                "account_number" => "2224440041626905",
+                "amount" => 1000,
+                "currency" => "MYR",
+                "mode" => "duitnow",
+                "purpose" => "payout",
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        'ifsc' => 'YESB0CMSNOC',
+                        "name" => "Gaurav Kumar",
+                        "bank_identifier" => "RAZRB000000",
+                        "account_number" => "1121431121541121"
+                    ],
+                    "contact" => [
+                        "name" => "Gaurav Kumar",
+                        "email" => "gaurav.kumar@example.com",
+                        "contact" => "9876543210",
+                        "type" => "employee",
+                        "reference_id" => "Acme Contact ID 12345",
+                        "notes" => [
+                            "notes_key_1" => "Tea, Earl Grey, Hot",
+                            "notes_key_2" => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "queue_if_low_balance" => true,
+                "reference_id" => "Acme Transaction ID 12345",
+                "narration" => "Acme Corp Fund Transfer",
+                "notes" => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 1000,
+                'currency'        => 'MYR',
+                'narration'       => 'Acme Corp Fund Transfer',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'mode'            => 'duitnow',
+                'tax'             => 0,
+                'fees'            => 500,
+                'notes'           => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ],
+            ],
+        ],
+    ],
+    'testCreatePayoutWithoutIFSCAndBankIdentifierCode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                "account_number" => "2224440041626905",
+                "amount" => 1000,
+                "currency" => "MYR",
+                "mode" => "duitnow",
+                "purpose" => "payout",
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "name" => "Gaurav Kumar",
+                        "account_number" => "1121431121541121"
+                    ],
+                    "contact" => [
+                        "name" => "Gaurav Kumar",
+                        "email" => "gaurav.kumar@example.com",
+                        "contact" => "9876543210",
+                        "type" => "employee",
+                        "reference_id" => "Acme Contact ID 12345",
+                        "notes" => [
+                            "notes_key_1" => "Tea, Earl Grey, Hot",
+                            "notes_key_2" => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "queue_if_low_balance" => true,
+                "reference_id" => "Acme Transaction ID 12345",
+                "narration" => "Acme Corp Fund Transfer",
+                "notes" => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
                 'narration'       => 'Batman',
                 'purpose'         => 'refund',
@@ -47,7 +215,275 @@ return [
             ],
         ],
     ],
-
+    'testCreatePayoutWithInvalidBankIdentifierCode1' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                "account_number" => "2224440041626905",
+                "amount" => 1000,
+                "currency" => "MYR",
+                "mode" => "duitnow",
+                "purpose" => "payout",
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "ifsc" => "SBIN0005943",
+                        "name" => "Gaurav Kumar",
+                        "account_number" => "1121431121541121",
+                        "bank_identifier" => "djaljfsdklaj33423424jkljlkjkl32j2klj42kljkl23242mn432n4kl23nkl"
+                    ],
+                    "contact" => [
+                        "name" => "Gaurav Kumar",
+                        "email" => "gaurav.kumar@example.com",
+                        "contact" => "9876543210",
+                        "type" => "employee",
+                        "reference_id" => "Acme Contact ID 12345",
+                        "notes" => [
+                            "notes_key_1" => "Tea, Earl Grey, Hot",
+                            "notes_key_2" => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "queue_if_low_balance" => true,
+                "reference_id" => "Acme Transaction ID 12345",
+                "narration" => "Acme Corp Fund Transfer",
+                "notes" => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    'testCreatePayoutWithInvalidBankIdentifierCode2' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                "account_number" => "2224440041626905",
+                "amount" => 1000,
+                "currency" => "MYR",
+                "mode" => "duitnow",
+                "purpose" => "payout",
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "ifsc" => "SBIN0005943",
+                        "name" => "Gaurav Kumar",
+                        "account_number" => "1121431121541121",
+                        "bank_identifier" => "2"
+                    ],
+                    "contact" => [
+                        "name" => "Gaurav Kumar",
+                        "email" => "gaurav.kumar@example.com",
+                        "contact" => "9876543210",
+                        "type" => "employee",
+                        "reference_id" => "Acme Contact ID 12345",
+                        "notes" => [
+                            "notes_key_1" => "Tea, Earl Grey, Hot",
+                            "notes_key_2" => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "queue_if_low_balance" => true,
+                "reference_id" => "Acme Transaction ID 12345",
+                "narration" => "Acme Corp Fund Transfer",
+                "notes" => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+    'testCreatePayoutWithInvalidCurrency' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                "account_number" => "2224440041626905",
+                "amount" => 1000,
+                "currency" => "USD",
+                "mode" => "duitnow",
+                "purpose" => "payout",
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "name" => "Gaurav Kumar",
+                        "account_number" => "1121431121541121"
+                    ],
+                    "contact" => [
+                        "name" => "Gaurav Kumar",
+                        "email" => "gaurav.kumar@example.com",
+                        "contact" => "9876543210",
+                        "type" => "employee",
+                        "reference_id" => "Acme Contact ID 12345",
+                        "notes" => [
+                            "notes_key_1" => "Tea, Earl Grey, Hot",
+                            "notes_key_2" => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "queue_if_low_balance" => true,
+                "reference_id" => "Acme Transaction ID 12345",
+                "narration" => "Acme Corp Fund Transfer",
+                "notes" => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+    'testCreatePayoutWithIFSCForMY' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                "account_number" => "2224440041626905",
+                "amount" => 1000,
+                "currency" => "MYR",
+                "mode" => "duitnow",
+                "purpose" => "refund",
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "name" => "Gaurav Kumar",
+                        "ifsc_code" => "ICIC0000104",
+                        "account_number" => "1121431121541121"
+                    ],
+                    "contact" => [
+                        "name" => "Gaurav Kumar",
+                        "email" => "gaurav.kumar@example.com",
+                        "contact" => "9876543210",
+                        "type" => "employee",
+                        "reference_id" => "Acme Contact ID 12345",
+                        "notes" => [
+                            "notes_key_1" => "Tea, Earl Grey, Hot",
+                            "notes_key_2" => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "queue_if_low_balance" => true,
+                "reference_id" => "Acme Transaction ID 12345",
+                "narration" => "Acme Corp Fund Transfer",
+                "notes" => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+    'testCreatePayoutWithBankIdentifierCodeForIN' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                "account_number" => "2224440041626905",
+                "amount" => 1000,
+                "currency" => "INR",
+                "mode" => "IMPS",
+                "purpose" => "refund",
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "ifsc" => "SBIN0005943",
+                        "name" => "Gaurav Kumar",
+                        "bank_identifier" => "SBIN0005943",
+                        "account_number" => "1121431121541121"
+                    ],
+                    "contact" => [
+                        "name" => "Gaurav Kumar",
+                        "email" => "gaurav.kumar@example.com",
+                        "contact" => "9876543210",
+                        "type" => "employee",
+                        "reference_id" => "Acme Contact ID 12345",
+                        "notes" => [
+                            "notes_key_1" => "Tea, Earl Grey, Hot",
+                            "notes_key_2" => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "queue_if_low_balance" => true,
+                "reference_id" => "Acme Transaction ID 12345",
+                "narration" => "Acme Corp Fund Transfer",
+                "notes" => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'narration'       => 'Acme Corp Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 90,
+                'fees'            => 590,
+                'notes'           => [
+                    "notes_key_1" => "Beam me up Scotty",
+                    "notes_key_2" => "Engage"
+                ],
+            ],
+        ],
+    ],
     'testCreatePayoutForTaxRecalculation' => [
         'request'  => [
             'method'  => 'POST',
@@ -8584,7 +9020,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected currency is invalid.',
+                    'description' => "Payout and Merchant's acceptance currency should be same, Payout's currency : USD, Merchant's currency INR",
                 ],
             ],
             'status_code' => 400,

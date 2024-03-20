@@ -142,6 +142,8 @@ class Validator extends Base\Validator
 
         $destinationType = $attempt->getDestinationType();
 
+        $merchant = $attempt->merchant;
+
         $mode = $attempt->getMode();
 
         $channel = $attempt->getChannel();
@@ -224,7 +226,7 @@ class Validator extends Base\Validator
             }
         }
 
-        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode, $merchant);
 
         if ($valid === false)
         {

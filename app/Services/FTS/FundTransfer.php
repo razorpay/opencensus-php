@@ -701,6 +701,7 @@ class FundTransfer extends Base
         $request[Constants::ACCOUNT] = [
                 Constants::BANK_ACCOUNT => [
                         Constants::IFSC_CODE                  => $this->fta->bankAccount->getIfscCode(),
+                        Constants::BANK_IDENTIFIER            => $this->fta->bankAccount->getBankIdentifier(),
                         Constants::ACCOUNT_TYPE               => $accountType,
                         Constants::ACCOUNT_NUMBER             => $this->fta->bankAccount->getAccountNumber(),
                         Constants::BENEFICIARY_NAME           => $this->fta->bankAccount->getBeneficiaryName(),
@@ -711,6 +712,7 @@ class FundTransfer extends Base
                         Constants::IS_VIRTUAL_ACCOUNT         => $this->fta->bankAccount->isVirtual(),
                         Constants::BENEFICIARY_ADDRESS        => $this->fta->bankAccount->getBeneficiaryAddress1(),
                         Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry(),
+                        Constants::IDENTIFIER_TYPE            => $this->fta->bankAccount->getIdentifierType(),
                 ],
         ];
 

@@ -118,6 +118,10 @@ final class Constants
 
     const BENEFICIARY_NAME               = 'beneficiary_name';
 
+    const BANK_IDENTIFIER                = 'bank_identifier';
+
+    const IDENTIFIER_TYPE                = 'identifier_type';
+
     const BENEFICIARY_CODE               = 'beneficiary_code';
 
     const BENEFICIARY_CITY               = 'beneficiary_city';

@@ -4165,6 +4165,34 @@ class MerchantTest extends TestCase
         $this->assertEquals($beforeCount, $afterCount);
     }
 
+
+    public function testUpdateBankAccountSyncViaPennyTestingForMY()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTestingSyncFlowMY'];
+
+        Config(['services.bvs.mock' => true]);
+
+        Config(['services.bvs.sync.flow' => true]);
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $this->fixtures->merchant->edit($merchantId, ['country_code' => 'MY']);
+
+        $beforeCount = $this->getBankAccountsCount($merchantId);
+
+        $this->startTest();
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'ICIC0001206',
+            'account_number'    => '0000009999999999999',
+        ]);
+
+        $afterCount = $this->getBankAccountsCount($merchantId);
+
+        $this->assertEquals($beforeCount, $afterCount);
+    }
+
     public function testUpdateBankAccountViaPennyTestingWithoutExistingBankAccountFail()
     {
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, false);

@@ -2476,6 +2476,8 @@ class Base extends BaseCore
 
         $payout = (new Payout\Entity);
 
+        $payout->merchant()->associate($this->merchant);
+
         $queuePayoutCreateRequest = array_pull($input, Payout\Entity::QUEUE_PAYOUT_CREATE_REQUEST, false);
 
         $feeType = array_pull($input, Payout\Entity::FEE_TYPE, null);
@@ -2487,8 +2489,6 @@ class Base extends BaseCore
         $this->runInputValidations($payout, $input);
 
         $this->processPayoutLinkId($payout, $input);
-
-        $payout->merchant()->associate($this->merchant);
 
         $payout->customer()->associate($this->customer);
 
@@ -4115,6 +4115,12 @@ class Base extends BaseCore
 
             $payout = (new Payout\Entity);
 
+            $merchantId = $params[Payout\Entity::MERCHANT_ID];
+
+            $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+            $payout->merchant()->associate($merchant);
+
             $payout->setId($payoutId);
 
             $payout->setIsPayoutService(1);
@@ -4141,12 +4147,6 @@ class Base extends BaseCore
             {
                 $payout->setUserId($params[Entity::USER_ID]);
             }
-
-            $merchantId = $params[Payout\Entity::MERCHANT_ID];
-
-            $merchant = (new Merchant\Repository)->findOrFail($merchantId);
-
-            $payout->merchant()->associate($merchant);
 
             /** @var Balance\Entity $balance */
             $balance = $this->repo->balance->findOrFailById($params[Entity::BALANCE_ID]);

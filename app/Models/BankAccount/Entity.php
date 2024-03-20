@@ -7,6 +7,7 @@ use RZP\Models\Vpa;
 use RZP\Models\Base;
 use Razorpay\IFSC\IFSC;
 use RZP\Models\Merchant;
+use RZP\Constants\Country;
 use RZP\Models\VirtualAccount;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -64,6 +65,11 @@ class Entity extends Base\PublicEntity
     const MPIN_SET                      = 'mpin_set';
 
     const IFSC_CODE_LENGTH              = 11;
+
+    const BANK_IDENTIFIER_MAX_LENGTH    = 64;
+
+    const IDENTIFIER_TYPE_MAX_LENGTH    = 32;
+
     const BANK_CODE_LENGTH              = 4;
 
     const ACCOUNT_NUMBER_LENGTH         = 16;
@@ -87,11 +93,18 @@ class Entity extends Base\PublicEntity
     //
     const TRANSFER_MODE = 'transfer_mode';
 
+    const BANK_IDENTIFIER = "bank_identifier";
+    const IDENTIFIER_TYPE = "identifier_type";
+
     protected static $sign      = 'ba';
 
     protected $primaryKey = self::ID;
 
     protected $entity = 'bank_account';
+
+    protected static $modifiers = [
+        self::BANK_IDENTIFIER
+    ];
 
     protected $fillable = [
         self::ENTITY_ID,
@@ -114,6 +127,9 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_CITY,
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_PIN,
+        self::BANK_IDENTIFIER,
+        self::IDENTIFIER_TYPE
+
     ];
 
     protected $visible = [
@@ -144,6 +160,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::MOBILE_BANKING_ENABLED,
         self::CREATED_AT,
+        self::IDENTIFIER_TYPE,
+        self::BANK_IDENTIFIER
     ];
 
     protected $public = [
@@ -154,6 +172,8 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::NOTES,
         self::ACCOUNT_NUMBER,
+        self::BANK_IDENTIFIER,
+        self::IDENTIFIER_TYPE
     ];
 
     protected $hosted = [
@@ -186,6 +206,7 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         self::ID,
         self::BENEFICIARY_COUNTRY,
+        self::IDENTIFIER_TYPE,
     ];
 
     protected $casts = [
@@ -204,12 +225,27 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
     ];
 
+    protected static $identifierTypes = [
+        Country::IN => Constants::IFSC,
+        Country::MY => Constants::BIC
+    ];
+
+    public static $IfscAllowedCountries = [
+        Country::IN
+    ];
+
+    public static $beneRegisrationRequiredCountries = [
+        Country::IN
+    ];
+
     protected $generateIdOnCreate = true;
 
     public function build(array $input = [], string $operation = 'addBankAccount')
     {
         try
         {
+            $this->modify($input);
+
             $this->getValidator()->validateInput($operation, $input);
 
             $this->generate($input);
@@ -232,6 +268,39 @@ class Entity extends Base\PublicEntity
         $beneficiaryCode = $this->getKotakBeneficaryCode();
 
         $this->setAttribute(self::BENEFICIARY_CODE, $beneficiaryCode);
+    }
+
+
+    public function generateIdentifierType()
+    {
+        $merchantCountry = Country::IN;
+
+        if ($this->merchant)
+        {
+            $merchantCountry = $this->merchant->getCountry();
+        }
+
+        $merchantCountry = strtolower($merchantCountry);
+
+        $this->setAttribute(self::IDENTIFIER_TYPE, self::$identifierTypes[$merchantCountry]);
+    }
+
+    protected function modifyBankIdentifier(array & $input)
+    {
+        $merchantCountry = Country::IN;
+
+        if (isset($this->merchant) === true)
+        {
+            $merchantCountry = strtolower($this->merchant->getCountry());
+        }
+
+        $ifscCode = $input[self::IFSC_CODE] ?? $input[self::IFSC];
+
+        if (isset($ifscCode) === true &&
+            in_array($merchantCountry, Entity::$IfscAllowedCountries) === true)
+        {
+            $input[self::BANK_IDENTIFIER] = $ifscCode;
+        }
     }
 
     protected function generateBeneficiaryCountry($input)
@@ -341,6 +410,26 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function setPublicBankIdentifierAttribute(array & $attributes)
+    {
+        $merchant = $this->merchant;
+
+        if (isset($merchant) === true && in_array(strtolower($merchant->getCountry()), self::$IfscAllowedCountries) === false)
+        {
+            $attributes[self::BANK_IDENTIFIER] = $this->getBankIdentifier();
+        }
+    }
+
+    protected function setPublicIdentifierTypeAttribute(array & $attributes)
+    {
+        $merchant = $this->merchant;
+
+        if (isset($merchant) === true && in_array(strtolower($merchant->getCountry()), self::$IfscAllowedCountries) === false)
+        {
+            $attributes[self::IDENTIFIER_TYPE] = $this->getIdentifierType();
+        }
+    }
+
     public function settlements()
     {
         return $this->hasMany('RZP\Models\Settlement\Entity');
@@ -369,6 +458,16 @@ class Entity extends Base\PublicEntity
     public function getIfscCode()
     {
         return $this->getAttribute(self::IFSC_CODE);
+    }
+
+    public function getBankIdentifier()
+    {
+        return $this->getAttribute(self::BANK_IDENTIFIER);
+    }
+
+    public function getIdentifierType()
+    {
+        return $this->getAttribute(self::IDENTIFIER_TYPE);
     }
 
     public function getBankName()
@@ -479,6 +578,16 @@ class Entity extends Base\PublicEntity
     public function setIfsc($ifsc)
     {
         return $this->setAttribute(self::IFSC_CODE, $ifsc);
+    }
+
+    public function setBankIdentifier($bankIdentifier)
+    {
+        return $this->setAttribute(self::BANK_IDENTIFIER, $bankIdentifier);
+    }
+
+    public function setIdentifierType($identifierType)
+    {
+        return $this->setAttribute(self::IDENTIFIER_TYPE, $identifierType);
     }
 
     public function setBeneficiaryName(string $name)

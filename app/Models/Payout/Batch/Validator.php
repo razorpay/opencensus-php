@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Batch;
 
 use RZP\Base;
 use RZP\Models\Payout;
+use RZP\Constants\Country;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\FundAccount\Entity as FaEntity;
 
@@ -81,6 +82,16 @@ class Validator extends Base\Validator
 
     protected function validateMode($attribute, $value)
     {
-        Payout\Mode::validateMode($value);
+        $entity = $this->entity;
+
+        $merchantCountry = Country::IN;
+
+        if (isset($entity) === true &&
+            isset($entity->merchant) == true)
+        {
+            $merchantCountry = strtolower($entity->merchant->getCountry());
+        }
+
+        Payout\Mode::validateMode($value, $merchantCountry);
     }
 }

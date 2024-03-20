@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Country;
 use RZP\Models\Bank\BankInfo;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Bank\IFSC as BankIFSC;
@@ -21,9 +22,11 @@ class Validator extends Base\Validator
         '4104115000012344', '1921238323624830', '31260200000646', '201002552973'
     ];
 
-    const INVALID_IFSC_CODE_MESSAGE         = 'Invalid IFSC Code in Bank Account';
-    const INVALID_BANK_CODE_MESSAGE         = 'Invalid Bank Code in Bank Account';
-    const INVALID_ADDRESS_PROOF_URL_MESSAGE = 'Invalid Address Proof File in Details or Invalid Auth';
+    const INVALID_IFSC_CODE_MESSAGE                    = 'Invalid IFSC Code in Bank Account';
+    const INVALID_BANK_IDENTIFIER_CODE_MESSAGE         = 'Invalid Bank Identifier Code in Bank Account';
+    const INVALID_BANK_CODE_MESSAGE                    = 'Invalid Bank Code in Bank Account';
+    const INVALID_IDENTIFIER_CODE_MESSAGE              = 'Invalid Bank Identifier type in Bank Account';
+    const INVALID_ADDRESS_PROOF_URL_MESSAGE            = 'Invalid Address Proof File in Details or Invalid Auth';
 
     protected static $fileUploadRules = [
         Detail\Entity::ADDRESS_PROOF_URL => 'required|file|max:50000|mime_types:'
@@ -54,10 +57,15 @@ class Validator extends Base\Validator
                                             . 'image/jpeg,'
     ];
 
+    /*
+     * @Todo Once the ifsc code is decomposed, then will have to add the same validations in the bank_identifier as well
+     * based on the type of code we are getting like BIC for MY, IFSC for IN
+     */
     protected static $addBankAccountRules = [
         Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
         Entity::ENTITY_ID                       => 'sometimes',
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
+        Entity::BANK_IDENTIFIER                 => 'sometimes|string|min:8|max:11',
         Entity::ACCOUNT_NUMBER                  => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35|custom',
         Entity::BENEFICIARY_NAME                => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:3,120|string',
         Entity::ACCOUNT_TYPE                    => 'sometimes|nullable|string|custom',
@@ -77,9 +85,14 @@ class Validator extends Base\Validator
         Entity::TYPE                            => 'sometimes|string',
     ];
 
+    /*
+     * @Todo Once the ifsc code is decomposed, then will have to add the same validations in the bank_identifier as well
+     * based on the type of code we are getting like BIC for MY, IFSC for IN
+     */
     protected static $addInternationalBankAccountRules = [
         Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
         Entity::ENTITY_ID                       => 'sometimes',
+        Entity::BANK_IDENTIFIER                 => 'sometimes|string|min:8|max:11',
         Entity::IFSC_CODE                       => 'required|alpha_num|between:8,11',
         Entity::ACCOUNT_NUMBER                  => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35|custom',
         Entity::BENEFICIARY_NAME                => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:4,120|string',
@@ -108,13 +121,23 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_NAME    => 'sometimes|between:4,120|string|custom',
     ];
 
+    /*
+     * @Todo Once the ifsc code is decomposed, then will have to add the same validations in the bank_identifier as well
+     * based on the type of code we are getting like BIC for MY, IFSC for IN
+     */
     protected static $addVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable|max:13',
+        Entity::BANK_IDENTIFIER       => 'sometimes|alpha_num|min:8|max:11',
         Entity::ACCOUNT_NUMBER        => 'required|regex:/^[a-zA-Z0-9-]+$/|between:4,35',
         Entity::BENEFICIARY_NAME      => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]*/|max:40|string',
     ];
 
+    /*
+     * @Todo Once the ifsc code is decomposed, then will have to add the same validations in the bank_identifier as well
+     * based on the type of code we are getting like BIC for MY, IFSC for IN
+     */
     protected static $editVirtualBankAccountRules = [
+        Entity::BANK_IDENTIFIER       => 'sometimes|alpha_num|min:8|max:11',
         Entity::IFSC_CODE             => 'sometimes|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER        => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|max:35',
         Entity::BENEFICIARY_NAME      => 'sometimes|string|max:100',
@@ -126,33 +149,53 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_NAME      => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:40|string',
     ];
 
+    /*
+     * @Todo Once the ifsc code is decomposed, then will have to add the same validations in the bank_identifier as well
+     * based on the type of code we are getting like BIC for MY, IFSC for IN
+     */
     protected static $addBankTransferRules = [
+        Entity::BANK_IDENTIFIER       => 'sometimes|alpha_num|min:8|max:11',
         Entity::IFSC_CODE             => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER        => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35',
         Entity::BENEFICIARY_NAME      => 'sometimes|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:40|string',
     ];
 
     /*
-     * RZP\Models\FundAccount\Core::REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_BANK_ACCOUNT_NAME
+     * 1. RZP\Models\FundAccount\Core::REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_BANK_ACCOUNT_NAME
      * needs to be updated accordingly if the validation regex for name field is changed in
      * $addFundAccountBankAccountRules.
+     *
+     * 2. @Todo Once the ifsc code is decomposed, then will have to add the same validations in the bank_identifier as well
+     * based on the type of code we are getting like BIC for MY, IFSC for IN
+     *
      */
     protected static $addFundAccountBankAccountRules = [
-        Entity::IFSC           => 'required|alpha_num|size:11',
-        Entity::ACCOUNT_NUMBER => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35',
-        Entity::NAME           => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:3,120|string',
-        Entity::ACCOUNT_TYPE   => 'sometimes|nullable|string|custom',
-        Entity::BANK_CODE      => 'sometimes|nullable|alpha_num|size:4',
+        Entity::IFSC            => 'required|alpha_num|size:11',
+        Entity::BANK_IDENTIFIER => 'sometimes|alpha_num|min:8|max:11',
+        Entity::ACCOUNT_NUMBER  => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35',
+        Entity::NAME            => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:3,120|string',
+        Entity::ACCOUNT_TYPE    => 'sometimes|nullable|string|custom',
+        Entity::BANK_CODE       => 'sometimes|nullable|alpha_num|size:4',
     ];
 
+    /*
+     * @Todo Once the ifsc code is decomposed, then will have to add the same validations in the bank_identifier as well
+     * based on the type of code we are getting like BIC for MY, IFSC for IN
+     */
     protected static $addTpvBankAccountRules = [
         Entity::IFSC            => 'required|alpha_num|size:11',
+        Entity::BANK_IDENTIFIER => 'sometimes|alpha_num|min:8|max:11',
         Entity::ACCOUNT_NUMBER  => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35',
         Entity::NAME            => 'sometimes|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:120|string',
     ];
 
+    /*
+     * @Todo Once the ifsc code is decomposed, then will have to add the same validations in the bank_identifier as well
+     * based on the type of code we are getting like BIC for MY, IFSC for IN
+     */
     protected static $addTpvBankAccountForVaRules = [
         Entity::IFSC                => 'required|alpha_num|size:11|custom',
+        Entity::BANK_IDENTIFIER     => 'sometimes|alpha_num|min:8|max:11',
         Entity::ACCOUNT_NUMBER      => 'required|alpha_num|between:5,35',
         Entity::BENEFICIARY_NAME    => 'sometimes|string',
     ];
@@ -215,9 +258,16 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIfscCode(array $input, $mode = 'test')
+    public function validateIfscCode(array $input, $mode = 'test', $merchantCountry = Country::IN)
     {
-        $ifsc = $input[Entity::IFSC_CODE] ?? ($input[Entity::IFSC] ?? '');
+        $merchantCountry = strtolower($merchantCountry);
+
+        if (in_array($merchantCountry, Entity::$IfscAllowedCountries) === false){
+            return ;
+        }
+
+        $ifsc = $input[Entity::IFSC_CODE] ?? ($input[Entity::IFSC] ?? ($input[Entity::BANK_IDENTIFIER] ?? ''));
+
 
         $ifsc = strtoupper($ifsc);
 

@@ -7014,9 +7014,19 @@ class Core extends Base\Core
             return null;
         }
 
+        $payout = new Entity;
+
         $psPayout = $payoutServicePayouts[0];
 
-        $payout = new Entity;
+        $merchantId = $psPayout->merchant_id;
+        $merchant = null;
+
+        if (isset($merchantId) === true)
+        {
+            $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        }
+
+        $payout->merchant()->associate($merchant);
 
         $payout->setIsPayoutService(1);
         $payout->setAmount($psPayout->amount);
@@ -9759,11 +9769,11 @@ class Core extends Base\Core
                     continue;
                 }
 
-                $fundLoadingBankAccountDetails = [
-                    BankAccount\Entity::ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
-                    BankAccount\Entity::IFSC           => $bankAccount->getIfscCode(),
-                    BankAccount\Entity::NAME           => $bankAccount->getName()
-                ];
+            $fundLoadingBankAccountDetails = [
+                BankAccount\Entity::ACCOUNT_NUMBER  => $bankAccount->getAccountNumber(),
+                BankAccount\Entity::IFSC            => $bankAccount->getIfscCode(),
+                BankAccount\Entity::NAME            => $bankAccount->getName(),
+            ];
 
                 $trimmedBankAccountDetails = $this->trimSpaces($fundLoadingBankAccountDetails);
 

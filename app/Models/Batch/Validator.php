@@ -4,15 +4,10 @@ namespace RZP\Models\Batch;
 
 use App;
 use DateTime;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator as LaravelValidator;
 use Lib\Gstin;
-
 use RZP\Base;
+use Carbon\Carbon;
 use RZP\Exception;
-use Illuminate\Http\Request;
-use RZP\Http\Controllers\PlinkController;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\User;
 use RZP\Models\Admin;
 use RZP\Models\Batch;
@@ -25,11 +20,14 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
 use Razorpay\Trace\Logger;
+use RZP\Constants\Country;
 use RZP\Constants\Timezone;
-use RZP\Models\FundTransfer;
-use RZP\Http\UserRolesScope;
-use RZP\Models\Payment\Refund;
 use RZP\Models\RawAddress;
+use RZP\Http\UserRolesScope;
+use Illuminate\Http\Request;
+use RZP\Models\FundTransfer;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Payment\Gateway;
 use RZP\Exception\BaseException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payout\BatchHelper;
@@ -38,10 +36,12 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact as ContactModel;
 use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Http\Controllers\PlinkController;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
+use Illuminate\Support\Facades\Validator as LaravelValidator;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
@@ -1392,7 +1392,17 @@ class Validator extends Base\Validator
 
     protected function validatePayoutMode($attribute, $value)
     {
-        PayoutMode::validateMode($value);
+        $entity = $this->entity;
+
+        $merchantCountry = Country::IN;
+
+        if (isset($entity) === true &&
+            isset($entity->merchant) === true)
+        {
+            $merchantCountry = strtolower($entity->merchant->getCountry());
+        }
+
+        PayoutMode::validateMode($value, $merchantCountry);
     }
 
     public function validatePayoutDate($attribute, $value)

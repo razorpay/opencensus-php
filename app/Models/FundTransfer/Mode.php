@@ -23,10 +23,12 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Mode extends Core
 {
-    const RTGS = 'RTGS';
-    const IMPS = 'IMPS';
-    const NEFT = 'NEFT';
-    const IFT  = 'IFT';
+    const RTGS    = 'RTGS';
+    const IMPS    = 'IMPS';
+    const NEFT    = 'NEFT';
+    const IFT     = 'IFT';
+    const DUITNOW = "duitnow";
+    const IBG     = "IBG";
 
     // We will be storing mode 'card' for payouts through
     // M2P, but we will be supporting 'Card', 'cArd', 'CaRD' etc in request body
@@ -62,25 +64,33 @@ class Mode extends Core
     ];
 
     protected static $modeAccountTypeMap = [
-        Type::BANK_ACCOUNT => [
-            self::RTGS,
-            self::IMPS,
-            self::NEFT,
-            self::IFT,
+        Constants\Country::IN => [
+            Type::BANK_ACCOUNT => [
+                self::RTGS,
+                self::IMPS,
+                self::NEFT,
+                self::IFT,
+            ],
+            Type::VPA => [
+                self::UPI,
+            ],
+            Type::CARD => [
+                self::IMPS,
+                self::UPI,
+                self::NEFT,
+                self::CT,
+                self::CARD,
+            ],
+            Type::WALLET_ACCOUNT => [
+                self::AMAZONPAY,
+            ]
         ],
-        Type::VPA => [
-            self::UPI,
-        ],
-        Type::CARD => [
-            self::IMPS,
-            self::UPI,
-            self::NEFT,
-            self::CT,
-            self::CARD,
-        ],
-        Type::WALLET_ACCOUNT => [
-            self::AMAZONPAY,
-        ],
+        Constants\Country::MY => [
+            Type::BANK_ACCOUNT => [
+                self::IBG,
+                self::DUITNOW
+            ]
+        ]
     ];
 
     protected static $accountTypePublicNameMap = [
@@ -280,10 +290,10 @@ class Mode extends Core
         return [];
     }
 
-    public static function validateModeOfAccountType($mode, $accountType)
+    public static function validateModeOfAccountType($mode, $accountType, $merchantCountry = Constants\Country::IN)
     {
-        if ((isset(self::$modeAccountTypeMap[$accountType]) === false) or
-            (in_array($mode, self::$modeAccountTypeMap[$accountType], true) === false))
+        if ((isset(self::$modeAccountTypeMap[$merchantCountry][$accountType]) === false) or
+            (in_array($mode, self::$modeAccountTypeMap[$merchantCountry][$accountType], true) === false))
         {
             $accountTypePublic = self::$accountTypePublicNameMap[$accountType] ?? $accountType;
             throw new BadRequestValidationFailureException("Invalid combination of payout mode ($mode) and beneficiary account type ($accountTypePublic)");

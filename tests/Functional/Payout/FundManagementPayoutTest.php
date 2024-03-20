@@ -73,7 +73,7 @@ class FundManagementPayoutTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000, AccountType::SHARED, Channel::YESBANK);
 
-        $this->bankAccount = $this->fixtures->edit('bank_account', $this->bankAccount->getId(), ['ifsc_code' => 'YESB0CMSNOC']);
+        $this->bankAccount = $this->fixtures->edit('bank_account', $this->bankAccount->getId(), ['ifsc_code' => 'YESB0CMSNOC', 'bank_identifier' => 'BOFAUS3N']);
 
         $this->directBalance = $this->fixtures->merchant->createBalanceOfBankingType(
             30000000, '10000000000000', AccountType::DIRECT, Channel::RBL);

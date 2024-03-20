@@ -148,7 +148,10 @@ class Core extends Base\Core
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
 
-        $this->useDefaultIfscCodeIfRequired($input, $merchant);
+        if (in_array(strtolower($merchant->getCountry()), BankAccount\Entity::$IfscAllowedCountries) === true)
+        {
+            $this->useDefaultIfscCodeIfRequired($input, $merchant);
+        }
 
         $accountDetails = $this->getAccountDetailsForInput($input);
 
@@ -1107,7 +1110,7 @@ class Core extends Base\Core
         switch ($accountType)
         {
             case Type::BANK_ACCOUNT:
-                $uniqueHashInputBankAccountSuffix = $this->getUniqueConsistentHashInputSuffixForBankAccount($accountDetails);
+                $uniqueHashInputBankAccountSuffix = $this->getUniqueConsistentHashInputSuffixForBankAccount($accountDetails, strtolower($merchant->getCountry()));
 
                 $uniqueHashInput = $uniqueHashInput . '|' . $uniqueHashInputBankAccountSuffix;
 
@@ -1159,7 +1162,7 @@ class Core extends Base\Core
         switch ($accountType)
         {
             case Type::BANK_ACCOUNT:
-                $uniqueHashInputBankAccountSuffix = $this->getUniqueHashInputSuffixForBankAccount($accountDetails);
+                $uniqueHashInputBankAccountSuffix = $this->getUniqueHashInputSuffixForBankAccount($accountDetails, strtolower($merchant->getCountry()));
 
                 $uniqueHashInput = $uniqueHashInput . '|' . $uniqueHashInputBankAccountSuffix;
 
@@ -1192,15 +1195,17 @@ class Core extends Base\Core
      * Hash input suffix structure for bank account type fund accounts -
      * bank_account|{account_number}|{ifsc} (first 4 characters of ifsc)
      */
-    protected function getUniqueConsistentHashInputSuffixForBankAccount(array $bankAccountDetails) : string
+    protected function getUniqueConsistentHashInputSuffixForBankAccount(array $bankAccountDetails, string $merchantCountry) : string
     {
         $accountNumber =
             $this->removeWhitespacesAndSpecialCharacters($bankAccountDetails[BankAccount\Entity::ACCOUNT_NUMBER]);
 
-        $ifsc = substr(strtoupper(
-            $this->removeWhitespacesAndSpecialCharacters($bankAccountDetails[BankAccount\Entity::IFSC])),0,4);
+        $bankCode = strtoupper($this->removeWhitespacesAndSpecialCharacters($this->getBankDetailsBasedOnCountry($bankAccountDetails, $merchantCountry)));
 
-        $uniqueHashInput = Type::BANK_ACCOUNT . '|' . $accountNumber . '|' . $ifsc;
+        $bankCode = (in_array($merchantCountry, BankAccount\Entity::$IfscAllowedCountries) === false) ? $bankCode : substr($bankCode
+            ,0,4);
+
+        $uniqueHashInput = Type::BANK_ACCOUNT . '|' . $accountNumber . '|' . $bankCode;
 
         return $uniqueHashInput;
     }
@@ -1209,19 +1214,19 @@ class Core extends Base\Core
      * Hash input suffix structure for bank account type fund accounts -
      * bank_account|{account_number}|{ifsc}|{name}
      */
-    protected function getUniqueHashInputSuffixForBankAccount(array $bankAccountDetails) : string
+    protected function getUniqueHashInputSuffixForBankAccount(array $bankAccountDetails, string $merchantCountry) : string
     {
         $accountNumber =
             $this->removeWhitespacesAndSpecialCharacters($bankAccountDetails[BankAccount\Entity::ACCOUNT_NUMBER]);
 
-        $ifsc = strtoupper($this->removeWhitespacesAndSpecialCharacters($bankAccountDetails[BankAccount\Entity::IFSC]));
+        $bankCode = strtoupper($this->removeWhitespacesAndSpecialCharacters($this->getBankDetailsBasedOnCountry($bankAccountDetails, $merchantCountry)));
 
         $customRegexForName = self::REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_BANK_ACCOUNT_NAME;
 
         $name = $this->removeWhitespacesAndSpecialCharacters($bankAccountDetails[BankAccount\Entity::NAME],
                                                              $customRegexForName);
 
-        $uniqueHashInput = Type::BANK_ACCOUNT . '|' . $accountNumber . '|' . $ifsc . '|' . $name;
+        $uniqueHashInput = Type::BANK_ACCOUNT . '|' . $accountNumber . '|' . $bankCode . '|' . $name;
 
         return $uniqueHashInput;
     }
@@ -1264,6 +1269,18 @@ class Core extends Base\Core
         $input = preg_replace($regexForRemovingWhitespaceAndSpecialCharacters, "", $input); // nosemgrep : php.lang.security.preg-replace-eval.preg-replace-eval
 
         return $input;
+    }
+
+    protected function getBankDetailsBasedOnCountry($bankDetails, $countryCode) {
+
+        if (in_array($countryCode, BankAccount\Entity::$IfscAllowedCountries) === true)
+        {
+            return $bankDetails[BankAccount\Entity::IFSC];
+        }
+        else
+        {
+            return $bankDetails[BankAccount\Entity::BANK_IDENTIFIER] ?? $bankDetails[BankAccount\Entity::IFSC];
+        }
     }
 
     protected function getAccountDetailsForInput(array $input)
@@ -1365,9 +1382,10 @@ class Core extends Base\Core
                 $bankAccount = $fundAccount->account;
 
                 $accountDetails = [
-                    BankAccount\Entity::NAME           => $bankAccount->getBeneficiaryName(),
-                    BankAccount\Entity::IFSC           => $bankAccount->getIfscCode(),
-                    BankAccount\Entity::ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
+                    BankAccount\Entity::NAME            => $bankAccount->getBeneficiaryName(),
+                    BankAccount\Entity::IFSC            => $bankAccount->getIfscCode(),
+                    BankAccount\Entity::BANK_IDENTIFIER => $bankAccount->getBankIdentifier(),
+                    BankAccount\Entity::ACCOUNT_NUMBER  => $bankAccount->getAccountNumber(),
                 ];
 
                 break;

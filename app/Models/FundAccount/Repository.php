@@ -143,6 +143,8 @@ class Repository extends Base\Repository
 
         $bankAccountIfscCodeColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::IFSC_CODE);
 
+        $bankAccountBankIdentifierCodeColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::BANK_IDENTIFIER);
+
         $bankAccountTypeColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::TYPE);
 
         $bankAccountMerchantIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::MERCHANT_ID);
@@ -176,7 +178,10 @@ class Repository extends Base\Repository
                         ->where($bankAccountTypeColumn, '=', E::CONTACT)
                         ->where($bankAccountAccountNumberColumn, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
                 // TODO: Can remove strtoupper() if collation for ifsc column is made case insensitive
-                        ->where($bankAccountIfscCodeColumn, '=', strtoupper($bankAccount[BankAccount\Entity::IFSC]))
+                        ->where(function ($query)  use ($bankAccountIfscCodeColumn, $bankAccount, $bankAccountBankIdentifierCodeColumn){
+                            $query->where($bankAccountIfscCodeColumn, '=', strtoupper($bankAccount[BankAccount\Entity::IFSC]))
+                                ->orWhere($bankAccountBankIdentifierCodeColumn, '=', $bankAccount[BankAccount\Entity::BANK_IDENTIFIER]);
+                        })
                         ->where($bankAccountBeneficiaryName, '=', $bankAccount[BankAccount\Entity::NAME])
                         ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
                         ->orderBy($faActiveColumn, 'desc')

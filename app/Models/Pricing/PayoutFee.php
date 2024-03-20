@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Constants\Country;
+use RZP\Models\BankAccount;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\Payout\Constants as PayoutConstants;
@@ -25,8 +27,12 @@ class PayoutFee extends Fee
     /**
      * Recalculation because of the higher tax being deducted because even splitting of CGST and SGST
      */
-    public static function recalculateTaxForPayout(int $fee, int $tax, $feesSplit)
+    public static function recalculateTaxForPayout(int $fee, int $tax, $feesSplit, $countryCode = Country::IN)
     {
+        if (in_array($countryCode, BankAccount\Entity::$IfscAllowedCountries) === false)
+        {
+            return [$fee, $tax];
+        }
         $feeWithoutTax = $fee - $tax;
 
         $tax = (int) round($feeWithoutTax * (PayoutConstants::PAYOUT_FEE_TAX_PERCENTAGE / 100));
@@ -50,8 +56,14 @@ class PayoutFee extends Fee
     public function calculateMerchantFees($entity): array
     {
         list($totalFee, $totalTax, $feeSplit) = parent::calculateMerchantFees($entity);
+        $merchantCountry = Country::IN;
 
-        list($totalFee, $totalTax) = $this->recalculateTaxForPayout($totalFee, $totalTax, $feeSplit);
+        if (isset($this->merchant))
+        {
+            $merchantCountry = $this->merchant->getCountry();
+        }
+
+        list($totalFee, $totalTax) = $this->recalculateTaxForPayout($totalFee, $totalTax, $feeSplit, strtolower($merchantCountry));
 
         return [$totalFee, $totalTax, $feeSplit];
     }

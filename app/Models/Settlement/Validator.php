@@ -8,6 +8,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Constants\Country;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Rbl\RequestConstants;
@@ -249,7 +250,17 @@ class Validator extends Base\Validator
 
     protected function validateChannel($attribute, $value)
     {
-        if (in_array($value, Channel::getChannels()) === false)
+        $entity = $this->entity;
+
+        $merchantCountry = Country::IN;
+
+        if (isset($entity) === true &&
+            isset($entity->merchant) == true)
+        {
+            $merchantCountry = strtolower($entity->merchant->getCountry());
+        }
+
+        if (in_array($value, Channel::getChannels($merchantCountry)) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid Channel: ' . $value);
@@ -267,7 +278,17 @@ class Validator extends Base\Validator
 
     protected function validateDestination($attribute, $value)
     {
-        if (in_array($value, Channel::getChannels()) === false)
+        $entity = $this->entity;
+
+        $merchantCountry = Country::IN;
+
+        if (isset($entity) === true &&
+            isset($entity->merchant) == true)
+        {
+            $merchantCountry = strtolower($entity->merchant->getCountry());
+        }
+
+        if (in_array($value, Channel::getChannels($merchantCountry)) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid Channel: ' . $value);

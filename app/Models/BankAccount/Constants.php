@@ -4,6 +4,10 @@ namespace RZP\Models\BankAccount;
 
 class Constants
 {
+
+    const BIC                                               = 'bic';
+
+    const IFSC                                              = 'ifsc';
     const OLD_BANK_ACCOUNT_ARRAY                            = 'old_bank_account_array';
     const NEW_BANK_ACCOUNT_ARRAY                            = 'new_bank_account_array';
     const BANK_ACCOUNT_UPDATE_POST_PENNY_TESTING_ROUTE_NAME = 'merchant_bank_account_update';
@@ -61,4 +65,6 @@ class Constants
      * Bank account deactivate is synced with gateway
      */
     const BANK_ACCOUNT_DEACTIVATE_SYNCED                    = 2;
+
+    const BANK_NAME = "bank_name";
 }

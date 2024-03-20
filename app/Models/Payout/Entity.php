@@ -1735,7 +1735,7 @@ class Entity extends Base\PublicEntity
 
     public function setChannel($channel)
     {
-        Channel::validate($channel);
+        Channel::validate($channel, $this->merchant);
 
         $this->setAttribute(self::CHANNEL, $channel);
     }

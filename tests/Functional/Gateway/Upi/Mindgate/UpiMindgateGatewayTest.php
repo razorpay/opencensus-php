@@ -893,7 +893,8 @@ class UpiMindgateGatewayTest extends TestCase
                 'bank_account' => [
                     'ifsc_code'         => '12345678911',
                     'account_number'    => '123456789',
-                    'beneficiary_name'  => 'test'
+                    'beneficiary_name'  => 'test',
+                    'bank_identifier'   => '12345678911'
                 ]
             ];
 

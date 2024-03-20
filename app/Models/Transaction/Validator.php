@@ -4,6 +4,7 @@ namespace RZP\Models\Transaction;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Constants\Country;
 use RZP\Models\Settlement\Channel;
 
 class Validator extends Base\Validator
@@ -38,7 +39,17 @@ class Validator extends Base\Validator
 
     protected function validateChannel($attribute, $value)
     {
-        if (in_array($value, Channel::getChannels()) === false)
+        $entity = $this->entity;
+
+        $merchantCountry = Country::IN;
+
+        if (isset($entity) === true &&
+            isset($entity->merchant) == true)
+        {
+            $merchantCountry = strtolower($entity->merchant->getCountry());
+        }
+
+        if (in_array($value, Channel::getChannels($merchantCountry)) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid Channel: ' . $value);

@@ -23,7 +23,6 @@ class Base
     const MERCHANT_CONFIG_CREATE            = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Create';
     const MERCHANT_CONFIG_UPDATE            = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Update';
     const MERCHANT_CONFIG_BULK_UPDATE       = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/BulkUpdate';
-
     const BANK_ACCOUNT_CREATE               = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Create';
     const ORG_BANK_ACCOUNT_CREATE           = '/twirp/rzp.settlements.org_bank_account.v1.OrgBankAccountService/Create';
     const ORG_BANK_ACCOUNT_UPDATE           = '/twirp/rzp.settlements.org_bank_account.v1.OrgBankAccountService/Update';
@@ -440,6 +439,8 @@ class Base
             'account_number'      => $accountNumber,
             'account_type'        => $ba->getAccountType() !== null ? $ba->getAccountType() : 'current',
             'ifsc_code'           => $ba->getIfscCode(),
+            'bank_identifier'     => $ba->getBankIdentifier(),
+            'identifier_type'     => $ba->getIdentifierType(),
             'beneficiary_name'    => $beneName,
             'beneficiary_address' => $ba->getBeneficiaryAddress1() ?? '',
             'beneficiary_city'    => $beneCity,

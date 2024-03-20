@@ -11,10 +11,15 @@ use RZP\Models\Currency\Currency;
 class Validator extends Base\Validator
 {
     /**
-     * @var string[] validation rules for migrating a bank account
+     * 1. @var string[] validation rules for migrating a bank account
      * along with merchant migration (eased up validation checks compared to
      * $createBankAccountRules to allow smooth bank account migrations)
      * this rule is only used by settlement service so changing it.
+     *
+     *
+     * 2. @Todo Once the ifsc code is decomposed, then will have to add the same validations in the bank_identifier as well
+     *  based on the type of code we are getting like BIC for MY, IFSC for IN
+     *
      */
     protected static $createBankAccountRules = [
         'org_id'             =>  'required_if:type,==,org|string|size:14',
@@ -22,6 +27,8 @@ class Validator extends Base\Validator
         'account_number'      => 'required|string',
         'account_type'        => 'required|in:current,saving,nodal',
         'ifsc_code'           => 'required|string',
+        'bank_identifier'     => 'sometimes',
+        'identifier_type'     => 'sometimes',
         'beneficiary_name'    => 'required|min:4|custom',
         'beneficiary_address' => 'sometimes|string',
         'beneficiary_city'    => 'sometimes|string',

@@ -1,9 +1,9 @@
 <?php
 
 namespace RZP\Models\Payout;
-
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Country;
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Models\Settlement\Channel;
 use RZP\Http\BasicAuth\Type as AuthType;
@@ -242,12 +242,31 @@ class Fetch extends BaseFetch
 
     protected function validateMode(string $attribute, string $value)
     {
-        Mode::validateMode($value);
+        $entity = $this->entity;
+
+        $merchantCountry = Country::IN;
+
+        if (isset($entity) === true &&
+            isset($entity->merchant) == true)
+        {
+            $merchantCountry = strtolower($entity->merchant->getCountry());
+        }
+
+        Mode::validateMode($value, $merchantCountry);
     }
 
     protected function validatePayoutMode(string $attribute, string $value)
     {
-        Mode::validateMode($value);
+        $entity = $this->entity;
+
+        $merchantCountry = Country::IN;
+
+        if (isset($entity) === true &&
+            isset($entity->merchant) == true)
+        {
+            $merchantCountry = strtolower($entity->merchant->getCountry());
+        }
+        Mode::validateMode($value, $merchantCountry);
     }
 
     protected function validateChannel(string $attribute, string $value)

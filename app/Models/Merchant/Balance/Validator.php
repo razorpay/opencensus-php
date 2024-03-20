@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Balance;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Country;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Payout\Mode as PayoutMode;
 
@@ -64,6 +65,16 @@ class Validator extends Base\Validator
     {
         $uniqueValues = [];
 
+        $entity = $this->entity;
+
+        $merchantCountry = Country::IN;
+
+        if (isset($entity) === true &&
+            isset($entity->merchant) == true)
+        {
+            $merchantCountry = strtolower($entity->merchant->getCountry());
+        }
+
         foreach ($values as $value)
         {
             if (in_array($value, $uniqueValues, true) === true)
@@ -77,7 +88,7 @@ class Validator extends Base\Validator
                     ]);
             }
 
-            PayoutMode::validateMode($value);
+            PayoutMode::validateMode($value, $merchantCountry);
 
             array_push($uniqueValues, $value);
         }

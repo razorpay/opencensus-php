@@ -6,8 +6,9 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Channel
 {
@@ -38,8 +39,36 @@ class Channel
     // This channel is for malaysain merchant transaction
     const RHB = 'rhb';
 
+    const OCBC = 'ocbc';
+
     // This channel is for in person transactions
     const HDFC_POS = 'hdfc_pos';
+
+    public static $allChannels = [
+        Constants\Country::IN => [
+            self::KOTAK,
+            self::YESBANK,
+            self::AXIS,
+            self::ICICI,
+            self::HDFC,
+            self::RBL,
+            self::AXIS2,
+            self::ICICI2,
+            self::CITI,
+            self::M2P,
+            self::AMAZONPAY,
+            self::ICICI_OPGSP_EXPORT,
+            self::AXIS3,
+            self::RZPX,
+            self::MCS,
+            self::RHB,
+            self::IDFC,
+            self::HDFC_POS
+        ],
+        Constants\Country::MY => [
+            self::OCBC
+        ]
+    ];
 
     public static $gateways = [
         self::KOTAK => [
@@ -77,28 +106,9 @@ class Channel
         self::M2P     => Payment\Gateway::M2P
     ];
 
-    public static function getChannels()
+    public static function getChannels($merchantCountryCode = Constants\Country::IN)
     {
-        return [
-            self::KOTAK,
-            self::YESBANK,
-            self::AXIS,
-            self::ICICI,
-            self::HDFC,
-            self::RBL,
-            self::AXIS2,
-            self::ICICI2,
-            self::CITI,
-            self::M2P,
-            self::AMAZONPAY,
-            self::ICICI_OPGSP_EXPORT,
-            self::AXIS3,
-            self::RZPX,
-            self::MCS,
-            self::RHB,
-            self::IDFC,
-            self::HDFC_POS
-        ];
+        return self::$allChannels[$merchantCountryCode];
     }
 
     /**
@@ -248,9 +258,16 @@ class Channel
         return defined(get_class() . '::' . strtoupper($channel));
     }
 
-    public static function validate(string $channel = null)
+    public static function validate(string $channel = null, MerchantEntity $merchant = null)
     {
-        if (in_array($channel, self::getChannels(), true) === false)
+        $merchantCountry = Constants\Country::IN;
+
+        if (isset($merchant) === true)
+        {
+            $merchantCountry = strtolower($merchant->getCountry());
+        }
+
+        if (in_array($channel, self::getChannels($merchantCountry), true) === false)
         {
             throw new Exception\BadRequestValidationFailureException('Invalid channel name: ' . $channel);
         }
@@ -301,15 +318,17 @@ class Channel
             self::AXIS,
             self::AMAZONPAY_FTS,
             self::M2P,
-            self::MCS
+            self::MCS,
+            self::OCBC
         ];
     }
 
     public static function validateChannelAndMode(string $channel = null,
                                                   string $destinationType = null,
-                                                  string $mode = null) : bool
+                                                  string $mode = null,
+                                                  MerchantEntity $merchant = null) : bool
     {
-        self::validate($channel);
+        self::validate($channel, $merchant);
 
         $allChannelsWithModes = self::getAllSupportedChannelsWithModes();
 
@@ -423,6 +442,12 @@ class Channel
                     Mode::UPI,
                     Mode::NEFT,
                 ],
+            ],
+            self::OCBC      => [
+                Constants\Entity::BANK_ACCOUNT  =>  [
+                    Mode::DUITNOW,
+                    Mode::IBG
+                ]
             ],
         ];
     }

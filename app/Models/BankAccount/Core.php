@@ -221,7 +221,7 @@ class Core extends Base\Core
                                                     Merchant\Entity $merchant,
                                                     Base\PublicEntity $source = null): Entity
     {
-        (new Validator)->validateIfscCode($input, $this->mode);
+        (new Validator)->validateIfscCode($input, $this->mode, $merchant->getCountry());
 
         $trimmedInput = $this->trimSpaces($input);
 
@@ -293,6 +293,8 @@ class Core extends Base\Core
                 }
             }
         }
+
+        $input[Entity::BANK_IDENTIFIER] = $defaultIfsc;
 
         if (isset($input[Entity::IFSC_CODE]) === true)
         {
@@ -599,9 +601,9 @@ class Core extends Base\Core
     {
         $ba = new BankAccount\Entity;
 
-        $ba = $ba->build($input, $addRule);
-
         $ba->merchant()->associate($merchant);
+
+        $ba = $ba->build($input, $addRule);
 
         $ba->source()->associate($source);
 
@@ -664,6 +666,9 @@ class Core extends Base\Core
             $notes[Entity::BANK_SORT_CODE] = $input[Entity::BANK_SORT_CODE];
             $input[Entity::NOTES] = $notes;
         }
+
+        $ba->merchant()->associate($merchant);
+
         // if live mode and input does not already contain notes, copy test mode notes
         if (($mode === Mode::LIVE) and (empty($input[Entity::NOTES]) === true))
         {
@@ -682,12 +687,11 @@ class Core extends Base\Core
         if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false and
             $merchant->isLRSFlowEnabled() === false and
             ($merchant->isJpmcImportFlowEnabled() === false) and
+            (in_array(strtolower($merchant->getCountry()), Entity::$IfscAllowedCountries) === true) and
             ($authType !== 'migrated'))
         {
             $ba->getValidator()->validateIfscCode($input, $mode);
         }
-
-        $ba->merchant()->associate($merchant);
 
         return $ba;
     }
@@ -982,6 +986,13 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_IN_PROGRESS);
         }
 
+        if (in_array(strtolower($merchant->getCountry()), BankCodes::COUNTRY_ELIGIBLE_FOR_SWIFT_CODE_MAPPING))
+        {
+            $this->populateFieldAsPerMapping($input, Constants::BANK_NAME, BankCodes::BANK_CODE_TO_SWIFTCODE_MAPPING, Entity::BANK_IDENTIFIER);
+        }
+
+        unset($input[Constants::BANK_NAME]);
+
         // If auth type is not admin then only validate feature for account update request.
         if ($this->app['basicauth']->isAdminAuth() === false)
         {
@@ -1019,14 +1030,48 @@ class Core extends Base\Core
 
         $this->validateNotLaxmiVilasBank($newBankAccount);
 
-        if ($newFlow === true)
+        if (in_array(strtolower($merchant->getCountry()), Entity::$IfscAllowedCountries) === false)
         {
-            return $this->syncOnlyBankAccountUpdateFlow($input, $merchant, $newBankAccount);
-        }
+            $data[Constants::BANK_ACCOUNT_UPDATE_INPUT] = $input;
 
+            return $this->changeBankAccountWithoutBVSValidation($merchant, $data, $newBankAccount);
+        }
         else
         {
-            return $this->syncAndAsyncBankAccountUpdateFlow($input, $merchant, $newBankAccount);
+            if ($newFlow === true)
+            {
+                return $this->syncOnlyBankAccountUpdateFlow($input, $merchant, $newBankAccount);
+            }
+            else
+            {
+                return $this->syncAndAsyncBankAccountUpdateFlow($input, $merchant, $newBankAccount);
+            }
+        }
+    }
+
+    /*
+     * This function accepts 4 params where
+     * @param $input -> Input
+     * @param $key -> key to search
+     * @param $mapping -> mapping to search in
+     * @param $replaceKey -> Add the value of key from the mapping at this key in input
+     *
+     * If replace key is not passed, then value from the mapping is set at $key value itself in the input
+     */
+    public static function populateFieldAsPerMapping(& $input, $key, $mapping, $replaceKey = '')
+    {
+        if (isset($input[$key]) === true &&
+            isset($mapping[$input[$key]]) === true)
+        {
+            if (empty($replaceKey) === false)
+            {
+                $input[$replaceKey] = $mapping[$input[$key]];
+                unset($input[$key]);
+            }
+            else
+            {
+                $input[$key] = $mapping[$input[$key]];
+            }
         }
     }
 
@@ -1049,6 +1094,11 @@ class Core extends Base\Core
         if (isset($input[Entity::IFSC_CODE]))
         {
             $input[Entity::IFSC_CODE] = str_replace('\n', '', $input[Entity::IFSC_CODE]);
+        }
+
+        if (isset($input[Entity::BANK_IDENTIFIER]))
+        {
+            $input[Entity::BANK_IDENTIFIER] = str_replace('\n', '', $input[Entity::BANK_IDENTIFIER]);
         }
 
         if (isset($input[Entity::BENEFICIARY_NAME]))
@@ -1137,8 +1187,7 @@ class Core extends Base\Core
         switch ($validation->getValidationStatus())
         {
             case BvsValidationConstants::SUCCESS:
-                $response[Constants::NEW_BANK_ACCOUNT] = $newBankAccount;
-                $response[Constants::SYNC_FLOW] = true;
+                $response = $this->generateSuccessResponseForBankAccountUpdate($newBankAccount);
                 break;
             default:
                 $response[Constants::CREATE_WORKFLOW] = true;
@@ -1352,6 +1401,35 @@ class Core extends Base\Core
             "status" => $status
         ]);
     }
+
+    public function changeBankAccountWithoutBVSValidation($merchant, $data, $newBankAccount)
+    {
+        $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false, false);
+
+        $currentBankAccount = (new Service)->getOwnBankAccount();
+
+        $bankAccountId = str_starts_with($currentBankAccount[Merchant\Constants::ID], 'ba_')
+            ? $currentBankAccount[Merchant\Constants::ID]
+            : 'ba_' . $currentBankAccount[Merchant\Constants::ID];
+
+        $response = $this->app['care_service']->dashboardProxyRequest(CareProxyController::ADD_BANK_ACCOUNT_UPDATE_RECORD, [
+            Merchant\Constants::BANK_ACCOUNT_ID => $bankAccountId
+        ]);
+
+        $this->stopShowingRejectionReasonForBankAccountUpdateSelfServe($merchant->bankAccount->getId(), $merchant->bankAccount->getEntityName());
+
+        $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_SUCCESS, [
+            Entity::MERCHANT_ID => $merchant->getId(),
+
+        ]);
+
+        $response = $this->generateSuccessResponseForBankAccountUpdate($newBankAccount);
+
+        unset($response[Constants::SYNC_FLOW]);
+
+        return $response;
+    }
+
 
     public function getSuperAdminChecker()
     {
@@ -2077,5 +2155,13 @@ class Core extends Base\Core
     public function fetchCustomerBankAccountByCustomerIdAndMerchantId($entityId, $merchantId , $limit)
     {
         return $this->repo->bank_account->fetchBankAccountByTypeCustomerAndApplyLimit($entityId, $merchantId , $limit);
+    }
+
+    public function generateSuccessResponseForBankAccountUpdate($newBankAccount)
+    {
+        return [
+            Constants::NEW_BANK_ACCOUNT => $newBankAccount,
+            Constants::SYNC_FLOW        => true
+        ];
     }
 }

@@ -131,6 +131,14 @@ class Base extends BaseCore
 
     protected function getBankAccountToAssociateWithFTA(PublicEntity $bankAccount, Entity $payout)
     {
+        /** @var Merchant\Entity $merchant */
+        $merchant = $payout->merchant;
+
+        if (in_array(strtolower($merchant->getCountry()), BankAccount\Entity::$IfscAllowedCountries) === false)
+        {
+            return $bankAccount;
+        }
+
         // We want to swap older IFSC to new IFSC for banks which are getting
         // merged to bigger banks. This is being done for now for IMPS payouts
         // only. This code will remain in FTA currently and will have to ported
@@ -138,9 +146,6 @@ class Base extends BaseCore
         // Detailed discussion - https://razorpay.slack.com/archives/CM9230B5Y/p1606721863218100
         $ifscCode = $bankAccount->getIfscCode();
         $bankCode = $bankAccount->getAttribute(BankAccount\Entity::BANK_CODE) ?? '';
-
-        /** @var Merchant\Entity $merchant */
-        $merchant = $payout->merchant;
 
         if ($this->isIfscSwappingRequired($ifscCode) === true)
         {

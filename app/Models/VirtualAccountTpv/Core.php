@@ -77,9 +77,11 @@ class Core extends Base\Core
     {
         $input[BankAccount\Entity::BENEFICIARY_NAME] = $merchant->getFilteredDba();
 
-        $bankAccount = (new BankAccount\Entity())->build($input, 'addTpvBankAccountForVa');
+        $baEntity = new BankAccount\Entity();
 
-        $bankAccount->merchant()->associate($merchant);
+        $baEntity->merchant()->associate($merchant);
+
+        $bankAccount = $baEntity->build($input, 'addTpvBankAccountForVa');
 
         $this->repo->saveOrFail($bankAccount);
 

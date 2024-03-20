@@ -3065,6 +3065,40 @@ return [
         ]
     ],
 
+    'testUpdateBankAccountViaPennyTestingSyncFlowMY' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+                'sync_only' => 'true',
+                'bank_name' => 'Affin Bank'
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST',
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'new_bank_account' => [
+                    'notes' => [],
+                    'beneficiary_country' => 'IN',
+                    'ifsc_code' => 'ICIC0001206',
+                    'account_number' => '0000009999999999999',
+                    'beneficiary_name' => 'Test R4zorpay:',
+                    'type' => 'merchant',
+                    'name' => 'Test R4zorpay:',
+                    'ifsc' =>  'ICIC0001206',
+                    'mpin_set' => FALSE,
+                    'bank_name' => 'ICICI Bank',
+                ],
+                'sync_flow' => TRUE
+            ]
+        ]
+    ],
+
     'testUpdateBankAccountViaPennyTestingWorkflowCreatedSyncFlow' => [
         'request'  => [
             'content' => [

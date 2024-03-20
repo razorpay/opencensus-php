@@ -50,9 +50,14 @@ class Validator extends Base\Validator
         'reversals.*.amount'    => 'required|integer|min_amount',
     ];
 
+    /*
+     * @Todo Once the ifsc code is decomposed, then will have to add the same validations in the bank_identifier as well
+     * based on the type of code we are getting like BIC for MY, IFSC for IN
+     */
     protected static $retryRules = [
         'bank_account'                      => 'sometimes|array',
         'bank_account.ifsc_code'            => 'required_with:bank_account|alpha_num|size:11',
+        'bank_account.bank_identifier'      => 'sometimes|string|min:8|max:11',
         'bank_account.account_number'       => 'required_with:bank_account|alpha_num|between:5,22',
         'bank_account.beneficiary_name'     => 'required_with:bank_account|between:4,120|string',
         'vpa'                               => 'sometimes|associative_array',

@@ -6,7 +6,6 @@ use App;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\Batch;
@@ -15,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Country;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Models\Card\Issuer;
@@ -23,10 +23,12 @@ use RZP\Models\FundTransfer;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Currency\Currency;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\PartnerBankHealth\Events;
 use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
@@ -44,6 +46,13 @@ use RZP\Models\Payout\Configurations\DirectAccounts\PayoutModeConfig;
 
 class Validator extends Base\Validator
 {
+
+
+    /**
+     * @var Merchant\Entity
+     */
+    public $merchant;
+
 
     // We are increasing this from 100 to 200. Slack thread for reference:
     // https://razorpay.slack.com/archives/C013868TRK4/p1615796447155300?thread_ts=1615544530.147100&cid=C013868TRK4
@@ -203,7 +212,7 @@ class Validator extends Base\Validator
     protected static $fundAccountPayoutCompositeRules = [
         Entity::PURPOSE                              => 'required|filled|string|max:30|alpha_dash_space',
         Entity::AMOUNT                               => 'required|integer|min:100|custom',
-        Entity::CURRENCY                             => 'required|size:3|in:INR',
+        Entity::CURRENCY                             => 'required|size:3|custom',
         Entity::NOTES                                => 'sometimes|notes',
         Entity::BALANCE_ID                           => 'sometimes|filled|size:14',
         Entity::MODE                                 => 'required|string|custom',
@@ -263,7 +272,7 @@ class Validator extends Base\Validator
     protected static $fundAccountPayoutRules = [
         Entity::PURPOSE                         => 'required|filled|string|max:30|alpha_dash_space',
         Entity::AMOUNT                          => 'required|integer|custom',
-        Entity::CURRENCY                        => 'required|size:3|in:INR',
+        Entity::CURRENCY                        => 'required|size:3|custom',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::BALANCE_ID                      => 'sometimes|filled|size:14',
         Entity::FUND_ACCOUNT_ID                 => 'required|public_id',
@@ -706,7 +715,47 @@ class Validator extends Base\Validator
 
     protected function validateMode($attribute, $value)
     {
-        PayoutMode::validateMode($value);
+        $payout = $this->entity;
+        $merchant = $this->merchant;
+        $merchantCountry = Country::IN;
+
+        if ($merchant === null &&
+            isset($payout) === true &&
+            isset($payout->merchant) == true)
+        {
+            $merchant = $payout->merchant;
+        }
+
+        if (isset($merchant) === true)
+        {
+            $merchantCountry = strtolower($merchant->getCountry());
+        }
+
+        PayoutMode::validateMode($value, $merchantCountry);
+    }
+
+    protected function validateCurrency($attribute, $currency)
+    {
+        $payout = $this->entity;
+        $merchant = $this->merchant;
+        $merchantCurrency = Currency::INR;
+
+        if ($merchant === null &&
+            isset($payout) === true &&
+            isset($payout->merchant) == true)
+        {
+            $merchant = $payout->merchant;
+        }
+
+        if (isset($merchant) === true)
+        {
+           $merchantCurrency = $merchant->getCurrency();
+        }
+
+        if ($currency !== $merchantCurrency)
+        {
+            throw new Exception\BadRequestValidationFailureException("Payout and Merchant's acceptance currency should be same, Payout's currency : " . $currency . ", Merchant's currency " . $merchantCurrency);
+        }
     }
 
     protected function validateScheduledAt($attribute, $value)
@@ -767,7 +816,16 @@ class Validator extends Base\Validator
 
         $accountType = $fundAccount->getAccountType();
 
-        Mode::validateModeOfAccountType($mode, $accountType);
+        $merchant = $fundAccount->merchant;
+
+        $merchantCountry = Country::IN;
+
+        if (isset($merchant) === true)
+        {
+            $merchantCountry = strtolower($merchant->getCountry());
+        }
+
+        Mode::validateModeOfAccountType($mode, $accountType, $merchantCountry);
 
         $this->validateCardAccountType($payout);
 
@@ -1543,7 +1601,18 @@ class Validator extends Base\Validator
             }
         }
 
-        return PayoutMode::validateChannelAndModeForPayouts($channel, $destinationType, $mode, $accountType);
+        $payout = $this->entity;
+
+        $merchant = $this->merchant;
+
+        if ($merchant === null &&
+            isset($payout) === true &&
+            isset($payout->merchant) === true)
+        {
+           $merchant = $payout->merchant;
+        }
+
+        return PayoutMode::validateChannelAndModeForPayouts($channel, $destinationType, $mode, $accountType, $merchant);
     }
 
     public function validateAndUpdateCardMode(array & $input)

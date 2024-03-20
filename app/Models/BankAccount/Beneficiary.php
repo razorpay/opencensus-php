@@ -7,10 +7,10 @@ use Mail;
 use Cache;
 use Config;
 use Carbon\Carbon;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Country;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
@@ -18,6 +18,7 @@ use RZP\Jobs\FTS\RegisterAccount;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Jobs\BeneficiaryRegistration;
 use RZP\Jobs\BeneficiaryVerification;
@@ -75,8 +76,16 @@ class Beneficiary extends Base\Core
             'type' => $account->getType(),
         ];
 
-        if (($accountType === FundAccountType::BANK_ACCOUNT) &&
-            ($account->getType() === Type::CONTACT)) {
+        $merchantCountry = Country::IN;
+
+        if (isset($account->merchant) === true)
+        {
+            $merchantCountry = strtolower($account->merchant->getCountry());
+        }
+
+        if ((in_array($merchantCountry, Entity::$beneRegisrationRequiredCountries) === false) ||
+            (($accountType === FundAccountType::BANK_ACCOUNT) &&
+            ($account->getType() === Type::CONTACT))) {
 
             $this->trace->info(TraceCode::FTS_BENEFICIARY_REGISTER_SKIPPED, $traceData);
 

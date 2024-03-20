@@ -150,6 +150,13 @@ final class RazorxTreatment
     // Decides payout channel based on NEFT mode
     const NEFT_MODE_PAYOUT_FILTER = 'neft_mode_payout_filter';
 
+
+    // Decides payout channel based on duitnow mode
+    const DUITNOW_MODE_PAYOUT_FILTER = 'duitnow_mode_payout_filter';
+
+    // Decides payout channel based on IBG mode
+    const IBG_MODE_PAYOUT_FILTER = 'ibg_mode_payout_filter';
+
     // Decides payout channel based on RTGS mode
     const RTGS_MODE_PAYOUT_FILTER = 'rtgs_mode_payout_filter';
 

@@ -3831,7 +3831,11 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::PAYOUT_COMPOSITE_CREATE_REQUEST, $traceRequest);
 
-        (new Validator)->validateInput(Validator::FUND_ACCOUNT_PAYOUT_COMPOSITE, $input);
+        $validator = new Validator();
+
+        $validator->merchant = $this->merchant;
+
+        $validator->validateInput(Validator::FUND_ACCOUNT_PAYOUT_COMPOSITE, $input);
 
         $contactData = $this->createContactForCompositePayout($input);
 
