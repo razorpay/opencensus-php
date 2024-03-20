@@ -10,7 +10,7 @@ class Helper
     /*
      *  getPendingQuestionsForMerchant returns the pending questions required for given merchant
      */
-    public static function getPendingQuestionsForMerchant(array $answers = [], Detail\Entity $merchantDetails): array
+    public static function getPendingQuestionsForMerchant(array $answers = [], Detail\Entity $merchantDetails, bool $all = false): array
     {
         $pendingQuestions = [];
 
@@ -19,19 +19,36 @@ class Helper
             case BusinessCategoriesV2\BusinessSubcategory::ELECTRONICS_AND_FURNITURE:
             case BusinessCategoriesV2\BusinessSubcategory::ACCESSORY_AND_APPAREL_STORES:
             case BusinessCategoriesV2\BusinessSubcategory::HARDWARE_EQUIPMENT_AND_SUPPLY_STORES:
-                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_2, $answers));
+            case BusinessCategoriesV2\BusinessSubcategory::ELECTRICAL_PARTS_AND_EQUIPMENT:
+            case BusinessCategoriesV2\BusinessSubcategory::STATIONERY_SUPPLIES:
+            case BusinessCategoriesV2\BusinessSubcategory::DEPARTMENT_STORES:
+            case BusinessCategoriesV2\BusinessSubcategory::SECOND_HAND_STORES:
+            case BusinessCategoriesV2\BusinessSubcategory::USED_AUTOMOBILE_AND_TRUCK_DEALERS:
+            case BusinessCategoriesV2\BusinessSubcategory::FASHION_AND_LIFESTYLE:
+                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_2, $answers, $all));
                 break;
             case BusinessCategoriesV2\BusinessSubcategory::GROCERY:
-                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_4, $answers));
+            case BusinessCategoriesV2\BusinessSubcategory::BAKERIES:
+            case BusinessCategoriesV2\BusinessSubcategory::DAIRY_PRODUCTS:
+                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_4, $answers, $all));
                 break;
             case BusinessCategoriesV2\BusinessSubcategory::RESTAURANT:
-                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_11, $answers));
+            case BusinessCategoriesV2\BusinessSubcategory::FOOD_COURT:
+            case BusinessCategoriesV2\BusinessSubcategory::CATERING:
+            case BusinessCategoriesV2\BusinessSubcategory::ONLINE_FOOD_ORDERING:
+                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_11, $answers, $all));
                 break;
             case BusinessCategoriesV2\BusinessSubcategory::ACCOUNTING:
-                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_24, $answers));
+            case BusinessCategoriesV2\BusinessSubcategory::TAX_PAYMENTS:
+            case BusinessCategoriesV2\BusinessSubcategory::TAX_PREPARATION_SERVICES:
+                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_24, $answers, $all));
                 break;
             case BusinessCategoriesV2\BusinessSubcategory::HOSPITAL:
-                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_43, $answers));
+                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_43, $answers, $all));
+                break;
+            case BusinessCategoriesV2\BusinessSubcategory::SECOND_HAND_STORES:
+            case BusinessCategoriesV2\BusinessSubcategory::USED_AUTOMOBILE_AND_TRUCK_DEALERS:
+                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_34, $answers, $all));
                 break;
             default:
 
@@ -40,28 +57,31 @@ class Helper
         return $pendingQuestions;
     }
 
-    public static function getUnAnsweredQuestions(string $questionKey, array $answers = []): array
+    public static function getUnAnsweredQuestions(string $questionKey, array $answers = [], bool $all = false): array
     {
         $unansweredQuestions = [];
-        if (isset($answers[$questionKey]))
+        $currentQuestion = Questions::QUESTIONS_OPTIONS_MAP[$questionKey][Questions::API_KEY];
+
+        if ( $all === true || isset($answers[$questionKey]) === false )
+        {
+            $unansweredQuestions[] = $currentQuestion;
+        }
+
+        if ( $all === true || isset($answers[$questionKey]) === true )
         {
             if (isset(Questions::QUESTIONS_OPTIONS_MAP[$questionKey][Questions::OPTIONS]) === true)
             {
                 foreach (Questions::QUESTIONS_OPTIONS_MAP[$questionKey][Questions::OPTIONS] as $optionKey => $option)
                 {
-                    if ( in_array($optionKey, $answers[$questionKey]) === true && isset($option[Questions::NEXT]))
+                    if ( ( $all === true || in_array($optionKey, $answers[$questionKey]) === true ) && isset($option[Questions::NEXT]))
                     {
                         foreach ($option[Questions::NEXT] as $nextQuestionKey)
                         {
-                            $unansweredQuestions = array_merge($unansweredQuestions, static::getUnAnsweredQuestions($nextQuestionKey, $answers));
+                            $unansweredQuestions = array_merge($unansweredQuestions, static::getUnAnsweredQuestions($nextQuestionKey, $answers, $all));
                         }
                     }
                 }
             }
-        }
-        else
-        {
-            $unansweredQuestions[] = Questions::QUESTIONS_OPTIONS_MAP[$questionKey][Questions::API_KEY];
         }
 
         return $unansweredQuestions;
@@ -101,8 +121,19 @@ class Helper
         return $apiInput;
     }
 
-    public static function transformInputToPGOSInput(array $input): array
+    public static function transformInputToPGOSInput(Detail\Entity $merchantDetails, array $profile): array
     {
+        // filtering valid question keys for BMC
+        $input = array_intersect_key($profile, Questions::API_KEYS_TO_QUESTION_KEYS);
+        if ( empty($input) === true )
+        {
+            return $input;
+        }
+
+        // filtering valid questions for the sub-category
+        $allQuestionKeys = self::getPendingQuestionsForMerchant([], $merchantDetails, true);
+        $input = array_only($input, $allQuestionKeys);
+
         $pgosInput = [];
         foreach ($input as $apiKey => $apiValue)
         {
@@ -140,6 +171,23 @@ class Helper
             }
         }
         return $pgosInput;
+    }
+
+    public static function getValidations(): array
+    {
+        $validations = [];
+        foreach(Questions::QUESTIONS_OPTIONS_MAP as $key => $value)
+        {
+            if (isset($value[Questions::VALIDATIONS]) === true)
+            {
+                $validations[$value[Questions::API_KEY]] =  $value[Questions::VALIDATIONS];
+            }
+            if (isset($value[Questions::ITEM_VALIDATIONS]) === true)
+            {
+                $validations[$value[Questions::API_KEY].'.*'] =  $value[Questions::ITEM_VALIDATIONS];
+            }
+        }
+        return $validations;
     }
 
 }

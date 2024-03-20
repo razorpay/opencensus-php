@@ -11,6 +11,7 @@ class Questions
     const QUESTION_11     = "question_11";
     const QUESTION_11_4_1 = "question_11_4_1";
     const QUESTION_43     = "question_43";
+    const QUESTION_34     = "question_34";
 
     const OPTION_2_11     = "option_2_11";
     const OPTION_2_12     = "option_2_12";
@@ -36,6 +37,8 @@ class Questions
     const OPTIONS  = "options";
     const NEXT     = "next";
     const PREVIOUS = "previous";
+    const VALIDATIONS = "validations";
+    const ITEM_VALIDATIONS = "item_validations";
 
     const TYPE_STRING = "string";
     const TYPE_ARRAY  = "array";
@@ -48,6 +51,7 @@ class Questions
     const RESTAURANT_BUSINESS_MODEL_TYPE   = "restaurant_business_model_type";
     const ALCOHOLIC_BEVERAGES_DELIVERY     = "alcoholic_beverages_delivery";
     const HOSPITAL_SETUP_TYPE              = "hospital_setup_type";
+    const SECOND_HAND_PRODUCTS_SOLD        = "second_hand_products_sold";
 
     //const PGOS_KEYS_TO_API_KEYS = [
     //    self::QUESTION_2      => "average_delivery_time",
@@ -65,6 +69,7 @@ class Questions
         self::RESTAURANT_BUSINESS_MODEL_TYPE   => self::QUESTION_11,
         self::ALCOHOLIC_BEVERAGES_DELIVERY     => self::QUESTION_11_4_1,
         self::HOSPITAL_SETUP_TYPE              => self::QUESTION_43,
+        self::SECOND_HAND_PRODUCTS_SOLD        => self::QUESTION_34,
     ];
 
     const QUESTIONS_OPTIONS_MAP = [
@@ -90,6 +95,11 @@ class Questions
                 self::OPTION_2_5  => [
                     self::VALUE => "not_applicable"
                 ],
+            ],
+            self::VALIDATIONS => [
+                "filled",
+                self::TYPE_STRING,
+                "in:0_7_days,8_14_days,15_21_days,22_35_days,above_35_days,not_applicable"
             ]
         ],
         self::QUESTION_4      => [
@@ -102,6 +112,11 @@ class Questions
                 self::OPTION_4_2 => [
                     self::VALUE => "no"
                 ],
+            ],
+            self::VALIDATIONS => [
+                "filled",
+                self::TYPE_STRING,
+                "in:yes,no"
             ]
         ],
         self::QUESTION_11     => [
@@ -123,6 +138,16 @@ class Questions
                         self::QUESTION_11_4_1
                     ],
                 ],
+            ],
+            self::VALIDATIONS => [
+                "filled",
+                self::TYPE_ARRAY,
+                "min:1"
+            ],
+            self::ITEM_VALIDATIONS => [
+                "filled",
+                self::TYPE_STRING,
+                "in:restaurant_or_online_food_delivery,catering_service,food_court_with_multiple_brands,sell_alcoholic_beverages"
             ]
         ],
         self::QUESTION_11_4_1 => [
@@ -137,6 +162,11 @@ class Questions
                 ]
             ],
             self::PREVIOUS => self::QUESTION_11,
+            self::VALIDATIONS => [
+                "filled",
+                self::TYPE_STRING,
+                "in:yes,no"
+            ]
         ],
         self::QUESTION_24     => [
             self::API_KEY => self::ACCOUNTING_BUSINESS_MODEL_TYPE,
@@ -148,6 +178,11 @@ class Questions
                 self::OPTION_24_2 => [
                     self::VALUE => "not_ca_firm"
                 ],
+            ],
+            self::VALIDATIONS => [
+                "filled",
+                self::TYPE_STRING,
+                "in:ca_firm,not_ca_firm"
             ]
         ],
         self::QUESTION_43     => [
@@ -160,6 +195,21 @@ class Questions
                 self::OPTION_43_2 => [
                     self::VALUE => "consulting_with_hospitalization_or_surgery"
                 ],
+            ],
+            self::VALIDATIONS => [
+                "filled",
+                self::TYPE_STRING,
+                "in:consulting_only,consulting_with_hospitalization_or_surgery"
+            ]
+        ],
+        self::QUESTION_34     => [
+            self::API_KEY => self::SECOND_HAND_PRODUCTS_SOLD,
+            self::TYPE    => self::TYPE_STRING,
+            self::VALIDATIONS => [
+                "filled",
+                self::TYPE_STRING,
+                "min:5",
+                "max:250"
             ]
         ],
     ];

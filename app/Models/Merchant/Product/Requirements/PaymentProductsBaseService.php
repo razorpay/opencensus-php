@@ -1181,59 +1181,55 @@ class PaymentProductsBaseService extends Base\Service
         $bmcDocumentTypes = [];
 
         foreach ($bmcAnswers as $questionId => $answer) {
-            if ($merchantDetails->getBusinessSubcategory() === BusinessCategoriesV2\BusinessSubcategory::GROCERY && $questionId === BMCQuestionnaire::QUESTION_4 && $answer[0] === BMCQuestionnaire::OPTION_4_1)
+            if ($questionId === BMCQuestionnaire::QUESTION_4 && $answer[0] === BMCQuestionnaire::OPTION_4_1)
             {
                 $bmcDocumentTypes[] = Document\Type::FSSAI_CERTIFICATE;
             }
 
-            if ($merchantDetails->getBusinessSubcategory() === BusinessCategoriesV2\BusinessSubcategory::RESTAURANT)
-            {
-                if ($questionId === BMCQuestionnaire::QUESTION_11)
-                {
-                    if (
-                        in_array(BMCQuestionnaire::OPTION_11_1, $answer) ||
-                        in_array(BMCQuestionnaire::OPTION_11_2, $answer) ||
-                        in_array(BMCQuestionnaire::OPTION_11_3, $answer)
-                    )
-                    {
-                        $bmcDocumentTypes[] = Document\Type::FSSAI_CERTIFICATE;
-                    }
 
-                    if (in_array(BMCQuestionnaire::OPTION_11_3, $answer))
-                    {
-                        $bmcDocumentTypes[] = Document\Type::SLA_DOCUMENT;
-                    }
+            if ($questionId === BMCQuestionnaire::QUESTION_11)
+            {
+                if (
+                    in_array(BMCQuestionnaire::OPTION_11_1, $answer) ||
+                    in_array(BMCQuestionnaire::OPTION_11_2, $answer) ||
+                    in_array(BMCQuestionnaire::OPTION_11_3, $answer)
+                )
+                {
+                    $bmcDocumentTypes[] = Document\Type::FSSAI_CERTIFICATE;
                 }
 
-                if ($questionId === BMCQuestionnaire::QUESTION_11_4_1)
+                if (in_array(BMCQuestionnaire::OPTION_11_3, $answer))
                 {
-                    $bmcDocumentTypes[] = Document\Type::LIQUOR_LICENSE;
-
-                    if ($answer[0] === BMCQuestionnaire::OPTION_11_4_1_1)
-                    {
-                        $bmcDocumentTypes[] = Document\Type::GOVT_AUTHORISATION_LETTER;
-                    }
+                    $bmcDocumentTypes[] = Document\Type::SLA_DOCUMENT;
                 }
             }
 
-            if ($merchantDetails->getBusinessSubcategory() === BusinessCategoriesV2\BusinessSubcategory::HOSPITAL)
+            if ($questionId === BMCQuestionnaire::QUESTION_11_4_1)
             {
-                if (
-                    $questionId === BMCQuestionnaire::QUESTION_43 &&
-                    in_array(BMCQuestionnaire::OPTION_43_2, $answer)
-                )
+                $bmcDocumentTypes[] = Document\Type::LIQUOR_LICENSE;
+
+                if ($answer[0] === BMCQuestionnaire::OPTION_11_4_1_1)
                 {
                     $bmcDocumentTypes[] = Document\Type::GOVT_AUTHORISATION_LETTER;
                 }
+            }
 
-                if (
-                    $questionId === BMCQuestionnaire::QUESTION_43 &&
-                    in_array(BMCQuestionnaire::OPTION_43_1, $answer) &&
-                    $merchantDetails->isUnregisteredBusiness()
-                )
-                {
-                    $bmcDocumentTypes[] = Document\Type::PROOF_OF_PROFESSION;
-                }
+
+            if (
+                $questionId === BMCQuestionnaire::QUESTION_43 &&
+                in_array(BMCQuestionnaire::OPTION_43_2, $answer)
+            )
+            {
+                $bmcDocumentTypes[] = Document\Type::GOVT_AUTHORISATION_LETTER;
+            }
+
+            if (
+                $questionId === BMCQuestionnaire::QUESTION_43 &&
+                in_array(BMCQuestionnaire::OPTION_43_1, $answer) &&
+                $merchantDetails->isUnregisteredBusiness()
+            )
+            {
+                $bmcDocumentTypes[] = Document\Type::PROOF_OF_PROFESSION;
             }
 
         }

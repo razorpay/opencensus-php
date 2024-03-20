@@ -183,11 +183,14 @@ class Core extends Base\Core
         ) {
             if ($dashboardAccess)
             {
-                $subMSignUpSource = $this->app->partnerships->getSubmSignupSource($merchant->getId());
                 $ppDashboardAccessFeature = $this->repo->feature->findByEntityTypeEntityIdAndName('merchant', $entityOwner->getId(), 'pp_subm_dashboard_access');
-                if($subMSignUpSource === $entityOwner->getId() and empty($ppDashboardAccessFeature))
+                if( empty($ppDashboardAccessFeature) === false )
                 {
-                    $this->assignDashboardAccessForSubmerchants($entityOwner, $merchant);
+                    $subMSignUpSource = $this->app->partnerships->getSubmSignupSource($merchant->getId());
+                    if( $subMSignUpSource === $entityOwner->getId() )
+                    {
+                        $this->assignDashboardAccessForSubmerchants($entityOwner, $merchant);
+                    }
                 }
             }
         });

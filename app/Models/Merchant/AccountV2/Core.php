@@ -35,7 +35,6 @@ use RZP\Models\Partner\Config\Constants as ConfigConstants;
 use RZP\Models\Merchant\Escalations\Constants as EscalationConstants;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Models\Merchant\Detail\BusinessCategoriesV2\BusinessParentCategory;
-use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Questions as BMCQuestionnaire;
 use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Helper as BMCHelper;
 use RZP\Models\Merchant\Detail\BusinessCategoriesV2\BusinessSubCategoryMetaData as SubcategoryV2;
 
@@ -373,7 +372,7 @@ class Core extends Merchant\Core
 
             $isExpEnabled = (new MerchantCore())->isOnboardingApiBmcEnabled($partnerId, 'skip_blacklisted_category_check');
 
-            if (isset($input[Detail\Entity::BUSINESS_CATEGORY]) && isset($input[Detail\Entity::BUSINESS_SUBCATEGORY]))
+            if (isset($input[Detail\Entity::BUSINESS_CATEGORY]) && isset($input[Detail\Entity::BUSINESS_SUBCATEGORY]) && isset($input[Detail\Entity::BUSINESS_TYPE]))
             {
                 $category = $input[Detail\Entity::BUSINESS_CATEGORY];
 
@@ -956,8 +955,7 @@ class Core extends Merchant\Core
                     if ($isPhantomPrefillEnabled && isset($input[Constants::PROFILE]) === true && $this->isOnboardingApiBmcEnabled($partnerId) === true )
                     {
                         $profile = $input[Constants::PROFILE];
-                        $bmcFilteredInput = array_intersect_key($profile, BMCQuestionnaire::API_KEYS_TO_QUESTION_KEYS);
-                        $bmcInput = BMCHelper::transformInputToPGOSInput($bmcFilteredInput);
+                        $bmcInput = BMCHelper::transformInputToPGOSInput($subMerchant->merchantDetail, $profile);
 
                         if (count($bmcInput) > 0)
                         {

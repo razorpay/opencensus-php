@@ -17,6 +17,7 @@ use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
+use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Helper as BMCHelper;
 
 class Validator extends Merchant\Validator
 {
@@ -114,7 +115,7 @@ class Validator extends Merchant\Validator
         Constants::CATEGORY          => 'sometimes|string',
         Constants::SUBCATEGORY       => 'sometimes|string',
         Constants::DESCRIPTION       =>  array ('sometimes','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
-        Constants::BUSINESS_MODEL    => 'sometimes|string'
+        Constants::BUSINESS_MODEL    => 'sometimes|string',
     ];
 
     protected static $accountAddressRules = [
@@ -196,11 +197,27 @@ class Validator extends Merchant\Validator
         'apps',
     ];
 
+    protected static $createAccountPrefillValidators = [
+        'profile_input',
+        'legal_info',
+        'brand',
+        'contact_info',
+        'apps',
+    ];
+
     protected static $editAccountValidators = [
         'edit_profile_input',
         'legal_info',
         'brand',
         'tos_acceptance',
+        'contact_info',
+        'apps',
+    ];
+
+    protected static $editAccountPrefillValidators = [
+        'edit_profile_input',
+        'legal_info',
+        'brand',
         'contact_info',
         'apps',
     ];
@@ -259,6 +276,13 @@ class Validator extends Merchant\Validator
             return;
         }
 
+        $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled)
+        {
+            static::$profileRules = array_merge(static::$profileRules, BMCHelper::getValidations());
+        }
+
         $this->validateInput('profile', $profileInput);
 
         $this->validateAddresses($profileInput);
@@ -269,6 +293,13 @@ class Validator extends Merchant\Validator
         if (isset($input[Constants::PROFILE]) === false)
         {
             return;
+        }
+
+        $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled)
+        {
+            static::$editProfileRules = array_merge(static::$editProfileRules, BMCHelper::getValidations());
         }
 
         $profileInput = $input[Constants::PROFILE];
