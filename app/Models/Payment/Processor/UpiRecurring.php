@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -117,16 +118,19 @@ trait UpiRecurring
 
     public function processRecurringDebitForUpiOptimizer(Payment\Entity $payment, array $inputRec): array
     {
-        $variant = $this->app['razorx']->getTreatment(
-            $payment->merchant->getId(),
-            RazorxTreatment::ALLOW_OPTIMIZER_UPI_RECURRING,
-            $this->mode
-        );
+        $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
 
-         if (strtolower($variant) !== 'on')
-         {
-             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED);
-         }
+        if (empty($testCaseId) === true) {
+            $variant = $this->app['razorx']->getTreatment(
+                $payment->merchant->getId(),
+                RazorxTreatment::ALLOW_OPTIMIZER_UPI_RECURRING,
+                $this->mode
+            );
+
+            if (strtolower($variant) !== 'on') {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED);
+            }
+        }
 
         $notifyInput = [];
 
