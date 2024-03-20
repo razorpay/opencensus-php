@@ -1,13 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import { Box } from '@razorpay/blade/components';
-import styled from 'styled-components';
-
 import IntroductionPosterMobile from 'assets/partner-dashboard/partner-playbook/introduction-poster-mobile.svg';
 import IntroductionPoster from 'assets/partner-dashboard/partner-playbook/introduction-poster.svg';
+import styled from 'styled-components';
+
 import { UseFormikReturnType } from 'common/typings';
 import { isMobileResolution } from 'common/utils/rzp-utils';
 import { useIntersectionObserver } from 'merchant/hooks/useIntersectionObserver';
 import { debouncedTrackPageSectionReadSuccess } from 'merchant/views/PartnerDashboard/PartnerPlaybook/analytics';
+import { introVideoItem } from 'merchant/views/PartnerDashboard/PartnerPlaybook/data';
+import { ProgramItem } from 'merchant/views/PartnerDashboard/PartnerPlaybook/types';
 
 import SearchBar from './SearchBar';
 
@@ -31,16 +33,16 @@ const IntroClickOverlayMobile = styled.div`
 
 type PosterAndSearchBarProps = {
   formik: UseFormikReturnType;
-  onWatchIntroClick: () => void;
+  openPreview: (item: ProgramItem) => void;
 };
-const PosterAndSearchBar = ({
-  formik,
-  onWatchIntroClick,
-}: PosterAndSearchBarProps): JSX.Element => {
+const PosterAndSearchBar = ({ formik, openPreview }: PosterAndSearchBarProps): JSX.Element => {
   const isMobile = isMobileResolution();
 
   const sectionRef = useRef(null);
   const isOnScreen = useIntersectionObserver(sectionRef);
+  const onWatchIntroClick = () => {
+    openPreview(introVideoItem);
+  };
   useEffect(() => {
     if (isOnScreen) {
       debouncedTrackPageSectionReadSuccess({
@@ -53,7 +55,11 @@ const PosterAndSearchBar = ({
   return (
     <Box ref={sectionRef} display="block">
       <Box position="relative">
-        <img width="100%" src={isMobile ? IntroductionPosterMobile : IntroductionPoster} />
+        <img
+          width="100%"
+          src={isMobile ? IntroductionPosterMobile : IntroductionPoster}
+          alt="Poster"
+        />
         {isMobile ? (
           <IntroClickOverlayMobile
             data-testid="playbook-intro-overlay"

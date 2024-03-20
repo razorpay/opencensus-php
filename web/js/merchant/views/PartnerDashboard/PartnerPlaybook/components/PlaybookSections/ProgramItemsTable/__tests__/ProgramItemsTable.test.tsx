@@ -79,7 +79,6 @@ describe('ProgramItemsTable', () => {
       ...growYourBusinessSection.folders[0],
       sectionHeader: growYourBusinessSection.header,
     });
-    // expand the first folder
     expect(screen.getAllByLabelText('download')).toHaveLength(2);
     await userEvent.click(screen.getAllByLabelText('download')[0]);
 
@@ -96,5 +95,18 @@ describe('ProgramItemsTable', () => {
         }),
       }),
     );
+  });
+
+  test('should hide download url cta if disable_download is true', () => {
+    const growYourBusinessSection = parsedProgramItems[1].sectionItem;
+    renderApp({
+      ...growYourBusinessSection.folders[0],
+      items: growYourBusinessSection.folders[0].items.map((item) => ({
+        ...item,
+        disable_download: true,
+      })),
+      sectionHeader: growYourBusinessSection.header,
+    });
+    expect(screen.queryAllByLabelText('download')).toHaveLength(0);
   });
 });

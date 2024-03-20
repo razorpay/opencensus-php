@@ -47,7 +47,8 @@ const ItemActions = ({
     trackItemActionCta('download', item);
   };
   const shouldShowCopyButton = [VIDEO].includes(content_type);
-  const shouldShowDownloadButton = [DOC, PDF, PPT, IMAGE].includes(content_type);
+  const shouldShowDownloadButton =
+    !item.disable_download && [DOC, PDF, PPT, IMAGE].includes(content_type);
   return (
     <Box display="flex" flexDirection="row" gap="spacing.7" justifyContent="center">
       <IconButton

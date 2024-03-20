@@ -3,10 +3,18 @@ import {
   PlaybookItemsStore,
   ProgramHeader,
   PlaybookItemsStoreInitial,
+  ProgramItem,
 } from 'merchant/views/PartnerDashboard/PartnerPlaybook/types';
 
-export const INTRO_VIDEO_EMBED_LINK =
-  'https://www.youtube.com/embed/jO_2m3RgiKw?si=JjT95vCTUV77j5E-';
+export const introVideoItem: ProgramItem = {
+  id: 'introVideoItem',
+  content_type: PlaybookContentTypes.VIDEO,
+  copy_url: 'https://drive.google.com/file/d/17wiO6tfB9pAPHBQdkj5dfhTAWExCVIkO/view?usp=drive_link',
+  preview_url: 'https://drive.google.com/file/d/17wiO6tfB9pAPHBQdkj5dfhTAWExCVIkO/preview',
+  description: '',
+  download_url: 'https://drive.google.com/uc?export=download&id=17wiO6tfB9pAPHBQdkj5dfhTAWExCVIkO',
+  title: 'Introduction to Partner Playbook',
+};
 
 const initializeProgramItems = (
   programItemsData: PlaybookItemsStoreInitial,
@@ -187,6 +195,7 @@ export const programItemsData: PlaybookItemsStore = initializeProgramItems([
               download_url:
                 'https://drive.google.com/uc?export=download&id=1Ae_wF2TE0QM5dL_3v1PV6EEvQ9fhNHPZ',
               title: 'Product-Client Mapping',
+              disable_download: true,
             },
             {
               content_type: PlaybookContentTypes.PDF,
@@ -199,6 +208,7 @@ export const programItemsData: PlaybookItemsStore = initializeProgramItems([
               download_url:
                 'https://drive.google.com/uc?export=download&id=1RgaTRwBxqYTsecFajfhzQdkbWcmu-xAv',
               title: 'Objection Handling',
+              disable_download: true,
             },
           ],
         },
@@ -393,16 +403,17 @@ export const programItemsData: PlaybookItemsStore = initializeProgramItems([
               title: 'KYC Completion',
             },
             {
-              content_type: PlaybookContentTypes.DOC,
+              content_type: PlaybookContentTypes.PDF,
               copy_url:
-                'https://docs.google.com/document/d/1UKVJYN1-4HTHxrdLY_L6WVZ53AaLRnXF/edit?usp=drive_link&ouid=111736103671181464456&rtpof=true&sd=true',
+                'https://drive.google.com/file/d/1K2imMifxgSKaMQgQ8ksgfft0uzIIjpzA/view?usp=drive_link',
               preview_url:
-                'https://docs.google.com/document/d/e/2PACX-1vTSDRAEUZBvlOqcnOgRTkEvqJghWCSwGk62mJ5vqt0sFmEkOdBn6DNYkJLFuXfcbA/pub',
+                'https://drive.google.com/file/d/1K2imMifxgSKaMQgQ8ksgfft0uzIIjpzA/preview',
               description:
                 'Assist your clients on how to fill up their KYC form effectively and avoid any delays',
               download_url:
-                'https://drive.google.com/uc?export=download&id=1UKVJYN1-4HTHxrdLY_L6WVZ53AaLRnXF',
+                'https://drive.google.com/uc?export=download&id=1K2imMifxgSKaMQgQ8ksgfft0uzIIjpzA',
               title: 'KYC Checklist',
+              disable_download: true,
             },
           ],
         },
@@ -424,6 +435,7 @@ export const programItemsData: PlaybookItemsStore = initializeProgramItems([
               download_url:
                 'https://drive.google.com/uc?export=download&id=1XD3VFihFd9LMeUKYgAailMGWmK3ZhZuA',
               title: 'International Payments Enablement',
+              disable_download: true,
             },
           ],
         },

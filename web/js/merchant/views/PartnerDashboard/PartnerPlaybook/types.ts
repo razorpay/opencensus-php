@@ -22,6 +22,7 @@ export type ProgramItem = {
   copy_url: string;
   download_url: string;
   preview_url: string;
+  disable_download?: boolean;
 };
 
 type ProgramFolderHeader = {

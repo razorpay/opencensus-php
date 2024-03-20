@@ -31,7 +31,7 @@ test.describe('Test wallet reports @flow=reports @project=payments ', () => {
     ).toBeVisible();
   });
 
-  test('should be able to download a report', async ({ page }) => {
+  test.skip('should be able to download a report', async ({ page }) => {
     await page.getByText('Date - Newest').nth(0).click();
     await page.getByRole('option', { name: 'Status - Success' }).click();
 

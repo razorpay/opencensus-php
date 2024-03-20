@@ -16,7 +16,6 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchPlaybookItems } from './api';
 import FeedbackLoop from './components/FeedbackLoop';
 import GoogleDrivePreview from './components/GoogleDrivePreview';
-import IntroVideoModal from './components/IntroVideoModal';
 import PlaybookSections from './components/PlaybookSections';
 import PosterAndSearchBar from './components/PosterAndSearchBar';
 
@@ -32,7 +31,6 @@ const PartnerPlaybook = ({ showNotification }: PartnerPlaybookProps): JSX.Elemen
   const location = useLocation();
   const decodedSearchParams = getDecodedParams(location.search);
   const [previewItem, setPreviewItem] = useState(null);
-  const [isIntroVideoModalOpen, setIsIntroVideoModalOpen] = useState(false);
   const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
   let formik = {} as UseFormikReturnType;
   const {
@@ -84,9 +82,6 @@ const PartnerPlaybook = ({ showNotification }: PartnerPlaybookProps): JSX.Elemen
     onSubmit: handleFormSubmit,
   });
 
-  const onWatchIntroClick = () => {
-    setIsIntroVideoModalOpen(true);
-  };
   const openPreview = (item) => {
     setPreviewItem(item);
     setIsDriveModalOpen(true);
@@ -103,7 +98,7 @@ const PartnerPlaybook = ({ showNotification }: PartnerPlaybookProps): JSX.Elemen
       flexDirection="column"
       backgroundColor="surface.background.level3.lowContrast"
     >
-      <PosterAndSearchBar formik={formik} onWatchIntroClick={onWatchIntroClick} />
+      <PosterAndSearchBar formik={formik} openPreview={openPreview} />
       <PlaybookSections
         programItems={programItems}
         isLoading={isFetching || isInitialLoading}
@@ -115,7 +110,6 @@ const PartnerPlaybook = ({ showNotification }: PartnerPlaybookProps): JSX.Elemen
         isOpen={isDriveModalOpen}
         closePreview={closePreview}
       />
-      <IntroVideoModal isOpen={isIntroVideoModalOpen} setIsOpen={setIsIntroVideoModalOpen} />
     </Box>
   );
 };
