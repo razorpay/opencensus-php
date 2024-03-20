@@ -145,11 +145,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->runEntityAssertionsForDedicatedTerminalQr($response, $terminal, 'test');
     }
 
-    protected function enableRazorXTreatmentForQrDedicatedTerminal()
-    {
-        $this->setMockRazorxTreatment([RazorxTreatment::DEDICATED_TERMINAL_QR_CODE => RazorxTreatment::RAZORX_VARIANT_ON]);
-    }
-
     protected function enableRazorXTreatmentForQrOnDemandClose()
     {
         $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
@@ -1993,4 +1988,23 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals(false, $qrPayment['expected']);
         $this->assertEquals('refunded', $payment['status']);
     }
+
+    public function testDownloadQrCodeInTestMode()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+        $qrCode = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'payment_amount' => 400,
+                'fixed_amount'   => true,
+            ]);
+
+        $qrCodeId = $qrCode['id'];
+        $this->handleUfhService($qrCodeId);
+        $response = $this->downloadQrCode($qrCodeId);
+
+        $this->assertContentTypeForResponse('image/png', $response);
+    }
+
 }

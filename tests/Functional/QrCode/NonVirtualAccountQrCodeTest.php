@@ -424,27 +424,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->runEntityAssertions($response);
     }
 
-    public function testDownloadUpiQr()
-    {
-        $response = $response = $this->createQrCode([
-                                                        'type'  => 'upi_qr',
-                                                        'usage' => 'multiple_use'
-                                                    ]);
-
-        $qrCodeId = $response['id'];
-
-        $request = [
-            'method'  => 'GET',
-            'url'     => '/t/qrcode/' . $qrCodeId,
-        ];
-
-        $this->ba->directAuth();
-
-        $response = $this->sendRequest($request);
-
-        $this->assertContentTypeForResponse('image/png', $response);
-    }
-
     public function testCreateUpiQrCodeWithoutTransactionName()
     {
         $this->fixtures->merchant->addFeatures(['qr_custom_txn_name']);

@@ -836,23 +836,6 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
-    protected function enableRazorXTreatmentForQrDedicatedTerminal()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-               {
-                   if ($featureFlag === (RazorxTreatment::DEDICATED_TERMINAL_QR_CODE))
-                   {
-                       return 'on';
-                   }
-                   return 'control';
-               });
-    }
-
     protected function overrideUpiIciciPayment(array $upiEntity, $gatewayPaymentId = null)
     {
         $facade                   = $this->testData['upiIcici'];

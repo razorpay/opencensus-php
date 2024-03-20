@@ -6,6 +6,7 @@ use DB;
 use Mail;
 use Queue;
 use Mockery;
+use RZP\Services\Mock;
 use RZP\Error\ErrorCode;
 use RZP\Models\QrCode\Type;
 use RZP\Services\RazorXClient;
@@ -56,6 +57,28 @@ trait NonVirtualAccountQrCodeTrait
         ];
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    private function downloadQrCode(string $id, $mode = 'test', $merchantId = '10000000000000')
+    {
+        if ($mode === 'live')
+        {
+            $request = [
+                'method'  => 'GET',
+                'url'     => '/l/qrcode/' . $id,
+            ];
+        }
+        else
+        {
+            $request = [
+                'method'  => 'GET',
+                'url'     => '/t/qrcode/' . $id,
+            ];
+        }
+
+        $this->ba->directAuth();
+
+        return $this->sendRequest($request);
     }
 
     private function closeQrCode(string $id, $mode = 'test', $merchantId = '10000000000000')
@@ -943,4 +966,44 @@ trait NonVirtualAccountQrCodeTrait
                           });
         }
     }
+
+    public function handleUfhService($qrCodeId)
+    {
+        $ufhServiceMock = Mockery::mock(Mock\UfhService::class, [$this->app])->makePartial();
+        $exception = new ServerErrorException('Unavailable', 'SERVER_ERROR');
+        $count = 0;
+
+        $ufhServiceMock->shouldReceive('fetchFiles')
+                       ->andReturnUsing(function() use (&$count, $exception, $qrCodeId) {
+                           if ($count == 0) {
+                               ++$count;
+                               throw $exception;
+                           }
+                           else {
+                               ++$count;
+                               return [
+                                   'entity'  => 'collection',
+                                   'count'   => 1,
+                                   'items'   => [
+                                       [
+                                           'id'            => 'file_10RandomFileId',
+                                           'type'          => 'explanation_letter',
+                                           'entity_type'   => 'qr_code',
+                                           'entity_id'     => $qrCodeId,
+                                           'name'          => 'QrCode.jpg',
+                                           'location'      => 'random/qrcode/location',
+                                           'bucket'        => 'test_bucket',
+                                           'mime'          => 'image/jpeg',
+                                           'extension'     => 'jpg',
+                                           'merchant_id'   => '10000000000000',
+                                           'store'         => 's3',
+                                       ],
+                                   ],
+                               ];
+                           }
+                       });
+
+        $this->app->instance('ufh.service', $ufhServiceMock);
+    }
+
 }

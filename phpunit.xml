@@ -421,6 +421,15 @@
         <testsuite name="UPI Kotak QR Code Test Suite">
             <file>./tests/Functional/QrCode/UpiKotakQRCodeTest.php</file>
         </testsuite>
+        <testsuite name="QR Entity Test Suite">
+            <file>./tests/Unit/Models/QrCode/EntityTest.php</file>
+        </testsuite>
+        <testsuite name="UPI Mindgate QR Code Test Suite">
+            <file>./tests/Functional/QrCode/UpiMindgateQRCodeTest.php</file>
+        </testsuite>
+        <testsuite name="UPI Airtel QR Code Test Suite">
+            <file>./tests/Functional/QrCode/UpiAirtelQRCodeTest.php</file>
+        </testsuite>
         <testsuite name="Checkout Orders Test Suite">
             <file>./tests/Functional/CheckoutOrder/CheckoutOrdersTest.php</file>
         </testsuite>

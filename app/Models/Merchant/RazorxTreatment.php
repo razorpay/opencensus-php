@@ -788,8 +788,6 @@ final class RazorxTreatment
     //Experiment used to control whether requests route to DCS or NOT
     const DCS_ENABLED_NEW_USECASE = 'dcs_new_usecases_enabled';
 
-    const DEDICATED_TERMINAL_QR_CODE = 'dedicated_terminal_qr_code';
-
     const MIGRATE_TO_NEW_BEAM_PUSH_URL = 'migrate_to_new_beam_push_url';
 
     const RBL_CA_USE_NEW_STATE_MACHINE = 'rbl_ca_use_new_state_machine';
