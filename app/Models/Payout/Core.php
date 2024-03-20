@@ -6522,7 +6522,7 @@ class Core extends Base\Core
     {
         (new Validator)->setStrictFalse()->validateInput(Validator::STATUS_DETAILS_SOURCE_UPDATE, $input);
 
-        $payout = $this->getAPIModelPayoutFromPayoutService(Entity::PAYOUT_ID);
+        $payout = $this->getAPIModelPayoutFromPayoutService($input[Entity::PAYOUT_ID]);
 
         $payout->setAttribute(Entity::SOURCE_DETAILS, $input[Entity::SOURCE_DETAILS]);
         $payout->setAttribute(Entity::STATUS_DETAILS, $input[Entity::STATUS_DETAILS]);
