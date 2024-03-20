@@ -1708,7 +1708,7 @@ class Core extends Base\Core
     {
         $MISSING_TRANSACTIONS_QUERY = "
             SELECT
-              id AS refund_id,
+              id,
               amount,
               base_amount,
               fee,
