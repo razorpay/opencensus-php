@@ -810,6 +810,8 @@ return array(
 
     'magic_complete_checkout_decomp_feature_flags_experiment_id' => env('MAGIC_COMPLETE_CHECKOUT_DECOMP_FEATURE_FLAGS_EXP_ID'),
 
+    'magic_complete_checkout_async_decomp_experiment_id' => env('MAGIC_COMPLETE_CHECKOUT_ASYNC_DECOMP_EXP_ID'),
+
     'magic_update_shipping_address_experiment_id' => env('MAGIC_UPDATE_SHIPPING_ADDRESS_EXP_ID'),
 
     'one_cc_shipping_info_decomp' => env('ONE_CC_SHIPPING_INFO_DECOMP_EXP_ID'),

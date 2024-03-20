@@ -124,9 +124,9 @@ class SplitzExperimentEvaluator extends Base\Core
         return $result['variant'] === 'enable';
     }
 
-    public function useMCSForShopifyCompleteCheckoutForFeatureFlags(): bool
+    public function useMCSForShopifyCompleteCheckoutForFeatureFlags(string $merchantId): bool
     {
-        $input = $this->merchantIdBasedPayload('app.magic_complete_checkout_decomp_feature_flags_experiment_id');
+        $input = $this->merchantIdBasedPayload('app.magic_complete_checkout_decomp_feature_flags_experiment_id', $merchantId);
         $result = $this->evaluateExperiment($input);
         return $result['variant'] === 'enable';
     }
@@ -159,13 +159,28 @@ class SplitzExperimentEvaluator extends Base\Core
         return $result['variant'] === 'enable';
     }
 
-    // To be used when merchant_id is the only param required for evaluating the experiment.
-    protected function merchantIdBasedPayload(string $experimentPath): array
+    // useMCSForAsyncShopifyCompleteCheckout is called from APIEventSubscriber which does not have
+    // merchant set in context so we pass the merchantId and manually build the input.
+    public function useMCSForAsyncShopifyCompleteCheckout(string $merchantId): bool
     {
+        $input = $this->merchantIdBasedPayload('app.magic_complete_checkout_async_decomp_experiment_id', $merchantId);
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
+    // To be used when merchant_id is the only param required for evaluating the experiment.
+    // $this->merchant always exists for web server pods. In case of worker pods the client
+    // must explicitly pass $merchantId.
+    protected function merchantIdBasedPayload(string $experimentPath, string $merchantId = ''): array
+    {
+        if ($merchantId === '')
+        {
+            $merchantId = $this->merchant->getId();
+        }
         return [
             'id'            => UniqueIdEntity::generateUniqueId(),
             'experiment_id' => $this->app['config']->get($experimentPath),
-            'request_data'  => json_encode(['merchant_id' => $this->merchant->getId()]),
+            'request_data'  => json_encode(['merchant_id' => $merchantId]),
         ];
     }
 }

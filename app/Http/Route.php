@@ -17546,6 +17546,7 @@ class Route
             'one_cc_shopify_cart_for_mcs',
             'order_payments',
             'internal_merchant_details_fetch',
+            'payment_refund',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',

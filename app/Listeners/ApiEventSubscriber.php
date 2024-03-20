@@ -42,6 +42,7 @@ use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\WebhookV2\Metric as WebhookMetric;
 use RZP\Models\Merchant\Detail as MerchantDetail;
+use RZP\Models\Merchant\OneClickCheckout\Shopify\Decomp as MagicDecomp;
 
 class ApiEventSubscriber extends Base\Core
 {
@@ -602,15 +603,44 @@ class ApiEventSubscriber extends Base\Core
                 if ($payment->isAuthorized() === true)
                 {
                     $dispatched = true;
-
-                    OneCCShopifyCreateOrder::dispatch([
+                    $publishData = [
                         'mode'                => $this->mode,
                         'razorpay_order_id'   => $order->getPublicId(),
                         'razorpay_payment_id' => $payment->getPublicId(),
                         'merchant_id'         => $payment->getMerchantId(),
                         'type'                => 'create_order',
                         'dispatch_time'       => millitime() - $start,
-                    ])->delay(now()->addSeconds(45));
+                    ];
+                    $waitTime = 45; // seconds
+                    $queue = 'api_monolith';
+                    try
+                    {
+                        $magicDecomp = new MagicDecomp();
+                        $merchantId = $payment->getMerchantId();
+                        $useMcs = $magicDecomp->useMCSForAsyncCompleteCheckout($merchantId);
+                        if ($useMcs === true)
+                        {
+                            $queue = 'mcs';
+                            $magicDecomp->pushCompleteCheckoutPayloadToMCSQueue($publishData, $waitTime);
+                        }
+                        else
+                        {
+                            OneCCShopifyCreateOrder::dispatch($publishData)->delay(now()->addSeconds($waitTime));
+                        }
+                    }
+                    catch (\Throwable $ex)
+                    {
+                        // Push to MCS failed so we default to API queue.
+                        $queue = 'api_monolith_fallback';
+                        OneCCShopifyCreateOrder::dispatch($publishData)->delay(now()->addSeconds($waitTime));
+                        $this->trace->traceException(
+                            $ex,
+                            Trace::CRITICAL,
+                            TraceCode::SHOPIFY_1CC_MCS_COMPLETE_CHECKOUT_SQS_PUSH_FAILED,
+                            [
+                                'data' => $publishData,
+                            ]);
+                    }
 
                     // To debug payloads not being handled properly in sqs
                     $this->trace->info(
@@ -618,6 +648,7 @@ class ApiEventSubscriber extends Base\Core
                         [
                             'step'                => 'dispatch',
                             'type'                => 'create_order',
+                            'use_mcs'             => $useMcs,
                             'dispatched'          => $dispatched,
                             'mode'                => $this->mode,
                             'razorpay_order_id'   => $order->getPublicId(),
@@ -625,6 +656,7 @@ class ApiEventSubscriber extends Base\Core
                             'payment_method'      => $payment->getMethod(),
                             'payment_status'      => $payment->getStatus(),
                             'merchant_id'         => $payment->getMerchantId(),
+                            'queue'               => $queue,
                             'from'                => 'ApiEventSubscriber',
                         ]);
                 }

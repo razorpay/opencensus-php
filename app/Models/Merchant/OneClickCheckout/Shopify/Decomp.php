@@ -28,40 +28,14 @@ class Decomp extends Base\Service
         $this->magicCheckoutSvc = new MagicCheckoutService\Service();
     }
 
-    // Logic to determine whether we use MCS for completing the checkout or stick to API.
-    // 1. Merchants using Nector coins are in migration.
-    // 2. Orders using Gift cards are in migration.
-    // 3. Orders using coupon engine are not supported.
-    // 4. Merchants using customer account creation are not supported.
-    // 5. Merchants using custom fullfilment centres are not supported.
-    // 6. Merchants using draft order flow are not supported.
-    // 7. Orders processed through SQS are not supported.
-    // 8. Merchants using Gupshup for customer consent flows.
-    // 9. Merchants who have taxes enabled on shipping.
-    // Remaining traffic is controlled using Splitz.
+    // useMCSForCompleteCheckout controls traffic migration for "v1/1cc/shopify/complete" endpoint.
     public function useMCSForCompleteCheckout(): bool
     {
         $merchantId = $this->merchant->getId();
-        // These are the feature flags which are yet not supported.
-        if (
-            $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_ACC_CREATE) || 
-            $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_DRAFT_ORDER) ||
-            $this->merchant->isFeatureEnabled('one_cc_opt_shipping_tax') ||
-            $this->merchant->isFeatureEnabled('one_cc_tax_inclusion') ||
-            $merchantId === 'LsgXO1I1dfZNeI' || // wingreens for fullfilment centres
-            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_COUPON_ENGINE) ||
-            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_ENABLE_GUPSHUP)
-        )
+        $useMCS = $this->useMCSForShopifyCompleteCheckoutForFeatureFlags($merchantId);
+        if (!$useMCS)
         {
             return false;
-        }
-        // These are the feature flags currently being migrated.
-        if (
-            $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_ENABLE_NECTOR_COINS) ||
-            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_GIFT_CARD)
-        )
-        {
-            return (new SplitzExperimentEvaluator())->useMCSForShopifyCompleteCheckoutForFeatureFlags();
         }
         // This experiment controls ramp up for merchants without customizations (as above).
         return (new SplitzExperimentEvaluator())->useMCSForShopifyCompleteCheckout();
@@ -94,4 +68,57 @@ class Decomp extends Base\Service
             return false;
         }
     }
+
+    public function pushCompleteCheckoutPayloadToMCSQueue(array $publishData, int $waitTime): void
+    {
+        $queueName = $this->app['config']->get('queue.mcs_shopify_complete_checkout');
+        $this->app['queue']->connection('sqs')->later($waitTime, 'mcs_shopify_complete_checkout', json_encode($publishData), $queueName);
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_MCS_COMPLETE_CHECKOUT_SQS_PUSH_SUCCESS,
+            [
+                'data' => $publishData
+            ]);
+    }
+
+    // useMCSForAsyncCompleteCheckout controls traffic migration for "one-cc-shopify-create-order" worker.
+    // Based on this, we either push to the SQS queue consumed by API or a new one consumed by MCS.
+    public function useMCSForAsyncCompleteCheckout(string $merchantId): bool
+    {
+        $useMCS = $this->useMCSForShopifyCompleteCheckoutForFeatureFlags($merchantId);
+        if (!$useMCS)
+        {
+            return false;
+        }
+        return (new SplitzExperimentEvaluator())->useMCSForAsyncShopifyCompleteCheckout($merchantId);
+    }
+
+    // useMCSForShopifyCompleteCheckoutForFeatureFlags controls merchant wise (based onfeature flags)
+    // migration strategy for Shopify complete checkout API and SQS worker.
+    // API and SQS must control traffic migration only for the supported merchants.
+    protected function useMCSForShopifyCompleteCheckoutForFeatureFlags(string $merchantId): bool
+    {
+        // These are the feature flags which are yet not supported in MCS.
+        if (
+            $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_ACC_CREATE) ||
+            $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_DRAFT_ORDER) ||
+            $this->merchant->isFeatureEnabled('one_cc_opt_shipping_tax') ||
+            $this->merchant->isFeatureEnabled('one_cc_tax_inclusion') ||
+            $merchantId === 'LsgXO1I1dfZNeI' || // wingreens for fullfilment centres
+            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_COUPON_ENGINE) ||
+            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_ENABLE_GUPSHUP)
+        )
+        {
+            return false;
+        }
+        // These are the feature flags currently being migrated.
+        if (
+            $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_ENABLE_NECTOR_COINS) ||
+            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_GIFT_CARD)
+        )
+        {
+            return (new SplitzExperimentEvaluator())->useMCSForShopifyCompleteCheckoutForFeatureFlags($merchantId);
+        }
+        return true;
+    }
+
 }
