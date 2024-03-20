@@ -131,9 +131,12 @@ class TurboUpiTest extends TestCase
             'common' => [
             ],
             "fallback" => [
-                "public_error_code"   => "SYSTEM_ERROR",
+                "public_error_code"   => "SERVER_ERROR",
                 "internal_error_code" => "FALLBACK_ERROR",
-                "description"         => "Something went wrong, please try again later. Any amount deducted will be refunded within 5-7 working days."
+                "description"         => "We are facing some trouble completing your request at the moment. Please try again shortly.",
+                "reason"              => "server_error",
+                'source'              => "internal",
+                "step"                => "payment_authorization"
             ]
         ];
 

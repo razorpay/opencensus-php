@@ -29,11 +29,11 @@ class Constants
         Error::STEP
     ];
 
-    const FALLBACK_PUBLIC_ERROR_CODE   = "UNKNOWN_ERROR";
-    const FALLBACK_REASON              = "unknown_error";
-    const FALLBACK_ERROR_DESCRIPTION   = "Something went wrong, please try again.";
-    const FALLBACK_SOURCE              = "unknown_source";
-    const FALLBACK_STEP                = "";
+    const FALLBACK_PUBLIC_ERROR_CODE   = "SERVER_ERROR";
+    const FALLBACK_REASON              = "server_error";
+    const FALLBACK_ERROR_DESCRIPTION   = "We are facing some trouble completing your request at the moment. Please try again shortly.";
+    const FALLBACK_SOURCE              = "internal";
+    const FALLBACK_STEP                = "payment_authorization";
 
     // Prefetch Constants
     const TYPE                      = "type";
