@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Environment;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Detail;
@@ -797,4 +798,74 @@ class Service extends Base\Service
         return $this->partnerPGOSProxyController->handlePGOSProxyRequests($route, $input, $partner, true);
     }
 
+    public function autoApproveMerchantActivationCheckerFlow(array $input): array
+    {
+        $splitzVariables = $this->getSplitzExperimentVariables('enable');
+        if (empty($splitzVariables))
+        {
+            throw new Exception\LogicException("Admin not allowed to auto-approve!");
+        }
+
+        $this->increaseAllowedSystemLimits();
+
+        return $this->core->autoApproveMerchantActivationCheckerFlow($input, $splitzVariables);
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(600);
+
+        RuntimeManager::setMaxExecTime(600);
+    }
+
+    public function getSplitzExperimentVariables(string $checkVariant): array
+    {
+        $splitzVariables = [];
+
+        try
+        {
+            $admin = $this->app['basicauth']->getAdmin();
+
+            $properties = [
+                'id'            => $admin->getId(),
+                'experiment_id' => app('config')->get('app.sub_merchant_activation_auto_approval_checker'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+            if ( is_null($variant) === true )
+            {
+                return [];
+            }
+
+            $isVariantMatch = $variant === $checkVariant;
+
+            if (! $isVariantMatch)
+            {
+                return [];
+            }
+
+            foreach ( $response['response']['variant']['variables'] as $variable )
+            {
+                $splitzVariables[$variable['key']] = $variable['value'];
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+            $this->trace->traceException(
+                $e, Trace::ERROR,
+                TraceCode::SPLITZ_ERROR,
+                ['id' => $id, 'variables' => $splitzVariables]
+            );
+
+            return [];
+        }
+
+        return $splitzVariables;
+    }
 }

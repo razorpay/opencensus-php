@@ -8,6 +8,7 @@ use RZP\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Batch as Batch;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Base\PublicCollection;
@@ -20,6 +21,15 @@ use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntit
 
 class Validator extends Base\Validator
 {
+    protected static $autoApproveMerchantActivationSplitzVariablesRules = [
+        'partner_id'    => 'required|string',
+        'limit'         => 'required|integer|max:400',
+    ];
+
+    protected static $autoApproveMerchantActivationInputRules = [
+        'checkers_file' => 'required|file|max:1024' . Batch\Validator::CSV_EXCEL_MIME_RULE,
+    ];
+
     protected static $resellerToAggregatorMigrationRules = [
         'merchant_id'     => 'required|alpha_num|size:14',
         'new_auth_create' => 'required|boolean',

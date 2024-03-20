@@ -217,4 +217,14 @@ class PartnerController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function autoApproveMerchantActivationCheckerFlow()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->autoApproveMerchantActivationCheckerFlow($input);
+
+        return ApiResponse::json($response);
+    }
+
 }

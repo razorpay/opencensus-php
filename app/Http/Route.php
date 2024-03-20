@@ -910,6 +910,8 @@ class Route
         'merchant_get_rejection_reasons'           => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_aov_config'                      => ['get',      'merchant/aov-config',                            'MerchantController@getAovConfig'                                   ],
 
+        'auto_approve_merchant_activation_checker' => ['post',     'merchant/activation/auto_approve',               'PartnerController@autoApproveMerchantActivationCheckerFlow'        ],
+
         'merchant_tnc_details'                     => ['get',      'merchant/tnc/{id}',                              'MerchantController@getMerchantTnc'                                 ],
         'merchant_tnc_details_by_mid'              => ['get',      'merchant/{mid}/tnc',                             'MerchantController@getMerchantTncByMerchantId'                     ],
         'merchant_tnc_save'                        => ['post',     'merchant/tnc',                                   'MerchantController@postMerchantTnc'                                ],
@@ -8165,6 +8167,7 @@ class Route
         'merchant_activation_archive',
         'merchant_activation_document_type',
         'merchant_activation_status',
+        'auto_approve_merchant_activation_checker',
         'merchant_activation_status_change_log',
         'onboarding_features_fetch_submissions',
         'onboarding_features_get_submissions',
@@ -9749,6 +9752,7 @@ class Route
         'merchant_activation_document_type'        => Permission::EDIT_MERCHANT,
         'merchant_activation_archive'              => Permission::MERCHANT_ACTIVATION_ARCHIVE,
         'merchant_activation_status'               => Permission::EDIT_ACTIVATE_MERCHANT,
+        'auto_approve_merchant_activation_checker' => Permission::EDIT_ACTIVATE_MERCHANT,
         'internal_merchant_activation_status'      => Permission::EDIT_ACTIVATE_MERCHANT,
         'merchant_activation_status_change_log'    => Permission::VIEW_ACTIVATION_FORM,
         'merchant_update_key_access'               => Permission::EDIT_MERCHANT_KEY_ACCESS,
@@ -14397,6 +14401,7 @@ class Route
             'merchant_checkout_details',
             'merchant_activation_document_type',
             'merchant_activation_status',
+            'auto_approve_merchant_activation_checker',
             'merchant_activation_status_change_log',
             'merchant_activation_status_partner',
             'merchant_activation_update',
@@ -18060,6 +18065,8 @@ class Route
 
     const WORKFLOW_APPROVE_ROUTE_NAME = 'action_checker_create';
 
+    const WORKFLOW_AUTO_APPROVE_ROUTE_NAME = 'auto_approve_merchant_activation_checker';
+
     /**
      * S2S payment routes
      */
@@ -19984,7 +19991,8 @@ class Route
         $routeName = $this->getCurrentRouteName();
 
         if (($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME) or
-            ($routeName === self::WORKFLOW_APPROVE_ROUTE_NAME))
+            ($routeName === self::WORKFLOW_APPROVE_ROUTE_NAME) or
+            ($routeName === self::WORKFLOW_AUTO_APPROVE_ROUTE_NAME))
         {
             return true;
         }

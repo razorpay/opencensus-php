@@ -411,6 +411,8 @@ return array(
 
     'partner_entities_partnership_service_sync' => env('PARTNER_ENTITIES_PARTNERSHIP_SERVICE_SYNC'),
 
+    'sub_merchant_activation_auto_approval_checker' => env('SUB_MERCHANT_ACTIVATION_AUTO_APPROVAL_CHECKER'),
+
     'partner_weekly_activation_summary_datalake_exp_id' => env('PARTNER_WEEKLY_ACTIVATION_SUMMARY_DATALAKE_EXP_ID'),
 
     'enable_merchant_dashboard_timeout_experiment_id' => env('ENABLE_MERCHANT_DASHBOARD_TIMEOUT_EXPERIMENT_ID'),
@@ -702,9 +704,9 @@ return array(
     'enable_document_expiry_check_for_activation' => env('ENABLE_DOCUMENT_EXPIRY_CHECK_FOR_ACTIVATION_EXP_ID'),
 
     'add_delay_timestamp_for_kafka_event' => env('ADD_DELAY_TIMESTAMP_FOR_KAFKA_EVENT'),
-    
+
     'enable_compliance_checks_on_admin_activation_workflows' => env('ENABLE_COMPLIANCE_CHECKS_ON_ADMIN_ACTIVATION_WORKFLOWS'),
-    
+
     'enable_unverified_email_check_for_easy_onboarding' => env('ENABLE_UNVERIFIED_EMAIL_CHECK_FOR_EASY_ONBOARDING_EXP_ID'),
 
 

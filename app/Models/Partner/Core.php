@@ -16,6 +16,8 @@ use RZP\Http\RequestHeader;
 use Illuminate\Support\Str;
 use RZP\Constants\Environment;
 use RZP\Gateway\Base\AESCrypto;
+use RZP\Models\FileStore\Format;
+use Illuminate\Http\UploadedFile;
 use RZP\Models\Pricing\DefaultPlan;
 use RZP\Encryption\AesGcmEncryption;
 use Razorpay\OAuth\Client as OAuthClient;
@@ -26,6 +28,7 @@ use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Jobs\BulkMigrateResellerToAggregatorJob;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Jobs\MigratePurePlatformToResellerPartnerJob;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
@@ -60,6 +63,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Jobs\PartnerActivationMigration;
 use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Jobs\SendPartnerWeeklyActivationSummary;
+use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Mail\Merchant\PartnerWeeklyActivationSummary;
@@ -69,9 +73,10 @@ use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
 use RZP\Models\Merchant\MerchantApplications\Repository as ApplicationRepo;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 
-
 class Core extends Detail\Core
 {
+    use FileHandlerTrait;
+
     /**
      * @var OAuth\Application\Repository
      */
@@ -2414,5 +2419,136 @@ class Core extends Detail\Core
         ];
 
         return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    public function autoApproveMerchantActivationCheckerFlow(array $input, array $splitzVariables): array
+    {
+        (new Validator())->validateInput('autoApproveMerchantActivationSplitzVariables', $splitzVariables);
+        (new Validator())->validateInput('autoApproveMerchantActivationInput', $input);
+
+        $filePath = $input['checkers_file'];
+        $partnerId = $splitzVariables['partner_id'];
+        $limit = $splitzVariables['limit'];
+
+        $rows = $this->parseFile($filePath);
+
+        $mids = array_unique(array_map(function ($row) {
+            return $row['merchant_id'];
+        }, $rows));
+        if (count($mids) > $limit)
+        {
+            throw new Exception\LogicException(
+                "Limit for list of sub-merchant MIDs have breached, current limit: {$limit}"
+            );
+        }
+
+        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+        $appIds = (new Merchant\MerchantApplications\Core())->getMerchantAppIds(
+            $partner->getId(), [MerchantApplicationsEntity::OAUTH]
+        );
+
+        $actions = (new WorkflowAction\Core)->fetchOpenActionsOnEntitiesOperationWithPermissionList(
+            $mids, 'merchant_detail', [Permission\Name::EDIT_ACTIVATE_MERCHANT]
+        )->groupBy(WorkflowAction\Entity::ENTITY_ID);
+        $checkerInput = [
+            "approved" => 1,
+            WorkflowAction\Checker\Constants::APPROVED_WITH_FEEDBACK => 0
+        ];
+
+        $success = $failed = [];
+
+        foreach ($mids as $mid)
+        {
+            try
+            {
+                $mapping = $this->repo->merchant_access_map->findMerchantAccessMapOnEntityIds(
+                    $mid, $appIds, AccessMap\Entity::APPLICATION
+                );
+
+                if ($mapping->isEmpty())
+                {
+                    $this->trace->debug(
+                        TraceCode::PARTNER_SUBMERCHANT_NOT_MAPPED,
+                        ['sub_merchant_id' => $mid, 'partner_id' => $partnerId]
+                    );
+                    $failed[] = $mid;
+                }
+                else
+                {
+                    if (empty($actions[$mid]))
+                    {
+                        $this->trace->debug(
+                            TraceCode::SUBMERCHANT_ONBOARDING_ACTIVATION_WORKFLOW_NOT_FOUND,
+                            ['sub_merchant_id' => $mid, 'partner_id' => $partnerId]
+                        );
+                        $failed[] = $mid;
+                    }
+                    else
+                    {
+                        $workflowAction = $actions[$mid]->first();
+                        $this->trace->debug(
+                            TraceCode::PARTNER_SUBMERCHANT_ONBOARDING_WORKFLOWS,
+                            ['workflow_action' => $workflowAction->getId(), 'mid' => $mid]
+                        );
+
+                        $this->resetWorkflowSingleton();
+
+                        $actionId = "w_action_{$workflowAction->getId()}";
+                        $response = (new WorkflowAction\Checker\Service())->create($actionId, $checkerInput);
+                        $this->trace->debug(
+                            TraceCode::PARTNER_SUBMERCHANT_CHECKER_AUTO_APPROVAL_CREATED,
+                            ['response' => $response, 'mid' => $mid]
+                        );
+
+                        $success[] = $mid;
+                    }
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e, Trace::ERROR,
+                    TraceCode::PARTNER_SUBMERCHANT_CHECKER_AUTO_APPROVAL_FAILED,
+                    ['mid' => $mid]
+                );
+
+                $failed[] = $mid;
+            }
+        }
+
+        $this->trace->debug(
+            TraceCode::PARTNER_SUBMERCHANTS_ACTIVATED_IN_BULK,
+            ['success' => $success, 'failed' => $failed]
+        );
+        return [
+            'success' => $success, 'failed' => $failed
+        ];
+    }
+
+    protected function parseFile(UploadedFile $file): array
+    {
+        $ext = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+
+        switch ($ext)
+        {
+            case Format::XLSX:
+            case Format::XLS:
+                return $this->parseExcelSheets($file);
+            case Format::CSV:
+                return $this->parseTextFile($file, ',');
+            default:
+                throw  new Exception\LogicException("Extension not handled: {$ext}");
+        }
+    }
+
+    private function resetWorkflowSingleton()
+    {
+        $app = App::getFacadeRoot();
+        $app['workflow'] =  new \RZP\Services\Workflow\Service($app);
+    }
+
+    protected function getHeadings(): array
+    {
+        return [Constants::MERCHANT_ID];
     }
 }

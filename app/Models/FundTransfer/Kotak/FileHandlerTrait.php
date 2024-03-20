@@ -230,7 +230,7 @@ trait FileHandlerTrait
      *
      * @return array flat version of input array
      */
-    protected function flatten(array $row)
+    protected function flatten(array $row, $prefix = '')
     {
         foreach ($row as &$value)
         {

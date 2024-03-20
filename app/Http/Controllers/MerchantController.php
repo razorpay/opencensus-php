@@ -1707,6 +1707,8 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
+        unset($input['checkers_file']);
+
         $response = $this->service(E::MERCHANT_DETAIL)->updateActivationStatus($id, $input);
 
         return ApiResponse::json($response);
