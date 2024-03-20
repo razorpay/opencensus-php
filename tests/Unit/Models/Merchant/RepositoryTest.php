@@ -9,8 +9,10 @@ use Rzp\Accounts\Merchant\V1\MerchantDocumentSaveRequest;
 use Rzp\Accounts\Merchant\V1\MerchantSaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveResponse;
+use RZP\Exception\DbQueryException;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument;
+use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Tests\Functional;
 use Razorpay\Asv\Error\GrpcError;
 use RZP\Models\Merchant\Repository;
@@ -182,10 +184,30 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantResponse = (new MerchantResponse())->setMerchant($merchantProto1);
         // Test Case 6 - SaveRoute false - Splitz on - Request for findOrFail & findOrFailPublic  should go to account service
         $this->setSplitzWithOutput("true", 1);
+        $this->flushCache();
         $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t2K", $merchantResponse, null, "getById", 2);
         $repo            = new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
+        $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantEntity1Array, "CzmiCwTPCL3t2K");
+
+        // now value is cached so get by id should be called only for findOrFailPublic not for findOrFail
+        $this->setSplitzWithOutput("true", 1);
+        $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t2K", $merchantResponse, null, "getById", 1);
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantEntity1Array, "CzmiCwTPCL3t2K");
+
+
+        //assert that error is thrown if we pass random id
+        $this->setSplitzWithOutput("true", 2);
+        $this->flushCache();
+        $repo            = new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 4, false, null);
+        $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t21", null, new GrpcError(STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), "getById", 2);
+        try {
+            $repo->findOrFail("CzmiCwTPCL3t21");
+        } catch (DbQueryException $e) {
+            $this->assertEquals($e->getCode(), "SERVER_ERROR_DB_QUERY_FAILED");
+        }
     }
 
     public function testMerchantRepositoryFindOrFailErrors()

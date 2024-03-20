@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Acs\Traits;
 
+use Database\Connection;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
@@ -76,27 +77,32 @@ trait AsvFind
 
         if ($shouldCallAsv === true) {
 
-            $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_OR_FAIL;
+            if ($this->isTransactionActive()) {
+                $connectionType = Connection::ASV_WRITER;
+            } else {
 
-            try {
-                return $this->findOrFailAsv($id);
-            } catch (\Exception $e) {
+                $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_OR_FAIL;
 
-                if ($e->getCode() == ErrorCode::SERVER_ERROR_DB_QUERY_FAILED) {
+                try {
+                    return $this->findOrFailAsv($id);
+                } catch (\Exception $e) {
 
-                    $this->trace->info(TraceCode::ACCOUNT_SERVICE_THROW_EXCEPTION_AGAIN, [
-                        "functionIdentifier" => $functionIdentifier,
-                        "error_code" => $e->getCode(),
+                    if ($e->getCode() == ErrorCode::SERVER_ERROR_DB_QUERY_FAILED) {
+
+                        $this->trace->info(TraceCode::ACCOUNT_SERVICE_THROW_EXCEPTION_AGAIN, [
+                            "functionIdentifier" => $functionIdentifier,
+                            "error_code" => $e->getCode(),
+                            "id" => $id,
+                        ]);
+
+                        throw $e;
+                    }
+
+                    $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_OR_FAIL_EXCEPTION, [
                         "id" => $id,
+                        "functionIdentifier" => $functionIdentifier,
                     ]);
-
-                    throw $e;
                 }
-
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_OR_FAIL_EXCEPTION, [
-                    "id" => $id,
-                    "functionIdentifier" => $functionIdentifier,
-                ]);
             }
         }
 

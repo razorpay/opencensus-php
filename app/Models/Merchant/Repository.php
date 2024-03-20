@@ -49,7 +49,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Modules\Acs\Wrapper\Merchant as MerchantWrapper;
-use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Models\Merchant\Acs\Traits\AsvFindWithCache;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as AsvSdkMerchantQuery;
@@ -57,8 +56,6 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as AsvSdkMerchantQuery;
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLiveAndAsv;
-
-   use AsvFind;
 
    use AsvFindWithCache;
 
