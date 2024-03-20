@@ -123,6 +123,8 @@ class Service extends \RZP\Models\Base\Service
                     $useMCS = (new SplitzExperimentEvaluator())->isShippingInfoDecompEnabled();
                     if ($useMCS === true) {
                         $merchant_id = $this->merchant->getId();
+                        $shippingInfoReq['email'] = $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_EMAIL];
+                        $shippingInfoReq['contact'] = $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_CONTACT];
                         $shippingInfoReq['merchant_id'] = $merchant_id;
                         $shippingInfoReq['addresses'][0]['country_code'] = $country;
                         $shippingInfoResponse  = (new MagicCheckoutService\Service())->getTaxDetailsAndShippingOptions($shippingInfoReq);
