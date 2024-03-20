@@ -519,6 +519,13 @@ class Core extends Base\Core
             $this->addRecurringUpiToMethodsIfApplicable($merchant, $methods, $data['recurring']);
 
             $data['recurring'][Entity::NACH] = $methods->isNachEnabled();
+
+            $recurringIdVariant = (new MerchantCore())->isRazorxExperimentEnable($merchant->getId(), RazorxTreatment::TNG_RECURRING);
+
+            if($recurringIdVariant === true)
+            {
+                $data['recurring'][Payment\Method::WALLET][Entity::TOUCHNGO] = $methods->isTouchngoEnabled();
+            }
         }
 
         if ($merchant->isFeatureEnabled(Constants::DISABLE_UPI_INTENT) === false)

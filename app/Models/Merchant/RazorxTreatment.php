@@ -34,6 +34,7 @@ final class RazorxTreatment
     const VOTERS_ID_SYNC            = 'voters_id_sync';
     const PASSPORT_SYNC             = 'passport_sync';
     const BVS_IN_SYNC               = "bvs_in_sync";
+    const TNG_RECURRING             = 'tng_recurring';
 
     // the ON variant
     const RAZORX_VARIANT_ON     = 'on';
