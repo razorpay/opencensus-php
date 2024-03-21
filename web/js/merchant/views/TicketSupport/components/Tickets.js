@@ -10,7 +10,7 @@ import { raiseTicket } from 'merchant/views/TicketSupport/utils';
 import FailedScreen from './FailedScreen';
 import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
-import { getPosActivationStatus } from 'merchant/components/Support/utils';
+import { getPosActivationStatus, isHelpWidgetDisabled } from 'merchant/components/Support/utils';
 @connect(
   (state) => {
     return {
@@ -158,7 +158,10 @@ class Tickets extends React.Component {
             ) : (
               <span>Open queries ({OPEN_TICKETS.length})</span>
             )}
-            {this.props.match.params.ticketType !== 'agent' ? (
+            {!(
+              isHelpWidgetDisabled(this.props.splitz) ||
+              this.props.match.params.ticketType == 'agent'
+            ) ? (
               <button
                 onClick={createTicket}
                 type="button"
@@ -193,7 +196,7 @@ class Tickets extends React.Component {
           <h1 className="tickets-section-title">
             <span>Closed queries ({CLOSED_TICKETS.length})</span>
             <i className="i i-chevron-up section-collapse" />
-            {OPEN_TICKETS.length === 0 ? (
+            {!(isHelpWidgetDisabled(this.props.splitz) || OPEN_TICKETS.length !== 0) ? (
               <button
                 onClick={createTicket}
                 type="button"

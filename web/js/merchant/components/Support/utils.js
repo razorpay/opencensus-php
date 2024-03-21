@@ -28,3 +28,11 @@ export const getPosActivationStatus = (user, splitz) => {
   }
   return user?.pos_activation_status;
 };
+
+export const isHelpWidgetDisabled = (splitz) => {
+  const { abExperiments } = splitz || {
+    abExperiments: { is_help_widget_disabled: undefined },
+  };
+
+  return isExperimentEnabled(abExperiments.is_help_widget_disabled);
+};

@@ -38,6 +38,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'is_help_widget_disabled',
+        experimentId: {
+          beta: 'NozLYbvypZUjkv',
+          production: 'Now1xr6jelTihz',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'pos_onboarding',
         experimentId: {
           beta: 'MVPjQVuTnq6nHb',

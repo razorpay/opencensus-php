@@ -51,9 +51,11 @@ import { withI18Service } from 'common/i18';
 import { importRemote } from 'merchant/utils/dynamic-remotes';
 import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
 import { isGCMSExperimentEnabled } from 'merchant/views/GCMS/shared/utils';
+import { isHelpWidgetDisabled } from 'merchant/components/Support/utils';
 
 import MagicKonnect from 'merchant/views/MagicKonnect';
 
+// eslint-disable-next-line require-await
 const loadModule = (module) =>
   importRemote({
     url: window.cdnDashboardAssetsUrl,
@@ -569,6 +571,11 @@ class Content extends Component {
   checkIsMicrofrontendSelfserveEnabled = () => {
     const { splitz } = this.props;
     return isMicrofrontendSelfserveEnabled(splitz);
+  };
+
+  checkIsHelpWidgetDisabled = () => {
+    const { splitz } = this.props;
+    return isHelpWidgetDisabled(splitz);
   };
 
   setBaseLocation = (location) => {
@@ -2324,7 +2331,7 @@ class Content extends Component {
             {DetailView}
             {ModalFormView}
             <MultiSlider />
-            {window?.RZP?.appName !== 'businessbanking' && (
+            {!(this.checkIsHelpWidgetDisabled() || window?.RZP?.appName == 'businessbanking') && (
               <Suspense fallback={null}>
                 <HelpSection user={user} />
               </Suspense>
