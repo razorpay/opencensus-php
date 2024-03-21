@@ -25,6 +25,7 @@ class Constants
     const MERCHANT_PAYMENTS_DISPUTED_GMV          = 'merchant_payments_disputed_gmv';
     const MERCHANT_PAYMENTS_DISPUTED_COUNT        = 'merchant_payments_disputed_count';
     const MERCHANT_PAYMENTS_HIGHER_DISPUTED_COUNT = 'merchant_payments_higher_disputed_count';
+    const MERCHANT_CUSTOMER_DISPUTES_COUNT        = 'merchant_customer_disputes_count';
 
     const MERCHANT_ODS                       = 'merchant_ods';
     const MERCHANT_AUTHORIZED_LIFETIME_GMV            = 'merchant_authorized_lifetime_gmv';

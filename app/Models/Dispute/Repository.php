@@ -328,6 +328,39 @@ class Repository extends Base\Repository
         return $query->sum($paymentBaseAmountColumn);
     }
 
+    public function getMerchantCustomerDisputePaymentsCountForRiskAnalysis(string $merchantId, int $fromTimestamp, int $toTimestamp)
+    {
+        $disputePaymentIdColumn = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $paymentRecordSourceColumn = $this->repo->payment->dbColumn(Base\PublicEntity::RECORD_SOURCE);
+
+        $useTiDBSourceApiFilter = false;
+
+        $query = $this->newQuery();
+
+        // Adding record_source filter for TiDB query only in prod
+        // This check is to not break the query in lower environments because the column doesn't exist
+        if ($this->app['env'] === Environment::PRODUCTION)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->newQueryWithConnection($connectionType);
+
+            $useTiDBSourceApiFilter = true;
+        }
+
+        $this->getMerchantDisputedPaymentsQueryForRiskAnalysis($merchantId, $fromTimestamp, $toTimestamp, $query);
+
+        $query = $query->where(Entity::GATEWAY_DISPUTE_ID, 'like', Constants::CUSTOMER_DISPUTE_GATEWAY_DISPUTE_ID_PREFIX.'%');
+
+        if ($useTiDBSourceApiFilter === true)
+        {
+            $query = $query->where($paymentRecordSourceColumn, '=', Base\Constants::RECORD_SOURCE_API);
+        }
+
+        return $query->count($disputePaymentIdColumn);
+    }
+
     public function getMerchantDisputedPaymentsCountbyPhaseForRiskAnalysis(string $merchantId, int $fromTimestamp, int $toTimestamp, array $phases = [])
     {
         if (empty($phases) === true)

@@ -653,10 +653,14 @@ class Service extends Base\Service
         $paymentHigherDisputedCount = $this->repo->dispute->getMerchantDisputedPaymentsCountbyPhaseForRiskAnalysis(
             $merchantId, $fromTimestamp, $toTimestamp, [Phase::PRE_ARBITRATION, Phase::ARBITRATION]);
 
+        $customerDisputesCount = $this->repo->dispute->getMerchantCustomerDisputePaymentsCountForRiskAnalysis(
+            $merchantId, $fromTimestamp, $toTimestamp);
+
         $details = [
             Constants::MERCHANT_PAYMENTS_DISPUTED_GMV          => intval($paymentDisputedGmv),
             Constants::MERCHANT_PAYMENTS_DISPUTED_COUNT        => intval($paymentDisputedCount),
             Constants::MERCHANT_PAYMENTS_HIGHER_DISPUTED_COUNT => intval($paymentHigherDisputedCount),
+            Constants::MERCHANT_CUSTOMER_DISPUTES_COUNT        => intval($customerDisputesCount),
         ];
 
         return $details;
