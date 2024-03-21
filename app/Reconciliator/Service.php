@@ -1874,7 +1874,7 @@ class Service extends Base\Service
                 'payment_id' => $payment->getId(),
                 CardlessEmi::GATEWAY_REFERENCE_NUMBER => $input['cardless_emi']['gateway_reference_number'] ?? null,
                 CardlessEmi::ADDITIONAL_DATA => [
-                    CardlessEmi::CASH_OUTFLOW_AMOUNT  => $input['cardless_emi'][CardlessEmi::ADDITIONAL_DATA][CardlessEmi::CASH_OUTFLOW_AMOUNT],
+                    CardlessEmi::CASH_OUTFLOW_AMOUNT  => isset($input['cardless_emi'][CardlessEmi::ADDITIONAL_DATA][CardlessEmi::CASH_OUTFLOW_AMOUNT]) ? intval($input['cardless_emi'][CardlessEmi::ADDITIONAL_DATA][CardlessEmi::CASH_OUTFLOW_AMOUNT]) : null,
                 ]
         ];
 
