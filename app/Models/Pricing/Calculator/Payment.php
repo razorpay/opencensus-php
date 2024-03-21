@@ -1143,6 +1143,16 @@ class Payment extends Base
         $this->amount = $amount;
     }
 
+    protected function setRewardAmount()
+    {
+        if (($this->entity->getEntity() === (Entity::PAYMENT)) and
+            ($this->entity->hasReward() === true))
+        {
+            $this->rewardAmount = $this->entity->reward->getRewardAmount();    
+        }
+        
+    }
+
     protected function isMerchantProcuredPayment(): bool{
 
         $payment = $this->entity;

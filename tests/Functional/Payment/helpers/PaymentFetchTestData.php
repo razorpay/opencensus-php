@@ -956,6 +956,20 @@ return [
         ],
     ],
 
+    'testFetchPaymentFromPgRouterWithCardAndReward' => [
+        'request' => [
+            'method'  => 'get',
+            'content' => [
+                'expand' => [
+                    'card',
+                ],
+             ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testFetchPaymentFromPgRouterWithNonToken' => [
         'request' => [
             'method'  => 'get',

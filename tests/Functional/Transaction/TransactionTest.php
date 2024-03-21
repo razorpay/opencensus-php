@@ -1685,6 +1685,19 @@ class TransactionTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentCaptureTransactionsForReward()
+    {
+        $this->ba->appAuth();
+
+        $terminal = $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payment']['terminal_id'] = $terminal['id'];
+
+        $this->startTest();
+    }
+
     public function testPaymentAuthorizedTransactionCreateAfterCaptureTransactionsCreateInternal()
     {
         $this->ba->appAuth();

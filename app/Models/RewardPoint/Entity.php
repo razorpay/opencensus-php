@@ -18,7 +18,6 @@ class Entity extends Base\PublicEntity
     public const MERCHANT_ID = 'merchant_id';
     public const CREATED_AT  = 'created_at';
     public const UPDATED_AT  =  'updated_at';
-
     protected static $sign = 'reward';
     protected $entity = 'reward_point';
 
@@ -37,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::POINTS_QTY,
         self::POINTS_AMOUNT
     ];
+
 
     public function getRewardAmount()
     {

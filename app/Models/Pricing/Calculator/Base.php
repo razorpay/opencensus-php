@@ -50,6 +50,8 @@ abstract class Base extends BaseModel\Core
 
     protected $amount = null;
 
+    protected $rewardAmount = null;
+
     protected $processor;
 
     const DEFAULT_PERCENT_RATE_SCALE_FACTOR = 100;
@@ -69,6 +71,8 @@ abstract class Base extends BaseModel\Core
         $this->pricingRules = new BaseModel\PublicCollection;
 
         $this->setAmount();
+
+        $this->setRewardAmount();
     }
 
     protected function setAmount()
@@ -84,6 +88,11 @@ abstract class Base extends BaseModel\Core
         }
 
         $this->amount = $amount;
+    }
+
+    protected function setRewardAmount()
+    {
+        $this->rewardAmount = 0;
     }
 
     protected function isFeeBearerCustomer()
@@ -648,6 +657,20 @@ abstract class Base extends BaseModel\Core
     }
 
     /**
+     * Irrespective of preCalculationOfFees, Use the percent of original amount
+     * to calculate razorpay fees. Tax is not included here.
+     *
+     * @param int $percent               e.g 2% is 200
+     * @param int $fixed
+     * @return int
+     */
+    protected function getUnroundedFeesForRewardAmount($percent, $fixed, $percentScaleFactor)
+    {
+        return $this->getRzpFeesUsingPercentOfRewardAmount($percent, $fixed, $percentScaleFactor);
+    }
+
+
+    /**
      *
      * Uses the following formula for fees calculation
      *
@@ -656,6 +679,11 @@ abstract class Base extends BaseModel\Core
     protected function getRzpFeesUsingPercentOfOriginalAmount($percent, $fixed, $percentScaleFactor = 100)
     {
         return (($this->amount * $percent) / (100 * $percentScaleFactor)) + $fixed;
+    }
+
+    protected function getRzpFeesUsingPercentOfRewardAmount($percent, $fixed, $percentScaleFactor = 100)
+    {
+        return (($this->rewardAmount * $percent) / (100 * $percentScaleFactor)) + $fixed;
     }
 
     protected function traceAllRules($rules)
@@ -739,12 +767,19 @@ abstract class Base extends BaseModel\Core
 
         $fee = $this->getUnroundedFees($percent, $fixed, $percentScaleFactor);
 
+        // in case of reward feature the calculation should happen on reward amount and not on the actual payment
+        // amount
+        if ($rule->isRewardFeature() === true)
+        {
+            $fee = $this->getUnroundedFeesForRewardAmount($percent, $fixed, $percentScaleFactor);
+        }
+
         $fee = (int) ceil($fee);
 
         // Fee is checked with bounds after being rounded up.
         // This ensures fee will always be within the bound.
         $fee = $this->compareBoundsAndGetFee($fee, $min, $max);
-
+        
         $rzpFee = $this->createFeeBreakup(
             $rule->getFeature(),
             null,

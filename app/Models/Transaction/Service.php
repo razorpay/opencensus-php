@@ -21,6 +21,7 @@ use RZP\Base\JitValidator;
 use RZP\Models\Transaction;
 use RZP\Models\Pricing\Fee;
 use RZP\Base\RuntimeManager;
+use RZP\Models\RewardPoint;
 use RZP\Models\Payment\Refund;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountStatement;
@@ -450,6 +451,17 @@ class Service extends Base\Service
             $card = (new Card\Entity)->forceFill($input['payment']['card']);
 
             unset($input['payment']['card']);
+        }
+
+        if (isset($input['payment']['reward']) === true)
+        {
+            $rewardPoint = (new RewardPoint\Entity)->forceFill($input['payment']['reward']);
+
+            $rewardPoint->setExternal(true);
+
+            unset($input['payment']['reward']);
+
+            $payment->reward()->associate($rewardPoint);
         }
 
         if (isset($input['payment']['source_channel']) === true)

@@ -4821,7 +4821,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             unset($array[self::REWARD_ID]);
         }
-    }
+}
 
     public function setPublicAmountTransferredAttribute(array & $attributes)
     {
@@ -5762,6 +5762,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $features[] = Pricing\Feature::UPI_INAPP;
         }
 
+        if ($this->hasReward() === true)
+        {
+            $features[] = Pricing\Feature::REWARD;
+        }
+
         if (($this->isEmi() === true) and
             ($this->merchant->getEmiSubvention() === Emi\Subvention::MERCHANT))
         {
@@ -5777,6 +5782,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $features[] = Pricing\Feature::OPTIMIZER;
         }
+
+
+
 
         $order = $this->getOrderAttribute();
 
