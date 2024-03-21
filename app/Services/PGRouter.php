@@ -669,11 +669,9 @@ class PGRouter
             ($this->mode === Mode::TEST)) {
             $shouldGoViaNewFlow = false;
             try {
-                if (empty($merchantId) === false) {
-                    $variantForFeature = $this->app->razorx->getTreatment($merchantId,
+                    $variantForFeature = $this->app->razorx->getTreatment($this->request->getTaskId(),
                         RazorxTreatment::ROUTE_ORDER_FETCH_TO_PG_ROUTER_TEST, $this->mode);
                     $shouldGoViaNewFlow = strtolower($variantForFeature) == RazorxTreatment::RAZORX_VARIANT_ON;
-                }
             } catch (\Throwable $e) {
                 $this->trace->traceException(
                     $e,
