@@ -93,7 +93,7 @@ class MagicCheckoutProvider extends Base\Core
                 $shippingFee = $shippingMethods[0]['shipping_fee'];
             }
             // For 0 or 1 shipping method we need to remove the array due to how the FE prioritizes reading fields.
-            if (count($shippingMethods) < 2)
+            if ($platform !== 'woocommerce' && count($shippingMethods) < 2)
             {
                 unset($shippingOptions['addresses'][0]['shipping_methods']);
             }
@@ -162,7 +162,7 @@ class MagicCheckoutProvider extends Base\Core
         $codEngineType = $codEngineConfigs[Merchant1ccConfig\Type::COD_ENGINE_TYPE];
         if (!$shouldUseCodEngine || empty($codEngineType))
         {
-            // In case a merchant configures shipping engine but not cod engine (which is a 
+            // In case a merchant configures shipping engine but not cod engine (which is a
             // pre-requisite), we must disable cod or the fee may default to Re 0.
             if ($shippingProvider === Merchant1ccConfig\Type::SHIPPING_ENGINE)
             {
