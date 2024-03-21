@@ -960,6 +960,30 @@ class Service extends Base\Service
             return [];
         }
 
+        // Is Shopify order timedout?
+        if ($fromShopifyApi === false && $this->isShopifyOrderTimedout($order) === true)
+        {
+            // If the order is timedout, it could already be placed. Let MCS handle post order creation steps if required.
+            try {
+                $this->decompUtils->checkAndCompletePostShopifyOrderPlacementSteps($input);
+                $this->monitoring->addTraceCount(
+                    Metric::PLACE_SHOPIFY_ORDER_SUCCESS_COUNT,
+                    ['source' => $source, 'method' => $fromShopifyApi ? 'api': 'sqs', 'service' => 'mcs']
+                );
+                // We mark order as paid in API and MCS as a resiliency mechanism.
+                (new Core)->markShopifyOrderPlaced($orderId);
+                return [];
+            } catch (\Exception $e) {
+                $this->trace->info(TraceCode::SHOPIFY_1CC_POST_ORDER_STEPS_FAILED,
+                    [
+                        'order_id' => $orderId,
+                        'error' => $e->getMessage(),
+                    ]
+                );
+                throw $e;
+            }
+        }
+
         $this->checkForGiftCardPayment($order, $payment, $this->merchant, $fromShopifyApi);
 
         $nectorCoinsResponse = $this->deductNectorCoinsIfApplicable($order);
@@ -1136,6 +1160,26 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    protected function isShopifyOrderTimedout($order) : bool
+    {
+        $receipt = $order->getReceipt();
+        $orderMeta = $this->getOrderMeta($order);
+
+        $orderMeta = array_first($order->orderMetas, function ($orderMeta)
+        {
+            return $orderMeta->getType() === OrderMeta\Type::ONE_CLICK_CHECKOUT;
+        });
+
+        $meta = $orderMeta->getValue()["metadata"] ?? [];
+        $status = $meta['shopify_error'] ?? '';
+        if ($receipt === OneClickCheckout\Constants::SHOPIFY_TEMP_RECEIPT && $status === 'timeout')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     // places final order and gateway transaction to Shopify

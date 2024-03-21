@@ -47,6 +47,12 @@ class Decomp extends Base\Service
         return $this->magicCheckoutSvc->completeShopifyCheckout($input);
     }
 
+    // Very thin wrapper so it is easier for us to track active decomp flows for Magic Checkout.
+    public function checkAndCompletePostShopifyOrderPlacementSteps(array $input): array
+    {
+        return $this->magicCheckoutSvc->checkAndCompletePostShopifyOrderPlacementSteps($input);
+    }
+
     public function isShopifyOrderPlacedByMCS(string $orderId): bool
     {
         try
