@@ -24,6 +24,7 @@ import { deliveryAddressSchema, pincodeValidationSchema } from 'merchant/views/P
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 import { DeliveryAddress } from 'merchant/views/POS/types';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
+import { checkIfPanIndiaLive } from 'merchant/views/POS/helpers';
 
 type AddressFormProps = {
   isEdit: boolean;
@@ -190,6 +191,8 @@ const AddressForm = (props: AddressFormProps): JSX.Element => {
   const gtmCities = omniChannelGtm?.variables?.cities;
   const availableCities = typeof gtmCities === 'string' ? gtmCities.split(',') : [];
 
+  const isPANIndiaLive = checkIfPanIndiaLive({ abExperiments });
+
   const formik = useFormik<FormikValues>({
     initialValues: {
       name: name ?? '',
@@ -199,7 +202,9 @@ const AddressForm = (props: AddressFormProps): JSX.Element => {
       city,
       state,
     },
-    validationSchema: deliveryAddressSchema.shape(pincodeValidationSchema(availableCities)),
+    validationSchema: deliveryAddressSchema.shape(
+      pincodeValidationSchema(availableCities, isPANIndiaLive),
+    ),
     validateOnChange: false,
     enableReinitialize: true,
     onSubmit: (values) => onSubmit({ ...values, type: 'custom' }),

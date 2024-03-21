@@ -3,6 +3,7 @@ import { Box, Title, Text, Divider } from '@razorpay/blade/components';
 
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
 import { DETAILED_PRICING, OFFER_DETAILED_PRICING } from 'merchant/views/POS/constants';
+import { isValidFee } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 import { ProductDescription } from 'merchant/views/POS/types';
 
@@ -83,8 +84,8 @@ const DetailedPricing = ({ product }: DetailedPricingProps): JSX.Element => {
                         <Text weight="bold" marginRight="spacing.2">
                           {value}
                         </Text>
-                        {prevValue && isShowOffer ? (
-                          <Text textDecorationLine="line-through">{value}</Text>
+                        {isValidFee(Number(prevValue)) && isShowOffer ? (
+                          <Text textDecorationLine="line-through">{prevValue}</Text>
                         ) : null}
                         {text ? <Text weight="bold">{text}</Text> : null}
                       </Box>

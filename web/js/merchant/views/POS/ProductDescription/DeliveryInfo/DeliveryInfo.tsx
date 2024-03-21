@@ -7,6 +7,7 @@ import { DELIVERY_AVAILABLE_TEXT, DELIVERY_UNAVAILABLE_TEXT } from 'merchant/vie
 import { getPincodeInfo } from 'merchant/views/POS/services';
 
 import { TextInputWrapper } from './styles';
+import { checkIfPanIndiaLive } from 'merchant/views/POS/helpers';
 
 type ErrorMessage = {
   text: string;
@@ -69,7 +70,10 @@ const DeliveryInfo = ({ productTitle }: { productTitle: string }): JSX.Element =
     setIsLoading(true);
     try {
       const { data } = await getPincodeInfo(pincode);
-      if (data && availableCities.includes(data?.city)) {
+      if (
+        (data && availableCities.includes(data?.city)) ||
+        checkIfPanIndiaLive({ abExperiments })
+      ) {
         return setMessage({
           type: 'success',
           text: DELIVERY_AVAILABLE_TEXT,

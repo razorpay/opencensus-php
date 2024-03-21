@@ -54,6 +54,10 @@ export const splitzConfig: SplitzInitConfig = {
               key: 'offersEnabled',
               value: 'off',
             },
+            {
+              key: 'isPanIndiaLive',
+              value: 'off',
+            },
           ],
         },
       },

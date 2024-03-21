@@ -16,6 +16,7 @@ import {
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import {
   getPayloadForOrderCreate,
+  checkIfPanIndiaLive,
   loadCheckoutForPos,
   preCheckoutAdditionalDetails,
 } from 'merchant/views/POS/helpers';
@@ -65,6 +66,8 @@ const CheckoutCta = ({
   const { omniChannelGtm } = abExperiments ?? {};
   const gtmCities = omniChannelGtm?.variables?.cities;
   const availableCities = typeof gtmCities === 'string' ? gtmCities.split(',') : [];
+
+  const isPanIndiaLive = checkIfPanIndiaLive({ abExperiments });
 
   const isTermsAndConditionCheck = created_at ? created_at < POS_TERMS_AND_CONDITION_DATE : false;
 
@@ -136,12 +139,14 @@ const CheckoutCta = ({
       const createOrderPayload = await getPayloadForOrderCreate({ cartItems, deliveryAddresses });
       if (!createOrderPayload || !razorpayKey) throw new Error();
 
-      const { data: pincodeInfo } = await getPincodeInfo(
-        createOrderPayload?.delivery_address?.pin_code,
-      );
+      if (!isPanIndiaLive) {
+        const { data: pincodeInfo } = await getPincodeInfo(
+          createOrderPayload?.delivery_address?.pin_code,
+        );
 
-      if (!pincodeInfo || !availableCities.includes(pincodeInfo.city)) {
-        throw new Error(DELIVERY_UNAVAILABLE_TEXT);
+        if (!pincodeInfo || !availableCities.includes(pincodeInfo.city)) {
+          throw new Error(DELIVERY_UNAVAILABLE_TEXT);
+        }
       }
 
       const { data } = await createOrder(createOrderPayload);

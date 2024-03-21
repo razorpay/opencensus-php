@@ -15,6 +15,7 @@ import { compose } from 'redux';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 import EmptyOrderImg from 'assets/pos/icons/empty-order.svg';
+import { ORDER_LIST_STATUS_TYPES } from 'merchant/views/POS/constants';
 import { getOrderList } from 'merchant/views/POS/services';
 import { MainContainer } from 'merchant/views/POS/styles';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -48,6 +49,7 @@ const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element =
       const payload = {
         skip: pageParam.toString(),
         count: pageSize.toString(),
+        status: ORDER_LIST_STATUS_TYPES,
       };
       return getOrderList(payload);
     },

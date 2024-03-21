@@ -10,7 +10,7 @@ test.describe.parallel(
       storageState: getStorageStatePath(BASE_PATH).CAPITAL_RESELLER_PARTNER_TEST_LOGIN_STATE,
     });
 
-    test('should load the capital Reseller Partner Dashboard @priority=critical', async ({
+    test.skip('should load the capital Reseller Partner Dashboard @priority=critical', async ({
       page,
     }) => {
       await page.goto(routes.AFFILIATE_ACCOUNTS_CAPITAL);

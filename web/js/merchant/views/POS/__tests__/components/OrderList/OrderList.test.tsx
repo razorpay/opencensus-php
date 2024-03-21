@@ -63,6 +63,7 @@ describe('<OrderList/>', () => {
     expect(fetchOrdersSpy).toHaveBeenCalledWith({
       skip: '0',
       count: '3',
+      status: ['paid', 'delivered', 'rejected'],
     });
     const nextPageLoader = screen.getByTestId('next-page-trigger-el');
     intersect(nextPageLoader, true);
@@ -72,6 +73,7 @@ describe('<OrderList/>', () => {
     expect(fetchOrdersSpy).toHaveBeenCalledWith({
       skip: '1',
       count: '3',
+      status: ['paid', 'delivered', 'rejected'],
     });
   });
 

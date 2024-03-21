@@ -1003,3 +1003,9 @@ export const preCheckoutAdditionalDetails = ({
     isCaseCreateRequired: false,
   };
 };
+
+export const checkIfPanIndiaLive = ({
+  abExperiments,
+}: {
+  abExperiments: ExperimentInfoType;
+}): boolean => abExperiments?.pos_onboarding?.variables?.isPanIndiaLive === 'on';

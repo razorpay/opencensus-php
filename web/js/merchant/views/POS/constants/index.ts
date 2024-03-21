@@ -146,6 +146,7 @@ export const deliveryAddressSchema = yup.object().shape({
 
 export const pincodeValidationSchema = (
   availableCities: string[] = [],
+  isPanIndiaLive: boolean,
 ): Record<'pincode', yup.NumberSchema<number>> => ({
   pincode: yup
     .number()
@@ -157,6 +158,8 @@ export const pincodeValidationSchema = (
     )
     .test('deliverable pincode', DELIVERY_UNAVAILABLE_TEXT, async (pincode): Promise<boolean> => {
       if (!pincode) return false;
+      if (isPanIndiaLive) return true;
+
       try {
         const { data } = await getPincodeInfo(pincode);
         if (!data?.city) {
@@ -486,6 +489,8 @@ export const PRODUCT_OFFER_CONFIG: Record<string, OfferConfig> = {
     },
   },
 };
+
+export const ORDER_LIST_STATUS_TYPES = ['paid', 'delivered', 'rejected'];
 
 export { default as ANDROID_MINI_POS } from './AndroidMiniPos';
 export { default as ANDROID_SMART_POS } from './AndroidSmartPos';

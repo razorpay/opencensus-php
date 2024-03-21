@@ -43,6 +43,8 @@ describe('<DetailedPricing/>', () => {
     expect(screen.getByText('Mock offer text')).toBeVisible();
     expect(screen.getByText('After 1L GMV, Below Rates to Apply')).toBeVisible();
     expect(screen.getByText(/charges upto ₹1L transactions/)).toBeVisible();
+    expect(screen.getByText('1.75%')).toBeVisible();
+    expect(screen.getByText('1.85%')).toBeVisible();
   });
 
   test('should render Detailed pricing with partner offer content if offer exists on screen', () => {

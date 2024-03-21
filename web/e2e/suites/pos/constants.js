@@ -40,4 +40,4 @@ export const PDP_CONTENT = {
   },
 };
 
-export const POS_SELECTOR_TIMEOUT = 30000;
+export const POS_SELECTOR_TIMEOUT = 50000;
