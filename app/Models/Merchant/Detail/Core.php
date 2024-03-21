@@ -8743,18 +8743,8 @@ class Core extends Base\Core
      */
     public function getActivationFlow(Merchant\Entity $merchant, Entity $merchantDetails, $partner, bool $batchFlow)
     {
-        $subcategory = $merchantDetails->getBusinessSubcategory();
 
-        $category = $merchantDetails->getBusinessCategory();
-
-        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
-
-        $activationFlow = $subcategoryMetaData[Entity::ACTIVATION_FLOW];
-
-        if ($merchantDetails->isUnregisteredBusiness() === true)
-        {
-            $activationFlow = $subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW];
-        }
+        $activationFlow = $this->getActivationFlowBasedOnCategory($merchantDetails);
 
         //
         // If activation flow is blacklisted we need not to update that
@@ -8785,6 +8775,24 @@ class Core extends Base\Core
         if ($this->dedupeCore->isMerchantImpersonated($merchant) === true)
         {
             return ActivationFlow::GREYLIST;
+        }
+
+        return $activationFlow;
+    }
+
+    public function getActivationFlowBasedOnCategory(Entity $merchantDetails)
+    {
+        $subcategory = $merchantDetails->getBusinessSubcategory();
+
+        $category = $merchantDetails->getBusinessCategory();
+
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+        $activationFlow = $subcategoryMetaData[Entity::ACTIVATION_FLOW];
+
+        if ($merchantDetails->isUnregisteredBusiness() === true)
+        {
+            $activationFlow = $subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW];
         }
 
         return $activationFlow;

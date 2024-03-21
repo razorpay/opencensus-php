@@ -571,9 +571,11 @@ class Core extends Base\Core
                            ]);
 
         $skipExpEnabled = false;
+        $skipBusinessModelForL1 = false;
 
         if ( $subMerchant->isLinkedAccount() === false )
         {
+            $skipBusinessModelForL1 = (new Merchant\Core())->isOnboardingApiBmcEnabled($subMerchant->getId(), 'skip_business_model');
             $skipExpEnabled = (new Merchant\Core())->isOnboardingApiBmcEnabled($subMerchant->getId(), 'skip_requirements_check');
         }
 
@@ -587,9 +589,9 @@ class Core extends Base\Core
             {
                 $requirementService = Requirements\Factory::getInstance($productName);
 
-                if ($requirementService->isNonTerminalStatusApplicable($merchantDetails) === true)
+                if ($requirementService->isNonTerminalStatusApplicable($merchantDetails, $skipBusinessModelForL1) === true)
                 {
-                    $this->autoUpdateNonTerminalStatus($subMerchant, $merchantDetails);
+                    $this->autoUpdateNonTerminalStatus($subMerchant, $merchantDetails, $skipBusinessModelForL1);
                 }
 
                 if ( $skipExpEnabled && in_array($productName, [Name::PAYMENT_GATEWAY, Name::PAYMENT_LINKS]) === true )
@@ -866,13 +868,24 @@ class Core extends Base\Core
         return $input;
     }
 
-    public function autoUpdateNonTerminalStatus(Merchant\Entity $merchant, Detail\Entity $merchantDetails)
+    public function autoUpdateNonTerminalStatus(Merchant\Entity $merchant, Detail\Entity $merchantDetails, bool $skipBusinessModelForL1 = false)
     {
         $merchantDetails->setActivationFormMilestone(Detail\Constants::L1_SUBMISSION);
 
         $input = $this->preparePayload($merchantDetails);
 
         $merchantDetailsCore = new Detail\Core();
+
+
+        if ($skipBusinessModelForL1 === true && $merchantDetails->canDetermineActivationFlow() === true)
+        {
+            $activationFlow = $merchantDetailsCore->getActivationFlowBasedOnCategory($merchantDetails);
+            if ($activationFlow === Detail\ActivationFlow::WHITELIST)
+            {
+                $input[Detail\Entity::BUSINESS_MODEL] = null;
+            }
+        }
+
 
         $this->trace->info(TraceCode::MERCHANT_STATUS_AUTO_UPDATE_ATTEMPTED,[
             'merchant_id'                 => $merchant->getId(),

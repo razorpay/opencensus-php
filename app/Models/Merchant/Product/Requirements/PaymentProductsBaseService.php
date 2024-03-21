@@ -1049,9 +1049,9 @@ class PaymentProductsBaseService extends Base\Service
         }
     }
 
-    public function validateRequiredFieldsNonEmpty(Detail\Entity $merchantDetails): bool
+    public function validateRequiredFieldsNonEmpty(Detail\Entity $merchantDetails, bool $skipBusinessModelForL1 = false): bool
     {
-        $requiredFields = (new Detail\ValidationFields())->getRequiredFieldsForInstantActV2Apis($merchantDetails->getBusinessType());
+        $requiredFields = (new Detail\ValidationFields())->getRequiredFieldsForInstantActV2Apis($merchantDetails->getBusinessType(), $skipBusinessModelForL1);
 
         $this->trace->info(TraceCode::INSTANT_ACTIVATION_FIELDS_REQUIREMENTS,[
             'business_type'     => $merchantDetails->getId(),
@@ -1080,7 +1080,7 @@ class PaymentProductsBaseService extends Base\Service
         return true;
     }
 
-    public function isNonTerminalStatusApplicable(Detail\Entity $merchantDetails)
+    public function isNonTerminalStatusApplicable(Detail\Entity $merchantDetails, bool $skipBusinessModelForL1 = false)
     {
         $instantActivationTag = (new AccountV2\Core())->isInstantActivationTagEnabled($merchantDetails->getId());
 
@@ -1102,7 +1102,7 @@ class PaymentProductsBaseService extends Base\Service
             return false;
         }
 
-        if ($this->validateRequiredFieldsNonEmpty($merchantDetails) === false)
+        if ($this->validateRequiredFieldsNonEmpty($merchantDetails, $skipBusinessModelForL1) === false)
         {
             return false;
         }

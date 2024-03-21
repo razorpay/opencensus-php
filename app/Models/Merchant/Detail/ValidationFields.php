@@ -521,19 +521,31 @@ class ValidationFields
         }
     }
 
-    public static function getRequiredFieldsForInstantActV2Apis(string $businessType) : array
+    public static function getRequiredFieldsForInstantActV2Apis(string $businessType, bool $skipBusinessModelForL1 = false) : array
     {
+        $requiredFields = self::L1_FIELDS_IA_V2_APIS;
+        if ($skipBusinessModelForL1 === true)
+        {
+            $requiredFields = array_filter(
+                $requiredFields,
+                function ($field)
+                {
+                    return $field !== Entity::BUSINESS_MODEL;
+                });
+
+        }
+
         switch ($businessType)
         {
             case BusinessType::NOT_YET_REGISTERED:
             case BusinessType::INDIVIDUAL:
-                return self::L1_FIELDS_IA_V2_APIS;
+                return $requiredFields;
 
             case BusinessType::PROPRIETORSHIP:
-                return array_merge(self::L1_FIELDS_IA_V2_APIS, [Entity::BUSINESS_NAME]);
+                return array_merge($requiredFields, [Entity::BUSINESS_NAME]);
 
             default:
-                return array_merge(self::L1_FIELDS_IA_V2_APIS, [Entity::BUSINESS_NAME, Entity::COMPANY_PAN]);
+                return array_merge($requiredFields, [Entity::BUSINESS_NAME, Entity::COMPANY_PAN]);
         }
     }
 }
