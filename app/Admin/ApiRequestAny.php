@@ -363,7 +363,7 @@ class ApiRequestAny
 
                 $baUser = $this->mode;
 
-                $pass = Config::get('api.auth_pass');
+                $pass = Config::get('api.admin_auth_pass');
 
                 // TODO: Remove this once debug is completed.
                 $x = null;

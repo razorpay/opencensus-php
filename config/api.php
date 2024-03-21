@@ -12,6 +12,7 @@ return array(
     'public_api_url'        =>  env('PUBLIC_API_URL'),
     'auth_user'             =>  'rzp_api',
     'auth_pass'             =>  env('API_AUTH_PASS'),
+    'admin_auth_pass'       =>  env('API_ADMIN_AUTH_PASS'),
     'auth_guest_pass'       =>  env('API_GUEST_AUTH_PASS'),
     'auth_internal_pass'    =>  env('API_INTERNAL_AUTH_PASS'),
     'mock'                  =>  env('API_MOCK'),
