@@ -48,10 +48,13 @@ describe('MobileNumber', () => {
   test('should call form validation error on register otp api error', async () => {
     mockUserRegisterOtpError();
     const trackWithSegmentMock = jest.spyOn(trackWithSegment, 'trackWithSegment');
-    renderApp();
+
+    const setStep = jest.fn();
+    renderApp({ setStep });
     await userEvent.type(screen.getByPlaceholderText('Enter mobile number'), '8888888888');
     await userEvent.click(screen.getByText(/Get Started/i));
     await waitFor(() => {
+      expect(setStep).toHaveBeenCalledWith(STEPS.WELCOME_BACK);
       expect(trackWithSegmentMock).toHaveBeenCalledWith({
         objectName: 'Form Field Validation',
         actionName: 'Error',

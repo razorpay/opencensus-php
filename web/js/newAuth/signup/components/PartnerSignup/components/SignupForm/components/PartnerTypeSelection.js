@@ -74,7 +74,7 @@ const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerF
   return (
     <Formik initialValues={{}} validationSchema={partnerTypeSelectionSchema} onSubmit={noop}>
       {(formikProps) => (
-        <StyledForm onChange={formikProps.handleChange}>
+        <StyledForm onSubmit={(e) => e.preventDefault()} onChange={formikProps.handleChange}>
           <StyledStepWrapper $mobileOverflow="unset">
             <StyledTitle>Choose your Partner Type</StyledTitle>
             <StyledSubtitle $textAlign="center">

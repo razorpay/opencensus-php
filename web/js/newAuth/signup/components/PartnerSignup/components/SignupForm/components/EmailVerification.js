@@ -150,7 +150,7 @@ const EmailVerification = ({ emailToken, contactEmail, setEmailToken, setStep, s
   return (
     <Formik initialValues={{}} validationSchema={emailVerificationSchema} onSubmit={noop}>
       {(formikProps) => (
-        <StyledForm onChange={formikProps.handleChange}>
+        <StyledForm onSubmit={(e) => e.preventDefault()} onChange={formikProps.handleChange}>
           <StyledStepWrapper>
             <StyledTitle>Verify your Email</StyledTitle>
             <StyledSubtitle>

@@ -68,7 +68,7 @@ const WelcomeBack = ({ setMobileNumber, setStep, mobileNumber }: WelcomeBackProp
   return (
     <Formik initialValues={{}} validationSchema={mobileNumberSchema} onSubmit={noop}>
       {(formikProps: UseFormikReturnType) => (
-        <StyledForm onChange={formikProps.handleChange}>
+        <StyledForm onSubmit={(e) => e.preventDefault()} onChange={formikProps.handleChange}>
           <StyledStepWrapper>
             <StyledTitle>Welcome Back!</StyledTitle>
             <StyledSubtitle>Login with your existing account to continue</StyledSubtitle>

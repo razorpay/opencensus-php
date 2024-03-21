@@ -1,6 +1,8 @@
 import { Button } from '@razorpay/blade/components';
-import { StyledFooterWrap } from './styled';
+
 import { trackWithSegment } from 'newAuth/trackEvents';
+
+import { StyledFooterWrap } from './styled';
 
 export default ({ onClick, ctaText, disabled, isLoading }) => {
   return (

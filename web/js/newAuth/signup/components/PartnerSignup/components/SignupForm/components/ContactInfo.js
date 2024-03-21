@@ -50,7 +50,7 @@ const ContactInfo = ({ setStep, setContactName }) => {
   return (
     <Formik initialValues={{}} validationSchema={contactInfoSchema} onSubmit={noop}>
       {(formikProps) => (
-        <StyledForm onChange={formikProps.handleChange}>
+        <StyledForm onSubmit={(e) => e.preventDefault()} onChange={formikProps.handleChange}>
           <StyledStepWrapper>
             <StyledTitle>Enter contact details</StyledTitle>
             <StyledSubtitle />

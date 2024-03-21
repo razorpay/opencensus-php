@@ -130,7 +130,7 @@ const BusinessTypeSelection = ({
   return (
     <Formik initialValues={{}} validationSchema={businessTypeSelectionSchema} onSubmit={noop}>
       {(formikProps) => (
-        <StyledForm onChange={formikProps.handleChange}>
+        <StyledForm onSubmit={(e) => e.preventDefault()} onChange={formikProps.handleChange}>
           <StyledStepWrapper>
             <StyledTitle onClick={closeModal}>Select Business Type</StyledTitle>
             <StyledSubtitle>Pick only one that applies to your business</StyledSubtitle>

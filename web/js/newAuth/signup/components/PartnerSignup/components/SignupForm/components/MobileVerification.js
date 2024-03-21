@@ -210,7 +210,7 @@ const MobileVerification = ({
   return (
     <Formik initialValues={{}} validationSchema={mobileVerificationSchema} onSubmit={() => {}}>
       {(formikProps) => (
-        <StyledForm onChange={formikProps.handleChange}>
+        <StyledForm onSubmit={(e) => e.preventDefault()} onChange={formikProps.handleChange}>
           <StyledStepWrapper>
             <StyledTitle>Verify your Mobile</StyledTitle>
             <StyledSubtitle>

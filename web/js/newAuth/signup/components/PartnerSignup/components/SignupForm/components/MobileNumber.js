@@ -106,7 +106,7 @@ const MobileNumber = ({
   return (
     <Formik initialValues={{}} validationSchema={mobileNumberSchema} onSubmit={noop}>
       {(formikProps) => (
-        <StyledForm onChange={formikProps.handleChange}>
+        <StyledForm onSubmit={(e) => e.preventDefault()} onChange={formikProps.handleChange}>
           <StyledStepWrapper>
             <StyledTitle>Sign up as a Partner!</StyledTitle>
             <StyledSubtitle>
