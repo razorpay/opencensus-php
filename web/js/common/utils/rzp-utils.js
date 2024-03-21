@@ -15,7 +15,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable no-use-before-define */
 /* eslint-disable prefer-const */
-import { formatNumberByParts } from '@razorpay/i18nify-js/currency';
+import { formatNumberByParts, convertToMajorUnit } from '@razorpay/i18nify-js/currency';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 import isEmpty from 'lodash/isEmpty';
@@ -359,7 +359,7 @@ export const getCurrencyConfig = (currency = 'INR') => {
  * @returns {ReturnType<formatNumberByParts>}
  */
 export const getFormattedAmountByParts = (amount, currency = 'INR') => {
-  let updatedAmount = (amount / 100).toFixed(2);
+  let updatedAmount = convertToMajorUnit(amount, { currency }).toString();
 
   const integer = updatedAmount.split('.')[0] || '';
   const fraction = updatedAmount.split('.')[1] || '';
@@ -420,7 +420,7 @@ export const formatAmount = (amt, showCurrency, currency) => {
 };
 
 export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') => {
-  const adjustedAmount = (amount / 100).toFixed(2);
+  const adjustedAmount = convertToMajorUnit(amount, { currency }).toString();
 
   return formatAmount(adjustedAmount, showCurrency, currency);
 };

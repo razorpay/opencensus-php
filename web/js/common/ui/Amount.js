@@ -5,12 +5,12 @@ import {
   getCurrencySymbol as i18nifyGetCurrencySymbol,
 } from '@razorpay/i18nify-js/currency';
 
+import { ANALYTICS } from 'common/constant';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getFormattedAmountByParts, classList } from 'common/utils/rzp-utils';
 import sanitizer from 'common/utils/xss-sanitizer';
 import useViewport, { ViewportProvider } from 'merchant/hooks/useViewPort';
-import { ANALYTICS } from 'common/constant';
-import { analyticsTrack } from 'common/utils/analytics';
 
 const currencies = {
   INR: {

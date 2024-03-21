@@ -31,6 +31,10 @@ describe('common/utils/rzp-utils: getFormattedAmountByParts', () => {
   it('getFormattedAmountByParts should return subparts of formatted amount in different currencies', () => {
     const formattedAmountINR = getFormattedAmountByParts(125672.8767, 'INR');
     const formattedAmountUSD = getFormattedAmountByParts(125672.8767, 'USD');
+    const formattedAmountKWD = getFormattedAmountByParts(125672.8767, 'KWD');
+    const formattedAmountBHD = getFormattedAmountByParts(125672.8767, 'BHD');
+    const formattedAmountOMR = getFormattedAmountByParts(125672.8767, 'OMR');
+    const formattedAmountJPY = getFormattedAmountByParts(125672.8767, 'JPY');
 
     const expectedAmountINR = {
       currency: '₹',
@@ -100,8 +104,71 @@ describe('common/utils/rzp-utils: getFormattedAmountByParts', () => {
       ],
     };
 
+    const expectedAmountKWD = {
+      currency: 'KWD',
+      integer: '125',
+      decimal: '.',
+      fraction: '673',
+      isPrefixSymbol: true,
+      rawParts: [
+        { type: 'currency', value: 'KWD' },
+        { type: 'literal', value: String.fromCharCode(160) },
+        { type: 'integer', value: '125' },
+        { type: 'decimal', value: '.' },
+        { type: 'fraction', value: '673' },
+      ],
+    };
+
+    const expectedAmountBHD = {
+      currency: 'BHD',
+      integer: '125',
+      decimal: '.',
+      fraction: '673',
+      isPrefixSymbol: true,
+      rawParts: [
+        { type: 'currency', value: 'BHD' },
+        { type: 'literal', value: String.fromCharCode(160) },
+        { type: 'integer', value: '125' },
+        { type: 'decimal', value: '.' },
+        { type: 'fraction', value: '673' },
+      ],
+    };
+
+    const expectedAmountOMR = {
+      currency: 'OMR',
+      integer: '125',
+      decimal: '.',
+      fraction: '673',
+      isPrefixSymbol: true,
+      rawParts: [
+        { type: 'currency', value: 'OMR' },
+        { type: 'literal', value: String.fromCharCode(160) },
+        { type: 'integer', value: '125' },
+        { type: 'decimal', value: '.' },
+        { type: 'fraction', value: '673' },
+      ],
+    };
+
+    const expectedAmountJPY = {
+      currency: 'JP¥',
+      integer: '1,25,673',
+      isPrefixSymbol: true,
+      rawParts: [
+        { type: 'currency', value: 'JP¥' },
+        { type: 'integer', value: '1' },
+        { type: 'group', value: ',' },
+        { type: 'integer', value: '25' },
+        { type: 'group', value: ',' },
+        { type: 'integer', value: '673' },
+      ],
+    };
+
     expect(formattedAmountINR).to.deep.eql(expectedAmountINR);
     expect(formattedAmountUSD).to.deep.eql(expectedAmountUSD);
+    expect(formattedAmountKWD).to.deep.eql(expectedAmountKWD);
+    expect(formattedAmountBHD).to.deep.eql(expectedAmountBHD);
+    expect(formattedAmountOMR).to.deep.eql(expectedAmountOMR);
+    expect(formattedAmountJPY).to.deep.eql(expectedAmountJPY);
   });
 });
 
@@ -122,6 +189,11 @@ describe('common/utils/rzp-utils: getFormattedAmountNew', () => {
     // Check for correct formatting with specified currency
     expect(result).to.include('$'); // Check for presence of Dollar symbol
     expect(result).to.match(/\$\s?1,234.56/); // Assuming 'en-IN' formatting rules apply
+  });
+
+  it('should correctly format a number with specified currency (OMR)', () => {
+    const result = getFormattedAmountNew(123456, true, 'OMR');
+    expect(result).to.equal(`OMR${String.fromCharCode(160)}123.456`);
   });
 
   it('should handle zero amount correctly', () => {
