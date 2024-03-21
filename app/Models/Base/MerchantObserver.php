@@ -3,6 +3,7 @@
 namespace RZP\Models\Base;
 
 use App;
+use Database\Connection;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -38,7 +39,7 @@ class MerchantObserver
         // We just want to trigger action when the connection mode is not test
         try
         {
-            if ($entity->getConnectionName() === Mode::TEST)
+            if ($entity->getConnectionName() === Mode::TEST or $entity->getConnectionName() === Connection::ASV_WRITER)
             {
                 return;
             }

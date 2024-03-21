@@ -12187,7 +12187,7 @@ We look forward to transacting with you!
 
         $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
 
-        $kafkaProducerMock->expects($this->atLeastOnce())->method('produce')->withAnyParameters();
+        $kafkaProducerMock->expects($this->once())->method('produce')->withAnyParameters();
 
         $this->fixtures->on('live')->edit('merchant', $merchantId, ['website' => $website]);
     }
@@ -12380,7 +12380,7 @@ We look forward to transacting with you!
 
         $this->app->instance('segment-analytics', $segmentMock);
 
-        $segmentMock->expects($this->Exactly(2))
+        $segmentMock->expects($this->Exactly(1))
                     ->method('pushIdentifyAndTrackEvent')
                     ->will($this->returnCallback(function($merchant, $eventAttributes, $eventName) {
                         if ($eventName === "Merchant Funds And Payment Status")
