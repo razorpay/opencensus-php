@@ -84,6 +84,12 @@ export const FALLBACK_PRODUCTS = [
         tags: [],
       },
       {
+        title: SIDEEBAR_PRODUCTS_TITLES.magic_konnect,
+        product_id: 'magic_konnect',
+        category: '',
+        tags: [],
+      },
+      {
         title: SIDEEBAR_PRODUCTS_TITLES.optimizer,
         product_id: 'optimizer',
         category: '',

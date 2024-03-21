@@ -38,6 +38,7 @@ const SUBSCRIPTIONS_ROUTES_REGEX =
   /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks|registration_links)/;
 const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|commissions)/;
 const MAGIC_CHECKOUT_REGEX = /^\/(magic)/;
+const MAGIC_KONNECT_REGEX = /^\/magic-konnect(\/|$)/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
@@ -59,6 +60,7 @@ const BASE_ROUTES = {
   smartCollect: '/smartcollect/virtualaccounts',
   bbps: '/bbps',
   magicCheckout: '/magic',
+  magicKonnect: '/magic-konnect',
   stores: '/stores/products',
   developersApis: '/developers/apis',
   developersWebhooks: '/developers/webhooks',
@@ -152,6 +154,9 @@ class Sidebar extends Component {
     } else if (MAGIC_CHECKOUT_REGEX.test(pathname)) {
       routes.magicCheckout = pathname.match(MAGIC_CHECKOUT_REGEX)[0];
       this.prevRoute = 'magicCheckout';
+    } else if (MAGIC_KONNECT_REGEX.test(pathname)) {
+      routes.magicKonnect = pathname.match(MAGIC_KONNECT_REGEX)[0];
+      this.prevRoute = 'magicKonnect';
     }
 
     if (user.isRegistrationLinkBasedRole) {

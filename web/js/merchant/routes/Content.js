@@ -52,9 +52,9 @@ import { importRemote } from 'merchant/utils/dynamic-remotes';
 import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
 import { isGCMSExperimentEnabled } from 'merchant/views/GCMS/shared/utils';
 
-console.log('cdnDashboardAssetsUrl :', window.cdnDashboardAssetsUrl);
+import MagicKonnect from 'merchant/views/MagicKonnect';
 
-const loadModule = async (module) =>
+const loadModule = (module) =>
   importRemote({
     url: window.cdnDashboardAssetsUrl,
     scope: 'selfserve',
@@ -1209,6 +1209,15 @@ class Content extends Component {
                 }
               >
                 <Wallet />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="magic-konnect/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isMagicKonnectEnabled}>
+                <MagicKonnect />
               </RouteGuard>
             }
           />

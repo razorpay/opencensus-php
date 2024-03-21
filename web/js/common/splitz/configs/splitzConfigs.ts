@@ -169,6 +169,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'magic_konnect',
+        experimentId: {
+          beta: 'NiHLK3gI0O8Kn1',
+          production: 'NgzGEn4BoEgpgz',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],
@@ -642,6 +658,27 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'NOq9DTaOYYUIhO',
             production: 'NPN9bwDyfK9bZp',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      routesToMatch: [/^\/magic-konnect(?:\/.*)?$/i],
+      abExperiments: [
+        {
+          uniqueHashKey: 'magic_konnect_login_enabled',
+          experimentId: {
+            beta: 'NiHMzXt5F48rKg',
+            production: 'NiFX1PTuAdYwGc',
           },
           defaultVariant: {
             name: 'variables',

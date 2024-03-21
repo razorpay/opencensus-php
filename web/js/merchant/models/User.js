@@ -439,6 +439,11 @@ export default class User {
     return this.isFeatureEnabled('one_cc_merchant_dashboard') && this.isOrgRZP;
   }
 
+  get isMagicKonnectEnabled() {
+    const accessRoles = [rolesList.OWNER, rolesList.ADMIN, rolesList.MANAGER, rolesList.PARTNER];
+    return this.isOrgRZP && accessRoles.indexOf(this.userRole) > -1;
+  }
+
   get isMerchantExpiryPPEnabled() {
     return this.isFeatureEnabled('enable_merchant_expiry_pp');
   }

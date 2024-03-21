@@ -20,7 +20,8 @@ const ROUTE_REG = {
   subscriptions:
     /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks|registration_links)/,
   partner: /^\/(submerchants(\/(applications|settings))?|commissions)/,
-  magic_checkout: /^\/(magic)/,
+  magic_checkout: /^\/magic(\/|$)/,
+  magic_konnect: /^\/magic-konnect(\/|$)/,
   optimizer: /^\/optimizer(\/(add-provider|create-rule|update-rule|rules))?/,
   smart_collect: /^\/(smartcollect|virtualaccounts)/,
   qr_codes: /^\/qr_codes(\/(payments))?/,
@@ -61,6 +62,7 @@ export const BASE_ROUTES = {
   optimizer: '/optimizer',
   bbps: '/bbps',
   magic_checkout: '/magic',
+  magic_konnect: '/magic-konnect',
   smart_collect: '/smartcollect/virtualaccounts',
   qr_codes: '/qr_codes',
   subscriptions: '/subscriptions',
@@ -134,6 +136,8 @@ export const initializeRoutes = (location, user) => {
     )[0];
   } else if (ROUTE_REG.magic_checkout.test(pathname)) {
     routes.magic_checkout = pathname.match(ROUTE_REG.magic_checkout)[0];
+  } else if (ROUTE_REG.magic_konnect.test(pathname)) {
+    routes.magic_konnect = pathname.match(ROUTE_REG.magic_konnect)[0];
   } else if (ROUTE_REG.wallet.test(pathname)) {
     routes.wallet = pathname.match(ROUTE_REG.wallet)[0];
   } else if (ROUTE_REG.internationalPaymentsBtn.test(pathname)) {

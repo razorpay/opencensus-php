@@ -66,6 +66,7 @@ const {
   x_payroll,
   cash_advance,
   magic_checkout,
+  magic_konnect,
   riskAndFraud,
 } = PRODUCTS_DATA;
 
@@ -1096,6 +1097,15 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     icon: magic_checkout.icon,
     additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
       magic_checkout.additionalCondition(user),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.magic_konnect,
+    url: SEARCH_PRODUCTS_URL.magic_konnect,
+    tags: [{ value: 'magic' }, { value: 'konnect' }, { value: 'magic konnect' }],
+    icon: magic_checkout.icon,
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig): boolean =>
+      magic_konnect.additionalCondition(user, extraConfig?.abExperiments),
     apiCondition: false,
   },
   {

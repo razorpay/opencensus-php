@@ -29,6 +29,7 @@ export enum Teams {
   RAZORPAY_X = 'RazorpayX',
   MERCHANT_REPORTING = 'Merchant Reporting',
   MAGIC_CHECKOUT = 'Magic Checkout',
+  MAGIC_KONNECT = 'Magic Konnect',
   RAZORPAY_WALLET = 'Razorpay Wallet',
   OMNI_CHANNEL = 'OMNI_CHANNEL',
 }
@@ -92,6 +93,7 @@ export const RoutesConfig = {
   '/items': Teams.PG_DASHBOARD,
   '/keys': Teams.PG_DASHBOARD,
   '/magic': Teams.MAGIC_CHECKOUT,
+  '/magic-konnect': Teams.MAGIC_KONNECT,
   '/notification-settings': Teams.PG_DASHBOARD,
   '/notification-settings/email': Teams.PG_DASHBOARD,
   '/notification-settings/sms': Teams.PG_DASHBOARD,

@@ -94,6 +94,11 @@ export const PRODUCTS_DATA = {
     icon: 'i-magic-checkout',
     additionalCondition: (user: any): boolean => user.isMagicCheckoutEnabled,
   },
+  magic_konnect: {
+    icon: 'i-magic-konnect',
+    additionalCondition: (user: any, extraConfig: ExtraConfig) =>
+      user.isMagicKonnectEnabled && isExperimentEnabled(extraConfig?.abExperiments?.magic_konnect),
+  },
   smart_collect: {
     icon: 'i-account-balance',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>

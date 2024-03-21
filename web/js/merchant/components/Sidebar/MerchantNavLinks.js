@@ -19,6 +19,7 @@ import {
   getRecommendedProductDetails,
 } from 'merchant/components/Activation/ActivationUtils';
 import { useI18Service } from 'common/i18';
+import { useSplitzService } from 'common/splitz';
 
 function MerchantNavLinks(props) {
   const { isConfigTagEnabled } = useI18Service();
@@ -30,6 +31,9 @@ function MerchantNavLinks(props) {
   const { recommendedProduct, hasRecommendedProduct } = getRecommendedProductDetails();
   const isRecommendProduct =
     hasRecommendedProduct && payment === 0 && user.isProductRecommendationEnabled;
+
+  const { abExperiments } = useSplitzService();
+  const showMagicKonnectTab = abExperiments?.magic_konnect?.variables?.result === 'on';
 
   useEffect(() => {
     //set recommend product to localstorage.
@@ -279,6 +283,16 @@ function MerchantNavLinks(props) {
           />
         )}
       </MagicCheckoutNavLink>
+
+      <MainNavLink
+        label="Magic Konnect"
+        type="product"
+        icon="i i-magic-konnect"
+        to={routes.magicKonnect}
+        additionalCondition={(currentUser) =>
+          currentUser.isMagicKonnectEnabled && showMagicKonnectTab
+        }
+      />
 
       <MainNavLink
         label="BBPS"

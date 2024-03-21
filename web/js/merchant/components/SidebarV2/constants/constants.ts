@@ -38,6 +38,7 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   route: 'Route',
   checkout_rewards: 'Checkout Rewards',
   magic_checkout: 'Magic Checkout',
+  magic_konnect: 'Magic Konnect',
   optimizer: 'Optimizer',
   stores: 'Stores',
   bbps: 'BBPS',
