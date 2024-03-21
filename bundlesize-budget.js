@@ -46,13 +46,13 @@ module.exports = [
   {
     name: 'Merc. Mobile',
     path: 'js/merchant/merchantMobile.*.js',
-    limit: '130 KB',
+    limit: '142 KB',
     gzip: true,
   },
   {
     name: 'Merc. Desktop',
     path: 'js/merchant/merchantDesktop.*.js',
-    limit: '120 KB',
+    limit: '142 KB',
     gzip: true,
   },
   {
@@ -106,7 +106,7 @@ module.exports = [
   {
     name: 'Settlements',
     path: 'js/merchant/Settlements.*.js',
-    limit: '55.025 KB',
+    limit: '107 KB',
     gzip: true,
   },
   {
@@ -118,13 +118,13 @@ module.exports = [
   {
     name: 'Payment Links',
     path: 'js/merchant/PaymentLinks.*.js',
-    limit: '20 KB',
+    limit: '47 KB',
     gzip: true,
   },
   {
     name: 'Payment Pages',
     path: 'js/merchant/PaymentPages.*.js',
-    limit: '32.475 KB',
+    limit: '152 KB',
     gzip: true,
   },
   {
@@ -136,7 +136,7 @@ module.exports = [
   {
     name: 'Invoices',
     path: 'js/merchant/Invoices.*.js',
-    limit: '42.375 KB',
+    limit: '75 KB',
     gzip: true,
   },
 ];

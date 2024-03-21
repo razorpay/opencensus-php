@@ -111,46 +111,55 @@ module.exports = {
     // config.optimization.splitChunks = false;
 
     config.optimization.splitChunks = {
-      chunks: 'all',
       cacheGroups: {
-        defaultVendors: {
-          test: new RegExp(/[\\/]node_modules[\\/](react|react-dom|react-router-dom)[\\/]/),
-          name: 'vendor',
-          // `priority` property helps webpack decide which cache group to prioritize. default groups have a negative priority.
-          priority: -15,
-          // chunks `all` means that chunks can be shared even between async and non-async chunks.
+        blade: {
+          test: /[\\/]node_modules[\\/](@razorpay[\\/]blade|@razorpay[\\/]blade-old)[\\/]/,
+          name: 'blade',
           chunks: 'all',
-          // Webpack reuses existing chunks containing previously split modules instead of generating new ones to optimize chunk.
+          enforce: true,
           reuseExistingChunk: true,
-          // It ignore splitChunks.minSize, splitChunks.minChunks, splitChunks.maxAsyncRequests
-          // and splitChunks.maxInitialRequests options and always create chunks for this cache group.
-          enforce: true,
         },
-        common: {
-          name: 'common',
-          minChunks: 10,
-          enforce: true,
-          priority: -15,
+        sentry: {
+          test: /[\\/]node_modules[\\/]@sentry[\\/]/,
+          name: 'sentry',
           chunks: 'all',
+          enforce: true,
           reuseExistingChunk: true,
-          test(module) {
-            // this is required to make module federation work
-            // with split chunks plugin
-            // we exclude chunks managed by the MF plugin
-            /**
-             * https://razorpay.slack.com/archives/C04DEMQ4JQ1/p1692189160082479?thread_ts=1692188286.997909&cid=C04DEMQ4JQ1
-             * https://github.com/module-federation/module-federation-examples/issues/692#issuecomment-1382670317
-             */
-            if (
-              module.type === 'provide-module' ||
-              module.type === 'consume-shared-module' ||
-              module.type === 'remote-module'
-            ) {
-              return false;
-            }
-            return true;
-          },
         },
+        highlight: {
+          test: /[\\/]node_modules[\\/](highlight.js)[\\/]/,
+          name: 'highlight',
+          chunks: 'all',
+          enforce: true,
+          reuseExistingChunk: true,
+        },
+        refractor: {
+          test: /[\\/]node_modules[\\/](refractor)[\\/]/,
+          name: 'refractor',
+          chunks: 'all',
+          enforce: true,
+          reuseExistingChunk: true,
+        },
+        utility: {
+          test: /[\\/]node_modules[\\/](core-js-pure|lodash|rc-trigger)[\\/]/,
+          name: 'utility',
+          chunks: 'all',
+          enforce: true,
+          reuseExistingChunk: true,
+        },
+      },
+      chunks: (module) => {
+        // Check if the module is in node_modules and is not one of the specified modules
+        if (
+          module.resource &&
+          module.resource.includes('node_modules') &&
+          /(@razorpay[\\/]blade|@razorpay[\\/]blade-old|@sentry|highlight\.js|refractor|core-js-pure|lodash|rc-trigger)/.test(
+            module.resource,
+          )
+        ) {
+          return true;
+        }
+        return false;
       },
     };
 
