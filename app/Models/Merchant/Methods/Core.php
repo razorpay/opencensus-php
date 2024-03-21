@@ -1030,6 +1030,14 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($methods);
 
+        $this->trace->info(
+            TraceCode::MERCHANT_METHODS_RESET_UPON_ACTIVATION,
+            [
+                'merchant_id' => $merchant->getId(),
+                'methods' => $merchant->methods->toArray(),
+            ]
+        );
+
         $this->pushMethodUpdateEventToKafka($merchant,$methods);
     }
 
