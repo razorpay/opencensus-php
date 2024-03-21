@@ -56,6 +56,7 @@ jobs:
           REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
           COMMIT_ID: ${{ github.sha }}
           REPORT_PORTAL_LAUNCH_NAME: "Dashboard UTs-${{ steps.fetch-branch-name.outputs.branch_name }}"
+          DISABLE_REPORT_PORTAL_INTEGRATION: true
 
       - name: Run Eslint for files
         run: |

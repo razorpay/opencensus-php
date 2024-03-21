@@ -60,3 +60,4 @@ jobs:
           REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
           COMMIT_ID: ${{ github.sha }}
           REPORT_PORTAL_LAUNCH_NAME: "Dashboard UTs-${{ steps.extract_branch.outputs.branch }}"
+          DISABLE_REPORT_PORTAL_INTEGRATION: true
