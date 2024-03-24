@@ -9,9 +9,11 @@ use RZP\Exception;
 use RZP\Exception\ReconciliationException;
 use RZP\Jobs\CardsPaymentRecon;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -572,6 +574,8 @@ class Service extends Base\Service
      * @return array
      * @throws \Throwable
      */
+
+    //Check this
     public function reconcileRefundsAfterScroogeRecon(array $response , bool $shouldUpdateBatchSummary = true)
     {
         $batchId        =  $response[ScroogeReconciliate::BATCH_ID] ?? null;
@@ -619,7 +623,19 @@ class Service extends Base\Service
                 try
                 {
 
-                    $refund = $this->repo->refund->findByPublicIdFromAPI($refundId);
+                    $experimentVariable = UniqueIdEntity::generateUniqueId();
+                    $variantFlag = $this->app['razorx']->getTreatment($experimentVariable,
+                        RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
+                        $this->app['rzp.mode']);
+
+                    if ($variantFlag === 'on')
+                    {
+                        $refund = $this->repo->refund->findByPublicId($refundId);
+                    }
+                    else
+                    {
+                        $refund = $this->repo->refund->findByPublicIdFromAPI($refundId);
+                    }
 
                     if (empty($refundData[Transaction\Entity::RECONCILED_AT]) === false)
                     {
@@ -760,7 +776,16 @@ class Service extends Base\Service
             $refund->transaction->setGatewaySettledAt($refundData[Transaction\Entity::GATEWAY_SETTLED_AT]);
         }
 
-        $this->repo->saveOrFail($refund);
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+        $variantFlag = $this->app['razorx']->getTreatment($experimentVariable,
+            RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
+            $this->app['rzp.mode']);
+
+        if ($variantFlag !== 'on')
+        {
+            $this->repo->saveOrFail($refund);
+        }
+
         $this->repo->saveOrFail($refund->transaction);
     }
 

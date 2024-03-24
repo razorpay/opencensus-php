@@ -325,15 +325,16 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id);
-                $apiResponse     = parent::findOrFailPublic($id, $columns, $connectionType);
-
-                (new Service())->compareRefundsAndLogDifference(
-                    [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
 
                 if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
                 {
                     return $scroogeResponse;
                 }
+
+                $apiResponse     = parent::findOrFailPublic($id, $columns, $connectionType);
+
+                (new Service())->compareRefundsAndLogDifference(
+                    [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
 
                 return $apiResponse;
             }
@@ -990,6 +991,20 @@ trait ExternalScroogeRepo
      */
     public function forceRefundLoadFromApi($routeName): bool
     {
+        if ($routeName === 'reconciliate_via_batch_service')
+        {
+            $mode = $this->app['rzp.mode'] ?? 'live';
+            $result = $this->app['razorx']->getTreatment(
+                UniqueIdEntity::generateUniqueId(),
+                RazorxTreatment::REFUND_READS_FOR_RECON_FROM_SCROOGE,
+                $mode);
+
+            if ($result === 'on')
+            {
+                return false;
+            }
+        }
+
         $routes = \RZP\Http\Route::$forceRefundsLoadFromApiRoutes;
 
         return (in_array($routeName, $routes, true) === true);

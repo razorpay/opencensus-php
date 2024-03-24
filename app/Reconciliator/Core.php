@@ -3,8 +3,10 @@
 namespace RZP\Reconciliator;
 
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Batch;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -79,7 +81,9 @@ class Core extends Base\Core
             {
                 // Refresh both refund and transaction to get latest changes.
                 // Reload txn because relation are cached.
-                $refund->reload()->transaction->reload();
+                $transaction = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
+                $refund->reload();
+                $refund->transaction()->associate($transaction);
             }
         }
 
@@ -153,8 +157,15 @@ class Core extends Base\Core
 
         $txn = $processor->createTransactionForRefund($refund, $refund->payment);
 
-        // This is required to save the association of the transaction with the refund.
-        $this->repo->saveOrFail($refund);
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+        $variantFlag = $this->app['razorx']->getTreatment($experimentVariable,
+            RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
+            $this->app['rzp.mode']);
+        if ($variantFlag !== 'on')
+        {
+            // This is required to save the association of the transaction with the refund.
+            $this->repo->saveOrFail($refund);
+        }
 
         return $txn;
     }
