@@ -263,6 +263,10 @@ class External extends Base
             $requestBody[Payment\Entity::TOKEN] = $input[Payment\Entity::TOKEN];
         }
 
+        if ($input[Payment\Entity::METHOD] === Payment\Method::WALLET ) {
+            $requestBody[Payment\Entity::WALLET] = $input[Payment\Method::WALLET];
+        }
+
         $this->traceRequest($requestBody);
 
         $headers = [

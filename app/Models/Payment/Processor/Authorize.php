@@ -2838,7 +2838,7 @@ trait Authorize
 
     protected function isAutoRecurringCardPayment($method, array $input)
     {
-        if ($method !== Payment\Method::CARD)
+        if ($method !== Payment\Method::CARD )
         {
             return false;
         }
@@ -5569,7 +5569,8 @@ trait Authorize
         return ($payment->hasSubscription() === true) and
             (($payment->isCardRecurring() === true) or
                 ($payment->isUpiRecurring() === true) or
-                ($payment->isEmandate() === true));
+                ($payment->isEmandate() === true) or
+                ($payment->isWalletRecurring() === true) );
     }
 
     /**
@@ -6714,7 +6715,10 @@ trait Authorize
             {
                 $token = $this->savePaymentMethodForSubscription($payment, null, $input);
             }
-
+            else if ($payment->isWalletRecurring() === true)
+            {
+                $token = $this->savePaymentMethodForSubscription($payment, null, $input);
+            }
             if ($token !== null)
             {
                 $this->payment->localToken()->associate($token);
@@ -6741,6 +6745,10 @@ trait Authorize
                 $payment->setVpa($vpa->getAddress());
             }
             else if ($payment->isEmandate() === true)
+            {
+                $payment->localToken()->associate($token);
+            }
+            else if ($payment->isWalletRecurring() === true)
             {
                 $payment->localToken()->associate($token);
             }
@@ -6865,7 +6873,8 @@ trait Authorize
     {
         if((($payment->isUpiAutoRecurring() === true) or
             ($payment->isNachAutoRecurring() === true) or
-            (($payment->isCardAutoRecurring() === true) and ($payment->card->isRuPay() === true))) and
+            (($payment->isCardAutoRecurring() === true) and ($payment->card->isRuPay() === true)) or
+            ($payment->isWalletAutoRecurring() === true)) and
                 ($token !== null))
         {
             $this->trace->info(
@@ -7503,6 +7512,10 @@ trait Authorize
             // default expiry of emandate token is 30 years
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
                 $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? Carbon::now()->addYears(30)->timestamp;
+        }
+        else if ($payment->isWallet() === true)
+        {
+            $saveMethodInput[Token\Entity::WALLET] = $payment->getWallet();
         }
 
         $token = (new Token\Core)->createForSubscription(

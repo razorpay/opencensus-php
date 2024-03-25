@@ -2824,7 +2824,8 @@ class Processor
             }
 
             if ((isset($input[Payment\Entity::WALLET]) === true) &&
-                (in_array($input[Payment\Entity::WALLET], Wallet::$supportedWalletsForRearch)))
+                (in_array($input[Payment\Entity::WALLET], Wallet::$supportedWalletsForRearch)) &&
+                (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true))
             {
                 return true;
             }
@@ -3272,6 +3273,7 @@ class Processor
                 {
                     $payment->setRelation('entityOrigin', $entityOrigin);
                 }
+
 
                 $paymentData = $this->authorize($payment, $input, $gatewayInput);
 
@@ -7953,6 +7955,12 @@ class Processor
         {
             $gatewayData[Payment\Entity::CPS_ROUTE] = $gatewayData[E::PAYMENT][Payment\Entity::CPS_ROUTE];
         }
+        else if($gateway === Payment\Gateway::TNGD)
+        {
+            $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::NB_PLUS_SERVICE;
+
+            $this->setPaymentService($this->payment, 'nbplusps');
+        }
 
         $gatewayData['merchant_detail'] = $this->repo->merchant_detail->fetchForMerchant($this->payment->merchant);
 
@@ -10105,6 +10113,22 @@ class Processor
             $token->fill($data['token']);
             $token->saveOrFail();
         }
+
+        return $token;
+    }
+
+    public function updateToken(Payment\Entity $payment, array $data): Customer\Token\Entity
+    {
+        $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
+
+        $token->fill($data);
+
+        if ($token->getTerminalId() === null)
+        {
+            $token->terminal()->associate($payment->terminal);
+        }
+
+        $token->saveOrFail();
 
         return $token;
     }

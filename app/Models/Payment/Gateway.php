@@ -1813,6 +1813,9 @@ class Gateway
         self::CURRENCY_CLOUD => [Currency::USD, Currency::EUR, Currency::GBP, Currency::AUD, Currency::CAD],
     ];
 
+    const WALLET_PAYMENT = 'walletPayments';
+    const S2S_TOKEN = 's2s_token';
+
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
         Payment\Gateway::NETBANKING_VIJAYA      => 1575484200,
         Payment\Gateway::NETBANKING_OBC         => 1575484200,
@@ -5106,6 +5109,7 @@ class Gateway
             self::NETBANKING_ICICI,
             self::BILLDESK_OPTIMIZER,
             self::OPTIMIZER_RAZORPAY,
+            self::TNGD
         ];
 
         $isRouted = in_array($gateway, $gateways, true);
@@ -5172,6 +5176,7 @@ class Gateway
                 self::WALLET_BAJAJ,
                 self::WALLET_PAYZAPP,
                 self::WALLET_PAYPAL,
+                self::TNGD,
             ]
         ];
 
@@ -5268,6 +5273,7 @@ class Gateway
             self::WALLET_PAYPAL,
             self::OPTIMIZER_RAZORPAY,
             self::WALLET_AIRTELMONEY,
+            self::TNGD,
         ];
 
         $acquirerGateways = [
