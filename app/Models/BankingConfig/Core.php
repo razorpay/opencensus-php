@@ -2,9 +2,12 @@
 
 namespace RZP\Models\BankingConfig;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\NetbankingConfig;
+use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
 use RZP\Trace\TraceCode;
 use function PHPUnit\Framework\isNull;
 
@@ -48,7 +51,6 @@ class Core extends Base\Core
             }
 
         }
-        
 
         return true;
     }
@@ -126,4 +128,72 @@ class Core extends Base\Core
         }
     }
 
+    public function fetchPaymentsNotesKeys($userId, $merchantId): array {
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if ($merchant->isFeatureEnabled(Feature::CUSTOM_TXN_TAB_VIEW) === false) {
+            throw new  Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        $dcsConfigService = app(Constants::DCS_CONFIG_SERVICE);
+
+        $userColumnsDCS = $dcsConfigService->fetchConfiguration(DcsConfigConst::PaymentNotesKeyColumns, $userId, [DcsConfigConst::PaymentNotesKeyColumns], $this->mode);
+
+        $userTotalColumns = [];
+
+        if(empty($userColumnsDCS) === false and
+            $userColumnsDCS[DcsConfigConst::PaymentNotesKeyColumns] !== "")
+        {
+            $userTotalColumns = json_decode($userColumnsDCS[DcsConfigConst::PaymentNotesKeyColumns], true);
+        }
+
+        $data[Constants::PAYMENT_OPTIONAL_KEYS_COLUMNS] = $userTotalColumns[Constants::PAYMENT_OPTIONAL_KEYS_COLUMNS];
+
+        $data[Constants::USER_NOTES_KEYS_COLUMNS] = $userTotalColumns[Constants::USER_NOTES_KEYS_COLUMNS];
+
+        $response['data'] = $data;
+
+        $response['success'] = true;
+
+        return $response;
+    }
+
+    public function upsertPaymentsNotesKeys($input, $userId, $merchantId): array {
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if ($merchant->isFeatureEnabled(Feature::CUSTOM_TXN_TAB_VIEW) === false) {
+            throw new  Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        $dcsConfigService = app(Constants::DCS_CONFIG_SERVICE);
+
+        $userTotalColumns = $dcsConfigService->fetchConfiguration(DcsConfigConst::PaymentNotesKeyColumns, $userId, [DcsConfigConst::PaymentNotesKeyColumns], $this->mode);
+
+        $requestBody = [
+            Constants::PAYMENT_OPTIONAL_KEYS_COLUMNS => $input["data"][Constants::PAYMENT_OPTIONAL_KEYS_COLUMNS],
+            Constants::USER_NOTES_KEYS_COLUMNS  => $input["data"][Constants::USER_NOTES_KEYS_COLUMNS],
+        ];
+
+        $jsonString = json_encode($requestBody);
+
+        if(empty($userTotalColumns) === true or
+            $userTotalColumns[DcsConfigConst::PaymentNotesKeyColumns] === "")
+        {
+            $dcsResponse = $dcsConfigService->createConfiguration(DcsConfigConst::PaymentNotesKeyColumns, $userId, [DcsConfigConst::PaymentNotesKeyColumns => $jsonString], $this->mode);
+        }
+        else
+        {
+            $dcsResponse =  $dcsConfigService->editConfiguration(DcsConfigConst::PaymentNotesKeyColumns, $userId, [DcsConfigConst::PaymentNotesKeyColumns => $jsonString], $this->mode);
+        }
+
+        $response['data'] = json_decode($dcsResponse[DcsConfigConst::PaymentNotesKeyColumns]);
+
+        $response['success'] = true;
+
+        return $response;
+    }
 }

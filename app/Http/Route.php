@@ -424,6 +424,11 @@ class Route
         // Below route is a temporary route and should be deleted after the migration is completed
         'migration_multi_va_on_x'                  => ['post',     'merchants/banking-va-migration',                 'MerchantController@migrationBankingVAs'                            ],
         'affordability_widget_trial_period_update' => ['put',      'affordability/widget/trial_period',              'AffordabilityController@updateWidgetTrialPeriod'                        ],
+
+        //Fetching and Storing the Payment Notes Keys
+        'fetch_payment_notes_keys_columns'         => ['get',        'merchants/payments/saved_columns',               'BankingConfigController@fetchPaymentsNotesKeys'                   ],
+        'upsert_payment_notes_keys_columns'        => ['post',       'merchants/payments/saved_columns',               'BankingConfigController@upsertPaymentsNotesKeys'                  ],
+
         'merchant_fetch'                           => ['get',      'merchants/{id}',                                 'MerchantController@getMerchant'                                    ],
         'merchant_fetch_internal'                  => ['get',      'merchants_internal/{id}',                        'MerchantController@getMerchant'                                    ],
         'merchant_edit'                            => ['put',      'merchants/{id}',                                 'MerchantController@putMerchant'                                    ],
@@ -6565,7 +6570,7 @@ class Route
         // Billme
         'user_create_proxy',
         'user_roles_mapping_bulk_proxy',
-        
+
         // emandate service internal auth
         'customer_fetch_token_emandate_internal',
     ];
@@ -6701,6 +6706,8 @@ class Route
         'payouts_merchant_smart_routing_summary',
         'merchant_vkyc_submit',
         'merchant_edd_details_fetch',
+        'fetch_payment_notes_keys_columns',
+        'upsert_payment_notes_keys_columns',
         'pgos_send_sms_otp',
         'pgos_verify_otp',
         'merchant_activation_business_categories_v3',
@@ -11890,6 +11897,8 @@ class Route
 
         'merchant_dashboard' => [
             'merchant_fetch_customer_eligibility',
+            'fetch_payment_notes_keys_columns',
+            'upsert_payment_notes_keys_columns',
             'merchant_vkyc_submit',
             'merchant_edd_details_fetch',
             'pgos_send_sms_otp',
@@ -17155,7 +17164,7 @@ class Route
             'internal_merchant_risk_notification',
             'pricing_fetch_plan'
         ],
-        
+
         'emandate_service' => [
             'internal_payment_pricing',
             'customer_fetch_token_emandate_internal',

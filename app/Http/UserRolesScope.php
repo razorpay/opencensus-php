@@ -503,6 +503,8 @@ class UserRolesScope
             'merchant_edit_config_la'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'merchant_features_fetch'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER, Role::LINKED_ACCOUNT_ADMIN, Role::PARTNER, Role::PARTNER_AGENT],
             'merchant_tnc_popup_status'                     => [Role::OWNER],
+            'upsert_payment_notes_keys_columns'             => Role::ALL_ROLES,
+            'fetch_payment_notes_keys_columns'              => Role::ALL_ROLES,
             'merchant_features_update'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::FINANCE, Role::SELLERAPP, Role::PARTNER],
             'affordability_widget_details'                  => [Role::OWNER, Role::ADMIN],
             'merchant_fetch_methods'                        => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP, Role::PARTNER,],

@@ -35,6 +35,7 @@ class Constants
     const EnableMerchantExpiryForPP                  = 'payment_page_no_expiry_enabled';
     const EnableMerchantExpiryForPL                  = 'payment_link_no_expiry_enabled';
     const DynamicPLOffset                            = 'dynamic_pl_offset';
+    const CustomTransactionTabView                   = 'custom_transaction_tab_view';
     const EnablePaymentLinkSign                      = 'enable_payment_link_sign';
     const NotifyViaWhatsappPlink                     = 'notify_via_whatsapp_plink';
     const PlV2DisableAllSms                          = 'pl_v2_disable_all_sms';
@@ -325,6 +326,7 @@ class Constants
         self::EnableMerchantExpiryForPP                   => "rzp/nocode/merchant/paymentpage/Features",
         self::EnableMerchantExpiryForPL                   => "rzp/nocode/merchant/paymentlink/Features",
         self::DynamicPLOffset                             => "rzp/pg/merchant/paymentlinks/Features",
+        self::CustomTransactionTabView                    => "rzp/pg/merchant/dashboard/banking_program/UIControls",
         self::EnablePaymentLinkSign                       => "rzp/pg/merchant/paymentlinks/Features",
         self::NotifyViaWhatsappPlink                      => "rzp/pg/merchant/paymentlinks/Features",
         self::PlV2DisableAllSms                           => "rzp/pg/merchant/paymentlinks/Features",
@@ -577,6 +579,7 @@ class Constants
         self::AffordabilityWidgetSet                                       => self::AffordabilityWidgetSet,
         APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PL                    => self::EnableMerchantExpiryForPL,
         APIFeaturesConstants::DYNAMIC_PL_OFFSET                            => self::DynamicPLOffset,
+        APIFeaturesConstants::CUSTOM_TXN_TAB_VIEW                          => self::CustomTransactionTabView,
         APIFeaturesConstants::ENABLE_PAYMENT_LINK_SIGN                     => self::EnablePaymentLinkSign,
         APIFeaturesConstants::NOTIFY_VIA_WHATSAPP_PLINK                    => self::NotifyViaWhatsappPlink,
         APIFeaturesConstants::PL_V2_DISABLE_ALL_SMS                        => self::PlV2DisableAllSms,

@@ -298,6 +298,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DCS_UPSERT_BANKING_CONFIG                             = 'DCS_UPSERT_BANKING_CONFIG';
     const DCS_GET_BANKING_CONFIG                                = 'DCS_GET_BANKING_CONFIG';
 
+    const DCS_UPSERT_SAVED_PAYMENT_COLUMNS                      = 'DCS_UPSERT_SAVED_PAYMENT_COLUMNS';
+
     // payout links
     const PAYOUT_LINK_GET_MODE_AND_MERCHANT                     = "PAYOUT_LINK_GET_MODE_AND_MERCHANT";
     const PAYOUT_LINK_APPROVE_WORKFLOW                          = "PAYOUT_LINK_APPROVE_WORKFLOW";

@@ -3,7 +3,10 @@
 namespace RZP\Models\BankingConfig;
 
 
+use Faker\Provider\Payment;
 use RZP\Models\Base;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
 
@@ -61,5 +64,29 @@ class Service extends Base\Service
         $fields = $input[Constants::FIELDS];
 
         return $dcsConfigService->fetchConfiguration($key, $entityId, $fields, $this->mode);
+    }
+
+    public function fetchPaymentsNotesKeys()
+    {
+        $userId = $this->ba->getUser()->getId();
+
+        $merchantId = $this->ba->getMerchantId();
+
+        return $this->core->fetchPaymentsNotesKeys($userId, $merchantId);
+    }
+
+    public function upsertPaymentsNotesKeys($input)
+    {
+        $this->trace->info(TraceCode::DCS_UPSERT_SAVED_PAYMENT_COLUMNS, [
+            'input' => $input
+        ]);
+
+        (new Validator())->validateUpsertNotesInput($input);
+
+        $userId = $this->ba->getUser()->getId();
+
+        $merchantId = $this->ba->getMerchantId();
+
+        return $this->core->upsertPaymentsNotesKeys($input, $userId, $merchantId);
     }
 }

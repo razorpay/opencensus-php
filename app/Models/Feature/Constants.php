@@ -1669,6 +1669,8 @@ class Constants
 
     const DYNAMIC_PL_OFFSET = 'dynamic_pl_offset';
 
+    const CUSTOM_TXN_TAB_VIEW =  'custom_txn_tab_view';
+
     const ENABLE_PAYMENT_LINK_SIGN = 'enable_payment_link_sign';
 
     const NOTIFY_VIA_WHATSAPP_PLINK = 'notify_via_whatsapp_plink';
@@ -2694,6 +2696,7 @@ class Constants
         self::ENABLE_MERCHANT_EXPIRY_PL                    => true,
         self::ENABLE_MERCHANT_EXPIRY_PP                    => true,
         self::DYNAMIC_PL_OFFSET                            => true,
+        self::CUSTOM_TXN_TAB_VIEW                          => true,
         self::ENABLE_PAYMENT_LINK_SIGN                     => true,
         self::NOTIFY_VIA_WHATSAPP_PLINK                    => true,
         self::PL_V2_DISABLE_ALL_SMS                        => true,
@@ -2944,6 +2947,11 @@ class Constants
      * @var array
      */
     public static $visibleFeaturesMap = [
+        self::CUSTOM_TXN_TAB_VIEW => [
+            'feature' => self::CUSTOM_TXN_TAB_VIEW,
+            'display_name' => "Displays Submerchant's Payments to the partner along with an option to use notes keys as headers",
+            'documentation' => "",
+        ],
         self::MISSED_ORDERS_PLINK => [
             'feature' => self::MISSED_ORDERS_PLINK,
             'display_name' => "Enable missed orders payment-links feature from the dashboard",

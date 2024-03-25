@@ -16,8 +16,14 @@ class Constants {
     const FIELD_VALUE = "field_value";
     const FIELDS = "fields";
     const ENTITY_ID = "entity_id";
+    const MERCHANT_ID = "merchant_id";
 
     const RZP_ORG = '100000razorpay';
+
+    const USER_NOTES_KEYS_COLUMNS = 'user_notes_key_columns';
+    const PAYMENT_OPTIONAL_KEYS_COLUMNS = 'payment_optional_keys_columns';
+    const PAYMENT_NOTES_KEY_COLUMNS = 'payment_notes_keys_columns';
+    const DCS_CONFIG_SERVICE = 'dcs_config_service';
 
     // types
     const BOOLEAN = "bool";
