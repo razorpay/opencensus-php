@@ -1,5 +1,7 @@
 <?php
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
@@ -400,7 +402,7 @@ return [
             ],
         ],
     ],
-  
+
     'testSearchEsForNotesSortOnCreatedAtAndThenOnScore' => [
         'request' => [
             'url'     => '/payments',
@@ -411,7 +413,7 @@ return [
         'content' => ['count' => 2],
         ],
     ],
-  
+
     'testSearchEsForNotesOnCreatedAtAndThenOnScoreExpectedSearchParams' => [
         'index' => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
         'type'  => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
@@ -455,7 +457,42 @@ return [
             ],
         ],
     ],
-  
+
+    'testSearchEsForNotesKeysParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+        'body'  => [
+            '_source' => ["notes.key"],
+            'from'    => 0,
+            'size'    => 2000,
+            'query'   => [
+                'bool' => [
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'range' => [
+                                        'created_at' => [
+                                            'gte' =>  Carbon::createFromTimestamp('1710389611', Timezone::IST)->subhours(24)->getTimestamp(),
+                                            'lte' =>  '1710389611',
+                                        ]
+                                    ]
+                                ],
+                                [
+                                'terms' => [
+                                    'merchant_id' => [
+                                        '10000000000000'
+                                    ],
+                                ],
+                            ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testSearchEsForNotesWithoutExpEnable' => [
         'request' => [
             'url'     => '/payments',
@@ -464,6 +501,37 @@ return [
         ],
         'response' => [
             'content' => ['count' => 2],
+        ],
+    ],
+
+    'testSearchEsForNotesKeys' => [
+        'request' => [
+            'url'     => '/payments/transaction_tab/notes_keys?to=1710389611',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'roll_no',
+                'student_name',
+                'student_id'
+            ],
+        ],
+    ],
+
+    'testSearchEsForNotesKeysNegative' => [
+        'request' => [
+            'url'     => '/payments/transaction_tab/notes_keys',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [],
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => \RZP\Error\ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
 ];

@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Carbon\Carbon;
+use RZP\Constants\Es;
 use RZP\Constants\Timezone;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Error\ErrorCode;
@@ -22,7 +24,7 @@ class PaymentRetrieveTest extends TestCase
 {
     use PaymentTrait;
     use MocksSplitz;
-    
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/PaymentRetrieveTestData.php';
@@ -834,34 +836,34 @@ class PaymentRetrieveTest extends TestCase
 
         $this->startTest();
     }
-    
+
     public function testSearchEsForNotesSortOnCreatedAtAndThenOnScore()
     {
         $this->mockAllSplitzTreatment();
-        
+
         $this->ba->proxyAuth();
-        
+
         $firstPayment = $this->fixtures->create('payment:authorized', [
             'notes' => [
                 'quotes' => 'es_random'
             ],
             'created_at'=> Carbon::now(Timezone::IST)->subHours(3)->getTimestamp(),
         ]);
-    
+
         $secondPayment = $this->fixtures->create('payment:authorized', [
             'notes' => [
                 'quotes' => 'es_random_1'
             ],
             'created_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
         ]);
-        
+
         $firstPaymentId = $firstPayment->getId();
         $secondPaymentId = $secondPayment->getId();
-        
+
         $esMock = $this->createEsMock(['search']);
-        
+
         $expectedSearchParams = $this->testData["testSearchEsForNotesOnCreatedAtAndThenOnScoreExpectedSearchParams"];
-        
+
         $expectedSearchRes    = [
             'hits' => [
                 'hits' => [
@@ -871,49 +873,49 @@ class PaymentRetrieveTest extends TestCase
                     [
                         '_id' => $firstPaymentId,
                     ],
-              
+
                 ],
             ],
         ];
-        
+
         $esMock->expects($this->once())
           ->method('search')
           ->with($expectedSearchParams)
           ->willReturn($expectedSearchRes);
-        
+
         $response = $this->startTest();
-        
+
         $this->assertEquals('es_random_1', $response['items'][0]['notes']['quotes']);
         $this->assertEquals('es_random', $response['items'][1]['notes']['quotes']);
     }
-    
+
     public function testSearchEsForNotesWithoutExpEnable()
     {
         $this->mockAllSplitzResponseDisable();
-        
+
         $this->ba->proxyAuth();
-        
+
         $firstPayment = $this->fixtures->create('payment:authorized', [
             'notes' => [
                 'quotes' => 'es_random'
             ],
             'created_at'=> Carbon::now(Timezone::IST)->subHours(3)->getTimestamp(),
         ]);
-        
+
         $secondPayment = $this->fixtures->create('payment:authorized', [
             'notes' => [
                 'quotes' => 'es_random_1'
             ],
           'created_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
         ]);
-        
+
         $firstPaymentId = $firstPayment->getId();
         $secondPaymentId = $secondPayment->getId();
-        
+
         $esMock = $this->createEsMock(['search']);
-        
+
         $expectedSearchParams = $this->testData["testSearchEsForNotesOnCreatedAtAndThenOnScoreExpectedSearchParams"];
-        
+
         $expectedSearchRes    = [
             'hits' => [
                 'hits' => [
@@ -926,15 +928,97 @@ class PaymentRetrieveTest extends TestCase
                 ],
             ],
         ];
-        
+
         $esMock->expects($this->once())
           ->method('search')
           ->with($expectedSearchParams)
           ->willReturn($expectedSearchRes);
-        
+
         $response = $this->startTest();
-        
+
         $this->assertEquals('es_random_1', $response['items'][0]['notes']['quotes']);
         $this->assertEquals('es_random', $response['items'][1]['notes']['quotes']);
+    }
+
+    public function testSearchEsForNotesKeys()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::CUSTOM_TXN_TAB_VIEW,
+            'entity_id'     => '10000000000000',
+            'entity_type'   => 'merchant',
+        ]);
+
+        $firstPayment = $this->fixtures->create('payment', [
+            'notes' => [
+                'notes_1' => 'es_random_1'
+            ],
+            'created_at'=> Carbon::now(Timezone::IST)->subHours(3)->getTimestamp(),
+        ]);
+
+        $secondPayment = $this->fixtures->create('payment', [
+            'notes' => [
+                'notes_2' => 'es_random_2'
+            ],
+            'created_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ]);
+
+        $firstPaymentId = $firstPayment->getId();
+        $secondPaymentId = $secondPayment->getId();
+
+        $esMock = $this->createEsMock(['search']);
+
+        $expectedSearchParams = $this->testData["testSearchEsForNotesKeysParams"];
+
+        $expectedSearchRes    = [
+            'hits' => [
+                'hits' => [
+                          [
+                              "_index" => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+                              "_type" => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+                              "_id" => "$firstPaymentId",
+                              "_score" =>  1,
+                              "_source" => [
+                              "notes" => [
+                                [
+                                    "key" =>  "roll_no"
+                                ]
+                          ]
+                        ]
+                    ],
+                    [
+                        "_index" => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+                        "_type" => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+                        "_id" => $secondPayment,
+                        "_score" =>  1,
+                        "_source" => [
+                            "notes" => [
+                                [
+                                    "key" =>  "student_name"
+                                ],
+                                [
+                                    "key" => "student_id"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ];
+
+        $esMock->expects($this->once())
+            ->method('search')
+            ->with($expectedSearchParams)
+            ->willReturn($expectedSearchRes);
+
+         $this->startTest();
+    }
+
+    public function testSearchEsForNotesKeysNegative()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 }

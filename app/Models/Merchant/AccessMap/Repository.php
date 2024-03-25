@@ -264,6 +264,32 @@ class Repository extends Base\Repository
     }
 
     /**
+    This will fetch all the submerchant Ids associated with only one partner.
+    Ex -  if there are two submerchants S1 and S2
+    S1 is associated with P1 partner
+    S2 is associated with P1, P2 partner
+    Then the below function for P1 ownerId will return Submerchant S1 only.
+     */
+    public function fetchSubMerchantIDsLinkedOnlyToAPartner(string $merchantId): array
+    {
+        $subMerchantIds = $this->newQuery()
+            ->select(Entity::MERCHANT_ID)
+            ->whereIn(Entity::MERCHANT_ID, function ($query) use ($merchantId) {
+                $query->select(Entity::MERCHANT_ID)
+                    ->from(Table::MERCHANT_ACCESS_MAP)
+                    ->where(Entity::ENTITY_OWNER_ID, $merchantId)
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->pluck(Entity::MERCHANT_ID);
+            })
+            ->groupBy(Entity::MERCHANT_ID)
+            ->havingRaw('COUNT(DISTINCT '.Entity::ENTITY_OWNER_ID.') = 1')
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+
+        return $subMerchantIds;
+    }
+
+    /**
      * Returns the access maps that links a submerchant to the given app type of a partner.
      *
      * @param string $subMerchantId

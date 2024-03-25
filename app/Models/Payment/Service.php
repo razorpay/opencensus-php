@@ -2221,6 +2221,22 @@ class Service extends Base\Service
         return $payments->toArrayPublic();
     }
 
+    public function fetchPaymentNotesKeys(array $input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        if ($this->merchant->isFeatureEnabled(Features::CUSTOM_TXN_TAB_VIEW) === false) {
+            throw new  Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        $this->modifyInputForNotesKeys($input, $merchantId);
+
+        return $this->repo
+            ->payment
+            ->fetchNotesKeys($input);
+    }
+
     protected function fetchPaymentDocumentsThroughInvoice($payments, $merchantId)
     {
         try
@@ -2301,6 +2317,19 @@ class Service extends Base\Service
         {
             unset($input[Entity::VIRTUAL_ACCOUNT]);
         }
+    }
+
+    private function modifyInputForNotesKeys(&$input, $merchantId)
+    {
+        $input['submerchants'] = $this->repo->merchant_access_map->fetchSubMerchantIDsLinkedOnlyToAPartner($merchantId);
+
+        $input['submerchants'][] = $merchantId;
+
+        $input['to'] = $input['to'] ?? Carbon::now()->timestamp;
+
+        $input['from'] = Carbon::createFromTimestamp($input['to'], Timezone::IST)->subhours(24)->getTimestamp();
+
+        $input['count'] = 2000;
     }
 
     public function fetchStatusCount(array $input)

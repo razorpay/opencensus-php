@@ -139,6 +139,15 @@ class PaymentController extends Controller
         return ApiResponse::json($payments);
     }
 
+    public function fetchPaymentNotesKeys()
+    {
+        $input = Request::all();
+
+        $payments = $this->service()->fetchPaymentNotesKeys($input);
+
+        return ApiResponse::json($payments);
+    }
+
     public function getPaymentsStatusCountInternal()
     {
         $input = Request::all();

@@ -46,4 +46,12 @@ final class Es
     const BEST_FIELDS          = 'best_fields';
     const MATCH_PHRASE_PREFIX  = 'match_phrase_prefix';
     const MINIMUM_SHOULD_MATCH = 'minimum_should_match';
+    const AGGREGATIONS = 'aggregations';
+    const DISTINCT_NOTES_KEYS = 'distinct_notes_keys';
+    const BUCKETS = 'buckets';
+    const KEY = 'key';
+    const AGGS = 'aggs';
+    const SAMPLER = 'sampler';
+    const SHARD_SIZE = 'shard_size';
+    const SAMPLE_PAYMENTS_AND_FETCH_NOTES_KEYS = "sample_payments_and_fetch_notes_keys";
 }

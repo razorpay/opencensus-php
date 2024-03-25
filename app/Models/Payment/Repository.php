@@ -911,6 +911,43 @@ EOT;
         }
     }
 
+    public function fetchNotesKeys($params) : array
+    {
+        $response = (new EsRepository('payment'))->buildQueryForNotesKeysAndSearch($params);
+
+        return $this->filterDistinctNotesKeys($response[ES::HITS][ES::HITS]);
+    }
+
+    public function filterDistinctNotesKeys($notesKeys)
+    {
+        $distinctNotesKeys = [];
+
+        foreach ($notesKeys as $item) {
+            $source = $item['_source'];
+
+            // Checking if the notes field exists and is an array
+            if (isset($source['notes']) && is_array($source['notes'])) {
+                // Looping through each note
+                foreach ($source['notes'] as $note) {
+                    // Accessing the key field of each note
+
+                    if (isset($distinctNotesKeys[$note['key']])) {
+                        // Accessing the 'key' field of each note
+                        $distinctNotesKeys[$note['key']]++;
+                    }
+                    else {
+                        $distinctNotesKeys[$note['key']] = 1;
+                    }
+                }
+            }
+        }
+        arsort($distinctNotesKeys);
+
+        $topNotesKeysWithCount =  array_slice($distinctNotesKeys, 0,30);
+
+        return array_keys($topNotesKeysWithCount);
+    }
+
     protected function buildWdaQuery($query, $connection, $merchantId, $mysqlParams) : WDAQueryBuilder
     {
         $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
