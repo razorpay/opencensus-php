@@ -19,6 +19,7 @@ return [
         'emails.downtime.create_downtime',
         'emails.downtime.resolve_downtime',
         'emails.merchant.enterprise_dashboard_login_otp',
+        'emails.user.otp',
     ],
 
     'stork_whitelist' => [
