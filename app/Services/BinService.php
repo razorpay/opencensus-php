@@ -25,6 +25,8 @@ class BinService
 
     const UPDATE_IIN        = 'update_iin';
 
+    const CREATE_TOKEN_RANGE        = 'create_token_range';
+
     const FETCH_IIN         = 'fetch_iin';
 
     protected $baseUrl;
@@ -103,11 +105,11 @@ class BinService
 
     public function sendRequest($url, $method, $data = null, $namespace = null, $action = null)
     {
-        try 
+        try
         {
             $url = $this->baseUrl . $url;
 
-            if ($data === null) 
+            if ($data === null)
             {
                 $data = '';
             }
@@ -118,7 +120,7 @@ class BinService
             $headers[self::X_NAMESPACE] = $namespace;
             $headers['X-Razorpay-Mode'] = $this->app['rzp.mode'] ?? Mode::LIVE;
             $headers['Authorization'] = 'Basic ' . base64_encode($this->key . ':' . $this->secret);
-            
+
             if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
                 $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
             }
@@ -143,7 +145,7 @@ class BinService
 
             return json_decode($response->body, true);
         }
-        catch (\Exception $e) 
+        catch (\Exception $e)
         {
             $this->trace->error(
                 TraceCode::BIN_SERVICE_ERROR,
@@ -175,6 +177,7 @@ class BinService
                                     $request['headers'],
                                     []);
                         break;
+                    case Requests::PUT:
                     case Requests::PATCH:
                         $response = Requests::$method(
                                     $request['url'],

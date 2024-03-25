@@ -10579,6 +10579,65 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('==AMyYTN2gTM3ADM2UTM5UDN', $card['global_fingerprint']);
     }
 
+    public function testPaymentCreateIINMapping()
+    {
+        $this->ba->publicAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature)
+                {
+                    if (str_contains($feature, 'alt_') === true)
+                    {
+                        return 'on';
+                    }
+
+                    if (str_contains($feature, 'allow_bin_service_') === true)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+
+        $this->fixtures->iin->create([
+            'iin'     => '459156',
+            'country' => 'IN',
+            'issuer'  => 'PUNB',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'          => '1',
+            ]
+        ]);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4591560071865620';
+        $payment['card']['expiry_year'] = '2028';
+        $payment['card']['expiry_month'] = '3';
+
+        $this->mockCardVaultWithCryptogram();
+        $this->mockBinService();
+
+        $payment['card']['cvv'] = 111;
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['consent_to_save_card'] = 0;
+        $payment['card']['name'] = 'testAltIdVISA';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('9fab08f0ac2e49d7b33d7eb3bf26dbc4', $card['vault_token']);
+        $this->assertEquals('2', $card['trivia']);
+        $this->assertEquals('==AMyYTN2gTM3ADM2UTM5UDN', $card['global_fingerprint']);
+    }
+
     public function testFetchPaymentsCardEntity()
     {
         $paymentArray = $this->getDefaultPaymentArray();

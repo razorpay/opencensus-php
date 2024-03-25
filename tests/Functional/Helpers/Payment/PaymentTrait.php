@@ -4111,12 +4111,10 @@ trait PaymentTrait
                     $response['token']  = $token;
 
                     $response['alt_id'] = [
-                        [
                             'value' => '2223000000000007',
                             'expiry_month' => '12',
                             'expiry_year' => '2024',
                             'cryptogram_value' => 'AgAAAAAcfGcac/wAABFcgqYAAAA=',
-                        ]
                     ];
                     break;
 
@@ -4141,6 +4139,54 @@ trait PaymentTrait
             ->andReturnUsing($callable);
 
         $this->app->instance('card.cardVault', $cardVault);
+    }
+
+    public function mockBinService()
+    {
+        $cardVault = Mockery::mock('RZP\Services\BinService', [$app])->makePartial();
+        $this->app->instance('binService', $cardVault);
+        $callable = function ()
+        {
+            return [
+                'iin' => '476995',
+                'rangeMin' => '476995382000000000000',
+                'rangeMax' => '476995382999999999999',
+                'network' => 'MasterCard',
+                'issuer' => '',
+                'issuerName' => 'FINDOMESTIC BANCA SPA',
+                'country' => 'IT',
+                'currency' => 'INR',
+                'type' => 'credit',
+                'subType' => 'consumer',
+                'messageType' => '',
+                'category' => 'MCS - STANDARD',
+                'iinLength' => 6,
+                'cardLength' => 16,
+                'mappedIin' => '546984',
+                'cobrandingPartner' => '',
+                'productCode' => 'MCS',
+                'trivia' => '',
+                'mandateHubs' => [
+                    'billdesk_sihub'
+                ],
+                'features' => [
+                    'enabled' => true,
+                    'locked' => false,
+                    'recurring' => false,
+                    'emi' => false,
+                    'features' => [
+                        '3ds',
+                        'headless_otp',
+                        'ivr'
+                    ]
+                ],
+                'createdAt' => '1710486681',
+                'updatedAt' => '1710486681'
+            ];
+        };
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'put', Mockery::type('array'))
+            ->andReturnUsing($callable);
     }
 
     public function mockCardVaultWithMigrateToken()
