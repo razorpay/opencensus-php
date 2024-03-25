@@ -2181,6 +2181,24 @@ class Service extends Base\Service
         return ($expEnable === true) && (isset($input[Entity::NOTES]) === true);
     }
 
+    private function fetchCustomTxnEnabledAndSubmerchants(): array
+    {
+        $response['custom_txn_enabled'] = false;
+
+        $response['submerchants'] = [];
+
+        if ($this->merchant !== null &&
+            $this->merchant->isFeatureEnabled(Feature\Constants::CUSTOM_TXN_TAB_VIEW) === true) {
+            $response['custom_txn_enabled'] = true;
+
+            $response['submerchants'] =$this->repo->merchant_access_map->fetchSubMerchantIDsLinkedOnlyToAPartner($this->merchant->getId());
+
+            $response['submerchants'][] = $this->merchant->getId();
+        }
+
+        return $response;
+    }
+
     public function fetchMultipleInternal(array $input): array
     {
         $this->trace->info(TraceCode::PAYMENTS_BULK_FETCH, [
@@ -2205,6 +2223,26 @@ class Service extends Base\Service
         $this->modifyInputForVATransaction($input);
 
         $isExpEnable = $this->isExpEnableEsSearchOnCreatedAtAndThenOnScore($merchantId, $input);
+
+        $customTxnEnabled = $this->fetchCustomTxnEnabledAndSubmerchants();
+
+        if($customTxnEnabled['custom_txn_enabled'] === true)
+        {
+            $payments = $this->repo
+                ->payment
+                ->setExperimentForESearchOnCreatedAtFirst($isExpEnable)
+                ->setCustomTxnViewAndSubMerchants($customTxnEnabled)
+                ->fetchPaymentForSubmerchantsWithForceIndex($input, $merchantId);
+
+            // Get payment supporting documents for opgsp import flow on dashboard.
+            if($this->auth->isProxyAuth() === true and
+                ($this->merchant->isOpgspImportEnabled() || $this->merchant->isJpmcImportFlowEnabled()))
+            {
+                return $this->fetchPaymentDocumentsThroughInvoice($payments, $merchantId);
+            }
+
+            return $payments->toArrayPublic();
+        }
 
         $payments = $this->repo
                         ->payment

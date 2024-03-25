@@ -1021,4 +1021,59 @@ class PaymentRetrieveTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testFetchPaymentsForSubmerchants()
+    {
+        $this->ba->proxyAuth();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchant2 = $this->fixtures->create('merchant');
+
+        $entityOwner2 = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_access_map', [
+                'entity_owner_id' => '10000000000000',
+                'merchant_id' => $merchant->id
+            ]
+        );
+
+        $this->fixtures->create('merchant_access_map', [
+                'entity_owner_id' => '10000000000000',
+                'merchant_id' => $merchant2->id
+            ]
+        );
+
+        $this->fixtures->create('merchant_access_map', [
+                'entity_owner_id' => $entityOwner2->id,
+                'merchant_id' => $merchant2->id
+            ]
+        );
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::CUSTOM_TXN_TAB_VIEW,
+            'entity_id'     => '10000000000000',
+            'entity_type'   => 'merchant',
+        ]);
+
+        $firstPayment = $this->fixtures->create('payment', [
+            'merchant_id' => $merchant->id,
+            'notes' => [
+                'notes_1' => 'es_random_1'
+            ],
+            'created_at'=> Carbon::now(Timezone::IST)->subHours(3)->getTimestamp(),
+        ]);
+
+        $secondPayment = $this->fixtures->create('payment', [
+            'merchant_id' => $merchant2->id,
+            'notes' => [
+                'notes_2' => 'es_random_2'
+            ],
+            'created_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ]);
+
+        $response =  $this->startTest();
+        $this->assertNotEquals($response['items'][0]->id, $secondPayment->id);
+        $this->assertNotEquals($response['items'][1]->id, $secondPayment->id);
+    }
 }

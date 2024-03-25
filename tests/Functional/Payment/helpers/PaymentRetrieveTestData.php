@@ -479,12 +479,12 @@ return [
                                     ]
                                 ],
                                 [
-                                'terms' => [
-                                    'merchant_id' => [
-                                        '10000000000000'
+                                    'terms' => [
+                                        'merchant_id' => [
+                                            '10000000000000'
+                                        ],
                                     ],
                                 ],
-                            ],
                             ],
                         ],
                     ],
@@ -532,6 +532,18 @@ return [
         'exception' => [
             'class' => \RZP\Exception\BadRequestException::class,
             'internal_error_code' => \RZP\Error\ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testFetchPaymentsForSubmerchants' => [
+        'request' => [
+            'url'     => '/payments?skip=0&count=25',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
         ],
     ],
 ];
