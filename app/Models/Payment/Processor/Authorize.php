@@ -4400,9 +4400,12 @@ trait Authorize
             $type = $iinEntity->getType();
             $issuer = $iinEntity->getIssuer();
 
-            $isDisabledInstrument = in_array($issuer, DebitProvider::$disabledDebitEmiBanks, true);
 
-            if ($isDisabledInstrument === true and $type === Type::DEBIT )
+            $isDisabledInstrument = in_array($issuer, DebitProvider::$disabledDebitEmiBanks, true);
+            $whitelistedInstruments = (new MerchantCore())->getWhitelistedDebitEmiBanks($this->merchant);
+            $isExperimentCheckRequired = array_key_exists($issuer, DebitProvider::$experimentCheckRequiredDebitEmiBanks);
+
+            if ($type === Type::DEBIT and ($isDisabledInstrument === true or ($isExperimentCheckRequired === true and !in_array($issuer, $whitelistedInstruments))))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Provider is currently disabled for Debit EMI.',

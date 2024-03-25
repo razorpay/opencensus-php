@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Mockery;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -23,61 +25,63 @@ class HdfcDebitEmiTest extends TestCase
 
         $this->payment = $this->getDefaultEmiPaymentArray();
 
+        $this->mockHdfcDebitEmiSplitzExperiment();
+
         $this->ba->publicAuth();
     }
 
-//    public function testHdfcDebitEmiPaymentSuccess()
-//    {
-//        $this->createDependentEntitiesForSuccessPayment();
-//
-//        $this->doAuthPayment($this->payment);
-//
-//        $payment= $this->getDbLastEntity('payment');
-//
-//        $this->assertCreateSuccess($payment);
-//
-//        $data = $this->testData[__FUNCTION__];
-//
-//        $url = $this->getOtpSubmitUrl($payment);
-//
-//        $data['request']['url'] = $url;
-//
-//        $this->runRequestResponseFlow($data);
-//
-//        $this->assertAuthorized();
-//    }
+    public function testHdfcDebitEmiPaymentSuccess()
+    {
+        $this->createDependentEntitiesForSuccessPayment();
 
-//    public function testHdfcDebitEmiCheckEligibilityFailure()
-//    {
-//        $this->createDependentEntitiesForSuccessPayment();
-//
-//        $this->mockServerContentFunction(function(& $content, $action = '')
-//        {
-//            if ($action === 'authenticate_init')
-//            {
-//                $content['data']['status']                  = 'OTP_send_failed';
-//                $content['data']['AuthenticationErrorCode'] = 'A034';
-//                $content['success']                         = 'false';
-//
-//                $content['error'] = [
-//                    'description'               => 'Customer is not eligible',
-//                    'gateway_error_code'        => 'A034',
-//                    'gateway_error_description' => 'Customer is not eligible',
-//                    'gateway_status_code'       => 200,
-//                    'internal_error_code'       => 'BAD_REQUEST_HDFC_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE',
-//                ];
-//            }
-//        });
-//
-//        $data = $this->testData[__FUNCTION__];
-//
-//        $this->runRequestResponseFlow(
-//            $data,
-//            function()
-//            {
-//                $this->doAuthPayment($this->payment);
-//            });
-//    }
+        $this->doAuthPayment($this->payment);
+
+        $payment= $this->getDbLastEntity('payment');
+
+        $this->assertCreateSuccess($payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpSubmitUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+
+        $this->assertAuthorized();
+    }
+
+    public function testHdfcDebitEmiCheckEligibilityFailure()
+    {
+        $this->createDependentEntitiesForSuccessPayment();
+
+        $this->mockServerContentFunction(function(& $content, $action = '')
+        {
+            if ($action === 'authenticate_init')
+            {
+                $content['data']['status']                  = 'OTP_send_failed';
+                $content['data']['AuthenticationErrorCode'] = 'A034';
+                $content['success']                         = 'false';
+
+                $content['error'] = [
+                    'description'               => 'Customer is not eligible',
+                    'gateway_error_code'        => 'A034',
+                    'gateway_error_description' => 'Customer is not eligible',
+                    'gateway_status_code'       => 200,
+                    'internal_error_code'       => 'BAD_REQUEST_HDFC_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE',
+                ];
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
+    }
 
     public function testHdfcDebitEmiPartialRefundDisabled()
     {
@@ -142,19 +146,19 @@ class HdfcDebitEmiTest extends TestCase
         );
     }
 
-//    public function testHdfcDebitEmiMissingEmiPlan()
-//    {
-//        $this->createDependentEntitiesForSuccessPayment(false);
-//
-//        $data = $this->testData[__FUNCTION__];
-//
-//        $this->runRequestResponseFlow(
-//            $data,
-//            function()
-//            {
-//                $this->doAuthPayment($this->payment);
-//            });
-//    }
+    public function testHdfcDebitEmiMissingEmiPlan()
+    {
+        $this->createDependentEntitiesForSuccessPayment(false);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
+    }
 
     public function testHdfcDebitEmiMissingContact()
     {
@@ -275,4 +279,49 @@ class HdfcDebitEmiTest extends TestCase
 
         return $payment;
     }
+
+    protected function mockHdfcDebitEmiSplitzExperiment()
+    {
+        $output[] = [
+            "experiment" => [
+                "id" => $this->app['config']->get('app.hdfc_dcemi_whitelisted_mid_experiment_id'),
+            ],
+            "variant"    => [
+                "variables" => [
+                    [
+                        "key" => "result",
+                        "value" => "on"
+                    ]
+                ]
+            ],
+        ];
+
+        $this->mockDebitEmiSplitzTreatmentBulkRequest($output);
+    }
+
+    protected function mockDebitEmiSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturnUsing(function (array $input) use ($output)
+            {
+                $debitEmiWhitelistExperiments = [
+                    $this->app['config']->get('app.hdfc_dcemi_whitelisted_mid_experiment_id'),
+                ];
+
+                foreach ($input as $experimentData)
+                {
+                    if(in_array($experimentData['experiment_id'], $debitEmiWhitelistExperiments))
+                    {
+                        return $output;
+                    }
+                }
+                return [];
+            });
+    }
+
 }

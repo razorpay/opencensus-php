@@ -10,6 +10,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Card\SubType;
 use RZP\Models\Card\Type;
 use RZP\Models\Emi\DebitProvider;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Fpx as FpxProcessor;
@@ -1746,15 +1747,24 @@ class Entity extends Base\PublicEntity
 
         $debitEmiProviders = DebitProvider::getConsolidatedEnabledDebitEmiProviders($debitEmi, $networks);
 
+        $whitelistedInstruments = (new MerchantCore())->getWhitelistedDebitEmiBanks($this->merchant);
+
         foreach ($debitEmiProviders as $provider => $enabled)
         {
 
             $isDisabledInstrument = in_array($provider, DebitProvider::$disabledDebitEmiBanks, true);
+            $isExperimentCheckRequired = array_key_exists($provider, DebitProvider::$experimentCheckRequiredDebitEmiBanks);
 
             if ($isDisabledInstrument === true)
             {
                 $debitEmiProviders[$provider] = 0;
             }
+
+            if ($isExperimentCheckRequired === true and  !in_array($provider, $whitelistedInstruments))
+            {
+                $debitEmiProviders[$provider] = 0;
+            }
+
         }
         return $debitEmiProviders;
     }

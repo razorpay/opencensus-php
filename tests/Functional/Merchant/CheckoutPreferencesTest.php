@@ -783,6 +783,8 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
+        $this->mockHdfcDebitEmiSplitzExperiment();
+
         $this->fixtures->merchant->enableDebitEmiProviders('10000000000000', ['HDFC' => 1, 'ICIC' => 1]);
 
         $this->fixtures->emiPlan->create(
@@ -809,7 +811,7 @@ class CheckoutPreferencesTest extends TestCase
         $response = $this->getPreferences();
 
         //temporarily disabling HDFC DC EMI
-        $this->assertArrayNotHasKey('HDFC_DC', $response['methods']['emi_options']);
+        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
         $this->assertArrayHasKey('ICIC_DC', $response['methods']['emi_options']);
 
     }
@@ -818,11 +820,13 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableEmiDebit();
 
+        $this->mockHdfcDebitEmiSplitzExperiment();
+
         $this->fixtures->merchant->enableDebitEmiProviders('10000000000000', ['HDFC' => 1, 'ICIC' => 1]);
 
         $response = $this->getPreferences();
 
-        $this->assertArraySelectiveEquals(['HDFC' => 0, 'ICIC' => 1], $response['methods']['debit_emi_providers']);
+        $this->assertArraySelectiveEquals(['HDFC' => 1, 'ICIC' => 1], $response['methods']['debit_emi_providers']);
 
         $this->assertTrue($response['methods']['emi_types']['debit']);
 
@@ -919,6 +923,9 @@ class CheckoutPreferencesTest extends TestCase
         $this->fixtures->merchant->enableDebitEmiProviders();
         $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
 
+        $this->mockHdfcDebitEmiSplitzExperiment();
+
+
         $this->fixtures->emiPlan->create(
             [
                 'id'          => '10101010101310',
@@ -943,8 +950,42 @@ class CheckoutPreferencesTest extends TestCase
 
         $response = $this->getPreferences();
 
-        $this->assertArrayNotHasKey('HDFC_DC', $response['methods']['emi_options']);
+        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
         $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+    }
+
+    public function testHdfcDebitEmiInPreferencesWithoutWhitelistedMerchant()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->enableDebitEmiProviders('10000000000000', ['HDFC' => 1, 'ICIC' => 1]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101312',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'ICIC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayNotHasKey('HDFC_DC', $response['methods']['emi_options']);
+        $this->assertArrayHasKey('ICIC_DC', $response['methods']['emi_options']);
+
     }
 
     public function testGetCheckoutPreferencesForPayLater()
@@ -3850,6 +3891,31 @@ class CheckoutPreferencesTest extends TestCase
             });
     }
 
+    protected function mockDebitEmiSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturnUsing(function (array $input) use ($output)
+            {
+                $debitEmiWhitelistExperiments = [
+                    $this->app['config']->get('app.hdfc_dcemi_whitelisted_mid_experiment_id'),
+                ];
+
+                foreach ($input as $experimentData)
+                {
+                    if(in_array($experimentData['experiment_id'], $debitEmiWhitelistExperiments))
+                    {
+                        return $output;
+                    }
+                }
+                return [];
+            });
+    }
+
     protected function mockPaylaterSplitzExperiment()
     {
         $output[] = [
@@ -3868,6 +3934,26 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->mockPaylaterSplitzTreatmentBulkRequest($output);
     }
+
+    protected function mockHdfcDebitEmiSplitzExperiment()
+    {
+        $output[] = [
+            "experiment" => [
+                "id" => $this->app['config']->get('app.hdfc_dcemi_whitelisted_mid_experiment_id'),
+            ],
+            "variant"    => [
+                "variables" => [
+                    [
+                        "key" => "result",
+                        "value" => "on"
+                    ]
+                ]
+            ],
+        ];
+
+        $this->mockDebitEmiSplitzTreatmentBulkRequest($output);
+    }
+
 
     protected function mockCheckoutService($output)
     {
