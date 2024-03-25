@@ -651,9 +651,15 @@ abstract class Base extends BaseModel\Core
      * @param int $fixed
      * @return int
      */
+
     protected function getUnroundedFees($percent, $fixed, $percentScaleFactor)
     {
         return $this->getRzpFeesUsingPercentOfOriginalAmount($percent, $fixed, $percentScaleFactor);
+    }
+
+    protected function getUnroundedFeesExcludingReward($percent, $fixed, $percentScaleFactor)
+    {
+        return $this->getRzpFeesExcludingRewardUsingPercentOfOriginalAmount($percent, $fixed, $percentScaleFactor);
     }
 
     /**
@@ -679,6 +685,11 @@ abstract class Base extends BaseModel\Core
     protected function getRzpFeesUsingPercentOfOriginalAmount($percent, $fixed, $percentScaleFactor = 100)
     {
         return (($this->amount * $percent) / (100 * $percentScaleFactor)) + $fixed;
+    }
+
+    protected  function getRzpFeesExcludingRewardUsingPercentOfOriginalAmount($percent, $fixed, $percentScaleFactor=100)
+    {
+        return ((($this->amount - $this->rewardAmount)  * $percent) / (100 * $percentScaleFactor)) + $fixed;
     }
 
     protected function getRzpFeesUsingPercentOfRewardAmount($percent, $fixed, $percentScaleFactor = 100)
@@ -767,6 +778,11 @@ abstract class Base extends BaseModel\Core
 
         $fee = $this->getUnroundedFees($percent, $fixed, $percentScaleFactor);
 
+        if($rule->isPaymentFeature() === true && $this->rewardAmount != null && $this->rewardAmount > 0)
+        {
+            $fee = $this->getUnroundedFeesExcludingReward($percent, $fixed, $percentScaleFactor);
+        }
+
         // in case of reward feature the calculation should happen on reward amount and not on the actual payment
         // amount
         if ($rule->isRewardFeature() === true)
@@ -779,7 +795,7 @@ abstract class Base extends BaseModel\Core
         // Fee is checked with bounds after being rounded up.
         // This ensures fee will always be within the bound.
         $fee = $this->compareBoundsAndGetFee($fee, $min, $max);
-        
+
         $rzpFee = $this->createFeeBreakup(
             $rule->getFeature(),
             null,

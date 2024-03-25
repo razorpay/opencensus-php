@@ -606,6 +606,11 @@ class Entity extends Base\PublicEntity
         return $this->getFeature() === Feature::REWARD;
     }
 
+    public  function isPaymentFeature()
+    {
+        return $this->getFeature() === Feature::PAYMENT;
+    }
+
     public function getProduct()
     {
         return $this->getAttribute(self::PRODUCT);
