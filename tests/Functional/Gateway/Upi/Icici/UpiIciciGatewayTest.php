@@ -92,6 +92,46 @@ class UpiIciciGatewayTest extends TestCase
         $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
     }
 
+    // This test requires the correctness of the test testTpvPayment() for a lot of other assertions related to TPV.
+    public function testTpvPaymentWithAccountNumberFromBankAccount()
+    {
+        $this->fixtures->create('terminal:shared_upi_icici_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData['testTpvPayment'];
+
+        $order = $this->startTest($data);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->fixtures->edit('order', str_after($order['id'], 'order_'), ['account_number' => null]);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['amount'] = $order['amount'];
+        $payment['order_id'] = $order['id'];
+
+        $modifiedAccNumber = null;
+
+        $this->mockServerRequestFunction(
+            function ($input) use (&$modifiedAccNumber) {
+                $modifiedAccNumber = $input['payerAccount'];
+            },
+            'upi_icici'
+        );
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('04030403040304', $payment->order->bankAccount->account_number);
+        $this->assertEquals('0403040304', $modifiedAccNumber);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
     public function testIntentTpvPayment()
     {
         $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
@@ -137,6 +177,62 @@ class UpiIciciGatewayTest extends TestCase
         $gatewayEntity = $this->getLastEntity('upi', true);
 
         $this->assertEquals('pay', $gatewayEntity['type']);
+    }
+
+    // This test requires the correctness of the test testIntentTpvPayment() for a lot of other assertions related to TPV.
+    public function testIntentTpvPaymentWithAccountNumberFromBankAccount()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $terminal->setAttribute('tpv', 2)->saveOrFail();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'user@icici';
+            }
+        });
+
+        $this->startTest($this->testData['testTpvPayment']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->fixtures->edit('order', str_after($order['id'], 'order_'), ['account_number' => null]);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['vpa']);
+        $payment['_']['flow'] = 'intent';
+
+        $payment['amount'] = $order['amount'];
+        $payment['order_id'] = $order['id'];
+
+        $modifiedAccNumber = null;
+
+        $this->mockServerRequestFunction(
+            function ($input) use (&$modifiedAccNumber) {
+                $modifiedAccNumber = $input['payerAccount'];
+            },
+            'upi_icici'
+        );
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('04030403040304', $payment->order->bankAccount->account_number);
+        $this->assertEquals('0403040304', $modifiedAccNumber);
+
+        $this->fixtures->merchant->disableTPV();
     }
 
     public function testIntentTpvPaymentWithOldIfscCode()

@@ -12696,22 +12696,33 @@ trait Authorize
 
     protected function modifyAccountNumberForSpecificBanks($payment, array & $gatewayInput)
     {
-        $accountNumber = $gatewayInput['order']['account_number'];
-        $bank          = $gatewayInput['order']['bank'];
+        $accountNumber = $gatewayInput['order']['bank_account']['account_number'] ??
+            $gatewayInput['order']['account_number'] ??
+            null;
+
+        if ($accountNumber === null)
+        {
+            return;
+        }
+
+        $bank = $gatewayInput['order']['bank'];
 
         // prepend required zeroes in the account number based on bank
         switch ($bank)
         {
             case IFSC::SBIN:
                 $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT );
+
                 break;
 
             case IFSC::KKBK:
                 $accountNumber = str_pad($accountNumber, 10, '0', STR_PAD_LEFT );
+
                 break;
 
             case IFSC::CBIN:
                 $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT );
+
                 break;
 
             case IFSC::RATN:
@@ -12719,30 +12730,43 @@ trait Authorize
                 {
                     $accountNumber = substr($accountNumber, 4);
                 }
+
                 break;
 
             case IFSC::APGB:
                 $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT);
+
                 break;
 
             case IFSC::APGV:
                 $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT);
+
                 break;
 
             case IFSC::VARA:
                 $accountNumber = str_pad($accountNumber, 19, '0', STR_PAD_LEFT);
+
                 break;
 
             case IFSC::SPCB:
             case IFSC::MAHG:
                 $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT);
+
                 break;
 
             default:
                 break;
         }
 
-        $gatewayInput['order']['account_number'] = $accountNumber;
+        if (empty($gatewayInput['order']['bank_account']['account_number']) === false)
+        {
+            $gatewayInput['order']['bank_account']['account_number'] = $accountNumber;
+        }
+
+        if (empty($gatewayInput['order']['account_number']) === false)
+        {
+            $gatewayInput['order']['account_number'] = $accountNumber;
+        }
     }
 
     public function validateAndSaveBillingAddressIfApplicable(Payment\Entity $payment, array $input)

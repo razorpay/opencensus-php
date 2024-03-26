@@ -400,6 +400,48 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
         ], $payment);
     }
 
+    // This test requires the correctness of the test testUpsTpvPaymentSuccess() for a lot of assertions related to TPV
+    // This test mocks the asserts done inside the UPS Service mock to focus on the account number assertion.
+    public function testTpvPaymentSuccessWithAccountNumberFromBankAccount()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['enable_addtl_info_upi']);
+
+        $this->payment['notes']['Application Id'] = 'alphaNum123';
+
+        $order = $this->createTpvOrder();
+        $this->fixtures->edit('order', str_after($order['id'], 'order_'), ['account_number' => null]);
+
+        $this->payment['amount'] = $order['amount'];
+        $this->payment['order_id'] = $order['id'];
+        $this->payment['description'] = 'tpv_order_success';
+
+        $modifiedAccNumber = null;
+
+        $this->upiPaymentService->shouldReceive('action')->andReturnUsing(
+            function ($action, $input, $gateway) use (&$modifiedAccNumber) {
+                $modifiedAccNumber = $input['order']['bank_account']['account_number'];
+
+                return [
+                    'data' => ['vpa' => 'razorpay@airtel'],
+                    'gateway' => 'upi_axisolive',
+                ];
+            }
+        );
+
+        $this->doAjaxPaymentWithUps('terminal:shared_upi_mindgate_tpv_terminal', 'upi_mindgate');
+
+        $payment = $this->getDbLastpayment();
+
+        $this->assertEquals('created', $payment->getStatus());
+
+        $this->assertEquals('04030403040304', $payment->order->bankAccount->account_number);
+        $this->assertEquals('0403040304', $modifiedAccNumber);
+    }
+
     public function testUpsTpvPaymentFailure()
     {
         $this->gateway = 'upi_mozart';

@@ -736,7 +736,10 @@ class Gateway extends Base\Gateway
 
         if ($input['merchant']->isTPVRequired() === true)
         {
-            $data[Fields::ACCOUNT_NUM] = bin2hex($this->encrypt($input['order']['account_number']));
+            $accountNumber = $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER] ??
+                $input['order'][Order\Entity::ACCOUNT_NUMBER];
+
+            $data[Fields::ACCOUNT_NUM] = bin2hex($this->encrypt($accountNumber));
 
             $data[Fields::IFSC_CODE_TPV] = substr($input['order']['bank'], 0, 4);
         }
@@ -1701,7 +1704,9 @@ class Gateway extends Base\Gateway
 
         if ($input['merchant']->isTPVRequired() === true)
         {
-            $data[Fields::ACCOUNT_NUM_TPV]    =  $input['order'][Order\Entity::ACCOUNT_NUMBER];
+            $data[Fields::ACCOUNT_NUM_TPV]    =  $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER] ??
+                $input['order'][Order\Entity::ACCOUNT_NUMBER];
+
             $data[Fields::IFSC_CODE_TPV]      =  substr($input['order'][Order\Entity::BANK], 0, 4);
             $path = 'pay_v2';
         }

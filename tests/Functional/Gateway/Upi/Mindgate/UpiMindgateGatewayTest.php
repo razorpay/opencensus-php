@@ -533,6 +533,46 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
     }
 
+    // This test requires the correctness of the test testTpvPayment() for a lot of assertions related to TPV.
+    public function testTpvPaymentWithAccountNumberFromBankAccount()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData['testTpvPayment'];
+
+        $order = $this->startTest($data);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->fixtures->edit('order', str_after($order['id'], 'order_'), ['account_number' => null]);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['amount'] = $order['amount'];
+        $payment['order_id'] = $order['id'];
+
+        $modifiedAccNumber = null;
+
+        $this->mockServerRequestFunction(
+            function ($input) use (&$modifiedAccNumber) {
+                $modifiedAccNumber = $input[13];
+            },
+            'upi_mindgate'
+        );
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('04030403040304', $payment->order->bankAccount->account_number);
+        $this->assertEquals('0403040304', $modifiedAccNumber);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
     public function testVerifyPayment()
     {
         // First we test that verification works
@@ -1999,6 +2039,53 @@ class UpiMindgateGatewayTest extends TestCase
         $gatewayEntity = $this->getDbLastEntity('upi');
 
         $this->assertEquals('pay', $gatewayEntity['type']);
+    }
+
+    // This test requires the correctness of the test testIntentTpvPayment() for a lot of assertions related to TPV.
+    public function testIntentTpvPaymentWithAccountNumberFromBankAccount()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_mindgate_intent_tpv_terminal');
+
+        $this->fixtures->merchant->enableTPV();
+
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
+        $this->createOrder([
+                               'amount'         => 50000,
+                               'currency'       => 'INR',
+                               'receipt'        => 'rcptid42',
+                               'method'         => 'upi',
+                               'bank'           => 'RATN',
+                               'account_number' => '04030403040304',
+                           ]);
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->fixtures->edit('order', str_after($order['id'], 'order_'), ['account_number' => null]);
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+        $this->payment['order_id'] = $order->getPublicId();
+
+        $modifiedAccNumber = null;
+
+        $this->mockServerRequestFunction(
+            function ($input) use (&$modifiedAccNumber) {
+                $modifiedAccNumber = $input[15];
+            },
+            'upi_mindgate'
+        );
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('04030403040304', $payment->order->bankAccount->account_number);
+        $this->assertEquals('0403040304', $modifiedAccNumber);
+
+        $this->fixtures->merchant->disableTPV();
     }
 
     public function testInitiateIntentTpvFailedPayment()

@@ -18,6 +18,7 @@ use phpseclib\Crypt\RSA;
 use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\BankAccount;
 use RZP\Models\UpiTransfer;
 use RZP\Constants\Timezone;
 use RZP\Http\RequestHeader;
@@ -691,7 +692,8 @@ class Gateway extends Base\Gateway
         if ($input['merchant']->isTPVRequired() === true)
         {
             $data[Fields::VALIDATE_PAYER_ACCOUNT] = 'Y';
-            $data[Fields::PAYER_ACCOUNT] = $input['order'][Order\Entity::ACCOUNT_NUMBER];
+            $data[Fields::PAYER_ACCOUNT] = $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER] ??
+                $input['order'][Order\Entity::ACCOUNT_NUMBER];
             $data[Fields::PAYER_IFSC] = self::SPECIAL_IFSC;
         }
 
@@ -736,7 +738,8 @@ class Gateway extends Base\Gateway
             $path = 'pay_v3';
 
             $data[Fields::VALIDATE_PAYER_ACCOUNT2] = 'Y';
-            $data[Fields::PAYER_ACCOUNT] = $input['order'][Order\Entity::ACCOUNT_NUMBER];
+            $data[Fields::PAYER_ACCOUNT] = $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER] ??
+                $input['order'][Order\Entity::ACCOUNT_NUMBER];
             $data[Fields::PAYER_IFSC] = self::SPECIAL_IFSC;
         }
 

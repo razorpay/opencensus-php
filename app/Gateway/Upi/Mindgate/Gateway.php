@@ -5,6 +5,8 @@ namespace RZP\Gateway\Upi\Mindgate;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Monolog\Logger;
+
+use RZP\Models\Order;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Timezone;
 use RZP\Exception;
@@ -18,6 +20,7 @@ use RZP\Models\BharatQr;
 use RZP\Models\QrCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\BankAccount;
 use RZP\Models\UpiTransfer;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\Action;
@@ -1307,7 +1310,8 @@ class Gateway extends Base\Gateway
         {
             // MEBR is the request type for TPV
             $data[12] = 'MEBR';
-            $data[13] = $input['order']['account_number'];
+            $data[13] = $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER] ??
+                $input['order'][Order\Entity::ACCOUNT_NUMBER];
 
             $traceData = $this->maskUpiDataForTracing($data, [
                 Entity::VPA             => 2,
@@ -2363,7 +2367,7 @@ class Gateway extends Base\Gateway
             '',
             '',
             'MEBR',
-            $input['order']['account_number'],
+            $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER] ?? $input['order'][Order\Entity::ACCOUNT_NUMBER],
             'NA',
             'NA',
             'NA',

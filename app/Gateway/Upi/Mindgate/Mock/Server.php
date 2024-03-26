@@ -55,6 +55,8 @@ class Server extends Base\Mock\Server
 
         $input = $this->parseInput($input, Action::INTENT_TPV);
 
+        $this->request($input);
+
         $content = [
             $input[1],
             Status::SUCCESS,
@@ -81,6 +83,8 @@ class Server extends Base\Mock\Server
         parent::authorize($input);
 
         $input = $this->parseInput($input);
+
+        $this->request($input);
 
         $vpa = $input[2];
 

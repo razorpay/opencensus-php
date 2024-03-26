@@ -19,6 +19,7 @@ use RZP\Exception\PaymentVerificationException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 
 class UpiPaymentServiceTest extends TestCase
 {
@@ -68,6 +69,15 @@ class UpiPaymentServiceTest extends TestCase
         {
             return $this->getRazoxVariant($feature, 'api_upi_airtel_v1', 'upips');
         });
+    }
+
+    public function mockDcsService($retValue = null)
+    {
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+                                 ->setConstructorArgs([$this->app])
+                                 ->getMock();
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+        $this->app->dcs_config_service->method('fetchConfiguration')->willReturn($retValue);
     }
 
     /**
@@ -1236,6 +1246,7 @@ class UpiPaymentServiceTest extends TestCase
 
     protected function getTurboPreferences(string $order_id , string $customer_id)
     {
+        $this->mockDcsService();
         $this->ba->publicAuth();
 
         // if both order id and customer id are passed pass both of them
