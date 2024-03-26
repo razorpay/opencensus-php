@@ -1,5 +1,7 @@
 import { CommonApiResponse } from 'common/typings';
 import { merchantFetch } from 'merchant/utils/ajax';
+
+import { createPayloadForSavePreferences } from './utils';
 import { ApplicationDetails } from './v2/Payments/components/PaymentsDetails/types';
 
 export const fetchPaymentIdDetails = (id: string): Promise<any> => {
@@ -76,4 +78,27 @@ export const fetchAppDetails = (
   id: string,
 ): Promise<CommonApiResponse<{ application: ApplicationDetails | null }>> => {
   return merchantFetch(`partner/subm_payment/app_details?payment_id=${id}`);
+};
+
+export const saveMerchantColumnPreferences = (selectedColumnsListData): Promise<any> => {
+  const payload = { data: createPayloadForSavePreferences(selectedColumnsListData) };
+  return merchantFetch({
+    method: 'post',
+    url: `merchants/payments/saved_columns`,
+    data: payload,
+  });
+};
+
+export const fetchMerchantColumnPreferences = (): Promise<any> => {
+  return merchantFetch({
+    method: 'get',
+    url: `merchants/payments/saved_columns`,
+  });
+};
+
+export const fetchPaymentNotesKeys = (): Promise<any> => {
+  return merchantFetch({
+    method: 'get',
+    url: `payments/transaction_tab/notes_keys`,
+  });
 };

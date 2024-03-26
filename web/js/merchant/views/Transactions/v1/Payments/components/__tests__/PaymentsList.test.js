@@ -1,10 +1,12 @@
 import '@testing-library/jest-dom/extend-expect';
-import { screen, fireEvent, waitFor, errorHandlers, server } from 'test-utils';
+import { generateDynamicComponent } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
+import * as EditColumnsModal from 'merchant/views/Transactions/model';
 import {
   renderApp,
   defaultStore,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentsList';
+import { screen, fireEvent, waitFor, errorHandlers, server } from 'test-utils';
 
 describe('PaymentsList', () => {
   const fetchPaymentsList = async (params) => {
@@ -124,6 +126,61 @@ describe('PaymentsList', () => {
           },
         }),
       );
+    });
+  });
+
+  describe('Payments edit columns modal', () => {
+    const fetchMerchantColumnPreferencesSpy = jest.spyOn(
+      EditColumnsModal,
+      'fetchMerchantColumnPreferences',
+    );
+    const fetchPaymentNotesKeysSpy = jest.spyOn(EditColumnsModal, 'fetchPaymentNotesKeys');
+
+    test('Should fetch notes lists columns and preferences if custom tab view is enabled', async () => {
+      await fetchPaymentsList({
+        initialState: {
+          ...defaultStore,
+          session: {
+            ...defaultStore.session,
+            user: {
+              isCustomTransactionTabView: true,
+              ...defaultStore.session.user,
+            },
+          },
+        },
+      });
+      expect(screen.getByText(/Edit Columns/)).toBeInTheDocument();
+      expect(fetchMerchantColumnPreferencesSpy).toHaveBeenCalled();
+      expect(fetchPaymentNotesKeysSpy).toHaveBeenCalled();
+    });
+
+    test('Should return a dynamic component object with the correct title and value function', () => {
+      const columnName = 'domain';
+      const dynamicComponent = generateDynamicComponent(columnName);
+      expect(dynamicComponent.title).toBe(columnName);
+
+      const item = {
+        notes: {
+          [columnName]: 'Example Note',
+        },
+      };
+
+      const valueResult = dynamicComponent.value(item);
+      expect(valueResult).toBe('Example Note');
+    });
+
+    test('Should return undefined if the item does not have notes for the specified column', () => {
+      const columnName = 'domain';
+      const dynamicComponent = generateDynamicComponent(columnName);
+
+      const item = {
+        notes: {
+          notThatColumn: 'Another Note',
+        },
+      };
+
+      const valueResult = dynamicComponent.value(item);
+      expect(valueResult).toBeUndefined();
     });
   });
 });

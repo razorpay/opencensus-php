@@ -2006,6 +2006,10 @@ export default class User {
     return this.isFeatureEnabled('lrs_education_flow');
   }
 
+  get isCustomTransactionTabView() {
+    return this.isFeatureEnabled('custom_txn_tab_view');
+  }
+
   get isOmniChannelMerchant() {
     const variant = getSplitzExperimentVariant('omni_channel_merchants');
     return variant?.name === 'show-ezetap-txn';

@@ -99,6 +99,10 @@ export const refundStatus = {
   title: 'Status',
   value: (item) => <RefundStatusLabel status={item.status} />,
 };
+export const generateDynamicComponent = (columnName) => ({
+  title: columnName,
+  value: (item) => item.notes?.[columnName],
+});
 
 export const enchancedRefundStatus = (showStatusInfo) => {
   return {

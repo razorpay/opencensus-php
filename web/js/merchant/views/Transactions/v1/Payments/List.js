@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { withSplitzService } from 'common/splitz';
 import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
 import { fetchFA, resetFA } from 'merchant/reducers/payments/details';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import PaymentsList from 'merchant/views/Transactions/v1/Payments/components/PaymentsList';
 
 export default withSplitzService(
@@ -18,6 +19,6 @@ export default withSplitzService(
         selfServeActionsPage: 'Transactions.Payments',
       };
     },
-    { fetchAll, fetchFA, resetFA },
+    { fetchAll, fetchFA, resetFA, showNotification },
   )(PaymentsList),
 );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box, Link, SettingsIcon } from '@razorpay/blade/components';
 
 import { withRouter } from 'common/deprecated/withRouter';
 // eslint-disable-next-line no-restricted-imports
@@ -23,6 +24,16 @@ import EmptyList from 'merchant/components/EmptyList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ListContainer from 'merchant/containers/ListContainer';
 import {
+  ERROR_MESSAGES,
+  FIXED_COLUMNS_TRANSACTIONS_V1,
+  OPTIONAL_COLUMNS_TRANSACTIONS_V1,
+} from 'merchant/views/Transactions/constants';
+import {
+  fetchMerchantColumnPreferences,
+  fetchPaymentNotesKeys,
+} from 'merchant/views/Transactions/model';
+import { createCustomColumnView } from 'merchant/views/Transactions/utils';
+import {
   selfServerTrack,
   selfServeTrackResult,
 } from 'merchant/views/Transactions/v1/AnalyticsTrack';
@@ -32,6 +43,7 @@ import PaymentsListFilter from 'merchant/views/Transactions/v1/Payments/componen
 import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
 
 import PaymentFailureAnalysis from './PaymentFailureAnalysis';
+import { PaymentsEditColumnsModal } from './PaymentsEditColumnsModal';
 
 const EmptyRoutesComponent = () => (
   <EmptyList
@@ -61,6 +73,12 @@ const _paymentId = (initiatePage = 'Transactions.Payments') => {
 };
 
 class PaymentsListContainer extends ListContainer {
+  state = {
+    columnsList: [],
+    selectedColumnsList: [],
+    isEditColumnsModalOpen: false,
+  };
+
   componentDidMount() {
     const { user, isRoute } = this.props;
     const { pathname } = this.props.location;
@@ -82,6 +100,11 @@ class PaymentsListContainer extends ListContainer {
     */
     if (!isRoute && user?.isFAEnabled) {
       this.fetchFailureAnalysisData();
+    }
+
+    if (user?.isCustomTransactionTabView) {
+      this.fetchColumns();
+      this.fetchMerchantColumns();
     }
   }
 
@@ -174,6 +197,49 @@ class PaymentsListContainer extends ListContainer {
     });
   };
 
+  fetchColumns = async () => {
+    const { showNotification } = this.props;
+    try {
+      const { data: columnsData, status_code } = await fetchPaymentNotesKeys();
+      if (status_code === 200) this.setState({ columnsList: columnsData });
+      else showNotification({ type: 'error', message: ERROR_MESSAGES.FETCH_COLUMNS });
+    } catch (error) {
+      showNotification({ type: 'error', message: ERROR_MESSAGES.FETCH_COLUMNS });
+    }
+  };
+
+  fetchMerchantColumns = async () => {
+    const { showNotification } = this.props;
+    try {
+      const { data: { data: selectedColumnsData } = {}, status_code } =
+        await fetchMerchantColumnPreferences();
+      if (status_code === 200)
+        this.setState({
+          selectedColumnsList: [
+            ...selectedColumnsData.payment_optional_keys_columns,
+            ...selectedColumnsData.user_notes_key_columns,
+          ],
+        });
+      else
+        showNotification({
+          type: 'error',
+          message: ERROR_MESSAGES.FETCH_PREFERENCES,
+        });
+    } catch (error) {
+      showNotification({
+        type: 'error',
+        message: ERROR_MESSAGES.FETCH_PREFERENCES,
+      });
+    }
+  };
+
+  updateColumnView = (selectedColumnsListData) => {
+    this.setState({
+      selectedColumnsList: [...selectedColumnsListData],
+      isEditColumnsModalOpen: false,
+    });
+  };
+
   doShowFA = () => {
     const { user, user_segment_data } = this.props;
     return (user && user_segment_data?.average_monthly_transactions <= user.getMaxFAMtv) || null;
@@ -183,7 +249,7 @@ class PaymentsListContainer extends ListContainer {
     const { selfServeActionsPage, user } = this.props;
     const isOmniChannelMerchant = user?.isOmniChannelMerchant;
     const initiatePage = selfServeActionsPage ? selfServeActionsPage : 'Transactions.Payments';
-    const cols = [_paymentId(initiatePage), amount, email, contact, createdAt, status];
+    let cols = [_paymentId(initiatePage), amount, email, contact, createdAt, status];
     /* istanbul ignore else */
     if (isOmniChannelMerchant) cols.splice(4, 0, paymentReceiverType);
 
@@ -191,12 +257,31 @@ class PaymentsListContainer extends ListContainer {
     if (user.isLRSEducationFlow) {
       cols.push(downloadSwiftCopy);
     }
+
+    if (user.isCustomTransactionTabView)
+      cols = createCustomColumnView(cols, this.state.selectedColumnsList);
+
     return cols;
   };
 
+  toggleEditColumnsModal = () => {
+    this.setState((prevState) => ({
+      isEditColumnsModalOpen: !prevState.isEditColumnsModalOpen,
+    }));
+  };
+
   render() {
-    const { docUrl, quickTourFeature, isRoute, user, failureAnalysisData, terminalProviders } =
-      this.props;
+    const {
+      docUrl,
+      quickTourFeature,
+      isRoute,
+      user,
+      failureAnalysisData,
+      terminalProviders,
+      showNotification,
+    } = this.props;
+
+    const { columnsList, selectedColumnsList, isEditColumnsModalOpen } = this.state;
 
     return (
       <div className="content-wrapper">
@@ -271,7 +356,29 @@ class PaymentsListContainer extends ListContainer {
         {!isRoute && user?.isFAEnabled && this.doShowFA() && failureAnalysisData?.data && (
           <PaymentFailureAnalysis data={failureAnalysisData?.data} user={user} />
         )}
-
+        {user?.isCustomTransactionTabView && (
+          <Box display="grid" margin="10px">
+            <Link
+              variant="button"
+              size="medium"
+              justifySelf={{ l: 'flex-end', s: 'flex-start' }}
+              icon={SettingsIcon}
+              onClick={this.toggleEditColumnsModal}
+            >
+              Edit Columns
+            </Link>
+            <PaymentsEditColumnsModal
+              isOpen={isEditColumnsModalOpen}
+              onClose={this.toggleEditColumnsModal}
+              onSubmit={this.updateColumnView}
+              columnsList={columnsList}
+              selectedColumnsList={selectedColumnsList}
+              fixedColumns={FIXED_COLUMNS_TRANSACTIONS_V1}
+              optionalColumns={OPTIONAL_COLUMNS_TRANSACTIONS_V1}
+              showNotification={showNotification}
+            />
+          </Box>
+        )}
         <PaymentsTable
           count={this.state.count}
           skip={this.state.skip}

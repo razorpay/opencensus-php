@@ -80,7 +80,7 @@ export const FIXED_FIELDS = {
       name: 'pri__ref__id',
       title: 'Primary Reference ID',
       required: true,
-      ...fUnits.alphanumeric.schema,
+      ...fUnits.str.schema,
     };
   },
 
@@ -89,7 +89,7 @@ export const FIXED_FIELDS = {
       name: 'sec__ref__id_1',
       title: 'Secondary Reference ID',
       required: true,
-      ...fUnits.alphanumeric.schema,
+      ...fUnits.str.schema,
     };
   },
 
