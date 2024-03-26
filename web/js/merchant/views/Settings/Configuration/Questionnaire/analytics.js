@@ -10,6 +10,7 @@ const INT_POPUP = `${INT_FORM} popup`;
 const INT_POPUP_BUTTON = `${INT_FORM} popup button`;
 const INT_SAVE_DATA = `${INT_FORM} save data`;
 const INT_PURPOSE_CODE = `${INT_FORM} purpose code`;
+const INT_FIELD_CHANGED = `${INT_FORM} field`;
 
 //common function
 const track = ({ properties, ...args }) => {
@@ -144,6 +145,17 @@ export const trackPurposeCodeChanged = (newPurposeCode, oldPurposeCode) => {
     properties: {
       new_purpose_code: newPurposeCode,
       old_purpose_code: oldPurposeCode,
+    },
+  });
+};
+
+export const trackFieldChange = (fieldKey, value) => {
+  track({
+    objectName: INT_FIELD_CHANGED,
+    actionName: 'entered',
+    properties: {
+      fieldKey,
+      value,
     },
   });
 };

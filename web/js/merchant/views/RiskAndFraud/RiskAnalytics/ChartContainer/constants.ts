@@ -6,6 +6,7 @@ import {
   METRIC_VALUE,
 } from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
 
+import { SelectedGraphOption } from './types';
 import { generateChartOptions } from './utils';
 
 export const TOTAL_SALES_VALUE = 'total_sales';
@@ -13,7 +14,9 @@ export const VALUE_OF_REPORTED_ENTITY = 'entity';
 export const ENTITY_RATIO = 'entity_ratio';
 export const CHART_ORDER = [TOTAL_SALES_VALUE, VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO];
 
-export const DEFAULT_CHART_OPTIONS = {
+export const DEFAULT_CHART_OPTIONS: {
+  [x: string]: SelectedGraphOption[];
+} = {
   [FRAUD]: [VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO],
   [DISPUTES]: [VALUE_OF_REPORTED_ENTITY, ENTITY_RATIO],
   [RISK_DECLINED]: [ENTITY_RATIO],

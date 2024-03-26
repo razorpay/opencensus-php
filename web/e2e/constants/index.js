@@ -75,6 +75,7 @@ const routes = {
   GCMS_RESELLERS: '/app/gcms/resellers',
   APP_STORE: '/app/app-store',
   RIZE_MARKETPLACE: '/app/rize-marketplace',
+  RISK_AND_FRAUD: '/app/risk-and-fraud',
 };
 
 module.exports = {

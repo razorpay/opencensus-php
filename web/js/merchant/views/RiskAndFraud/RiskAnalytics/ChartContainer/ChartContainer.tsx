@@ -27,7 +27,7 @@ const ChartContainer: React.FC<ChartContainerProps> = (props) => {
   const [chartData, setChartData] = useState<ChartData>({ labels: [], datasets: [] });
 
   const chartOptions = useMemo(() => {
-    getChartAreaConfig({ entity, metric, selectedInterval, chartData });
+    return getChartAreaConfig({ entity, metric, selectedInterval, chartData });
   }, [entity, metric, selectedInterval, chartData]);
 
   const chart = useMemo(() => {

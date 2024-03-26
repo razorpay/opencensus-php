@@ -5,7 +5,7 @@ import { render, screen } from 'test-utils';
 import { FRAUD, DEFAULT_METRIC } from '../../constants';
 import ChartContainer from '../ChartContainer';
 import { DEFAULT_CHART_OPTIONS } from '../constants';
-import { ChartContainerProps, graphSelectedOptions } from '../types';
+import { ChartContainerProps, SelectedGraphOption } from '../types';
 
 jest.mock('react-chartjs-2', () => ({
   Bar: jest.fn(() => <div data-testid="mocked-bar-chart" />),
@@ -24,7 +24,7 @@ describe('ChartContainer', () => {
     },
     selectedInterval: 'day',
     metric: DEFAULT_METRIC,
-    graphOptions: DEFAULT_CHART_OPTIONS[FRAUD] as graphSelectedOptions[],
+    graphOptions: DEFAULT_CHART_OPTIONS[FRAUD] as SelectedGraphOption[],
     queryData: [],
     handleInterval: jest.fn(),
   };

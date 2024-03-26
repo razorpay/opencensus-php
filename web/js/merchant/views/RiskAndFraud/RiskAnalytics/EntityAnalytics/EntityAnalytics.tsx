@@ -1,0 +1,113 @@
+import React, { useReducer } from 'react';
+import { Box } from '@razorpay/blade/components';
+import { useQuery } from '@tanstack/react-query';
+
+import ChartContainer from 'merchant/views/RiskAndFraud/RiskAnalytics/ChartContainer';
+import DownloadReports from 'merchant/views/RiskAndFraud/RiskAnalytics/DownloadReports';
+import StatsOverview from 'merchant/views/RiskAndFraud/RiskAnalytics/StatsOverview';
+import BlockRule from 'merchant/views/RiskAndFraud/RiskAnalytics/BlockRule';
+import { EntityFilters, EntityHeader } from 'merchant/views/RiskAndFraud/RiskAnalytics/components';
+import {
+  SET_DATE_RANGE,
+  SET_METRIC,
+  SET_CHART_OPTIONS,
+  SET_INTERVAL,
+  RISK_DECLINED,
+} from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
+import riskAnalyticsReducer from 'merchant/views/RiskAndFraud/RiskAnalytics/reducer';
+import { fetchAnalytics } from 'merchant/views/RiskAndFraud/RiskAnalytics/services';
+
+import { getBreakdownInterval, getInitialState } from './utils';
+
+import type { EntityAnalyticsProps, AnalyticsReducer } from './types';
+import type { DateRange } from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
+
+const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => {
+  const initialState = getInitialState(entity);
+  const [state, dispatch] = useReducer<AnalyticsReducer>(riskAnalyticsReducer, initialState);
+
+  const { dateRange, metric, graphOptions, interval } = state;
+  const { startDate, endDate } = dateRange;
+
+  const {
+    isLoading,
+    isError,
+    data: queryData,
+  } = useQuery({
+    queryKey: [entity, { startDate, endDate, interval }],
+    queryFn: () => fetchAnalytics({ entity, metric, dateRange, interval, graphOptions }),
+    cacheTime: 0,
+    staleTime: 0,
+    retry: 0,
+    refetchOnWindowFocus: false,
+  });
+
+  const handleDurationChange = (newValue: DateRange) => {
+    const { startDate, endDate } = newValue;
+    const newInterval = getBreakdownInterval(startDate as number, endDate as number);
+    dispatch({ type: SET_DATE_RANGE, payload: newValue });
+    dispatch({ type: SET_INTERVAL, payload: newInterval });
+  };
+
+  const handleMetricChange = (newValue) => {
+    dispatch({ type: SET_METRIC, payload: newValue });
+  };
+
+  const handleGraphOptions = (newValue) => {
+    dispatch({ type: SET_CHART_OPTIONS, payload: newValue });
+  };
+
+  const handleInterval = (newValue) => {
+    dispatch({ type: SET_INTERVAL, payload: newValue });
+  };
+
+  const { data, stats, chartData } = queryData || {
+    data: [],
+    stats: {},
+    chartData: { labels: [], datasets: [] },
+  };
+
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      marginTop="spacing.5"
+      padding={['spacing.5', 'spacing.7', 'spacing.5', 'spacing.7']}
+      backgroundColor="surface.background.level2.lowContrast"
+    >
+      <EntityHeader entity={entity} />
+      <EntityFilters
+        entity={entity}
+        dateRange={dateRange}
+        metric={metric}
+        graphOptions={graphOptions}
+        handleDurationChange={handleDurationChange}
+        handleMetricChange={handleMetricChange}
+        handleGraphOptions={handleGraphOptions}
+      />
+      <StatsOverview
+        isLoading={isLoading}
+        entity={entity}
+        metric={metric}
+        ratios={ratios}
+        stats={stats}
+      />
+      <ChartContainer
+        isLoading={isLoading}
+        isError={isError}
+        entity={entity}
+        dateRange={dateRange}
+        selectedInterval={interval}
+        metric={metric}
+        chartData={chartData}
+        queryData={data}
+        graphOptions={graphOptions}
+        handleInterval={handleInterval}
+      />
+      <DownloadReports entity={entity} />
+      {entity !== RISK_DECLINED ? <BlockRule entity={entity} /> : null}
+    </Box>
+  );
+};
+
+export default EntityAnalytics;

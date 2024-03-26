@@ -6,9 +6,14 @@ import {
   ENTITY_RATIO,
 } from './ChartContainer/constants';
 import { ChartData, GenerateChartDataType } from './ChartContainer/types';
+import { Stats } from './StatsOverview/types';
 import { RISK_DECLINED } from './constants';
 
-import type { PresetValue, ChartInterval } from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
+import type {
+  PresetValue,
+  ChartInterval,
+  QueryResponseItem,
+} from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
 
 export const getChartInterval = (presetValue: PresetValue): ChartInterval[] => {
   switch (presetValue) {
@@ -121,3 +126,54 @@ export const generateChartData = ({
     datasets,
   };
 };
+
+const formatAmount = (
+  amount: number,
+): {
+  value: string;
+  decimal: string;
+} => {
+  // Format integer part with commas
+  const formattedInteger = amount.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+
+  // Extract decimal part
+  const decimalPart = amount % 1 !== 0 ? amount.toFixed(2).split('.')[1] : '00';
+
+  return {
+    value: formattedInteger,
+    decimal: decimalPart,
+  };
+};
+
+export function calculateStats(data: QueryResponseItem[]): Stats {
+  // Initialize variables
+  let totalPaymentAmount = 0;
+  let entityPaymentAmount = 0;
+  let totalEntityCount = 0;
+  let totalPaymentCount = 0;
+
+  // Iterate over the API response data
+  data.forEach((item) => {
+    totalPaymentAmount += parseFloat(item?.payment?.amount) || 0; // total sales value
+    entityPaymentAmount += parseFloat(item?.entity_data?.amount) || 0; // value reported
+    totalEntityCount += parseInt(item?.entity_data?.count, 10) || 0; // number of reported entity
+    totalPaymentCount += parseInt(item?.payment?.count, 10) || 0; // total number of transactions
+  });
+
+  // Calculate ratios
+  const entityPaymentRatio = ((totalEntityCount / totalPaymentCount) * 100).toFixed(2); // ratio
+
+  /**
+   * Format the result
+   * Convert payment and entity amounts from paise to rupees (divide by 100)
+   */
+  const result = {
+    total_payment_amount: formatAmount(totalPaymentAmount / 100),
+    entity_payment_amount: formatAmount(entityPaymentAmount / 100),
+    total_entity_count: totalEntityCount,
+    total_payment_count: totalPaymentCount,
+    entity_payment_ratio: entityPaymentRatio,
+  };
+
+  return result;
+}

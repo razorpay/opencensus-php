@@ -545,6 +545,15 @@ const TransactionV2RefundsContainer = lazy(() =>
     /* webpackChunkName: "RefundsContainer" */ 'merchant/views/Transactions/v2/Refunds/components/RefundsContainer'
   ),
 );
+
+const RiskAndFraud = lazy(() =>
+  import(/* webpackChunkName: "RiskAndFraud" */ 'merchant/views/RiskAndFraud'),
+);
+
+const RiskAnalytics = lazy(() =>
+  /* webpackChunkName: "RiskAnalytics" */ import('merchant/views/RiskAndFraud/RiskAnalytics'),
+);
+
 @withI18Service
 @connect(
   (state) => ({
@@ -2224,6 +2233,23 @@ class Content extends Component {
                   }
                 >
                   <GCMSFunds />
+                </RouteGuard>
+              }
+            />
+          </Route>
+          <Route
+            path="risk-and-fraud/*"
+            element={
+              <RouteGuard additionalCondition={(user) => user.isRiskAndFraudEnabled}>
+                <RiskAndFraud />
+              </RouteGuard>
+            }
+          >
+            <Route
+              index
+              element={
+                <RouteGuard>
+                  <RiskAnalytics />
                 </RouteGuard>
               }
             />

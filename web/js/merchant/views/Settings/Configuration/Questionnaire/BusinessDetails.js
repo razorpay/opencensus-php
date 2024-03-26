@@ -33,7 +33,7 @@ const BusinessDetails = ({
     if (typeof fieldKey === 'string') {
       formikProps.setFieldTouched(fieldKey, true);
     }
-    saveFormData(formikProps, isRevampFlow);
+    saveFormData(formikProps, isRevampFlow, fieldKey);
   };
 
   const handleCheckboxChange = (value, productValue) => {
@@ -53,7 +53,7 @@ const BusinessDetails = ({
     });
     formikProps.values.products = products;
     formikProps.setFieldValue('products', products);
-    handleChange();
+    handleChange('products');
   };
 
   useEffect(() => {
@@ -134,7 +134,7 @@ const BusinessDetails = ({
           required
           name="products"
           label="Enable international payments on"
-          onBlur={handleChange}
+          onBlur={() => handleChange('products')}
           options={productOptions}
           defaultValue={formikProps.values.products.toString()}
           disabled={disabled}
@@ -157,7 +157,7 @@ const BusinessDetails = ({
           { label: 'Both', name: 'both' },
         ]}
         disabled={disabled}
-        onBlur={handleChange}
+        onBlur={() => handleChange('goods_type')}
         mature={formikProps.touched.goods_type}
         propagatedError={getError('goods_type')}
       />
@@ -193,7 +193,7 @@ const BusinessDetails = ({
             { label: '50,000 - 1,00,000', name: '50000=100000' },
             { label: '>1,00,000 ', name: '100000=-1' },
           ]}
-          onBlur={handleChange}
+          onBlur={() => handleChange('business_txn_size')}
           mature={formikProps.touched.business_txn_size}
           info="This will put a upper cap on your transaction size. You can later change it by contacting support"
           propagatedError={getError('business_txn_size')}
@@ -218,7 +218,7 @@ const BusinessDetails = ({
             App: 'Please provide Google play store URL; In case your app is not hosted on google play store, share any other app store URL',
             'Sample App url': 'https://play.google.com/store/apps/details?id=com.whatsapp',
           }}
-          onBlur={handleChange}
+          onBlur={() => handleChange('about_us_link')}
           propagatedError={getError('about_us_link')}
         />
       )}

@@ -1,14 +1,5 @@
 import styled from 'styled-components';
 
-export const DownloadIconWrapper = styled.span(
-  () => `
-  & svg {
-    width: 84px;
-    height: 84px;
-  }
-`,
-);
-
 export const ReportModalWrapper = styled.div<{
   scrollable?: boolean;
   width?: number;

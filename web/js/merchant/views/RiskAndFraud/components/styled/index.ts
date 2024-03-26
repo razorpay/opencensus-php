@@ -1,5 +1,45 @@
 import { Theme } from '@razorpay/blade/components';
-import styled, { css } from 'styled-components';
+import styled, { css, FlattenSimpleInterpolation } from 'styled-components';
+
+interface StyledTabProps extends React.HTMLAttributes<HTMLDivElement> {
+  active: boolean;
+}
+
+export const flexCentered = css`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const FlexCentered = styled.div`
+  ${flexCentered}
+`;
+
+export const TabsHeader = styled.header`
+  display: flex;
+  flex-wrap: wrap;
+  background: #ffffff;
+  width: 100%;
+  border-bottom: 1px solid #e2e8ea;
+`;
+
+export const StyledTab = styled(FlexCentered)<StyledTabProps>(({ theme, active }) => {
+  return `
+    padding: ${theme.spacing[4]}px;
+    margin-inline: ${theme.spacing[4]}px;
+    border-bottom: 2px solid ${active ? theme.colors.brand.primary['500'] : 'transparent'};      
+    color: ${active ? theme.colors.brand.primary['500'] : 'unset'} !important; 
+  `;
+});
+
+export const SectionWrapper = styled.div<FlattenSimpleInterpolation>`
+  display: flex;
+  flex-direction: column;
+  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+  margin-top: ${({ theme }) => theme.spacing[5]}px;
+  padding: ${({ theme }) =>
+    [theme.spacing[5], theme.spacing[7], theme.spacing[5], theme.spacing[7]].join(' ')};
+`;
 
 export const StyledButtonText = styled.button`
   color: ${({ theme }) => theme.colors.brand.primary['500']};
@@ -88,4 +128,13 @@ export const StyledChartError = styled.div(
       color: ${theme.colors.surface.text.normal.lowContrast};
     }
   `,
+);
+
+export const DownloadIconWrapper = styled.span(
+  () => `
+  & svg {
+    width: 84px;
+    height: 84px;
+  }
+`,
 );

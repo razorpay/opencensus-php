@@ -26,6 +26,7 @@ import {
   trackDataSaveError,
   trackDataSaveSuccess,
   trackDataSaving,
+  trackFieldChange,
   trackFormButtonClicked,
   trackModalClosed,
   trackModalOpened,
@@ -256,12 +257,13 @@ const Questionnaire = ({
 
   const debouncedFormDataCall = useDebounce(makeFormDataCall, 500);
 
-  const saveFormData = (formikProps, skipDirtyCheck) => {
+  const saveFormData = (formikProps, skipDirtyCheck, fieldKey = '') => {
     // save only if dirty
     if (!skipDirtyCheck && (!formikProps.dirty || isDisabled)) {
       return null;
     }
     validateTab(formikProps, false, activeTab);
+    if (fieldKey) trackFieldChange(fieldKey, formikProps.values?.[fieldKey]);
     trackDataSaving(true, tabsData?.[activeTab]?.name);
     dispatch({ type: 'IS_SAVING_FORM', payload: LOADING.PENDING });
     window.clearTimeout(loaderTimeout); // Reset the previous removeLoader-call timer on each new Pending
@@ -290,6 +292,7 @@ const Questionnaire = ({
 
     if (activeTab === 1 && formData.purpose_code !== initialPurposeCode) {
       trackPurposeCodeChanged(formData.purpose_code, initialPurposeCode);
+      trackFieldChange('purpose_code', formData.purpose_code);
       dispatch({
         type: 'SET_INIT_PURPOSE_CODE',
         payload: formData.purpose_code,

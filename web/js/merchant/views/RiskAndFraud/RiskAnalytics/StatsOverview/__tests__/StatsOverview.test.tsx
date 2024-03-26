@@ -95,17 +95,17 @@ describe('StatsOverview', () => {
     expect(entityRatioThreshold).toHaveTextContent(/Higher than industry average/);
 
     const totalEntityCountElement = screen.getByTestId('total_entity_count');
-    expect(totalEntityCountElement).toHaveTextContent(total_entity_count);
+    expect(totalEntityCountElement).toHaveTextContent(`${total_entity_count}`);
   });
 
   test('should render labels, value and threshold text entity fraud and metric count', () => {
     renderComponent({ entity: FRAUD, metric: METRIC_COUNT });
 
     const totalPaymentAmountElement = screen.getByTestId('total_payment_count');
-    expect(totalPaymentAmountElement).toHaveTextContent(total_payment_count);
+    expect(totalPaymentAmountElement).toHaveTextContent(`${total_payment_count}`);
 
     const totalEntityCountElement = screen.getByTestId('total_entity_count');
-    expect(totalEntityCountElement).toHaveTextContent(total_entity_count);
+    expect(totalEntityCountElement).toHaveTextContent(`${total_entity_count}`);
 
     const entityPaymentRatioElement = screen.getByTestId('entity_payment_ratio');
     expect(entityPaymentRatioElement).toHaveTextContent(`${entity_payment_ratio}%`);

@@ -12,6 +12,7 @@ import {
 import { StyledPurposeCodeWrapper } from './styles';
 import { PurposeCodeList, PurposeCodeProps } from './types';
 import { PURPOSE_CODE_DOC_LINK } from './constants';
+import { trackFieldChange } from './analytics';
 
 const PurposeCode = ({
   isRevampFlow,
@@ -43,6 +44,7 @@ const PurposeCode = ({
     const { value } = e.target;
     const results = computePurposeCodeSearch(purposeCodeList, value);
     setSearch((prevState) => ({ ...prevState, text: value, results }));
+    trackFieldChange('search_code', value);
     handleChange('', 'purpose_code');
   };
 
@@ -50,6 +52,7 @@ const PurposeCode = ({
     const { value } = e.target;
     const purposeGroup = purposeCodeList.find((group) => group.purposeGroup === value);
     setSearch({ text: '', results: purposeGroup?.codes ?? [] });
+    trackFieldChange('purpose_group', value);
     handleChange('', 'purpose_code');
   };
 

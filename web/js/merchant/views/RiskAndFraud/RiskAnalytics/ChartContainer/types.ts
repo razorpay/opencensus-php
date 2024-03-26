@@ -2,13 +2,13 @@ import { LinearComponentProps } from 'react-chartjs-2';
 
 import {
   AnalyticsEntity,
-  ChartQueryDataItem,
+  QueryResponseItem,
   DateRange,
   IntervalValue,
   MetricOptions,
 } from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
 
-export type graphSelectedOptions = 'total_sales' | 'entity' | 'entity_ratio';
+export type SelectedGraphOption = 'total_sales' | 'entity' | 'entity_ratio';
 
 export type ChartOption = { label: string; value: string };
 
@@ -21,8 +21,8 @@ export type ChartLabelsMapping = {
 export type GenerateChartDataType = {
   entity: AnalyticsEntity;
   metric: MetricOptions;
-  graphOptions: graphSelectedOptions[];
-  queryData: ChartQueryDataItem[];
+  graphOptions: SelectedGraphOption[];
+  queryData: QueryResponseItem[];
 };
 
 export type ChartDataset = {
@@ -45,7 +45,8 @@ export type ChartDataset = {
 
 export type ChartComponentType = React.ComponentType<LinearComponentProps>;
 export type ChartDatasets = (ChartDataset | null)[];
-export type ChartData = { labels: number[]; datasets: ChartDatasets };
+export type DefaultChartData = { labels: []; datasets: [] };
+export type ChartData = { labels: number[]; datasets: ChartDatasets } | DefaultChartData;
 
 export type ChartContainerProps = {
   isLoading: boolean;
@@ -54,8 +55,9 @@ export type ChartContainerProps = {
   dateRange: DateRange;
   selectedInterval: IntervalValue;
   metric: MetricOptions;
-  graphOptions: graphSelectedOptions[];
-  queryData: ChartQueryDataItem[];
+  graphOptions: SelectedGraphOption[];
+  queryData: QueryResponseItem[];
+  chartData?: ChartData;
   handleInterval: (value: IntervalValue) => void;
 };
 

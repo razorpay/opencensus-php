@@ -1,10 +1,21 @@
-import { AnalyticsEntity, MetricOptions } from './types';
+import { AnalyticsEntity, DateRangePreset, MetricOptions, Ratios } from './types';
 
 export const ASSETS_PATH = '/dist/css/assets/risk-analytics';
 
 export const FRAUD: AnalyticsEntity = 'fraud';
 export const DISPUTES: AnalyticsEntity = 'disputes';
 export const RISK_DECLINED: AnalyticsEntity = 'risk_declined';
+
+export const ENTITY_SECTIONS = [FRAUD, DISPUTES, RISK_DECLINED];
+
+export const INITIAL_RATIOS = {
+  fraud_to_sales_ratio: 0,
+  disputes_to_sales_ratio: 0,
+  risk_declined_to_sales_ratio: 0,
+  industry_fraud_to_sales_ratio: 0,
+  industry_disputes_to_sales_ratio: 0,
+  industry_risk_declined_to_sales_ratio: 0,
+} as Ratios;
 
 export const ENTITY_HEADER = {
   [FRAUD]: {
@@ -64,7 +75,11 @@ export const ENTITY_PRESETS = {
   [RISK_DECLINED]: RISK_DECLINED_PRESETS,
 };
 
-export const DEFAULT_PRESET = { [FRAUD]: '14d', [DISPUTES]: '14d', [RISK_DECLINED]: '7d' };
+export const DEFAULT_PRESET: { [entity: string]: DateRangePreset } = {
+  [FRAUD]: { label: 'Last 2 weeks', value: '14d', duration: 14, unit: 'days' },
+  [DISPUTES]: { label: 'Last 2 weeks', value: '14d', duration: 14, unit: 'days' },
+  [RISK_DECLINED]: { label: 'Last 1 week', value: '7d', duration: 7, unit: 'days' },
+};
 
 export const METRIC_COUNT: MetricOptions = 'count';
 export const METRIC_VALUE: MetricOptions = 'amount';
@@ -74,3 +89,27 @@ export const METRIC_OPTIONS = [
   { label: 'absolute count', value: 'count' },
   { label: 'value (in ₹)', value: 'amount' },
 ];
+
+// state action types
+export const SET_DATE_RANGE = 'SET_DATE_RANGE';
+export const SET_METRIC = 'SET_METRIC';
+export const SET_CHART_OPTIONS = 'SET_CHART_OPTIONS';
+export const SET_INTERVAL = 'SET_INTERVAL';
+export const SET_CHART_DATA = 'SET_CHART_DATA';
+
+const FRAUD_BLOCK_CONTRIBUTORS = {
+  heading: 'Block highest fraud contributers',
+  description:
+    'Have you observed most of the frauds are from certain IP addresses, countries, BINs or any other parameter? You can now request us to blacklist those parameters and help you lower the number of frauds.',
+};
+
+const DISPUTES_BLOCK_CONTRIBUTORS = {
+  heading: 'Block highest dispute contributers',
+  description:
+    'Have you observed most of the disputes are from certain IP addresses, countries, BINs or any other parameter? You can now request us to blacklist those parameters and help you lower the number of disputes.',
+};
+
+export const BLOCK_CONTRIBUTORS = {
+  [FRAUD]: FRAUD_BLOCK_CONTRIBUTORS,
+  [DISPUTES]: DISPUTES_BLOCK_CONTRIBUTORS,
+};

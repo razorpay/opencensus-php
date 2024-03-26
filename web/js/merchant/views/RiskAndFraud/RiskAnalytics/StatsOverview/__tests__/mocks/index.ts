@@ -10,7 +10,7 @@ export const mockRatios = {
 export const mockFraudStats = {
   total_payment_amount: { value: '80,18,887', decimal: '59' },
   entity_payment_amount: { value: '29,550', decimal: '00' },
-  total_entity_count: '1',
-  total_payment_count: '392',
+  total_entity_count: 1,
+  total_payment_count: 392,
   entity_payment_ratio: '0.26',
 };

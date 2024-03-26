@@ -17,6 +17,7 @@ import {
   getIsOtherDocumentInRevampFlow,
   isIecCodeRequired,
 } from './utils';
+import { trackFieldChange } from './analytics';
 
 const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user }) => {
   const [transactionProofDocs, setTransactionProofDocs] = React.useState([]);
@@ -55,6 +56,7 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
           documentsObject[docType] = [...(documentsObject[docType] || []), docData];
           const documentKey = `documents${isOtherDocument ? '.others' : ''}`;
           formikProps.setFieldValue(documentKey, documentsObject);
+          trackFieldChange('additional_documents', docType);
           saveFormData(formikProps);
           return docData;
         }
@@ -84,6 +86,7 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
       formikProps.values = stringToObj(documentKey, documentValue, formikProps.values);
       // this is needed for formik validation schema to run
       formikProps.setFieldValue(documentKey, documentValue);
+      trackFieldChange('additional_documents', docType);
       saveFormData(formikProps, true);
     }
   };
@@ -174,6 +177,7 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
 
   const handleChange = (e) => {
     const radioValue = e?.target?.value;
+    trackFieldChange('accepts_intl_txns', radioValue);
     formikProps.setFieldValue('accepts_intl_txns', radioValue);
     if (radioValue === 'false') {
       setTransactionProofDocs([]);
@@ -182,6 +186,7 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
   };
 
   const handleImportCodeChange = (e) => {
+    trackFieldChange('import_export_code', e?.target?.value);
     formikProps.setFieldValue('import_export_code', e?.target?.value);
   };
 
