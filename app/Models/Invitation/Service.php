@@ -31,9 +31,11 @@ class Service extends Base\Service
             'experiment_id' => $this->app['config']->get('app.invite_merchant_with_2FA_experiment_id'),
         ];
 
+        $isLinkedAccount = $this->merchant->isLinkedAccount();
+
         $isOtpVerificationExperimentEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enabled');
 
-        if ($this->auth->getProduct() === Product::BANKING || $isOtpVerificationExperimentEnabled)
+        if ($isLinkedAccount === false && ($this->auth->getProduct() === Product::BANKING || $isOtpVerificationExperimentEnabled))
         {
             (new Validator())->setStrictFalse()->validateInput(Validator::CREATE_INVITATION_VERIFY_OTP, $input);
             $userCore = new User\Core;
