@@ -7,6 +7,17 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\BankingAccount\Gateway\Rbl as RblGateway;
 
+$rblMigrationTestData = [
+                        'request'   => [
+                            'url'       => '/admin/rbl_migration_bas',
+                            'method'    => 'POST',
+                            'content'   => []
+                        ],
+                        'response'  => [
+                            'content'   => []
+                        ]
+                    ];
+
 return [
     'testCreateBankingAccount' => [
         'request'  => [
@@ -6045,16 +6056,17 @@ return [
         ]
     ],
 
-    'testRblMigrationBas' => [
-        'request'   => [
-            'url'       => '/rbl_migration_bas',
-            'method'    => 'POST',
-            'content'   => []
-        ],
-        'response'  => [
-            'content'   => []
-        ]
-    ],
+    'testRblMigrationBasActivatedAccount' => $rblMigrationTestData,
+
+    'testRblMigrationBasArchivedAccount' => $rblMigrationTestData,
+
+    'testRblMigrationBasPickedState' => $rblMigrationTestData,
+
+    'testRblMigrationBasTerminatedAccount' => $rblMigrationTestData,
+
+    'testRblMigrationBasDocCollectionState' => $rblMigrationTestData,
+
+    'testRblMigrationBasApiOnboardingState' => $rblMigrationTestData,
 
     'testMultiCaFetchBankingAccountsProxyAuth' => [
         'request'  => [

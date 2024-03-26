@@ -2119,6 +2119,7 @@ class Service extends Base\Service
 
                 // 4. generate banking_account for BAS
                 $balance = $bankingAccount->balance;
+
                 $basBankingAccount = array_merge($basInput['banking_account'], [
                     'id'                    => $bankingAccountId,
                     'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
@@ -2127,7 +2128,7 @@ class Service extends Base\Service
                     'status'                => 'ACTIVE',
                     'account_type'          => 'CA_DIRECT',
                     'partner_bank'          => 'RBL',
-                    'balance_id'            => $balance->getId(),
+                    'balance_id'            => empty($balance) ? '' : $balance->getId(),
                     'fts_fund_account_id'   => $bankingAccount->getAttribute('fts_fund_account_id'),
                     'credentials'           => $credentials
                 ]);

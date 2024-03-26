@@ -14069,7 +14069,7 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-    public function testRblMigrationBas()
+    public function rblMigrationBasWithDifferentState(string $state, bool $balanceRequired)
     {
         // 1. basic setup
         $this->testActivate();
@@ -14090,10 +14090,10 @@ class BankingAccountTest extends TestCase
         unset($inputData['activation_detail']);
 
         $bankingAccount = $this->fixtures->edit('banking_account', $bankingAccount->getId(), array_merge($inputData, [
-            'balance_id'    => $balance->getId(),
+            'balance_id'    => $balanceRequired? $balance->getId() : '',
             'merchant_id'   => $bankingAccount->getMerchantId(),
             'channel'       => 'rbl',
-            'status'        => 'activated',
+            'status'        => $state,
             'account_type'  => 'current'
         ]));
 
@@ -14111,9 +14111,11 @@ class BankingAccountTest extends TestCase
 
         $activationDetail = $this->fixtures->edit('banking_account_activation_detail', $activationDetail->getId(), $activationDetailInput);
 
-        $balance = $this->fixtures->edit('balance', $balance->getId(), [
-            'account_number' => $bankingAccount->getAttribute('account_number')
-        ]);
+        if ($balanceRequired) {
+            $balance = $this->fixtures->edit('balance', $balance->getId(), [
+                'account_number' => $bankingAccount->getAttribute('account_number')
+            ]);
+        }
 
         // 3. add auditors
         (new BankingAccount\Core)->addOpsMxPOCToBankingAccount($bankingAccount, Org::SUPER_ADMIN_SIGNED);
@@ -14158,7 +14160,7 @@ class BankingAccountTest extends TestCase
             'metadata'              => array_merge($expectedBasInput['banking_account_application']['metadata'], [
                 'is_allowed_on_partner_lms' => false
             ]),
-            'application_status'    => 'activated'
+            'application_status'    => $state
         ]);
 
         $expectedBankingAccountApplication['metadata']['additional_details']['is_documents_walkthrough_complete'] = false;
@@ -14171,7 +14173,7 @@ class BankingAccountTest extends TestCase
             'status'                => 'ACTIVE',
             'account_type'          => 'CA_DIRECT',
             'partner_bank'          => 'RBL',
-            'balance_id'            => $balance->getId(),
+            'balance_id'            => $balanceRequired ? $balance->getId() : '',
             'fts_fund_account_id'   => $bankingAccount->getAttribute('fts_fund_account_id'),
             'credentials'           => [
                 'bank_reference_number' => $bankingAccount->getAttribute('bank_reference_number'),
@@ -14293,9 +14295,11 @@ class BankingAccountTest extends TestCase
 
         $this->app->instance('banking_account_service', $basMock);
 
+        $this->ba->adminAuth();
         // 5. run test
         $dataToReplace = [
             'request'   => [
+                'url'       => '/rbl_migration_bas',
                 'content'   => [
                     'banking_account_ids'   => [
                         $bankingAccount->getId(),
@@ -14314,6 +14318,46 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(Status::MIGRATED, $bankingAccount->getStatus());
+    }
+
+    public function testRblMigrationBasActivatedAccount()
+    {
+        $this->rblMigrationBasWithDifferentState('activated', true);
+    }
+
+    public function testRblMigrationBasArchivedAccount()
+    {
+        $this->rblMigrationBasWithDifferentState('archived', false);
+    }
+
+    public function testRblMigrationBasArchivedAccountWithBalance()
+    {
+        $this->rblMigrationBasWithDifferentState('archived', true);
+    }
+
+    public function testRblMigrationBasPickedState()
+    {
+        $this->rblMigrationBasWithDifferentState('picked', false);
+    }
+
+    public function testRblMigrationBasTerminatedAccount()
+    {
+        $this->rblMigrationBasWithDifferentState('terminated', false);
+    }
+
+    public function testRblMigrationBasTerminatedAccountWithBalance()
+    {
+        $this->rblMigrationBasWithDifferentState('terminated', true);
+    }
+
+    public function testRblMigrationBasDocCollectionState()
+    {
+        $this->rblMigrationBasWithDifferentState('doc_collection', false);
+    }
+
+    public function testRblMigrationBasApiOnboardingState()
+    {
+        $this->rblMigrationBasWithDifferentState('api_onboarding', true);
     }
 
     public function mockBankingAccountProcessRblAccountOpeningWebhook($status = 'Success')
