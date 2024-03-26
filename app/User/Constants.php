@@ -235,13 +235,13 @@ class Constants
         '9460507015',
     ];
 
-    const PHONE_NUMBER_EXTENSIONS = [
-        '', '+91', '91', '0'
-    ];
-
     const DOMAIN_REDIRECT_MAP = [
         'dashboard-curlec.dev.razorpay.in' => ['redirect_url' => 'https://accounts-curlec.np.razorpay.in', 'id' => 'CURLEC_REDIRECTION_ENABLED'],
         'dashboard.curlec.com'             => ['redirect_url' => 'https://accounts.curlec.com', 'id'=>'CURLEC_REDIRECTION_ENABLED'],
+    ];
+
+    const PHONE_NUMBER_EXTENSIONS = [
+        '', '+91', '91', '0'
     ];
 
     const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];

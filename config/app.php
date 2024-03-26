@@ -283,6 +283,8 @@ return array(
     'easy_onboarding_url' => env('EASY_ONBOARDING_URL'),
     'pp_ecommerce_url' => env('PP_ECOMMERCE_URL'),
     'easy_dashboard_url'  => env('EASY_DASHBOARD_URL'),
+    'unified_signup_redirect_path' => env('UNIFIED_SIGNUP_REDIRECT_PATH'),
+    'unified_login_redirect_path'  => env('UNIFIED_LOGIN_REDIRECT_PATH'),
     'easy_curlec_signup_url' => env('EASY_CURLEC_SIGNUP_URL'),
     'is_api_circuit_breaker_enabled' =>  env('IS_API_CIRCUIT_BREAKER_ENABLED'),
     'cache_ttl_org_time_minute' => env('CACHE_TTL_ORG_TIME_MINUTE'),

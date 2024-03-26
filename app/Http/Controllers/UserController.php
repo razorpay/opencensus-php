@@ -154,6 +154,7 @@ class UserController extends Controller
 
     public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCall = false)
     {
+
         $data = $this->getDataForRendering($details,$org, $userError, $orgError);
 
         $currentRouteName = \Route::currentRouteName();
@@ -257,10 +258,31 @@ class UserController extends Controller
         if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin" || $currentRouteName === "resetpassword" || $currentRouteName === "emailupdate"))
         {
             $data['isAuthPath'] = true;
+
+            // redirect guests to unified signup page based on experiment and current conditions
+            if ($currentRouteName === "signup" and $this->isRedirectionApplicableToUnifiedLogin($org)) {
+
+                $redirectPath = \Config::get('app.unified_signup_redirect_path');
+
+                $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+                    'redirection_url' => $redirectPath,
+                    'cookie_set'      => false,
+                    'condition'       => 'GUEST_SIGNUP',
+                    'user'            => $data['user'] ?? null,
+                    'api_host'        => $data['api_host'] ?? null,
+                    'session_id'      => $data['session_id'] ?? null,
+                ]);
+
+                return redirect($redirectPath);
+            }
+
             if ($currentRouteName === 'signup')
             {
                 if ($this->redirectionApplicableForGuest($org) === true)
                 {
+                    $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+                        'redirectionApplicableForGuest'     => "redirectionApplicableForGuest",
+                    ]);
                     $redirectPath = env('EASY_DASHBOARD_URL') . \Request::getRequestUri();
                     $redirectPath = preg_replace('/\?/', '&', $redirectPath); // because we are adding a new query param at the begining
                     $redirectPath = preg_replace('/signup/', 'onboarding?source=website', $redirectPath);
@@ -276,6 +298,23 @@ class UserController extends Controller
 
                     return redirect($redirectPath);
                 }
+            }
+
+            // redirect guests to unified signin page based on experiment on top of existing conditions
+            if ($currentRouteName === "signin" and $this->isRedirectionApplicableToUnifiedLogin($org)) {
+
+                $redirectPath = \Config::get('app.unified_login_redirect_path');
+
+                $this->trace->info(TraceCode::UNIFIED_LOGIN_REDIRECTION, [
+                    'redirection_url' => $redirectPath,
+                    'cookie_set'      => false,
+                    'condition'       => 'GUEST_LOGIN',
+                    'user'            => $data['user'] ?? null,
+                    'api_host'        => $data['api_host'] ?? null,
+                    'session_id'      => $data['session_id'] ?? null,
+                ]);
+
+                return redirect($redirectPath);
             }
         }
 
@@ -613,6 +652,34 @@ class UserController extends Controller
         }
 
         return true;
+    }
+
+    private function isRedirectionApplicableToUnifiedLogin(array $org): bool {
+
+        $existingRedirectionConditions = $this->redirectionApplicableForGuest($org);
+
+        $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+            '$existingRedirectionConditions'     => $existingRedirectionConditions,
+        ]);
+
+        if ($existingRedirectionConditions === false) {
+            return false;
+        }
+
+        $uuid = Cookie::get('ab_user_id') ?? UniqueIdEntity::generateUniqueId();
+
+        Cookie::queue('ab_user_id', $uuid, null, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+
+        // UNIFIED LOGIN SIGN UP EASY_ONBOARDING_REDIRECT as true.
+        $unifiedExperimentID = \Config::get('splitz.experiments')['UNIFIED_PG_REDIRECTION_ENABLED'];
+
+        $data = (new SplitzService())->getVariantBulk($uuid, [$unifiedExperimentID], [], "splitz/bulkEvaluate");
+
+        $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+            '$data'     => $data,
+        ]);
+
+        return ($data[$unifiedExperimentID]['variables']['result'] ?? null) === 'on';
     }
 
     private function matchExclusionsToRedirect(bool $isExpEnabled = false): bool
