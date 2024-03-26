@@ -6,6 +6,7 @@ import { compose, bindActionCreators } from 'redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 const oneHour = 3600 * 1000; //1 hour in milliseconds
 
@@ -63,6 +64,10 @@ class BatchCreate extends Component {
       data.schedule = schedule;
     }
 
+    if (props.otp) {
+      data.otp = props.otp;
+    }
+
     const trackSelfServe = () => {
       const batchType = this.props.batchType;
       const routeBatchList = ['transfer_reversal', 'linked_account_create', 'payment_transfer'];
@@ -82,21 +87,25 @@ class BatchCreate extends Component {
     };
 
     this.props.trackUploadBatch('Create');
-    this.setState({ isCreatingBatch: true }, () =>
-      this.props
-        .createBatch(data)
-        .then((response) => {
-          trackSelfServe();
-          this.props.onCreation(response);
-        })
-        .catch(() => {
-          this.props.showNotification({
-            type: 'error',
-            message: 'Failed to create batch.',
-          });
-        })
-        .finally(() => this.setState({ isCreatingBatch: false })),
-    );
+    this.setState({ isCreatingBatch: true });
+    this.props
+      .createBatch(data)
+      .then((response) => {
+        trackSelfServe();
+        this.props.onCreation(response);
+        this.props.showNotification({
+          type: 'success',
+          message: 'Batch account created successfully',
+        });
+        this.props.closeModal();
+      })
+      .catch(() => {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Failed to create batch.',
+        });
+      })
+      .finally(() => this.setState({ isCreatingBatch: false }));
   };
 
   render() {
@@ -148,7 +157,7 @@ class BatchCreate extends Component {
 export default compose(
   connect(
     (state) => state.session,
-    (dispatch) => bindActionCreators({ showNotification }, dispatch),
+    (dispatch) => bindActionCreators({ showNotification, closeModal }, dispatch),
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('BatchCreate')),

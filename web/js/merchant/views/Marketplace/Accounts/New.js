@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 import RTracking from 'react-tracking';
 import { Field, reduxForm, formValueSelector, change } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -15,27 +16,20 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import {
+  triggerOtpOnEmail,
+  triggerOtpOnSMS,
+  triggerOtpOnBoth,
+} from 'merchant_common/reducers/twoFactor';
+import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { withSplitzService } from 'common/splitz';
+import { is2faRouteExperimentEnabled } from 'common/utils/rzp-utils';
 
 // Decorate with connect to read form values
 const selector = formValueSelector('newAccount');
 
-@connect(
-  (state) => {
-    const dashboard_access = selector(state, 'dashboard_access');
-    const allow_reversals = selector(state, 'allow_reversals');
-    return {
-      user: state.session.user,
-      dashboard_access,
-      allow_reversals,
-    };
-  },
-  {
-    ...AccountActions,
-    ...ModalActions,
-    ...NotificationsActions,
-    fromChange: (...args) => change('newAccount', ...args),
-  },
-)
 @reduxForm({
   form: 'newAccount',
   initialValues: {
@@ -43,7 +37,7 @@ const selector = formValueSelector('newAccount');
   },
 })
 @RTracking(() => window.rzpQ.component('AddAccount'))
-export default class AddAccount extends Component {
+class AddAccount extends Component {
   static contextTypes = {
     // eslint-disable-next-line
     confirm: PropTypes.func,
@@ -51,6 +45,7 @@ export default class AddAccount extends Component {
 
   state = {
     errors: null,
+    token: null,
   };
 
   UNSAFE_componentWillMount() {
@@ -113,6 +108,10 @@ export default class AddAccount extends Component {
         this.props.closeModal();
       })
       .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors.errors,
+        });
         this.setState({
           errors,
         });
@@ -189,6 +188,100 @@ export default class AddAccount extends Component {
     );
   };
 
+  onOtpConfirm = ({ otp }) => {
+    const payload = {
+      account: true,
+      name: this.state.name,
+      email: this.state.email,
+      otp,
+      token: this.state.token,
+    };
+    return this.save({ ...payload });
+  };
+
+  onCloseClick = () => {
+    this.props.closeModal();
+  };
+
+  getOTPDestination = () => {
+    const { user } = this.props.user;
+    const hasOnlyEmail = Boolean(user.email && user.confirmed);
+    const hasOnlyMobile = Boolean(user.contact_mobile && user.contact_mobile_verified);
+    const hasBothEmailAndMobile = hasOnlyEmail && hasOnlyMobile;
+
+    return {
+      hasOnlyEmail,
+      hasOnlyMobile,
+      hasBothEmailAndMobile,
+    };
+  };
+
+  show2faModal = () => {
+    const { user } = this.props.user;
+    const { hasBothEmailAndMobile, hasOnlyEmail, hasOnlyMobile } = this.getOTPDestination();
+
+    const isNewAccountAndSettingsPage = this.props.user?.isAccountAndSettingsRevampEnabled;
+
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <TwoFactorVerificationOTP
+          onConfirm={this.onOtpConfirm}
+          onClose={this.onCloseClick}
+          onResend={this.sendVerificationOtp(true)}
+          title="Invite new member"
+          renderMessage={() => (
+            <p class="m-b">
+              Inviting new member requires you to enter OTP sent over to your{' '}
+              {hasOnlyEmail && (
+                <>
+                  registered email address <strong>{user.email}</strong>
+                </>
+              )}
+              {hasBothEmailAndMobile && ' and '}
+              {hasOnlyMobile && (
+                <>
+                  registered phone number <strong>{user.contact_mobile}</strong>
+                </>
+              )}
+            </p>
+          )}
+          isNewAccountAndSettingsPage={isNewAccountAndSettingsPage}
+        />
+      ),
+    });
+  };
+
+  sendVerificationOtp = (isResend = false) => {
+    return () => {
+      const { hasBothEmailAndMobile, hasOnlyEmail } = this.getOTPDestination();
+
+      let triggerOTP;
+      if (hasBothEmailAndMobile) {
+        triggerOTP = triggerOtpOnBoth;
+      } else if (hasOnlyEmail) {
+        triggerOTP = triggerOtpOnEmail;
+      } else triggerOTP = triggerOtpOnSMS;
+
+      return triggerOTP()
+        .then(({ data }) => {
+          this.setState({
+            token: data.token,
+          });
+          // Dont show when 2fa modal is already being shown
+          if (!isResend) {
+            this.show2faModal();
+          }
+        })
+        .catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
+    };
+  };
+
   render() {
     const { handleSubmit, user, accountData, allow_reversals, dashboard_access } = this.props;
     let noLAEmail;
@@ -196,6 +289,10 @@ export default class AddAccount extends Component {
     if (!accountData) {
       noLAEmail = !this.state.email || user.merchants[user.current].email === this.state.email;
     }
+
+    const { abExperiments } = this.props.splitz;
+
+    const is2faExperimentActive = is2faRouteExperimentEnabled(abExperiments);
 
     return (
       <div class="accounts-edit-new">
@@ -306,7 +403,11 @@ export default class AddAccount extends Component {
                 class="btn btn-primary btn-block"
                 text={!!accountData ? 'Update' : 'Add'}
                 pendingText="Adding..."
-                onClick={handleSubmit(this.save)}
+                onClick={
+                  is2faExperimentActive
+                    ? handleSubmit(this.sendVerificationOtp())
+                    : handleSubmit(this.save)
+                }
               />
             </div>
           </form>
@@ -339,3 +440,27 @@ const EnableDashboardField = ({ children, isDisabled }) => {
 
   return children;
 };
+
+export default compose(
+  withSplitzService,
+  connect(
+    (state) => {
+      const dashboard_access = selector(state, 'dashboard_access');
+      const allow_reversals = selector(state, 'allow_reversals');
+      return {
+        user: state.session.user,
+        dashboard_access,
+        allow_reversals,
+      };
+    },
+    {
+      ...AccountActions,
+      ...ModalActions,
+      ...NotificationsActions,
+      fromChange: (...args) => change('newAccount', ...args),
+      closeModal,
+      openModal,
+      showNotification,
+    },
+  ),
+)(AddAccount);

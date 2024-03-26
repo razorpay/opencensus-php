@@ -22,6 +22,22 @@ export const splitzConfig: SplitzInitConfig = {
     default: [],
     merchant: [
       {
+        uniqueHashKey: 'two_fa_route',
+        experimentId: {
+          beta: 'Ng1ZfgSF38n7J5',
+          production: 'Ng14VTQBkDFQ8J',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'is_merchant_pos_for_ftx',
         experimentId: {
           beta: 'NdViMia8Elf8e7',

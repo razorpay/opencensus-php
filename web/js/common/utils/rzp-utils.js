@@ -1762,3 +1762,6 @@ export function convertToLocale(amount, countryCode) {
 
   return Number.toLocaleString ? Number(amount).toLocaleString(locale) : amount;
 }
+
+export const is2faRouteExperimentEnabled = (experimenets) =>
+  experimenets?.two_fa_route?.variables.result === 'on';

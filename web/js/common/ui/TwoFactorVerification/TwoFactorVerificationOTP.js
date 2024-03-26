@@ -18,7 +18,7 @@ class TwoFactorVerificationOTP extends React.Component {
   noOfAttempts = 1;
   timerIntervalId = null;
 
-  state = { otpValue: null, resendTimer: 30, wrongOtp: false };
+  state = { otpValue: null, resendTimer: 30, wrongOtp: false, disableConfirmButton: false };
 
   setTimerInterval = () => {
     this.timerIntervalId = setInterval(() => {
@@ -48,7 +48,8 @@ class TwoFactorVerificationOTP extends React.Component {
 
   onConfirm = () => {
     return this.validOtp()
-      ? this.props
+      ? (this.setState({ disableConfirmButton: true }),
+        this.props
           .onConfirm({
             otp: this.state.otpValue,
             receiver: this.props.contactMobile,
@@ -62,6 +63,9 @@ class TwoFactorVerificationOTP extends React.Component {
             this.props.onWrongOtp({ errors });
             this.setState({ wrongOtp: true });
           })
+          .finally(() => {
+            this.setState({ disableConfirmButton: false });
+          }))
       : this.setState({ wrongOtp: true });
   };
 
@@ -118,7 +122,7 @@ class TwoFactorVerificationOTP extends React.Component {
   };
 
   render() {
-    const { resendTimer, wrongOtp } = this.state;
+    const { resendTimer, wrongOtp, disableConfirmButton } = this.state;
     const { title, renderMessage } = this.props;
     return (
       <div>
@@ -174,6 +178,7 @@ class TwoFactorVerificationOTP extends React.Component {
                 });
                 this.onConfirm(...e);
               }}
+              disabled={disableConfirmButton}
             >
               Confirm
             </AsyncBtn.Primary>
