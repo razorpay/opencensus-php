@@ -10895,6 +10895,15 @@ class Core extends Base\Core
                     'user_device_details'          => $userDeviceDetail ? [$userDeviceDetail->toArray()] : []
                 ];
 
+                foreach ($merchantInfo['user_device_details'] as $index => $deviceDetail)
+                {
+                    if (isset($deviceDetail['metadata']) === false || empty($deviceDetail['metadata']) === true)
+                    {
+                        $merchantInfo['user_device_details'][$index]['metadata'] = (new \stdClass());
+                    }
+                }
+
+
                 $merchantInfo['merchant_business_detail']['website_details'] = count(optional($merchant->merchantBusinessDetail)->getWebsiteDetails() ?? []) > 0 ?
                     optional($merchant->merchantBusinessDetail)->getWebsiteDetails() : (new \stdClass());
 
