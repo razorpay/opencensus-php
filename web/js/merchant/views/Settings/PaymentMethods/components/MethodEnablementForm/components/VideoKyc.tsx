@@ -51,6 +51,7 @@ const VideoKyc = ({
       }
       const webLink = vKycLink?.payload?.details?.weblink;
       if (webLink) {
+        trackVideoKycLinkGeneration(businessType, false);
         setVideoKycLink(webLink);
       }
     } catch (error) {

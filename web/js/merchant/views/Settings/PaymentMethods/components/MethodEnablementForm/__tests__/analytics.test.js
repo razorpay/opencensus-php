@@ -109,6 +109,7 @@ describe('trackIntlMethodEnablementFormData', () => {
     expect(trackSpy).toHaveBeenCalledWith({
       ...commonProperties,
       objectName: 'international additional methods enablement form data',
+      actionName: 'saved',
       properties: {
         ...commonProperties.properties,
         business_type: businessType,

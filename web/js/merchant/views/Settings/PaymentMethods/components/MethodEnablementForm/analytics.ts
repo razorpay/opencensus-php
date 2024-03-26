@@ -14,6 +14,7 @@ const FORM_DATA = `${INTL_ADDITIONAL_METHOD_ENABLEMENT} form data`;
 const actions = {
   CLICKED: 'clicked',
   RESPONSE: 'response',
+  SAVED: 'saved',
 };
 
 const track = ({ properties = {}, ...args }): void => {
@@ -69,6 +70,7 @@ export const trackIntlMethodEnablementFormData = (
 ): void => {
   track({
     objectName: FORM_DATA,
+    actionName: actions.SAVED,
     properties: { business_type: businessType, ...formatIntlFormDataTrackingObject(data) },
   });
 };

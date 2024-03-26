@@ -39,8 +39,7 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
     const promoterPan = user?.promoter_pan_name;
     const purposeCode = fircData?.data?.purpose_code;
 
-    const isDisableInternationalPaymentMethods =
-      showMorePaymentMethodsSection && !isFetching && !accounts?.length;
+    const isDisableInternationalPaymentMethods = showMorePaymentMethodsSection && !isFetching;
 
     const containerStatus = useMemo(() => {
       if (accountsDeactivated) {

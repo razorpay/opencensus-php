@@ -97,7 +97,7 @@ const ModalContainer = ({
           const errorMessage = JSON.parse(vcipLink.error.message ?? '');
           trackVideoKycLinkGeneration(
             user.business_type,
-            false,
+            true,
             errorMessage?.statusCode,
             errorMessage?.message,
           );
@@ -107,6 +107,7 @@ const ModalContainer = ({
           });
         }
         if (vcipLink?.payload?.details?.weblink) {
+          trackVideoKycLinkGeneration(user.business_type, true);
           window.open(vcipLink?.payload?.details?.weblink, '_blank');
           setIsMethodEnablementFormOpen({ isOpen: false });
         }
