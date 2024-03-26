@@ -4200,7 +4200,9 @@ class Route
         'trusted_badge_eligibility_cron'          => ['post',     'trusted_badge/eligibility_cron',                         'TrustedBadgeController@eligibilityCron'                       ],
         'fetch_trusted_badge_status'              => ['get',      'trusted_badge',                                          'TrustedBadgeController@fetch'                                 ],
         'trusted_badge_merchant_status'           => ['put',      'trusted_badge/merchant_status',                          'TrustedBadgeController@updateMerchantStatus'                  ],
+        'trusted_badge_merchant_status_internal'  => ['put',      'internal/trusted_badge/merchant_status',                 'TrustedBadgeController@updateMerchantStatusInternal'          ],
         'update_trusted_badge_status'             => ['put',      'trusted_badge/status',                                   'TrustedBadgeController@updateTrustedBadgeStatus'              ],
+        'update_trusted_badge_status_internal'    => ['put',      'internal/trusted_badge/status',                          'TrustedBadgeController@updateTrustedBadgeStatusInternal'      ],
         'trusted_badge_redirect'                  => ['get',      'trusted_badge/redirect',                                 'TrustedBadgeController@redirectUrl'                           ],
         'trusted_badge_get_experiment_list'       => ['get',      'trusted_badge/experiment_list',                          'TrustedBadgeController@fetchExperimentList'                   ],
         'trusted_badge_put_experiment_list'       => ['put',      'trusted_badge/experiment_list',                          'TrustedBadgeController@putExperimentList'                     ],
@@ -6407,6 +6409,7 @@ class Route
         // trusted badge experiment internal auth
         'trusted_badge_get_experiment_list',
         'trusted_badge_put_experiment_list',
+        'update_trusted_badge_status_internal',
 
         'internal_create',
         'internal_fail',
@@ -7579,6 +7582,7 @@ class Route
         'reward_fetch',
         'fetch_trusted_badge_status',
         'trusted_badge_merchant_status',
+        'trusted_badge_merchant_status_internal',
         // merchant notification config
         'create_merchant_notification_config',
         'update_merchant_notification_config',
@@ -17478,6 +17482,8 @@ class Route
             'internal_1cc_configs_get',
             'customer_truecaller_auth_internal',
             'fetch_trusted_badge_status',
+            'trusted_badge_merchant_status_internal',
+            'update_trusted_badge_status_internal',
             'invoice_fetch_for_checkout_internal',
             'merchant_fetch_config_for_checkout_internal',
             'order_fetch_internal_checkout',

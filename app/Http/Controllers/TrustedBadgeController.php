@@ -36,7 +36,29 @@ class TrustedBadgeController extends Controller
         return ApiResponse::json([], Response::HTTP_NO_CONTENT);
     }
 
+    // updateMerchantStatusInternal is used temporarily, to allow dual writes on trusted_badge table while we
+    // migrate this table from API monolith to checkout-service
+    public function updateMerchantStatusInternal()
+    {
+        $input = Request::all();
+
+        $this->service()->updateMerchantStatus($input);
+
+        return ApiResponse::json([], Response::HTTP_NO_CONTENT);
+    }
+
     public function updateTrustedBadgeStatus()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateTrustedBadgeStatus($input);
+
+        return ApiResponse::json($response);
+    }
+
+    // updateTrustedBadgeStatusInternal is used temporarily, to allow dual writes on trusted_badge table while we
+    // migrate this table from API monolith to checkout-service
+    public function updateTrustedBadgeStatusInternal()
     {
         $input = Request::all();
 
