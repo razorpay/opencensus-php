@@ -423,7 +423,8 @@ class Constants
             self::UBI,
             self::YESB,
             self::BOB,
-            self::IDFC
+            self::IDFC,
+            self::INDUSIND
         ]
     ];
 
