@@ -813,11 +813,11 @@ class Service extends Base\Service
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setMemoryLimit('2048M');
 
-        RuntimeManager::setTimeLimit(600);
+        RuntimeManager::setTimeLimit(1800);
 
-        RuntimeManager::setMaxExecTime(600);
+        RuntimeManager::setMaxExecTime(1800);
     }
 
     public function getSplitzExperimentVariables(string $checkVariant): array
