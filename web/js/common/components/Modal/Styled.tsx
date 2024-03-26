@@ -14,7 +14,8 @@ export const DialogContainer = styled.div<any>`
   justify-content: center;
   width: 100%;
   min-height: 100%;
-  background-color: ${({ theme }) => getColor(theme, 'shade.950')};
+  background-color: ${({ theme, $isDenserBackdrop }) =>
+    getColor(theme, $isDenserBackdrop ? 'shade.980' : 'shade.950')};
   touch-action: 'none';
   opacity: ${({ $opacity }) => $opacity};
   z-index: 200000;

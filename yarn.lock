@@ -29848,6 +29848,11 @@ react-inspector@^5.1.0:
     is-dom "^1.0.0"
     prop-types "^15.0.0"
 
+react-insta-stories@2.6.2:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/react-insta-stories/-/react-insta-stories-2.6.2.tgz#b421ac351d69a841cac4923a3508c661287858a8"
+  integrity sha512-eM1YHr92bV7WK5h9sECjyYnqZtPxnzJrZFr9IaoDcaZaAEOHVRav+pST513DIG8Hk8QjSTHtdvHHZ0Ka5HwH8w==
+
 react-is@17.0.1:
   version "17.0.1"
   resolved "https://registry.npmjs.org/react-is/-/react-is-17.0.1.tgz"

@@ -111,6 +111,10 @@ const TerminalStatus = lazy(() =>
   ),
 );
 
+const PaymentsRecap = lazy(() =>
+  import(/* webpackChunkName: 'payments-recap' */ 'merchant/components/HeaderNav/PaymentsRecap'),
+);
+
 class AnalyticsDesktop extends Component {
   state = {
     showNcPopup: true,
@@ -363,6 +367,12 @@ class AnalyticsDesktop extends Component {
     );
   };
 
+  shouldShowRazorpayRewind = () => {
+    const { user, splitz } = this.props;
+    const { abExperiments: { payments_recap } = {} } = splitz;
+    return user.isOrgRZP && user.isActivated && isExperimentActive(payments_recap);
+  };
+
   onClickCovidEnableNow = async () => {
     try {
       await merchantFetch({
@@ -570,6 +580,9 @@ class AnalyticsDesktop extends Component {
 
     return (
       <div className="home-analytics-desktop">
+        {this.shouldShowRazorpayRewind() ? (
+          <PaymentsRecap user={user} bannerVariant="desktop" />
+        ) : null}
         <PricingSubscriptionWrapper />
         <ShowWhen additionalCondition={() => !isConfigTagEnabled('onboarding.getting_started')}>
           {/* Announcement Banner Start */}

@@ -32,7 +32,11 @@ import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
-import { getFormattedAmountNew, checkHTML5APIvalidity } from 'common/utils/rzp-utils';
+import {
+  getFormattedAmountNew,
+  checkHTML5APIvalidity,
+  isExperimentActive,
+} from 'common/utils/rzp-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
@@ -60,6 +64,10 @@ const TerminalStatus = lazy(() =>
   import(
     /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
   ),
+);
+
+const PaymentsRecap = lazy(() =>
+  import(/* webpackChunkName: 'payments-recap' */ 'merchant/components/HeaderNav/PaymentsRecap'),
 );
 
 @withI18Service
@@ -160,6 +168,12 @@ class AnalyticsMobile extends Component {
       disableClose: true,
     });
   }
+
+  shouldShowRazorpayRewind = () => {
+    const { user, splitz } = this.props;
+    const { abExperiments: { payments_recap } = {} } = splitz;
+    return user.isOrgRZP && user.isActivated && isExperimentActive(payments_recap);
+  };
 
   renderOnboardingWidgets = () => {
     const { user } = this.props;
@@ -266,6 +280,7 @@ class AnalyticsMobile extends Component {
     );
     let carouselItem = [];
     if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
+
     return (
       <div className="home-analytics-mobile">
         <PricingSubscriptionWrapper />
@@ -280,6 +295,9 @@ class AnalyticsMobile extends Component {
             Google Chrome, Edge, Safari, Firefox.
           </AnnouncementBanner>
         )}
+        {this.shouldShowRazorpayRewind() ? (
+          <PaymentsRecap user={user} bannerVariant="mobile" />
+        ) : null}
         <DashboardBanner />
         <div
           ref={(node) => onExtraContentMount(node)}

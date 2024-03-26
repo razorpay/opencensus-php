@@ -237,6 +237,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'payments_recap',
+        experimentId: {
+          beta: 'Nntc2jFOd01hHO',
+          production: 'NnteV1Ml7Fb4aD',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

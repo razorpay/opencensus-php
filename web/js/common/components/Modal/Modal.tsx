@@ -20,6 +20,7 @@ export interface ModalPropsT {
   bottomSheetHeight?: string;
   bottomSheetHeaderText?: string;
   bottomSheetRef?: ReactNode;
+  isDenserBackdrop?: boolean;
 }
 
 const Modal: React.FC<ModalPropsT> = ({
@@ -31,6 +32,7 @@ const Modal: React.FC<ModalPropsT> = ({
   bottomSheetHeight = 'inherit',
   bottomSheetHeaderText = '',
   bottomSheetRef = null,
+  isDenserBackdrop = false,
 }) => {
   const dailogRef = useRef(null);
   const dailogContainerRef = useRef(null);
@@ -70,6 +72,7 @@ const Modal: React.FC<ModalPropsT> = ({
           <DialogContainer
             $bottomSheet={bottomsheet}
             $opacity={styles.opacity}
+            $isDenserBackdrop={isDenserBackdrop}
             ref={dailogContainerRef}
           >
             {bottomsheet ? (
