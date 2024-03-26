@@ -66,6 +66,7 @@ const BASE_ROUTES = {
   developersWebhooks: '/developers/webhooks',
   paymentMetrics: '/payment-metrics',
   paymentHandle: '/payment-handle',
+  reconciliations: '/reconciliations/dashboard',
 };
 
 @withI18Service

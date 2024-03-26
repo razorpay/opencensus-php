@@ -1,0 +1,56 @@
+import React from 'react';
+import { Box, Heading, Text, ChevronRightIcon } from '@razorpay/blade/components';
+import OptimizerIcon from 'assets/reconciliations/payment-optimizer-icon.svg';
+import POSIcon from 'assets/reconciliations/pos-icon.svg';
+import styled from 'styled-components';
+
+import OnboardingView from './OnboardingView';
+import { selectProductMeta } from './constants';
+
+const ProcuctCard = styled.div`
+  cursor: pointer;
+`;
+
+export default function SelectProduct({ selectProduct, merchantMeta }) {
+  const products = Object.keys(merchantMeta.products);
+
+  const getIcon = (name) => {
+    return name.toLowerCase().includes('optimizer') ? OptimizerIcon : POSIcon;
+  };
+
+  return (
+    <OnboardingView
+      title={selectProductMeta.title}
+      question={selectProductMeta.question}
+      questionSubText={selectProductMeta.questionSubText}
+    >
+      {products.map((item) => {
+        const product = merchantMeta.products[item];
+        return (
+          <ProcuctCard key={item} onClick={() => selectProduct(item)}>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              width="480px"
+              borderWidth={1}
+              borderColor="surface.border.normal.lowContrast"
+              padding="spacing.4"
+              borderRadius="medium"
+              marginBottom="spacing.4"
+            >
+              <Box display="flex">
+                <img src={getIcon(product.header || product.description)} alt="icon" />
+                <Box marginLeft="spacing.4">
+                  <Heading weight="bold">{product.header}</Heading>
+                  <Text type="">{product.description}</Text>
+                </Box>
+              </Box>
+              <ChevronRightIcon />
+            </Box>
+          </ProcuctCard>
+        );
+      })}
+    </OnboardingView>
+  );
+}

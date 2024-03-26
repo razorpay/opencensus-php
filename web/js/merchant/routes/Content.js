@@ -52,6 +52,7 @@ import { importRemote } from 'merchant/utils/dynamic-remotes';
 import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
 import { isGCMSExperimentEnabled } from 'merchant/views/GCMS/shared/utils';
 import { isHelpWidgetDisabled } from 'merchant/components/Support/utils';
+import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
 
 import MagicKonnect from 'merchant/views/MagicKonnect';
 
@@ -554,6 +555,17 @@ const RiskAnalytics = lazy(() =>
   /* webpackChunkName: "RiskAnalytics" */ import('merchant/views/RiskAndFraud/RiskAnalytics'),
 );
 
+const Reconciliations = lazy(() =>
+  import(/* webpackChunkName: "Reconciliations" */ 'merchant/views/Reconciliations/index'),
+);
+const ReconOnboarding = lazy(() =>
+  import(/* webpackChunkName: "ReconOnboarding" */ 'merchant/views/Reconciliations/Onboarding'),
+);
+const ReconRun = lazy(() =>
+  import(
+    /* webpackChunkName: "ReconRun" */ 'merchant/views/Reconciliations/Onboarding/NewReconciliationRun'
+  ),
+);
 @withI18Service
 @connect(
   (state) => ({
@@ -2250,6 +2262,32 @@ class Content extends Component {
               element={
                 <RouteGuard>
                   <RiskAnalytics />
+                </RouteGuard>
+              }
+            />
+          </Route>
+          <Route path="reconciliations/*">
+            <Route
+              path="dashboard"
+              element={
+                <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
+                  <Reconciliations />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="new-run"
+              element={
+                <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
+                  <ReconRun />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path=":type/:step"
+              element={
+                <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
+                  <ReconOnboarding />
                 </RouteGuard>
               }
             />

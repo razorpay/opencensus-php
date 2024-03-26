@@ -76,6 +76,7 @@ const routes = {
   APP_STORE: '/app/app-store',
   RIZE_MARKETPLACE: '/app/rize-marketplace',
   RISK_AND_FRAUD: '/app/risk-and-fraud',
+  RECON_DASHBOARD: '/app/reconciliations/dashboard',
 };
 
 module.exports = {

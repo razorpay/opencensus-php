@@ -20,10 +20,10 @@ import {
 } from 'merchant/components/Activation/ActivationUtils';
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
+import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
 
 function MerchantNavLinks(props) {
   const { isConfigTagEnabled } = useI18Service();
-
   // prettier-ignore
   const { routes, isReportsPending, isChargeAtWillEnabled, isSettlementEnabled, user, payment } =
     props;
@@ -95,6 +95,13 @@ function MerchantNavLinks(props) {
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('settlements') && currentUser.hideForNIASupportRole
         }
+      />
+      <MainNavLink
+        label="Reconciliations"
+        icon="i i-check-circle-outline text-primary"
+        type="general"
+        to="/reconciliations/dashboard"
+        additionalCondition={() => checkReconSaasEnabled({ abExperiments })}
       />
       <MainNavLink
         label="International Payments"

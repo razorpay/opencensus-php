@@ -6,6 +6,7 @@ import { ConfigTagType } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
+import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
 
 export type ExtraConfig = {
   abExperiments: any;
@@ -27,6 +28,11 @@ export const PRODUCTS_DATA = {
       user.isAllowedView('settlements') &&
       !isConfigTagEnabled('settlements.settlement') &&
       user.hideForNIASupportRole,
+  },
+  reconciliations: {
+    icon: 'i-check-circle-outline',
+    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
+      checkReconSaasEnabled({ abExperiments }),
   },
   settings: {
     icon: 'i-settings',
@@ -276,6 +282,11 @@ export const COMMON_PRODUCTS = [
   {
     title: SIDEEBAR_PRODUCTS_TITLES.settlements,
     product_id: 'settlements',
+    tags: [],
+  },
+  {
+    title: SIDEEBAR_PRODUCTS_TITLES.reconciliations,
+    product_id: 'reconciliations',
     tags: [],
   },
   {

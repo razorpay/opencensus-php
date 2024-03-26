@@ -253,6 +253,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'recon_sass_flag',
+        experimentId: {
+          beta: 'NaMSjrxhdTtjFO',
+          production: 'NaMEVNbu71GpiJ',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'turned',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

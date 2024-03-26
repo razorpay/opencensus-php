@@ -43,6 +43,7 @@ const ROUTE_REG = {
   gcms_orders: /^\/gcms\/orders/,
   gcms_funds: /^\/gcms\/funds/,
   gcms_reports: /^\/gcms\/reports/,
+  reconciliations: /^\/reconciliations/,
 };
 
 export const BASE_ROUTES = {
@@ -94,6 +95,7 @@ export const BASE_ROUTES = {
   gcms_funds: '/gcms/funds',
   gcms_reports: '/gcms/reports',
   riskAndFraud: '/risk-and-fraud',
+  reconciliations: '/reconciliations/dashboard',
 };
 
 export const initializeRoutes = (location, user) => {
