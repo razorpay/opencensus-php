@@ -7,20 +7,27 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Job;
 use RZP\Constants\Mode;
 use RZP\Constants\Metric;
-use RZP\Models\Ledger\ReverseShadow\Transfers\Reversal\Core as TransferReversalReverseShadowCore;
+use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 
 class TransferReversalCreateTransaction extends Job
 {
     protected $reversalAndRefundJournalIds;
-    protected $producerKey;
 
-    public function __construct(string $mode, $reversalAndRefundJournalIds, $producerKey)
+    protected  $delaySecs = 900;
+
+    const MAX_RETRY_ATTEMPT = 10;
+
+    protected $queueConfigKey = 'transfer_reversal_transaction_create_process';
+
+
+    public function __construct(string $mode, $reversalAndRefundJournalIds, $delaySecs = 0)
     {
         parent::__construct($mode);
 
         $this->reversalAndRefundJournalIds = $reversalAndRefundJournalIds;
-        $this->producerKey = $producerKey;
+
+        $this->delaySecs = $delaySecs;
     }
 
     public function handle()
@@ -35,12 +42,15 @@ class TransferReversalCreateTransaction extends Job
 
         try
         {
-            (new TransferReversalReverseShadowCore())->pushReversalToKafkaForAPITransactionCreation($this->reversalAndRefundJournalIds, $this->producerKey);
+            $response   =  (new Transfer\Core())->createTransferReversalTransactions($this->reversalAndRefundJournalIds);
 
-            $this->trace->info(TraceCode::TRANSFER_REVERSAL_API_TXN_JOB_PUSH_SUCCESS, [
-                'reversalAndRefundJournalIds' =>  $this->reversalAndRefundJournalIds,
-                'producerKey' =>  $this->producerKey,
+            $this->trace->info(TraceCode::TRANSFER_REVERSAL_TRANSACTION_CREATE_SUCCESS, [
+                'response'      => $response
             ]);
+
+            $this->delete();
+
+            return;
 
         }
         catch (\Exception $ex)
@@ -48,14 +58,44 @@ class TransferReversalCreateTransaction extends Job
             $this->trace->traceException(
                 $ex,
                 Trace::CRITICAL,
-                TraceCode::TRANSFER_REVERSAL_API_TXN_JOB_PUSH_FAILURE,
+                TraceCode::TRANSFER_REVERSAL_TRANSACTION_CREATE_FAILURE_QUEUE,
                 [
-                    'message'           => 'transfer reversal api txn job push failed',
                     'reversalAndRefundJournalIds' => $this->reversalAndRefundJournalIds,
-                    'producerKey' => $this->producerKey,
+                    'mode' =>  $this->mode,
                 ]);
 
-            $this->trace->count(Metric::TRANSFER_REVERSAL_API_TXN_JOB_PUSH_FAILURE);
+            $this->trace->count(Metric::TRANSFER_REVERSAL_TXN_CREATE_FROM_QUEUE_FAILURE);
+
+            $this->checkRetry($this->delaySecs, $ex);
+
+            return;
+
+        }
+    }
+
+    protected function checkRetry($retryTime, \Exception $e): void
+    {
+        if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
+        {
+            $this->trace->count(Metric::TRANSFER_REVERSAL_API_TXN_JOB_RETRY_EXHAUSTED);
+
+            $this->trace->error(TraceCode::TRANSFER_REVERSAL_API_TXN_JOB_RETRY_EXHAUSTED, [
+                "input" => $this->reversalAndRefundJournalIds,
+                "attempts" => $this->attempts()
+            ]);
+
+            $this->delete();
+        }
+        else
+        {
+            $this->trace->info(TraceCode::TRANSFER_REVERSAL_API_TXN_JOB_DISPTACH_RETRY,
+                [
+                    "input" => $this->reversalAndRefundJournalIds,
+                    "attempts" => $this->attempts()
+                ]
+            );
+
+            $this->release($retryTime);
         }
     }
 }

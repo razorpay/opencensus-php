@@ -2335,93 +2335,108 @@ class Core extends Base\Core
 
                 $reversal = $this->repo->reversal->findOrFail($reversalId);
 
-                // avoid duplicate txn creation
-                $reversalTxn = $this->repo->transaction->findByEntityId($reversal->getId(), $reversal->merchant);
+                $resource = $reversal->getId() . '_transaction';
 
-                if (isset($reversalTxn) === false) {
-                    // Create the transaction for reversal
-                    $reversalTxn = $txnCore->createFromTransferReversal($reversal, $reversalJournalId);
+                $reversalAndRefundTxnIds = $this->mutex->acquireAndRelease(
+                    $resource,
+                    function () use ($reversal, $reversalId, $reversalJournalId, $refundId, $dummyRefundJournalId, $reversalTransactionsList, $isRearchRefund, $txnCore) {
 
-                    $this->repo->saveOrFail($reversalTxn);
+                                // avoid duplicate txn creation
+                        $reversalTxn = $this->repo->transaction->findByEntityId($reversal->getId(), $reversal->merchant);
 
-                    $reversal->transaction()->associate($reversalTxn);
+                        if (isset($reversalTxn) === false) {
+                            // Create the transaction for reversal
+                            $reversalTxn = $txnCore->createFromTransferReversal($reversal, $reversalJournalId);
 
-                    $this->repo->saveOrFail($reversal);
-                }
-                else
-                {
-                    $this->app['trace']->info(TraceCode::TRANSFER_REVERSAL_TRANSACTION_EXISTS, [
-                        'entity'   => 'reversal',
-                        'txn'      => $reversalTxn
-                    ]);
-                }
+                            $this->repo->saveOrFail($reversalTxn);
 
-                if($isRearchRefund)
-                {
-                    $refund = (new Refund\Repository())->fetchExternalRefundById($refundId, '', [], true);
-                }
-                else
-                {
-                    $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
-                        'method'       => 'createTransferReversalTransactionsInReverseShadow',
-                    ]);
-                    $refund = $this->repo->refund->findOrFail($refundId);
-                }
+                            $reversal->transaction()->associate($reversalTxn);
 
-                $transferPayment = $this->repo->payment->findOrFail($refund->getPaymentId());
+                            $this->repo->saveOrFail($reversal);
+                        }
+                        else
+                        {
+                            $this->app['trace']->info(TraceCode::TRANSFER_REVERSAL_TRANSACTION_EXISTS, [
+                                'entity'   => 'reversal',
+                                'txn'      => $reversalTxn
+                            ]);
+                        }
 
-                $refund->payment()->associate($transferPayment);
+                        if($isRearchRefund)
+                        {
+                            $refund = (new Refund\Repository())->fetchExternalRefundById($refundId, '', [], true);
+                        }
+                        else
+                        {
+                            $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                                'method'       => 'createTransferReversalTransactionsInReverseShadow',
+                            ]);
+                            $refund = $this->repo->refund->findOrFail($refundId);
+                        }
 
-                // Create the transaction for dummy refund
-                $dummyRefundInput = [
-                    Refund\Constants::JOURNAL_ID            => $dummyRefundJournalId,
-                    Refund\Constants::ID                    => $refund->getId(),
-                    Refund\Constants::PAYMENT_ID            => $refund->payment->getId(),
-                    Refund\Constants::AMOUNT                => $refund->getAmount(),
-                    Refund\Constants::SCROOGE_BASE_AMOUNT   => $refund->getBaseAmount(),
-                    Refund\Constants::SPEED_DECISIONED      => $refund->getSpeedDecisioned(),
-                    Refund\Constants::SCROOGE_GATEWAY       => $refund->getGateway(),
-                    Refund\Constants::MODE                  => $this->mode,
-                    Refund\Constants::FEE                   => $refund->getFee(),
-                    Refund\Constants::TAX                   => $refund->getTax(),
-                ];
+                        $transferPayment = $this->repo->payment->findOrFail($refund->getPaymentId());
 
-                $paymentProcessor = new Payment\Processor\Processor($refund->merchant);
+                        $refund->payment()->associate($transferPayment);
 
-                // avoid duplicate txn creation
-                $refundTxn = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
+                        // Create the transaction for dummy refund
+                        $dummyRefundInput = [
+                            Refund\Constants::JOURNAL_ID            => $dummyRefundJournalId,
+                            Refund\Constants::ID                    => $refund->getId(),
+                            Refund\Constants::PAYMENT_ID            => $refund->payment->getId(),
+                            Refund\Constants::AMOUNT                => $refund->getAmount(),
+                            Refund\Constants::SCROOGE_BASE_AMOUNT   => $refund->getBaseAmount(),
+                            Refund\Constants::SPEED_DECISIONED      => $refund->getSpeedDecisioned(),
+                            Refund\Constants::SCROOGE_GATEWAY       => $refund->getGateway(),
+                            Refund\Constants::MODE                  => $this->mode,
+                            Refund\Constants::FEE                   => $refund->getFee(),
+                            Refund\Constants::TAX                   => $refund->getTax(),
+                        ];
 
-                $refundTxnId = null;
+                        $paymentProcessor = new Payment\Processor\Processor($refund->merchant);
 
-                if(isset($refundTxn) === false)
-                {
-                    $dummyRefundTxnResponse = $paymentProcessor->scroogeRefundTransactionCreate($refund->payment, $dummyRefundInput);
+                        // avoid duplicate txn creation
+                        $refundTxn = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
 
-                    $refundTxnId = $dummyRefundTxnResponse['data'][Refund\Constants::TRANSACTION_ID];
+                        $refundTxnId = null;
 
-                    // associate refund with txn
-                    $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refundId);
+                        if(isset($refundTxn) === false)
+                        {
+                            $dummyRefundTxnResponse = $paymentProcessor->scroogeRefundTransactionCreate($refund->payment, $dummyRefundInput);
 
-                    if ((isset($txn) === true) and ($isRearchRefund === false)) {
-                        $refund->transaction()->associate($txn);
-                        $refund->exists = true;
-                        $this->repo->saveOrFail($refund);
-                    }
-                }
-                else
-                {
-                    $refundTxnId = $refundTxn->getId();
+                            $refundTxnId = $dummyRefundTxnResponse['data'][Refund\Constants::TRANSACTION_ID];
 
-                    $this->app['trace']->info(TraceCode::TRANSFER_REVERSAL_TRANSACTION_EXISTS, [
-                        'entity'   => 'refund',
-                        'txn'      => $refundTxn
-                    ]);
-                }
+                            // associate refund with txn
+                            $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refundId);
 
-                $reversalTransactionsList[] = [
-                    "reversal_txn_id"     => $reversalTxn->getId(),
-                    "refund_txn_id"       => $refundTxnId,
-                ];
+                            if ((isset($txn) === true) and ($isRearchRefund === false)) {
+                                $refund->transaction()->associate($txn);
+                                $refund->exists = true;
+                                $this->repo->saveOrFail($refund);
+                            }
+                        }
+                        else
+                        {
+                            $refundTxnId = $refundTxn->getId();
+
+                            $this->app['trace']->info(TraceCode::TRANSFER_REVERSAL_TRANSACTION_EXISTS, [
+                                'entity'   => 'refund',
+                                'txn'      => $refundTxn
+                            ]);
+                        }
+
+                        return [
+                            "reversal_txn_id"     => $reversalTxn->getId(),
+                            "refund_txn_id"       => $refundTxnId,
+                        ];
+                    },
+                    60,
+                    ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                    5,
+                    100,
+                    200
+                );
+
+                $reversalTransactionsList[] = $reversalAndRefundTxnIds;
 
             }
 

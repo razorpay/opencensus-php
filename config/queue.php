@@ -262,6 +262,13 @@ return [
         'test'       => env('AWS_TRANSFER_PROCESS_BATCH_TEST_QUEUE'),
         'live'       => env('AWS_TRANSFER_PROCESS_BATCH_LIVE_QUEUE'),
     ],
+
+    // Dedicated transfer reversal transaction processing queue for reverse shadow
+    'transfer_reversal_transaction_create_process' => [
+        'test'       => env('AWS_TRANSFER_REVERSAL_TRANSACTION_TEST_QUEUE'),
+        'live'       => env('AWS_TRANSFER_REVERSAL_TRANSACTION_LIVE_QUEUE'),
+    ],
+
     // settlement related QUEUES
     'settlement_create' => [
         'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),

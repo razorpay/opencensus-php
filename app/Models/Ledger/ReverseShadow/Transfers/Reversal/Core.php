@@ -4,6 +4,7 @@ namespace RZP\Models\Ledger\ReverseShadow\Transfers\Reversal;
 
 use App;
 use Neves\Events\TransactionalClosureEvent;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Transfers\TransferReversalCreateTransaction;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Balance;
@@ -142,8 +143,7 @@ class Core extends Base\Core
 
         \Event::dispatch(new TransactionalClosureEvent(function () use ($reversalAndRefundJournalIds, $producerKey) {
 
-            TransferReversalCreateTransaction::dispatchNow($this->mode, $reversalAndRefundJournalIds, $producerKey);
-
+            $this->dispatchForTransferReversalTransactionCreation($reversalAndRefundJournalIds);
         }));
 
         return $reversalAndRefundJournalIds;
@@ -186,9 +186,9 @@ class Core extends Base\Core
 
         list($reversalAndRefundJournalIds, $producerKey) = $this->createPayloadForAPITransactionCreation($results, $customerRefund, $journals, true, $isRearchRefund);
 
-        \Event::dispatch(new TransactionalClosureEvent(function () use ($reversalAndRefundJournalIds, $producerKey) {
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($reversalAndRefundJournalIds) {
 
-            TransferReversalCreateTransaction::dispatchNow($this->mode, $reversalAndRefundJournalIds, $producerKey);
+            $this->dispatchForTransferReversalTransactionCreation($reversalAndRefundJournalIds);
 
         }));
 
@@ -315,5 +315,35 @@ class Core extends Base\Core
 
         }
 
+    }
+
+    public function dispatchForTransferReversalTransactionCreation(array $reversalAndRefundJournalIds = [])
+    {
+        $delaySecs = 3600;
+
+        try
+        {
+            TransferReversalCreateTransaction::dispatch($this->mode, $reversalAndRefundJournalIds, $delaySecs)->delay($delaySecs);
+
+            $this->trace->info(TraceCode::TRANSFER_REVERSAL_API_TXN_DISPATCH_SUCCESS, [
+                'reversalAndRefundJournalIds' =>  $reversalAndRefundJournalIds,
+                'mode' =>  $this->mode,
+            ]);
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::TRANSFER_REVERSAL_API_TXN_DISPATCH_FAILURE,
+                [
+                    'message'           => 'transfer reversal api txn job push failed',
+                    'reversalAndRefundJournalIds' => $reversalAndRefundJournalIds,
+                    'mode' =>  $this->mode,
+                ]);
+
+            $this->trace->count(Metric::TRANSFER_REVERSAL_API_TXN_DISPATCH_TO_QUEUE_FAILURE);
+        }
     }
 }
