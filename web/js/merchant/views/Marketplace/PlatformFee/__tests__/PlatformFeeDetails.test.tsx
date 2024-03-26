@@ -6,6 +6,7 @@ import { platformFeedDetailsData as data, reversalsData } from './mocks/fixtures
 import { platformFeeDetailsSuccess, reversalSuccess } from './mocks/handlers';
 import * as modals from 'merchant_common/reducers/modals';
 import * as analytics from 'common/utils/analytics';
+import * as store from 'merchant/views/Marketplace/store';
 
 jest.mock('@razorpay/blade/components', () => {
   const bladeActual = jest.requireActual('@razorpay/blade/components');
@@ -62,12 +63,12 @@ describe('Platform Fee Details', () => {
     server.use(reversalSuccess(reversalsData));
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText(`Platform Fee ID:`)).toBeInTheDocument();
+      expect(screen.getByText(`Partner Fee ID:`)).toBeInTheDocument();
     });
     expect(screen.getByText(data.id)).toBeInTheDocument();
-    expect(screen.getByText('Platform Fee Amount')).toBeInTheDocument();
+    expect(screen.getByText('Partner Fee Amount')).toBeInTheDocument();
 
-    expect(screen.getByText(paiseToRupees(data.amount + data.fees + data.tax))).toBeInTheDocument();
+    expect(screen.getByText(paiseToRupees(data.amount + data.fees))).toBeInTheDocument();
 
     await waitFor(() => {
       expect(
@@ -84,7 +85,7 @@ describe('Platform Fee Details', () => {
     server.use(reversalSuccess({}));
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
+      expect(screen.getByText(`Partner Fee Amount`)).toBeInTheDocument();
     });
     expect(screen.getAllByText('N/A')).toHaveLength(7);
   });
@@ -94,8 +95,7 @@ describe('Platform Fee Details', () => {
     server.use(reversalSuccess(reversalsData));
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
-      expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
+      expect(screen.getByText(`Partner Fee Amount`)).toBeInTheDocument();
       expect(screen.getByText('--')).toBeInTheDocument();
     });
   });
@@ -105,11 +105,11 @@ describe('Platform Fee Details', () => {
     server.use(reversalSuccess(reversalsData));
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText(`Platform Fee ID:`)).toBeInTheDocument();
+      expect(screen.getByText(`Partner Fee ID:`)).toBeInTheDocument();
     });
     expect(screen.getByText(data.id)).toBeInTheDocument();
-    expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
-    expect(screen.getByText(paiseToRupees(data.amount + data.fees + data.tax))).toBeInTheDocument();
+    expect(screen.getByText(`Partner Fee Amount`)).toBeInTheDocument();
+    expect(screen.getByText(paiseToRupees(data.amount + data.fees))).toBeInTheDocument();
     const reversalButton = screen.getByRole('button', { name: 'Create reversal' });
     expect(reversalButton).toBeInTheDocument();
     await userEvent.click(reversalButton);
@@ -134,5 +134,19 @@ describe('Platform Fee Details', () => {
         toLumberjack: true,
       });
     });
+  });
+
+  test('should show platformFee if isPartnerPlatformFeeEnabled is true', async () => {
+    jest.spyOn(store, 'useMarketplaceStore').mockImplementation(() => ({
+      isPartnerPlatformFeeEnabled: true,
+    }));
+    server.use(platformFeeDetailsSuccess(data));
+    server.use(reversalSuccess(reversalsData));
+    renderApp();
+    await waitFor(() => {
+      expect(screen.getByText(`Platform Fee ID:`)).toBeInTheDocument();
+    });
+    expect(screen.getByText(data.id)).toBeInTheDocument();
+    expect(screen.getByText('Platform Fee Amount')).toBeInTheDocument();
   });
 });

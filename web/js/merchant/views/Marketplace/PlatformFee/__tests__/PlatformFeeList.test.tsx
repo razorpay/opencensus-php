@@ -41,11 +41,14 @@ describe('Platform Fee List', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
-  const renderApp = () => {
-    render(<PlatformFee location={location} />, {
-      initialState: state,
-      renderViaRouteGuard: false,
-    });
+  const renderApp = (isPartnerPlatformFeeEnabled = false) => {
+    render(
+      <PlatformFee location={location} isPartnerPlatformFeeEnabled={isPartnerPlatformFeeEnabled} />,
+      {
+        initialState: state,
+        renderViaRouteGuard: false,
+      },
+    );
   };
 
   test('should render spinner if loading', () => {
@@ -59,11 +62,11 @@ describe('Platform Fee List', () => {
     server.use(platformFeeListSuccess());
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText('Platform Fee Id')).toBeInTheDocument();
+      expect(screen.getByText('Partner Fee Id')).toBeInTheDocument();
       expect(screen.getByText('Source Id')).toBeInTheDocument();
       expect(screen.getByText('Recipient Id')).toBeInTheDocument();
       expect(screen.getByText('Recipient Name')).toBeInTheDocument();
-      expect(screen.getByText('Platform Fee Amount')).toBeInTheDocument();
+      expect(screen.getByText('Partner Fee Amount')).toBeInTheDocument();
       expect(screen.getAllByText('Status')).toHaveLength(2);
 
       expect(screen.getByText(platformFeeData.items[0].id)).toBeInTheDocument();
@@ -74,7 +77,7 @@ describe('Platform Fee List', () => {
     server.use(platformFeeListSuccess(platformFeeDataEmpty));
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText('Platform Fee Id')).toBeInTheDocument();
+      expect(screen.getByText('Partner Fee Id')).toBeInTheDocument();
     });
     expect(screen.queryByText(platformFeeData.items[0].id)).not.toBeInTheDocument();
   });
@@ -84,7 +87,7 @@ describe('Platform Fee List', () => {
     renderApp();
 
     await waitFor(() => {
-      expect(screen.getByText('Platform Fee Id')).toBeInTheDocument();
+      expect(screen.getByText('Partner Fee Id')).toBeInTheDocument();
       expect(screen.getByText(platformFeeData.items[0].recipient)).toBeInTheDocument();
     });
 
@@ -114,6 +117,15 @@ describe('Platform Fee List', () => {
         },
         toLumberjack: true,
       });
+    });
+  });
+
+  test('render platform Fee Id if isPartnerPlatformFeeEnabled is true', async () => {
+    const isPartnerPlatformFeeEnabled = true;
+    server.use(platformFeeListSuccess());
+    renderApp(isPartnerPlatformFeeEnabled);
+    await waitFor(() => {
+      expect(screen.getByText('Platform Fee Id')).toBeInTheDocument();
     });
   });
 

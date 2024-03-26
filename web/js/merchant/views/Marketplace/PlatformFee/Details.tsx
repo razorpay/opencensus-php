@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { compose, ActionCreator, bindActionCreators } from 'redux';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import shallow from 'zustand/shallow';
 import { Amount, Spinner, InfoIcon } from '@razorpay/blade/components';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
@@ -26,6 +27,7 @@ import { Notification } from 'common/typings/Store/notifications';
 import { User } from 'common/typings';
 import { fetchTransfersById, fetchReversals } from './api';
 import { platformFeeDetailsOpenedAnalytics } from 'merchant/views/Marketplace/MarketplaceAnalytics';
+import { useMarketplaceStore } from 'merchant/views/Marketplace/store';
 
 const ERROR_CODE_CTAS_MAP = {
   BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT: 'Please create another transfer.',
@@ -105,6 +107,13 @@ const PlatformFeeDetailsContainer = ({
     },
   });
 
+  const { isPartnerPlatformFeeEnabled } = useMarketplaceStore(
+    (state) => ({
+      isPartnerPlatformFeeEnabled: state.isPartnerPlatformFeeEnabled,
+    }),
+    shallow,
+  );
+
   const { isLoading: isReversalLoading, refetch: refetchReversal } = useQuery({
     queryKey: ['get-reversal-details'],
     queryFn: () => fetchReversals(id),
@@ -147,21 +156,20 @@ const PlatformFeeDetailsContainer = ({
           <div className="panel panel-default SliderPanel">
             {transferData?.id ? (
               <div className="panel-heading">
-                Platform Fee ID: <strong>{transferData.id}</strong>
+                {isPartnerPlatformFeeEnabled ? 'Platform Fee ID' : 'Partner Fee ID'}:{' '}
+                <strong>{transferData.id}</strong>
               </div>
             ) : null}
 
             <div className="SliderPanel__Body">
               <div className="panel-body">
-                <EntityDetailRow label="Platform Fee Amount">
+                <EntityDetailRow
+                  label={isPartnerPlatformFeeEnabled ? 'Platform Fee Amount' : 'Partner Fee Amount'}
+                >
                   {transferData?.amount ? (
                     <Definition>
                       <span>
-                        <Amount
-                          value={paiseToRupees(
-                            transferData.amount + transferData.fees + transferData.tax,
-                          )}
-                        />
+                        <Amount value={paiseToRupees(transferData.amount + transferData.fees)} />
                       </span>
                       <AmountContainer>
                         Payment to {transferData.recipient_details.name} ={' '}
@@ -170,10 +178,7 @@ const PlatformFeeDetailsContainer = ({
                       <ContentToggler>
                         <AmountContainer>
                           Razorpay Charges Incl Tax ={' '}
-                          <Amount
-                            value={paiseToRupees(transferData.fees + transferData.tax)}
-                            size="body-small"
-                          />
+                          <Amount value={paiseToRupees(transferData.fees)} size="body-small" />
                         </AmountContainer>
                         <div className="m-t m-l">
                           <AmountContainer>

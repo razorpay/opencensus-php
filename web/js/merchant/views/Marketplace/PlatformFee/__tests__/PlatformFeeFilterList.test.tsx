@@ -16,13 +16,14 @@ describe('Platform Fee Filter', () => {
     history = createMemoryHistory();
     history.push = jest.fn();
   });
-  const renderApp = (locationProp = location) => {
+  const renderApp = (locationProp = location, isPartnerPlatformFeeEnabled = false) => {
     render(
       <PlatformFeeListFilter
         location={locationProp}
         setPagination={handlePagination}
         onSearch={onSearch}
         history={history}
+        isPartnerPlatformFeeEnabled={isPartnerPlatformFeeEnabled}
       />,
       {
         renderViaRouteGuard: false,
@@ -32,13 +33,18 @@ describe('Platform Fee Filter', () => {
 
   test('should render all fields', () => {
     renderApp();
-    expect(screen.getByLabelText('Platform Fee ID')).toBeInTheDocument();
+    expect(screen.getByLabelText('Partner Fee ID')).toBeInTheDocument();
     expect(screen.getByLabelText('Payment ID')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByLabelText('Recipient ID')).toBeInTheDocument();
     expect(screen.getByLabelText('Count')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Clear' })).toBeInTheDocument();
+  });
+  test('should render Platform Fee ID if isPartnerPlatformFeeEnabled is enabled', () => {
+    const isPartnerPlatformFeeEnabled = true;
+    renderApp(location, isPartnerPlatformFeeEnabled);
+    expect(screen.getByLabelText('Platform Fee ID')).toBeInTheDocument();
   });
 
   test('should setValue to fields if search is already present in location', async () => {
@@ -51,7 +57,7 @@ describe('Platform Fee Filter', () => {
 
   test('should update the state and call search when fields are updated and search is clicked', async () => {
     renderApp();
-    const platformFeeField = screen.getByLabelText('Platform Fee ID');
+    const platformFeeField = screen.getByLabelText('Partner Fee ID');
     expect(platformFeeField).toBeInTheDocument();
     await userEvent.type(platformFeeField, 'ABCUYD');
 

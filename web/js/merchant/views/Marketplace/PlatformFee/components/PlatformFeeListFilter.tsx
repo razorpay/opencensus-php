@@ -35,6 +35,7 @@ interface PlatformFilterListProps {
   history: History;
   location: Location;
   setPagination: (val: { skip: number; count: number }) => void;
+  isPartnerPlatformFeeEnabled: boolean;
 }
 
 const initState = {
@@ -50,6 +51,7 @@ export const PlatformFeeListFilter = ({
   location,
   history,
   setPagination,
+  isPartnerPlatformFeeEnabled,
 }: PlatformFilterListProps): JSX.Element => {
   const [formData, setFormData] = useState<PlatformFeeFilters>(initState);
 
@@ -127,7 +129,7 @@ export const PlatformFeeListFilter = ({
     <FilterContainer>
       <InputContainer>
         <TextInput
-          label="Platform Fee ID"
+          label={isPartnerPlatformFeeEnabled ? 'Platform Fee ID' : 'Partner Fee ID'}
           name="id"
           placeholder="Enter Platform Fee ID"
           value={formData.id}

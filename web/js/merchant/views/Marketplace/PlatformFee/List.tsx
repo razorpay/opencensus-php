@@ -39,9 +39,18 @@ const platformAmount = {
   title: 'Platform Fee Amount',
   value: (item) => <Amount value={paiseToRupees(item.amount)} size="body-small" />,
 };
+const partnerAmount = {
+  title: 'Partner Fee Amount',
+  value: (item) => <Amount value={paiseToRupees(item.amount)} size="body-small" />,
+};
 
 const platformFeeId = {
   title: 'Platform Fee Id',
+  value: (item) => <Link to={`/route/platformfee/${item.id}`}>{item.id}</Link>,
+};
+
+const partnerFeeId = {
+  title: 'Partner Fee Id',
   value: (item) => <Link to={`/route/platformfee/${item.id}`}>{item.id}</Link>,
 };
 
@@ -151,15 +160,16 @@ const PlatformFee = ({
             location={location}
             history={history}
             setPagination={setPagination}
+            isPartnerPlatformFeeEnabled={isPartnerPlatformFeeEnabled}
           />
           <DataTable
             title="Platform Fee"
             columns={[
-              platformFeeId,
+              isPartnerPlatformFeeEnabled ? platformFeeId : partnerFeeId,
               source,
               recipient,
               recipientName,
-              platformAmount,
+              isPartnerPlatformFeeEnabled ? platformAmount : partnerAmount,
               createdAt,
               transferStatus,
             ]}
