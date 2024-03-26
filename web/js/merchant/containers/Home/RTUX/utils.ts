@@ -1,0 +1,27 @@
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import User from 'merchant/models/User';
+import { useStore } from 'shell/commonStore';
+
+interface RTUXHomepageEnabled {
+  user: User;
+  abExperiments: any;
+}
+
+export const isRTUXHomepageEnabled = ({ user, abExperiments }: RTUXHomepageEnabled): boolean => {
+  const isActivated = window.rzp_user?.activated === 1;
+  // enabled for activated user and rzp org and non-partner accounts
+
+  return (
+    isActivated &&
+    user.isOrgRZP &&
+    !user.isPartner() &&
+    isExperimentEnabled(abExperiments.rtux_homepage)
+  );
+};
+
+export const useIsRTUXHomepageEnabled = (): boolean => {
+  const user = useStore((state) => state.session.user) as unknown as User;
+  const { abExperiments } = useSplitzService();
+  return isRTUXHomepageEnabled({ user, abExperiments });
+};

@@ -7,9 +7,12 @@ import { FALLBACK_PRODUCTS } from 'merchant/components/SidebarV2/utils/Fallback'
 import * as SidebarUtils from 'merchant/components/SidebarV2/utils/Sidebar';
 import * as fetchNavigationItems from 'merchant/reducers/leftNav';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import { render, screen, waitFor, userEvent } from 'test-utils';
+import { render, screen, waitFor, userEvent, within } from 'test-utils';
 
-import { state } from './mocks/fixtures/Sidebar';
+import { navigationApi, state } from './mocks/fixtures/Sidebar';
+import { RZP_LOGO_URL_DARK } from '../constants/constants';
+import * as showUtils from 'merchant/components/ShowWhen';
+import * as rtuxUtils from 'merchant/containers/Home/RTUX/utils';
 
 jest.mock(
   'merchant/components/SidebarV2/components/ActivationProgress',
@@ -29,15 +32,15 @@ jest.mock('common/splitz', () => ({
   }),
 }));
 
+const renderApp = ({ initialState = state, props } = {}) =>
+  render(<SidebarV2 {...props} />, {
+    initialState,
+  });
+
 describe('SidebarV2', () => {
   const fetchNavigationSpy = jest.spyOn(fetchNavigationItems, 'fetchLeftNavItems');
   const fetchNavItemsCacheSpy = jest.spyOn(SidebarUtils, 'getLeftNavItemsCache');
   window.open = jest.fn();
-
-  const renderApp = ({ initialState = state, props } = {}) =>
-    render(<SidebarV2 {...props} />, {
-      initialState,
-    });
 
   beforeEach(() => {
     fetchNavigationSpy.mockClear();
@@ -285,5 +288,73 @@ describe('SidebarV2', () => {
         );
       });
     });
+  });
+});
+
+describe('SidebarV2 -> Blade designs', () => {
+  beforeEach(() => {
+    jest.spyOn(showUtils, 'showWhenUtil').mockImplementation(() => true);
+  });
+
+  test('should render razorpay logo', async () => {
+    jest.spyOn(rtuxUtils, 'useIsRTUXHomepageEnabled').mockReturnValue(true);
+    renderApp({
+      initialState: {
+        session: {
+          user: {
+            isAllowedView: () => true,
+            isAllowedMultiple: () => true,
+            findTag: () => false,
+          },
+        },
+      },
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('img')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('img')).toHaveAttribute('src', RZP_LOGO_URL_DARK);
+  });
+
+  test('should open/collapse sidebar items on click', async () => {
+    renderApp({
+      initialState: {
+        session: {
+          user: {
+            isAllowedView: () => true,
+            isAllowedMultiple: () => true,
+            findTag: () => false,
+            isConfigTagEnabled: () => true,
+          },
+          isTagsLoaded: true,
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('shimmer-group')).not.toBeInTheDocument();
+    });
+
+    const firstNavLinkProduct = screen.getAllByTestId('navlink-product')[0];
+    expect(firstNavLinkProduct).toBeVisible();
+
+    expect(screen.getByText(navigationApi.sections[0].section_name)).toBeInTheDocument();
+    expect(
+      within(firstNavLinkProduct).getByText(navigationApi.sections[0].product_options[0].title),
+    ).toBeInTheDocument();
+    expect(
+      within(firstNavLinkProduct).queryByText(navigationApi.sections[0].product_options[5].title),
+    ).not.toBeInTheDocument();
+
+    const showMoreRegex = new RegExp('show all', 'i');
+    const showLessRegex = new RegExp('show less', 'i');
+    const showAllButton = within(firstNavLinkProduct).getByText(showMoreRegex);
+    expect(showAllButton).toBeVisible();
+
+    await userEvent.click(showAllButton);
+
+    await waitFor(() => {
+      expect(within(firstNavLinkProduct).queryByText(showMoreRegex)).not.toBeInTheDocument();
+    });
+    expect(within(firstNavLinkProduct).getByText(showLessRegex)).toBeVisible();
   });
 });

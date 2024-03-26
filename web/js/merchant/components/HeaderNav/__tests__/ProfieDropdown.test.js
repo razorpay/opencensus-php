@@ -26,6 +26,13 @@ jest.mock('merchant/views/PaymentHandle/components/DropDownSlug', () => ({
   },
 }));
 
+jest.mock('merchant/components/HeaderNav/ProfileDropdownV2', () => ({
+  __esModule: true,
+  default: () => {
+    return <div>ProfileDropdownV2 Component</div>;
+  },
+}));
+
 const updateStore = (user, org = {}) => {
   const updatedStore = store.getState();
   updatedStore.session.user = new User({ ...updatedStore.session.user, ...user });
@@ -92,5 +99,12 @@ describe('test for ProfileDropdown component', () => {
     mockedFn.mockImplementation((path) => path === 'documentation.documentation');
     renderApp({ props, updatedState });
     expect(screen.queryByText(text)).not.toBeInTheDocument();
+  });
+
+  test('should render profile dropdown v2 when isRTUXHomepage', () => {
+    const props = { ...defaultProps, isRTUXHomepage: true };
+
+    renderApp({ props });
+    expect(screen.queryByText('ProfileDropdownV2 Component')).toBeInTheDocument();
   });
 });

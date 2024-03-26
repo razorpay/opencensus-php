@@ -1,4 +1,5 @@
 import { Theme } from '@razorpay/blade/components';
+import { COLORS } from 'merchant/containers/Home/RTUX/colors';
 import styled, { css } from 'styled-components';
 
 export const StyledInputBox = styled.div(
@@ -6,10 +7,12 @@ export const StyledInputBox = styled.div(
     isDeviceInBreakpoint,
     isMobile,
     theme,
+    isRTUXHomepage,
   }: {
     theme: Theme;
     isDeviceInBreakpoint: boolean;
     isMobile: boolean;
+    isRTUXHomepage: boolean;
   }) => `
     height: ${isMobile ? theme.spacing[9] : theme.spacing[8]}px;
     width: ${isMobile ? '100%' : isDeviceInBreakpoint ? '200px' : '348px'};
@@ -17,7 +20,9 @@ export const StyledInputBox = styled.div(
     align-items: center;
     gap: 6px;
     background: ${
-      isMobile
+      isRTUXHomepage
+        ? COLORS.searchBarColor
+        : isMobile
         ? theme.colors.action.text.primary.default
         : theme.colors.feedback.background.neutral.lowContrast
     };

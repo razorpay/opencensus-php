@@ -101,6 +101,7 @@ class NavFragment extends Component {
       canShowMtuPopup,
       mtuOfferCount,
       exclusive_offers,
+      isRTUXHomepage,
     } = this.props;
     const { showSwitchModeTooltip, showFtuxModal } = this.state;
 
@@ -121,29 +122,32 @@ class NavFragment extends Component {
 
     return (
       <React.Fragment>
-        <GrowthAssetEB>
-          <ShowWhen
-            // eslint-disable-next-line no-shadow
-            additionalCondition={(user) =>
-              showOFYNitroFlow ||
-              canShowOnboardingOffers ||
-              user.isProjectMoonshineEnabled ||
-              user?.isICICILinkedCAFlowEnabled?.('offers-for-you') ||
-              shouldShowGSExclusiveOffers
-            }
-          >
-            <OffersForYou
-              canShowOnboardingOffers={canShowOnboardingOffers}
-              mtuOfferCount={mtuOfferCount}
-            />
-          </ShowWhen>
-        </GrowthAssetEB>
+        {!isRTUXHomepage && (
+          <GrowthAssetEB>
+            <ShowWhen
+              // eslint-disable-next-line no-shadow
+              additionalCondition={(user) =>
+                showOFYNitroFlow ||
+                canShowOnboardingOffers ||
+                user.isProjectMoonshineEnabled ||
+                user?.isICICILinkedCAFlowEnabled?.('offers-for-you') ||
+                shouldShowGSExclusiveOffers
+              }
+            >
+              <OffersForYou
+                canShowOnboardingOffers={canShowOnboardingOffers}
+                mtuOfferCount={mtuOfferCount}
+              />
+            </ShowWhen>
+          </GrowthAssetEB>
+        )}
         <li>
           <ModesDropdown
             mode={mode}
             modeFormatted={modeFormatted}
             onSwitchMode={onSwitchMode}
             isTestModeBlocked={user.isTestModeBlocked}
+            isRTUXHomepage={isRTUXHomepage}
           />
           {showSwitchModeTooltip && (
             <Popover persistent={true} theme="dark">
@@ -158,7 +162,7 @@ class NavFragment extends Component {
             </Popover>
           )}
         </li>
-        {Object.keys(user.merchants).length > 1 ? (
+        {!isRTUXHomepage && Object.keys(user.merchants).length > 1 ? (
           <li class="SwitchMerchantDropdown">
             <SwitchMerchant user={user} onSwitchMerchant={onSwitchMerchant} />
           </li>

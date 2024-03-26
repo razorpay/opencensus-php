@@ -65,6 +65,7 @@ const BASE_ROUTES = {
   developersApis: '/developers/apis',
   developersWebhooks: '/developers/webhooks',
   paymentMetrics: '/payment-metrics',
+  paymentHandle: '/payment-handle',
 };
 
 @withI18Service

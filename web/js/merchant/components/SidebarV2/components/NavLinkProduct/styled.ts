@@ -30,3 +30,12 @@ export const Items = styled.div`
   flex-direction: column;
   gap: 2px;
 `;
+
+export const ShowMoreWrapper = styled.div(
+  ({ theme }) => `
+  cursor: pointer;
+  text-transform: uppercase;
+  padding-left: ${theme.spacing[10]}px;
+  padding-top: ${theme.spacing[2]}px;
+`,
+);

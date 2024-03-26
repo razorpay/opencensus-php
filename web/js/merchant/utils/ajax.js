@@ -2,6 +2,7 @@
 import ajax from 'common/utils/ajax';
 import { getMode } from 'merchant/store';
 
+// FYI - This function is mocked in UTs in another file
 export function merchantFetch(params) {
   if (typeof params === 'string') {
     params = {

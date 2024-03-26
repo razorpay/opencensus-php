@@ -174,6 +174,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'rtux_homepage',
+        experimentId: {
+          beta: 'NQLsTXE9tcp1pE',
+          production: 'NQLDxIVXOAnYez',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'ray_ai',
         experimentId: {
           beta: 'NgMk9aLHhP79nc',

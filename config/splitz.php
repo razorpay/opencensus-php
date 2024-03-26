@@ -102,9 +102,6 @@ return [
         // enable product led onboarding
         'PRODUCT_LED_ONBOARDING' => env('PRODUCT_LED_ONBOARDING', ''),
 
-        // Left Nav revamp
-        'LEFT_NAV_REVAMP' => env('LEFT_NAV_REVAMP', ''),
-
         // Account Settings Revamp
         'ACCOUNT_SETTINGS_REVAMP'  => env('ACCOUNT_SETTINGS_REVAMP', ''),
 

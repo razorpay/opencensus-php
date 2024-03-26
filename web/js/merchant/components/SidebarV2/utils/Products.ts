@@ -125,7 +125,7 @@ export const PRODUCTS_DATA = {
     icon: 'i-refresh',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('subscriptions') && !isConfigTagEnabled('subscriptions.subscription'),
-    getHref: ({ routes, user }) =>
+    getHref: ({ routes, user }): string =>
       routes[user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'],
   },
   x_payroll: {

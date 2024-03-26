@@ -1,18 +1,17 @@
-import { Component, Suspense } from 'react';
+import React, { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import moment from 'moment';
 import { createSidetab, createPopup } from '@typeform/embed';
 import errorService from '@razorpay/universe-utils/errorService';
 import Loader from 'common/ui/Loader';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
-import { removeItem } from 'common/utils/localStorage';
+import { getItem, setItem, removeItem } from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import { initSentry } from 'common/utils/observability';
 import Notifications from 'common/ui/Notifications';
-import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
 import Sidebar from 'merchant/components/Sidebar';
 import SidebarV2 from 'merchant/components/SidebarV2';
@@ -59,15 +58,15 @@ import { fetchInstantSettlements, fetchPayments } from 'merchant/reducers/collec
 import { fetchAmount } from 'merchant/reducers/fetchTransaction';
 import { bindActionCreators, compose } from 'redux';
 import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
-import _refiner from 'refiner-js';
 import { getCookie, setCookie } from 'common/utils/cookies';
 import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal';
 import { isPartnerPage } from 'merchant/utils/isPartnerPage';
 import getMobileDetect from 'common/utils/mobileDetect';
-import { isPgMerchant } from 'merchant/components/Activation/ActivationUtils';
+import {
+  isPgMerchant,
+  setRecommendedProduct,
+} from 'merchant/components/Activation/ActivationUtils';
 import currencies from '../constants/currency';
-import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
-import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dates';
@@ -78,6 +77,7 @@ import { withSplitzService } from 'common/splitz';
 import { withI18Service, withI18nifyState } from 'common/i18';
 import { fetchConfigTags } from 'merchant/reducers/session';
 import graphqlClient from 'common/services/graphql/graphql-client';
+import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
 import { COUNTRY_CODE_LOCALE_MAP } from 'merchant/routes/constants';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
@@ -100,17 +100,17 @@ class App extends Component {
     super(props);
 
     const oldModeToken = 'rzp_mode';
-    const oldModeValue = LocalStorageService.getItem(oldModeToken);
+    const oldModeValue = getItem(oldModeToken);
 
     // localizing mode for each merchant so that different modes can be maintained
     // across logins/merchants
     if (oldModeValue) {
       window.rzp_user &&
         Object.keys(window.rzp_user.merchants).forEach((merchantId) => {
-          LocalStorageService.setItem(`${oldModeToken}--${merchantId}`, oldModeValue);
+          setItem(`${oldModeToken}--${merchantId}`, oldModeValue);
         });
 
-      LocalStorageService.removeItem(oldModeToken);
+      removeItem(oldModeToken);
     }
 
     this.modeToken = null;
@@ -190,14 +190,12 @@ class App extends Component {
   };
 
   partnerActivationKycCallback = ({ data, user, currentMode }) => {
-    let currentPartnerMode = LocalStorageService.getItem(this.partnerModeToken);
-    let isPartnerKYCActivated = LocalStorageService.getItem(
-      `is_partner_activated--${user?.current}`,
-    );
+    let currentPartnerMode = getItem(this.partnerModeToken);
+    let isPartnerKYCActivated = getItem(`is_partner_activated--${user?.current}`);
     const isCurrentPartnerKYCActivated =
       data?.partner_activation?.activation_status === 'activated';
     if (user && isCurrentPartnerKYCActivated) {
-      LocalStorageService.setItem(`is_partner_activated--${user.current}`, 'true');
+      setItem(`is_partner_activated--${user.current}`, 'true');
       isPartnerKYCActivated = 'true';
     }
     this.setState({
@@ -225,7 +223,7 @@ class App extends Component {
   };
 
   fetchPartnerActivationStatusUpdate = ({ data }) => {
-    let user = cloneDeep(this.props.user);
+    const user = cloneDeep(this.props.user);
     const { activation_status = '' } = data?.partner_activation;
 
     if (user.merchants[user.current]) {
@@ -262,7 +260,8 @@ class App extends Component {
     initLumberjack();
 
     const self = this;
-    window.addEventListener('NOT_AUTHENTICATED', function () {
+    window.addEventListener('NOT_AUTHENTICATED', function notAuthenticatedHandler() {
+      // eslint-disable-next-line babel/no-invalid-this
       if (this.logoutPopupShown) {
         return;
       }
@@ -271,10 +270,11 @@ class App extends Component {
         size: 'large',
         component: <LogoutDialog user={user} />,
       });
+      // eslint-disable-next-line babel/no-invalid-this
       this.logoutPopupShown = true;
     });
 
-    window.addEventListener('REQUEST_ERROR', function (e) {
+    window.addEventListener('REQUEST_ERROR', function requestErrorHandler(e) {
       const errorCode = e.detail.response ? e.detail.response.status : 'UNKNOWN STATUS';
 
       window.ga &&
@@ -287,8 +287,8 @@ class App extends Component {
         );
     });
 
-    let currentMode = LocalStorageService.getItem(this.modeToken);
-    let isActivated = LocalStorageService.getItem(`is_activated--${user?.current}`);
+    let currentMode = getItem(this.modeToken);
+    let isActivated = getItem(`is_activated--${user?.current}`);
     const isUnregBiz = ['2', '11'].indexOf(user?.business_type) !== -1;
 
     if (
@@ -302,7 +302,7 @@ class App extends Component {
           user.poi_verification_status === 'verified' &&
           user.activation_status === 'instantly_activated'))
     ) {
-      LocalStorageService.setItem(`is_activated--${user.current}`, 'true');
+      setItem(`is_activated--${user.current}`, 'true');
       isActivated = 'true';
     }
 
@@ -311,7 +311,9 @@ class App extends Component {
         .then((response) => {
           const isOrgRZP = response?.[1]?.data?.custom_code === 'rzp';
           const transactionAmount = response?.[0]?.data?.firstTransaction?.result?.length
-            ? paiseToRupees(data.firstTransaction.result[0].base_amount)
+            ? // check with codeowner once, how is it working 😔?
+              // eslint-disable-next-line no-undef
+              paiseToRupees(data.firstTransaction.result[0].base_amount)
             : 0;
 
           const pathname = this.props.history.location.pathname;
@@ -370,6 +372,7 @@ class App extends Component {
       }),
       this.fetchOrg().then(({ data }) => {
         graphqlClient.setHeader('x-org-id', data.id);
+        // eslint-disable-next-line no-multi-assign
         const orgCode = (this.orgCode = data.custom_code);
         if (orgCode && orgCode !== 'rzp') {
           applyTheme(data);
@@ -429,9 +432,7 @@ class App extends Component {
             this.props.fetchUserTags();
             this.props.fetchCampaigns();
 
-            const merchantsSettlementStatus = JSON.parse(
-              LocalStorageService.getItem('merchantsSettlementStatus'),
-            );
+            const merchantsSettlementStatus = JSON.parse(getItem('merchantsSettlementStatus'));
 
             const esOndemandSettlementDisabled = !user.isOndemandSettlementEnabled;
             if (esOndemandSettlementDisabled) return;
@@ -449,7 +450,7 @@ class App extends Component {
                   ...merchantsSettlementStatus,
                   [user.current]: 'disableAnimationOnReload',
                 };
-                LocalStorageService.setItem(
+                setItem(
                   'merchantsSettlementStatus',
                   JSON.stringify(updatedMerchantSettlementStatus),
                 );
@@ -483,7 +484,7 @@ class App extends Component {
     this.props.fetchGST();
     this.fetchSupportedCurrencies();
 
-    const signUpFormStatus = LocalStorageService.getItem('sign_up_exp_status');
+    const signUpFormStatus = getItem('sign_up_exp_status');
     if (user?.merchants && Object.keys(user.merchants).length === 1) {
       if (this.props.user?.isActivationFormFullView) {
         if (!user?.activation_form_milestone && !user?.activated) {
@@ -511,7 +512,7 @@ class App extends Component {
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
-        LocalStorageService.setItem('sign_up_exp_status', 'kyc_form_fill_started');
+        setItem('sign_up_exp_status', 'kyc_form_fill_started');
         if (isMobileDevice()) {
           this.props.history.push('/onboarding/steps');
         } else {
@@ -621,13 +622,14 @@ class App extends Component {
     if (user) {
       this.openRequestEmailPopup();
       if (
-        ((user.experiments || {})['csm_experince_survey'] || {}).result === 'on' &&
-        !LocalStorageService.getItem('csm_experience_survey_showed')
+        ((user.experiments || {}).csm_experince_survey || {}).result === 'on' &&
+        !getItem('csm_experience_survey_showed')
       ) {
-        LocalStorageService.setItem('csm_experience_survey_showed');
+        setItem('csm_experience_survey_showed');
         createPopup('Sl6YqLtE', {
           hideHeaders: true,
           hideFooters: true,
+          // eslint-disable-next-line no-undef
           hidden,
         }).open();
       }
@@ -669,9 +671,7 @@ class App extends Component {
     }
     if (org && user) {
       if (!isPartnerPage()) {
-        const goLiveSurveyShowed = !!LocalStorageService.getItem(
-          'razorpay_go_live_nps_survey_showed',
-        );
+        const goLiveSurveyShowed = !!getItem('razorpay_go_live_nps_survey_showed');
         if (
           org?.custom_code?.toLowerCase() === 'rzp' && // only for razorpay org
           user.showNPSSurvey() && // experiment check
@@ -685,9 +685,7 @@ class App extends Component {
           this.setState({ goLiveNPSSurveyPopup: takeGoLiveNPSSurvey });
         }
 
-        const nonGoLiveSurveyShowed = !!LocalStorageService.getItem(
-          'razorpay_non_go_live_nps_survey_showed',
-        );
+        const nonGoLiveSurveyShowed = !!getItem('razorpay_non_go_live_nps_survey_showed');
         if (
           org?.custom_code?.toLowerCase() === 'rzp' && // only for razorpay org
           user.showNPSSurvey() && // experiment check
@@ -724,17 +722,12 @@ class App extends Component {
     const { fetchInstantSettlements } = this.props;
 
     fetchInstantSettlements({ count: 1 }).then(({ data: { items = [] } = {} } = {}) => {
-      const merchantsSettlementStatus = JSON.parse(
-        LocalStorageService.getItem('merchantsSettlementStatus'),
-      );
+      const merchantsSettlementStatus = JSON.parse(getItem('merchantsSettlementStatus'));
       const updatedMerchantSettlementStatus = {
         ...merchantsSettlementStatus,
         [merchantId]: items.length > 0,
       };
-      LocalStorageService.setItem(
-        'merchantsSettlementStatus',
-        JSON.stringify(updatedMerchantSettlementStatus),
-      );
+      setItem('merchantsSettlementStatus', JSON.stringify(updatedMerchantSettlementStatus));
     });
   };
 
@@ -859,13 +852,14 @@ class App extends Component {
   };
 
   setLiveTransactionDone = (user) => {
-    let { live_transaction_done, id } = user;
+    let { live_transaction_done } = user;
+    const { id } = user;
 
     if (!isPresent(live_transaction_done)) {
       return;
     }
 
-    live_transaction_done = parseInt(live_transaction_done);
+    live_transaction_done = parseInt(live_transaction_done, 10);
 
     switch (live_transaction_done) {
       case 1:
@@ -879,6 +873,8 @@ class App extends Component {
         break;
       case 2:
         this.fireMTUAudienceEvents(user);
+        break;
+      default:
         break;
     }
   };
@@ -900,14 +896,14 @@ class App extends Component {
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
-      let currentMode = LocalStorageService.getItem(this.modeToken);
-      const isActivated = LocalStorageService.getItem(`is_activated--${user.current}`);
+      let currentMode = getItem(this.modeToken);
+      const isActivated = getItem(`is_activated--${user.current}`);
 
       if (!currentMode) {
         currentMode = user.isActivated ? 'live' : 'test';
       } else if (this.canMerchantMoveToLiveMode(currentMode, isActivated, user)) {
         currentMode = 'live';
-        LocalStorageService.setItem(`is_activated--${user.current}`, 'true');
+        setItem(`is_activated--${user.current}`, 'true');
       } else if (!user.isActivated) {
         currentMode = 'test';
       }
@@ -915,7 +911,7 @@ class App extends Component {
       // making sure his current mode is remembered so that when he gets
       // activated, he wont be switched to live mode automatically
       // which may lead to mass confusion for merchants
-      LocalStorageService.setItem(this.modeToken, currentMode);
+      setItem(this.modeToken, currentMode);
 
       if (user && user.user) {
         if (window.rzpAnalytics) {
@@ -970,6 +966,9 @@ class App extends Component {
         case null:
           this.props.history.replace('/profile');
           break;
+
+        default:
+          break;
       }
     }
   }
@@ -978,7 +977,13 @@ class App extends Component {
     return merchantFetch({ url: 'partner/activation', mode: 'live' });
   };
 
+  // eslint-disable-next-line consistent-return
   switchMode = (mode, callback = () => {}) => {
+    const {
+      splitz: { abExperiments },
+    } = this.props;
+
+    const isRTUXHomepage = isRTUXHomepageEnabled({ user: this.props.user, abExperiments });
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Header',
       eventAction: 'Switch - Mode',
@@ -991,7 +996,8 @@ class App extends Component {
       properties: {
         current: mode,
         new: 'test',
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...(isRTUXHomepage ? { version: 'v2' } : {}),
+        ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: isRTUXHomepage }),
       },
     });
     if (this.state.isPartnerModeEnabled) {
@@ -1007,7 +1013,7 @@ class App extends Component {
       });
     } else {
       callback();
-      LocalStorageService.setItem(this.modeToken, mode);
+      setItem(this.modeToken, mode);
       window.trackHubs?.({
         name: 'update_property',
         data: {
@@ -1048,7 +1054,7 @@ class App extends Component {
         },
       });
       if (this.state.isPartnerKYCActivated) {
-        LocalStorageService.setItem(this.partnerModeToken, mode);
+        setItem(this.partnerModeToken, mode);
         location.reload();
       } else {
         this.props.openModal({
@@ -1062,7 +1068,7 @@ class App extends Component {
         });
       }
     } else {
-      LocalStorageService.setItem(this.partnerModeToken, mode);
+      setItem(this.partnerModeToken, mode);
       location.reload();
     }
   };
@@ -1149,20 +1155,18 @@ class App extends Component {
     }
     return (
       <>
-        {goLiveNPSSurveyPopup &&
-          !LocalStorageService.getItem('razorpay_go_live_nps_survey_showed') && (
-            <>
-              {LocalStorageService.setItem('razorpay_go_live_nps_survey_showed', 1)}
-              {goLiveNPSEnableTypeForm.open()}
-            </>
-          )}
-        {nonGoLiveNPSSurveyPopup &&
-          !LocalStorageService.getItem('razorpay_non_go_live_nps_survey_showed') && (
-            <>
-              {LocalStorageService.setItem('razorpay_non_go_live_nps_survey_showed', 1)}
-              {nonGoLiveNPSEnableTypeForm.open()}
-            </>
-          )}
+        {goLiveNPSSurveyPopup && !getItem('razorpay_go_live_nps_survey_showed') && (
+          <>
+            {setItem('razorpay_go_live_nps_survey_showed', 1)}
+            {goLiveNPSEnableTypeForm.open()}
+          </>
+        )}
+        {nonGoLiveNPSSurveyPopup && !getItem('razorpay_non_go_live_nps_survey_showed') && (
+          <>
+            {setItem('razorpay_non_go_live_nps_survey_showed', 1)}
+            {nonGoLiveNPSEnableTypeForm.open()}
+          </>
+        )}
       </>
     );
   };
@@ -1206,19 +1210,32 @@ class App extends Component {
   };
 
   showSidebarV2 = () => {
-    const { user } = this.props;
-    return (
-      user.isOrgRZP &&
-      !isMobileDevice() &&
-      user.isLeftNavRevampEnabled &&
-      !user.isPartner() &&
-      !user.isSourceRX
-    );
+    const {
+      user,
+      splitz: { abExperiments },
+    } = this.props;
+
+    const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
+
+    const isSidebarV2 = user.isOrgRZP && !user.isPartner() && !user.isSourceRX;
+
+    if (isRTUXHomepage) {
+      return isSidebarV2;
+    }
+    return isSidebarV2 && !isMobileDevice();
   };
 
   render() {
-    const { user, config, org, mode, modeFormatted, partnerModeFormatted, partnerMode } =
-      this.props;
+    const {
+      user,
+      config,
+      org,
+      mode,
+      modeFormatted,
+      partnerModeFormatted,
+      partnerMode,
+      splitz: { abExperiments },
+    } = this.props;
 
     const hasGSTIN = this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
     const isPartnerModeEnabled = this.state.isPartnerModeEnabled;
@@ -1233,11 +1250,12 @@ class App extends Component {
       return null;
     }
     const sidebarProps = {
-      user: user,
+      user,
       logoURL: org.main_logo_url,
       config: config.config,
       org_custom_code: org.custom_code,
     };
+    const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
 
     return (
       <Wrapper
@@ -1263,7 +1281,14 @@ class App extends Component {
             </Helmet>
           </HelmetProvider>
         )}
-        <div className={classList('layout', this.orgCode, this.renderFullPageView && 'layout--fp')}>
+        <div
+          className={classList(
+            'layout',
+            this.orgCode,
+            this.renderFullPageView && 'layout--fp',
+            isRTUXHomepage && 'layout--rtux--background',
+          )}
+        >
           <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
             {!this.renderFullPageView && !this.state.isWebView && (
               <React.Fragment>
@@ -1276,6 +1301,7 @@ class App extends Component {
                   onSwitchMerchant={this.switchMerchant}
                   showMobileNav={this.props.windowWidth < mobileWidth}
                   org={this.props.org}
+                  isSidebarV2={this.showSidebarV2()}
                 />
                 {this.showSidebarV2() ? (
                   <SidebarV2 {...sidebarProps} />
@@ -1298,6 +1324,7 @@ class App extends Component {
                 modeFormatted={currentModeFormatted}
                 fullPageView={this.renderFullPageView}
                 isWebView={this.state.isWebView}
+                isRTUXHomepage={isRTUXHomepage}
               />
             </SplitzRoutesBasedService>
             {!this.renderFullPageView && !this.state.isWebView && (

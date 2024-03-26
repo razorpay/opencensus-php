@@ -17,6 +17,7 @@ import { mockContext, COMPONENT_WRAPPER_TESTID } from 'common/services/test/cons
 import { RouteGuard } from 'merchant/components/ShowWhen';
 import { createMemoryHistory } from 'history';
 import * as commonI18 from 'common/i18';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const createWrapper = ({
   context,
@@ -143,6 +144,9 @@ const updateUseI18ServiceSpy = (configPath = '') => {
   }));
 };
 
+const renderWithSuspense = (children: React.ReactNode) =>
+  customRender(<SuspenseWithLoader>{children}</SuspenseWithLoader>);
+
 // override render method
 export {
   customRender as render,
@@ -157,4 +161,5 @@ export {
   checkIfComponentIsEmpty,
   COMPONENT_WRAPPER_TESTID,
   updateUseI18ServiceSpy,
+  renderWithSuspense,
 };

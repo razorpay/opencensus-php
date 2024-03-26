@@ -20,9 +20,14 @@ const StatusDetails = lazy(
 type EcosystemDowntimesProps = {
   mode: string;
   showMobileNav: boolean;
+  isRTUXHomepage: boolean;
 };
 
-const EcosystemDowntimes = ({ mode, showMobileNav }: EcosystemDowntimesProps): JSX.Element => {
+const EcosystemDowntimes = ({
+  mode,
+  showMobileNav,
+  isRTUXHomepage,
+}: EcosystemDowntimesProps): JSX.Element => {
   return (
     <ErrorBoundary
       tags={{ page: 'ecosystemDowntimes' }}
@@ -36,7 +41,7 @@ const EcosystemDowntimes = ({ mode, showMobileNav }: EcosystemDowntimesProps): J
       team={Teams.AVAILABILITY_AND_DOWNTIME}
     >
       <Suspense fallback={null}>
-        <EcosystemDowntimesContainer />
+        <EcosystemDowntimesContainer isRTUXHomepage={isRTUXHomepage} />
       </Suspense>
     </ErrorBoundary>
   );

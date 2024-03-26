@@ -27,6 +27,10 @@ import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr'
 import PaymentHandleSlug from 'merchant/views/PaymentHandle/components/DropDownSlug';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { withI18Service } from 'common/i18';
+import ProfileDropdownV2 from './ProfileDropdownV2';
+
+const trustedBadgeTooltipInfo =
+  'You are a trusted business and the Razorpay trusted business badge is now being displayed on checkout for customers to see';
 
 @withI18Service
 @connect(
@@ -203,11 +207,26 @@ class ProfileDropdown extends Component {
       mode,
       onSwitchMode,
       i18: { isConfigTagEnabled },
+      isRTUXHomepage,
     } = this.props;
     const { badgeStatus } = trustedBadge || {};
     const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
     const merchant = user.merchants[user.current];
     const { showRazorpayxToolTip } = this.state;
+    if (isRTUXHomepage) {
+      return (
+        <ProfileDropdownV2
+          user={user}
+          mode={mode}
+          onSwitchMode={onSwitchMode}
+          onLogout={this.logout}
+          openSwitchMerchantModal={this.openSwitchMerchantModal}
+          isRTBEnabled={isRTBEnabled}
+          trustedBadgeTooltipInfo={trustedBadgeTooltipInfo}
+        />
+      );
+    }
+
     return (
       <Dropdown closeOnClick={false} onShow={this.handleShow} onHide={this.handleHide}>
         <DropdownTrigger
@@ -246,10 +265,7 @@ class ProfileDropdown extends Component {
                 </span>
                 <Popover align="bottom" theme="dark">
                   <PopoverBody>
-                    <div>
-                      You are a trusted business and the Razorpay trusted business badge is now
-                      being displayed on checkout for customers to see
-                    </div>
+                    <div>{trustedBadgeTooltipInfo}</div>
                   </PopoverBody>
                 </Popover>
               </span>

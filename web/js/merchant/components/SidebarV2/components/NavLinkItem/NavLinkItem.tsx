@@ -1,6 +1,6 @@
 import React from 'react';
-import { withRouter } from 'common/deprecated/withRouter';
 import { Badge, Text } from '@razorpay/blade/components';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { useSplitzService } from 'common/splitz';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -12,8 +12,11 @@ import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import { useI18Service } from 'common/i18';
 import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
+import SelectedSidebarBackground from 'assets/sidebar/sidebar-selected.svg';
+import Image from 'common/ui/Image';
 
-import { BadgeContainer, Icon, LinkButtonItem, LinkItem, Typo } from './styled';
+import { BadgeContainer, Icon, LinkButtonItem, LinkItem, LinkItemV2, Typo } from './styled';
+import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 
 const CustomBadge = ({ text }: { text: string }) => {
   return (
@@ -26,10 +29,10 @@ const CustomBadge = ({ text }: { text: string }) => {
 };
 
 const getTags = (type) => {
-  return type.reduce((acc, each) => {
+  return type.reduce((acc, each, index) => {
     switch (each) {
       case 'NEW': {
-        acc.push(<CustomBadge text="new" />);
+        acc.push(<CustomBadge text="new" key={index} />);
         break;
       }
       default:
@@ -51,10 +54,12 @@ const NavLinkItem = ({
   product_id,
   section,
   location,
+  toggleMobileMenu,
 }: NavLinkItemInterface & WithRouterProps): JSX.Element | null => {
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
+  const isRTUXHomepage = useIsRTUXHomepageEnabled();
 
   const onNavLinkItemClick = () => {
     analyticsTrack({
@@ -70,22 +75,48 @@ const NavLinkItem = ({
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    toggleMobileMenu?.();
   };
 
   const Tags = getTags(tags);
+  const url: string = getHref
+    ? getHref({ routes, user })
+    : routes[product_id] || DASHBOARD_LANDING_URL;
+
+  const isActive = activeTab === product_id;
 
   return (
     <ShowWhen additionalCondition={(user) => additionalCondition(user, extraConfig)}>
       {type === 'linkButton' ? (
-        <LinkButtonItem
-          to={getHref ? getHref({ routes, user }) : routes[product_id] || DASHBOARD_LANDING_URL}
-          isActive={activeTab === product_id}
-          onClick={onNavLinkItemClick}
-        >
+        <LinkButtonItem to={url} isActive={isActive} onClick={onNavLinkItemClick}>
           <Typo>{title}</Typo>
           <i className="i i-chevron-right" />
           {Tags}
         </LinkButtonItem>
+      ) : isRTUXHomepage ? (
+        <LinkItemV2 to={url} onClick={onNavLinkItemClick} isActive={isActive}>
+          {isActive && (
+            <Image
+              src={SelectedSidebarBackground}
+              alt="Selected background"
+              className="sidebar-active"
+            />
+          )}
+          <Icon className={`i ${icon}`} />
+          <Text
+            variant="body"
+            weight="regular"
+            size="medium"
+            color={
+              activeTab === product_id
+                ? 'surface.text.normal.lowContrast'
+                : 'surface.text.subtle.lowContrast'
+            }
+          >
+            {title}
+          </Text>
+          {Tags}
+        </LinkItemV2>
       ) : (
         <LinkItem
           to={getHref ? getHref({ routes, user }) : routes[product_id] || DASHBOARD_LANDING_URL}

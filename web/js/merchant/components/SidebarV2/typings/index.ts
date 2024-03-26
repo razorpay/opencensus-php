@@ -55,6 +55,8 @@ export interface SidebarPropsInterface extends RouteComponentProps {
   isTagsLoading: boolean;
   isNcEligibile: boolean;
   trackEvents: (props: any) => void;
+  shouldShowMobileMenu: boolean;
+  toggleMobileMenu: () => void;
 }
 
 export interface NavLinkItemInterface extends RouteComponentProps {
@@ -65,11 +67,12 @@ export interface NavLinkItemInterface extends RouteComponentProps {
   activeTab?: string;
   routes: Record<string, string>;
   additionalCondition: (payload: User, experiments: any) => boolean;
-  getHref?: (payload: any) => boolean;
+  getHref?: (payload: any) => string;
   user: User;
   section?: string;
   type?: string;
   heading: string;
+  toggleMobileMenu: () => void;
 }
 
 export interface NavLinkProductPropsInterface extends RouteComponentProps {
@@ -80,6 +83,7 @@ export interface NavLinkProductPropsInterface extends RouteComponentProps {
   loading: boolean;
   user: User;
   section_id: string;
+  toggleMobileMenu: () => void;
 }
 
 export interface ProductsStateInterface {

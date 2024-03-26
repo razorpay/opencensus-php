@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import NavLinkItem from 'merchant/components/SidebarV2/components/NavLinkItem';
 import Collapsible from 'common/components/Collapsible';
 import { PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
-import { ProductHeading, Items, Toggler } from './styled';
+import { ProductHeading, Items, Toggler, ShowMoreWrapper } from './styled';
 import NavGroupShimmer from 'merchant/components/SidebarV2/components/Shimmer';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import {
@@ -19,6 +19,8 @@ import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useSplitzService } from 'common/splitz';
 import { useI18Service } from 'common/i18';
+import { Box, Heading, Text } from '@razorpay/blade/components';
+import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 
 const NavLinkProduct = ({
   heading,
@@ -29,11 +31,13 @@ const NavLinkProduct = ({
   user,
   section_id,
   location,
+  toggleMobileMenu,
 }: NavLinkProductPropsInterface): JSX.Element | null => {
   const [sectionProducts, setSectionProducts] = useState<ProductsStateInterface>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
+  const isRTUXHomepage = useIsRTUXHomepageEnabled();
 
   const handleToggle = (): void => {
     analyticsTrack({
@@ -117,16 +121,30 @@ const NavLinkProduct = ({
       user={user}
       {...product}
       {...PRODUCTS_DATA[product.product_id]}
+      toggleMobileMenu={toggleMobileMenu}
     />
   );
 
   return sectionProducts?.valid?.length ? (
     <>
-      <ProductHeading>{heading}</ProductHeading>
+      {isRTUXHomepage ? (
+        <Heading
+          variant="subheading"
+          type="subtle"
+          weight="bold"
+          contrast="low"
+          marginX="spacing.7"
+          marginY="spacing.3"
+        >
+          {heading}
+        </Heading>
+      ) : (
+        <ProductHeading>{heading}</ProductHeading>
+      )}
       {loading ? (
         <NavGroupShimmer />
       ) : (
-        <Items>
+        <Items data-testid="navlink-product">
           {sectionProducts.valid.slice(0, 3).map((each, index) => (
             <RenderNavLink key={`${each.title}_${index}`} product={each} />
           ))}
@@ -138,13 +156,23 @@ const NavLinkProduct = ({
             </Items>
           </Collapsible>
           {sectionProducts.valid.length > 3 && (
-            <Toggler onClick={handleToggle} type="button">
-              {isOpen ? 'Show less' : `Show all (${sectionProducts.valid.length})`}
-            </Toggler>
+            <>
+              {isRTUXHomepage ? (
+                <ShowMoreWrapper onClick={handleToggle}>
+                  <Text weight="bold" size="small" color="action.text.link.default">
+                    {isOpen ? 'Show less' : `Show all (${sectionProducts.valid.length})`}
+                  </Text>
+                </ShowMoreWrapper>
+              ) : (
+                <Toggler onClick={handleToggle} type="button">
+                  {isOpen ? 'Show less' : `Show all (${sectionProducts.valid.length})`}
+                </Toggler>
+              )}
+            </>
           )}
         </Items>
       )}
-      <Divider />
+      {isRTUXHomepage ? <Box marginBottom="spacing.6" /> : <Divider />}
     </>
   ) : null;
 };

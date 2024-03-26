@@ -1,4 +1,5 @@
 /* eslint-disable react/no-unsafe */
+import { Box, MenuIcon } from '@razorpay/blade/components';
 import React, { Component } from 'react';
 import { Ray } from '@razorpay/frontend-care';
 import { connect } from 'react-redux';
@@ -36,6 +37,7 @@ import ProfileDropdown from './ProfileDropdown';
 import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
+import { isRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -87,6 +89,12 @@ class HeaderNav extends Component {
     if (abExperiments?.ray_ai?.variables?.result !== 'on') return false;
 
     return true;
+  }
+
+  isRTUXHomepage() {
+    const { abExperiments } = this.props.splitz;
+    const { user } = this.props;
+    return isRTUXHomepageEnabled({ user, abExperiments });
   }
 
   componentDidMount() {
@@ -180,6 +188,7 @@ class HeaderNav extends Component {
       org,
       referee,
       isMobile,
+      isSidebarV2,
       i18: { isConfigTagEnabled },
       openedCareWidget,
     } = this.props;
@@ -191,12 +200,14 @@ class HeaderNav extends Component {
       canShowMtuPopup: user.showMtuPopup,
       mtuOfferCount,
     };
+    const isRTUXHomepage = isSidebarV2 && this.isRTUXHomepage();
     const commonProps = {
       user,
       showGSTModal,
       modeFormatted,
       onSwitchMode,
       onSwitchMerchant,
+      isRTUXHomepage,
     };
     const isUniversalSearchEnabled = user.isUniversalSearchEnabled;
     const isMobileSearch = isUniversalSearchEnabled && isMobile;
@@ -206,6 +217,7 @@ class HeaderNav extends Component {
           className={classList(
             'navbar navbar-default navbar-fixed-top',
             isMobileSearch && 'search-nav-box',
+            isRTUXHomepage && 'homepage-rtux-navbar',
           )}
         >
           <div className="container-fluid navbar-container">
@@ -219,17 +231,34 @@ class HeaderNav extends Component {
               )}
               {isMobile && (
                 <div className="pull-left navbar-toggle-container">
-                  <button type="button" className="navbar-toggle" onClick={this.onToggleAppMenu}>
-                    <span className="i-bar" />
-                    <span className="i-bar" />
-                    <span className="i-bar" />
-                  </button>{' '}
-                  {activePageName || 'Dashboard'}
+                  {isRTUXHomepage ? (
+                    <Box display="flex" alignItems="center" justifyContent="center" height="60px">
+                      <MenuIcon
+                        size="medium"
+                        onClick={this.onToggleAppMenu}
+                        color="surface.text.subtle.lowContrast"
+                        margin="spacing.2"
+                      />
+                    </Box>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="navbar-toggle"
+                        onClick={this.onToggleAppMenu}
+                      >
+                        <span className="i-bar" />
+                        <span className="i-bar" />
+                        <span className="i-bar" />
+                      </button>{' '}
+                      {activePageName || 'Dashboard'}
+                    </>
+                  )}
                 </div>
               )}
               {isUniversalSearchEnabled && !isMobile && (
                 <div className="universal-search-desktop">
-                  <UniversalSearch />
+                  <UniversalSearch isRTUXHomepage={isRTUXHomepage} />
                 </div>
               )}
               <ul className="nav navbar-nav navbar-right">
@@ -239,7 +268,9 @@ class HeaderNav extends Component {
 
                 <ShowWhen
                   additionalCondition={(_user) =>
-                    !isConfigTagEnabled('announcements.announcements') && !isMobileDevice()
+                    !isConfigTagEnabled('announcements.announcements') &&
+                    !isMobileDevice() &&
+                    !isRTUXHomepage
                   }
                 >
                   <GrowthAssetEB>
@@ -252,7 +283,7 @@ class HeaderNav extends Component {
                 </ShowWhen>
 
                 {/* Will uncomment later. Please dont block this from going to prod  */}
-                {!showMobileNav && user.isMobileSignupCareActive && (
+                {!isRTUXHomepage && !showMobileNav && user.isMobileSignupCareActive && (
                   <li id="support-request">
                     <SupportRequestDropdown showMobileNav={showMobileNav} />
                   </li>
@@ -264,7 +295,7 @@ class HeaderNav extends Component {
                     !isConfigTagEnabled('announcements.announcements')
                   }
                 >
-                  <li id="whats-new-section">
+                  <li id="whats-new-section" data-testid="header-announcement">
                     <GrowthAssetEB FallbackComponent={ErrorFallbackComponent}>
                       {user.isWhatsNewLazyEnabled ? (
                         <NotificationIcon
@@ -291,17 +322,26 @@ class HeaderNav extends Component {
                   </li>
                 </ShowWhen>
                 {user?.isOrgRZP && user?.isInternalStatusPageEnabled && (
-                  <li id="status-details">
+                  <li id="status-details" data-testid="header-status-details">
                     {user.isEcosystemDowntimeEnabled ? (
-                      <EcosystemDowntimes mode={mode} showMobileNav={showMobileNav} />
+                      <EcosystemDowntimes
+                        mode={mode}
+                        showMobileNav={showMobileNav}
+                        isRTUXHomepage={isRTUXHomepage}
+                      />
                     ) : (
-                      <StatusDetails AppMode={mode} showMobileNav={showMobileNav} />
+                      <StatusDetails
+                        AppMode={mode}
+                        showMobileNav={showMobileNav}
+                        isRTUXHomepage={isRTUXHomepage}
+                      />
                     )}
                   </li>
                 )}
 
                 <ShowWhen
                   additionalCondition={(_user) =>
+                    !isRTUXHomepage &&
                     _user?.isAppSwitcherEnabled &&
                     _user?.isAccepted &&
                     !_user?.isOrgAxis &&
@@ -338,8 +378,10 @@ class HeaderNav extends Component {
           </div>
         </nav>
         {isMobileSearch && (
-          <div className="mobile-search-layout">
-            <UniversalSearch />
+          <div
+            className={classList('mobile-search-layout', isRTUXHomepage && 'homepage-rtux-navbar')}
+          >
+            <UniversalSearch isRTUXHomepage={isRTUXHomepage} />
           </div>
         )}
         {mode === 'test' && isMobileDevice() && <HighlightTestMode onSwitchMode={onSwitchMode} />}

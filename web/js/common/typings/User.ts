@@ -73,6 +73,14 @@ type Getters = {
   isRiskAndFraudEnabled: boolean;
   isOmniChannelMerchant: boolean;
   isOmniEnabledMerchant: boolean;
+  isRazorxAnnouncementEnabled: boolean;
+};
+
+type Merchant = {
+  id: string;
+  hold_funds: boolean;
+  max_payment_amount: number;
+  currency: string;
 };
 
 type UserProperties = {
@@ -95,11 +103,9 @@ type UserProperties = {
     contact_mobile?: string;
     signup_campaign?: string;
   };
-  merchant: {
-    id: string;
-    hold_funds: boolean;
-    max_payment_amount: number;
-    currency: string;
+  merchant: Merchant;
+  merchants: {
+    [key: string]: Merchant;
   };
   business_type: string;
   business_subcategory: BUSINESS_SUBCATEGORIES | string;
@@ -129,6 +135,7 @@ type UserProperties = {
   tags: string[];
   is_pgos_merchant: boolean;
   configTags: any;
+  logo_url?: string;
 };
 
 // as user properties are not available initially

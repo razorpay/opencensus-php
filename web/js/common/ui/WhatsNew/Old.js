@@ -3,6 +3,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
+import { AnnouncementIcon } from '@razorpay/blade/components';
 
 import ExclusiveOffer from 'common/ui/ExclusiveOffer';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
@@ -545,6 +546,15 @@ class WhatsNewOld extends Component {
         );
       }
     */
+    if (this.props.isRTUXHomepage) {
+      return (
+        <AnnouncementIcon
+          size="medium"
+          onClick={this.handleSliderToggleClick}
+          color="surface.text.subtle.lowContrast"
+        />
+      );
+    }
 
     return (
       <>

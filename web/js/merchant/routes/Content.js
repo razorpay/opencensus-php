@@ -56,7 +56,7 @@ import { isHelpWidgetDisabled } from 'merchant/components/Support/utils';
 import MagicKonnect from 'merchant/views/MagicKonnect';
 
 // eslint-disable-next-line require-await
-const loadModule = (module) =>
+const loadModule = async (module) =>
   importRemote({
     url: window.cdnDashboardAssetsUrl,
     scope: 'selfserve',
@@ -2316,11 +2316,13 @@ class Content extends Component {
         </Suspense>
       );
     }
+
     return (
       // to add a new class alognside main-content if we are in the test mode and in m-web
       <main
         class={classList(
           !fullPageView && !isWebView && 'main-content',
+          !fullPageView && !isWebView && this.props.isRTUXHomepage ? 'main-content--rtux' : '',
           isMobileSearchEnabled && !fullPageView && !isWebView && 'search-header',
           mode === 'test' && isMobileDevice() ? 'test-mode' : '',
         )}

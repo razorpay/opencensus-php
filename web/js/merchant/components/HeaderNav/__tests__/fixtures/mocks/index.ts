@@ -1,0 +1,20 @@
+export const user = {
+  id: 'JYYN1SC4iU0697',
+  contact_name: 'Kamlesh J',
+  contact_email: 'owner+12@rzp.com',
+  contact_mobile: '9999829384',
+  logo_url: 'https://cdn.razorpay.com/logo_invert.svg',
+  display_name: 'Kapil 12',
+  name: 'Merchant name',
+  user: {
+    contact_mobile: '7798586889',
+    email: 'kapil.thakur+150@razorpay.com',
+    signup_via_email: 1,
+    name: 'Kapil Thakur',
+    merchants: {},
+  },
+  userRole: 'owner',
+  role: 'owner',
+  isRazorxAnnouncementEnabled: false,
+  merchants: [],
+};

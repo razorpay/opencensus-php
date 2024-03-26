@@ -1,0 +1,93 @@
+import React, { Fragment, useEffect } from 'react';
+import { Box, Spinner } from '@razorpay/blade/components';
+
+import { useUCSDataQuery } from 'merchant/containers/Home/RTUX/hooks/useUCSDataQuery';
+import { useUCSLayoutQuery } from 'merchant/containers/Home/RTUX/hooks/useUCSLayoutQuery';
+import { ErrorState } from 'merchant/widgets/common/ErrorState';
+import { getUcsAliasFromQueryKey, getBaseWidget, track } from 'merchant/widgets/utils';
+import { ResponsiveWrapper } from './styles';
+
+const DefaultLoader = (): JSX.Element => (
+  <Box minHeight="150px" display="flex" alignItems="center" justifyContent="center">
+    <Spinner accessibilityLabel="home page loading" />
+  </Box>
+);
+
+const RTUX_HOMEPAGE_LAYOUT_KEY = ['rtux-homepage', 'layout'];
+const RTUX_HOMEPAGE_DATA_KEY = ['rtux-homepage', 'data'];
+
+const RTUXHomepage = (): JSX.Element => {
+  const {
+    data: layoutData,
+    isFetching: isFetchingLayout,
+    isError: isErrorLayout,
+  } = useUCSLayoutQuery(RTUX_HOMEPAGE_LAYOUT_KEY, { alias: 'home_page' });
+
+  const { data, isFetching, isError, refetch, error } = useUCSDataQuery(RTUX_HOMEPAGE_DATA_KEY, {
+    alias: 'home_page',
+  });
+  const screen = getUcsAliasFromQueryKey(RTUX_HOMEPAGE_DATA_KEY) ?? '';
+  // home page widget doesn't has a type or id
+  const widgetId = `merchantDashboard.${screen}`;
+
+  const retryHandler = () => {
+    if (isError) refetch();
+  };
+
+  useEffect(() => {
+    if (!isFetching) {
+      track({
+        objectName: 'widget',
+        actionName: error ? 'error' : 'loaded',
+        screen,
+        properties: {
+          widgetId,
+          actionBy: widgetId,
+          ...(error ? { error: `${error}` } : {}),
+        },
+      });
+    }
+  }, [isFetching, error]);
+
+  // if layout errors out, fallback to default loader
+  if (isFetchingLayout || (isErrorLayout && isFetching)) return <DefaultLoader />;
+
+  // only retry for data, layout error is handled by default loader
+  if (isError)
+    return (
+      <Box margin="spacing.7">
+        <ErrorState
+          text="Something went wrong"
+          retryHandler={retryHandler}
+          backgroundColor="surface.background.level2.lowContrast"
+          marginX="spacing.0"
+          analyticsProperties={{
+            screen,
+            widgetId,
+            actionBy: widgetId,
+            ...(error ? { error: `${error}` } : {}),
+          }}
+        />
+      </Box>
+    );
+
+  const dataSource = isFetching ? layoutData : data;
+
+  return (
+    <ResponsiveWrapper>
+      <Box display="flex" flexDirection="column" paddingY="spacing.5" gap="spacing.6">
+        {dataSource.components.map((widgetData) => (
+          <Fragment key={widgetData.type}>
+            {getBaseWidget({
+              widget: widgetData,
+              isLoading: isFetching,
+              queryKey: RTUX_HOMEPAGE_DATA_KEY,
+            })}
+          </Fragment>
+        ))}
+      </Box>
+    </ResponsiveWrapper>
+  );
+};
+
+export default RTUXHomepage;

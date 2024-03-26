@@ -1,4 +1,5 @@
 export const RZP_LOGO_URL = 'https://cdn.razorpay.com/logo_invert.svg';
+export const RZP_LOGO_URL_DARK = 'https://cdn.razorpay.com/logo.svg';
 export const DASHBOARD_LANDING_URL = '/dashboard';
 export const ONBOARDING_STEPS_URL = '/onboarding/steps';
 export const KYC_URL = '/kyc';

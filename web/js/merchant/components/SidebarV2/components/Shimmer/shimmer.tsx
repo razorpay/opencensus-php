@@ -3,7 +3,7 @@ import { ShimmerBar, ShimmerGroup } from './styled';
 
 const NavGroupShimmer = (): JSX.Element => {
   return (
-    <ShimmerGroup>
+    <ShimmerGroup data-testid="shimmer-group">
       <ShimmerBar />
       <ShimmerBar />
       <ShimmerBar />

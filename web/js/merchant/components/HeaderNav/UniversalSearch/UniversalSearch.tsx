@@ -53,6 +53,7 @@ const UniversalSearch = ({
   fetchMerchantWebsiteDetailsFn: fetchMerchantWebsiteDetails,
   fetchEnrollmentStatus,
   enrollmentStatus,
+  isRTUXHomepage,
 }: UniversalSearchProps): JSX.Element => {
   const haveIndexedApiBasedItems = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -235,7 +236,7 @@ const UniversalSearch = ({
 
   return (
     <div ref={searchContainerRef}>
-      <SearchBar ref={inputRef} {...commonProps} />
+      <SearchBar ref={inputRef} isRTUXHomepage={isRTUXHomepage} {...commonProps} />
       <ProductListing
         ref={listingRef}
         history={history}

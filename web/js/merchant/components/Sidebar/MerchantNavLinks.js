@@ -161,6 +161,17 @@ function MerchantNavLinks(props) {
         customBadge={getProductBadge(['payment_page'])}
       />
       <MainNavLink
+        label="Razorpay.me Link"
+        type="product"
+        icon="i i-payment-handle text-success"
+        to={routes.paymentHandle}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('payment_handle') &&
+          currentUser.isPaymentHandleSplitzEnabled &&
+          !isConfigTagEnabled('payments.payment_handle')
+        }
+      />
+      <MainNavLink
         label="Stores"
         icon="i i-store-product text-danger"
         type="product"

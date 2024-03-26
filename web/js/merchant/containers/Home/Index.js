@@ -76,9 +76,11 @@ import InternationalHPBanner from 'merchant/views/AccountAndSettings/PaymentMeth
 import FestiveAnimation from './FestiveAnimation';
 import { withI18Service } from 'common/i18';
 import { withSplitzService } from 'common/splitz';
+import { isRTUXHomepageEnabled } from './RTUX/utils';
 
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
+const RTUXHomepage = lazyLoader(() => import(/* webpackChunkName: 'RTUXHomepage' */ './RTUX'));
 
 const DATE_RANGE_PRESETS = [
   ['Past 7 Days', -7, 'days'],
@@ -1118,6 +1120,7 @@ class HomeContainer extends Component {
       user.isBankAccountUpdateRevampEnabled &&
       user.activation_status === 'activated' &&
       isBankAccountDetailsAllowed({ abExperiments, isConfigTagEnabled });
+    const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
 
     const hasLakhmiVilasBankAcc =
       user && user.bank_branch_ifsc && user.bank_branch_ifsc.substring(0, 4) === 'LAVB';
@@ -1332,8 +1335,11 @@ class HomeContainer extends Component {
             />
           )}
         </ShowWhen>
-
-        {isMobile ? (
+        {isRTUXHomepage ? (
+          <SuspenseWithLoader type="full">
+            <RTUXHomepage />
+          </SuspenseWithLoader>
+        ) : isMobile ? (
           <SuspenseWithLoader type="full">
             <Mobile {...commonProps} />
           </SuspenseWithLoader>

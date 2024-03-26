@@ -291,13 +291,6 @@ export default {
     // prod experiment ids
     'KE6QIX5uyJrKOq',
   ],
-  left_nav_revamp: [
-    // beta experiment ids
-    'KpK9k86u44CxNg',
-    // prod experiment ids
-    'Kmd4oqDWnxSFe8',
-  ],
-
   universal_search_enabled: [
     // beta experiment ids
     'Lf6qHEprAH4UCm',

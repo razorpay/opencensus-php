@@ -15,7 +15,7 @@ jest.mock('merchant/views/EcosystemDowntimes/context', () => ({
 }));
 
 const App = (): JSX.Element => {
-  return <EcosystemDowntimes mode="live" showMobileNav={true} />;
+  return <EcosystemDowntimes mode="live" showMobileNav={true} isRTUXHomepage={false} />;
 };
 
 describe('<EcosystemDowntimes/>', () => {

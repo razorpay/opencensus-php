@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react';
-import { Heading } from '@razorpay/blade/components';
+import { Heading, ActivityIcon } from '@razorpay/blade/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import Slider from 'common/ui/Slider';
 import { useClickOutSide } from 'common/utils/customHooks';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import lazy from 'merchant/routes/LazyLoader';
 import EcosystemRefreshNudge from 'merchant/views/EcosystemDowntimes/components/EcosystemRefreshNudge';
 import {
@@ -20,6 +20,7 @@ import {
   EcosystemDowntimeContainer,
 } from 'merchant/views/EcosystemDowntimes/styles';
 import { openSlider } from 'merchant_common/reducers/slider';
+import { analyticsTrack } from 'common/utils/analytics';
 
 // eslint-disable-next-line prettier/prettier
 const MethodsContainer = lazy(
@@ -28,7 +29,7 @@ const MethodsContainer = lazy(
 
 const EcosystemDowntimesContainer = (props): JSX.Element => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const { openSlider: sliderOpen } = props;
+  const { openSlider: sliderOpen, isRTUXHomepage } = props;
   const methodsContainerRef = useRef<HTMLDivElement | null>(null);
   const ecosystemHealthIcon = useRef<HTMLDivElement | null>(null);
   const queryCache = useQueryClient();
@@ -59,13 +60,33 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
         className={classList('status-details', isExpanded && 'status-details--active')}
       >
         <div className="status-details-slide-toggle">
-          <i
-            className="i i-downtime"
-            aria-label="status-detail-icon"
-            onClick={handleToggleSlider}
-            ref={ecosystemHealthIcon}
-            role="img"
-          />
+          {isRTUXHomepage ? (
+            <div
+              onClick={() => {
+                handleToggleSlider();
+                analyticsTrack({
+                  screen: 'home page',
+                  objectName: 'Ecosystem Health Check Icon',
+                  actionName: 'clicked',
+                  properties: {
+                    version: 'v2',
+                    ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
+                  },
+                });
+              }}
+              ref={ecosystemHealthIcon}
+            >
+              <ActivityIcon size="medium" color="surface.text.subtle.lowContrast" />
+            </div>
+          ) : (
+            <i
+              className="i i-downtime"
+              aria-label="status-detail-icon"
+              onClick={handleToggleSlider}
+              ref={ecosystemHealthIcon}
+              role="img"
+            />
+          )}
         </div>
       </div>
       {isExpanded ? (

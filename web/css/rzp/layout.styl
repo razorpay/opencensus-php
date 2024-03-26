@@ -20,6 +20,7 @@ html {
 html,
 body {
   background-color: #F0F3F4;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -70,6 +71,12 @@ body {
   padding-bottom: 0;
 }
 
+.layout--rtux--background {
+  background: linear-gradient(180deg, #CBD5E2 44%, #F1F5FA 72%, #FFF 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
 .desktop-view {
   min-width: 854px;
 }
@@ -88,6 +95,15 @@ body {
 
   .rzp-error-boundary {
     padding: 20px;
+  }
+}
+
+.main-content--rtux {
+  margin-top: 0;
+  padding-top: $header-height;
+
+  @media (max-width $screen-sm-min) {
+    padding-top: 0;
   }
 }
 
@@ -459,6 +475,18 @@ body {
       margin 0 5px
       height 60px
     }
+  }
+}
+
+.homepage-rtux-navbar {
+  // stylelint-disable-next-line declaration-no-important
+  background-color: #CBD5E2 !important;
+  // stylelint-disable-next-line declaration-no-important
+  box-shadow: none !important;
+
+  @media screen and (max-width $screen-sm-min) {
+    // stylelint-disable-next-line declaration-no-important
+    background-color: #F1F5FA !important;
   }
 }
 
@@ -1451,7 +1479,7 @@ tr:hover .row-action.btn-group {
   position: relative;
   top: 5px;
   padding: 6px 10px;
-  background: rgb(209 45 45 / 0.1);
+  background: #D12D2D1A;
   border-radius: 30px;
   color: #D12D2D;
 

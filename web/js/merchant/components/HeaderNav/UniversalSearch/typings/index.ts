@@ -53,6 +53,7 @@ export type EligibleProducts = ProductItem & {
 };
 
 export interface UniversalSearchPropInterface {
+  isRTUXHomepage: boolean;
   isMobile: boolean;
   user: Required<User>;
   mode: string;

@@ -1931,10 +1931,6 @@ export default class User {
     );
   }
 
-  get isLeftNavRevampEnabled() {
-    return getSplitzExperimentVariant('left_nav_revamp')?.variables?.result === 'on';
-  }
-
   get isFetchTicketsApiMigration() {
     return getSplitzExperimentVariant('fetch_tickets_migration')?.variables?.result === 'on';
   }

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { BladeProvider, Box } from '@razorpay/blade/components';
+import { paymentTheme } from '@razorpay/blade/tokens';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
+import { toggleMobileMenu } from 'merchant/reducers/app';
 import { withRouter } from 'common/deprecated/withRouter';
 import { analyticsTrack } from 'common/utils/analytics';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
@@ -29,7 +31,13 @@ import Divider from './components/Divider';
 import NavLinkItem from './components/NavLinkItem';
 import { Typo, Icon } from './components/NavLinkItem/styled';
 import NavLinkProduct from './components/NavLinkProduct';
-import { RZP_LOGO_URL, ONBOARDING_STEPS_URL, KYC_URL, ACTIVATION_URL } from './constants/constants';
+import {
+  RZP_LOGO_URL,
+  ONBOARDING_STEPS_URL,
+  KYC_URL,
+  ACTIVATION_URL,
+  RZP_LOGO_URL_DARK,
+} from './constants/constants';
 import {
   SidebarContainer,
   SidebarSection,
@@ -37,11 +45,14 @@ import {
   NavContent,
   Navigation,
   ExternalLink,
+  SidebarBackgroundOverlay,
 } from './styled';
 import { NavLinkData, Routes, SidebarPropsInterface } from './typings';
 import { COMMON_PRODUCTS, PRODUCTS_DATA, CUSTOMERS_PRODUCTS } from './utils/Products';
 import { getLeftNavItemsCache, setLeftNavItemsCache } from './utils/Sidebar';
 import { getActiveTab, initializeRoutes } from './utils/href';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const {
@@ -55,7 +66,11 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
     isTagsLoading,
     isNcEligibile,
     trackEvents,
+    shouldShowMobileMenu,
+    toggleMobileMenu,
   } = props;
+
+  const isRTUXHomepage = useIsRTUXHomepageEnabled();
   const { location, history } = props;
 
   const [routesInfo, setRoutesInfo] = useState<Routes>({});
@@ -142,14 +157,20 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   }
 
   const leftNavItems = cachedLeftNavItems || data;
-
+  const isSidebarVisible = !isMobile || (isMobile && shouldShowMobileMenu);
+  // Enabled for sidebarV2 in blade and check redux value only on mobile
+  const shouldShowMobileOverlay = isRTUXHomepage && isMobileDevice() && shouldShowMobileMenu;
   return (
-    <BladeProvider themeTokens={Theme} colorScheme="light">
-      <SidebarContainer>
-        <SidebarSection>
+    <BladeProvider themeTokens={isRTUXHomepage ? paymentTheme : Theme} colorScheme="light">
+      <SidebarContainer
+        isRTUXHomepage={isRTUXHomepage}
+        isVisible={isSidebarVisible}
+        isMobile={isMobile}
+      >
+        <SidebarSection isRTUXHomepage={isRTUXHomepage} isMobile={isMobile}>
           <Link to="/dashboard" aria-label="brand-logo home page link">
             <Logo
-              src={logoURL || RZP_LOGO_URL}
+              src={isRTUXHomepage ? RZP_LOGO_URL_DARK : logoURL || RZP_LOGO_URL}
               role="img"
               aria-label="brand-logo"
               alt="brand-logo"
@@ -174,10 +195,11 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                     {...commonNavLinkProps}
                     {...product}
                     {...PRODUCTS_DATA[product.product_id]}
+                    toggleMobileMenu={toggleMobileMenu}
                   />
                 ))}
               </Box>
-              <Divider />
+              {isRTUXHomepage ? <Box marginBottom="spacing.6" /> : <Divider />}
               {leftNavItems.map((each) => (
                 <NavLinkProduct
                   key={each.section_name}
@@ -187,6 +209,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                   activeTab={activeTab}
                   loading={isLoading}
                   user={user}
+                  toggleMobileMenu={toggleMobileMenu}
                   {...each}
                 />
               ))}
@@ -200,6 +223,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                 activeTab={activeTab}
                 loading={isLoading}
                 user={user}
+                toggleMobileMenu={toggleMobileMenu}
               />
               <Box display="flex" flexDirection="column" gap="spacing.1">
                 {CUSTOMERS_PRODUCTS.map((product, index) => (
@@ -208,6 +232,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                     {...commonNavLinkProps}
                     {...product}
                     {...PRODUCTS_DATA[product.product_id]}
+                    toggleMobileMenu={toggleMobileMenu}
                   />
                 ))}
                 <ShowWhen
@@ -229,6 +254,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
           </NavContent>
         </Navigation>
       </SidebarContainer>
+      {shouldShowMobileOverlay && <SidebarBackgroundOverlay onClick={toggleMobileMenu} />}
       <AcceptPaymentsModal
         isKLA={user.has_key_access}
         shouldShow={props.showAcceptPayments}
@@ -247,12 +273,18 @@ const mapStateToProps = (state) => {
     isNcEligibile: state.home.isNcEligibile,
     isMobile: state.app.isMobileResolution,
     isTagsLoading: !state.session.isTagsLoaded,
+    shouldShowMobileMenu: state.app.showMobileMenu,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
-    { fetchLeftNavItems: fetchNavigationItems, hideAcceptPaymentsModal, trackEvents },
+    {
+      fetchLeftNavItems: fetchNavigationItems,
+      hideAcceptPaymentsModal,
+      trackEvents,
+      toggleMobileMenu,
+    },
     dispatch,
   );
 };

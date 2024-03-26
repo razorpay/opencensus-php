@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
 import { Theme } from '@razorpay/blade/components';
+import { Link } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
-export const LinkItem = styled(Link)<any>`
+export const LinkItem = styled(Link)<{ isActive: boolean }>(
+  ({ isActive }) => `
   height: 29px;
   width: 100%;
   display: flex;
@@ -11,7 +12,7 @@ export const LinkItem = styled(Link)<any>`
   line-height: 21px;
   color: #b4b6bc;
   position: relative;
-  ${({ isActive }) =>
+  ${
     isActive &&
     css`
       color: #ffffff;
@@ -24,7 +25,8 @@ export const LinkItem = styled(Link)<any>`
         background: #ffffff;
         position: absolute;
       }
-    `}
+    `
+  }
   &:focus {
     color: #ffffff;
   }
@@ -36,7 +38,8 @@ export const LinkItem = styled(Link)<any>`
         background: rgba(255, 255, 255, 0.08);
       `}
   }
-`;
+`,
+);
 
 export const LinkButtonItem = styled(Link)<any>`
   display: flex;
@@ -91,4 +94,29 @@ export const BadgeContainer = styled.div(
     position: absolute;
     right: 16px;
   `,
+);
+
+export const LinkItemV2 = styled(Link)<{ isActive: boolean }>(
+  ({ theme, isActive }) => `
+  display: flex;
+  padding: ${theme.spacing[3]}px ${theme.spacing[5]}px;
+  align-items: center;
+  background-color: ${isActive ? theme.colors.static.white : 'unset'};
+  margin: 0 ${theme.spacing[3]}px;
+  border-radius: ${theme.border.radius.medium}px;
+  position: relative;
+
+  & > i {
+    margin: 0 ${theme.spacing[3]}px 0 0;
+  }
+
+  & > .rzp-image {
+    position: absolute;
+    left: 0;
+  }
+  & > .rzp-image, & > .rzp-image > img {
+    border-top-left-radius: ${theme.border.radius.medium}px;
+    border-bottom-left-radius: ${theme.border.radius.medium}px;
+  }
+`,
 );
