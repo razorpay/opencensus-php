@@ -1,9 +1,4 @@
-ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi_testing:php81-fpm-nginxphp-8.1-nginx
-
-FROM c.rzp.io/razorpay/onggi:php-8.1-api-web as opencensus-ext
-
-
-FROM $ONGGI_IMAGE as opencensus-ext
+FROM c.rzp.io/razorpay/onggi-multi-arch:rzp-golden-image-nginx-php-8.1-fpm as opencensus-ext
 
 WORKDIR /
 ARG OPENCENSUS_VERSION_TAG=v0.8.0-beta
@@ -33,6 +28,17 @@ COPY --chown=nginx:nginx . /app/
 
 # This step can't run without some classes from above step
 RUN composer dump-autoload && php artisan optimize
+
+RUN echo "* Installing dependencies" && \
+    apk update && \
+    apk add --no-cache \
+    python3 \
+    py3-pip \
+    gcc && \
+    pip install razorpay.alohomora && \
+    rm -rf ~/.cache/pip/* && \
+    # Verify alohomora as running
+    alohomora --help
 
 STOPSIGNAL SIGQUIT
 
