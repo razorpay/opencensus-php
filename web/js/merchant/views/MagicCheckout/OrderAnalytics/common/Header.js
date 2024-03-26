@@ -7,6 +7,8 @@ import { getPresetsValue } from 'merchant/views/MagicCheckout/CODOrdersTab/utils
 import { useOrderAnalyticsContext } from 'merchant/views/MagicCheckout/OrderAnalytics/OrderAnalyticsContext';
 import { TABS } from 'merchant/views/MagicCheckout/OrderAnalytics/constants/tabs';
 import SummaryWidget from 'merchant/views/MagicCheckout/OrderAnalytics/widgets/Summary';
+import { RCOD_APP_NAME, SOPC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
+import { ORG_NAME } from 'merchant/views/PartnerDashboard/constants';
 
 // all ranges offseted by 1 since end date for those preset is day before
 const DATE_RANGE_PRESETS = [
@@ -21,9 +23,10 @@ const DEFAULT_PRESET = 1;
 const TODAY = moment();
 const DAY_BEFORE = moment().subtract('1', 'day');
 
-const Header = ({ setTimeRange, updated_at }) => {
+const Header = ({ setTimeRange, updated_at, dashboardView, org }) => {
   const { activeTab } = useOrderAnalyticsContext();
   const isConversionTab = activeTab.label === TABS.CONVERSION.label;
+  const orgName = org?.business_name || ORG_NAME.RZP;
 
   const presetList = useMemo(
     () => (isConversionTab ? DATE_RANGE_PRESETS.slice(1) : DATE_RANGE_PRESETS),
@@ -72,6 +75,12 @@ const Header = ({ setTimeRange, updated_at }) => {
     return defaults || day.isAfter(TODAY);
   };
 
+  const getHeaderText = () => {
+    if (dashboardView === RCOD_APP_NAME || dashboardView === SOPC_APP_NAME)
+      return `This data is only for ${orgName} MagicX processed orders`;
+    return `This data is only for ${orgName} Magic processed orders`;
+  };
+
   return (
     <div className="sticky-header dashboard-header">
       <div>
@@ -81,7 +90,7 @@ const Header = ({ setTimeRange, updated_at }) => {
             <small>
               <span className="orders-subtext">
                 <i className="i i-info-circle" />
-                This data is only for Razorpay Magic processed orders
+                {getHeaderText()}
               </span>
             </small>
           </>
@@ -89,7 +98,7 @@ const Header = ({ setTimeRange, updated_at }) => {
           <div>
             <span className="orders-subtext">
               <i className="i i-info-circle" />
-              This data is only for Razorpay Magic processed orders
+              {getHeaderText()}
             </span>
           </div>
         )}

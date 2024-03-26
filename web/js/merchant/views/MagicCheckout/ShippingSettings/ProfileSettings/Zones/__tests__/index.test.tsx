@@ -61,7 +61,7 @@ describe('Shipping zones', () => {
     const uploadMore = screen.getByTestId('magic-upload-more-button');
     await userEvent.click(uploadMore);
     await waitFor(() => {
-      const zoneName = screen.queryByText(/Upload more zones/i);
+      const zoneName = screen.queryByText('Upload Zipcodes');
       expect(zoneName).toBeInTheDocument();
     });
   });

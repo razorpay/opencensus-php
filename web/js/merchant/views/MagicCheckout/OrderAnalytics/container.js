@@ -8,7 +8,7 @@ import { TABS } from './constants/tabs';
 import { TabsContainer, Tabs, Tab } from './styles';
 import { connect } from 'react-redux';
 
-function OrderAnalyticsContainer({ user }) {
+function OrderAnalyticsContainer({ user, dashboardView, org }) {
   const { setTimeRange, analyticsData, isFetching, activeTab, setActiveTab } =
     useOrderAnalyticsContext();
   const handleTimeRangeChange = ({ start, end }) => {
@@ -40,7 +40,7 @@ function OrderAnalyticsContainer({ user }) {
     <TabsContainer>
       <Tabs>
         {Object.keys(TABS).map((tabName) => {
-          return TABS[tabName].condition && !TABS[tabName].condition(user) ? null : (
+          return TABS[tabName].condition && !TABS[tabName].condition(user, dashboardView) ? null : (
             <Tab
               key={TABS[tabName].label}
               className={getTab(TABS[tabName])}
@@ -52,7 +52,12 @@ function OrderAnalyticsContainer({ user }) {
         })}
       </Tabs>
       <div className="magic-analytics-container">
-        <Header setTimeRange={handleTimeRangeChange} updated_at={updatedAt} />
+        <Header
+          setTimeRange={handleTimeRangeChange}
+          updated_at={updatedAt}
+          dashboardView={dashboardView}
+          org={org}
+        />
         <div className="charts-container">
           {activeTab.layout.map((layoutItem, index) => {
             const { chart, width } = layoutItem;
@@ -81,6 +86,8 @@ function OrderAnalyticsContainer({ user }) {
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  dashboardView: state.magicCheckout.dashboard_view,
+  org: state.session.org,
 });
 
 export default connect(mapStateToProps, null)(OrderAnalyticsContainer);

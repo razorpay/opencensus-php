@@ -12,6 +12,7 @@ import FbIcon from 'assets/payment_pages/fb-pixel-logo.svg';
 import GoogleIcon from 'assets/google-icon-transparent.svg';
 import InstagramIcon from 'assets/instagram-logo.svg';
 import WhatsAppIcon from 'assets/whatsapp.svg';
+import { RateTypeMaps } from 'merchant/views/MagicCheckout/OrderAnalytics/constants/types';
 
 export const NO_GRAPH_DATA = {
   customTitle: 'No data to display',
@@ -233,3 +234,15 @@ export const UTM_SOURCE_ICONS = {
   whatsapp: WhatsAppIcon,
   instagram: InstagramIcon,
 };
+
+export const RATE_TYPES: RateTypeMaps = {
+  RATE: 'conversion_rate',
+  RATE_LOGGED_IN: 'conversion_rate_logged_in',
+  RATE_LOGGED_OUT: 'conversion_rate_logged_out',
+};
+
+export const RATE_FILTER = [
+  { label: 'Total', name: 'RATE' },
+  { label: 'Logged In', name: 'RATE_LOGGED_IN' },
+  { label: 'Logged Out', name: 'RATE_LOGGED_OUT' },
+];

@@ -72,6 +72,7 @@ const MagicCheckout = ({
         isPrepayCODEnabled={magicCheckout?.one_cc_prepay_cod_conversion}
         platform={magicCheckout?.platform}
         isRcodEnabled={magicCheckout?.rcod}
+        dashboardView={magicCheckout?.dashboard_view}
       />
     );
   }

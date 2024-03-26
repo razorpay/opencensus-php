@@ -9,8 +9,20 @@ import { RouteGuard } from 'merchant/components/ShowWhen';
 import magicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
+import { RCOD_APP_NAME, SOPC_APP_NAME } from '../common/constants';
 
 let redirectPath;
+
+const getTabName = (tabName, dashboardView) => {
+  if (
+    tabName === 'Order Analytics' &&
+    (dashboardView === SOPC_APP_NAME || dashboardView === RCOD_APP_NAME)
+  ) {
+    return 'Analytics';
+  }
+  return tabName;
+};
+
 const RouteContainer = ({
   user,
   isCODIntelligenceEnabled,
@@ -18,6 +30,7 @@ const RouteContainer = ({
   isPrepayCODEnabled,
   isRcodEnabled,
   platform,
+  dashboardView,
 }) => {
   const { abExperiments } = useSplitzService();
 
@@ -32,7 +45,8 @@ const RouteContainer = ({
       if (item.tabName === 'COD Orders' && !isCODOrderControlEnabled) return null;
       if (item.tabName === 'COD Order Conversion' && (platform === 'native' || !isPrepayCODEnabled))
         return null;
-      if (item.condition && !item.condition(user, abExperiments, platform)) return null;
+      if (item.condition && !item.condition(user, abExperiments, platform, dashboardView))
+        return null;
       if (item.tabName === 'Edit Orders' && platform !== PLATFORMS.VALUES.SHOPIFY) return null;
       if (
         item.tabName === 'Settings' &&
@@ -50,7 +64,7 @@ const RouteContainer = ({
       }
       return (
         <NavLink key={item.path} to={item.path}>
-          {item.tabName}
+          {getTabName(item.tabName, dashboardView)}
         </NavLink>
       );
     },
@@ -62,6 +76,7 @@ const RouteContainer = ({
       platform,
       abExperiments,
       isRcodEnabled,
+      dashboardView,
     ],
   );
 

@@ -1,4 +1,5 @@
 import { CHART_LABEL_MAPPING } from '.';
+import { RCOD_APP_NAME, SOPC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 
 export const WIDTHS = {
   FULL: 'full-width',
@@ -53,6 +54,8 @@ export const TABS = {
   OVERVIEW: {
     label: 'Overview',
     layout: OVERVIEW_LAYOUT,
+    condition: (_user, dashboardView) =>
+      dashboardView !== SOPC_APP_NAME && dashboardView !== RCOD_APP_NAME,
   },
   CONVERSION: {
     label: 'Conversion',

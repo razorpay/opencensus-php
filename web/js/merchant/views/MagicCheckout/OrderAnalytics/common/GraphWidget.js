@@ -25,8 +25,9 @@ function GraphWidget({
   className = '',
 }) {
   const chartData = useMemo(() => {
+    const dataValues = [...data?.values];
     const datasets = data?.values
-      ? getChartDatasets(data.values, label, isChartStacked, data.unit)
+      ? getChartDatasets(dataValues, label, isChartStacked, data.unit)
       : [];
     const labels = data?.timestamps?.map((t) => moment.unix(t).local()) || [];
     return {

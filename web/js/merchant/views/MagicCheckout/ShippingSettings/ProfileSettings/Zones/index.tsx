@@ -198,6 +198,7 @@ const Zones = ({
           <MagicDataTable
             data={zones}
             addMoreLabel="zones"
+            addMoreLabel2={isZoneUploadEnabled ? 'zipcodes' : undefined}
             handleAddMore={handleCreate}
             handleAddMoreViaFileUpload={isZoneUploadEnabled ? handleFileUploadCreate : undefined}
             columns={[
@@ -214,7 +215,9 @@ const Zones = ({
           <>
             <CreateButton entity="zones" onClick={handleCreate} />
             {isZoneUploadEnabled && (
-              <UploadZonesButton onClick={handleFileUploadCreate}>+ Upload zones</UploadZonesButton>
+              <UploadZonesButton onClick={handleFileUploadCreate}>
+                + Upload zipcodes
+              </UploadZonesButton>
             )}
           </>
         )}

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAnalyticsData } from './api';
 // eslint-disable-next-line import/no-cycle
 import { formatAnalyticsResponse } from './utils';
 import { TABS } from './constants/tabs';
+import { RCOD_APP_NAME, SOPC_APP_NAME } from '../common/constants';
 
 const OrderAnalyticsContext = React.createContext(null);
 
@@ -13,9 +15,14 @@ const QueryOptions = {
   retry: 3,
 };
 
-function OrderAnalyticsProvider({ children }) {
+const getActiveTab = (dashboardView) => {
+  if (dashboardView === RCOD_APP_NAME || dashboardView === SOPC_APP_NAME) return TABS.CONVERSION;
+  return TABS.OVERVIEW;
+};
+
+function OrderAnalyticsProvider({ children, dashboardView }) {
   const [analyticsData, setAnalyticsData] = useState({});
-  const [activeTab, setActiveTab] = useState(TABS.OVERVIEW);
+  const [activeTab, setActiveTab] = useState(getActiveTab(dashboardView));
   const [timeRange, setTimeRange] = useState({ start: null, end: null });
   const { isFetching, refetch: refetchAnalyticsData } = useQuery({
     /**
@@ -24,7 +31,7 @@ function OrderAnalyticsProvider({ children }) {
      * This issue will be resolved in the new version of react query.
      */
     queryKey: [`get-magic-order-analytics-data${timeRange.end}`],
-    queryFn: () => fetchAnalyticsData(timeRange),
+    queryFn: () => fetchAnalyticsData(timeRange, dashboardView),
     ...QueryOptions,
     onSuccess({ data }) {
       setAnalyticsData(formatAnalyticsResponse(data));
@@ -33,7 +40,7 @@ function OrderAnalyticsProvider({ children }) {
 
   useEffect(() => {
     refetchAnalyticsData();
-  }, [timeRange]);
+  }, [timeRange, dashboardView]);
 
   return (
     <OrderAnalyticsContext.Provider
@@ -58,4 +65,7 @@ const useOrderAnalyticsContext = () => {
   return ctx;
 };
 
-export { useOrderAnalyticsContext, OrderAnalyticsProvider };
+const ConnectedOrderAnalyticsProvider = connect((state) => ({
+  dashboardView: state.magicCheckout.dashboard_view,
+}))(OrderAnalyticsProvider);
+export { useOrderAnalyticsContext, ConnectedOrderAnalyticsProvider as OrderAnalyticsProvider };

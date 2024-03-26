@@ -61,6 +61,7 @@ const routes = [
     path: '/magic/order-analytics',
     condition: (_user) => _user.isMagicOrderAnalyticsEnabled,
     Component: OrderAnalytics,
+    onRCOD: true,
   },
   {
     tabName: 'COD Orders',

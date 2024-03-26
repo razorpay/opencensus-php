@@ -9,6 +9,7 @@ export interface DataTableProps<TData> {
   customClass?: string;
   maxWidth?: string;
   addMoreLabel?: string;
+  addMoreLabel2?: string;
   handleAddMore?: () => void;
   handleAddMoreViaFileUpload?: () => void;
   EmptyComponent?: React.ReactNode;
@@ -20,6 +21,7 @@ export function MagicDataTable<TData>({
   customClass = 'settings-table',
   maxWidth = 'auto',
   addMoreLabel,
+  addMoreLabel2,
   handleAddMore,
   handleAddMoreViaFileUpload,
   EmptyComponent,
@@ -41,9 +43,9 @@ export function MagicDataTable<TData>({
           + Create more {addMoreLabel}
         </AddMoreButton>
       )}
-      {addMoreLabel && handleAddMoreViaFileUpload && (
+      {addMoreLabel2 && handleAddMoreViaFileUpload && (
         <AddMoreButton data-testid="magic-upload-more-button" onClick={handleAddMoreViaFileUpload}>
-          + Upload more {addMoreLabel}
+          + Upload {addMoreLabel2}
         </AddMoreButton>
       )}
     </DataTableWrapper>

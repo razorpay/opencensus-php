@@ -28,6 +28,7 @@ describe('Datatable', () => {
     const handleAddMoreViaFileUpload = jest.fn();
     renderTable({
       addMoreLabel: 'test',
+      addMoreLabel2: 'test2',
       handleAddMore,
       handleAddMoreViaFileUpload,
     });
