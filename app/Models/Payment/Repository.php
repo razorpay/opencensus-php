@@ -13,6 +13,7 @@ use Database\Connection;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Environment;
 use RZP\Exception\LogicException;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception;
@@ -78,6 +79,10 @@ class Repository extends Base\Repository
 
     private bool $isExpEnableForESearchOnCreatedAtFirst = false;
 
+    private bool $isCustomTxnViewEnabled = false;
+
+    private array $subMerchants = [];
+
     public const SUCCESSFUL_PAYMENTS_COUNT_SQL = <<<'EOT'
 SELECT
   merchant_id,
@@ -98,6 +103,15 @@ EOT;
     public function setExperimentForESearchOnCreatedAtFirst(bool $expEnableValue): Repository
     {
         $this->isExpEnableForESearchOnCreatedAtFirst = $expEnableValue;
+
+        return $this;
+    }
+
+    public function setCustomTxnViewAndSubMerchants(array $customTxnEnabled): Repository
+    {
+        $this->isCustomTxnViewEnabled = $customTxnEnabled['custom_txn_enabled'];
+
+        $this->subMerchants = $customTxnEnabled['submerchants'];
 
         return $this;
     }
@@ -753,6 +767,315 @@ EOT;
         if (count($esParams) > 0)
         {
             return $this->runEsFetch($esParams, $merchantId, $expands, ConnectionType::DATA_WAREHOUSE_ADMIN);
+        }
+
+        // Found a bug where Merchant SDK intg private auth calls were
+        // going to admin cluster, returning the same result for private
+        // auth and paginated result for proxy auth.
+        if (($this->auth->isPrivateAuth() === true) or
+            ($this->auth->isProxyAuth() === true))
+        {
+            $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            // Routing all payment queries containing contact filter to harvester replica as contact index
+            // is only present in harvester replica. With API decomp this query, needs to go to WDA service in the future.
+            // Note: contact index should be added on payments table in WDA service.
+            if (isset($params['contact']))
+            {
+                $connection = $this->getConnectionFromType($this->getPaymentFetchReplicaConnection());
+            }
+
+            $query = $this->newQueryWithConnection($connection);
+        }
+
+        $query = $query->with($expands);
+
+        $this->addCommonQueryParamMerchantId($query, $merchantId);
+
+        // If above doesn't happen we build query for mysql fetch and return the
+        // result.
+        $query = $this->buildFetchQuery($query, $mysqlParams);
+
+        // Check if the connection is going to Tidb cluster and form the query object
+        // for WDA.
+        $isWda = false;
+
+        try
+        {
+            if($this->checkWdaRouteForFetchPayment($expands, $this->getWdaConnectionType($connection)) === true)
+            {
+                $wdaQueryBuilder = $this->buildWdaQuery($query, $connection, $merchantId, $mysqlParams);
+
+                $isWda = true;
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_query_builder_error' => $ex->getMessage(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        //
+        // For now, we want to expose this only for proxy auth.
+        // We would want to expose this to private auth as well
+        // in the future, but need a little bit though around
+        // how we want to expose it. Pagination has lot of standards
+        // generally and we might want to follow those when
+        // exposing on private auth. SDKs _might_ have to fixed too.
+        //
+        if ($this->auth->isProxyAuth() === true)
+        {
+            $result = $this->getPaginated($query, $params);
+
+            //Adding pagination for call going to tidb via wda-service
+            try
+            {
+                if($isWda === true)
+                {
+                    $wdaStartTimeMs = round(microtime(true) * 1000);
+
+                    $wdaResult = $this->getPaginatedFromWDA($wdaQueryBuilder, $query, $params);
+
+                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaResult, $result, $wdaStartTimeMs);
+
+                    if ($difference === false)
+                    {
+                        $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, "WDA");
+
+                        return $wdaResult;
+                    }
+                }
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                    'wda_migration_error_pagination' => $ex->getMessage(),
+                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+
+            $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection);
+
+            return $result;
+        }
+
+        try
+        {
+            $startTimeMs = round(microtime(true) * 1000);
+
+            $entities = $query->get();
+
+            $endTimeMs = round(microtime(true) * 1000);
+
+            //When the auth type does not requires pagination
+            try
+            {
+                if ($isWda === true)
+                {
+                    $wdaStartTimeMs = round(microtime(true) * 1000);
+
+                    $wdaEntities = $this->getEntitiesFromWda($wdaQueryBuilder, $query);
+
+                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs);
+
+                    if ($difference === false)
+                    {
+                        $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, "WDA");
+
+                        return $wdaEntities;
+                    }
+                }
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                    'wda_migration_error' => $ex->getMessage(),
+                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+
+            $queryDuration = $endTimeMs - $startTimeMs;
+
+            $this->trace->info(TraceCode::DATA_WAREHOUSE_PAYMENT_FETCH_DURATION,
+                [
+                    'connection' => $connection,
+                    'query_ctx' => is_null($merchantId) ? 'admin' : 'merchant',
+                    'duration_ms' => $queryDuration,
+                    'query' => $query->toSql(),
+                    'sql_error_code' => ($queryDuration > 3000) ? 1 : 0,
+                ]
+            );
+
+            $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection);
+
+            return $entities;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::DATA_WAREHOUSE_PAYMENT_FETCH_ERROR, [
+                'connection' => $connection,
+                'query_ctx' => is_null($merchantId) ? 'admin' : 'merchant',
+                'query' => $query->toSql(),
+                'sql_error_code' => 2,
+            ]);
+
+            throw $e;
+        }
+    }
+
+    public function fetchNotesKeys($params) : array
+    {
+        $response = (new EsRepository('payment'))->buildQueryForNotesKeysAndSearch($params);
+
+        return $this->filterDistinctNotesKeys($response[ES::HITS][ES::HITS]);
+    }
+
+    public function filterDistinctNotesKeys($notesKeys)
+    {
+        $distinctNotesKeys = [];
+
+        foreach ($notesKeys as $item) {
+            $source = $item['_source'];
+
+            // Checking if the notes field exists and is an array
+            if (isset($source['notes']) && is_array($source['notes'])) {
+                // Looping through each note
+                foreach ($source['notes'] as $note) {
+                    // Accessing the key field of each note
+
+                    if (isset($distinctNotesKeys[$note['key']])) {
+                        // Accessing the 'key' field of each note
+                        $distinctNotesKeys[$note['key']]++;
+                    }
+                    else {
+                        $distinctNotesKeys[$note['key']] = 1;
+                    }
+                }
+            }
+        }
+        arsort($distinctNotesKeys);
+
+        $topNotesKeysWithCount =  array_slice($distinctNotesKeys, 0,30);
+
+        return array_keys($topNotesKeysWithCount);
+    }
+
+    public function fetchPaymentForSubmerchantsWithForceIndex(array $params, string $merchantId = null)
+    {
+        $startTimeMsForTrace = round(microtime(true) * 1000);
+
+        // Process params (sanitization, validation, modification, etc.)
+        $this->processFetchParams($params);
+
+        $expands = $this->getExpandsForQueryFromInput($params);
+
+        $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+        try
+        {
+            if($this->app['api.route']->isWDAServiceRoute() === true)
+            {
+                $this->trace->info(TraceCode::WDA_FETCH_PAYMENT_WITH_FORCE_INDEX, [
+                    'input_params'     => $params,
+                    'expand_params'    => $expands,
+                    'route_auth'       => $this->auth->getAuthType(),
+                    'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_SERVICE_LOGGING_ERROR, [
+                'error_message'    => $ex->getMessage(),
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        if (!is_null($merchantId) &&
+            count(array_diff(array_keys($params), ["skip", "count", "from", "to"])) === 0)
+        {
+            $app = App::getFacadeRoot();
+
+            // The variant is used for switching between tidb admin / merchant -> slave
+            // and also for reverting back to ES and slave in case admin tibd is not able
+            // to support queries
+            if (($this->isExperimentEnabled(self::MERCHANT_TIDB_EXPERIMENT) === true) or
+                (app()->isEnvironmentProduction() === false))
+            {
+
+                // TiDB Merchant here because part of bulk fetch will be accessible by merchant only
+                $connection = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+                $query = $this->newQueryWithConnection($connection);
+            }
+            else
+            {
+                try
+                {
+                    $expEnableForSearchOnCreatedAtFirst = $this->getExperimentForESearchOnCreatedAtFirst();
+
+                    $paymentIds = (new EsRepository('payment'))->setExpForESearchSortOnCreatedAtFirst($expEnableForSearchOnCreatedAtFirst)
+                        ->buildQueryAndSearch($params);
+
+                    $paymentIdsFiltered = array_map(
+                        function ($res) {
+                            return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
+                        },
+                        $paymentIds[ES::HITS][ES::HITS]);
+
+                    if (count($paymentIdsFiltered) > 0) {
+                        $connection = $this->getPaymentFetchReplicaConnection();
+
+                        $result = $this->newQueryWithConnection($connection)
+                            ->whereIn(Entity::ID, $paymentIdsFiltered)
+                            ->whereIn(Entity::MERCHANT_ID, $this->subMerchants)
+                            ->with($expands)
+                            ->orderBy(Entity::CREATED_AT, 'desc')
+                            ->get();
+
+                        $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection, true);
+
+                        return $result;
+                    }
+
+                    $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection, true);
+
+                    return (new Base\PublicCollection());
+                } catch (\Exception $e)
+                {
+                    $this->trace->error(TraceCode::PAYMENT_FETCH_MULTIPLE_ES_FAILURE, [
+                        'error' => $e->getMessage(),
+                        'code' => $e->getCode(),
+                    ]);
+
+                    $connection = $this->getPaymentFetchReplicaConnection();
+
+                    $query = $this->newQueryWithConnection($connection);
+                }
+            }
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection($connection);
+        }
+
+        $this->setEsRepoIfExist();
+
+        // Splits the params into mysqlParams and esParams. Check methods doc on
+        // how that happens.
+        list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        // If we find that there are es params then we do es search.
+        // Currently (as commented in getMysqlAndEsParams method) we raise bad
+        // request error if we get mix of MySQL and es params. Later we might support
+        // such thing.
+        if (count($esParams) > 0)
+        {
+            $esParams["submerchants"] = $this->subMerchants;
+
+            return $this->runEsFetch($esParams, null, $expands, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
 
         // Found a bug where Merchant SDK intg private auth calls were
@@ -5089,5 +5412,81 @@ EOT;
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
             ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
             ->find($id);
+    }
+
+    protected function addQueryParamMerchantId($query, $params)
+    {
+        Merchant\Entity::verifyIdAndStripSign($params[Common::MERCHANT_ID]);
+
+        if ($this->isCustomTxnViewEnabled === true)
+        {
+            $query->whereIn(Entity::MERCHANT_ID, $this->subMerchants);
+
+            return;
+        }
+
+        $query->merchantId($params[Common::MERCHANT_ID]);
+    }
+
+    protected function addCommonQueryParamMerchantId($query, $merchantId)
+    {
+        if($this->isCustomTxnViewEnabled === true)
+        {
+            $query = $query->whereIn(Entity::MERCHANT_ID, $this->subMerchants);
+            return;
+        }
+
+        // For admins, merchant ID may not be required.
+        // For merchants, the ID is always required.
+
+        if ($merchantId !== null)
+        {
+            $query = $query->merchantId($merchantId);
+        }
+
+        //
+        // We need to check whether merchant id is required or not
+        // to perform the query. This is important because when
+        // merchant is making a query, it needs to be enforced
+        // and should not be missing by mistake.
+        //
+        if ($this->isMerchantIdRequiredForFetch())
+        {
+            if ($merchantId === null)
+            {
+                throw new InvalidArgumentException('Merchant Id is required for fetch query');
+            }
+        }
+    }
+
+    protected function addCommonWDAQueryParamMerchantId($wdaQueryBuilder, $merchantId)
+    {
+        if($this->isCustomTxnViewEnabled === true)
+        {
+            $wdaQueryBuilder->filters($this->getTableName(), Common::MERCHANT_ID, $this->subMerchants, Symbol::IN);
+            return;
+        }
+
+        // For admins, merchant ID may not be required.
+        // For merchants, the ID is always required.
+
+        if ($merchantId !== null)
+        {
+            $wdaQueryBuilder->filters($this->getTableName(), Common::MERCHANT_ID, [$merchantId], Symbol::EQ);
+        }
+
+        //
+        // We need to check whether merchant id is required or not
+        // to perform the query. This is important because when
+        // merchant is making a query, it needs to be enforced
+        // and should not be missing by mistake.
+        //
+        if ($this->isMerchantIdRequiredForFetch() === true)
+        {
+            if ($merchantId === null)
+            {
+                throw new InvalidArgumentException('Merchant Id is required for fetch query');
+            }
+        }
     }
 }

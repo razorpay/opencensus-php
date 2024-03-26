@@ -36,6 +36,8 @@ class Constants
     const DCCCurrencyLevelMarkup = 'dcc_currency_level_markup';
     const CurrencyLevelMarkups = 'currency_level_markups';
 
+    const PaymentNotesKeyColumns = 'payment_notes_key_columns';
+
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
      */
@@ -54,6 +56,7 @@ class Constants
         self::DCCCurrencyLevelMarkup         => "rzp/pg/merchant/cross_border/india/DCCConfig",
         self::UpiInAppPrefetch               => "rzp/pg/merchant/upi/in_app/Prefetch",
         self::UpiInAppRewardConfigs         => "rzp/pg/merchant/upi/in_app/RewardConfigs",
+        self::PaymentNotesKeyColumns         => "rzp/pg/merchant/dashboard/banking_program/UIControls",
     ];
 
 }

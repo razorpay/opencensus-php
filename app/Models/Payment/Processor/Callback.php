@@ -809,6 +809,7 @@ trait Callback
                                         Payment\Entity::AMOUNT          => $payment->getAmount(),
                                         Payment\Entity::SUBSCRIPTION_ID => $subscriptionId,
                                         Payment\Entity::METHOD          => $payment->getMethod(),
+                                        Payment\Entity::WALLET          => $payment->getWallet()
                                     ],
                                     $payment->merchant,
                                     $callback = true);
@@ -857,8 +858,8 @@ trait Callback
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
         }
 
-        // Debit for UPI will be called separately and not from here
-        if ($input['payment']['method'] !== Payment\Method::UPI)
+        // Debit for UPI will be called separately and not from here. TNGD is auto debit during authorization process. this one is not needed.
+        if ($input['payment']['method'] !== Payment\Method::UPI && $input['payment']['gateway'] !== Payment\Gateway::TNGD)
         {
             $this->callGatewayFunction(Payment\Action::DEBIT, $input);
         }

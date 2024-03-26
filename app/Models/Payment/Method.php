@@ -94,6 +94,7 @@ class Method
         self::EMANDATE,
         self::UPI,
         self::NACH,
+        self::WALLET,
     ];
 
     protected static $asynchronous = [

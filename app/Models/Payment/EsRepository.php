@@ -7,7 +7,7 @@ use RZP\Constants\Es;
 
 class EsRepository extends Base\EsRepository
 {
-    
+
     private bool $isExpEnableForESearchSortOnCreatedAtFirst = false;
 
     /**
@@ -36,20 +36,40 @@ class EsRepository extends Base\EsRepository
     public function setExpForESearchSortOnCreatedAtFirst(bool $expValue): EsRepository
     {
         $this->isExpEnableForESearchSortOnCreatedAtFirst = $expValue;
-        
+
         return $this;
     }
-    
+
     public  function getExpValueForESearchSortOnCreatedAtFirst(): bool
     {
         return $this->isExpEnableForESearchSortOnCreatedAtFirst;
     }
-    
+
     public function buildQueryForRecurring(array & $query, string $value)
     {
         $queryValue = (($value === '1') or ($value === true)) ? true : false;
 
         $this->addTermFilter($query, Entity::RECURRING, $queryValue);
+    }
+
+
+    public function buildQueryForNotesKeysAndSearch(
+        array $params): array
+    {
+        $esRequestParams = $this->buildQueryAndGetEsRequestParams($params);
+
+        if (empty($esRequestParams["body"]["sort"]) === false) {
+            unset($esRequestParams["body"]["sort"]);
+        }
+
+        $esRequestParams["body"]["_source"] = ["notes.key"];
+
+        return $this->esDao->search($esRequestParams);
+    }
+
+    public function buildQueryForSubmerchants(array & $query, array $value)
+    {
+        $this->addTermsFilter($query, Entity::MERCHANT_ID, $value);
     }
 
     public function buildQueryForTransferred(array & $query, $value)
@@ -62,7 +82,7 @@ class EsRepository extends Base\EsRepository
         $filter = [Es::RANGE => [Entity::AMOUNT_TRANSFERRED => [Es::GT => 0]]];
         $this->addFilter($query, $filter);
     }
-    
+
     public function getSortParameter(): array
     {
         if ($this->getExpValueForESearchSortOnCreatedAtFirst())

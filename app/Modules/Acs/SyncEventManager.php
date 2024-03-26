@@ -455,6 +455,7 @@ class SyncEventManager
         $metricDimensions = [
             Metric::LABEL_ROUTE => $routeName,
             Metric::LABEL_ASYNC_JOB_NAME => $asyncJobName,
+            Metric::LABEL_ENTITY_NAME => $entityName
         ];
 
         if (config('applications.acs.read_traffic_metric_enabled', false) === true) {

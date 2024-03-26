@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -516,13 +517,20 @@ class Service extends Base\Service
 
             // remove providers which are not enabled
             $enabledProviders = $methods->getEnabledDebitEmiProviders();
+            $whitelistedInstruments = (new MerchantCore())->getWhitelistedDebitEmiBanks($this->merchant);
 
             foreach ($enabledProviders as $provider => $enabled)
             {
 
                 $isDisabledInstrument = in_array($provider, DebitProvider::$disabledDebitEmiBanks, true);
+                $isExperimentCheckRequired = array_key_exists($provider, DebitProvider::$experimentCheckRequiredDebitEmiBanks);
 
                 if ($isDisabledInstrument === true)
+                {
+                    $enabledProviders[$provider] = 0;
+                }
+
+                if ($isExperimentCheckRequired === true and  !in_array($provider, $whitelistedInstruments))
                 {
                     $enabledProviders[$provider] = 0;
                 }

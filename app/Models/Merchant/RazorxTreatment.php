@@ -850,6 +850,11 @@ final class RazorxTreatment
     // Unexpected payment refund delay to T+1
     const UNEXPECTED_VA_PAYMENT_REFUND_DELAY = 'unexpected_va_payment_refund_delay';
 
+    //Experiment to stop dual writes of refunds in API
+    const STOP_REFUNDS_DUAL_WRITE = 'stop_refunds_dual_write';
+
+    const REFUND_READS_FOR_RECON_FROM_SCROOGE = 'refund_reads_for_recon_from_scrooge';
+
     // Experiment to ramp up international refunds
     const SCROOGE_INTERNATIONAL_REFUND = 'scrooge_international_refund';
 
@@ -1032,6 +1037,7 @@ final class RazorxTreatment
     const ALLOW_EMAIL_OPTIONAL_FOR_PARTNER = 'allow_email_optional_for_partner';
 
     public const ALLOW_BIN_SERVICE_DUAL_WRITE = 'allow_bin_service_dual_write';
+    public const ALLOW_BIN_SERVICE_TOKEN_DUAL_WRITE = 'allow_bin_service_token_dual_write';
 
     public const ALLOW_BIN_SERVICE_SHADOW_READS = 'allow_bin_service_shadow_reads';
 

@@ -241,12 +241,12 @@ class Processor extends Base\Processor
         return [
             Entity::SDK_VERSIONS => [
                 Entity::ANDROID => [
-                    Entity::MIN       => '1.0.0',
-                    Entity::BLOCKED   => ['1.1.0', '1.1.1', '1.2.0'],
+                    Entity::MIN       => '1.1.0',
+                    Entity::BLOCKED   => [],
                 ],
                 Entity::IOS     => [
                     Entity::MIN       => '1.0.0',
-                    Entity::BLOCKED   => ['1.1.0', '1.1.1', '1.2.0'],
+                    Entity::BLOCKED   => [],
                 ],
             ],
         ];

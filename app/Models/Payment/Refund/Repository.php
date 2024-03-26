@@ -222,7 +222,7 @@ class Repository extends Base\Repository
             $refundstidb = $this->repo->refund_tidb->fetchCardRefundsForMerchantAndGatewayBetweenFromTidb($from, $to, $merchantIds);
 
             (new Service())->compareRefundsAndLogDifference(
-                $refunds, $refundstidb, [
+                $refunds->all(), $refundstidb->all(), [
                 'method_name' => __FUNCTION__,
                 'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_FETCH_CARDS,
             ]);

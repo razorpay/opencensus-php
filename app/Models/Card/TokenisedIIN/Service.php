@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Card\TokenisedIIN;
 
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\BinService;
 use RZP\Tests\Functional\Fixtures\Entity\Token;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
@@ -122,6 +125,11 @@ class Service extends Base\Service
         if(isset($token_iin_high) === false && isset($token_iin_low) === false){
 
             $response = $this->createMapping($iin, $tokenIin);
+            //adding bin service update for dual write
+            if ($this->shouldDualWriteToken() === true)
+            {
+                $this->updateBinServiceTokenData($iin, $tokenIin);
+            }
 
         }
 
@@ -317,6 +325,54 @@ class Service extends Base\Service
     public function getIINLength($tokenIIN)
     {
         return strlen($tokenIIN);
+    }
+
+    public function updateBinServiceTokenData($iin, $tokenIIN)
+    {
+        $binService = (new BinService());
+
+        $originalIIN = $this->repo->iin->findOrFail($iin);
+
+        $request = $this->formatRequest($originalIIN, $tokenIIN);
+
+        $url = "ranges";
+
+        $namespace = "RZP/".strtoupper($originalIIN["country"])."/".strtoupper($originalIIN["type"]);
+
+        $binService->sendRequest($url, 'PUT', $request, $namespace, BinService::CREATE_TOKEN_RANGE);
+    }
+
+    private function formatRequest($iin, $tokenIIN)
+    {
+        $token_iin_length = strlen($tokenIIN);
+        $padding_length = 21 - $token_iin_length;
+
+        $range_min = $tokenIIN . str_repeat('0', $padding_length);
+        $range_max = $tokenIIN . str_repeat('9', $padding_length);
+
+        return [
+            "iin" => $tokenIIN,
+            "mapped_iin" => $iin['iin'],
+            "rangeMin" => $range_min,
+            "rangeMax" => $range_max
+        ];
+    }
+
+    public function shouldDualWriteToken(): bool
+    {
+        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),RazorxTreatment::ALLOW_BIN_SERVICE_TOKEN_DUAL_WRITE, $this->mode);
+
+        $this->trace->info(TraceCode::BIN_SERVICE_TOKEN_DUAL_WRITE_VARIANT, [
+            'razorx_variant' => $variant,
+            'mode' => $this->mode,
+            'env' => $this->app['env'],
+        ]);
+
+        if (strtolower($variant) === 'on')
+        {
+            return true;
+        }
+        return false;
     }
 
 }

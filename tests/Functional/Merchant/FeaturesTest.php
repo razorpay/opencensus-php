@@ -15,6 +15,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankingConfig;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Feature\Entity;
+use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
 use RZP\Services\Dcs\Features\Service;
 use RZP\Services\RazorXClient;
 use RZP\Models\NetbankingConfig;
@@ -378,6 +379,105 @@ class FeaturesTest extends OAuthTestCase
         $this->ba->adminAuth();
 
         $this->mockDCSService();
+
+        $this->startTest();
+    }
+
+    public function testUpsertPaymentsNotesKeys()
+    {
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->fixtures->merchant->addFeatures(['custom_txn_tab_view'],'10000000000000');
+
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([DcsConfigConst::PaymentNotesKeyColumns => ""]);
+
+        $this->app->dcs_config_service->method('createConfiguration')->willReturn([DcsConfigConst::PaymentNotesKeyColumns => '{
+                "user_notes_key_columns": [
+                     "Dealer Code",
+                     "Merchant Name",
+                        "Notes key 1"
+                ],
+                "payment_optional_keys": [
+                    "Email",
+                    "Contact"
+                ]
+            }'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000' , $this->merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testUpsertPaymentsNotesKeysNegative()
+    {
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000' , $this->merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testUpsertPaymentsNotesKeysNegative2()
+    {
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->fixtures->merchant->addFeatures(['custom_txn_tab_view'],'10000000000000');
+
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000' , $this->merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testFetchPaymentsNotesKeys()
+    {
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->fixtures->merchant->addFeatures(['custom_txn_tab_view'],'10000000000000');
+
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([DcsConfigConst::PaymentNotesKeyColumns => '{
+                "user_notes_key_columns": [
+                     "Dealer Code",
+                     "Merchant Name",
+                        "Notes key 1"
+                ],
+                "payment_optional_keys_columns": [
+                    "Email",
+                    "Contact"
+                ]
+            }'
+        ]);
+
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000' , $this->merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testFetchPaymentsNotesKeysNegative()
+    {
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000' , $this->merchantUser->getId());
 
         $this->startTest();
     }

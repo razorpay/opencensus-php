@@ -499,6 +499,11 @@ return [
             'content' => [
                 'features' => [
                     [
+                        'feature' => 'custom_txn_tab_view',
+                        'display_name' => "Displays Submerchant's Payments to the partner along with an option to use notes keys as headers",
+                        'value'       => false,
+                    ],
+                    [
                         'feature'      => 'missed_orders_plink',
                         'value'        => false,
                         'display_name' => "Enable missed orders payment-links feature from the dashboard",
@@ -528,22 +533,22 @@ return [
                         'value'        => false,
                         'display_name' => 'Smart Collect'
                     ],
-                    154 => array (
+                    155 => array (
                         'feature' => 'view_opfin_sso_announcement',
                         'value' => true,
                         'display_name' => 'View opfin sso announcemnet',
                     ),
-                    155 => array (
+                    156 => array (
                         'feature' => 'view_ssl_banner',
                         'value' => true,
                         'display_name' => 'View SSL banner',
                     ),
-                    156 => array (
+                    157 => array (
                         'feature' => 'view_onboarding_cards',
                         'value' => true,
                         'display_name' => 'View onboarding cards',
                     ),
-                    195 => [
+                    196 => [
                         'feature'      => 'payout_service_enabled',
                         'value'        => false,
                         'display_name' => 'Payouts Service',
@@ -731,7 +736,11 @@ return [
         'response' => [
             'content' => [
                 'features' => [
-
+                    [
+                        'feature' => 'custom_txn_tab_view',
+                        'display_name' => "Displays Submerchant's Payments to the partner along with an option to use notes keys as headers",
+                        'value'       => false,
+                    ],
                     [
                         'feature'      => 'missed_orders_plink',
                         'value'        => true,
@@ -782,6 +791,11 @@ return [
         'response' => [
             'content' => [
                 'features' => [
+                    [
+                        'feature' => 'custom_txn_tab_view',
+                        'display_name' => "Displays Submerchant's Payments to the partner along with an option to use notes keys as headers",
+                        'value'       => false,
+                    ],
                     [
                         'feature'      => 'missed_orders_plink',
                         'value'        => false,
@@ -2845,6 +2859,131 @@ return [
         ],
     ],
 
+    'testUpsertPaymentsNotesKeys' => [
+        'request'  => [
+            'url' => '/merchants/payments/saved_columns',
+            'method'  => 'post',
+            'content' => [
+                'data' => [
+                    'user_notes_key_columns' => [
+                      "Dealer Code",
+                      "Merchant Name",
+                      "Notes key 1"
+                    ],
+                   'payment_optional_keys_columns' => [
+                     "Email",
+                     "Contact"
+                   ],
+             ],
+        ],
+    ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpsertPaymentsNotesKeysNegative' => [
+        'request'  => [
+            'url'     => '/merchants/payments/saved_columns',
+            'method'  => 'post',
+            'content' => [
+                'data' => [
+                    'user_notes_key_columns' => [
+                        "Dealer Code",
+                        "Merchant Name",
+                        "Notes key 1"
+                    ],
+                    'payment_optional_keys_columns' => [
+                        "Email",
+                        "Contact"
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [],
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => \RZP\Error\ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testUpsertPaymentsNotesKeysNegative2' => [
+        'request'  => [
+            'url'     => '/merchants/payments/saved_columns',
+            'method'  => 'post',
+            'content' => [
+                'data' => [
+                    'user_notes_key_columns' => [
+                        "Dealer Code",
+                        "Merchant Name",
+                        "Notes key 1"
+                    ],
+                    'payment_optional_keys_columns' => [
+                        "Email",
+                        "Contact",
+                        "Order Id"
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [],
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'description' => "invalid number of payment_optional_keys_columns send"
+        ],
+    ],
+
+    'testFetchPaymentsNotesKeys' => [
+        'request'  => [
+            'url'     => '/merchants/payments/saved_columns',
+            'method'  => 'get',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'data' => [
+                    'user_notes_key_columns' => [
+                        "Dealer Code",
+                        "Merchant Name",
+                        "Notes key 1"
+                    ],
+                    'payment_optional_keys_columns' => [
+                        "Email",
+                        "Contact"
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchPaymentsNotesKeysNegative' => [
+        'request'  => [
+            'url'     => '/merchants/payments/saved_columns',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [],
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => \RZP\Error\ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
 
     'testUpsertBankingConfig' => [
         'request'  => [

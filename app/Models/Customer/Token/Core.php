@@ -1970,6 +1970,27 @@ class Core extends Base\Core
 
             TokenActionsHandler::dispatch($tokenData, $this->mode);
         }
+        elseif ($token->getMethod() === Method::WALLET and $token->getEntityType() === 'subscription')
+        {
+            $subscriptionId = $token->getEntityId();
+
+            $tokenData = [
+                'isTokenAction'   => true,
+                'token_id'        => $token->getId(),
+                'subscription_id' => $subscriptionId,
+                'token_status'    => $status,
+                'mode'            => $this->mode
+            ];
+
+            $this->trace->info(
+                TraceCode::CUSTOMER_TOKEN_ACTION_ASYNC,
+                [
+                    'payload'   => $tokenData,
+                    'mode'      => $this->mode,
+                ]);
+
+            TokenActionsHandler::dispatch($tokenData, $this->mode);
+        }
     }
 
     public function createTokenAndTokenizedCard($input, $merchantPushProvisioning)

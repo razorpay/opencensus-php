@@ -38,6 +38,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Upi\Base as BaseUpi;
 use RZP\Gateway\Upi\Axis as AxisUpi;
 use Illuminate\Http\RedirectResponse;
+use RZP\Services\Mozart as MozartBase;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\TurboPayeeCallbackExecutor;
@@ -50,10 +51,12 @@ use RZP\Models\P2p\Preferences as P2pPreferences;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
 use RZP\Models\Merchant\Repository as MerchantRepository;
+use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Models\QrCodeConfig\Service as QrCodeConfigService;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction as p2pUpiAxisActions;
 use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
+
 
 class GatewayController extends Controller
 {
@@ -923,6 +926,9 @@ class GatewayController extends Controller
 
                 $data = $this->processServerCallbackWithGatewayResponse($input, Gateway::UPI_YESBANK);
 
+                break;
+            case Gateway::TNGD :
+                $data = $this->processTngdGatewayCallback($input);
                 break;
         }
 
@@ -2557,5 +2563,127 @@ class GatewayController extends Controller
         $this->logCallbackResponseTime($startTime, $gatewayDriver);
 
         return ApiResponse::json($response);
+    }
+
+    public function processTngdGatewayCallback($input)
+    {
+        $paymentId = $input['request']['body']['extRequestId'];
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $payment = $this->app['repo']->payment->findOrFail($paymentId);
+
+        $merchant = $payment->merchant;
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
+
+        $this->app['basicauth']->setAuthDetailsUsingPublicKey($publicKey);
+
+        if ($payment->getCallbackUrl() !== null)
+        {
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+        }
+
+        return $this->mutex->acquireAndRelease(
+
+            $this->getCallbackMutexResource($payment),
+
+            function() use ($input ,$merchant, $paymentId)
+            {
+                $payment = $this->app['repo']->payment->findOrFail($paymentId);
+
+                if((isset($input['request']['body']['accessToken']) === false) or ($input['request']['body']['accessToken'] === "null"))
+                {
+                    $e = new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
+                        null,
+                        [
+                            'provider'   => Gateway::TNGD,
+                            'input'      => $input,
+                            'payment_id' => $payment->getPublicId(),
+                            'order_id'   => $payment->getOrderId(),
+                        ]);
+
+                    $processor = new Payment\Processor\Processor($merchant);
+
+                    $processor->setPayment($payment);
+
+                    throw $e;
+                }
+
+                $input['gateway_data']= $input;
+
+                $input['payment'] = $payment;
+
+                try
+                {
+                    $this->trace->info(
+                        TraceCode::MOZART_ACTION_INIT,
+                        [
+                            'namespace' => $input['namespace'],
+                            'gateway'   => $input['gateway'],
+                            'action'    => $payment->getTerminalId()
+                        ]);
+
+                    $accessToken = $input['request']['body']['accessToken'];
+
+                    $tokenFunction = $input['request']['head']['function'];
+
+                    $tokenStatus = TokenConstants::INITIATED;
+
+                    if($tokenFunction=== 'alipayplus.oauth.accesstoken.apply.notify')
+                    {
+                        $tokenStatus = TokenConstants::ACTIVE;
+
+                    }
+                    else if($tokenFunction=== 'alipayplus.oauth.accesstoken.revoke.notify')
+                    {
+                        $tokenStatus = TokenConstants::DEACTIVATED;
+                    }
+
+                    $tokenData = [
+                        'payment_id' => $paymentId,
+                        Payment\Entity::METHOD  => Payment\Method::WALLET,
+                        "gateway_token" =>  $accessToken,
+                        "status" => $tokenStatus,
+                        "recurring" => true,
+                        // default expiry of tng token is 15 years
+                        "expired_at" =>  Carbon::now()->addYears(15)->timestamp,
+                    ];
+
+                    $token = (new Payment\Processor\Processor($merchant))->updateToken($payment, $tokenData);
+
+                    $response = (new MozartBase($this->app))->sendMozartRequest(Gateway::WALLET_PAYMENT, Gateway::TNGD, Gateway::S2S_TOKEN ,$input, "v1",false,"60", "10", false, false);
+
+                    $this->trace->info(TraceCode::TOKEN_CREATE,[ "token_data" => $token['id']]);
+
+                    (new Customer\Token\Core()) -> notifyAppsTokenStatus($token, Customer\Token\RecurringStatus::CONFIRMED);
+
+                    return $response['data']['callback_response'];
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::MOZART_ACTION_FAILED);
+
+                    $response = 'Caught Exception: ' . $e->getMessage();
+
+                    return $response;
+                }
+
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
@@ -79,6 +80,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
      * @throws ReconciliationException
      * @throws \RZP\Exception\LogicException
      */
+
+    //Check this
     public function runReconciliate($row)
     {
         //
@@ -477,7 +480,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
             // Refresh both refund and transaction to get latest changes.
             // Reload txn because relation are cached.
-            $this->refund->reload()->transaction->reload();
+            $transaction = $this->repo->transaction->findByEntityIdWithoutMerchant($this->refund->getId());
+            $this->refund->reload();
+            $this->refund->transaction()->associate($transaction);
         }
 
         $this->persistReconciledAt($this->refund);
@@ -900,9 +905,17 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
             $refund->setStatusProcessed();
 
-            // This needs to be present here and not in the calling function,
-            // to ensure that if any failure happens, arn still gets saved.
-            $this->repo->saveOrFail($refund);
+            $experimentVariable = UniqueIdEntity::generateUniqueId();
+            $variantFlag = $this->app['razorx']->getTreatment($experimentVariable,
+                RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
+                $this->app['rzp.mode']);
+
+            if ($variantFlag !== 'on')
+            {
+                // This needs to be present here and not in the calling function,
+                // to ensure that if any failure happens, arn still gets saved.
+                $this->repo->saveOrFail($refund);
+            }
 
             $this->core->pushRefundProcessedMetric($refund, $this->source);
         }

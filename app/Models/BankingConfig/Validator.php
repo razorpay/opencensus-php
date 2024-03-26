@@ -57,4 +57,26 @@ class Validator extends Base\Validator
                 'field '. $fieldName. ' isn\'t owned by banking');
         }
     }
+
+    public function validateUpsertNotesInput($input)
+    {
+        if(empty($input) === true or
+            empty($input["data"]) === true or
+            is_array($input["data"][Constants::PAYMENT_OPTIONAL_KEYS_COLUMNS]) === false or
+            is_array($input["data"][Constants::USER_NOTES_KEYS_COLUMNS] === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'invalid data send');
+        }
+
+        if(count($input["data"][Constants::PAYMENT_OPTIONAL_KEYS_COLUMNS]) > 2) {
+            throw new Exception\BadRequestValidationFailureException(
+                'invalid number of payment_optional_keys_columns send');
+        }
+
+        if(count($input["data"][Constants::USER_NOTES_KEYS_COLUMNS]) > 30) {
+            throw new Exception\BadRequestValidationFailureException(
+                'invalid number of user_notes_keys_columns send');
+        }
+    }
 }

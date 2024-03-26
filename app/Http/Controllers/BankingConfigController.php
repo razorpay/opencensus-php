@@ -35,4 +35,22 @@ class BankingConfigController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchPaymentsNotesKeys()
+    {
+        $input = Request::all();
+
+        $data = (new BankingConfig\Service())->fetchPaymentsNotesKeys($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function upsertPaymentsNotesKeys()
+    {
+        $input = Request::all();
+
+        $data = (new BankingConfig\Service())->upsertPaymentsNotesKeys($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

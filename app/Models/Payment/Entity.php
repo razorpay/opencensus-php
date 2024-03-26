@@ -7559,4 +7559,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         return false;
     }
+
+    public function isWalletRecurring(): bool
+    {
+        return (($this->getAttribute(self::METHOD) === Payment\Method::WALLET) and
+            ($this->getAttribute(self::RECURRING) === true));
+    }
+
+    public function isWalletAutoRecurring(): bool
+    {
+        return (($this->isWalletRecurring() === true) and
+            ($this->isSecondRecurring() === true));
+    }
 }

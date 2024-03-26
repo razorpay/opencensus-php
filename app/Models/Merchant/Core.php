@@ -71,6 +71,7 @@ use RZP\Models\Batch;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Comment\Entity as CommentEntity;
 use RZP\Models\Emi;
+use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Feature;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Feature\Service as FeatureService;
@@ -9314,8 +9315,8 @@ class Core extends Base\Core
 
         return !$isSubMerchant;
     }
-    
-    
+
+
     public function isMerchantEligibleForComplianceCheck(Entity $merchant): bool
     {
         // Linked Accounts
@@ -9325,20 +9326,20 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
                 'linked_account'=>true
             ]);
-            
+
             return false;
         }
-        
+
         if(\RZP\Constants\Country::matches($merchant->getCountry() , Country::IN) === false)
         {
             $this->trace->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_SKIP, [
                 'merchant_id' => $merchant->getId(),
                 'country_code'=> $merchant->getCountry()
             ]);
-            
+
             return false;
         }
-        
+
         // Partnership Merchant
         if ($merchant->isPartner() === true)
         {
@@ -9348,10 +9349,10 @@ class Core extends Base\Core
             ]);
             return false;
         }
-        
+
         // subMerchant
         $isSubMerchant = (new AccessMapCore)->isSubMerchant($merchant->getMerchantId());
-        
+
         if ($isSubMerchant === true)
         {
             $this->trace->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_ELIGIBLE, [
@@ -9360,7 +9361,7 @@ class Core extends Base\Core
             ]);
             return true;
         }
-        
+
         // RazorpayX
         if ($merchant->isBusinessBankingEnabled() === true)
         {
@@ -9370,8 +9371,8 @@ class Core extends Base\Core
             ]);
             return true;
         }
-        
-        
+
+
         if ($merchant->isRazorpayOrgId() === true)
         {
             $this->trace->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_ELIGIBLE, [
@@ -9859,6 +9860,60 @@ class Core extends Base\Core
         }
 
         return $whitelistedInstruments;
+    }
+
+    public function getWhitelistedDebitEmiBanks(Merchant\Entity $merchant): array {
+
+        $whitelistedBanks = [];
+
+        try {
+
+            foreach(DebitProvider::$experimentCheckRequiredDebitEmiBanks as $bank => $experimentId)
+            {
+                $whitelistExperiments[ $this->app['config']->get($experimentId) ] = $bank;
+            }
+
+            foreach ($whitelistExperiments as $experimentId => $instrument)
+            {
+                $experimentsData[] = [
+                    "id" => $merchant->getId(),
+                    "experiment_id" => $experimentId,
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => $merchant->getId(),
+                        ]),
+                ];
+            }
+
+            $experimentResponses = $this->app['splitzService']->bulkCallsToSplitz($experimentsData);
+
+            foreach ($experimentResponses as $response)
+            {
+                $variables = $response['variant']['variables'];
+
+                foreach ($variables as $variable)
+                {
+                    if ($variable['key'] == "result" && $variable['value'] == "on") {
+
+                        $experimentId = $response['experiment']['id'];
+
+                        if(array_key_exists($experimentId, $whitelistExperiments))
+                        {
+                            $whitelistedBanks[] = $whitelistExperiments[$experimentId];
+                        }
+                    }
+                }
+            }
+
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::HDFC_DCEMI_WHITELISTED_MERCHANTS_SPLITZ_ERROR
+            );
+        }
+
+        return $whitelistedBanks;
     }
 
     public function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode = null): bool

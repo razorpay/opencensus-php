@@ -5,6 +5,9 @@ namespace RZP\Models\Payment\Refund;
 use App;
 use ApiResponse;
 use Carbon\Carbon;
+use Monolog\Logger;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
@@ -1668,5 +1671,32 @@ class Entity extends Base\PublicEntity
         $discountRatio = $this->payment->getDiscountRatioIfApplicable();
 
         return ($amount - (int)(round($amount * $discountRatio)));
+    }
+
+    public function reload()
+    {
+        $app = \App::getFacadeRoot();
+        try
+        {
+            $experimentVariable = UniqueIdEntity::generateUniqueId();
+            $variantFlag = $app['razorx']->getTreatment($experimentVariable,
+                RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
+                $app['rzp.mode']);
+
+            if ($variantFlag === 'on')
+            {
+                return (new Repository)->findOrFail($this->{$this->primaryKey});
+            }
+        }
+        catch (\Throwable $e) {
+            $app['trace']->traceException($e,
+                Trace::ERROR,
+                TraceCode::SCROOGE_ENTITY_FETCH_FAILURE,
+                [
+                    'refund_id' => $this->primaryKey
+                ]);
+        }
+
+        return parent::reload();
     }
 }
