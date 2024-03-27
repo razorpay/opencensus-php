@@ -90,6 +90,12 @@ class Decomp extends Base\Service
     // Based on this, we either push to the SQS queue consumed by API or a new one consumed by MCS.
     public function useMCSForAsyncCompleteCheckout(string $merchantId): bool
     {
+        // $merchant is autoset by the API middlewares. For flows involving SQS workers or cronjobs we need
+        // to manually set the $this->merchant variable everytime.
+        if (empty($this->merchant) === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
         $useMCS = $this->useMCSForShopifyCompleteCheckoutForFeatureFlags($merchantId);
         if (!$useMCS)
         {
