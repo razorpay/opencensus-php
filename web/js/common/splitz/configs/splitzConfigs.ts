@@ -882,6 +882,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'integration_audit',
+          experimentId: {
+            beta: 'NW0ESOMHunD3on',
+            production: 'Nl2wGYuH4sQ9ek',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {
