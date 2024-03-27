@@ -41,7 +41,7 @@
     "redux": "4.0.5",
     "styled-components": "5.1.1",
     "zustand": "3.1.2",
-    "@razorpay/i18nify-js": "^1.4.0"
+    "@razorpay/i18nify-js": "^1.8.1"
   },
   "devDependencies": {
     "@babel/plugin-proposal-function-bind": "7.8.3",

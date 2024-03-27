@@ -359,21 +359,24 @@ export const getCurrencyConfig = (currency = 'INR') => {
  * @returns {ReturnType<formatNumberByParts>}
  */
 export const getFormattedAmountByParts = (amount, currency = 'INR') => {
-  let updatedAmount = convertToMajorUnit(amount, { currency }).toString();
-
-  const integer = updatedAmount.split('.')[0] || '';
-  const fraction = updatedAmount.split('.')[1] || '';
-
-  let byParts;
+  let updatedAmount, integer, fraction, byParts;
 
   try {
+    updatedAmount = convertToMajorUnit(amount, { currency }).toString();
+    integer = updatedAmount.split('.')[0] || '';
+    fraction = updatedAmount.split('.')[1] || '';
+
     byParts = formatNumberByParts(updatedAmount, {
       currency,
       intlOptions: {
         style: 'currency',
       },
     });
-  } catch (e) {
+  } catch (error) {
+    updatedAmount = (amount / 100).toFixed(2);
+    integer = updatedAmount.split('.')[0] || '';
+    fraction = updatedAmount.split('.')[1] || '';
+
     byParts = {
       integer,
       decimal: '.',
@@ -420,7 +423,12 @@ export const formatAmount = (amt, showCurrency, currency) => {
 };
 
 export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') => {
-  const adjustedAmount = convertToMajorUnit(amount, { currency }).toString();
+  let adjustedAmount;
+  try {
+    adjustedAmount = convertToMajorUnit(amount, { currency }).toString();
+  } catch (error) {
+    adjustedAmount = (amount / 100).toFixed(2);
+  }
 
   return formatAmount(adjustedAmount, showCurrency, currency);
 };

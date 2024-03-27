@@ -87,7 +87,7 @@ const Amount = ({
       actionName: ANALYTICS.ACTION.CURRENCY,
       screen: ANALYTICS.SCREEN.DASHBOARD,
       properties: {
-        input: `${currency}`,
+        input: `currency: ${currency}`,
         error: `${error}`,
       },
     });
@@ -161,7 +161,7 @@ export function AmountTooltipContainer({
       actionName: ANALYTICS.ACTION.CURRENCY,
       screen: ANALYTICS.SCREEN.DASHBOARD,
       properties: {
-        input: `${currency}`,
+        input: `currency: ${currency}`,
         error: `${error}`,
       },
     });

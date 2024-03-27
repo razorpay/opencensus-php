@@ -3,10 +3,12 @@ import {
   getCurrencyList,
   getCurrencySymbol as i18nifyGetCurrencySymbol,
 } from '@razorpay/i18nify-js/currency';
+/* eslint-disable import/no-unresolved */
 import { getFormattedAmountByParts, classList } from '@dashboard/shared-utils/rzp-utils';
 import { sanitizer } from '@dashboard/shared-utils';
 import { ANALYTICS } from '@dashboard/shared-utils/constants/analytics';
 import { analyticsTrack } from '@dashboard/shared-utils/analytics';
+/* eslint-enable import/no-unresolved */
 import useViewport, { ViewportProvider } from '../hooks/useViewPort';
 import Popover, { PopoverBody } from './Popover';
 
@@ -85,7 +87,7 @@ const Amount = ({
       actionName: ANALYTICS.ACTION.CURRENCY,
       screen: ANALYTICS.SCREEN.DASHBOARD,
       properties: {
-        input: `${currency}`,
+        input: `currency: ${currency}`,
         error: `${error}`,
       },
     });
@@ -160,7 +162,7 @@ export function AmountTooltipContainer({
       actionName: ANALYTICS.ACTION.CURRENCY,
       screen: ANALYTICS.SCREEN.DASHBOARD,
       properties: {
-        input: `${currency}`,
+        input: `currency: ${currency}`,
         error: `${error}`,
       },
     });

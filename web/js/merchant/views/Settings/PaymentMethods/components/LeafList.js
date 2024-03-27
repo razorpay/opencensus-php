@@ -172,12 +172,14 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
     return list.map((leafItem) => {
       if (leafItem.slug === 'internationalcards')
         return (
+          // eslint-disable-next-line react/jsx-key
           <SuspenseWithLoader>
             <International />
           </SuspenseWithLoader>
         );
       else if (leafItem.slug === 'paypal')
         return (
+          // eslint-disable-next-line react/jsx-key
           <SuspenseWithLoader>
             <Paypal instrument={leafItem} />
           </SuspenseWithLoader>
