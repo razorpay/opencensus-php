@@ -114,6 +114,7 @@ const PaymentsRecap: React.FC<{
             src={showMobileBanner ? RzpMobileBanner : RzpRewindBannerDesktop}
             width="100%"
             height="100%"
+            style={{ objectFit: 'cover' }}
           />
           <BannerBtn
             onClick={() => {
