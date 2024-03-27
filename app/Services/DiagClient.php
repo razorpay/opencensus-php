@@ -28,6 +28,7 @@ class DiagClient extends EventTrackerClient
     use Traits\VirtualAccountEvent;
     use Traits\VirtualVpaPrefixEvent;
     use Traits\TokenisationEvent;
+    use Traits\FundAccountValidationStatusEvent;
 
     public function trackEvent(string $eventType, string $eventVersion, array $event,
                                array $properties,

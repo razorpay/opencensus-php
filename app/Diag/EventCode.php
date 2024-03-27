@@ -1206,6 +1206,11 @@ class EventCode
         'name'    => 'external_payouts.fetch.request'
     ];
 
+    const FUND_ACCOUNT_VALIDATION_STATUS_EVENT = [
+        'group'   => 'fund_account_validation',
+        'name'    => 'fund_account_validation.status'
+    ];
+
     const BALANCE_FETCH_REQUESTS = [
         'group'   => 'external_balance',
         'name'    => 'external_balance.fetch.request'

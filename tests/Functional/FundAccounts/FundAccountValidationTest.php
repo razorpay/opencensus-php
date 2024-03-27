@@ -9,6 +9,7 @@ use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Jobs\Transactions;
 use RZP\Models\Admin\Admin;
+use RZP\Services\DiagClient;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Models\Pricing\Fee;
 use RZP\Jobs\FavQueueForFTS;
@@ -70,11 +71,25 @@ class FundAccountValidationTest extends TestCase
 
         $response = $this->startTest();
 
+        $isEventValidated = false;
+
+        $expectedProperties = [
+            'fav'   => [
+                'merchant_id'     => '10000000000000',
+                'account_status'  => 'active',
+                'status'          => 'completed'
+            ]
+        ];
+
+        $this->verifyFAVStatusEvent('fund_account_validation.status', $expectedProperties, $isEventValidated);
+
         $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
         $fav         = $this->getLastEntity('fund_account_validation', true);
+
+        $this->assertTrue($isEventValidated);
 
         // Queue will be processed by now.
         $this->assertEquals('completed', $fav['status']);
@@ -116,6 +131,38 @@ class FundAccountValidationTest extends TestCase
         $this->assertArrayKeysExist($response['results'], ['utr','account_status','registered_name']);
 
         return $response;
+    }
+
+    private function mockDiag()
+    {
+        $diagMock = $this->getMockBuilder(DiagClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['trackEvent'])
+            ->getMock();
+
+        $this->app->instance('diag', $diagMock);
+    }
+
+    private function verifyFAVStatusEvent($eventName, $expectedProperties, &$isEventValidated)
+    {
+        $this->mockDiag();
+
+        $this->app->diag->method('trackEvent')
+            ->will($this->returnCallback(
+                function (string $eventType,
+                          string $eventVersion,
+                          array $event,
+                          array $properties) use ($eventName, $expectedProperties, &$isEventValidated)
+                {
+                    if ($event['group'] === 'fund_account_validation')
+                    {
+                        $this->assertEquals($eventName, $event['name']);
+                        $this->assertArraySelectiveEquals($expectedProperties, $properties);
+                        $isEventValidated = true;
+                    }
+
+                    return;
+                }));
     }
 
     public function testPennilessVpaValidationSuccess()
@@ -953,6 +1000,18 @@ class FundAccountValidationTest extends TestCase
 
         $this->expectWebhookEventWithContents('fund_account.validation.failed', $eventTestDataKey);
 
+        $isEventValidated = false;
+
+        $expectedProperties = [
+            'fav'   => [
+                'merchant_id'     => '10000000000000',
+                'account_status'  => null,
+                'status'          => 'failed'
+            ]
+        ];
+
+        $this->verifyFAVStatusEvent('fund_account_validation.status', $expectedProperties, $isEventValidated);
+
         $this->triggerFlowToUpdateFavWithNewState($payoutId, 'FAILED', [
             'bank_status_code' => 'ACCOUNT_INVALID',
             'extra_info'       => ['internal_error' => true],
@@ -969,6 +1028,8 @@ class FundAccountValidationTest extends TestCase
         $favCreated = $this->getDbLastEntity('fund_account_validation');
 
         $reversalCreated = $this->getDbLastEntity('reversal');
+
+        $this->assertTrue($isEventValidated);
 
         // Since there are multiple events within the flow,
         // following is a list of events in the order in which they occur in the test flow

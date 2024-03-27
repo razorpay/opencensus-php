@@ -8,6 +8,7 @@ use Monolog\Logger;
 
 use RZP\Exception;
 use RZP\Trace\Tracer;
+use RZP\Diag\EventCode;
 use RZP\Models\Base\Core;
 use RZP\Models\Transaction;
 use RZP\Constants\HyperTrace;
@@ -104,6 +105,8 @@ abstract class Base extends Core
         $this->dispatchValidationCompletedEvent();
 
         $this->triggerValidationCompletedWebhook();
+
+        $this->pushFAVStatusChangeEvent($this->validation);
     }
 
     public function markValidationAsFailed()
@@ -115,6 +118,17 @@ abstract class Base extends Core
         $this->dispatchValidationCompletedEvent();
 
         $this->triggerValidationFailedWebhook();
+
+        $this->pushFAVStatusChangeEvent($this->validation);
+    }
+
+    public function pushFAVStatusChangeEvent(Entity $fav)
+    {
+        $eventCode = EventCode::FUND_ACCOUNT_VALIDATION_STATUS_EVENT;
+
+        $this->app['diag']->trackFundAccountValidationStatusEvent(
+            $eventCode,
+            $fav);
     }
 
     /**
