@@ -83,6 +83,13 @@ jobs:
       - name: Web - Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
+      - uses: razorpay/create-github-app-token@v1
+        name: Generate Github Token
+        id: app-token
+        with:
+          app-id: ${{ secrets.WORKFLOWGATEKEEPER_APP_ID }}
+          private-key: ${{ secrets.WORKFLOWGATEKEEPER_PRIVATEKEY }}
+          repositories: "dashboard,razorpay,trace,slack-laravel,spine,oauth-5-laravel,metrics-php,edge-passport-php"
 
       - name: Web - PHP Server Build
         uses: docker/build-push-action@v2
@@ -92,7 +99,7 @@ jobs:
           push: true
           file: ./Dockerfile.ci
           secrets: |
-            git_token=${{ secrets.GIT_TOKEN }}
+            git_token=${{ steps.app-token.outputs.token }}
           build-args: |
             GIT_COMMIT_HASH=${{ github.sha }}
             GIT_USERNAME=rzp
