@@ -12,6 +12,8 @@ import {
   waitForLoadingToFinishByLabel,
 } from 'test-utils';
 
+import { defaultUserExtra } from './mocks/fixtures';
+
 const defaultPartnerDashboardExperiments = {
   isPartnershipsInviteFlowEnabled: false,
   isPartnershipsForPosEnabled: true,
@@ -22,12 +24,8 @@ jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments'
   __esModule: true,
   default: () => mockPartnerDashboardExperiments,
 }));
-
 const isPartner = jest.fn();
 const isFeatureEnabled = jest.fn();
-// Required for announcements:
-const instantActivation = { isWhitelistFlow: false };
-
 const location = {
   search: '',
   pathname: '/partners/submerchants',
@@ -46,15 +44,9 @@ const renderApp = ({ userExtra = {}, orgExtra = {} } = {}, props = {}, experimen
   const session = getInitialUserOrgState({
     isRzpOrg: true,
     userExtra: {
-      id: 'testUserId',
-      userRole: 'owner',
-      isAuthenticated: true,
-      isOrgRZP: true,
       isPartner,
       isFeatureEnabled,
-      isPartnershipForCapitalEnabled: true,
-      isPartnershipFUX: true,
-      instantActivation,
+      ...defaultUserExtra,
       ...userExtra,
     },
     orgExtra,
@@ -80,11 +72,26 @@ describe('ClientAccounts', () => {
   });
   it('should render all the default Affliate accounts tabs', () => {
     updateUseI18ServiceSpy('false-path');
-    renderApp({});
+    renderApp();
     expect(screen.getByText('Payments')).toBeInTheDocument();
     expect(screen.getByText('POS')).toBeInTheDocument();
     expect(screen.getByText('Line Of Credit')).toBeInTheDocument();
     expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
+  });
+
+  it('should render only POS if isPartnerAgentRole is true and the feature is enabled', () => {
+    renderApp(
+      { userExtra: { isPartnerAgentRole: true } },
+      {},
+      {
+        isPartnershipsInviteFlowEnabled: true,
+        isPartnershipsForPosEnabled: true,
+      },
+    );
+    expect(screen.queryByText('Payments')).not.toBeInTheDocument();
+    expect(screen.queryByText('Line of Credit')).not.toBeInTheDocument();
+    expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
+    expect(screen.getByText('POS')).toBeInTheDocument();
   });
 
   it('should not render POS if the feature is not enabled', () => {
@@ -120,7 +127,7 @@ describe('ClientAccounts', () => {
 
     test('...the merchant is not from india (international merchants)', () => {
       updateUseI18ServiceSpy('partnership.razorpay_x_affiliate_account');
-      renderApp({});
+      renderApp();
       expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
     });
   });

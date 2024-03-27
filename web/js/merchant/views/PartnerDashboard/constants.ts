@@ -10,11 +10,19 @@ export const PRODUCT_TYPE = {
   CAPITAL: 'capital',
 };
 
-export const PRODUCT_ROUTE_PREFIX = {
+export const PRODUCT_ROUTE_PATH_PREFIX = {
   [PRODUCT_TYPE.X]: '/x',
   [PRODUCT_TYPE.PG]: '', // Avoids extra slash getting added
   [PRODUCT_TYPE.POS]: '/pos',
   [PRODUCT_TYPE.CAPITAL]: '/capital',
+};
+
+// Need this map at places where slashes are not expected
+export const PRODUCT_ROUTE_PATH_PARAM = {
+  [PRODUCT_TYPE.X]: 'x',
+  [PRODUCT_TYPE.PG]: '',
+  [PRODUCT_TYPE.POS]: 'pos',
+  [PRODUCT_TYPE.CAPITAL]: 'capital',
 };
 
 export const ORG_NAME = {
@@ -27,6 +35,8 @@ export const PRODUCT_NAME = {
   [PRODUCT_TYPE.CAPITAL]: 'Capital',
   [PRODUCT_TYPE.POS]: 'POS',
 };
+
+export const ADD_NEW_MERCHANT_ELIGIBLE_ROLES = 'owner manager admin partner_agent';
 
 export const ADD_MODE = {
   single: 'single',

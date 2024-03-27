@@ -173,7 +173,8 @@ export default {
   loans: [OWNER, ADMIN],
   cash_advance: [OWNER, ADMIN],
   b2b_payments: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT],
-  partner_navlinks: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT],
+  partner_reports: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT],
+  partner_navlinks: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT, PARTNER_AGENT],
 
   // optimizer
   optimizer: [OWNER, ADMIN, MANAGER, OPERATIONS],

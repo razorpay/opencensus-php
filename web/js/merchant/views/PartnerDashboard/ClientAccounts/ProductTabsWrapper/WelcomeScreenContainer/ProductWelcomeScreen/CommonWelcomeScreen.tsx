@@ -1,9 +1,9 @@
 import React from 'react';
 import { Title, Text, Box, Button, PlusIcon } from '@razorpay/blade/components';
-import { connect } from 'react-redux';
-
 import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
 import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
+import { connect } from 'react-redux';
+
 import { useI18Service } from 'common/i18';
 import { User } from 'common/typings';
 import Image from 'common/ui/Image';
@@ -12,7 +12,10 @@ import useProductActions from 'merchant/views/PartnerDashboard/ClientAccounts/Pr
 import { Org } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import { getHasSelectedKycAccess } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/kycAccessFtux';
 import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink/SocialShareGroup';
-import { ORG_NAME } from 'merchant/views/PartnerDashboard/constants';
+import {
+  ADD_NEW_MERCHANT_ELIGIBLE_ROLES,
+  ORG_NAME,
+} from 'merchant/views/PartnerDashboard/constants';
 import { ShowWhen } from 'merchant_common/components/RouteGuard';
 
 type CommonWelcomeScreenProps = {
@@ -60,7 +63,7 @@ const CommonWelcomeScreen = ({
             justifyContent="center"
           >
             <ShowWhen
-              myRole="owner manager admin"
+              myRole={ADD_NEW_MERCHANT_ELIGIBLE_ROLES}
               additionalCondition={(currentUser) => getAddMerchantVisibility(currentUser)}
             >
               <Box display="flex" flexDirection="column" gap="spacing.3" alignItems="center">

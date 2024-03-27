@@ -24,6 +24,7 @@ interface NewInvitationProps {
   ctaText: string;
   experiments?: SpiltzContextState;
   screen?: string;
+  isRenderedFromPartnerRoute: boolean;
 }
 const NewInvitation = NewInvitationJS as ComponentType<NewInvitationProps>;
 export default NewInvitation;

@@ -9,7 +9,12 @@ import ShareReferralLink from 'merchant/views/PartnerDashboard/SubMerchant/compo
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 const analyticsTrackWithUserInfoSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
-
+const defaultUserExtra = {
+  findTag: jest.fn(),
+  isPartner: (partner_type = 'reseller') => partner_type === 'reseller',
+  isPartnershipForCapitalEnabled: true,
+  isPartnerAgentRole: false,
+};
 const defaultPartnerDashboardExperiments = {
   isPartnershipsInviteFlowEnabled: true,
   isPartnershipsForPosEnabled: true,
@@ -40,8 +45,7 @@ describe('ShareReferralLink', () => {
     const session = getInitialUserOrgState({
       isRzpOrg: true,
       userExtra: {
-        findTag: jest.fn(),
-        isPartnershipForCapitalEnabled: true,
+        ...defaultUserExtra,
         ...userExtra,
       },
       orgExtra,
@@ -53,11 +57,11 @@ describe('ShareReferralLink', () => {
     });
   };
 
-  test('should render ShareReferralLink correctly for capital with props', () => {
+  test('should render ShareReferralLink correctly for capital', () => {
     renderApp(
       {},
       {
-        productType: PRODUCT_TYPE.CAPITAL,
+        initialProductType: PRODUCT_TYPE.CAPITAL,
       },
     );
     expect(screen.getByText('Line of Credit')).toBeInTheDocument();
@@ -68,11 +72,11 @@ describe('ShareReferralLink', () => {
     ).toBeInTheDocument();
   });
 
-  test('should render ShareReferralLink correctly for X with props', () => {
+  test('should render ShareReferralLink correctly for X', () => {
     renderApp(
       {},
       {
-        productType: PRODUCT_TYPE.X,
+        initialProductType: PRODUCT_TYPE.X,
       },
       { isPartnershipsForPosEnabled: false },
     );
@@ -85,11 +89,11 @@ describe('ShareReferralLink', () => {
     ).toBeInTheDocument();
   });
 
-  test('should render ShareReferralLink correctly for PG', async () => {
+  test('should render ShareReferralLink correctly for payments', async () => {
     renderApp(
       {},
       {
-        productType: PRODUCT_TYPE.PG,
+        initialProductType: PRODUCT_TYPE.PG,
       },
       { isPartnershipsForPosEnabled: false },
     );
@@ -100,11 +104,11 @@ describe('ShareReferralLink', () => {
     expect(screen.getByText(referralData.primary.easy_kyc_access_url)).toBeInTheDocument();
   });
 
-  test('track events in ShareReferralLink for PG', async () => {
+  test('track events in ShareReferralLink for payments', async () => {
     renderApp(
       {},
       {
-        productType: PRODUCT_TYPE.PG,
+        initialProductType: PRODUCT_TYPE.PG,
       },
     );
     expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
@@ -142,7 +146,7 @@ describe('ShareReferralLink', () => {
     renderApp(
       {},
       {
-        productType: PRODUCT_TYPE.POS,
+        initialProductType: PRODUCT_TYPE.POS,
       },
     );
     expect(screen.getByText('Razorpay POS')).toBeInTheDocument();
@@ -156,7 +160,7 @@ describe('ShareReferralLink', () => {
     renderApp(
       {},
       {
-        productType: PRODUCT_TYPE.POS,
+        initialProductType: PRODUCT_TYPE.POS,
       },
     );
     expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
@@ -189,5 +193,21 @@ describe('ShareReferralLink', () => {
         actionName: 'Closed',
       }),
     );
+  });
+  test('should render only POS if isPartnerAgentRole is true and the feature is enabled', () => {
+    renderApp(
+      { userExtra: { isPartnerAgentRole: true } },
+      {
+        initialProductType: PRODUCT_TYPE.POS,
+      },
+      {
+        isPartnershipsInviteFlowEnabled: true,
+        isPartnershipsForPosEnabled: true,
+      },
+    );
+    expect(screen.queryByText('Razorpay Payments')).not.toBeInTheDocument();
+    expect(screen.queryByText('Line of Credit')).not.toBeInTheDocument();
+    expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
+    expect(screen.getByText('Razorpay POS')).toBeInTheDocument();
   });
 });

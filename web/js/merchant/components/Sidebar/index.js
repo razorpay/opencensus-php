@@ -1,7 +1,9 @@
+/* eslint-disable react/no-unsafe */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
+import styled from 'styled-components';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
@@ -68,6 +70,17 @@ const BASE_ROUTES = {
   paymentHandle: '/payment-handle',
   reconciliations: '/reconciliations/dashboard',
 };
+
+// Note: cannot use Box because textOverflow is not supported.
+const StyledPartnerTitle = styled.div`
+  position: absolute;
+  max-width: 180px;
+  font-size: 14px;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
 
 @withI18Service
 @connect(
@@ -280,7 +293,8 @@ class Sidebar extends Component {
                 )}
 
                 <ShowWhen
-                  additionalCondition={() =>
+                  additionalCondition={(currentUser) =>
+                    !currentUser.isPartnerAgentRole &&
                     !isOrgFeatureExist('hide_razorpay_text_link') &&
                     !isConfigTagEnabled('app_store.app_store')
                   }
@@ -373,14 +387,24 @@ class PartnerSidebarComponent extends Component {
   };
 
   render() {
-    const props = this.props;
-    const isPartnershipFUX = props?.user?.isPartnershipFUX || false;
+    const { user, merchantNavLinkProps } = this.props;
+    const isPartnershipFUX = user?.isPartnershipFUX || false;
     const fuxEnabledClass = isPartnershipFUX ? 'fux-enabled' : '';
+    let partnerNavTitle = 'Partner';
+    if (user.isPartnerAgentRole) {
+      partnerNavTitle = user?.business_name ? `POS Agent | ${user?.business_name}` : 'POS Agent';
+    }
+    const partnerNavGroupTitle = (
+      <>
+        {isPartnershipFUX ? null : <i className="i i-partner text-primary" />}
+        <StyledPartnerTitle>{partnerNavTitle}</StyledPartnerTitle>
+      </>
+    );
     return (
       <div className={`nav-group ${fuxEnabledClass}`}>
         <MainNavLinkGroup
           additionalCondition={(currentUser) => currentUser.isAllowedView('partner_navlinks')}
-          title={<>{isPartnershipFUX ? null : <i className="i i-partner text-primary" />}Partner</>}
+          title={partnerNavGroupTitle}
           onToggleClick={this.toggle('partnerOpen')}
           value={this.state.partnerOpen}
         >
@@ -388,13 +412,14 @@ class PartnerSidebarComponent extends Component {
         </MainNavLinkGroup>
 
         <MainNavLinkGroup
+          additionalCondition={(currentUser) => !currentUser.isPartnerAgentRole}
           title={
             <>{isPartnershipFUX ? null : <i className="i i-products text-success" />}Products</>
           }
           onToggleClick={this.toggle('merchantOpen')}
           value={this.state.merchantOpen}
         >
-          <MerchantNavLinks {...props.merchantNavLinkProps} user={props.user} />
+          <MerchantNavLinks {...merchantNavLinkProps} user={user} />
         </MainNavLinkGroup>
       </div>
     );

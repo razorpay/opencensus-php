@@ -7,7 +7,13 @@ import GatewayDataInfo from 'merchant/components/GatewayDataInfo';
 import MaskedContact, { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 import MaskedEmail from 'merchant/components/Mask/Email';
 import { RefundStatusLabel, OfferStatusLabel } from 'merchant/components/StatusLabel';
-import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
+import {
+  roles,
+  agentRole,
+  RBLRoles,
+  RegistrationLinkRoles,
+  posPartnerRoles,
+} from 'merchant/helpers/data';
 
 import * as id from './id';
 
@@ -18,6 +24,7 @@ const allRoles = {
   ...agentRole,
   ...RBLRoles,
   ...RegistrationLinkRoles,
+  ...posPartnerRoles,
 };
 
 export const withClick =

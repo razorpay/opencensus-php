@@ -10,7 +10,7 @@ import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { PGAcceptedInviteItem } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/api';
 import { getIsInviteFlowEnabled } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/utils/tabsData';
 import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
-import { PRODUCT_ROUTE_PREFIX } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_ROUTE_PATH_PREFIX } from 'merchant/views/PartnerDashboard/constants';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -49,7 +49,7 @@ const ActionButtonKYC = ({
     if (isInviteFlowEnabled) {
       trackAccountLevelAcceptedInvitesCta(submerchant, { productType, action: btnText });
     }
-    navigate(`/partners/submerchants${PRODUCT_ROUTE_PREFIX[productType]}/${submerchantId}`);
+    navigate(`/partners/submerchants${PRODUCT_ROUTE_PATH_PREFIX[productType]}/${submerchantId}`);
   };
   const openKYCForm = () => {
     const isMWeb = isMobileAndTablet();
@@ -113,14 +113,20 @@ const ActionButtonKYC = ({
       'rejected',
     ].includes(activation_status as string)
   ) {
-    return null;
+    isDisabled = true;
   }
   const disabledClass = isDisabled ? 'action-kyc-request-disable' : '';
   const fullRejectClass = isFullRejected ? 'action-kyc-request-full-rejected' : '';
 
   return (
     <div className={`action-kyc-request ${disabledClass} ${fullRejectClass}`}>
-      <Button variant="secondary" size="small" onClick={action} isLoading={isActionLoading}>
+      <Button
+        variant="secondary"
+        size="small"
+        onClick={action}
+        isLoading={isActionLoading}
+        isDisabled={isDisabled}
+      >
         {btnText}
       </Button>
     </div>

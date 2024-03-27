@@ -13,7 +13,7 @@ test.describe.parallel(
     test.skip('should load the capital Reseller Partner Dashboard @priority=critical', async ({
       page,
     }) => {
-      await page.goto(routes.AFFILIATE_ACCOUNTS_CAPITAL);
+      await page.goto(routes.CLIENT_ACCOUNTS_CAPITAL);
       await page.waitForSelector('thead th:has-text("Account Name")');
 
       // Create Bureau link
@@ -39,7 +39,10 @@ test.describe.parallel(
       });
       await uploadStatementButton.click();
       await expect(page.locator('text=Upload bank account statement')).toBeVisible();
-      await page.setInputFiles('input[type="file"]', resolve(__dirname, 'test-doc.pdf'));
+      await page.setInputFiles(
+        'input[type="file"]',
+        resolve(__dirname, '..', 'common', 'files', 'test-doc.pdf'),
+      );
       await expect(page.locator('text=File Uploaded Successfully!')).toBeVisible();
 
       const closeUploadModal = await page.locator('button[aria-label="Close"]');

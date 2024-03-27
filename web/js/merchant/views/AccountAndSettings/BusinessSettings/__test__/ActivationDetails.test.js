@@ -1,8 +1,8 @@
-import ActivationDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/ActivationDetails';
-import { render, screen, server, waitFor, userEvent } from 'test-utils';
-import { adminAsMerchantHandler } from 'merchant/views/AccountAndSettings/BusinessSettings/__test__/fixtures/handlers';
 import { analyticsTrack } from 'common/utils/analytics';
+import ActivationDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/ActivationDetails';
+import { adminAsMerchantHandler } from 'merchant/views/AccountAndSettings/BusinessSettings/__test__/fixtures/handlers';
 import { testNewStylesUsingFlowRevamped } from 'merchant/views/AccountAndSettings/__test__/mocks/fixtures';
+import { render, screen, server, waitFor, userEvent } from 'test-utils';
 
 jest.mock('common/ui/ProgressBar', () => ({
   ProgressBar: ({ value }) => <span>Progress Bar - {value}</span>,
@@ -173,6 +173,13 @@ describe('ActivationDetails', () => {
     });
 
     test('should use kyc as activation link in activationFormFullView', async () => {
+      await renderAppWithAdminAsMerchant({
+        isActivationFormFullView: true,
+      });
+      const activationLink = screen.getByRole('link', { name: 'Fill Activation Form' });
+      expect(activationLink).toHaveAttribute('href', '/kyc');
+    });
+    test('should use easy as activation link in activationFormFullView', async () => {
       await renderAppWithAdminAsMerchant({
         isActivationFormFullView: true,
       });

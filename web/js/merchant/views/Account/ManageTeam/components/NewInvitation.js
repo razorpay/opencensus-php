@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { Alert } from '@razorpay/blade/components';
 import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -47,6 +48,8 @@ class NewInvitation extends Component {
     });
   }
   save = (body) => {
+    const { ctaText, screen, experiments, successMsg, onFormSubmit, isRenderedFromPartnerRoute } =
+      this.props;
     const is_edit = this.props.ctaText === 'Update Invitation';
     analyticsTrack({
       objectName: is_edit ? 'invitation update popup' : 'invite new member popup',
@@ -60,15 +63,15 @@ class NewInvitation extends Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    if (this.props.experiments?.isPartnershipsForPosEnabled) {
+    if (experiments?.isPartnershipsForPosEnabled) {
       trackInviteNewMemberModalClicked({
-        ctaClicked: this.props.ctaText,
-        screen: this.props.screen,
+        ctaClicked: ctaText,
+        screen: screen || window.location.pathname,
+        isRenderedFromPartnerRoute,
       });
     }
-    const { successMsg } = this.props;
-    return this.props
-      .onFormSubmit(body)
+
+    return onFormSubmit(body)
       .then(() => {
         if (!is_edit) {
           selfServeTrackSuccess({
@@ -115,8 +118,12 @@ class NewInvitation extends Component {
   };
 
   componentDidMount() {
-    if (this.props.experiments?.isPartnershipsForPosEnabled) {
-      trackInviteNewMemberModalLoaded({ screen: this.props.screen });
+    const { screen, experiments, isRenderedFromPartnerRoute } = this.props;
+    if (experiments?.isPartnershipsForPosEnabled) {
+      trackInviteNewMemberModalLoaded({
+        screen: screen || window.location.pathname,
+        isRenderedFromPartnerRoute,
+      });
     }
   }
 
@@ -134,7 +141,15 @@ class NewInvitation extends Component {
   };
 
   render() {
-    const { handleSubmit, selectedRole, user, visibleFields, experiments, ...props } = this.props;
+    const {
+      handleSubmit,
+      selectedRole,
+      user,
+      visibleFields,
+      experiments,
+      isRenderedFromPartnerRoute,
+      ...props
+    } = this.props;
 
     let ROLES = this.filterRoles();
 
@@ -150,9 +165,11 @@ class NewInvitation extends Component {
       ROLES = { ...ROLES, ...RegistrationLinkRoles };
     }
 
-    if (experiments?.isPartnershipsForPosEnabled) {
+    if (experiments?.isPartnershipsForPosEnabled || isRenderedFromPartnerRoute) {
       ROLES = { ...ROLES, ...posPartnerRoles };
     }
+    const shouldShowNonPOSAlert =
+      isRenderedFromPartnerRoute && !!selectedRole && selectedRole !== rolesList.PARTNER_AGENT;
 
     return (
       <form>
@@ -218,8 +235,17 @@ class NewInvitation extends Component {
                 </div>
               </div>
               <div class="form-group">
-                {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
+                {!shouldShowNonPOSAlert && ROLES[selectedRole]?.desc ? (
                   <div class="alert alert-info text-center">{ROLES[selectedRole].desc}</div>
+                ) : null}
+                {shouldShowNonPOSAlert ? (
+                  <Alert
+                    isDismissible={false}
+                    color="negative"
+                    description={
+                      "You're adding a role which is associated with your merchant profile"
+                    }
+                  />
                 ) : null}
               </div>
             </>

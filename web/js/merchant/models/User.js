@@ -1373,6 +1373,10 @@ export default class User {
     return [rolesList.SELLERAPP, rolesList.SELLERAPP_PLUS].indexOf(userRole) > -1;
   }
 
+  get isPartnerAgentRole() {
+    return this.userRole === rolesList.PARTNER_AGENT;
+  }
+
   get isRouteCodeSupportEnabled() {
     return this.isFeatureEnabled('route_code_support');
   }

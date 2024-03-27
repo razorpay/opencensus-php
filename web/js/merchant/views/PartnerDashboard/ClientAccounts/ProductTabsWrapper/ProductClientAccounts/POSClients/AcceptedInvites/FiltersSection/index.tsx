@@ -82,15 +82,18 @@ const AcceptedInvitesFiltersSection = ({
           <CommonFilters filtersList={getFiltersList({ user })} />
         </FiltersSectionWrapper>
       </Box>
-      <Box
-        minWidth="160px"
-        marginTop="30px"
-        marginBottom="spacing.2"
-        marginRight="spacing.1"
-        marginLeft="spacing.2"
-      >
-        <ExportButton productType={productType} />
-      </Box>
+      {/* Note: hiding this button from Agent until report config is separated from BE(POS vs non-POS submerchants) */}
+      {!user.isPartnerAgentRole ? (
+        <Box
+          minWidth="160px"
+          marginTop="30px"
+          marginBottom="spacing.2"
+          marginRight="spacing.1"
+          marginLeft="spacing.2"
+        >
+          <ExportButton productType={productType} />
+        </Box>
+      ) : null}
     </Box>
   );
 };

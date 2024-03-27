@@ -45,6 +45,7 @@ export const hideCustomBannersFromState = async ({ page }) => {
     }
   });
 };
+
 export const hideCustomerGluGame = async ({ page }) => {
   await page.evaluate(() => {
     window.localStorage.setItem(`CUSTOMER_GLU_E2E`, 'off');
@@ -72,4 +73,10 @@ export const waitForSelectorToBeVisible = async ({ page, selector }, options) =>
   await page.waitForSelector(selector, options);
   const locator = await page.locator(selector);
   await expect(locator).toBeVisible();
+};
+
+export const pageConsoleLog = async (page, ...args) => {
+  await page.evaluate((args) => {
+    console.log(...args);
+  }, args);
 };

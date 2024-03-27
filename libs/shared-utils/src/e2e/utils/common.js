@@ -76,3 +76,9 @@ export const waitForSelectorToBeVisible = async ({ page, selector }, options) =>
   const locator = await page.locator(selector);
   await expect(locator).toBeVisible();
 };
+
+export const pageConsoleLog = async (page, ...args) => {
+  await page.evaluate((args) => {
+    console.log(...args);
+  }, args);
+};

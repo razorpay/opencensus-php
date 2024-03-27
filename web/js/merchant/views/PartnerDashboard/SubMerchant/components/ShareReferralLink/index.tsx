@@ -16,6 +16,7 @@ import { useI18Service } from 'common/i18';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { User } from 'common/typings';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { getProductTypeVisibilityMap } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/utils/tabsData';
 import { Org } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import { ReferralData } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/hooks/useReferralLinks';
 import { ORG_NAME, PRODUCT_NAME, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
@@ -31,14 +32,14 @@ type ShareReferralLinkType = {
   closeModal: () => void;
   user: User;
   org: Org;
-  productType: string;
+  initialProductType: string;
 };
 const ShareReferralLink = ({
   closeModal,
   referralData,
   user,
   org,
-  productType: initialProductType,
+  initialProductType,
 }: ShareReferralLinkType): JSX.Element => {
   // tracking arg
   const inviteFlow = 'SHARE_REFERRAL_LINK';
@@ -48,9 +49,11 @@ const ShareReferralLink = ({
   // TODO v2: make a copy of ShareReferralLink component to separately handle urls for isPlatformPartnerInviteFlowEnabled
   const referralUrl = referralData?.[productType]?.url;
   const easyAccessUrl = referralData?.[productType]?.easy_kyc_access_url;
-  const { isPlatformPartnerInviteFlowEnabled, isPartnershipsForPosEnabled } =
-    usePartnerDashboardExperiments();
-  const { isConfigTagEnabled } = useI18Service();
+
+  const i18 = useI18Service();
+  const experiments = usePartnerDashboardExperiments();
+  const { isPlatformPartnerInviteFlowEnabled } = experiments;
+  const productTypeVisibilityMap = getProductTypeVisibilityMap({ user, experiments, i18 });
 
   useEffect(() => {
     analyticsTrackWithUserInfo({
@@ -91,7 +94,7 @@ const ShareReferralLink = ({
               justifyContent="center"
               backgroundColor="surface.background.level2.lowContrast"
             >
-              {isPartnershipsForPosEnabled ? (
+              {productTypeVisibilityMap[PRODUCT_TYPE.POS] ? (
                 <div onClick={() => setProductType(PRODUCT_TYPE.POS)}>
                   <Box
                     display="flex"
@@ -144,58 +147,60 @@ const ShareReferralLink = ({
                 </div>
               ) : null}
 
-              <div onClick={() => setProductType(PRODUCT_TYPE.PG)}>
-                <Box
-                  display="flex"
-                  flexDirection="column"
-                  gap="spacing.5"
-                  justifyContent="center"
-                  padding="spacing.6"
-                  backgroundColor="surface.background.level2.lowContrast"
-                  borderColor="surface.border.normal.lowContrast"
-                  borderWidth="thin"
-                >
-                  <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
-                    <Box
-                      display="flex"
-                      flexDirection="column"
-                      gap="spacing.2"
-                      justifyContent="center"
-                    >
-                      <Box display="flex" flexDirection="column" gap="spacing.2">
+              {productTypeVisibilityMap[PRODUCT_TYPE.PG] ? (
+                <div onClick={() => setProductType(PRODUCT_TYPE.PG)}>
+                  <Box
+                    display="flex"
+                    flexDirection="column"
+                    gap="spacing.5"
+                    justifyContent="center"
+                    padding="spacing.6"
+                    backgroundColor="surface.background.level2.lowContrast"
+                    borderColor="surface.border.normal.lowContrast"
+                    borderWidth="thin"
+                  >
+                    <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
+                      <Box
+                        display="flex"
+                        flexDirection="column"
+                        gap="spacing.2"
+                        justifyContent="center"
+                      >
                         <Box display="flex" flexDirection="column" gap="spacing.2">
-                          <Text weight="bold">{orgName} Payments</Text>
-                          <Text size="small">
-                            Invite clients to use {orgName} Payment products to collect payments
-                          </Text>
+                          <Box display="flex" flexDirection="column" gap="spacing.2">
+                            <Text weight="bold">{orgName} Payments</Text>
+                            <Text size="small">
+                              Invite clients to use {orgName} Payment products to collect payments
+                            </Text>
+                          </Box>
                         </Box>
                       </Box>
+                      <Radio value={PRODUCT_TYPE.PG}>{''}</Radio>
                     </Box>
-                    <Radio value={PRODUCT_TYPE.PG}>{''}</Radio>
+                    {productType === PRODUCT_TYPE.PG ? (
+                      !isPlatformPartnerInviteFlowEnabled && easyAccessUrl ? (
+                        <ClientAssistOptions
+                          inviteFlow={inviteFlow}
+                          productType={productType}
+                          referralUrl={referralUrl}
+                          easyAccessUrl={easyAccessUrl}
+                        />
+                      ) : (
+                        <SocialShareGroup
+                          isKycAssistedSelected={null}
+                          inviteFlow={inviteFlow}
+                          productType={productType}
+                          referralUrl={referralUrl}
+                        />
+                      )
+                    ) : null}
                   </Box>
-                  {productType === PRODUCT_TYPE.PG ? (
-                    !isPlatformPartnerInviteFlowEnabled && easyAccessUrl ? (
-                      <ClientAssistOptions
-                        inviteFlow={inviteFlow}
-                        productType={productType}
-                        referralUrl={referralUrl}
-                        easyAccessUrl={easyAccessUrl}
-                      />
-                    ) : (
-                      <SocialShareGroup
-                        isKycAssistedSelected={null}
-                        inviteFlow={inviteFlow}
-                        productType={productType}
-                        referralUrl={referralUrl}
-                      />
-                    )
-                  ) : null}
-                </Box>
-              </div>
+                </div>
+              ) : null}
 
               {!isPlatformPartnerInviteFlowEnabled &&
-              !isPartnershipsForPosEnabled &&
-              !isConfigTagEnabled('partnership.add_new_razorpay_x_merchant') ? (
+              productTypeVisibilityMap[PRODUCT_TYPE.X] &&
+              !i18.isConfigTagEnabled('partnership.add_new_razorpay_x_merchant') ? (
                 <div onClick={() => setProductType(PRODUCT_TYPE.X)}>
                   <Box
                     display="flex"
@@ -237,7 +242,8 @@ const ShareReferralLink = ({
                   </Box>
                 </div>
               ) : null}
-              {!isPlatformPartnerInviteFlowEnabled && user.isPartnershipForCapitalEnabled ? (
+              {!isPlatformPartnerInviteFlowEnabled &&
+              productTypeVisibilityMap[PRODUCT_TYPE.CAPITAL] ? (
                 <div onClick={() => setProductType(PRODUCT_TYPE.CAPITAL)}>
                   <Box
                     display="flex"

@@ -166,7 +166,6 @@ const DetailsAction = ({
         <div className="submerchant-details-action request-access-kyc">
           <div className="icon-container">
             <div className="icon">
-              {/* eslint-disable i18n-rules/no-region-specific-image */}
               <img src="/dist/css/assets/partner-dashboard/razorpay-circle.svg" />
             </div>
           </div>
@@ -175,7 +174,6 @@ const DetailsAction = ({
             <br />
             <p className="description">{description}</p>
             <div className={`${image === WaitingApprovalImg ? 'waiting-approval' : 'default-img'}`}>
-              {/* eslint-disable i18n-rules/no-region-specific-image */}
               <Image src={image} isWebP />
             </div>
             {!isHidden && (
@@ -193,7 +191,6 @@ const DetailsAction = ({
         <div className="submerchant-details-action ">
           <div className="icon-container">
             <div className="icon">
-              {/* eslint-disable i18n-rules/no-region-specific-image */}
               <img src="/dist/css/assets/partner-dashboard/document-circle.svg" />
             </div>
           </div>
@@ -224,7 +221,6 @@ const DetailsAction = ({
         <div className="submerchant-details-action ">
           <div className="icon-container">
             <div className="icon">
-              {/* eslint-disable i18n-rules/no-region-specific-image */}
               <img src="/dist/css/assets/partner-dashboard/rupee-circle.svg" />
             </div>
           </div>

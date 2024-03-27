@@ -3,6 +3,7 @@ import { Button, Link, PlusIcon } from '@razorpay/blade/components';
 
 import { I18ContextStateType } from 'common/i18/types';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { ADD_NEW_MERCHANT_ELIGIBLE_ROLES } from 'merchant/views/PartnerDashboard/constants';
 
 import useProductActions from './hooks/useProductActions';
 
@@ -28,7 +29,7 @@ const SideHeader = ({ i18, isPlatformPartnerWithPGInviteFlow }: SideHeaderProps)
         </Link>
       </ShowWhen>
       <ShowWhen
-        myRole="owner manager admin"
+        myRole={ADD_NEW_MERCHANT_ELIGIBLE_ROLES}
         additionalCondition={(currentUser) =>
           currentUser.isPartner() &&
           (isPlatformPartnerWithPGInviteFlow || !currentUser.isPartner('pure_platform'))

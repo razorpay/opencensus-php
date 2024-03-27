@@ -5,7 +5,7 @@ import ProductTabsWrapper from 'merchant/views/PartnerDashboard/ClientAccounts/P
 import { emptyAccountsListResponse } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/fixtures';
 import { acceptedInvitesListHandler } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/once-handlers';
 import { fetchReferralsHandler } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/once-handlers';
-import { PRODUCT_ROUTE_PREFIX, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_ROUTE_PATH_PREFIX, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import {
   render,
   screen,
@@ -17,7 +17,7 @@ import {
 
 import { staticUserExtra, staticLocation } from './mocks/fixtures';
 const productType = PRODUCT_TYPE.CAPITAL;
-const productPrefix = PRODUCT_ROUTE_PREFIX[productType];
+const productPrefix = PRODUCT_ROUTE_PATH_PREFIX[productType];
 const defaultLocation = {
   ...staticLocation,
   pathname: `/partners/submerchants${productPrefix}`,

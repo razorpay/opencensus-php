@@ -1,23 +1,31 @@
 // test-utils.js
 import React, { ReactElement } from 'react';
-import { render, waitForElementToBeRemoved, screen, waitFor } from '@testing-library/react';
-import { renderHook } from '@testing-library/react-hooks';
-import { BrowserRouter, Router as DefaultRouter, Route, Routes } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { server } from '../../../../mocks/node';
-import { errorHandlers } from '../../../../mocks/errorHandlers';
-import { storeWithInitialState } from 'merchant/store';
-import ModalDialog from 'common/ui/ModalDialog';
-import Notifications from 'common/ui/Notifications';
-import Wrapper from 'common/components/Bootstrap/Wrapper';
+import {
+  render,
+  waitForElementToBeRemoved,
+  screen,
+  waitFor,
+  RenderResult,
+} from '@testing-library/react';
+import { RenderHookResult, renderHook } from '@testing-library/react-hooks';
 import userEvent from '@testing-library/user-event';
-// eslint-disable-next-line
-import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
-import { mockContext, COMPONENT_WRAPPER_TESTID } from 'common/services/test/constants';
-import { RouteGuard } from 'merchant/components/ShowWhen';
 import { createMemoryHistory } from 'history';
+import { Provider } from 'react-redux';
+import { BrowserRouter, Router as DefaultRouter, Route, Routes } from 'react-router-dom';
+
+import Wrapper from 'common/components/Bootstrap/Wrapper';
 import * as commonI18 from 'common/i18';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { mockContext, COMPONENT_WRAPPER_TESTID } from 'common/services/test/constants';
+// eslint-disable-next-line
+import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
+import ModalDialog from 'common/ui/ModalDialog';
+import Notifications from 'common/ui/Notifications';
+import { RouteGuard } from 'merchant/components/ShowWhen';
+import { storeWithInitialState } from 'merchant/store';
+
+import { errorHandlers } from '../../../../mocks/errorHandlers';
+import { server } from '../../../../mocks/node';
 
 const createWrapper = ({
   context,
@@ -78,7 +86,7 @@ const customRender = (
     history = createMemoryHistory({ initialEntries }),
     ...restOptions
   }: any = {},
-) => {
+): RenderResult & { history: any } => {
   const AllTheProviders = createWrapper({
     context,
     reduxStore,
@@ -96,7 +104,7 @@ const customRender = (
 };
 
 const customRenderHook = (
-  hook,
+  hook: any,
   {
     path = '/',
     initialState,
@@ -108,8 +116,8 @@ const customRenderHook = (
     renderViaRouteGuard,
     history = createMemoryHistory({ initialEntries }),
     ...restOptions
-  },
-) => {
+  }: any = {},
+): RenderHookResult<any, any> => {
   const AllTheProviders = createWrapper({
     context,
     reduxStore,

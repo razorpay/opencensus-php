@@ -1,10 +1,10 @@
 import React from 'react';
 import { Box, Button } from '@razorpay/blade/components';
+import CheckRound from 'assets/check-round.svg';
 import { FormikValues, useFormik } from 'formik';
 import { isEmpty } from 'lodash';
 import * as Yup from 'yup';
 
-import CheckRound from 'assets/check-round.svg';
 import { FormikHandleChange } from 'common/typings';
 import { CommonSubmerchantBatchResponse } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
@@ -111,7 +111,6 @@ const BulkAddForm = ({
                 <div className="success-message flex-col-between">
                   <div>
                     <p>
-                      {/* eslint-disable i18n-rules/no-region-specific-image */}
                       <img src={CheckRound} alt="Tick icon" /> &nbsp;
                       {bulkContactsCount} contacts have been identified.
                     </p>

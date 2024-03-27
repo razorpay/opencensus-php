@@ -11,8 +11,8 @@ import useTrackPartnerExperiments from 'merchant/views/PartnerDashboard/SubMerch
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import PartnerReports from 'merchant_common/views/Reports/views/PartnerReports';
 
-import ClientAccounts from './ClientAccounts';
 import Applications from './Applications';
+import ClientAccounts from './ClientAccounts';
 import Earnings from './Earnings';
 import Home from './Home';
 import Settings from './Settings';
@@ -23,6 +23,12 @@ import Subvention from './Subvention';
 const PartnerPlaybook = lazy(() =>
   import(
     /* webpackChunkName: "PartnerPlaybook" */ 'merchant/views/PartnerDashboard/PartnerPlaybook'
+  ),
+);
+
+const PartnerManageTeam = lazy(() =>
+  import(
+    /* webpackChunkName: "PartnerManageTeam" */ 'merchant/views/PartnerDashboard/PartnerManageTeam'
   ),
 );
 
@@ -142,6 +148,22 @@ export default function PartnerDashboard() {
             >
               <RouteGuard additionalCondition={() => isPartnerPlaybookEnabled}>
                 <PartnerPlaybook />
+              </RouteGuard>
+            </Suspense>
+          }
+        />
+        <Route
+          path="manage-team/*"
+          element={
+            <Suspense
+              fallback={
+                <Box minHeight="800px" display="flex" justifyContent="center" alignItems="center">
+                  <Spinner accessibilityLabel="spinner" size="xlarge" />
+                </Box>
+              }
+            >
+              <RouteGuard additionalCondition={(user) => user.isAllowedTeamManagement}>
+                <PartnerManageTeam />
               </RouteGuard>
             </Suspense>
           }

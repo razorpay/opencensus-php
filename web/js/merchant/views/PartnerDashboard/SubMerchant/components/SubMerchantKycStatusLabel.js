@@ -14,11 +14,13 @@ import { connect } from 'react-redux';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { titleCase } from 'common/utils/rzp-utils';
 import ConditionalTooltip from 'merchant/containers/ConditionalTooltip';
-
+// Note: in case of POS submerchant
+const NA_ACTIVATION_STATUS = 'n/a';
 const statusMap = {
   activated: 'positive',
   rejected: 'negative',
   needs_clarification: 'notice',
+  [NA_ACTIVATION_STATUS]: 'notice',
   under_review: 'information',
   kyc_qualified_unactivated: 'information',
   instantly_activated: 'information',
@@ -29,6 +31,7 @@ const activationStatusToIcon = {
   activated: CheckIcon,
   rejected: AlertOctagonIcon,
   needs_clarification: AlertTriangleIcon,
+  [NA_ACTIVATION_STATUS]: AlertTriangleIcon,
   under_review: ClockIcon,
   kyc_qualified_unactivated: ClockIcon,
   instantly_activated: CheckIcon,
@@ -120,8 +123,12 @@ const SubMerchantKycStatusLabel = ({
     if (activation_status === null) {
       return 'Pending Completion';
     }
-    return titleCase(activation_status);
+    if (activation_status === NA_ACTIVATION_STATUS) {
+      return 'Not Available';
+    }
+    return titleCase(activation_status) || 'Not Available';
   };
+
   return (
     <Box
       minWidth="150px"

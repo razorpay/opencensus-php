@@ -26,7 +26,6 @@ const commonProps = {
   productType,
   submerchant: { id: 'acc_LY0LBrSgJLlFHa', details: { activation_status: null }, kyc_access: null },
   showNotification: jest.fn(),
-  isPGProductWithInviteFlow: false,
 };
 
 describe('<ActionButtonKYC /> ', () => {
@@ -176,8 +175,7 @@ describe('<ActionButtonKYC /> ', () => {
       },
     });
 
-    expect(screen.queryByText('Perform KYC')).toBeNull();
-    expect(screen.getByTestId('component-wrapper').firstChild).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Perform KYC' })).toBeDisabled();
   });
 
   test('Status is instantly_activated by Razorpay', () => {

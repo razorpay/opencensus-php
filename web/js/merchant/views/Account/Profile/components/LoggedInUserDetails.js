@@ -1,13 +1,20 @@
-import DetailRow from 'merchant/components/DetailRow';
-import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import Button from 'common/new-ui/Button';
-import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
 import { connect } from 'react-redux';
-import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
+
+import Button from 'common/new-ui/Button';
+import { analyticsTrack } from 'common/utils/analytics';
+import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import DetailRow from 'merchant/components/DetailRow';
+import {
+  roles,
+  agentRole,
+  RBLRoles,
+  RegistrationLinkRoles,
+  posPartnerRoles,
+} from 'merchant/helpers/data';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import AddEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail';
-import { analyticsTrack } from 'common/utils/analytics';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 
 const LoggedInUserDetails = ({
   isOrgRZP,
@@ -17,7 +24,13 @@ const LoggedInUserDetails = ({
   isEmailSelfServeEnabled,
   openModal,
 }) => {
-  const ROLES = { ...roles, ...agentRole, ...RBLRoles, ...RegistrationLinkRoles };
+  const ROLES = {
+    ...roles,
+    ...agentRole,
+    ...RBLRoles,
+    ...RegistrationLinkRoles,
+    ...posPartnerRoles,
+  };
 
   const openAddEmailModal = () => {
     analyticsTrack({

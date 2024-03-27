@@ -119,6 +119,7 @@ export const RoutesConfig = {
   '/partners/earnings/invoices': Teams.PARTNERSHIP,
   '/partners/earnings/transactional': Teams.PARTNERSHIP,
   '/partners/playbook': Teams.PARTNERSHIP,
+  '/partners/manage-team': Teams.PARTNERSHIP,
   '/partners/reports': Teams.MERCHANT_REPORTING,
   '/partners/settings': Teams.PARTNERSHIP,
   '/partners/submerchants': Teams.PARTNERSHIP,

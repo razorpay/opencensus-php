@@ -23,13 +23,20 @@ export const trackPartnerHomepageCtaClicked = ({ ctaClicked }: { ctaClicked: str
   });
 };
 
-export const trackInviteNewMemberModalLoaded = ({ screen }: { screen: string }): void => {
+export const trackInviteNewMemberModalLoaded = ({
+  screen,
+  isRenderedFromPartnerRoute,
+}: {
+  screen: string;
+  isRenderedFromPartnerRoute: boolean;
+}): void => {
   analyticsTrackWithUserInfo({
     objectName: 'Invite New Member Modal',
     actionName: 'Loaded',
     screen: 'Partner Dashboard Home',
     properties: {
       screen,
+      isRenderedFromPartnerRoute,
     },
   });
 };
@@ -37,9 +44,11 @@ export const trackInviteNewMemberModalLoaded = ({ screen }: { screen: string }):
 export const trackInviteNewMemberModalClicked = ({
   ctaClicked,
   screen,
+  isRenderedFromPartnerRoute,
 }: {
   ctaClicked: string;
   screen: string;
+  isRenderedFromPartnerRoute: boolean;
 }): void => {
   analyticsTrackWithUserInfo({
     objectName: 'Invite New Member Modal Cta',
@@ -48,6 +57,7 @@ export const trackInviteNewMemberModalClicked = ({
     properties: {
       screen,
       ctaClicked,
+      isRenderedFromPartnerRoute,
     },
   });
 };

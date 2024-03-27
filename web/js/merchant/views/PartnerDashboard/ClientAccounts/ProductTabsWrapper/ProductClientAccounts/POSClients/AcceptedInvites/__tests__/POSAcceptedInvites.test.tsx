@@ -102,6 +102,15 @@ describe('POSAcceptedInvites', () => {
     });
   });
 
+  test(`should hide export list button when isPartnerAgentRole is true for pos`, async () => {
+    renderApp({ userExtra: { isPartnerAgentRole: true } });
+    await waitForLoadingToFinishByLabel();
+    await waitFor(() => {
+      expect(screen.queryByText('Invite Accepted On')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Export All (CSV)')).not.toBeInTheDocument();
+  });
+
   test(`should render the empty screen once the data is fetched and is empty for pos`, async () => {
     server.use(acceptedInvitesListHandlerPOS(emptyAccountsListResponsePOS));
     renderApp();

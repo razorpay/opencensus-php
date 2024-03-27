@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, Button, Divider, Text } from '@razorpay/blade/components';
+import CheckRound from 'assets/check-round.svg';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
-import CheckRound from 'assets/check-round.svg';
 import { FormikHandleChange, UseFormikReturnType } from 'common/typings';
 import { validatePartnerSubmerchantReferralInvitesBatch } from 'merchant/reducers/batches';
 import { ValidateReferralInvitesBatchType } from 'merchant/views/PartnerDashboard/SubMerchant/api';

@@ -1,5 +1,4 @@
-import { rest } from 'msw';
-
+import { fetchMerchantTeamMembersHandler } from 'merchant/views/PartnerDashboard/PartnerManageTeam/__tests__/mocks/once-handlers';
 import {
   allInvitesListSuccess,
   resendInviteHandler,
@@ -9,14 +8,5 @@ import { allInvitesDataPOS, resendInviteDataPOS, partnerAgentsData } from './fix
 
 export const allInvitesListSuccessPOS = (data = allInvitesDataPOS) => allInvitesListSuccess(data);
 export const resendInviteHandlerPOS = (data = resendInviteDataPOS) => resendInviteHandler(data);
-export const fetchPartnerAgentUsersHandler = () =>
-  rest.get('*/merchant/api/*/merchants-users', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        status_code: 200,
-        success: true,
-        data: partnerAgentsData,
-      }),
-    );
-  });
+export const fetchPartnerAgentUsersHandler = (data = partnerAgentsData) =>
+  fetchMerchantTeamMembersHandler(data);

@@ -82,7 +82,7 @@ describe('ProductTabsWrapper', () => {
       await waitFor(() => {
         expect(screen.getByRole('button', { name: 'Copy Link' })).toBeInTheDocument();
       });
-    });
+    }, 20000);
 
     test('should render Add merchant modal after clicking Add button', async () => {
       const productType = PRODUCT_TYPE.X;

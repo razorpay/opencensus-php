@@ -1,11 +1,16 @@
 import { useEffect } from 'react';
+import { connect } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
+
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
-
+import { User } from 'common/typings';
 import { matchFullPageView } from 'merchant/routes';
 
-export default function HandleIndex() {
+type HandleIndexProps = {
+  user: User;
+};
+const HandleIndex = ({ user }: HandleIndexProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const i18 = useI18Service();
@@ -25,10 +30,14 @@ export default function HandleIndex() {
 
       const newRoute = location.pathname + path;
       navigate(newRoute);
+    } else if (user.isPartnerAgentRole) {
+      navigate('/partners/submerchants/pos');
     } else {
       navigate('/dashboard');
     }
   }, []);
 
   return null;
-}
+};
+
+export default connect((state) => ({ user: state.session.user }), null)(HandleIndex);

@@ -10,7 +10,7 @@ import {
   allInvitesDataEmpty,
 } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/fixtures';
 import { allInvitesListSuccess } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/handlers';
-import { PRODUCT_ROUTE_PREFIX, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_ROUTE_PATH_PREFIX, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import {
   render,
   screen,
@@ -23,7 +23,7 @@ import {
 import { staticUserExtra, staticLocation } from './mocks/fixtures';
 
 const productType = PRODUCT_TYPE.PG;
-const productPrefix = PRODUCT_ROUTE_PREFIX[productType];
+const productPrefix = PRODUCT_ROUTE_PATH_PREFIX[productType];
 const defaultLocation = {
   ...staticLocation,
   pathname: `/partners/submerchants${productPrefix}`,

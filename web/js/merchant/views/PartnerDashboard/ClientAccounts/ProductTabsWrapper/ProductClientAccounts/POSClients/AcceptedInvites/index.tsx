@@ -6,7 +6,7 @@ import DataTableWrapper from 'merchant/views/PartnerDashboard/ClientAccounts/Pro
 import {
   FetchSubmerchantsParams,
   fetchSubmerchants,
-  PGAcceptedInviteItem,
+  POSAcceptedInviteItem,
   FetchInviteResponse,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/api';
 import useWelcomeScreenData from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/WelcomeScreenContainer/hooks/useWelcomeScreenData';
@@ -36,7 +36,7 @@ const AcceptedInvitesTable = ({ user }: AcceptedInvitesTableProps): JSX.Element 
   };
 
   return (
-    <DataTableWrapper<PGAcceptedInviteItem, FetchInviteResponse>
+    <DataTableWrapper<POSAcceptedInviteItem, FetchInviteResponse>
       getColumns={getColumns}
       paginationQueryFn={paginationQueryFn}
       queryKey="filter-pos-accepted-invites"

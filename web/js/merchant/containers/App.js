@@ -1,40 +1,35 @@
 import React, { Component, Suspense } from 'react';
-import { connect } from 'react-redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-import moment from 'moment';
-import { createSidetab, createPopup } from '@typeform/embed';
 import errorService from '@razorpay/universe-utils/errorService';
-import Loader from 'common/ui/Loader';
+import { createSidetab, createPopup } from '@typeform/embed';
+import cloneDeep from 'lodash/cloneDeep';
+import moment from 'moment';
+import qs from 'query-string';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+import { bindActionCreators, compose } from 'redux';
+import 'refiner-js';
+
+import Wrapper from 'common/components/Bootstrap/Wrapper';
+import { withI18Service, withI18nifyState } from 'common/i18';
 import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import graphqlClient from 'common/services/graphql/graphql-client';
+import { withSplitzService } from 'common/splitz';
+import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
+import Loader from 'common/ui/Loader';
 import ModalDialog from 'common/ui/ModalDialog';
-import { getItem, setItem, removeItem } from 'common/utils/localStorage';
-import { analyticsTrack } from 'common/utils/analytics';
-import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
-import { initSentry } from 'common/utils/observability';
 import Notifications from 'common/ui/Notifications';
-import debounce from 'common/utils/debounce';
-import Sidebar from 'merchant/components/Sidebar';
-import SidebarV2 from 'merchant/components/SidebarV2';
-import HeaderNav from 'merchant/components/HeaderNav';
-import HighlightTestMode from 'merchant/components/HighlightTestMode';
-import Content from 'merchant/routes/Content';
-import Footer from 'merchant/components/Footer';
-import ActivationRequiredModal from 'merchant/components/ActivationRequiredModal';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import * as NotificationActions from 'merchant_common/reducers/notifications';
-import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
-import * as SessionActions from 'merchant/reducers/session';
-import * as ConfigActions from 'merchant/reducers/config';
-import { applyTheme } from 'merchant_common/helpers/themes';
 import TwoFactorVerificationProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
-import User, { setFeatures } from 'merchant/models/User';
-import { fetchFeaturesAjax } from 'merchant/reducers/config';
-import AddGST from 'merchant/views/Account/Profile/components/AddGST';
-import { fetchGST } from 'merchant/reducers/profile';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCookie, setCookie } from 'common/utils/cookies';
+import debounce from 'common/utils/debounce';
 import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics';
-import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
-import { fetchEligibilityForNcRevamp } from 'merchant/reducers/home';
-import { matchFullPageView } from 'merchant/routes';
+import { getItem, setItem, removeItem } from 'common/utils/localStorage';
+import getMobileDetect from 'common/utils/mobileDetect';
+import { initSentry } from 'common/utils/observability';
 import {
   classList,
   isPresent,
@@ -43,42 +38,51 @@ import {
   getCommonAnalyticsProperties,
   isConfigTagAPISupported,
 } from 'common/utils/rzp-utils';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import ajax, { merchantFetch } from 'merchant/utils/ajax';
-import rolesList from 'merchant/helpers/permissions/roles-list';
-import RTracking from 'react-tracking';
-import qs from 'query-string';
-import Wrapper from 'common/components/Bootstrap/Wrapper';
-import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
-import * as EventActions from 'merchant/reducers/trackEvents';
-import LogoutDialog from 'merchant/components/LogoutDialog';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { fetchMerchantReferralDetail } from 'merchant/reducers/merchantReferral';
-import { fetchInstantSettlements, fetchPayments } from 'merchant/reducers/collection';
-import { fetchAmount } from 'merchant/reducers/fetchTransaction';
-import { bindActionCreators, compose } from 'redux';
-import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
-import { getCookie, setCookie } from 'common/utils/cookies';
-import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal';
-import { isPartnerPage } from 'merchant/utils/isPartnerPage';
-import getMobileDetect from 'common/utils/mobileDetect';
+import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import {
   isPgMerchant,
   setRecommendedProduct,
 } from 'merchant/components/Activation/ActivationUtils';
-import currencies from '../constants/currency';
-import { Helmet, HelmetProvider } from 'react-helmet-async';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import ActivationRequiredModal from 'merchant/components/ActivationRequiredModal';
+import Footer from 'merchant/components/Footer';
+import HeaderNav from 'merchant/components/HeaderNav';
+import HighlightTestMode from 'merchant/components/HighlightTestMode';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import LogoutDialog from 'merchant/components/LogoutDialog';
+import Sidebar from 'merchant/components/Sidebar';
+import SidebarV2 from 'merchant/components/SidebarV2';
+import currencies from 'merchant/constants/currency';
 import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dates';
-import lazy from 'merchant/routes/LazyLoader';
-import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
-import cloneDeep from 'lodash/cloneDeep';
-import { withSplitzService } from 'common/splitz';
-import { withI18Service, withI18nifyState } from 'common/i18';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import User, { setFeatures } from 'merchant/models/User';
+import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
+import { fetchInstantSettlements, fetchPayments } from 'merchant/reducers/collection';
+import * as ConfigActions from 'merchant/reducers/config';
+import { fetchFeaturesAjax } from 'merchant/reducers/config';
+import { fetchAmount } from 'merchant/reducers/fetchTransaction';
+import { fetchEligibilityForNcRevamp } from 'merchant/reducers/home';
+import { fetchMerchantReferralDetail } from 'merchant/reducers/merchantReferral';
+import { fetchGST } from 'merchant/reducers/profile';
+import * as SessionActions from 'merchant/reducers/session';
 import { fetchConfigTags } from 'merchant/reducers/session';
-import graphqlClient from 'common/services/graphql/graphql-client';
-import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
+import * as EventActions from 'merchant/reducers/trackEvents';
+import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
+import { matchFullPageView } from 'merchant/routes';
+import Content from 'merchant/routes/Content';
+import lazy from 'merchant/routes/LazyLoader';
 import { COUNTRY_CODE_LOCALE_MAP } from 'merchant/routes/constants';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
+import { isPartnerPage } from 'merchant/utils/isPartnerPage';
+import AddGST from 'merchant/views/Account/Profile/components/AddGST';
+import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
+import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal';
+import { applyTheme } from 'merchant_common/helpers/themes';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
+
+import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -309,7 +313,8 @@ class App extends Component {
     if (this.props.user?.isProductLedOnboarding) {
       Promise.all([this.props.fetchTransactionAmount(user?.created_at), this.fetchOrg()])
         .then((response) => {
-          const isOrgRZP = response?.[1]?.data?.custom_code === 'rzp';
+          const data = response?.[1]?.data;
+          const isOrgRZP = data?.custom_code === 'rzp';
           const transactionAmount = response?.[0]?.data?.firstTransaction?.result?.length
             ? // check with codeowner once, how is it working 😔?
               // eslint-disable-next-line no-undef
@@ -966,7 +971,6 @@ class App extends Component {
         case null:
           this.props.history.replace('/profile');
           break;
-
         default:
           break;
       }
@@ -1001,7 +1005,8 @@ class App extends Component {
       },
     });
     if (this.state.isPartnerModeEnabled) {
-      return this.handlePartnerModeSwitch(mode);
+      this.handlePartnerModeSwitch(mode);
+      return;
     }
     const user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
@@ -1217,7 +1222,8 @@ class App extends Component {
 
     const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
 
-    const isSidebarV2 = user.isOrgRZP && !user.isPartner() && !user.isSourceRX;
+    const isSidebarV2 =
+      user.isOrgRZP && !user.isPartner() && !user.isSourceRX && !user.isPartnerAgentRole;
 
     if (isRTUXHomepage) {
       return isSidebarV2;

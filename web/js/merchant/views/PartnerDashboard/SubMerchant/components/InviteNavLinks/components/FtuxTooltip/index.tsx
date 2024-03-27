@@ -83,6 +83,7 @@ const FtuxTooltip = (): JSX.Element | null => {
             <Text type="subtle" size="small" contrast="high">
               All Affiliate Accounts that have accepted your invite.{' '}
               <Link target="_blank" href={PARTNERSHIPS_WEBSITE_LINKS.PERFORM_KYC_DOCS_LINK}>
+                {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
                 {/* @ts-ignore Link only accepts string children */}
                 <Text weight="bold" size="small" type="subtle" contrast="high">
                   Perform KYC
@@ -99,12 +100,7 @@ const FtuxTooltip = (): JSX.Element | null => {
           ) : null}
         </Text>
         <Box marginTop="spacing.4">
-          <FtuxAction
-            onClick={handleClick}
-            variant="primary"
-            size="xsmall"
-            testID="invite-navlinks-ftux-gotit"
-          >
+          <FtuxAction onClick={handleClick} variant="primary" size="xsmall">
             GOT IT
           </FtuxAction>
         </Box>

@@ -18,6 +18,7 @@ export const customFiltersGetter = ({
     const invitedByField: ListFilterConfig = {
       fieldType: 'custom',
       fieldName: 'inviter_user_id',
+      fieldWidth: '190px',
       Component: ({ onChange, value }) => (
         <InvitedByFilter value={value} posAgents={posAgents} onChange={onChange} />
       ),

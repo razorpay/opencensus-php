@@ -1,4 +1,10 @@
-import { agentRole, RBLRoles, RegistrationLinkRoles, roles } from 'merchant/helpers/data';
+import {
+  agentRole,
+  RBLRoles,
+  RegistrationLinkRoles,
+  roles,
+  posPartnerRoles,
+} from 'merchant/helpers/data';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
   CHANGE_PASSWORD,
@@ -12,7 +18,7 @@ import {
   User,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 
-const Roles = { ...roles, ...agentRole, ...RBLRoles, ...RegistrationLinkRoles };
+const Roles = { ...roles, ...agentRole, ...RBLRoles, ...RegistrationLinkRoles, ...posPartnerRoles };
 
 export const getRole = ({ user }) => {
   const role = user.userRole;

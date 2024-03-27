@@ -12,6 +12,7 @@ const getStorageStatePath = () => ({
   MAGIC_CHECKOUT_STATE: `${BASE_PATH}/magic-checkout.json`,
   RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
   RESELLER_PARTNER_POS_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-pos-desktop-test-mode-login.json`,
+  RESELLER_PARTNER_AGENT_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-agent-desktop-test-mode-login.json`,
   AGGREGATOR_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/aggregator-partner-desktop-test-mode-login.json`,
   PLATFORM_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/platform-partner-desktop-test-mode-login.json`,
   OPTIMIZER_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-login.json`,
@@ -80,6 +81,12 @@ const getEmailCredentials = () => {
       username: ENV.RESELLER_PARTNER_POS_TEST_MODE_USERNAME,
       password: ENV.RESELLER_PARTNER_POS_TEST_MODE_PASSWORD,
       storagePath: StorageStatePath.RESELLER_PARTNER_POS_TEST_LOGIN_STATE,
+    },
+    {
+      type: 'reseller-partner-agent-desktop-test-mode-login.json',
+      username: ENV.RESELLER_PARTNER_AGENT_TEST_MODE_USERNAME,
+      password: ENV.RESELLER_PARTNER_AGENT_TEST_MODE_PASSWORD,
+      storagePath: StorageStatePath.RESELLER_PARTNER_AGENT_TEST_LOGIN_STATE,
     },
     {
       type: 'aggregator-partner-desktop-test-mode-login.json',

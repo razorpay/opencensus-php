@@ -12,10 +12,11 @@ const defaultProps = {
   onNextClick: jest.fn(),
 };
 const defaultUserExtra = {
+  isPartner: (partner_type = 'reseller') => partner_type === 'reseller',
   findTag: jest.fn(),
   isPartnershipForCapitalEnabled: true,
+  isPartnerAgentRole: false,
 };
-const defaultOrgExtra = {};
 
 const defaultPartnerDashboardExperiments = {
   isPartnershipsForPosEnabled: false,
@@ -27,11 +28,18 @@ jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments'
 }));
 
 describe('SelectProduct', () => {
-  const renderApp = (props = {}, { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {}) => {
+  const renderApp = ({ userExtra = {}, orgExtra = {} } = {}, props = {}, experiments = {}) => {
+    mockPartnerDashboardExperiments = {
+      ...defaultPartnerDashboardExperiments,
+      ...experiments,
+    };
     const session = getInitialUserOrgState({
-      isRzpOrg,
-      userExtra: { ...defaultUserExtra, ...userExtra },
-      orgExtra: { ...defaultOrgExtra, ...orgExtra },
+      isRzpOrg: true,
+      userExtra: {
+        ...defaultUserExtra,
+        ...userExtra,
+      },
+      orgExtra,
     });
     // eslint-disable-next-line
     // @ts-ignore
@@ -42,16 +50,9 @@ describe('SelectProduct', () => {
     mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
   test('should fire callbacks on click events', async () => {
-    // Enable all options
-    const findTag = jest.fn();
-    findTag.mockImplementation((value) => {
-      if (value === HIDDEN_INTERNATIONAL_FEATURES_TAGS.AddNewRazorpayXMerchant) return false;
-      return true;
-    });
-
     renderApp(
+      { userExtra: { isPartnershipForCapitalEnabled: true } },
       { productType: PRODUCT_TYPE.PG },
-      { userExtra: { findTag, isPartnershipForCapitalEnabled: true } },
     );
     await userEvent.click(screen.getByText('RazorpayX'));
     // Call parent's setProductType prop
@@ -66,8 +67,8 @@ describe('SelectProduct', () => {
   });
   test('show Line of credit when isPartnershipForCapitalEnabled is true', () => {
     renderApp(
-      { productType: PRODUCT_TYPE.PG },
       { userExtra: { isPartnershipForCapitalEnabled: true } },
+      { productType: PRODUCT_TYPE.PG },
     );
 
     expect(screen.getByText('Line of credit')).toBeInTheDocument();
@@ -78,22 +79,31 @@ describe('SelectProduct', () => {
       if (value === HIDDEN_INTERNATIONAL_FEATURES_TAGS.AddNewRazorpayXMerchant) return true;
       return false;
     });
-    mockPartnerDashboardExperiments = {
-      ...defaultPartnerDashboardExperiments,
-      isPartnershipsForPosEnabled: true,
-    };
-
+    renderApp({}, {}, { isPartnershipsForPosEnabled: true });
     expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
   });
   test('show POS option if experiment is enabled and product type is POS should fire callback with POS when clicked', async () => {
-    mockPartnerDashboardExperiments = {
-      ...defaultPartnerDashboardExperiments,
-      isPartnershipsForPosEnabled: true,
-    };
-    renderApp({ productType: PRODUCT_TYPE.POS });
+    renderApp({}, { productType: PRODUCT_TYPE.POS }, { isPartnershipsForPosEnabled: true });
     const mainText = screen.getByText('Razorpay POS');
     expect(mainText).toBeInTheDocument();
     await userEvent.click(mainText);
     expect(defaultProps.setProductType).toHaveBeenCalledWith(PRODUCT_TYPE.POS);
+  });
+
+  test('should render only POS if isPartnerAgentRole is true and the feature is enabled', () => {
+    renderApp(
+      { userExtra: { isPartnerAgentRole: true } },
+      {
+        productType: PRODUCT_TYPE.POS,
+      },
+      {
+        isPartnershipsInviteFlowEnabled: true,
+        isPartnershipsForPosEnabled: true,
+      },
+    );
+    expect(screen.queryByText('Razorpay Payments')).not.toBeInTheDocument();
+    expect(screen.queryByText('Line of Credit')).not.toBeInTheDocument();
+    expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
+    expect(screen.getByText('Razorpay POS')).toBeInTheDocument();
   });
 });

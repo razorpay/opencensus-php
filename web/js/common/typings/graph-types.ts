@@ -7117,6 +7117,8 @@ export enum UserRolePaymentsEnum {
   SELLER_APP = 'SELLER_APP',
   SUPPORT = 'SUPPORT',
   VIEW_ONLY = 'VIEW_ONLY',
+  PARTNER = 'PARTNER',
+  PARTNER_AGENT = 'PARTNER_AGENT',
 }
 
 export enum UserSignupCampaignEnum {

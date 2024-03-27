@@ -3,7 +3,7 @@ import { Box, Divider } from '@razorpay/blade/components';
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { PRODUCT_ROUTE_PREFIX, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_ROUTE_PATH_PREFIX, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 import FtuxTooltip from './components/FtuxTooltip';
 
@@ -35,7 +35,7 @@ const InviteNavLinks = ({
   onAcceptedInvitesClick,
   onAllInvitesClick,
 }: InviteNavLinksProps): JSX.Element => {
-  const productRoute = PRODUCT_ROUTE_PREFIX[productType];
+  const productRoute = PRODUCT_ROUTE_PATH_PREFIX[productType];
   return (
     <StyledInviteNavLinks>
       <Box paddingTop="spacing.6" paddingLeft="spacing.6" paddingRight="spacing.6">

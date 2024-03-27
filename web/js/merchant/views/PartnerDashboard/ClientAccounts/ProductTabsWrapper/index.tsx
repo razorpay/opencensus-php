@@ -90,7 +90,7 @@ const ClientProductsWrapper = ({
 
     openModal({
       size: 'med-large',
-      component: <ShareReferralLink referralData={referralData} productType={productType} />,
+      component: <ShareReferralLink referralData={referralData} initialProductType={productType} />,
     });
   };
 

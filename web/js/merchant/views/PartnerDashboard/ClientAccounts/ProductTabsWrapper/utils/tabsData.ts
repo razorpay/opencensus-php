@@ -46,6 +46,33 @@ type getTabsDataValue = {
   productTypeVisibilityMap: Record<string, boolean>;
   tabsData: Array<TabData>;
 };
+export const getProductTypeVisibilityMap = ({
+  user,
+  i18,
+  experiments,
+}: Pick<
+  getTabsDataArgs,
+  'user' | 'i18' | 'experiments'
+>): getTabsDataValue['productTypeVisibilityMap'] => {
+  const { isPartnershipsForPosEnabled } = experiments;
+
+  const shouldShowX =
+    !isPartnershipsForPosEnabled &&
+    !user.isPartnerAgentRole &&
+    user.isPartner() &&
+    !user.isPartner('pure_platform') &&
+    !i18.isConfigTagEnabled('partnership.razorpay_x_affiliate_account');
+
+  const productTypeVisibilityMap = {
+    [PRODUCT_TYPE.PG]: !user.isPartnerAgentRole,
+    [PRODUCT_TYPE.POS]: isPartnershipsForPosEnabled,
+    [PRODUCT_TYPE.CAPITAL]: user.isPartnershipForCapitalEnabled && !user.isPartnerAgentRole,
+    [PRODUCT_TYPE.X]: shouldShowX,
+  };
+
+  return productTypeVisibilityMap;
+};
+
 export const getTabsData = ({
   user,
   i18,
@@ -53,20 +80,8 @@ export const getTabsData = ({
   productType,
 }: getTabsDataArgs): getTabsDataValue => {
   const partnerId = user.id as string;
-  const { isPartnershipsForPosEnabled } = experiments;
 
-  const shouldShowX =
-    !isPartnershipsForPosEnabled &&
-    user.isPartner() &&
-    !user.isPartner('pure_platform') &&
-    !i18.isConfigTagEnabled('partnership.razorpay_x_affiliate_account');
-
-  const productTypeVisibilityMap = {
-    [PRODUCT_TYPE.PG]: true,
-    [PRODUCT_TYPE.POS]: isPartnershipsForPosEnabled,
-    [PRODUCT_TYPE.CAPITAL]: user.isPartnershipForCapitalEnabled,
-    [PRODUCT_TYPE.X]: shouldShowX,
-  };
+  const productTypeVisibilityMap = getProductTypeVisibilityMap({ user, i18, experiments });
 
   const tabsData = tabsConfig.map((tab) => ({
     ...tab,

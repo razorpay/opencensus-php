@@ -1,8 +1,9 @@
-import MainNavLink from 'merchant_common/components/MainNavLink';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
+import MainNavLink from 'merchant_common/components/MainNavLink';
 
 export default function PartnerNavLinks() {
-  const { isPartnerPlaybookEnabled } = usePartnerDashboardExperiments();
+  const { isPartnerPlaybookEnabled, isPartnershipsForPosEnabled } =
+    usePartnerDashboardExperiments();
 
   return (
     <>
@@ -24,10 +25,19 @@ export default function PartnerNavLinks() {
       />
 
       <MainNavLink
+        label="Manage Team"
+        icon="i i-settings text-warning"
+        to="/partners/manage-team"
+        isNew
+        additionalCondition={(user) => isPartnershipsForPosEnabled && user.isAllowedTeamManagement}
+        end
+      />
+
+      <MainNavLink
         label="Partner Playbook"
         icon="i i-partner-playbook text-notice"
         to="/partners/playbook"
-        isNew={true}
+        isNew
         additionalCondition={() => isPartnerPlaybookEnabled}
         end
       />
@@ -78,7 +88,10 @@ export default function PartnerNavLinks() {
         to="/partners/reports"
         isPending={false}
         // disabling for reseller partner not having partner configs
-        additionalCondition={(user) => !user.isPartner('reseller') || user.isHavingPartnerConfigs}
+        additionalCondition={(user) =>
+          user.isAllowedView('partner_reports') &&
+          (!user.isPartner('reseller') || user.isHavingPartnerConfigs)
+        }
       />
     </>
   );

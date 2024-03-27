@@ -31,8 +31,10 @@ const idColumn: DataTableColumn = {
 
 const kycLastSubmittedByColumn: DataTableColumn = {
   title: 'KYC Last Submitted by',
-  value: (submerchant: POSAcceptedInviteItem): string =>
-    submerchant.pos?.last_kyc_performed_by.name,
+  value: (submerchant: POSAcceptedInviteItem): string => {
+    const last_kyc_performed_by = submerchant.pos?.last_kyc_performed_by;
+    return last_kyc_performed_by?.name || last_kyc_performed_by?.contact_email || '--';
+  },
 };
 
 const kycStatusColumn: DataTableColumn = {

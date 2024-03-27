@@ -5,6 +5,7 @@
     "paths": {
       "playwright/*": ["../../playwright/*"],
       "testConstants": ["./constants/index.js"],
+      "partnerDashboard/*": ["./suites/partnerDashboard/*"],
       "utils": ["./utils/index.js"],
       "utils/*": ["./utils/*"]
     }

@@ -16,7 +16,10 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
 import ShareReferralLink from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import {
+  ADD_NEW_MERCHANT_ELIGIBLE_ROLES,
+  PRODUCT_TYPE,
+} from 'merchant/views/PartnerDashboard/constants';
 import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
 import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -172,7 +175,9 @@ class SubMerchantsList extends Component {
     }
     this.props.openModal({
       size: 'med-large',
-      component: <ShareReferralLink referralData={this.state.referralData} productType={product} />,
+      component: (
+        <ShareReferralLink referralData={this.state.referralData} initialProductType={product} />
+      ),
     });
   };
 
@@ -299,7 +304,7 @@ class SubMerchantsList extends Component {
                 </button>
               </ShowWhen>
               <ShowWhen
-                myRole="owner manager admin"
+                myRole={ADD_NEW_MERCHANT_ELIGIBLE_ROLES}
                 additionalCondition={(currentUser) =>
                   currentUser.isPartner() &&
                   (isPlatformPartnerWithPGInviteFlow || !currentUser.isPartner('pure_platform'))

@@ -1,13 +1,13 @@
 import { Fragment } from 'react';
 import { Badge, Box, Button } from '@razorpay/blade/components';
+import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
+import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
 import QueryString from 'query-string';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { compose } from 'redux';
 
-import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
-import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
@@ -48,6 +48,7 @@ import {
   CAPITAL_STATUS,
   CREATE_BUREAU_COUNTDOWN_TIME,
   PARTNERSHIPS_WEBSITE_LINKS,
+  ADD_NEW_MERCHANT_ELIGIBLE_ROLES,
 } from 'merchant/views/PartnerDashboard/constants';
 import {
   trackSearchAnalytics,
@@ -981,7 +982,7 @@ class ProductSubMerchantsList extends ListContainer {
                 <div style={{ flex: 3 }} class="action-area">
                   <div>
                     <ShowWhen
-                      myRole="owner manager admin"
+                      myRole={ADD_NEW_MERCHANT_ELIGIBLE_ROLES}
                       additionalCondition={(currentUser) =>
                         currentUser.isPartner() &&
                         (isPlatformPartnerWithPGInviteFlow ||
@@ -990,7 +991,6 @@ class ProductSubMerchantsList extends ListContainer {
                     >
                       <div>
                         <div>
-                          {/* eslint-disable-next-line i18n-rules/no-region-specific-image */}
                           <Image src={AddNewSubMerchants} isWebP />
                         </div>
                         <p>
@@ -1015,7 +1015,6 @@ class ProductSubMerchantsList extends ListContainer {
                     >
                       <div>
                         <div>
-                          {/* eslint-disable-next-line i18n-rules/no-region-specific-image */}
                           <Image src={ShareReferralLink} isWebP />
                         </div>
                         <p>
@@ -1031,7 +1030,6 @@ class ProductSubMerchantsList extends ListContainer {
                               <i class="i i-link line-height-9" /> Copy Link
                             </button>
                           </CustomClipboard>
-                          {/* eslint-disable i18n-rules/no-region-specific-image */}
                           <img
                             src="/img/social-media/fb.png"
                             onClick={() => this.shareReferralOn('fb', referralUrl)}
@@ -1044,7 +1042,6 @@ class ProductSubMerchantsList extends ListContainer {
                             src="/img/social-media/whatsapp.png"
                             onClick={() => this.shareReferralOn('whatsapp', referralUrl)}
                           />
-                          {/* eslint-enable i18n-rules/no-region-specific-image */}
                         </div>
                       </div>
                     </ShowWhen>
