@@ -3408,7 +3408,7 @@ class Validator extends Base\Validator
         Entity::WEBSITE                         => 'sometimes|string',
         Entity::CATEGORY2                       => 'sometimes|string',
         Entity::ORG_ID                          => 'sometimes|string',
-        'merchant_ids'                          => 'sometimes|array',
+        'merchant_ids'                          => 'required|array',
     ];
 
     protected static $couponConfigDataRules = [
