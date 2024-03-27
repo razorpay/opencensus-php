@@ -17137,4 +17137,272 @@ class CoreTest extends TestCase
 
         $this->assertFalse($response);
     }
+
+    private function setupForUpdateActivationStatusTest($merchantId)
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $merchantId,
+        ];
+
+        $riskTagsExpInput = [
+            "experiment_id" => "NoCu6Q4qi4sIRM",
+            "id"            => $merchantId,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $riskTagsExpOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->mockSplitzTreatment($riskTagsExpInput, $riskTagsExpOutput);
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        return $detailCoreMock;
+    }
+
+    public function testUpdateActivationStatusFromURToActivatedRiskTag()
+    {
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchantId = $merchantDetails->getMerchantId();
+
+        $detailCoreMock = $this->setupForUpdateActivationStatusTest($merchantId);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Merchant cannot be activated when risk tags are assigned to the merchant');
+
+        (new MerchantCore())->addTags($merchantId, [
+            'tags'  => ['risk_review_suspend'],
+        ], false);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+    }
+
+    public function testUpdateActivationStatusFromURToActivatedRiskTagLinkedAccount()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000001',
+                ['parent_id' => '10000000000000'],
+            ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'merchant_id'               => $merchant->getId(),
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchantId = $merchantDetails->getMerchantId();
+
+        $detailCoreMock = $this->setupForUpdateActivationStatusTest($merchantId);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        (new MerchantCore())->addTags($merchantId, [
+            'tags'  => ['risk_review_suspend'],
+        ], false);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+    }
+
+    public function testUpdateActivationStatusFromNullToAMPRiskTags()
+    {
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'merchant_id'               => $merchant->getId(),
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchantId = $merchantDetails->getMerchantId();
+
+        $detailCoreMock = $this->setupForUpdateActivationStatusTest($merchantId);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
+        ];
+
+        (new MerchantCore())->addTags($merchantId, [
+            'tags'  => ['risk_review_suspend'],
+        ], false);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Merchant cannot be activated when risk tags are assigned to the merchant');
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+    }
+
+    public function testUpdateActivationStatusFromURToActivatedSuccessNoRiskTags()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000001',
+            ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'merchant_id'               => $merchant->getId(),
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchantId = $merchantDetails->getMerchantId();
+
+        $detailCoreMock = $this->setupForUpdateActivationStatusTest($merchantId);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+    }
+
+    public function testUpdateActivationStatusFromNullToActivatedSuccessNoRiskTags()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000001',
+            ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'merchant_id'               => $merchant->getId(),
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchantId = $merchantDetails->getMerchantId();
+
+        $detailCoreMock = $this->setupForUpdateActivationStatusTest($merchantId);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+    }
+
+    public function testUpdateActivationStatusFromNullToAMPSuccessNoRiskTags()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000001',
+            ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'merchant_id'               => $merchant->getId(),
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchantId = $merchantDetails->getMerchantId();
+
+        $detailCoreMock = $this->setupForUpdateActivationStatusTest($merchantId);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
+        ];
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals('activated_mcc_pending', $merchantDetailData['activation_status']);
+    }
 }

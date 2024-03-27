@@ -453,6 +453,8 @@ return array(
 
     'others_m3_experiment_id' => env('OTHERS_M3_EXPERIMENT_ID'),
 
+    'risk_tags_check_experiment_id' => env('RISK_TAGS_CHECK_EXPERIMENT_ID'),
+
     'wda_migration_acquisition_splitz_exp_id' => env('WDA_MIGRATION_ACQUISITION_SPLITZ_EXP_ID'),
 
     'hybrid_data_querying_splitz_experiment_id'=> env('HYBRID_DATA_QUERYING_SPLITZ_EXPERIMENT_ID'),

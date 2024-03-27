@@ -69,6 +69,7 @@ class Validator extends Base\Validator
     const INVALID_REASON_TYPE                           = 'Invalid reason type';
     const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please add another bank a/c or contact support.';
     const ADDITIONAL_FIELD_NOT_REQUIRED                 = 'Not required additional field ';
+    const ACTIVATION_NOT_SUPPORTED_WITH_RISK_TAGS       = 'Merchant cannot be activated when risk tags are assigned to the merchant';
 
     // Constant representing operations for which Validation rules exists
     const BULK_EDIT                                     = 'bulkEdit';
@@ -1986,5 +1987,25 @@ class Validator extends Base\Validator
         return Status::ALLOWED_NEXT_POS_ACTIVATION_STATUSES_MAPPING[$currentStatus];
     }
 
+    public function validateRiskTags($input, $merchant)
+    {
+        if ((new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.risk_tags_check_experiment_id'),
+            ],
+            'enable'
+        ) === false) {
+            return;
+        }
 
+        if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED
+                or $input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING)
+            and (new Core())->hasRiskTags($merchant) === true
+            and $merchant->isLinkedAccount() === false
+        )
+        {
+            throw new Exception\BadRequestValidationFailureException(self::ACTIVATION_NOT_SUPPORTED_WITH_RISK_TAGS);
+        }
+    }
 }

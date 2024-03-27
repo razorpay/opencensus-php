@@ -3837,6 +3837,8 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
 
+        (new Validator())->validateRiskTags($input, $merchant);
+
         $websiteDetail = $merchantDetails->merchantWebsite;
 
         $currentActivationStatus = $merchantDetails->getActivationStatus();
@@ -6460,7 +6462,7 @@ class Core extends Base\Core
         return Status::UNDER_REVIEW;
     }
 
-    private function hasRiskTags($merchant): bool
+    public function hasRiskTags($merchant): bool
     {
         $riskTags= explode(',', RiskActionConstants::RISK_TAGS_CSV);
 
