@@ -13,4 +13,12 @@ class Constant
 
     const JPMC_IMPORT_FLOW_GOODS_DESCRIPTION_DEFAULT_OTHER = 'Other';
 
+    const ERROR_MONEY_IMPLICATION = 'error_money_implication';
+
+    const ERROR_NEXT_STEP         = 'error_next_step';
+
+    const MONEY_IMPLICATION       = 'money_implication';
+
+    const NEXT_STEP               = 'next_step';
+
 }

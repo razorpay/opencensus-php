@@ -1,6 +1,7 @@
 <?php
 
 namespace RZP\Tests\Functional\Assertion\Validator;
+use RZP\Models\Payment\Constant as PaymentsConstants;
 
 use RZP\Exception;
 use RZP\Models\Payment\Entity;
@@ -80,7 +81,9 @@ class Payment extends Validator
         Entity::TOKEN               => 'sometimes',
         Entity::UPI                 => 'sometimes',
         Entity::REWARD_ID           => 'sometimes',
-        Entity::REWARD              => 'sometimes'
+        Entity::REWARD              => 'sometimes',
+        PaymentsConstants::ERROR_MONEY_IMPLICATION => 'sometimes',
+        PaymentsConstants::ERROR_NEXT_STEP => 'sometimes',
     );
 
     protected function validateMethod($attribute, $value)

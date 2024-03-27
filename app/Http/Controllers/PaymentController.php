@@ -32,7 +32,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->service()->fetch($id, $input);
+        $payment = $this->service()->fetchPaymentDetails($id, $input);
 
         try
         {

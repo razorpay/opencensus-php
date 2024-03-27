@@ -91,6 +91,7 @@ use RZP\Services\Harvester\Constants as HarvesterConstants;
 use RZP\Models\Batch\Processor\Nach\ErrorCodes\RegisterErrorCodes;
 use RZP\Models\Invoice\Service as InvoiceService;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
+use RZP\Models\Payment\Constant as PaymentsConstants;
 use RZP\Models\Invoice\Constants as InvoiceConstants;
 use RZP\Models\Invoice\Type as InvoiceType;
 use RZP\Models\GenericDocument\Service as DocumentService;
@@ -2438,6 +2439,37 @@ class Service extends Base\Service
         $response['response'] = $statusItem;
 
         return $response;
+    }
+
+    public function fetchPaymentDetails(string $id, array $input = []): array
+    {
+
+        $entity = $this->fetch($id, $input);
+
+        if ($this->app['basicauth']->isMerchantDashboardApp() === true)
+        {
+            $this->addAdditionalPaymentErrorDetails($entity);
+        }
+
+        return $entity;
+    }
+
+    public function addAdditionalPaymentErrorDetails(&$entity)
+    {
+        $errorCode = $entity['error_code'] ?? null;
+
+        $method = $entity['method'] ?? null;
+
+        $error_details = [];
+
+        if ($errorCode != null and $method != null)
+        {
+            [$error_details,] = $this->app['error_mapper']->getErrorMapping($errorCode, $method);
+        }
+
+        $entity[PaymentsConstants::ERROR_MONEY_IMPLICATION] = $error_details[PaymentsConstants::MONEY_IMPLICATION] ?? null;
+
+        $entity[PaymentsConstants::ERROR_NEXT_STEP] =  $error_details[PaymentsConstants::NEXT_STEP] ?? null;
     }
 
     public function fetch(string $id, array $input = []): array
