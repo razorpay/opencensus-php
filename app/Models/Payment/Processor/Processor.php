@@ -444,6 +444,11 @@ class Processor
     const ALLOW_UPI_MODE_ON_REARCH_UPS = 'allow_upi_mode_on_rearch_ups';
 
     /**
+     * Razorx flag to allow customer
+     */
+    const ALLOW_UPI_TOKEN_SAVE_ON_REARCH_UPS = 'allow_upi_token_save_on_rearch_ups';
+
+    /**
      * Razorx flag to allow Apps merchants on re-arch flow
      */
     const ALLOW_APPS_MERCHANTS_ON_REARCH_UPS = 'allow_apps_merchants_on_rearch_ups';
@@ -2302,8 +2307,11 @@ class Processor
 
         if (empty($input[Payment\Entity::SAVE]) === false)
         {
-            $routeViaReArch = false;
-            $dimensions[8] = 1;
+            if ($this->shouldRouteUpsReArchTokenSave($input) === false)
+            {
+                $routeViaReArch = false;
+                $dimensions[8] = 1;
+            }
         }
 
         if (empty($input[Payment\Entity::OFFER_ID]) === false)
@@ -11709,6 +11717,31 @@ class Processor
         }
 
         $feature = self::ALLOW_UPI_MODE_ON_REARCH_UPS ;
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant'     => $variant,
+            'mode'        => $this->mode,
+            'feature'     => $feature,
+        ]);
+
+        return str_starts_with($variant, 'on') === true;
+    }
+
+    /**
+     * shouldRouteUpsReArchTokenSave checks if upi token save can be enabled
+     * @return bool
+     */
+    private function shouldRouteUpsReArchTokenSave($input): bool
+    {
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) == true)
+        {
+            return false;
+        }
+
+        $feature = self::ALLOW_UPI_TOKEN_SAVE_ON_REARCH_UPS ;
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
 
