@@ -4106,6 +4106,36 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createUpiKotakTerminal()
+    {
+        $attributes = [];
+
+        $defaultValues = [
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
+            // Sample hex for aes encryption, not in used
+            //'gateway_terminal_password' => '93158d5892188161a259db660ddb1d0b',
+            'id'                        => '10000000000112',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_kotak',
+            'gateway_merchant_id'       => 'razorpayupi',
+            'gateway_terminal_id'       => 'nodal account upi kotak',
+            'gateway_terminal_password' => 'razorpay_password',
+            'vpa'                       => 'testvpa@kotak',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::ONLINE            => '1',
+                Type::COLLECT           => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createDedicatedUpiKotakTerminal($attributes)
     {
         $termId = Shared::UPI_KOTAK_DEDICATED_TERMINAL;

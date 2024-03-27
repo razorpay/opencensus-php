@@ -283,6 +283,7 @@ class Constants
     const RblBankLmsDashboard = 'rbl_bank_lms_dashboard';
 
     const OtherPaymentGatewayConfigured = 'other_payment_gateway_configured';
+
     public static $validDcsKeys = [];
 
     /**
@@ -533,7 +534,7 @@ class Constants
         self::ShowIntlRiskAnalyticsDashboard              => "rzp/pg/merchant/cross_border/india/RiskAnalytics",
         self::RblBankLmsDashboard                         => 'rzp/x/merchant/onboarding/rbl/RblAccess',
         self::ShowIntlRiskAnalyticsDashboard              => "rzp/pg/merchant/cross_border/india/RiskAnalytics",
-        self::OtherPaymentGatewayConfigured               => "rzp/pg/merchant/terminals/banking_program/Identifier"
+        self::OtherPaymentGatewayConfigured               => "rzp/pg/merchant/terminals/banking_program/Identifier",
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool

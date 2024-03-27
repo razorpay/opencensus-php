@@ -498,6 +498,16 @@ return [
         'response' => [
             'content' => [
                 'features' => [
+                     [
+                        'feature' => 'custom_merchant_upi_qr',
+                        'display_name' => "Feature flag for merchant logo on the top of Qr code Image",
+                        'value' => false,
+                    ],
+                     [
+                        'feature' => 'custom_org_upi_qr',
+                        'display_name' => "Feature flag for org logo on the top of Qr code Image",
+                        'value' => false,
+                    ],
                     [
                         'feature' => 'custom_txn_tab_view',
                         'display_name' => "Displays Submerchant's Payments to the partner along with an option to use notes keys as headers",
@@ -533,22 +543,22 @@ return [
                         'value'        => false,
                         'display_name' => 'Smart Collect'
                     ],
-                    155 => array (
+                    157 => array (
                         'feature' => 'view_opfin_sso_announcement',
                         'value' => true,
                         'display_name' => 'View opfin sso announcemnet',
                     ),
-                    156 => array (
+                    158 => array (
                         'feature' => 'view_ssl_banner',
                         'value' => true,
                         'display_name' => 'View SSL banner',
                     ),
-                    157 => array (
+                    159 => array (
                         'feature' => 'view_onboarding_cards',
                         'value' => true,
                         'display_name' => 'View onboarding cards',
                     ),
-                    196 => [
+                    198 => [
                         'feature'      => 'payout_service_enabled',
                         'value'        => false,
                         'display_name' => 'Payouts Service',
@@ -737,6 +747,16 @@ return [
             'content' => [
                 'features' => [
                     [
+                        'feature' => 'custom_merchant_upi_qr',
+                        'display_name' => "Feature flag for merchant logo on the top of Qr code Image",
+                        'value' => false,
+                    ],
+                    [
+                        'feature' => 'custom_org_upi_qr',
+                        'display_name' => "Feature flag for org logo on the top of Qr code Image",
+                        'value' => false,
+                    ],
+                    [
                         'feature' => 'custom_txn_tab_view',
                         'display_name' => "Displays Submerchant's Payments to the partner along with an option to use notes keys as headers",
                         'value'       => false,
@@ -791,6 +811,16 @@ return [
         'response' => [
             'content' => [
                 'features' => [
+                    [
+                        'feature' => 'custom_merchant_upi_qr',
+                        'display_name' => "Feature flag for merchant logo on the top of Qr code Image",
+                        'value' => false,
+                    ],
+                    [
+                        'feature' => 'custom_org_upi_qr',
+                        'display_name' => "Feature flag for org logo on the top of Qr code Image",
+                        'value' => false,
+                    ],
                     [
                         'feature' => 'custom_txn_tab_view',
                         'display_name' => "Displays Submerchant's Payments to the partner along with an option to use notes keys as headers",

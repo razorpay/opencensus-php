@@ -1830,6 +1830,13 @@ class Constants
 
     const ORG_CUSTOM_UPI_LOGO   = 'org_custom_upi_logo';
 
+    /*
+    * Feature flag for UPI QR enabled for Merchant and Org for including merchant's or org's logo on the top of QR Image
+    * */
+    const CUSTOM_MERCHANT_UPI_QR = 'custom_merchant_upi_qr';
+
+    const CUSTOM_ORG_UPI_QR = 'custom_org_upi_qr';
+
     /**
      * NB : Enable only for maker-checker corporate flow
      *
@@ -2769,6 +2776,8 @@ class Constants
         self::KFIN_MERCHANT_REPORT                         => true,
         self::UPIQR_V1_HDFC                                => true,
         self::ORG_CUSTOM_UPI_LOGO                          => true,
+        self::CUSTOM_MERCHANT_UPI_QR                       => true,
+        self::CUSTOM_ORG_UPI_QR                            => true,
         self::NETBANKING_CORPORATE_DELAY_REFUND            => false,
         self::ONE_CC_STORE_ACCOUNT                         => true,
         self::ONE_CC_COUPON_DISABLE_COD                    => true,
@@ -2947,6 +2956,16 @@ class Constants
      * @var array
      */
     public static $visibleFeaturesMap = [
+        self::CUSTOM_MERCHANT_UPI_QR => [
+            'feature' => self::CUSTOM_MERCHANT_UPI_QR,
+            'display_name' => "Feature flag for merchant logo on the top of Qr code Image",
+            'documentation' => "",
+        ],
+        self::CUSTOM_ORG_UPI_QR => [
+            'feature' => self::CUSTOM_ORG_UPI_QR,
+            'display_name' => "Feature flag for org logo on the top of Qr code Image",
+            'documentation' => "",
+        ],
         self::CUSTOM_TXN_TAB_VIEW => [
             'feature' => self::CUSTOM_TXN_TAB_VIEW,
             'display_name' => "Displays Submerchant's Payments to the partner along with an option to use notes keys as headers",

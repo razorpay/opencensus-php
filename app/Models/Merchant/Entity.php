@@ -720,6 +720,17 @@ class Entity extends Base\PublicEntity
     // https://razorpay.slack.com/archives/C01LK94TC69/p1708595682462969?thread_ts=1708496760.889379&cid=C01LK94TC69
     const MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER = 82000000;
 
+    public function isCustomOrgUpiQrEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::CUSTOM_ORG_UPI_QR);
+    }
+
+    public function isCustomMerchantUpiQrEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::CUSTOM_MERCHANT_UPI_QR);
+    }
+
+
     public function getMaxPaymentAmountDefault()
     {
         $country = $this->getCountry();

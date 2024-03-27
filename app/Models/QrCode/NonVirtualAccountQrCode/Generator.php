@@ -467,6 +467,220 @@ class Generator extends QrCode\Generator
         return $terminal;
     }
 
+    protected function getImageDimensions($gdImage)
+    {
+        $width = imagesx($gdImage);
+
+        $height = imagesy($gdImage);
+
+        return [$width, $height];
+    }
+
+    protected function setLogoOnQrBaseImage($logo, $baseImage, $baseImageWidth, $baseImageHeight)
+    {
+        $topMargin = Constants::TOP_MARGIN_IN_PIXEL_NPCI;
+
+        $height = Constants::HEIGHT_OF_LOGO_IN_PIXEL_NPCI;
+
+        list($originalLogoWidth, $originalLogoHeight) = $this->getImageDimensions($logo);
+
+        $aspectRatio = $originalLogoWidth / $originalLogoHeight;
+
+        $newLogoWidth = 4 * $height * $aspectRatio;
+
+        $newLogoHeight = 4 * $height;
+
+        $resizedLogo = imagecreatetruecolor($newLogoWidth, $newLogoHeight);
+
+        $transparentColor = imagecolorallocatealpha($resizedLogo, 0, 0, 0, 127);
+
+        imagecolortransparent($resizedLogo, $transparentColor);
+
+        imagealphablending($resizedLogo, false);
+
+        imagesavealpha($resizedLogo, true);
+
+        // Fill the resized logo with the transparent color
+        imagefilledrectangle($resizedLogo, 0, 0, $newLogoWidth, $newLogoHeight, $transparentColor);
+
+        imagecopyresampled($resizedLogo, $logo, 0, 0, 0, 0, $newLogoWidth, $newLogoHeight, $originalLogoWidth, $originalLogoHeight);
+
+        $destX = ($baseImageWidth - $newLogoWidth) / 2;
+
+        $destY = 4 * $topMargin;
+
+        // Merge the resized logo onto the base image with specified opacity
+        $this->imagecopymerge_alpha(
+            $baseImage, $resizedLogo, $destX, $destY,
+            0, 0, $newLogoWidth, $newLogoHeight,
+            Constants::OPACITY
+        );
+    }
+
+    /**
+     * Retrieve and return the appropriate logo image based on the feature flag status
+     * and the application environment (unit test or production).
+     */
+    protected function getLogoForFeatureFlag()
+    {
+        $logoUrl = null;
+
+        if ($this->merchant->isCustomMerchantUpiQrEnabled() === true)
+        {
+            $logoUrl = $this->app->runningUnitTests() ?
+                public_path() . $this->merchant->getLogoUrl() :
+                $this->merchant->getFullLogoUrlWithSize();
+        }
+        else
+        {
+            $logoUrl = $this->app->runningUnitTests() ?
+                public_path() . $this->merchant->org->getMainLogo() :
+                $this->merchant->org->getMainLogo();
+        }
+
+        return imagecreatefrompng($logoUrl);
+    }
+
+
+    protected function setNameAndDescription(& $logoImage, & $displayDetails, & $qrCode)
+    {
+        $color = imagecolorallocate($logoImage, 4, 9, 63);
+
+        $ypos = QrCode\Constants::QR_V2_UPI_QR_NAME_YPOS_KOTAK;
+
+        $name = $displayDetails['name'];
+
+        $description = $qrCode->getDescription();
+
+        if(strlen($name) > 0)
+        {
+            $this->alignCentre($logoImage, $displayDetails['name'], $color, Constants::QR_VPA_FONT, $ypos, 40, 20);
+        }
+        if(strlen($description) > 0)
+        {
+            $this->alignCentre($logoImage, $qrCode->getDescription(), $color, Constants::QR_VPA_FONT, $ypos, 25, 40);
+        }
+    }
+
+    protected function shouldUseCustomUpiQr(): bool
+    {
+        return $this->merchant->isCustomOrgUpiQrEnabled() || $this->merchant->isCustomMerchantUpiQrEnabled();
+    }
+
+    protected function isHdfcOrg($org): bool
+    {
+        if($this->app->runningUnitTests() === true)
+        {
+            return (substr(strtolower($org->getDisplayName()), 0, 4) === "hdfc");
+        }
+        else
+        {
+            $customCode = $org->getCustomCode();
+
+            return $customCode === 'hdfc' or $customCode === 'HDFC' or $customCode === 'HDFC GIG' or $customCode === 'HDFC CTSP';
+        }
+    }
+
+    private function isKotakOrg($org): bool
+    {
+        if($this->app->runningUnitTests() === true)
+        {
+            return (substr(strtolower($org->getDisplayName()), 0, 5) === "kotak");
+        }
+        else
+        {
+            $customCode = $org->getCustomCode();
+
+            return $customCode === 'KKBK';
+        }
+
+    }
+
+    private function getBaseImagePath(): string
+    {
+        $org = $this->merchant->org;
+
+        $isHdfc = $this->isHdfcOrg($org);
+
+        $isKotak = $this->isKotakOrg($org);
+
+        if ($isHdfc === true)
+        {
+            return $this->getImagePathFromOrg($org);
+        }
+        else if($isKotak === true)
+        {
+            return '/img/custom_upi_qr_image.png';
+        }
+
+        return '/img/standard_base_image.png';
+    }
+    private function setLogoInMiddleOfQr(& $qrCodeImage, & $displayDetails)
+    {
+        if($this->app->runningUnitTests() === true)
+        {
+            $this->setMerchantLogoInQrImage(public_path() . '/img/facebook.png', $qrCodeImage);
+        }
+        else
+        {
+            $this->setMerchantLogoInQrImage($displayDetails['logo'], $qrCodeImage);
+        }
+    }
+
+    private function generateCustomUpiQrCodeImage($qrCode, $localFilePath, $qrCodeImage, $displayDetails)
+    {
+        $path = $this->getBaseImagePath();
+
+        $logo = $this->getLogoForFeatureFlag();
+
+        if ($logo === false)
+        {
+            $path = $this->getImagePathFromOrg($this->merchant->org);
+        }
+
+        $logoImage = imagecreatefrompng(public_path(). $path);
+
+        $this->setLogoInMiddleOfQr($qrCodeImage, $displayDetails);
+
+        imageAlphaBlending($logoImage, true);
+
+        imageSaveAlpha($logoImage, true);
+
+        $this->imagecopymerge_alpha($logoImage, $qrCodeImage,
+            Constants::QR_V2_UPI_QR_DEST_X, Constants::QR_V2_UPI_QR_DEST_Y,
+            Constants::SORCE_X, Constants::SORCE_Y,
+            Constants::QR_V2_UPI_QR_CODE_WIDTH, Constants::QR_V2_UPI_QR_CODE_HEIGHT,
+            Constants::OPACITY);
+
+        list($baseImageWidth, $baseImageHeight) = $this->getImageDimensions($logoImage);
+
+        if($logo !== false and  $this->isHdfcOrg($this->merchant->org) === false)
+        {
+            $this->setLogoOnQrBaseImage($logo, $logoImage, $baseImageWidth, $baseImageHeight);
+        }
+
+        $vpa = $qrCode->getQrVpa();
+
+        $color = imagecolorallocate($logoImage, 4, 9, 63);
+
+        $yposUpi = $baseImageHeight / 1.5;
+
+        if(($this->isHdfcOrg($this->merchant->org) === false) and $path!=='new_upi_qr.png')
+        {
+            $this->alignCentre($logoImage, "UPI ID: $vpa", $color, Constants::QR_VPA_FONT, $yposUpi, 15, 40);
+        }
+
+        $this->setNameAndDescription($logoImage, $displayDetails, $qrCode);
+
+        imagepng($logoImage, $localFilePath);
+
+        imagedestroy($logoImage);
+
+        imagedestroy($qrCodeImage);
+
+        return $localFilePath;
+    }
+
     public function generateUpiQrCodeImage($qrCode)
     {
         $localFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '.' . Constants::QR_CODE_EXTENSION;
@@ -475,7 +689,12 @@ class Generator extends QrCode\Generator
 
         $displayDetails = $this->getMerchantDisplayDetails();
 
-        $this->setMerchantLogoInQrImage($displayDetails['logo'], $qrCodeImage);
+        $this->setLogoInMiddleOfQr($qrCodeImage, $displayDetails);
+
+        if($this->shouldUseCustomUpiQr() === true)
+        {
+            return $this->generateCustomUpiQrCodeImage($qrCode, $localFilePath, $qrCodeImage, $displayDetails);
+        }
 
         if($this->merchant->org->isFeatureEnabled(\RZP\Models\Feature\Constants::ORG_CUSTOM_UPI_LOGO) === true)
         {
@@ -502,9 +721,7 @@ class Generator extends QrCode\Generator
 
         $ypos = QrCode\Constants::QR_V2_UPI_QR_NAME_YPOS;
 
-        $this->alignCentre($logoImage, $displayDetails['name'], $color, 'Mulish-ExtraBold.ttf', $ypos, 40, 20);
-
-        $this->alignCentre($logoImage, $qrCode->getDescription(), $color, 'Mulish-SemiBold.ttf', $ypos, 25, 40);
+        $this->setNameAndDescription($logoImage, $displayDetails, $qrCode);
 
         imagepng($logoImage, $localFilePath);
 

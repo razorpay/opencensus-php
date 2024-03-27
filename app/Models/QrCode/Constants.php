@@ -32,6 +32,12 @@ class Constants
     const QR_EMAIL_WIDTH        = 140;
     const QR_EMAIL_HEIGHT       = 140;
 
+    const SQUARE_DIMENSION_FOR_QR_IN_PIXEL_NPCI = 200;
+
+    const TOP_MARGIN_IN_PIXEL_NPCI = 90;
+
+    const HEIGHT_OF_LOGO_IN_PIXEL_NPCI = 29.65;
+
     const OPACITY               = 100;
 
     const QR_STRING_MPAN_TOKENIZATION_SUCCESS_COUNT = 'qr_string_mpan_tokenization_success_count';
@@ -57,6 +63,10 @@ class Constants
 
     const QR_V2_UPI_QR_DEST_X      = 146;
     const QR_V2_UPI_QR_DEST_Y      = 658;
+
+    const QR_V2_UPI_QR_NAME_YPOS_KOTAK = 1375;
+
+    const VPA_YPOS = 1500;
 
     const QR_V2_UPI_QR_NAME_YPOS     = 1350;
     const QR_V2_BHARAT_QR_NAME_YPOS  = 280;
@@ -91,4 +101,6 @@ class Constants
     const QR_CODE_V2_YESBANK_PREFIX = 'RZPY';
 
     const QR_CODE_V2_HDFC_PREFIX    = 'STQ';
+
+    const QR_VPA_FONT = 'Mulish-SemiBold.ttf';
 }

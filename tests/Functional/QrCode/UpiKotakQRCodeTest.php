@@ -2,13 +2,18 @@
 
 namespace Functional\QrCode;
 
+use Mockery;
 use Carbon\Carbon;
+use RZP\Services\Mock;
 use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Terminal\Type;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\LogicException;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -520,5 +525,324 @@ class UpiKotakQRCodeTest extends TestCase
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
         $this->assertEquals('captured', $response['payment']['status']);
         $this->assertEquals($existingPayment['id'], $payment['id']);
+    }
+
+    public function handleUfhService($qrCodeId)
+    {
+        $ufhServiceMock = Mockery::mock(Mock\UfhService::class, [$this->app])->makePartial();
+
+        $exception = new ServerErrorException('Unavailable', 'SERVER_ERROR');
+
+        $ufhServiceMock->shouldReceive('fetchFiles')
+            ->andReturnUsing(function() use (&$count, $exception, $qrCodeId) {
+                if ($count == 0) {
+                    ++$count;
+                    throw $exception;
+                }
+                else {
+                    ++$count;
+                    return [
+                        'entity'  => 'collection',
+                        'count'   => 1,
+                        'items'   => [
+                            [
+                                'id'            => 'file_10RandomFileId',
+                                'type'          => $type ?? 'explanation_letter',
+                                'entity_type'   => 'qr_code',
+                                'entity_id'     => $qrCodeId,
+                                'name'          => 'QrCode.jpg',
+                                'location'      => 'random/qrcode/location',
+                                'bucket'        => 'test_bucket',
+                                'mime'          => 'image/jpeg',
+                                'extension'     => 'jpg',
+                                'merchant_id'   => '10000000000000',
+                                'store'         => 's3',
+                            ],
+                        ],
+                    ];
+                }
+            });
+
+        $this->app->instance('ufh.service', $ufhServiceMock);
+    }
+
+    public function createTestOrg($displayName = 'HDFC CollectNow', $businessName = 'HDFC CollectNow')
+    {
+        $this->ba->adminAuth();
+
+        $org = $this->fixtures->create('org', [
+            'display_name'            => $displayName,
+            'business_name'            => $businessName,
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => 'org_custom_upi_logo',
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org'
+        ]);
+
+        return $org;
+    }
+
+    public function downloadQrInTestModeForKotak($qrCodeId)
+    {
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        return $this->sendRequest($request);
+    }
+
+    public function testCreateUpiQRWithOrgLogoFeatureFlagAndHDFCOrg()
+    {
+        $org = $this->createTestOrg();
+
+        $this->fixtures->edit('merchant','10000000000000',[
+            'name'=>'Shubham',
+            'org_id' => $org->getId(),
+            'logo_url' => '/img/rbllogo.png',
+        ]);
+
+        $this->fixtures->edit('org',$org->getId(),[
+            'main_logo_url' => '/img/logo_black.png',
+        ]);
+
+
+        $terminal = $this->fixtures->terminal->createUpiKotakTerminal();
+
+        $qrCode = $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type' => 'upi_qr',
+                'fixed_amount' => true,
+                'payment_amount' => 100000
+            ],
+            'test',
+            Account::TEST_ACCOUNT
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->handleUfhService($qrCodeId);
+
+        $response = $this->downloadQrInTestModeForKotak($qrCodeId);
+
+        $contentType = $response->baseResponse->headers->get('content-type');
+
+        $this->assertEquals('image/png', $contentType);
+
+    }
+
+    public function testCreateUpiQRWithOrgLogoFeatureFlagAndkotakOrg()
+    {
+        $org = $this->createTestOrg('kotak', 'kotak');
+
+        $this->fixtures->edit('merchant','10000000000000',[
+            'name'=>'Shubham',
+            'org_id' => $org->getId(),
+            'logo_url' => '/img/rbllogo.png',
+        ]);
+
+        $this->fixtures->edit('org',$org->getId(),[
+            'main_logo_url' => '/img/logo_black.png',
+        ]);
+
+
+        $terminal = $this->fixtures->terminal->createUpiKotakTerminal();
+
+        $qrCode = $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type' => 'upi_qr',
+                'fixed_amount' => true,
+                'payment_amount' => 100000
+            ],
+            'test',
+            Account::TEST_ACCOUNT
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->handleUfhService($qrCodeId);
+
+        $response = $this->downloadQrInTestModeForKotak($qrCodeId);
+
+        $contentType = $response->baseResponse->headers->get('content-type');
+
+        $this->assertEquals('image/png', $contentType);
+
+    }
+
+    public function testCreateUpiQRWithOrgLogoAndMerchantFeatureFlagAndkotakOrg()
+    {
+        $this->fixtures->merchant->addFeatures(['custom_merchant_upi_qr']);
+
+        $org = $this->createTestOrg('kotak', 'kotak');
+
+        $this->fixtures->edit('merchant','10000000000000',[
+            'name'=>'Shubham',
+            'org_id' => $org->getId(),
+            'logo_url' => '/img/rbllogo.png',
+        ]);
+
+        $this->fixtures->edit('org',$org->getId(),[
+            'main_logo_url' => '/img/logo_black.png',
+        ]);
+
+        $terminal = $this->fixtures->terminal->createUpiKotakTerminal();
+
+        $qrCode = $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type' => 'upi_qr',
+                'fixed_amount' => true,
+                'payment_amount' => 100000
+            ],
+            'test',
+            Account::TEST_ACCOUNT
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->handleUfhService($qrCodeId);
+
+        $response = $this->downloadQrInTestModeForKotak($qrCodeId);
+
+        $contentType = $response->baseResponse->headers->get('content-type');
+
+        $this->assertEquals('image/png', $contentType);
+
+    }
+
+    public function testCreateUpiQRWithOrgLogoAndMerchantFeatureFlagAndHDFCOrg()
+    {
+        $this->fixtures->merchant->addFeatures(['custom_merchant_upi_qr']);
+
+        $org = $this->createTestOrg();
+
+        $this->fixtures->edit('merchant','10000000000000',[
+            'name'=>'Shubham',
+            'org_id' => $org->getId(),
+            'logo_url' => '/img/rbllogo.png',
+        ]);
+
+        $this->fixtures->edit('org',$org->getId(),[
+            'main_logo_url' => '/img/logo_black.png',
+        ]);
+
+        $terminal = $this->fixtures->terminal->createUpiKotakTerminal();
+
+        $qrCode = $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type' => 'upi_qr',
+                'fixed_amount' => true,
+                'payment_amount' => 100000
+            ],
+            'test',
+            Account::TEST_ACCOUNT
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->handleUfhService($qrCodeId);
+
+        $response = $this->downloadQrInTestModeForKotak($qrCodeId);
+
+        $contentType = $response->baseResponse->headers->get('content-type');
+
+        $this->assertEquals('image/png', $contentType);
+    }
+
+    public function testCreateUpiQRWithOrgLogoAndOrgFeatureFlagAndkotakOrg()
+    {
+        $org = $this->createTestOrg('kotak', 'kotak');
+
+        $this->fixtures->edit('merchant','10000000000000',[
+            'name'=>'Shubham',
+            'org_id' => $org->getId(),
+            'logo_url' => '/img/rbllogo.png',
+        ]);
+
+        $this->fixtures->edit('org',$org->getId(),[
+            'main_logo_url' => '/img/logo_black.png',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => 'custom_org_upi_qr',
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org'
+        ]);
+
+        $terminal = $this->fixtures->terminal->createUpiKotakTerminal();
+
+        $qrCode = $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type' => 'upi_qr',
+                'fixed_amount' => true,
+                'payment_amount' => 100000
+            ],
+            'test',
+            Account::TEST_ACCOUNT
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->handleUfhService($qrCodeId);
+
+        $response = $this->downloadQrInTestModeForKotak($qrCodeId);
+
+        $contentType = $response->baseResponse->headers->get('content-type');
+
+        $this->assertEquals('image/png', $contentType);
+
+    }
+
+    public function testCreateUpiQRWithOrgLogoAndOrgFeatureFlagAndHDFCOrg()
+    {
+        $org = $this->createTestOrg();
+
+        $this->fixtures->edit('merchant','10000000000000',[
+            'name'=>'Shubham',
+            'org_id' => $org->getId(),
+            'logo_url' => '/img/rbllogo.png',
+        ]);
+
+        $this->fixtures->edit('org',$org->getId(),[
+            'main_logo_url' => '/img/logo_black.png',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => 'custom_org_upi_qr',
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org'
+        ]);
+
+        $terminal = $this->fixtures->terminal->createUpiKotakTerminal();
+
+        $qrCode = $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type' => 'upi_qr',
+                'fixed_amount' => true,
+                'payment_amount' => 100000
+            ],
+            'test',
+            Account::TEST_ACCOUNT
+        );
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->handleUfhService($qrCodeId);
+
+        $response = $this->downloadQrInTestModeForKotak($qrCodeId);
+
+        $contentType = $response->baseResponse->headers->get('content-type');
+
+        $this->assertEquals('image/png', $contentType);
     }
 }
