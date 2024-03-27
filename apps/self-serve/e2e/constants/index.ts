@@ -6,6 +6,7 @@ export const payments = {
       netbanking: 'pay_MWkEWbfbz46Wsk',
       emi: 'pay_MWgFTBM47GDA2T',
       upi: 'pay_MWm0faxRp7Whwh',
+      intlbanktransfer: 'pay_Ncisu2YovXxYxn',
     },
     captured: {
       wallet: 'pay_MWb0KQ9xSJPNvk',
@@ -14,7 +15,7 @@ export const payments = {
       card: 'pay_NaOk9ruBJogGYA',
     },
     created: {
-      netbanking: 'pay_MWaxTM6QW05iz9',
+      netbanking: 'pay_NgmvbcWMb0fGy3',
     },
     failed: {
       netbanking: 'pay_MWawypCQ6dWyhD',

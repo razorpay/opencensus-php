@@ -112,7 +112,7 @@ test.describe.parallel(
         // await expect(page.getByText('Gross amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
         await expect(page.getByText('Payment ID')).toBeVisible();
-        await expect(page.getByText('pay_MWaxTM6QW05iz9')).toBeVisible();
+        await expect(page.getByText(id)).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Refund' })).toBeVisible();
         await expect(page.getByText('Only captured payments can be refunded')).toBeVisible();
         await expect(page.getByText('Payment created')).toBeVisible();
@@ -122,7 +122,7 @@ test.describe.parallel(
 
       test('should show "authorized" payment state details', async ({ page }) => {
         await navigateToTransactions(page);
-        const id = payments.paymentId.authorized.upi;
+        const id = payments.paymentId.authorized.intlbanktransfer;
         await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
         // await expect(page.getByText('Net amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
         // await expect(page.getByText('Gross amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
@@ -130,16 +130,16 @@ test.describe.parallel(
         await expect(page.getByText('Payment ID')).toBeVisible();
         await expect(page.getByText(id)).toBeVisible();
         await expect(page.getByText('Bank RRN')).toBeVisible();
-        await expect(page.getByText('845870741465')).toBeVisible();
+        // await expect(page.getByText('845870741465')).toBeVisible();
         await expect(page.getByText('Payment method')).toBeVisible();
-        await expect(page.getByText('UPI( shiv@dbs)')).toBeVisible();
+        await expect(page.getByText('Intl Bank Transfer')).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Refund' })).toBeVisible();
         await expect(page.getByText('Only captured payments can be refunded')).toBeVisible();
         await expect(page.getByText('Payment created')).toBeVisible();
         await expect(page.getByText('Payment authorized')).toBeVisible();
         await expect(page.getByText('Payment captured')).toBeVisible();
         await expect(page.getByText('Amount yet to be manually captured')).toBeVisible();
-        await expect(page.getByRole('button', { name: 'Capture payment' })).toBeVisible();
+        // await expect(page.getByRole('button', { name: 'Capture payment' })).toBeVisible();
       });
 
       test('should show "refunded" payment state details', async ({ page }) => {

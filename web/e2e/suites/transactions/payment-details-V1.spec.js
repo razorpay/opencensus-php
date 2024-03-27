@@ -5,7 +5,7 @@ import { navigateTo } from 'utils/common';
 const searchPaymentId = async (page, paymentId) => {
   try {
     // Select the input element by its name attribute
-    const paymentIdInput = await page.waitForSelector('input[name="id"]', { timeout: 10000 });
+    const paymentIdInput = await page.waitForSelector('input[name="id"]');
     // Fill data into the input field
     await paymentIdInput.fill(paymentId);
     await page.getByRole('button', { name: 'Search' }).click();

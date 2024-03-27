@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const prodCommitIdFetchURLMap = {
-  api: 'https://api.razorpay.com/commit.txt',
+  api: 'https://api-web.dev.razorpay.in/commit.txt',
   'payment-links': 'https://paymentlinks-test.razorpay.com/commit.txt',
   gimli: 'https://rzp.io/commit.txt',
   // TODO: Devstack kept in sync with prod
