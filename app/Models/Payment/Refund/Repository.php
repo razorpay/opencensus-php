@@ -100,6 +100,31 @@ class Repository extends Base\Repository
             'route'        => $this->route
         ]);
 
+        $refundstidb = new Base\PublicCollection();
+
+        try
+        {
+            if($this->repo->refund->isScroogeReadMigrationEnabledTidb() == true){
+                $refundstidb = $this->repo->refund_tidb->fetchEmiRefundsWithCardTerminalsBetweenFromTidb($from,$to,$bank,$type);
+
+                if($this->repo->refund->isScroogeReadMigrationTidb() == true){
+                    return $refundstidb;
+                }
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::SCROOGE_ENTITY_FETCH_FAILURE,
+                [   'from' => $from,
+                    'to'=>$to,
+                    'bank' => $bank,
+                    'type' => $type
+                ]);
+        }
+
         $tRepo = $this->repo->terminal;
 
         $cRepo = $this->repo->card;
@@ -148,19 +173,11 @@ class Repository extends Base\Repository
             ->select($refundData)
             ->get();
 
-        if($this->repo->refund->isScroogeReadMigrationEnabledTidb() == true){
-            $refundstidb = $this->repo->refund_tidb->fetchEmiRefundsWithCardTerminalsBetweenFromTidb($from,$to,$bank,$type);
-
-            (new Service())->compareRefundsAndLogDifference(
-                $refunds->all(), $refundstidb->all(), [
-                'method_name' => __FUNCTION__,
-                'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
-            ]);
-
-            if($this->repo->refund->isScroogeReadMigrationTidb() == true){
-                return $refundstidb;
-            }
-        }
+        (new Service())->compareRefundsAndLogDifference(
+            $refunds->all(), $refundstidb->all(), [
+            'method_name' => __FUNCTION__,
+            'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
+        ]);
 
         if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
         {
@@ -191,6 +208,30 @@ class Repository extends Base\Repository
             'method'       => 'fetchCardRefundsForMerchantAndGatewayBetween',
             'route'        => $this->route
         ]);
+
+        $refundstidb = new Base\PublicCollection();
+
+        try{
+            if($this->repo->refund->isScroogeReadMigrationEnabledTidb() == true) {
+                $refundstidb = $this->repo->refund_tidb->fetchCardRefundsForMerchantAndGatewayBetweenFromTidb($from, $to, $merchantIds);
+
+                if ($this->repo->refund->isScroogeReadMigrationTidbForFetchCards() == true) {
+                    return $refundstidb;
+                }
+
+            }
+        }
+        catch(\Throwable $ex){
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::SCROOGE_ENTITY_FETCH_FAILURE,
+                [   'from' => $from,
+                    'to'=>$to,
+                    'merchantIds' => $merchantIds,
+                ]);
+        }
+
         $paymentRepo = $this->repo->payment;
 
         $pTableName = $paymentRepo->getTableName();
@@ -217,33 +258,11 @@ class Repository extends Base\Repository
             ->get();
 
 
-        try{
-        if($this->repo->refund->isScroogeReadMigrationEnabledTidb() == true) {
-            $refundstidb = $this->repo->refund_tidb->fetchCardRefundsForMerchantAndGatewayBetweenFromTidb($from, $to, $merchantIds);
-
-            (new Service())->compareRefundsAndLogDifference(
-                $refunds->all(), $refundstidb->all(), [
-                'method_name' => __FUNCTION__,
-                'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_FETCH_CARDS,
-            ]);
-
-            if ($this->repo->refund->isScroogeReadMigrationTidbForFetchCards() == true) {
-                return $refundstidb;
-            }
-            return $refunds;
-
-        }
-        }catch(\Throwable $ex){
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::SCROOGE_ENTITY_FETCH_FAILURE,
-                [   'from' => $from,
-                    'to'=>$to,
-                    'merchantIds' => $merchantIds,
-                ]);
-            return $refunds;
-        }
+        (new Service())->compareRefundsAndLogDifference(
+            $refunds->all(), $refundstidb->all(), [
+            'method_name' => __FUNCTION__,
+            'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_FETCH_CARDS,
+        ]);
         return $refunds;
 
     }
