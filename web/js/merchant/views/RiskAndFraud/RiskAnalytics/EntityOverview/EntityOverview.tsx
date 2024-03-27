@@ -12,6 +12,7 @@ import { AnalyticsEntity, Ratios } from 'merchant/views/RiskAndFraud/RiskAnalyti
 
 import OverviewCard from './OverviewCard';
 import { getRatioPayload } from './utils';
+import { trackEvent } from '../../common/trackEvents';
 
 interface EntityOverviewProps {
   setRatio: Dispatch<SetStateAction<Ratios>>;
@@ -35,6 +36,10 @@ const EntityOverview: React.FC<EntityOverviewProps> = ({ setRatio }) => {
     const targetId =
       (event.target as HTMLButtonElement).id || (event.currentTarget as HTMLButtonElement).id;
     setSelectedTab(targetId);
+    trackEvent({
+      objectName: 'Top Level metrics',
+      properties: { tabName: targetId },
+    });
   };
 
   return (

@@ -2,10 +2,10 @@ import React, { useReducer } from 'react';
 import { Box } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
+import BlockRule from 'merchant/views/RiskAndFraud/RiskAnalytics/BlockRule';
 import ChartContainer from 'merchant/views/RiskAndFraud/RiskAnalytics/ChartContainer';
 import DownloadReports from 'merchant/views/RiskAndFraud/RiskAnalytics/DownloadReports';
 import StatsOverview from 'merchant/views/RiskAndFraud/RiskAnalytics/StatsOverview';
-import BlockRule from 'merchant/views/RiskAndFraud/RiskAnalytics/BlockRule';
 import { EntityFilters, EntityHeader } from 'merchant/views/RiskAndFraud/RiskAnalytics/components';
 import {
   SET_DATE_RANGE,
@@ -18,9 +18,15 @@ import riskAnalyticsReducer from 'merchant/views/RiskAndFraud/RiskAnalytics/redu
 import { fetchAnalytics } from 'merchant/views/RiskAndFraud/RiskAnalytics/services';
 
 import { getBreakdownInterval, getInitialState } from './utils';
+import { trackEvent } from '../../common/trackEvents';
+import { SelectedGraphOption } from '../ChartContainer/types';
 
 import type { EntityAnalyticsProps, AnalyticsReducer } from './types';
-import type { DateRange } from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
+import type {
+  DateRange,
+  MetricOptions,
+  IntervalValue,
+} from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
 
 const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => {
   const initialState = getInitialState(entity);
@@ -47,18 +53,37 @@ const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => 
     const newInterval = getBreakdownInterval(startDate as number, endDate as number);
     dispatch({ type: SET_DATE_RANGE, payload: newValue });
     dispatch({ type: SET_INTERVAL, payload: newInterval });
+    trackEvent({
+      objectName: 'Duration',
+      properties: { dateRange: newValue, chartInterval: newInterval, section: entity },
+    });
   };
 
-  const handleMetricChange = (newValue) => {
+  const handleMetricChange = (newValue: MetricOptions) => {
     dispatch({ type: SET_METRIC, payload: newValue });
+    trackEvent({
+      objectName: 'Duration',
+      actionName: 'Change',
+      properties: { metric: newValue, section: entity },
+    });
   };
 
-  const handleGraphOptions = (newValue) => {
+  const handleGraphOptions = (newValue: SelectedGraphOption[]) => {
     dispatch({ type: SET_CHART_OPTIONS, payload: newValue });
+    trackEvent({
+      objectName: 'Graph Options',
+      actionName: 'Change',
+      properties: { chartOptions: newValue, section: entity },
+    });
   };
 
-  const handleInterval = (newValue) => {
+  const handleInterval = (newValue: IntervalValue) => {
     dispatch({ type: SET_INTERVAL, payload: newValue });
+    trackEvent({
+      objectName: 'Chart Interval',
+      actionName: 'Change',
+      properties: { chartInterval: newValue, section: entity },
+    });
   };
 
   const { data, stats, chartData } = queryData || {

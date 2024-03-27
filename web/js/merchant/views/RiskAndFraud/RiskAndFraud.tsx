@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Text } from '@razorpay/blade/components';
+import { Box, ExternalLinkIcon, Link, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
@@ -16,16 +16,18 @@ import RiskAndFraudOnBoarding, {
 } from 'merchant/views/RiskAndFraud/OnBoarding';
 
 import QuickGuide, { getRiskAndFraudQuickGuideIsClosed } from './QuickGuide';
-import { RiskFraudEntityRoute } from './common/constant';
+import { DOCUMENT_LINK, RiskFraudEntityRoute, RiskFraudPagesMap } from './common/constant';
+import { trackEvent } from './common/trackEvents';
+import { getDocLink } from './common/utils';
 import { StyledTab, TabsHeader } from './components/styled';
 
 const { RISK_ANALYTICS_ROUTE } = RiskFraudEntityRoute;
 
-const Tab = ({ children, to, exact }) => {
+const Tab = ({ children, to, exact, onClick }) => {
   const { pathname } = useLocation();
   const isActive = pathname === to;
   return (
-    <NavLink aria-label={children} to={to} end={exact ?? false} key={to}>
+    <NavLink aria-label={children} data-path={to} to={to} end={exact ?? false} onClick={onClick}>
       <Text variant="body" weight="bold" size="medium">
         <StyledTab as="span" active={isActive}>
           {children}
@@ -35,8 +37,9 @@ const Tab = ({ children, to, exact }) => {
   );
 };
 
-const RiskAndFraud = ({ riskAndFraudProductOnBoarding, handleProductQuickGuide }) => {
+const RiskAndFraud = ({ riskAndFraudProductOnBoarding, handleProductQuickGuide, businessName }) => {
   const { showOnboarding, isQuickGuideOpen, isTour } = riskAndFraudProductOnBoarding;
+  const docLink = getDocLink(DOCUMENT_LINK, businessName);
 
   const initRiskAndFraudOnboarding = () => {
     if (isTour) {
@@ -70,6 +73,25 @@ const RiskAndFraud = ({ riskAndFraudProductOnBoarding, handleProductQuickGuide }
     initRiskAndFraudOnboarding();
   }, []);
 
+  const handleTab = (e) => {
+    const path = e.currentTarget.getAttribute('data-path');
+
+    trackEvent({
+      objectName: 'Risk and Fraud Tab',
+      properties: {
+        tabName: RiskFraudPagesMap[path],
+        path,
+      },
+    });
+  };
+
+  const handleLink = () => {
+    trackEvent({
+      objectName: 'Document Link',
+      properties: { link: docLink },
+    });
+  };
+
   if (showOnboarding) return <RiskAndFraudOnBoarding closeOnboarding={closeOnboarding} />;
 
   return (
@@ -82,9 +104,21 @@ const RiskAndFraud = ({ riskAndFraudProductOnBoarding, handleProductQuickGuide }
         ) : null}
       </div>
       <TabsHeader>
-        <Tab to={RISK_ANALYTICS_ROUTE} exact={true}>
+        <Tab to={RISK_ANALYTICS_ROUTE} exact={true} onClick={handleTab}>
           Risk Analytics
         </Tab>
+        <Box display="flex" alignItems="center" padding="spacing.4" paddingRight="spacing.7">
+          <Link
+            href={docLink}
+            icon={ExternalLinkIcon}
+            iconPosition="right"
+            target="_blank"
+            rel="noopener noreferer"
+            onClick={handleLink}
+          >
+            Document
+          </Link>
+        </Box>
       </TabsHeader>
       <Box>
         <ErrorBoundary resetOnProps>
@@ -97,6 +131,7 @@ const RiskAndFraud = ({ riskAndFraudProductOnBoarding, handleProductQuickGuide }
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  businessName: state.session.org?.business_name,
   riskAndFraudProductOnBoarding: getCurrentProductOnBoardingDetails(
     state,
     RZPFeatures.RISK_AND_FRAUD,

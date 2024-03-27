@@ -3,5 +3,8 @@ export const RiskFraudEntityRoute = {
 };
 
 export const RiskFraudPagesMap = {
-  [RiskFraudEntityRoute.RISK_ANALYTICS_ROUTE]: 'Risk and Fraud',
+  [RiskFraudEntityRoute.RISK_ANALYTICS_ROUTE]: 'Risk Analytics',
 };
+
+export const DOCUMENT_LINK =
+  'https://_domain_.com/docs/payments/payments/risk-visibility-dashboard/';

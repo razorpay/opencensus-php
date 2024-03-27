@@ -18,6 +18,7 @@ export const FlexCentered = styled.div`
 export const TabsHeader = styled.header`
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
   background: #ffffff;
   width: 100%;
   border-bottom: 1px solid #e2e8ea;

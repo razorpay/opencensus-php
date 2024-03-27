@@ -6,8 +6,16 @@ import { HeaderPopover } from 'merchant/views/RiskAndFraud/components';
 
 const EntityHeader = (props) => {
   const { entity } = props;
-  const { title, description, popoverText, popoverTitle, popoverContent, popoverImage, imageAlt } =
-    ENTITY_HEADER[entity];
+  const {
+    title,
+    description,
+    popoverText,
+    popoverTitle,
+    popoverContent,
+    popoverImage,
+    imageAlt,
+    docLink,
+  } = ENTITY_HEADER[entity];
 
   return (
     <Box>
@@ -20,11 +28,13 @@ const EntityHeader = (props) => {
         </Text>
         <Box width="fit-content" mr={3}>
           <HeaderPopover
+            entity={entity}
             text={popoverText}
             title={popoverTitle}
             content={popoverContent}
             contentImage={popoverImage}
             imageAlt={imageAlt}
+            docLink={docLink}
           />
         </Box>
       </Box>

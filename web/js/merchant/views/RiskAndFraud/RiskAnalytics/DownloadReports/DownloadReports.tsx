@@ -3,20 +3,25 @@ import { connect } from 'react-redux';
 import { Dispatch, AnyAction } from 'redux';
 
 import { OpenModalPayload, Notification } from 'common/typings';
+import ActionContainer from 'merchant/views/RiskAndFraud/RiskAnalytics/components/ActionContainer';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { getAvailableEmails } from 'merchant_common/views/Reports/utils/commonUtils';
-import ActionContainer from 'merchant/views/RiskAndFraud/RiskAnalytics/components/ActionContainer';
 
 import ReportModal from './ReportModal';
 import { DOWNLOAD_REPORTS } from './constants';
 import { DownloadReportsProps } from './types';
+import { trackEvent } from '../../common/trackEvents';
 
 const DownloadReports: React.FC<DownloadReportsProps> = (props) => {
   const { entity, availableEmails, generatedBy, openModal, closeModal, showNotification } = props;
   const { heading, description, note } = DOWNLOAD_REPORTS[entity];
 
   const handleDownload = () => {
+    trackEvent({
+      objectName: 'Download list - Open',
+      properties: { section: entity },
+    });
     openModal({
       component: (
         <ReportModal

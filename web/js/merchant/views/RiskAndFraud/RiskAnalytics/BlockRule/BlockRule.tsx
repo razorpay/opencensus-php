@@ -5,16 +5,25 @@ import { BLOCK_CONTRIBUTORS } from 'merchant/views/RiskAndFraud/RiskAnalytics/co
 
 import RequestBlacklist from './RequestBlacklist';
 import { BlockRuleProps } from './types';
+import { trackEvent } from '../../common/trackEvents';
 
 const BlockRule = ({ entity }: BlockRuleProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { heading, description } = BLOCK_CONTRIBUTORS[entity];
 
   const onButtonClick = () => {
+    trackEvent({
+      objectName: 'Request blacklist - Open',
+      properties: { section: entity },
+    });
     setIsModalOpen(true);
   };
 
   const onDismiss = () => {
+    trackEvent({
+      objectName: 'Request blacklist - Close',
+      properties: { section: entity },
+    });
     setIsModalOpen(false);
   };
 
@@ -26,7 +35,7 @@ const BlockRule = ({ entity }: BlockRuleProps) => {
         onButtonClick={onButtonClick}
         buttonText="Request blacklist"
       />
-      <RequestBlacklist isOpen={isModalOpen} onDismiss={onDismiss} />
+      <RequestBlacklist entity={entity} isOpen={isModalOpen} onDismiss={onDismiss} />
     </>
   );
 };

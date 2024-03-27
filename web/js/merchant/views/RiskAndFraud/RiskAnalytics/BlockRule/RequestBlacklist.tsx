@@ -24,9 +24,16 @@ import UploadButon from './UploadButton';
 import { BLOCK_PARAMETERS, FORM_INITIAL_VALUES } from './constants';
 import { RequestBlacklistProps, FormValues, FormError } from './types';
 import { validateForm } from './utils';
+import { trackEvent } from '../../common/trackEvents';
 import { CreateFDTicketParams } from '../types';
 
-const RequestBlacklist = ({ user, isOpen, onDismiss, showNotification }: RequestBlacklistProps) => {
+const RequestBlacklist = ({
+  user,
+  isOpen,
+  entity,
+  onDismiss,
+  showNotification,
+}: RequestBlacklistProps) => {
   const [formValues, setFormValues] = useState<FormValues>(FORM_INITIAL_VALUES);
   const [formError, setFormError] = useState<FormError>({});
   const [successModalData, setSuccessModalData] = useState({ isOpen: false, ticketId: '' });
@@ -41,11 +48,25 @@ const RequestBlacklist = ({ user, isOpen, onDismiss, showNotification }: Request
           user,
           formValues as CreateFDTicketParams,
         );
+        trackEvent({
+          objectName: 'Request blacklist - Response',
+          actionName: 'success',
+          properties: { section: entity, payload: formValues },
+        });
         onDismiss();
         setSuccessModalData({ isOpen: true, ticketId: response.ticketId });
       }
       setFormError(errors);
     } catch (error: any) {
+      trackEvent({
+        objectName: 'Request blacklist - Response',
+        actionName: 'error',
+        properties: {
+          section: entity,
+          error_code: error?.status_code,
+          error_description: error?.errors[0],
+        },
+      });
       showNotification({
         type: 'error',
         message: error.errors[0],
@@ -114,7 +135,7 @@ const RequestBlacklist = ({ user, isOpen, onDismiss, showNotification }: Request
             label="Email updates to"
             labelPosition="left"
             placeholder="Enter any other comma seperated email id(s) that you want the updates to be"
-            helpText="This is in addition to the email id already associated with this Razorpay account"
+            helpText="This is in addition to the email id already associated with this account"
             marginBottom="spacing.5"
             value={formValues.email}
             validationState={formError.email ? 'error' : 'none'}

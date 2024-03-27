@@ -35,6 +35,7 @@ import {
 import { ReportModalWrapper } from './styled';
 import { ReportModalProps, SelectedRangeType } from './types';
 import { getDurationCoveredInReports, getInitialState } from './utils';
+import { trackEvent } from '../../common/trackEvents';
 
 const ReportModal: React.FC<ReportModalProps> = (props) => {
   const { entity, availableEmails, generatedBy, onCloseCallback, showNotification } = props;
@@ -46,33 +47,56 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
   const [recipients, setRecipients] = useState([]);
   const [isSubmitButtonLoading, setSubmitButtonLoading] = useState(false);
 
-  const handlePreset = ({ values }) => {
-    const selectedOption = REPORTS_PRESETS.find((preset) => preset.value === values[0]);
-    const currentDate = moment().subtract(1, 'day');
-
-    if (selectedOption) {
-      if (selectedOption.value === 'custom') {
-        setCustomDuration(true);
-        setDateRange({ startDate: null, endDate: null, preset: selectedOption });
-        return; // Early exit for custom option
-      }
-
-      const { duration, unit } = selectedOption;
-      const endDate = moment(currentDate).startOf('day');
-      const startDate = endDate
-        .clone()
-        .subtract(duration, unit as unitOfTime.DurationConstructor)
-        .startOf('day');
-
-      setDateRange({
-        startDate: startDate.unix(),
-        endDate: endDate.unix(),
-        preset: selectedOption,
-      });
-    }
+  const handleClose = () => {
+    trackEvent({
+      objectName: 'Download list - Close',
+      properties: { section: entity },
+    });
+    onCloseCallback();
   };
 
-  const handleCustomRange = (date: SelectedRangeType) => setCustomDurationRange(date);
+  const handlePreset = ({ values }) => {
+    const selectedOption = REPORTS_PRESETS.find((preset) => preset.value === values[0]);
+    if (!selectedOption) return;
+
+    if (selectedOption.value === 'custom') {
+      setCustomDuration(true);
+      setDateRange({ startDate: null, endDate: null, preset: selectedOption });
+      return;
+    }
+
+    const { duration, unit } = selectedOption;
+    const currentDate = moment().subtract(1, 'day');
+    const endDate = moment(currentDate).startOf('day');
+    const startDate = endDate
+      .clone()
+      .subtract(duration, unit as unitOfTime.DurationConstructor)
+      .startOf('day');
+
+    const newDateRange = {
+      startDate: startDate.unix(),
+      endDate: endDate.unix(),
+      preset: selectedOption,
+    };
+
+    trackEvent({
+      objectName: 'Download list - Preset Duration',
+      actionName: 'Change',
+      properties: { section: entity, dateRange: newDateRange },
+    });
+
+    setDateRange(newDateRange);
+  };
+
+  const handleCustomRange = (newDateRange: SelectedRangeType) => {
+    trackEvent({
+      objectName: 'Download list - Custom Duration',
+      actionName: 'Change',
+      properties: { section: entity, dateRange: newDateRange },
+    });
+    setCustomDurationRange(newDateRange);
+  };
+
   const handleRecipients = ({ values }) => setRecipients(values);
 
   const validateCustomDurationForPicker = ({ startDate, endDate }) => {
@@ -98,8 +122,22 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
     try {
       await merchantFetch({ url: 'reporting/logs', method: 'POST', data: payload });
       showNotification({ type: 'success', message: REPORT_POST_SUCCESS });
-      onCloseCallback();
-    } catch (error) {
+      trackEvent({
+        objectName: 'Download list - Response',
+        actionName: 'success',
+        properties: { section: entity, payload },
+      });
+      handleClose();
+    } catch (error: any) {
+      trackEvent({
+        objectName: 'Download list - Response',
+        actionName: 'error',
+        properties: {
+          section: entity,
+          error_code: error?.status_code,
+          error_description: error?.errors[0],
+        },
+      });
       showNotification({ type: 'error', message: REPORT_POST_INVALID_RES });
     } finally {
       setSubmitButtonLoading(false);
@@ -115,7 +153,7 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
           accessibilityLabel="close-modal"
           size="large"
           contrast="low"
-          onClick={onCloseCallback}
+          onClick={handleClose}
           icon={CloseIcon}
         />
       </ReportCloseButton>
@@ -206,7 +244,7 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
               <Button
                 isDisabled={isSubmitButtonLoading}
                 size="medium"
-                onClick={onCloseCallback}
+                onClick={handleClose}
                 variant="tertiary"
               >
                 Cancel

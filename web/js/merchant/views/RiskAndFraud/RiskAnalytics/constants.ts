@@ -27,6 +27,8 @@ export const ENTITY_HEADER = {
       'A fraud is said to occur when an unauthorized transaction is made with a lost, stolen, compromised or counterfeit card/number. It is calculated as:',
     popoverImage: `${ASSETS_PATH}/fraud-to-sales-ratio.png`,
     imageAlt: 'fraud-to-sales-ratio',
+    docLink:
+      'https://_domain_.com/docs/payments/payments/risk-visibility-dashboard/fraud-sales-ratio/#calculating-fraud-to-sales-ratio',
   },
   [DISPUTES]: {
     title: 'Disputes',
@@ -37,6 +39,8 @@ export const ENTITY_HEADER = {
       'Fraud transactions reported by card networks as a % of total captured transactions in a given time period',
     popoverImage: `${ASSETS_PATH}/risk-decline-ratio.png`,
     imageAlt: 'risk-decline-ratio',
+    docLink:
+      'https://_domain_.com/docs/payments/payments/risk-visibility-dashboard/dispute-sales-ratio/#calculating-disputes-to-sales-ratio',
   },
   [RISK_DECLINED]: {
     title: 'Risk Declines',
@@ -47,6 +51,8 @@ export const ENTITY_HEADER = {
       'Fraud transactions reported by card networks as a % of total captured transactions in a given time period',
     popoverImage: `${ASSETS_PATH}/disputes-to-sales-ratio.png`,
     imageAlt: 'disputes-to-sales-ratio',
+    docLink:
+      'https://_domain_.com/docs/payments/payments/risk-visibility-dashboard/risk-decline-rate/#calculating-risk-decline-rate',
   },
 };
 

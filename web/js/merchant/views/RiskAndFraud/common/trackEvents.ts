@@ -1,31 +1,27 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-import { RiskFraudPagesMap } from './constant';
+interface TrackEvent {
+  objectName: string;
+  actionName?: string;
+  screen?: string;
+  properties?: Record<string, unknown>;
+}
 
-export const track = ({
+export const trackEvent = ({
   objectName,
   actionName = 'Clicked',
-  screen = 'Transactions',
+  screen = 'Risk and Fraud',
   properties,
-}) => {
+}: TrackEvent): void => {
   analyticsTrack({
     objectName,
     actionName,
     screen,
     properties: {
-      version: 'v2',
-      page: 'Transactions',
+      page: 'Risk and Fraud',
       ...properties,
       ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
     },
   });
 };
-
-export const trackTabClick = (pathname) => () =>
-  track({
-    objectName: 'Transactions Tab',
-    properties: {
-      tabName: RiskFraudPagesMap[pathname],
-    },
-  });

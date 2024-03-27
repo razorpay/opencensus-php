@@ -5,6 +5,7 @@ import { AnalyticsEntity } from '../types';
 export type RequestBlacklistProps = {
   user: User;
   isOpen: boolean;
+  entity: AnalyticsEntity;
   onDismiss: () => void;
   showNotification: (payload: { type: string; message: string }) => void;
 };
