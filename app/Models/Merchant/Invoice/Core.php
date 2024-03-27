@@ -391,7 +391,7 @@ class Core extends Base\Core
                 if($rblAccountInvoiceAmount > 0)
                 {
                     if($virtualAccountInvoiceAmount === 0){
-                        $data[BankingInvoiceReport::ROWS][$type][BankingInvoiceReport::SELLER_ENTITY] = 'RSPL';
+                        $data[BankingInvoiceReport::ROWS][$type][BankingInvoiceReport::SELLER_ENTITY] = 'RZPL';
                     }
                     else{
                         return [
