@@ -70,6 +70,8 @@ jobs:
 
       - name: Checkout Codebase
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Use Node v18.12.1
         uses: actions/setup-node@v1
@@ -115,9 +117,38 @@ jobs:
       - name: Echo Affected Projects
         run: echo ${{ env.AFFECTED }}
 
+      - name: Check for changes in specified directories
+        id: check_changes
+        if: ${{ !contains(env.AFFECTED, 'web') }}
+        run: |
+          # Get Base commit
+          base_commit=$(git merge-base origin/master origin/${{ steps.extract_branch.outputs.branch }})
+        
+          # Get a list of changed files
+          changed_files=$(git diff --name-only $base_commit origin/${{ steps.extract_branch.outputs.branch }})
+
+          # Check if any of the changed files are in the directories you're interested in
+          if echo "$changed_files" | grep -qE "^apps/|^config/|^environment/|^[^/]*$"
+          then
+            echo "There are changes in the specified files and directories."
+            echo "::set-output name=changes::true"
+          else
+            echo "There are no changes in the specified files and directories."
+            echo "::set-output name=changes::false"
+          fi
+
       - name: Set Affected Projects Output
         id: set-affected-output
-        run: echo "::set-output name=affected::${{ env.AFFECTED }}"
+        run: | 
+          if [ "${{ steps.check_changes.outputs.changes }}" == "true" ]; then
+            echo "::set-output name=affected::${{ env.AFFECTED }},web"
+          else
+            echo "::set-output name=affected::${{ env.AFFECTED }}"
+          fi
+
+      - name: Echo Affected Projects after final changes
+        run: |
+          echo "Affected projects: ${{ steps.set-affected-output.outputs.affected }}"
 
       - name: Build Docker Image
         uses: docker/build-push-action@v3
@@ -130,7 +161,7 @@ jobs:
             github_access_token=${{env.GITHUB_ACCESS_TOKEN}}
           build-args: |
             APP_NAME=${{env.APP_NAME}}
-            AFFFECTED_PROJECTS=${{ env.AFFECTED }}
+            AFFFECTED_PROJECTS=${{ steps.set-affected-output.outputs.affected }}
             #  TODO: Add project level INCLUDE_GROUPS and EXCLUDE_GROUPS as key value pairs and extract them to pass in playwright getproject config
             INCLUDE_GROUPS=@project=payments|@project=partner-dashboard
             EXCLUDE_GROUPS=
@@ -155,7 +186,7 @@ jobs:
         run: echo "Commit ID is ${{ needs.build-fe-e2e.outputs.commit_id }}"
       
       - name: Echo Affected Projects
-        run: echo "Commit ID is ${{ needs.build-fe-e2e.outputs.affected }}"
+        run: echo "Affected projects => ${{ needs.build-fe-e2e.outputs.affected }}"
 
       # TODO: optimize the below step to install depecndencies which are required for nx
       # - name: Install dependencies with caching
