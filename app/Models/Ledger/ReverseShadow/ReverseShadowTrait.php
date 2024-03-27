@@ -706,6 +706,8 @@ trait ReverseShadowTrait
 
         $merchantAmountCreditsLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::REWARD);
 
+        $transactionAmount = $this->getTransactionAmountForTransactionTypeFromJournal($journalResponse,$transactionType);
+
         $commissionLedgerEntry = $this->getCommisionLedgerEntryForTransactionTypeFromJournal($journalResponse, $transactionType);
 
         $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::RZP_GST);
@@ -742,7 +744,7 @@ trait ReverseShadowTrait
             TransactionEntity::ENTITY_ID        => $transactorId,
             TransactionEntity::TYPE             => $transactionType,
             TransactionEntity::MERCHANT_ID      => $merchantBalanceLedgerEntry[Constants::MERCHANT_ID],
-            TransactionEntity::AMOUNT           => (int) $journalResponse[Constants::BASE_AMOUNT], // check this
+            TransactionEntity::AMOUNT           => (int) $transactionAmount,
             TransactionEntity::CURRENCY         => $merchantBalanceLedgerEntry[Constants::CURRENCY],
             TransactionEntity::CREDIT           => (int) $credit,
             TransactionEntity::DEBIT            => (int) $debit,
@@ -782,6 +784,20 @@ trait ReverseShadowTrait
         }
 
         return $commissionLedgerEntry;
+    }
+
+    private function getTransactionAmountForTransactionTypeFromJournal($journalResponse, $transactorType)
+    {
+        if ($transactorType === Transaction\Type::TRANSFER)
+        {
+            $transactionAmountLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::PAYABLE, Constants::MERCHANT_VA_MERCHANT);
+
+            return $transactionAmountLedgerEntry['amount'];
+        }
+        else
+        {
+            return $journalResponse[Constants::BASE_AMOUNT];
+        }
     }
 
     private function getSpecificLedgerEntryFromJournal($journalResponse,$accountType ,$fundAccountType)

@@ -461,7 +461,7 @@ class Core extends Base\Core
                 'transfer_id'         => $transfer->getId(),
                 'merchant_id'         => $transfer->getMerchantId(),
             ]);
-        
+
         $this->trace->info(TraceCode::TRANSFER_REVERSE_SHADOW_TXN_CREATION_SUCCESS,
             [
                 'transfer_id'               => $transfer->getId(),
@@ -486,19 +486,6 @@ class Core extends Base\Core
 
             $txn->setPricingRule($pricingRuleId);
         }
-        else
-        {
-            $amount = $txn->getAmount();
-
-            $fee = $txn->getFee();
-
-            $isPrepaid = $merchant->isPrepaid();
-
-            // Add fee to debit only for prepaid merchants
-            $debit  = ($isPrepaid === true) ? abs($amount + $fee) : $amount;
-
-            $txn->setDebit($debit);
-        }
 
         $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -514,7 +501,14 @@ class Core extends Base\Core
             }
         }
 
+        $commissionLedgerEntry = $this->getCommisionLedgerEntryForTransactionTypeFromJournal($journal, Transaction\Type::TRANSFER);
+
+        $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journal,Constants::PAYABLE, Constants::RZP_GST);
+
+        $apiFee = $commissionLedgerEntry['amount'] + $taxBalanceLedgerEntry['amount'];
+
         $values = [
+            Transaction\Entity::API_FEE         => (int) $apiFee,
             Transaction\Entity::GATEWAY_FEE     => 0,
             Transaction\Entity::RECONCILED_AT   => time(),
             Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,

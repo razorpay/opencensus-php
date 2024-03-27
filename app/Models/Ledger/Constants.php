@@ -173,6 +173,7 @@ class Constants
     const MERCHANT_BALANCE           = 'merchant_balance';
     const MERCHANT_RESERVE_BALANCE   = 'merchant_reserve_balance';
     const MERCHANT_NEGATIVE_BALANCE  = 'merchant_negative_balance';
+    const MERCHANT_VA_MERCHANT       = 'merchant_va_merchant';
     const REWARD                     = 'reward';
     const PAYABLE                    = 'payable';
     const BALANCE                    = 'balance';
@@ -246,7 +247,7 @@ class Constants
 
     const LINKED_ACCOUNT_MERCHANT_ID = 'linked_account_merchant_id';
     const BALANCE_TYPE               = 'balance_type';
-    
+
     const MERCHANT_BALANCE_FUND_ACCOUNT                = 'merchant_balance';
 
     const CREATED_AT                                   = 'created_at';
