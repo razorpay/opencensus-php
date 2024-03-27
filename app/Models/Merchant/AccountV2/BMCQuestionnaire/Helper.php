@@ -22,8 +22,6 @@ class Helper
             case BusinessCategoriesV2\BusinessSubcategory::ELECTRICAL_PARTS_AND_EQUIPMENT:
             case BusinessCategoriesV2\BusinessSubcategory::STATIONERY_SUPPLIES:
             case BusinessCategoriesV2\BusinessSubcategory::DEPARTMENT_STORES:
-            case BusinessCategoriesV2\BusinessSubcategory::SECOND_HAND_STORES:
-            case BusinessCategoriesV2\BusinessSubcategory::USED_AUTOMOBILE_AND_TRUCK_DEALERS:
             case BusinessCategoriesV2\BusinessSubcategory::FASHION_AND_LIFESTYLE:
                 $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_2, $answers, $all));
                 break;
@@ -48,6 +46,7 @@ class Helper
                 break;
             case BusinessCategoriesV2\BusinessSubcategory::SECOND_HAND_STORES:
             case BusinessCategoriesV2\BusinessSubcategory::USED_AUTOMOBILE_AND_TRUCK_DEALERS:
+                $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_2, $answers, $all));
                 $pendingQuestions = array_merge($pendingQuestions, static::getUnAnsweredQuestions(Questions::QUESTION_34, $answers, $all));
                 break;
             default:
