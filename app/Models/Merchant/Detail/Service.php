@@ -129,6 +129,12 @@ class Service extends Base\Service
     use NotifyTrait;
 
     const PAYMENT_DATA_NOT_FOUND_ON_DRUID = 'payment data not found on druid';
+    
+    const BAD_REQUEST_MSG_CIN_MISMATCH = 'bad_request: The given CIN does not belong to your selected business type. Please provide a different CIN';
+    const BAD_REQUEST_MSG_PAN_MISMATCH = 'bad_request: The given PAN does not belong to your selected business type. Please provide a different PAN';
+    
+    const BAD_REQUEST_MSG_OWNER_GSTIN_MISMATCH = 'bad_request: The given GSTIN does not belong to the Owner PAN provided. Please provide a different GSTIN';
+    const BAD_REQUEST_MSG_BUSINESS_GSTIN_MISMATCH = 'bad_request: The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
     const SHARED_MERCHANT_ID = '100000Razorpay';
 
     protected $core;
@@ -604,6 +610,18 @@ class Service extends Base\Service
 
                 if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
                 {
+                    if($pgosResponse['msg'] === self::BAD_REQUEST_MSG_CIN_MISMATCH){
+                        throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_CIN_MISMATCH);
+                    }
+                    if($pgosResponse['msg'] ===  self::BAD_REQUEST_MSG_PAN_MISMATCH){
+                        throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_PAN_MISMATCH);
+                    }
+                    if($pgosResponse['msg'] === self::BAD_REQUEST_MSG_OWNER_GSTIN_MISMATCH){
+                        throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_OWNER_GSTIN_MISMATCH);
+                    }
+                    if($pgosResponse['msg'] ===  self::BAD_REQUEST_MSG_BUSINESS_GSTIN_MISMATCH){
+                        throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_BUSINESS_GSTIN_MISMATCH);
+                    }
                     throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
                 }
 
@@ -619,6 +637,18 @@ class Service extends Base\Service
 
                 if ($exception instanceof Exception\BadRequestValidationFailureException)
                 {
+                    if($pgosResponse['msg'] === self::BAD_REQUEST_MSG_CIN_MISMATCH){
+                        throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_CIN_MISMATCH);
+                    }
+                    if($pgosResponse['msg'] ===  self::BAD_REQUEST_MSG_PAN_MISMATCH){
+                        throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_PAN_MISMATCH);
+                    }
+                    if($pgosResponse['msg'] === self::BAD_REQUEST_MSG_OWNER_GSTIN_MISMATCH){
+                        throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_OWNER_GSTIN_MISMATCH);
+                    }
+                    if($pgosResponse['msg'] ===  self::BAD_REQUEST_MSG_BUSINESS_GSTIN_MISMATCH){
+                        throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_BUSINESS_GSTIN_MISMATCH);
+                    }
                     throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
                 }
 
