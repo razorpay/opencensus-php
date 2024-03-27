@@ -14,7 +14,7 @@
     "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
     "@razorpay/blade-old-for-new-auth": "npm:@razorpay/blade-old@0.0.1",
     "@razorpay/commander-shield": "0.0.1512",
-    "@razorpay/frontend-care": "0.7.15",
+    "@razorpay/frontend-care": "0.7.18",
     "@razorpay/i18nify-js": "^1.4.0",
     "@razorpay/i18nify-react": "^4.0.0",
     "@razorpay/universe-utils": "11.1.3",
