@@ -753,7 +753,7 @@ class AddProvider extends React.Component {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, splitz } = this.props;
 
     const {
       isEdit,
@@ -865,6 +865,7 @@ class AddProvider extends React.Component {
                   onEditClick={this.onEditClick}
                   isSubmitDisabled={!(this.checkAllValuesExist() && allDetailsValid)}
                   onSubmit={this.onSubmit}
+                  splitz={splitz}
                 />
               </Box>
             )}

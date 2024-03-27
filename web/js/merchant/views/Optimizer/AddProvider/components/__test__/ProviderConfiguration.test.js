@@ -70,6 +70,20 @@ describe('Add Provider > ProviderConfiguration', () => {
       render(<App {...PAYU_PROVIDER} />);
       expect(screen.getByText(field)).toBeInTheDocument();
     });
+
+    it('should not render methods field for payu if integration audit enabled', () => {
+      const props = {
+        ...mockProps,
+        splitz: {
+          abExperiments: {
+            integration_audit: { variables: { result: 'on' } },
+          },
+        },
+      };
+      render(<App {...props} {...PAYU_PROVIDER} />);
+      expect(screen.queryByText('Payment Methods')).not.toBeInTheDocument();
+      expect(screen.getByText('Test integration')).toBeInTheDocument();
+    });
   });
 
   describe('For paytm gateway', () => {

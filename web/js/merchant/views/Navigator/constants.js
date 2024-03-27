@@ -26,6 +26,8 @@ export const GATEWAY_CATEGORIES = {
 export const RAZORPAY_GATEWAY_KEY = 'optimizer_razorpay';
 export const RECOMMENDED_GATEWAYS = ['payu'];
 
+export const INTEGRATION_AUDIT_COVERED_GATEWAY = ['payu', 'paytm', 'cashfree'];
+
 export const METHODS = {
   CARD: 'card',
   EMANDATE: 'emandate',

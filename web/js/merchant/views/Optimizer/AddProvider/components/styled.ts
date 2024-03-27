@@ -45,3 +45,15 @@ export const StyledDivider = styled.hr(
   margin: ${theme.spacing[5]}px 0;
 `,
 );
+
+export const IconBackground = styled.div<{ status: string }>`
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  vertical-align: bottom;
+  background-color: ${({ status, theme }) =>
+    status === 'positive'
+      ? theme.colors.feedback.background.positive.lowContrast
+      : theme.colors.feedback.background.negative.lowContrast};
+`;

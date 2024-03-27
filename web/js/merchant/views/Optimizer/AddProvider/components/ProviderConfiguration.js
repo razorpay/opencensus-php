@@ -24,6 +24,10 @@ import {
   TPV_OPTIONS,
   SKIP_INPUT_FOR_PROVIDER_KEYS,
 } from 'merchant/views/Navigator/constants';
+import {
+  isIntegrationAuditEnabled,
+  isGatewaySupportIntegrationAudit,
+} from 'merchant/views/Optimizer/AddProvider/utils';
 
 import WalletAutoDebit from './WalletAutoDebit';
 import WalletsMultiSelect from './WalletsMultiSelect';
@@ -45,6 +49,7 @@ const ProviderConfiguration = (props) => {
     isSubmitting,
     isSubmitDisabled,
     onSubmit,
+    splitz,
   } = props;
 
   const { Gateway_details } = provider;
@@ -117,6 +122,10 @@ const ProviderConfiguration = (props) => {
 
   const isSodexoCheckboxDisabled = isMethodCheckboxDisabled(METHODS.SODEXO);
 
+  const showMethods = !(
+    isIntegrationAuditEnabled(splitz) && isGatewaySupportIntegrationAudit(selectedProvider)
+  );
+
   return (
     <Box
       display="flex"
@@ -178,7 +187,7 @@ const ProviderConfiguration = (props) => {
       <Box display="flex" flexDirection="column" gap="spacing.7">
         {fields.map(({ label = '', data_type, data_value }) => {
           if (data_type === 'array') {
-            if (label === 'Payment Methods') {
+            if (label === 'Payment Methods' && showMethods) {
               return (
                 <Fragment key={label}>
                   <Box display="flex">
@@ -403,7 +412,7 @@ const ProviderConfiguration = (props) => {
         <Box display="flex" justifyContent="end">
           <Box display="flex" alignItems="center" gap="spacing.7">
             <Button isLoading={isSubmitting} isDisabled={isSubmitDisabled} onClick={onSubmit}>
-              Submit
+              {!showMethods ? 'Test integration' : 'Submit'}
             </Button>
           </Box>
         </Box>
