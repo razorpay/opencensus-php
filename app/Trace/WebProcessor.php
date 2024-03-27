@@ -68,7 +68,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'x_amzn_trace_id'   => $this->request->header('X-Amzn-Trace-Id'),
             'x-razorpay-request-id' => $this->request->header('X-Razorpay-Request-Id'),
             'x-dashboard-user-id' => $this->request->header('x-dashboard-user-id'),
-            'x-dashboard-merchant-id' => $this->request->header('x-dashboard-merchant-id')
+            'x-dashboard-merchant-id' => $this->request->header('x-dashboard-merchant-id'),
+            'X-edge-user-jti' => $this->request->header('X-Edge-User-Jti')                     // dashboard bypass via edge
         ];
 
         return $serverData;

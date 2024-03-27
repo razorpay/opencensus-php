@@ -13,6 +13,7 @@ use App\Lib\Util;
 use App\Http\ApiUrl;
 use App\User\Helper;
 use App\User\Constants;
+use App\Edge\EdgeClient;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use App\Base\UniqueIdEntity;
@@ -21,16 +22,12 @@ use Illuminate\Http\Response;
 use GuzzleHttp\Client as Guzzle;
 use App\User\RecoverableException;
 use Razorpay\Api\Errors\ErrorCode;
-use Illuminate\Routing\Redirector;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Http\RedirectResponse;
 use Razorpay\Api\Errors\BadRequestError;
 use App\Splitz\Service as SplitzService;
 use App\Constants\Constants as AppConstants;
 use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
 use App\User\Constants as UserConstants;
-use Illuminate\Contracts\Foundation\Application;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 
@@ -68,6 +65,11 @@ class UserController extends Controller
      */
     private ?User\Service $userService;
 
+    /**
+     * @var \GuzzleHttp\Client|null
+     */
+    private $edgeClient;
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -77,6 +79,8 @@ class UserController extends Controller
         $this->trace = $app['trace'];
 
         $this->metrics = $app['metrics'];
+
+        $this->edgeClient = new EdgeClient();
     }
 
     public function getDataForRendering($details, $org, $userError, $orgError): array
@@ -1541,6 +1545,9 @@ class UserController extends Controller
                 MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
             ]);
 
+        // revoke user token on edge using jti
+        $this->revokeTokenOnEdge();
+
         $user->logoutCurrentDevice();
 
         // Clearing all session data as session keys like current_merchant_id are persisted even after logout
@@ -1562,6 +1569,28 @@ class UserController extends Controller
         Session::forget('is_merchant_login');
 
         return AppResponse::jsonResponse([]);
+    }
+
+    /**
+     * revokes user token on edge
+     * @return void
+     */
+    public function revokeTokenOnEdge() {
+        try {
+            $this->edgeClient->revokeToken();
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::EDGE_TOKEN_REVOKE_FAILED, [
+                "message"   => "Failed to revoke user session token at edge for logout: " . $e->getMessage(),
+            ]);
+
+            // TODO: throw exception when we move out of shadow mode
+            // return if user token can not be revoked at edge
+            // we will not alter the sessions at redis unless edge tokens are revoked successfully
+//            throw new ServerErrorException(
+//                "Session deletion failed: " . $e->getMessage(),
+//                \Razorpay\Api\Errors\ErrorCode::SERVER_ERROR,
+//                500);
+        }
     }
 
     /**

@@ -10,6 +10,10 @@ final class RequestContext
 
     public ?bool $oauthRequest = false;
 
+    // if redis sessions have to be overriden by laravel session handler
+    // used by CustomCacheBasedSessionHandler write()
+    public ?bool $shouldOverrideSession = true;
+
     /**
      * @return string|null
      */
@@ -56,5 +60,15 @@ final class RequestContext
     public function setOauthRequest(bool $oauthRequest): void
     {
         $this->oauthRequest = $oauthRequest;
+    }
+
+    public function setShouldOverrideSession(bool $override): void
+    {
+        $this->shouldOverrideSession = $override;
+    }
+
+    public function shouldOverrideSession(): bool
+    {
+        return $this->shouldOverrideSession;
     }
 }

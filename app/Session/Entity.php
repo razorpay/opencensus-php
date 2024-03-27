@@ -3,6 +3,9 @@
 namespace App\Session;
 
 use App\Base;
+use App\Edge\EdgeClient;
+use Http\Client\Common\Exception\ServerErrorException;
+
 use Redis;
 use Session;
 
@@ -35,6 +38,11 @@ class Entity extends Base\Entity
         self::USER_AGENT,
         self::LAST_ACTIVITY,
         self::ADMIN_ID);
+
+    /**
+     * @var \GuzzleHttp\Client|null
+     */
+    protected $edgeClient;
 
     public function getAllSessionsForAdmin($id)
     {
@@ -117,6 +125,20 @@ class Entity extends Base\Entity
 
         $sessionIds = Redis::smembers($setKey);
 
+        $this->edgeClient = new EdgeClient();
+        // revoke all tokens on edge for the current user
+        try {
+            $exclude_current_session = (! empty($currentSessionId));
+            $this->edgeClient->revokeToken($userId, $exclude_current_session);
+        } catch (\Exception $e) {
+            // return if user token can not be revoked at edge
+            // we will not alter the sessions at redis unless edge tokens are revoked successfully
+            throw new ServerErrorException(
+                "Session deletion Failed Failed to revoke user session token from edge " . $e->getMessage(),
+                \Razorpay\Api\Errors\ErrorCode::SERVER_ERROR,
+                500);
+        }
+
         foreach ($sessionIds as $sessionId)
         {
             if ((empty($currentSessionId) === false) and ($sessionId === $currentSessionId))
@@ -137,6 +159,29 @@ class Entity extends Base\Entity
             }
 
             $this->deleteUserSessionRelation($userId, $sessionId);
+        }
+    }
+
+    /**
+     * Deletes current session for the user, used by Edge team to revoke user sessions
+     * on Edge authentication result
+     *
+     * @param        $userId
+     */
+    public function deleteCurrentSessionForUser($userId)
+    {
+        $sessionId = Session::getId();
+        $key = $this->getSessionKey($sessionId);
+        $hash = Redis::hgetall($key);
+
+        // remove it from sessions
+        Redis::del($key);
+        $this->deleteUserSessionRelation($userId, $sessionId);
+
+        // Delete from admins:adminId:sessions set as well
+        if (isset($hash['admin_id']))
+        {
+            $this->deleteAdminSessionRelation($hash['admin_id'], $sessionId);
         }
     }
 

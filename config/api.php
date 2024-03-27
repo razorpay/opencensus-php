@@ -10,6 +10,7 @@ return array(
     'url'                   =>  env('API_URL'),
     'checkout_url'          =>  env('CHECKOUT_API_URL'),
     'public_api_url'        =>  env('PUBLIC_API_URL'),
+    'edge_url'              =>  env('EDGE_URL'),
     'auth_user'             =>  'rzp_api',
     'auth_pass'             =>  env('API_AUTH_PASS'),
     'admin_auth_pass'       =>  env('API_ADMIN_AUTH_PASS'),

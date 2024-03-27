@@ -5,7 +5,6 @@ namespace App\Session;
 use App;
 use Auth;
 use Config;
-use App\Trace\TraceCode;
 use Illuminate\Support\Arr;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Cache\Repository as CacheContract;
@@ -43,6 +42,16 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
     public function write($sessionId, $data):bool
     {
+        // dont override session if it is already handled
+        // currently sessions are manually modified by edge team
+        // to keep dashboard sessions in sync with edge on ValidateEdgeToken.php
+        // laravel session handler will try to override the manual modifications
+        // hence we use this flag to identify if the session has to be overridden or not
+        $shouldOverrideSession = app('request.ctx')->shouldOverrideSession();
+        if (! $shouldOverrideSession) {
+            return true;
+        }
+
         $connection = $this->cache->connection()->client();
 
         $data = $this->getDefaultPayload($data, app());
