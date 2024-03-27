@@ -590,18 +590,6 @@ class Service extends Base\Service
                 continue;
             }
 
-
-            if($attribute == RefundEntity::NOTES || $attribute == RefundEntity::ACQUIRER_DATA){
-
-                if ($apiRefund->$attribute->toArray() != $scroogeRefund->$attribute->toArray() ) {
-                    $differences[$attribute] = [
-                        'api_refund' => $apiRefund->$attribute,
-                        'scrooge_refund' => $scroogeRefund->$attribute,
-                    ];
-                }
-                continue;
-            }
-
             if (is_array($value) === true)
             {
                 if ($scroogeRefund->$attribute != $value)
@@ -621,6 +609,18 @@ class Service extends Base\Service
                     'scrooge_refund' => $scroogeRefund->$attribute,
                 ];
             }
+
+            if($attribute == RefundEntity::NOTES || $attribute == RefundEntity::ACQUIRER_DATA){
+
+                if ($apiRefund->$attribute->toArray() != $scroogeRefund->$attribute->toArray() ) {
+                    $differences[$attribute] = [
+                        'api_refund' => $apiRefund->$attribute,
+                        'scrooge_refund' => $scroogeRefund->$attribute,
+                    ];
+                }
+                continue;
+            }
+
         }
 
         if($scroogeChecked == false){

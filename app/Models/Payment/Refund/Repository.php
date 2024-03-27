@@ -463,7 +463,7 @@ class Repository extends Base\Repository
                                             string $accountId,
                                             array $relations = []): Refund\Entity
     {
-        if ($this->isScroogeReadMigrationEnabled() === true) {
+        if ($this->isScroogeReadMigrationEnabledForReversal() === true) {
             return $this->fetchRefundByReversalIdAndMerchant($reversalId, $accountId, $relations);
         }
         return $this->findByReversalIdAndMerchantFromApi($reversalId, $accountId,$relations);

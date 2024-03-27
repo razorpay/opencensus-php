@@ -76,7 +76,7 @@ trait ExternalScroogeRepo
             if(empty($refunds) == true){
                 return null;
             }
-            return $refunds[0];
+            return $refunds;
         }else{
             return parent::find($refundId,$columns, $connectionType);
         }
@@ -452,6 +452,30 @@ trait ExternalScroogeRepo
         return false;
     }
 
+    public function isScroogeReadMigrationForReversal($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_FOR_REVERSAL,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_FOR_REVERSAL,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isScroogeReadMigrationEnabled($id = null)
     {
         $mode = $this->app['rzp.mode'] ?? 'live';
@@ -463,6 +487,29 @@ trait ExternalScroogeRepo
 
         $this->trace->info(
             TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+    public function isScroogeReadMigrationEnabledForReversal($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_FOR_REVERSAL,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_FOR_REVERSAL,
             [
                 'result'    => $result,
                 'mode'      => $mode,
