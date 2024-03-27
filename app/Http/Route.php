@@ -17339,6 +17339,7 @@ class Route
         'pgos' => [
             'merchant_entities_info',
             'merchant_submit_internal',
+            'merchant_assign_pricing_internal',
         ],
 
         'disputes' => [
