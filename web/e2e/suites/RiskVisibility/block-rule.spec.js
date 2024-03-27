@@ -39,7 +39,7 @@ test.describe.parallel(
       await expect(page.locator(ELEMENT_CONFIG.MODAL_TITLE)).toBeVisible();
       await page.locator(ELEMENT_CONFIG.SEND_REQUEST_BUTTON).click();
 
-      await expect(page.locator(ELEMENT_CONFIG.ERROR)).toHaveCount(2);
+      await expect(page.locator(ELEMENT_CONFIG.ERROR)).toHaveCount(3);
 
       await page.locator(ELEMENT_CONFIG.CANCEL).click();
       await expect(page.locator(ELEMENT_CONFIG.MODAL_TITLE)).not.toBeVisible();
