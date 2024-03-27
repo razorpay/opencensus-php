@@ -319,7 +319,7 @@ abstract class BaseStatusUpdater implements StatusUpdater
 
     public function getMerchantSignatoryVerificationStatus(MerchantEntity $merchant)
     {
-        $verificationDetails = $this->repo->merchant_verification_detail->getDetailsForMerchant($this->merchant->getId());
+        $verificationDetails = $this->repo->merchant_verification_detail->getDetailsForMerchantFromMaster($this->merchant->getId());
 
         if (empty($verificationDetails) === false)
         {
@@ -353,6 +353,10 @@ abstract class BaseStatusUpdater implements StatusUpdater
             return $notMatchedCount >= 1 ? ValidationConstants::NOT_MATCHED : ValidationConstants::NOT_INITIATED;
 
         }
+
+        $this->trace->info(TraceCode::MERCHANT_SIGNATORY,[
+            "verificationDetails" => 'No signatory verification details found for merchantId'
+        ]);
 
         return BvsValidationConstants::NOT_INITIATED;
     }

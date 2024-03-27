@@ -38,4 +38,11 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, '=', $mid)
                     ->get();
     }
+
+    public function getDetailsForMerchantFromMaster(string $mid)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $mid)
+            ->get();
+    }
 }
