@@ -1630,64 +1630,6 @@ class CBPaymentCreateTest extends TestCase
             'Payment does not have a customer_id.');
     }
 
-    public function testJPMCImportFlowPaymentWithInvalidMerchantPurposeCode()
-    {
-        $merchantId = "10000000000000";
-
-        $merchantAttribute = [
-            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
-            'purpose_code' => 'P0802',
-            'convert_currency' => true,
-            'international' => false,
-        ];
-
-        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
-        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'enable_jpmc_import_flow']);
-
-        $merchantDetailAttribute = [
-            DetailEntity::MERCHANT_ID => $merchantId,
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
-
-        $order = $this->fixtures->create('order',
-            [
-                'amount' => 1000,
-                'customer_id' => '100000customer',
-            ]);
-
-        $this->fixtures->create('order_meta',
-            [
-                'order_id' => $order->getId(),
-                'value'    => self::getOrderMetaValue(),
-                'type'     => 'cart_info',
-            ]);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['amount'] = '1000';
-
-        $payment['order_id'] = $order->getPublicId();
-
-        $payment['notes'] = [
-            'invoice_number' => '1234567890qwertyuiop',
-            'goods_description' => 'sample description for goods or services',
-        ];
-
-        $this->makeRequestAndCatchException(function() use ($payment)
-        {
-            $response = $this->doS2SPrivateAuthJsonPayment($payment);
-
-            $error = $response['error'];
-
-            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
-            $this->assertEquals($error['description'], 'Invalid purpose code while validating amount - P0802');
-
-        },
-            \RZP\Exception\BadRequestValidationFailureException::class,
-            'Invalid purpose code while validating amount - P0802');
-    }
-
     public function testJPMCImportFlowPaymentWithInvalidCurrency()
     {
         $merchantId = "10000000000000";
@@ -1756,6 +1698,76 @@ class CBPaymentCreateTest extends TestCase
         },
             \RZP\Exception\BadRequestException::class,
             'Currency is not supported');
+    }
+
+    public function testJPMCImportFlowPaymentWithInvalidPurposeCode()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+            'purpose_code' => 'P0802',
+            'convert_currency' => true,
+            'international' => false,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'enable_jpmc_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => $merchantId,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => 'jpmc_import_flow',
+            InternationalIntegration\Entity::INTEGRATION_KEY => 'jpmc_import_flow',
+            InternationalIntegration\Entity::NOTES => [
+                'hs_code' => '85238020'
+            ],
+        ]);
+
+        $order = $this->fixtures->create('order',
+            [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'customer_id' => '100000customer',
+            ]);
+
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValue(),
+                'type'     => 'cart_info',
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000';
+
+        $payment['currency'] = 'INR';
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['notes'] = [
+            'invoice_number' => '1234567890qwertyuiop',
+            'goods_description' => 'sample description for goods or services',
+        ];
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $response = $this->doS2SPrivateAuthJsonPayment($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_VALIDATION_FAILURE');
+            $this->assertEquals($error['description'], 'Merchant Purpose Code is invalid');
+
+        },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'Merchant Purpose Code is invalid');
     }
 
     public function testJPMCImportFlowPaymentWithDuplicateInvoiceNumber()

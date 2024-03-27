@@ -130,19 +130,6 @@ class Constants
 
     const OPGSP_TRANSACTION_LIMIT_USD = 200000;
 
-    // For purpose code: S0802
-    const JPMC_IMPORT_FLOW_SOFTWARE_TRANSACTION_LIMIT_USD = 199500;
-
-    // For purpose code: S1101, S1103
-    const JPMC_IMPORT_FLOW_DIGITAL_CONTENT_TRANSACTION_LIMIT_USD = 19500;
-
-    const PURPOSE_CODE_TXN_LIMIT_MAP = [
-        PurposeCodeList::S0802 => self::JPMC_IMPORT_FLOW_SOFTWARE_TRANSACTION_LIMIT_USD,
-        PurposeCodeList::S1101 => self::JPMC_IMPORT_FLOW_DIGITAL_CONTENT_TRANSACTION_LIMIT_USD,
-        PurposeCodeList::S1103 => self::JPMC_IMPORT_FLOW_DIGITAL_CONTENT_TRANSACTION_LIMIT_USD,
-    ];
-
-
     // optimizer
     const OPTIMIZER_GATEWAY_DATA = 'optimizer_gateway_data';
     const DATA                   = 'data';
