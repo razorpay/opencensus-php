@@ -476,13 +476,13 @@ class RepositoryTest extends RepositoryTestHelper
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
 
         // Test Case 2 - SaveRoute false - Splitz off - Request for findOrFail & findOrFailPublic  should not go to account service
-        $this->setSplitzWithOutput("false", 2);
+        $this->setSplitzWithOutput("false", 3);
         $repo = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
 
         // Test Case 3 - SaveRoute false - Splitz Exception - Request for findOrFail & findOrFailPublic  should not go to account service
-        $this->splitzShouldThrowException(2);
+        $this->splitzShouldThrowException(3);
         $repo = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
@@ -510,14 +510,14 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantDetailResponse = (new MerchantDetailResponse())->setMerchantDetail($merchantDetailProto1);
 
         // Test Case 6 - SaveRoute false - Splitz on - Request for findOrFail & findOrFailPublic  should go to account service
-        $this->setSplitzWithOutput("true", 1);
+        $this->setSplitzWithOutput("true", 2);
         $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t2K", $merchantDetailResponse, null, "getById", 2);
         $repo = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
 
         // Test Case 7 - SaveRoute false - Splitz on - Request for findOrFail & findOrFailPublic  should go to account service - Exception occurs fallback to DB
-        $this->setSplitzWithOutput("true", 2);
+        $this->setSplitzWithOutput("true", 3);
         $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t2K", null, new GrpcError(STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), "getById", 3);
         $repo = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);

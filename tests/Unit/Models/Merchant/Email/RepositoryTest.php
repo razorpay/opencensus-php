@@ -431,7 +431,7 @@ class RepositoryTest extends TestCase
         $merchantEmailResponse = (new MerchantEmailResponse())->setEmail($merchantEmailProto1);
 
         // Test Case 4 - ExclusionFlow false - Splitz should never be called - Request for find  should go to account service
-        $this->setSplitzWithOutput("true", 1);
+        $this->setSplitzWithOutput("true", 2);
         $this->setMerchantEmailMockClientWithIdAndResponse("CzmiCwTPCL3t2R", $merchantEmailResponse, null, "getById", 2);
         $repo = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);

@@ -69,14 +69,7 @@ class SplitzHelper
     function isSplitzOnByExperimentName(string $experimentName, string $identifier): bool {
         try {
             $experimentId = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[$experimentName];
-            $resultMapKey = $experimentId."_".$identifier;
-
-            if(isset($this->resultMap[$resultMapKey])) {
-                return $this->resultMap[$resultMapKey];
-            }
-
             $result =  $this->isSplitzOn($experimentId, $identifier);
-            $this->resultMap[$resultMapKey] = $result;
             return $result;
         } catch (\Exception $e) {
             $this->trace->error(TraceCode::ACCOUNT_SERVICE_SPLITZ_EXCEPTION, [
