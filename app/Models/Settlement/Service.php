@@ -71,6 +71,17 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('settlement_service_create', $input);
 
+        $this->trace->info(
+            TraceCode::SETTLEMENT_CREATE_REQUEST,
+            [
+                'input' => $input,
+            ]
+        );
+
+        if(isset($input['rearch_flow']) === true && $input['rearch_flow'] === true){
+            return (new Processor)->createSettlementEntryForRearch($input);
+        }
+
         return (new Processor)->createSettlementEntry($input);
     }
 
@@ -89,6 +100,7 @@ class Service extends Base\Service
             'settlement_currency'  => $this->merchant->getCurrency(),
             'next_settlement_time' => null,
         ];
+
 
         $isNewService = (new Bucket\Core())->shouldProcessViaNewService($this->merchant->getId(), $balance);
 

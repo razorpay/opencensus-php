@@ -167,6 +167,7 @@ class Merchant
     {
         try
         {
+
             $this->setl = $settlement;
 
             $this->repo->transaction(function() use ($journalID)
@@ -802,6 +803,109 @@ class Merchant
         });
 
         return [$this->setl, $settlementTransfer];
+    }
+
+    public function createSettlementFromNewServiceForRearch($balance, array $params)
+    {
+        $input = [
+            Settlement\Entity::AMOUNT          => $params['amount'],
+            Settlement\Entity::FEES            => $params['fees'],
+            Settlement\Entity::TAX             => $params['tax'],
+            Settlement\Entity::CHANNEL         => $this->channel,
+            Settlement\Entity::ID              => $params['settlement_id'],
+            Settlement\Entity::STATUS          => $params['status'],
+            Settlement\Entity::IS_NEW_SERVICE  => true,
+        ];
+
+        $merchantSettleToPartner = $this->merchantSettleToPartner;
+
+        $this->setlDetailAmounts = $this->createSettlementDetailsFromNewService($params['details']);
+
+        $this->setlDetails = new Base\Collection;
+
+        $destinationMerchantId = null;
+
+        $settlementJournalID = null;
+
+        $settlementTransferJournalID = null;
+
+        $settlementTransferEntityID = null;
+
+        if (!empty($params['journals_data']))
+        {
+            $settlementJournalID = $params['journal_id'];
+        }
+
+        if (empty($params['journals_data']) === false)
+        {
+            $journalsData = $params['journals_data'];
+
+            if($journalsData['settlement_journal_id'] !== ""){
+                $settlementJournalID = $journalsData['settlement_journal_id'];
+            }
+
+            if($journalsData['settlement_transfer_journal_id'] !== ""){
+                $settlementTransferJournalID = $journalsData["settlement_transfer_journal_id"];
+            }
+
+            if($journalsData['settlement_transfer_id'] !== ""){
+                $settlementTransferEntityID = $journalsData["settlement_transfer_id"];
+            }
+        }
+
+
+        if(($params['type'] === Feature\Constants::AGGREGATE_SETTLEMENT) and isset($params['destination_merchant_id']) === true)
+        {
+            $destinationMerchantId = $params['destination_merchant_id'];
+
+            if(empty($destinationMerchantId) === true)
+            {
+                throw new \Exception('empty destination MID sent for aggregate settlement type');
+            }
+        }
+
+        $settlementTransfer = $this->repo->transaction(function() use ($merchantSettleToPartner, $balance, $input,
+            $destinationMerchantId, $settlementJournalID, $settlementTransferJournalID, $settlementTransferEntityID)
+        {
+            //create new settlement entity
+            $this->newSettlementEntity($merchantSettleToPartner, $balance, $input);
+
+            // Create Settlement Details entity
+            $this->createSettlementDetailsEntities();
+
+            // Save settlement Entity to database
+            $this->repo->saveOrFail($this->setl);
+
+            // Save settlement Details Entity to database
+            $this->repo->saveOrFailCollection($this->setlDetails);
+
+            $settlementTransfer = null;
+
+            if(empty($destinationMerchantId) === false)
+            {
+                $settlementTransfer = (new Transfer\Core)->transfer(
+                    $this->setl,
+                    $destinationMerchantId,
+                    $balance->getType(),
+                    $settlementTransferEntityID,
+                    $settlementTransferJournalID,
+                    $settlementJournalID
+                );
+            }
+
+            return $settlementTransfer;
+        });
+
+        try {
+            //create transaction corresponding to settlement
+            $this->createTransaction($this->setl, $settlementJournalID);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN, ['error' => $e]);
+
+            return [$this->setl, $settlementTransfer, true];
+        }
+
+        return [$this->setl, $settlementTransfer, false];
     }
 
     protected function createSettlementDetailsFromNewService(array &$details)

@@ -1204,6 +1204,152 @@ class Processor extends Base\Core
         }
     }
 
+    public function createSettlementEntryForRearch($input)
+    {
+        try
+        {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_CREATE_VIA_REARCH_FLOW,
+                [
+                    'input' => $input,
+                ]);
+
+            $settlementId = $input['settlement_id'];
+            $merchantId = $input['merchant_id'];
+            $channel = $input['channel'];
+
+            $data =  $this->repo->settlement->findBySettlementId($settlementId);
+
+            $settlementTrf = $this->repo->settlement_transfer->fetchBySettlementId($settlementId);
+
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $isAggregateSettlement = $input['type'] === Feature\Constants::AGGREGATE_SETTLEMENT;
+
+            $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $input['balance_type']);
+
+            $merchantSettler = new SetlMerchant(
+                $merchant,
+                $channel,
+                $this->repo,
+                false,
+                [],
+                $isAggregateSettlement,
+                true
+            );
+
+            if ($data->count() != 0)
+            {
+                $settlementJournalID = null;
+
+                if (empty($input['journal_id']) === false)
+                {
+                    $settlementJournalID = $input['journal_id'];
+                }
+
+                if (empty($input['journals_data']) === false)
+                {
+                    $journalsData = $input['journals_data'];
+
+                    if($journalsData['settlement_journal_id'] !== ""){
+                        $settlementJournalID = $journalsData['settlement_journal_id']??null;
+                    }
+                }
+
+                if(empty($data[0]->getTransactionId())){
+                    try {
+                        $this->trace->info(
+                            TraceCode::SETTLEMENT_TRANSACTION_CREATE_RETRY,
+                            [
+                                'input' => $input,
+                                'settlementJournalID' => $settlementJournalID,
+                            ]);
+
+
+                        $merchantSettler->createTransaction($data[0], $settlementJournalID);
+
+                        return [
+                            'transaction_id'                        => $settlementJournalID,
+                            'settlement_transfer_transaction_id'    => (isset($settlementTrf[0]) === true) ? $settlementTrf[0]->transaction->getId() : null,
+                            'duplicate'                             => false,
+                            'error'                                 => null,
+                            'soft_failure'                          => false,
+                        ];
+
+                    }  catch (\Throwable $e) {
+
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::SETTLEMENT_TRANSACTION_CREATION_FAILED,
+                            [
+                                'input' => $input,
+                            ]);
+
+                        return [
+                            'transaction_id'                        => $settlementJournalID,
+                            'settlement_transfer_transaction_id'    => (isset($settlementTrf[0]) === true) ? $settlementTrf[0]->transaction->getId() : null,
+                            'duplicate'                             => false,
+                            'error'                                 => null,
+                            'soft_failure'                          => true,
+                        ];
+                    }
+                }
+
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_TRANSACTION_CREATE_DUPLICATE_REQUEST,
+                    [
+                        'input' => $input
+                    ]);
+
+                return [
+                    'transaction_id'                        => $data[0]->getTransactionId(),
+                    'settlement_transfer_transaction_id'    => (isset($settlementTrf[0]) === true) ? $settlementTrf[0]->transaction->getId() : null,
+                    'duplicate'                             => true,
+                    'error'                                 => null,
+                    'soft_failure'                          => false,
+                ];
+            }
+
+            [$response, $settlementTransfer, $isSoftFailure] = $merchantSettler->createSettlementFromNewServiceForRearch($balance, $input);
+
+            $settlementTransferTxnId = null;
+
+            if((isset($settlementTransfer) === true) and (isset($settlementTransfer->transaction) === true))
+            {
+                $settlementTransferTxnId = $settlementTransfer->transaction->getId();
+            }
+
+            return [
+                'transaction_id'                        => $response->getTransactionId(),
+                'settlement_transfer_transaction_id'    => $settlementTransferTxnId,
+                'duplicate'                             => false,
+                'error'                                 => null,
+                'soft_failure'                          => $isSoftFailure,
+            ];
+        }
+        catch (\Throwable $e)
+        {
+            $errorMsg      = $e->getMessage();
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_CREATE_FAILED_FOR_SERVICE,
+                [
+                    'input' => $input,
+                ]);
+
+            return [
+                'transaction_id'                        => null,
+                'settlement_transfer_transaction_id'    => null,
+                'duplicate'                             => null,
+                'error'                                 => $errorMsg,
+                'soft_failure'                          => false,
+            ];
+        }
+    }
+
     /**
      * settlementStatusUpdate used to update the status of the settlement from settlement service
      * @param array $input

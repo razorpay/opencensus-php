@@ -40,7 +40,8 @@ class Core extends Base\Core
         string $destinationMerchantId,
         string $balanceType,
         string $entityID = null,
-        string $journalID = null): Entity
+        string $journalID = null,
+        string $settlementJournalID = null): Entity
     {
         assert($settlement->hasTransaction(), true); // nosemgrep : razorpay:assert-fix-false-positives
 
@@ -66,12 +67,15 @@ class Core extends Base\Core
 
         $txnCore = (new Transaction\Core);
 
-        $settlementTransfer = $this->transaction(function () use ($settlement, $destinationBalance, $txnCore, $entityID, $journalID)
+        $settlementTransfer = $this->transaction(function () use ($settlement, $destinationBalance, $txnCore, $entityID, $journalID, $settlementJournalID)
         {
             $settlementTransfer = $this->buildSettlementTransferEntity(
                 $settlement,
                 $destinationBalance,
-                $entityID);
+                $entityID,
+                $settlementJournalID,
+            );
+
 
             //
             // marking settlement as processed as its internally transferred to parent merchant
@@ -113,7 +117,7 @@ class Core extends Base\Core
      */
     protected function buildSettlementTransferEntity(
         SettlementEntity $settlement,
-        Balance\Entity $destinationBalance, $entityID = null)
+        Balance\Entity $destinationBalance, $entityID = null, $settlementJournelId=null)
     {
         $entityData = [
             Entity::CURRENCY                  => Currency::INR,
@@ -124,7 +128,7 @@ class Core extends Base\Core
             Entity::MERCHANT_ID               => $destinationBalance->getMerchantId(),
             Entity::SETTLEMENT_ID             => $settlement->getId(),
             Entity::SOURCE_MERCHANT_ID        => $settlement->getMerchantId(),
-            Entity::SETTLEMENT_TRANSACTION_ID => $settlement->getTransactionId(),
+            Entity::SETTLEMENT_TRANSACTION_ID => $settlementJournelId??$settlement->getTransactionId(),
         ];
 
         $entity = $entityID === null ? (new Entity)->generateId() : (new Entity)->setId($entityID);
