@@ -53,8 +53,25 @@ else
   cp dockerconf/nginx.conf /etc/nginx/conf.d/default.conf
 fi
 
+export OPCACHE_ENABLE=1
+
 echo "setting max_input_vars to 2000"
 sed -ie "s/; max_input_vars =.*/max_input_vars = 2000/g" /etc/php81/php.ini
+echo "opcache.enable=1" >> /etc/php81/php.ini
+echo "opcache.jit_buffer_size=256M" >> /etc/php81/php.ini
+echo "opcache.jit=tracing" >> /etc/php81/php.ini
+echo "opcache.memory_consumption=128" >> /etc/php81/php.ini
+echo "opcache.max_accelerated_files=10000" >> /etc/php81/php.ini
+
+touch /etc/php81/conf.d/opcache.ini
+echo "opcache.enable=1" >> /etc/php81/conf.d/opcache.ini
+echo "opcache.revalidate_freq=0" >> /etc/php81/conf.d/opcache.ini
+echo "opcache.validate_timestamps=1" >> /etc/php81/conf.d/opcache.ini
+echo "opcache.max_accelerated_files=10000" >> /etc/php81/conf.d/opcache.ini
+echo "opcache.memory_consumption=192" >> /etc/php81/conf.d/opcache.ini
+echo "opcache.max_wasted_percentage=10" >> /etc/php81/conf.d/opcache.ini
+echo "opcache.interned_strings_buffer=16" >> /etc/php81/conf.d/opcache.ini
+echo "opcache.fast_shutdown=1" >> /etc/php81/conf.d/opcache.ini
 
 export PATH=$PATH:/app/
 
