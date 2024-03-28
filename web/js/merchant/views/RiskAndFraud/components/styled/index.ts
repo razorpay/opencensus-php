@@ -5,6 +5,18 @@ interface StyledTabProps extends React.HTMLAttributes<HTMLDivElement> {
   active: boolean;
 }
 
+interface TableRowProps {
+  height?: number;
+}
+
+interface TableCellProps {
+  center?: boolean;
+}
+
+interface GridItemProps {
+  columns?: number;
+}
+
 export const flexCentered = css`
   display: flex;
   justify-content: center;
@@ -139,3 +151,94 @@ export const DownloadIconWrapper = styled.span(
   }
 `,
 );
+
+export const Grid = styled.div`
+  display: grid;
+  grid-gap: ${({ theme }) => theme.spacing[4]}px;
+  grid-template-columns: repeat(8, 1fr);
+  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    column-gap: 0;
+  }
+`;
+
+export const GridItem = styled.div<GridItemProps>`
+  grid-column: span ${({ columns }) => columns || 1};
+
+  @media (max-width: 768px) {
+    grid-column: span 1fr; /* Override on smaller screens */
+  }
+`;
+
+export const AnalyticsTableWrapper = styled.div`
+  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+
+  @media (max-width: 700px) {
+    grid-row: 1;
+    grid-column: 1;
+  }
+`;
+
+export const DownloadReportsContainer = styled.div`
+  background-color: #c0c0c0;
+`;
+
+export const BlocklistContainer = styled.div`
+  background-color: #a0a0a0;
+
+  @media (max-width: 700px) {
+    grid-row: 3;
+    grid-column: 1;
+  }
+`;
+
+export const TableContainer = styled.div`
+  width: 100%;
+  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+  padding: ${({ theme }) => `${theme.spacing[5]}px ${theme.spacing[8]}px`};
+  border: 1px solid #e0e8f4;
+  border-radius: ${({ theme }) => theme.border.radius.medium}px;
+`;
+
+export const Table = styled.table`
+  width: 100%;
+  border: none;
+  border-collapse: collapse;
+`;
+
+export const TableHead = styled.thead`
+  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+  border-bottom: 1px solid #e0e8f4;
+`;
+
+export const TableBody = styled.tbody`
+  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+`;
+
+export const TableRow = styled.tr<TableRowProps>`
+  border-bottom: 1px solid #e0e8f4;
+  height: ${({ height }) => (height ? `${height}px` : '45px')};
+`;
+
+const TableCellBase = css`
+  padding: ${({ theme }) => `${theme.spacing[4]}px ${theme.spacing[3]}px`};
+  color: #262d3a;
+  text-align: left;
+
+  &:first-child {
+    padding-left: 0; /* No left padding for the first child */
+  }
+`;
+
+export const TableHeaderCell = styled.th`
+  ${TableCellBase}
+  font-weight: ${({ theme }) => theme.typography.fonts.weight.regular};
+`;
+
+export const TableCell = styled.td<TableCellProps>`
+  ${TableCellBase}
+  font-weight: ${({ theme }) => theme.typography.fonts.weight.bold};
+  text-align: ${({ center }) => (center ? 'center' : 'left')};
+`;

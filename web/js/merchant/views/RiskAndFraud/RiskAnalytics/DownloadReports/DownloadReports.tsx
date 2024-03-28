@@ -12,6 +12,7 @@ import ReportModal from './ReportModal';
 import { DOWNLOAD_REPORTS } from './constants';
 import { DownloadReportsProps } from './types';
 import { trackEvent } from '../../common/trackEvents';
+import { RISK_DECLINED } from '../constants';
 
 const DownloadReports: React.FC<DownloadReportsProps> = (props) => {
   const { entity, availableEmails, generatedBy, openModal, closeModal, showNotification } = props;
@@ -41,7 +42,7 @@ const DownloadReports: React.FC<DownloadReportsProps> = (props) => {
       description={description}
       note={note}
       buttonText="Download list"
-      showDownloadIcon
+      showDownloadIcon={entity === RISK_DECLINED}
       onButtonClick={handleDownload}
     />
   );

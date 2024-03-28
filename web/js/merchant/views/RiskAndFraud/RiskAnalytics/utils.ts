@@ -127,8 +127,8 @@ export const generateChartData = ({
   };
 };
 
-const formatAmount = (
-  amount: number,
+export const formatAmount = (
+  amount = 0,
 ): {
   value: string;
   decimal: string;

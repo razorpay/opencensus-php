@@ -100,6 +100,13 @@ export interface QueryResponseItem {
   entity_data: { [metric in MetricOptions]: string };
 }
 
+export interface TableRowItem {
+  card_iin: string;
+  card_country: string;
+  entity_data: { [metric in MetricOptions]: string };
+  payment: { [metric in MetricOptions]: string };
+}
+
 export type FetchRatiosResponse = Promise<Ratios>;
 
 export type FetchAnalyticsParams = {
@@ -115,6 +122,14 @@ export type FetchAnalyticsResponse = Promise<{
   stats: Stats;
   chartData: ChartData;
 }>;
+
+export type FetchTableDataParams = {
+  entity: AnalyticsEntity;
+  dateRange: DateRange;
+  groupBy: 'card_iin' | 'countries';
+};
+
+export type FetchTableDataResponse = Promise<TableRowItem[] | undefined>;
 
 export type FormValues = {
   parameters: string | undefined;

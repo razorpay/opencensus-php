@@ -1,8 +1,8 @@
-import { merchantFetch } from 'merchant/utils/ajax';
-import { getDataFromAPI } from 'merchant/views/Account/Profile/components/FIRC/utility';
 import { User } from 'common/typings';
 import { getDeviceSource } from 'merchant/components/Support/getCommonSupportProperties';
 import { TICKET_BASE_URL } from 'merchant/reducers/config';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { getDataFromAPI } from 'merchant/views/Account/Profile/components/FIRC/utility';
 
 import {
   DateRange,
@@ -10,6 +10,8 @@ import {
   FetchAnalyticsParams,
   FetchAnalyticsResponse,
   CreateFDTicketParams,
+  FetchTableDataParams,
+  FetchTableDataResponse,
 } from './types';
 import { calculateStats, generateChartData } from './utils';
 
@@ -127,4 +129,30 @@ export const createSupportTicketForBlockRule = async (
   }
 
   return { created: false };
+};
+
+export const fetchTableData = async ({
+  entity,
+  dateRange,
+  groupBy,
+}: FetchTableDataParams): FetchTableDataResponse => {
+  const { startDate, endDate } = dateRange;
+  const payload = {
+    start_date: startDate,
+    end_date: endDate,
+    group_by: groupBy,
+    entity,
+  };
+  try {
+    const response = await merchantFetch({
+      method: 'GET',
+      url: 'payments_cross_border_live/v1/risk-analytics',
+      mode: 'live',
+      data: payload,
+    });
+    const { data } = getDataFromAPI(response);
+    return data;
+  } catch {
+    throw new Error('Data fetch failed! Please try again');
+  }
 };

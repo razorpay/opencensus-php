@@ -19,7 +19,14 @@ import { fetchAnalytics } from 'merchant/views/RiskAndFraud/RiskAnalytics/servic
 
 import { getBreakdownInterval, getInitialState } from './utils';
 import { trackEvent } from '../../common/trackEvents';
+import {
+  Grid,
+  GridItem,
+  DownloadReportsContainer,
+  BlocklistContainer,
+} from '../../components/styled';
 import { SelectedGraphOption } from '../ChartContainer/types';
+import EntityAnalyticsTable from '../EntityAnalyticsTable';
 
 import type { EntityAnalyticsProps, AnalyticsReducer } from './types';
 import type {
@@ -129,8 +136,21 @@ const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => 
         graphOptions={graphOptions}
         handleInterval={handleInterval}
       />
-      <DownloadReports entity={entity} />
-      {entity !== RISK_DECLINED ? <BlockRule entity={entity} /> : null}
+      <Grid>
+        {entity !== RISK_DECLINED && (
+          <GridItem columns={5}>
+            <EntityAnalyticsTable entity={entity} dateRange={dateRange} />
+          </GridItem>
+        )}
+        <GridItem columns={entity !== RISK_DECLINED ? 3 : 8}>
+          <DownloadReportsContainer>
+            <DownloadReports entity={entity} />
+          </DownloadReportsContainer>
+          <BlocklistContainer>
+            {entity !== RISK_DECLINED ? <BlockRule entity={entity} /> : null}
+          </BlocklistContainer>
+        </GridItem>
+      </Grid>
     </Box>
   );
 };

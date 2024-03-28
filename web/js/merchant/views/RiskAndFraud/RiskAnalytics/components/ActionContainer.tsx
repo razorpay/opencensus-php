@@ -25,8 +25,8 @@ const ActionContainer = ({
           display="flex"
           flexDirection="column"
           gap="spacing.3"
-          paddingRight="spacing.10"
-          width="85%"
+          paddingRight={showDownloadIcon ? 'spacing.10' : 'spacing.0'}
+          width={showDownloadIcon ? '85%' : '100%'}
         >
           <Text weight="bold" size="large" marginBottom="spacing.4">
             {heading}
