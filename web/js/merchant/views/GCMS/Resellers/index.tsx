@@ -24,6 +24,7 @@ const merchant_name = {
     <NavLink
       key={item.merchant_Id}
       to={`${item.merchant_id}`}
+      state={{ prevPath: location?.pathname }}
       onClick={() =>
         trackResellerDetailsPageClicked({
           resellerId: item.merchant_id,

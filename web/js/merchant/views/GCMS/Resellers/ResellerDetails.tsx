@@ -42,12 +42,14 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
 
   const handleOrderCreate = () => {
     trackOrdersCreateClicked();
-    navigate(`/gcms/orders/create/programs`, { state: { resellerId } });
+    navigate(`/gcms/orders/create/programs`, {
+      state: { resellerId, prevPath: location.pathname },
+    });
   };
 
   const handleViewCart = () => {
     trackOrdersCreateCartClicked();
-    navigate(`/gcms/orders/create/cart`, { state: { resellerId } });
+    navigate(`/gcms/orders/create/cart`, { state: { resellerId, prevPath: location.pathname } });
   };
 
   const { mutate: orderCreateMutation } = useMutation({
@@ -76,8 +78,8 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
 
   const handleGoBack = () => {
     const { prevPath = '' } = location?.state ?? {};
-
     if (prevPath) {
+      console.log('prev path', prevPath);
       return navigate(-1);
     }
     return navigate('/gcms/resellers');
@@ -123,11 +125,19 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
           cartLength={orderItemsByProgram}
         />
         <header>
-          <NavLink to={RESELLER_PROGRAMS_PATH}>Programs</NavLink>
-          <NavLink data-testid="orders-nav-link" to={RESELLER_ORDERS_PATH}>
+          <NavLink to={RESELLER_PROGRAMS_PATH} state={{ prevPath: location?.pathname }}>
+            Programs
+          </NavLink>
+          <NavLink
+            data-testid="orders-nav-link"
+            to={RESELLER_ORDERS_PATH}
+            state={{ prevPath: location?.pathname }}
+          >
             Orders
           </NavLink>
-          <NavLink to={RESELLER_ACCOUNTS_PATH}>Accounts</NavLink>
+          <NavLink to={RESELLER_ACCOUNTS_PATH} state={{ prevPath: location?.pathname }}>
+            Accounts
+          </NavLink>
         </header>
         <div className="content">
           <Routes>

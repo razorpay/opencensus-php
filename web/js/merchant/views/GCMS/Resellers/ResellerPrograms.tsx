@@ -57,7 +57,11 @@ const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
                 <ProgramsListItem
                   key={program.id}
                   program={program}
-                  onClick={() => navigate(`/gcms/programs/${program.id}`)}
+                  onClick={() => {
+                    navigate(`/gcms/programs/${program.id}`, {
+                      state: { prevPath: location.pathname },
+                    });
+                  }}
                 />
               ))
             ) : (

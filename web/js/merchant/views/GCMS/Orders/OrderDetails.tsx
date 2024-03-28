@@ -73,7 +73,6 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
 
   const handleGoBack = () => {
     const { prevPath = '' } = location?.state ?? {};
-
     if (prevPath) {
       return navigate(-1);
     }

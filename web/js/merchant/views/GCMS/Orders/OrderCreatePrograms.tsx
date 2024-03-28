@@ -76,7 +76,9 @@ const OrderCreatePrograms = () => {
 
   const onClickViewCart = (): void => {
     trackOrdersCreateCartProgramsCartClicked({ orderId, resellerId });
-    navigate('/gcms/orders/create/cart', { state: { resellerId, orderId } });
+    navigate('/gcms/orders/create/cart', {
+      state: { resellerId, orderId, prevPath: location.pathname },
+    });
   };
 
   const orderItemsByProgram = Array.isArray(orderItems)

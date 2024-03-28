@@ -142,7 +142,9 @@ const OrderCart = ({ showNotification }: Props) => {
                     variant="secondary"
                     size="medium"
                     onClick={() =>
-                      navigate('/gcms/orders/create/programs', { state: { resellerId } })
+                      navigate('/gcms/orders/create/programs', {
+                        state: { resellerId, prevPath: location.pathname },
+                      })
                     }
                   >
                     Add Programs

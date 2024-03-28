@@ -25,6 +25,7 @@ const ORDER_LIST_COLUMNS = [
       <NavLink
         key={order.orderId}
         to={`${order.id}`}
+        state={{ prevPath: location?.pathname }}
         onClick={() =>
           trackOrdersItemClicked({
             orderId: order?.id,

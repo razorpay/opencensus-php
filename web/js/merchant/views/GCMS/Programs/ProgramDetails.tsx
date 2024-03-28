@@ -29,7 +29,6 @@ const ProgramDetails: React.FC = () => {
 
   const handleGoBack = () => {
     const { prevPath = '' } = location?.state ?? {};
-
     if (prevPath) {
       return navigate(-1);
     }
