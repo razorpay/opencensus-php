@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Processors;
 
 use Rzp\Bvs\Validation\V1\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\AutoKyc\Response;
@@ -21,6 +23,8 @@ class DefaultProcessorMock extends DefaultProcessor
     private $mockValidationDetail;
 
     const UNITTEST_VALIDATION_ARRAY_CACHE_KEY = 'unittest_bvs_validation_array';
+
+    const RECORD_NOT_FOUND = 'record_not_found';
 
     const UNITTEST_VALIDATION_ARRAY_CACHE_TTL = 15 * 60; // 15 minutes
 
@@ -161,6 +165,11 @@ class DefaultProcessorMock extends DefaultProcessor
 
     public function FetchDetails(string $validationId): Response
     {
+        if ($this->mockStatus === self::RECORD_NOT_FOUND)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+        }
+
         $status = $this->mockStatus ?? 'success';
 
         $data = [

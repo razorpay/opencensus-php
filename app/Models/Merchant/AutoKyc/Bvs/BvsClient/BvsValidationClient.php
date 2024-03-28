@@ -16,6 +16,7 @@ use Google\Protobuf\Internal\MapField;
 use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 use RZP\Exception\IntegrationException;
+use RZP\Exception\BadRequestException;
 use Rzp\Bvs\Validation\V1 as validationV1;
 use RZP\Models\Merchant\Detail\Metric;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -30,7 +31,7 @@ class BvsValidationClient extends BaseClient
 {
     private $ValidationApiClient;
 
-
+    const NOT_FOUND = 'not_found';
     /**
      * BvsValidationClient constructor.
      *
@@ -71,7 +72,12 @@ class BvsValidationClient extends BaseClient
         {
             $this->trace->traceException($e, null, TraceCode::BVS_INTEGRATION_ERROR, $e->getMetaMap());
 
-            throw new IntegrationException('Could not receive proper response from BVS service',$e->getErrorCode()==='not_found'?ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND:null);
+            if($e->getErrorCode() === self::NOT_FOUND)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+            }
+
+            throw new IntegrationException('Could not receive proper response from BVS service', null);
         }
     }
 

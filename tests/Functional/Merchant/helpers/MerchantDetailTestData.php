@@ -2757,7 +2757,7 @@ return [
             ],
         ],
     ],
-  
+
     'testGetInternalMerchantIsTransactedDetailFalse' => [
         'request' => [
             'url'       => '/internal/merchants/10011210025000',
@@ -3404,6 +3404,58 @@ return [
         'response' => [
             'content'     => [
                 'promoter_pan_name' => 'John Doe',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetBvsValidationArtefactDetailsArtefactNotPresentInBVS' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchants/10000000000000/bvs/cin/details',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "No db records found."
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
+
+    'testGetBvsValidationArtefactDetailsArtefactPresentInBVS' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchants/10000000000000/bvs/cin/details',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                "validation_id"=>"MkCRZ02hL658lp",
+                "enrichment_details_fields"=>[
+                    "online_provider"=>[
+                        "details"=>[
+                            "account_holder_names"=>[
+                                [
+                                    "score"=>0,"value"=>"name 1"
+                                ],
+                                [
+                                    "score"=>0,"value"=>"name 2"
+                                ]
+                            ],
+                            "account_status"=>[
+                                "value"=>"active"
+                            ]
+                        ]
+                    ]
+                ]
             ],
             'status_code' => 200,
         ],

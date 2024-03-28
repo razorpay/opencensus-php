@@ -691,6 +691,53 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetBvsValidationArtefactDetailsArtefactNotPresentInBVS()
+    {
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>"10000000000000",
+        ]);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'record_not_found');
+
+        $bvsValidation = $this->fixtures->create('bvs_validation',
+            [
+                'owner_id'      => '10000000000000',
+                'artefact_type' => Constant::CIN,
+                'owner_type'    => Constant::MERCHANT
+            ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testGetBvsValidationArtefactDetailsArtefactPresentInBVS()
+    {
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>"10000000000000",
+        ]);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        $bvsValidation = $this->fixtures->create('bvs_validation',
+            [
+                'validation_id'            => 'MkCRZ02hL658lp',
+                'owner_id'      => '10000000000000',
+                'artefact_type' => Constant::CIN,
+                'owner_type'    => Constant::MERCHANT
+            ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
     public function testGetClarificationReasons()
     {
         $this->enableRazorXTreatmentForRazorX();

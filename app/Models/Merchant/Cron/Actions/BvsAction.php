@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Cron\Actions;
 
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
@@ -62,6 +63,14 @@ class BvsAction extends BaseAction
                         'error'     => $error->getMessage(),
                         'errorCode' => $error->getCode()]);
 
+                    continue;
+                }
+                catch (BadRequestException $error)
+                {
+                    $this->app['trace']->info(TraceCode::BVS_GET_VALIDATIONS_ERROR, [
+                        'error'     => $error->getMessage(),
+                        'errorCode' => $error->getCode()]);
+
                     //update the bvs_Validation status to failed if no records found in bvs
                     if ($error->getCode() === ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
                     {
@@ -75,7 +84,6 @@ class BvsAction extends BaseAction
 
                     continue;
                 }
-
                 catch (\Exception $e)
                 {
                     $this->app['trace']->traceException(
