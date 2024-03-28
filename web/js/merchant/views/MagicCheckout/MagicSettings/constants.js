@@ -385,4 +385,4 @@ export const WOOCOMMERCE_SHIPPING_SETTINGS_TYPE = [
 ];
 
 export const WOOC_SHIPPING_ENGINE_PLUGIN_UPDATE =
-  'Note: To use advance Shipping settings, please update your Razorpay WooCommerce plugin to version 4.5.6 or above.';
+  'Note: To use custom shipping profile, please update your Razorpay WooCommerce plugin to version 4.6.2 or above.';
