@@ -217,7 +217,7 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                           weight="regular"
                           marginBottom="spacing.4"
                         >
-                          Total Card request:
+                          Cards Requested:
                         </Text>
                         <Text
                           size="medium"
@@ -225,7 +225,7 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                           weight="regular"
                           marginBottom="spacing.4"
                         >
-                          Successfully Process:
+                          Successfully Processed:
                         </Text>
                         <Text
                           size="medium"

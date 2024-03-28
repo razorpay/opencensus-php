@@ -23,6 +23,7 @@ import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSectio
 import { GCMSSession, SessionContext } from 'merchant/views/GCMS/shared/context';
 import { isPositiveInteger } from 'merchant/views/GCMS/shared/utils';
 import { ErrorText } from 'merchant/views/Marketplace/PlatformFee/components/styles';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { GCMSOrderSession, OrderSessionContext } from './context';
 import {
@@ -31,7 +32,6 @@ import {
   trackOrdersCreateCartProgramsModalSuccess,
 } from './events';
 import { orderItemsCreate, orderItemsPatch } from './queries';
-
 type Props = {
   isOpen: boolean;
   setIsOpen: (boolean) => void;
@@ -210,6 +210,10 @@ const OrderCreateProgramDenominationsModal = ({
       });
       setIsOpen(false);
       clear();
+      showNotification({
+        type: 'success',
+        message: 'Order has been added to cart successfully',
+      });
       /* eslint-disable-next-line no-empty */
     } catch (ex) {}
 
