@@ -7,6 +7,7 @@ use Request;
 use ApiResponse;
 use RZP\Error\Error;
 use RZP\Exception;
+use RZP\Http\RequestHeader;
 use RZP\Mail\Loc\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Permission\Name;
@@ -31,9 +32,11 @@ class LOCController extends Controller
 
     protected function handleProxyRequests($path = null)
     {
-        $request = Request::instance();
-        $url     = $path;
-        $body    = $request->all();
+        $request   = Request::instance();
+        $url       = $path;
+        $body      = $request->all();
+        $ipAddress = $request->headers->get(RequestHeader::X_DASHBOARD_IP);
+
         $this->trace->info(TraceCode::LINE_OF_CREDIT_PROXY_REQUEST, [
             'request' => $url,
         ]);
@@ -43,6 +46,7 @@ class LOCController extends Controller
             'X-Merchant-Email' => $this->ba->getMerchant()->getEmail() ?? '',
             'X-User-Id'        => $this->ba->getUser()->getId() ?? '',
             'X-User-Role'      => $this->ba->getUserRole() ?? '',
+            'X-IP-Address'     => $ipAddress,
             'X-Auth-Type'      => 'proxy',
         ];
 
@@ -150,6 +154,10 @@ class LOCController extends Controller
         array $headers = [],
         array $options = [])
     {
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
+
         $response = $this->sendRequest($url, $body, $headers, $options);
 
         return $this->parseResponse($response);
