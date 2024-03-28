@@ -55,7 +55,8 @@
     "test:e2e:flow": "bash run-e2e.sh",
     "test:e2e-infra": "node ./playwright/runInfraE2E.js",
     "add-prod-commits": "node ./playwright/utils/addProdCommits.js",
-    "test:e2e:show-report": "universe-test web-e2e show-report"
+    "test:e2e:show-report": "universe-test web-e2e show-report",
+    "updateE2EDependencies": "node ./playwright/utils/copyDependecy.js"
   },
   "dependencies": {
     "@razorpay/universe-cli": "17.2.0",

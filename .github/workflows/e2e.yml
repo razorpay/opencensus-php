@@ -68,10 +68,12 @@ jobs:
             `Frontend E2E Workflow docker build started` [Visit ongoing action](${{ steps.e2e_github_workflow_action.outputs.workflow_link }})
           allow-repeats: true
 
+      # fetching with depth 0 to find detached head ref
       - name: Checkout Codebase
         uses: actions/checkout@v3
         with:
-          fetch-depth: 1
+          ref: ${{ env.COMMIT_ID }}
+          fetch-depth: 0
 
       - name: Use Node v18.12.1
         uses: actions/setup-node@v1
@@ -149,6 +151,10 @@ jobs:
       - name: Echo Affected Projects after final changes
         run: |
           echo "Affected projects: ${{ steps.set-affected-output.outputs.affected }}"
+
+      - name: Update package dependencies for docker build
+        id: update-config
+        run: yarn run updateE2EDependencies
 
       - name: Build Docker Image
         uses: docker/build-push-action@v3
