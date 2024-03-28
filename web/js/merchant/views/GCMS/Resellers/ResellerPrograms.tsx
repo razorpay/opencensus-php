@@ -82,7 +82,7 @@ const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
               <Text
                 size="small"
                 color="surface.text.subdued.lowContrast"
-              >{`Total ${programs?.total_count} records`}</Text>
+              >{`Total ${programs?.total_count} Programs`}</Text>
             </Box>
             <Pagination
               next={handleNext}

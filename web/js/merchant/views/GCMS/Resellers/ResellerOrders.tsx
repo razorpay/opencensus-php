@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Box, Text } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -8,11 +9,11 @@ import Spinner from 'common/ui/Spinner';
 import TableBody from 'common/ui/TableBody';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
+import ResellerOrdersFilter from 'merchant/views/GCMS/Orders/OrdersFilters';
+import { fetchResellerOrders } from 'merchant/views/GCMS/Orders/queries';
 import { RESELLER_ORDER_LIST_COLUMNS } from 'merchant/views/GCMS/Resellers/constants';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
-import { fetchResellerOrders } from 'merchant/views/GCMS/Orders/queries';
 
-import ResellerOrdersFilter from 'merchant/views/GCMS/Orders/OrdersFilters';
 import { LIST_FETCH_BATCH_SIZE } from './queries';
 
 const ResellerOrders = ({ mode }: { mode: ModeT }) => {
@@ -110,13 +111,20 @@ const ResellerOrders = ({ mode }: { mode: ModeT }) => {
                 </TableBody>
               </table>
             </div>
-            <Pagination
-              next={handleNext}
-              prev={handlePrev}
-              listData={orders?.items || []}
-              skip={skip}
-              count={LIST_FETCH_BATCH_SIZE}
-            />
+            <Box>
+              <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
+                <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+                  orders?.total_count || 0
+                } Orders`}</Text>
+              </Box>
+              <Pagination
+                next={handleNext}
+                prev={handlePrev}
+                listData={orders?.items || []}
+                skip={skip}
+                count={LIST_FETCH_BATCH_SIZE}
+              />
+            </Box>
           </>
         )}
       </div>

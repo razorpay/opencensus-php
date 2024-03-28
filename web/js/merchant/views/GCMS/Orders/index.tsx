@@ -7,7 +7,7 @@ import { NavLink } from 'react-router-dom';
 import { ModeT } from 'common/services/mode';
 import Spinner from 'common/ui/Spinner';
 import TableBody from 'common/ui/TableBody';
-import { convertUnixToDate, getFormattedAmountNew } from 'common/utils/rzp-utils';
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
@@ -17,6 +17,7 @@ import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
 import OrdersFilter from './OrdersFilters';
 import { trackOrdersItemClicked, trackOrdersPageLoadSuccess } from './events';
 import { LIST_FETCH_BATCH_SIZE, fetchOrders } from './queries';
+import { convertUnixToShortDate } from '../shared/utils';
 
 const ORDER_LIST_COLUMNS = [
   {
@@ -45,7 +46,7 @@ const ORDER_LIST_COLUMNS = [
   },
   {
     label: 'Order Date',
-    value: (order) => <Text>{convertUnixToDate(order.created_at)}</Text>,
+    value: (order) => <Text>{convertUnixToShortDate(order.created_at)}</Text>,
   },
   // {
   //   label: 'Order created by',
@@ -209,7 +210,7 @@ const Orders = ({ mode }: { mode: ModeT }) => {
                 <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
                   <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
                     orders?.total_count || 0
-                  } records`}</Text>
+                  } Orders`}</Text>
                 </Box>
                 <Pagination
                   next={handleNext}

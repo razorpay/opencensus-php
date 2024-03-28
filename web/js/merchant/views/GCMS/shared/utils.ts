@@ -38,3 +38,13 @@ export const isGCMSExperimentEnabled = (splitz: SpiltzContextState): boolean => 
 export const isPositiveInteger = (value: string) => {
   return /^\d+$/.test(value);
 };
+
+/* convert unix timestamp to human readable short date format */
+export const convertUnixToShortDate = (unixTimeStamp) => {
+  const date = new Date(unixTimeStamp * 1000).toLocaleString('en-IN', {
+    month: 'short',
+    day: 'numeric',
+    year: '2-digit',
+  });
+  return date;
+};

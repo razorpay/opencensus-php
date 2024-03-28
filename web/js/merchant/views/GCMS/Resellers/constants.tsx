@@ -1,8 +1,11 @@
 import React from 'react';
 import { Badge, Text } from '@razorpay/blade/components';
 import { NavLink } from 'react-router-dom';
-import { convertUnixToDate, getFormattedAmountNew } from 'common/utils/rzp-utils';
+
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
+
+import { convertUnixToShortDate } from '../shared/utils';
 
 export const RESELLER_ORDER_LIST_COLUMNS = [
   {
@@ -15,7 +18,7 @@ export const RESELLER_ORDER_LIST_COLUMNS = [
   },
   {
     label: 'Order Date',
-    value: (order) => <Text>{convertUnixToDate(order.created_at)}</Text>,
+    value: (order) => <Text>{convertUnixToShortDate(order.created_at)}</Text>,
   },
   {
     label: 'Total Quantity',

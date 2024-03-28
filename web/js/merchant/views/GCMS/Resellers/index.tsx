@@ -160,7 +160,7 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
                 <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
                   <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
                     resellers?.total_count || 0
-                  } records`}</Text>
+                  } Resellers`}</Text>
                 </Box>
                 <Pagination
                   next={handleNext}

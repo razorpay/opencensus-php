@@ -100,7 +100,7 @@ const ResellerAccounts = ({ mode, merchantId }: ResellerAccountsProps) => {
             <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
               <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
                 resellerAccounts?.count || 0
-              } records`}</Text>
+              } Reseller Accounts`}</Text>
             </Box>
             <Pagination
               next={handleNext}

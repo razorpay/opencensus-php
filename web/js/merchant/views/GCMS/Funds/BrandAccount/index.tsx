@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import Shimmer from 'common/components/Shimmer';
 import TableBody from 'common/ui/TableBody';
-import { getFormattedAmountNew, convertUnixToDate } from 'common/utils/rzp-utils';
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import store from 'merchant/store';
@@ -19,6 +19,7 @@ import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
 
 import BrandAccountFilters from './brandAccountFilters';
+import { convertUnixToShortDate } from '../../shared/utils';
 
 const brandTrasactionColumns = [
   {
@@ -27,7 +28,7 @@ const brandTrasactionColumns = [
   },
   {
     label: 'Date and Time',
-    value: (transaction) => <Text>{convertUnixToDate(transaction.created_at)}</Text>,
+    value: (transaction) => <Text>{convertUnixToShortDate(transaction.created_at)}</Text>,
   },
   {
     label: 'Reference Id',
@@ -185,7 +186,7 @@ const BrandAccount = (): JSX.Element => {
             <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
               <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
                 transactions?.count || 0
-              } records`}</Text>
+              } Transactions`}</Text>
             </Box>
             <Pagination
               next={handleNext}
