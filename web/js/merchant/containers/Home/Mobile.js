@@ -376,7 +376,7 @@ class AnalyticsMobile extends Component {
               <div className={`pull-left ${this.props.user.isOndemandSettlementEnabled && 'm-t'}`}>
                 Balance:{' '}
                 <b>
-                  {!current_balance.loading && typeof current_balance.data.balance === 'number' && (
+                  {!current_balance.loading && (
                     <Amount value={current_balance.data.balance} currency="INR" />
                   )}
                 </b>
