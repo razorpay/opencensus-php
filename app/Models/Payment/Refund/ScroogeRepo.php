@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstants;
@@ -266,17 +267,28 @@ trait ScroogeRepo
                     'merchant_id' => $accountId,
                     'route_name' => $routeName
                 ]);
-            $scroogeResponse = $this->fetchRefundByReversalIdAndMerchantId($reversalId, $accountId);
+
+            $refund = $this->fetchRefundByReversalIdAndMerchantId($reversalId, $accountId)->all()[0];
+
+            $reversalColumns = $this->repo->reversal->dbColumn('*');
+
+            $reversalEntityId = $this->repo->reversal->dbColumn(ReversalEntity::ID);
+
+            $reversal = $this->repo->reversal->newQuery()
+                ->select($reversalColumns)
+                ->where($reversalEntityId, $refund->getReversalId())
+                ->get();
+
+            $refund->setRelation(Entity::REVERSAL, $reversal);
 
             if ($this->isScroogeReadMigrationForReversal() == true) {
-                return $scroogeResponse->all()[0];
+                return $refund;
             }
 
             $apiResponse = $this->findByReversalIdAndMerchantFromApi($reversalId, $accountId, $relations);
 
             (new Service())->compareRefundEntitesAndLogDifference(
-                $apiResponse, $scroogeResponse->all()[0],false, ['method_name' => __FUNCTION__, 'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_FOR_REVERSAL]);
-
+                $apiResponse, $refund,false, ['method_name' => __FUNCTION__, 'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
             return $apiResponse;
 
