@@ -1554,9 +1554,14 @@ class Core extends Base\Core
 
         if (empty($rzpOrder['notes']['gstin']) === false)
         {
+            $key = "GSTIN";
+            if ((new SplitzExperimentEvaluator())->useCustomerGSTINForShopify($this->merchant->getId()))
+            {
+                $key = "CustomerGSTIN";
+            }
             array_push($noteAttributes,
             [
-                'name'  => 'GSTIN',
+                'name'  => $key,
                 'value' => $rzpOrder['notes']['gstin']
             ]);
         }

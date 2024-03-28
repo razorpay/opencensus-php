@@ -131,6 +131,13 @@ class SplitzExperimentEvaluator extends Base\Core
         return $result['variant'] === 'enable';
     }
 
+    public function useCustomerGSTINForShopify(string $merchantId): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.one_cc_customer_gstin_experiment_id', $merchantId);
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
     public function useMCSForShopifyApplyCouponDecomposition(): bool
     {
         $input = $this->merchantIdBasedPayload('app.magic_shopify_apply_coupon_decomp_experiment_id');
