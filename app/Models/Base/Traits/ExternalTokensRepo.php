@@ -494,11 +494,11 @@ trait ExternalTokensRepo
                 if ($this->validateExternalFetchEnabledForTokens() and
                     (EntityConstants::validateExternalRepoEntity($this->entityName) === true))
                 {
-                    $params[Token\Entity::MERCHANT_ID] = $merchant->getId();
+                    $param[Token\Entity::MERCHANT_ID] = $merchant->getId();
 
-                    $params[Token\Entity::ID] = $id;
+                    $param[Token\Entity::ID] = $id;
 
-                    $token = $this->fetchExternalToken($params);
+                    $token = $this->fetchExternalToken($param);
 
                     if (method_exists($token, 'merchant') === true)
                     {
