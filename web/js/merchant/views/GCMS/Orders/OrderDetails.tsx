@@ -141,7 +141,7 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                 </Box>
               </Box>
               <Box display="flex" alignItems="center">
-                <Badge color="neutral">Payment mode: Virtual Account</Badge>
+                <Badge color="neutral">Payment mode: Account</Badge>
                 {orderDetails?.status ? (
                   <Badge color={ORDERS_STATUS[orderDetails?.status].color} marginLeft="spacing.4">
                     {ORDERS_STATUS[orderDetails?.status].label}

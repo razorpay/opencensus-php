@@ -27,7 +27,7 @@ const VirtualAccountDetails = ({
       >
         <Box marginTop={'spacing.4'} marginX={'spacing.6'}>
           <Text weight={'bold'} color="surface.text.subtle.lowContrast">
-            Virtual Account Details
+            Account Details
           </Text>
         </Box>
 
@@ -102,7 +102,7 @@ const VirtualAccountDetails = ({
         >
           <InfoIcon marginLeft={'spacing.6'} />
           <Text size="small" marginLeft={'spacing.6'} color="surface.text.subtle.lowContrast">
-            Bank transfer can be performed to top up the virtual account for placing orders
+            Bank transfer can be performed to top up the account for placing orders
           </Text>
         </Box>
       </Box>

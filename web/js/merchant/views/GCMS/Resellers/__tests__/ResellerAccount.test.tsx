@@ -29,7 +29,7 @@ describe('GCMS: Reseller Accounts', () => {
     renderAccounts();
 
     await waitFor(() => {
-      expect(screen.getByText('Virtual Account Details')).toBeInTheDocument();
+      expect(screen.getByText('Account Details')).toBeInTheDocument();
       expect(screen.getByText('Account number')).toBeInTheDocument();
     });
   });

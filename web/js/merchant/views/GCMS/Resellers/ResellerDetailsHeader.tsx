@@ -68,7 +68,7 @@ const ResellerDetailsHeader = ({
             </Box>
             <Box>
               <Text size="medium" color="surface.text.muted.lowContrast">
-                Virtual Account Balance
+                Account Balance
               </Text>
               <Skeleton width="100px" height="20px" marginTop="spacing.2" />
             </Box>
@@ -93,7 +93,7 @@ const ResellerDetailsHeader = ({
             </Box>
             <Box>
               <Text size="medium" color="surface.text.muted.lowContrast">
-                Virtual Account Balance
+                Account Balance
               </Text>
               <Text color="surface.text.subtle.lowContrast" weight="bold" size="large">
                 {getFormattedAmountNew(resellerBalance?.balance ?? 0, true)}

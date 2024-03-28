@@ -6,8 +6,9 @@ import {
   Link,
   ChevronLeftIcon,
   Heading,
-  TrashIcon,
-  IconButton,
+  Text,
+  Divider,
+  CloseIcon,
 } from '@razorpay/blade/components';
 import { useMutation } from '@tanstack/react-query';
 import { connect } from 'react-redux';
@@ -106,17 +107,8 @@ const OrderCart = ({ showNotification }: Props) => {
             Go back
           </Link>
         </Box>
-        <Box display="flex" flexDirection="row" justifyContent="space-between">
+        <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="end">
           <Title color="surface.text.subtle.lowContrast">Cart</Title>
-          <Box>
-            <IconButton
-              isDisabled={isLoadingOrderUpdate}
-              size="large"
-              icon={TrashIcon}
-              accessibilityLabel="Cancel"
-              onClick={handleOrderCancel}
-            />
-          </Box>
         </Box>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" flexDirection="column" flex={1}>
@@ -159,6 +151,34 @@ const OrderCart = ({ showNotification }: Props) => {
                 <OrderCartItemsSection />
                 <OrderCartDeliveryTypeSection />
                 <OrderCartBillingSection />
+                <Divider
+                  thickness="thick"
+                  margin={['spacing.5', 'spacing.0', 'spacing.5', 'spacing.0']}
+                />
+                <Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Box>
+                      <Heading size="medium" color="surface.text.subtle.lowContrast">
+                        Cancel this order?
+                      </Heading>
+                      <Text color="surface.text.subdued.lowContrast">
+                        This action can not be undone
+                      </Text>
+                    </Box>
+                    <Button
+                      isLoading={isLoadingOrderUpdate}
+                      variant="secondary"
+                      color="negative"
+                      size="medium"
+                      iconPosition="left"
+                      icon={CloseIcon}
+                      onClick={handleOrderCancel}
+                      accessibilityLabel="Cancel"
+                    >
+                      Cancel order
+                    </Button>
+                  </Box>
+                </Box>
               </Box>
               <Box paddingTop="spacing.4">
                 <OrderCartStatusSection />

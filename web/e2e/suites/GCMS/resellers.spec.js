@@ -36,7 +36,7 @@ test.describe('GCMS resellers @flow=resellers @project=payments', () => {
     await page.getByRole('link', { name: 'Ibaco' }).first().click(); //Select first reseller as it has the seed data
     await expect(page).toHaveURL(`${routes.GCMS_RESELLERS}/N91osUDdN9WdO9/programs`); //Reseller id of first reseller
     await expect(await page.getByText('N91osUDdN9WdO9')).toBeVisible(); //Reseller id of first reseller
-    await expect(await page.getByText('Virtual Account Balance')).toBeVisible();
+    await expect(await page.getByText('Account Balance')).toBeVisible();
     await expect(await page.getByText('Thank You Gift Card').first()).toBeVisible();
     await expect(await page.getByText('Ibaco')).toBeVisible();
   });
@@ -45,7 +45,7 @@ test.describe('GCMS resellers @flow=resellers @project=payments', () => {
     await page.getByRole('link', { name: 'Ibaco' }).first().click(); //Select first reseller as it has the seed data
     await expect(page).toHaveURL(`${routes.GCMS_RESELLERS}/N91osUDdN9WdO9/programs`); //Reseller id of first reseller
     await expect(await page.getByText('N91osUDdN9WdO9')).toBeVisible(); //Reseller id of first reseller
-    await expect(await page.getByText('Virtual Account Balance')).toBeVisible();
+    await expect(await page.getByText('Account Balance')).toBeVisible();
     await page.getByRole('link', { name: 'Orders', exact: true }).click();
     await expect(page).toHaveURL(`${routes.GCMS_RESELLERS}/N91osUDdN9WdO9/orders`); //Reseller id of first reseller
     await expect(await page.getByText('Order ID')).toBeVisible();
@@ -55,9 +55,9 @@ test.describe('GCMS resellers @flow=resellers @project=payments', () => {
     await page.getByRole('link', { name: 'Ibaco' }).first().click(); //Select first reseller as it has the seed data
     await expect(page).toHaveURL(`${routes.GCMS_RESELLERS}/N91osUDdN9WdO9/programs`); //Reseller id of first reseller
     await expect(await page.getByText('N91osUDdN9WdO9')).toBeVisible(); //Reseller id of first reseller
-    await expect(await page.getByText('Virtual Account Balance')).toBeVisible();
+    await expect(await page.getByText('Account Balance')).toBeVisible();
     await page.getByRole('link', { name: 'Accounts' }).first().click();
     await expect(page).toHaveURL(`${routes.GCMS_RESELLERS}/N91osUDdN9WdO9/accounts`); //Reseller id of first reseller
-    await expect(await page.getByText('Virtual Account Details')).toBeVisible();
+    await expect(await page.getByText('Account Details')).toBeVisible();
   });
 });
