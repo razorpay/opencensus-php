@@ -94,7 +94,7 @@ class CardPaymentService
 
     // entities path
     const ENTITIES_PATH = 'entities/';
-    const ENTITIES_PATH_V2 = 'v1/entitiesV2/';
+    const ENTITIES_PATH_V2 = 'entitiesV2/';
 
     /**
      * Columns of CPS authorization table.
