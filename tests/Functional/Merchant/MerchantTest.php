@@ -2041,6 +2041,40 @@ class MerchantTest extends TestCase
 
         $this->mockDCS();
 
+        $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
+            ->times(5)
+            ->andReturn([
+                'body' => [
+                    "balance" => 12000
+                ],
+                'code' => 200
+            ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ]);
+
+
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
 
@@ -2051,6 +2085,200 @@ class MerchantTest extends TestCase
         $feature = $this->getDbEntity('feature', ["name" => 'pg_ledger_reverse_shadow']);
 
         $this->assertNotNull($feature);
+
+    }
+
+    public function testUpdateLedgerForNewTransferParentMerchant()
+    {
+        $this->app['rzp.mode'] = "test";
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(2)
+            ->andReturn([
+                'body' => [
+                    "accounts" => [
+                        "pg_merchant_onboarding" => null
+                    ]
+                ],
+                'code' => 200
+            ]);
+
+        $this->mockDCS();
+
+        $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
+            ->times(5)
+            ->andReturn([
+                'body' => [
+                    "balance" => 12000
+                ],
+                'code' => 200
+            ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ]);
+
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
+
+        $response = (new Merchant\Activate)->updateLedger($merchant);
+
+        $feature = $this->getDbEntity('feature', ["name" => 'pg_ledger_reverse_shadow']);
+
+        $this->assertNotNull($feature);
+
+    }
+
+    public function testUpdateLedgerForNewTransferChildMerchantWithParentOnReverseShadow()
+    {
+        $this->app['rzp.mode'] = "test";
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'],);
+
+        $this->fixtures->create('merchant',[
+            'id'        => '10000000000040',
+            'email'     => 'test@razorpay.com',
+            'parent_id' => '10000000000000',
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id'      => '10000000000040',
+            'business_name'    => 'Test Merchant',
+            'contact_name'     => 'Test Merchant',
+            'contact_email'    => 'testmerchant@gmail.com',
+            'contact_mobile'   => '8114455061',
+            'business_website' => 'testmerchant.com'
+        ]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(2)
+            ->andReturn([
+                'body' => [
+                    "accounts" => [
+                        "pg_merchant_onboarding" => null
+                    ]
+                ],
+                'code' => 200
+            ]);
+
+        $this->mockDCS();
+
+        $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
+            ->times(5)
+            ->andReturn([
+                'body' => [
+                    "balance" => 12000
+                ],
+                'code' => 200
+            ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ]);
+
+
+        $merchant       = $merchantDetail->merchant;
+
+        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
+
+        $response = (new Merchant\Activate)->updateLedger($merchant);
+
+        $feature = $this->getDbEntity('feature', ["name" => 'pg_ledger_reverse_shadow', "entity_id" => '10000000000040']);
+
+        $this->assertNotNull($feature);
+
+    }
+
+    public function testUpdateLedgerForNewTransferChildMerchantWithParentNotOnReverseShadow()
+    {
+        $this->app['rzp.mode'] = "test";
+
+        $this->fixtures->merchant->addFeatures(['marketplace'],);
+
+        $this->fixtures->create('merchant',[
+            'id'        => '10000000000040',
+            'email'     => 'test@razorpay.com',
+            'parent_id' => '10000000000000',
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id'      => '10000000000040',
+            'business_name'    => 'Test Merchant',
+            'contact_name'     => 'Test Merchant',
+            'contact_email'    => 'testmerchant@gmail.com',
+            'contact_mobile'   => '8114455061',
+            'business_website' => 'testmerchant.com'
+        ]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->mockDCS();
+
+        $merchant       = $merchantDetail->merchant;
+
+        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
+
+        $response = (new Merchant\Activate)->updateLedger($merchant);
+
+        $feature = $this->getDbEntity('feature', ["name" => 'pg_ledger_reverse_shadow', "entity_id" => '10000000000040']);
+
+        $this->assertNull($feature);
+
     }
 
     public function mockDCS()

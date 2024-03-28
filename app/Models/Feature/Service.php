@@ -392,7 +392,7 @@ class Service extends Base\Service
 
     //Calls ledger service to create merchant sub accounts for PG tenant.
     //Auto Loads Credits and Balances from current
-    private function ledgerPGAccountCreateRequest($merchant)
+    public function ledgerPGAccountCreateRequest($merchant)
     {
             $result = [];
 
@@ -1804,8 +1804,9 @@ class Service extends Base\Service
                     $this->trace->info(
                         TraceCode::MERCHANT_ONBOARDED_TO_PG_LEDGER_REVERSE_SHADOW,
                         [
-                            Constants::MERCHANT_ID => $merchantId,
-                            CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_REVERSE_SHADOW
+                            Constants::MERCHANT_ID  => $merchantId,
+                            CONSTANTS::FEATURE      => CONSTANTS::PG_LEDGER_REVERSE_SHADOW,
+                            CONSTANTS::RESPONSE     => $response
                         ]
                     );
 

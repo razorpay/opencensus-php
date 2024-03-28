@@ -450,42 +450,25 @@ class Activate extends Base\Core
     {
         if ($this->shouldOnboardToLedger($merchant) === true)
         {
-            $merchantId = $merchant->getId();
+            $this->repo->transaction(function () use ($merchant) {
+                // Create PG and ES ondemand account on ledger service
+                $response = (new Feature\Service())->ledgerPGAccountCreateRequest($merchant);
 
-            $primaryBalance = $this->repo->balance->getMerchantBalanceByType($merchantId, BalanceType::PRIMARY);
-            $primaryBalanceAmount =  isset($primaryBalance) ? $primaryBalance->getBalance() : 0;
+                if ($response[Constants::ACCOUNTS_CREATED_RESPONSE] === true and $response[Constants::ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE] === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW) === false) {
+                    (new FeatureCore)->create(
+                        [
+                            FeatureEntity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                            FeatureEntity::ENTITY_ID => $merchant->getId(),
+                            FeatureEntity::NAME => Constants::PG_LEDGER_REVERSE_SHADOW,
+                        ]);
+                }
 
-            //fetches fee and amount credits from credits table
-            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsWithoutLock($merchant->getId());
-
-            $reserveBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), BalanceType::RESERVE_PRIMARY);
-
-            $reserveBalanceAmount =  isset($reserveBalance) ? $reserveBalance->getBalance() : 0;
-
-            $isPgLedgerAccountCreated = (new LedgerCore())->createPGLedgerAccount(
-                $merchant,
-                $this->mode,
-                $primaryBalanceAmount,
-                $creditBalances,
-                $reserveBalanceAmount
-            );
-
-            $isESOndemandAccountCreated = (new LedgerCore())->createLedgerOndemandSettlementAccount($merchant, $this->mode);
-
-            if ($isPgLedgerAccountCreated === true and $isESOndemandAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW) === false)
-            {
-                (new FeatureCore)->create(
-                    [
-                        FeatureEntity::ENTITY_TYPE   => EntityConstants::MERCHANT,
-                        FeatureEntity::ENTITY_ID     => $merchant->getId(),
-                        FeatureEntity::NAME          => Constants::PG_LEDGER_REVERSE_SHADOW,
-                    ]);
-            }
-
-            $this->trace->info(TraceCode::LEDGER_ONBOARDING_PG_MERCHANT, [
-                "merchantId"                => $merchant->getId(),
-                "isPgLedgerAccountCreated"  => $isPgLedgerAccountCreated
-            ]);
+                $this->trace->info(TraceCode::LEDGER_ONBOARDING_PG_MERCHANT, [
+                    "merchantId" => $merchant->getId(),
+                    "response" => $response,
+                    "feature" => Constants::PG_LEDGER_REVERSE_SHADOW,
+                ]);
+            });
         }
     }
 
@@ -496,8 +479,21 @@ class Activate extends Base\Core
 
         if($isExperimentEnabledForLedgerPGMerchant === true and $merchant->getCountry() === "IN")
         {
+            // If merchant is not transfer parent or child merchant -> should auto onboard it
+            // If merchant is transfer parent -> should auto onboard it
+            // if merchant is transfer child  and parent merchant on reverse shadow -> should auto onboard it
+            // if merchant is transfer child  and parent merchant not  on reverse shadow -> should not auto onboard it
             if ($merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW) === false)
             {
+                if($merchant->getParentId() !== null)
+                {
+                    $parentMerchant = $this->repo->merchant->findOrFailPublic($merchant->getParentId());
+
+                    if ($parentMerchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+                    {
+                        return false;
+                    }
+                }
                 return true;
             }
         }
