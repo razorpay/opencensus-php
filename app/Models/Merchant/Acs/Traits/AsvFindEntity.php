@@ -25,6 +25,7 @@ trait AsvFindEntity
 
     public function find($id, $columns = array('*'), string $connectionType = null)
     {
+        $oldConnection = $connectionType;
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND);
         if ($shouldCallAsv === true) {
             if ($this->isTransactionActive()) {
@@ -32,7 +33,7 @@ trait AsvFindEntity
             } else {
                 $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND;
                 try {
-                    return $this->getDetailsFromAsvIgnoreValidationAndNotFound($id);
+                    return $this->getDetailsFromAsvIgnoreValidationAndNotFound($id, $oldConnection);
                 } catch (\Exception $e) {
                     $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_EXCEPTION, [
                         "id" => $id,
@@ -41,7 +42,7 @@ trait AsvFindEntity
                 }
             }
         }
-        return $this->findDatabase($id, $columns, $connectionType);
+        return $this->findDatabase($id, $columns, $connectionType, $oldConnection);
     }
 }
 

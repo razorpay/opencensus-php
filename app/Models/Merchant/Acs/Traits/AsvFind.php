@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Acs\Traits;
 use Database\Connection;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -13,32 +14,40 @@ use RZP\Exception;
 
 trait AsvFind
 {
-    public function findOrFailDatabase($id, $columns = array('*'), string $connectionType = null)
+    public function findOrFailDatabase($id, $columns = array('*'), string $connectionType = null, $oldConnection = null)
     {
-        return parent::findOrFail($id, $columns, $connectionType);
+        $model = parent::findOrFail($id, $columns, $connectionType);
+        $this->setOldConnection($model, $oldConnection);
+        return $model;
     }
 
-    public function findOrFailPublicDatabase($id, $columns = array('*'), string $connectionType = null)
+    public function findOrFailPublicDatabase($id, $columns = array('*'), string $connectionType = null, $oldConnection = null)
     {
-        return parent::findOrFailPublic($id, $columns, $connectionType);
+        $model =  parent::findOrFailPublic($id, $columns, $connectionType);
+        $this->setOldConnection($model, $oldConnection);
+        return $model;
     }
 
     /**
      * @throws \Exception
      */
-    public function getDetailsFromAsvIgnoreValidationAndNotFound($id)
+    public function getDetailsFromAsvIgnoreValidationAndNotFound($id, $oldConnection = null)
     {
         $asvSdkWrapper = RepoToSdkWrapperMap::getWrapperInstance(get_class($this));
 
-        return $asvSdkWrapper->getByIdForFindOrFail($id);
+        $model = $asvSdkWrapper->getByIdForFindOrFail($id);
+
+        $this->setOldConnection($model, $oldConnection);
+
+        return $model;
     }
 
     /**
      * @throws \Exception
      */
-    public function findOrFailAsv($id)
+    public function findOrFailAsv($id, $oldConnection = null)
     {
-        $model = $this->getDetailsFromAsvIgnoreValidationAndNotFound($id);
+        $model = $this->getDetailsFromAsvIgnoreValidationAndNotFound($id, $oldConnection);
 
         if ($model != null) {
             return $model;
@@ -53,7 +62,6 @@ trait AsvFind
      */
     public function findOrFailPublicAsv($id)
     {
-
         $model = $this->getDetailsFromAsvIgnoreValidationAndNotFound($id);
 
         if (is_null($model) === false) {
@@ -72,7 +80,7 @@ trait AsvFind
 
     public function findOrFail($id, $columns = array('*'), string $connectionType = null)
     {
-
+        $oldConnection = $connectionType;
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_OR_FAIL);
 
         if ($shouldCallAsv === true) {
@@ -84,7 +92,7 @@ trait AsvFind
                 $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_OR_FAIL;
 
                 try {
-                    return $this->findOrFailAsv($id);
+                    return $this->findOrFailAsv($id, $oldConnection);
                 } catch (\Exception $e) {
 
                     if ($e->getCode() == ErrorCode::SERVER_ERROR_DB_QUERY_FAILED) {
@@ -106,12 +114,12 @@ trait AsvFind
             }
         }
 
-        return $this->findOrFailDatabase($id, $columns, $connectionType);
+        return $this->findOrFailDatabase($id, $columns, $connectionType, $oldConnection);
     }
 
     public function findOrFailPublic($id, $columns = array('*'), string $connectionType = null)
     {
-
+        $oldConnection = $connectionType;
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_OR_FAIL_PUBLIC);
 
         if ($shouldCallAsv === true) {
@@ -119,7 +127,7 @@ trait AsvFind
             $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_OR_FAIL_PUBLIC;
 
             try {
-                return $this->findOrFailAsv($id);
+                return $this->findOrFailAsv($id, $oldConnection);
             } catch (\Exception $e) {
 
                 if ($e->getCode() == ErrorCode::BAD_REQUEST_INVALID_ID) {
@@ -140,16 +148,42 @@ trait AsvFind
             }
         }
 
-        return $this->findOrFailPublicDatabase($id, $columns, $connectionType);
+        return $this->findOrFailPublicDatabase($id, $columns, $connectionType, $oldConnection);
     }
 
-    public function findDatabase($id, $columns = array('*'), string $connectionType = null)
+    public function findDatabase($id, $columns = array('*'), string $connectionType = null, string $oldConnection = null)
     {
-        return parent::find($id, $columns, $connectionType);
+        $model = parent::find($id, $columns, $connectionType);
+        $this->setOldConnection($model, $oldConnection);
+        return $model;
+    }
+
+    public function setOldConnection($entity, $oldConnection)
+    {
+        try
+        {
+            if($oldConnection === null)
+            {
+                $oldConnection = $this->connection;
+            }
+
+            if($entity instanceof EloquentModel)
+            {
+                $entity->setConnection($oldConnection);
+            } else {
+                $this->trace->info(TraceCode::MODEL_NOT_ELOQUENT_INSTANCE, [
+                    "route" => app()->runningInQueue() ? app('worker.ctx')->getJobName() : app('request.ctx')->getRoute()
+                ]);
+            }
+        } catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR ,TraceCode::SET_PARENT_MODE_FAILURE);
+        }
     }
 
     public function findForImplicitJoin($id, string $entityName, $columns = array('*'), string $connectionType = null)
     {
+        $oldConnection = $connectionType;
         $shouldCallAsv = $this->asvRouter->shouldRouteFindForImplicitJoinToAccountService($id, $entityName, $columns, $connectionType, get_class($this), FunctionConstant::FIND_FOR_IMPLICIT_JOIN);
 
         if ($shouldCallAsv === true) {
@@ -157,7 +191,7 @@ trait AsvFind
             $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_FOR_IMPLICIT_JOIN;
 
             try {
-                return $this->getDetailsFromAsvIgnoreValidationAndNotFound($id);
+                return $this->getDetailsFromAsvIgnoreValidationAndNotFound($id, $oldConnection);
             } catch (\Exception $e) {
                 $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_OR_FAIL_EXCEPTION, [
                     "id" => $id,
@@ -166,7 +200,7 @@ trait AsvFind
             }
         }
 
-        return $this->findDatabase($id, $columns, $connectionType);
+        return $this->findDatabase($id, $columns, $connectionType, $oldConnection);
     }
 
     public function findForWrite($id, $columns = array('*'), string $connectionType = null)
