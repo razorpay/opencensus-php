@@ -123,28 +123,32 @@ trait AsvFind
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_OR_FAIL_PUBLIC);
 
         if ($shouldCallAsv === true) {
+            if ($this->isTransactionActive()) {
+                $connectionType = Connection::ASV_WRITER;
+            } else {
 
-            $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_OR_FAIL_PUBLIC;
+                $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_OR_FAIL_PUBLIC;
 
-            try {
-                return $this->findOrFailAsv($id, $oldConnection);
-            } catch (\Exception $e) {
+                try {
+                    return $this->findOrFailAsv($id, $oldConnection);
+                } catch (\Exception $e) {
 
-                if ($e->getCode() == ErrorCode::BAD_REQUEST_INVALID_ID) {
+                    if ($e->getCode() == ErrorCode::BAD_REQUEST_INVALID_ID) {
 
-                    $this->trace->info(TraceCode::ACCOUNT_SERVICE_THROW_EXCEPTION_AGAIN, [
-                        "functionIdentifier" => $functionIdentifier,
-                        "error_code" => $e->getCode(),
+                        $this->trace->info(TraceCode::ACCOUNT_SERVICE_THROW_EXCEPTION_AGAIN, [
+                            "functionIdentifier" => $functionIdentifier,
+                            "error_code" => $e->getCode(),
+                            "id" => $id,
+                        ]);
+
+                        throw $e;
+                    }
+
+                    $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_OR_FAIL_EXCEPTION, [
                         "id" => $id,
+                        "functionIdentifier" => $functionIdentifier,
                     ]);
-
-                    throw $e;
                 }
-
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_OR_FAIL_EXCEPTION, [
-                    "id" => $id,
-                    "functionIdentifier" => $functionIdentifier,
-                ]);
             }
         }
 
@@ -188,15 +192,20 @@ trait AsvFind
 
         if ($shouldCallAsv === true) {
 
-            $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_FOR_IMPLICIT_JOIN;
+            if ($this->isTransactionActive()) {
+                $connectionType = Connection::ASV_WRITER;
+            } else {
 
-            try {
-                return $this->getDetailsFromAsvIgnoreValidationAndNotFound($id, $oldConnection);
-            } catch (\Exception $e) {
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_OR_FAIL_EXCEPTION, [
-                    "id" => $id,
-                    "functionIdentifier" => $functionIdentifier,
-                ]);
+                $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_FOR_IMPLICIT_JOIN;
+
+                try {
+                    return $this->getDetailsFromAsvIgnoreValidationAndNotFound($id, $oldConnection);
+                } catch (\Exception $e) {
+                    $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_OR_FAIL_EXCEPTION, [
+                        "id" => $id,
+                        "functionIdentifier" => $functionIdentifier,
+                    ]);
+                }
             }
         }
 
