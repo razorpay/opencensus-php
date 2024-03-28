@@ -236,6 +236,8 @@ class Constants
     const INVOICE_SENT                 = 'invoice_sent';
     const FEE_BASED_GATING_DESCRIPTION = 'Fee for KYC verification request';
 
+    const CATEGORY_MODULE_PLACEMENT    = 'category_module_placement';
+
     // White Glove Onboarding constants
     const WHITE_GLOVE_ONBOARDING_MANAGER_FEE = 'fee_for_white_glove_onboarding_manager';
     const ONBOARDING_MANAGER                 = 'onboarding_manager';

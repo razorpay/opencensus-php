@@ -11520,16 +11520,6 @@ class Core extends Base\Core
         return false;
     }
 
-    public function isEligibleForOthersM3($merchantId)
-    {
-        if ($this->pgosProxyController->isPGOSExperimentEnabledForMerchant($merchantId, 'app.pgos_live_mode_experiment_id', 'enable') === false)
-        {
-            return false;
-        }
-
-        return $this->pgosProxyController->isPGOSExperimentEnabledForMerchant($merchantId, 'app.others_m3_experiment_id', 'enable') === true;
-    }
-
     /**
      * This function updates fee based gating eligibility status in PGOS and gets updated status.
      * @param Merchant\Entity $merchant
@@ -11934,6 +11924,7 @@ class Core extends Base\Core
                     "suggested_business_subcategories" => ['subcat_desc_1', 'subcat_desc_2', 'subcat_desc_3', 'subcat_desc_4'],
                     "disable_try_again_others_m3"      => false,
                 ],
+                "category_module_placement" => 'L1',
             ];
         }
 
@@ -11943,15 +11934,6 @@ class Core extends Base\Core
             'merchant_id'  => $merchantId,
             'route'        => DetailConstants::MERCHANT_ACTIVATION_FETCH_INTERNAL,
         ]);
-
-        $isEligibleForFeeBasedGating = $this->isEligibleForFeeBasedGating($merchant, $merchant->merchantDetail);
-
-        $isEligibleForOthersM3 = $this->isEligibleForOthersM3($merchantId);
-
-        if ($isEligibleForFeeBasedGating === false && $isEligibleForOthersM3 === false && $shouldFetchWhiteGloveAttribute === false)
-        {
-            return null;
-        }
 
         try
         {

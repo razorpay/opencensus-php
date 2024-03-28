@@ -284,6 +284,11 @@ class Service extends Base\Service
         {
             $response[DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3] = $pgosFetchInternalResponse[DetailConstants::SUBCATEGORY_RECOMMENDATIONS][DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3];
         }
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::CATEGORY_MODULE_PLACEMENT]) === true)
+        {
+            $response[DetailConstants::CATEGORY_MODULE_PLACEMENT] = $pgosFetchInternalResponse[DetailConstants::CATEGORY_MODULE_PLACEMENT];
+        }
     }
 
     public function getMerchantMethodsCore()
