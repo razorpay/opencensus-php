@@ -51,11 +51,11 @@ class EdgeClient
 
     /**
      * revokes user token at edge
-     * @param $userId string|array
+     * @param $userIds array
      * @param $exclude_current_session bool
      * @return void
      */
-    public function revokeToken($userId = null, $exclude_current_session = false) {
+    public function revokeToken($userIds = [], $exclude_current_session = false) {
         // delete token at edge only if experiment is enabled
         if (! $this->getRazorxExperimentResult()) {
             return;
@@ -64,13 +64,8 @@ class EdgeClient
         $jti = \Request::header(self::X_EDGE_USER_JTI);
         $params = [];
 
-        if (! empty($userId)) {                      // used by other session delete apis like user detach, email update etc
-            if (is_array($userId)) {
-                $params['user_id'] = $userId;
-            } else {
-                $params['user_id'] = [$userId];
-            }
-
+        if (! empty($userIds)) {                      // used by other session delete apis like user detach, email update etc
+            $params['user_ids'] = $userIds;
             if ($exclude_current_session) {
                 $params['exclude_jti'] = $jti;
             }

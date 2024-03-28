@@ -129,7 +129,7 @@ class Entity extends Base\Entity
         // revoke all tokens on edge for the current user
         try {
             $exclude_current_session = (! empty($currentSessionId));
-            $this->edgeClient->revokeToken($userId, $exclude_current_session);
+            $this->edgeClient->revokeToken([$userId], $exclude_current_session);
         } catch (\Exception $e) {
             // return if user token can not be revoked at edge
             // we will not alter the sessions at redis unless edge tokens are revoked successfully
