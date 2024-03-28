@@ -1,24 +1,9 @@
 import React from 'react';
-import { Box, Title, Text, CheckIcon, CloseIcon, Button, Alert } from '@razorpay/blade/components';
+import { Box, Title, Text, Button, Alert } from '@razorpay/blade/components';
 
 import { titleCase } from 'common/utils/rzp-utils';
-import { IconBackground } from 'merchant/views/Optimizer/AddProvider/components/styled';
+import { CoverageIcon } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/CoverageIcon';
 import { areMandatoryMethodsCovered } from 'merchant/views/Optimizer/AddProvider/utils';
-
-const CoverageIcon = ({ status }) => {
-  const iconColor =
-    status === 'positive'
-      ? 'feedback.background.positive.highContrast'
-      : 'feedback.background.negative.highContrast';
-  const IconComp = status === 'positive' ? CheckIcon : CloseIcon;
-  return (
-    <IconBackground status={status}>
-      <Box display="flex" alignItems="center" justifyContent="center" paddingLeft="spacing.1">
-        <IconComp color={iconColor} size="medium" />
-      </Box>
-    </IconBackground>
-  );
-};
 
 const ShowCoverage = ({ methods, coverage }) => {
   return methods?.map((method) => (
