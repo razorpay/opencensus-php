@@ -43,6 +43,24 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateTerminalGodModeValidatev3(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->validateTerminalGodModeEditV3($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateTerminalGodModev3(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->godModeEditTerminalV3($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getEditableFields()
     {
         $input = Request::all();

@@ -98,6 +98,13 @@ class TerminalsService
     //v3 Terminal Write API's
     const EDIT_TERMINAL_V3            = 'edit_terminal_v3'; //v3/terminals/".$terminalId."/v3
     const VALIDATE_EDIT_TERMINAL_V3   = 'validate_edit_terminal_v3';
+
+    const GODMODE_EDIT_TERMINAL_V3            = 'terminal_edit_god_mode_v3'; //v3/terminals/god_mod_edit/".$terminalId."/v3
+    const GODMODE_VALIDATE_EDIT_TERMINAL_V3   = 'terminal_edit_god_mode_validatev3';
+
+    const DELETE_TERMINAL_V3            = 'delete_terminal_v3';
+
+    const VALIDATE_DELETE_TERMINAL_V3   = 'validate_delete_terminal_v3';
     const CREATE_TERMINAL_V3          = 'create_terminal_v3';
     const VALIDATE_CREATE_TERMINAL_V3 = 'validate_create_terminal_v3';
 
@@ -202,6 +209,22 @@ class TerminalsService
         self::EDIT_TERMINAL_V3 => [
             self::PATH   => 'v3/terminals/%s/v3',
             self::METHOD => Requests::PATCH
+        ],
+        self::GODMODE_VALIDATE_EDIT_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/god_mode_edit/%s/validate_edit_v3',
+            self::METHOD => Requests::POST
+        ],
+        self::GODMODE_EDIT_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/god_mode_edit/%s/v3',
+            self::METHOD => Requests::PATCH
+        ],
+        self::VALIDATE_DELETE_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/validate_delete',
+            self::METHOD => Requests::POST
+        ],
+        self::DELETE_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s',
+            self::METHOD => Requests::DELETE
         ],
     ];
 
@@ -1293,13 +1316,24 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)['data'] ?? [];
     }
 
+    function throwSyncMethodInstrumentsWarning($parsedResponse) {
+        if($parsedResponse['status_code'] === 202) {
+            throw new Exception\MethodInstrumentsTerminalsSyncException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR,
+                $parsedResponse,202, "Method/Instruments need to be updated for the terminal change");
+        }
+    }
+
     public function validateCreateTerminalV3($mid,$input)
     {
         $params = self::PARAMS[self::VALIDATE_CREATE_TERMINAL_V3];
 
         $path = sprintf($params[self::PATH],$mid);
 
-        return $this->proxyTerminalService($input, $params[self::METHOD], $path);
+        $parsedResponse =  $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
     }
 
     public function createTerminalV3($mid,$input)
@@ -1308,7 +1342,11 @@ class TerminalsService
 
         $path = sprintf($params[self::PATH],$mid);
 
-        return $this->proxyTerminalService($input, $params[self::METHOD], $path);
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
     }
 
     public function validateTerminalEditV3($terminalId,$input)
@@ -1317,7 +1355,11 @@ class TerminalsService
 
         $path = sprintf($params[self::PATH],$terminalId);
 
-        return $this->proxyTerminalService($input, $params[self::METHOD], $path);
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
     }
 
     public function editTerminalV3($terminalId,$input)
@@ -1338,6 +1380,77 @@ class TerminalsService
 
         $path = sprintf($params[self::PATH],$terminalId);
 
-        return $this->proxyTerminalService($input, $params[self::METHOD], $path);
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
+    }
+
+    public function validateTerminalGodModeEditV3($terminalId,$input)
+    {
+        $params = self::PARAMS[self::GODMODE_VALIDATE_EDIT_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH],$terminalId);
+
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
+    }
+
+    public function godModeEditTerminalV3($terminalId,$input)
+    {
+        if(isset($input['trigger_workflow']) && $input['trigger_workflow'])
+        {
+            unset($input['trigger_workflow']);
+
+            $this->app['workflow']
+                ->setEntityAndId($terminalId, 'terminal')
+                ->handle(["terminal_edit"=> []], [
+                    "terminal_edit" => (new terminalcore())->redactSecretsOnWorkflow($input),
+                ]);
+        }
+
+        $params = self::PARAMS[self::GODMODE_EDIT_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH],$terminalId);
+
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
+    }
+
+    public function validateDeleteTerminalV3($terminalId)
+    {
+        $params = self::PARAMS[self::VALIDATE_DELETE_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH],$terminalId);
+
+        $parsedResponse = $this->proxyTerminalService("", $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
+    }
+
+    public function deleteTerminalV3($terminalId)
+    {
+        $this->app['workflow']
+            ->setEntityAndId('terminal', $terminalId)
+            ->handle(['terminal_id'=>$terminalId], []);
+
+        $params = self::PARAMS[self::DELETE_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH],$terminalId);
+
+        $parsedResponse = $this->proxyTerminalService("", $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
     }
 }

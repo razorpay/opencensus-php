@@ -270,20 +270,12 @@ class Service extends Base\Service
     public function validateDeleteTerminalv3($mid, $tid)
     {
 
-        $path = "v3/terminals/".$tid."/validate_delete";
-
-        return $this->app['terminals_service']->proxyTerminalService('', "POST", $path);
+        return $this->app['terminals_service']->validateDeleteTerminalV3($tid);
     }
 
     public function deleteTerminalv3($mid, $tid)
     {
-        $this->app['workflow']
-            ->setEntityAndId('terminal', $tid)
-            ->handle(['terminal_id'=>$tid], []);
-
-        $path = "v3/terminals/".$tid;
-
-        return $this->app['terminals_service']->proxyTerminalService('', "DELETE", $path);
+        return $this->app['terminals_service']->deleteTerminalV3($tid);
     }
 
     public function deleteTerminal2($id,$input)
@@ -356,6 +348,16 @@ class Service extends Base\Service
     }
 
     public function editTerminalV3($terminalId, $input)
+    {
+        return $this->app['terminals_service']->editTerminalV3($terminalId, $input);
+    }
+
+    public function validateTerminalGodModeEditV3($id, $input)
+    {
+        return $this->app['terminals_service']->validateTerminalEditV3($id, $input);
+    }
+
+    public function godModeEditTerminalV3($terminalId, $input)
     {
         return $this->app['terminals_service']->editTerminalV3($terminalId, $input);
     }
