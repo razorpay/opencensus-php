@@ -53,6 +53,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Processor;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Merchant\Balance\BalanceConfig;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Transaction\Processor as TransactionProcessor;
 use RZP\Models\Transaction\Ledger\Core as TransactionLedgerCore;
@@ -166,8 +167,14 @@ class Core extends Base\Core
 
         $shouldDispatchSettlementBucket = true;
 
-        // We need not to dispatch for settlement if ASYNC_TXN_FILL_DETAILS is enabled and payment is processed in rearch
-        if($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
+        $isEarlyDispatchExpEnabled = (new LedgerOutboxCore())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($payment->merchant);
+
+        // We need not to dispatch for settlement if ASYNC_TXN_FILL_DETAILS is enabled
+        // If API Payment and merchant is on reverse shadow, that payment would have been dispatched to
+        // settlement from ack worker, we need not to dispatch again after api transaction creation
+        if(($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true) or
+            (($isEarlyDispatchExpEnabled === true) and ($payment->isExternal() === false) and
+            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)))
         {
             $shouldDispatchSettlementBucket = false;
         }

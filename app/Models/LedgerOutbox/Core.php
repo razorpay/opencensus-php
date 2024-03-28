@@ -23,6 +23,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant;
 use RZP\Trace\Tracer;
+use RZP\Models\Settlement\Bucket;
 use RZP\Error\PublicErrorDescription;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Exception\BadRequestException;
@@ -146,6 +147,10 @@ class Core extends Base\Core
         if(isset($response[LedgerConstants::JOURNALS]) and is_array($response[LedgerConstants::JOURNALS]))
         {
             $isBulkJournal = true;
+        }
+        else
+        {
+            $this->dispatchToSettlementFromJournalIfApplicable($journal);
         }
 
         if($isBulkJournal === true)
@@ -1294,6 +1299,10 @@ class Core extends Base\Core
                     {
                         $bulkJournals = $responseBody[LedgerConstants::JOURNALS];
                     }
+                    else
+                    {
+                        $this->dispatchToSettlementFromJournalIfApplicable($journal);
+                    }
 
                     $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE,
                         [
@@ -1865,5 +1874,30 @@ class Core extends Base\Core
         (new Transfer\Metric())->pushTransferProcessFailedMetrics((new BadRequestException($errorCode)));
 
         (new Transfer\Core())->eventTransferFailed($transfer);
+    }
+
+    private function dispatchToSettlementFromJournalIfApplicable($journal)
+    {
+        $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
+
+        $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
+
+        $payment = $this->repo->payment->findByPublicId($transactorPublicId);
+
+        $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($payment->merchant);
+
+        if (($isExpEnabled === true) and ($transactorEvent === LedgerConstants::MERCHANT_CAPTURED))
+        {
+            $bucketCore = new Bucket\Core;
+
+            $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntityForPayments($journal);
+
+            $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
+
+            if ($status === true)
+            {
+                $bucketCore->publishForSettlement($virtualPaymentTransaction);
+            }
+        }
     }
 }

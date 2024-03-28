@@ -15,6 +15,7 @@ use RZP\Models\Card;
 use RZP\Models\Admin;
 use RZP\Diag\EventCode;
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
@@ -1197,8 +1198,23 @@ trait Capture
 
             $this->processTransferIfApplicable($payment);
 
-            // dispatching txn data to new settlement service after updating credit and debit value
-            (new Transaction\Core)->dispatchForSettlementBucketing($txn);
+            $isEarlyDispatchExpEnabled = (new LedgerOutboxCore())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($payment->merchant);
+
+            $shouldDispatchSettlementBucket = true;
+
+            // If API Payment and merchant is on reverse shadow, that payment would have been dispatched to
+            // settlement from ack worker, we need not to dispatch again after api transaction creation
+            if (($isEarlyDispatchExpEnabled === true) and ($payment->isExternal() === false) and
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+            {
+                $shouldDispatchSettlementBucket = false;
+            }
+
+            if ($shouldDispatchSettlementBucket === true)
+            {
+                // dispatching txn data to new settlement service after updating credit and debit value
+                (new Transaction\Core)->dispatchForSettlementBucketing($txn);
+            }
 
             if ($payment->isExternal() === true)
             {

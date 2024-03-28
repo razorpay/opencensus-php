@@ -2,7 +2,9 @@
 
 namespace Functional\Payment;
 
+use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\FeeBearer;
@@ -4663,5 +4665,124 @@ class PaymentLedgerTest extends TestCase
         $this->assertNotNull($merchantCaptureLedgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
     }
 
+    public function testKafkaSuccessForPaymentMerchantCaptureEventEarlyDispatchToSettlement()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow', 'new_settlement_service']);
+
+        $payment = $this->createPaymentInReverseShadow();
+
+        $paymentId = $payment['id'];
+
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
+
+        $journalId = $journal['id'];
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        $creditTxnPayload = [
+            "id"=> $journalId,
+            "merchant_id"=> "10000000000000",
+            "source_id"=> str_replace("pay_","",$paymentId),
+            "source_type"=> "payment",
+            "balance_type"=> "PRIMARY",
+            "currency"=> "INR",
+            "credit"=> 1960,
+            "debit"=> 0,
+            "fee"=> 40,
+            "tax"=> 0,
+            "settled_by"=> "Razorpay",
+            "on_hold"=> null,
+            "on_hold_reason"=> "",
+            "meta"=> [
+                "method"=> "card",
+                "international"=> false
+            ]
+        ];
+
+        $this->mockSns($creditTxnPayload);
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_PAYMENTS, 'on');
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        //s($txn);
+        $this->assertNotNull($txn);
+
+        $this->assertNotNull($txn['fee']);
+        $this->assertNotNull($txn['tax']);
+        $this->assertNotNull($txn['credit']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertTrue($txn->isBalanceUpdated());
+
+        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_", "", $paymentId)]);
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals($payment['fee'], $txn['fee']);
+        $this->assertEquals($payment['tax'], $txn['tax']);
+        $this->assertEquals($payment['amount']-$payment['fee'], $txn['credit']);
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
+
+        $this->assertEquals($paymentId, 'pay_'.$txn['entity_id']);
+        $this->assertEquals($journalId, $txn['id']);
+        $this->assertEquals($journal['ledger_entry'][0]['amount'], $txn['fee']);
+        $this->assertEquals($journal['ledger_entry'][1]['amount'], $txn['tax']);
+        $this->assertEquals($journal['ledger_entry'][2]['amount'], $txn['amount']);
+        $this->assertEquals($journal['ledger_entry'][3]['amount'], $txn['amount']-$txn['fee']-$txn['tax']);
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+
+    }
+
+    protected function mockSns($creditTxnPayload)
+    {
+        $sns = Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->times(1)
+            ->with(Mockery::type('string'), Mockery::type('string'))
+            ->andReturnUsing(function ($input) use ($creditTxnPayload)
+            {
+                $json_decoded_input = json_decode($input, true);
+
+                if ($json_decoded_input['id'] === $creditTxnPayload['id'])
+                {
+                    $this->assertEquals($creditTxnPayload['merchant_id'], $json_decoded_input['merchant_id']);
+                    $this->assertEquals($creditTxnPayload['source_id'], $json_decoded_input['source_id']);
+                    $this->assertEquals($creditTxnPayload['source_type'], $json_decoded_input['source_type']);
+                    $this->assertEquals($creditTxnPayload['balance_type'], $json_decoded_input['balance_type']);
+                    $this->assertEquals($creditTxnPayload['currency'], $json_decoded_input['currency']);
+                    $this->assertEquals($creditTxnPayload['credit'], $json_decoded_input['credit']);
+                    $this->assertEquals($creditTxnPayload['debit'], $json_decoded_input['debit']);
+                    $this->assertEquals($creditTxnPayload['fee'], $json_decoded_input['fee']);
+                    $this->assertEquals($creditTxnPayload['tax'], $json_decoded_input['tax']);
+                    $this->assertEquals($creditTxnPayload['settled_by'], $json_decoded_input['settled_by']);
+                    $this->assertEquals($creditTxnPayload['on_hold'], $json_decoded_input['on_hold']);
+                    $this->assertEquals($creditTxnPayload['on_hold_reason'], $json_decoded_input['on_hold_reason']);
+                    $this->assertEquals($creditTxnPayload['meta']['method'], $json_decoded_input['meta']['method']);
+                    $this->assertEquals($creditTxnPayload['meta']['international'], $json_decoded_input['meta']['international']);
+                    $this->assertEquals($creditTxnPayload['meta']['origin_method'], $json_decoded_input['meta']['origin_method']);
+                }
+
+                return $input;
+            });
+
+        $this->app->instance('sns', $sns);
+    }
 
 }

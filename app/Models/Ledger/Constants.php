@@ -174,6 +174,8 @@ class Constants
     const MERCHANT_RESERVE_BALANCE   = 'merchant_reserve_balance';
     const MERCHANT_NEGATIVE_BALANCE  = 'merchant_negative_balance';
     const MERCHANT_VA_MERCHANT       = 'merchant_va_merchant';
+
+    const MERCHANT_GMV               = 'merchant_gmv';
     const REWARD                     = 'reward';
     const PAYABLE                    = 'payable';
     const BALANCE                    = 'balance';

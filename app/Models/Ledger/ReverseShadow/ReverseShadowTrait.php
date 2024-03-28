@@ -3,7 +3,10 @@
 namespace RZP\Models\Ledger\ReverseShadow;
 
 use App;
+use Carbon\Carbon;
 use Exception;
+use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Error\Error;
 use Ramsey\Uuid\Uuid;
 use RZP\Constants\Metric;
@@ -647,7 +650,8 @@ trait ReverseShadowTrait
         $isAmountCreditsUsed = false;
 
         if (isset($journal['ledger_entry'])) {
-            foreach ($journal['ledger_entry'] as $ledgerEntry) {
+            foreach ($journal['ledger_entry'] as $ledgerEntry)
+            {
 
                 if(isset($ledgerEntry['account_entities']) === true)
                 {
@@ -708,7 +712,7 @@ trait ReverseShadowTrait
 
         $transactionAmount = $this->getTransactionAmountForTransactionTypeFromJournal($journalResponse,$transactionType);
 
-        $commissionLedgerEntry = $this->getCommisionLedgerEntryForTransactionTypeFromJournal($journalResponse, $transactionType);
+        $commissionLedgerEntry = $this->getCommissionLedgerEntryForTransactionTypeFromJournal($journalResponse, $transactionType);
 
         $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::RZP_GST);
 
@@ -772,7 +776,36 @@ trait ReverseShadowTrait
         return $txn;
     }
 
-    private function getCommisionLedgerEntryForTransactionTypeFromJournal($journalResponse, $transactorType)
+
+    public function transformJournalResponseToTransactionEntityForPayments($journalResponse)
+    {
+        $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
+
+        $payment = $this->repo->payment->findOrFail($baseTransactionEntity->getEntityId());
+
+        $primaryBalance = $this->repo->balance->getMerchantBalance($payment->merchant);
+
+        $baseTransactionEntity->setFeeBearer(($payment->getFeeBearer()));
+
+        $baseTransactionEntity->setAttribute(TransactionEntity::BALANCE_ID, $primaryBalance->getId());
+
+        $baseTransactionEntity->setMdr($baseTransactionEntity->getFee());
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $baseTransactionEntity->setSettledAt($settledAt);
+
+        if($baseTransactionEntity->isGratis() === true)
+        {
+            $pricingRuleId = (new Fee())->getZeroPricingPlanRule($payment)->getId();
+
+            $baseTransactionEntity->setPricingRule($pricingRuleId);
+        }
+
+        return $baseTransactionEntity;
+    }
+
+    private function getCommissionLedgerEntryForTransactionTypeFromJournal($journalResponse, $transactorType)
     {
         if ($transactorType === Transaction\Type::TRANSFER)
         {
@@ -784,6 +817,7 @@ trait ReverseShadowTrait
         }
 
         return $commissionLedgerEntry;
+
     }
 
     private function getTransactionAmountForTransactionTypeFromJournal($journalResponse, $transactorType)
@@ -791,6 +825,12 @@ trait ReverseShadowTrait
         if ($transactorType === Transaction\Type::TRANSFER)
         {
             $transactionAmountLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::PAYABLE, Constants::MERCHANT_VA_MERCHANT);
+
+            return $transactionAmountLedgerEntry['amount'];
+        }
+        else if ($transactorType === Transaction\Type::PAYMENT)
+        {
+            $transactionAmountLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::PAYABLE, Constants::MERCHANT_GMV);
 
             return $transactionAmountLedgerEntry['amount'];
         }
@@ -837,10 +877,31 @@ trait ReverseShadowTrait
 
         $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
             [
-                'merchant'               => $this->merchant->getId(),
+                'merchant'               => $merchant->getId(),
+                'isExperimentEnabled'    => $isExperimentEnabled,
+            ]);
+
+        return $isExperimentEnabled;
+    }
+
+    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($merchant): bool
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_PAYMENTS,
+            $this->mode ?? Mode::LIVE
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
+            [
+                'merchant'               => $merchant->getId(),
                 'isExperimentEnabled'    => $isExperimentEnabled,
             ]);
 
         return $isExperimentEnabled;
     }
 }
+
+

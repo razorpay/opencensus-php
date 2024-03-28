@@ -501,7 +501,7 @@ class Core extends Base\Core
             }
         }
 
-        $commissionLedgerEntry = $this->getCommisionLedgerEntryForTransactionTypeFromJournal($journal, Transaction\Type::TRANSFER);
+        $commissionLedgerEntry = $this->getCommissionLedgerEntryForTransactionTypeFromJournal($journal, Transaction\Type::TRANSFER);
 
         $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journal,Constants::PAYABLE, Constants::RZP_GST);
 
