@@ -529,6 +529,7 @@ class Processor
 
     const SODEXO = 'sodexo';
 
+    const DEBIT = 'debit';
 
     const RUPAY_ALT_ID_RAZORX_RESULT         = "rupay_alt_id_razorx_result";
     const RUPAY_ALT_ID_RAZORX_TTL            = 20*60;
@@ -6048,6 +6049,53 @@ class Processor
             'Amount exceeds maximum amount allowed.',
             'amount',
             ['amount' => $payment->getAmount()]);
+    }
+
+    protected function validateCardTpvPayment(Payment\Entity $payment)
+    {
+
+        if ($payment->merchant->isDebitCardValidationEnabled() === true && $this->mode === MODE::TEST) {
+            if (empty($payment->order) || empty($payment->order->bankAccount())) {
+                throw new Exception\BadRequestValidationFailureException
+                (
+                    'Your payment could not be completed as the account details are missing.'
+                );
+            }
+
+            if ($payment->card->iinRelation->getType() != self::DEBIT) {
+                throw new Exception\BadRequestValidationFailureException
+                (
+                    'Your payment could not be completed as the card type is not supported. Try again using a debit card.'
+                );
+            }
+
+            $orderBank = $payment->order->getBank();
+
+            if ($payment->card->iinRelation->getIssuer() != $orderBank){
+                throw new Exception\BadRequestValidationFailureException
+                (
+                    'Your payment is declined due to a mismatch in account details. Try again with the account registered with the business only.'
+                );
+            }
+
+            $cardTpvBanks = Payment\Processor\CardPayments::getCardTPVSupportedBanks();
+
+            if (in_array($orderBank, $cardTpvBanks, true) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Your payment could not be completed as this bank is not yet supported for this payment type. Try another card/payment method.');
+            }
+
+            return;
+        }
+
+        if (!empty($payment->order) && !empty($payment->order->bankAccount)) {
+            throw new Exception\BadRequestValidationFailureException
+            (
+                'Your payment was unsuccessful as this seller is not enabled for card payments. Try using another method.'
+            );
+        }
+
     }
 
     protected function validateAndFetchOffer(Payment\Entity $payment, array $input)

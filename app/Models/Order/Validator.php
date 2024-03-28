@@ -586,20 +586,27 @@ class Validator extends Base\Validator
             if($method === Payment\Method::EMANDATE)
             {
                 $isMergedBank = isset(Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$order->getBank()]);
-                
+
                 $this->trace->info(TraceCode::EMANDATE_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK,
                     [
                         "order_bank"   => $order->getBank(),
                         "payment_bank" => $bank,
                         "is_merged_bank"  => $isMergedBank
                     ]);
-                
+
                 if($isMergedBank === true)
                 {
                     return;
                 }
             }
-            
+
+            $cardTpvRequired = $order->merchant->isDebitCardValidationEnabled();
+
+            if ( ($method === Payment\Method::CARD || $method === null) and $cardTpvRequired === true )
+            {
+                return;
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK);
         }
@@ -635,8 +642,9 @@ class Validator extends Base\Validator
 
         // TPV - Third Party Validation
         $tpvRequired = $order->merchant->isTPVRequired();
+        $cardTpvRequired = $order->merchant->isDebitCardValidationEnabled();
 
-        if ($tpvRequired === false)
+        if ($tpvRequired === false && $cardTpvRequired === false)
         {
             return;
         }
@@ -645,7 +653,8 @@ class Validator extends Base\Validator
 
         if (($method !== null) and
             ($method !== Payment\Method::NETBANKING) and
-            ($method !== Payment\Method::UPI))
+            ($method !== Payment\Method::UPI) and
+            ($method !== Payment\Method::CARD))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Order method needs to be netbanking or upi for the merchant');
@@ -673,6 +682,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Order bank does not match the payment bank');
+        }
+
+        $cardTpvBanks = Payment\Processor\CardPayments::getCardTPVSupportedBanks();
+
+        if (($method !== null and
+                $method === Payment\Method::CARD) and
+            (in_array($orderBank, $cardTpvBanks, true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Order bank does not support TPV');
         }
 
         // TODO: Change this after creating bank account entities for all the previous TPV orders

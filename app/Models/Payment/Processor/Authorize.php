@@ -5896,6 +5896,11 @@ trait Authorize
             $this->setGatewayInputForAeps($input, $gatewayInput);
         }
 
+        if ($payment->isCard() === true)
+        {
+            $this->validateCardTpvPayment($payment);
+        }
+
         if ($payment->isMethodCardOrEmi() === true)
         {
             $gatewayInput['iin'] = $this->getIinDetails($payment);
