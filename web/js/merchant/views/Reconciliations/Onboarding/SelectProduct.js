@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Heading, Text, ChevronRightIcon } from '@razorpay/blade/components';
+import { Box, Text, ChevronRightIcon } from '@razorpay/blade/components';
 import OptimizerIcon from 'assets/reconciliations/payment-optimizer-icon.svg';
 import POSIcon from 'assets/reconciliations/pos-icon.svg';
 import styled from 'styled-components';
@@ -34,7 +34,7 @@ export default function SelectProduct({ selectProduct, merchantMeta }) {
               justifyContent="space-between"
               width="480px"
               borderWidth={1}
-              borderColor="surface.border.normal.lowContrast"
+              borderColor="surface.border.gray.muted"
               padding="spacing.4"
               borderRadius="medium"
               marginBottom="spacing.4"
@@ -42,8 +42,10 @@ export default function SelectProduct({ selectProduct, merchantMeta }) {
               <Box display="flex">
                 <img src={getIcon(product.header || product.description)} alt="icon" />
                 <Box marginLeft="spacing.4">
-                  <Heading weight="bold">{product.header}</Heading>
-                  <Text type="">{product.description}</Text>
+                  <Text weight="semibold" size="large">
+                    {product.header}
+                  </Text>
+                  <Text color="surface.text.gray.normal">{product.description}</Text>
                 </Box>
               </Box>
               <ChevronRightIcon />

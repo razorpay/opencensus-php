@@ -40,7 +40,7 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
   test('should show dispute list and details in Disputes', async ({ page }) => {
     await navigateToTransactions(page);
     await page.getByLabel('view-Disputes-details').click();
-    expect(page.getByRole('heading', { name: 'Disputes' })).toBeVisible();
+    expect(page.getByText('Disputes')).toBeVisible();
     expect(page.getByRole('link', { name: 'Guide to Dispute' })).toBeVisible();
     const columns = ['Dispute Id', 'Amount', 'Type', 'Respond By', 'Created At', 'Status'];
     for await (const column of columns) {

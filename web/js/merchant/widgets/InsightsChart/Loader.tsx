@@ -18,7 +18,7 @@ const InsightsChartWidgetLoader: React.FC<InsightsChartLoadingProps> = ({
   return (
     <InsightsChartWrapper>
       <InsightsChartHeaderWrapper>
-        <Heading size="large">{title}</Heading>
+        <Heading size="medium">{title}</Heading>
         {input && renderInput({ widget: input })}
       </InsightsChartHeaderWrapper>
       <InsightsChartContentWrapper>
@@ -47,7 +47,7 @@ export function SubwidgetSkeleton() {
       borderRadius="large"
       padding="spacing.6"
       borderWidth="thinner"
-      borderColor="surface.border.subtle.lowContrast"
+      borderColor="surface.border.gray.subtle"
       gap="spacing.4"
       testID="insights-chart-loader"
     >

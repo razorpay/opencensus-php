@@ -15,7 +15,7 @@ export const PreviewHeader = styled.div`
 `;
 export const EditIconContainer = styled.div`
   color: #2b83ea;
-  font-weight: 700;
+  font-weight: 600;
   display: flex;
   justify-content: center;
   align-items: center;

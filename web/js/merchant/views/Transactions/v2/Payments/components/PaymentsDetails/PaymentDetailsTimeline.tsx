@@ -1,49 +1,49 @@
-import React, { useEffect, useState } from 'react';
 import {
   Box,
+  Button,
   Card,
   CardBody,
-  Spinner,
-  Link,
-  Text,
-  RefreshIcon,
   Divider,
-  Button,
   Heading,
+  Link,
+  RefreshIcon,
+  Spinner,
+  Text,
 } from '@razorpay/blade/components';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { compose, bindActionCreators } from 'redux';
+import { bindActionCreators, compose } from 'redux';
 
 import RefundIcon from 'assets/transactions/refund.svg';
 import { useSplitzService } from 'common/splitz';
 import { deepClone } from 'common/utils/rzp-utils';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import {
-  fetchInstantRefundFeeFn,
-  fetchTransfersFn,
-  refundPaymentFn,
   fetchBankTransfer,
+  fetchInstantRefundFeeFn,
   fetchPaymentIdTimelineData,
   fetchTransactionTimelineDataFn,
+  fetchTransfersFn,
+  refundPaymentFn,
 } from 'merchant/views/Transactions/model';
 import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModalNew';
 import TimeLine from 'merchant/views/Transactions/v2/Payments/components/Timeline';
 import { IconBackground } from 'merchant/views/Transactions/v2/Payments/components/Timeline/styled';
 import {
-  TimelineJourneyPoint,
   SkipTimelineTransactions,
+  TimelineJourneyPoint,
 } from 'merchant/views/Transactions/v2/Payments/components/Timeline/types';
 import { PaymentsTimeline } from 'merchant/views/Transactions/v2/Payments/types';
 import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
 import { isSettlementRetryTimelineEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
-import { IPaymentDetails, IPaymentIdRefundDetail, IBankTransfer } from './types';
+import { IBankTransfer, IPaymentDetails, IPaymentIdRefundDetail } from './types';
 import {
-  getSettlementTimelineData,
   getDisputesTimelineData,
-  getRefundsTimelineData,
   getPaymentTimelineData,
+  getRefundsTimelineData,
+  getSettlementTimelineData,
   isIssueRefundDisabled,
 } from './utils';
 
@@ -206,7 +206,7 @@ function PaymentDetailsTimeline({
         {paymentTimelineData ? (
           <Box>
             <Box marginLeft="-8px">
-              <Heading weight="bold" color="surface.text.normal.lowContrast" size="medium">
+              <Heading weight="semibold" color="surface.text.gray.normal" size="small">
                 Timeline
               </Heading>
             </Box>
@@ -223,7 +223,7 @@ function PaymentDetailsTimeline({
           </Box>
         ) : didPaymentTimelineDataError ? (
           <Box>
-            <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+            <Text variant="body" size="medium" weight="regular" color="surface.text.gray.subtle">
               We couldn’t load your payment timeline. Refresh to try again
             </Text>
             <Box paddingTop="spacing.3">

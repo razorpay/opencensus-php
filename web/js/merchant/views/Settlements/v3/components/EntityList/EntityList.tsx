@@ -225,12 +225,12 @@ const ListItem = ({
           case `entity_id`:
             row = (
               <StyledTd key={idx}>
-                <Text type="subtle" size="medium">
+                <Text size="medium" color="surface.text.gray.subtle">
                   {id}
                 </Text>
                 {isDetailsRevampFlow ? null : (
                   <CustomClipboard value={id} onCopy={onIdCopied.bind(null, id)}>
-                    <CopyIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                    <CopyIcon size="medium" color="feedback.icon.neutral.intense" />
                   </CustomClipboard>
                 )}
               </StyledTd>
@@ -239,7 +239,7 @@ const ListItem = ({
           case 'gross_amount':
             row = (
               <td key={idx}>
-                <Text type="subtle" size="medium">
+                <Text size="medium" color="surface.text.gray.subtle">
                   <Amount value={amount} currency={currency} />
                 </Text>
               </td>
@@ -248,7 +248,7 @@ const ListItem = ({
           case 'deductions':
             row = (
               <td key={idx}>
-                <Text weight="regular" color="surface.text.subtle.lowContrast" size="medium">
+                <Text weight="regular" color="surface.text.gray.subtle" size="medium">
                   <Amount value={deductions} currency={currency} />
                 </Text>
               </td>
@@ -258,8 +258,8 @@ const ListItem = ({
             row = (
               <td key={idx}>
                 <Text
-                  weight={isDetailsRevampFlow ? 'bold' : 'regular'}
-                  color="surface.text.subtle.lowContrast"
+                  weight={isDetailsRevampFlow ? 'semibold' : 'regular'}
+                  color="surface.text.gray.subtle"
                   size="medium"
                 >
                   <Amount value={netValue} currency={currency} />
@@ -270,11 +270,11 @@ const ListItem = ({
           case 'date':
             row = (
               <td key={idx}>
-                <Text type="subtle">
+                <Text color="surface.text.gray.subtle">
                   <Time value={created_at} format="DD MMM YYYY, hh:mm:ss a" />
                 </Text>
                 {isMobileResolution ? (
-                  <Text type="subdued" size="small">
+                  <Text size="small" color="surface.text.gray.muted">
                     {id}
                   </Text>
                 ) : null}
@@ -400,17 +400,12 @@ const EntityList = (props) => {
       return (
         <ColumnHeader key={idx}>
           <Box display="flex" gap={{ base: 'spacing.2', m: '5px' }} alignItems="center">
-            <Text
-              variant="body"
-              size="medium"
-              color="surface.text.subtle.lowContrast"
-              weight="bold"
-            >
+            <Text variant="body" size="medium" color="surface.text.gray.subtle" weight="semibold">
               {isDetailsRevampFlow ? capitalizeFirstLetter(key) : titleCase(key)}
             </Text>
             {(key === 'Net amount' || key === 'Net deduction') && !isDetailsRevampFlow ? (
               <div>
-                <InfoIcon size="small" color="surface.text.subtle.lowContrast" />
+                <InfoIcon size="small" color="interactive.icon.gray.subtle" />
                 <Popover theme="dark" align="top">
                   <PopoverBody>
                     <div>{tooltipConfig[key]}</div>

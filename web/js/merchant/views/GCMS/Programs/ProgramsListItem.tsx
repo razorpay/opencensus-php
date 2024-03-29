@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Box, Card, CardBody, Heading, Text } from '@razorpay/blade/components';
+import { Box, Card, CardBody, Text } from '@razorpay/blade/components';
 
 import { capitalize, truncatedString } from 'common/utils/rzp-utils';
 import { StyledProgramTypeContainer } from 'merchant/views/GCMS/Programs/styled';
@@ -24,7 +24,7 @@ const ProgramsListItem: React.FC<Props> = ({ program, onClick }) => {
         elevation="midRaised"
         onHover={function noRefCheck() {}}
         shouldScaleOnHover
-        surfaceLevel={2}
+        backgroundColor="surface.background.gray.moderate"
         width={{
           m: '260px',
           s: '100%',
@@ -36,20 +36,20 @@ const ProgramsListItem: React.FC<Props> = ({ program, onClick }) => {
           </Box>
           <Box paddingTop="spacing.4">
             <Box>
-              <Heading size="small" weight="bold">
+              <Text weight="semibold" size="large">
                 {program.name}
-              </Heading>
+              </Text>
             </Box>
             <Box display="flex" flexDirection="row" alignItems="center" paddingTop="spacing.2">
               <Box>
-                <Text color="surface.text.muted.lowContrast">
+                <Text color="surface.text.gray.muted">
                   {truncatedString(program.policies?.program_desc, 18)}
                 </Text>
               </Box>
               <StyledProgramTypeContainer
                 backgroundColor={PROGRAM_TYPES[programType as keyof typeof PROGRAM_TYPES].color}
               >
-                <Text color="white.action.text.secondary.active" weight="bold" size="small">
+                <Text color="interactive.text.staticWhite.normal" weight="semibold" size="small">
                   {capitalize(PROGRAM_TYPES[programType as keyof typeof PROGRAM_TYPES].name)}
                 </Text>
               </StyledProgramTypeContainer>
@@ -63,7 +63,7 @@ const ProgramsListItem: React.FC<Props> = ({ program, onClick }) => {
             >
               <Box paddingTop="spacing.2">
                 <Box>
-                  <Text color="surface.text.muted.lowContrast">Validity</Text>
+                  <Text color="surface.text.gray.muted">Validity</Text>
                 </Box>
                 <Box paddingTop="spacing.2">
                   <Text>
@@ -77,7 +77,7 @@ const ProgramsListItem: React.FC<Props> = ({ program, onClick }) => {
               </Box>
               <Box paddingTop="spacing.2">
                 <Box>
-                  <Text color="surface.text.muted.lowContrast">Denomination</Text>
+                  <Text color="surface.text.gray.muted">Denomination</Text>
                 </Box>
                 <Box paddingTop="spacing.2">
                   <Text>{getProgramDenomination({ policy: program.policies })}</Text>

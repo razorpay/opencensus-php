@@ -109,21 +109,19 @@ export default class SmartCollectContainer extends React.Component {
             </AnnouncementBanner>
           </ShowWhen>
         </div>
-
         {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
         {isCustomerFeeBearer && (
           <Box padding="spacing.6" paddingBottom="spacing.0">
             <Alert
-              contrast="low"
+              emphasis="subtle"
               description="This product is not supported for merchants accepting payments as per the convenience fee model. Any payments accepted via QR will be auto refunded."
-              intent="notice"
               title="Smart collect is not available for you"
               isDismissible={false}
               isFullWidth
+              color="notice"
             />
           </Box>
         )}
-
         <ErrorBoundary resetOnProps>
           <Outlet />
         </ErrorBoundary>

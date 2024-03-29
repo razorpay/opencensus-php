@@ -58,7 +58,7 @@ const TurnoffNotify = ({
     <Modal zIndex={1112} isOpen={isOpen} onDismiss={handleDismiss} snapPoints={defaultSnapPoints}>
       <ModalHeader title="Turn off notifications?" />
       <ModalBody>
-        <Text type="subdued" size="large">
+        <Text size="large" color="surface.text.gray.muted">
           If you turn off notifications, customers will no longer receive any updates for Payment
           Links on Whatsapp
         </Text>

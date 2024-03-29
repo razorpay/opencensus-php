@@ -36,9 +36,9 @@ export const ErrorState = ({
       {...rest}
     >
       <AlertIconWrapper variant="error">
-        <AlertTriangleIcon color="feedback.icon.negative.lowContrast" />
+        <AlertTriangleIcon color="feedback.icon.negative.intense" />
       </AlertIconWrapper>
-      <Text weight="bold" marginTop="spacing.4">
+      <Text weight="semibold" marginTop="spacing.4">
         {text || 'Something went wrong'}
       </Text>
       {retryHandler ? (

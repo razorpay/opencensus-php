@@ -22,7 +22,7 @@ export const DetailsRow = ({
   return (
     <Box display="flex" gap="spacing.0" padding="spacing.3">
       <Box width={isActivationStatus ? '38%' : '39%'}>
-        <Text color="surface.text.muted.lowContrast">{label}</Text>
+        <Text color="surface.text.gray.muted">{label}</Text>
       </Box>
       <Box display="flex" flexDirection="column">
         {values.map((item, index) => (
@@ -40,9 +40,7 @@ export const DetailsRow = ({
                     showDescriptionAsTooltip
                   />
                 ) : (
-                  <Text color="surface.text.normal.lowContrast">
-                    {item && item !== '' ? item : 'N/A'}
-                  </Text>
+                  <Text color="surface.text.gray.normal">{item && item !== '' ? item : 'N/A'}</Text>
                 )}
               </Box>
             )}

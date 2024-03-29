@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
-import EntityTabs from 'merchant/views/Settlements/v3/components/EntityTabs';
+import { ChevronDownIcon, ChevronUpIcon, Spinner, Text } from '@razorpay/blade/components';
+import { useMobile } from 'common/hooks/useMobile';
 import { removeUnreconciledEntity } from 'merchant/views/Settlements/v2/util';
 import EntityListNew from 'merchant/views/Settlements/v3/components/EntityList/EntityList';
-import { Heading, Spinner, Text, ChevronDownIcon, ChevronUpIcon } from '@razorpay/blade/components';
-import { StyledEntityContainer } from './Styled';
+import EntityTabs from 'merchant/views/Settlements/v3/components/EntityTabs';
 import {
   CollapsibleContainer,
   SectionHeader,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
-import { useMobile } from 'common/hooks/useMobile';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { StyledEntityContainer } from './Styled';
 
 const GrossSettlementsEntities = (props) => {
   const [activeTab, setactiveTab] = useState<string | null>(null);
@@ -55,22 +55,22 @@ const GrossSettlementsEntities = (props) => {
     return (
       <StyledEntityContainer data-testid="settlements-gross-entities">
         <SectionHeader enableBorderBottomRadius={!isOpen}>
-          <Heading type="normal" size="small" weight="bold" contrast="low">
+          <Text weight="semibold" size="large" color="surface.text.gray.normal">
             Gross Settlements
-          </Heading>
+          </Text>
           {isMobile && (
             <CollapsibleContainer onClick={toggleAccordian} data-testid="collapsible-container">
-              <Text type="subtle" size="medium" weight="bold">
+              <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
                 {!isOpen ? (
                   <ChevronDownIcon
                     size="medium"
-                    color="feedback.icon.neutral.lowContrast"
+                    color="feedback.icon.neutral.intense"
                     data-testid="chevron-down"
                   />
                 ) : (
                   <ChevronUpIcon
                     size="medium"
-                    color="feedback.icon.neutral.lowContrast"
+                    color="feedback.icon.neutral.intense"
                     data-testid="chevron-up"
                   />
                 )}

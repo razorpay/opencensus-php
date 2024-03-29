@@ -90,7 +90,7 @@ const DeleteAccount = ({
     <Modal zIndex={1112} isOpen={isOpen} onDismiss={handleDismiss} snapPoints={defaultSnapPoints}>
       <ModalHeader title="Are you sure you want delete?" />
       <ModalBody>
-        <Text type="subdued" size="large">
+        <Text size="large" color="surface.text.gray.muted">
           Are you sure you want to delete your Whatsapp Business Profile?
         </Text>
       </ModalBody>

@@ -13,6 +13,48 @@ const CloseIconContainer = styled.span(({ theme }) => ({
   cursor: 'pointer',
 }));
 
+const DismissableInput = ({
+  label,
+  name,
+  onFileChange,
+  onFileRemove,
+  showRemoveButton,
+}): JSX.Element => {
+  const [showRemove, setShowRemove] = useState(showRemoveButton);
+  const handleFileChange = (file, progressTracker) => {
+    setShowRemove(false);
+    return onFileChange(file, progressTracker);
+  };
+
+  const handleCloseClick = () => {
+    setShowRemove(true);
+    onFileRemove();
+  };
+
+  const handleRemoveFileType = () => {
+    onFileRemove();
+  };
+  return (
+    <Box position="relative">
+      <Input.File
+        name={name}
+        label={label}
+        maxSize={52430000} // 50MB
+        showFileSize={false}
+        onChange={handleFileChange}
+        onCloseClick={handleCloseClick}
+        multi={false}
+        _accept={['pdf']}
+      />
+      {showRemove ? (
+        <CloseIconContainer onClick={handleRemoveFileType} data-testid="btn-file-remove">
+          <CloseIcon color="interactive.icon.gray.normal" size="medium" />
+        </CloseIconContainer>
+      ) : null}
+    </Box>
+  );
+};
+
 const AddButtonContainer = styled.span`
   &:hover {
     cursor: pointer;
@@ -74,55 +116,11 @@ const MultiFileUpload = ({ name, label, onFileChange, onFileRemove }): JSX.Eleme
           />
         );
       })}
-
       <AddButtonContainer onClick={addAnotherFile}>
-        <Text weight="bold" size="medium" color="action.text.link.default">
+        <Text weight="semibold" size="medium" color="interactive.text.primary.subtle">
           + Add another file
         </Text>
       </AddButtonContainer>
-    </Box>
-  );
-};
-
-const DismissableInput = ({
-  label,
-  name,
-  onFileChange,
-  onFileRemove,
-  showRemoveButton,
-}): JSX.Element => {
-  const [showRemove, setShowRemove] = useState(showRemoveButton);
-  const handleFileChange = (file, progressTracker) => {
-    setShowRemove(false);
-    return onFileChange(file, progressTracker);
-  };
-
-  const handleCloseClick = () => {
-    setShowRemove(true);
-    onFileRemove();
-  };
-
-  const handleRemoveFileType = () => {
-    onFileRemove();
-  };
-  return (
-    <Box position="relative">
-      <Input.File
-        name={name}
-        label={label}
-        maxSize={52430000} // 50MB
-        showFileSize={false}
-        onChange={handleFileChange}
-        onCloseClick={handleCloseClick}
-        multi={false}
-        _accept={['pdf']}
-      />
-
-      {showRemove ? (
-        <CloseIconContainer onClick={handleRemoveFileType} data-testid="btn-file-remove">
-          <CloseIcon color="surface.text.normal.lowContrast" size="medium" />
-        </CloseIconContainer>
-      ) : null}
     </Box>
   );
 };

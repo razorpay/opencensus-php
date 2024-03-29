@@ -52,7 +52,7 @@ export const StyledUploadContainer = styled.div<any>`
           text-align: center;
           font-size: 14px;
           .staged-desc {
-            font-weight: 700;
+            font-weight: 600;
           }
         }
         .icon {

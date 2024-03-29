@@ -29,7 +29,7 @@ const TodaySettlementSingle: React.FC<
     >
       <Status status={status} />
       <Dot />
-      <Text type="subtle" size="medium" weight="bold">
+      <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
         {subheading}
       </Text>
       {!!action ? (

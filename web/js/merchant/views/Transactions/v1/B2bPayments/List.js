@@ -218,11 +218,11 @@ class PaymentsListContainer extends ListContainer {
             onClearAnalytics={this.onClearAnalytics}
           />
           <Alert
-            intent="information"
             description="Uploading an invoice for international payments received via ACH/SWIFT/SEPA/BACS or domestic payments for international businesses is required for audit purposes as per RBI guidelines. Without a valid invoice for such transactions, your settlements cannot be processed and will be put on hold."
             isDismissible={false}
             isFullWidth
             marginBottom="spacing.5"
+            color="information"
           />
           <ListTable
             {...this.props}

@@ -33,7 +33,7 @@ const ListingDetails = ({ product }: ListingDetailsProps): JSX.Element | null =>
       </Container>
 
       <AnimatedBottomMobileBanner isVisible={isViewportInTextContent}>
-        <Box backgroundColor="surface.background.level3.lowContrast">
+        <Box backgroundColor="surface.background.gray.moderate">
           {product.data.deal ? (
             <SmallDealCard
               slug={product.slug}
@@ -77,7 +77,7 @@ const ListingDetails = ({ product }: ListingDetailsProps): JSX.Element | null =>
           gap="spacing.8"
           padding="spacing.7"
           borderRadius="medium"
-          backgroundColor="surface.background.level1.lowContrast"
+          backgroundColor="surface.background.gray.subtle"
         >
           <Box display={{ base: 'none', l: 'block' }}>
             {product.data.deal ? (

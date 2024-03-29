@@ -9,7 +9,9 @@ const InitiateSetup = (): JSX.Element => {
   return (
     <Card
       padding={isMobile ? 'spacing.5' : 'spacing.7'}
-      surfaceLevel={isMobile ? 3 : 2}
+      backgroundColor={
+        isMobile ? 'surface.background.gray.intense' : 'surface.background.gray.moderate'
+      }
       elevation="none"
       testID="loading-shimmer"
     >

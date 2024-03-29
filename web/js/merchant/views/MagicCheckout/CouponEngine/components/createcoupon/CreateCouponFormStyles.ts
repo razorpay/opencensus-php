@@ -19,7 +19,7 @@ export const CreateCouponFormWrapper = styled.div`
 
   .form-label {
     color: #344a6c;
-    font-weight: 700;
+    font-weight: 600;
     width: 200px;
   }
 
@@ -51,7 +51,7 @@ export const Container = styled.div`
 export const BackLink = styled(Link)`
   text-decoration: none;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: #00000080;
   display: flex;
   align-items: flex-end;
@@ -64,7 +64,7 @@ export const BackLink = styled(Link)`
 `;
 
 export const CouponName = styled.div`
-  font-weight: 700;
+  font-weight: 600;
   color: #262d3a;
   line-height: 20px;
   font-size: 20px;
@@ -354,7 +354,7 @@ export const HorizontalRadioButtons = styled.div`
   }
 
   .add-cta {
-    font-weight: 700;
+    font-weight: 600;
     color: #2a86f3;
     font-size: 14px;
     line-height: 20px;
@@ -439,7 +439,7 @@ export const AddCollectionsCta = styled.div`
   color: #0b70e7;
   font-size: 14px;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 600;
   width: fit-content;
 
   i {

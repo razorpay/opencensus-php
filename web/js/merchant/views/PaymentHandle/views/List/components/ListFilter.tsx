@@ -32,7 +32,7 @@ const ListFilter: React.FC<ListFilterPropTypes> = ({
           {isTestMode && (
             <View>
               <AlertInfoListContainer data-testid="ds-test-mode">
-                <Text type="subtle" contrast="low" size="small">
+                <Text size="small" color="surface.text.gray.subtle">
                   You are in <HighlightBold>Test Mode</HighlightBold>, so only test data is shown.
                   Switch to <u>Live mode</u> to see real transactions data.
                 </Text>
@@ -43,14 +43,14 @@ const ListFilter: React.FC<ListFilterPropTypes> = ({
             <HideMobile>
               <Flex alignItems="center">
                 <View>
-                  <Text weight="bold">Transactions</Text>
+                  <Text weight="semibold">Transactions</Text>
                   <Line />
                   <Space margin={[0, 1.5, 0, 0]}>
                     <View>
                       <TextV2 color="#8991ae" fontSize="12px" text="Total Payments" />
                     </View>
                   </Space>
-                  <Text type="subtle" weight="bold" contrast="low" size="medium">
+                  <Text weight="semibold" size="medium" color="surface.text.gray.subtle">
                     {paymentPageEntity.captured_payments_count}
                   </Text>
                   <Line />
@@ -59,7 +59,7 @@ const ListFilter: React.FC<ListFilterPropTypes> = ({
                       <TextV2 color="#8991ae" fontSize="12px" text="Total revenue" />
                     </View>
                   </Space>
-                  <Text type="subtle" contrast="low" size="medium" weight="bold">
+                  <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
                     <Amount
                       currency={paymentPageEntity.currency}
                       value={paymentPageEntity.total_amount_paid}
@@ -70,12 +70,12 @@ const ListFilter: React.FC<ListFilterPropTypes> = ({
               </Flex>
             </HideMobile>
             <ShowMobile>
-              <Text weight="bold">Transactions</Text>
+              <Text weight="semibold">Transactions</Text>
               <Space margin={[0.5, 0, 0, 0]}>
                 <FlexV2 gap="40px">
                   <FlexV2 gap="24px">
                     <TextV2 color="#8991ae" fontSize="12px" text="Total Payments" />{' '}
-                    <Text weight="bold" type="subtle" contrast="low">
+                    <Text weight="semibold" color="surface.text.gray.subtle">
                       {paymentPageEntity.captured_payments_count}
                     </Text>
                   </FlexV2>

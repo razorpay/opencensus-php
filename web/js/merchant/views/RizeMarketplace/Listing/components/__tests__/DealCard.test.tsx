@@ -106,11 +106,9 @@ describe('LargeDealCard', () => {
       couponCode: mockCouponDealData.coupon_code,
       availLink: mockCouponDealData.avail_link ?? '',
     });
-
-    const heading = screen.getByRole('heading', {
-      name: mockCouponDealData.offer,
-    });
-    expect(heading).toBeInTheDocument();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore-next-line
+    expect(screen.getByText(mockCouponDealData.offer)).toBeInTheDocument();
 
     const availDealButton = getAvailDealButton();
     expect(availDealButton).toBeInTheDocument();
@@ -157,9 +155,8 @@ describe('SmallDealCard', () => {
   const openSmallDealCardBottomSheet = async () => {
     const availDealButton = getAvailDealButton();
     expect(availDealButton).toBeInTheDocument();
-
     await userEvent.click(availDealButton);
-    expect(screen.getByRole('heading', { name: /avail deal/i })).toBeInTheDocument();
+    expect(screen.getByTestId('bottomsheet-surface')).toHaveTextContent('Avail Deal');
   };
 
   test('should render deal with coupon code inline', async () => {
@@ -170,12 +167,9 @@ describe('SmallDealCard', () => {
       availLink: mockCouponDealData.avail_link ?? '',
     });
 
-    expect(
-      screen.getByRole('heading', {
-        name: mockCouponDealData.offer,
-      }),
-    ).toBeInTheDocument();
-
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore-next-line
+    expect(screen.getByText(mockCouponDealData.offer)).toBeInTheDocument();
     await openSmallDealCardBottomSheet();
     await testCouponCodeDealUI();
   });
@@ -186,13 +180,9 @@ describe('SmallDealCard', () => {
       slug: mockLinkDealData.slug,
       availLink: mockLinkDealData.avail_link ?? '',
     });
-
-    expect(
-      screen.getByRole('heading', {
-        name: mockLinkDealData.offer,
-      }),
-    ).toBeInTheDocument();
-
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore-next-line
+    expect(screen.getByText(mockLinkDealData.offer)).toBeInTheDocument();
     await openSmallDealCardBottomSheet();
     await testLinkDealUI();
   });
@@ -205,13 +195,9 @@ describe('SmallDealCard', () => {
       availLink: mockCouponDealData.avail_link ?? '',
       isSticky: true,
     });
-
-    expect(
-      screen.getByRole('heading', {
-        name: mockCouponDealData.offer,
-      }),
-    ).toBeInTheDocument();
-
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore-next-line
+    expect(screen.getByText(mockCouponDealData.offer)).toBeInTheDocument();
     await openSmallDealCardBottomSheet();
     await testCouponCodeDealUI();
   });
@@ -224,12 +210,9 @@ describe('SmallDealCard', () => {
       availLink: mockCouponDealData.avail_link ?? '',
       isSticky: true,
     });
-
-    expect(
-      screen.getByRole('heading', {
-        name: mockCouponDealData.offer,
-      }),
-    ).toBeInTheDocument();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore-next-line
+    expect(screen.getByText(mockCouponDealData.offer)).toBeInTheDocument();
 
     await openSmallDealCardBottomSheet();
     await testCouponCodeDealUI();

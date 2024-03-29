@@ -63,7 +63,7 @@ export const PPSwitchContentTitle = styled.div`
 
 export const PPSwitchContentDesc = styled.div(
   ({ theme }: { theme: Theme }) => `
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
   font-weight: ${theme.typography.fonts.weight.regular};
   font-size: ${theme.typography.fonts.size[100]}px;
   line-height: ${theme.typography.lineHeights[100]}px;
@@ -157,8 +157,8 @@ export const ServiceProvidedHeading = styled.div(
   ({ theme }: { theme: Theme }) => `
     margin-top: 36px;
     font-weight: ${theme.typography.fonts.weight.bold};
-    font-size: ${theme.typography.fonts.size[700]}px;
-    line-height: ${theme.typography.lineHeights[700]}px;
+    font-size: ${theme.typography.fonts.size[600]}px;
+    line-height: ${theme.typography.lineHeights[600]}px;
     color: #324664;
 
     @media (max-width: ${mobileTabMax}) {
@@ -192,7 +192,7 @@ export const ServiceProvidedDescription = styled.div(
     font-size: ${theme.typography.fonts.size[100]}px;
     line-height: ${theme.typography.lineHeights[100]}px;
     width: 100%;
-    color: ${theme.colors.surface.text.subdued.lowContrast};
+    color: ${theme.colors.surface.text.gray.muted};
   }
 `,
 );
@@ -220,14 +220,14 @@ export const ServiceProvidedPillsOption = styled.div(
     line-height: ${theme.typography.lineHeights[100]}px;
 
     :hover {
-      color: ${theme.colors.brand.primary[600]};
-      border-color: ${theme.colors.brand.primary[600]};
+      color: ${theme.colors.surface.background.primary.intense};
+      border-color: ${theme.colors.surface.background.primary.intense};
     }
     ${
       $isActive
         ? `
-        color: ${theme.colors.brand.primary[600]};
-        border-color: ${theme.colors.brand.primary[600]};
+        color: ${theme.colors.surface.background.primary.intense};
+        border-color: ${theme.colors.surface.background.primary.intense};
       `
         : ''
     }
@@ -288,7 +288,7 @@ export const ManagePaymentsBanner = styled.div(
 
 export const ManagePaymentHeading = styled.div(
   ({ theme }: { theme: Theme }) => `
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
   font-weight: ${theme.typography.fonts.weight.bold};
   font-size: ${theme.typography.fonts.size[400]}px;
   line-height: ${theme.typography.lineHeights[400]}px;
@@ -296,7 +296,7 @@ export const ManagePaymentHeading = styled.div(
   @media (max-width:${mobileTabMax}) {
     font-size: ${theme.typography.fonts.size[200]}px;
     line-height: ${theme.typography.lineHeights[200]}px;
-    color: ${theme.colors.surface.background.level3.highContrast};
+    color: ${theme.colors.surface.text.gray.subtle};
     margin-bottom: 20px;
   }
 `,
@@ -315,7 +315,7 @@ export const ManagePaymentButtonWrap = styled.div`
 
 export const IntegrateAPIBanner = styled.div(
   ({ theme }: { theme: Theme }) => `
-  background: ${theme.colors.feedback.background.neutral.lowContrast};
+  background: ${theme.colors.feedback.background.neutral.subtle};
   padding: 25px 30px;
   position: relative;
 `,
@@ -326,7 +326,7 @@ export const IntegrateAPIHeading = styled.div(
   font-weight: ${theme.typography.fonts.weight.bold};
   font-size: ${theme.typography.fonts.size[200]}px;
   line-height: ${theme.typography.lineHeights[200]}px;
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
   margin-bottom: 8px;
 
   span {
@@ -341,7 +341,7 @@ export const IntegrateAPIDesc = styled.div(
   font-weight: ${theme.typography.fonts.weight.regular};
   font-size: ${theme.typography.fonts.size[100]}px;
   line-height: ${theme.typography.lineHeights[100]}px;
-  color: ${theme.colors.surface.text.subdued.lowContrast};
+  color: ${theme.colors.surface.text.gray.muted};
 
   @media (max-width:${mobileTabMax}) {
     width: 100%;
@@ -458,7 +458,7 @@ export const ApplicationDotContent = styled.div(
   font-weight: ${theme.typography.fonts.weight.bold};
   font-size: ${theme.typography.fonts.size[100]}px;
   line-height: ${theme.typography.lineHeights[100]}px;
-  color: ${theme.colors.surface.background.level3.highContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
 
   .pp-dot-subtitle {
     color: #9D9D9D;

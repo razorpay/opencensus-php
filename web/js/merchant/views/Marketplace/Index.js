@@ -160,21 +160,19 @@ class MarketplaceContainer extends React.Component {
             />
           </AnnouncementBanner>
         )}
-
         {isQuickGuideOpen ? <QuickGuide className="QuickGuide-v2" /> : null}
         {isCustomerFeeBearer && (
           <Box padding="spacing.6" paddingBottom="spacing.0">
             <Alert
-              contrast="low"
+              emphasis="subtle"
               description="This product is not supported for merchants accepting payments as per the convenience fee model. Any payments accepted via QR will be auto refunded."
-              intent="notice"
               title="Route is not available for you"
               isDismissible={false}
               isFullWidth
+              color="notice"
             />
           </Box>
         )}
-
         <ErrorBoundary resetOnProps>
           <Routes>
             <Route path="*" element={<Navigate to="payments" replace />} />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 import '@testing-library/jest-dom/extend-expect';
 import { deepClone, titleCase } from 'common/utils/rzp-utils';
@@ -44,7 +44,7 @@ describe('Add Provider > ProviderConfiguration', () => {
 
   const App = (props = {}) => {
     return (
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <ProviderConfiguration {...props} />
       </BladeProvider>
     );
@@ -178,9 +178,7 @@ describe('Add Provider > ProviderConfiguration', () => {
 
     test('should render correct text for gateway', () => {
       render(<App {...mockProps} {...OPTIMIZER_RAZORPAY_PROVIDER} />);
-      expect(
-        screen.getByRole('heading', { name: 'Razorpay Production API Details' }),
-      ).toBeInTheDocument();
+      expect(screen.getByText('Razorpay Production API Details')).toBeInTheDocument();
       expect(screen.getByText('STEP 4 OUT OF 4')).toBeInTheDocument();
       expect(screen.getByText('Where do I find Razorpay API Keys details?')).toBeInTheDocument();
     });

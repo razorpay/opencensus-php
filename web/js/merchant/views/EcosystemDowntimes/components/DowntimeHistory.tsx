@@ -17,16 +17,16 @@ const DowntimeHistory = ({ isMobile, pastDowntimes = [] }: DowntimeHistoryProps)
   return (
     <DowntimeHistoryContainer aria-label="downtime-history" isMobile={isMobile}>
       <div className="previous-downtime-title">
-        <Text weight="bold">Past Downtimes</Text>
+        <Text weight="semibold">Past Downtimes</Text>
       </div>
-      <Text size={isMobile ? 'small' : 'medium'} type="subdued">
+      <Text size={isMobile ? 'small' : 'medium'} color="surface.text.gray.muted">
         Past 30 Days Incidents
       </Text>
       <div className="downtime-timeline" aria-label="downtime-history-data">
         {pastDowntimes.length > 0 ? (
           <Timeline data={pastDowntimes} />
         ) : (
-          <Text size={isMobile ? 'small' : 'medium'} type="subdued">
+          <Text size={isMobile ? 'small' : 'medium'} color="surface.text.gray.muted">
             No previous downtimes.
           </Text>
         )}

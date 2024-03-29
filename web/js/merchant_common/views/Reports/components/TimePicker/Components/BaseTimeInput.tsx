@@ -18,7 +18,7 @@ export const BaseTimeInput = ({ isValidated }: { isValidated: boolean }): JSX.El
         validation={isValidated}
         focused={shouldShowPicker}
       >
-        <Text type="normal" size="medium" weight="regular" variant="body">
+        <Text size="medium" weight="regular" variant="body" color="surface.text.gray.normal">
           {selectedTime.format('h:mm A')}
         </Text>
         <FlexCentered
@@ -26,7 +26,7 @@ export const BaseTimeInput = ({ isValidated }: { isValidated: boolean }): JSX.El
             marginLeft: 5,
           }}
         >
-          <ClockIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+          <ClockIcon color="feedback.icon.neutral.intense" size="medium" />
         </FlexCentered>
       </SelectedRangeInputField>
       {shouldShowPicker ? (

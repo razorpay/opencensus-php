@@ -377,10 +377,10 @@ class CashAdvance extends React.Component {
           <tabbed-container>
             {hasDisbursedForADayWithdrawals ? (
               <BladeAlert
-                contrast="low"
+                emphasis="subtle"
                 title="Repayment for your last withdrawal is unavailable"
                 description="Withdrawals and repayments are temporarily down. While we work on fixing this, please reach out to us at capital-support@razorpay.com to repay and clear any pending dues."
-                intent="notice"
+                color="notice"
                 isFullWidth
               />
             ) : null}

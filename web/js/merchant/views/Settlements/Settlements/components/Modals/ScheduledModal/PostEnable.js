@@ -40,7 +40,7 @@ const Item = styled.div`
 `;
 
 const GradientText = styled.span`
-  font-weight: 900;
+  font-weight: 800;
   font-size: 32px;
   line-height: 40px;
   background: linear-gradient(#baf4f5, #30c5d8);
@@ -63,7 +63,7 @@ const BadgeLabel = styled.div`
   text-align: ${({ align }) => align ?? 'left'};
   color: #f2f4f8;
   span {
-    font-weight: 900;
+    font-weight: 800;
   }
 `;
 

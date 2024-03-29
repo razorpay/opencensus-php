@@ -36,7 +36,7 @@ const InputSelector = ({ setInput, options }: InputSelectorProps): JSX.Element =
           defaultValue="accounts"
         />
         <DropdownOverlay>
-          <ActionList surfaceLevel={2}>
+          <ActionList>
             {options?.map((type) => (
               <ActionListItem key={type.name} title={type.label} value={type.name} />
             ))}

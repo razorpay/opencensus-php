@@ -1,10 +1,9 @@
 import React from 'react';
+import { Text } from '@razorpay/blade/components';
 import styled from 'styled-components';
 
-import { Heading } from '@razorpay/blade/components';
-import AnalyticsEventsPreview from 'merchant/views/MagicCheckout/AnalyticsSettings/common/AnalyticsEventsPreview';
 import AnalyticsEventsEdit from 'merchant/views/MagicCheckout/AnalyticsSettings/common/AnalyticsEventsEdit';
-
+import AnalyticsEventsPreview from 'merchant/views/MagicCheckout/AnalyticsSettings/common/AnalyticsEventsPreview';
 import { AnalyticsEventsPropsType } from 'merchant/views/MagicCheckout/AnalyticsSettings/types';
 
 const EventsContainer = styled.div`
@@ -28,11 +27,11 @@ const AnalyticsEvents = (props: AnalyticsEventsPropsType): JSX.Element => {
 
   return (
     <EventsContainer>
-      <Heading
-        size="small"
-        weight="bold"
-        color="surface.text.subtle.lowContrast"
-      >{`${header} events to trigger`}</Heading>
+      <Text
+        weight="semibold"
+        color="surface.text.gray.subtle"
+        size="large"
+      >{`${header} events to trigger`}</Text>
       {!showPreviewMode ? (
         <AnalyticsEventsEdit
           analyticsEvents={analyticsEvents}

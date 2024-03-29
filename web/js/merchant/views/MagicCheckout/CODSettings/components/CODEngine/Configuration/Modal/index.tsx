@@ -1,29 +1,28 @@
 import React, { useEffect, useState } from 'react';
+import { Box, Button, CloseIcon, Heading, IconButton } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { Box, Button, CloseIcon, Heading, IconButton } from '@razorpay/blade/components';
-import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
-import ZoneMapping from './ZoneMapping';
-import CategoryMapping from './CategoryMapping';
-import {
-  ModalBody,
-  ModalHeader,
-} from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/styled';
-
-import { closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   fetchConfig,
   mapFeeRulesToZones,
   mapZonesToCategories,
 } from 'merchant/reducers/magicCheckout/codEngine/action';
-
 import {
   MAPPING_TYPES,
   SERVICEABILITY_TYPES,
 } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
-import { RCOD_APP_NAME, MAGIC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
+import {
+  ModalBody,
+  ModalHeader,
+} from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/styled';
+import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
+import { MAGIC_APP_NAME, RCOD_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import CategoryMapping from './CategoryMapping';
+import ZoneMapping from './ZoneMapping';
 
 const Modal = ({
   type,
@@ -121,7 +120,7 @@ const Modal = ({
     <div className="cod-config-modal cod-settings-modal" data-testid="slab-modal">
       <ModalHeader>
         <Box>
-          <Heading size="medium">{MODAL_HEADER}</Heading>
+          <Heading size="small">{MODAL_HEADER}</Heading>
           {subText()}
         </Box>
         <IconButton

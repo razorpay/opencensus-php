@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import {
-  Title,
   Card,
   CardBody,
   Heading,
@@ -164,16 +163,18 @@ export default function NewReconciliationRun() {
       ) : (
         <Card margin="spacing.6">
           <CardBody>
-            <Title>New Reconciliation</Title>
+            <Heading size="large">New Reconciliation</Heading>
             <Box marginBottom="spacing.6" />
             <Divider marginBottom="spacing.6" />
             <Box width="480px">
               <Box display="flex" justifyContent="space-between">
                 <Box>
-                  <Heading marginBottom="spacing.6">Add transaction and bank records</Heading>
+                  <Text marginBottom="spacing.6" size="large">
+                    Add transaction and bank records
+                  </Text>
                 </Box>
               </Box>
-              <Text type="subdued" size="small">
+              <Text size="small" color="surface.text.gray.muted">
                 You’ll need to provide the following records:
               </Text>
               <List size="small">
@@ -187,7 +188,7 @@ export default function NewReconciliationRun() {
                   key={config.id}
                   marginTop="spacing.6"
                   textAlign="center"
-                  backgroundColor="brand.primary.300"
+                  backgroundColor="surface.background.primary.subtle"
                   padding="spacing.6"
                   borderRadius="medium"
                   onDrop={(e) => handleDrop(e, config.id, index)}
@@ -202,12 +203,12 @@ export default function NewReconciliationRun() {
                     </Box>
                   ) : (
                     <>
-                      <UploadIcon color="brand.primary.500" />
-                      <Heading>
+                      <UploadIcon color="interactive.icon.primary.normal" />
+                      <Text size="large">
                         <Link onClick={() => inputRef.current[index].click()}>Browse</Link> or drag
                         & drop file here
-                      </Heading>
-                      <Text type="subdued" size="small">
+                      </Text>
+                      <Text size="small" color="surface.text.gray.muted">
                         {config.name}
                       </Text>
                       <input

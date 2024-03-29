@@ -36,7 +36,7 @@ describe('TabbedCharts', () => {
     await userEvent.click(tabs[1]);
     const activeTabTitle = screen.getByText(TABBED_CHARTS_MOCKED_RESPONSE.components[1].title);
     expect(activeTabTitle).toHaveStyle({
-      color: 'rgb(19, 19, 19)',
+      color: 'rgb(25, 25, 25)',
     });
   });
 });

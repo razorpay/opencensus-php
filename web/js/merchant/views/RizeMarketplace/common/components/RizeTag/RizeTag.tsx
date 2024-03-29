@@ -14,7 +14,11 @@ const RizeTag = ({ showFlap = false }: { showFlap?: boolean }): JSX.Element => {
       position="relative"
       borderRadius={showFlap ? 'none' : 'medium'}
     >
-      <RizeLogo color={theme.colors.static.white} height="18px" width="auto" />
+      <RizeLogo
+        color={theme.colors.interactive.icon.staticWhite.normal}
+        height="18px"
+        width="auto"
+      />
       {showFlap ? (
         <Box display="inline-flex" position="absolute" top="100%" left="spacing.0" marginTop="-1px">
           <svg xmlns="http://www.w3.org/2000/svg" width="8" height="11" fill="none">

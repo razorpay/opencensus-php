@@ -40,7 +40,7 @@ const Paypal = ({ instrument, terminals, isIERevamp }) => {
         actionComponent={
           showStatus ? (
             <Badge
-              contrast="high"
+              emphasis="intense"
               size="large"
               variant={getBadgeVariant(status)}
               icon={(props) => (
@@ -80,10 +80,10 @@ const Paypal = ({ instrument, terminals, isIERevamp }) => {
                 Paypal. They CANNOT be collected in INR.
               </>
             }
-            intent="neutral"
+            color="neutral"
             isFullWidth
             isDismissible={false}
-            contrast="low"
+            emphasis="subtle"
           />
         </div>
       )}

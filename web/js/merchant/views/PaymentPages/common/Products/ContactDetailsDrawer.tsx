@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { Button, Text, TextInput } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
-import { Button, TextInput } from '@razorpay/blade/components';
-import { editStorefront } from 'merchant/reducers/paymentPages/storefront';
 import { bindActionCreators } from 'redux';
-import { Heading, SubHeading } from './styled';
+
+import { editStorefront } from 'merchant/reducers/paymentPages/storefront';
+import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
+
+import { SubHeading } from './styled';
 import { validateContactDetails } from './utils';
 
 interface IContactDetailsDrawer {
@@ -76,7 +78,7 @@ const ContactDetailsDrawer = ({
   ];
   return (
     <PaymentPagesDrawer maskClosable={false} onClose={handleClose} footerButtons={footerButtons}>
-      <Heading>Contact details</Heading>
+      <Text size="large">Contact details</Text>
       <SubHeading>Provide your contact details for customers to contact you</SubHeading>
       <TextInput
         label="Business email id"

@@ -87,7 +87,7 @@ export const CHART_COLORS_MAPPING = {
 
 export const LEGEND_COLORS_MAPPING = {
   ...CHART_COLORS_MAPPING,
-  [ENTITY_RATIO]: 'brand.primary.500', // Blade icon will only accept theme color
+  [ENTITY_RATIO]: 'surface.background.primary.intense', // Blade icon will only accept theme color
 };
 
 export const FRAUD_CHART_LABEL = {

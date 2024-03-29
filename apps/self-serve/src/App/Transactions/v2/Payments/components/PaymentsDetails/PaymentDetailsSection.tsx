@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useMobile } from '@dashboard/shared-ui/hooks';
+import copyToClipboard from '@dashboard/shared-utils/copyToClipboard';
+import { getI18FormattedPhoneNumber } from '@dashboard/shared-utils/i18/contact';
 import {
   Box,
   Card,
@@ -6,20 +8,18 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   Divider,
-  Heading,
   Link,
   MailIcon,
   PhoneIcon,
   Text,
 } from '@razorpay/blade/components';
+import React, { useEffect, useState } from 'react';
 import { withRouter } from 'shell/deprecated/withRouter';
-import { getI18FormattedPhoneNumber } from '@dashboard/shared-utils/i18/contact';
-import { useMobile } from '@dashboard/shared-ui/hooks';
-import copyToClipboard from '@dashboard/shared-utils/copyToClipboard';
 
+import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import getNotes from './Notes';
 import PaymentMethod from './PaymentMethod';
-import Tooltip from './Tooltip';
+import PaymentTransfers from './PaymentTransfers';
 import {
   CardWrapper,
   CollapsibleContainer,
@@ -28,10 +28,9 @@ import {
   RowWrapper,
   SectionHeader,
 } from './styled';
-import { IPaymentDetails, ApplicationDetails } from './types';
+import Tooltip from './Tooltip';
+import { ApplicationDetails, IPaymentDetails } from './types';
 import { onCopy } from './utils';
-import PaymentTransfers from './PaymentTransfers';
-import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 
 interface IPaymentDetailsSection extends RouteComponentProps<{ id: string }> {
   paymentDetails: IPaymentDetails;
@@ -80,22 +79,22 @@ function PaymentDetailsSection({
   return (
     <Box testID="payment-details-section">
       <SectionHeader enableBorderBottomRadius={!isOpen}>
-        <Heading type="normal" size="small" weight="bold" contrast="low">
+        <Text weight="semibold" size="large" color="surface.text.gray.normal">
           Details
-        </Heading>
+        </Text>
         {isMobile ? (
           <CollapsibleContainer onClick={toggleAccordian} data-testid="collapsible-container">
-            <Text type="subtle" size="medium" weight="bold">
+            <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
               {!isOpen ? (
                 <ChevronDownIcon
                   size="medium"
-                  color="feedback.icon.neutral.lowContrast"
+                  color="feedback.icon.neutral.intense"
                   data-testid="chevron-down"
                 />
               ) : (
                 <ChevronUpIcon
                   size="medium"
-                  color="feedback.icon.neutral.lowContrast"
+                  color="feedback.icon.neutral.intense"
                   data-testid="chevron-up"
                 />
               )}
@@ -109,8 +108,13 @@ function PaymentDetailsSection({
             <CardBody>
               <RowsWrapper>
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
-                    Payment ID <Tooltip type="paymentId" size="small" />
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
+                    Payment ID <Tooltip size="small" />
                   </Text>
                   <CopyWrapper
                     onClick={onCopy('Payment ID', { transactionIDActual, paymentId: id }).bind(
@@ -118,24 +122,44 @@ function PaymentDetailsSection({
                       id,
                     )}
                   >
-                    <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="semibold"
+                      color="surface.text.gray.normal"
+                    >
                       {id}
                     </Text>
                   </CopyWrapper>
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
-                    Bank RRN <Tooltip type="bankRRN" size="small" />
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
+                    Bank RRN <Tooltip size="small" />
                   </Text>
-                  <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.normal"
+                  >
                     {acquirer_data.rrn || '--'}
                   </Text>
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
-                    Order ID <Tooltip type="orderId" size="small" />
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
+                    Order ID <Tooltip size="small" />
                   </Text>
                   {order_id ? (
                     <CopyWrapper
@@ -144,36 +168,66 @@ function PaymentDetailsSection({
                         order_id,
                       )}
                     >
-                      <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
+                      <Text
+                        variant="body"
+                        size="medium"
+                        weight="semibold"
+                        color="surface.text.gray.normal"
+                      >
                         {order_id}
                       </Text>
                     </CopyWrapper>
                   ) : (
-                    <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="semibold"
+                      color="surface.text.gray.normal"
+                    >
                       --
                     </Text>
                   )}
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     Invoice ID
                   </Text>
                   {invoice_id ? (
                     <CopyWrapper onClick={copyToClipboard.bind(null, invoice_id)}>
-                      <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
+                      <Text
+                        variant="body"
+                        size="medium"
+                        weight="semibold"
+                        color="surface.text.gray.normal"
+                      >
                         {invoice_id}
                       </Text>
                     </CopyWrapper>
                   ) : (
-                    <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="semibold"
+                      color="surface.text.gray.normal"
+                    >
                       --
                     </Text>
                   )}
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     Payment method
                   </Text>
                   <PaymentMethod
@@ -185,32 +239,35 @@ function PaymentDetailsSection({
                     wallet={wallet}
                   />
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     Customer details
                   </Text>
                   <Box display="flex" flexDirection="column" gap="spacing.2">
                     {notes.name ? (
                       <Text
-                        type="normal"
                         variant="body"
                         size="medium"
                         weight="regular"
-                        contrast="low"
+                        color="surface.text.gray.normal"
                       >
                         {notes.name}
                       </Text>
                     ) : null}
                     {contact ? (
                       <Box display="inline-flex" gap="spacing.3" alignItems="center">
-                        <PhoneIcon size="medium" color="surface.text.subtle.lowContrast" />
+                        <PhoneIcon size="medium" color="interactive.icon.gray.subtle" />
                         <Text
-                          type="normal"
                           variant="body"
                           size="medium"
                           weight="regular"
-                          contrast="low"
+                          color="surface.text.gray.normal"
                         >
                           {getI18FormattedPhoneNumber(contact)}
                         </Text>
@@ -218,13 +275,12 @@ function PaymentDetailsSection({
                     ) : null}
                     {email ? (
                       <Box display="inline-flex" gap="spacing.3" alignItems="center">
-                        <MailIcon size="medium" color="surface.text.subtle.lowContrast" />
+                        <MailIcon size="medium" color="interactive.icon.gray.subtle" />
                         <Text
-                          type="normal"
                           variant="body"
                           size="medium"
                           weight="regular"
-                          contrast="low"
+                          color="surface.text.gray.normal"
                         >
                           {email}
                         </Text>
@@ -233,58 +289,102 @@ function PaymentDetailsSection({
                     {/* if nothing exists, show -- */}
                     {!notes.name && !contact && !email ? (
                       <Text
-                        type="normal"
                         variant="body"
                         size="medium"
                         weight="regular"
-                        contrast="low"
+                        color="surface.text.gray.normal"
                       >
                         --
                       </Text>
                     ) : null}
                   </Box>
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     Fee bearer
                   </Text>
-                  <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.normal"
+                  >
                     {fee_bearer === 'platform'
                       ? 'You pay the Razorpay platform fee'
                       : 'The customer has paid the fees for this payment'}
                   </Text>
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     App Name
                   </Text>
-                  <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.normal"
+                  >
                     {applicationDetails?.name || `--`}
                   </Text>
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     App ID
                   </Text>
-                  <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.normal"
+                  >
                     {applicationDetails?.id || `--`}
                   </Text>
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     Description
                   </Text>
-                  <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.normal"
+                  >
                     {description || `--`}
                   </Text>
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     Notes
                   </Text>
                   {getNotes({ notes, isStorefront })}
@@ -293,19 +393,13 @@ function PaymentDetailsSection({
                 {/* Show only if dispute is raised */}
                 {disputes.items.length > 0 ? (
                   <>
-                    <Divider
-                      contrast="low"
-                      dividerStyle="solid"
-                      thickness="thick"
-                      variant="normal"
-                    />
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                     <RowWrapper>
                       <Text
-                        type="subtle"
                         variant="body"
                         size="medium"
                         weight="regular"
-                        contrast="low"
+                        color="surface.text.gray.subtle"
                       >
                         Dispute ID
                       </Text>

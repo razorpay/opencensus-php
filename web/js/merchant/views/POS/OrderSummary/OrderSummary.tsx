@@ -128,7 +128,7 @@ const OrderSummary = (): JSX.Element => {
           </Box>
         ) : (
           <Box
-            backgroundColor="surface.background.level2.lowContrast"
+            backgroundColor="surface.background.gray.intense"
             width="100%"
             left="0px"
             right="0px"
@@ -150,8 +150,10 @@ const OrderSummary = (): JSX.Element => {
                   value={!orderProcessError ? pricing?.total ?? 0 : 0}
                   suffix="none"
                   isAffixSubtle={false}
-                  size="heading-small-bold"
                   testID="total-amount-mobile"
+                  type="body"
+                  size="large"
+                  weight="semibold"
                 />
               </Box>
               <Box>

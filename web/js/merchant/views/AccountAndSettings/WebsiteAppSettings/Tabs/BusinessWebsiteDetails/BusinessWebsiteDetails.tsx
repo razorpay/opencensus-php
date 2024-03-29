@@ -249,15 +249,15 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
     if (businessWebsiteWorkflow?.ocr_automated_check_enable) {
       return (
         <Alert
-          contrast="low"
+          emphasis="subtle"
           description={
             user.has_key_access === true
               ? 'Your request to update the website is under review'
               : "Our team will verify your website/app so that you can start collecting payments on it. We'll contact you via email if we need further information"
           }
-          intent="notice"
           isDismissible={false}
           isFullWidth
+          color="notice"
         />
       );
     }
@@ -285,19 +285,18 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
     if (hasCustomerRespondedStatus) {
       return (
         <Alert
-          contrast="low"
+          emphasis="subtle"
           description="Thank you for providing us with further information. Our team is going through the information provided by you and will help resolve this issue"
-          intent="notice"
           isDismissible={false}
           isFullWidth
+          color="notice"
         />
       );
     } else if (hasAwaitingCustomerResponseStatus) {
       return (
         <Alert
-          contrast="low"
+          emphasis="subtle"
           description={needs_clarification}
-          intent="negative"
           isDismissible={false}
           actions={{
             primary: {
@@ -313,30 +312,31 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
             },
           }}
           isFullWidth
+          color="negative"
         />
       );
     } else if (hasRejectedStatus) {
       return (
         <Alert
-          contrast="low"
+          emphasis="subtle"
           description={rejection_reason_message}
-          intent="negative"
           isDismissible={true}
           isFullWidth
+          color="negative"
         />
       );
     } else if (hasReviewStatus) {
       return (
         <Alert
-          contrast="low"
+          emphasis="subtle"
           description={
             user.has_key_access === true
               ? 'Your request to update the website is under review'
               : "Our team will verify your website/app so that you can start collecting payments on it. We'll contact you via email if we need further information"
           }
-          intent="notice"
           isDismissible={false}
           isFullWidth
+          color="notice"
         />
       );
     }
@@ -362,7 +362,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
               <Box>{showAlert()}</Box>
               <StyledLinksContainer>
                 <Box
-                  borderColor="surface.border.normal.lowContrast"
+                  borderColor="surface.border.gray.muted"
                   marginY={'spacing.5'}
                   borderRadius="small"
                   padding={'spacing.7'}
@@ -371,10 +371,10 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
                   width="100%"
                 >
                   <Box
-                    borderColor="surface.border.normal.lowContrast"
+                    borderColor="surface.border.gray.muted"
                     padding={'spacing.3'}
                     borderRadius="medium"
-                    backgroundColor="surface.background.level1.lowContrast"
+                    backgroundColor="surface.background.gray.subtle"
                   >
                     <img
                       src="https://cdn.razorpay.com/static/assets/globe.svg"
@@ -383,7 +383,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
                     />
                   </Box>
                   <Box marginLeft={'spacing.7'}>
-                    <Text color="surface.text.subtle.lowContrast" weight="bold">
+                    <Text color="surface.text.gray.subtle" weight="semibold">
                       Website Url
                     </Text>
                     <Text marginTop={'spacing.3'}>
@@ -392,7 +392,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
                   </Box>
                 </Box>
                 <Box
-                  borderColor="surface.border.normal.lowContrast"
+                  borderColor="surface.border.gray.muted"
                   marginY={'spacing.5'}
                   borderRadius="small"
                   padding={'spacing.7'}
@@ -401,10 +401,10 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
                   width="100%"
                 >
                   <Box
-                    borderColor="surface.border.normal.lowContrast"
+                    borderColor="surface.border.gray.muted"
                     padding={'spacing.3'}
                     borderRadius="medium"
-                    backgroundColor="surface.background.level1.lowContrast"
+                    backgroundColor="surface.background.gray.subtle"
                   >
                     <img
                       src="https://cdn.razorpay.com/static/assets/globe.svg"
@@ -413,7 +413,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
                     />
                   </Box>
                   <Box marginLeft={'spacing.7'}>
-                    <Text color="surface.text.subtle.lowContrast" weight="bold">
+                    <Text color="surface.text.gray.subtle" weight="semibold">
                       AppStore Url
                     </Text>
                     <Text marginTop={'spacing.3'}>
@@ -422,7 +422,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
                   </Box>
                 </Box>
                 <Box
-                  borderColor="surface.border.normal.lowContrast"
+                  borderColor="surface.border.gray.muted"
                   marginY={'spacing.5'}
                   borderRadius="small"
                   padding={'spacing.7'}
@@ -431,10 +431,10 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
                   width="100%"
                 >
                   <Box
-                    borderColor="surface.border.normal.lowContrast"
+                    borderColor="surface.border.gray.muted"
                     padding={'spacing.3'}
                     borderRadius="medium"
-                    backgroundColor="surface.background.level1.lowContrast"
+                    backgroundColor="surface.background.gray.subtle"
                   >
                     <img
                       src="https://cdn.razorpay.com/static/assets/globe.svg"
@@ -443,7 +443,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
                     />
                   </Box>
                   <Box marginLeft={'spacing.7'}>
-                    <Text color="surface.text.subtle.lowContrast" weight="bold">
+                    <Text color="surface.text.gray.subtle" weight="semibold">
                       PlayStore Url
                     </Text>
                     <Text marginTop={'spacing.3'}>

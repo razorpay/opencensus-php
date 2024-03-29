@@ -73,10 +73,10 @@ export const Section = ({
       >
         <CollapsibleFormHeader>
           <CollapsibleFormLabel>
-            <Text weight="bold" variant="body" type="subtle">
+            <Text weight="semibold" variant="body" color="surface.text.gray.subtle">
               {title}
             </Text>
-            <Text variant="body" type="subdued" size="small">
+            <Text variant="body" size="small" color="surface.text.gray.muted">
               {helpText}
             </Text>
           </CollapsibleFormLabel>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Heading, Skeleton, Text } from '@razorpay/blade/components';
+import { Box, Button, Skeleton, Text } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
 import { ModeT } from 'common/services/mode';
@@ -36,7 +36,7 @@ const ResellerDetailsHeader = ({
 
   return (
     <Box
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       width="100%"
       display="flex"
       padding="spacing.6"
@@ -44,7 +44,7 @@ const ResellerDetailsHeader = ({
     >
       <Box
         flex={1}
-        backgroundColor="surface.background.level2.lowContrast"
+        backgroundColor="surface.background.gray.intense"
         display="flex"
         justifyContent="space-between"
         flexWrap="wrap"
@@ -61,13 +61,13 @@ const ResellerDetailsHeader = ({
               >
                 <Skeleton width="100px" height="20px" />
                 <Box display="flex">
-                  <Text color="surface.text.muted.lowContrast">ID: </Text>
+                  <Text color="surface.text.gray.muted">ID: </Text>
                   <Skeleton width="100px" height="20px" marginLeft="spacing.2" />
                 </Box>
               </Box>
             </Box>
             <Box>
-              <Text size="medium" color="surface.text.muted.lowContrast">
+              <Text size="medium" color="surface.text.gray.muted">
                 Account Balance
               </Text>
               <Skeleton width="100px" height="20px" marginTop="spacing.2" />
@@ -82,20 +82,20 @@ const ResellerDetailsHeader = ({
                 justifyContent="space-between"
                 marginLeft="spacing.2"
               >
-                <Heading>{resellerBalance?.merchant_name}</Heading>
+                <Text size="large">{resellerBalance?.merchant_name}</Text>
                 <Box display="flex">
-                  <Text color="surface.text.muted.lowContrast">ID: </Text>
-                  <Text weight="bold" color="surface.text.muted.lowContrast">
+                  <Text color="surface.text.gray.muted">ID: </Text>
+                  <Text weight="semibold" color="surface.text.gray.muted">
                     {resellerBalance?.merchant_id}
                   </Text>
                 </Box>
               </Box>
             </Box>
             <Box>
-              <Text size="medium" color="surface.text.muted.lowContrast">
+              <Text size="medium" color="surface.text.gray.muted">
                 Account Balance
               </Text>
-              <Text color="surface.text.subtle.lowContrast" weight="bold" size="large">
+              <Text color="surface.text.gray.subtle" weight="semibold" size="large">
                 {getFormattedAmountNew(resellerBalance?.balance ?? 0, true)}
               </Text>
             </Box>

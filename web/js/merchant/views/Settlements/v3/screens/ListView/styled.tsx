@@ -39,7 +39,7 @@ export const StyledSettlementListTable = styled.table(
     width: 100%;
     
     thead {
-        background-color: ${theme.colors.surface.background.level3.lowContrast};
+        background-color: ${theme.colors.surface.background.gray.moderate};
         height: ${theme.spacing[9]}px;
         ${StyledSettlementListTableHeaderCell}{
           height: 100%;
@@ -62,7 +62,7 @@ export const StyledSettlementListTable = styled.table(
     }
 
     tr {
-      border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+      border: 1px solid ${theme.colors.surface.border.gray.muted};
       border-left: 0px;
       border-right: 0px;
     }
@@ -98,7 +98,7 @@ export const StyledSettlementListTable = styled.table(
 export const StyledSettlementRow = styled.tr(
   ({ theme }: { theme: Theme }) => `
   &:hover {
-    background-color: ${theme.colors.surface.background.level3.lowContrast};
+    background-color: ${theme.colors.surface.background.gray.moderate};
 
     ${StyledCopyButton} svg {
       opacity: 1;
@@ -114,7 +114,7 @@ export const StyledSettlementRow = styled.tr(
 export const StyledDivider = styled.div(
   ({ theme }: { theme: Theme }) => `
   height: 1px;    
-  background-color: ${theme.colors.surface.border.subtle.lowContrast};
+  background-color: ${theme.colors.surface.border.gray.subtle};
   margin: 0 ${theme.spacing[6]}px;
 `,
 );

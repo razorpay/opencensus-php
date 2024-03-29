@@ -5,6 +5,7 @@ import { convertUnixToDate } from 'common/utils/rzp-utils';
 import { Order, OrderDeliveryStatusEnum, OrderStatusEnum } from 'merchant/views/GCMS/Orders/types';
 
 import OrderDetailsDelivery from './OrderDetailsDelivery';
+import { CustomDivider, IconContainer } from './styled';
 
 const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoading: boolean }) => {
   const isOrderDraft = orderDetails?.status === OrderStatusEnum.DRAFT;
@@ -22,7 +23,7 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
     <>
       {isLoading ? null : (
         <Box
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           paddingX="spacing.6"
           paddingTop="spacing.6"
           paddingBottom="spacing.8"
@@ -34,54 +35,34 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
         >
           <Text
             marginBottom="spacing.5"
-            weight="bold"
-            color="surface.text.normal.lowContrast"
+            weight="semibold"
+            color="surface.text.gray.normal"
             size="medium"
           >
             Order status
           </Text>
           <Box display="flex" flexDirection="row">
             <Box display="flex" flexDirection="column">
-              <Box
-                backgroundColor="brand.secondary.500"
-                height="spacing.5"
-                width="spacing.5"
-                marginRight="spacing.4"
-                borderRadius="round"
-                marginY="spacing.1"
-              >
+              <IconContainer isOrderProcessed withNoPadding>
                 <CheckIcon
-                  color="surface.text.normal.highContrast"
                   size="small"
+                  color="surface.icon.staticWhite.normal"
                   margin="spacing.1"
                 />
-              </Box>
-              <Box
-                backgroundColor="brand.secondary.500"
-                width="1px"
-                flexGrow={1}
-                marginRight="spacing.6"
-                marginLeft="spacing.3"
-                marginBottom="spacing.3"
-                marginTop="spacing.2"
-              />
+              </IconContainer>
+              <CustomDivider isOrderProcessed />
             </Box>
             <Box width="100%">
               <Box display="flex" flexDirection="row" justifyContent="space-between">
                 <Text
                   size="medium"
-                  weight="bold"
-                  color="surface.text.normal.lowContrast"
+                  weight="semibold"
+                  color="surface.text.gray.normal"
                   marginBottom="spacing.4"
                 >
                   Order Created
                 </Text>
-                <Text
-                  size="small"
-                  type="muted"
-                  color="surface.text.subdued.lowContrast"
-                  marginBottom="spacing.4"
-                >
+                <Text size="small" color="surface.text.gray.muted" marginBottom="spacing.4">
                   {convertUnixToDate(orderDetails?.created_at)}
                 </Text>
               </Box>
@@ -90,10 +71,10 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                 paddingLeft="spacing.5"
                 paddingRight="spacing.7"
                 paddingTop="spacing.5"
-                backgroundColor="brand.gray.200.lowContrast"
+                backgroundColor="surface.background.gray.moderate"
                 marginBottom="spacing.6"
               >
-                <Text size="medium" color="surface.text.subdued.lowContrast" weight="regular">
+                <Text size="medium" color="surface.text.gray.muted" weight="regular">
                   Order has been created.
                 </Text>
               </Box>
@@ -102,56 +83,39 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
 
           <Box display="flex" flexDirection="row">
             <Box display="flex" flexDirection="column">
-              <Box
-                borderRadius="round"
-                backgroundColor={
-                  isOrderProcessed ? 'brand.secondary.500' : 'brand.gray.400.lowContrast'
-                }
-                height="spacing.5"
-                width="spacing.5"
-                marginRight="spacing.4"
-                marginY="spacing.1"
-                padding={isOrderProcessed || isOrderCancelled ? 'spacing.0' : 'spacing.2'}
+              <IconContainer
+                isOrderProcessed={isOrderProcessed}
+                withNoPadding={isOrderProcessed || isOrderCancelled}
               >
                 {isOrderCancelled ? (
                   <CloseIcon
-                    color="feedback.icon.negative.lowContrast"
+                    color="feedback.icon.negative.intense"
                     size="small"
                     margin="spacing.1"
                   />
                 ) : isOrderProcessed ? (
                   <CheckIcon
-                    color="surface.text.normal.highContrast"
+                    color="surface.icon.staticWhite.normal"
                     size="small"
                     margin="spacing.1"
                   />
                 ) : (
                   <Box
-                    backgroundColor="brand.primary.500"
+                    backgroundColor="surface.background.primary.intense"
                     height="spacing.3"
                     width="spacing.3"
                     borderRadius="round"
                   />
                 )}
-              </Box>
-              <Box
-                backgroundColor={
-                  isOrderProcessed ? 'brand.secondary.500' : 'brand.gray.400.lowContrast'
-                }
-                width="1px"
-                flexGrow={1}
-                marginRight="spacing.6"
-                marginLeft="spacing.3"
-                marginBottom="spacing.3"
-                marginTop="spacing.2"
-              />
+              </IconContainer>
+              <CustomDivider isOrderProcessed={isOrderProcessed} />
             </Box>
             <Box width="100%">
               <Box display="flex" flexDirection="row" justifyContent="space-between">
                 <Text
                   size="medium"
-                  weight="bold"
-                  color="surface.text.normal.lowContrast"
+                  weight="semibold"
+                  color="surface.text.gray.normal"
                   marginBottom="spacing.4"
                 >
                   {isOrderCancelled
@@ -161,12 +125,7 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                     : 'Generating cards'}
                 </Text>
                 {isOrderProcessed || isOrderCancelled ? (
-                  <Text
-                    size="small"
-                    type="muted"
-                    color="surface.text.subdued.lowContrast"
-                    marginBottom="spacing.4"
-                  >
+                  <Text size="small" color="surface.text.gray.muted" marginBottom="spacing.4">
                     {convertUnixToDate(orderDetails?.created_at)}
                   </Text>
                 ) : null}
@@ -177,14 +136,14 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                   paddingLeft="spacing.5"
                   paddingRight="spacing.7"
                   paddingTop="spacing.5"
-                  backgroundColor="brand.gray.200.lowContrast"
+                  backgroundColor="surface.background.gray.moderate"
                   marginBottom="spacing.7"
                 >
                   <Box display="flex" flexDirection="row" justifyContent="space-between">
                     <Text
                       size="medium"
-                      weight="bold"
-                      color="surface.text.normal.lowContrast"
+                      weight="semibold"
+                      color="surface.text.gray.normal"
                       marginBottom="spacing.4"
                     >
                       {isOrderProcessed ? 'Order Processed' : 'Order Processing'}
@@ -193,14 +152,13 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                       <Box alignSelf="center" display="flex" flexDirection="row">
                         <Text
                           size="medium"
-                          type="muted"
-                          color="action.text.link.default"
+                          color="interactive.text.primary.subtle"
                           marginBottom="13px"
                         >
                           In-progress
                         </Text>
                         <InfoIcon
-                          color="surface.action.icon.default.lowContrast"
+                          color="interactive.icon.gray.normal"
                           marginLeft="spacing.1"
                           marginTop="spacing.2"
                           size="medium"
@@ -213,7 +171,7 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                       <Box display="flex" flexDirection="column" marginRight="spacing.7">
                         <Text
                           size="medium"
-                          color="surface.text.subdued.lowContrast"
+                          color="surface.text.gray.muted"
                           weight="regular"
                           marginBottom="spacing.4"
                         >
@@ -221,24 +179,20 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                         </Text>
                         <Text
                           size="medium"
-                          color="surface.text.subdued.lowContrast"
+                          color="surface.text.gray.muted"
                           weight="regular"
                           marginBottom="spacing.4"
                         >
                           Successfully Processed:
                         </Text>
-                        <Text
-                          size="medium"
-                          color="surface.text.subdued.lowContrast"
-                          weight="regular"
-                        >
+                        <Text size="medium" color="surface.text.gray.muted" weight="regular">
                           Failed:
                         </Text>
                       </Box>
                       <Box display="flex" flexDirection="column">
                         <Text
                           size="medium"
-                          color="surface.text.normal.lowContrast"
+                          color="surface.text.gray.normal"
                           weight="regular"
                           marginBottom="spacing.4"
                         >
@@ -246,17 +200,13 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                         </Text>
                         <Text
                           size="medium"
-                          color="surface.text.normal.lowContrast"
+                          color="surface.text.gray.normal"
                           weight="regular"
                           marginBottom="spacing.4"
                         >
                           {orderDetails?.processed_quantity}
                         </Text>
-                        <Text
-                          size="medium"
-                          color="surface.text.normal.lowContrast"
-                          weight="regular"
-                        >
+                        <Text size="medium" color="surface.text.gray.normal" weight="regular">
                           {(orderDetails?.total_quantity || 0) -
                             (orderDetails?.processed_quantity || 0)}
                         </Text>
@@ -275,7 +225,7 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                         size="medium"
                         marginBottom="spacing.5"
                       />
-                      <Text size="medium" color="surface.text.subdued.lowContrast" weight="regular">
+                      <Text size="medium" color="surface.text.gray.muted" weight="regular">
                         Please wait as we process the order. This may take few minutes. Logs will be
                         once processing is complete.
                       </Text>
@@ -290,34 +240,23 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
           {isOrderCancelled ? null : (
             <Box>
               <Box display="flex" flexDirection="row" alignItems="center">
-                <Box
-                  borderRadius="round"
-                  backgroundColor={
-                    isOrderDeliveryCompleted ? 'brand.secondary.500' : 'brand.gray.400.lowContrast'
-                  }
-                  height="spacing.5"
-                  width="spacing.5"
-                  marginRight="spacing.4"
-                  marginY="spacing.1"
-                  padding={isOrderDeliveryCompleted ? 'spacing.0' : 'spacing.2'}
+                <IconContainer
+                  isOrderProcessed={isOrderDeliveryCompleted}
+                  withNoPadding={isOrderDeliveryCompleted}
                 >
                   {isOrderDeliveryCompleted ? (
-                    <CheckIcon
-                      color="surface.text.normal.highContrast"
-                      size="small"
-                      margin="spacing.1"
-                    />
+                    <CheckIcon color="surface.icon.gray.normal" size="small" margin="spacing.1" />
                   ) : (
                     <Box
-                      backgroundColor="brand.primary.500"
+                      backgroundColor="surface.background.primary.intense"
                       height="spacing.3"
                       width="spacing.3"
                       borderRadius="round"
                     />
                   )}
-                </Box>
+                </IconContainer>
                 <Box>
-                  <Text size="medium" weight="bold" color="surface.text.normal.lowContrast">
+                  <Text size="medium" weight="semibold" color="surface.text.gray.normal">
                     Delivery
                   </Text>
                 </Box>

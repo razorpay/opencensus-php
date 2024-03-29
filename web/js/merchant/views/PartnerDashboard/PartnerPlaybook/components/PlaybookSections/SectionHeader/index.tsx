@@ -7,7 +7,7 @@ import {
   HeadphonesIcon,
   IconComponent,
   Text,
-  Title,
+  Heading,
   TrendingUpIcon,
 } from '@razorpay/blade/components';
 import styled from 'styled-components';
@@ -37,18 +37,18 @@ const SectionHeader = ({
     <Box>
       <Box display="flex" gap="spacing.3" alignItems="center">
         <StyledSectionHeader id={hash}>
-          <Title color="action.text.tertiary.default" size="large">
-            <Icon marginRight="spacing.3" color="action.icon.link.default" size="xlarge" />
+          <Heading color="interactive.text.gray.normal" size="xlarge">
+            <Icon marginRight="spacing.3" color="interactive.icon.primary.subtle" size="xlarge" />
             {title}
-          </Title>
+          </Heading>
         </StyledSectionHeader>
         {!isSearchQueryPresent ? (
-          <Badge variant="blue" size="large">
+          <Badge size="large" color="primary">
             {count} {count === 1 ? 'item' : 'items'}
           </Badge>
         ) : null}
       </Box>
-      <Text marginTop="spacing.4" size="medium" color="feedback.text.neutral.lowContrast">
+      <Text marginTop="spacing.4" size="medium" color="feedback.text.neutral.intense">
         {description}
       </Text>
     </Box>

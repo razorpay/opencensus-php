@@ -14,7 +14,7 @@ const ignoredNotesKeys = ['name', 'email', 'phone'];
 function getNotes({ notes, isStorefront }: INotes): JSX.Element | string {
   if (Object.keys(notes).length === 0) {
     return (
-      <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+      <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
         --
       </Text>
     );
@@ -22,18 +22,17 @@ function getNotes({ notes, isStorefront }: INotes): JSX.Element | string {
 
   const filteredKeys = Object.keys(notes).filter((key) => ignoredNotesKeys.indexOf(key) === -1);
   return (
-    <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+    <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
       {filteredKeys.length !== 0
         ? filteredKeys.map((key, index) => {
             if (!(isStorefront && key === 'line_items')) {
               return (
                 <Text
-                  type="normal"
                   variant="body"
                   size="medium"
                   weight="regular"
-                  contrast="low"
                   key={index}
+                  color="surface.text.gray.normal"
                 >
                   <>
                     <NotesKey>{key}:</NotesKey> {String(notes[key] || '--')}

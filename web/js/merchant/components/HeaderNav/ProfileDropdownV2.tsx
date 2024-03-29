@@ -44,6 +44,18 @@ const TrustedBadgeIcon = styled.div(
 `,
 );
 
+const ImageContainer = styled.div(
+  ({ theme }: { theme: Theme }) => `
+  height: 50px;
+  width: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background-color: ${theme.colors.interactive.border.gray.faded};
+`,
+);
+
 const ProfileDropdownV2: React.FC<{
   user: User;
   mode: 'test' | 'live';
@@ -115,7 +127,7 @@ const ProfileDropdownV2: React.FC<{
     <Dropdown>
       <DropdownLink
         margin="spacing.5"
-        icon={() => <UserIcon size="medium" color="surface.text.subtle.lowContrast" />}
+        icon={() => <UserIcon size="medium" color="interactive.icon.gray.subtle" />}
         onClick={() => {
           analyticsTrack({
             objectName: 'Account Dropdown',
@@ -128,15 +140,7 @@ const ProfileDropdownV2: React.FC<{
       <DropdownOverlay>
         <Box minWidth="300px">
           <Box display="flex" gap="spacing.3" alignItems="center" padding="spacing.5">
-            <Box
-              height="50px"
-              width="50px"
-              borderRadius="round"
-              backgroundColor="brand.gray.400.lowContrast"
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-            >
+            <ImageContainer>
               {imageUrl ? (
                 <img
                   title="profile-pic"
@@ -151,11 +155,11 @@ const ProfileDropdownV2: React.FC<{
               ) : userNameInitials ? (
                 <Text>{userNameInitials}</Text>
               ) : (
-                <UserIcon size="large" color="surface.text.subtle.lowContrast" />
+                <UserIcon size="large" color="interactive.icon.gray.subtle" />
               )}
-            </Box>
+            </ImageContainer>
             <Box display="flex" flexDirection="column">
-              <Text weight="bold" size="large">
+              <Text weight="semibold" size="large">
                 {loggedInUserName ? titleCase(loggedInUserName) : '--'}
               </Text>
               <Text>{userRole}</Text>
@@ -165,7 +169,7 @@ const ProfileDropdownV2: React.FC<{
         </Box>
         <Box padding="spacing.5">
           <Box display="flex" flexDirection="row" alignItems="center">
-            <Text weight="bold" display="block">
+            <Text weight="semibold" display="block">
               {name}
             </Text>
             {isRTBEnabled && (
@@ -177,7 +181,7 @@ const ProfileDropdownV2: React.FC<{
             )}
           </Box>
           <CopyWrapper onClick={handleMIDClick}>
-            <Text weight="bold">MID:</Text>
+            <Text weight="semibold">MID:</Text>
             <Text>{merchantId}</Text>
           </CopyWrapper>
         </Box>

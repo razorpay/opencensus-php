@@ -24,14 +24,14 @@ const KycDetails = ({
         marginTop={'spacing.7'}
         marginBottom={'spacing.10'}
         marginLeft={'spacing.6'}
-        backgroundColor={'surface.background.level2.lowContrast'}
-        borderColor="brand.gray.400.lowContrast"
+        backgroundColor={'surface.background.gray.intense'}
+        borderColor="surface.border.gray.muted"
         borderWidth={'thin'}
         maxWidth={'50%'}
         borderRadius={'medium'}
       >
         <Box marginTop={'spacing.4'} marginX={'spacing.6'} justifyContent={'space-between'}>
-          <Text weight={'bold'} color="surface.text.subtle.lowContrast">
+          <Text weight="semibold" color="surface.text.gray.subtle">
             KYC Details
           </Text>
         </Box>
@@ -48,40 +48,40 @@ const KycDetails = ({
           marginBottom={'spacing.6'}
         >
           <Box justifyContent="space-between">
-            <Text color="surface.text.subtle.lowContrast">Reseller Business PAN</Text>
-            <Text marginTop={'spacing.5'} color="surface.text.subtle.lowContrast">
+            <Text color="surface.text.gray.subtle">Reseller Business PAN</Text>
+            <Text marginTop={'spacing.5'} color="surface.text.gray.subtle">
               Business Name
             </Text>
-            <Text marginTop={'spacing.5'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} color="surface.text.gray.subtle">
               Business Label
             </Text>
-            <Text marginTop={'spacing.5'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} color="surface.text.gray.subtle">
               Authorized Signatory PAN
             </Text>
-            <Text marginTop={'spacing.5'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} color="surface.text.gray.subtle">
               CINGSTIN
             </Text>
-            <Text marginTop={'spacing.5'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} color="surface.text.gray.subtle">
               GSTIN
             </Text>
           </Box>
           <Box marginLeft={'spacing.11'}>
-            <Text weight={'bold'} color="surface.text.subtle.lowContrast">
+            <Text weight="semibold" color="surface.text.gray.subtle">
               {resellerPan}
             </Text>
-            <Text marginTop={'spacing.5'} weight={'bold'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} weight="semibold" color="surface.text.gray.subtle">
               {businessName}
             </Text>
-            <Text marginTop={'spacing.5'} weight={'bold'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} weight="semibold" color="surface.text.gray.subtle">
               {billingLabel}
             </Text>
-            <Text marginTop={'spacing.5'} weight={'bold'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} weight="semibold" color="surface.text.gray.subtle">
               {authorizedSignatoryPan}
             </Text>
-            <Text marginTop={'spacing.5'} weight={'bold'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} weight="semibold" color="surface.text.gray.subtle">
               {cinGstin}
             </Text>
-            <Text marginTop={'spacing.5'} weight={'bold'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} weight="semibold" color="surface.text.gray.subtle">
               {gstin}
             </Text>
           </Box>

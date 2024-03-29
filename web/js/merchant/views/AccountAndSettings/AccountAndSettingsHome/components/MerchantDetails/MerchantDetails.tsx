@@ -15,10 +15,10 @@ const MerchantDetails = ({ isMobile, merchantId }: MerchantDetailsPropsInterface
   return (
     <StyledMerchantDetails>
       <SubInfo>
-        <Text type="subtle" weight="bold">
+        <Text weight="semibold" color="surface.text.gray.subtle">
           Merchant ID
         </Text>
-        <Text type="subtle">{merchantId}</Text>
+        <Text color="surface.text.gray.subtle">{merchantId}</Text>
       </SubInfo>
       <CustomClipboard value={merchantId} hideTooltip={isMobile}>
         <Link onClick={() => {}} iconPosition="right" variant="button" icon={CopyIcon}>

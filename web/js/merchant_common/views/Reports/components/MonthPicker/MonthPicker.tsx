@@ -1,23 +1,25 @@
 import React, { useRef, useState } from 'react';
 import moment from 'moment';
+
+import { Box, CalendarIcon, Text } from 'merchant_common/views/Reports/components';
+import { MonthGrid } from 'merchant_common/views/Reports/components/DateTimeRangePicker/components';
 import { AbsoluteWrapper } from 'merchant_common/views/Reports/components/DateTimeRangePicker/styled';
+import { FieldFooter } from 'merchant_common/views/Reports/components/FieldFooter';
+import { FieldLabel } from 'merchant_common/views/Reports/components/FieldLabel';
 import {
   FlexCentered,
   FlexJustifyContentCenter,
 } from 'merchant_common/views/Reports/components/styled';
+import { useClickOutSide, useTheme } from 'merchant_common/views/Reports/hooks';
+
 import {
-  SelectedMonthInfo,
   MonthContainer,
   MonthField,
   MonthInput,
+  SelectedMonthInfo,
   YearPickerStyled,
 } from './styled';
-import { Box, CalendarIcon, Heading, Text } from 'merchant_common/views/Reports/components';
-import { MonthGrid } from 'merchant_common/views/Reports/components/DateTimeRangePicker/components';
-import { useTheme, useClickOutSide } from 'merchant_common/views/Reports/hooks';
 import { MonthIndex, MonthPickerProps } from './types';
-import { FieldFooter } from 'merchant_common/views/Reports/components/FieldFooter';
-import { FieldLabel } from 'merchant_common/views/Reports/components/FieldLabel';
 
 export const MonthPicker = ({
   value,
@@ -55,12 +57,9 @@ export const MonthPicker = ({
         >
           <Text
             size="medium"
-            type="normal"
             variant="body"
             color={
-              typeof value === 'number'
-                ? 'surface.text.normal.lowContrast'
-                : 'surface.text.muted.lowContrast'
+              typeof value === 'number' ? 'surface.text.gray.normal' : 'surface.text.gray.muted'
             }
           >
             {(typeof value === 'number' ? moment().month(value).format('MMMM') : null) ??
@@ -68,7 +67,7 @@ export const MonthPicker = ({
               'Select A Month'}
           </Text>
 
-          <CalendarIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+          <CalendarIcon color="feedback.icon.neutral.intense" size="medium" />
         </SelectedMonthInfo>
         {isPickerOpen ? (
           <AbsoluteWrapper topOffset={18}>
@@ -85,10 +84,10 @@ export const MonthPicker = ({
                     refDayMoment={moment()}
                     customCalendarHeading={() => (
                       <FlexCentered>
-                        <Box marginBottom={'spacing.4'}>
-                          <Heading size="small" weight="bold" type="subdued" variant="regular">
+                        <Box marginBottom="spacing.4">
+                          <Text weight="semibold" size="large" color="surface.text.gray.muted">
                             Select Month
-                          </Heading>
+                          </Text>
                         </Box>
                       </FlexCentered>
                     )}

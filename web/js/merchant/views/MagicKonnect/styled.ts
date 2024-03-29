@@ -42,7 +42,7 @@ min-width: 90%
       font-size: 16px
       line-height: 21px
       margin: 8px 0 24px
-      font-weight: bold
+      font-weight: 600
       color: #0D2366}
 
       .dash{
@@ -57,7 +57,7 @@ min-width: 90%
       font-size: 40px
       line-height: 48px
       margin: 16px 0 8px
-      font-weight: bold
+      font-weight: 600
       color: #0D2366}
 
     .Details-dash{
@@ -75,7 +75,7 @@ min-width: 90%
         color: #FFF
         border-radius: 4px
         font-size: 16px
-        font-weight: bold
+        font-weight: 600
         height: 50px
         min-width: 126px
         line-height: 19px

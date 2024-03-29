@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import {
-  Title,
   Heading,
   Box,
   CreditCardIcon,
@@ -16,7 +15,6 @@ import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
 import { PartnerExclusivePriceContainer } from 'merchant/views/POS/PartnerExclusiveContainer';
-import AmountWithStrikeThrough from 'merchant/views/POS/ProductDescription/ProductPriceCards/AmountWithStrikeThrough';
 import { PRODUCT_PLANS, ANDROID_SMART_POS } from 'merchant/views/POS/constants';
 import { isValidFee } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
@@ -42,19 +40,19 @@ type MainBannerTextContentProps = {
 const FEATURE_ITEMS: FEATURE_ITEMS = [
   {
     title: 'Accept card and UPI payments',
-    icon: <CreditCardIcon color="feedback.icon.neutral.highContrast" size="large" />,
+    icon: <CreditCardIcon color="surface.icon.staticWhite.normal" size="large" />,
   },
   {
     title: 'Uninterrupted connectivity over wifi / sim',
-    icon: <WifiIcon color="feedback.icon.neutral.highContrast" size="large" />,
+    icon: <WifiIcon color="surface.icon.staticWhite.normal" size="large" />,
   },
   {
     title: 'Instant audio confirmations',
-    icon: <VolumeHighIcon color="feedback.icon.neutral.highContrast" size="large" />,
+    icon: <VolumeHighIcon color="surface.icon.staticWhite.normal" size="large" />,
   },
   {
     title: 'In-built printer for printing charges slips',
-    icon: <BillIcon color="feedback.icon.neutral.highContrast" size="large" />,
+    icon: <BillIcon color="surface.icon.staticWhite.normal" size="large" />,
   },
 ];
 
@@ -84,17 +82,17 @@ const MainBannerTextContent = ({
       paddingX="spacing.5"
       paddingTop="spacing.8"
     >
-      <Title
-        size="medium"
-        color="surface.text.normal.highContrast"
+      <Heading
+        color="surface.text.staticWhite.normal"
         textAlign={isMobile ? 'center' : 'left'}
+        size="xlarge"
       >
         {product.productTitle}
-      </Title>
+      </Heading>
       <Heading
-        size="medium"
-        color="surface.text.muted.highContrast"
+        color="surface.text.gray.subtle"
         textAlign={isMobile ? 'center' : 'left'}
+        size="small"
       >
         All-in-one POS to support all your payment needs
       </Heading>
@@ -103,7 +101,7 @@ const MainBannerTextContent = ({
           {FEATURE_ITEMS.map(({ title, icon }) => (
             <Box display="flex" alignItems="center" key={title} marginY="spacing.4">
               <Box
-                backgroundColor="brand.primary.400"
+                backgroundColor="surface.background.primary.subtle"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
@@ -112,20 +110,20 @@ const MainBannerTextContent = ({
               >
                 {icon}
               </Box>
-              <Heading
+              <Text
                 weight="regular"
-                color="surface.text.subdued.highContrast"
+                color="surface.text.staticWhite.subtle"
                 marginLeft="spacing.5"
                 testID="main-banner-features"
                 marginRight="spacing.5"
+                size="large"
               >
                 {title}
-              </Heading>
+              </Text>
             </Box>
           ))}
         </MainBannerFeaturesContainer>
       ) : null}
-
       <MainBannerFooter>
         <PartnerExclusivePriceContainer
           isPartnerPricing={product?.isPartnerPricing && !isValidOffer}
@@ -135,7 +133,7 @@ const MainBannerTextContent = ({
           {isValidOffer ? (
             <Box display={{ base: 'block', l: 'flex' }}>
               <Heading
-                color="surface.text.muted.highContrast"
+                color="surface.text.gray.subtle"
                 size={isMobile ? 'medium' : 'small'}
                 textAlign={isMobile ? 'center' : 'left'}
                 marginRight="spacing.6"
@@ -145,19 +143,27 @@ const MainBannerTextContent = ({
                   value={nextMonthlyFee as number}
                   suffix="none"
                   isAffixSubtle={false}
-                  size="heading-large-bold"
                   testID="monthly-amount"
+                  type="heading"
+                  size="medium"
+                  weight="semibold"
                 />
                 {'  '}
-                <AmountWithStrikeThrough
+                <Amount
                   value={prevMonthlyFee as number}
-                  size="heading-small-bold"
                   testID="prev-monthly"
-                />{' '}
+                  isAffixSubtle={false}
+                  suffix="none"
+                  marginRight="spacing.2"
+                  isStrikethrough={true}
+                  color="surface.text.gray.muted"
+                  size="large"
+                  weight="semibold"
+                />
                 /month after 3 months*
               </Heading>
               <Heading
-                color="surface.text.muted.highContrast"
+                color="surface.text.gray.subtle"
                 size={isMobile ? 'medium' : 'small'}
                 textAlign={isMobile ? 'center' : 'left'}
                 marginRight="spacing.6"
@@ -167,22 +173,29 @@ const MainBannerTextContent = ({
                   value={setupFee}
                   suffix="none"
                   isAffixSubtle={false}
-                  size="heading-large-bold"
                   testID="setup-amount"
+                  type="heading"
+                  size="medium"
+                  weight="semibold"
                 />
                 {'  '}
-                <AmountWithStrikeThrough
+                <Amount
+                  size="large"
                   value={prevSetupFee as number}
-                  size="heading-small-bold"
                   testID="prev-setup"
+                  isAffixSubtle={false}
+                  suffix="none"
+                  marginRight="spacing.2"
+                  isStrikethrough={true}
+                  color="surface.text.gray.muted"
+                  weight="semibold"
                 />
-                {'  '}
                 setup fee
               </Heading>
             </Box>
           ) : (
             <Heading
-              color="surface.text.normal.highContrast"
+              color="surface.text.staticWhite.normal"
               size={isMobile ? 'medium' : 'small'}
               textAlign={isMobile ? 'center' : 'left'}
             >
@@ -190,8 +203,10 @@ const MainBannerTextContent = ({
                 value={monthlyFee}
                 suffix="none"
                 isAffixSubtle={false}
-                size="heading-large-bold"
                 testID="monthly-amount"
+                type="heading"
+                size="medium"
+                weight="semibold"
               />{' '}
               monthly subscription
             </Heading>
@@ -200,7 +215,7 @@ const MainBannerTextContent = ({
           <Box display={{ base: 'block', m: 'flex' }} alignItems="center" marginBottom="spacing.6">
             {!product.offer && !prevSetupFee ? (
               <Text
-                color="surface.text.normal.highContrast"
+                color="surface.text.staticWhite.normal"
                 size={isMobile ? 'medium' : 'small'}
                 textAlign={isMobile ? 'center' : 'left'}
                 marginBottom="spacing.1"
@@ -211,7 +226,7 @@ const MainBannerTextContent = ({
                   value={setupFee}
                   suffix="none"
                   isAffixSubtle={false}
-                  size={isMobile ? 'body-medium-bold' : 'body-small-bold'}
+                  size={isMobile ? 'medium' : 'small'}
                   testID="setup-amount"
                 />{' '}
                 one time setup fee.
@@ -219,7 +234,7 @@ const MainBannerTextContent = ({
             ) : null}
             <Text
               size="small"
-              color="surface.text.muted.highContrast"
+              color="surface.text.gray.subtle"
               textAlign={isMobile ? 'center' : 'left'}
             >
               *Lifetime Pricing also available.

@@ -30,7 +30,7 @@ export const PrepayInsightsHeader = styled.div`
     }
 
     .widget-header {
-      font-weight: 700;
+      font-weight: 600;
       font-size: 16px;
     }
 
@@ -57,7 +57,7 @@ export const PrepayInsightsHeader = styled.div`
 
     .number {
       font-size: 18px;
-      font-weight: 700;
+      font-weight: 600;
       display: flex;
       justify-content: center;
     }

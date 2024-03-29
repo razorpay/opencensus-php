@@ -11,7 +11,7 @@ const WalletAutoDebit = (props) => {
       <Box minWidth="180px" display="flex" alignItems="center">
         <Text>Wallet auto-debit</Text>
         <Box display="flex" alignItems="center" marginLeft="spacing.2">
-          <HelpCircleIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+          <HelpCircleIcon size="medium" color="feedback.icon.neutral.intense" />
           <Popover theme="dark" align="right">
             <PopoverBody>
               Wallet auto-debit will allow your users to pay via wallet balance directly without
@@ -27,7 +27,9 @@ const WalletAutoDebit = (props) => {
           onChange={(e) => changeEnableAutoDebitSwitch(e.isChecked)}
           accessibilityLabel="Toggle wallet auto-debit"
         />
-        <Text type="subdued">{provider?.Gateway_details?.[label] ? 'Enabled' : 'Disabled'}</Text>
+        <Text color="surface.text.gray.muted">
+          {provider?.Gateway_details?.[label] ? 'Enabled' : 'Disabled'}
+        </Text>
       </Box>
     </Box>
   );

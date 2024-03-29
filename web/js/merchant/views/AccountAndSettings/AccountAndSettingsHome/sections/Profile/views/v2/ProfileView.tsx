@@ -1,4 +1,4 @@
-import { Box, Heading } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
 import Divider from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Divider';
 import { InfoDataConfig } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/config/profile';
 import { ProfileViewpropsInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
@@ -37,7 +37,7 @@ const ProfileView = ({
         </Box>
       ) : (
         <>
-          <Heading size="small">Your profile</Heading>
+          <Text size="large">Your profile</Text>
           <ProfileContainer>
             <PersonalInfoContainer>
               <ProfileInfo userRole={userRole} user={user} />

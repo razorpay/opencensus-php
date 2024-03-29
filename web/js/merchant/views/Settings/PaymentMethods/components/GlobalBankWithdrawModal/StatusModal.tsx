@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 ///- Redux
 
 // Blade Components
-import { Heading, Text, Button } from '@razorpay/blade/components';
+import { Button, Heading, Text } from '@razorpay/blade/components';
 ///- Blade Components
 
 // Styled Components
@@ -32,7 +32,7 @@ function StatusModal({ type, onClose, onTryAgain }: StatusModalProps): JSX.Eleme
             <img width="50" height="50" src={ErrorIcon} alt="Withdrawal failed" />
           </FormRow>
           <FormRow textCenter>
-            <Heading size="large">Oh, snap!</Heading>
+            <Heading size="medium">Oh, snap!</Heading>
           </FormRow>
           <FormRow textCenter>
             <Text>An error has occurred in the process of money withdrawal from your account.</Text>
@@ -54,7 +54,7 @@ function StatusModal({ type, onClose, onTryAgain }: StatusModalProps): JSX.Eleme
             <img width="45" src={SuccessIcon} alt="Withdrawal Success" />
           </FormRow>
           <FormRow textCenter>
-            <Heading size="large">Withdrawal successful</Heading>
+            <Heading size="medium">Withdrawal successful</Heading>
           </FormRow>
           <FormRow>
             <Button isFullWidth type="button" variant="primary" onClick={onClose}>

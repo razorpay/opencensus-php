@@ -29,7 +29,7 @@ export const paymentStatusVariantMap = {
     content: 'This is the amount reversed to a customer(s) bank account',
   },
   pending: {
-    variant: 'blue',
+    variant: 'primary',
     content:
       "These are payments with Cash on Delivery (COD) as the customer's chosen mode of payment",
   },

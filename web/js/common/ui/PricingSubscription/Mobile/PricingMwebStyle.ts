@@ -20,7 +20,7 @@ const PricingHeaderTag = styled.div(
     background-position: right top;
     flex-direction: column;
     & > h4 {
-        color: ${theme.colors.surface.background.level2.lowContrast};
+        color: ${theme.colors.surface.background.gray.intense};
     }
 `,
 );
@@ -48,7 +48,7 @@ const PricingBadge = styled.div(
    p {
     color: ${
       addColor
-        ? theme.colors.surface.background.level2.lowContrast
+        ? theme.colors.surface.background.gray.intense
         : 'linear-gradient(130.97deg, #c8bfff 9.95%, #553edf 108.91%)'
     };
     }
@@ -89,7 +89,7 @@ const StyleDescription = styled.div(
   ({ theme }: { theme: Theme }) => `
   margin-bottom: ${theme.spacing[5]}px;
   & > p {
-    color: ${theme.colors.surface.text.subdued.lowContrast}
+    color: ${theme.colors.surface.text.gray.muted}
   }
 `,
 );
@@ -111,7 +111,7 @@ const StyleViewMore = styled.div(
   margin-top: ${theme.spacing[7]}px;
   & > p {
     margin-right: ${theme.spacing[4]}px;
-    color: ${theme.colors.surface.text.subdued.lowContrast}
+    color: ${theme.colors.surface.text.gray.muted}
   }
 `,
 );
@@ -121,7 +121,7 @@ const PricingPlansDetail = styled.div(
   & > p:first-of-type {
     margin-right: ${theme.spacing[4]}px;
     display:inline;
-    color: ${theme.colors.surface.text.subdued.lowContrast}
+    color: ${theme.colors.surface.text.gray.muted}
   }
 `,
 );
@@ -170,7 +170,7 @@ const StyledCarouselDot = styled.div(
     background: ${
       isActive
         ? 'linear-gradient(126deg, #C8BFFF 9.01%, #553EDF 98.6%)'
-        : theme.colors.surface.border.normal.lowContrast
+        : theme.colors.surface.border.gray.muted
     };
     box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.06);
 `,

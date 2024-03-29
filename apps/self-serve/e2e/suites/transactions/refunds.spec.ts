@@ -70,8 +70,8 @@ test.describe
         .getByTestId(`entity-item-row-${id}`)
         .getByRole('button', { name: 'Details' })
         .click();
-      await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Refund' })).toBeVisible();
+      await expect(page.getByText('Details', { exact: true })).toBeVisible();
+      await expect(page.getByTestId('refund-heading')).toBeVisible();
     });
   });
 
@@ -84,7 +84,7 @@ test.describe
       });
       const id = refunds.refundId.fullRefund.processed;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
-      await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
+      await expect(page.getByText('Details', { exact: true })).toBeVisible();
       await expect(page.getByText('Payment ID')).toBeVisible();
       await expect(page.getByText('pay_MWavaGTL2MpX8U')).toBeVisible();
       await expect(page.getByText('Order ID')).toBeVisible();
@@ -105,7 +105,7 @@ test.describe
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
       // await expect(page.getByText('Gross amount₹ 100.00₹ - Indian Rupee (INR)')).toBeVisible();
       // await expect(page.getByText('Net amount₹ 96.58₹ - Indian Rupee (INR)')).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
+      await expect(page.getByText('Details', { exact: true })).toBeVisible();
       await expect(page.getByText('Payment ID')).toBeVisible();
       await expect(page.getByText('pay_Lb1dTpEs7VXfkV')).toBeVisible();
       await expect(page.getByText('Order ID')).toBeVisible();
@@ -128,7 +128,7 @@ test.describe
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
       // await expect(page.getByText('Gross amount₹ 100.00₹ - Indian Rupee (INR)')).toBeVisible();
       // await expect(page.getByText('Net amount₹ 96.58₹ - Indian Rupee (INR)')).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
+      await expect(page.getByText('Details', { exact: true })).toBeVisible();
       await expect(page.getByText('Payment ID')).toBeVisible();
       await expect(page.getByText('pay_MWar3gNs2Tzs18')).toBeVisible();
       await expect(page.getByText('Order ID')).toBeVisible();

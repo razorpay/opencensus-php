@@ -108,7 +108,7 @@ const FailedPaymentsRetry = (): JSX.Element => {
           <ModalHeader title="Calculate the recovered GMV" />
           <ModalBody>
             <Box display="flex" flexDirection="column" gap="spacing.7">
-              <Text size="medium" type="normal">
+              <Text size="medium" color="surface.text.gray.normal">
                 To assess the recovery potential for your business, enter the values to calculate
                 the monthly revenue you could have earned from your failed payments
               </Text>
@@ -152,7 +152,7 @@ const FailedPaymentsRetry = (): JSX.Element => {
           </ModalBody>
           <ModalFooter>
             <AmountWrapper>
-              <Text weight="bold" size="large" color="feedback.text.positive.lowContrast">
+              <Text weight="semibold" size="large" color="feedback.text.positive.intense">
                 Total recovered GMV:
               </Text>
               {GMV ? (
@@ -160,9 +160,11 @@ const FailedPaymentsRetry = (): JSX.Element => {
                   <Amount
                     value={parseFloat(GMV)}
                     currency="INR"
-                    intent="positive"
-                    size="heading-small-bold"
+                    color="feedback.text.positive.intense"
                     isAffixSubtle={false}
+                    type="body"
+                    size="large"
+                    weight="semibold"
                   />{' '}
                   🎉
                 </>

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import {
   Button,
-  Title,
+  Heading,
   Text,
   Modal,
   ModalBody,
@@ -106,12 +106,12 @@ export const CongratulatoryModalContent = ({
       >
         <Box>
           <StyleModalParent>
-            <Title size="large">Congratulations!</Title>
+            <Heading size="xlarge">Congratulations!</Heading>
           </StyleModalParent>
-          <Text marginTop="spacing.6" weight="bold" testID="modalMainHeader">
+          <Text marginTop="spacing.6" weight="semibold" testID="modalMainHeader">
             {MODAL_CONTENT[type].header}
           </Text>
-          <Text marginTop="spacing.4" type="muted" testID="modalSubHeader">
+          <Text marginTop="spacing.4" testID="modalSubHeader" color="surface.text.gray.muted">
             {MODAL_CONTENT[type].subHeader}
           </Text>
         </Box>

@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import {
   Box,
-  Heading,
   Text,
   InfoIcon,
   Amount,
@@ -68,15 +67,15 @@ export default class CommissionEntityContainer extends Component {
                       gap="spacing.2"
                       marginTop="spacing.9"
                     >
-                      <Text weight="bold">{detailsTitle}</Text>
+                      <Text weight="semibold">{detailsTitle}</Text>
                       <Box display="flex" flexDirection="column" gap="spacing.0">
                         <Box
                           display="flex"
                           gap="spacing.7"
                           padding={['spacing.4', 'spacing.5']}
                           flex="1"
-                          backgroundColor="surface.background.level3.lowContrast"
-                          borderBottomColor="surface.border.subtle.lowContrast"
+                          backgroundColor="surface.background.gray.moderate"
+                          borderBottomColor="surface.border.gray.subtle"
                           borderTopWidth="none"
                           borderLeftWidth="none"
                           borderRightWidth="none"
@@ -95,8 +94,8 @@ export default class CommissionEntityContainer extends Component {
                           alignItems="center"
                           padding={['spacing.4', 'spacing.5']}
                           flex="1"
-                          backgroundColor="surface.background.level3.lowContrast"
-                          borderBottomColor="surface.border.subtle.lowContrast"
+                          backgroundColor="surface.background.gray.moderate"
+                          borderBottomColor="surface.border.gray.subtle"
                           borderTopWidth="none"
                           borderLeftWidth="none"
                           borderRightWidth="none"
@@ -117,8 +116,8 @@ export default class CommissionEntityContainer extends Component {
                             alignItems="center"
                             padding={['spacing.4', 'spacing.5']}
                             flex="1"
-                            backgroundColor="surface.background.level3.lowContrast"
-                            borderBottomColor="surface.border.subtle.lowContrast"
+                            backgroundColor="surface.background.gray.moderate"
+                            borderBottomColor="surface.border.gray.subtle"
                             borderTopWidth="none"
                             borderLeftWidth="none"
                             borderRightWidth="none"
@@ -135,8 +134,8 @@ export default class CommissionEntityContainer extends Component {
                           alignItems="center"
                           padding={['spacing.4', 'spacing.5']}
                           flex="1"
-                          backgroundColor="surface.background.level3.lowContrast"
-                          borderBottomColor="surface.border.subtle.lowContrast"
+                          backgroundColor="surface.background.gray.moderate"
+                          borderBottomColor="surface.border.gray.subtle"
                           borderTopWidth="none"
                           borderLeftWidth="none"
                           borderRightWidth="none"
@@ -152,7 +151,7 @@ export default class CommissionEntityContainer extends Component {
                           alignItems="center"
                           padding={['spacing.4', 'spacing.5']}
                           flex="1"
-                          backgroundColor="surface.background.level3.lowContrast"
+                          backgroundColor="surface.background.gray.moderate"
                         >
                           <Box flexBasis="30%">
                             <Text>Created at</Text>
@@ -190,7 +189,7 @@ export function CommissionEarningBreakUp(props) {
   return (
     <Box display="flex" flexDirection="column" gap="spacing.3">
       <Box display="flex" gap="spacing.3" alignItems="center">
-        <Text weight="bold">{earningsTitle}</Text>
+        <Text weight="semibold">{earningsTitle}</Text>
         <Box display="flex" marginTop="spacing.3">
           {props.sourceType === COMMISSION_TYPE.REFUND ? (
             <Tooltip
@@ -199,7 +198,7 @@ export function CommissionEarningBreakUp(props) {
               placement="bottom"
             >
               <TooltipInteractiveWrapper>
-                <InfoIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                <InfoIcon size="medium" color="feedback.icon.neutral.intense" />
               </TooltipInteractiveWrapper>
             </Tooltip>
           ) : null}
@@ -212,18 +211,18 @@ export function CommissionEarningBreakUp(props) {
           justifyContent="space-between"
           alignItems="center"
           padding="spacing.5"
-          backgroundColor="surface.background.level3.lowContrast"
+          backgroundColor="surface.background.gray.moderate"
         >
           <Box display="flex" flexDirection="column" gap="spacing.2">
-            <Heading>Total Earnings</Heading>
+            <Text size="large">Total Earnings</Text>
             <Text size="small">{`Base + ${isRzpOrg ? 'GST' : 'Tax'}`}</Text>
           </Box>
           <Box display="flex" flexDirection="column" gap="spacing.2" alignItems="end">
-            <Heading color="feedback.text.negative.lowContrast">
+            <Text color="feedback.text.negative.intense" size="large">
               {intent === 'negative' && '-'}
-              <Amount value={props.total} intent={intent} currency={props.currency} />
-            </Heading>
-            <Text weight="bold" size="small">
+              <Amount value={props.total} color={intent} currency={props.currency} />
+            </Text>
+            <Text weight="semibold" size="small">
               <Amount value={props.base} currency={props.currency} />
               +
               <Amount value={props.gst} currency={props.currency} />

@@ -85,11 +85,7 @@ const GSTDetails = ({
 
   if (gstInError) {
     return (
-      <Box
-        backgroundColor="surface.background.level2.lowContrast"
-        margin="auto"
-        padding="spacing.7"
-      >
+      <Box backgroundColor="surface.background.gray.intense" margin="auto" padding="spacing.7">
         <Alert
           color="negative"
           isDismissible={false}
@@ -130,7 +126,7 @@ const GSTDetails = ({
           flexDirection="column"
           gap="spacing.3"
           padding={{ base: 'spacing.3', m: 'spacing.4' }}
-          backgroundColor="surface.background.level3.lowContrast"
+          backgroundColor="surface.background.gray.moderate"
         >
           <Box
             display="flex"
@@ -140,7 +136,7 @@ const GSTDetails = ({
               base: 'spacing.5',
               m: 'spacing.7',
             }}
-            backgroundColor="surface.background.level2.lowContrast"
+            backgroundColor="surface.background.gray.intense"
           >
             <Box display="flex" gap="spacing.7" alignItems="flex-start">
               {!isMobile ? (
@@ -149,11 +145,11 @@ const GSTDetails = ({
                   gap="spacing.3"
                   alignItems="center"
                   padding="spacing.4"
-                  backgroundColor="surface.background.level1.lowContrast"
+                  backgroundColor="surface.background.gray.subtle"
                   borderRadius="medium"
-                  borderColor="brand.gray.400.lowContrast"
+                  borderColor="surface.border.gray.muted"
                 >
-                  <StampIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                  <StampIcon size="medium" color="feedback.icon.neutral.intense" />
                 </Box>
               ) : null}
               <Box
@@ -171,26 +167,26 @@ const GSTDetails = ({
                 }}
               >
                 <Item>
-                  <Text weight="bold">GST Number</Text>
+                  <Text weight="semibold">GST Number</Text>
                   <Text>{merchant_gst.gstin || '--'}</Text>
                 </Item>
                 <Item>
-                  <Text weight="bold">Registered Address</Text>
+                  <Text weight="semibold">Registered Address</Text>
                   <Box maxWidth="420px">
                     <Text>{getBusinessRegisteredAddress(user)}</Text>
                   </Box>
                 </Item>
                 <Item>
-                  <Text weight="bold">Status</Text>
+                  <Text weight="semibold">Status</Text>
                   {gstIn ? <Badge color="positive">Active</Badge> : <Text>--</Text>}
                 </Item>
                 {user.isOrgRZP ? (
                   <Item>
                     <Box display="flex" gap="spacing.1" alignItems="center">
-                      <Text weight="bold">Razorpay's GST Number</Text>
+                      <Text weight="semibold">Razorpay's GST Number</Text>
                       <Tooltip content="GST number of Razorpay, to be used while filing GST returns">
                         <TooltipInteractiveWrapper>
-                          <InfoIcon size="small" color="feedback.icon.neutral.lowContrast" />
+                          <InfoIcon size="small" color="feedback.icon.neutral.intense" />
                         </TooltipInteractiveWrapper>
                       </Tooltip>
                     </Box>

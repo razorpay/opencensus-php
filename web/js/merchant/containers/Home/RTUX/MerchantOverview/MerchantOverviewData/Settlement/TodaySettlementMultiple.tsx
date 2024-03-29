@@ -53,7 +53,7 @@ const TodaySettlementMultiple: React.FC<
         >
           <Box display="flex" alignItems="center" justifyContent="center" gap="spacing.3">
             <img src={BlueDotIcon} alt="blue dot" />
-            <Text type="subtle" weight="bold">
+            <Text weight="semibold" color="surface.text.gray.subtle">
               {count} settlements worth
             </Text>
           </Box>
@@ -67,7 +67,9 @@ const TodaySettlementMultiple: React.FC<
             <Amount
               value={i18CurrencyConversionFromMinorUnitToCommonUnit(amount, currency)}
               isAffixSubtle={false}
-              size="body-medium-bold"
+              type="body"
+              size="medium"
+              weight="semibold"
             />
             <Dot />
             <Status status={status} />

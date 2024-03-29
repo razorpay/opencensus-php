@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Heading, Link, Text } from '@razorpay/blade/components';
+import { Box, Button, Link, Text } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -89,7 +89,7 @@ const CommsBannerItem = ({
                 width="16px"
                 backgroundColor={
                   status === 'pending' || !STATUS_ASSETS_MAPPING?.[status]?.icon
-                    ? 'surface.background.level2.lowContrast'
+                    ? 'surface.background.gray.intense'
                     : 'transparent'
                 }
                 display="flex"
@@ -116,9 +116,13 @@ const CommsBannerItem = ({
         paddingLeft={{ base: 'spacing.5', l: 'spacing.0' }}
       >
         <Box width="100%" marginBottom="spacing.3" minHeight={{ base: '50px', l: '85px' }}>
-          <Heading textAlign={isMobileOrTablet ? 'left' : 'center'} marginBottom="spacing.3">
+          <Text
+            textAlign={isMobileOrTablet ? 'left' : 'center'}
+            marginBottom="spacing.3"
+            size="large"
+          >
             {title}
-          </Heading>
+          </Text>
           <Box marginX={{ base: '0px', l: 'spacing.8' }} display="flex" justifyContent="center">
             {typeof description === 'string' ? (
               <Text textAlign={isMobileOrTablet ? 'left' : 'center'}>{description}</Text>

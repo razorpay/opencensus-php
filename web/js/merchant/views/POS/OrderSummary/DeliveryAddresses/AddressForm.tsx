@@ -7,7 +7,6 @@ import {
   BottomSheet,
   BottomSheetBody,
   BottomSheetFooter,
-  Heading,
   Link,
   BottomSheetHeader,
   Dropdown,
@@ -15,6 +14,7 @@ import {
   DropdownOverlay,
   ActionList,
   ActionListItem,
+  Text,
 } from '@razorpay/blade/components';
 import { FormikErrors, FormikValues, useFormik } from 'formik';
 
@@ -71,7 +71,7 @@ const AddressFormFields = ({
           justifyContent="space-between"
           marginBottom="spacing.4"
         >
-          <Heading>{isEdit ? 'Edit' : 'Add New'} Address</Heading>
+          <Text size="large">{isEdit ? 'Edit' : 'Add New'} Address</Text>
           <Link variant="button" onClick={onCancelClick}>
             Cancel
           </Link>

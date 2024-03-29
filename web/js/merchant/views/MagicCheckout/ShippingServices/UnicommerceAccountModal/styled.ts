@@ -58,7 +58,7 @@ export const FormCtaContainer = styled.div`
     border-radius: 2px;
     background: #1583f1;
     color: #fff;
-    font-weight: 700;
+    font-weight: 600;
     padding: 10px 12px;
   }
 `;
@@ -84,7 +84,7 @@ export const InfoContainer = styled.div`
 `;
 export const PointerHeading = styled.p`
   color: #ffffff;
-  font-weight: 700;
+  font-weight: 600;
   word-break: break-word;
 `;
 export const PointListContainer = styled.div`
@@ -127,7 +127,7 @@ export const InfoPointCtaContainer = styled.div`
     border-radius: 2px;
     background: #1583f1;
     color: #fff;
-    font-weight: 700;
+    font-weight: 600;
     padding: 10px 12px;
   }
 `;

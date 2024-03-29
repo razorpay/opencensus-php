@@ -93,23 +93,21 @@ const Banner: React.FC<BannerProps> = ({
                                     <HideMobile>
                                       {' '}
                                       <Text
-                                        weight="bold"
-                                        type="normal"
-                                        contrast="low"
+                                        weight="semibold"
                                         size="medium"
+                                        color="surface.text.gray.normal"
                                       >
                                         Get paid instantly with your Razorpay.me link
                                       </Text>
                                     </HideMobile>
                                     <ShowMobile>
-                                      <Text type="normal" contrast="low" size="medium">
+                                      <Text size="medium" color="surface.text.gray.normal">
                                         Get paid instantly with your
                                       </Text>
                                       <Text
-                                        weight="bold"
-                                        type="subtle"
-                                        contrast="low"
+                                        weight="semibold"
                                         size="medium"
+                                        color="surface.text.gray.subtle"
                                       >
                                         Razorpay.me link
                                       </Text>
@@ -117,7 +115,7 @@ const Banner: React.FC<BannerProps> = ({
                                   </View>
                                 </Flex>
                                 <CTAWrapper>
-                                  <Text type="subtle" contrast="low" size="medium">
+                                  <Text size="medium" color="surface.text.gray.subtle">
                                     Share your Razorpay.me link with customers as many times as you
                                     need to accept payments
                                   </Text>
@@ -130,14 +128,13 @@ const Banner: React.FC<BannerProps> = ({
                                           <Flex>
                                             <View>
                                               {' '}
-                                              <Text type="subtle" contrast="low" size="medium">
+                                              <Text size="medium" color="surface.text.gray.subtle">
                                                 razorpay.me/
                                               </Text>
                                               <Text
-                                                weight="bold"
-                                                type="normal"
-                                                contrast="low"
+                                                weight="semibold"
                                                 size="medium"
+                                                color="surface.text.gray.normal"
                                               >
                                                 {handleInfo.slug}
                                               </Text>
@@ -178,10 +175,9 @@ const Banner: React.FC<BannerProps> = ({
                                           <i className="i i-triangle-alert" />
                                         </IconBackgroundWrapper>
                                         <Text
-                                          weight="bold"
-                                          type="subtle"
-                                          contrast="low"
+                                          weight="semibold"
                                           size="medium"
+                                          color="surface.text.gray.subtle"
                                         >
                                           Switch to <u>Live mode</u> to get your Razorpay.me link
                                         </Text>

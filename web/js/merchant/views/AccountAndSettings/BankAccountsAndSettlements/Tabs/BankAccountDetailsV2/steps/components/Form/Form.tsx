@@ -181,9 +181,9 @@ const Form = ({
   return (
     <StyledForm onSubmit={submitForm}>
       <StyledAlert
-        contrast="low"
+        emphasis="subtle"
         description={getBankAccountBannerContent(user)}
-        intent="notice"
+        color="notice"
         isDismissible={false}
       />
       <FormInputWrapper>
@@ -214,8 +214,8 @@ const Form = ({
           onChange={handleChange}
         />
         <BeneficiaryAlertWrapper>
-          <InfoIcon color="surface.text.subdued.lowContrast" size="small" />
-          <Text type="subdued" size="small">
+          <InfoIcon color="interactive.icon.gray.muted" size="small" />
+          <Text size="small" color="surface.text.gray.muted">
             Beneficiary name should be the same as your name in KYC documents
           </Text>
         </BeneficiaryAlertWrapper>

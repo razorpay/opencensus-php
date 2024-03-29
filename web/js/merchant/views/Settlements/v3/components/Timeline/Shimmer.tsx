@@ -12,7 +12,7 @@ const TimelineShimmer = (): JSX.Element => {
   return (
     <StyledTimeline>
       <TimelineHeader>
-        <Heading size="medium" weight="bold">
+        <Heading weight="semibold" size="small">
           Timeline
         </Heading>
       </TimelineHeader>
@@ -53,7 +53,7 @@ export const TimelineRevampShimmer = (): JSX.Element => {
   return (
     <StyledTimeline style={{ flex: '1' }}>
       <TimelineHeader>
-        <Heading size="medium" weight="bold">
+        <Heading weight="semibold" size="small">
           Timeline
         </Heading>
       </TimelineHeader>

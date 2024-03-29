@@ -48,11 +48,7 @@ const ResellerAccountsFilter = ({ onSearch }: ResellerAccountsFilterProps): JSX.
   return (
     <StyledFilterDiv>
       <div className="gcms-resellers-filter-group">
-        <Box
-          paddingY="spacing.4"
-          display="flex"
-          backgroundColor="surface.background.level2.lowContrast"
-        >
+        <Box paddingY="spacing.4" display="flex" backgroundColor="surface.background.gray.intense">
           <div className="form-group list-filter-item">
             <label>Reseller Name</label>
             <input

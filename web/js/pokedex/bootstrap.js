@@ -1,9 +1,10 @@
+/* eslint-disable */
 import 'regenerator-runtime/runtime.js';
 import 'core-js/es/map';
 import 'core-js/es/set';
 import { Component } from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import axios from 'axios';
 import moment from 'moment';
@@ -20,8 +21,8 @@ import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { FullPageLoader } from 'common/components/Loader';
 import * as SessionActions from 'merchant/reducers/session';
 import User, { setFeatures } from 'merchant/models/User';
-import { pokeConfig, fetch } from 'merchant/reducers/pokedex';
-import { tabsOrder, tabsMeta } from 'merchant/containers/Home/KeyMetrics/data';
+import { pokeConfig } from 'merchant/reducers/pokedex';
+import { tabsMeta } from 'merchant/containers/Home/KeyMetrics/data';
 import { getQuery as getPaymentMethodsQuery } from 'merchant/containers/Home/PaymentMethods/data';
 import Home from 'merchant/containers/Home/Index';
 import { AppProvider } from 'common/context/App';
@@ -167,7 +168,7 @@ class App extends Component {
 
 // TODO: Refactor all providers into one.
 render(
-  <BladeProvider themeTokens={paymentTheme}>
+  <BladeProvider themeTokens={bladeTheme}>
     <ThemeProvider theme={theme}>
       <Provider store={store}>
         <AppProvider>

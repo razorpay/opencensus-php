@@ -85,7 +85,7 @@ const ConfigItem = ({ type, item, isPreview = false, openModal }) => {
       <Box display="flex" justifyContent="space-between" flex="1">
         <Box>
           <Text size="large">{item?.name}</Text>
-          <Text type="subdued">{getSubText()}</Text>
+          <Text color="surface.text.gray.muted">{getSubText()}</Text>
         </Box>
         {isPreview ? null : (
           <Box>
@@ -107,7 +107,7 @@ const ConfigItem = ({ type, item, isPreview = false, openModal }) => {
         !isCODBlocked ? (
           <DataTable customClass="settings-table" items={items} columns={TABLE_COLUMS} />
         ) : (
-          <Text weight="bold" marginTop="10px" type="subdued">
+          <Text weight="semibold" marginTop="10px" color="surface.text.gray.muted">
             COD is blocked
           </Text>
         )

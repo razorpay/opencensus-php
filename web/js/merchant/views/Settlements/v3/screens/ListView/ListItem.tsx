@@ -1,26 +1,26 @@
-import React, { useState } from 'react';
-import { Box, ChevronRightIcon, Heading, InfoIcon, Link, Text } from '@razorpay/blade/components';
-import { SettlementInfo, User, ShowNotificationType } from 'common/typings';
+import { Box, ChevronRightIcon, InfoIcon, Link, Text } from '@razorpay/blade/components';
+import Shimmer from 'common/components/Shimmer';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { withRouter } from 'common/deprecated/withRouter';
+import { SettlementInfo, ShowNotificationType, User } from 'common/typings';
 import Amount from 'common/ui/Amount';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import Time from 'common/ui/Time';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { fetchBreakupDetails, isBreakupNew } from 'merchant/reducers/settlements/details';
+import { getBreakUpDetails } from 'merchant/views/Settlements/v3/components/Breakup/config';
 import StatusBadge from 'merchant/views/Settlements/v3/components/StatusBadge';
 import CopyButton from 'merchant/views/Settlements/v3/screens/ListView/CopyButton';
 import {
   StyledDivider,
   StyledSettlementRow,
 } from 'merchant/views/Settlements/v3/screens/ListView/styled';
-import { withRouter } from 'common/deprecated/withRouter';
-import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { showPaymentProviderColumn } from 'merchant/views/Settlements/v3/utils/common';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
-import { fetchBreakupDetails, isBreakupNew } from 'merchant/reducers/settlements/details';
-import Shimmer from 'common/components/Shimmer';
-import { getBreakUpDetails } from 'merchant/views/Settlements/v3/components/Breakup/config';
 import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { showPaymentProviderColumn } from 'merchant/views/Settlements/v3/utils/common';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 type Props = RouteComponentProps & {
   settlement: SettlementInfo;
@@ -116,11 +116,10 @@ const SettlementListItem = ({
   return (
     <StyledSettlementRow>
       <td>
-        <Text type="subtle">
+        <Text color="surface.text.gray.subtle">
           <Time value={settlement.created_at} format="MMM DD YYYY, hh:mma" />
         </Text>
       </td>
-
       <td>
         <CopyButton text={settlement.id} type="settlement-id" settlement={settlement} />
       </td>
@@ -146,11 +145,7 @@ const SettlementListItem = ({
         <Box as="span" display="flex" alignItems="center" justifyContent="flex-end">
           <Amount value={settlement.amount} currency={currency} />
           <Box as="span" display="flex">
-            <InfoIcon
-              marginLeft="spacing.2"
-              size="medium"
-              color="surface.text.normal.lowContrast"
-            />
+            <InfoIcon marginLeft="spacing.2" size="medium" color="interactive.icon.gray.normal" />
             <PopoverComponent
               className="settlement-breakup-tooltip"
               align="right"
@@ -162,12 +157,12 @@ const SettlementListItem = ({
                 <Box
                   height="spacing.9"
                   display="flex"
-                  backgroundColor="surface.background.level3.lowContrast"
+                  backgroundColor="surface.background.gray.moderate"
                   alignItems="center"
                   paddingLeft="spacing.6"
                 >
-                  <Heading variant="subheading">Settlement breakup for&nbsp;</Heading>
-                  <Text type="subtle" size="small">
+                  <Text size="small">Settlement breakup for&nbsp;</Text>
+                  <Text size="small" color="surface.text.gray.subtle">
                     {settlement.id}
                   </Text>
                 </Box>
@@ -181,10 +176,10 @@ const SettlementListItem = ({
                   >
                     {breakupInfo ? (
                       <>
-                        <Text size="small" type="subtle">
+                        <Text size="small" color="surface.text.gray.subtle">
                           Gross settlement
                         </Text>
-                        <Text size="small" type="subtle">
+                        <Text size="small" color="surface.text.gray.subtle">
                           <Amount value={breakupInfo.grossSettlement} currency={currency} />
                         </Text>
                       </>
@@ -204,10 +199,10 @@ const SettlementListItem = ({
                   >
                     {breakupInfo ? (
                       <>
-                        <Text size="small" type="subtle">
+                        <Text size="small" color="surface.text.gray.subtle">
                           Deductions
                         </Text>
-                        <Text size="small" color="feedback.text.negative.lowContrast">
+                        <Text size="small" color="feedback.text.negative.intense">
                           - <Amount value={breakupInfo.deductions} currency={currency} />
                         </Text>
                       </>
@@ -228,10 +223,10 @@ const SettlementListItem = ({
                   >
                     {breakupInfo ? (
                       <>
-                        <Text size="small" type="subtle" weight="bold">
+                        <Text size="small" weight="semibold" color="surface.text.gray.subtle">
                           Net Settlement
                         </Text>
-                        <Text size="small" type="subtle" weight="bold">
+                        <Text size="small" weight="semibold" color="surface.text.gray.subtle">
                           <Amount value={breakupInfo.netSettlement} currency={currency} />
                         </Text>
                       </>

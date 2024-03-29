@@ -9,11 +9,11 @@ const ComingSoon = () => {
   return (
     <div className="coming-soon-alert">
       <Alert
-        contrast="low"
-        intent="information"
+        emphasis="subtle"
         title="Coming Soon - Widgets with Conversion Analytics & more"
         isDismissible={false}
         isFullWidth
+        color="information"
       />
     </div>
   );

@@ -46,7 +46,11 @@ export const AppConfiguration = ({
       <header>
         <StyledHeader>
           <StyledLink to="/partners/applications">
-            <ArrowLeftIcon color="action.icon.link.default" size="medium" marginRight="5px" />
+            <ArrowLeftIcon
+              color="interactive.icon.primary.subtle"
+              size="medium"
+              marginRight="5px"
+            />
             All Applications
           </StyledLink>
           <strong>

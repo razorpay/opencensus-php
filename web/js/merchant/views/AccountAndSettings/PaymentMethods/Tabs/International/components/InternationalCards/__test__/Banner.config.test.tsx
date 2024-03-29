@@ -54,7 +54,7 @@ describe('Banner config', () => {
         BannerType.APPROVED,
         {
           title: 'Your request to activate international card payments was successful',
-          intent: 'positive',
+          color: 'positive',
           useBannerMessageForDescription: true,
         },
         undefined,
@@ -64,7 +64,7 @@ describe('Banner config', () => {
         {
           title: 'Your request to activate international card payments is under review',
           description: `We'll verify your details in a few days and share an update by ${commonArgs.workflowEta}.`,
-          intent: 'information',
+          color: 'information',
         },
         undefined,
       ],
@@ -73,7 +73,7 @@ describe('Banner config', () => {
         {
           title: 'Your request to activate international card payments is under review (Delayed)',
           description: `This is taking more time than usual. We'll verify your details in a few days and share an update by ${commonArgs.workflowEta}.`,
-          intent: 'information',
+          color: 'information',
         },
         undefined,
       ],
@@ -83,7 +83,7 @@ describe('Banner config', () => {
           title: 'Your request to activate international card payments is under review (Delayed)',
           description:
             "This is taking more time than usual. We'll verify your details in a few days and share an update soon. To know more, contact our support.",
-          intent: 'information',
+          color: 'information',
         },
         'Contact support',
       ],
@@ -93,7 +93,7 @@ describe('Banner config', () => {
           title: 'We need a few more details for your international cards payment request',
           description:
             "Please note, you'll be able to collect international card payments only after verification is complete",
-          intent: 'notice',
+          color: 'notice',
         },
         'Submit details now',
       ],
@@ -102,7 +102,7 @@ describe('Banner config', () => {
         {
           description:
             'Update your website details to request for international card payments on payment gateway',
-          intent: 'notice',
+          color: 'notice',
         },
         'Update',
       ],
@@ -111,7 +111,7 @@ describe('Banner config', () => {
         {
           title: 'Your request to activate international card payments is rejected',
           useBannerMessageForDescription: true,
-          intent: 'negative',
+          color: 'negative',
         },
         'Link PayPal account',
       ],
@@ -120,7 +120,7 @@ describe('Banner config', () => {
         {
           title: 'Banner type is not supported',
           description: 'Provide valid banner type',
-          intent: 'negative',
+          color: 'negative',
         },
         undefined,
       ],

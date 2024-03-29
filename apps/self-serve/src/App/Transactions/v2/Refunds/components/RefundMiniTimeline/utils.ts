@@ -1,29 +1,29 @@
 import { Theme } from '@razorpay/blade/components';
 
-import { EntityStatus, RefundTimelineJourneyPoint, RefundTimelineType } from './types';
 import { IPaymentIdRefundDetail } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/types';
+import { EntityStatus, RefundTimelineJourneyPoint, RefundTimelineType } from './types';
 
 export const getBackgroundColor = (status: string, id: number, theme: Theme): string => {
   if (status === 'processing' && id === 1) {
-    return `${theme.colors.feedback.background.notice.lowContrast}`;
+    return `${theme.colors.feedback.background.notice.subtle}`;
   } else if (status === 'processed') {
-    return `${theme.colors.feedback.background.positive.lowContrast}`;
+    return `${theme.colors.feedback.background.positive.subtle}`;
   } else if (status === 'failed') {
-    return `${theme.colors.feedback.background.negative.lowContrast}`;
+    return `${theme.colors.feedback.background.negative.subtle}`;
   } else {
-    return `${theme.colors.feedback.background.neutral.lowContrast}`;
+    return `${theme.colors.feedback.background.neutral.subtle}`;
   }
 };
 
 export const getStatusIconColor = (status: string, id: number, theme: Theme): string => {
   if (status === 'processing' && id === 1) {
-    return `${theme.colors.feedback.icon.notice.lowContrast}`;
+    return `${theme.colors.feedback.icon.notice.intense}`;
   } else if (status === 'processed') {
-    return `${theme.colors.feedback.icon.positive.lowContrast}`;
+    return `${theme.colors.feedback.icon.positive.intense}`;
   } else if (status === 'failed') {
-    return `${theme.colors.feedback.icon.negative.lowContrast}`;
+    return `${theme.colors.feedback.icon.negative.intense}`;
   } else {
-    return `${theme.colors.feedback.border.neutral.lowContrast}`;
+    return `${theme.colors.feedback.border.neutral.subtle}`;
   }
 };
 

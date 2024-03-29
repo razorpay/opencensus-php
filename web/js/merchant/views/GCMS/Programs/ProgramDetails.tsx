@@ -1,5 +1,5 @@
 import React, { memo, useEffect } from 'react';
-import { Box, ChevronLeftIcon, Divider, Heading, Link, Text } from '@razorpay/blade/components';
+import { Box, ChevronLeftIcon, Divider, Link, Text } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -51,7 +51,7 @@ const ProgramDetails: React.FC = () => {
           </Link>
         </Box>
         {!isLoading && program && (
-          <Box backgroundColor="surface.background.level2.lowContrast">
+          <Box backgroundColor="surface.background.gray.intense">
             <ProgramHeaderSection
               program={program}
               containerProps={{ height: '116px' }}
@@ -76,7 +76,9 @@ const ProgramDetails: React.FC = () => {
                 }}
               >
                 <Box>
-                  <Heading weight="bold">Program Details</Heading>
+                  <Text weight="semibold" size="large">
+                    Program Details
+                  </Text>
                 </Box>
                 <Box paddingTop="spacing.4" display="flex" flexDirection="row">
                   <Box width="342px" height="216px">
@@ -89,9 +91,9 @@ const ProgramDetails: React.FC = () => {
                   </Box>
                   <Box paddingLeft="spacing.8">
                     <Box>
-                      <Heading size="small" weight="bold">
+                      <Text weight="semibold" size="large">
                         Basic Details
-                      </Heading>
+                      </Text>
                     </Box>
                     <Box paddingTop="spacing.4">
                       {contentSections.map((section) => (
@@ -102,10 +104,10 @@ const ProgramDetails: React.FC = () => {
                           paddingTop="spacing.4"
                         >
                           <Box minWidth="180px">
-                            <Text color="surface.text.subtle.lowContrast">{section.name}</Text>
+                            <Text color="surface.text.gray.subtle">{section.name}</Text>
                           </Box>
                           <Box>
-                            <Text color="surface.text.subtle.lowContrast" weight="bold">
+                            <Text color="surface.text.gray.subtle" weight="semibold">
                               {capitalize(section.value)}
                             </Text>
                           </Box>
@@ -117,9 +119,9 @@ const ProgramDetails: React.FC = () => {
                     </Box>
                     <Box padding={['spacing.0', 'spacing.0', 'spacing.8']}>
                       <Box>
-                        <Heading size="small" weight="bold">
+                        <Text weight="semibold" size="large">
                           Denomination
-                        </Heading>
+                        </Text>
                       </Box>
                       <Box paddingTop="spacing.4">
                         {denominationSections.map((section) => (
@@ -130,7 +132,7 @@ const ProgramDetails: React.FC = () => {
                             paddingTop="spacing.4"
                           >
                             <Box minWidth="180px">
-                              <Text color="surface.text.subtle.lowContrast">{section.name}</Text>
+                              <Text color="surface.text.gray.subtle">{section.name}</Text>
                             </Box>
                             {section.name === 'Denomination' ? (
                               <Box
@@ -147,22 +149,22 @@ const ProgramDetails: React.FC = () => {
                                       padding={['spacing.3', 'spacing.6']}
                                       borderRadius="small"
                                       borderWidth="thinner"
-                                      borderColor="surface.border.normal.lowContrast"
+                                      borderColor="surface.border.gray.muted"
                                     >
-                                      <Text color="surface.text.subtle.lowContrast" weight="bold">
+                                      <Text color="surface.text.gray.subtle" weight="semibold">
                                         {getFormattedAmountNew(denomination, true)}
                                       </Text>
                                     </Box>
                                   ))
                                 ) : (
-                                  <Text color="surface.text.subtle.lowContrast" weight="bold">
+                                  <Text color="surface.text.gray.subtle" weight="semibold">
                                     -
                                   </Text>
                                 )}
                               </Box>
                             ) : (
                               <Box>
-                                <Text weight="bold">{capitalize(section.value as string)}</Text>
+                                <Text weight="semibold">{capitalize(section.value as string)}</Text>
                               </Box>
                             )}
                           </Box>

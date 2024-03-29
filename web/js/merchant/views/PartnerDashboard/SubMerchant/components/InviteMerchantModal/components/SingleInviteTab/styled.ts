@@ -11,6 +11,6 @@ export const SuccessBackground = styled.div(
   top: 0px;
   left: 0px;
   pointer-events: none;
-  background-color: ${theme.colors.feedback.background.positive.lowContrast};
+  background-color: ${theme.colors.feedback.background.positive.subtle};
 `,
 );

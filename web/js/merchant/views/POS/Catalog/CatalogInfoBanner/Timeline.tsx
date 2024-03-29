@@ -52,7 +52,7 @@ const Timeline = (): JSX.Element => {
             </Box>
           </Box>
           <Box width={{ base: '90%', l: 'fit-content' }}>
-            <Text color="surface.text.subdued.lowContrast" textAlign={isMobile ? 'center' : 'left'}>
+            <Text color="surface.text.gray.muted" textAlign={isMobile ? 'center' : 'left'}>
               {title}
             </Text>
           </Box>

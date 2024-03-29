@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Box, ChevronDownIcon, ChevronUpIcon, Heading, Text } from '@razorpay/blade/components';
+import { Box, ChevronDownIcon, ChevronUpIcon, Text } from '@razorpay/blade/components';
+
+import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 
 import { OrderCollapsibleHeader, OrderCollapsibleIconContainer, StyledCollapsible } from './styles';
-import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 
 type OrderCollapsibleProps = {
   icon: JSX.Element;
@@ -37,7 +38,7 @@ const OrderCollapsible = ({
     <Box
       borderWidth="thick"
       borderRadius="medium"
-      borderColor="surface.border.normal.lowContrast"
+      borderColor="surface.border.gray.muted"
       marginBottom="spacing.5"
       testID={testID}
     >
@@ -47,21 +48,21 @@ const OrderCollapsible = ({
             {icon}
           </OrderCollapsibleIconContainer>
           <Box>
-            {typeof title === 'string' ? <Heading>{title}</Heading> : title}
-            <Text type="subtle">{subTitle}</Text>
+            {typeof title === 'string' ? <Text size="large">{title}</Text> : title}
+            <Text color="surface.text.gray.subtle">{subTitle}</Text>
           </Box>
           <Box marginLeft="auto" display="flex" alignItems="center">
             {headerWidgets}
             {isExpanded ? (
               <ChevronUpIcon
                 size="large"
-                color="action.icon.secondary.active"
+                color="interactive.icon.primary.normal"
                 marginLeft="spacing.3"
               />
             ) : (
               <ChevronDownIcon
                 size="large"
-                color="surface.action.icon.active.lowContrast"
+                color="interactive.icon.gray.normal"
                 marginLeft="spacing.3"
               />
             )}

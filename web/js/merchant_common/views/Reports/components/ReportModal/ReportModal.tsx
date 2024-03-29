@@ -55,7 +55,7 @@ const Modal = connect(
           <IconButton
             accessibilityLabel="Close Modal"
             size="large"
-            contrast="low"
+            emphasis="intense"
             onClick={onClose}
             icon={CloseIcon}
           />
@@ -86,7 +86,7 @@ const Modal = connect(
               <IconButton
                 accessibilityLabel="Close Modal"
                 size="large"
-                contrast="low"
+                emphasis="intense"
                 onClick={onClose}
                 icon={CloseIcon}
               />

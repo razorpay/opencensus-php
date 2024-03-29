@@ -6,8 +6,8 @@ import { IconBackground } from 'merchant/views/Optimizer/AddProvider/components/
 export const CoverageIcon = ({ status }) => {
   const iconColor =
     status === 'positive'
-      ? 'feedback.background.positive.highContrast'
-      : 'feedback.background.negative.highContrast';
+      ? 'feedback.background.positive.intense'
+      : 'feedback.background.negative.intense';
   const IconComp = status === 'positive' ? CheckIcon : CloseIcon;
   return (
     <IconBackground status={status}>

@@ -1,7 +1,6 @@
 import React from 'react';
+import { Button, PlusCircleIcon, Text } from '@razorpay/blade/components';
 import styled from 'styled-components';
-
-import { Button, Heading, PlusCircleIcon } from '@razorpay/blade/components';
 
 import { ContainerHeadingPropType } from 'merchant/views/MagicCheckout/AnalyticsSettings/types';
 
@@ -21,9 +20,9 @@ const ContainerHeading = (props: ContainerHeadingPropType): JSX.Element => {
 
   return (
     <HeadingContent>
-      <Heading size="small" weight="bold" color="surface.text.subtle.lowContrast">
+      <Text weight="semibold" color="surface.text.gray.subtle" size="large">
         {header}
-      </Heading>
+      </Text>
       <Button
         type="button"
         size="medium"

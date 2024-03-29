@@ -5,7 +5,7 @@ import { BrowserRouter, Router as DefaultRouter, Route, Routes } from 'react-rou
 import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 import { COMPONENT_WRAPPER_TESTID } from './constants';
 
@@ -26,7 +26,7 @@ const createWrapper = ({
   }> = ({ children }) => {
     const Router = renderWithBrowserRouter ? BrowserRouter : DefaultRouter;
     return (
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <Router navigator={history} location={history.location}>
           <Routes>
             <Route

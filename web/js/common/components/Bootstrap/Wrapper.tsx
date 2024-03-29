@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import {
   QueryClient,
@@ -9,7 +9,8 @@ import {
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Provider } from 'react-redux';
-import { ThemeProvider } from 'styled-components';
+import { createGlobalStyle, ThemeProvider } from 'styled-components';
+
 import { LayerProvider } from 'common/components/Layer/LayerContext';
 import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
 import { AppProvider, AppContextTypes } from 'common/context/App';
@@ -35,10 +36,25 @@ interface Props {
   children: ReactNode;
 }
 
+const GlobalStyles = createGlobalStyle`
+  body {
+    font-family: ${(props) => props.theme.typography.fonts.family.text}
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: ${(props) => props.theme.typography.fonts.family.heading};
+  }
+
+  th {
+    font-weight: ${(props) => props.theme.typography.fonts.weight.semibold};
+  }
+`;
+
 const Wrapper: React.FC<Props> = ({ context, children }) => {
   return (
     <Provider store={store}>
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
+        <GlobalStyles />
         <ThemeProvider theme={theme}>
           <ReactQueryClientProvider client={queryClient}>
             <AppProvider context={context}>

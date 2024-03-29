@@ -19,14 +19,14 @@ const VirtualAccountDetails = ({
         marginTop={'spacing.5'}
         marginLeft={'spacing.6'}
         marginBottom={'spacing.8'}
-        backgroundColor={'surface.background.level2.lowContrast'}
-        borderColor="brand.gray.400.lowContrast"
+        backgroundColor={'surface.background.gray.intense'}
+        borderColor="surface.border.gray.muted"
         borderWidth={'thin'}
         maxWidth={'50%'}
         borderRadius={'medium'}
       >
         <Box marginTop={'spacing.4'} marginX={'spacing.6'}>
-          <Text weight={'bold'} color="surface.text.subtle.lowContrast">
+          <Text weight="semibold" color="surface.text.gray.subtle">
             Account Details
           </Text>
         </Box>
@@ -44,22 +44,22 @@ const VirtualAccountDetails = ({
           justifyContent={'space-between'}
         >
           <Box>
-            <Text color="surface.text.subtle.lowContrast">Account number</Text>
-            <Text marginTop={'spacing.5'} color="surface.text.subtle.lowContrast">
+            <Text color="surface.text.gray.subtle">Account number</Text>
+            <Text marginTop={'spacing.5'} color="surface.text.gray.subtle">
               IFSC Number
             </Text>
-            <Text marginTop={'spacing.5'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} color="surface.text.gray.subtle">
               Beneficiary Name
             </Text>
           </Box>
           <Box marginRight={'spacing.8'}>
-            <Text weight={'bold'} color="surface.text.subtle.lowContrast">
+            <Text weight="semibold" color="surface.text.gray.subtle">
               {accountNumber || ''}
             </Text>
-            <Text marginTop={'spacing.5'} weight={'bold'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} weight="semibold" color="surface.text.gray.subtle">
               {ifsc || ''}
             </Text>
-            <Text marginTop={'spacing.5'} weight={'bold'} color="surface.text.subtle.lowContrast">
+            <Text marginTop={'spacing.5'} weight="semibold" color="surface.text.gray.subtle">
               {beneficiaryName || ''}
             </Text>
           </Box>
@@ -97,11 +97,11 @@ const VirtualAccountDetails = ({
             m: 'row',
           }}
           display="flex"
-          backgroundColor={'brand.primary.300'}
+          backgroundColor={'surface.background.primary.subtle'}
           paddingY={'spacing.5'}
         >
           <InfoIcon marginLeft={'spacing.6'} />
-          <Text size="small" marginLeft={'spacing.6'} color="surface.text.subtle.lowContrast">
+          <Text size="small" marginLeft={'spacing.6'} color="surface.text.gray.subtle">
             Bank transfer can be performed to top up the account for placing orders
           </Text>
         </Box>

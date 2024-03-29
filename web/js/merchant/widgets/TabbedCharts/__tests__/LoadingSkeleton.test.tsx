@@ -21,14 +21,16 @@ describe('LoadingSkeleton', () => {
   it('renders the first TabSkeleton as active', () => {
     renderApp();
     const activeTabSkeleton = screen.getAllByTestId('tab-skeleton')[0];
-    expect(activeTabSkeleton).toHaveStyle({ borderBottomColor: 'brand.primary.500' });
+    expect(activeTabSkeleton).toHaveStyle({
+      borderBottomColor: 'surface.background.primary.intense',
+    });
   });
 
   it('renders the other TabSkeletons as inactive', () => {
     renderApp();
     const inactiveTabSkeletons = screen.getAllByTestId('tab-skeleton').slice(1);
     inactiveTabSkeletons.forEach((skeleton) => {
-      expect(skeleton).toHaveStyle({ borderBottomColor: 'brand.primary.300' });
+      expect(skeleton).toHaveStyle({ borderBottomColor: 'surface.background.primary.subtle' });
     });
   });
 });

@@ -8,7 +8,7 @@ export const FormWrapper = styled.div`
 `;
 export const FieldLabel = styled.label`
   color: #262d3a;
-  font-weight: 700;
+  font-weight: 600;
 
   sup {
     color: red;

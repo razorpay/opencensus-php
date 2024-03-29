@@ -35,7 +35,7 @@ export const SelectedOptionsContainer = <ItemType, AllowMultiple>({ value, refKe
         if (!val) return <Fragment />;
         return (
           <SelectedOption theme={theme} key={val}>
-            <Text size="medium" type="normal" variant="body">{`${val} `}</Text>
+            <Text size="medium" variant="body" color="surface.text.gray.normal">{`${val} `}</Text>
             <span
               style={{
                 marginTop: 2,

@@ -25,22 +25,20 @@ export const StyledRadioButton = styled.label(
   margin: 0px;
   background-color:theme.colors.white ;
   color: 
-    ${
-      checked
-        ? theme.colors.surface.text.normal.lowContrast
-        : theme.colors.surface.text.subdued.lowContrast
-    };
+    ${checked ? theme.colors.surface.text.gray.normal : theme.colors.surface.text.gray.muted};
   border: 1px solid transparent;
   border-color: 
-    ${checked ? theme.colors.brand.primary[500] : theme.colors.surface.border.normal.lowContrast};
+    ${
+      checked
+        ? theme.colors.surface.background.primary.intense
+        : theme.colors.surface.border.gray.muted
+    };
   cursor: ${disabled ? 'not-allowed' : 'pointer'};
   user-select: none;
 
   &:hover {
     color: ${
-      disabled
-        ? theme.colors.surface.text.subdued.lowContrast
-        : theme.colors.surface.text.normal.lowContrast
+      disabled ? theme.colors.surface.text.gray.muted : theme.colors.surface.text.gray.normal
     };
   }
 

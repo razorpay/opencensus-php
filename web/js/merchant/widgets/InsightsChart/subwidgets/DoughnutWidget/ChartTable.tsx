@@ -23,9 +23,11 @@ function ChartTable({ chartData }: { chartData: ChartDataType }) {
       <Amount
         value={formattedValue as number}
         currency={schema.unit as any}
-        size="body-medium-bold"
         isAffixSubtle={false}
         suffix="none"
+        type="body"
+        size="medium"
+        weight="semibold"
       />
     );
   };

@@ -5,7 +5,7 @@ import { ListContainerProps } from 'merchant/views/Transactions/v2/common/types'
 export type PaymentsTableProps = ListContainerProps<Payments['items']>;
 
 export type StatusProps = {
-  variant: BadgeProps['variant'];
+  variant: BadgeProps['color'];
   content: string;
   status: Item['status'];
 };

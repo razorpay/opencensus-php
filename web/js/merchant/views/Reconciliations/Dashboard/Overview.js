@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Title,
+  Heading,
   Card,
   CardBody,
   Text,
@@ -77,20 +77,22 @@ const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
           >
             <Box>
               <Box display="flex" alignItems="center">
-                <Title marginRight="spacing.4">{activeProcess?.name}</Title>
+                <Heading marginRight="spacing.4" size="large">
+                  {activeProcess?.name}
+                </Heading>
                 <InfoIcon marginX="spacing.3" />
                 <Badge size="large" color="positive" icon={CheckIcon}>
                   Completed
                 </Badge>
               </Box>
-              <Text size="small" type="muted">
+              <Text size="small" color="surface.text.gray.muted">
                 <Box display="flex" alignItems="center">
                   Product:
-                  <Text type="subtle" size="small" marginX="spacing.2">
+                  <Text size="small" marginX="spacing.2" color="surface.text.gray.subtle">
                     {activeProcess?.product_name}
                   </Text>
                   | Type:
-                  <Text type="subtle" size="small" marginX="spacing.2">
+                  <Text size="small" marginX="spacing.2" color="surface.text.gray.subtle">
                     {activeProcess?.type}
                   </Text>
                 </Box>

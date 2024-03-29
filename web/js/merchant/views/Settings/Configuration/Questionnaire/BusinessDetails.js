@@ -10,7 +10,8 @@ import { trackIEEvent } from 'merchant/views/AccountAndSettings/PaymentMethods/T
 import { getPreferredProduct } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/utils';
 import { StyledProductOption } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/Styled';
 import { Tooltip } from 'merchant/views/Settings/Configuration/Questionnaire/Tooltip';
-import { Text, ExternalLinkIcon } from '@razorpay/blade/components';
+import { Text, BladeProvider, ExternalLinkIcon } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 const BusinessDetails = ({
   user,
@@ -98,31 +99,33 @@ const BusinessDetails = ({
 
                 <Tooltip
                   content={
-                    each.label === 'Payment Gateway' ? (
-                      <Text type="subtle" contrast="high">
-                        Collect payments from your customers on your website
-                      </Text>
-                    ) : (
-                      <div>
-                        <Text type="subtle" contrast="high">
-                          Ready-to-use templates to collect payments from your customers without
-                          using a website
+                    <BladeProvider colorScheme="dark" themeTokens={bladeTheme}>
+                      {each.label === 'Payment Gateway' ? (
+                        <Text color="surface.text.gray.subtle">
+                          Collect payments from your customers on your website
                         </Text>
-                        <a
-                          href="https://razorpay.com/payment-links"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <Text type="subtle" contrast="high" weight="bold">
-                            Know more
-                            <ExternalLinkIcon
-                              size="medium"
-                              color="surface.text.subtle.highContrast"
-                            />
+                      ) : (
+                        <div>
+                          <Text color="surface.text.gray.subtle">
+                            Ready-to-use templates to collect payments from your customers without
+                            using a website
                           </Text>
-                        </a>
-                      </div>
-                    )
+                          <a
+                            href="https://razorpay.com/payment-links"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <Text color="surface.text.gray.subtle" weight="semibold">
+                              Know more
+                              <ExternalLinkIcon
+                                size="medium"
+                                color="interactive.icon.gray.subtle"
+                              />
+                            </Text>
+                          </a>
+                        </div>
+                      )}
+                    </BladeProvider>
                   }
                 />
               </StyledProductOption>
@@ -143,7 +146,6 @@ const BusinessDetails = ({
           autoRender
         />
       )}
-
       <div class="spacer" />
       <Input.Select
         required
@@ -161,7 +163,6 @@ const BusinessDetails = ({
         mature={formikProps.touched.goods_type}
         propagatedError={getError('goods_type')}
       />
-
       <Input.Textarea
         required
         name="business_use_case"
@@ -176,7 +177,6 @@ const BusinessDetails = ({
         showCharacterLength={isRevampFlow ? undefined : (val) => (val?.length ? val.length : null)}
         autoRender
       />
-
       {!isRevampFlow ? (
         <Input.Select
           required
@@ -199,7 +199,6 @@ const BusinessDetails = ({
           propagatedError={getError('business_txn_size')}
         />
       ) : null}
-
       {isRevampFlow ? (
         websiteInfo.isWebsiteDetails ? (
           <WebsiteDetailsSections websiteInfo={websiteInfo} closeModal={closeModal} />

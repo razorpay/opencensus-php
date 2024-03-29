@@ -2,7 +2,7 @@ import '@testing-library/jest-dom/extend-expect';
 import { render, screen } from 'test-utils';
 import { Provider } from 'react-redux';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { storeWithInitialState } from 'merchant/store';
 import CODSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/CODSettingsTab';
 import { UPDATE_WOOC_PLUGIN_MSG } from 'merchant/views/MagicCheckout/Settings/constants';
@@ -41,7 +41,7 @@ const initState = {
 const App = ({ state = {}, ...props }) => {
   return (
     <Provider store={storeWithInitialState({ ...initState, ...state })}>
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <CODSettingsTab {...props} />
       </BladeProvider>
     </Provider>

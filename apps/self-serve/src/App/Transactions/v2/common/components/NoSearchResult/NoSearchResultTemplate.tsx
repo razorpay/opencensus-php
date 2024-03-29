@@ -25,7 +25,7 @@ const NoSearchResultTemplate = ({ page, config }: NoSearchResultTemplateProps): 
     >
       <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center">
         <Image src={src} alt={alt} />
-        <Text textAlign="center" weight="bold" size="large" marginTop="spacing.4">
+        <Text textAlign="center" weight="semibold" size="large" marginTop="spacing.4">
           {title}
         </Text>
         <Text textAlign="center">{subtitle}</Text>

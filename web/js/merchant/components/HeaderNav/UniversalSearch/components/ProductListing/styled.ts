@@ -16,7 +16,7 @@ export const ProductListingOverlay = styled.div(
   width: 100%;
   left: ${theme.spacing[0]}px;
   bottom: ${theme.spacing[0]}px;
-  background: ${theme.colors.action.text.primary.default};
+  background: ${theme.colors.interactive.text.staticWhite.normal};
   z-index: 9999;
   border-radius: ${theme.spacing[2]}px ${theme.spacing[2]}px ${theme.spacing[0]}px ${theme.spacing[0]}px;
   height: calc(100% - 121px);
@@ -40,7 +40,7 @@ export const StyledProductListingContainer = styled.div(
     width: 348px;
     max-height: 228px;
     padding: ${theme.spacing[3]}px;
-    background: ${theme.colors.action.text.primary.default};
+    background: ${theme.colors.interactive.text.staticWhite.normal};
     display: flex;
     flex-direction: column;
     gap: ${theme.spacing[2]}px;
@@ -59,7 +59,7 @@ export const StyledList = styled.div(
   align-items: center;
   padding: ${theme.spacing[3]}px 9px;
   border-radius: ${theme.spacing[2]}px;
-  background: ${theme.colors.action.text.primary.default};
+  background: ${theme.colors.interactive.text.staticWhite.normal};
   white-space: nowrap;
   cursor: pointer;
   &:hover,
@@ -75,7 +75,7 @@ export const ProductTag = styled.div(
   padding: ${theme.spacing[0]}px ${theme.spacing[3]}px;
   display: flex;
   align-items: center;
-  background: ${theme.colors.brand.gray[300].lowContrast};
+  background: ${theme.colors.surface.background.gray.subtle};
   border-radius: 3px;
   overflow: hidden;
   box-sizing: border-box;

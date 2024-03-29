@@ -3,7 +3,7 @@ import {
   Box,
   Text,
   InfoIcon,
-  Title,
+  Heading,
   Tooltip,
   BarChartAltIcon,
   TooltipInteractiveWrapper,
@@ -33,7 +33,11 @@ const OverviewCard: React.FC<OverviewCardProps> = (props) => {
     >
       <Box width="100%" display="flex" flexDirection="column" height="90px">
         <Box display="flex" flexDirection="row" alignItems="center" marginBottom="spacing.2">
-          <Text weight={isActive ? 'bold' : 'regular'} type="subtle" marginY="spacing.2">
+          <Text
+            weight={isActive ? 'semibold' : 'regular'}
+            marginY="spacing.2"
+            color="surface.text.gray.subtle"
+          >
             {title}
           </Text>
           <TooltipWrapper>
@@ -45,9 +49,9 @@ const OverviewCard: React.FC<OverviewCardProps> = (props) => {
           </TooltipWrapper>
         </Box>
         <Box display="flex" flexDirection="column" alignItems="flex-start">
-          <Title size={isActive ? 'large' : 'medium'} marginBottom="spacing.3">
+          <Heading size={isActive ? 'large' : 'medium'} marginBottom="spacing.3">
             {ratios?.[valueKey] ?? 0}%
-          </Title>
+          </Heading>
           {ratios?.[valueKey] !== undefined && ratios?.[comparisionKey] !== undefined && (
             <Box display="flex" flexDirection="row" alignItems="center">
               <BarChartAltIcon size="medium" color={labelInfo?.iconColor} />

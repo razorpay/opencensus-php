@@ -28,7 +28,7 @@ const Tab = ({ children, to, exact, onClick }) => {
   const isActive = pathname === to;
   return (
     <NavLink aria-label={children} data-path={to} to={to} end={exact ?? false} onClick={onClick}>
-      <Text variant="body" weight="bold" size="medium">
+      <Text variant="body" weight="semibold" size="medium">
         <StyledTab as="span" active={isActive}>
           {children}
         </StyledTab>

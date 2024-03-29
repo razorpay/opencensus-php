@@ -92,7 +92,7 @@ const SubscribedRate = (): JSX.Element => {
               <Box key={index} gap="spacing.5">
                 <Box display="flex" gap="spacing.3">
                   <Box marginBottom="spacing.4">
-                    <Text size="small" marginBottom="spacing.3" weight="bold">
+                    <Text size="small" marginBottom="spacing.3" weight="semibold">
                       Name
                     </Text>
                     <Input
@@ -104,7 +104,7 @@ const SubscribedRate = (): JSX.Element => {
                     />
                   </Box>
                   <Box marginLeft="spacing.8">
-                    <Text size="small" marginBottom="spacing.3" weight="bold">
+                    <Text size="small" marginBottom="spacing.3" weight="semibold">
                       Rate
                     </Text>
                     <Input
@@ -123,7 +123,7 @@ const SubscribedRate = (): JSX.Element => {
                       <CloseIcon
                         margin="spacing.4"
                         size="medium"
-                        color="feedback.icon.negative.lowContrast"
+                        color="feedback.icon.negative.intense"
                       />
                     )}
                   />

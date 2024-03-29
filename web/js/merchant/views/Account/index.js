@@ -152,7 +152,7 @@ const MyAccount = (props) => {
             <ShowWhen additionalCondition={(user) => user?.isBundlePricingEnabled}>
               <NavLink className="flex-link" to="/pricing-plans">
                 Pricing Plans
-                <Badge contrast="low" variant="positive" size="medium" icon={OffersIcon}>
+                <Badge emphasis="subtle" size="medium" icon={OffersIcon} color="positive">
                   NEW
                 </Badge>
               </NavLink>

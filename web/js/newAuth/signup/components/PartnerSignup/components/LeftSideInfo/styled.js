@@ -6,7 +6,7 @@ export const StyledHeading = styled.div(
   color: #FFFFFF;
   margin-top: 110px;
   line-height: 120%;
-  font-size: ${theme.typography.fonts.size[900]}px;
+  font-size: ${theme.typography.fonts.size[700]}px;
   font-weight: ${theme.typography.fonts.weight.bold};
   .highlight {
     color: #FFCD4C;

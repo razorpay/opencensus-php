@@ -40,7 +40,7 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency })
       />
       {delayedTransferAmount > 0 && !isDelayedSettlement ? (
         <span>
-          <Badge variant="negative" size="medium">
+          <Badge size="medium" color="negative">
             {`${currencySym} ${getFormattedAmount(delayedTransferAmount)} Delayed`}
           </Badge>
           <PopoverComponent align="top" theme="dark">
@@ -50,7 +50,7 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency })
       ) : (
         initiatedSettlements?.length > 0 && (
           <span>
-            <Badge variant="notice" size="medium">
+            <Badge size="medium" color="notice">
               Created
             </Badge>
             <PopoverComponent align="top" theme="dark">

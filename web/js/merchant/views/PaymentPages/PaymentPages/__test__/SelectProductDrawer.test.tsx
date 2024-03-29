@@ -13,7 +13,7 @@ describe('ProductDrawer', () => {
   describe('ProductDrawer -> Basic flow', () => {
     test('API success flow', async () => {
       const { container } = renderApp();
-      expect(screen.getByRole('heading', { name: 'Add products to page' })).toBeInTheDocument();
+      expect(screen.getByText('Add products to page')).toBeInTheDocument();
       expect(screen.getByTestId('select-product-skeleton')).toBeInTheDocument();
       await waitFor(() => {
         expect(screen.queryByTestId('select-product-skeleton')).not.toBeInTheDocument();

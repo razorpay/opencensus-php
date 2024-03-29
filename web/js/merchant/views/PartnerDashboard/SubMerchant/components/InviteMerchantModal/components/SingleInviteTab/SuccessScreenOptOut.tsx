@@ -40,30 +40,30 @@ const SuccessScreenOptOut = ({
     onDismiss();
   };
   return (
-    <Box backgroundColor="surface.background.level2.lowContrast">
+    <Box backgroundColor="surface.background.gray.intense">
       <Box display="flex" flexDirection="column" gap="spacing.5" alignItems="start">
         <SuccessBackground height="220px" />
         <img src={SuccessIcon} height="48" alt="Invite Successful" />
 
         <Box display="flex" flexDirection="column" gap="spacing.3" justifyContent="center">
-          <Heading size="medium">Invite successfully sent</Heading>
+          <Heading size="small">Invite successfully sent</Heading>
           <Box display="flex" flexDirection="column" gap="spacing.2">
-            <Text color="surface.text.subdued.lowContrast">
+            <Text color="surface.text.gray.muted">
               A signup link has been sent to the invited clients
             </Text>
-            <Text color="surface.text.subdued.lowContrast">
+            <Text color="surface.text.gray.muted">
               Once the client signs up, you can view the referred clients under{' '}
-              <Text color="surface.text.subdued.lowContrast" weight="bold" display="inline">
+              <Text color="surface.text.gray.muted" weight="semibold" display="inline">
                 Affiliate Accounts
               </Text>
             </Text>
           </Box>
         </Box>
       </Box>
-      <Heading marginTop="spacing.10" marginBottom="spacing.5">
+      <Text marginTop="spacing.10" marginBottom="spacing.5" size="large">
         Before you finish, we have something to ask
-      </Heading>
-      <Text color="surface.text.subdued.lowContrast" weight="bold">
+      </Text>
+      <Text color="surface.text.gray.muted" weight="semibold">
         Why did you opt to not handle the client's KYC?
       </Text>
       <Box marginBottom="spacing.11">
@@ -91,7 +91,6 @@ const SuccessScreenOptOut = ({
           </Box>
         ) : null}
       </Box>
-
       <ModalFooter>
         <Button onClick={handleFormSubmit}>Submit & Close</Button>
       </ModalFooter>

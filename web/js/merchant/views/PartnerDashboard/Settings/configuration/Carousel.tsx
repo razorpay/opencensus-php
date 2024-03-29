@@ -43,7 +43,7 @@ export const Carousel = ({
       <div className="carousel-container">
         {!hideArrows && (
           <button className="prev-btn" type="button" onClick={handlePrev}>
-            <ChevronLeftIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+            <ChevronLeftIcon color="feedback.icon.neutral.intense" size="medium" />
           </button>
         )}
         {carouselLength > 0 &&
@@ -62,7 +62,7 @@ export const Carousel = ({
           })}
         {!hideArrows && (
           <button className="next-btn" type="button" onClick={handleNext}>
-            <ChevronRightIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+            <ChevronRightIcon color="feedback.icon.neutral.intense" size="medium" />
           </button>
         )}
       </div>

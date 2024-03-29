@@ -9,7 +9,7 @@ export const InfoItem = styled.div<{ isBorder: boolean }>`
   ${({ isBorder }) =>
     isBorder &&
     css`
-      border-right: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+      border-right: 1px solid ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
     `}
   &:first-child {
     gap: 8px;

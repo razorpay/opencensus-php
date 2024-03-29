@@ -33,7 +33,7 @@ const NoSettlement = ({ colSpan }: { colSpan: number }): JSX.Element => {
             m: ['spacing.8', 'spacing.0'],
           }}
         >
-          <Text size="medium" weight="bold">
+          <Text size="medium" weight="semibold">
             {errorMessage.label}
           </Text>
           {errorMessage.action ? (

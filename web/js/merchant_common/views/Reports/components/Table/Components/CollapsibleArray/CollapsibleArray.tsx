@@ -1,13 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { Clickable } from 'merchant_common/views/Reports/components/styled';
 import { CollapsibleArrayPropsType } from 'merchant_common/views/Reports/components/Table/types';
-import { Counter, Heading } from 'merchant_common/views/Reports/components';
 import { Email, ListEmails, ListHeader } from './styled';
 import { TableText } from 'merchant_common/views/Reports/components/Table/Components/TableText';
 import { useClickOutSide, useTheme } from 'merchant_common/views/Reports/hooks';
 import { trackDownloadsSection } from 'merchant_common/views/Reports/configs/analytics.config';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
 import { DashboardType } from 'merchant_common/views/Reports/types';
+import { Heading, Counter } from '@razorpay/blade/components';
 
 export const CollapsibleArray = ({
   arr = [],
@@ -62,18 +62,18 @@ export const CollapsibleArray = ({
                 onClick={handleExpand}
               >
                 <Counter
-                  contrast="high"
-                  variant="neutral"
+                  emphasis="intense"
                   size="medium"
                   value={10000}
                   max={arr.length - 1}
+                  color="neutral"
                 />
               </Clickable>
             ) : null}
             {shouldExpand ? (
               <ListEmails theme={theme}>
                 <ListHeader theme={theme}>
-                  <Heading size="medium">Recipient's Addresses</Heading>
+                  <Heading size="small">Recipient's Addresses</Heading>
                 </ListHeader>
 
                 {arr.slice(1).map((el) => (

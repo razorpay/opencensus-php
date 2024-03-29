@@ -49,7 +49,7 @@ const UploadButton = ({ value, fileError, onFileChange }: UploadButtonProps) => 
         marginTop="spacing.3"
         marginBottom={{ base: 'spacing.3', m: 'spacing.0' }}
       >
-        <Text weight="bold" type="subdued">
+        <Text weight="semibold" color="surface.text.gray.muted">
           Value(s)
         </Text>
       </Box>
@@ -78,13 +78,10 @@ const UploadButton = ({ value, fileError, onFileChange }: UploadButtonProps) => 
               <Box display="flex" flexDirection="row" alignItems="center" marginTop="spacing.2">
                 <InfoIcon
                   size="small"
-                  color="feedback.negative.action.icon.primary.active.lowContrast"
+                  color="interactive.icon.negative.subtle"
                   marginRight="spacing.2"
                 />
-                <Text
-                  variant="caption"
-                  color="feedback.negative.action.text.primary.active.lowContrast"
-                >
+                <Text variant="caption" color="interactive.text.negative.subtle">
                   {error || fileError}
                 </Text>
               </Box>
@@ -98,7 +95,7 @@ const UploadButton = ({ value, fileError, onFileChange }: UploadButtonProps) => 
             padding="spacing.3"
             marginBottom="spacing.3"
             width="100%"
-            backgroundColor="brand.gray.300.lowContrast"
+            backgroundColor="surface.background.gray.subtle"
           >
             <FileIcon />
             <Box flex="1" marginLeft="spacing.4">
@@ -107,7 +104,7 @@ const UploadButton = ({ value, fileError, onFileChange }: UploadButtonProps) => 
             <IconButton onClick={onCloseClick} icon={CloseIcon} accessibilityLabel="Close" />
           </Box>
         )}
-        <Text weight="bold">
+        <Text weight="semibold">
           Download <Link onClick={onDownloadSampleFile}>sample XLS file</Link>
         </Text>
       </Box>

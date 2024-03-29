@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Badge, Heading, Link, Text } from '@razorpay/blade/components';
+import { Badge, Link, Text, Heading } from '@razorpay/blade/components';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -161,7 +161,7 @@ function FeeBearerSelfserve(props) {
       return <i className="i i-outline-lock" />;
     }
     if (isCustomerFeeNotSupported) {
-      return <Badge variant="neutral">NOT SUPPORTED</Badge>;
+      return <Badge color="neutral">NOT SUPPORTED</Badge>;
     }
     return (
       <input
@@ -199,7 +199,6 @@ function FeeBearerSelfserve(props) {
           mode of payment from the below options -
         </p>
       </div>
-
       <div className="panel-body pb6">
         <div className="row">
           <div className="col-sm-6 p5">
@@ -225,7 +224,7 @@ function FeeBearerSelfserve(props) {
               <div className="fee-bearer-container">
                 <CustomerFeeHeading>
                   <CustomerFeeTitle>
-                    <Heading size="medium" type="subdued">
+                    <Heading size="small" color="surface.text.gray.muted">
                       Customer pays the fee
                     </Heading>
                   </CustomerFeeTitle>

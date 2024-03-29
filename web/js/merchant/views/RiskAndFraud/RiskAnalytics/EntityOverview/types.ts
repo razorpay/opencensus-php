@@ -10,8 +10,8 @@ export type OverviewTab = {
 };
 
 export type LabelComparisonResult = {
-  iconColor: 'feedback.icon.negative.lowContrast' | 'surface.text.subdued.lowContrast';
-  textColor: 'feedback.text.negative.lowContrast' | 'surface.text.subdued.lowContrast';
+  iconColor: 'feedback.icon.negative.intense' | 'surface.icon.gray.muted';
+  textColor: 'feedback.text.negative.intense' | 'surface.text.gray.muted';
   label: string;
 };
 

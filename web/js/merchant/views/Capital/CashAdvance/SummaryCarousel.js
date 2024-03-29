@@ -23,7 +23,7 @@ const Information = ({ message, backgroundColor }) => {
         <div className="slide-container active">
           <div
             className="slide"
-            style={{ background: backgroundColor, fontSize: '20px', fontWeight: 'bold' }}
+            style={{ background: backgroundColor, fontSize: '20px', fontWeight: 600 }}
           >
             <img
               className="background-pattern-image"

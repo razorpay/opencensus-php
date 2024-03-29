@@ -24,18 +24,18 @@ const renderTimelineJourneyMeta = (
   return (
     <StyledBoxMetedata>
       {journeyPoint.id === 1 ? (
-        <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+        <Text size="small" color="surface.text.gray.subtle" weight="regular">
           Takes 3-5 working days
         </Text>
       ) : null}
       {journeyPoint.timestamp ? (
-        <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+        <Text size="small" color="surface.text.gray.subtle" weight="regular">
           {getHumanReadableTimestamp(journeyPoint.timestamp)}
         </Text>
       ) : null}
       {journeyPoint.id === 2 && refundStatus !== 'failed' ? (
         <Box paddingTop="spacing.3">
-          <Text size="small" color="surface.text.muted.lowContrast" weight="bold">
+          <Text size="small" color="surface.text.gray.muted" weight="semibold">
             [Amount will be credited to customer’s bank account within 5-7 working days after the
             refund has processed]
           </Text>

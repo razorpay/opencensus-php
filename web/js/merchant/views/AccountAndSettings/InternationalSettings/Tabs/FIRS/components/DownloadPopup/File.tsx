@@ -52,7 +52,7 @@ const File = ({ file, month, year }: FilePropsT) => {
       key={id}
     >
       <Box display="flex" alignItems={{ base: 'center' }}>
-        <ReportsIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+        <ReportsIcon color="feedback.icon.neutral.intense" size="medium" />
         <Text marginLeft="spacing.3">
           {FileName[document_type]}
           {order ? ` ${order}` : ''} - {month} {year}
@@ -64,7 +64,7 @@ const File = ({ file, month, year }: FilePropsT) => {
           placement="left"
         >
           <TooltipInteractiveWrapper>
-            <Badge variant="notice" size="large" icon={InfoIcon}>
+            <Badge size="large" icon={InfoIcon} color="notice">
               Requested
             </Badge>
           </TooltipInteractiveWrapper>

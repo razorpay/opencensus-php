@@ -18,7 +18,7 @@ const TimelineItem = ({ icon, content, isConnectorRequired }: TimelineItemTypes)
     <TimelineItemContainer aria-label="timeline-item">
       <TimelineItemConnectorContainer>
         <div className="icon-container" aria-label="timeline-icon">
-          {icon || <CircleIcon color="feedback.icon.neutral.lowContrast" size="medium" />}
+          {icon || <CircleIcon color="feedback.icon.neutral.intense" size="medium" />}
         </div>
         {isConnectorRequired ? <TimelineItemConnector aria-label="timeline-connector" /> : ''}
       </TimelineItemConnectorContainer>

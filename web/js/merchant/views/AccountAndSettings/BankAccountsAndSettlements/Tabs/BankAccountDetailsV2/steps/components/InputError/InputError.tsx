@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button, Heading, Text } from '@razorpay/blade/components';
+import { Button, Text } from '@razorpay/blade/components';
 import {
   BANK_ACCOUNT_UPDATE_STEPS,
   InputErrorPropsInterface,
@@ -41,8 +41,8 @@ const InputError = ({ setView, state, setState }: InputErrorPropsInterface): JSX
       <StyledLayout>
         <StyledDescriptionContent>
           <BvsErrorIcon src={BVS_ICONS[icon]} />
-          <Heading size="small">{title}</Heading>
-          <Text size="medium" type="subtle">
+          <Text size="large">{title}</Text>
+          <Text size="medium" color="surface.text.gray.subtle">
             {subTitle}
           </Text>
         </StyledDescriptionContent>

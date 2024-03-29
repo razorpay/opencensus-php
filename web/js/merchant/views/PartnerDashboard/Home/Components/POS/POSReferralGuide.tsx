@@ -1,6 +1,6 @@
 /* eslint-disable import/extensions */
 import React, { useEffect } from 'react';
-import { Box, Button, Heading, Text, Link, PlusIcon } from '@razorpay/blade/components';
+import { Box, Button, Text, Link, PlusIcon, Heading } from '@razorpay/blade/components';
 import posBackground from 'assets/partner-dashboard/posBannerBackground.svg';
 import posIllustration from 'assets/partner-dashboard/posIllustration.svg';
 import { connect } from 'react-redux';
@@ -113,7 +113,7 @@ const POSReferralGuide = ({
           margin="spacing.3"
         >
           <Box display="flex" flexDirection="column" gap="spacing.3" flexWrap="wrap">
-            <Heading size="medium">Refer clients to {orgName} POS!</Heading>
+            <Heading size="small">Refer clients to {orgName} POS!</Heading>
           </Box>
           <ColoredLine />
           <Text>Add your agents to assist clients with KYC link to manage agents flow</Text>

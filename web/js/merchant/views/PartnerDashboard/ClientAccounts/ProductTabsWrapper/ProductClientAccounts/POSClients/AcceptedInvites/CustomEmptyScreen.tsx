@@ -1,5 +1,5 @@
 import React from 'react';
-import { SearchIcon, Box, Heading, Text } from '@razorpay/blade/components';
+import { Box, Heading, SearchIcon, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
 import { Org } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
@@ -13,15 +13,15 @@ const CustomEmptyScreen = ({ org, isFilterSearchUsed }: CustomEmptyScreenProps):
     <Box paddingTop="140px" paddingBottom="140px">
       {isFilterSearchUsed ? (
         <Box display="flex" flexDirection="column" gap="spacing.5" alignItems="center">
-          <SearchIcon size="medium" color="surface.action.icon.default.lowContrast" />
+          <SearchIcon size="medium" color="interactive.icon.gray.normal" />
           <Box display="flex" flexDirection="column" gap="spacing.3" alignItems="center">
-            <Heading size="medium">No Results Found</Heading>
+            <Heading size="small">No Results Found</Heading>
             <Text>Try adjusting your search or filter to find what you&apos;re looking for</Text>
           </Box>
         </Box>
       ) : (
         <Box display="flex" flexDirection="column" gap="spacing.5" alignItems="center">
-          <Heading size="large">No Accepted Invites</Heading>
+          <Heading size="medium">No Accepted Invites</Heading>
           <Box
             display="flex"
             flexDirection="column"
@@ -29,9 +29,9 @@ const CustomEmptyScreen = ({ org, isFilterSearchUsed }: CustomEmptyScreenProps):
             justifyContent="center"
             alignItems="center"
             padding="spacing.5"
-            backgroundColor="surface.background.level1.lowContrast"
+            backgroundColor="surface.background.gray.subtle"
           >
-            <Text weight="bold" size="large" color="feedback.text.notice.lowContrast">
+            <Text weight="semibold" size="large" color="feedback.text.notice.intense">
               Did you know?
             </Text>
             <Text>

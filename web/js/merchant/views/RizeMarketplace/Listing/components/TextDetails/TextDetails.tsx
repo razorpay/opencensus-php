@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Link, Text, Theme, Title } from '@razorpay/blade/components';
+import { Box, Link, Text, Theme, Heading } from '@razorpay/blade/components';
 import styled from 'styled-components';
 
 import { TextDetailsProps } from './types';
@@ -31,7 +31,7 @@ const List = styled.ul`
 
 const ListItem = styled.li(
   ({ theme }: { theme: Theme }) => `
-  color: ${theme.colors.surface.text.normal.lowContrast};
+  color: ${theme.colors.surface.text.gray.normal};
   font-size: ${theme.typography.fonts.size[300]}px;
   margin-top: ${theme.spacing[3]}px;
 `,
@@ -40,9 +40,9 @@ const ListItem = styled.li(
 const TextDetails = ({ heading, body }: TextDetailsProps): JSX.Element => (
   <Box>
     <Box marginBottom="spacing.5">
-      <Title as="h2" size="small" color="surface.text.normal.lowContrast">
+      <Heading as="h2" color="surface.text.gray.normal" size="large">
         {heading}
-      </Title>
+      </Heading>
     </Box>
     {Array.isArray(body) ? (
       <List>

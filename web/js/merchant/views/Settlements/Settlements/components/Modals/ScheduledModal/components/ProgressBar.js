@@ -20,7 +20,7 @@ const ProgressContainer = styled.div`
 const DaysToGo = styled.div`
   width: 100%;
   position: relative;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 14px;
   line-height: 20px;
   color: #008cb1;
@@ -90,7 +90,7 @@ const Legend = styled.div`
   display: flex;
   align-items: center;
   padding: 2px 8px 11px;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 12px;
   line-height: 16px;
   color: #008cb1;

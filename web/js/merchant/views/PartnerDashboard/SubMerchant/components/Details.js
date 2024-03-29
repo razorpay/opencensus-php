@@ -481,14 +481,14 @@ const Details = (props) => {
                         <Box paddingTop="spacing.2">
                           <Box display="flex" marginTop="spacing.2" alignItems="center">
                             <Box marginRight="spacing.2" display="flex">
-                              <ClockIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                              <ClockIcon size="medium" color="feedback.icon.neutral.intense" />
                             </Box>
                             <Box display="flex">
-                              <Text color="surface.text.subdued.lowContrast" textAlign="center">
+                              <Text color="surface.text.gray.muted" textAlign="center">
                                 Create link again in
                               </Text>
                               <Text
-                                color="feedback.text.notice.lowContrast"
+                                color="feedback.text.notice.intense"
                                 textAlign="center"
                                 marginLeft="spacing.2"
                               >

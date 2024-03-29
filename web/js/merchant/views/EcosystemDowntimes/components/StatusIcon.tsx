@@ -17,7 +17,7 @@ const StatusIcon = ({ type }: StatusIconsType): JSX.Element | null => {
           bgColorKey="positive"
           aria-label="operational-icon"
         >
-          <CheckIcon color="feedback.icon.positive.highContrast" size="small" />
+          <CheckIcon color="feedback.icon.positive.intense" size="small" />
         </EcosystemStatusIconContainer>
       );
     case STATUS.low.slug:
@@ -29,7 +29,7 @@ const StatusIcon = ({ type }: StatusIconsType): JSX.Element | null => {
           bgColorKey="notice"
           aria-label="medium-sev-icon"
         >
-          <AlertOnlyIcon color="feedback.icon.positive.highContrast" size="medium" />
+          <AlertOnlyIcon color="feedback.icon.positive.intense" size="medium" />
         </EcosystemStatusIconContainer>
       );
     case STATUS.high.slug:
@@ -40,7 +40,7 @@ const StatusIcon = ({ type }: StatusIconsType): JSX.Element | null => {
           bgColorKey="negative"
           aria-label="high-sev-icon"
         >
-          <AlertOnlyIcon color="feedback.icon.positive.highContrast" size="medium" />
+          <AlertOnlyIcon color="feedback.icon.positive.intense" size="medium" />
         </EcosystemStatusIconContainer>
       );
     default:

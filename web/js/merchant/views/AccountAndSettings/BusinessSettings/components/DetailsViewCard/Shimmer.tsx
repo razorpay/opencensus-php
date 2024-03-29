@@ -1,6 +1,8 @@
-import { Box, Heading } from '@razorpay/blade/components';
-import Shimmer from 'common/components/Shimmer';
 import React from 'react';
+import { Box, Text } from '@razorpay/blade/components';
+
+import Shimmer from 'common/components/Shimmer';
+
 import { StyledDetailListing, StyledDivider } from './styled';
 
 const DetailsViewShimmer = ({ title }: { title: string }): JSX.Element => {
@@ -8,14 +10,14 @@ const DetailsViewShimmer = ({ title }: { title: string }): JSX.Element => {
     <Box
       display="flex"
       flexDirection="column"
-      backgroundColor="surface.background.level3.lowContrast"
+      backgroundColor="surface.background.gray.moderate"
       padding={{
         base: ['spacing.4', 'spacing.5', 'spacing.6'],
         m: ['spacing.6', 'spacing.7', 'spacing.7'],
       }}
       gap="spacing.5"
     >
-      <Heading>{title}</Heading>
+      <Text size="large">{title}</Text>
       <StyledDivider />
       <Box display="flex" flexDirection="column" gap="spacing.7">
         {[

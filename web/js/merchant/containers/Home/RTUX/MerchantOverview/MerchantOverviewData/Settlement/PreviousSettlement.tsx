@@ -73,15 +73,17 @@ const PreviousSettlement: React.FC<IPreviousSettlement & IAnalyticsProperties> =
           gap="spacing.2"
           alignItems={{ base: 'start', l: 'center' }}
         >
-          <Text type="subdued" weight="bold">
+          <Text weight="semibold" color="surface.text.gray.muted">
             <Amount
               value={i18CurrencyConversionFromMinorUnitToCommonUnit(
                 total_amount,
                 settlement_currency,
               )}
               isAffixSubtle={false}
-              size="body-medium-bold"
               currency={settlement_currency}
+              type="body"
+              size="medium"
+              weight="semibold"
             />
             &nbsp; deposited across {total_count} settlements on{' '}
             {getFormattedDateFromTimestamp(created_at)}

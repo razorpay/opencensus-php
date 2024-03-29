@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 ///- Redux
 
 // Blade Components
-import { Heading, Text, Button, CloseIcon, IconButton } from '@razorpay/blade/components';
+import { Button, CloseIcon, Heading, IconButton, Text } from '@razorpay/blade/components';
 ///- Blade Components
 
 // Styled Components
@@ -30,7 +30,7 @@ function ConfirmWithdrawalModal({
   return (
     <>
       <ModalHeader>
-        <Heading size="medium">Confirm Withdrawal</Heading>
+        <Heading size="small">Confirm Withdrawal</Heading>
         <IconButton icon={CloseIcon} accessibilityLabel="Close" onClick={onClose} />
       </ModalHeader>
       <ModalBody>

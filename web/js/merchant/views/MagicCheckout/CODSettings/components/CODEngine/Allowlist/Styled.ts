@@ -36,7 +36,7 @@ export const TabHeader = styled.div`
 
   .heading {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     color: #262d3a;
     line-height: 20px;
   }

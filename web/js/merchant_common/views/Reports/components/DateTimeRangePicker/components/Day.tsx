@@ -16,7 +16,7 @@ export const Day = ({ weekIndex, customDayComponent, daySize }: DayProps): JSX.E
       {customDayComponent ? (
         customDayComponent({ weekIndex, weekDay: data[weekIndex] })
       ) : (
-        <Text size="small" weight="regular" type="subtle" variant="body">
+        <Text size="small" weight="regular" variant="body" color="surface.text.gray.subtle">
           {data[weekIndex]}
         </Text>
       )}

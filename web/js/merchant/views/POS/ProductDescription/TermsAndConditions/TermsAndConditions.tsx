@@ -3,10 +3,10 @@ import {
   Box,
   Divider,
   Heading,
-  Title,
   List,
   ListItem,
   ArrowRightIcon,
+  Text,
 } from '@razorpay/blade/components';
 
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
@@ -39,13 +39,13 @@ const TermsAndConditions = ({
   return (
     <Box width="100%" maxWidth="1200px" marginBottom="spacing.8">
       <Box marginBottom="spacing.5">
-        <Title size="medium" textAlign="center">
+        <Heading textAlign="center" size="xlarge">
           {title}
-        </Title>
+        </Heading>
       </Box>
       <Box
         display={{ base: 'block', m: 'flex' }}
-        backgroundColor="surface.background.level2.lowContrast"
+        backgroundColor="surface.background.gray.intense"
         padding="spacing.5"
         borderRadius="medium"
       >
@@ -57,9 +57,9 @@ const TermsAndConditions = ({
             display="flex"
             flexDirection="column"
           >
-            <Heading marginBottom="spacing.4" marginLeft="spacing.8">
+            <Text marginBottom="spacing.4" marginLeft="spacing.8" size="large">
               {criteria}
-            </Heading>
+            </Text>
 
             <Divider marginBottom="spacing.4" />
             <Box
@@ -67,7 +67,7 @@ const TermsAndConditions = ({
                 base: 'none',
                 m: index !== TERMS_AND_CONDITIONS.length - 1 ? 'thin' : 'none',
               }}
-              borderRightColor="brand.gray.400.lowContrast"
+              borderRightColor="surface.border.gray.muted"
               paddingX={{ base: 'spacing.0', m: 'spacing.8' }}
               height="100%"
               paddingBottom="spacing.5"
@@ -78,7 +78,7 @@ const TermsAndConditions = ({
                 <Box
                   marginX="spacing.2"
                   marginY="spacing.6"
-                  backgroundColor="surface.background.level3.lowContrast"
+                  backgroundColor="surface.background.gray.moderate"
                   padding="spacing.5"
                   borderRadius="medium"
                   minHeight="160px"

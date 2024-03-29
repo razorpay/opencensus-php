@@ -94,13 +94,7 @@ const ModalForm = ({
           autoFocus
         />
         <Box marginTop="spacing.6">
-          <Text
-            color="surface.text.normal.lowContrast"
-            size="medium"
-            variant="body"
-            weight="regular"
-            type="normal"
-          >
+          <Text color="surface.text.gray.normal" size="medium" variant="body" weight="regular">
             {bodyText}
           </Text>
         </Box>

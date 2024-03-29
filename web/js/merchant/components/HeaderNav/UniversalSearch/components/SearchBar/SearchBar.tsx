@@ -48,7 +48,7 @@ const SearchBar = forwardRef(
           isMobile={isMobile}
           isRTUXHomepage={isRTUXHomepage}
         >
-          <SearchIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+          <SearchIcon color="feedback.icon.neutral.intense" size="medium" />
           <StyledBaseInput
             ref={ref as React.RefObject<HTMLInputElement>}
             name="search"
@@ -62,7 +62,7 @@ const SearchBar = forwardRef(
           />
           {searchQuery.length ? (
             <CloseButton onClick={handleChange.bind(null, 'clear')} data-testid="search-close">
-              <CloseIcon color="surface.action.icon.default.lowContrast" size="medium" />
+              <CloseIcon color="interactive.icon.gray.normal" size="medium" />
             </CloseButton>
           ) : null}
         </StyledInputBox>

@@ -315,17 +315,17 @@ export const shouldShowCapturePaymentButton = (
 export const getAmountColor = (type: string, theme: Theme): string => {
   switch (type) {
     case 'positive':
-      return `${theme.colors.feedback.text.positive.lowContrast}`;
+      return `${theme.colors.feedback.text.positive.intense}`;
     case 'negative':
-      return `${theme.colors.feedback.text.negative.lowContrast}`;
+      return `${theme.colors.feedback.text.negative.intense}`;
     default:
-      return `${theme.colors.surface.text.normal.lowContrast}`;
+      return `${theme.colors.surface.text.gray.normal}`;
   }
 };
 
 export const getBaseVariant = (
   status: IPaymentDetails['status'] | SettlementStatus,
-): BadgeProps['variant'] => {
+): BadgeProps['color'] => {
   switch (status) {
     case PaymentStatus.CREATED:
     case SettlementStatus.CREATED:
@@ -409,13 +409,13 @@ export const getRefundsOverviewDetails = (paymentRefundDetails) => {
     const refund = paymentRefundDetails[0];
     const createdAt = getTime(refund.created_at).join(', ');
     return (
-      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
-        Refund of ₹{getFormattedAmount(refund.amount, refund.currency)} issued on {createdAt}
+      <Text color="surface.text.gray.normal" weight="semibold" size="small">
+        Refund of ₹{getFormattedAmount(refund.amount, refund.currency)}issued on{createdAt}
       </Text>
     );
   } else {
     return (
-      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
+      <Text color="surface.text.gray.normal" weight="semibold" size="small">
         Multiple refunds issued to the customer
       </Text>
     );
@@ -470,7 +470,7 @@ export const getDisputesOverviewDetails = (paymentDetails, viewDisputeCallback) 
         break;
     }
     return (
-      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
+      <Text color="surface.text.gray.normal" weight="semibold" size="small">
         {info}{' '}
         <Link
           iconPosition="right"
@@ -493,7 +493,7 @@ export const getDisputesOverviewDetails = (paymentDetails, viewDisputeCallback) 
     );
   } else {
     return (
-      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
+      <Text color="surface.text.gray.normal" weight="semibold" size="small">
         Multiple disputes exist for this payment
       </Text>
     );

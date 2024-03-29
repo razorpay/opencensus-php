@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Box,
-  Title,
+  Heading,
   Text,
   Button,
   Card,
@@ -38,13 +38,13 @@ const About = ({ handleCtaClick }) => {
               />
               <img src={RecIcon} alt="icon" />
               <Box marginTop="spacing.6" />
-              <Title weight="regular" size="medium" marginTop="spacing.6">
+              <Heading weight="regular" marginTop="spacing.6" size="xlarge">
                 Redefining Reconciliation with
-              </Title>
-              <Title weight="bold" size="medium" marginTop="spacing.8">
+              </Heading>
+              <Heading weight="semibold" marginTop="spacing.8" size="xlarge">
                 Proactive Insights
-              </Title>
-              <Text marginTop="spacing.6" type="subdued">
+              </Heading>
+              <Text marginTop="spacing.6" color="surface.text.gray.muted">
                 Automated reconciliations solution crafted to simplify end-to-end recon processes
                 for businesses.
               </Text>

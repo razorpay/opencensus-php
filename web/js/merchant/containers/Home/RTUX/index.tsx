@@ -59,7 +59,7 @@ const RTUXHomepage = (): JSX.Element => {
         <ErrorState
           text="Something went wrong"
           retryHandler={retryHandler}
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           marginX="spacing.0"
           analyticsProperties={{
             screen,

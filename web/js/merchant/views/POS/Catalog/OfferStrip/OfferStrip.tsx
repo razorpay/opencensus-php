@@ -19,11 +19,11 @@ const getOfferAndInfoIconColor = ({
   type,
   isPartnerPricing,
 }: getOfferTextAndColorProps): IconProps['color'] => {
-  let offerAndInfoIconColor: IconProps['color'] = 'brand.primary.500';
+  let offerAndInfoIconColor: IconProps['color'] = 'surface.icon.primary.normal';
   if (type === 'dark') {
-    offerAndInfoIconColor = 'feedback.icon.neutral.lowContrast';
+    offerAndInfoIconColor = 'feedback.icon.neutral.intense';
   } else if (isPartnerPricing) {
-    offerAndInfoIconColor = 'feedback.icon.notice.lowContrast';
+    offerAndInfoIconColor = 'feedback.icon.notice.intense';
   }
   return offerAndInfoIconColor;
 };
@@ -32,11 +32,11 @@ const getOfferTextColor = ({
   type,
   isPartnerPricing,
 }: getOfferTextAndColorProps): TextProps<{ variant: 'body' }>['color'] => {
-  let textColor: TextProps<{ variant: 'body' }>['color'] = 'brand.primary.500';
+  let textColor: TextProps<{ variant: 'body' }>['color'] = 'surface.text.primary.normal';
   if (type === 'dark') {
-    textColor = 'surface.text.subtle.lowContrast';
+    textColor = 'surface.text.gray.subtle';
   } else if (isPartnerPricing) {
-    textColor = 'feedback.text.notice.lowContrast';
+    textColor = 'feedback.text.notice.intense';
   }
   return textColor;
 };
@@ -61,7 +61,7 @@ const OfferStrip = ({
           marginRight="spacing.3"
         />
       )}
-      <Text color={getOfferTextColor({ type, isPartnerPricing })} size="small" weight="bold">
+      <Text color={getOfferTextColor({ type, isPartnerPricing })} size="small" weight="semibold">
         {text}
       </Text>
     </OfferStripContainer>

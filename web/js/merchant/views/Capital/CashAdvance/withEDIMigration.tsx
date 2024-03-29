@@ -4,12 +4,12 @@ import {
   Box,
   BladeProvider,
   Alert,
-  Title,
+  Heading,
   Text,
   Button,
   ExternalLinkIcon,
 } from '@razorpay/blade/components';
-import { bankingTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import styled, { createGlobalStyle } from 'styled-components';
 
 import CoinsImg from 'assets/capital/coins.png';
@@ -53,7 +53,7 @@ const AutoRedirection = ({ onTimeout }: { onTimeout: VoidFunction }) => {
     }
   }, [time]);
 
-  return <Text type="muted">Redirecting in {time} seconds</Text>;
+  return <Text color="surface.text.gray.muted">Redirecting in {time} seconds</Text>;
 };
 
 const _RedirectToNewDashboard = (props) => {
@@ -79,13 +79,13 @@ const _RedirectToNewDashboard = (props) => {
   };
 
   return (
-    <BladeProvider colorScheme="dark" themeTokens={bankingTheme}>
+    <BladeProvider colorScheme="dark" themeTokens={bladeTheme}>
       <GlobalStyles />
       <Box
         position="relative"
         width="100%"
         minHeight="94vh"
-        backgroundColor="surface.background.level1.lowContrast"
+        backgroundColor="surface.background.gray.subtle"
         padding={{ base: 'spacing.9', m: 'spacing.11' }}
       >
         <Box
@@ -103,18 +103,23 @@ const _RedirectToNewDashboard = (props) => {
           color="information"
           description="Cash Advance has been moved to a new dashboard"
         />
-        <Title marginTop="spacing.8" size="large">
+        <Heading marginTop="spacing.8" size="xlarge">
           Cash Advance
-        </Title>
-        <Text marginTop="spacing.3" marginBottom="spacing.4" type="muted" variant="caption">
+        </Heading>
+        <Text
+          marginTop="spacing.3"
+          marginBottom="spacing.4"
+          variant="caption"
+          color="surface.text.gray.muted"
+        >
           Facilitated by{' '}
-          <Text type="muted" variant="caption" as="span" weight="bold">
+          <Text variant="caption" as="span" weight="semibold" color="surface.text.gray.muted">
             RTSPL
           </Text>
         </Text>
         <CustomDivider />
         <Box marginTop="spacing.6" marginBottom="spacing.10" maxWidth="440px">
-          <Text type="muted">
+          <Text color="surface.text.gray.muted">
             Get additional money whenever required, repay and borrow again up to your limit any
             number of times.
           </Text>

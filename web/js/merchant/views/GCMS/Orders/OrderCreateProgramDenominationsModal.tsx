@@ -5,7 +5,6 @@ import {
   ModalBody,
   ModalFooter,
   Box,
-  Heading,
   TextInput,
   Text,
   Button,
@@ -277,7 +276,7 @@ const OrderCreateProgramDenominationsModal = ({
               minHeight: '80px',
               padding: ['spacing.0', 'spacing.0', 'spacing.5', 'spacing.0'],
               borderBottomWidth: 'thick',
-              borderBottomColor: 'surface.border.subtle.lowContrast',
+              borderBottomColor: 'surface.border.gray.subtle',
             }}
             imageProps={{
               maxHeight: '60px',
@@ -294,10 +293,10 @@ const OrderCreateProgramDenominationsModal = ({
           padding={['spacing.4', 'spacing.0', 'spacing.0', 'spacing.0']}
         >
           <Box minWidth="185px" paddingRight="spacing.4">
-            <Text color="surface.text.muted.lowContrast">Denomination</Text>
+            <Text color="surface.text.gray.muted">Denomination</Text>
           </Box>
           <Box minWidth="185px" paddingRight="spacing.4">
-            <Text color="surface.text.muted.lowContrast">Quantity</Text>
+            <Text color="surface.text.gray.muted">Quantity</Text>
           </Box>
         </Box>
         {isProgramDenominationArrayAvailable
@@ -306,16 +305,16 @@ const OrderCreateProgramDenominationsModal = ({
                 <Box
                   key={id ? id + index : index}
                   borderBottomWidth="thick"
-                  borderBottomColor="surface.border.subtle.lowContrast"
+                  borderBottomColor="surface.border.gray.subtle"
                   display="flex"
                   flexDirection="row"
                   alignItems="center"
                   padding={['spacing.3', 'spacing.0', 'spacing.4', 'spacing.0']}
                 >
                   <Box minWidth="185px" paddingRight="spacing.4">
-                    <Heading size="small" color="surface.text.subdued.lowContrast">
+                    <Text color="surface.text.gray.muted" size="large">
                       {denomination ? getFormattedAmountNew(denomination, true) : 0}
-                    </Heading>
+                    </Text>
                   </Box>
                   <Box minWidth="185px" paddingRight="spacing.4">
                     <TextInput
@@ -335,7 +334,7 @@ const OrderCreateProgramDenominationsModal = ({
                 <Box
                   key={customOrderItem?.id ? customOrderItem.id + index : index}
                   borderBottomWidth="thick"
-                  borderBottomColor="surface.border.subtle.lowContrast"
+                  borderBottomColor="surface.border.gray.subtle"
                   display="flex"
                   flexDirection="row"
                   alignItems="center"

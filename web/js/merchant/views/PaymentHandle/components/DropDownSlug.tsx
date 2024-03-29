@@ -85,10 +85,10 @@ const DropDownSlug = ({
       <CenterAlignContainer>
         {' '}
         <AlignTogether>
-          <Text type="subtle" contrast="low" size="small">
+          <Text size="small" color="surface.text.gray.subtle">
             razorpay.me/
           </Text>
-          <Text weight="bold" type="normal" contrast="low" size="small">
+          <Text weight="semibold" size="small" color="surface.text.gray.normal">
             {paymentHandleConfig?.paymentHandleSlug}
           </Text>
           <ShareContainer onClick={(event) => openPHShareModal(event)}>

@@ -35,14 +35,14 @@ export const TooltipContainer = styled.div<any>(
     }
   }
   button > div > div {
-    color: ${theme.colors.action.text.link.default};
+    color: ${theme.colors.interactive.text.primary.subtle};
   }
   &:hover {
     ${
       isTooltipAction
         ? `
           button > div > div {
-            color: ${theme.colors.action.text.link.disabled};
+            color: ${theme.colors.interactive.text.primary.disabled};
           }
         `
         : ''

@@ -17,7 +17,7 @@ const CreatedOn = ({ created_at }: CreatedOnProps): JSX.Element => {
     return (
       <>
         <Text>{date}</Text>
-        <Text size="small" color="surface.text.muted.lowContrast">
+        <Text size="small" color="surface.text.gray.muted">
           {time}
         </Text>
       </>

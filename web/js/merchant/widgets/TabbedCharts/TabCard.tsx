@@ -24,30 +24,37 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
       height="100%"
       padding={['spacing.5', 'spacing.7']}
       backgroundColor={
-        isActive ? 'surface.background.level2.lowContrast' : 'surface.background.level3.lowContrast'
+        isActive ? 'surface.background.gray.intense' : 'surface.background.gray.moderate'
       }
       borderTopWidth="none"
-      borderColor="surface.border.normal.lowContrast"
+      borderColor="surface.border.gray.muted"
       borderLeftWidth={isActive ? 'none' : 'thinner'}
       borderRightWidth={isActive ? 'none' : 'thinner'}
       borderBottomWidth="thicker"
-      borderBottomColor={isActive ? 'brand.primary.500' : 'brand.primary.300'}
+      borderBottomColor={
+        isActive ? 'surface.border.primary.normal' : 'surface.border.primary.muted'
+      }
       gap="spacing.2"
       minHeight={{ base: '120px', m: 'initial' }}
       justifyContent="center"
     >
       <Text
         size="medium"
-        color={isActive ? 'surface.text.normal.lowContrast' : 'surface.text.subtle.lowContrast'}
-        weight="bold"
+        color={isActive ? 'surface.text.gray.normal' : 'surface.text.gray.subtle'}
+        weight="semibold"
       >
         {title}
       </Text>
       <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.3">
         {value > 0 || cardPosition === 0 ? (
-          <Amount value={value} currency={currency as AmountProps['currency']} size="title-small" />
+          <Amount
+            value={value}
+            currency={currency as AmountProps['currency']}
+            type="heading"
+            size="large"
+          />
         ) : (
-          <Text weight="bold">--</Text>
+          <Text weight="semibold">--</Text>
         )}
         {value > 0 ? (
           <Change
@@ -61,8 +68,8 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
       {!isMobile && value > 0 ? (
         <Text
           size="medium"
-          weight="bold"
-          color={isActive ? 'surface.text.normal.lowContrast' : 'surface.text.subdued.lowContrast'}
+          weight="semibold"
+          color={isActive ? 'surface.text.gray.normal' : 'surface.text.gray.muted'}
         >
           {trendSubText}
         </Text>

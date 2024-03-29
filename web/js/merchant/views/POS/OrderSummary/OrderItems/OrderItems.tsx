@@ -9,9 +9,9 @@ import {
   Button,
   Divider,
   EditIcon,
-  Heading,
   Link,
   ShoppingCartIcon,
+  Text,
 } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
@@ -34,9 +34,9 @@ const EmptyCartState = (): JSX.Element => {
       padding="spacing.5"
       minHeight="200px"
     >
-      <Heading type="subtle" weight="regular" textAlign="center">
+      <Text weight="regular" textAlign="center" size="large" color="surface.text.gray.subtle">
         Looks like you haven’t made your choices yet..
-      </Heading>
+      </Text>
       <Link
         icon={ArrowRightIcon}
         iconPosition="right"
@@ -127,17 +127,17 @@ const OrderItems = ({ defaultIsExpanded }: OrderItemsProps): JSX.Element => {
       icon={
         <ShoppingCartIcon
           size="large"
-          color={
-            isExpanded ? 'action.icon.secondary.active' : 'surface.action.icon.active.lowContrast'
-          }
+          color={isExpanded ? 'interactive.icon.primary.normal' : 'interactive.icon.gray.normal'}
         />
       }
       title={
         <Box display={{ base: 'block', l: 'flex' }}>
-          <Heading marginRight="spacing.3">Order Summary</Heading>
-          <Heading type="subtle" weight="regular">
+          <Text marginRight="spacing.3" size="large">
+            Order Summary
+          </Text>
+          <Text weight="regular" size="large" color="surface.text.gray.subtle">
             {cartItems.length} {cartItems.length <= 1 ? 'Item' : 'Items'}
-          </Heading>
+          </Text>
         </Box>
       }
       headerWidgets={extraWidgets}

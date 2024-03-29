@@ -38,11 +38,11 @@ const FirsFiles = (): React.ReactElement => {
           justifyContent={{ base: 'space-between' }}
           borderWidth="none"
           borderBottomWidth="thin"
-          borderBottomColor="surface.border.normal.lowContrast"
+          borderBottomColor="surface.border.gray.muted"
           paddingBottom="spacing.3"
           marginBottom="spacing.4"
         >
-          <Text type="subdued">
+          <Text color="surface.text.gray.muted">
             Bank FIRS ({bankFirs.length || 'No'} {pluralize('file', bankFirs.length)} available)
           </Text>
         </Box>
@@ -71,17 +71,16 @@ const FirsFiles = (): React.ReactElement => {
           </Box>
         )}
       </Box>
-
       {internalFirs.length > 0 && (
         <Box>
           <Box
             borderWidth="none"
             borderBottomWidth="thin"
-            borderBottomColor="surface.border.normal.lowContrast"
+            borderBottomColor="surface.border.gray.muted"
             paddingBottom="spacing.3"
             marginBottom="spacing.4"
           >
-            <Text type="subdued">
+            <Text color="surface.text.gray.muted">
               Razorpay Statements ({internalFirs.length || 'No'}{' '}
               {pluralize('file', internalFirs.length)} available)
             </Text>
@@ -93,7 +92,6 @@ const FirsFiles = (): React.ReactElement => {
           </Box>
         </Box>
       )}
-
       {shouldShowRequestButton && isRequestFirsEnabled && (
         <Box marginTop="spacing.7" display="flex" alignItems="flex-end" flex="1">
           <Text size="small">

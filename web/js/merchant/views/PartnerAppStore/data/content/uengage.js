@@ -12,7 +12,7 @@ export default () => (
         Uengage's Uniqueness Lies in its balanced combination of innovative products and digital
         growth consultancy services.
       </p>
-      <p style={{ fontWeight: 'bold' }}>It has 3 core pillars:</p>
+      <p style={{ fontWeight: 600 }}>It has 3 core pillars:</p>
       <ul>
         <li> Online Ordering Apps</li>
         <li> User Acquisition and Demand Generation</li>

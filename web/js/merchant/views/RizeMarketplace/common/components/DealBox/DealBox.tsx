@@ -12,10 +12,10 @@ const DealBox = styled.div(
   padding: ${theme.spacing[3]}px ${theme.spacing[5]}px;
 
   border-radius: ${theme.border.radius.medium}px;
-  border: 1px dashed ${theme.colors.feedback.background.positive.highContrast};
+  border: 1px dashed ${theme.colors.feedback.background.positive.intense};
 
-  color: ${theme.colors.feedback.background.positive.highContrast};
-  background-color: ${theme.colors.feedback.background.positive.lowContrast};
+  color: ${theme.colors.feedback.background.positive.intense};
+  background-color: ${theme.colors.feedback.background.positive.subtle};
 
   @media (min-width: ${theme.breakpoints.l}px) {
     max-width: 190px;

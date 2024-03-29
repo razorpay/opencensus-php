@@ -22,14 +22,14 @@ const UserInfo = ({ isMobile, infoData, onClick }: UserInfoPropsInterface): JSX.
             flexDirection={{ base: 'column', m: 'row' }}
           >
             {isMobile ? (
-              <Text weight="bold">{each.displayName}</Text>
+              <Text weight="semibold">{each.displayName}</Text>
             ) : (
               <Box minWidth="160px">
-                <Text weight="bold">{each.displayName}</Text>
+                <Text weight="semibold">{each.displayName}</Text>
               </Box>
             )}
             <StyledInfo>
-              <Text type="subdued">{each.value}</Text>
+              <Text color="surface.text.gray.muted">{each.value}</Text>
               <TooltipContainer isTooltipAction={!!(!each.isEditEnable && each.editTooltip)}>
                 <Link
                   variant="button"

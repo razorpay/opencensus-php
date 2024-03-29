@@ -47,7 +47,7 @@ export const StyledTable = styled.div(
         }
       }
       vertical-align: middle;
-      background-color: ${theme.colors.surface.background.level3.highContrast};
+      background-color: ${theme.colors.surface.text.gray.subtle};
     }
     tbody > tr > td {
       height: 52px;
@@ -94,7 +94,7 @@ export const StyledTable = styled.div(
       .ClipboardCustom {
         opacity: 1;
       }
-      background-color: ${theme.colors.surface.background.level3.lowContrast};
+      background-color: ${theme.colors.surface.background.gray.moderate};
       border-bottom: 1px solid rgba(121, 135, 156, 0.18);
       box-shadow: 0px 12px 16px -4px rgba(19, 38, 68, 0.08), 0px 4px 6px -2px rgba(19, 38, 68, 0.03);
     }
@@ -204,7 +204,7 @@ export const StyledSearchByFilter = styled.div(
     border-top: none;
     border-bottom-left-radius: ${theme.spacing[0]};
     border-bottom-right-radius: ${theme.spacing[0]};
-    background: ${theme.colors.brand.gray.a50.lowContrast};
+    background: ${theme.colors.surface.background.gray.moderate};
   }
 `,
 );
@@ -217,8 +217,8 @@ export const StyledTabHeader = styled.header(
   text-align: center;
   font-size: ${theme.spacing[6]}px;
   &&& > .active {
-    color: ${theme.colors.action.text.link.default};
-    border-color: ${theme.colors.action.text.link.default};
+    color: ${theme.colors.interactive.text.primary.subtle};
+    border-color: ${theme.colors.interactive.text.primary.subtle};
     pointer-events: none;
   }
   @media screen and (max-width: ${theme.breakpoints.m}px) {
@@ -238,7 +238,7 @@ export const StyledTabItem = styled(NavLink)(
   &&& {
     padding: ${theme.spacing[0]} ${theme.spacing[5]}px ;
     margin: ${theme.spacing[0]};
-    color: ${theme.colors.surface.text.subdued.lowContrast};
+    color: ${theme.colors.surface.text.gray.muted};
     flex: 1;
     @media screen and (max-width: ${theme.breakpoints.m}px) {
       padding: ${theme.spacing[0]} 10px ;

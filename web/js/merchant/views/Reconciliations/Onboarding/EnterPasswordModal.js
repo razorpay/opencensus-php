@@ -21,7 +21,7 @@ export default function EnterPasswordModal({ activePassFile, setActivePassFile, 
         leading={<LockIcon />}
       />
       <ModalBody padding="spacing.6">
-        <Text type="subdued" weight="bold" size="small">
+        <Text weight="semibold" size="small" color="surface.text.gray.muted">
           Document
         </Text>
         <Box
@@ -31,7 +31,7 @@ export default function EnterPasswordModal({ activePassFile, setActivePassFile, 
           alignItems="center"
           marginTop="spacing.3"
           borderWidth="thick"
-          borderColor="brand.gray.300.lowContrast"
+          borderColor="surface.border.gray.subtle"
           borderRadius="medium"
         >
           <img src={FileUploading} alt="File Icon" />

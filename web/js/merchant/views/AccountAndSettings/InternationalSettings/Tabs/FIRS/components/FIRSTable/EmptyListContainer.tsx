@@ -20,7 +20,7 @@ const EmptyListContainer = (): React.ReactElement => {
         />
       </Box>
       <Box maxWidth="460px" display="flex" flexDirection="column" alignItems="center">
-        <Text weight="bold" marginBottom="spacing.2" size="large">
+        <Text weight="semibold" marginBottom="spacing.2" size="large">
           Start collecting international payments
         </Text>
         <Text marginBottom="spacing.7" size="small">

@@ -48,7 +48,7 @@ const PaymentTransfers = ({
         !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentTransfers) && !hasPlatformFee
       }
     >
-      <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+      <Divider dividerStyle="solid" thickness="thick" variant="muted" />
       <RowWrapper>
         <Box display="flex" justifyContent="space-between" width="100%">
           <Box
@@ -60,7 +60,7 @@ const PaymentTransfers = ({
             }}
           >
             <Box minWidth="200px">
-              <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+              <Text variant="body" size="medium" weight="regular" color="surface.text.gray.subtle">
                 Transfer
               </Text>
             </Box>

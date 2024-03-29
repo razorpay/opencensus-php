@@ -1,25 +1,24 @@
 import React, { useMemo } from 'react';
+import { Box, EditComposeIcon, Link, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
-import { Heading, Link, Text, EditComposeIcon, Box } from '@razorpay/blade/components';
 import DataTable from 'common/ui/Table/DataTable';
+import Configuration from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration';
+import { MAPPING_TYPES } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
 import {
+  slabName,
   slabRange,
   slatRate,
   zoneCountry,
   zoneName,
   zoneStates,
-  slabName,
 } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/cellItem';
-import Configuration from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration';
-
 import { COD_ENGINES } from 'merchant/views/MagicCheckout/CODSettings/constants';
-import { MAPPING_TYPES } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
 
 const PreviewItem = ({ label, children }) => (
   <div className="preview-item">
     <Box marginBottom="spacing.3">
-      <Text size="small" type="subdued">
+      <Text size="small" color="surface.text.gray.muted">
         {label}
       </Text>
     </Box>
@@ -52,7 +51,7 @@ const PreviewView = ({ cod_engine_config, handleEdit, isRCOD }) => {
     <div className="preview-view">
       <div className="preview-item">
         <div className="heading">
-          <Heading>Settings</Heading>
+          <Text size="large">Settings</Text>
           <Link onClick={handleEdit} icon={EditComposeIcon} iconPosition="left" variant="button">
             Edit
           </Link>
@@ -60,7 +59,7 @@ const PreviewView = ({ cod_engine_config, handleEdit, isRCOD }) => {
       </div>
       {!isRCOD ? (
         <PreviewItem label="Type of setting">
-          <Text weight="bold">{engine}</Text>
+          <Text weight="semibold">{engine}</Text>
         </PreviewItem>
       ) : null}
       {isAdvanceView ? (
@@ -78,7 +77,7 @@ const PreviewView = ({ cod_engine_config, handleEdit, isRCOD }) => {
                 columns={TABLE_COLUMNS}
               />
             ) : (
-              <Text weight="bold">Disabled</Text>
+              <Text weight="semibold">Disabled</Text>
             )}
           </PreviewItem>
 
@@ -91,7 +90,7 @@ const PreviewView = ({ cod_engine_config, handleEdit, isRCOD }) => {
                   columns={[zoneName, zoneCountry, zoneStates]}
                 />
               ) : (
-                <Text weight="bold">Enabled for all shopify shipping zones</Text>
+                <Text weight="semibold">Enabled for all shopify shipping zones</Text>
               )}
             </PreviewItem>
           ) : null}

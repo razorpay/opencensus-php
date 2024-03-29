@@ -1,6 +1,5 @@
 import React, { useContext, useEffect } from 'react';
 import {
-  Title,
   Box,
   Button,
   Link,
@@ -108,7 +107,9 @@ const OrderCart = ({ showNotification }: Props) => {
           </Link>
         </Box>
         <Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="end">
-          <Title color="surface.text.subtle.lowContrast">Cart</Title>
+          <Heading color="surface.text.gray.subtle" size="large">
+            Cart
+          </Heading>
         </Box>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" flexDirection="column" flex={1}>
@@ -135,9 +136,9 @@ const OrderCart = ({ showNotification }: Props) => {
                   alignItems="center"
                   paddingBottom="spacing.4"
                 >
-                  <Heading size="small" color="surface.text.subtle.lowContrast">
+                  <Text color="surface.text.gray.subtle" size="large">
                     Programs
-                  </Heading>
+                  </Text>
                   <Button
                     variant="secondary"
                     size="medium"
@@ -160,12 +161,10 @@ const OrderCart = ({ showNotification }: Props) => {
                 <Box>
                   <Box display="flex" justifyContent="space-between">
                     <Box>
-                      <Heading size="medium" color="surface.text.subtle.lowContrast">
+                      <Heading color="surface.text.gray.subtle" size="small">
                         Cancel this order?
                       </Heading>
-                      <Text color="surface.text.subdued.lowContrast">
-                        This action can not be undone
-                      </Text>
+                      <Text color="surface.text.gray.muted">This action can not be undone</Text>
                     </Box>
                     <Button
                       isLoading={isLoadingOrderUpdate}

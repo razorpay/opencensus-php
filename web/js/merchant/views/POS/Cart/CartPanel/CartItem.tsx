@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Box, Heading, IconButton, TrashIcon, Text, Amount } from '@razorpay/blade/components';
+import { Amount, Box, IconButton, Text, TrashIcon } from '@razorpay/blade/components';
 
 import QuantityWidget from 'merchant/views/POS/Cart/QuantityWidget';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
@@ -64,7 +64,7 @@ const CartItem = ({
     <Box
       key={code}
       padding="spacing.5"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       borderRadius="medium"
       testID={`${code}-${plan}-cart-item`}
       marginBottom="spacing.5"
@@ -78,11 +78,13 @@ const CartItem = ({
             height={{ base: '65px', l: '70px' }}
             width={{ base: '65px', l: '70px' }}
             backgroundPosition="center center"
-            backgroundColor="surface.background.level3.lowContrast"
+            backgroundColor="surface.background.gray.moderate"
             borderRadius="large"
             marginRight="spacing.4"
           />
-          <Heading type="subtle">{productTitle}</Heading>
+          <Text size="large" color="surface.text.gray.subtle">
+            {productTitle}
+          </Text>
         </Box>
         <Box paddingTop="spacing.5">
           <IconButton
@@ -102,7 +104,7 @@ const CartItem = ({
             data-testid={`${type}-card`}
             onClick={() => handlePricingCardClick(type as ProductPlans)}
           >
-            <Text type="subdued" marginBottom="spacing.2" weight="bold">
+            <Text marginBottom="spacing.2" weight="semibold" color="surface.text.gray.muted">
               {name}
             </Text>
             {product?.offer ? (
@@ -141,8 +143,10 @@ const CartItem = ({
           <Amount
             value={total.value ?? 0}
             suffix="none"
-            size="heading-small-bold"
             isAffixSubtle={false}
+            type="body"
+            size="large"
+            weight="semibold"
           />
         </Box>
       </Box>

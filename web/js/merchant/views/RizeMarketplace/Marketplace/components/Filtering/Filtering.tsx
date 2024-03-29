@@ -32,7 +32,7 @@ const DesktopFiltering = ({
   return (
     <Box display={{ base: 'none', l: 'block' }} position="sticky" top="12rem" zIndex="10">
       <Box display="flex" alignItems="center" gap="spacing.5">
-        <Text size="large" weight="bold" color="surface.text.subdued.lowContrast">
+        <Text size="large" weight="semibold" color="surface.text.gray.muted">
           Categories
         </Text>
 
@@ -83,7 +83,7 @@ const MobileFiltering = ({
   return (
     <Box
       borderTopWidth="thin"
-      borderTopColor="surface.border.normal.lowContrast"
+      borderTopColor="surface.border.gray.muted"
       borderTopRightRadius="medium"
       borderTopLeftRadius="medium"
     >

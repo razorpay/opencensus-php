@@ -100,21 +100,21 @@ export const getBannerProps = ({
       return {
         title: 'Your request to activate international card payments was successful',
         description: bannerMessage || '',
-        intent: 'positive',
+        color: 'positive',
         ...commonData,
       };
     case UNDER_REVIEW:
       return {
         title: 'Your request to activate international card payments is under review',
         description: `We'll verify your details in a few days and share an update by ${workflowEta}.`,
-        intent: 'information',
+        color: 'information',
         ...commonData,
       };
     case UNDER_REVIEW_BREACHED:
       return {
         title: 'Your request to activate international card payments is under review (Delayed)',
         description: `This is taking more time than usual. We'll verify your details in a few days and share an update by ${workflowEta}.`,
-        intent: 'information',
+        color: 'information',
         ...commonData,
       };
     case UNDER_REVIEW_BREACHED_AGAIN:
@@ -122,7 +122,7 @@ export const getBannerProps = ({
         title: 'Your request to activate international card payments is under review (Delayed)',
         description:
           "This is taking more time than usual. We'll verify your details in a few days and share an update soon. To know more, contact our support.",
-        intent: 'information',
+        color: 'information',
         ...commonData,
         ...underReviewTimeBreachedAgainActions,
       };
@@ -131,7 +131,7 @@ export const getBannerProps = ({
         title: 'We need a few more details for your international cards payment request',
         description:
           "Please note, you'll be able to collect international card payments only after verification is complete",
-        intent: 'notice',
+        color: 'notice',
         ...commonData,
         ...ncActions({ openModal }),
       };
@@ -140,7 +140,7 @@ export const getBannerProps = ({
       return {
         title: 'Your request to activate international card payments is rejected',
         description: bannerMessage || '',
-        intent: 'negative',
+        color: 'negative',
         ...commonData,
         actions: {
           primary: {
@@ -159,7 +159,7 @@ export const getBannerProps = ({
       return {
         description:
           'Update your website details to request for international card payments on payment gateway',
-        intent: 'notice',
+        color: 'notice',
         ...commonData,
         actions: {
           primary: {
@@ -179,7 +179,7 @@ export const getBannerProps = ({
       return {
         title: 'Banner type is not supported',
         description: 'Provide valid banner type',
-        intent: 'negative',
+        color: 'negative',
         ...commonData,
       };
   }

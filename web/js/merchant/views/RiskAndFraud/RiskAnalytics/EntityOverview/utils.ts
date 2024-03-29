@@ -17,20 +17,20 @@ export const getLabelComparision = (
 ): LabelComparisonResult => {
   if (actualValue > comparedValue) {
     return {
-      iconColor: 'feedback.icon.negative.lowContrast',
-      textColor: 'feedback.text.negative.lowContrast',
+      iconColor: 'feedback.icon.negative.intense',
+      textColor: 'feedback.text.negative.intense',
       label: 'Higher than industry average',
     };
   } else if (actualValue < comparedValue) {
     return {
-      iconColor: 'surface.text.subdued.lowContrast',
-      textColor: 'surface.text.subdued.lowContrast',
+      iconColor: 'surface.icon.gray.muted',
+      textColor: 'surface.text.gray.muted',
       label: 'Lower than industry average',
     };
   } else {
     return {
-      iconColor: 'surface.text.subdued.lowContrast',
-      textColor: 'surface.text.subdued.lowContrast',
+      iconColor: 'surface.icon.gray.muted',
+      textColor: 'surface.text.gray.muted',
       label: 'At par with industry average',
     };
   }

@@ -13,7 +13,7 @@ function Tooltip(props): React.ReactElement {
     <TooltipWrapper>
       <BladeTooltip content={content || ''}>
         <TooltipInteractiveWrapper>
-          <InfoIcon size="small" color="surface.text.subtle.lowContrast" {...restProps} />
+          <InfoIcon size="small" color="interactive.icon.gray.subtle" {...restProps} />
         </TooltipInteractiveWrapper>
       </BladeTooltip>
     </TooltipWrapper>

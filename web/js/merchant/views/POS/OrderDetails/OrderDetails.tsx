@@ -8,7 +8,6 @@ import {
   PhoneIcon,
   Spinner,
   Text,
-  Title,
 } from '@razorpay/blade/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import moment from 'moment';
@@ -102,16 +101,18 @@ const OrderDetails = ({
             <Box flex="0 0 35%" marginBottom={{ base: 'spacing.5', l: 'spacing.0' }}>
               {orderStatusMeta ? (
                 <Box>
-                  <Text type="subdued">{orderStatusMeta.statusTitle}</Text>
+                  <Text color="surface.text.gray.muted">{orderStatusMeta.statusTitle}</Text>
                   <Box marginBottom="spacing.3">
-                    <Title>{moment.unix(orderStatusMeta.statusDate).format('MMMM DD, YYYY')}</Title>
+                    <Heading size="large">
+                      {moment.unix(orderStatusMeta.statusDate).format('MMMM DD, YYYY')}
+                    </Heading>
                   </Box>
                 </Box>
               ) : null}
               <Box display="flex" alignItems="center">
                 <CalendarIcon
                   size="medium"
-                  color="surface.text.subtle.lowContrast"
+                  color="interactive.icon.gray.subtle"
                   marginRight="spacing.2"
                 />
                 <Text>Ordered on {moment.unix(created_at).format('MMMM DD, YYYY')}</Text>
@@ -128,17 +129,19 @@ const OrderDetails = ({
         <Box as="section" display={{ base: 'block', l: 'flex' }} gap="spacing.5">
           <Box flex="0 0 60%">
             <Box
-              backgroundColor="surface.background.level3.lowContrast"
+              backgroundColor="surface.background.gray.moderate"
               padding="spacing.6"
               borderRadius="medium"
               marginBottom="spacing.5"
             >
               {delivery_address?.address ? (
                 <React.Fragment>
-                  <Heading marginBottom="spacing.5">Shipping Address</Heading>
+                  <Text marginBottom="spacing.5" size="large">
+                    Shipping Address
+                  </Text>
                   <Box marginBottom="spacing.5">
                     <Box display="flex" marginBottom="spacing.2">
-                      <Text weight="bold">{delivery_address.name}</Text>
+                      <Text weight="semibold">{delivery_address.name}</Text>
                       <Text marginX="spacing.3">|</Text>
                       <Text>{delivery_address.phone_no}</Text>
                     </Box>
@@ -152,10 +155,12 @@ const OrderDetails = ({
               <Divider marginBottom="spacing.5" />
               <Box marginBottom="spacing.5">
                 <Box display="flex" marginBottom="spacing.5">
-                  <Heading marginRight="spacing.3">Products in this purchase</Heading>
-                  <Heading weight="regular">
+                  <Text marginRight="spacing.3" size="large">
+                    Products in this purchase
+                  </Text>
+                  <Text weight="regular" size="large">
                     {items.length} {items.length === 1 ? 'Item' : 'Items'}
-                  </Heading>
+                  </Text>
                 </Box>
                 {items.map(({ code, count, period }) => (
                   <OrderItem
@@ -173,7 +178,9 @@ const OrderDetails = ({
                 <React.Fragment>
                   <Divider marginBottom="spacing.5" />
                   <Box marginBottom="spacing.5">
-                    <Heading marginBottom="spacing.3">Updates sent to</Heading>
+                    <Text marginBottom="spacing.3" size="large">
+                      Updates sent to
+                    </Text>
                     <Box display={{ base: 'block', l: 'flex' }} testID="merchant-contact-container">
                       {user?.contact_email ? (
                         <Box
@@ -184,7 +191,7 @@ const OrderDetails = ({
                         >
                           <MailIcon
                             size="medium"
-                            color="surface.action.icon.focus.lowContrast"
+                            color="interactive.icon.gray.subtle"
                             marginRight="spacing.3"
                           />
                           <Text>{user.contact_email}</Text>
@@ -194,7 +201,7 @@ const OrderDetails = ({
                         <Box display="flex" alignItems="center" marginBottom="spacing.3">
                           <PhoneIcon
                             size="medium"
-                            color="surface.action.icon.focus.lowContrast"
+                            color="interactive.icon.gray.subtle"
                             marginRight="spacing.3"
                           />
                           <Text>{user.contact_mobile}</Text>
@@ -208,7 +215,7 @@ const OrderDetails = ({
           </Box>
           <Box width="100%">
             <Box
-              backgroundColor="surface.background.level3.lowContrast"
+              backgroundColor="surface.background.gray.moderate"
               padding="spacing.6"
               borderRadius="medium"
               display="flex"

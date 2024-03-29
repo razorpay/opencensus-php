@@ -9,7 +9,7 @@ const Container = styled.div`
 `;
 
 const Heading = styled.h2`
-  font-weight: 900;
+  font-weight: 800;
   font-size: 16px;
   line-height: 22px;
   text-align: center;

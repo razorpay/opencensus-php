@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { AsyncBtn } from 'common/new-ui/Button';
 
 const EnableButton = styled(AsyncBtn.Primary)`
-  font-weight: bold;
+  font-weight: 600;
   line-height: 17px;
   width: 100%;
 `;

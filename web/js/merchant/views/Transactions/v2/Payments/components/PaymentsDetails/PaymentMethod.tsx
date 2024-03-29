@@ -106,14 +106,7 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
     return <>{titleCase(method)}</>;
   };
   return (
-    <Text
-      type="normal"
-      variant="body"
-      size="medium"
-      weight="regular"
-      contrast="low"
-      color="surface.text.normal.lowContrast"
-    >
+    <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
       {getPaymentMethod()}
     </Text>
   );

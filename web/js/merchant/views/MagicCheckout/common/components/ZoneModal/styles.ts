@@ -15,7 +15,7 @@ export const ModalWrapper = styled.div`
       background: #f6f6f7;
     }
     &::-webkit-scrollbar-thumb {
-      background-color: ${({ theme }) => theme.colors.brand.primary[500]};
+      background-color: ${({ theme }) => theme.colors.surface.background.primary.intense};
     }
   }
 `;

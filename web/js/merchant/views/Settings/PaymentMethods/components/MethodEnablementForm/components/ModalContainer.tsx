@@ -192,7 +192,7 @@ const ModalContainer = ({
           <Box
             maxWidth="267px"
             width="100%"
-            backgroundColor="surface.background.level3.lowContrast"
+            backgroundColor="surface.background.gray.moderate"
             padding={['spacing.7', 'spacing.5', 'spacing.7', 'spacing.5']}
             display={{ base: 'none', m: 'block' }}
           >
@@ -204,18 +204,20 @@ const ModalContainer = ({
                   alignItems="center"
                   padding="spacing.3"
                   paddingRight="spacing.0"
-                  backgroundColor={isTabActive(index) ? 'brand.primary.300' : 'transparent'}
+                  backgroundColor={
+                    isTabActive(index) ? 'surface.background.primary.subtle' : 'transparent'
+                  }
                   borderRadius="medium"
                   key={name}
                 >
                   {isTabValid(index) && (
-                    <CheckIcon marginRight="spacing.3" color="feedback.icon.positive.lowContrast" />
+                    <CheckIcon marginRight="spacing.3" color="feedback.icon.positive.intense" />
                   )}
                   <Text
                     color={
                       isTabValid(index)
-                        ? 'feedback.text.positive.lowContrast'
-                        : 'surface.text.normal.lowContrast'
+                        ? 'feedback.text.positive.intense'
+                        : 'surface.text.gray.normal'
                     }
                   >
                     {name}

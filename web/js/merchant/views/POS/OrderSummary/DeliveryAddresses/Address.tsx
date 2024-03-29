@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Heading, Link, EditIcon } from '@razorpay/blade/components';
+import { Box, Link, EditIcon, Text } from '@razorpay/blade/components';
 
 import { states as STATES } from 'merchant/helpers/data';
 import { DeliveryAddress } from 'merchant/views/POS/types';
@@ -20,19 +20,19 @@ const Address = ({ deliveryAddress, isDisabled, onEditClick }: AddressProps): JS
         justifyContent="space-between"
         marginBottom="spacing.3"
       >
-        <Heading>{name}</Heading>
+        <Text size="large">{name}</Text>
         {isDisabled ? null : (
           <Link variant="button" icon={EditIcon} onClick={() => onEditClick()}>
             Edit
           </Link>
         )}
       </Box>
-      <Heading weight="regular" size="small" type="subtle">
+      <Text weight="regular" size="large" color="surface.text.gray.subtle">
         {phoneNumber}
-      </Heading>
-      <Heading weight="regular" size="small" type="subtle">
+      </Text>
+      <Text weight="regular" size="large" color="surface.text.gray.subtle">
         {address}, {city}, {STATES[state]}-{pincode}
-      </Heading>
+      </Text>
     </Box>
   );
 };

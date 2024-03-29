@@ -4,27 +4,26 @@ import type { EcosystemDowntimesStatusType } from 'merchant/views/EcosystemDownt
 
 const COLOR_MAP = {
   background: {
-    main: (colors) => colors.brand.gray[200].lowContrast,
-    layer: (colors) => colors.surface.background.level1.lowContrast,
-    positive: (colors) => colors.feedback.background.positive.lowContrast,
-    notice: (colors) => colors.feedback.background.notice.lowContrast,
-    negative: (colors) => colors.feedback.background.negative.lowContrast,
-    information: (colors) => colors.surface.background.level1.lowContrast,
+    main: (colors) => colors.surface.background.gray.moderate,
+    layer: (colors) => colors.surface.background.gray.subtle,
+    positive: (colors) => colors.feedback.background.positive.subtle,
+    notice: (colors) => colors.feedback.background.notice.subtle,
+    negative: (colors) => colors.feedback.background.negative.subtle,
+    information: (colors) => colors.surface.background.gray.subtle,
   },
   icon: {
-    neutral: (colors) => colors.feedback.icon.neutral.lowContrast,
-    positive: (colors) => colors.feedback.icon.positive.lowContrast,
-    notice: (colors) => colors.feedback.icon.notice.lowContrast,
-    negative: (colors) => colors.feedback.icon.negative.lowContrast,
+    neutral: (colors) => colors.feedback.icon.neutral.intense,
+    positive: (colors) => colors.feedback.icon.positive.intense,
+    notice: (colors) => colors.feedback.icon.notice.intense,
+    negative: (colors) => colors.feedback.icon.negative.intense,
   },
   action: {
-    enabled: (colors) => colors.action.text.secondary.default,
-    disabled: (colors) => colors.action.text.primary.disabled,
+    enabled: (colors) => colors.interactive.text.primary.normal,
+    disabled: (colors) => colors.interactive.text.primary.disabled,
   },
   border: {
-    focused: (colors) => colors.action.border.secondary.focus,
-    disabled: (colors) => colors.action.border.primary.disabled,
-    separator: (colors) => colors.brand.gray[700].lowContrast,
+    focused: (colors) => colors.interactive.border.primary.default,
+    separator: (colors) => colors.interactive.background.neutral.default,
   },
 };
 
@@ -131,7 +130,6 @@ export const EcosystemLoaderContainer = styled.div(
 export const EcosystemHealthHeading = styled.div(
   ({ theme }: { theme: Theme }) => `
     padding: 0 0 ${theme.spacing[3]}px;
-    border-bottom: 1px solid ${COLOR_MAP.border.disabled(theme.colors)};
     position: sticky;
     top: 0;
     background-color: ${COLOR_MAP.background.main(theme.colors)};

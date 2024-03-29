@@ -32,7 +32,7 @@ export const ConditionalModalFooter = ({
         {/* // Note: below is a placeholder to correct scrolling height in the DOM for ModalBody
             // because in our use-case, the ModalFooter is inside ModalBody.
             // The placeholder represents Buttons with height 36px; */}
-        <Box backgroundColor="surface.background.level2.lowContrast" height="36px" width="100%" />
+        <Box backgroundColor="surface.background.gray.intense" height="36px" width="100%" />
       </BladeModalFooter>
     );
   return null;

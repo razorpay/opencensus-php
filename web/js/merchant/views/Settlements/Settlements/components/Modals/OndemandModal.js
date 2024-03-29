@@ -655,7 +655,7 @@ class OndemandModal extends Component {
           {hasISPlusPlus ? (
             wantsISPlusPlus ? (
               <Box marginY="spacing.5">
-                <PlusSquareIcon size="medium" color="action.icon.tertiary.default" />
+                <PlusSquareIcon size="medium" color="interactive.icon.gray.normal" />
                 <Input
                   label="Additional advance"
                   required={false}

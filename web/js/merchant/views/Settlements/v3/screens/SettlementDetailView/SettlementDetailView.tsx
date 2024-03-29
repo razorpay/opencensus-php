@@ -72,12 +72,12 @@ const SettlementDetailView = ({
       {shouldShouldFailedAlert && (
         <Alert
           {...(bannerConfig?.action ? bannerConfig.action(settlement) : {})}
-          contrast="low"
+          emphasis="subtle"
           description={bannerConfig?.description || ''}
-          intent="negative"
           isDismissible={false}
           title={bannerConfig?.heading}
           isFullWidth
+          color="negative"
         />
       )}
       <SettlementInfo settlementId={settlementId} />

@@ -6,7 +6,7 @@ export const ModalItem = styled.div<{ isDisabled: boolean }>`
   justify-content: space-between;
   align-items: center;
   height: 60px;
-  border-bottom: ${({ theme }) => `1px dashed ${theme.colors.surface.border.normal.lowContrast};`}
+  border-bottom: ${({ theme }) => `1px dashed ${theme.colors.surface.border.gray.muted};`}
     ${({ isDisabled }) =>
       isDisabled &&
       css`
@@ -29,7 +29,7 @@ export const ModalItem = styled.div<{ isDisabled: boolean }>`
 
 export const ModalItems = styled.div(
   ({ theme }) => `
-    border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+    border: 1px solid ${theme.colors.surface.border.gray.muted};
     padding-left: 15px;
     height: 340px;
     margin-top ${theme.spacing[2]}px;
@@ -49,12 +49,12 @@ export const CheckboxWrapper = styled.div(
     min-width: 20px;
     margin: 0;
     min-height: 20px;
-    border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+    border: 1px solid ${theme.colors.surface.border.gray.muted};
     border-radius: 2px;
     &::after {
       font-family: merchant-icons;
       content: "\f125";
-      color: ${theme.colors.surface.background.level2.lowContrast};
+      color: ${theme.colors.surface.background.gray.intense};
       display: none;
       position: relative;
       top: 2px;
@@ -62,15 +62,15 @@ export const CheckboxWrapper = styled.div(
       font-size: 14px;
     }
     &:checked {
-      border-color: ${theme.colors.brand.primary[500]};
-      background: ${theme.colors.brand.primary[500]};
+      border-color: ${theme.colors.surface.background.primary.intense};
+      background: ${theme.colors.surface.background.primary.intense};
       &::after {
         display: block;
       }
     }
     &:indeterminate {
-      border-color: ${theme.colors.brand.primary[500]};
-      background: ${theme.colors.brand.primary[500]};
+      border-color: ${theme.colors.surface.background.primary.intense};
+      background: ${theme.colors.surface.background.primary.intense};
       &::after {
         left: 4px;
         top: 0;

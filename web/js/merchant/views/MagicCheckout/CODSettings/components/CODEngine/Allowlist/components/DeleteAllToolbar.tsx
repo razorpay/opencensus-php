@@ -13,7 +13,7 @@ const DeleteAllToolbar = (props: DeleteToolbarProps) => {
       <Button
         type="button"
         variant="secondary"
-        color="default"
+        color="primary"
         onClick={onDeleteClick}
         size="medium"
         iconPosition="left"

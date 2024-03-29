@@ -81,7 +81,7 @@ const FailedPaymentsOverview = ({ mode, user }): JSX.Element => {
         justifyContent="space-between"
       >
         <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.2">
-          <Text type="normal" weight="bold" contrast="low">
+          <Text weight="semibold" color="surface.text.gray.normal">
             Failed
           </Text>
           <Dropdown

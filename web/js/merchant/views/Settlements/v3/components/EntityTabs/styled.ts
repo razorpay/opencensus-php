@@ -15,8 +15,8 @@ export const TabsContainer = styled.div`
   padding-right: ${({ theme }) => `${theme.spacing[0]}px`};
   max-width: 100%;
   overflow: scroll;
-  background: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
-  border-bottom: ${({ theme }) => `1px solid ${theme.colors.surface.border.normal.lowContrast}`};
+  background: ${({ theme }) => theme.colors.surface.background.gray.intense};
+  border-bottom: ${({ theme }) => `1px solid ${theme.colors.surface.border.gray.muted}`};
 `;
 
 export const Tab = styled.div<StyledActiveProps>`
@@ -31,7 +31,7 @@ export const Tab = styled.div<StyledActiveProps>`
   ${({ isActive, theme }) =>
     isActive &&
     css`
-      border-bottom: 2px solid ${theme.colors.brand.primary[500]};
+      border-bottom: 2px solid ${theme.colors.surface.background.primary.intense};
     `}
 `;
 
@@ -39,8 +39,8 @@ export const StyledDivTabText = styled.div<StyledActiveProps>`
   p {
     color: ${({ isActive, theme }) => {
       return isActive
-        ? `${theme.colors.brand.primary[500]}`
-        : `${theme.colors.surface.text.normal.lowContrast}`;
+        ? `${theme.colors.surface.background.primary.intense}`
+        : `${theme.colors.surface.text.gray.normal}`;
     }};
   }
 `;

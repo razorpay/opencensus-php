@@ -15,11 +15,11 @@ const shareIcons = [
     action: 'facebook',
   },
   {
-    Icon: () => <CopyIcon color="brand.gray.700.lowContrast" size="large" />,
+    Icon: () => <CopyIcon color="interactive.icon.neutral.subtle" size="large" />,
     action: 'copy',
   },
   {
-    Icon: () => <DownloadIcon color="brand.gray.700.lowContrast" size="large" />,
+    Icon: () => <DownloadIcon color="interactive.icon.neutral.subtle" size="large" />,
     action: 'download',
   },
 ];

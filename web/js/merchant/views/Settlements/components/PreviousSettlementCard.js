@@ -15,7 +15,7 @@ const PreviousSettlementCard = ({ settlementsList, currency }) => {
     case SETTLEMENT_STATUS.CREATED:
       badge = (
         <span>
-          <Badge variant="notice" size="medium">
+          <Badge size="medium" color="notice">
             Created
           </Badge>
           <PopoverComponent align="top" theme="dark">
@@ -27,7 +27,7 @@ const PreviousSettlementCard = ({ settlementsList, currency }) => {
     case SETTLEMENT_STATUS.PROCESSED:
       badge = (
         <span>
-          <Badge variant="positive" size="medium">
+          <Badge size="medium" color="positive">
             Processed
           </Badge>
           <PopoverComponent align="top" theme="dark">
@@ -39,7 +39,7 @@ const PreviousSettlementCard = ({ settlementsList, currency }) => {
     case SETTLEMENT_STATUS.FAILED:
       badge = (
         <span>
-          <Badge variant="negative" size="medium">
+          <Badge size="medium" color="negative">
             Failed
           </Badge>
           <PopoverComponent align="top" theme="dark">

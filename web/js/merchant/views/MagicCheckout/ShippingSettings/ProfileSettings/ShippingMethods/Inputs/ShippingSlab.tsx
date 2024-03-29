@@ -173,7 +173,7 @@ const ShippingSlab = (): JSX.Element => {
                 />
                 {index === 1 && (
                   <IconButton onClick={handleDeleteCondition} data-testid="deleteIcon">
-                    <CloseIcon size="medium" color="feedback.icon.negative.lowContrast" />
+                    <CloseIcon size="medium" color="feedback.icon.negative.intense" />
                   </IconButton>
                 )}
               </Box>

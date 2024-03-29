@@ -10,7 +10,7 @@ import {
   YearInput,
   YearPickerStyled,
 } from './styled';
-import { CalendarIcon, Text, Box, Heading } from 'merchant_common/views/Reports/components';
+import { CalendarIcon, Text, Box } from 'merchant_common/views/Reports/components';
 import { YearGrid } from 'merchant_common/views/Reports/components/DateTimeRangePicker/components';
 import { useTheme, useClickOutSide } from 'merchant_common/views/Reports/hooks';
 import { YearPickerProps } from './types';
@@ -61,7 +61,6 @@ export const YearPicker = ({
   return (
     <YearField>
       <FieldLabel necessityIndicator={necessityIndicator} label={label} />
-
       <YearInput ref={pickerRef} label={label} open={isPickerOpen}>
         <SelectedYearInfo
           validation={isPickerOpen ? true : isValidated}
@@ -71,17 +70,14 @@ export const YearPicker = ({
         >
           <Text
             size="medium"
-            type="normal"
             variant="body"
             color={
-              typeof value === 'number'
-                ? 'surface.text.normal.lowContrast'
-                : 'surface.text.muted.lowContrast'
+              typeof value === 'number' ? 'surface.text.gray.normal' : 'surface.text.gray.muted'
             }
           >
             {value ?? placeHolder ?? 'Select A Year'}
           </Text>
-          <CalendarIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+          <CalendarIcon color="feedback.icon.neutral.intense" size="medium" />
         </SelectedYearInfo>
         {isPickerOpen ? (
           <AbsoluteWrapper topOffset={18}>
@@ -110,9 +106,9 @@ export const YearPicker = ({
                   customCalendarHeading={() => (
                     <FlexCentered>
                       <Box marginBottom={'spacing.4'}>
-                        <Heading size="small" weight="bold" type="subdued" variant="regular">
+                        <Text weight="semibold" size="large" color="surface.text.gray.muted">
                           Select Year
-                        </Heading>
+                        </Text>
                       </Box>
                     </FlexCentered>
                   )}

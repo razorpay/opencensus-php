@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
-import { connect } from 'react-redux';
 import { Box, Heading } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+
 import SettingsCard from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsCard';
 import FeeDetails from 'merchant/views/MagicCheckout/common/components/FeeDetails';
 
@@ -21,9 +22,9 @@ const ShippingCard = ({
         padding="spacing.6"
         paddingLeft="spacing.0"
         paddingRight="spacing.0"
-        backgroundColor="surface.background.level2.lowContrast"
+        backgroundColor="surface.background.gray.intense"
       >
-        <Heading size="large">Shipping Settings</Heading>
+        <Heading size="medium">Shipping Settings</Heading>
       </Box>
       <div className="platform-settings-card-wrapper">
         <div className="platform-settings-card bg-white">

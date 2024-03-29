@@ -30,7 +30,7 @@ const UpdateBusinessDetailsModal = ({ history, closeModal }: Props) => {
   return (
     <StyledUpdateBusinessDetailsContainer>
       <StyledUpdateBusinessDetailsContent>
-        <AlertTriangleIcon color="feedback.icon.notice.lowContrast" size="large" />
+        <AlertTriangleIcon color="feedback.icon.notice.intense" size="large" />
         <div>
           <h4>Update website details</h4>
           <p>

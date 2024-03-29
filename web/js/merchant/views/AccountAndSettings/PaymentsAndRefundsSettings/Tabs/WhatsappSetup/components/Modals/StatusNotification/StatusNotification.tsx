@@ -8,12 +8,13 @@ import {
   Text,
   BottomSheetHeader,
   BottomSheetBody,
-  Title,
+  Heading,
 } from '@razorpay/blade/components';
-import { useMobile } from 'common/hooks/useMobile';
-import { defaultSnapPoints } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/constants';
 import InitiateCheck from 'assets/initiate-check.svg';
 import SuccessCheck from 'assets/success-check.svg';
+
+import { useMobile } from 'common/hooks/useMobile';
+import { defaultSnapPoints } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/constants';
 import { whatsappAccountSetupAnalyticsTrack } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/utils';
 
 export const Config = {
@@ -80,8 +81,8 @@ const StatusNotification = ({
         >
           <img src={icon} alt={`${type}_check`} />
           <Box display="flex" flexDirection="column" alignItems="center" gap="spacing.4">
-            <Title size="small">{title}</Title>
-            <Text type="subdued" size="large" textAlign="center">
+            <Heading size="large">{title}</Heading>
+            <Text size="large" textAlign="center" color="surface.text.gray.muted">
               {subtext}
             </Text>
           </Box>

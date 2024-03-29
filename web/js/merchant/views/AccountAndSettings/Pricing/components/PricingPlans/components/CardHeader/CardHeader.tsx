@@ -1,4 +1,4 @@
-import { Badge, Heading, Text } from '@razorpay/blade/components';
+import { Badge, Text, Heading } from '@razorpay/blade/components';
 import React from 'react';
 import { connect } from 'react-redux';
 
@@ -84,23 +84,23 @@ const CardHeader = ({
               />
             </div>
             <div className="title">
-              <Heading size="small" weight="bold">
+              <Text weight="semibold" size="large">
                 {String(subscriptionPlanData?.plan?.name)}
-              </Heading>
+              </Text>
             </div>
             <div className="status">
-              <Badge contrast="high" variant={statusData.variant} size="small">
+              <Badge emphasis="intense" color={statusData.variant} size="small">
                 {statusData.label}
               </Badge>
             </div>
             <div className="pricing">
-              <Heading size="small" type="muted" weight="regular">
+              <Text weight="regular" size="large" color="surface.text.gray.muted">
                 {String(pricing)}
-              </Heading>
+              </Text>
             </div>
           </CardHeaderLeftItem>
           {statusData.label === 'IN PROGRESS' ? (
-            <Text size="small" weight="regular" type="normal">
+            <Text size="small" weight="regular" color="surface.text.gray.normal">
               Pricing Page will be activated in 24-48 hours
             </Text>
           ) : (
@@ -116,25 +116,24 @@ const CardHeader = ({
                 </ProgressBarContainer>
               ) : null}
               <Flex gap={3} justifyContent="space-between" width="100%">
-                <Text size="small" weight="regular" type="normal">
+                <Text size="small" weight="regular" color="surface.text.gray.normal">
                   {noOfDaysLeftToCharge} Days left
                 </Text>
                 <Flex gap={2}>
                   <Text
                     size="small"
                     weight="regular"
-                    type="normal"
                     color={
                       cancelledStatus === PRICING_PLAN_STATUS.cancelled
-                        ? 'feedback.text.negative.lowContrast'
-                        : 'surface.text.placeholder.lowContrast'
+                        ? 'feedback.text.negative.intense'
+                        : 'surface.text.gray.disabled'
                     }
                   >
                     {cancelledStatus === PRICING_PLAN_STATUS.cancelled
                       ? 'Expiring At'
                       : 'Next Billing Date:'}
                   </Text>
-                  <Text size="small" weight="bold" type="normal">
+                  <Text size="small" weight="semibold" color="surface.text.gray.normal">
                     {nextBillingDate}
                   </Text>
                 </Flex>
@@ -154,26 +153,26 @@ const CardHeader = ({
               />
             </div>
             <div className="title">
-              <Heading size="large" weight="bold">
+              <Heading weight="semibold" size="medium">
                 {String(subscriptionPlanData?.plan?.name)}
               </Heading>
             </div>
             <div className="status">
-              <Badge contrast="high" variant={statusData.variant} size="medium">
+              <Badge emphasis="intense" color={statusData.variant} size="medium">
                 {statusData.label}
               </Badge>
             </div>
             <div className="pricing">
-              <Heading size="small" type="muted" weight="regular">
+              <Text weight="regular" size="large" color="surface.text.gray.muted">
                 {pricing}
-              </Heading>
+              </Text>
             </div>
           </CardHeaderLeftItem>
           {statusData.label === STATUS_DATA.IN_PROGRESS.label ||
           statusData.label === STATUS_DATA.PAYMENT_PROCESSING.label ? (
-            <Heading size="small" weight="regular" type="subdued">
+            <Text weight="regular" size="large" color="surface.text.gray.muted">
               Pricing Plan updation in-progress
-            </Heading>
+            </Text>
           ) : (
             <Flex gap={4} flexDirection="column" alignItems="flex-end">
               <Flex gap={3}>
@@ -187,27 +186,27 @@ const CardHeader = ({
                     />
                   </ProgressBarContainer>
                 ) : null}
-                <Text size="small" type="normal" weight="regular">
+                <Text size="small" weight="regular" color="surface.text.gray.normal">
                   {noOfDaysLeftToCharge} Days left
                 </Text>
               </Flex>
               <Flex gap={3}>
-                <Heading
-                  size="small"
+                <Text
                   weight="regular"
                   color={
                     cancelledStatus === PRICING_PLAN_STATUS.cancelled
-                      ? 'feedback.text.negative.lowContrast'
-                      : 'surface.text.placeholder.lowContrast'
+                      ? 'feedback.text.negative.intense'
+                      : 'surface.text.gray.disabled'
                   }
+                  size="large"
                 >
                   {cancelledStatus === PRICING_PLAN_STATUS.cancelled
                     ? 'Expiring At'
                     : 'Next Billing Date:'}
-                </Heading>
-                <Heading size="small" weight="bold">
+                </Text>
+                <Text weight="semibold" size="large">
                   {nextBillingDate}
-                </Heading>
+                </Text>
               </Flex>
             </Flex>
           )}

@@ -1,30 +1,29 @@
 // TODO: Fix imports, currently its out of scope from phase 1;
 // @ts-nocheck
+import { Box, Heading, Text, VisuallyHidden } from '@razorpay/blade/components';
 import React from 'react';
-import { VisuallyHidden, Box, Text } from '@razorpay/blade/components';
 
-import Amount from 'common/ui/Amount';
-import { refundsStatusVariantMap } from './constants';
 import {
-  createdOn,
   amount,
+  createdOn,
   paymentId,
 } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsTable/columns';
 import { Item } from 'apps/self-serve/src/App/Transactions/v2/Refunds/types';
 import Details from 'apps/self-serve/src/App/Transactions/v2/common/components/Details';
 import Status from 'apps/self-serve/src/App/Transactions/v2/common/components/Status';
-import Title from 'apps/self-serve/src/App/Transactions/v2/common/components/Title';
 import {
   TransactionsEntityRoute,
   TransactionsPagesMap,
 } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { getCreatedOnTime } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
+import Amount from 'common/ui/Amount';
+import { refundsStatusVariantMap } from './constants';
 
 const { REFUNDS } = TransactionsEntityRoute;
 
 const refundId = {
   ...paymentId,
-  title: <Title>Refund ID</Title>,
+  title: <Heading size="large">Refund ID</Heading>,
 };
 
 const _paymentId = {
@@ -53,12 +52,14 @@ const mobileAmount = {
           marginLeft={{
             base: '-4px',
           }}
-          size="body-medium-bold"
           isAffixSubtle={false}
           value={amount}
           currency={currency}
+          type="body"
+          size="medium"
+          weight="semibold"
         />
-        <Text size="small" color="surface.text.muted.lowContrast">
+        <Text size="small" color="surface.text.gray.muted">
           {getCreatedOnTime({ created_at })}
         </Text>
       </>
@@ -67,7 +68,7 @@ const mobileAmount = {
 };
 
 const status = {
-  title: <Title>Status</Title>,
+  title: <Heading size="large">Status</Heading>,
   value: ({ status }: Item): JSX.Element => {
     const { variant, content } = refundsStatusVariantMap[status];
     return <Status variant={variant} content={content} status={status} />;
@@ -83,7 +84,7 @@ const actions = {
       }}
     >
       <VisuallyHidden>
-        <Title>Actions</Title>
+        <Heading size="large">Actions</Heading>
       </VisuallyHidden>
     </Box>
   ),

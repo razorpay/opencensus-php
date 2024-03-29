@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, ChevronDownIcon, ChevronUpIcon, Link, Title } from '@razorpay/blade/components';
+import { Box, ChevronDownIcon, ChevronUpIcon, Link, Heading } from '@razorpay/blade/components';
 import analytics, {
   L1FunnelStageT,
   L2FunnelStageT,
@@ -57,9 +57,9 @@ const ProductFeatureTable = ({
     <Box display="flex" flexDirection="column" overflow="hidden" ref={foldRef}>
       {isMobile ? (
         <Box marginBottom="spacing.5">
-          <Title size="medium" textAlign="center">
+          <Heading textAlign="center" size="xlarge">
             Choose the best devices for your business
-          </Title>
+          </Heading>
         </Box>
       ) : null}
       <Box

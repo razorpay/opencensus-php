@@ -8,7 +8,7 @@ import {
   RadioGroup,
   Radio,
   Switch,
-  Title,
+  Heading,
   Link,
   Button,
   EditIcon,
@@ -132,29 +132,29 @@ const ProviderConfiguration = (props) => {
       flexDirection="column"
       padding="spacing.7"
       gap={isFormEdit ? 'spacing.9' : 'spacing.6'}
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
     >
       <Box display="flex" justifyContent="space-between">
         <Box display="flex" flexDirection="column" gap="spacing.3">
-          <Title color="surface.text.subtle.lowContrast">
+          <Heading color="surface.text.gray.subtle" size="large">
             {selectedProviderDetails?.['Gateway Name']?.data_value || ''} Production API Details
-          </Title>
+          </Heading>
           {isFormEdit && (
             <Box>
-              <Text as="p" color="surface.text.subtle.lowContrast">
+              <Text as="p" color="surface.text.gray.subtle">
                 Please make sure you{' '}
-                <Text as="span" weight="bold">
+                <Text as="span" weight="semibold">
                   enter the production API details
                 </Text>{' '}
                 only and{' '}
-                <Text as="span" weight="bold">
+                <Text as="span" weight="semibold">
                   NOT the Test Details
                 </Text>
               </Text>
               <Box display="flex" alignItems="center" marginTop="spacing.2">
                 <HelpCircleIcon
                   size="medium"
-                  color="action.icon.link.default"
+                  color="interactive.icon.primary.subtle"
                   marginRight="spacing.2"
                 />
                 <Link onClick={onLinkClick} variant="anchor" size="small">
@@ -177,13 +177,12 @@ const ProviderConfiguration = (props) => {
               Edit details
             </Button>
           ) : (
-            <Text color="surface.text.subdued.lowContrast">
+            <Text color="surface.text.gray.muted">
               {hasSeamlessOption ? 'STEP 4 OUT OF 4' : 'STEP 3 OUT OF 3'}
             </Text>
           )}
         </Box>
       </Box>
-
       <Box display="flex" flexDirection="column" gap="spacing.7">
         {fields.map(({ label = '', data_type, data_value }) => {
           if (data_type === 'array') {
@@ -241,20 +240,19 @@ const ProviderConfiguration = (props) => {
                             )}
                           </Checkbox>
                         )}
-                        <Text type="subdued" variant="caption">
+                        <Text variant="caption" color="surface.text.gray.muted">
                           Select the payment methods to be enabled for{' '}
                           {selectedProviderDetails?.['Gateway Name']?.data_value || ''}.
                         </Text>
                       </Box>
                     ) : (
-                      <Text weight="bold">
+                      <Text weight="semibold">
                         {Gateway_details?.['Payment Methods']
                           ?.map((method) => METHODS_MAP?.[method] ?? method)
                           ?.join(', ')}
                       </Text>
                     )}
                   </Box>
-
                   {walletOptions?.length > 0 &&
                     Gateway_details?.['Payment Methods']?.includes('wallet') && (
                       <WalletsMultiSelect
@@ -277,7 +275,7 @@ const ProviderConfiguration = (props) => {
                         <HelpCircleIcon
                           testID="tpv-info-icon"
                           size="medium"
-                          color="feedback.icon.neutral.lowContrast"
+                          color="feedback.icon.neutral.intense"
                         />
                         <Popover theme="dark" align="right">
                           <PopoverBody>
@@ -301,7 +299,7 @@ const ProviderConfiguration = (props) => {
                         <Radio value={2}>Both (TPV and Non TPV)</Radio>
                       </RadioGroup>
                     ) : (
-                      <Text weight="bold">{TPV_OPTIONS[Gateway_details?.TPV] || ''}</Text>
+                      <Text weight="semibold">{TPV_OPTIONS[Gateway_details?.TPV] || ''}</Text>
                     )}
                   </Box>
                 </Box>
@@ -324,14 +322,14 @@ const ProviderConfiguration = (props) => {
                           onChange={changeGatewayDetails}
                           accessibilityLabel="Toggle Recurring"
                         />
-                        <Text type="subdued">{labelText}</Text>
+                        <Text color="surface.text.gray.muted">{labelText}</Text>
                       </Box>
-                      <Text type="subdued" variant="caption">
+                      <Text variant="caption" color="surface.text.gray.muted">
                         Available for Card and Netbanking, coming soon for UPI.
                       </Text>
                     </>
                   ) : (
-                    <Text weight="bold">{labelText}</Text>
+                    <Text weight="semibold">{labelText}</Text>
                   )}
                 </Box>
               </Box>
@@ -356,7 +354,7 @@ const ProviderConfiguration = (props) => {
                       gap={8}
                     />
                   ) : (
-                    <Text weight="bold">{Gateway_details?.[label] || ''}</Text>
+                    <Text weight="semibold">{Gateway_details?.[label] || ''}</Text>
                   )}
                 </Box>
               </Box>
@@ -383,7 +381,6 @@ const ProviderConfiguration = (props) => {
                   <Box minWidth="180px">
                     <Text>{titleCase(label)}</Text>
                   </Box>
-
                   <Box minWidth="280px">
                     {isFormEdit ? (
                       <TextInput
@@ -398,7 +395,7 @@ const ProviderConfiguration = (props) => {
                         gap={8}
                       />
                     ) : (
-                      <Text weight="bold">{Gateway_details?.[label] || ''}</Text>
+                      <Text weight="semibold">{Gateway_details?.[label] || ''}</Text>
                     )}
                   </Box>
                 </Box>
@@ -407,7 +404,6 @@ const ProviderConfiguration = (props) => {
             return null;
           })}
       </Box>
-
       {isFormEdit && (
         <Box display="flex" justifyContent="end">
           <Box display="flex" alignItems="center" gap="spacing.7">

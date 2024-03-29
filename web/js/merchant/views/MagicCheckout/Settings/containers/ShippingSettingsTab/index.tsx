@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text, Heading } from '@razorpay/blade/components';
+import { Box, Heading, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -121,8 +121,8 @@ const ShippingSettingsTab = ({
   };
   return (
     <ShippingSettingsWrapper>
-      <Heading size="large">Shipping Settings </Heading>
-      <Text type="subdued" size="medium" marginTop="spacing.4">
+      <Heading size="medium">Shipping Settings </Heading>
+      <Text size="medium" marginTop="spacing.4" color="surface.text.gray.muted">
         {SHIPPING_SETTINGS_INFO}
       </Text>
       <ShippingToggle>
@@ -132,7 +132,7 @@ const ShippingSettingsTab = ({
         />
       </ShippingToggle>
       <Box marginTop="spacing.2">
-        <Text type="subdued" size="small">
+        <Text size="small" color="surface.text.gray.muted">
           {MAGIC_SHIPPING_DESCRIPTION}
         </Text>
       </Box>

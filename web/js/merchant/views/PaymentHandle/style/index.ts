@@ -412,8 +412,7 @@ export const AlignTogether = styled(View)`
 `;
 
 export const HighlightBold = styled.span`
-  font-family: Lato-Bold;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13px;
   color: rgba(22, 47, 86, 0.87);
   text-decoration: none;

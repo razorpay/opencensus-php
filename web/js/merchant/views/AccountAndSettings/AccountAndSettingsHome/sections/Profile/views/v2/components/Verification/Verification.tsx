@@ -31,9 +31,9 @@ const Verification = ({ isMobile, user }: VerificationPropsInterface): JSX.Eleme
       justifyContent={{ base: 'space-between', m: 'initial' }}
     >
       <Box width="160px" display="flex" gap="3px" alignItems="center">
-        <Text weight="bold">2-step verification</Text>
+        <Text weight="semibold">2-step verification</Text>
         <Box display="flex" alignItems="center">
-          <InfoIcon color="action.icon.tertiary.default" size="medium" />
+          <InfoIcon color="interactive.icon.gray.normal" size="medium" />
           <Popover theme="dark" align="top" horizontalAdjustment={isMobile ? 80 : 100}>
             <PopoverBody>
               <div>

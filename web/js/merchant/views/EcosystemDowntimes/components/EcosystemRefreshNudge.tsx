@@ -63,7 +63,7 @@ const EcosystemRefreshNudge = ({ waitInterval }: { waitInterval: number }): JSX.
       isRefreshEnabled={isRefreshEnabled}
       aria-label="ecosystem-refresh-nudge"
     >
-      <Text type="subdued">Last updated at : {lastUpdatedAt}</Text>
+      <Text color="surface.text.gray.muted">Last updated at : {lastUpdatedAt}</Text>
       <div
         aria-label="ecosystem-refresh-button"
         className={`refresh-btn ${isRefreshEnabled ? 'enabled-refresh' : 'disabled-refresh'}`}
@@ -75,7 +75,9 @@ const EcosystemRefreshNudge = ({ waitInterval }: { waitInterval: number }): JSX.
           <>
             <RefreshIcon
               color={
-                isRefreshEnabled ? 'action.icon.secondary.default' : 'action.icon.primary.disabled'
+                isRefreshEnabled
+                  ? 'interactive.icon.primary.normal'
+                  : 'interactive.icon.primary.disabled'
               }
               size="medium"
             />

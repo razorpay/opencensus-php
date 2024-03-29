@@ -101,7 +101,7 @@ const UnicommerceForm = (props: UnicommerceFormPropType) => {
       ))}
       <UnicommerceLogisticsInfo>
         <InfoIcon
-          color="surface.text.muted.lowContrast"
+          color="interactive.icon.gray.muted"
           marginRight="spacing.4"
           position="relative"
           top="spacing.1"

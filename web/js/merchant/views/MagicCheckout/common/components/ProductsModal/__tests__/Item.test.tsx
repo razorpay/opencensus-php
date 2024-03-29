@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { Provider } from 'react-redux';
 
 import { render, screen, userEvent, waitFor } from 'common/services/test/test-utils';
@@ -15,7 +15,7 @@ import ProductItem from 'merchant/views/MagicCheckout/common/components/Products
 const renderProductItem = (newProps) => {
   return render(
     <Provider store={storeWithInitialState({ ...INITIAL_STATE })}>
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <ProductItem item={{ ...DB_PRODUCTS[0], selected: false }} {...newProps} />
       </BladeProvider>
     </Provider>,

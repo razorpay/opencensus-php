@@ -1,7 +1,6 @@
 import React from 'react';
 import { ArrowRightIcon, Box, Button, Heading, Text } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
-
 import EmptyCartIcon from 'assets/pos/icons/empty-cart.svg';
 
 type CartEmptyProps = {
@@ -33,10 +32,10 @@ const CartEmpty = ({ onShopMoreClick }: CartEmptyProps): JSX.Element => {
       <Box marginBottom="spacing.5">
         <img src={EmptyCartIcon} height="130px" />
       </Box>
-      <Heading size="large" textAlign="center">
+      <Heading textAlign="center" size="medium">
         Your cart is empty
       </Heading>
-      <Text textAlign="center" type="subtle">
+      <Text textAlign="center" color="surface.text.gray.subtle">
         Looks like you haven’t made your choices yet.
       </Text>
       <Button

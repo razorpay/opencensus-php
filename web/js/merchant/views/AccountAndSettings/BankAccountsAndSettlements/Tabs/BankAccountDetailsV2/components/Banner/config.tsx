@@ -117,7 +117,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
       return {
         title: 'Your bank account change request was successful',
         description: `Settlements are now active on your account ending with ${maskedAccountNumber}`,
-        intent: 'positive',
+        color: 'positive',
         ...commonData,
         onDismiss,
       };
@@ -125,21 +125,21 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
       return {
         title: 'Your bank account change request is under review',
         description: `We'll verify your details in a few days and share an update by ${workflowEta}. Please note, settlements are currently active on your existing account ending with ${maskedAccountNumber} until then.`,
-        intent: 'information',
+        color: 'information',
         ...commonData,
       };
     case ACTIVE_SETTLEMENT_UNDER_REVIEW_TIME_BREACHED:
       return {
         title: 'Your bank account change request is under review (Delayed)',
         description: `This is taking more time than usual. We'll verify your details in a few days and share an update by ${workflowEta}. Please note, settlements are currently active on your existing account ending with ${maskedAccountNumber} until then.`,
-        intent: 'information',
+        color: 'information',
         ...commonData,
       };
     case ACTIVE_SETTLEMENT_UNDER_REVIEW_TIME_BREACHED_AGAIN:
       return {
         title: 'Your bank account change request is under review (Delayed)',
         description: `This is taking more time than usual. We'll verify your details in a few days and share an update soon. To know more, contact our support. Please note, settlements are currently active on your existing account ending with ${maskedAccountNumber} until then.`,
-        intent: 'information',
+        color: 'information',
         ...commonData,
         ...underReviewTimeBreachedAgainActions,
       };
@@ -147,21 +147,21 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
       return {
         title: 'Your bank account change request is under review',
         description: `We'll verify your details in a few days and share an update by ${workflowEta}. Please note, settlements to your existing active account ending with ${maskedAccountNumber} are on-hold until your new bank account details are updated`,
-        intent: 'information',
+        color: 'information',
         ...commonData,
       };
     case INACTIVE_SETTLEMENT_UNDER_REVIEW_TIME_BREACHED:
       return {
         title: 'Your bank account change request is under review (Delayed)',
         description: `This is taking more time than usual. We'll verify your details in a few days and share an update by ${workflowEta}. Please note, settlements to your existing active account ending with ${maskedAccountNumber} are on-hold until your new bank account details are updated`,
-        intent: 'information',
+        color: 'information',
         ...commonData,
       };
     case INACTIVE_SETTLEMENT_UNDER_REVIEW_TIME_BREACHED_AGAIN:
       return {
         title: 'Your bank account change request is under review (Delayed)',
         description: `This is taking more time than usual. We'll verify your details in a few days and share an update soon. To know more, contact our support. Please note, settlements to your existing active account ending with ${maskedAccountNumber} are on-hold until your new bank account details are updated`,
-        intent: 'information',
+        color: 'information',
         ...commonData,
         ...underReviewTimeBreachedAgainActions,
       };
@@ -169,7 +169,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
       return {
         title: 'We need a few more details for your bank account verification',
         description: `Please note, settlements are currently active on your bank account ending with ${maskedAccountNumber}`,
-        intent: 'notice',
+        color: 'notice',
         ...commonData,
         ...ncActions({ openModal }),
       };
@@ -177,7 +177,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
       return {
         title: 'We need a few more details for your bank account verification',
         description: `Please note, settlements on your existing active account ending with ${maskedAccountNumber} are on-hold until your new bank account details are updated`,
-        intent: 'notice',
+        color: 'notice',
         ...commonData,
         ...ncActions({ openModal }),
       };
@@ -185,7 +185,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
       return {
         title: 'Your bank account change request is rejected',
         description: `The new bank account details you submitted couldn't be verified. Check your details and submit a new bank account change request to try again. Please note, settlements are currently active on your bank account ending with ${maskedAccountNumber}`,
-        intent: 'negative',
+        color: 'negative',
         ...commonData,
         onDismiss,
       };
@@ -194,7 +194,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
         title: 'Your bank account change request is rejected',
         description:
           "The new bank account details you submitted couldn't be verified. Check your details and submit a new bank account change request to try again. Please note, settlements will be on hold until your new bank account details are updated",
-        intent: 'negative',
+        color: 'negative',
         ...commonData,
         onDismiss,
       };
@@ -202,7 +202,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
       return {
         title: 'Complete your KYC to receive payments in your bank account',
         description: 'Your KYC details are required to start settlements',
-        intent: 'negative',
+        color: 'negative',
         ...commonData,
         actions: {
           primary: {
@@ -226,7 +226,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
         title: 'Settlements for your Razorpay account are on hold',
         description:
           'We noticed unusual activity and have paused transfer of payments to your bank account. To resume settlements, contact our support for the next steps',
-        intent: 'negative',
+        color: 'negative',
         ...commonData,
         actions: {
           primary: {
@@ -239,14 +239,14 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
         title: 'Update your bank account details to resume settlements',
         description:
           "Your settlements are on-hold as we've encountered a few issues with your given bank account. Please submit a request to change your bank account at the earliest",
-        intent: 'negative',
+        color: 'negative',
         ...commonData,
       };
     default:
       return {
         title: 'Banner type is not supported',
         description: 'Provide valid banner type',
-        intent: 'negative',
+        color: 'negative',
         ...commonData,
       };
   }

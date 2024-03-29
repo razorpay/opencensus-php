@@ -48,7 +48,7 @@ const StreaksReward = ({ location, mode }: { location: Location; mode: string })
         <StyledHeader className="scrollable-tab-header">
           <NavLink className="flex-link" to={ROUTES_INFO.STREAK_REWARD} data-testid="flex-link">
             Streaks
-            <Badge contrast="low" color="positive" size="medium" icon={OffersIcon}>
+            <Badge emphasis="subtle" color="positive" size="medium" icon={OffersIcon}>
               NEW
             </Badge>
           </NavLink>

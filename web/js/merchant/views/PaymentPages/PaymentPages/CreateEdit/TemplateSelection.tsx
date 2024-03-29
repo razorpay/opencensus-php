@@ -19,14 +19,7 @@ import {
   NewLabel,
   TemplateSelectionHeading,
 } from './styled';
-import {
-  Title,
-  Heading,
-  Button,
-  CheckIcon,
-  ArrowRightIcon,
-  CloseIcon,
-} from '@razorpay/blade/components';
+import { Heading, Button, CheckIcon, ArrowRightIcon, CloseIcon } from '@razorpay/blade/components';
 import { withRouter } from 'common/deprecated/withRouter';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 // import 'react-responsive-carousel/lib/styles/carousel.min.css'; // requires a loader
@@ -103,12 +96,12 @@ const TemplateSelection = ({ handlePageType, isMobile, history }: IProps): React
             <IconWrapper className="template">
               <i className="i i-template" />
             </IconWrapper>
-            <Title size="small" type="normal" contrast="high">
+            <Heading size="large" color="surface.text.staticWhite.normal">
               Select page of your choice
-            </Title>
+            </Heading>
           </div>
           <IconWrapper className="close-icon" onClick={handleClose}>
-            <CloseIcon color="feedback.icon.neutral.highContrast" size="large" />
+            <CloseIcon color="surface.icon.staticWhite.normal" size="large" />
           </IconWrapper>
         </PurpleBackground>
         <TemplateSelectionWrapper>
@@ -134,25 +127,25 @@ const TemplateSelection = ({ handlePageType, isMobile, history }: IProps): React
                 Sample Pages
               </Tag>
             </div>
-            <Heading type="normal" size="large" weight="bold" contrast="low">
+            <Heading weight="semibold" size="medium" color="surface.text.gray.normal">
               Payment page
             </Heading>
             <div>Setup your own custom branded page. Collect payments for:</div>
             <FeatureWrapper>
               <InlineWrapper>
-                <CheckIcon color="feedback.icon.positive.lowContrast" size="medium" />
+                <CheckIcon color="feedback.icon.positive.intense" size="medium" />
                 <span>Events & tickets</span>
               </InlineWrapper>
               <InlineWrapper>
-                <CheckIcon color="feedback.icon.positive.lowContrast" size="medium" />
+                <CheckIcon color="feedback.icon.positive.intense" size="medium" />
                 <span>Donations</span>
               </InlineWrapper>
               <InlineWrapper>
-                <CheckIcon color="feedback.icon.positive.lowContrast" size="medium" />
+                <CheckIcon color="feedback.icon.positive.intense" size="medium" />
                 <span>Fees</span>
               </InlineWrapper>
               <InlineWrapper>
-                <CheckIcon color="feedback.icon.positive.lowContrast" size="medium" />
+                <CheckIcon color="feedback.icon.positive.intense" size="medium" />
                 <span>Courses</span>
               </InlineWrapper>
               <InlineWrapper>

@@ -8,7 +8,7 @@ import {
 
 import AccountBalanceContainer from 'merchant/views/Wallet/AccountDetail/containers/AccountBalanceContainer';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 export const queryClient = new QueryClient();
 
@@ -16,7 +16,7 @@ describe('Wallet: AccountBalanceContainer tests', () => {
   it('should render amount and graph', async () => {
     render(
       <ReactQueryClientProvider client={queryClient}>
-        <BladeProvider themeTokens={paymentTheme}>
+        <BladeProvider themeTokens={bladeTheme}>
           <AccountBalanceContainer account_id="iacc_I9eCvXfHx7nzZs" mode="test" />
         </BladeProvider>
       </ReactQueryClientProvider>,

@@ -1,12 +1,15 @@
-import React from 'react';
 import { Box, ChevronRightIcon, Heading, Link, Text } from '@razorpay/blade/components';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { SettlementFailedStatus } from 'merchant/views/Settlements/v3/typings';
+import {
+  trackSettlmentDetailsContactSupport,
+  trackSettlmentDetailsUpdateBankAccount,
+} from 'merchant/views/Settlements/v3/utils/common';
 import {
   FailedSettlementInfo,
   getTimelineJourneyDetailsRevamp,
 } from 'merchant/views/Settlements/v3/utils/settlementInfo';
-import { connect } from 'react-redux';
-import { StyledSettlementJourneyMetadata, StyledTimelineRevamp } from './styled';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import {
   IconBackground,
   StyledGradientBox,
@@ -15,13 +18,10 @@ import {
   StyledTimelineContainer,
   getStatusIcon,
 } from 'merchant/views/Transactions/v2/Payments/components/Timeline/styled';
-import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import React from 'react';
+import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import {
-  trackSettlmentDetailsContactSupport,
-  trackSettlmentDetailsUpdateBankAccount,
-} from 'merchant/views/Settlements/v3/utils/common';
+import { StyledSettlementJourneyMetadata, StyledTimelineRevamp } from './styled';
 
 const getFailedSettlementInfo = (journeyPoint): JSX.Element | null => {
   const { failedType } = journeyPoint;
@@ -33,10 +33,10 @@ const getFailedSettlementInfo = (journeyPoint): JSX.Element | null => {
   return (
     <>
       <StyledGradientBox>
-        <Text size="small" weight="bold">
+        <Text size="small" weight="semibold">
           {title}
         </Text>
-        <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+        <Text size="small" color="surface.text.gray.subtle" weight="regular">
           {subtitle}
         </Text>
       </StyledGradientBox>
@@ -76,19 +76,19 @@ const getSettlementJourneyMeta = (journeyPoint): JSX.Element => {
   return (
     <StyledSettlementJourneyMetadata>
       {journeyPoint.subtitle && (
-        <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+        <Text size="small" color="surface.text.gray.subtle" weight="regular">
           {journeyPoint.subtitle}
         </Text>
       )}
       {journeyPoint.secondarySubtitle && (
-        <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+        <Text size="small" color="surface.text.gray.subtle" weight="regular">
           {journeyPoint.secondarySubtitle}
         </Text>
       )}
       {journeyPoint.mutedInfo && (
         <Text
-          color="surface.text.muted.lowContrast"
-          weight="bold"
+          color="surface.text.gray.muted"
+          weight="semibold"
           size="small"
           marginBottom="spacing.8"
           marginTop="spacing.4"
@@ -111,7 +111,7 @@ const Timeline = ({ settlement, settlementConfig, user }): JSX.Element => {
   return (
     <StyledTimelineRevamp>
       <Box padding="spacing.5" paddingBottom={'spacing.0'} paddingTop="spacing.7">
-        <Heading size="medium" weight="bold">
+        <Heading weight="semibold" size="small">
           Timeline
         </Heading>
       </Box>

@@ -20,7 +20,7 @@ export const LeafListItemSection = styled.div(
 export const LeafListItem = styled.div(
   ({ theme }: { theme: Theme }) => `
   padding: ${theme.spacing[7]}px !important;
-  background: ${theme.colors.surface.background.level3.lowContrast} !important;
+  background: ${theme.colors.surface.background.gray.moderate} !important;
   border-radius: 0px ${theme.spacing[2]}px ${theme.spacing[2]}px ${theme.spacing[2]}px;
   border-bottom: none !important;
 
@@ -37,8 +37,8 @@ export const LeafListItem = styled.div(
 
     .top-container .left-text-wrapper h4,
     .method-list-container .instrument-row .text-wraper .name {
-      color: ${theme.colors.surface.text.subtle.lowContrast}; !important;
-      font-weight: 700 !important;
+      color: ${theme.colors.surface.text.gray.subtle}; !important;
+      font-weight: 600 !important;
       font-size: ${theme.spacing[5]}px !important;
       line-height: ${theme.spacing[7]}px !important;
     }
@@ -69,14 +69,14 @@ export const LeafListItem = styled.div(
 
 export const StyledLeafListItemHeader = styled.div(
   ({ theme }: { theme: Theme }) => `
-  color: ${theme.colors.surface.text.subtle.lowContrast};;
+  color: ${theme.colors.surface.text.gray.subtle};;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   position: relative;
 
   h3 {
-    font-weight: 700;
+    font-weight: 600;
     font-size: ${theme.spacing[5]}px;
     line-height: ${theme.spacing[8]}px;
     margin-bottom: ${theme.spacing[3]}px;
@@ -93,7 +93,7 @@ export const StyledLeafListItemHeader = styled.div(
     column-gap: 9.5px;
 
     b {
-      color: ${theme.colors.surface.text.subdued.lowContrast};
+      color: ${theme.colors.surface.text.gray.muted};
     }
 
     button {

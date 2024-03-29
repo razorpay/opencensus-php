@@ -63,12 +63,13 @@ test('getBillingFrequencies should return expected frequencies', () => {
   expect(getBillingFrequencies(PAYMENT_METHODS.NACH)).toStrictEqual(BILLING_FREQUENCY);
 });
 
+// Assuming 'en-US' formatting rules apply
 test('maxAmountValidator should validate default field limits', () => {
   expect(maxAmountValidator(100, MAX_TOKEN_AMOUNT)('invalid')).toContain('Invalid Amount');
   expect(
     maxAmountRenderer(maxAmountValidator(100, MAX_TOKEN_AMOUNT)(MAX_TOKEN_AMOUNT + 1)).container
       .textContent,
-  ).toContain('Max amount should not be greater than₹1,00,00,000.00');
+  ).toContain('Max amount should not be greater than₹10,000,000.00');
 
   expect(
     maxAmountRenderer(maxAmountValidator(200, MAX_TOKEN_AMOUNT)(1)).container.textContent,
@@ -83,7 +84,7 @@ test('maxAmountValidator should validate UPI field limits', () => {
   expect(
     maxAmountRenderer(maxAmountValidator(100, UPI_AVL_LIMIT)(UPI_AVL_LIMIT + 1)).container
       .textContent,
-  ).toContain('Max amount should not be greater than₹2,00,000.00');
+  ).toContain('Max amount should not be greater than₹200,000.00');
 
   expect(
     maxAmountRenderer(maxAmountValidator(200, UPI_AVL_LIMIT)(1)).container.textContent,
@@ -98,7 +99,7 @@ test('maxAmountValidator should validate NACH field limits', () => {
   expect(
     maxAmountRenderer(maxAmountValidator(100, MAX_TOKEN_AMOUNT_NACH)(MAX_TOKEN_AMOUNT_NACH + 1))
       .container.textContent,
-  ).toContain('Max amount should not be greater than₹1,00,00,000.00');
+  ).toContain('Max amount should not be greater than₹10,000,000.00');
 
   expect(
     maxAmountRenderer(maxAmountValidator(200, MAX_TOKEN_AMOUNT_NACH)(1)).container.textContent,
@@ -112,12 +113,12 @@ test('cardMaxAmountValidator should return proper error message for INR', () => 
     maxAmountRenderer(
       cardMaxAmountValidator(CARD_TOKEN_MAX_AMOUNT, 'INR')(CARD_TOKEN_MAX_AMOUNT + 1),
     ).container.textContent,
-  ).toContain('Please enter an amount below₹10,00,000.00');
+  ).toContain('Please enter an amount below₹1,000,000.00');
 });
 
 test('cardMaxAmountValidator should return proper error message for MYR', () => {
   expect(
     maxAmountRenderer(cardMaxAmountValidator(MY_CARD_MAX_AMOUNT, 'MYR')(MY_CARD_MAX_AMOUNT + 1))
       .container.textContent,
-  ).toContain('Please enter an amount belowRM30,000.00');
+  ).toContain('Please enter an amount belowMYR30,000.00');
 });

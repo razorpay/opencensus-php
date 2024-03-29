@@ -36,7 +36,7 @@ describe('WhatsappSetup - StatusNotification', () => {
       renderApp({
         type: 'initiate',
       });
-      expect(screen.getByRole('heading', { name: Config.initiate.title })).toBeInTheDocument();
+      expect(screen.getByText(Config.initiate.title)).toBeInTheDocument();
       expect(screen.getByText(Config.initiate.subtext)).toBeInTheDocument();
     });
 
@@ -45,7 +45,7 @@ describe('WhatsappSetup - StatusNotification', () => {
       renderApp({
         type: 'initiate',
       });
-      expect(screen.getByRole('heading', { name: Config.initiate.title })).toBeInTheDocument();
+      expect(screen.getByText(Config.initiate.title)).toBeInTheDocument();
       expect(screen.getByText(Config.initiate.subtext)).toBeInTheDocument();
     });
 
@@ -80,7 +80,7 @@ describe('WhatsappSetup - StatusNotification', () => {
       renderApp({
         type: 'success',
       });
-      expect(screen.getByRole('heading', { name: Config.success.title })).toBeInTheDocument();
+      expect(screen.getByText(Config.success.title)).toBeInTheDocument();
       expect(screen.getByText(Config.success.subtext)).toBeInTheDocument();
     });
 
@@ -89,7 +89,7 @@ describe('WhatsappSetup - StatusNotification', () => {
       renderApp({
         type: 'success',
       });
-      expect(screen.getByRole('heading', { name: Config.success.title })).toBeInTheDocument();
+      expect(screen.getByText(Config.success.title)).toBeInTheDocument();
       expect(screen.getByText(Config.success.subtext)).toBeInTheDocument();
     });
 

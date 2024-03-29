@@ -14,7 +14,7 @@ export const EmptyComponent =
               <Button
                 type="button"
                 variant="primary"
-                color="default"
+                color="primary"
                 onClick={onUploadClick}
                 size="medium"
                 iconPosition="left"

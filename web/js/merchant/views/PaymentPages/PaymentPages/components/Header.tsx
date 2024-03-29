@@ -21,7 +21,7 @@ const PageNavContainer = styled.div<{ isSticky?: boolean }>(
 
 const PageTitle = styled.div`
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 600;
   padding-left: 8px;
 
   span {
@@ -42,7 +42,7 @@ const PageAction = styled.div`
     // height: 32px;
     vertical-align: middle;
     margin-left: 10px;
-    font-weight: 700;
+    font-weight: 600;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -85,7 +85,7 @@ const PageAction = styled.div`
   .new-label {
     background: #29c24d;
     border-radius: 10px;
-    font-weight: bold;
+    font-weight: 600;
     font-size: 12px;
     padding: 4px 10px;
     margin-left: 8px;

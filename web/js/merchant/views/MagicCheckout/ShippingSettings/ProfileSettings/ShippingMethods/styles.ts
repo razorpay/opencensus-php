@@ -3,9 +3,9 @@ import styled from 'styled-components';
 export const ConfigItemWrapper = styled.div(
   ({ theme }) => `
   width: 100%;
-  background-color: ${theme.colors.surface.background.level2.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.intense};
   padding: ${theme.spacing[4]}px;
-  border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+  border: 1px solid ${theme.colors.surface.border.gray.muted};
   border-radius: ${theme.border.radius.small}px;
 
   .seperator {
@@ -17,7 +17,7 @@ export const ConfigItemWrapper = styled.div(
   }
 
   svg > path {
-    fill: ${theme.colors.brand.primary[500]}
+    fill: ${theme.colors.surface.background.primary.intense}
   }
  
 `,
@@ -26,9 +26,9 @@ export const ConfigItemWrapper = styled.div(
 export const SummaryItemWrapper = styled.div(
   ({ theme }) => `
   width: 100%;
-  background-color: ${theme.colors.surface.background.level2.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.intense};
   padding: ${theme.spacing[3]}px;
-  border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+  border: 1px solid ${theme.colors.surface.border.gray.muted};
   border-radius: ${theme.border.radius.small}px;
 `,
 );
@@ -54,17 +54,17 @@ export const IconButton = styled.div`
 export const ShippingMethodTableWrapper = styled.div(
   ({ theme }) => `
   padding: ${theme.spacing[3]}px ${theme.spacing[4]}px;
-  border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+  border: 1px solid ${theme.colors.surface.border.gray.muted};
   border-radius: ${theme.border.radius.small}px;
   margin-top: ${theme.spacing[3]}px;
-  background-color: ${theme.colors.surface.background.level2.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.intense};
 `,
 );
 
 export const DeleteIconWrapper = styled.div(
   ({ theme }) => `
   svg > path {
-    fill: ${theme.colors.feedback.icon.negative.lowContrast};
+    fill: ${theme.colors.feedback.icon.negative.intense};
   }
 
 `,

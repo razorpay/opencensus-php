@@ -20,10 +20,10 @@ import { useStore } from 'shell/commonStore';
 
 import { withRouter } from 'shell/deprecated/withRouter';
 import { useMobile } from '@dashboard/shared-ui/hooks';
-import { ExtraFiltersModalProps, ChipProps, PaymentMethodOption } from './types';
-import { getDefaultValuesAndOptions, getOptions } from './utils';
 import { ALL_VALUE } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { trackMethodFilter } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import { ExtraFiltersModalProps, ChipProps, PaymentMethodOption } from './types';
+import { getDefaultValuesAndOptions, getOptions } from './utils';
 
 const ExtraFiltersModal = ({ handleSearch }: ExtraFiltersModalProps): JSX.Element => {
   const { defaultMethodValue, defaultChannelValue } = getDefaultValuesAndOptions();
@@ -72,7 +72,7 @@ const ExtraFiltersModal = ({ handleSearch }: ExtraFiltersModalProps): JSX.Elemen
       <ModalHeader title="Filters" />
       <ModalBody>
         <Box width="100%">
-          <Text variant="body" size="medium" weight="bold" contrast="low">
+          <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
             Payment Method
           </Text>
           <Dropdown marginTop="spacing.3" selectionType="single">
@@ -93,7 +93,7 @@ const ExtraFiltersModal = ({ handleSearch }: ExtraFiltersModalProps): JSX.Elemen
           </Dropdown>
         </Box>
         <Box marginTop="spacing.6">
-          <Text variant="body" size="medium" weight="bold" contrast="low">
+          <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
             Channel
           </Text>
           <ChipGroup

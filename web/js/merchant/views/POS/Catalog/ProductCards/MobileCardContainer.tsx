@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Box, Title, Heading, Text, Amount } from '@razorpay/blade/components';
+import { Box, Heading, Text, Amount } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
 
 import MainBannerBackdropImage from 'assets/pos/main-banner/mainbannerbackground.webp';
@@ -7,7 +7,6 @@ import { useSplitzService } from 'common/splitz';
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
 import { PartnerExclusivePriceContainer } from 'merchant/views/POS/PartnerExclusiveContainer';
-import AmountWithStrikeThrough from 'merchant/views/POS/ProductDescription/ProductPriceCards/AmountWithStrikeThrough';
 import { PRODUCT_PLANS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import {
@@ -54,7 +53,7 @@ const MobileCardContainer = ({
   return (
     <div onClick={handleOnCardClick}>
       <Box
-        backgroundColor="surface.background.level1.lowContrast"
+        backgroundColor="surface.background.gray.subtle"
         paddingTop="spacing.8"
         borderRadius="large"
         position="relative"
@@ -74,10 +73,15 @@ const MobileCardContainer = ({
             />
           </Box>
         ) : null}
-        <Title size="medium" textAlign="center">
+        <Heading textAlign="center" size="xlarge">
           {productDescription.productTitle}
-        </Title>
-        <Heading size="medium" textAlign="center" marginBottom="spacing.8" type="subdued">
+        </Heading>
+        <Heading
+          textAlign="center"
+          marginBottom="spacing.8"
+          size="small"
+          color="surface.text.gray.muted"
+        >
           {cardDescription}
         </Heading>
         <PartnerExclusivePriceContainer
@@ -88,62 +92,87 @@ const MobileCardContainer = ({
           <Box marginBottom="spacing.7">
             {isValidOffer ? (
               <React.Fragment>
-                <Heading
+                <Text
                   textAlign="center"
                   weight="regular"
-                  type="subtle"
                   testID="monthly-offer-amount-text"
+                  size="large"
+                  color="surface.text.gray.subtle"
                 >
                   <Amount
                     value={offer?.nextMonthly}
                     isAffixSubtle={false}
                     suffix="none"
-                    size="heading-large-bold"
+                    size="medium"
+                    weight="semibold"
+                    type="heading"
                   />{' '}
-                  <AmountWithStrikeThrough value={offer?.prevMonthly} size="heading-small-bold" />{' '}
+                  <Amount
+                    value={offer?.prevMonthly}
+                    isAffixSubtle={false}
+                    suffix="none"
+                    marginRight="spacing.2"
+                    isStrikethrough={true}
+                    color="surface.text.gray.muted"
+                    size="large"
+                    weight="semibold"
+                  />{' '}
                   /month after 3 months*
-                </Heading>
+                </Text>
                 <Text
                   textAlign="center"
                   marginBottom="spacing.3"
-                  type="subtle"
                   testID="setup-offer-amount-text"
+                  color="surface.text.gray.subtle"
                 >
                   {' '}
                   <Amount
                     value={setupFee}
                     suffix="none"
                     isAffixSubtle={false}
-                    size="heading-small-bold"
+                    size="large"
+                    weight="semibold"
                   />{' '}
-                  <AmountWithStrikeThrough value={offer?.prevSetupFee} size="heading-small-bold" />{' '}
+                  <Amount
+                    value={offer?.prevSetupFee}
+                    isAffixSubtle={false}
+                    suffix="none"
+                    marginRight="spacing.2"
+                    isStrikethrough={true}
+                    color="surface.text.gray.muted"
+                    size="large"
+                    weight="semibold"
+                  />{' '}
                   setup fee
                 </Text>
               </React.Fragment>
             ) : (
               <React.Fragment>
-                <Heading textAlign="center">
+                <Text textAlign="center" size="large">
                   <Amount
                     value={monthly}
                     isAffixSubtle={false}
                     suffix="none"
-                    size="heading-large-bold"
+                    size="medium"
+                    weight="semibold"
+                    type="heading"
                   />{' '}
                   monthly subscription
-                </Heading>
+                </Text>
                 <Text textAlign="center" marginBottom="spacing.3">
                   +{' '}
                   <Amount
                     value={setupFee}
                     suffix="none"
                     isAffixSubtle={false}
-                    size="body-medium-bold"
+                    size="medium"
+                    weight="semibold"
                   />{' '}
                   one time setup fee
                 </Text>
               </React.Fragment>
             )}
-            <Text textAlign="center" type="muted" size="small">
+            <Text textAlign="center" size="small" color="surface.text.gray.muted">
               *Lifetime Pricing also available.
             </Text>
           </Box>

@@ -4,11 +4,11 @@ import { Box, Skeleton } from '@razorpay/blade/components';
 export const CarouselDataWidgetLoader: React.FC = (): JSX.Element => (
   <Box
     display="flex"
-    backgroundColor="surface.background.level2.lowContrast"
+    backgroundColor="surface.background.gray.intense"
     borderRadius="large"
     padding="spacing.5"
     borderWidth="thinner"
-    borderColor="surface.border.subtle.lowContrast"
+    borderColor="surface.border.gray.subtle"
     height="120px"
     gap="spacing.4"
     testID="data-widget-loader"

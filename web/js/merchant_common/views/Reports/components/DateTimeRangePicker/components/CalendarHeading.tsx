@@ -1,8 +1,8 @@
 import React from 'react';
-import { Heading } from 'merchant_common/views/Reports/components';
 import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { CalendarHeadingPropsType } from 'merchant_common/views/Reports/components/DateTimeRangePicker/types';
 import { HeaderButton } from 'merchant_common/views/Reports/components/DateTimeRangePicker/styled';
+import { Heading } from '@razorpay/blade/components';
 
 export const CalendarHeading = ({
   children,
@@ -20,7 +20,7 @@ export const CalendarHeading = ({
       disabled={disabled}
       onClick={onClick}
     >
-      <Heading size="medium" weight="bold" type="subdued" variant="regular">
+      <Heading weight="semibold" size="small" color="surface.text.gray.muted">
         {children}
       </Heading>
     </HeaderButton>

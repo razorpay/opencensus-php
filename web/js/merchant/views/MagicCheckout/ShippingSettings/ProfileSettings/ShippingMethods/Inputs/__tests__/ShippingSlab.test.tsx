@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
 
@@ -17,7 +17,7 @@ const renderShippingSlab = (newProps = {}, name: string) => {
   const state = getStateWithSelectedProfile(name);
   return render(
     <Provider store={storeWithInitialState({ ...state })}>
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <ShippingSettingsRouteContextProvider>
           <FormContextProvider>
             <ShippingSlab {...newProps} />

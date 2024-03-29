@@ -1,6 +1,6 @@
 import React from 'react';
 import { withRouter } from 'common/deprecated/withRouter';
-import { Heading, Link, Badge, OffersIcon } from '@razorpay/blade/components';
+import { Link, Badge, OffersIcon, Text } from '@razorpay/blade/components';
 import { CardComponent, CardHeader, ProductIcon, CardItems, SubSectionItem } from './styled';
 import Divider from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Divider';
 import {
@@ -38,7 +38,7 @@ const SectionCard = ({
         <ProductIcon iconBackground={iconBackground}>
           <i className={`i ${icon}`} />
         </ProductIcon>
-        <Heading size="small">{title}</Heading>
+        <Text size="large">{title}</Text>
       </CardHeader>
       {!isMobile && <Divider noMargin />}
       <CardItems>
@@ -49,7 +49,7 @@ const SectionCard = ({
                 {each.title}
               </Link>
               {each.isNew && (
-                <Badge variant="positive" fontWeight="bold" icon={OffersIcon}>
+                <Badge icon={OffersIcon} color="positive">
                   NEW
                 </Badge>
               )}

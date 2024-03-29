@@ -15,7 +15,7 @@ export const PointsContainer = styled.div`
 `;
 export const PointerHeading = styled.p`
   color: #262d3a;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 8px;
 `;
 export const PointListContainer = styled.div`

@@ -7,7 +7,6 @@ import {
   Heading,
   Link,
   Text,
-  Title,
 } from '@razorpay/blade/components';
 
 import { TechnicalSpecification } from 'merchant/views/POS/types';
@@ -28,20 +27,20 @@ const SpecItem = ({ category, value }: SpecItem) => (
   <Box
     key={category}
     display="flex"
-    backgroundColor="surface.background.level3.lowContrast"
+    backgroundColor="surface.background.gray.moderate"
     width="100%"
     padding="spacing.4"
     marginTop="spacing.2"
     borderRadius="medium"
   >
     <Box flex={{ base: '0 0 35%', xl: ' 0 0  15%' }} paddingX="spacing.4">
-      <Text size="medium" type="subtle" weight="bold">
+      <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
         {category}
       </Text>
     </Box>
     <Divider orientation="vertical" />
     <Box paddingX="spacing.4" marginLeft="spacing.3">
-      <Text size="medium" type="subtle">
+      <Text size="medium" color="surface.text.gray.subtle">
         {value}
       </Text>
     </Box>
@@ -70,24 +69,24 @@ const ProductTechnicalSpecs = ({
   return (
     <Box marginY="spacing.8" display="flex" justifyContent="center" ref={foldRef}>
       <Box width="100%" maxWidth={{ base: '100%', xl: '1100px' }}>
-        <Title size="medium" textAlign="center">
+        <Heading textAlign="center" size="xlarge">
           Technical Specifications
-        </Title>
+        </Heading>
         <Box
           display="flex"
-          backgroundColor="surface.background.level3.lowContrast"
+          backgroundColor="surface.background.gray.moderate"
           width="100%"
           padding="spacing.4"
           marginTop="spacing.6"
           borderRadius="medium"
         >
           <Box flex={{ base: '0 0 35%', xl: ' 0 0  20%' }} paddingX="spacing.4">
-            <Heading size="medium" type="subtle">
+            <Heading size="small" color="surface.text.gray.subtle">
               Categories
             </Heading>
           </Box>
           <Box paddingX="spacing.4">
-            <Heading size="medium" type="subtle" marginLeft="spacing.3">
+            <Heading marginLeft="spacing.3" size="small" color="surface.text.gray.subtle">
               Specifications
             </Heading>
           </Box>
@@ -106,7 +105,7 @@ const ProductTechnicalSpecs = ({
             display="flex"
             alignItems="center"
             justifyContent="center"
-            backgroundColor="surface.background.level3.lowContrast"
+            backgroundColor="surface.background.gray.moderate"
             marginTop="spacing.2"
           >
             <Link

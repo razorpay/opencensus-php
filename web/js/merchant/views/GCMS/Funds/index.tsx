@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Title } from '@razorpay/blade/components';
+import { Box, Heading } from '@razorpay/blade/components';
 import { NavLink, Route, Routes, Navigate } from 'react-router-dom';
 
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
@@ -14,7 +14,9 @@ const Funds = (): JSX.Element => {
     <Wrapper>
       <div className="tabbed-container">
         <Box marginBottom="spacing.4">
-          <Title color="surface.text.subtle.lowContrast">Funds</Title>
+          <Heading color="surface.text.gray.subtle" size="large">
+            Funds
+          </Heading>
         </Box>
         <header>
           <ShowWhen

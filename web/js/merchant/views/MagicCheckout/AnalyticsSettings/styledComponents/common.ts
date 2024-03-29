@@ -12,7 +12,7 @@ export const ContentWrapper = styled.div`
 
 export const InfoLink = styled.a`
   color: #528ff0;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: underline;
 `;
 
@@ -35,7 +35,7 @@ export const FormCtaContainer = styled.div`
     border-radius: 2px;
     background: #1583f1;
     color: #fff;
-    font-weight: 700;
+    font-weight: 600;
     padding: 10px 12px;
   }
 `;

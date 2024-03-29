@@ -2,7 +2,6 @@ import React, { Fragment, useEffect, useState } from 'react';
 import {
   Button,
   Dropdown,
-  Heading,
   Text,
   MonthPicker,
   YearPicker,
@@ -102,18 +101,12 @@ const DownloadCustomReport = connect(
     return (
       <Fragment>
         <ReportModalHeader>
-          <Heading variant="regular">Download report for your business</Heading>
-          <Text
-            variant="body"
-            size="medium"
-            weight="regular"
-            color="surface.text.subdued.lowContrast"
-          >
+          <Text size="large">Download report for your business</Text>
+          <Text variant="body" size="medium" weight="regular" color="surface.text.gray.muted">
             A new improved version of reports now available for you to download. You can now select
             the specific date and time period for which you would like to see the report.
           </Text>
         </ReportModalHeader>
-
         <MarginDivider theme={theme}>
           <FieldWrapper>
             <Dropdown selectionType="single">
@@ -142,7 +135,7 @@ const DownloadCustomReport = connect(
               </DropdownOverlay>
             </Dropdown>
             {selectedConfig?.helpInfo && (
-              <Text variant="caption" type="muted" weight="regular">
+              <Text variant="caption" weight="regular" color="surface.text.gray.muted">
                 {`${selectedConfig.helpInfo.info}`}{' '}
                 <Link
                   size="small"
@@ -160,7 +153,6 @@ const DownloadCustomReport = connect(
             )}
           </FieldWrapper>
         </MarginDivider>
-
         <CustomDurationWrapper theme={theme}>
           <FieldWrapper>
             <MonthPicker

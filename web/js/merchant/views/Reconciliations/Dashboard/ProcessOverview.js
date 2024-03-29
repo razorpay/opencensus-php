@@ -51,13 +51,13 @@ const ProcessDetail = ({ activeProcess, stats, currency, setDates, dateRange }) 
           />
           <Divider orientation="vertical" />
           <Box paddingRight="spacing.11">
-            <Text weight="bold" marginBottom="spacing.2">
+            <Text weight="semibold" marginBottom="spacing.2">
               Total Duration
             </Text>
             <Text>
               {start} to {end}
             </Text>
-            <Text type="muted" variant="caption">
+            <Text variant="caption" color="surface.text.gray.muted">
               Last Run on: {moment(activeProcess?.last_run * 1000).format('ll')}
             </Text>
           </Box>
@@ -74,18 +74,18 @@ const StatBox = ({ icon, stats, title, currency }) => {
     <Box display="flex" alignItems="flex-start" marginBottom="spacing.4">
       {icon ? <img src={icon} width="20px" /> : null}
       <Box marginLeft="spacing.2" gap="spacing.2">
-        <Text weight="bold" marginBottom="spacing.2">
+        <Text weight="semibold" marginBottom="spacing.2">
           {title}
         </Text>
         {stats?.share ? (
-          <Heading weight="bold" size="large">
+          <Heading weight="semibold" size="medium">
             {stats.share === 'NaN' ? 0 : stats.share}%
           </Heading>
         ) : null}
-        <Text size="small" weight="bold">
+        <Text size="small" weight="semibold">
           {stats.count} records
         </Text>
-        <Text type="muted">{formatAmount(stats.sum / 100, true, currency)}</Text>
+        <Text color="surface.text.gray.muted">{formatAmount(stats.sum / 100, true, currency)}</Text>
       </Box>
     </Box>
   );

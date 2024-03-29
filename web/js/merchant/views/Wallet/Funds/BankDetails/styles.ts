@@ -4,11 +4,11 @@ const EscrowDetailsContainer = styled.div(
   ({ theme }) => `
   margin-left: auto;
   margin-right: auto;
-  background: ${theme.colors.action.background.tertiary.focus};
+  background: ${theme.colors.interactive.background.gray.default};
   width: fit-content;
-  box-shadow: ${theme.spacing[0]}px ${theme.spacing[2]}px ${theme.spacing[3]}px ${theme.colors.surface.border.normal.highContrast};
+  box-shadow: ${theme.spacing[0]}px ${theme.spacing[2]}px ${theme.spacing[3]}px ${theme.colors.surface.border.gray.muted};
   border-radius: ${theme.spacing[1]};
-  color: ${theme.colors.surface.background.level1.highContrast}
+  color: ${theme.colors.surface.text.gray.normal}
 `,
 );
 

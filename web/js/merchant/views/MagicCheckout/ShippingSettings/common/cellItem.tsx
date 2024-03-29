@@ -130,14 +130,14 @@ export const actions = ({
           <IconButton
             accessibilityLabel="download"
             onClick={() => downloadable?.handleDownloadClick(item)}
-            icon={() => <DownloadIcon size="medium" color="action.icon.link.active" />}
+            icon={() => <DownloadIcon size="medium" color="interactive.icon.primary.normal" />}
           />
         )}
         {handleEditClick && (
           <IconButton
             accessibilityLabel="edit"
             onClick={handleEditClick(item)}
-            icon={() => <EditComposeIcon size="medium" color="action.icon.link.active" />}
+            icon={() => <EditComposeIcon size="medium" color="interactive.icon.primary.normal" />}
           />
         )}
         {handleDeleteClick && (
@@ -145,7 +145,7 @@ export const actions = ({
             <IconButton
               accessibilityLabel="delete"
               onClick={handleDeleteClick(item)}
-              icon={() => <TrashIcon size="medium" color="feedback.icon.negative.lowContrast" />}
+              icon={() => <TrashIcon size="medium" color="feedback.icon.negative.intense" />}
             />
           </Box>
         )}

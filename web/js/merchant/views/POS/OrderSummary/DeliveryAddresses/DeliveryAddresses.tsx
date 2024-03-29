@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Divider,
-  Heading,
   MapPinIcon,
   PlusIcon,
   RadioGroup,
@@ -143,19 +142,24 @@ const DeliveryAddresses = ({ defaultIsExpanded }: { defaultIsExpanded: boolean }
       icon={
         <MapPinIcon
           size="large"
-          color={
-            isExpanded ? 'action.icon.secondary.active' : 'surface.action.icon.active.lowContrast'
-          }
+          color={isExpanded ? 'interactive.icon.primary.normal' : 'interactive.icon.gray.normal'}
         />
       }
       title={
         <Box display={{ base: 'block', l: 'flex' }}>
           <Box flex="0 0 auto">
-            <Heading marginRight="spacing.3">Delivery Address</Heading>
+            <Text marginRight="spacing.3" size="large">
+              Delivery Address
+            </Text>
           </Box>
           {selectedAddress?.address && !editiableAddressIndex && !isAddNewDeliveryAddress ? (
             <Box testID="header-address">
-              <Text type="subtle" weight="regular" truncateAfterLines={1} size="large">
+              <Text
+                weight="regular"
+                truncateAfterLines={1}
+                size="large"
+                color="surface.text.gray.subtle"
+              >
                 {selectedAddress?.name}, {selectedAddress?.address}, {selectedAddress?.city},{' '}
                 {STATES[selectedAddress?.state]}-{selectedAddress?.pincode}
               </Text>

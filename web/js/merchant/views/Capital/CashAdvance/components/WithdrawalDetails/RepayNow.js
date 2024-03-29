@@ -113,7 +113,7 @@ const RepayNow = (props) => {
         width="100%"
         padding="20px 34px 11px 41px"
         marginBottom="spacing.6"
-        backgroundColor="brand.primary.300"
+        backgroundColor="surface.background.primary.subtle"
       >
         Failed to load repay amount
       </Box>
@@ -131,26 +131,28 @@ const RepayNow = (props) => {
           <Box display="flex" flexDirection="column">
             {hasDpd ? (
               <Box display="flex" alignItems="center" gap="8px">
-                <AlertTriangleIcon color="surface.text.subtle.lowContrast" size="large" />
-                <Text size="medium" color="surface.text.subtle.lowContrast" weight="bold">
+                <AlertTriangleIcon color="interactive.icon.gray.subtle" size="large" />
+                <Text size="medium" color="surface.text.gray.subtle" weight="semibold">
                   Pending due amount
                 </Text>
               </Box>
             ) : (
-              <Text size="medium" color="surface.text.subtle.lowContrast" weight="bold">
+              <Text size="medium" color="surface.text.gray.subtle" weight="semibold">
                 Upcoming due amount
               </Text>
             )}
 
             <Amount
               marginY="8px"
-              size="heading-large-bold"
               value={repayAmount / 100}
               testID="repay-amount"
+              type="heading"
+              size="medium"
+              weight="semibold"
             />
 
             {Number(dueDate) !== -1 && (
-              <Text color="surface.text.normal.lowContrast">
+              <Text color="surface.text.gray.normal">
                 Auto-collection scheduled{' '}
                 {moment
                   .unix(dueDate)
@@ -168,9 +170,9 @@ const RepayNow = (props) => {
         </Box>
 
         <Box display="flex" alignItems="center" marginTop="spacing.5">
-          <InfoIcon marginRight="spacing.1" size="small" color="surface.text.subdued.lowContrast" />
+          <InfoIcon marginRight="spacing.1" size="small" color="interactive.icon.gray.muted" />
           <Box className="repay-now-info-text">
-            <Text color="surface.text.subdued.lowContrast">
+            <Text color="surface.text.gray.muted">
               Repayments take upto 4 hours to process after collection
             </Text>
           </Box>

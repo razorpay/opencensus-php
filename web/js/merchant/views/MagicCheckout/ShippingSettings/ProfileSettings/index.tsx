@@ -1,10 +1,10 @@
 import React from 'react';
 import { Box, Button, Heading } from '@razorpay/blade/components';
+import { ShippingEngineStore } from 'merchant/reducers/magicCheckout/shippingEngine/types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { clearProfile } from 'merchant/reducers/magicCheckout/shippingEngine/action';
-import { ShippingEngineStore } from 'merchant/reducers/magicCheckout/shippingEngine/types';
 import { ADD_PROFILE } from 'merchant/views/MagicCheckout/ShippingSettings/constants';
 import { useShippingSettingsRouteContext } from 'merchant/views/MagicCheckout/ShippingSettings/context/RouteContext';
 import { Separator } from 'merchant/views/MagicCheckout/ShippingSettings/styles';
@@ -30,7 +30,7 @@ const ProfileSettings = ({ clearProfile, shippingEngine }): JSX.Element => {
 
   return (
     <Box>
-      <Heading marginBottom="spacing.8" size="medium">
+      <Heading marginBottom="spacing.8" size="small">
         {isDefault ? 'Default' : 'General'} shipping profiles
       </Heading>
       <ProductCategories />
@@ -42,7 +42,6 @@ const ProfileSettings = ({ clearProfile, shippingEngine }): JSX.Element => {
         </>
       )}
       {hasZones ? <ShippingMethods /> : null}
-
       <Box display="flex" gap="spacing.3" justifyContent="flex-end" marginTop="spacing.8">
         <Button variant="secondary" onClick={handleCancelClick}>
           Go back

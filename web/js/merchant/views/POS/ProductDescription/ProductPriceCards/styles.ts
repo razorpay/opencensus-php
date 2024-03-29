@@ -11,14 +11,14 @@ export const ProductPriceCard = styled.div(
     isSelected: boolean;
     shouldShowPartnerPricing: boolean;
   }) => {
-    let borderColor = theme.colors.surface.border.normal.lowContrast;
+    let borderColor = theme.colors.surface.border.gray.muted;
     if (isSelected) {
       borderColor = shouldShowPartnerPricing
-        ? theme.colors.feedback.border.notice.highContrast
-        : theme.colors.brand.primary[500];
+        ? theme.colors.feedback.border.notice.intense
+        : theme.colors.surface.background.primary.intense;
     }
     const backgroundColor = shouldShowPartnerPricing
-      ? theme.colors.feedback.background.notice.lowContrast
+      ? theme.colors.feedback.background.notice.subtle
       : 'transparent';
     return `
         flex:1;
@@ -39,14 +39,4 @@ export const PartnerExclusivePriceImage = styled.img(
         width: 170px;
         z-index: 1;
     `,
-);
-
-export const OfferAmountComponentWrapper = styled.span(
-  ({ theme }: { theme: Theme }) => `
-  position: relative;
-  span,
-  div {
-    color: ${theme.colors.surface.text.subdued.lowContrast};
-  }
-`,
 );

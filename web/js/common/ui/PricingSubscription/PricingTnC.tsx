@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
 import {
-  Heading,
   List,
   ListItem,
   ListItemLink,
@@ -13,23 +12,9 @@ import {
 import { TncModal } from './PricingSubscriptionProps.type';
 import { TNC_CONTENT, TNC_DETAILS_CREDIT_LINK, modalZindex } from './constants';
 
-const TncDesktop = ({
-  isOpenTncModal,
-  toggleTncModal,
-  zIndex = modalZindex,
-}: TncModal): JSX.Element => {
-  return (
-    <Modal zIndex={zIndex} isOpen={isOpenTncModal} onDismiss={toggleTncModal} size="large">
-      <ModalHeader title="" />
-      <ModalBody>
-        <TncContentMemo />
-      </ModalBody>
-    </Modal>
-  );
-};
 const TncContent = (): JSX.Element => (
   <>
-    <Heading size="small">Terms & Conditions</Heading>
+    <Text size="large">Terms & Conditions</Text>
     <Box marginTop="spacing.6">
       <Text size="medium" testID="tncSubHeader">
         By subscribing to the Razorpay Pricing Subscription Plans available on the merchant
@@ -61,5 +46,19 @@ const TncContent = (): JSX.Element => (
   </>
 );
 const TncContentMemo = memo(TncContent);
+const TncDesktop = ({
+  isOpenTncModal,
+  toggleTncModal,
+  zIndex = modalZindex,
+}: TncModal): JSX.Element => {
+  return (
+    <Modal zIndex={zIndex} isOpen={isOpenTncModal} onDismiss={toggleTncModal} size="large">
+      <ModalHeader title="" />
+      <ModalBody>
+        <TncContentMemo />
+      </ModalBody>
+    </Modal>
+  );
+};
 export { TncContentMemo };
 export default TncDesktop;

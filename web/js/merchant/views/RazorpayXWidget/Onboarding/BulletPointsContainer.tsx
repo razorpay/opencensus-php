@@ -27,14 +27,10 @@ type widgetData = {
 
 const BulletPoints = ({ text, variant }: { text: string; variant?: 'faded' }): JSX.Element => {
   const iconColor =
-    variant === 'faded'
-      ? 'surface.text.placeholder.highContrast'
-      : 'feedback.positive.action.icon.primary.disabled.highContrast';
+    variant === 'faded' ? 'surface.icon.gray.subtle' : 'interactive.icon.positive.normal';
   const IconComponent = variant === 'faded' ? ChevronRightIcon : CheckIcon;
   const textColor =
-    variant === 'faded'
-      ? 'surface.text.placeholder.highContrast'
-      : 'surface.text.normal.highContrast';
+    variant === 'faded' ? 'surface.text.gray.subtle' : 'surface.text.staticWhite.normal';
 
   return (
     <Box display="flex" alignItems="flex-start" marginBottom="spacing.4">
@@ -63,8 +59,8 @@ export const BulletPointsContainer = ({ widgetData }: { widgetData: widgetData }
         <Box display="flex" alignItems="flex-end">
           <Text
             size="large"
-            color="surface.text.normal.highContrast"
-            weight="bold"
+            color="surface.text.staticWhite.normal"
+            weight="semibold"
             marginRight="spacing.2"
           >
             {widgetData?.cards[0]?.illustration?.prefix}
@@ -76,8 +72,8 @@ export const BulletPointsContainer = ({ widgetData }: { widgetData: widgetData }
           />
           <Text
             size="large"
-            color="surface.text.normal.highContrast"
-            weight="bold"
+            color="surface.text.staticWhite.normal"
+            weight="semibold"
             marginLeft="spacing.2"
           >
             {widgetData?.cards[0]?.illustration?.postfix}
@@ -88,22 +84,22 @@ export const BulletPointsContainer = ({ widgetData }: { widgetData: widgetData }
             <BulletPoints key={text} text={text} />
           ))}
         </Box>
-        <Text size="medium" color="surface.text.normal.highContrast">
+        <Text size="medium" color="surface.text.staticWhite.normal">
           {widgetData?.cards[0]?.footer}
         </Text>
       </BulletPointsLeftContainer>
       <PlusIcon
         marginX="spacing.3"
-        color="surface.action.icon.active.lowContrast"
+        color="interactive.icon.gray.normal"
         alignSelf="center"
         size="2xlarge"
       />
       <BulletPointsRightContainer>
         <Box display="flex" alignItems="flex-start" flexDirection="column">
-          <Text size="medium" color="surface.text.normal.highContrast">
+          <Text size="medium" color="surface.text.staticWhite.normal">
             {widgetData?.cards[1]?.heading}
           </Text>
-          <Text size="medium" color="surface.text.placeholder.highContrast">
+          <Text size="medium" color="surface.text.gray.subtle">
             {widgetData?.cards[1]?.subheading}
           </Text>
         </Box>

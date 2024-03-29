@@ -6,7 +6,6 @@ import {
   ChevronUpIcon,
   Badge,
   CloseIcon,
-  Heading,
   Box,
   RupeeIcon,
   Link,
@@ -94,9 +93,9 @@ const plansDetailsForViewMore = ({
     <StyledTr key={text} pricingPlanLength={pricingPlans?.length}>
       <StyledTd removeCss textAlign verticalAlign={featureIndex === 0 ? undefined : 'baseline'}>
         <PlanLeftSection>
-          <Heading contrast="low" size="small" type="normal" variant="regular" weight="bold">
+          <Text weight="semibold" size="large" color="surface.text.gray.normal">
             {text}
-          </Heading>
+          </Text>
         </PlanLeftSection>
       </StyledTd>
       {pricingPlans.map((plans): JSX.Element => {
@@ -136,7 +135,7 @@ const PricingHeader = ({
         <StyleFireImage>
           <Image src={headerSrc} alt={headerAlt} />
         </StyleFireImage>
-        <Heading>{title}</Heading>
+        <Text size="large">{title}</Text>
       </StyledHeaderIcon>
       <StyleSwitchContainer>
         <Text>Switch to Annual Plans</Text>
@@ -146,11 +145,11 @@ const PricingHeader = ({
         </Label>
       </StyleSwitchContainer>
       <StyleBadgeContainer>
-        <Badge contrast="low" size="large" variant="positive">
+        <Badge emphasis="subtle" size="large" color="positive">
           {String(pillText)}
         </Badge>
         <StyledCloseIcon data-testid="close-icon" onClick={handleClose('close')}>
-          <CloseIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+          <CloseIcon color="feedback.icon.neutral.intense" size="medium" />
         </StyledCloseIcon>
       </StyleBadgeContainer>
     </StyledHeader>
@@ -159,7 +158,7 @@ const PricingHeader = ({
 const RedirectToastUI = ({ handleToastLink }: { handleToastLink: () => void }): JSX.Element => {
   return (
     <StyleToastLink>
-      <Text contrast="low" size="small" type="placeholder" variant="body">
+      <Text size="small" variant="body" color="surface.text.gray.disabled">
         We’ve received your payment, and your new Pricing plan should be updated in the next
         24-48hrs.
         <Link onClick={handleToastLink} variant="button">
@@ -193,28 +192,28 @@ const getPlanPrice = ({
         <Image src={plans.icon.src} alt={plans.icon.alt} />
       </StylePlanIcon>
       <StyleWrapper>
-        <Heading contrast="low" size="small" type="normal" variant="regular" weight="bold">
+        <Text weight="semibold" size="large" color="surface.text.gray.normal">
           {plans.title}
-        </Heading>
+        </Text>
       </StyleWrapper>
       <StylePlanWrapper>
         <RupeeIcon color="currentColor" size="large" />
-        <Heading contrast="low" size="small" type="normal" variant="regular" weight="bold">
+        <Text weight="semibold" size="large" color="surface.text.gray.normal">
           {togglePlan === TogglePlanValue.monthly
             ? `${plans.monthlyPrice.toLocaleString()}/Month`
             : `${plans.annualPrice.toLocaleString()}/Year`}
-        </Heading>
+        </Text>
       </StylePlanWrapper>
       {togglePlan === TogglePlanValue.monthly ? (
         <StyleMonthlyPrice>
-          <Text contrast="high" size="small" type="placeholder" variant="body">
+          <Text size="small" variant="body" color="surface.text.gray.muted">
             ₹{Math.floor(plans.annualPrice / 12).toLocaleString()}/Month with Annual Plan
           </Text>
         </StyleMonthlyPrice>
       ) : null}
       {togglePlan === TogglePlanValue.annual ? (
         <StyleStrikePrice>
-          <Text contrast="high" size="small" type="placeholder" variant="body">
+          <Text color="surface.text.gray.muted" size="small" variant="body">
             ₹
             {getMonthlyDiscount(
               plans.monthlyPrice,
@@ -250,7 +249,7 @@ const ModalLoader = ({ closeModal }: { closeModal: () => void }): JSX.Element =>
   return (
     <>
       <StyledModalClose onClick={closeModal}>
-        <CloseIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+        <CloseIcon color="feedback.icon.neutral.intense" size="medium" />
       </StyledModalClose>
       <div id="gs-modal-loader">
         <Loader />

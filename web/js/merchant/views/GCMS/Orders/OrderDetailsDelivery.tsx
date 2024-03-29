@@ -87,7 +87,7 @@ const OrderDetailsDelivery = ({
     onError: (error) => {
       showNotification({
         type: 'error',
-        /* @ts-expect-error */
+        /* @ts-expect-error This is necessary to handle potential errors during order delivery submission */
         message: error?.message || 'Error submitting the order delivery',
       });
     },
@@ -108,11 +108,8 @@ const OrderDetailsDelivery = ({
     enabled: isMultipleDelivery,
   });
 
-  const orderDeliveryBatchId =
-    /* @ts-expect-error array-undefined-check */
-    Array.isArray(orderDeliveryBatch?.batches) && orderDeliveryBatch?.batches.length > 0
-      ? orderDeliveryBatch?.batches[0]?.id
-      : undefined;
+  const batches = orderDeliveryBatch?.batches;
+  const orderDeliveryBatchId = batches && batches.length > 0 ? batches?.[0]?.id : undefined;
 
   const { data: orderDeliveryBatchDetails, isSuccess: isSuccessOrderDeliveryBatchDetails } =
     useQuery({
@@ -129,9 +126,12 @@ const OrderDetailsDelivery = ({
     return acc;
   }, {});
 
-  const initiatedOrderDeliveryItems = countsByStatus?.['initiated'] || 0;
-  const successOrderDeliveryItems = countsByStatus?.['success'] || 0;
-  const failedOrderDeliveryItems = countsByStatus?.['failed'] || 0;
+  /* @ts-expect-error TS2339: Property 'initiated' does not exist on type */
+  const initiatedOrderDeliveryItems = countsByStatus?.initiated || 0;
+  /* @ts-expect-error TS2339: Property 'success' does not exist on type */
+  const successOrderDeliveryItems = countsByStatus?.success || 0;
+  /* @ts-expect-error TS2339: Property 'failed' does not exist on type */
+  const failedOrderDeliveryItems = countsByStatus?.failed || 0;
 
   const processedQuantity = Number(order?.processed_quantity);
   const totalEmailsUploaded = Number(orderDeliveryBatch?.total_emails_uploaded);
@@ -186,7 +186,7 @@ const OrderDetailsDelivery = ({
         marginTop="spacing.4"
         borderWidth="thin"
         borderRadius="small"
-        borderColor="brand.gray.400.lowContrast"
+        borderColor="surface.border.gray.muted"
       >
         {isLoadingOrder || isLoadingOrderEmailDeliveryStatus ? (
           <Box
@@ -207,7 +207,7 @@ const OrderDetailsDelivery = ({
               justifyContent="space-between"
               alignItems="center"
             >
-              <Text weight="bold">
+              <Text weight="semibold">
                 {!isOrderDeliveryStarted ? 'Distribute Cards' : `Distributed Cards`}
               </Text>
             </Box>
@@ -250,7 +250,7 @@ const OrderDetailsDelivery = ({
                       <Text>Total Emails Found:</Text>
                     </Box>
                     <Box paddingX="spacing.2">
-                      <Text weight="bold">{orderDeliveryBatch?.total_emails_uploaded}</Text>
+                      <Text weight="semibold">{orderDeliveryBatch?.total_emails_uploaded}</Text>
                     </Box>
                   </Box>
                 )}
@@ -261,7 +261,7 @@ const OrderDetailsDelivery = ({
                     alignItems="center"
                     paddingTop="spacing.2"
                   >
-                    <FileIcon size="medium" color="surface.text.subdued.lowContrast" />
+                    <FileIcon size="medium" color="interactive.icon.gray.muted" />
                     <Box paddingX="spacing.2">
                       <Link variant="button" onClick={handleBatchDownload}>
                         {orderDeliveryBatchDetails?.name}
@@ -282,14 +282,14 @@ const OrderDetailsDelivery = ({
             <Box>
               {!isOrderDeliveryStarted && (
                 <Box padding="spacing.4">
-                  <Text color="surface.text.subdued.lowContrast">
+                  <Text color="surface.text.gray.muted">
                     {`Cards will be delivered to ${merchantDetails?.primary_contact?.email}`}
                   </Text>
                 </Box>
               )}
               {isOrderDeliveryInProgress && (
                 <Box padding="spacing.4">
-                  <Text color="surface.text.subdued.lowContrast">
+                  <Text color="surface.text.gray.muted">
                     {`Cards will be delivered to ${merchantDetails?.primary_contact?.email}`}
                   </Text>
                   <Box paddingTop="spacing.4">
@@ -310,10 +310,10 @@ const OrderDetailsDelivery = ({
               {isOrderDeliveryCompleted && (
                 <Box>
                   <Box padding="spacing.4">
-                    <Text weight="bold">
+                    <Text weight="semibold">
                       {`Cards delivered to ${merchantDetails?.primary_contact?.email}`}
                     </Text>
-                    <Text size="small" color="surface.text.subdued.lowContrast">
+                    <Text size="small" color="surface.text.gray.muted">
                       {`${convertUnixToDate(order.updated_at)} ${new Date(
                         Number(order.updated_at) * 1000,
                       ).toLocaleTimeString()}`}

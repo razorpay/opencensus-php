@@ -12,7 +12,7 @@ export const NecessityIndicator = ({
       case 'optional':
         return (
           <Box height="spacing.5">
-            <Text type="muted" variant="caption" color="surface.text.placeholder.lowContrast">
+            <Text variant="caption" color="surface.text.gray.disabled">
               &nbsp;&nbsp;(optional)
             </Text>
           </Box>
@@ -20,7 +20,7 @@ export const NecessityIndicator = ({
       case 'required':
         return (
           <Box height="spacing.6">
-            <Text type="muted" variant="body" color="feedback.text.negative.lowContrast">
+            <Text variant="body" color="feedback.text.negative.intense">
               *
             </Text>
           </Box>

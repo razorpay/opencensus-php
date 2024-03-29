@@ -21,9 +21,9 @@ export const Seperator = styled.span(
 export const ConfigItemWrapper = styled.div(
   ({ theme }) => `
   width: 100%;
-  background-color: ${theme.colors.surface.background.level2.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.intense};
   padding: ${theme.spacing[4]}px;
-  border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+  border: 1px solid ${theme.colors.surface.border.gray.muted};
   border-radius: ${theme.border.radius.small}px;
 
   .seperator {
@@ -35,7 +35,7 @@ export const ConfigItemWrapper = styled.div(
   }
 
   svg > path {
-    fill: ${theme.colors.brand.primary[500]}
+    fill: ${theme.colors.surface.background.primary.intense}
   }
  
 `,
@@ -63,14 +63,14 @@ export const ModalBody = styled.div(
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: ${theme.colors.brand.primary[500]};
+    background-color: ${theme.colors.surface.background.primary.intense};
   }
 `,
 );
 
 export const ActionItem = styled.div<{ borderTop?: string }>(
   ({ theme, borderTop }) => `
-  border-top: ${borderTop ?? `1px dashed ${theme.colors.surface.border.normal.lowContrast}`};
+  border-top: ${borderTop ?? `1px dashed ${theme.colors.surface.border.gray.muted}`};
   display: flex;
   justify-content: space-between;
   padding-top: ${theme.spacing[6]}px;
@@ -78,7 +78,7 @@ export const ActionItem = styled.div<{ borderTop?: string }>(
 
   .required {
     margin-left: ${theme.spacing[1]}px;
-    color: ${theme.colors.feedback.text.negative.lowContrast}
+    color: ${theme.colors.feedback.text.negative.intense}
   }
 
   .zones-list {

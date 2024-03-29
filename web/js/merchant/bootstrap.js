@@ -2,7 +2,7 @@
 import 'regenerator-runtime/runtime.js';
 import 'core-js/es/map';
 import 'core-js/es/set';
-import React, { lazy, Suspense } from 'react';
+import React, { Suspense } from 'react';
 
 import 'react-dates/initialize';
 import { I18nProvider } from '@razorpay/i18nify-react';
@@ -23,6 +23,7 @@ import App from './containers/App';
 import store from './store';
 import '../../css/merchant.styl';
 import '../../dashboard.font';
+import '@razorpay/blade/fonts.css';
 
 (async () => {
   if (localStorage.referrer === 'chrome-extension') {

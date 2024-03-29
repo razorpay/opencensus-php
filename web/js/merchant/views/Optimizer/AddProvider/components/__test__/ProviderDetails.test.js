@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 import ProviderDetails from 'merchant/views/Optimizer/AddProvider/components/ProviderDetails';
 import { render, screen } from 'test-utils';
@@ -23,7 +23,7 @@ describe('Add Provider > Provider Details', () => {
 
   const App = (props = {}) => {
     return (
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <ProviderDetails {...props} />
       </BladeProvider>
     );

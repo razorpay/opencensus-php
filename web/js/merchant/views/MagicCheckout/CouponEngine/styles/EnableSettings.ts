@@ -24,7 +24,7 @@ export const LogoImage = styled.img`
 
 export const Title = styled.div`
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   color: #162f56de;
 `;
 

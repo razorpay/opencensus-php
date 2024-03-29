@@ -36,9 +36,9 @@ const ProductListing = ({
       {isPopular ? (
         <Text
           size="small"
-          weight="bold"
-          type="muted"
+          weight="semibold"
           margin={['spacing.3', 'spacing.3', 'spacing.0']}
+          color="surface.text.gray.muted"
         >
           Popular searches
         </Text>
@@ -61,7 +61,7 @@ const ProductListing = ({
               </StyledText>
               {item.group?.length ? (
                 <ProductTag>
-                  <Text size="small" weight="bold" type="placeholder" contrast="high">
+                  <Text size="small" weight="semibold" color="surface.text.gray.muted">
                     {item.group[0]}
                   </Text>
                 </ProductTag>
@@ -79,12 +79,12 @@ const ProductListing = ({
       alignItems="center"
       padding={['15px', '13px']}
     >
-      <SearchIcon color="surface.action.icon.default.lowContrast" size="large" />
+      <SearchIcon color="interactive.icon.gray.normal" size="large" />
       <Box display="flex" flexDirection="column" gap="4px" alignItems="center">
-        <Text type="subdued" weight="bold">
+        <Text weight="semibold" color="surface.text.gray.muted">
           No search results found
         </Text>
-        <Text type="muted" size="small" textAlign="center">
+        <Text size="small" textAlign="center" color="surface.text.gray.muted">
           You can search for payment products, Account & Settings, and more
         </Text>
       </Box>

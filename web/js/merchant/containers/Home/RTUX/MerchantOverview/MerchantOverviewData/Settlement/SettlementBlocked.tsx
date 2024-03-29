@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Box, Heading, Text } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
 import {
   IAnalyticsProperties,
   UpcomingSettlementKeys,
@@ -33,16 +33,16 @@ const SettlementBlocked: React.FC<
           maxWidth="500px"
         >
           <Box>
-            <Text display="inline" weight="bold">
+            <Text display="inline" weight="semibold">
               Upcoming settlements are
             </Text>{' '}
-            <Text display="inline" weight="bold" color="feedback.text.negative.lowContrast">
+            <Text display="inline" weight="semibold" color="feedback.text.negative.intense">
               {status}
             </Text>
           </Box>
-          <Heading variant="subheading" color="surface.text.subdued.lowContrast">
+          <Text color="surface.text.gray.muted" size="small">
             {subheading}
-          </Heading>
+          </Text>
           <Text size="small">{action}</Text>
         </Box>
         {!isMobile ? <Image src="/img/rtux/payment-unsuccessful.png" /> : null}

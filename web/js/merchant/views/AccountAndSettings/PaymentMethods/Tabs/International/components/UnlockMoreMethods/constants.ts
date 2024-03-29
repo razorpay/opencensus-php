@@ -43,7 +43,7 @@ const KYC_DOC_ERROR_MAPPING = {
 
 export const KYC_DOCUMENT_STATUS_BADGE_MAPPING = {
   [ICProductStates.NOT_ACTIVATED]: {
-    status: 'default',
+    status: 'neutral',
     label: 'Not Activated',
     description: "We'll verify the KYC documents in a few days and update the status",
   },

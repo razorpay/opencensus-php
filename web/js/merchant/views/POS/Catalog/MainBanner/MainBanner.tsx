@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import { BladeProvider, Box } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
+import MainBannerBackdropImage from 'assets/pos/main-banner/mainbannerbackground.webp';
 import { useNavigate } from 'react-router-dom';
 
-import MainBannerBackdropImage from 'assets/pos/main-banner/mainbannerbackground.webp';
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
 import { ANDROID_SMART_POS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
@@ -46,7 +46,7 @@ const MainBanner = (): JSX.Element | null => {
   const isPartnerPricing = productDescription?.isPartnerPricing;
 
   return (
-    <BladeProvider themeTokens={paymentTheme} colorScheme="dark">
+    <BladeProvider themeTokens={bladeTheme} colorScheme="dark">
       <div data-testid="main-banner-wrapper" onClick={() => isMobile && handleNavigateToProduct()}>
         <Box
           ref={foldRef}
@@ -56,7 +56,7 @@ const MainBanner = (): JSX.Element | null => {
           width="100%"
           display="flex"
           justifyContent="center"
-          backgroundColor="surface.background.level3.lowContrast"
+          backgroundColor="surface.background.gray.moderate"
           marginBottom="spacing.5"
         >
           <Box

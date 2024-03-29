@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 
 import {
   Box,
-  Heading,
   Text,
   Tooltip,
   TooltipInteractiveWrapper,
@@ -45,9 +44,9 @@ const ShippingMethods = ({ shippingEngine }): JSX.Element => {
   return (
     <Box display="flex" gap="spacing.5" flexDirection={{ base: 'column', l: 'row' }}>
       <Box flex="1">
-        <Heading>
+        <Text size="large">
           Shipping method & rate
-          <Text as="span" color="feedback.text.negative.lowContrast">
+          <Text as="span" color="feedback.text.negative.intense">
             *
           </Text>
           <Tooltip
@@ -56,7 +55,7 @@ const ShippingMethods = ({ shippingEngine }): JSX.Element => {
           >
             <TooltipInteractiveWrapper>
               <InfoIcon
-                color="surface.text.muted.lowContrast"
+                color="interactive.icon.gray.muted"
                 marginLeft="spacing.2"
                 position="relative"
                 top="spacing.1"
@@ -64,7 +63,7 @@ const ShippingMethods = ({ shippingEngine }): JSX.Element => {
               />
             </TooltipInteractiveWrapper>
           </Tooltip>
-        </Heading>
+        </Text>
       </Box>
       <SettingsWrapper>
         {zones?.map((zone) => (

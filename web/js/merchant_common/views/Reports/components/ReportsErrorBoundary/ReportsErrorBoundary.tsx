@@ -8,9 +8,9 @@ export const ReportsErrorBoundary = ({ children }) => {
     <ErrorBoundary
       FallbackComponent={() => (
         <CenteredEmptyContainer>
-          <AlertTriangleIcon color="feedback.icon.information.lowContrast" size="2xlarge" />
+          <AlertTriangleIcon color="feedback.icon.information.intense" size="2xlarge" />
 
-          <Text variant="body" type="subdued" weight="regular" contrast="low" size="medium">
+          <Text variant="body" weight="regular" size="medium" color="surface.text.gray.muted">
             Something went wrong, our team has been notified.
           </Text>
         </CenteredEmptyContainer>

@@ -19,11 +19,11 @@ const EntityHeader = (props) => {
 
   return (
     <Box>
-      <Heading size="medium" marginBottom="spacing.1">
+      <Heading marginBottom="spacing.1" size="small">
         {title}
       </Heading>
       <Box display="flex" flexDirection="row">
-        <Text size="large" marginRight="spacing.1" type="muted">
+        <Text size="large" marginRight="spacing.1" color="surface.text.gray.muted">
           {description}
         </Text>
         <Box width="fit-content" mr={3}>

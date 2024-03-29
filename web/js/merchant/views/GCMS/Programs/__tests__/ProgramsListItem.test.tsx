@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { render as rootRender, screen } from '@testing-library/react';
 
 import ProgramsListItem from 'merchant/views/GCMS/Programs/ProgramsListItem';
@@ -18,8 +18,8 @@ jest.mock('common/splitz', () => ({
 describe('GCMS: Programs', () => {
   it('should render programs details page', () => {
     rootRender(
-      <BladeProvider themeTokens={paymentTheme}>
-        {/* @ts-expect-error */}
+      <BladeProvider themeTokens={bladeTheme}>
+        {/* @ts-expect-error properties missing in types*/}
         <ProgramsListItem program={programsResponse.data.items[0]} />
       </BladeProvider>,
     );

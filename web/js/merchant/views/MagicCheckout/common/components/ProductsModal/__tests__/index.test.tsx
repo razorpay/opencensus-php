@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { Provider } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
@@ -38,7 +38,7 @@ const openModalSpy = jest.spyOn(ModalActions, 'openModal');
 const renderProductsModal = (newProps = {}, customState = {}) => {
   return render(
     <Provider store={storeWithInitialState({ ...INITIAL_STATE, ...customState })}>
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <ProductsModal
           isOpen={true}
           closeModal={jest.fn()}

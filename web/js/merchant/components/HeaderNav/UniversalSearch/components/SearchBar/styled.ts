@@ -23,16 +23,16 @@ export const StyledInputBox = styled.div(
       isRTUXHomepage
         ? COLORS.searchBarColor
         : isMobile
-        ? theme.colors.action.text.primary.default
-        : theme.colors.feedback.background.neutral.lowContrast
+        ? theme.colors.interactive.text.staticWhite.normal
+        : theme.colors.feedback.background.neutral.subtle
     };
     border: 1px solid rgba(121, 135, 156, 0.17);
     border-radius: ${theme.spacing[2]}px;
     padding: 6px 14px;
     transition: width 400ms linear;
     &:focus-within {
-      background: ${theme.colors.action.text.primary.default};
-      border: 1px solid ${theme.colors.action.border.secondary.focus};
+      background: ${theme.colors.interactive.text.staticWhite.normal};
+      border: 1px solid ${theme.colors.interactive.border.primary.default};
       box-shadow: 0px 3px 8px rgba(21, 45, 75, 0.1), 0px 0px 1px rgba(21, 45, 75, 0.1);
       z-index: 999;
       ${
@@ -56,7 +56,7 @@ export const StyledBaseInput = styled.input(
   border: none;
   font-weight: 400;
   font-size: 14px;
-  color: ${theme.colors.surface.text.normal.lowContrast};
+  color: ${theme.colors.surface.text.gray.normal};
   background: transparent;
   &:placeholder-shown {
     text-overflow: ellipsis;

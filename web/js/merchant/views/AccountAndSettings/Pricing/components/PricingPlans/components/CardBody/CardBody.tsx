@@ -7,7 +7,7 @@ import {
 import { CardBodyPropsT } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/components/CardBody/CardBody.types';
 import { heading } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/components/CardBody/data';
 import { Flex } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/PricingPlans.styles';
-import { Text, Heading, CheckIcon } from '@razorpay/blade/components';
+import { Text, CheckIcon } from '@razorpay/blade/components';
 
 const CardBody = ({ isMobileResolution, subscriptionPlanData }: CardBodyPropsT): JSX.Element => {
   if (isMobileResolution)
@@ -15,27 +15,27 @@ const CardBody = ({ isMobileResolution, subscriptionPlanData }: CardBodyPropsT):
       <StyledCardBody>
         {subscriptionPlanData?.plan?.details?.feature?.map(({ feature_copy, offering }) => (
           <>
-            <CheckIcon color="feedback.icon.positive.lowContrast" size="small" />
+            <CheckIcon color="feedback.icon.positive.intense" size="small" />
             <div data-testid="featureDetail">
               {offering?.includes('\n') ? (
                 <>
-                  <Heading size="small" weight="regular" type="subdued">
+                  <Text weight="regular" size="large" color="surface.text.gray.muted">
                     {String(feature_copy)}
-                  </Heading>
+                  </Text>
                   <UnorderedList>
                     {offering?.split('\n').map((listItems) => (
                       <li key={`${feature_copy}-content-list-${listItems}`}>
-                        <Heading size="small" weight="regular" type="subdued">
+                        <Text weight="regular" size="large" color="surface.text.gray.muted">
                           {listItems}
-                        </Heading>
+                        </Text>
                       </li>
                     ))}
                   </UnorderedList>
                 </>
               ) : (
-                <Heading size="small" weight="regular" type="subdued">
+                <Text weight="regular" size="large" color="surface.text.gray.muted">
                   {String(`${feature_copy} ${offering}`)}
-                </Heading>
+                </Text>
               )}
             </div>
           </>
@@ -45,13 +45,13 @@ const CardBody = ({ isMobileResolution, subscriptionPlanData }: CardBodyPropsT):
 
   return (
     <>
-      <Heading size="small" weight="bold">
+      <Text weight="semibold" size="large">
         {heading}
-      </Heading>
+      </Text>
       <StyledCardBody>
         {subscriptionPlanData?.plan?.details?.feature?.map(({ feature_copy, offering }) => (
           <Flex key={feature_copy} flexDirection="column" gap={1} data-testid="featureDetail">
-            <Text size="medium" type="subdued" weight="regular">
+            <Text size="medium" weight="regular" color="surface.text.gray.muted">
               {feature_copy}
             </Text>
             {offering?.includes('\n') ? (
@@ -61,14 +61,14 @@ const CardBody = ({ isMobileResolution, subscriptionPlanData }: CardBodyPropsT):
                   .filter((listItems) => listItems?.length)
                   .map((listItems) => (
                     <li key={`${feature_copy}-content-list-${listItems}`}>
-                      <Text size="medium" type="subtle" weight="bold">
+                      <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
                         {listItems}
                       </Text>
                     </li>
                   ))}
               </UnorderedList>
             ) : (
-              <Text size="medium" type="subtle" weight="bold">
+              <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
                 {offering}
               </Text>
             )}

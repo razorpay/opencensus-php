@@ -14,7 +14,7 @@ const GoogleSignInButton = ({ onClick, isLoading }: any): JSX.Element => {
       isPending={isLoading}
     >
       <img src={GoogleIcon} alt="icon" style={{ marginRight: '16px' }} />
-      <span style={{ fontWeight: 700 }}>Sign in with Google</span>
+      <span style={{ fontWeight: 600 }}>Sign in with Google</span>
     </AsyncBtn.Primary>
   );
 };

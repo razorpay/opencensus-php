@@ -6,7 +6,7 @@ describe('Title', () => {
     renderApp({ children: 'Test Title' });
     const titleElement = screen.getByText('Test Title');
     expect(titleElement).toHaveStyle(`
-      font-weight: 700;
+      font-weight: 600;
     `);
   });
 

@@ -182,7 +182,7 @@ const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetai
                       color: '#0B70E7',
                       fontSize: '14px',
                       cursor: 'pointer',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       padding: '16px 0 0',
                       width: 'fit-content',
                     }}

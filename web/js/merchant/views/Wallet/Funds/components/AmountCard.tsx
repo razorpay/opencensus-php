@@ -24,7 +24,7 @@ export const AmountCard = ({
   return (
     <Card>
       {typeof label === 'string' ? (
-        <Text size="medium" type="subdued" weight="regular" variant="body">
+        <Text size="medium" weight="regular" variant="body" color="surface.text.gray.muted">
           {label}
         </Text>
       ) : (

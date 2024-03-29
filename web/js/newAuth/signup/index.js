@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { GoogleReCaptchaProvider as ReCaptchaV3Provider } from 'react-google-recaptcha-v3';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router } from 'react-router-dom';
@@ -18,7 +18,7 @@ const SignupWrap = () => {
       <Router>
         <LayerProvider>
           <ReCaptchaV3Provider reCaptchaKey={window.RECAPTCHA_V3_SITE_KEY}>
-            <BladeProvider themeTokens={paymentTheme} colorScheme="light">
+            <BladeProvider themeTokens={bladeTheme} colorScheme="light">
               <Signup />
               <ModalDialog />
               <Notifications />

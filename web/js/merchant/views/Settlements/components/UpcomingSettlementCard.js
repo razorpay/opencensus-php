@@ -23,7 +23,7 @@ const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency })
   if (showBlockedBadge) {
     badge = (
       <span>
-        <Badge variant="negative" size="medium" icon={HelpCircleIcon}>
+        <Badge size="medium" icon={HelpCircleIcon} color="negative">
           Blocked
         </Badge>
         <PopoverComponent align="top" theme="dark">

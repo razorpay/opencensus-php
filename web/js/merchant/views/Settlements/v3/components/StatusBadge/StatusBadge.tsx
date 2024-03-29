@@ -13,7 +13,7 @@ const StatusBadge = ({ status }: { status: string }): JSX.Element | null => {
   const uppercaseStatus = status.toUpperCase();
   return (
     <Badge
-      variant={VariantMap[uppercaseStatus]}
+      color={VariantMap[uppercaseStatus]}
       icon={(props) => (
         <StyledSpan>
           <InfoIcon {...props} />

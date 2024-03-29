@@ -73,7 +73,7 @@ const PaymentMethodSplit = ({
     <Card
       padding="spacing.3"
       marginY="spacing.5"
-      surfaceLevel={2}
+      backgroundColor="surface.background.gray.moderate"
       elevation="none"
       display="flex"
       testID="payment-method-split"
@@ -95,7 +95,7 @@ const PaymentMethodSplit = ({
             justifyContent={isMobile ? '' : 'space-between'}
             gap="spacing.2"
           >
-            <Text weight="bold" size="medium" color="surface.text.subtle.lowContrast">
+            <Text weight="semibold" size="medium" color="surface.text.gray.subtle">
               Split by payment method
             </Text>
             {shouldShowSrBanner ? (
@@ -132,17 +132,11 @@ const PaymentMethodSplit = ({
                 >
                   <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.2">
                     <LegendDot color={doughnutChartColors[index]} />
-                    <Text
-                      size={isMobile ? 'small' : 'medium'}
-                      color="surface.text.subtle.lowContrast"
-                    >
+                    <Text size={isMobile ? 'small' : 'medium'} color="surface.text.gray.subtle">
                       {getPaymentMethodLabel(label)}
                     </Text>
                   </Box>
-                  <Text
-                    size={isMobile ? 'small' : 'medium'}
-                    color="surface.text.subtle.lowContrast"
-                  >
+                  <Text size={isMobile ? 'small' : 'medium'} color="surface.text.gray.subtle">
                     {getPercentage(segmentDataTotal, value)}%
                   </Text>
                 </Box>

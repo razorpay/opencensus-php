@@ -5,7 +5,7 @@ export const ProfileContainer = styled.div(
   ({ theme }: { theme: Theme }) => `
     border-radius: ${theme.spacing[2]}px;
     max-width: 1136px;
-    background: ${theme.colors.surface.background.level2.lowContrast};
+    background: ${theme.colors.surface.background.gray.intense};
     box-shadow: 0px 1px 2px rgba(21, 45, 75, 0.2), 0px 0px 1px rgba(21, 45, 75, 0.2);
     width: 100%;
     min-width: 750px;
@@ -15,7 +15,7 @@ export const ProfileContainer = styled.div(
 
 export const PersonalInfoContainer = styled.div(
   ({ theme }: { theme: Theme }) => `
-    background: ${theme.colors.brand.primary[300]};
+    background: ${theme.colors.surface.background.primary.subtle};
     min-width: 370px;
     border-radius: ${theme.spacing[2]}px;
     display: flex;

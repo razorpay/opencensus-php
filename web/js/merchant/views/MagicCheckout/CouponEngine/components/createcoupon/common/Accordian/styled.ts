@@ -19,7 +19,7 @@ export const AccordionHeader = styled.div<AccordionHeaderProps>`
   align-items: center;
   cursor: pointer;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 20px;
   padding: 18px;
   border-bottom: ${({ isOpen }) => (isOpen ? '1px solid #EBECED' : 'none')};

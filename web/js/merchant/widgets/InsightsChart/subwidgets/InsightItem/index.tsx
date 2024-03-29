@@ -1,4 +1,4 @@
-import { Box, Heading, Text } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
 import { TooltipWidget } from 'merchant/widgets/common/Tooltip';
 import React, { useEffect } from 'react';
 import { InsightItemProps } from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/types';
@@ -63,7 +63,7 @@ const InsightItem: React.FC<InsightItemProps> = ({
     return (
       <ErrorState
         borderWidth="thinner"
-        borderColor="surface.border.subtle.lowContrast"
+        borderColor="surface.border.gray.subtle"
         text={`${title} couldn't be loaded`}
         retryHandler={() => retryHandler({ id, date_time: { quick: date } })}
         marginX="spacing.0"
@@ -105,16 +105,18 @@ const InsightItem: React.FC<InsightItemProps> = ({
       borderRadius="large"
       padding="spacing.6"
       borderWidth="thin"
-      borderColor="surface.border.normal.lowContrast"
+      borderColor="surface.border.gray.muted"
       gap="spacing.4"
       alignItems={{ base: 'center', m: 'initial' }}
     >
       <Box display="flex" flexDirection="column" flex="1" marginBottom="spacing.2">
         <Box display="flex">
-          <Heading marginRight="spacing.2">{title}</Heading>
+          <Text marginRight="spacing.2" size="large" weight="semibold">
+            {title}
+          </Text>
           {tooltip_text && <TooltipWidget tooltip_text={tooltip_text} />}
         </Box>
-        <Text marginBottom="spacing.6" type="subdued">
+        <Text marginBottom="spacing.6" color="surface.text.gray.muted">
           {durationOptionsSubtextMap[date]}
         </Text>
         <Box

@@ -4,14 +4,7 @@ import { bindActionCreators } from 'redux';
 import { closeModal } from 'merchant_common/reducers/modals';
 import ModalHeader from 'common/ui/ModalHeader';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import {
-  Box,
-  CheckboxGroup,
-  Checkbox,
-  TextArea,
-  Button,
-  Heading,
-} from '@razorpay/blade/components';
+import { Box, CheckboxGroup, Checkbox, TextArea, Button, Text } from '@razorpay/blade/components';
 
 const OPTIONS = ['Conversion Metrics', 'User Sessions', 'Returning Customers', 'Other'];
 
@@ -38,7 +31,7 @@ const FeedbackModal = ({ showNotification, closeModal }) => {
     <div className="feedback-modal">
       <ModalHeader title="Share Feedback" extraClass="no-padding" onCloseClick={closeModal} />
       <Box padding="spacing.7">
-        <Heading>What widget would you like to see added next?</Heading>
+        <Text size="large">What widget would you like to see added next?</Text>
         <CheckboxGroup name="feedback" onChange={handleChange}>
           {OPTIONS.map((opt, idx) => (
             <Checkbox key={idx} value={opt}>

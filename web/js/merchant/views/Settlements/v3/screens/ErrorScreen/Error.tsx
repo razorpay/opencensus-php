@@ -1,15 +1,14 @@
 import {
   Box,
-  Heading,
   Link,
   RotateCounterClockWiseIcon,
   Text,
   XCircleIcon,
 } from '@razorpay/blade/components';
-import { ERROR_TYPE, ErrorScreenPropsInterface } from 'merchant/views/Settlements/v3/typings';
-import React, { useEffect } from 'react';
 import { withRouter } from 'common/deprecated/withRouter';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { ERROR_TYPE, ErrorScreenPropsInterface } from 'merchant/views/Settlements/v3/typings';
+import React, { useEffect } from 'react';
 import { IconWrapper } from './styled';
 
 const ErrorScreen = ({
@@ -47,29 +46,26 @@ const ErrorScreen = ({
       alignItems="center"
       justifyContent="center"
       height="360px"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
     >
       <Box display="flex" flexDirection="column" alignItems="center" gap="spacing.7">
         <IconWrapper>
-          <XCircleIcon
-            size="2xlarge"
-            color="feedback.negative.action.icon.primary.disabled.highContrast"
-          />
+          <XCircleIcon size="2xlarge" color="interactive.icon.staticWhite.normal" />
         </IconWrapper>
         <Box display="flex" flexDirection="column" alignItems="center" gap="spacing.3">
           {type === ERROR_TYPE.INVALID_ID ? (
             <>
-              <Heading>Enter valid settlement ID</Heading>
+              <Text size="large">Enter valid settlement ID</Text>
               <Box display="flex" alignItems="center" gap="spacing.2">
                 <Link variant="button" onClick={handleClick}>
                   Go back
                 </Link>
-                <Text type="subtle">to view all settlements</Text>
+                <Text color="surface.text.gray.subtle">to view all settlements</Text>
               </Box>
             </>
           ) : (
             <>
-              <Heading>Settlement details could not be loaded</Heading>
+              <Text size="large">Settlement details could not be loaded</Text>
               <Box display="flex" alignItems="center" gap="spacing.2">
                 <Link
                   variant="button"
@@ -79,7 +75,7 @@ const ErrorScreen = ({
                 >
                   Refresh
                 </Link>
-                <Text type="subtle">this page or try again later</Text>
+                <Text color="surface.text.gray.subtle">this page or try again later</Text>
               </Box>
             </>
           )}

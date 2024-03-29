@@ -76,12 +76,9 @@ describe('WhatsappSetup - ActiveSetup', () => {
     renderApp({
       businessProvider,
     });
-    expect(
-      screen.getByRole('heading', { name: 'Your Whatsapp Business Account' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { name: 'Send all payment links on Whatsapp' }),
-    ).toBeInTheDocument();
+
+    expect(screen.getByText('Your Whatsapp Business Account')).toBeInTheDocument();
+    expect(screen.getByText('Send all payment links on Whatsapp')).toBeInTheDocument();
   });
 
   test('should render active whatsapp setup on mobile', () => {
@@ -89,12 +86,9 @@ describe('WhatsappSetup - ActiveSetup', () => {
     renderApp({
       businessProvider,
     });
-    expect(
-      screen.getByRole('heading', { name: 'Your Whatsapp Business Account' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { name: 'Send all payment links on Whatsapp' }),
-    ).toBeInTheDocument();
+
+    expect(screen.getByText('Your Whatsapp Business Account')).toBeInTheDocument();
+    expect(screen.getByText('Send all payment links on Whatsapp')).toBeInTheDocument();
   });
 
   test('should render business provider and its details', () => {

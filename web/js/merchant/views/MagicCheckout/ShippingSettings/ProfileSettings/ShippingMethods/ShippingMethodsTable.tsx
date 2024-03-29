@@ -33,11 +33,11 @@ const ShippingMethodsTable = ({
         <ShippingMethodTableWrapper key={method.id}>
           <Box display="flex" justifyContent="space-between" marginBottom="spacing.4">
             <Box>
-              <Text weight="bold">
+              <Text weight="semibold">
                 {`${method.name} @ ${getFormattedAmountNew(method.fee, true)}`}
               </Text>
               {method.description && (
-                <Text size="small" type="subdued">
+                <Text size="small" color="surface.text.gray.muted">
                   {method.description}
                 </Text>
               )}
@@ -47,16 +47,16 @@ const ShippingMethodsTable = ({
                 <IconButton
                   onClick={() => handleMethodEdit(method)}
                   accessibilityLabel="edit"
-                  icon={() => <EditComposeIcon size="medium" color="action.icon.link.active" />}
+                  icon={() => (
+                    <EditComposeIcon size="medium" color="interactive.icon.primary.normal" />
+                  )}
                 />
 
                 <DeleteIconWrapper>
                   <IconButton
                     accessibilityLabel="delete"
                     onClick={() => handleDelete(method.id)}
-                    icon={() => (
-                      <TrashIcon size="medium" color="feedback.icon.negative.lowContrast" />
-                    )}
+                    icon={() => <TrashIcon size="medium" color="feedback.icon.negative.intense" />}
                   />
                 </DeleteIconWrapper>
               </Box>

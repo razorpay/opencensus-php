@@ -5,17 +5,17 @@ export const Wrapper = styled.div(
   ({ theme }) => `
   border-width: ${makeBorderSize(theme.border.width.thin)};
   border-radius: ${makeBorderSize(theme.border.radius.medium)};
-  border-color: ${theme.colors.surface.border.normal.lowContrast};
+  border-color: ${theme.colors.surface.border.gray.muted};
   border-style: solid;
   padding: ${theme.spacing[6]}px;
-  background: ${theme.colors.surface.background.level2.lowContrast}
+  background: ${theme.colors.surface.background.gray.intense}
 `,
 );
 
 export const Separator = styled.div<{ margin?: number }>(
   ({ theme, margin = theme.spacing[5] }) => `
   margin: ${margin}px 0;
-  border-bottom: 1px solid ${theme.colors.surface.border.normal.lowContrast}
+  border-bottom: 1px solid ${theme.colors.surface.border.gray.muted}
 
 `,
 );

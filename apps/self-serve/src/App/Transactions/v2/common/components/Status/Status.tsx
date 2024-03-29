@@ -9,8 +9,8 @@ import {
 
 import { titleCase } from '@dashboard/shared-utils/rzp-utils';
 
-import { StatusProps } from './types';
 import { TooltipWrapper } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/styled';
+import { StatusProps } from './types';
 
 const Status = ({ variant, content, status }: StatusProps): JSX.Element => {
   return (
@@ -20,7 +20,7 @@ const Status = ({ variant, content, status }: StatusProps): JSX.Element => {
           base: 'auto',
           l: 'spacing.0',
         }}
-        variant={variant}
+        color={variant}
         icon={(props): JSX.Element => (
           <TooltipWrapper
             onClick={(e: { stopPropagation: () => void }) => {

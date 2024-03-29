@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { StyledJourneyMetadata } from 'merchant/views/Transactions/v2/Payments/components/Timeline/styled';
 
 export const StyledTimeline = styled.div`
-  background: ${({ theme }) => `${theme.colors.surface.background.level2.lowContrast}`};
+  background: ${({ theme }) => `${theme.colors.surface.background.gray.intense}`};
   flex: 1.2;
   width: 100%;
   @media screen and (min-width: 768px) {
@@ -12,7 +12,7 @@ export const StyledTimeline = styled.div`
 
 export const TimelineHeader = styled.div`
   padding: 12px 24px;
-  border-bottom: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border-bottom: 1px solid ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
 `;
 
 export const StyledTimelineRevamp = styled(StyledTimeline)`
@@ -25,11 +25,11 @@ export const StyledTimelineRevamp = styled(StyledTimeline)`
 const handleBackground = (status, theme) => {
   switch (status) {
     case 'failed':
-      return `background: ${theme.colors.feedback.background.negative.lowContrast}`;
+      return `background: ${theme.colors.feedback.background.negative.subtle}`;
     case 'processed':
-      return `background: ${theme.colors.feedback.background.positive.lowContrast}`;
+      return `background: ${theme.colors.feedback.background.positive.subtle}`;
     default:
-      return `background: ${theme.colors.feedback.background.neutral.lowContrast}`;
+      return `background: ${theme.colors.feedback.background.neutral.subtle}`;
   }
 };
 export const IconBackground = styled.div<{ status: string }>`
@@ -47,7 +47,7 @@ export const IconBackground = styled.div<{ status: string }>`
 export const StyledVerticalPath = styled.div`
   height: 44px;
   width: 0;
-  border: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border: 1px solid ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
 `;
 
 export const StyledSettlementJourneyMetadata = styled(StyledJourneyMetadata)`

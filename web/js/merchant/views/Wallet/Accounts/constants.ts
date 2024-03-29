@@ -2,18 +2,18 @@ import type { BadgeProps } from '@razorpay/blade/components';
 
 export const STATUS_BADGE_PROPS: Record<string, BadgeProps> = {
   active: {
-    contrast: 'high',
-    variant: 'positive',
+    emphasis: 'intense',
+    color: 'positive',
     children: 'Active',
   },
   inactive: {
-    contrast: 'high',
-    variant: 'negative',
+    emphasis: 'intense',
+    color: 'negative',
     children: 'Inactive',
   },
   pending_activation: {
-    contrast: 'high',
-    variant: 'blue',
+    emphasis: 'intense',
+    color: 'primary',
     children: 'Pending Activation',
   },
 };

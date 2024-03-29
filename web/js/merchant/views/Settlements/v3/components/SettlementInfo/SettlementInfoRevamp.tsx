@@ -6,7 +6,6 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   Divider,
-  Heading,
   Text,
 } from '@razorpay/blade/components';
 import {
@@ -41,22 +40,22 @@ const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }
   return (
     <Box testID="settlement-info-details-section">
       <SectionHeader enableBorderBottomRadius={!isOpen}>
-        <Heading type="normal" size="small" weight="bold" contrast="low">
+        <Text weight="semibold" size="large" color="surface.text.gray.normal">
           Details
-        </Heading>
+        </Text>
         {isMobile && (
           <CollapsibleContainer onClick={toggleAccordian} data-testid="collapsible-container">
-            <Text type="subtle" size="medium" weight="bold">
+            <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
               {!isOpen ? (
                 <ChevronDownIcon
                   size="medium"
-                  color="feedback.icon.neutral.lowContrast"
+                  color="feedback.icon.neutral.intense"
                   data-testid="chevron-down"
                 />
               ) : (
                 <ChevronUpIcon
                   size="medium"
-                  color="feedback.icon.neutral.lowContrast"
+                  color="feedback.icon.neutral.intense"
                   data-testid="chevron-up"
                 />
               )}
@@ -70,7 +69,12 @@ const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }
             <CardBody>
               <RowsWrapper>
                 <RowWrapper tooltipSpacing="5px">
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     Settlement ID <Tooltip content={tooltipContent.settlementId} />
                   </Text>
                   <CopyWrapper
@@ -81,14 +85,24 @@ const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }
                       copyToClipboard(settlement.id);
                     }}
                   >
-                    <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="semibold"
+                      color="surface.text.gray.normal"
+                    >
                       {settlement.id}
                     </Text>
                   </CopyWrapper>
                 </RowWrapper>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper tooltipSpacing="5px">
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     UTR number <Tooltip content={tooltipContent.bankRRN} />
                   </Text>
                   {settlement.utr ? (
@@ -103,7 +117,7 @@ const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }
                       <Text variant="body">{settlement.utr}</Text>
                     </CopyWrapper>
                   ) : (
-                    <Text variant="body" color="surface.text.muted.lowContrast">
+                    <Text variant="body" color="surface.text.gray.muted">
                       generated after settlement gets processed
                     </Text>
                   )}

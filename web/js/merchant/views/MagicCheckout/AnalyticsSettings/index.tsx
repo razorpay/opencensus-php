@@ -1,30 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Heading, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { bindActionCreators, Dispatch, AnyAction } from 'redux';
+import { AnyAction, Dispatch, bindActionCreators } from 'redux';
 import styled from 'styled-components';
 
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
-import { Heading, Text } from '@razorpay/blade/components';
-import Spinner from 'common/ui/Spinner';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
+import Spinner from 'common/ui/Spinner';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 import {
   fetchConfigs,
   resetAnalyticsSettings,
 } from 'merchant/reducers/magicCheckout/analyticsSettings/actions';
-import { getURLQueryParams } from 'common/utils/rzp-utils';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
-import {
-  NavItemPropType,
-  NavContentPropType,
-  AnalyticsSettingsPropsType,
-} from 'merchant/views/MagicCheckout/AnalyticsSettings/types';
-
 import {
   ANALYTICS_SETTINGS_ROUTES,
   NOTIFICATION_TEXTS,
 } from 'merchant/views/MagicCheckout/AnalyticsSettings/constants';
+import {
+  AnalyticsSettingsPropsType,
+  NavContentPropType,
+  NavItemPropType,
+} from 'merchant/views/MagicCheckout/AnalyticsSettings/types';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const AnalyticsSettingContainer = styled.div`
   padding: 16px;
@@ -97,8 +94,8 @@ const AnalyticsSettings = (props: AnalyticsSettingsPropsType): JSX.Element => {
     <ErrorBoundary team={Teams?.MAGIC_CHECKOUT} rank={Ranks.P0} resetOnProps>
       <SuspenseWithLoader type="center">
         <AnalyticsSettingContainer>
-          <Heading size="large">Analytics Settings</Heading>
-          <Text type="subdued">
+          <Heading size="medium">Analytics Settings</Heading>
+          <Text color="surface.text.gray.muted">
             Boost conversion and take better decisions by Integrating Google Analytics, Google Ads
             and Facebook Ads with us.
           </Text>

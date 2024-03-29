@@ -225,7 +225,12 @@ function amountValidator(value) {
     return (
       <>
         Amount should not be greater than{' '}
-        <Amount size="body-small" intent="negative" value={DEFAULT_UPI_LIMIT} />
+        <Amount
+          color="feedback.text.negative.intense"
+          value={DEFAULT_UPI_LIMIT}
+          type="body"
+          size="small"
+        />
       </>
     );
   }

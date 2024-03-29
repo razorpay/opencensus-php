@@ -5,9 +5,9 @@ export const OrderCollapsibleHeader = styled.div(
   ({ theme, isExpanded }: { theme: Theme; isExpanded: boolean }) => `
     padding: ${theme.spacing[5]}px;
     cursor: pointer;
-    background-color: ${isExpanded ? theme.colors.brand.primary[300] : 'none'};
+    background-color: ${isExpanded ? theme.colors.surface.background.primary.subtle : 'none'};
     border-bottom: ${isExpanded ? theme.border.width.thick : '0'}px solid ${
-    theme.colors.surface.border.normal.lowContrast
+    theme.colors.surface.border.gray.muted
   };
 `,
 );
@@ -18,8 +18,8 @@ export const OrderCollapsibleIconContainer = styled.div(
       border-radius: ${theme.border.radius.large}px;
       background-color: ${
         isExpanded
-          ? theme.colors.brand.primary[300]
-          : theme.colors.surface.background.level1.lowContrast
+          ? theme.colors.surface.background.primary.subtle
+          : theme.colors.surface.background.gray.subtle
       };
       margin-right:${theme.spacing[4]}px;
       display: flex;

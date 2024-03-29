@@ -34,7 +34,7 @@ const ShippingSettingsWrapper = ({ abExperiments }): JSX.Element => {
       {isShippingEngineLive && settingType === WOOC_MAGIC_SHIPPING ? (
         <Box
           padding="spacing.6"
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           paddingLeft="spacing.0"
           paddingRight="spacing.0"
         >

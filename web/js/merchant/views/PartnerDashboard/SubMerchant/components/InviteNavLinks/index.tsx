@@ -9,18 +9,18 @@ import FtuxTooltip from './components/FtuxTooltip';
 
 const StyledInviteNavLinks = styled.div(
   ({ theme }) => `
-  background: ${theme.colors.surface.background.level3.lowContrast};
+  background: ${theme.colors.surface.background.gray.moderate};
   position: relative;
   .navlink { 
     padding-right: ${theme.spacing[7]}px;
-    color: ${theme.colors.surface.text.muted.lowContrast};
+    color: ${theme.colors.surface.text.gray.muted};
     :hover{
-      color: ${theme.colors.brand.primary[500]};
+      color: ${theme.colors.surface.background.primary.intense};
     }
   }
   .active {
-    font-weight: bold;
-    color: ${theme.colors.brand.primary[500]};
+    font-weight: 600;
+    color: ${theme.colors.surface.background.primary.intense};
   }
 `,
 );

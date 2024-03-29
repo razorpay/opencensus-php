@@ -273,7 +273,7 @@ const SettlementsBannerV2 = ({
     (title && mode === 'live' ? (
       <BannerWrapper aria-label="settlement-banner">
         <Alert
-          intent={intent}
+          color={intent}
           isDismissible={false}
           title={title}
           description={subTitle}

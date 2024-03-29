@@ -24,7 +24,7 @@ const InternationalPayments = ({
       <li className="international-leaf-item alert-info">
         <Box>
           <Box>
-            <Text as="span" weight="bold">
+            <Text as="span" weight="semibold">
               International Payments
             </Text>
             {isInternationalBlackList && (
@@ -45,7 +45,7 @@ const InternationalPayments = ({
     <li className="international-leaf-item">
       <Box>
         <Box>
-          <Text as="span" weight="bold">
+          <Text as="span" weight="semibold">
             International Payments
           </Text>
           <ActivationStatus status={status} />

@@ -2,13 +2,13 @@ import React from 'react';
 import { Text } from '@razorpay/blade/components';
 
 import { titleCase } from '@dashboard/shared-utils/rzp-utils';
-import { IPaymentDetails } from './types';
 import CardIcon from 'apps/self-serve/src/assets/card.svg';
 import UpiIcon from 'apps/self-serve/src/assets/upi.svg';
 import TurboUpiIcon from 'apps/self-serve/src/assets/turbo-upi.svg';
 import EmiIcon from 'apps/self-serve/src/assets/emi.svg';
 import NetbankingIcon from 'apps/self-serve/src/assets/netbanking.svg';
 import WalletIcon from 'apps/self-serve/src/assets/wallet.svg';
+import { IPaymentDetails } from './types';
 
 interface IPaymentMethod {
   payment: any;
@@ -101,14 +101,7 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
     return <>{titleCase(method)}</>;
   };
   return (
-    <Text
-      type="normal"
-      variant="body"
-      size="medium"
-      weight="regular"
-      contrast="low"
-      color="surface.text.normal.lowContrast"
-    >
+    <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
       {getPaymentMethod()}
     </Text>
   );

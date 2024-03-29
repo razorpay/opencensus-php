@@ -26,14 +26,14 @@ export const StyledBoxMetedata = styled.div`
   top: 20px;
   left: -20px;
   border-left: 1px solid
-    ${({ theme }: { theme: Theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+    ${({ theme }: { theme: Theme }) => `${theme.colors.surface.border.gray.muted}`};
   padding-left: 30px;
   stroke-width: 1px;
   width: 100%;
 `;
 
 export const StyledText = styled.p`
-  color: ${({ theme }: { theme: Theme }) => `${theme.colors.surface.text.normal.lowContrast}`};
+  color: ${({ theme }: { theme: Theme }) => `${theme.colors.surface.text.gray.normal}`};
   font-size: 14px;
   font-weight: ${({ theme }: { theme: Theme }) => `${theme.typography.fonts.weight.bold}`};
 `;

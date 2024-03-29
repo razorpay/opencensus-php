@@ -40,8 +40,8 @@ const CopyButton = ({
 
   return (
     <StyledCopyButton type="button" onClick={onCopy} data-tip="Copied" data-event="active">
-      <Text type="subtle">{text}</Text>
-      {!disabled && <CopyIcon color="feedback.icon.neutral.lowContrast" size="medium" />}
+      <Text color="surface.text.gray.subtle">{text}</Text>
+      {!disabled && <CopyIcon color="feedback.icon.neutral.intense" size="medium" />}
     </StyledCopyButton>
   );
 };

@@ -101,7 +101,7 @@ const inviteAcceptedOn = {
       <Time value={item.created_at} format="ll" />
       {isInviteRecentlyAccepted(item.created_at) && (
         <Box display="inline-block">
-          <Badge contrast="high" fontWeight="bold" marginLeft="spacing.3" variant="positive">
+          <Badge emphasis="intense" marginLeft="spacing.3" color="positive">
             NEW
           </Badge>
         </Box>

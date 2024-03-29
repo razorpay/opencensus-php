@@ -22,7 +22,7 @@ const StyledPricingPlansAccordion = styled.div(
     }
     th {
       min-width: 80px;
-      background-color: ${theme.colors.brand.gray[300].lowContrast};
+      background-color: ${theme.colors.surface.background.gray.subtle};
     }
   }
 `,

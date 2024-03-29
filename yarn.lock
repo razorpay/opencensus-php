@@ -2920,7 +2920,7 @@
   resolved "https://registry.npmjs.org/@fastify/busboy/-/busboy-2.0.0.tgz"
   integrity sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==
 
-"@floating-ui/core@^1.3.0", "@floating-ui/core@^1.5.3":
+"@floating-ui/core@^1.5.3":
   version "1.5.3"
   resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.5.3.tgz#b6aa0827708d70971c8679a16cf680a515b8a52a"
   integrity sha512-O0WKDOo0yhJuugCx6trZQj5jVJ9yR0ystG2JaNAemYUWce+pmM6WUEFIibnWyEJKdrDxhm75NoSRME35FNaM/Q==
@@ -2941,13 +2941,6 @@
   integrity sha512-UsBK30Bg+s6+nsgblXtZmwHhgS2vmbuQK22qgt2pTQM6M3X6H1+cQcLXqgRY3ihVLcZJE6IvqDQozhsnIVqK/Q==
   dependencies:
     "@floating-ui/dom" "^1.5.4"
-
-"@floating-ui/react-native@0.10.1":
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/@floating-ui/react-native/-/react-native-0.10.1.tgz#6306e192c6b755fb5a8d037a089c2f9f619dd15a"
-  integrity sha512-+GdYTrcZ9pD6+l63YU8hqCDZGsUeP4351kLY6dgjXUDYXYCr7M0rWnTWigVMOyafnDrTRXWxZxJbHo180+uFvQ==
-  dependencies:
-    "@floating-ui/core" "^1.3.0"
 
 "@floating-ui/react@0.25.4":
   version "0.25.4"
@@ -5141,23 +5134,6 @@
     react-native-svg "12.1.0"
     react-native-tab-view "2.15.1"
 
-"@razorpay/blade@10.18.0":
-  version "10.18.0"
-  resolved "https://npm.pkg.github.com/download/@razorpay/blade/10.18.0/08555d5e0a74b73a92a262241789d3af8a8a7391#08555d5e0a74b73a92a262241789d3af8a8a7391"
-  integrity sha512-KRHLBWXwxm+yhsm/SdnI9GttSZl0p0+/RzWgTP3exvQKsiZaEBrtK+71/zL+FFMacVPD/2MMPOuUcYZNeqoC9g==
-  dependencies:
-    "@babel/runtime" "7.20.0"
-    "@floating-ui/react" "0.25.4"
-    "@floating-ui/react-native" "0.10.1"
-    "@types/body-scroll-lock" "3.1.0"
-    "@use-gesture/react" "10.2.24"
-    body-scroll-lock "4.0.0-beta.0"
-    patch-package "7.0.0"
-    react-native-pager-view "6.2.1"
-    react-native-tab-view "3.5.2"
-    tinycolor2 "1.6.0"
-    use-presence "1.1.0"
-
 "@razorpay/blade@10.23.5":
   version "10.23.5"
   resolved "https://npm.pkg.github.com/download/@razorpay/blade/10.23.5/ef1f1c27105671fc41b57fa5733c0dfe7bb57baf#ef1f1c27105671fc41b57fa5733c0dfe7bb57baf"
@@ -5170,6 +5146,22 @@
     "@use-gesture/react" "10.2.24"
     body-scroll-lock-upgrade "1.1.0"
     patch-package "7.0.0"
+    tinycolor2 "1.6.0"
+    ts-deepmerge "6.2.0"
+    use-presence "1.1.0"
+
+"@razorpay/blade@11.6.2":
+  version "11.6.2"
+  resolved "https://npm.pkg.github.com/download/@razorpay/blade/11.6.2/52274dd3df0a76f489da875fbecb2fa51280d3e7#52274dd3df0a76f489da875fbecb2fa51280d3e7"
+  integrity sha512-xNBSAMEEtk3zDPwszDa/Zz5owFyO3awfF4nESRrCjC2c1erfa2yzw5cBpVJqJ7G7X+upza2ty1SdGj7bUXz44A==
+  dependencies:
+    "@babel/runtime" "7.20.0"
+    "@emotion/react" "11.11.1"
+    "@floating-ui/react" "0.25.4"
+    "@table-library/react-table-library" "4.1.7"
+    "@use-gesture/react" "10.2.24"
+    body-scroll-lock-upgrade "1.1.0"
+    react-hot-toast "2.4.1"
     tinycolor2 "1.6.0"
     ts-deepmerge "6.2.0"
     use-presence "1.1.0"
@@ -9032,11 +9024,6 @@
   dependencies:
     "@types/connect" "*"
     "@types/node" "*"
-
-"@types/body-scroll-lock@3.1.0":
-  version "3.1.0"
-  resolved "https://registry.npmjs.org/@types/body-scroll-lock/-/body-scroll-lock-3.1.0.tgz"
-  integrity sha512-3owAC4iJub5WPqRhxd8INarF2bWeQq1yQHBgYhN0XLBJMpd5ED10RrJ3aKiAwlTyL5wK7RkBD4SZUQz2AAAMdA==
 
 "@types/bonjour@^3.5.9":
   version "3.5.12"
@@ -13237,11 +13224,6 @@ body-scroll-lock-upgrade@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/body-scroll-lock-upgrade/-/body-scroll-lock-upgrade-1.1.0.tgz#3df63fca3d1db2f896bd9a050bd14c33cd0085d2"
   integrity sha512-nnfVAS+tB7CS9RaksuHVTpgHWHF7fE/ptIBJnwZrMqImIvWJF1OGcLnMpBhC6qhkx9oelvyxmWXwmIJXCV98Sw==
-
-body-scroll-lock@4.0.0-beta.0:
-  version "4.0.0-beta.0"
-  resolved "https://registry.npmjs.org/body-scroll-lock/-/body-scroll-lock-4.0.0-beta.0.tgz"
-  integrity sha512-a7tP5+0Mw3YlUJcGAKUqIBkYYGlYxk2fnCasq/FUph1hadxlTRjF+gAcZksxANnaMnALjxEddmSi/H3OR8ugcQ==
 
 body-scroll-lock@^3.1.5:
   version "3.1.5"
@@ -20059,6 +20041,11 @@ gonzales-pe@^4.3.0:
   integrity sha512-otgSPpUmdWJ43VXyiNgEYE4luzHCL2pz4wQ0OnDluC6Eg4Ko3Vexy/SrSynglw/eR+OhkzmqFCZa/OFa/RgAOQ==
   dependencies:
     minimist "^1.2.5"
+
+goober@^2.1.10:
+  version "2.1.14"
+  resolved "https://registry.yarnpkg.com/goober/-/goober-2.1.14.tgz#4a5c94fc34dc086a8e6035360ae1800005135acd"
+  integrity sha512-4UpC0NdGyAFqLNPnhCT2iHpza2q+RAY3GV85a/mRPdzyPQMsj0KmMMuetdIkzWRbJ+Hgau1EZztq8ImmiMGhsg==
 
 gopd@^1.0.1:
   version "1.0.1"
@@ -29848,6 +29835,13 @@ react-helmet-async@^1.0.7:
     react-fast-compare "^3.2.0"
     shallowequal "^1.1.0"
 
+react-hot-toast@2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/react-hot-toast/-/react-hot-toast-2.4.1.tgz#df04295eda8a7b12c4f968e54a61c8d36f4c0994"
+  integrity sha512-j8z+cQbWIM5LY37pR6uZR6D4LfseplqnuAO4co4u8917hBUvXlEqyP1ZzqVLcqoyUesZZv/ImreoCeHVDpE5pQ==
+  dependencies:
+    goober "^2.1.10"
+
 react-idle-timer@5.7.2:
   version "5.7.2"
   resolved "https://registry.npmjs.org/react-idle-timer/-/react-idle-timer-5.7.2.tgz"
@@ -29995,11 +29989,6 @@ react-native-modalize@2.0.4:
   resolved "https://registry.npmjs.org/react-native-modalize/-/react-native-modalize-2.0.4.tgz"
   integrity sha512-imwMBfvbJdgGqzkfYI4t5jT5nrjXN9c+kEh1iPkEWJE2tz8dpcyWeyniXATmGmsqFkuQJvZY9o5LrYLY8BnduA==
 
-react-native-pager-view@6.2.1:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/react-native-pager-view/-/react-native-pager-view-6.2.1.tgz#985d21bbb7d7bc012f4c142dedbb98ce4bdea104"
-  integrity sha512-fZ8chez5J+w831nSnbtK8hwlCiMy1DgpFv8xG6ajXLsAI8uMkGvP554QDIDNlUoCuVwMf7OFyd32Y2Nm2Iaj9Q==
-
 react-native-reanimated@1.9.0:
   version "1.9.0"
   resolved "https://registry.npmjs.org/react-native-reanimated/-/react-native-reanimated-1.9.0.tgz"
@@ -30024,13 +30013,6 @@ react-native-tab-view@2.15.1:
   version "2.15.1"
   resolved "https://registry.npmjs.org/react-native-tab-view/-/react-native-tab-view-2.15.1.tgz"
   integrity sha512-cDYl1pNWspbEHBjHrHVpIC40h4g8VhZe0CIG0CUKcouX98vHVfAojxhgWuRosq9qMhITHpLKM+7BmBLnhCJ0nw==
-
-react-native-tab-view@3.5.2:
-  version "3.5.2"
-  resolved "https://registry.yarnpkg.com/react-native-tab-view/-/react-native-tab-view-3.5.2.tgz#2789b8af6148b16835869566bf13dc3b0e6c1b46"
-  integrity sha512-nE5WqjbeEPsWQx4mtz81QGVvgHRhujTNIIZiMCx3Bj6CBFDafbk7XZp9ocmtzXUQaZ4bhtVS43R4FIiR4LboJw==
-  dependencies:
-    use-latest-callback "^0.1.5"
 
 react-onclickoutside@^6.5.0:
   version "6.13.0"
@@ -34963,11 +34945,6 @@ use-isomorphic-layout-effect@^1.0.0, use-isomorphic-layout-effect@^1.1.1:
   version "1.1.2"
   resolved "https://registry.npmjs.org/use-isomorphic-layout-effect/-/use-isomorphic-layout-effect-1.1.2.tgz"
   integrity sha512-49L8yCO3iGT/ZF9QttjwLF/ZD9Iwto5LnH5LmEdk/6cFmXddqi2ulF0edxTwjj+7mqvpVVGQWvbXZdn32wRSHA==
-
-use-latest-callback@^0.1.5:
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/use-latest-callback/-/use-latest-callback-0.1.9.tgz#10191dc54257e65a8e52322127643a8940271e2a"
-  integrity sha512-CL/29uS74AwreI/f2oz2hLTW7ZqVeV5+gxFeGudzQrgkCytrHw33G4KbnQOrRlAEzzAFXi7dDLMC9zhWcVpzmw==
 
 use-latest@^1.2.1:
   version "1.2.1"

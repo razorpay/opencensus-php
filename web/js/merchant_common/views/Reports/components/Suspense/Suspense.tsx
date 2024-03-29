@@ -10,7 +10,7 @@ export const Suspense = ({ children, minWidth }: SuspenseType): JSX.Element => {
         <SpinnerContainer minWidth={minWidth}>
           <Spinner
             size="large"
-            contrast="low"
+            color="primary"
             accessibilityLabel="Loading, Please Wait."
             label="Loading Reports, Please wait..."
             labelPosition="bottom"

@@ -18,7 +18,7 @@ export const AndroidSmartMiniPosContainer = styled.div(
     width: 100%;
     min-width: 100px;
     height: 400px;    
-    background-color: ${theme.colors.surface.background.level1.lowContrast};
+    background-color: ${theme.colors.surface.background.gray.subtle};
     position: relative;
     border-radius: ${theme.border.radius.large}px;
     overflow: hidden;
@@ -49,7 +49,7 @@ export const AndroidPosMiniEllipse1 = styled.div(
     width: 120%;
     aspect-ratio: 1/1;
     border-radius: ${theme.border.radius.round};
-    background-color: ${theme.colors.brand.primary[400]};
+    background-color: ${theme.colors.surface.background.primary.subtle};
     filter: blur(100px);
     right: 40%;
     top: 0;
@@ -63,7 +63,7 @@ export const AndroidPosMiniEllipse2 = styled.div(
     max-width: 550px;
     aspect-ratio: 1/1;
     border-radius: ${theme.border.radius.round};
-    background: ${theme.colors.surface.background.level2.lowContrast};
+    background: ${theme.colors.surface.background.gray.intense};
     filter: blur(75px);
     right: 80%;
     bottom: 45%;
@@ -79,7 +79,7 @@ export const AndroidPosMiniEllipse3 = styled.div(
     width: 90%;
     aspect-ratio: 1/1;
     border-radius: ${theme.border.radius.round};
-    background: ${theme.colors.surface.background.level2.lowContrast};
+    background: ${theme.colors.surface.background.gray.intense};
     position: absolute;
     z-index: 1;
     left: 60%;
@@ -95,7 +95,7 @@ export const MobilePosContainer = styled.div(
     width: 100%;
     min-width: 330px;
     height: 400px;    
-    background-color: ${theme.colors.surface.background.level1.lowContrast};
+    background-color: ${theme.colors.surface.background.gray.subtle};
     position: relative;
     border-radius: ${theme.border.radius.large}px;
     overflow: hidden;
@@ -141,7 +141,7 @@ export const MobilePosCardEllipse2 = styled.div(
     width: 80%;
     aspect-ratio: 1/1;
     border-radius: ${theme.border.radius.round};
-    background: ${theme.colors.surface.background.level2.lowContrast};
+    background: ${theme.colors.surface.background.gray.intense};
     filter: blur(75px);
     right: 70%;
     top: 5%;
@@ -161,7 +161,7 @@ export const MobileEllpise = styled.div(
   ({ theme }: { theme: Theme }) => `
   width: 80%;
   border-radius: ${theme.border.radius.round};
-  background: ${theme.colors.brand.primary[400]};
+  background: ${theme.colors.surface.background.primary.subtle};
   filter: blur(200px);
   left: 40%;
   right: 0%;

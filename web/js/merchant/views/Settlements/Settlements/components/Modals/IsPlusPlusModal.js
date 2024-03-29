@@ -13,7 +13,7 @@ export const ISPlusPlusReasons = ({ fromWhere, onFinish }) => {
   const [reason, setReason] = useState('');
   return (
     <Box margin="spacing.6">
-      <Text weight="bold">What is not working for you?</Text>
+      <Text weight="semibold">What is not working for you?</Text>
       <RadioGroup
         necessityIndicator="none"
         onChange={({ value }) => setReason(value)}
@@ -55,7 +55,7 @@ export default function IsPlusPlusModal({
   if (state === 'success') {
     return (
       <Box display="flex" flexDirection="column" marginY="spacing.4">
-        <Text weight="bold" marginY="spacing.2">
+        <Text weight="semibold" marginY="spacing.2">
           Thank you for your interest!
         </Text>
         <Text size="small" marginY="spacing.2">
@@ -79,31 +79,38 @@ export default function IsPlusPlusModal({
     <Box marginY="spacing.8">
       <Box>
         <Text size="small">Amount to be provided</Text>
-        <Amount size="heading-large-bold" value={settlementAmount + advanceAmount} />
+        <Amount
+          value={settlementAmount + advanceAmount}
+          type="heading"
+          size="medium"
+          weight="semibold"
+        />
       </Box>
       <hr />
       <Box display="flex" flexDirection="row" flexWrap="wrap" marginY="spacing.5">
         <Box display="flex" justifyContent="space-between" width="100%">
           <Text size="small">Settlement amount</Text>
-          <Amount size="body-small-bold" value={settlementAmount} />
+          <Amount value={settlementAmount} type="body" size="small" weight="semibold" />
         </Box>
         <Box display="flex" justifyContent="space-between" width="100%">
           <Text size="small">Advance amount</Text>
-          <Amount size="body-small-bold" value={advanceAmount} />
+          <Amount value={advanceAmount} type="body" size="small" weight="semibold" />
         </Box>
         <Box display="flex" justifyContent="space-between" width="100%">
           <Text size="small">Instant fees</Text>
-          <Amount size="body-small-bold" value={instantFee * -1} />
+          <Amount value={instantFee * -1} type="body" size="small" weight="semibold" />
         </Box>
         <Box display="flex" justifyContent="space-between" width="100%">
           <Text size="small">Taxes</Text>
-          <Amount size="body-small-bold" value={tax * -1} />
+          <Amount value={tax * -1} type="body" size="small" weight="semibold" />
         </Box>
         <Box display="flex" justifyContent="space-between" width="100%" marginY="spacing.4">
           <Text size="small">Amount after deduction</Text>
           <Amount
-            size="body-small-bold"
             value={settlementAmount + advanceAmount - instantFee - tax}
+            type="body"
+            size="small"
+            weight="semibold"
           />
         </Box>
         <Box display="flex" justifyContent="space-between" width="100%" marginY="spacing.2">
@@ -111,7 +118,7 @@ export default function IsPlusPlusModal({
             + Interest on Advance amount <br /> at 0.05% / day
           </Text>
           <Box display="flex" alignItems="center">
-            <Amount size="body-small-bold" value={0.0005 * advanceAmount} />
+            <Amount value={0.0005 * advanceAmount} type="body" size="small" weight="semibold" />
             <Text size="small">/ day</Text>
           </Box>
         </Box>

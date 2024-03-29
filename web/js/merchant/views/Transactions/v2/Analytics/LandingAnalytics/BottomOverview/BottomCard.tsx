@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
 import {
   Amount,
   Box,
   Card,
   CardBody,
   ChevronRightIcon,
+  Heading,
   IconButton,
   InfoIcon,
   Text,
-  Heading,
   Tooltip,
   TooltipInteractiveWrapper,
 } from '@razorpay/blade/components';
 import { formatNumber } from '@razorpay/i18nify-js/currency';
 import noop from 'lodash/noop';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { paiseToRupees } from 'common/utils/rzp-utils';
@@ -63,7 +63,9 @@ const BottomOverviewCard = ({
       <Box onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)}>
         <Box flex="1">
           <Card
-            surfaceLevel={isHover ? 3 : 2}
+            backgroundColor={
+              isHover ? 'surface.background.gray.intense' : 'surface.background.gray.moderate'
+            }
             padding="spacing.5"
             marginY="spacing.2"
             elevation="none"
@@ -80,7 +82,7 @@ const BottomOverviewCard = ({
                 >
                   <Box display="flex" gap="spacing.2" alignItems="center">
                     <CardIcon name={name} />
-                    <Text type="subtle" weight="bold" contrast="low" size="medium">
+                    <Text weight="semibold" size="medium" color="surface.text.gray.subtle">
                       {name}
                     </Text>
                     <TooltipWrapper
@@ -90,7 +92,7 @@ const BottomOverviewCard = ({
                     >
                       <Tooltip content={LandingPageAnalyticsToolTip[name]} placement="top">
                         <TooltipInteractiveWrapper>
-                          <InfoIcon color="feedback.icon.neutral.lowContrast" size="small" />
+                          <InfoIcon color="feedback.icon.neutral.intense" size="small" />
                         </TooltipInteractiveWrapper>
                       </Tooltip>
                     </TooltipWrapper>
@@ -110,15 +112,12 @@ const BottomOverviewCard = ({
                       isAffixSubtle={true}
                       suffix="decimals"
                       currency={currency}
-                      size="title-small"
                       value={paiseToRupees(value)}
+                      type="heading"
+                      size="large"
                     />
                   ) : (
-                    <Heading
-                      color="surface.text.normal.lowContrast"
-                      size="large"
-                      marginLeft="spacing.2"
-                    >
+                    <Heading color="surface.text.gray.normal" marginLeft="spacing.2" size="medium">
                       {formatNumber(value)}
                     </Heading>
                   )}

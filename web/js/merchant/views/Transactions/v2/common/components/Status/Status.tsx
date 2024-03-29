@@ -20,7 +20,7 @@ const Status = ({ variant, content, status }: StatusProps): JSX.Element => {
           base: 'auto',
           l: 'spacing.0',
         }}
-        variant={variant}
+        color={variant}
         icon={(props) => (
           <TooltipWrapper
             onClick={(e) => {

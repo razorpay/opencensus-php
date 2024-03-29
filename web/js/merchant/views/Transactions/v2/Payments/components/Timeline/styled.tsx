@@ -31,21 +31,21 @@ export const IconBackground = styled.div<{ status: string }>`
 export const StyledVerticalPath = styled.div<{ height: number }>`
   ${({ height }) => `height:${height}px`};
   width: 0;
-  border: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border: 1px solid ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
 `;
 
 export const StyledJourneyMetadata = styled.div.attrs({ className: 'timeline-journey-meta' })`
   min-height: 40px;
   top: 20px;
   left: -20px;
-  border-left: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border-left: 1px solid ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
   padding-left: 24px;
   stroke-width: 1px;
   width: 300px;
 `;
 
 export const StyledText = styled.p`
-  color: ${({ theme }) => `${theme.colors.surface.text.normal.lowContrast}`};
+  color: ${({ theme }) => `${theme.colors.surface.text.gray.normal}`};
   font-size: ${({ theme }) => `${theme.typography.fonts.size[100]}`};
   font-weight: ${({ theme }) => `${theme.typography.fonts.weight.bold}`};
 `;
@@ -59,7 +59,7 @@ export const StyledJourneyStatus = styled.div`
 `;
 
 export const StyledStatusSubText = styled.p`
-  color: ${({ theme }) => `${theme.colors.surface.text.subtle.lowContrast}`};
+  color: ${({ theme }) => `${theme.colors.surface.text.gray.subtle}`};
   font-size: ${({ theme }) => `${theme.typography.fonts.size[100]}`};
   padding: 0 5px;
 `;
@@ -74,8 +74,8 @@ export const StyledGradientBox = styled.div`
 `;
 
 export const StyledRefundTimelineWrapper = styled.div`
-  border: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
-  background-color: ${({ theme }) => `${theme.colors.surface.background.level3.lowContrast}`};
+  border: 1px solid ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
+  background-color: ${({ theme }) => `${theme.colors.surface.background.gray.moderate}`};
   border-radius: ${({ theme }) => `${theme.spacing[2]}`};
   margin-bottom: ${({ theme }) => `${theme.spacing[3]}`};
 `;
@@ -102,7 +102,7 @@ export const getStatusIcon = (status: string): JSX.Element => {
       SettlementStatusIcons.DONE,
     ].includes(status as PaymentStatus | DisputeStatus | RefundStatus)
   ) {
-    return <CheckIcon color="feedback.icon.positive.lowContrast" size="small" />;
+    return <CheckIcon color="feedback.icon.positive.intense" size="small" />;
   } else if (
     [
       'not-authorized',
@@ -113,14 +113,14 @@ export const getStatusIcon = (status: string): JSX.Element => {
       SettlementStatusIcons.IN_PROGRESS,
     ].includes(status)
   ) {
-    return <ClockIcon color="feedback.icon.notice.lowContrast" size="small" />;
+    return <ClockIcon color="feedback.icon.notice.intense" size="small" />;
   } else if ([PaymentStatus.FAILED, 'auth-failed', SettlementStatusIcons.FAILED].includes(status)) {
-    return <CloseIcon color="feedback.icon.negative.lowContrast" size="small" />;
+    return <CloseIcon color="feedback.icon.negative.intense" size="small" />;
   }
 
   return status === 'show' ? (
-    <ChevronDownIcon color="feedback.icon.neutral.lowContrast" size="small" />
+    <ChevronDownIcon color="feedback.icon.neutral.intense" size="small" />
   ) : (
-    <ChevronUpIcon color="feedback.icon.neutral.lowContrast" size="small" />
+    <ChevronUpIcon color="feedback.icon.neutral.intense" size="small" />
   );
 };

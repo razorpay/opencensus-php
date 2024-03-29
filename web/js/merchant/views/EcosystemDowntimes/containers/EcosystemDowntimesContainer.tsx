@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Heading, ActivityIcon } from '@razorpay/blade/components';
+import { ActivityIcon, Heading } from '@razorpay/blade/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 
@@ -76,7 +76,7 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
               }}
               ref={ecosystemHealthIcon}
             >
-              <ActivityIcon size="medium" color="surface.text.subtle.lowContrast" />
+              <ActivityIcon size="medium" color="interactive.icon.gray.subtle" />
             </div>
           ) : (
             <i
@@ -101,7 +101,7 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
           >
             <EcosystemDowntimeProvider>
               <EcosystemHealthHeading>
-                <Heading contrast="low" size="large" type="normal" variant="regular" weight="bold">
+                <Heading weight="semibold" size="medium" color="surface.text.gray.normal">
                   {PAGE_TITLE}
                 </Heading>
                 <EcosystemRefreshNudge waitInterval={WAIT_TIME_FOR_NEXT_REFRESH} />

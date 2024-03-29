@@ -36,7 +36,7 @@ const EmptyText = styled.p(
   ({ theme }) => `
   padding: ${theme.spacing[5]}px 0;
   border-style: solid;
-  border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+  border: 1px solid ${theme.colors.surface.border.gray.muted};
   border-top: none;
   border-bottom-left-radius: ${theme.border.radius.small}px;
   border-bottom-right-radius: ${theme.border.radius.small}px;
@@ -47,7 +47,7 @@ const EmptyText = styled.p(
 
 const EmptyComponent = ({ type = 'default' }) => (
   <EmptyText>
-    <Text type="subdued" size="small">
+    <Text size="small" color="surface.text.gray.muted">
       No {type} shipping {type === PROFILE_TYPES.DEFAULT ? 'profile' : 'profiles'} configured
     </Text>
   </EmptyText>

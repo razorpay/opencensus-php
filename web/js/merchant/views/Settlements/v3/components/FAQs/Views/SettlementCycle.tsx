@@ -7,16 +7,16 @@ const SettlementCycle = ({ isMobile }: FaqInterface): JSX.Element => {
   return (
     <StyledFaqContent>
       {!isMobile && (
-        <Text weight="bold" marginBottom="spacing.2">
+        <Text weight="semibold" marginBottom="spacing.2">
           What is the settlement cycle Razorpay offers?
         </Text>
       )}
-      <Text type="subtle">
+      <Text color="surface.text.gray.subtle">
         Settlements are processed within <b>T+2 working days*</b> for domestic payments, and within
         <b>T+7 working days*</b> for international payments.
       </Text>
       <TextLink>
-        <Text marginRight="spacing.2" type="subtle">
+        <Text marginRight="spacing.2" color="surface.text.gray.subtle">
           To know more about settlements, check our
         </Text>
         <Link
@@ -28,11 +28,11 @@ const SettlementCycle = ({ isMobile }: FaqInterface): JSX.Element => {
         </Link>
       </TextLink>
       <Alert
-        contrast="low"
+        emphasis="subtle"
         description="Note: *T being the date of payment collection. Working days do not include second and fourth Saturdays, Sundays and Bank Holidays"
-        intent="information"
         marginTop="spacing.4"
         isDismissible={false}
+        color="information"
       />
     </StyledFaqContent>
   );

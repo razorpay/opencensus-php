@@ -48,16 +48,15 @@ const SettlementListItemMobile = ({
           alignItems="flex-start"
           marginBottom="spacing.2"
         >
-          <Text type="subtle">
+          <Text color="surface.text.gray.subtle">
             <Time value={settlement.created_at} format="MMM DD, YYYY" />
           </Text>
           <StatusBadge status={settlement.status} />
         </Box>
-        <Text type="subtle" size="small">
+        <Text size="small" color="surface.text.gray.subtle">
           {settlement.id}
         </Text>
       </td>
-
       <td className="text-right">
         <Box as="span" display="flex" justifyContent="end" columnGap="spacing.3">
           <Box as="span" display="flex" alignItems="center" justifyContent="flex-end">

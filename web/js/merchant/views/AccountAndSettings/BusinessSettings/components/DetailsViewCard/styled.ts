@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 export const StyledDivider = styled.div`
   border: ${({ theme }: { theme: Theme }): string =>
-    `1px solid ${theme.colors.surface.border.normal.highContrast}`};
+    `1px solid ${theme.colors.surface.border.gray.muted}`};
   flex: none;
   align-self: stretch;
   flex-grow: 0;

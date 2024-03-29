@@ -54,9 +54,9 @@ const SocialShareGroup = ({
           alignItems="center"
           padding="spacing.3"
           flex="1"
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
         >
-          <Text weight="bold" color="surface.text.muted.lowContrast">
+          <Text weight="semibold" color="surface.text.gray.muted">
             {referralUrl}
           </Text>
           <Button size="small" onClick={onCopyLinkClicked}>

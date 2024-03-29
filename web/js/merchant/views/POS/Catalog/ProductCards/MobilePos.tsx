@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Box, Text, Link, Amount, Title } from '@razorpay/blade/components';
+import { Box, Text, Link, Amount, Heading } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import { useNavigate } from 'react-router-dom';
 
@@ -60,8 +60,8 @@ const MobilePos = (): JSX.Element | null => {
           padding="spacing.5"
         >
           <Box>
-            <Title>{productDescription.productTitle}</Title>
-            <Text color="surface.text.subtle.lowContrast" weight="bold">
+            <Heading size="large">{productDescription.productTitle}</Heading>
+            <Text color="surface.text.gray.subtle" weight="semibold">
               Pocket-sized and affordable
             </Text>
             <Box marginTop={{ xl: 'spacing.11', base: 'spacing.4' }}>
@@ -69,25 +69,27 @@ const MobilePos = (): JSX.Element | null => {
                 isPartnerPricing={productDescription?.isPartnerPricing && !isOfferEnabled}
                 type="PRODUCT_CARD"
               >
-                <Text weight="bold" testID="pricing-details-text">
+                <Text weight="semibold" testID="pricing-details-text">
                   <Amount
                     value={monthly}
                     suffix="none"
-                    size="body-medium-bold"
                     isAffixSubtle={false}
+                    type="body"
+                    size="medium"
+                    weight="semibold"
                   />{' '}
                   /month +{' '}
                   <Amount
                     value={setupFee}
                     suffix="none"
-                    size="body-medium-bold"
                     isAffixSubtle={false}
+                    type="body"
+                    size="medium"
+                    weight="semibold"
                   />{' '}
                   setup fee
                 </Text>
-                <Text color="surface.text.subtle.lowContrast">
-                  *Lifetime Pricing also available.
-                </Text>
+                <Text color="surface.text.gray.subtle">*Lifetime Pricing also available.</Text>
               </PartnerExclusivePriceContainer>
               <Box display="flex" marginTop="spacing.5" alignItems="center">
                 <AddToCartButton

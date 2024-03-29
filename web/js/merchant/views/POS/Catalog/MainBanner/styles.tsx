@@ -43,12 +43,12 @@ export const MainBannerTitleContainer = styled.div(
     min-width: 120px;
     max-height: 140px;
     min-height: 90px;
-    border: ${theme.border.width.thinner}px solid ${theme.colors.brand.gray[200].lowContrast};
+    border: ${theme.border.width.thinner}px solid ${theme.colors.surface.background.gray.moderate};
     border-radius: ${theme.border.radius.large}px;
     margin-bottom:${theme.spacing[6]}px;
     overflow: hidden;
     position: relative;
-    background-color: ${theme.colors.surface.background.level1.highContrast};
+    background-color: ${theme.colors.surface.background.gray.subtle};
   `,
 );
 

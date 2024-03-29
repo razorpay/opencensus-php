@@ -67,7 +67,7 @@ export const SelectedRangeInfoInput = ({
     if (validValue) {
       const renderText = getFormattedDate(value, disableTimeSelection, selectedRangeFormat);
       return (
-        <Text variant="body" type="normal" weight="regular" color="surface.text.subtle.lowContrast">
+        <Text variant="body" weight="regular" color="surface.text.gray.subtle">
           {renderText}
         </Text>
       );
@@ -78,12 +78,7 @@ export const SelectedRangeInfoInput = ({
             justifyContent: 'space-between',
           }}
         >
-          <Text
-            variant="body"
-            type="normal"
-            weight="regular"
-            color="surface.text.muted.lowContrast"
-          >
+          <Text variant="body" weight="regular" color="surface.text.gray.muted">
             {placeHolder ?? 'Loading... Please wait...'}
           </Text>
         </FlexCentered>
@@ -112,7 +107,7 @@ export const SelectedRangeInfoInput = ({
         onClick={() => setPickerOpen(true)}
       >
         <div>{renderDate()}</div>
-        <CalendarIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+        <CalendarIcon color="feedback.icon.neutral.intense" size="medium" />
       </SelectedDateValue>
       <div aria-label="Picker Container">{isPickerOpen ? children : null}</div>
     </CalendarInput>

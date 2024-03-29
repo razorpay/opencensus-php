@@ -16,7 +16,7 @@ export const OfferStripContainer = styled.div(
     if (type === 'dark') {
       backgroundColor = isPartnerPricing
         ? 'hsla(32, 89%, 37%, 1)'
-        : theme.colors.brand.primary[700];
+        : theme.colors.surface.background.primary.intense;
     } else if (isPartnerPricing) {
       backgroundColor = 'linear-gradient(90deg, hsla(36, 57%, 86%, 1), hsla(219, 59%, 92%, 0.1))';
     }

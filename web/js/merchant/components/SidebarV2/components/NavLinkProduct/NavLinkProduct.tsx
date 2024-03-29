@@ -19,7 +19,7 @@ import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useSplitzService } from 'common/splitz';
 import { useI18Service } from 'common/i18';
-import { Box, Heading, Text } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
 import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 
 const NavLinkProduct = ({
@@ -128,16 +128,15 @@ const NavLinkProduct = ({
   return sectionProducts?.valid?.length ? (
     <>
       {isRTUXHomepage ? (
-        <Heading
-          variant="subheading"
-          type="subtle"
-          weight="bold"
-          contrast="low"
+        <Text
+          weight="semibold"
           marginX="spacing.7"
           marginY="spacing.3"
+          size="small"
+          color="surface.text.gray.subtle"
         >
           {heading}
-        </Heading>
+        </Text>
       ) : (
         <ProductHeading>{heading}</ProductHeading>
       )}
@@ -159,7 +158,7 @@ const NavLinkProduct = ({
             <>
               {isRTUXHomepage ? (
                 <ShowMoreWrapper onClick={handleToggle}>
-                  <Text weight="bold" size="small" color="action.text.link.default">
+                  <Text weight="semibold" size="small" color="interactive.text.primary.subtle">
                     {isOpen ? 'Show less' : `Show all (${sectionProducts.valid.length})`}
                   </Text>
                 </ShowMoreWrapper>

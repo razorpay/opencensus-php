@@ -6,7 +6,7 @@ const StyledDiv = styled.div(
       
       border-radius: ${theme.border.radius.medium};
       max-height: ${fullView ? '1439px' : 'unset'};
-      background-color: ${theme.colors.surface.background.level2.lowContrast};
+      background-color: ${theme.colors.surface.background.gray.intense};
       position: absolute;
       left: 50%;
       top: 50%;
@@ -21,7 +21,7 @@ const StyledTable = styled.table(
   border-collapse: separate;
   border-spacing: 15px 0;
   padding: ${theme.spacing[7]}px 0 ${theme.spacing[5]}px 0;
-  background-color: ${theme.colors.surface.background.level2.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.intense};
   & > :first-child {
     & > *::after {
       content: none;
@@ -146,7 +146,7 @@ const StyledFooter = styled.div(
     transform: translateX(-50%);
     
     border-radius: 0px 0px 8px 8px;
-    background-color: ${theme.colors.surface.background.level2.lowContrast};
+    background-color: ${theme.colors.surface.background.gray.intense};
     > button {
         margin-right: 20px;
     }
@@ -225,7 +225,7 @@ const StyleStrikePrice = styled.div(
   }
   > p:last-of-type {
     padding-right: 0px;
-    color:${theme.colors.brand.secondary};
+    color:${theme.colors.surface.text.onSea.onSubtle};
   }
 `,
 );
@@ -256,11 +256,11 @@ const StylePlanWrapper = styled.div`
   }
 `;
 const StylePercentageColor = styled.div(
-  ({ theme }: { theme }) => `
+  ({ theme }: { theme: Theme }) => `
   display: inline-block;
   padding-left: 5px;
   > p {
-  color: ${theme.colors.brand.secondary['500']};
+  color: ${theme.colors.surface.text.onSea.onSubtle};
   }
 `,
 );
@@ -331,7 +331,7 @@ const StyleInfo = styled.div(
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    color: ${theme.colors.surface.text.muted.lowContrast};
+    color: ${theme.colors.surface.text.gray.muted};
     margin-bottom : ${isMobile ? theme.spacing[3] : theme.spacing[0]}px;
 
     ${isMobile ? '&::before' : '&:not(:first-of-type)::before'} {
@@ -340,7 +340,7 @@ const StyleInfo = styled.div(
       width: 8px;
       height: 8px;
       border-radius: ${theme.border.radius.round};
-      background: ${theme.colors.surface.action.icon.default.lowContrast};
+      background: ${theme.colors.interactive.icon.gray.normal};
       margin-right:${theme.spacing[4]}px;
       margin-left: ${isMobile ? theme.spacing[0] : theme.spacing[4]}px;
     }
@@ -351,7 +351,7 @@ const StyleInfo = styled.div(
     width: 8px;
     height: 8px;
     border-radius: ${theme.border.radius.round};
-    background: ${theme.colors.surface.action.icon.default.lowContrast};
+    background: ${theme.colors.interactive.icon.gray.normal};
     margin-right:${theme.spacing[4]}px;
     margin-left: ${isMobile ? theme.spacing[0] : theme.spacing[4]}px;
   }

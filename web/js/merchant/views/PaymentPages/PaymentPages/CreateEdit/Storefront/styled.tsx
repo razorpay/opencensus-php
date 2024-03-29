@@ -70,7 +70,7 @@ export const StoreFrontName = styled.div`
   left: -24px;
   display: flex;
   align-items: center;
-  font-weight: 700px;
+  font-weight: 600px;
 `;
 
 export const LeftContentWrapper = styled.div`
@@ -99,7 +99,7 @@ export const AddProductBox = styled.div`
   cursor: pointer;
   h4 {
     color: #1566f1;
-    font-weight: 700;
+    font-weight: 600;
   }
   h4,
   p {
@@ -199,7 +199,7 @@ export const OptionsDropdownWrapper = styled.div(
   top: 28px;
   right: 0px;
   background: #FFFFFF;
-  border: ${theme.colors.surface.border.subtle.lowContrast};
+  border: ${theme.colors.surface.border.gray.subtle};
   box-shadow: 0px 8px 12px rgb(21 45 75 / 10%), 0px 0px 1px rgb(21 45 75 / 20%);
   border-radius: ${theme.border.radius.small}px;
   padding: ${theme.spacing[4]}px;
@@ -210,11 +210,11 @@ export const OptionsDropdownWrapper = styled.div(
     display: flex;
     align-items: center;
     gap: ${theme.spacing[2]}px;
-    color: ${theme.colors.action.text.link.default};
+    color: ${theme.colors.interactive.text.primary.subtle};
     font-weight: ${theme.typography.fonts.weight.bold};
     padding-bottom: 6px;
     &.danger {
-      color: ${theme.colors.feedback.text.negative.lowContrast};
+      color: ${theme.colors.feedback.text.negative.intense};
     }
     &:last-child {
       padding-bottom: 0px;
@@ -230,7 +230,7 @@ export const StoreFrontentIcon = styled.img(
 
 export const PageTitle = styled.p(
   ({ theme }: { theme: Theme }) => `
-  font-size: ${theme.typography.fonts.size[600]}px;
+  font-size: ${theme.typography.fonts.size[500]}px;
   margin-top: ${theme.spacing[3]}px;
   display: flex;
 
@@ -256,7 +256,7 @@ export const EditPageTitleWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
   display: flex;
   margin: ${theme.spacing[3]}px 0 ${theme.spacing[5]}px 0;
-  background-color: ${theme.colors.surface.background.level2.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.intense};
   box-shadow:  0px 8px 12px rgba(21, 45, 75, 0.1), 0px 0px 1px rgba(21, 45, 75, 0.2);
   border-radius: ${theme.border.radius.small}px;
   padding: ${theme.spacing[3]}px ${theme.spacing[4]}px;
@@ -294,9 +294,7 @@ export const ContactDetailsWrapper = styled.div(
 export const ContactDetailsHeading = styled.p(
   ({ theme, showError }: { theme: Theme; showError: boolean }) => `
   color: ${
-    showError
-      ? theme.colors.feedback.text.negative.lowContrast
-      : theme.colors.surface.text.subtle.lowContrast
+    showError ? theme.colors.feedback.text.negative.intense : theme.colors.surface.text.gray.subtle
   };
   font-weight: ${theme.typography.fonts.weight.bold};
   font-size: ${theme.typography.fonts.size[100]}px;
@@ -310,9 +308,7 @@ export const ContactDetailsHeading = styled.p(
 export const ContactDetailsSubHeading = styled.p(
   ({ theme, showError }: { theme: Theme; showError: boolean }) => `
   color: ${
-    showError
-      ? theme.colors.feedback.text.negative.lowContrast
-      : theme.colors.surface.text.muted.lowContrast
+    showError ? theme.colors.feedback.text.negative.intense : theme.colors.surface.text.gray.muted
   };
   font-weight: ${theme.typography.fonts.weight.regular};
   font-size: ${theme.typography.fonts.size[75]}px;
@@ -333,7 +329,7 @@ export const CategoryDropdownWrapper = styled.div(
 
 export const Label = styled.p(
   ({ theme }: { theme: Theme }) => `
-  color: ${theme.colors.surface.text.subdued.lowContrast};
+  color: ${theme.colors.surface.text.gray.muted};
   font-weight: ${theme.typography.fonts.weight.bold};
   font-size: ${theme.typography.fonts.size[75]}px;
   line-height: ${theme.typography.lineHeights[50]}px;
@@ -342,7 +338,7 @@ export const Label = styled.p(
 );
 export const Optional = styled.span(
   ({ theme }: { theme: Theme }) => `
-  color: ${theme.colors.surface.text.placeholder.lowContrast};
+  color: ${theme.colors.surface.text.gray.disabled};
   font-style: italic;
   font-size: ${theme.typography.fonts.size[50]}px;
   font-weight: ${theme.typography.fonts.weight.regular};
@@ -352,7 +348,7 @@ export const Optional = styled.span(
 
 export const AddCategory = styled.button(
   ({ theme }: { theme: Theme }) => `
-  color: ${theme.colors.action.text.secondary.default};
+  color: ${theme.colors.interactive.text.primary.normal};
   font-size: ${theme.typography.fonts.size[100]}px;
   font-weight: ${theme.typography.fonts.weight.bold};
   line-height: ${theme.typography.lineHeights[100]}px;
@@ -363,7 +359,7 @@ export const AddCategory = styled.button(
 
 export const ActiveCategory = styled.button(
   ({ theme, center }: { theme: Theme; center?: boolean }) => `
-  background-color: ${theme.colors.brand.gray[200].lowContrast};
+  background-color: ${theme.colors.surface.background.gray.moderate};
   font-size: ${theme.typography.fonts.size[100]}px;
   font-weight: ${theme.typography.fonts.weight.regular};
   line-height: ${theme.typography.lineHeights[100]}px;
@@ -373,7 +369,7 @@ export const ActiveCategory = styled.button(
   justify-content: ${center ? 'center' : 'space-between'};
   align-items: center;
   height: 36px;
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
 `,
 );
 
@@ -385,7 +381,7 @@ export const CategoryList = styled.div(
   ({ theme }: { theme: Theme }) => `
   position: absolute;
   padding: 0;
-  border: 1px solid ${theme.colors.brand.gray[400].lowContrast};
+  border: 1px solid ${theme.colors.interactive.border.gray.faded};
   top: 0;
   left: 0;
   right: 0;
@@ -424,9 +420,9 @@ export const CategoryItem = styled.li(
   line-height: ${theme.typography.lineHeights[100]}px;
   color: ${
     isAddButton
-      ? theme.colors.action.text.secondary.default
+      ? theme.colors.interactive.text.primary.normal
       : isActive
-      ? theme.colors.surface.text.subtle.lowContrast
+      ? theme.colors.surface.text.gray.subtle
       : 'rgba(22, 47, 86, 0.54)'
   };
   padding: ${theme.spacing[3]}px;
@@ -437,8 +433,8 @@ export const CategoryItem = styled.li(
   justify-content: space-between;
   background-color: ${
     isActive
-      ? theme.colors.brand.gray[200].lowContrast
-      : theme.colors.surface.background.level2.lowContrast
+      ? theme.colors.surface.background.gray.moderate
+      : theme.colors.surface.background.gray.intense
   };
 `,
 );
@@ -486,14 +482,10 @@ const PreviewImage = styled.img(
   ({ theme, isActive }: { theme: Theme; isActive: boolean }) => `
   background: ${
     isActive
-      ? theme.colors.action.background.tertiary.default
-      : theme.colors.action.background.tertiary.active
+      ? theme.colors.interactive.background.gray.default
+      : theme.colors.interactive.background.gray.default
   };
-  border: 1px solid ${
-    isActive
-      ? theme.colors.action.border.tertiary.default
-      : theme.colors.action.border.tertiary.active
-  };
+  border: 1px solid transparent;
   border-radius: ${theme.border.radius.small}px;
   width: 36px;
   height: 36px;
@@ -542,8 +534,8 @@ export const SelectProductDrawerWrapper = styled(PaymentPagesDrawer)(
 
 export const SelectCheckboxContainer = styled.div(
   ({ theme }) => `
-  background: ${theme.colors.surface.background.level2.lowContrast};
-  border: 1px solid ${theme.colors.action.border.tertiary.default};
+  background: ${theme.colors.surface.background.gray.intense};
+  border: 1px solid transparent;
   border-radius: ${theme.spacing[2]}px;
   padding: ${theme.spacing[7]}px;
   overflow: auto;
@@ -611,7 +603,7 @@ export const AddFooterWrapper = styled.div(
   align-items: center;
   margin: 0 auto;
   > span {
-    color: ${theme.colors.surface.text.normal.lowContrast};
+    color: ${theme.colors.surface.text.gray.normal};
     margin-top: ${theme.spacing[3]}px;
     margin-bottom: ${theme.spacing[4]}px;
   }
@@ -657,7 +649,7 @@ export const BottomSheetItem = styled.div(
   gap: ${gap ? gap : '0px'};
 
   .pp-danger-text {
-    color: ${theme.colors.feedback.background.negative.highContrast};
+    color: ${theme.colors.feedback.background.negative.intense};
   }
 `,
 );

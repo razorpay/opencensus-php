@@ -29,7 +29,7 @@ const Verification = ({ isMobile, user }: VerificationPropsInterface): JSX.Eleme
   return (
     <VerificationContainer>
       <IconText>
-        <Text type="subtle" weight="bold">
+        <Text weight="semibold" color="surface.text.gray.subtle">
           2-step verification
         </Text>
         <TooltipContainer className="verification-tooltip">

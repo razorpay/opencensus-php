@@ -9,12 +9,12 @@ import {
 } from '@razorpay/blade/components';
 import styled from 'styled-components';
 
-import { getIconBackgroundColor } from './utils';
 import {
   PaymentStatus,
   RefundStatus,
   DisputeStatus,
 } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/types';
+import { getIconBackgroundColor } from './utils';
 
 export const IconBackground = styled.div<{ status: string }>`
   height: 20px;
@@ -31,8 +31,7 @@ export const IconBackground = styled.div<{ status: string }>`
 export const StyledVerticalPath = styled.div<{ height: number }>`
   ${({ height }: { height: number }) => `height:${height}px`};
   width: 0;
-  border: 1px solid
-    ${({ theme }: { theme: Theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border: 1px solid ${({ theme }: { theme: Theme }) => `${theme.colors.surface.border.gray.muted}`};
 `;
 
 export const StyledJourneyMetadata = styled.div.attrs({ className: 'timeline-journey-meta' })`
@@ -40,14 +39,14 @@ export const StyledJourneyMetadata = styled.div.attrs({ className: 'timeline-jou
   top: 20px;
   left: -20px;
   border-left: 1px solid
-    ${({ theme }: { theme: Theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+    ${({ theme }: { theme: Theme }) => `${theme.colors.surface.border.gray.muted}`};
   padding-left: 24px;
   stroke-width: 1px;
   width: 300px;
 `;
 
 export const StyledText = styled.p`
-  color: ${({ theme }: { theme: Theme }) => `${theme.colors.surface.text.normal.lowContrast}`};
+  color: ${({ theme }: { theme: Theme }) => `${theme.colors.surface.text.gray.normal}`};
   font-size: ${({ theme }: { theme: Theme }) => `${theme.typography.fonts.size[100]}`};
   font-weight: ${({ theme }: { theme: Theme }) => `${theme.typography.fonts.weight.bold}`};
 `;
@@ -61,7 +60,7 @@ export const StyledJourneyStatus = styled.div`
 `;
 
 export const StyledStatusSubText = styled.p`
-  color: ${({ theme }: { theme: Theme }) => `${theme.colors.surface.text.subtle.lowContrast}`};
+  color: ${({ theme }: { theme: Theme }) => `${theme.colors.surface.text.gray.subtle}`};
   font-size: ${({ theme }: { theme: Theme }) => `${theme.typography.fonts.size[100]}`};
   padding: 0 5px;
 `;
@@ -76,10 +75,9 @@ export const StyledGradientBox = styled.div`
 `;
 
 export const StyledRefundTimelineWrapper = styled.div`
-  border: 1px solid
-    ${({ theme }: { theme: Theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border: 1px solid ${({ theme }: { theme: Theme }) => `${theme.colors.surface.border.gray.muted}`};
   background-color: ${({ theme }: { theme: Theme }) =>
-    `${theme.colors.surface.background.level3.lowContrast}`};
+    `${theme.colors.surface.background.gray.moderate}`};
   border-radius: ${({ theme }: { theme: Theme }) => `${theme.spacing[2]}`};
   margin-bottom: ${({ theme }: { theme: Theme }) => `${theme.spacing[3]}`};
 `;
@@ -105,7 +103,7 @@ export const getStatusIcon = (status: string): JSX.Element => {
       DisputeStatus.CLOSED,
     ].includes(status as PaymentStatus | DisputeStatus | RefundStatus)
   ) {
-    return <CheckIcon color="feedback.icon.positive.lowContrast" size="small" />;
+    return <CheckIcon color="feedback.icon.positive.intense" size="small" />;
   } else if (
     [
       'not-authorized',
@@ -115,14 +113,14 @@ export const getStatusIcon = (status: string): JSX.Element => {
       DisputeStatus.UNDER_REVIEW,
     ].includes(status)
   ) {
-    return <ClockIcon color="feedback.icon.notice.lowContrast" size="small" />;
+    return <ClockIcon color="feedback.icon.notice.intense" size="small" />;
   } else if (status === PaymentStatus.FAILED || status == 'auth-failed') {
-    return <CloseIcon color="feedback.icon.negative.lowContrast" size="small" />;
+    return <CloseIcon color="feedback.icon.negative.intense" size="small" />;
   }
 
   return status === 'show' ? (
-    <ChevronDownIcon color="feedback.icon.neutral.lowContrast" size="small" />
+    <ChevronDownIcon color="feedback.icon.neutral.intense" size="small" />
   ) : (
-    <ChevronUpIcon color="feedback.icon.neutral.lowContrast" size="small" />
+    <ChevronUpIcon color="feedback.icon.neutral.intense" size="small" />
   );
 };

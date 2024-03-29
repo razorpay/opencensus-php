@@ -22,7 +22,7 @@ const MetricsOverview = ({ title, b2bValue, b2cValue }: Props) => {
         m: '100%',
         s: '100%',
       }}
-      backgroundColor={'surface.background.level1.lowContrast'}
+      backgroundColor={'surface.background.gray.subtle'}
       marginX={'spacing.2'}
       padding={'spacing.2'}
     >

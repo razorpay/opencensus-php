@@ -24,8 +24,8 @@ const LineChart = ({
 
       datasets[0].backgroundColor = gradient;
       datasets[0].borderColor = isChangePositive
-        ? theme.colors.feedback.positive.action.text.link.default.lowContrast
-        : theme.colors.feedback.negative.action.text.link.default.lowContrast;
+        ? theme.colors.interactive.text.positive.normal
+        : theme.colors.interactive.text.negative.normal;
       datasets[0].fill = true;
 
       return {

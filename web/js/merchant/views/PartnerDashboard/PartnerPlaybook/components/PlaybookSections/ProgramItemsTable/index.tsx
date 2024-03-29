@@ -38,12 +38,12 @@ const StyledProgramItemsTable = styled.div(
       margin-bottom: 0px;
       tr {
         cursor: pointer;
-        background-color: ${theme.colors.surface.background.level2.lowContrast};
+        background-color: ${theme.colors.surface.background.gray.intense};
       }
       thead > tr > th{
         cursor: default;
-        color: ${theme.colors.action.text.tertiary.default};
-        background-color: ${theme.colors.feedback.background.neutral.lowContrast};
+        color: ${theme.colors.interactive.text.gray.normal};
+        background-color: ${theme.colors.feedback.background.neutral.subtle};
         border-top: 0px;
         border-bottom: 0px;
       } 
@@ -55,7 +55,7 @@ const StyledProgramItemsTable = styled.div(
 const title = {
   title: 'Title',
   columnClass: 'program-items-title',
-  value: (item: ProgramItem) => <Text weight="bold"> {item.title} </Text>,
+  value: (item: ProgramItem) => <Text weight="semibold"> {item.title} </Text>,
 };
 
 const logo = {

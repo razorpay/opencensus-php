@@ -6,7 +6,7 @@ export const TooltipWidget: React.FC<TooltipProps> = ({ tooltip_text }): JSX.Ele
   return (
     <Tooltip content={tooltip_text} placement="bottom">
       <TooltipInteractiveWrapper>
-        <InfoIcon color="surface.text.muted.lowContrast" marginTop="spacing.2" size="medium" />
+        <InfoIcon color="interactive.icon.gray.muted" marginTop="spacing.2" size="medium" />
       </TooltipInteractiveWrapper>
     </Tooltip>
   );

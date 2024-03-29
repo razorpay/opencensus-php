@@ -42,7 +42,7 @@ export const FormCtaContainer = styled.div`
     border-radius: 2px;
     background: #1583f1;
     color: #fff;
-    font-weight: 700;
+    font-weight: 600;
     padding: 10px 12px;
   }
 `;
@@ -97,7 +97,7 @@ export const PointsContainer = styled.div`
 `;
 export const PointerHeading = styled.p`
   color: #262d3a;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 8px;
 `;
 export const PointListContainer = styled.div`
@@ -130,7 +130,7 @@ export const FormWrapper = styled.div`
 `;
 export const FieldLabel = styled.label`
   color: #262d3a;
-  font-weight: 700;
+  font-weight: 600;
 
   sup {
     color: red;

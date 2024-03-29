@@ -8,11 +8,11 @@ import { IconBackground, StyledTimeline, StyledVerticalPath, TimelineHeader } fr
 const JourneyStatusIcon = ({ status }: { status: SettlementStatus }): JSX.Element => {
   switch (status) {
     case 'failed':
-      return <CloseIcon size="small" color="feedback.icon.negative.lowContrast" />;
+      return <CloseIcon size="small" color="feedback.icon.negative.intense" />;
     case 'processed':
-      return <CheckIcon size="small" color="feedback.icon.positive.lowContrast" />;
+      return <CheckIcon size="small" color="feedback.icon.positive.intense" />;
     default:
-      return <CheckIcon size="small" color="feedback.icon.neutral.lowContrast" />;
+      return <CheckIcon size="small" color="feedback.icon.neutral.intense" />;
   }
 };
 
@@ -28,7 +28,7 @@ const Timeline = ({
   return (
     <StyledTimeline>
       <TimelineHeader>
-        <Heading size="medium" weight="bold">
+        <Heading weight="semibold" size="small">
           Timeline
         </Heading>
       </TimelineHeader>
@@ -48,11 +48,11 @@ const Timeline = ({
         <Box display="flex" flexDirection="column" gap="spacing.8">
           {timelineJourney.map((each, index) => (
             <Box display="flex" flexDirection="column" gap="spacing.2" key={`${each.id}_${index}`}>
-              <Text type="subtle" size="medium">
+              <Text size="medium" color="surface.text.gray.subtle">
                 {each.status}
               </Text>
               {each?.timeline && (
-                <Text type="subdued" size="small">
+                <Text size="small" color="surface.text.gray.muted">
                   {each.timeline}
                 </Text>
               )}

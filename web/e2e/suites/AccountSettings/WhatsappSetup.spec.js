@@ -49,13 +49,9 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
   test('should show Whatsapp account setup page @priority=normal', async ({ page }) => {
     await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
 
+    await expect(page.getByText('Whatsapp Account Set-up', { exact: true })).toBeVisible();
     await expect(
-      page.getByRole('heading', {
-        name: 'Whatsapp Account Set-up',
-      }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole('heading', { name: 'Continue by linking your existing WABA account' }),
+      page.getByText('Continue by linking your existing WABA account', { exact: true }),
     ).toBeVisible();
 
     await expect(page.getByRole('button', { name: 'Proceed' })).toBeVisible();
@@ -89,9 +85,7 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     await expect(newPageTitle).toBe(providerPageTitle);
     await expect(newPageUrl).toContain(existingAccountUrl);
 
-    await expect(
-      page.getByRole('heading', { name: 'We’ve initiated the integration' }),
-    ).toBeVisible();
+    await expect(page.getByText('We’ve initiated the integration', { exact: true })).toBeVisible();
     await expect(page.getByText('Integration is in progress')).toBeVisible();
   });
 
@@ -118,9 +112,7 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     await mockApiResponseForConnectedApplication({ page });
     await page.goto(`${routes.WHATSAPP_ACCOUNT_SETUP}/?isWhatsappSetupCompleted=true`);
 
-    await expect(
-      page.getByRole('heading', { name: 'Set-up completed successfully!' }),
-    ).toBeVisible();
+    await expect(page.getByText('Set-up completed successfully!', { exact: true })).toBeVisible();
     await expect(
       page.getByText(
         'We’ve verified your details. Notifcations are now enabled for your payment links',
@@ -132,11 +124,9 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     await mockApiResponseForConnectedApplication({ page });
     await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
 
+    await expect(page.getByText('Your Whatsapp Business Account', { exact: true })).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: 'Your Whatsapp Business Account' }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole('heading', { name: 'Send all payment links on Whatsapp' }),
+      page.getByText('Send all payment links on Whatsapp', { exact: true }),
     ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible();
     await expect(page.locator('label')).toBeVisible();

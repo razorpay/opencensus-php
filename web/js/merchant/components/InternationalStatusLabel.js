@@ -50,7 +50,7 @@ const InternationalStatusLabel = ({ status, isIERevamp = false }) => {
   return isIERevamp ? (
     !!status && (
       <Badge
-        contrast="high"
+        emphasis="intense"
         size="large"
         variant={badgeMapping[status.toLowerCase()]}
         icon={(props) => (

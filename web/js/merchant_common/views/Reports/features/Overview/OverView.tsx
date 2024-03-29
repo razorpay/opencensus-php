@@ -4,10 +4,10 @@ import {
   ActionListItem,
   Dropdown,
   DropdownOverlay,
-  Heading,
   SelectInput,
   ActionList,
   Divider,
+  Text,
 } from 'merchant_common/views/Reports/components';
 import { OverViewPropsType } from 'merchant_common/views/Reports/features/Overview/types';
 import { OverviewCard as Card } from 'merchant_common/views/Reports/features/Overview/components/Card/OverviewCard';
@@ -100,9 +100,9 @@ export const OverviewSection = ({
             {parsedAdditionalConfigs.length ? (
               <ReportTypeWrapper theme={theme}>
                 <ReportTypeHeader theme={theme}>
-                  <Heading weight="bold" type="normal" variant="regular">
+                  <Text weight="semibold" size="large" color="surface.text.gray.normal">
                     OTHER REPORTS
-                  </Heading>
+                  </Text>
                 </ReportTypeHeader>
                 <CardsWrapper aria-label="Other Reports" theme={theme}>
                   {parsedAdditionalConfigs.map((config) => {
@@ -128,9 +128,9 @@ export const OverviewSection = ({
               return (
                 <ReportTypeWrapper key={type} index={index} theme={theme}>
                   <ReportTypeHeader theme={theme} index={index}>
-                    <Heading weight="bold" type="normal" variant="regular">
+                    <Text weight="semibold" size="large" color="surface.text.gray.normal">
                       {type.toUpperCase()}
-                    </Heading>
+                    </Text>
                   </ReportTypeHeader>
                   <CardsWrapper
                     aria-label={`Configs Ordered By ${type.toUpperCase()}`}
@@ -146,9 +146,9 @@ export const OverviewSection = ({
             {parsedAdditionalConfigs.length ? (
               <ReportTypeWrapper theme={theme}>
                 <ReportTypeHeader theme={theme}>
-                  <Heading weight="bold" type="normal" variant="regular">
+                  <Text weight="semibold" size="large" color="surface.text.gray.normal">
                     OTHER REPORTS
-                  </Heading>
+                  </Text>
                 </ReportTypeHeader>
                 <CardsWrapper aria-label="Other Reports" theme={theme}>
                   {parsedAdditionalConfigs.map((config) => {

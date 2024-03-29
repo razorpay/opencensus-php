@@ -44,7 +44,7 @@ export const StyledModalMask = styled(_ModalMask)`
 `;
 
 export const StyledTitle = styled.div`
-  font-weight: bold;
+  font-weight: 600;
   padding: 16px 24px;
   font-size: 18px;
 `;

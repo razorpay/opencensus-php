@@ -103,7 +103,7 @@ export const StyledFileUpload = styled.div`
           align-items: flex-start;
           width: 70%;
           .staged-desc {
-            font-weight: 700;
+            font-weight: 600;
             text-align: start;
           }
         }

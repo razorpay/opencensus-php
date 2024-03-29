@@ -1,4 +1,4 @@
-import { Box, CopyIcon, Heading, Text } from '@razorpay/blade/components';
+import { Box, CopyIcon, Text } from '@razorpay/blade/components';
 import { User } from 'common/typings';
 import { getSettlementDate } from 'merchant/views/Settlements/v3/utils/common';
 import { getSettlementInfo } from 'merchant/views/Settlements/v3/utils/settlementInfo';
@@ -32,10 +32,10 @@ const InfoItemValue = ({
       const { date, time } = getSettlementDate(value);
       return (
         <StyledInfoValue gap="5px">
-          <Heading size="small" weight="regular">
+          <Text weight="regular" size="large">
             {date}
-          </Heading>
-          <Text type="subdued" size="medium">
+          </Text>
+          <Text size="medium" color="surface.text.gray.muted">
             {time}
           </Text>
         </StyledInfoValue>
@@ -45,9 +45,9 @@ const InfoItemValue = ({
       return value ? <StatusBadge status={value} /> : <span>---</span>;
     default:
       return (
-        <Heading size="small" weight="regular">
+        <Text weight="regular" size="large">
           {value || '---'}
-        </Heading>
+        </Text>
       );
   }
 };
@@ -75,21 +75,21 @@ const SettlementInfo = ({
     <Box
       display="flex"
       flexWrap="wrap"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       flexDirection={{ base: 'column', m: 'row' }}
       padding={{ base: 'spacing.7', m: ['spacing.8', 'spacing.0'] }}
       rowGap={{ base: 'spacing.7', m: 'spacing.6' }}
     >
       {settlementData.map((each, index) => (
         <InfoItem key={each.id} isBorder={index < settlementData.length - 1}>
-          <Text size="medium" type="subtle">
+          <Text size="medium" color="surface.text.gray.subtle">
             {each.name}
           </Text>
           {each.isCopy && each.value ? (
             <CustomClipboard value={each.value} onCopy={onItemCopy.bind(null, each)}>
               <StyledInfoValue gap="5px">
                 <InfoItemValue {...each} user={user} />
-                <CopyIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                <CopyIcon size="medium" color="feedback.icon.neutral.intense" />
               </StyledInfoValue>
             </CustomClipboard>
           ) : (

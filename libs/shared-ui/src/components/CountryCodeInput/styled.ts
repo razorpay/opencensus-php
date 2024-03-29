@@ -802,7 +802,7 @@ export const DropdownValue = styled.span`
   background: rgba(22, 47, 86, 0.05);
   border: 1px solid #d1dadd;
   border-radius: 3px 0px 0px 3px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 12px;
   line-height: 14px;
   color: #555555;

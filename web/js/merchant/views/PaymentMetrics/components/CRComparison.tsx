@@ -10,10 +10,10 @@ import { ComparisonGraphs } from 'merchant/views/PaymentMetrics/types';
 const dow = moment().day();
 
 const UpIcon = () => {
-  return <TrendingUpIcon color="feedback.icon.positive.lowContrast" size="medium" />;
+  return <TrendingUpIcon color="feedback.icon.positive.intense" size="medium" />;
 };
 const DownIcon = () => {
-  return <TrendingDownIcon color="feedback.icon.notice.lowContrast" size="medium" />;
+  return <TrendingDownIcon color="feedback.icon.notice.intense" size="medium" />;
 };
 
 const CRComparison = ({

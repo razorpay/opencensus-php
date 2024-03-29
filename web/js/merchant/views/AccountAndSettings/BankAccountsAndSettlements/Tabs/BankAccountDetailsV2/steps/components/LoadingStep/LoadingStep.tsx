@@ -1,23 +1,24 @@
 import React, { useEffect } from 'react';
+import { Button, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
-import { Button, Heading, Text } from '@razorpay/blade/components';
+
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { classList } from 'common/utils/rzp-utils';
 import lazy from 'merchant/routes/LazyLoader';
+import { StyledDivider } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/common/styled';
+import {
+  LOADING_STATE,
+  LoadingStepInterface,
+} from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
+import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
 import { closeModal } from 'merchant_common/reducers/modals';
+
 import { LOADING_STEP_DATA } from './constants';
 import { DescriptionText, StyledLoadingContainer, StyledTitleGroup } from './styled';
-import { StyledDivider } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/common/styled';
-import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
 
-import {
-  LoadingStepInterface,
-  LOADING_STATE,
-} from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
-
-const CustomLottie = lazy(() =>
-  import(/* webpackChunkName: 'CustomLottie' */ 'common/new-ui/Lottie'),
+const CustomLottie = lazy(
+  () => import(/* webpackChunkName: 'CustomLottie' */ 'common/new-ui/Lottie'),
 );
 
 const LoadingStep = ({
@@ -36,14 +37,8 @@ const LoadingStep = ({
   }, []);
 
   if (!LOADING_STATE[type]) return null;
-  const {
-    title,
-    subTitle,
-    animationData,
-    description,
-    closeCTALabel,
-    mobileSubTitle,
-  } = LOADING_STEP_DATA[type];
+  const { title, subTitle, animationData, description, closeCTALabel, mobileSubTitle } =
+    LOADING_STEP_DATA[type];
   const handleClose = (): void => {
     trackBankAccountUpdateEvent({
       objectName: 'Penny Test Passed',
@@ -65,16 +60,18 @@ const LoadingStep = ({
         </SuspenseWithLoader>
       </div>
       <StyledTitleGroup>
-        <Heading size="small" weight="bold">
+        <Text weight="semibold" size="large">
           {title}
-        </Heading>
-        <Text type="subtle">{mobileSubTitle && isMobile ? mobileSubTitle : subTitle}</Text>
+        </Text>
+        <Text color="surface.text.gray.subtle">
+          {mobileSubTitle && isMobile ? mobileSubTitle : subTitle}
+        </Text>
       </StyledTitleGroup>
       {description && (
         <>
           <StyledDivider isFullWidth />
           <DescriptionText>
-            <Text type="muted" size="small">
+            <Text size="small" color="surface.text.gray.muted">
               {description}
             </Text>
           </DescriptionText>

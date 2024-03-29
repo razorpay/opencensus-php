@@ -23,7 +23,7 @@ export const TimelineItemContentContainer = styled.div`
 
 export const TimelineItemConnector = styled.div(
   ({ theme }: { theme: Theme }) => `
-  border-left: 1px solid ${theme.colors.brand.gray[700].lowContrast};
+  border-left: 1px solid ${theme.colors.interactive.background.neutral.default};
   height: 100%;
   opacity: 0.3;
 `,

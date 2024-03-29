@@ -47,16 +47,16 @@ const EntityOverview: React.FC<EntityOverviewProps> = ({ setRatio }) => {
       display="flex"
       flexDirection="column"
       padding="spacing.5"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       marginTop="spacing.5"
     >
-      <Heading size="medium" marginBottom="24px">
+      <Heading marginBottom="24px" size="small">
         {OVERVIEW_HEADER}
       </Heading>
       <Box
         display="flex"
         flexDirection="row"
-        borderColor="surface.border.subtle.lowContrast"
+        borderColor="surface.border.gray.subtle"
         borderRadius="medium"
       >
         {tabs.map((entity) => {

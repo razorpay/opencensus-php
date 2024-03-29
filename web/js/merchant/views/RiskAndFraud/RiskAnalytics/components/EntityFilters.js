@@ -67,7 +67,7 @@ const EntityFilters = (props) => {
       flexDirection="row"
       paddingTop="spacing.5"
       paddingBottom="spacing.7"
-      borderBottomColor="surface.border.normal.lowContrast"
+      borderBottomColor="surface.border.gray.muted"
     >
       <Box marginRight="spacing.7" minWidth="180px">
         <BladeDropdown selectionType="single">

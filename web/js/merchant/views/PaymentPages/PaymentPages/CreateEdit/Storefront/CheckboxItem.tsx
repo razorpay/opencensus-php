@@ -41,16 +41,15 @@ const CheckboxItem = ({
           </CheckboxLeftContent>
           <CheckboxRightContent isDiscounted={!!discounted_amount}>
             <Text
-              type={discounted_amount ? 'muted' : 'normal'}
               variant="body"
               size="medium"
               weight="regular"
-              contrast="low"
+              color={discounted_amount ? 'surface.text.gray.muted' : 'surface.text.gray.normal'}
             >
               {amount}
             </Text>
             {discounted_amount && (
-              <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+              <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
                 {discounted_amount}
               </Text>
             )}

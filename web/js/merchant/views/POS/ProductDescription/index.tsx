@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Divider, Heading, Link, Spinner, Title } from '@razorpay/blade/components';
+import { Box, Divider, Heading, Link, Spinner } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import { useParams } from 'react-router-dom';
 
@@ -113,16 +113,16 @@ const ProductDescription = (): JSX.Element => {
                 <ProductGallery gallery={productDetails.gallery} productTitle={productTitle} />
               )}
               <Box>
-                <Title size="large" textAlign={isMobile ? 'center' : 'left'} testID="pdp-title">
+                <Heading textAlign={isMobile ? 'center' : 'left'} testID="pdp-title" size="xlarge">
                   {productTitle}
-                </Title>
+                </Heading>
                 <Box paddingTop="4px" marginBottom="spacing.5">
                   <Heading
-                    size="medium"
-                    color="surface.text.subtle.lowContrast"
+                    color="surface.text.gray.subtle"
                     weight="regular"
                     textAlign={isMobile ? 'center' : 'left'}
                     marginBottom="spacing.8"
+                    size="small"
                   >
                     {description}
                   </Heading>

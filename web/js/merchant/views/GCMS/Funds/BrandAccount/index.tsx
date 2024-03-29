@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text, Heading, Divider } from '@razorpay/blade/components';
+import { Box, Text, Divider } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
 import Shimmer from 'common/components/Shimmer';
@@ -37,7 +37,7 @@ const brandTrasactionColumns = [
   {
     label: 'Amount',
     value: (transaction) => (
-      <Text color="surface.text.subtle.lowContrast">
+      <Text color="surface.text.gray.subtle">
         {getFormattedAmountNew(parseInt(transaction.amount, 10), true)}
       </Text>
     ),
@@ -104,41 +104,33 @@ const BrandAccount = (): JSX.Element => {
         <div className="content">
           <div className="table-responsive">
             <Box marginX="spacing.5" marginTop="spacing.5">
-              <Heading
-                type="normal"
-                weight="regular"
-                variant="regular"
-                size="small"
-                color="surface.text.subtle.lowContrast"
-              >
+              <Text weight="regular" color="surface.text.gray.subtle" size="large">
                 Total Available Fund
-              </Heading>
+              </Text>
               {isFetchBrandBalanceLoading ? (
                 <Box>
                   <Shimmer height="30px" width="140px" />
                 </Box>
               ) : (
                 <Text
-                  color="surface.text.subtle.lowContrast"
+                  color="surface.text.gray.subtle"
                   marginTop="spacing.2"
                   size="large"
-                  weight="bold"
+                  weight="semibold"
                 >
                   {getFormattedAmountNew(brandBalanceData?.balance ?? 0, true)}
                 </Text>
               )}
             </Box>
             <Divider marginTop="spacing.4" />
-            <Heading
-              type="normal"
-              variant="regular"
-              size="small"
-              color="surface.text.normal.lowContrast"
+            <Text
+              color="surface.text.gray.normal"
               marginY="spacing.4"
               marginX="spacing.5"
+              size="large"
             >
               Fund Transaction
-            </Heading>
+            </Text>
             <Divider />
             <BrandAccountFilters onSearch={handleSearch} />
             <table className="table table-hover">
@@ -184,7 +176,7 @@ const BrandAccount = (): JSX.Element => {
           </div>
           <Box>
             <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
-              <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+              <Text size="small" color="surface.text.gray.muted">{`Total ${
                 transactions?.count || 0
               } Transactions`}</Text>
             </Box>

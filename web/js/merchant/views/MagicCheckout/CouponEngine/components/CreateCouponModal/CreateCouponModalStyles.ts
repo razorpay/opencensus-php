@@ -14,7 +14,7 @@ export const CouponName = styled.div`
   font-size: 14px;
   line-height: 19px;
   color: #252939;
-  font-weight: 700;
+  font-weight: 600;
 `;
 
 export const CouponDescription = styled.div`

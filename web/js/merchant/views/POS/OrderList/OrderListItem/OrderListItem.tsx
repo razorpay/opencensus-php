@@ -37,42 +37,40 @@ const OrderListItem = ({ orderListItem }: OrderListItemProps): JSX.Element | nul
     <div onClick={() => isMobile && handleViewDetailsClick({ id: orderListItem.id })}>
       <Box
         borderWidth="thin"
-        borderColor="surface.border.normal.lowContrast"
+        borderColor="surface.border.gray.muted"
         borderRadius="medium"
         marginBottom="spacing.5"
       >
-        <Box
-          backgroundColor="surface.background.level3.lowContrast"
-          padding="spacing.5"
-          display="flex"
-        >
+        <Box backgroundColor="surface.background.gray.moderate" padding="spacing.5" display="flex">
           <Box>
-            <Text size="small" type="subtle" marginBottom="spacing.2">
+            <Text size="small" marginBottom="spacing.2" color="surface.text.gray.subtle">
               Order Placed
             </Text>
-            <Text weight="bold">
+            <Text weight="semibold">
               {moment.unix(orderListItem?.created_at).format('MMMM DD, YYYY')}
             </Text>
           </Box>
           <Box marginX="spacing.9">
-            <Text size="small" type="subtle" marginBottom="spacing.2">
+            <Text size="small" marginBottom="spacing.2" color="surface.text.gray.subtle">
               Total Amount
             </Text>
-            <Text weight="bold" type="subtle">
+            <Text weight="semibold" color="surface.text.gray.subtle">
               <Amount
                 value={amount.total}
                 suffix="none"
                 isAffixSubtle={false}
-                size="body-medium-bold"
+                type="body"
+                size="medium"
+                weight="semibold"
               />
             </Text>
           </Box>
           {!isMobile ? (
             <Box marginLeft="auto" display="flex" flexDirection="column" alignItems="end">
-              <Text size="small" type="subtle" marginBottom="spacing.2">
+              <Text size="small" marginBottom="spacing.2" color="surface.text.gray.subtle">
                 Order ID: {id}
               </Text>
-              <Badge variant={orderStatusMetaData.variant} icon={orderStatusMetaData.icon}>
+              <Badge color={orderStatusMetaData.variant} icon={orderStatusMetaData.icon}>
                 {orderStatusMetaData.name}
               </Badge>
             </Box>
@@ -86,7 +84,7 @@ const OrderListItem = ({ orderListItem }: OrderListItemProps): JSX.Element | nul
             justifyContent="space-between"
             marginBottom="spacing.4"
           >
-            <Heading size="medium" marginBottom="spacing.4">
+            <Heading marginBottom="spacing.4" size="small">
               {orderStatusMetaData.statusTitle}{' '}
               {moment.unix(orderStatusMetaData.statusDate).format('MMMM DD, YYYY')}
             </Heading>
@@ -113,7 +111,7 @@ const OrderListItem = ({ orderListItem }: OrderListItemProps): JSX.Element | nul
           <Box>
             {orderStatusMetaData.key === 'ORDER_REJECTED' && orderListItem?.rejection_reasons ? (
               <Alert
-                intent="negative"
+                color="negative"
                 description={orderListItem.rejection_reasons?.error_description}
                 isFullWidth
                 isDismissible={false}

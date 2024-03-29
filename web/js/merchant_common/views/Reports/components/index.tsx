@@ -7,7 +7,6 @@ export {
   Counter,
   Indicator,
   Badge,
-  Title,
   Button,
   DownloadIcon,
   ChevronLeftIcon,

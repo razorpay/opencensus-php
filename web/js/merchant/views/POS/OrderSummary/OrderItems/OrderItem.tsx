@@ -45,9 +45,7 @@ const OrderItem = ({ orderItem, isListItem, isOrderDetails }: OrderItem): JSX.El
         width={{ base: '65px', l: '70px' }}
         backgroundPosition="center center"
         backgroundColor={
-          isOrderDetails
-            ? 'surface.background.level2.lowContrast'
-            : 'surface.background.level3.lowContrast'
+          isOrderDetails ? 'surface.background.gray.intense' : 'surface.background.gray.moderate'
         }
         borderRadius="large"
         marginRight="spacing.4"
@@ -56,14 +54,18 @@ const OrderItem = ({ orderItem, isListItem, isOrderDetails }: OrderItem): JSX.El
         <Box display={{ base: 'block', l: 'flex' }} alignItems="center">
           <Text size={isMobile ? 'medium' : 'large'}>{productTitle}</Text>
           {!isMobile ? (
-            <Divider orientation="vertical" marginX="spacing.3" variant="normal" thickness="thin" />
+            <Divider orientation="vertical" marginX="spacing.3" variant="muted" thickness="thin" />
           ) : null}
-          <Text type="subtle" weight="regular" size={isMobile ? 'medium' : 'large'}>
+          <Text
+            weight="regular"
+            size={isMobile ? 'medium' : 'large'}
+            color="surface.text.gray.subtle"
+          >
             {PLAN_NAME_MAPPINGS[plan]}
           </Text>
         </Box>
         {isListItem && !isMobile ? (
-          <Text type="subtle" marginRight="spacing.1">
+          <Text marginRight="spacing.1" color="surface.text.gray.subtle">
             Qty: {quantity}
           </Text>
         ) : null}
@@ -76,12 +78,18 @@ const OrderItem = ({ orderItem, isListItem, isOrderDetails }: OrderItem): JSX.El
         alignItems="end"
       >
         {(isListItem && isMobile) || isOrderDetails ? (
-          <Text type="subtle" textAlign="right" marginRight="spacing.1">
+          <Text textAlign="right" marginRight="spacing.1" color="surface.text.gray.subtle">
             Qty: {quantity}
           </Text>
         ) : null}
         {!isListItem ? (
-          <Amount value={total.value} isAffixSubtle={false} suffix="none" size="heading-small" />
+          <Amount
+            value={total.value}
+            isAffixSubtle={false}
+            suffix="none"
+            type="body"
+            size="large"
+          />
         ) : null}
       </Box>
     </Box>

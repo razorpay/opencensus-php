@@ -29,26 +29,25 @@ type Props = {
   isMobileDevice: boolean;
 };
 
-export const badgeMapping: Partial<Record<
-  ICProductStates,
-  { variant: NonNullable<BadgeProps['variant']>; tooltip: string }
->> = {
+export const badgeMapping: Partial<
+  Record<ICProductStates, { color: NonNullable<BadgeProps['color']>; tooltip: string }>
+> = {
   [ICProductStates.ACTIVE]: {
-    variant: 'positive',
+    color: 'positive',
     tooltip: 'International card payments are active on this product',
   },
   [ICProductStates.ACTION_REQUIRED]: {
-    variant: 'notice',
+    color: 'notice',
     tooltip:
       'You need to submit additional details to continue the request for international cards activation',
   },
   [ICProductStates.REJECTED]: {
-    variant: 'negative',
+    color: 'negative',
     tooltip:
       'Your request to activate international card payments on this product is rejected. You can try to request for it again in 90 days',
   },
   [ICProductStates.UNDER_REVIEW]: {
-    variant: 'information',
+    color: 'information',
     tooltip: 'Your request for international card payment on this product is being verified',
   },
 };
@@ -98,7 +97,7 @@ const ProductInfo = ({
             )
           : !!status && (
               <span>
-                <Badge contrast="high" size="large" variant={badgeInfo?.variant} icon={InfoIcon}>
+                <Badge emphasis="intense" size="large" color={badgeInfo?.color} icon={InfoIcon}>
                   {status}
                 </Badge>
                 <Popover align="top" theme="dark">
@@ -107,7 +106,6 @@ const ProductInfo = ({
               </span>
             )}
       </StyledProductInfoHeader>
-
       {status === ICProductStates.ACTIVE ? (
         <StyledProductInfoContent>
           <p>
@@ -120,7 +118,7 @@ const ProductInfo = ({
                 onClick={onEditTransactionLimitClick}
                 data-testid="edit-transaction-link"
               >
-                <EditIcon color="action.icon.link.active" size="medium" />
+                <EditIcon color="interactive.icon.primary.normal" size="medium" />
               </StyledEditTransactionLimitLink>
             </span>
           </p>

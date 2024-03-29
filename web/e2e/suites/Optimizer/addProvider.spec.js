@@ -18,13 +18,13 @@ const { BASE_PATH, getStorageStatePath } = require('testConstants');
 
 const ELEMENTS = {
   INSTANT_BETA:
-    '[data-testid="integration-type"] label[data-blade-component="radio-label"] [data-blade-component="base-text"]:text("Instant (beta)")',
+    '[data-testid="integration-type"] label[data-blade-component="radio-label"] [data-blade-component="text"]:text("Instant (beta)")',
   SERVER_TO_SERVER:
-    '[data-testid="integration-type"] label[data-blade-component="radio-label"] [data-blade-component="base-text"]:text("Server-to-Server")',
+    '[data-testid="integration-type"] label[data-blade-component="radio-label"] [data-blade-component="text"]:text("Server-to-Server")',
   REGULAR_ACCOUNT_TYPE:
-    '[data-testid="account-type"] label[data-blade-component="radio-label"] [data-blade-component="base-text"]:text("Regular")',
+    '[data-testid="account-type"] label[data-blade-component="radio-label"] [data-blade-component="text"]:text("Regular")',
   BANKING_VAS_ACCOUNT_TYPE:
-    '[data-testid="account-type"] label[data-blade-component="radio-label"] [data-blade-component="base-text"]:text("Banking VAS")',
+    '[data-testid="account-type"] label[data-blade-component="radio-label"] [data-blade-component="text"]:text("Banking VAS")',
   SELECT_BANK_NAME: 'button[role="combobox"][placeholder="Select bank"]',
   PROVIDER_NAME: 'input[name="Provider_name"]',
   PROVIDER_DESCRIPTION: 'textarea[name="Description"]',

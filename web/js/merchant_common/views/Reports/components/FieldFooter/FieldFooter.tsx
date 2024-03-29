@@ -13,13 +13,12 @@ export const FieldFooter = ({
   return (validation ? Boolean(helpText) : Boolean(errorText)) ? (
     <Box marginTop="spacing.2" display="flex" alignItems="center">
       {!validation ? (
-        <InfoIcon marginRight="spacing.1" color="feedback.icon.negative.lowContrast" size="small" />
+        <InfoIcon marginRight="spacing.1" color="feedback.icon.negative.intense" size="small" />
       ) : null}
       <Text
         variant="caption"
-        type="muted"
         weight="regular"
-        color={validation ? 'surface.text.muted.lowContrast' : 'feedback.text.negative.lowContrast'}
+        color={validation ? 'surface.text.gray.muted' : 'feedback.text.negative.intense'}
       >
         {validation ? helpText : errorText}
       </Text>

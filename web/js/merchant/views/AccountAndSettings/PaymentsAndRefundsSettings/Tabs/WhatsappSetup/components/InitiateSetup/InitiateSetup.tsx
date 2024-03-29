@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Heading,
-  Text,
-  Divider,
-  Card,
-  CardBody,
-  Link,
-  Button,
-} from '@razorpay/blade/components';
+import { Box, Text, Divider, Card, CardBody, Link, Button } from '@razorpay/blade/components';
 import AccountLinkingModal from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/components/Modals/AccountLinking';
 import StatusNotification from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/components/Modals/StatusNotification';
 import { useMobile } from 'common/hooks/useMobile';
@@ -50,7 +41,9 @@ const InitiateSetup = (): JSX.Element => {
     <>
       <Card
         padding={isMobile ? 'spacing.5' : 'spacing.7'}
-        surfaceLevel={isMobile ? 3 : 2}
+        backgroundColor={
+          isMobile ? 'surface.background.gray.intense' : 'surface.background.gray.moderate'
+        }
         elevation="none"
       >
         <CardBody>
@@ -63,9 +56,9 @@ const InitiateSetup = (): JSX.Element => {
               gap={{ base: '10px', m: 'spacing.0' }}
             >
               <Box display="flex" flexDirection="column" gap={{ base: '10px', m: 'spacing.2' }}>
-                <Heading size="small" weight="bold">
+                <Text weight="semibold" size="large">
                   Continue by linking your existing WABA account
-                </Heading>
+                </Text>
               </Box>
               <Button
                 size="medium"
@@ -87,7 +80,7 @@ const InitiateSetup = (): JSX.Element => {
               flexDirection={{ base: 'column', m: 'row' }}
               gap={{ base: 'spacing.2', m: 'spacing.3' }}
             >
-              <Text size="medium" weight="bold">
+              <Text size="medium" weight="semibold">
                 Don’t have an account?
               </Text>
               <Link

@@ -39,8 +39,9 @@ test.describe('GCMS orders create @flow=ordersCreate @project=payments', () => {
     await page.getByRole('button', { name: 'Add to cart' }).first().click();
 
     await page.getByRole('button', { name: 'View Cart' }).first().click();
+
     await expect(page).toHaveURL(`${routes.GCMS_ORDERS_CREATE}/cart`); // Cart Page
-    await expect(await page.getByText('Cart')).toBeVisible();
+    await expect(await page.getByText('Cart', { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: 'Verify & Place Order' }).first().click();
   });

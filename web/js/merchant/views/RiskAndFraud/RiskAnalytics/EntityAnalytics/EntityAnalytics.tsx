@@ -105,7 +105,7 @@ const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => 
       flexDirection="column"
       marginTop="spacing.5"
       padding={['spacing.5', 'spacing.7', 'spacing.5', 'spacing.7']}
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
     >
       <EntityHeader entity={entity} />
       <EntityFilters

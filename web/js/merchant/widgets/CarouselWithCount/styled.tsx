@@ -17,7 +17,7 @@ export const CarouselWithCountWrapper = ({
       paddingX="spacing.5"
       overflowX="hidden"
       backgroundImage={background_img ? getBackgroundImage(background_img) : undefined}
-      backgroundColor={background_img ? undefined : 'surface.background.level2.lowContrast'}
+      backgroundColor={background_img ? undefined : 'surface.background.gray.intense'}
       testID="carousel-with-count-wrapper"
     >
       {children}

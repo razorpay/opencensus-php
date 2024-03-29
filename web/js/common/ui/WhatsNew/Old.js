@@ -551,7 +551,7 @@ class WhatsNewOld extends Component {
         <AnnouncementIcon
           size="medium"
           onClick={this.handleSliderToggleClick}
-          color="surface.text.subtle.lowContrast"
+          color="interactive.icon.gray.subtle"
         />
       );
     }

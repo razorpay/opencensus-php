@@ -300,10 +300,10 @@ export default function ProcessTransactions({ activeProcess }) {
 }
 
 const RadioSelect = ({ value, title, subTitle }) => (
-  <Box backgroundColor="brand.gray.300.lowContrast" padding="spacing.3" marginRight="spacing.4">
+  <Box backgroundColor="surface.background.gray.subtle" padding="spacing.3" marginRight="spacing.4">
     <Radio value={value}>
       <Box display="flex">
-        <Text weight="bold">{title}</Text>
+        <Text weight="semibold">{title}</Text>
         <Divider orientation="vertical" marginX="spacing.2" />
         <Text>{subTitle}</Text>
       </Box>

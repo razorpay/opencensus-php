@@ -69,12 +69,12 @@ const ProductPriceCards = ({
           const isSelected = selectedPricing === type;
           const shouldShowPartnerPricing = isPartnerPricing && isSelected && !isOfferEnabled;
           let priceContainerBackground: BoxProps['backgroundColor'] =
-            'surface.background.level2.lowContrast';
+            'surface.background.gray.intense';
 
           if (shouldShowPartnerPricing) {
             priceContainerBackground = 'transparent';
           } else if (isSelected) {
-            priceContainerBackground = 'surface.background.level3.lowContrast';
+            priceContainerBackground = 'surface.background.gray.moderate';
           }
           return (
             <ProductPriceCard
@@ -120,8 +120,10 @@ const ProductPriceCards = ({
                           <Amount
                             value={value}
                             suffix="none"
-                            size="heading-small-bold"
                             isAffixSubtle={false}
+                            type="body"
+                            size="large"
+                            weight="semibold"
                           />
                         </Text>
                       </Box>

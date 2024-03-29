@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Heading,
   Text,
   Tooltip,
   TooltipInteractiveWrapper,
@@ -172,9 +171,9 @@ const Zones = ({
   return (
     <Box display="flex" gap="spacing.5" flexDirection={{ base: 'column', l: 'row' }}>
       <Box flex="1">
-        <Heading>
+        <Text size="large">
           Shipping zone
-          <Text as="span" color="feedback.text.negative.lowContrast">
+          <Text as="span" color="feedback.text.negative.intense">
             *
           </Text>
           <Tooltip
@@ -183,7 +182,7 @@ const Zones = ({
           >
             <TooltipInteractiveWrapper>
               <InfoIcon
-                color="surface.text.muted.lowContrast"
+                color="interactive.icon.gray.muted"
                 marginLeft="spacing.2"
                 position="relative"
                 top="spacing.1"
@@ -191,7 +190,7 @@ const Zones = ({
               />
             </TooltipInteractiveWrapper>
           </Tooltip>
-        </Heading>
+        </Text>
       </Box>
       <SettingsWrapper>
         {zones?.length ? (

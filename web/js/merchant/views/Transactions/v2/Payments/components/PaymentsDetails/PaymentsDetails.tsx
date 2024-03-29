@@ -210,7 +210,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
           <CardBody>
             <ErrorWrapper>
               <img src={ErrorLoadingImage} alt="error loading data" />
-              <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+              <Text variant="body" size="medium" weight="regular" color="surface.text.gray.subtle">
                 We couldn’t load your details. Refresh to try again
               </Text>
               <Link icon={RefreshIcon} onClick={fetchDetails}>

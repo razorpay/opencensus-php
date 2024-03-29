@@ -21,7 +21,7 @@ import {
 } from 'merchant/views/EcosystemDowntimes/constants';
 import EcosystemMethodSummary from 'merchant/views/EcosystemDowntimes/components/EcosystemMethodSummary';
 import EcosystemHealthError from 'merchant/views/EcosystemDowntimes/components/EcosystemHealthError';
-import { Text, Heading } from '@razorpay/blade/components';
+import { Text } from '@razorpay/blade/components';
 import DowntimeDetailsContainer from './DowntimeDetailsContainer';
 import { Modal, ModalBody } from 'common/components/Modal';
 import { toTitleCase } from 'common/utils';
@@ -78,9 +78,9 @@ const MethodsContainer = (): JSX.Element => {
           return (
             <div key={method}>
               <MethodName>
-                <Heading size="small" type="normal" variant="regular" weight="bold">
+                <Text weight="semibold" size="large" color="surface.text.gray.normal">
                   {METHOD_NAMES_MAP?.[method] || toTitleCase(method)}
-                </Heading>
+                </Text>
               </MethodName>
               <EcosystemMethodSummary method={method} />
               {groups.map((group) => {
@@ -88,7 +88,12 @@ const MethodsContainer = (): JSX.Element => {
                 return (
                   <MethodsListContainer key={group}>
                     <ul>
-                      <Text contrast="low" size="medium" type="normal" variant="body" weight="bold">
+                      <Text
+                        size="medium"
+                        variant="body"
+                        weight="semibold"
+                        color="surface.text.gray.normal"
+                      >
                         {INSTRUMENT_TYPE_NAMES_MAP?.[group] || toTitleCase(group)}
                       </Text>
                       {instruments.map((instrument) => (

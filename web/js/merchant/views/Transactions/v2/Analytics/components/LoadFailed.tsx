@@ -5,7 +5,13 @@ import { LoadFailedProps } from 'merchant/views/Transactions/v2/Analytics/types'
 
 const LoadFailed = ({ title, subtitle, height }: LoadFailedProps): JSX.Element => {
   return (
-    <Card padding="spacing.3" marginY="spacing.5" surfaceLevel={2} elevation="none" display="flex">
+    <Card
+      padding="spacing.3"
+      marginY="spacing.5"
+      backgroundColor="surface.background.gray.moderate"
+      elevation="none"
+      display="flex"
+    >
       <CardBody>
         <Box
           display="flex"

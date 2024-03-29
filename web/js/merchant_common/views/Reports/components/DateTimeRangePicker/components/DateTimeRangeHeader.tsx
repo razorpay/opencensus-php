@@ -32,18 +32,17 @@ export const DateTimeRangeHeader = ({
   return (
     <CalendarHeader theme={theme}>
       <RangeSectionHeader>
-        <Text variant="body" type="normal" weight="bold">
+        <Text variant="body" weight="semibold" color="surface.text.gray.normal">
           Selected Date Range:
         </Text>
         {Boolean(startDate && endDate && !disableTimeSelection) ? (
           <Switch label="Include Time" onChange={handleIncludeTime} value={shouldIncludeTime} />
         ) : null}
       </RangeSectionHeader>
-
       <SelectedRangeInfo>
         <RangeSection>
           <SelectedRangeInfoBadge aria-label="Picker Start Date" theme={theme}>
-            <Text type="normal" size="medium" weight="regular" variant="body">
+            <Text size="medium" weight="regular" variant="body" color="surface.text.gray.normal">
               {startDate ? startDate.format('MMM DD, YYYY') : 'Choose A Start Date'}
             </Text>
           </SelectedRangeInfoBadge>
@@ -56,11 +55,11 @@ export const DateTimeRangeHeader = ({
           ) : null}
         </RangeSection>
         <RangeSection>
-          <ArrowRightIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+          <ArrowRightIcon size="medium" color="feedback.icon.neutral.intense" />
         </RangeSection>
         <RangeSection>
           <SelectedRangeInfoBadge aria-label="Picker End Date" theme={theme}>
-            <Text type="normal" size="medium" weight="regular" variant="body">
+            <Text size="medium" weight="regular" variant="body" color="surface.text.gray.normal">
               {endDate ? endDate.format('MMM DD, YYYY') : 'Choose An End Date'}
             </Text>
           </SelectedRangeInfoBadge>

@@ -44,7 +44,13 @@ const CapturedPaymentCard = ({
     });
   };
   return (
-    <Card padding="spacing.3" marginY="spacing.5" surfaceLevel={2} elevation="none" display="flex">
+    <Card
+      padding="spacing.3"
+      marginY="spacing.5"
+      backgroundColor="surface.background.gray.moderate"
+      elevation="none"
+      display="flex"
+    >
       <CardBody>
         <Box
           display="flex"
@@ -58,13 +64,13 @@ const CapturedPaymentCard = ({
         >
           <Box gap="spacing.3" display="flex" flexDirection="column">
             <Box display="flex" gap="spacing.2" alignItems="center" marginX="spacing.2">
-              <Text type="subtle" weight="bold" contrast="low" size="medium">
+              <Text weight="semibold" size="medium" color="surface.text.gray.subtle">
                 Collected Amount
               </Text>
               <TooltipWrapper>
                 <Tooltip content={LandingPageAnalyticsToolTip.Collected} placement="top">
                   <TooltipInteractiveWrapper>
-                    <InfoIcon color="feedback.icon.neutral.lowContrast" size="small" />
+                    <InfoIcon color="feedback.icon.neutral.intense" size="small" />
                   </TooltipInteractiveWrapper>
                 </Tooltip>
               </TooltipWrapper>
@@ -73,12 +79,13 @@ const CapturedPaymentCard = ({
               <Amount
                 suffix="decimals"
                 currency={currency}
-                size="title-medium"
                 value={paiseToRupees(paymentCapturedAmount)}
                 isAffixSubtle={false}
+                type="heading"
+                size="xlarge"
               />
             </StyledAmount>
-            <Text type="subtle" as="div" marginX="spacing.2">
+            <Text as="div" marginX="spacing.2" color="surface.text.gray.subtle">
               from {paymentCapturedCount} captured payments
             </Text>
           </Box>

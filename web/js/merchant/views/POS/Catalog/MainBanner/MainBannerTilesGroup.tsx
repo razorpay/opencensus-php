@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 import { MAIN_BANNER_TILES } from 'merchant/views/POS/constants';
 
@@ -8,7 +8,7 @@ import MainBannerTile from './MainBannerTiles';
 
 const MainBannerTilesGroup = (): JSX.Element => {
   return (
-    <BladeProvider themeTokens={paymentTheme} colorScheme="light">
+    <BladeProvider themeTokens={bladeTheme} colorScheme="light">
       <Box
         height="100%"
         width="100%"

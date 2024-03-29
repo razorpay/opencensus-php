@@ -19,8 +19,15 @@ import { connect } from 'react-redux';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import Amount from 'common/ui/Amount';
 import { merchantFetch } from '@dashboard/shared-utils/ajax';
-import { TimelineJourneyPoint } from './types';
-import { getHumanReadableTimestamp } from './utils';
+import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
+import RefundMiniTimeline from 'apps/self-serve/src/App/Transactions/v2/Refunds/components/RefundMiniTimeline';
+import { shouldShowCapturePaymentButton } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/utils';
+import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import { ERROR_DESCRIPTION_CONTENT_MAP } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/constants';
+import {
+  IPaymentDetails,
+  IBankTransfer,
+} from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/types';
 import {
   StyledJourneyMetadata,
   StyledTimelineContainer,
@@ -32,15 +39,8 @@ import {
   StyledStatusSubText,
   getStatusIcon,
 } from './styled';
-import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
-import RefundMiniTimeline from 'apps/self-serve/src/App/Transactions/v2/Refunds/components/RefundMiniTimeline';
-import { shouldShowCapturePaymentButton } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/utils';
-import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
-import { ERROR_DESCRIPTION_CONTENT_MAP } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/constants';
-import {
-  IPaymentDetails,
-  IBankTransfer,
-} from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/types';
+import { getHumanReadableTimestamp } from './utils';
+import { TimelineJourneyPoint } from './types';
 
 interface EntityStatusTimelineProps extends RouteComponentProps {
   data: TimelineJourneyPoint[];
@@ -161,13 +161,13 @@ const EntityStatusTimeline = ({
     return (
       <StyledJourneyMetadata>
         {journeyPoint.status === 'not-authorized' ? (
-          <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+          <Text size="small" color="surface.text.gray.subtle" weight="regular">
             Amount yet to be authenticated by the bank
           </Text>
         ) : null}
         {journeyPoint.status === 'not-captured' ? (
           <Box marginBottom="spacing.3">
-            <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+            <Text size="small" color="surface.text.gray.subtle" weight="regular">
               Amount yet to be manually captured
             </Text>
             {shouldShowCapturePaymentButton(user, journeyPoint, bankTransfer) ? (
@@ -186,14 +186,14 @@ const EntityStatusTimeline = ({
           </Box>
         ) : null}
         {journeyPoint.timestamp ? (
-          <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+          <Text size="small" color="surface.text.gray.subtle" weight="regular">
             {getHumanReadableTimestamp(journeyPoint.timestamp)}
           </Text>
         ) : null}
         {journeyPoint.status === 'failed' ? (
           <>
             <StyledGradientBox>
-              <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+              <Text size="small" color="surface.text.gray.subtle" weight="regular">
                 {ERROR_DESCRIPTION_CONTENT_MAP[
                   journeyPoint.metadata?.failureReason as keyof typeof ERROR_DESCRIPTION_CONTENT_MAP
                 ]
@@ -205,7 +205,7 @@ const EntityStatusTimeline = ({
               </Text>
             </StyledGradientBox>
             <Box paddingTop="spacing.2" paddingBottom="spacing.2">
-              <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+              <Text size="small" color="surface.text.gray.subtle" weight="regular">
                 If the amount was deducted from the customer’s bank account, it will be credited to
                 them within 5-7 working days
               </Text>
@@ -214,7 +214,7 @@ const EntityStatusTimeline = ({
         ) : null}
         {journeyPoint.status === 'auth-failed' ? (
           <StyledGradientBox>
-            <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+            <Text size="small" color="surface.text.gray.subtle" weight="regular">
               This payment will be refunded within 72 hours
             </Text>
           </StyledGradientBox>
@@ -227,12 +227,12 @@ const EntityStatusTimeline = ({
     return (
       <StyledJourneyMetadata>
         <Box paddingBottom="spacing.2">
-          <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+          <Text size="small" color="surface.text.gray.subtle" weight="regular">
             Net amount: <Amount value={journeyPoint.metadata.amount} />
           </Text>
         </Box>
         {journeyPoint.timestamp ? (
-          <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+          <Text size="small" color="surface.text.gray.subtle" weight="regular">
             {getHumanReadableTimestamp(journeyPoint.timestamp)}
           </Text>
         ) : null}
@@ -268,19 +268,19 @@ const EntityStatusTimeline = ({
       <StyledJourneyMetadata>
         {amount ? (
           <Box paddingBottom="spacing.2">
-            <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+            <Text size="small" color="surface.text.gray.subtle" weight="regular">
               Amount: <Amount value={amount} />
             </Text>
           </Box>
         ) : null}
         {refund?.created_at ? (
-          <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+          <Text size="small" color="surface.text.gray.subtle" weight="regular">
             Issued on {getHumanReadableTimestamp(refund?.created_at)}
           </Text>
         ) : null}
         {journeyPoint.metadata.failureReason ? (
           <StyledGradientBox>
-            <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+            <Text size="small" color="surface.text.gray.subtle" weight="regular">
               {journeyPoint.metadata.failureReason}
             </Text>
           </StyledGradientBox>
@@ -311,7 +311,7 @@ const EntityStatusTimeline = ({
     return (
       <StyledJourneyMetadata>
         {journeyPoint.timestamp ? (
-          <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+          <Text size="small" color="surface.text.gray.subtle" weight="regular">
             Created on {getHumanReadableTimestamp(journeyPoint.timestamp)}
           </Text>
         ) : null}

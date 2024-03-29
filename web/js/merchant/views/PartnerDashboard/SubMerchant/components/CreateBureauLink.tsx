@@ -90,16 +90,16 @@ export const CreateBureauLink = ({
           padding={['spacing.4', 'spacing.3']}
           marginBottom="spacing.6"
           flex="1"
-          backgroundColor="surface.background.level1.lowContrast"
+          backgroundColor="surface.background.gray.subtle"
         >
-          <Text weight="bold">{bureauLink}</Text>
+          <Text weight="semibold">{bureauLink}</Text>
         </Box>
         {shouldShowSuccessAlert ? (
           <Alert
-            intent="positive"
             isDismissible={false}
             title="SMS sent"
             description="An SMS has been successfully sent to your client on their contact number."
+            color="positive"
           />
         ) : null}
       </ModalBody>

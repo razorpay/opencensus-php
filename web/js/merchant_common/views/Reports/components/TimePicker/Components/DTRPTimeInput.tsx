@@ -16,7 +16,7 @@ export const DTRPTimeInput = ({ disableInput }: { disableInput: boolean }): JSX.
           aria-label={`Selected Time Is ${selectedTime.format('h:mm A')}`}
           onClick={() => setShowPicker(true)}
         >
-          <Text type="normal" size="medium" weight="regular" variant="body">
+          <Text size="medium" weight="regular" variant="body" color="surface.text.gray.normal">
             {selectedTime.format('h:mm A')}
           </Text>
           <FlexCentered
@@ -24,7 +24,7 @@ export const DTRPTimeInput = ({ disableInput }: { disableInput: boolean }): JSX.
               marginLeft: 5,
             }}
           >
-            <ClockIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+            <ClockIcon color="feedback.icon.neutral.intense" size="medium" />
           </FlexCentered>
         </SelectedRangeInfoBadge>
       ) : null}
@@ -33,7 +33,7 @@ export const DTRPTimeInput = ({ disableInput }: { disableInput: boolean }): JSX.
           fallback={
             <Box
               height="90px"
-              backgroundColor="surface.background.level2.lowContrast"
+              backgroundColor="surface.background.gray.intense"
               width="202px"
               position="absolute"
               elevation="midRaised"

@@ -32,9 +32,7 @@ describe('WhatsappSetup - AccountLinking', () => {
 
   test('should render Account Linking Modal view', () => {
     renderApp();
-    expect(
-      screen.getByRole('heading', { name: 'Link your existing Whatsapp Account' }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Link your existing Whatsapp Account')).toBeInTheDocument();
     expect(
       screen.getByRole('combobox', { name: 'Select your Business Service Provider' }),
     ).toBeInTheDocument();
@@ -45,9 +43,7 @@ describe('WhatsappSetup - AccountLinking', () => {
   test('should render Account Linking Modal view in mobile', () => {
     (useMobile as jest.Mock).mockImplementation(() => true);
     renderApp();
-    expect(
-      screen.getByRole('heading', { name: 'Link your existing Whatsapp Account' }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Link your existing Whatsapp Account')).toBeInTheDocument();
     expect(
       screen.getByRole('combobox', { name: 'Select your Business Service Provider' }),
     ).toBeInTheDocument();

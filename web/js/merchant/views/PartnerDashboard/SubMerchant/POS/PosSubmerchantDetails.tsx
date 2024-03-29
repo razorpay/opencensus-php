@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Heading, Divider, Spinner } from '@razorpay/blade/components';
+import { Box, Divider, Heading, Spinner } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 
@@ -54,7 +54,7 @@ const POSSubmerchantDetails = ({
                 paddingY="spacing.5"
                 paddingRight="spacing.8"
               >
-                <Heading size="medium">{responseData?.name ?? 'N/A'}</Heading>
+                <Heading size="small">{responseData?.name ?? 'N/A'}</Heading>
                 <KycActionButton submerchant={responseData} />
               </Box>
             </div>

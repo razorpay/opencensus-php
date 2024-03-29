@@ -96,7 +96,7 @@ const PartnerPlaybook = ({ showNotification }: PartnerPlaybookProps): JSX.Elemen
       display="flex"
       marginBottom="spacing.6"
       flexDirection="column"
-      backgroundColor="surface.background.level3.lowContrast"
+      backgroundColor="surface.background.gray.moderate"
     >
       <PosterAndSearchBar formik={formik} openPreview={openPreview} />
       <PlaybookSections

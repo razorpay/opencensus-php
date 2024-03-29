@@ -37,7 +37,11 @@ const RenderTypeValue = ({ id, type, value }: Omit<BankDataInterface, 'name'>): 
         </ChipContainer>
       );
     default:
-      return <Text type="subtle">{id === 'name' ? truncatedString(value, 23) : value}</Text>;
+      return (
+        <Text color="surface.text.gray.subtle">
+          {id === 'name' ? truncatedString(value, 23) : value}
+        </Text>
+      );
   }
 };
 
@@ -51,12 +55,12 @@ const BankDetails = ({
   return (
     <StyledBankDetailsContainer>
       <BankAccountIconSection>
-        <BankIcon color="surface.text.normal.lowContrast" size="large" />
+        <BankIcon color="interactive.icon.gray.normal" size="large" />
       </BankAccountIconSection>
       {bankData?.map(
         ({ id, name, value, type }): JSX.Element => (
           <AccountDetails key={id}>
-            <Text type="subtle" weight="bold">
+            <Text weight="semibold" color="surface.text.gray.subtle">
               {name}
             </Text>
             <RenderTypeValue id={id} type={type} value={value} />

@@ -88,7 +88,7 @@ const Table = ({
           <thead>
             <tr>
               {cols.map((column, index) => (
-                <th className={column.columnClass} key={index}>
+                <th style={{ fontWeight: 600 }} className={column.columnClass} key={index}>
                   {typeof column.title === 'function' ? column.title() : column.title}
                 </th>
               ))}

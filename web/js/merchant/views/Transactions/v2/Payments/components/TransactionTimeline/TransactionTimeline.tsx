@@ -1,16 +1,21 @@
-import React from 'react';
-import { Box, Collapsible, CollapsibleLink, CollapsibleBody } from '@razorpay/blade/components';
+import {
+  Box,
+  Collapsible,
+  CollapsibleBody,
+  CollapsibleLink,
+  Heading,
+} from '@razorpay/blade/components';
 import moment from 'moment';
+import React from 'react';
 
 import ErrorBoundary, { InlineFallbackComponent } from 'common/new-ui/ErrorBoundary';
 import { SkipTransactions } from 'merchant/views/Transactions/v2/Payments/components/Timeline/types';
 import {
-  Time,
-  Title,
-  Description,
   Container,
   CustomIcon,
+  Description,
   LineContainer,
+  Time,
 } from 'merchant/views/Transactions/v2/Payments/components/TransactionTimeline/styled';
 import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
 
@@ -36,7 +41,7 @@ const SkippedTransaction = ({ time, reason }: SkipType): JSX.Element => (
           <circle cx="5" cy="5" r="5" fill="#D13821" />
         </svg>
       </CustomIcon>
-      <Title>Settlement failed</Title>
+      <Heading size="large">Settlement failed</Heading>
     </Box>
     <LineContainer>
       <Time>{moment.unix(time).format('llll')}</Time>

@@ -48,7 +48,7 @@ export const LinkButtonItem = styled(Link)<any>`
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 1rem;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 0.75rem;
 
   &:hover {
@@ -78,7 +78,7 @@ export const NewTag = styled.span`
   height: 14px;
   background: #60e380;
   border-radius: 2px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 10px;
   line-height: 12px;
   text-transform: uppercase;
@@ -90,7 +90,7 @@ export const NewTag = styled.span`
 
 export const BadgeContainer = styled.div(
   ({ theme }: { theme: Theme }) => `
-    color: ${theme.colors.surface.text.normal.highContrast};
+    color: ${theme.colors.surface.text.staticWhite.normal};
     position: absolute;
     right: 16px;
   `,
@@ -101,7 +101,7 @@ export const LinkItemV2 = styled(Link)<{ isActive: boolean }>(
   display: flex;
   padding: ${theme.spacing[3]}px ${theme.spacing[5]}px;
   align-items: center;
-  background-color: ${isActive ? theme.colors.static.white : 'unset'};
+  background-color: ${isActive ? theme.colors.interactive.icon.staticWhite.normal : 'unset'};
   margin: 0 ${theme.spacing[3]}px;
   border-radius: ${theme.border.radius.medium}px;
   position: relative;

@@ -23,7 +23,7 @@ const TestimonialCard = ({
   <Card padding="spacing.0" marginY="spacing.4">
     <CardBody>
       <Box paddingX="spacing.5" paddingY="spacing.7">
-        <Text size="large" color="surface.text.normal.lowContrast">
+        <Text size="large" color="surface.text.gray.normal">
           {testimonial}
         </Text>
       </Box>
@@ -33,14 +33,14 @@ const TestimonialCard = ({
         gap="spacing.5"
         padding="spacing.5"
         borderTopWidth="thin"
-        borderTopColor="surface.border.subtle.lowContrast"
+        borderTopColor="surface.border.gray.subtle"
       >
         <TestimonialAvatar src={avatarSrc} />
         <Box>
-          <Text size="medium" weight="bold">
+          <Text size="medium" weight="semibold">
             {name}
           </Text>
-          <Text size="small" color="surface.text.muted.lowContrast" marginTop="spacing.2">
+          <Text size="small" color="surface.text.gray.muted" marginTop="spacing.2">
             {role}
           </Text>
         </Box>

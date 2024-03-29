@@ -52,7 +52,7 @@ const ItemActions = ({
   return (
     <Box display="flex" flexDirection="row" gap="spacing.7" justifyContent="center">
       <IconButton
-        icon={() => <EyeIcon size="large" color="action.icon.secondary.default" />}
+        icon={() => <EyeIcon size="large" color="interactive.icon.primary.normal" />}
         accessibilityLabel="view"
         onClick={onViewClick}
       />
@@ -64,7 +64,7 @@ const ItemActions = ({
           title=""
         >
           <IconButton
-            icon={() => <CopyIcon size="large" color="action.icon.secondary.default" />}
+            icon={() => <CopyIcon size="large" color="interactive.icon.primary.normal" />}
             accessibilityLabel="copy"
             onClick={onCopyClick}
           />
@@ -75,7 +75,7 @@ const ItemActions = ({
           {/* eslint-disable-next-line */}
           {/* @ts-ignore TS2322 Link only accepts string children */}
           <IconButton
-            icon={() => <DownloadIcon size="large" color="action.icon.secondary.default" />}
+            icon={() => <DownloadIcon size="large" color="interactive.icon.primary.normal" />}
             accessibilityLabel="download"
             onClick={onDownloadClick}
           />

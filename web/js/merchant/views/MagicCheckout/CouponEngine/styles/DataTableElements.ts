@@ -8,7 +8,7 @@ export const DataTableWrapper = styled.div`
 
 export const CouponName = styled.div`
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 19px;
   color: #515978;
   overflow-wrap: break-word;

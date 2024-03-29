@@ -1,6 +1,6 @@
 import {
   Box,
-  Title,
+  Heading,
   Text,
   EditIcon,
   Button,
@@ -27,15 +27,15 @@ const ProviderDetails = (props) => {
       flexDirection="column"
       padding="spacing.7"
       gap={isFormEdit ? 'spacing.9' : 'spacing.6'}
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
     >
       <Box display="flex" justifyContent="space-between">
         <Box display="flex" flexDirection="column" gap="spacing.3">
-          <Title color="surface.text.subtle.lowContrast">Provider details</Title>
+          <Heading color="surface.text.gray.subtle" size="large">
+            Provider details
+          </Heading>
           {isFormEdit && (
-            <Text color="surface.text.subtle.lowContrast">
-              Add details of your payment provider
-            </Text>
+            <Text color="surface.text.gray.subtle">Add details of your payment provider</Text>
           )}
         </Box>
 
@@ -50,13 +50,12 @@ const ProviderDetails = (props) => {
               Edit provider details
             </Button>
           ) : (
-            <Text color="surface.text.subdued.lowContrast">
+            <Text color="surface.text.gray.muted">
               {hasSeamlessOption ? 'STEP 3 OUT OF 4' : 'STEP 2 OUT OF 3'}
             </Text>
           )}
         </Box>
       </Box>
-
       <Box display="flex" flexDirection="column" gap="spacing.5">
         <Box display="flex" alignItems="center">
           <Box minWidth="180px">
@@ -74,7 +73,7 @@ const ProviderDetails = (props) => {
                 testID="provider-name"
               />
             ) : (
-              <Text weight="bold">{provider.Provider_name}</Text>
+              <Text weight="semibold">{provider.Provider_name}</Text>
             )}
           </Box>
         </Box>
@@ -94,14 +93,13 @@ const ProviderDetails = (props) => {
                 testID="provider-description"
               />
             ) : (
-              <Text weight="bold" truncateAfterLines={3}>
+              <Text weight="semibold" truncateAfterLines={3}>
                 {provider.Description}
               </Text>
             )}
           </Box>
         </Box>
       </Box>
-
       {isFormEdit && (
         <Box display="flex" justifyContent="end">
           <Box display="flex" alignItems="center" gap="spacing.7">

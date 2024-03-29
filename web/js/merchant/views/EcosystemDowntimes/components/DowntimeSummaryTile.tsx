@@ -1,6 +1,7 @@
 import React from 'react';
+import { Text } from '@razorpay/blade/components';
+
 import { DowntimeSummaryTileStyled } from 'merchant/views/EcosystemDowntimes/styles';
-import { Heading, Text } from '@razorpay/blade/components';
 
 type DowntimeSummaryTileType = {
   description: string;
@@ -19,19 +20,19 @@ const DowntimeSummaryTile = ({
     <DowntimeSummaryTileStyled>
       <div className="description-container" aria-label="summary-tile-description">
         <Text size={isMobile ? 'small' : 'medium'}>{description}</Text>
-        <Text type="subdued" size="small">
+        <Text size="small" color="surface.text.gray.muted">
           {subText}
         </Text>
       </div>
       <div aria-label="summary-tile-value">
         {isMobile ? (
-          <Text size="small" weight="bold">
+          <Text size="small" weight="semibold">
             {value}
           </Text>
         ) : (
-          <Heading size="small" weight="bold">
+          <Text weight="semibold" size="large">
             {value.toString()}
-          </Heading>
+          </Text>
         )}
       </div>
     </DowntimeSummaryTileStyled>

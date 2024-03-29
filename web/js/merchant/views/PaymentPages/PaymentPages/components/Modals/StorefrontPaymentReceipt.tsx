@@ -57,7 +57,7 @@ const StyledModal = styled(_Modal)`
 `;
 
 const Title = styled.div`
-  font-weight: bold;
+  font-weight: 600;
   padding: 16px 24px 4px;
   font-size: 18px;
 `;

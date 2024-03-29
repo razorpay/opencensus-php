@@ -26,7 +26,7 @@ const LoadingText = ({ showError = false }: LoadingText): JSX.Element => {
                     <Size width="432px">
                       <LoadingCTA>
                         {!showError && <Loader width="12px" height="12px" margin={[0, 1, 0, 0]} />}
-                        <Text type="subtle" size="medium" contrast="low">
+                        <Text size="medium" color="surface.text.gray.subtle">
                           {showError
                             ? 'Something went wrong, Our team will get back to you shortly.'
                             : 'Please wait... Loading your Razorpay.me link details...'}

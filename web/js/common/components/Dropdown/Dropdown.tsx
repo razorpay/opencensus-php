@@ -10,7 +10,7 @@ import { DropdownProps, Option, ClickProps, DropdownCommonProps } from './types'
 import { useMobile } from 'common/hooks/useMobile';
 import { getAllOptions, getDropdownContent, getDropdownTarget } from './utils';
 
-const Dropdown = ({
+const Dropdowns = ({
   prefixTitle = '',
   defaultOptions = [],
   options,
@@ -106,7 +106,15 @@ const Dropdown = ({
           <button ref={closeButtonRef}>Close</button>
         </VisuallyHidden>
       ) : null}
-      <BladeDropdown onDismiss={onDismiss} selectionType={selectionType} testID={testID}>
+      <BladeDropdown
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            onDismiss();
+          }
+        }}
+        selectionType={selectionType}
+        testID={testID}
+      >
         {getDropdownTarget({
           isLink,
           isSelectInput,
@@ -132,4 +140,4 @@ const Dropdown = ({
   );
 };
 
-export default Dropdown;
+export default Dropdowns;

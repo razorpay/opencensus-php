@@ -1,12 +1,12 @@
 export const STATUS_BADGE_PROPS = {
   success: {
-    contrast: 'low',
-    variant: 'positive',
+    emphasis: 'subtle',
+    color: 'positive',
     children: 'Success',
   },
   failed: {
-    contrast: 'low',
-    variant: 'negative',
+    emphasis: 'subtle',
+    color: 'negative',
     children: 'Failed',
   },
 };

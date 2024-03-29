@@ -37,15 +37,15 @@ const OrderCartStatusSection = () => {
               justifyContent="space-between"
             >
               <Box>
-                <Text color="surface.text.subdued.lowContrast">Order ID:</Text>
-                <Heading size="medium" weight="bold">
+                <Text color="surface.text.gray.muted">Order ID:</Text>
+                <Heading weight="semibold" size="small">
                   {order?.id}
                 </Heading>
               </Box>
               {order?.status === 'draft' && (
                 <Box
                   borderRadius="large"
-                  backgroundColor="brand.primary.300"
+                  backgroundColor="surface.background.primary.subtle"
                   padding={['spacing.2', 'spacing.4']}
                 >
                   <Text>Auto saved as draft</Text>
@@ -58,13 +58,13 @@ const OrderCartStatusSection = () => {
 
             {order?.updated_at && (
               <Box display="flex" flexDirection="row">
-                <Text color="surface.text.subdued.lowContrast">Last Modified On:</Text>
+                <Text color="surface.text.gray.muted">Last Modified On:</Text>
                 <Text
                   marginLeft="spacing.4"
-                  color="surface.text.subdued.lowContrast"
-                  weight="bold"
+                  color="surface.text.gray.muted"
+                  weight="semibold"
                 >{`${convertUnixToDate(order.updated_at)}`}</Text>
-                <Text color="surface.text.subdued.lowContrast" weight="bold" marginLeft="spacing.2">
+                <Text color="surface.text.gray.muted" weight="semibold" marginLeft="spacing.2">
                   {`${new Date(Number(order.updated_at) * 1000).toLocaleTimeString()}`}
                 </Text>
               </Box>

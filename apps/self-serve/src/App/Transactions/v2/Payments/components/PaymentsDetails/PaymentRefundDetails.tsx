@@ -1,63 +1,54 @@
 // TODO: Fix the imports, currently out of scope
 // @ts-nocheck
-import {
-  Box,
-  Button,
-  Card,
-  CardBody,
-  Divider,
-  Heading,
-  Text,
-  useTheme,
-} from '@razorpay/blade/components';
-import { AnyAction, Dispatch, bindActionCreators, compose } from 'redux';
-import { connect } from 'react-redux';
-import React from 'react';
+import { deepClone } from '@dashboard/shared-utils/rzp-utils';
+import { Box, Button, Card, CardBody, Divider, Text, useTheme } from '@razorpay/blade/components';
+import { useBreakpoint } from '@razorpay/blade/utils';
 import {
   fetchInstantRefundFeeFn,
   fetchTransfersFn,
   refundPaymentFn,
 } from 'apps/self-serve/src/App/Transactions/model';
 import RefundModal from 'apps/self-serve/src/App/Transactions/v1/Payments/components/RefundModalNew';
-import { deepClone } from '@dashboard/shared-utils/rzp-utils';
-import * as PaymentActions from 'merchant/reducers/payments/details';
+import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
+import { Currency } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
+import RefundMiniTimeline from 'apps/self-serve/src/App/Transactions/v2/Refunds/components/RefundMiniTimeline';
+import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
 import Amount from 'common/ui/Amount';
+import * as PaymentActions from 'merchant/reducers/payments/details';
+import React from 'react';
+import { connect } from 'react-redux';
+import { AnyAction, Dispatch, bindActionCreators, compose } from 'redux';
+import { useStore } from 'shell/commonStore';
 import { withRouter } from 'shell/deprecated/withRouter';
 import styled from 'styled-components';
-import { useBreakpoint } from '@razorpay/blade/utils';
-import { useStore } from 'shell/commonStore';
 import Tooltip from './Tooltip';
-import {
-  isIssueRefundDisabled,
-  isPaymentEligibleForRefundAsPerStatus,
-  isPaymentEligibleForRefund,
-  hasPaymentOpenNonFraudDisputes,
-  isGatewaySupportingRefund,
-  isPaymentThroughSeamlessProviders,
-  onCopy,
-  getTime as useTime,
-} from './utils';
-import {
-  IPaymentDetails,
-  IPaymentIdRefundDetail,
-  ICurrentBalance,
-  IPaymentIdRefundDetails,
-} from './types';
+import { REFUND_ELIBILITY_TEXT } from './constants';
 import {
   BoxContainer,
   CardWrapper,
   CopyWrapper,
-  RowsWrapper,
   RowWrapper,
+  RowsWrapper,
   SectionFooter,
   SectionHeader,
   StyledAmountWrapper,
 } from './styled';
-import { REFUND_ELIBILITY_TEXT } from './constants';
-import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
-import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
-import RefundMiniTimeline from 'apps/self-serve/src/App/Transactions/v2/Refunds/components/RefundMiniTimeline';
-import { Currency } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
+import {
+  ICurrentBalance,
+  IPaymentDetails,
+  IPaymentIdRefundDetail,
+  IPaymentIdRefundDetails,
+} from './types';
+import {
+  hasPaymentOpenNonFraudDisputes,
+  isGatewaySupportingRefund,
+  isIssueRefundDisabled,
+  isPaymentEligibleForRefund,
+  isPaymentEligibleForRefundAsPerStatus,
+  isPaymentThroughSeamlessProviders,
+  onCopy,
+  getTime as useTime,
+} from './utils';
 
 const StyledRefundTimelineContainer = styled.div<{ marginTop: string }>`
   margin-top: ${({ marginTop }: { marginTop: string }) => marginTop};
@@ -113,8 +104,13 @@ const PaymentRefundContent = ({
           <CardBody>
             <RowsWrapper>
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
-                  Refund ID <Tooltip type="refundId" size="small" />
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
+                  Refund ID <Tooltip size="small" />
                 </Text>
                 <CopyWrapper
                   onClick={onCopy('Refund ID', { transactionIDActual, refundId: refund.id }).bind(
@@ -122,15 +118,25 @@ const PaymentRefundContent = ({
                     refund.id,
                   )}
                 >
-                  <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="semibold"
+                    color="surface.text.gray.normal"
+                  >
                     {refund.id}
                   </Text>
                 </CopyWrapper>
               </RowWrapper>
-              <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
-                  ARN/RRN <Tooltip type="rrnARN" size="small" />
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
+                  ARN/RRN <Tooltip size="small" />
                 </Text>
                 {bankCode ? (
                   <CopyWrapper
@@ -140,51 +146,85 @@ const PaymentRefundContent = ({
                     )}
                   >
                     <Text
-                      type="normal"
                       variant="body"
                       size="medium"
                       weight="regular"
-                      contrast="low"
+                      color="surface.text.gray.normal"
                     >
                       {bankCode}
                     </Text>
                   </CopyWrapper>
                 ) : (
-                  <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.normal"
+                  >
                     --
                   </Text>
                 )}
               </RowWrapper>
-              <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
                   Amount
                 </Text>
                 <StyledAmountWrapper data-testid="amount" type="regular" fontSize="14">
                   <Amount value={refund.amount} currency={currency} />
                 </StyledAmountWrapper>
               </RowWrapper>
-              <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
                   Refund speed
                 </Text>
-                <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.normal"
+                >
                   {getRefundSpeed()}
                 </Text>
               </RowWrapper>
-              <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
                   Issued on
                 </Text>
-                <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.normal"
+                >
                   {createdAt}
                 </Text>
               </RowWrapper>
-              <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
                   Timeline
                 </Text>
                 <StyledRefundTimelineContainer marginTop={isDesktop ? '-15px' : '0px'}>
@@ -198,7 +238,7 @@ const PaymentRefundContent = ({
       {/* Show only if payment is intiated */}
       {showFooter ? (
         <SectionFooter>
-          <Text type="subtle" variant="body" size="small" weight="regular" contrast="low">
+          <Text variant="body" size="small" weight="regular" color="surface.text.gray.subtle">
             *Refund amount is deducted from your Razorpay current balance after getting processed
           </Text>
         </SectionFooter>
@@ -276,9 +316,14 @@ function PaymentRefundDetails({
       {paymentIdRefundDetails.length >= 0 ? (
         <Box>
           <SectionHeader>
-            <Heading type="normal" size="small" weight="bold" contrast="low">
+            <Text
+              testID="refund-heading"
+              weight="semibold"
+              size="large"
+              color="surface.text.gray.normal"
+            >
               Refund
-            </Heading>
+            </Text>
             <Button
               size="small"
               variant="secondary"
@@ -301,7 +346,12 @@ function PaymentRefundDetails({
             <CardWrapper enableBorderBottomRadius>
               <Card padding="spacing.5">
                 <CardBody>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     {getRefundInfoText()}
                   </Text>
                 </CardBody>

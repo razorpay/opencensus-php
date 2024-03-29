@@ -47,8 +47,8 @@ export const getBaseWidget = ({ widget, isLoading, queryKey }: renderWidgetProps
 export const ErrorBoundaryFallBackComponent = (props: BoxProps) => (
   <ErrorState
     borderWidth="thinner"
-    borderColor="surface.border.normal.lowContrast"
-    backgroundColor="surface.background.level2.lowContrast"
+    borderColor="surface.border.gray.muted"
+    backgroundColor="surface.background.gray.intense"
     borderRadius="large"
     marginX="spacing.0"
     {...props}

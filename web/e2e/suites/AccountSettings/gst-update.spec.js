@@ -11,7 +11,8 @@ test.describe.parallel('GST update @flow=account-settings @project=payments', ()
       await page.goto(routes.ACCOUNT_SETTINGS);
       await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
       await page.getByRole('button', { name: 'GST details' }).click();
-      await expect(page.getByRole('heading', { name: 'GSTIN information' })).toBeVisible();
+      await expect(page.getByText('GSTIN information', { exact: true })).toBeVisible();
+
       await expect(
         page.getByText(
           'GST addition is not supported for your business type. You can create a new Razorpay Account as a Non- Individual business type and link GST to it.',

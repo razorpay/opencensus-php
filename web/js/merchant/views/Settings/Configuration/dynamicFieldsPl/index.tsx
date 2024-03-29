@@ -132,7 +132,6 @@ function DynamicFieldsPl({ showNotification }): JSX.Element {
           </TextHighlighter>
         </span>
       </div>
-
       <div className="panel-body">
         <form className="form-horizontal">
           {configurations.map(({ label, is_mandatory, masking_length, type, suffix }, index) => {
@@ -159,13 +158,16 @@ function DynamicFieldsPl({ showNotification }): JSX.Element {
                       onChange={(params) => handleIsMandatory(params, index)}
                       isDisabled={isLoading}
                     >
-                      <Text type="subdued" weight="bold" marginLeft="spacing.3">
+                      <Text
+                        weight="semibold"
+                        marginLeft="spacing.3"
+                        color="surface.text.gray.muted"
+                      >
                         Is Mandatory
                       </Text>
                     </Checkbox>
                   </Box>
                 </Box>
-
                 <Box marginTop="spacing.5">
                   <TextInput
                     label="Characters"
@@ -181,7 +183,6 @@ function DynamicFieldsPl({ showNotification }): JSX.Element {
                     isDisabled={isLoading}
                   />
                 </Box>
-
                 <Box marginTop="spacing.5">
                   <Dropdown>
                     <SelectInput
@@ -202,7 +203,6 @@ function DynamicFieldsPl({ showNotification }): JSX.Element {
                     </DropdownOverlay>
                   </Dropdown>
                 </Box>
-
                 <Box display="flex" justifyContent="flex-end" marginTop="spacing.5">
                   <Button
                     size="medium"

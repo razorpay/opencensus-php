@@ -178,9 +178,9 @@ export const BaseDropdown = <ItemType, AllowMultiple, Virtualized>(
                 {isAsyncLoading && isAsyncDropdown ? (
                   <Spinner size="medium" accessibilityLabel="Loading results, please wait..." />
                 ) : shouldShowDropDown ? (
-                  <ChevronUpIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+                  <ChevronUpIcon color="feedback.icon.neutral.intense" size="medium" />
                 ) : (
-                  <ChevronDownIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+                  <ChevronDownIcon color="feedback.icon.neutral.intense" size="medium" />
                 )}
               </DropdownIconWrapper>
             </SelectContainer>

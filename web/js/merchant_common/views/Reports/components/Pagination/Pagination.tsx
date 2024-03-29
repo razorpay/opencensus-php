@@ -56,7 +56,7 @@ export const Pagination = ({
           if (pageNumber === DOTS) {
             return (
               <PageButton disabled={true} key={i} theme={theme}>
-                <Text variant="body" type="normal" weight="regular" contrast="low">
+                <Text variant="body" weight="regular" color="surface.text.gray.normal">
                   ...
                 </Text>
               </PageButton>
@@ -72,7 +72,7 @@ export const Pagination = ({
               disabled={currentPage === pageNumber}
               aria-label={`Page no is ${pageNumber}`}
             >
-              <Text variant="body" type="normal" weight="regular" contrast="low">
+              <Text variant="body" weight="regular" color="surface.text.gray.normal">
                 {pageNumber}
               </Text>
             </PageButton>
@@ -83,7 +83,7 @@ export const Pagination = ({
           <IconButton icon={ChevronRightIcon} accessibilityLabel="Next Page" onClick={onNext} />
         </ToggleVisibility>
       </PaginationDiv>
-      <Text variant="caption" type="subtle" contrast="low">
+      <Text variant="caption" color="surface.text.gray.subtle">
         Showing responses {showingFrom + 1}-{isLastPage ? totalCount : showingFrom + pageSize} out
         of {totalCount}
       </Text>

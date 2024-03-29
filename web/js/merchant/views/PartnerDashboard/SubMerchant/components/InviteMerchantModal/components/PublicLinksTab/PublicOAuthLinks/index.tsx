@@ -60,7 +60,7 @@ const PublicOAuthLinks = ({
           flexDirection="column"
           gap="spacing.5"
           padding={['spacing.5', 'spacing.5', 'spacing.7']}
-          backgroundColor="surface.background.level3.lowContrast"
+          backgroundColor="surface.background.gray.moderate"
         >
           <SocialShareGroup
             isKycAssistedSelected={null}

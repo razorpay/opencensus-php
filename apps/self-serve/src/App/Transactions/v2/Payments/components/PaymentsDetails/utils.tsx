@@ -6,13 +6,6 @@ import { Theme, BadgeProps, Text, Link, ChevronRightIcon } from '@razorpay/blade
 import Lottie from 'react-lottie';
 import moment from 'moment';
 import {
-  IPaymentDetails,
-  PaymentStatus,
-  IPaymentIdRefundDetail,
-  IBankTransfer,
-  DisputeStatus,
-} from './types';
-import {
   trackDetailsCopy,
   trackDetailsClick,
 } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
@@ -22,6 +15,13 @@ import CapturedAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payme
 import CreatedAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payments/lottie/Created';
 import FailedAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payments/lottie/Failed';
 import RefundAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payments/lottie/Refund';
+import {
+  IPaymentDetails,
+  PaymentStatus,
+  IPaymentIdRefundDetail,
+  IBankTransfer,
+  DisputeStatus,
+} from './types';
 
 export const shouldHideCapturePaymentAction = (
   payment: IPaymentDetails,
@@ -312,15 +312,15 @@ export const shouldShowCapturePaymentButton = (
 export const getAmountColor = (type: string, theme: Theme): string => {
   switch (type) {
     case 'positive':
-      return `${theme.colors.feedback.text.positive.lowContrast}`;
+      return `${theme.colors.feedback.text.positive.intense}`;
     case 'negative':
-      return `${theme.colors.feedback.text.negative.lowContrast}`;
+      return `${theme.colors.feedback.text.negative.intense}`;
     default:
-      return `${theme.colors.surface.text.normal.lowContrast}`;
+      return `${theme.colors.surface.text.gray.normal}`;
   }
 };
 
-export const getBaseVariant = (status: IPaymentDetails['status']): BadgeProps['variant'] => {
+export const getBaseVariant = (status: IPaymentDetails['status']): BadgeProps['color'] => {
   switch (status) {
     case PaymentStatus.CREATED:
       return 'notice';
@@ -396,13 +396,13 @@ export const getRefundsOverviewDetails = (paymentRefundDetails: any) => {
     const refund = paymentRefundDetails[0];
     const createdAt = getTime(refund.created_at).join(', ');
     return (
-      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
-        Refund of ₹{getFormattedAmount(refund.amount, refund.currency)} issued on {createdAt}
+      <Text color="surface.text.gray.normal" weight="semibold" size="small">
+        Refund of ₹{getFormattedAmount(refund.amount, refund.currency)}issued on{createdAt}
       </Text>
     );
   } else {
     return (
-      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
+      <Text color="surface.text.gray.normal" weight="semibold" size="small">
         Multiple refunds issued to the customer
       </Text>
     );
@@ -457,7 +457,7 @@ export const getDisputesOverviewDetails = (paymentDetails: any, viewDisputeCallb
         break;
     }
     return (
-      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
+      <Text color="surface.text.gray.normal" weight="semibold" size="small">
         {info}{' '}
         <Link
           iconPosition="right"
@@ -480,7 +480,7 @@ export const getDisputesOverviewDetails = (paymentDetails: any, viewDisputeCallb
     );
   } else {
     return (
-      <Text color="surface.text.normal.lowContrast" weight="bold" size="small">
+      <Text color="surface.text.gray.normal" weight="semibold" size="small">
         Multiple disputes exist for this payment
       </Text>
     );

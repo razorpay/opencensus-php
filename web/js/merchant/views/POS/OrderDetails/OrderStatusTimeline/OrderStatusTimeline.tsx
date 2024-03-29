@@ -14,11 +14,11 @@ const StatusIcon = ({ status }): JSX.Element => {
     switch (status) {
       case 'active':
       case 'done':
-        return <CheckIcon color="feedback.icon.positive.lowContrast" size="large" />;
+        return <CheckIcon color="feedback.icon.positive.intense" size="large" />;
       case 'failed':
-        return <SlashIcon color="feedback.icon.negative.lowContrast" size="large" />;
+        return <SlashIcon color="feedback.icon.negative.intense" size="large" />;
       default:
-        return <ClockIcon color="feedback.icon.neutral.lowContrast" size="large" />;
+        return <ClockIcon color="feedback.icon.neutral.intense" size="large" />;
     }
   };
   return <IconContainer status={status}>{renderIcon()}</IconContainer>;
@@ -88,7 +88,7 @@ const OrderStatusTimeline = ({ orderDetails }: OrderStatusTimelineProps): JSX.El
                     {toTitleCase(stage.name)}
                   </OrderStatusContainer>
                   <Box maxWidth="200px">
-                    <Text size="small" type="subdued">
+                    <Text size="small" color="surface.text.gray.muted">
                       {descriptionFn?.(orderDetails)}
                     </Text>
                   </Box>
@@ -109,7 +109,12 @@ const OrderStatusTimeline = ({ orderDetails }: OrderStatusTimelineProps): JSX.El
           </Box>
           {!isMobileOrTablet ? (
             <Box height="30px" maxWidth="200px">
-              <Text size="small" marginTop="spacing.4" type="subdued" textAlign="center">
+              <Text
+                size="small"
+                marginTop="spacing.4"
+                textAlign="center"
+                color="surface.text.gray.muted"
+              >
                 {descriptionFn?.(orderDetails)}
               </Text>
             </Box>

@@ -113,7 +113,10 @@ export default function ProcessRunsDetail({ activeProcess, openRunDetail }) {
                   <td>
                     {item?.status.toLowerCase() === 'completed' ? (
                       <Link onClick={() => downloadReport(item?.id)} marginRight="spacing.4">
-                        <DownloadIcon color="brand.primary.500" marginRight="spacing.2" />
+                        <DownloadIcon
+                          color="interactive.icon.primary.normal"
+                          marginRight="spacing.2"
+                        />
                         Download Report
                       </Link>
                     ) : null}

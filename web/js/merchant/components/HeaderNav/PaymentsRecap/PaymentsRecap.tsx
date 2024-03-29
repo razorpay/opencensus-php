@@ -214,11 +214,11 @@ const PaymentsRecap: React.FC<{
                   alignItems="center"
                   paddingX="spacing.5"
                 >
-                  <Text color="white.action.text.tertiary.default" size="large" weight="bold">
+                  <Text color="interactive.text.staticWhite.normal" size="large" weight="semibold">
                     Share to
                   </Text>
                   <IconButton
-                    icon={() => <CloseIcon color="action.icon.link.disabled" />}
+                    icon={() => <CloseIcon color="interactive.icon.primary.disabled" />}
                     onClick={() => setIsBottomSheetOpen(false)}
                     accessibilityLabel="share-drawer-close"
                   />

@@ -51,7 +51,7 @@ export const SummaryWidget = styled.div(
   }
   .value {
     font-size: 18px;
-    font-weight: 700;
+    font-weight: 600;
     display: flex;
     justify-content: flex-end;
   }

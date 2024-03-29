@@ -29,7 +29,7 @@ const EcosystemMethodSummary = ({
         <div className="downtime-summary-item">
           <div className="downtime-summary-header-container">
             {STATUS.operational.icon}{' '}
-            <Text size="small" weight="bold">
+            <Text size="small" weight="semibold">
               All instruments are functional
             </Text>
           </div>
@@ -56,7 +56,7 @@ const EcosystemMethodSummary = ({
                 aria-label="method-summary-heading"
               >
                 {icon}
-                <Text size="small" weight="bold">
+                <Text size="small" weight="semibold">
                   {heading}
                 </Text>
               </div>
@@ -70,14 +70,14 @@ const EcosystemMethodSummary = ({
           {isExpanded ? (
             <div data-testid="show-less-summary" onClick={handleOnShowClick}>
               <small>Show less</small>
-              <ChevronUpIcon color="action.icon.secondary.default" size="medium" />
+              <ChevronUpIcon color="interactive.icon.primary.normal" size="medium" />
             </div>
           ) : (
             <>
               <small>{`+${groupedDowntimes.length - 1} others`}</small>
               <div data-testid="show-more-summary" onClick={handleOnShowClick}>
                 <small>Show other downtimes </small>
-                <ChevronDownIcon color="action.icon.secondary.default" size="medium" />
+                <ChevronDownIcon color="interactive.icon.primary.normal" size="medium" />
               </div>
             </>
           )}

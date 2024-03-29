@@ -87,7 +87,7 @@ const ChooseOAuthApp = ({
           display="flex"
           flexDirection="column"
           justifyContent="center"
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
         >
           {applications?.map(({ id, name, logo_url, created_at, hasInvalidAppSetting }) => {
             const onAppClick = () => {
@@ -99,7 +99,7 @@ const ChooseOAuthApp = ({
                 key={id}
                 elevation="midRaised"
                 padding="spacing.3"
-                surfaceLevel={2}
+                backgroundColor="surface.background.gray.moderate"
                 as="label"
                 accessibilityLabel={name}
                 isSelected={id === selectedApp?.application_id}
@@ -139,14 +139,14 @@ const ChooseOAuthApp = ({
                               />
                             </Box>
                             <Box>
-                              <Text type="subdued" weight="bold">
+                              <Text weight="semibold" color="surface.text.gray.muted">
                                 {name}
                               </Text>
-                              <Text type="subdued">App Id : {id}</Text>
-                              <Text type="subdued">
+                              <Text color="surface.text.gray.muted">App Id : {id}</Text>
+                              <Text color="surface.text.gray.muted">
                                 Created on : <Time value={created_at} format="DD MMM YYYY" />
                               </Text>
-                              <Text type="subdued">
+                              <Text color="surface.text.gray.muted">
                                 {hasInvalidAppSetting ? (
                                   <ConditionalTooltip
                                     showTooltip={hasInvalidAppSetting}
@@ -160,7 +160,7 @@ const ChooseOAuthApp = ({
                                       <InfoIcon
                                         marginLeft="spacing.2"
                                         size="small"
-                                        color="feedback.icon.neutral.lowContrast"
+                                        color="feedback.icon.neutral.intense"
                                       />
                                     </Box>
                                   </ConditionalTooltip>

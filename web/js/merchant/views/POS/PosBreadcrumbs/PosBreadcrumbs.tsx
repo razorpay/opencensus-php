@@ -32,12 +32,12 @@ const PosBreadcrumbs = (): JSX.Element => {
       {steps.map(({ link, label }, index) => (
         <Box key={link} display="flex" alignItems="center">
           {index === steps.length - 1 ? (
-            <Text type="subdued" marginRight="spacing.4">
+            <Text marginRight="spacing.4" color="surface.text.gray.muted">
               {label}
             </Text>
           ) : (
             <Link to={link}>
-              <Text type="subdued" marginRight="spacing.4">
+              <Text marginRight="spacing.4" color="surface.text.gray.muted">
                 {label}
               </Text>
             </Link>
@@ -45,7 +45,7 @@ const PosBreadcrumbs = (): JSX.Element => {
           {index !== steps.length - 1 ? (
             <ChevronRightIcon
               size="medium"
-              color="surface.text.subdued.lowContrast"
+              color="interactive.icon.gray.muted"
               marginRight="spacing.4"
             />
           ) : null}

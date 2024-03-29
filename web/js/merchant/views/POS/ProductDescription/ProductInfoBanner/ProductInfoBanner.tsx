@@ -1,10 +1,10 @@
 import React from 'react';
-import { Box, Heading } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
+import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 import { InfoBanner } from 'merchant/views/POS/types';
 import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
-import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 type ProductInfoBanner = {
   infoBanner: InfoBanner;
@@ -51,14 +51,15 @@ const ProductInfoBanner = ({ infoBanner }: ProductInfoBanner): JSX.Element => {
             width="285px"
           >
             <img src={icon} width="28" />
-            <Heading
-              weight="bold"
+            <Text
+              weight="semibold"
               textAlign={isLargeScreen ? 'left' : 'center'}
               marginTop="spacing.2"
-              color="surface.text.subtle.lowContrast"
+              color="surface.text.gray.subtle"
+              size="large"
             >
               {text}
-            </Heading>
+            </Text>
           </Box>
         ))}
       </Box>

@@ -49,7 +49,7 @@ const SelectProduct = ({
           display="flex"
           flexDirection="column"
           justifyContent="center"
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
         >
           {productTypeVisibilityMap[PRODUCT_TYPE.PG] ? (
             <div onClick={() => setProductType(PRODUCT_TYPE.PG)}>
@@ -59,8 +59,8 @@ const SelectProduct = ({
                 gap="spacing.5"
                 justifyContent="center"
                 padding="spacing.6"
-                backgroundColor="surface.background.level2.lowContrast"
-                borderColor="surface.border.normal.lowContrast"
+                backgroundColor="surface.background.gray.intense"
+                borderColor="surface.border.gray.muted"
                 borderWidth="thin"
               >
                 <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -72,7 +72,7 @@ const SelectProduct = ({
                   >
                     <Box display="flex" flexDirection="column" gap="spacing.2">
                       <Box display="flex" flexDirection="column" gap="spacing.2">
-                        <Text weight="bold">{orgName} Payments</Text>
+                        <Text weight="semibold">{orgName} Payments</Text>
                         <Text size="small">
                           Refer merchants to {orgName} Payment gateway and other products to receive
                           payments
@@ -93,8 +93,8 @@ const SelectProduct = ({
                 gap="spacing.5"
                 justifyContent="center"
                 padding="spacing.6"
-                backgroundColor="surface.background.level2.lowContrast"
-                borderColor="surface.border.normal.lowContrast"
+                backgroundColor="surface.background.gray.intense"
+                borderColor="surface.border.gray.muted"
                 borderWidth="thin"
               >
                 <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -106,7 +106,7 @@ const SelectProduct = ({
                   >
                     <Box display="flex" flexDirection="column" gap="spacing.2">
                       <Box display="flex" flexDirection="column" gap="spacing.2">
-                        <Text weight="bold">{orgName} POS</Text>
+                        <Text weight="semibold">{orgName} POS</Text>
                         <Text size="small">
                           Refer merchants to {orgName} POS, a robust payment ecosystem and receive
                           competitive commissions.
@@ -128,8 +128,8 @@ const SelectProduct = ({
                 gap="spacing.5"
                 justifyContent="center"
                 padding="spacing.6"
-                backgroundColor="surface.background.level2.lowContrast"
-                borderColor="surface.border.normal.lowContrast"
+                backgroundColor="surface.background.gray.intense"
+                borderColor="surface.border.gray.muted"
                 borderWidth="thin"
               >
                 <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -141,7 +141,7 @@ const SelectProduct = ({
                   >
                     <Box display="flex" flexDirection="column" gap="spacing.2">
                       <Box display="flex" flexDirection="column" gap="spacing.2">
-                        <Text weight="bold">{xProductName}</Text>
+                        <Text weight="semibold">{xProductName}</Text>
                         <Text size="small">
                           Refer merchants to {xProductName} products like Current account to process
                           payouts
@@ -163,8 +163,8 @@ const SelectProduct = ({
                 gap="spacing.5"
                 justifyContent="center"
                 padding="spacing.6"
-                backgroundColor="surface.background.level2.lowContrast"
-                borderColor="surface.border.normal.lowContrast"
+                backgroundColor="surface.background.gray.intense"
+                borderColor="surface.border.gray.muted"
                 borderWidth="thin"
               >
                 <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -176,7 +176,7 @@ const SelectProduct = ({
                   >
                     <Box display="flex" flexDirection="column" gap="spacing.2">
                       <Box display="flex" flexDirection="column" gap="spacing.2">
-                        <Text weight="bold">Line of credit</Text>
+                        <Text weight="semibold">Line of credit</Text>
                         <Text size="small">
                           Refer merchants to {orgName} Payment gateway and other products to receive
                           payments

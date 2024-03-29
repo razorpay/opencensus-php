@@ -50,7 +50,7 @@ function SettingModal({
     <div className={`cod-settings-modal ${className}`}>
       <ModalHeader title={header} extraClass="no-padding" onCloseClick={closeModal} />
       <div className="name-container">
-        <Text weight="bold">{variant} name</Text>
+        <Text weight="semibold">{variant} name</Text>
         <div class="name-input">
           <input
             data-testid="name-input"

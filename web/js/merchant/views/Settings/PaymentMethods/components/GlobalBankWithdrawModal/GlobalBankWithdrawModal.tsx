@@ -1,41 +1,41 @@
 // Core
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 ///- Core
 
 // Redux
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
 import * as actions from 'merchant/reducers/b2bExports/actions';
 import { showNotification as showNotificationAction } from 'merchant_common/reducers/notifications';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 ///- Redux
 
 // Blade Components
 import {
-  Heading,
   Button,
   CloseIcon,
-  IconButton,
-  TextInput,
   DollarIcon,
-  Text,
+  Heading,
+  IconButton,
   Spinner,
+  Text,
+  TextInput,
 } from '@razorpay/blade/components';
 ///- Blade Components
 
 // Styled components
 import {
-  Wrapper,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  FormRow,
   AmountRow,
+  FormRow,
   LoaderOverlay,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  Wrapper,
 } from './styles';
 ///- Styled components
 
 // types
-import type { GlobalBankWithdrawModalProps, BeneficiaryDetailType } from './types';
+import type { BeneficiaryDetailType, GlobalBankWithdrawModalProps } from './types';
 ///- types
 
 function GlobalBankWithdrawModal({
@@ -135,7 +135,7 @@ function GlobalBankWithdrawModal({
   return (
     <Wrapper>
       <ModalHeader>
-        <Heading size="medium">Withdraw Money</Heading>
+        <Heading size="small">Withdraw Money</Heading>
         <IconButton icon={CloseIcon} accessibilityLabel="Close" onClick={onClose} />
       </ModalHeader>
       <ModalBody>
@@ -167,7 +167,7 @@ function GlobalBankWithdrawModal({
           />
         </FormRow>
         <FormRow>
-          <Text size="small" type="muted">
+          <Text size="small" color="surface.text.gray.muted">
             For any concern with your above beneficiary account details, please reach out to your
             account manager.
           </Text>

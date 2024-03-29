@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { Amount, Box, ChevronDownIcon, ChevronUpIcon, Text } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
-
-import AmountWithStrikeThrough from 'merchant/views/POS/ProductDescription/ProductPriceCards/AmountWithStrikeThrough';
-
 import { DetailedPricingContent, DetailedPricingHeader, PricingRowOfferTag } from './styles';
 
 type PricingProps = {
@@ -59,7 +56,7 @@ const PricingRow = ({
         >
           <Box display="flex" alignItems="center">
             {typeof title === 'string' ? (
-              <Text weight={isCollapsibleHeader ? 'bold' : 'regular'}>{title} </Text>
+              <Text weight={isCollapsibleHeader ? 'semibold' : 'regular'}>{title} </Text>
             ) : (
               title
             )}
@@ -68,14 +65,14 @@ const PricingRow = ({
                 {isExpanded ? (
                   <ChevronUpIcon
                     size="medium"
-                    color="surface.text.subdued.lowContrast"
+                    color="interactive.icon.gray.muted"
                     marginTop="spacing.1"
                     marginX="spacing.2"
                   />
                 ) : (
                   <ChevronDownIcon
                     size="medium"
-                    color="surface.text.subdued.lowContrast"
+                    color="interactive.icon.gray.muted"
                     marginTop="spacing.1"
                     marginX="spacing.2"
                   />
@@ -94,15 +91,17 @@ const PricingRow = ({
       <DetailedPricingContent isExpanded={isExpanded}>
         {isExpanded && (offerRows ?? []).length > 0 ? (
           <Box
-            backgroundColor="surface.background.level1.lowContrast"
+            backgroundColor="surface.background.gray.subtle"
             marginBottom="spacing.5"
             padding="spacing.4"
           >
             <PricingRowOfferTag isPartnerPricing={isPartnerPricing}>
               <Text
                 size="small"
-                weight="bold"
-                color={isPartnerPricing ? 'feedback.text.notice.lowContrast' : 'brand.primary.500'}
+                weight="semibold"
+                color={
+                  isPartnerPricing ? 'feedback.text.notice.intense' : 'surface.text.primary.normal'
+                }
               >
                 {isPartnerPricing ? 'Partner Offer Applied' : 'Offer Applied'}
               </Text>
@@ -127,7 +126,17 @@ const PricingRow = ({
                   </Box>
                   <Box>
                     {prevValue !== null ? (
-                      <AmountWithStrikeThrough value={prevValue} size="body-small-bold" />
+                      <Amount
+                        value={prevValue}
+                        isAffixSubtle={false}
+                        suffix="none"
+                        marginRight="spacing.2"
+                        isStrikethrough={true}
+                        color="surface.text.gray.muted"
+                        type="body"
+                        size="small"
+                        weight="semibold"
+                      />
                     ) : null}
                     {!isRenderValuePlanText ? (
                       <Amount value={value} isAffixSubtle={false} suffix="none" />

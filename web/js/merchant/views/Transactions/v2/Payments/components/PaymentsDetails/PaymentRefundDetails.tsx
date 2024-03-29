@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  Card,
-  CardBody,
-  Divider,
-  Heading,
-  Text,
-  useTheme,
-} from '@razorpay/blade/components';
+import { Box, Button, Card, CardBody, Divider, Text, useTheme } from '@razorpay/blade/components';
 import { bindActionCreators, compose } from 'redux';
 import { connect } from 'react-redux';
 import React from 'react';
@@ -146,9 +137,14 @@ function PaymentRefundDetails({
       {paymentIdRefundDetails.length >= 0 && (
         <Box>
           <SectionHeader>
-            <Heading type="normal" size="small" weight="bold" contrast="low">
+            <Text
+              testID="refund-heading"
+              weight="semibold"
+              size="large"
+              color="surface.text.gray.normal"
+            >
               Refund
-            </Heading>
+            </Text>
             <Button
               size="small"
               variant="secondary"
@@ -171,7 +167,12 @@ function PaymentRefundDetails({
             <CardWrapper enableBorderBottomRadius>
               <Card padding="spacing.5">
                 <CardBody>
-                  <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                  >
                     {getRefundInfoText()}
                   </Text>
                 </CardBody>
@@ -237,8 +238,13 @@ function PaymentRefundContent({
           <CardBody>
             <RowsWrapper>
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
-                  Refund ID <Tooltip type="refundId" size="small" />
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
+                  Refund ID <Tooltip size="small" />
                 </Text>
                 <CopyWrapper
                   onClick={onCopy('Refund ID', { transactionIDActual, refundId: refund.id }).bind(
@@ -246,15 +252,25 @@ function PaymentRefundContent({
                     refund.id,
                   )}
                 >
-                  <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="semibold"
+                    color="surface.text.gray.normal"
+                  >
                     {refund.id}
                   </Text>
                 </CopyWrapper>
               </RowWrapper>
-              <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
-                  ARN/RRN <Tooltip type="rrnARN" size="small" />
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
+                  ARN/RRN <Tooltip size="small" />
                 </Text>
                 {bankCode ? (
                   <CopyWrapper
@@ -264,51 +280,85 @@ function PaymentRefundContent({
                     )}
                   >
                     <Text
-                      type="normal"
                       variant="body"
                       size="medium"
                       weight="regular"
-                      contrast="low"
+                      color="surface.text.gray.normal"
                     >
                       {bankCode}
                     </Text>
                   </CopyWrapper>
                 ) : (
-                  <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.normal"
+                  >
                     --
                   </Text>
                 )}
               </RowWrapper>
-              <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
                   Amount
                 </Text>
                 <StyledAmountWrapper data-testid="amount" type="regular" fontSize="14">
                   <Amount value={refund.amount} currency={currency} />
                 </StyledAmountWrapper>
               </RowWrapper>
-              <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
                   Refund speed
                 </Text>
-                <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.normal"
+                >
                   {getRefundSpeed()}
                 </Text>
               </RowWrapper>
-              <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
                   Issued on
                 </Text>
-                <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.normal"
+                >
                   {createdAt}
                 </Text>
               </RowWrapper>
-              <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
-                <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
                   Timeline
                 </Text>
                 <StyledRefundTimelineContainer marginTop={isDesktop ? '-15px' : '0px'}>
@@ -322,7 +372,7 @@ function PaymentRefundContent({
       {/* Show only if payment is intiated */}
       {showFooter && (
         <SectionFooter>
-          <Text type="subtle" variant="body" size="small" weight="regular" contrast="low">
+          <Text variant="body" size="small" weight="regular" color="surface.text.gray.subtle">
             *Refund amount is deducted from your Razorpay current balance after getting processed
           </Text>
         </SectionFooter>

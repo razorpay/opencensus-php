@@ -7,17 +7,17 @@ const CreditSettlement = ({ isMobile }: FaqInterface): JSX.Element => {
   return (
     <StyledFaqContent>
       {!isMobile && (
-        <Text weight="bold" marginBottom="spacing.2">
+        <Text weight="semibold" marginBottom="spacing.2">
           How to know if settlements are credited to my bank account?
         </Text>
       )}
-      <Text type="subtle">
+      <Text color="surface.text.gray.subtle">
         You can track your settlement or contact your bank using the UTR number as a reference. It
         is in the settlement section alongside each settlement ID and when you download settlement
         reports from the ‘Reports’ section.
       </Text>
       <TextLink>
-        <Text marginRight="spacing.2" type="subtle">
+        <Text marginRight="spacing.2" color="surface.text.gray.subtle">
           To know more about settlements, check our
         </Text>
         <Link
@@ -29,11 +29,11 @@ const CreditSettlement = ({ isMobile }: FaqInterface): JSX.Element => {
         </Link>
       </TextLink>
       <Alert
-        contrast="low"
+        emphasis="subtle"
         description="Note: UTR is a unique transaction reference number available across banks, which can be used to track a specific settlement in your bank account."
-        intent="information"
         marginTop="spacing.4"
         isDismissible={false}
+        color="information"
       />
     </StyledFaqContent>
   );

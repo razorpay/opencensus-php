@@ -45,11 +45,11 @@ const FeeRuleSelector = ({
   return (
     <ActionSelector>
       <Box display="flex" justifyContent="space-between" marginBottom="spacing.2">
-        <Text type="subdued" weight="bold">
+        <Text weight="semibold" color="surface.text.gray.muted">
           Order Range
         </Text>
         <Box width="35px">
-          <Text type="subdued" weight="bold">
+          <Text weight="semibold" color="surface.text.gray.muted">
             Fee
           </Text>
         </Box>

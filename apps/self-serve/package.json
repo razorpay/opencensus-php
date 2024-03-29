@@ -28,7 +28,7 @@
     "test:e2e": "universe-test web-e2e test"
   },
   "dependencies": {
-    "@razorpay/blade": "10.18.0",
+    "@razorpay/blade": "11.6.2",
     "@razorpay/universe-cli": "17.2.0",
     "prop-types": "15.7.2",
     "react-chartjs-2": "2.11.1",

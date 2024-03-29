@@ -21,8 +21,6 @@ describe('testing convert category field', () => {
 
   test('should be able to change the dropdown value', async () => {
     const setState = jest.fn();
-    jest.spyOn(React, 'useState').mockImplementationOnce((initState) => [initState, setState]);
-
     renderApp({ convertRiskCategory: 'high', setConvertRiskCategory: setState });
 
     const fieldElement = screen.getByRole('combobox');

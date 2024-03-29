@@ -38,9 +38,8 @@ describe('WhatsappSetup - InitiateSetup', () => {
 
   test('should show connecting existing WABA and create new account CTA', () => {
     renderApp();
-    expect(
-      screen.getByRole('heading', { name: 'Continue by linking your existing WABA account' }),
-    ).toBeInTheDocument();
+
+    expect(screen.getByText('Continue by linking your existing WABA account')).toBeInTheDocument();
     expect(screen.getByText('Don’t have an account?')).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Create Whatsapp Business Account' }),
@@ -50,9 +49,7 @@ describe('WhatsappSetup - InitiateSetup', () => {
   test('should show connecting existing WABA and create new account CTA in mobile', () => {
     (useMobile as jest.Mock).mockImplementation(() => true);
     renderApp();
-    expect(
-      screen.getByRole('heading', { name: 'Continue by linking your existing WABA account' }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Continue by linking your existing WABA account')).toBeInTheDocument();
     expect(screen.getByText('Don’t have an account?')).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Create Whatsapp Business Account' }),

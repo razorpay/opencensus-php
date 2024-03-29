@@ -8,24 +8,24 @@ export const ProductCardWidgetLoader = () => (
     display="flex"
     flexDirection="column"
     testID="product-card-loader"
-    borderColor="surface.border.normal.lowContrast"
+    borderColor="surface.border.gray.muted"
     borderWidth="thinner"
     borderRadius="medium"
   >
     <Box
       height="300px"
-      backgroundColor="brand.gray.200.lowContrast"
+      backgroundColor="surface.background.gray.moderate"
       borderTopLeftRadius="medium"
       borderTopRightRadius="medium"
     />
     <Box
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       height="116px"
       display="flex"
       flexDirection="column"
       gap="spacing.4"
       padding="spacing.5"
-      borderTopColor="surface.border.normal.lowContrast"
+      borderTopColor="surface.border.gray.muted"
       borderBottomLeftRadius="medium"
       borderBottomRightRadius="medium"
     >

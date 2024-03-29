@@ -7,8 +7,8 @@ import { CollapsibleIcon } from 'merchant/views/Settlements/v3/components/FAQs/s
 import { BreakupDetailsInterface } from 'merchant/views/Settlements/v3/typings';
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { getBreakUpDetails } from './config';
 import BreakupShimmer from './Shimmer';
+import { getBreakUpDetails } from './config';
 import { BreakupHeader, StyledBox, StyledDivider } from './styled';
 
 const Breakup = ({
@@ -39,11 +39,11 @@ const Breakup = ({
       width="100%"
       flexDirection="column"
       flex="1.8"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       minWidth={{ base: 'spacing.0', m: '410px' }}
     >
       <BreakupHeader>
-        <Heading size="medium" weight="bold">
+        <Heading weight="semibold" size="small">
           Breakup
         </Heading>
       </BreakupHeader>
@@ -55,18 +55,18 @@ const Breakup = ({
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <StyledBox onClick={toggleDrawer.bind(null, 'gross')}>
             <Box display="flex" alignItems="center" gap={{ base: '5px' }}>
-              <Text size="medium" weight="bold" color="feedback.text.positive.lowContrast">
+              <Text size="medium" weight="semibold" color="feedback.text.positive.intense">
                 Gross settlement
               </Text>
               <CollapsibleIcon open={collapseState.gross}>
-                <ChevronDownIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                <ChevronDownIcon size="medium" color="feedback.icon.neutral.intense" />
               </CollapsibleIcon>
             </Box>
           </StyledBox>
           <Amount
             amount={grossSettlements.amount}
             type="breakup"
-            color="feedback.text.positive.lowContrast"
+            color="feedback.text.positive.intense"
             currency={currency}
             operator="+"
           />
@@ -86,11 +86,11 @@ const Breakup = ({
                   }}
                 >
                   <Box display="flex" alignItems="center" gap={{ base: '5px' }}>
-                    <Text size="medium" type="subtle">
+                    <Text size="medium" color="surface.text.gray.subtle">
                       {each.name}
                     </Text>
                     <div>
-                      <InfoIcon size="small" color="feedback.icon.neutral.lowContrast" />
+                      <InfoIcon size="small" color="feedback.icon.neutral.intense" />
                       {each.tooltipInfo && (
                         <Popover theme="dark" align="top">
                           <PopoverBody>
@@ -112,18 +112,18 @@ const Breakup = ({
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <StyledBox onClick={toggleDrawer.bind(null, 'deduction')}>
                 <Box display="flex" alignItems="center" gap={{ base: '5px' }}>
-                  <Text size="medium" weight="bold" color="feedback.text.negative.lowContrast">
+                  <Text size="medium" weight="semibold" color="feedback.text.negative.intense">
                     Deductions
                   </Text>
                   <CollapsibleIcon open={collapseState.deduction}>
-                    <ChevronDownIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                    <ChevronDownIcon size="medium" color="feedback.icon.neutral.intense" />
                   </CollapsibleIcon>
                 </Box>
               </StyledBox>
               <Amount
                 amount={deductions.amount}
                 type="breakup"
-                color="feedback.text.negative.lowContrast"
+                color="feedback.text.negative.intense"
                 currency={currency}
                 operator="-"
               />
@@ -143,11 +143,11 @@ const Breakup = ({
                       }}
                     >
                       <Box display="flex" alignItems="center" gap={{ base: '5px' }}>
-                        <Text size="medium" type="subtle">
+                        <Text size="medium" color="surface.text.gray.subtle">
                           {each.name}
                         </Text>
                         <div>
-                          <InfoIcon size="small" color="feedback.icon.neutral.lowContrast" />
+                          <InfoIcon size="small" color="feedback.icon.neutral.intense" />
                           {each.tooltipInfo && (
                             <Popover theme="dark" align="top">
                               <PopoverBody>
@@ -173,7 +173,7 @@ const Breakup = ({
           alignItems="center"
           marginTop={{ base: 'spacing.3' }}
         >
-          <Text size="medium" weight="bold">
+          <Text size="medium" weight="semibold">
             Net settlement
           </Text>
           <Amount amount={netSettlements.amount} type="net" currency={currency} />

@@ -12,10 +12,7 @@ export const CarouselWidgetLoader: React.FC<Omit<CarouselWidgetProps, 'type'>> =
 }): JSX.Element => (
   <CarouselWidgetWrapper background_img={background_img} data-testid="product-card-loader">
     <Box display="flex" gap="spacing.2" marginBottom="spacing.6">
-      <Heading
-        size="large"
-        color={background_img ? 'feedback.text.information.highContrast' : undefined}
-      >
+      <Heading color={background_img ? 'surface.text.staticWhite.normal' : undefined} size="medium">
         {title}
       </Heading>
     </Box>

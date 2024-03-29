@@ -292,7 +292,7 @@ const NeedsClarification = ({
       />
       <UploadContainer>
         {isMultiple && (
-          <Text size="small" type="subdued" weight="bold">
+          <Text size="small" weight="semibold" color="surface.text.gray.muted">
             You can upload multiple documents below
           </Text>
         )}

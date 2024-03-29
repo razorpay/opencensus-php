@@ -17,13 +17,15 @@ const TimelineCardWithAmount: React.FC<ITimelineItemWithAmount> = ({
 }) => {
   return (
     <Box display="flex" flexDirection="column" gap="spacing.2">
-      <Text size="medium" weight="bold">
+      <Text size="medium" weight="semibold">
         {heading}
       </Text>
       <Amount
         value={i18CurrencyConversionFromMinorUnitToCommonUnit(amount, currency)}
         currency={currency}
-        size="heading-large-bold"
+        type="heading"
+        size="medium"
+        weight="semibold"
       />
       <Box
         display="flex"
@@ -33,7 +35,7 @@ const TimelineCardWithAmount: React.FC<ITimelineItemWithAmount> = ({
       >
         <Status status={status} />
         <Dot />
-        <Text type="subtle" size="medium" weight="bold">
+        <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
           {subheading}
         </Text>
         {action ? (

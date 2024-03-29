@@ -1,4 +1,4 @@
-import { Heading, Link, Text } from '@razorpay/blade/components';
+import { Link, Text } from '@razorpay/blade/components';
 import Collapsible from 'common/components/Collapsible';
 import { titleCase } from 'common/utils/rzp-utils';
 import Divider from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Divider';
@@ -40,9 +40,9 @@ const ProfileView = ({
         <ProfileDetail>
           <ProfilePhoto imageUrl={imageUrl} />
           <Details>
-            <Heading size="small">{loggedInUserName ? titleCase(loggedInUserName) : '--'}</Heading>
+            <Text size="large">{loggedInUserName ? titleCase(loggedInUserName) : '--'}</Text>
             {userRole && (
-              <Text type="subdued" size="small">
+              <Text size="small" color="surface.text.gray.muted">
                 {userRole}
               </Text>
             )}
@@ -65,12 +65,12 @@ const ProfileView = ({
     </MobileProfileContainer>
   ) : (
     <ProfileContainer>
-      <Heading size="small">Your profile</Heading>
+      <Text size="large">Your profile</Text>
       <ProfileContent>
         <UserProfile>
           <ProfilePhoto imageUrl={imageUrl} />
           <Details>
-            <Heading size="small">{loggedInUserName ? titleCase(loggedInUserName) : '--'}</Heading>
+            <Text size="large">{loggedInUserName ? titleCase(loggedInUserName) : '--'}</Text>
             {userRole && <Subheading>{userRole}</Subheading>}
             <MerchantDetails merchantId={merchantId} isMobile={isMobile} />
             <Divider />

@@ -26,14 +26,14 @@ const InfoIcon = lazy(() =>
 
 export const carouselDataWidgetIconMap = {
   failed: (): JSX.Element => (
-    <AlertTriangleIcon color="feedback.icon.negative.lowContrast" size="large" />
+    <AlertTriangleIcon color="feedback.icon.negative.intense" size="large" />
   ),
   need_clarification: () => (
-    <AlertTriangleIcon color="feedback.icon.negative.lowContrast" size="large" />
+    <AlertTriangleIcon color="feedback.icon.negative.intense" size="large" />
   ),
   closed: (): JSX.Element => (
-    <CheckCircleIcon color="feedback.icon.positive.lowContrast" size="large" />
+    <CheckCircleIcon color="feedback.icon.positive.intense" size="large" />
   ),
-  open: (): JSX.Element => <BellIcon color="feedback.icon.neutral.lowContrast" size="large" />,
-  info: (): JSX.Element => <InfoIcon color="feedback.icon.neutral.lowContrast" size="large" />,
+  open: (): JSX.Element => <BellIcon color="feedback.icon.neutral.intense" size="large" />,
+  info: (): JSX.Element => <InfoIcon color="feedback.icon.neutral.intense" size="large" />,
 };

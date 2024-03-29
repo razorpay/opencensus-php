@@ -196,7 +196,7 @@ const LandingAnalytics = ({
         justifyContent="space-between"
       >
         <Box display="flex" flexDirection="row" gap="spacing.2">
-          <Text type="normal" weight="bold" contrast="low">
+          <Text weight="semibold" color="surface.text.gray.normal">
             Overview
           </Text>
           <Dropdown

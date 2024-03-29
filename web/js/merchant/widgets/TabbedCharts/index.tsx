@@ -69,7 +69,7 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
       gap="spacing.5"
       padding={['spacing.6', 'spacing.0', 'spacing.6', 'spacing.0']}
       marginX={{ base: 'spacing.0', m: 'spacing.6' }}
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       borderRadius="large"
     >
       <Box
@@ -79,7 +79,7 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
         margin={['spacing.0', 'spacing.5']}
         alignItems="center"
       >
-        <Heading size="large">{title}</Heading>
+        <Heading size="medium">{title}</Heading>
         {input &&
           renderInput({
             widget: input,

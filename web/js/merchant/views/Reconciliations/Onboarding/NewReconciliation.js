@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Title,
   Card,
   CardBody,
   Heading,
@@ -230,16 +229,18 @@ function NewReconciliation({ fileConfigs, reconType, handleCtaClick, showNotific
   return (
     <Card margin="spacing.6">
       <CardBody>
-        <Title>Upload Sample</Title>
+        <Heading size="large">Upload Sample</Heading>
         <Box marginBottom="spacing.6" />
         <Divider marginBottom="spacing.6" />
         <Box width="480px">
           <Box display="flex" justifyContent="space-between" marginBottom="spacing.4">
             <Box>
-              <Heading marginBottom="spacing.2">Add transaction and bank records</Heading>
+              <Text marginBottom="spacing.2" size="large">
+                Add transaction and bank records
+              </Text>
             </Box>
           </Box>
-          <Text type="subdued" size="small">
+          <Text size="small" color="surface.text.gray.muted">
             You’ll need to provide the following records:
           </Text>
           <List size="small">
@@ -252,7 +253,7 @@ function NewReconciliation({ fileConfigs, reconType, handleCtaClick, showNotific
               key={config.master_source_id}
               marginTop="spacing.6"
               textAlign="center"
-              backgroundColor="brand.primary.300"
+              backgroundColor="surface.background.primary.subtle"
               padding="spacing.6"
               borderRadius="medium"
               onDrop={(e) => handleDrop(e, config.master_source_id, config.source_name, index)}
@@ -267,14 +268,14 @@ function NewReconciliation({ fileConfigs, reconType, handleCtaClick, showNotific
                 </Box>
               ) : (
                 <>
-                  <UploadIcon color="brand.primary.500" />
-                  <Heading weight="regular">
+                  <UploadIcon color="interactive.icon.primary.normal" />
+                  <Text weight="regular" size="large">
                     <Link href="#" onClick={() => inputRefs.current[index].click()}>
                       Browse
                     </Link>{' '}
                     or drag & drop file here
-                  </Heading>
-                  <Text type="subdued" size="small">
+                  </Text>
+                  <Text size="small" color="surface.text.gray.muted">
                     {getReadableFromKey(config.source_name)}
                   </Text>
                   <input
@@ -312,13 +313,13 @@ function NewReconciliation({ fileConfigs, reconType, handleCtaClick, showNotific
             />
             <ModalBody padding="spacing.0">
               {filesUploadData[isOpen]?.mappingData?.required_schema ? (
-                <Box padding="spacing.6" backgroundColor="surface.background.level1.lowContrast">
+                <Box padding="spacing.6" backgroundColor="surface.background.gray.subtle">
                   <Box display="flex" alignItems="center" justifyContent="space-between">
                     <Box>
-                      <Text weight="bold">Required Data</Text>
+                      <Text weight="semibold">Required Data</Text>
                     </Box>
                     <Box width="200px">
-                      <Text weight="bold">Column Name</Text>
+                      <Text weight="semibold">Column Name</Text>
                     </Box>
                   </Box>
                   {filesUploadData[isOpen]?.mappingData?.required_schema?.map((field) => (
@@ -330,7 +331,10 @@ function NewReconciliation({ fileConfigs, reconType, handleCtaClick, showNotific
                     >
                       <Box display="flex" alignItems="center">
                         {field.display_name || field.name}
-                        <InfoIcon marginLeft="spacing.2" color="brand.gray.200.highContrast" />
+                        <InfoIcon
+                          marginLeft="spacing.2"
+                          color="interactive.icon.staticBlack.default"
+                        />
                       </Box>
                       <Box width="200px">
                         <Dropdown selectionType="single">

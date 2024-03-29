@@ -58,7 +58,7 @@ const FirsList = (): React.ReactElement => {
 
     // Message when no transactions exist
     if (!hasTransactions) {
-      return <Text type="muted">No international payments</Text>;
+      return <Text color="surface.text.gray.muted">No international payments</Text>;
     }
 
     //Status when FIRS is in requested state
@@ -70,7 +70,7 @@ const FirsList = (): React.ReactElement => {
           placement="top"
         >
           <TooltipInteractiveWrapper>
-            <Badge variant="notice" size="large" icon={InfoIcon}>
+            <Badge size="large" icon={InfoIcon} color="notice">
               FIRS Requested
             </Badge>
           </TooltipInteractiveWrapper>
@@ -81,7 +81,7 @@ const FirsList = (): React.ReactElement => {
     // Message when no FIRS files are generated yet
     return (
       <Box display="flex" flexDirection="row">
-        <Text marginRight="spacing.2" type="muted">
+        <Text marginRight="spacing.2" color="surface.text.gray.muted">
           No FIRS generated yet
         </Text>
         {isRequestFirsEnabled && (
@@ -124,11 +124,10 @@ const FirsList = (): React.ReactElement => {
                   <td>
                     {isRecentMonth(month, listYear) && (
                       <Badge
-                        contrast="high"
-                        fontWeight="bold"
+                        emphasis="intense"
                         size="medium"
-                        variant="positive"
                         marginLeft="spacing.5"
+                        color="positive"
                       >
                         New
                       </Badge>

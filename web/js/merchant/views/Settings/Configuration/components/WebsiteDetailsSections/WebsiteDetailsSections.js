@@ -19,11 +19,11 @@ const WebsiteDetailsSections = ({ history, closeModal, websiteInfo: { websitesDa
           {websitesData.map((each, index) => (
             <ListItem key={`details-${index}`}>
               <Order />
-              <Text type="subdued">{each}</Text>
+              <Text color="surface.text.gray.muted">{each}</Text>
             </ListItem>
           ))}
         </Content>
-        <Text size="small" type="subdued">
+        <Text size="small" color="surface.text.gray.muted">
           You’ll be able to collect international card payments only on registered website(s). To
           register another website, use the link below:
         </Text>

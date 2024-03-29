@@ -212,11 +212,11 @@ class PaymentsListContainer extends ListContainer {
             onClearAnalytics={this.onClearAnalytics}
           />
           <Alert
-            intent="information"
             description="Uploading an invoice and AWB copy (for physical goods only) is required as a audit requirement as per RBI guidelines. Without a valid invoice and AWB copy (if applicable) for each transaction, your settlements cannot be processed and will be put on hold if the invoice copy is not received within 15 days."
             isDismissible={false}
             isFullWidth
             marginBottom="spacing.5"
+            color="information"
           />
           <PaymentTable
             {...rest}

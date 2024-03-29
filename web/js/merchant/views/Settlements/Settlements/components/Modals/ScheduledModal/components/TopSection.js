@@ -33,7 +33,7 @@ const CloseButton = styled.button`
 `;
 
 const Emoji = styled.div`
-  font-weight: 800;
+  font-weight: 600;
   font-size: 32px;
   line-height: 32px;
   text-align: center;
@@ -41,7 +41,7 @@ const Emoji = styled.div`
 `;
 
 const TopHeading = styled.h2`
-  font-weight: 800;
+  font-weight: 600;
   font-size: 20px;
   line-height: 30px;
   text-align: center;
@@ -65,7 +65,7 @@ const TopSubHeading = styled.p`
     margin-top: 8px;
   }
   span {
-    font-weight: bold;
+    font-weight: 600;
   }
 `;
 
@@ -111,7 +111,7 @@ const SettlementTimingLabel = styled.span`
 `;
 
 const SettlementTimingTime = styled.span`
-  font-weight: bold;
+  font-weight: 600;
   font-size: 13px;
   line-height: 16px;
   color: #ffffff;

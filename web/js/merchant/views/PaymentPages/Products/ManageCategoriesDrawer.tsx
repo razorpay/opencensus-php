@@ -1,23 +1,21 @@
 import React from 'react';
+import { Heading, Text, Theme } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import styled from 'styled-components';
 
-import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
-import { Heading, Text, Theme } from '@razorpay/blade/components';
 import TableBody from 'common/ui/TableBody';
-import ConfirmModal from 'merchant/views/PaymentPages/common/ConfirmModal';
-import CategoryDrawer from 'merchant/views/PaymentPages/common/Products/CategoryDrawer';
-
 import { ICategory } from 'merchant/reducers/paymentPages/types';
-
-import { deleteStorefrontCategory } from 'merchant/views/PaymentPages/PaymentPages/model';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   OpenModalType,
   ShowNotificationType,
 } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/types';
+import { deleteStorefrontCategory } from 'merchant/views/PaymentPages/PaymentPages/model';
+import ConfirmModal from 'merchant/views/PaymentPages/common/ConfirmModal';
+import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
+import CategoryDrawer from 'merchant/views/PaymentPages/common/Products/CategoryDrawer';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 interface IManageCategoriesDrawer {
   handleClose: () => void;
@@ -126,10 +124,10 @@ const ManageCategoriesDrawer = ({
       hasTransparentBackground
       position="right"
     >
-      <Heading size="large" contrast="low" variant="regular" weight="bold">
+      <Heading weight="semibold" size="medium" color="surface.text.gray.normal">
         Manage Categories
       </Heading>
-      <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+      <Text variant="body" size="medium" weight="regular" color="surface.text.gray.subtle">
         Choose from your existing products or add a new product
       </Text>
       <DrawerBody>
@@ -146,15 +144,14 @@ const ManageCategoriesDrawer = ({
                   <div>
                     {' '}
                     <Text
-                      type="subtle"
                       variant="body"
                       size="medium"
                       weight="regular"
-                      contrast="low"
+                      color="surface.text.gray.subtle"
                     >
                       {category.name}
                     </Text>
-                    <Text size="small" type="muted">
+                    <Text size="small" color="surface.text.gray.muted">
                       &nbsp;({category.catalog_count} product
                       {category.catalog_count === 1 ? '' : 's'})
                     </Text>

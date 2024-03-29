@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Box, Spinner, Title } from '@razorpay/blade/components';
+import { Box, Spinner, Heading } from '@razorpay/blade/components';
 import { useLocation } from 'react-router-dom';
 
 import { isMobileResolution } from 'common/utils/rzp-utils';
@@ -92,14 +92,14 @@ const PlaybookSections = ({
         {isSearchQueryPresent ? (
           <Box marginTop="spacing.6" marginLeft="spacing.8" display="flex" justifyContent="middle">
             {totalMatchCount !== 0 ? (
-              <Title color="feedback.text.positive.lowContrast">
+              <Heading color="feedback.text.positive.intense" size="large">
                 Found {totalMatchCount} {totalMatchCount == 1 ? 'result' : 'results'}
-              </Title>
+              </Heading>
             ) : null}
             {totalMatchCount === 0 ? (
-              <Title color="feedback.text.negative.lowContrast">
+              <Heading color="feedback.text.negative.intense" size="large">
                 Oops! Couldn't find any results. Try searching something else.
-              </Title>
+              </Heading>
             ) : null}
           </Box>
         ) : null}

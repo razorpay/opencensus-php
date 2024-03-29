@@ -36,13 +36,13 @@ const ProductInfo = ({
         <>
           <Text>
             Transaction Size Enabled :{' '}
-            <Text as="span" weight="bold">
+            <Text as="span" weight="semibold">
               <Amount value={transactionSize} currency="INR" />
             </Text>
           </Text>
           <Text>
             Settlement Cycle :&nbsp;
-            <Text as="span" weight="bold">
+            <Text as="span" weight="semibold">
               T+{settlementCycle}
             </Text>
           </Text>
@@ -55,7 +55,7 @@ const ProductInfo = ({
   return (
     <div className="product-info">
       <Box display="flex" justifyContent="space-between" marginBottom="spacing.4">
-        <Text as="span" weight="bold">
+        <Text as="span" weight="semibold">
           {title}
         </Text>
 

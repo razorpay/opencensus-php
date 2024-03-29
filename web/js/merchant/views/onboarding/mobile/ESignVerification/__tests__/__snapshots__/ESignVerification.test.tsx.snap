@@ -11,7 +11,7 @@ exports[`ESignVerification should show the disabled form when checkbox is true 1
 
 exports[`VerifyOTP should throw an validation message if otp field doesn't have  4 digit number 1`] = `
 <input
-  class="TextInputweb__StyledInput-sc-18gz688-1 hxHBWr Sizeweb__Size-sc-1e5yf1-0 exhaHT Spaceweb__Space-sc-1abqisc-0 gvLSev Flexweb__Flex-sc-1yhcoea-0 fCJFon"
+  class="TextInputweb__StyledInput-sc-18gz688-1 idUGcQ Sizeweb__Size-sc-1e5yf1-0 eNEsQQ Spaceweb__Space-sc-1abqisc-0 eJVTSw Flexweb__Flex-sc-1yhcoea-0 iepduM"
   data-testid="ds-text-input"
   name="enteredOTP"
   placeholder="Enter text here"

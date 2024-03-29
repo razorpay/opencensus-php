@@ -1,5 +1,5 @@
+import { Box, ChevronLeftIcon, ExternalLinkIcon, Heading, Link } from '@razorpay/blade/components';
 import React from 'react';
-import { ChevronLeftIcon, ExternalLinkIcon, Heading, Link, Box } from '@razorpay/blade/components';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { LayoutPropsInterface } from 'merchant/views/Settlements/v3/typings';
@@ -35,7 +35,7 @@ const Layout = ({ children, settlementId }: LayoutPropsInterface): JSX.Element =
           justifyContent="space-between"
           alignItems={{ base: 'center', m: 'flex-start' }}
         >
-          <Heading size="medium" weight="bold">
+          <Heading weight="semibold" size="small">
             Settlement details - {settlementId}
           </Heading>
           <Link

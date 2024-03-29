@@ -67,7 +67,7 @@ function DateRangePreset(props) {
           onChange={handleOnPresetChange}
         />
         <DropdownOverlay>
-          <ActionList surfaceLevel={2}>
+          <ActionList>
             {presets.map((preset) => (
               <ActionListItem
                 key={preset.name}
@@ -81,7 +81,7 @@ function DateRangePreset(props) {
       </Dropdown>
       <Box
         borderWidth="thin"
-        borderColor="surface.border.normal.lowContrast"
+        borderColor="surface.border.gray.muted"
         alignItems="center"
         height="max-content"
         paddingY="spacing.2"

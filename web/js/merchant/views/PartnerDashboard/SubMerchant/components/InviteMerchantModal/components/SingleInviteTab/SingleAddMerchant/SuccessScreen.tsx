@@ -51,7 +51,7 @@ const SuccessScreen = ({
     );
   const referralUrl = referralData?.[productType]?.url;
   return (
-    <Box backgroundColor="surface.background.level2.lowContrast" paddingTop="spacing.5">
+    <Box backgroundColor="surface.background.gray.intense" paddingTop="spacing.5">
       {/* Note: these classnames are needed for inner styling of the old BatchValidate component */}
       <div className="partner-submerchant-modal">
         <div className="modal-body">

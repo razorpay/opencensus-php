@@ -11,7 +11,7 @@ const DateRangeTooltip = ({ history }) => {
 
   return (
     <div>
-      <AlertCircleIcon color="action.icon.tertiary.default" size="medium" />
+      <AlertCircleIcon color="interactive.icon.gray.normal" size="medium" />
       <Popover theme="dark" align="top">
         <PopoverBody>
           <div>

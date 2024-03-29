@@ -51,7 +51,7 @@ const Container = styled.div`
   }
 
   .title {
-    font-weight: bold;
+    font-weight: 600;
     font-size: 20px;
     line-height: 24px;
     color: rgba(22, 47, 86, 0.87);
@@ -77,7 +77,7 @@ const Container = styled.div`
       font-weight: normal;
     }
     td {
-      font-weight: bold;
+      font-weight: 600;
       font-size: 14px;
       line-height: 18px;
       color: rgba(22, 47, 86, 0.87);

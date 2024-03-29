@@ -61,7 +61,7 @@ export const DatePickerGroup = styled.div`
   margin-bottom: 'calc(%s / 2)' % 8px;
   align-items: center;
   .bold {
-    font-weight: bold;
+    font-weight: 600;
   }
 `;
 export const DateRangeContainer = styled.div`
@@ -80,7 +80,7 @@ export const DateTimeContainer = styled.div`
     > input.form-control {
       width: 145px;
       height: 28px;
-      font-weight: bold;
+      font-weight: 600;
       padding: 6px;
       text-align: center;
       border: none;
@@ -152,7 +152,7 @@ export const Card = styled.div`
 export const CardHeader = styled.div`
   padding: 0 24px;
   > :first-child {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 18px;
     color: #000;
   }
@@ -164,7 +164,7 @@ export const CardHeader = styled.div`
 
 export const CardCenter = styled.div`
   font-size: 56px;
-  font-weight: 700;
+  font-weight: 600;
   margin: 10px 0;
   color: #000;
   text-align: center;
@@ -310,6 +310,6 @@ export const MetricsTopBar = styled.div`
   }
 `;
 export const SelectedMetric = styled.span`
-  font-weight: bold;
+  font-weight: 600;
   color: #000;
 `;

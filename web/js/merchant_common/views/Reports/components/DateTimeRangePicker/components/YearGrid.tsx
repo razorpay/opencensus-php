@@ -85,13 +85,8 @@ export const YearGrid = ({
                     <Text
                       size="medium"
                       weight="regular"
-                      type="normal"
                       variant="body"
-                      color={
-                        isDisabled
-                          ? 'surface.text.muted.lowContrast'
-                          : 'surface.text.normal.lowContrast'
-                      }
+                      color={isDisabled ? 'surface.text.gray.muted' : 'surface.text.gray.normal'}
                     >
                       {year}
                     </Text>

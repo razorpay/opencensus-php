@@ -7,7 +7,7 @@ export const DataTableWrapper = styled.div<{ maxWidth?: string }>(
   flex-direction: column;
   
   .settings-table {
-    border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+    border: 1px solid ${theme.colors.surface.border.gray.muted};
     border-collapse: separate;
     border-radius: ${theme.border.radius.small}px;
     margin-bottom: 0;
@@ -33,7 +33,7 @@ export const DataTableWrapper = styled.div<{ maxWidth?: string }>(
 
     tr {
       &:nth-child(odd), &:nth-child(even) {
-        background-color: ${theme.colors.surface.background.level2.lowContrast};
+        background-color: ${theme.colors.surface.background.gray.intense};
       }
     }
 
@@ -46,14 +46,14 @@ export const DataTableWrapper = styled.div<{ maxWidth?: string }>(
       justify-content: flex-end;
       svg {
         & > path {
-          fill: ${theme.colors.brand.primary[500]};
+          fill: ${theme.colors.surface.background.primary.intense};
         }
       }
       .delete-button {
         margin-left: 10px;
         svg {
           & > path {
-            fill: ${theme.colors.feedback.background.negative.highContrast};
+            fill: ${theme.colors.feedback.background.negative.intense};
           }
         }
       }
@@ -81,14 +81,14 @@ export const DataTableWrapper = styled.div<{ maxWidth?: string }>(
 
 export const AddMoreButton = styled.p(
   ({ theme }) => `
-  border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+  border: 1px solid ${theme.colors.surface.border.gray.muted};
   border-top: none;
-  background: ${theme.colors.surface.background.level2.lowContrast};
+  background: ${theme.colors.surface.background.gray.intense};
   border-bottom-left-radius: 2px;
   border-bottom-right-radius: 2px;
   padding: 12px 10px;
-  color: ${theme.colors.brand.primary[500]};
-  font-weight: 700;
+  color: ${theme.colors.surface.background.primary.intense};
+  font-weight: 600;
   cursor pointer;
 `,
 );

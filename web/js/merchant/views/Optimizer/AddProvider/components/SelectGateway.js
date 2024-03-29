@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Title,
+  Heading,
   Text,
   TextInput,
   Button,
@@ -108,10 +108,10 @@ const SelectGateway = (props) => {
             <Box display="flex" alignItems="center">
               <StarIcon
                 size="small"
-                color="feedback.icon.positive.lowContrast"
+                color="feedback.icon.positive.intense"
                 marginRight="spacing.1"
               />
-              <Text size="small" color="feedback.text.positive.lowContrast">
+              <Text size="small" color="feedback.text.positive.intense">
                 Recommended
               </Text>
             </Box>
@@ -126,7 +126,7 @@ const SelectGateway = (props) => {
       return (
         <Text
           testID="no-providers-list"
-          color="surface.text.subtle.lowContrast"
+          color="surface.text.gray.subtle"
           textAlign="center"
           size="large"
         >
@@ -143,7 +143,7 @@ const SelectGateway = (props) => {
             return (
               <Box key={sectionKey} display="flex" flexDirection="column">
                 <Box display="flex" alignItems="center" marginBottom="spacing.6">
-                  <Icon color="surface.text.normal.lowContrast" size="medium" />
+                  <Icon color="interactive.icon.gray.normal" size="medium" />
                   <Text marginLeft="spacing.2">{GATEWAY_CATEGORIES[sectionKey]}</Text>
                 </Box>
                 <Box display="flex" gap="spacing.6" flexWrap="wrap">
@@ -156,7 +156,12 @@ const SelectGateway = (props) => {
                         flexDirection="column"
                         gap="spacing.3"
                       >
-                        <Text weight="bold" size="small" type="subtle" truncateAfterLines={1}>
+                        <Text
+                          weight="semibold"
+                          size="small"
+                          truncateAfterLines={1}
+                          color="surface.text.gray.subtle"
+                        >
                           {categoryListKey}
                         </Text>
                         {filteredProviders?.[sectionKey]?.[categoryListKey]?.map(
@@ -183,15 +188,15 @@ const SelectGateway = (props) => {
       flexDirection="column"
       padding="spacing.7"
       gap={isFormEdit ? 'spacing.9' : 'spacing.6'}
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
     >
       <Box display="flex" justifyContent="space-between">
         <Box display="flex" flexDirection="column" gap="spacing.3">
-          <Title color="surface.text.subtle.lowContrast">Select Gateway</Title>
+          <Heading color="surface.text.gray.subtle" size="large">
+            Select Gateway
+          </Heading>
           {isFormEdit && (
-            <Text color="surface.text.subtle.lowContrast">
-              Select a Gateway for your payment provider
-            </Text>
+            <Text color="surface.text.gray.subtle">Select a Gateway for your payment provider</Text>
           )}
         </Box>
 
@@ -209,7 +214,7 @@ const SelectGateway = (props) => {
           </Box>
         ) : (
           <Box display="flex" flexDirection="column" gap="spacing.3" alignItems="end">
-            <Text color="surface.text.subdued.lowContrast">
+            <Text color="surface.text.gray.muted">
               {isFormEdit
                 ? 'STEP 1'
                 : hasSeamlessOption || hasAccountTypeOption
@@ -237,7 +242,6 @@ const SelectGateway = (props) => {
           </Box>
         )}
       </Box>
-
       {selectedProvider ? (
         <Box display="flex" flexDirection="column" gap="spacing.7">
           <Box display="flex" alignItems="center">
@@ -256,7 +260,7 @@ const SelectGateway = (props) => {
                     </StyledLogoWrapper>
                   </Box>
                   <Box>
-                    <Text weight="bold" truncateAfterLines={1}>
+                    <Text weight="semibold" truncateAfterLines={1}>
                       {selectedProviderDetails?.['Gateway Name']?.data_value}
                     </Text>
                   </Box>

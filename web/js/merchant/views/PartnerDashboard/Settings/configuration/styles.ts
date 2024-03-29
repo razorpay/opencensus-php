@@ -9,5 +9,5 @@ export const StyledHeader = styled.div(() => ({
 export const StyledLink = styled(Link)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  color: theme.colors.action.icon.link.default,
+  color: theme.colors.interactive.icon.primary.subtle,
 }));

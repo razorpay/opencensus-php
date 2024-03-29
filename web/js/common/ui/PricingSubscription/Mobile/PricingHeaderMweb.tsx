@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Badge, Heading, Box, useTheme } from '@razorpay/blade/components';
+import { Text, Badge, Box, useTheme, Heading } from '@razorpay/blade/components';
 import { makeSpace } from '@razorpay/blade/utils';
 import { Label, Input, Switch } from 'common/ui/PricingSubscription/PricingStyled';
 import {
@@ -29,12 +29,11 @@ export const ToggleSwitch = ({
     <Box display="flex" justifyContent="center" alignItems="center">
       <StyleSwitchText>
         <Text>Switch to </Text>
-        <Text weight="bold">
+        <Text weight="semibold">
           {togglePlan === TogglePlanValue.annual ? TogglePlanValue.monthly : TogglePlanValue.annual}{' '}
           Plans
         </Text>
       </StyleSwitchText>
-
       <Label data-testid="switchInput">
         <Input
           data-testid="toggleInput"
@@ -67,11 +66,11 @@ const PricingHeaderMweb = ({
     >
       <PricingHeaderTag data-testid="title">
         <PricingBadge addColor data-testid="staticBadge">
-          <Badge contrast="low" fontWeight="bold" size="medium" variant="neutral">
+          <Badge emphasis="subtle" size="medium" color="neutral">
             NEW PRICING PLANS
           </Badge>
         </PricingBadge>
-        <Heading contrast="low" size="large" type="normal" weight="bold">
+        <Heading weight="semibold" size="medium" color="surface.text.gray.normal">
           {title}
         </Heading>
       </PricingHeaderTag>
@@ -82,7 +81,7 @@ const PricingHeaderMweb = ({
           handlePlanSwitch={handlePlanSwitch}
         />
         <PricingBadge addBackgroundColor data-testid="dynamicBadge">
-          <Badge contrast="low" fontWeight="bold" size="large" variant="neutral">
+          <Badge emphasis="subtle" size="large" color="neutral">
             {String(pillText)}
           </Badge>
         </PricingBadge>

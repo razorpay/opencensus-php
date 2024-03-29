@@ -18,7 +18,7 @@ const resellerAccountsColumns = [
     label: 'Total Available Fund',
     value: (item: ResellersBalance): JSX.Element => {
       return (
-        <Text color="surface.text.subtle.lowContrast" testID="fund-amount">
+        <Text color="surface.text.gray.subtle" testID="fund-amount">
           {getFormattedAmountNew(item.balance, true)}
         </Text>
       );

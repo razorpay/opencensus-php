@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Box, Text, Link, Amount, Title } from '@razorpay/blade/components';
+import { Box, Text, Link, Amount, Heading } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,7 +7,6 @@ import AndroidMiniPosImage from 'assets/pos/main-banner/minipos.webp';
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
 import { PartnerExclusivePriceContainer } from 'merchant/views/POS/PartnerExclusiveContainer';
-import AmountWithStrikeThrough from 'merchant/views/POS/ProductDescription/ProductPriceCards/AmountWithStrikeThrough';
 import { PRODUCT_PLANS, ANDROID_MINI_POS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { getPricingByProduct, getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
@@ -97,8 +96,8 @@ const AndroidMiniPos = (): JSX.Element | null => {
           zIndex={4}
           padding="spacing.5"
         >
-          <Title>{productDescription.productTitle}</Title>
-          <Text color="surface.text.subtle.lowContrast" weight="bold">
+          <Heading size="large">{productDescription.productTitle}</Heading>
+          <Text color="surface.text.gray.subtle" weight="semibold">
             Feature packed and portable
           </Text>
           <Box marginTop={{ base: 'spacing.4', xl: 'spacing.11' }}>
@@ -112,42 +111,65 @@ const AndroidMiniPos = (): JSX.Element | null => {
                     <Amount
                       value={offer.nextMonthly}
                       suffix="none"
-                      size="heading-small-bold"
                       isAffixSubtle={false}
+                      size="large"
+                      weight="semibold"
                     />{' '}
-                    <AmountWithStrikeThrough value={offer.prevMonthly} size="body-medium-bold" />{' '}
+                    <Amount
+                      value={offer.prevMonthly}
+                      isAffixSubtle={false}
+                      suffix="none"
+                      marginRight="spacing.2"
+                      isStrikethrough={true}
+                      color="surface.text.gray.muted"
+                      size="medium"
+                      weight="semibold"
+                    />{' '}
                     /month after 3 months*
                   </Text>
                   <Text marginBottom="spacing.3" testID="setup-pricing-text">
                     <Amount
                       value={setupFee}
                       suffix="none"
-                      size="heading-small-bold"
                       isAffixSubtle={false}
+                      size="large"
+                      weight="semibold"
                     />{' '}
-                    <AmountWithStrikeThrough value={offer.prevSetupFee} size="body-medium-bold" />{' '}
+                    <Amount
+                      value={offer.prevSetupFee}
+                      isAffixSubtle={false}
+                      suffix="none"
+                      marginRight="spacing.2"
+                      isStrikethrough={true}
+                      color="surface.text.gray.muted"
+                      size="medium"
+                      weight="semibold"
+                    />{' '}
                     setup fee
                   </Text>
                 </Box>
               ) : (
-                <Text weight="bold" testID="pricing-details-text">
+                <Text weight="semibold" testID="pricing-details-text">
                   <Amount
                     value={monthly}
                     suffix="none"
-                    size="body-medium-bold"
                     isAffixSubtle={false}
+                    size="medium"
+                    weight="semibold"
                   />{' '}
                   /month +{' '}
                   <Amount
                     value={setupFee}
                     suffix="none"
-                    size="body-medium-bold"
                     isAffixSubtle={false}
+                    type="body"
+                    size="medium"
+                    weight="semibold"
                   />{' '}
                   setup fee
                 </Text>
               )}
-              <Text color="surface.text.subtle.lowContrast">*Lifetime Pricing also available.</Text>
+              <Text color="surface.text.gray.subtle">*Lifetime Pricing also available.</Text>
             </PartnerExclusivePriceContainer>
             <Box display="flex" marginTop="spacing.5" alignItems="center">
               <AddToCartButton

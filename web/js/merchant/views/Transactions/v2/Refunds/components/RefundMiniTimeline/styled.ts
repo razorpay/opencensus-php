@@ -18,14 +18,14 @@ export const StyledBoxMetedata = styled.div`
   width: 300px;
   top: 20px;
   left: -20px;
-  border-left: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border-left: 1px solid ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
   padding-left: 30px;
   stroke-width: 1px;
   width: 100%;
 `;
 
 export const StyledText = styled.p`
-  color: ${({ theme }) => `${theme.colors.surface.text.normal.lowContrast}`};
+  color: ${({ theme }) => `${theme.colors.surface.text.gray.normal}`};
   font-size: 14px;
   font-weight: ${({ theme }) => `${theme.typography.fonts.weight.bold}`};
 `;

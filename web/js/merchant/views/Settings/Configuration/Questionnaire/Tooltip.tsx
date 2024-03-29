@@ -1,12 +1,13 @@
 import React from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { Text, InfoIcon } from '@razorpay/blade/components';
+import { Text, InfoIcon, BladeProvider } from '@razorpay/blade/components';
 import { StyledLabelWithToolTip } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/Styled';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 const Tooltip = ({ content }: { content: React.ReactNode }): JSX.Element => {
   return (
     <span>
-      <InfoIcon color="surface.action.icon.active.lowContrast" size="small" />
+      <InfoIcon color="interactive.icon.gray.normal" size="small" />
       <Popover theme="dark" align="top" parentQuerySelector=".Modal-body">
         <PopoverBody>
           <div>{content}</div>
@@ -31,9 +32,9 @@ const LabelWithTooltip = ({
       {tooltip && (
         <Tooltip
           content={
-            <Text type="subtle" contrast="high">
-              {tooltip}
-            </Text>
+            <BladeProvider themeTokens={bladeTheme} colorScheme="dark">
+              <Text color="surface.text.gray.subtle">{tooltip}</Text>{' '}
+            </BladeProvider>
           }
         />
       )}

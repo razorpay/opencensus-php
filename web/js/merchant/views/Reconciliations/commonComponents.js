@@ -19,7 +19,7 @@ export const FileUploadStatus = ({ fileData }) =>
         marginTop="spacing.4"
         elevation="midRaised"
         borderWidth="thick"
-        borderColor="brand.gray.300.lowContrast"
+        borderColor="surface.border.gray.subtle"
         borderRadius="medium"
       >
         <img src={fileData?.isUploaded ? FileUploaded : FileUploading} alt="File Uploading" />

@@ -173,7 +173,7 @@ const CODSettingsTab = ({
           />
         </div>
         <Box marginTop="spacing.4">
-          <Text type="subdued" size="small">
+          <Text size="small" color="surface.text.gray.muted">
             {!rcodEnabled ? COD_SETTINGS_INFO : RCOD_SETTINGS_INFO}
           </Text>
           {settings.platform === PLATFORMS.VALUES.WOOCOMMERCE && (

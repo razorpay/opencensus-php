@@ -1,16 +1,16 @@
 import React, { useContext, useState } from 'react';
+import { Box, Text } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
 import DataTable from 'common/ui/Table/DataTable';
 import AmountCard from 'merchant/views/Wallet/Funds/components/AmountCard';
-import { Box, Heading, Text } from '@razorpay/blade/components';
-
-import { fetchFundsSummary, fetchFundTransactions } from 'merchant/views/Wallet/Funds/queries';
+import { fetchFundTransactions, fetchFundsSummary } from 'merchant/views/Wallet/Funds/queries';
 import { SessionContext, WalletSession } from 'merchant/views/Wallet/context';
 
-import type { ListApiResponse } from 'merchant/views/Wallet/types';
+import { AMOUNT, CREATED_AT, ID, REFERENCE_ID, TYPE } from './constants';
+
 import type { FundsSummary, Transaction } from 'merchant/views/Wallet/Funds/types';
-import { AMOUNT, ID, REFERENCE_ID, CREATED_AT, TYPE } from './constants';
+import type { ListApiResponse } from 'merchant/views/Wallet/types';
 
 export const Transactions = (): JSX.Element => {
   const { mode, merchant_id } = useContext<WalletSession>(SessionContext);
@@ -32,12 +32,12 @@ export const Transactions = (): JSX.Element => {
   return (
     <>
       <Box padding={['spacing.5', 'spacing.7', 'spacing.8', 'spacing.7']}>
-        <Heading size="small" weight="bold">
+        <Text weight="semibold" size="large">
           Transactions Info
-        </Heading>
+        </Text>
         <Box marginTop="spacing.6" flex={1}>
           {!!fundsSummary.error?.message ? (
-            <Text color="feedback.text.negative.lowContrast">{fundsSummary.error?.message}</Text>
+            <Text color="feedback.text.negative.intense">{fundsSummary.error?.message}</Text>
           ) : (
             <AmountCard
               label="Balance"

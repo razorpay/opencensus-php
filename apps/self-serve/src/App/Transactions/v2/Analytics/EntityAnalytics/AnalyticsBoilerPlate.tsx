@@ -2,18 +2,18 @@ import React from 'react';
 import { Box, Card, CardBody, Divider } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
-import CardInfo from './components/CardInfo';
 import { BorderWrapper } from 'apps/self-serve/src/App/Transactions/v2/Analytics/styled';
 import { AnalyticsBoilerPlateProps } from 'apps/self-serve/src/App/Transactions/v2/Analytics/types';
 import { Currency } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import { ScrollableContainer } from 'apps/self-serve/src/App/Transactions/v2/common/styled';
+import CardInfo from './components/CardInfo';
 
 const AnalyticsBoilerPlate = ({ isLoading, isMobile, data, user }: AnalyticsBoilerPlateProps) => {
   const currency = user.merchant?.currency as Currency;
   const { lead, trail } = data;
   return isMobile ? (
     <Box display="flex" flexDirection="column" gap="spacing.4" marginTop="spacing.4">
-      <Card elevation="none" surfaceLevel={3} padding="spacing.5">
+      <Card elevation="none" backgroundColor="surface.background.gray.intense" padding="spacing.5">
         <CardBody>
           <CardInfo
             {...lead}
@@ -28,7 +28,11 @@ const AnalyticsBoilerPlate = ({ isLoading, isMobile, data, user }: AnalyticsBoil
         <Box display="flex" flexDirection="row" justifyContent="space-between" gap="spacing.4">
           {trail.map((element) => (
             <Box flex={1} key={element.title}>
-              <Card surfaceLevel={2} elevation="none" padding="spacing.5">
+              <Card
+                backgroundColor="surface.background.gray.moderate"
+                elevation="none"
+                padding="spacing.5"
+              >
                 <CardBody>
                   <Box
                     display="flex"
@@ -57,7 +61,7 @@ const AnalyticsBoilerPlate = ({ isLoading, isMobile, data, user }: AnalyticsBoil
         display="flex"
         flexDirection="row"
         alignItems="center"
-        backgroundColor="surface.background.level3.lowContrast"
+        backgroundColor="surface.background.gray.moderate"
       >
         <Box flex="1" padding="spacing.5" gap="spacing.2">
           <CardInfo
@@ -71,7 +75,7 @@ const AnalyticsBoilerPlate = ({ isLoading, isMobile, data, user }: AnalyticsBoil
         <Box
           flex={trail.length}
           padding="spacing.5"
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           display="flex"
           justifyContent="space-between"
           gap="spacing.5"

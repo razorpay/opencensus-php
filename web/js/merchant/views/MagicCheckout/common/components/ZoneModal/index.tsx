@@ -268,16 +268,12 @@ const ZoneModal = ({
           <Spinner />
         </div>
       ) : error ? (
-        <Text
-          marginY="spacing.5"
-          type="subdued"
-          color="feedback.negative.action.text.primary.active.lowContrast"
-        >
+        <Text marginY="spacing.5" color="interactive.text.negative.subtle">
           {error}
         </Text>
       ) : Object.keys(filteredCountries).length === 0 ? (
         <div className="empty-text">
-          <SearchIcon color="feedback.icon.neutral.lowContrast" size="large" />
+          <SearchIcon color="feedback.icon.neutral.intense" size="large" />
           <p>No results found</p>
         </div>
       ) : Object.keys(filteredCountries).length > 0 ? (

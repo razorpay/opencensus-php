@@ -82,7 +82,7 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider, isRTUXHomepag
         <AnnouncementIcon
           size="medium"
           onClick={handleSliderToggleClick}
-          color="surface.text.subtle.lowContrast"
+          color="interactive.icon.gray.subtle"
         />
       );
     }

@@ -15,7 +15,7 @@ describe('ProductDrawer', () => {
       render(<ProductDrawer handleClose={mockCloseFunction} onSuccess={mockSuccessFunction} />);
     beforeEach(() => {
       renderApp();
-      expect(screen.getByRole('heading', { name: 'Add new product' })).toBeInTheDocument();
+      expect(screen.getByText('Add new product')).toBeInTheDocument();
     });
     test('close button', async () => {
       const closeButton = document.querySelector('.Modal-close');
@@ -82,7 +82,7 @@ describe('ProductDrawer', () => {
       );
     beforeEach(() => {
       renderApp();
-      expect(screen.getByRole('heading', { name: 'Edit product' })).toBeInTheDocument();
+      expect(screen.getByText('Edit product')).toBeInTheDocument();
     });
     test('should edit product successfully', async () => {
       const saveButton = screen.getByRole('button', { name: /Save product details/ });

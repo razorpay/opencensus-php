@@ -22,7 +22,7 @@ export const TimeInfo = ({
         icon={ChevronUpIcon}
         accessibilityLabel={`${role} Up`}
         onClick={chevUpClick}
-        contrast="low"
+        emphasis="intense"
       />
       <Block
         aria-label={`${role} -> ${children}`}
@@ -35,12 +35,11 @@ export const TimeInfo = ({
           {children}
         </Text>
       </Block>
-
       <IconButton
         icon={ChevronDownIcon}
         accessibilityLabel={`${role} Down`}
         onClick={chevDownClick}
-        contrast="low"
+        emphasis="intense"
       />
     </TimePickerRow>
   );

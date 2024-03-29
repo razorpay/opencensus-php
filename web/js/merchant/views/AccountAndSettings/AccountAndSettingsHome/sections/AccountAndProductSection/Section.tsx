@@ -1,4 +1,4 @@
-import { Heading } from '@razorpay/blade/components';
+import { Text } from '@razorpay/blade/components';
 import Divider from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Divider';
 import SectionCard from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/SectionCard';
 import Shimmer from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Shimmer';
@@ -22,7 +22,7 @@ const AccountAndProductSection = ({
 }: AccountAndProductSectionPropsInterface): JSX.Element => {
   return (
     <CardContainer>
-      {!isMobile && <Heading size="small">Account and product settings</Heading>}
+      {!isMobile && <Text size="large">Account and product settings</Text>}
       <CardContent>
         {sections?.length
           ? sections.map((each, index) => (

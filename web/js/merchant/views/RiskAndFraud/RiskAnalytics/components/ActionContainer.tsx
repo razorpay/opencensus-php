@@ -15,7 +15,7 @@ const ActionContainer = ({
   return (
     <Box
       position="relative"
-      backgroundColor="surface.background.level3.lowContrast"
+      backgroundColor="surface.background.gray.moderate"
       padding={['spacing.5', 'spacing.7']}
       overflow="hidden"
       marginBottom="spacing.5"
@@ -28,13 +28,13 @@ const ActionContainer = ({
           paddingRight={showDownloadIcon ? 'spacing.10' : 'spacing.0'}
           width={showDownloadIcon ? '85%' : '100%'}
         >
-          <Text weight="bold" size="large" marginBottom="spacing.4">
+          <Text weight="semibold" size="large" marginBottom="spacing.4">
             {heading}
           </Text>
           <Text>{description}</Text>
           {note && (
             <Text>
-              <Text as="span" weight="bold">
+              <Text as="span" weight="semibold">
                 Note:{' '}
               </Text>
               {note}
@@ -63,13 +63,13 @@ const ActionContainer = ({
           display="flex"
           alignItems="center"
           justifyContent="center"
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           top="-30px"
           right="-4px"
           transform="rotate(-14deg)"
         >
           <DownloadIconWrapper>
-            <DownloadIcon size="2xlarge" color="surface.action.icon.disabled.lowContrast" />
+            <DownloadIcon size="2xlarge" color="interactive.icon.gray.disabled" />
           </DownloadIconWrapper>
         </Box>
       )}

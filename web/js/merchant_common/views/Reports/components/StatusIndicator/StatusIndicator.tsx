@@ -24,11 +24,10 @@ export const StatusIndicator = ({
     <Box position="relative">
       {Boolean(indicator) ? (
         <IndicatorContainer isInProcess={IN_PROCESS_STATES.includes(children)}>
-          <Indicator accessibilityLabel="Indicator" intent={StatusObj[children]} size="small" />
+          <Indicator accessibilityLabel="Indicator" color={StatusObj[children]} size="small" />
         </IndicatorContainer>
       ) : null}
-
-      <Badge variant={StatusObj[children]} contrast="low" size="large">
+      <Badge color={StatusObj[children]} emphasis="subtle" size="large">
         {children}
       </Badge>
     </Box>

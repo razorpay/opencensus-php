@@ -12,7 +12,7 @@ export const HeadingContainer = styled.div`
 
 export const Heading = styled.p(
   ({ theme }: { theme: Theme }) => `
-  color: ${theme.colors.surface.text.normal.lowContrast};
+  color: ${theme.colors.surface.text.gray.normal};
   font-size: ${theme.typography.fonts.size[400]}px;
   font-weight: ${theme.typography.fonts.weight.bold};
   line-height: ${theme.typography.lineHeights['3xl']}px;
@@ -29,14 +29,14 @@ export const HeadingInfo = styled.div(
   justify-content: space-between;
 
   > button {
-    color: ${theme.colors.feedback.text.negative.lowContrast}
+    color: ${theme.colors.feedback.text.negative.intense}
   }
 `,
 );
 
 export const SubHeading = styled.p(
   ({ theme }: { theme: Theme }) => `
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
   font-size: ${theme.typography.fonts.size[100]}px;
   font-weight: ${theme.typography.fonts.weight.regular};
   line-height: ${theme.typography.lineHeights[100]}px;
@@ -81,9 +81,9 @@ export const PriceWrapper = styled.div(
 
 const PricePreviewWrapper = styled.p(
   ({ theme }: { theme: Theme }) => `
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
   font-style: normal;
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
   font-weight: ${theme.typography.fonts.weight.regular};
   font-size: ${theme.typography.fonts.size[75]}px;
   line-height: ${theme.typography.lineHeights[50]}px;
@@ -97,9 +97,7 @@ const PriceField = styled.span(
   text-decoration: ${strikethrough ? 'line-through' : 'none'};
   padding-right: 8px;
   color: ${
-    strikethrough
-      ? theme.colors.surface.text.muted.lowContrast
-      : theme.colors.surface.text.subtle.lowContrast
+    strikethrough ? theme.colors.surface.text.gray.muted : theme.colors.surface.text.gray.subtle
   };
 `,
 );
@@ -116,7 +114,7 @@ export const PricePreview = ({
       {discounted_amount ? (
         <>
           <PriceField strikethrough>{formatTextAmountField(amount)}</PriceField>
-          <Text size="small" display="inline" color="surface.text.subtle.lowContrast">
+          <Text size="small" display="inline" color="surface.text.gray.subtle">
             {formatTextAmountField(discounted_amount)}
           </Text>
         </>
@@ -131,7 +129,7 @@ export const PricePreview = ({
 
 const LinkTextWrapper = styled.p<any>(
   ({ theme, isRemove }: { theme: Theme; isRemove: boolean }) => `
-  color: ${theme.colors.action.text.secondary.default};
+  color: ${theme.colors.interactive.text.primary.normal};
   font-style: normal;
   font-weight: ${theme.typography.fonts.weight.bold};
   font-size: ${theme.typography.fonts.size[75]}px;
@@ -170,7 +168,7 @@ export const SellingPriceWrapper = styled.div`
 
 export const ImageSelectorWrapper = styled.div(
   ({ theme }) => `
-  background-color: ${theme.colors.surface.background.level3.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.moderate};
   border: 1px dashed #2A86F3;
   border-radius: ${theme.border.radius.small}px;
   height: 56px;
@@ -214,11 +212,11 @@ export const ImageButton = styled.div(
     top: -8px;
     right: -8px;
     background: white;
-    border: 1px solid ${theme.colors.surface.text.subtle.lowContrast};
-    color: ${theme.colors.surface.text.subtle.lowContrast};
+    border: 1px solid ${theme.colors.surface.text.gray.subtle};
+    color: ${theme.colors.surface.text.gray.subtle};
     border-radius: ${theme.border.radius.large}px;
     &:hover {
-      color: ${theme.colors.surface.text.subtle.lowContrast};
+      color: ${theme.colors.surface.text.gray.subtle};
     }
   };
   `,
@@ -228,7 +226,7 @@ export const AddImageButtonWrapper = styled.div(
   ({ theme }) => `
     width: 56px;
     height: 56px;
-    background: ${theme.colors.surface.background.level3.lowContrast};
+    background: ${theme.colors.surface.background.gray.moderate};
     border: 1px dashed #2A86F3;
     border-radius: ${theme.border.radius.small}px;
     cursor: pointer;
@@ -236,11 +234,11 @@ export const AddImageButtonWrapper = styled.div(
     align-items: center;
     justify-content: center;
     & > button {
-      border: 1px solid ${theme.colors.action.icon.secondary.default};
-      color: ${theme.colors.action.icon.secondary.default};
+      border: 1px solid ${theme.colors.interactive.icon.primary.normal};
+      color: ${theme.colors.interactive.icon.primary.normal};
       border-radius: ${theme.border.radius.large}px;
       &:hover {
-        color: ${theme.colors.action.icon.secondary.default};
+        color: ${theme.colors.interactive.icon.primary.normal};
       }
     }
   `,

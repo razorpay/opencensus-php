@@ -11,7 +11,7 @@ const BreakupShimmer = (): JSX.Element => {
   return (
     <StyledBreakUp style={{ height: '450px' }} data-testid="breakup-shimmer">
       <BreakupHeader>
-        <Heading size="medium" weight="bold">
+        <Heading weight="semibold" size="small">
           Breakup
         </Heading>
       </BreakupHeader>
@@ -35,7 +35,7 @@ const BreakupShimmer = (): JSX.Element => {
         )}
         <Divider noMargin />
         <BreakupItem>
-          <Text size="medium" weight="bold">
+          <Text size="medium" weight="semibold">
             Net settlement
           </Text>
           <Shimmer height="20px" width="61px" variant="rounded" borderRadius="12px" />
@@ -68,7 +68,7 @@ export const BreakupRevampShimmer = (): JSX.Element => {
         )}
         <Divider noMargin />
         <BreakupItem>
-          <Text size="medium" weight="bold">
+          <Text size="medium" weight="semibold">
             Net settlement
           </Text>
           <Shimmer height="20px" width="61px" variant="rounded" borderRadius="12px" />

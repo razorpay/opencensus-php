@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Heading,
   Text,
   Tooltip,
   TooltipInteractiveWrapper,
@@ -135,9 +134,9 @@ const ProductCategory = ({
   return (
     <Box display="flex" gap="spacing.5" flexDirection={{ base: 'column', l: 'row' }}>
       <Box flex="1">
-        <Heading>
+        <Text size="large">
           Product categories
-          <Text as="span" color="feedback.text.negative.lowContrast">
+          <Text as="span" color="feedback.text.negative.intense">
             *
           </Text>
           <Tooltip
@@ -146,7 +145,7 @@ const ProductCategory = ({
           >
             <TooltipInteractiveWrapper>
               <InfoIcon
-                color="surface.text.muted.lowContrast"
+                color="interactive.icon.gray.muted"
                 marginLeft="spacing.2"
                 position="relative"
                 top="spacing.1"
@@ -154,7 +153,7 @@ const ProductCategory = ({
               />
             </TooltipInteractiveWrapper>
           </Tooltip>
-        </Heading>
+        </Text>
       </Box>
       <SettingsWrapper>
         <Component />

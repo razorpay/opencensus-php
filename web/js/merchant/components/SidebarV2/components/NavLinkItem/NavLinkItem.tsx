@@ -21,7 +21,7 @@ import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 const CustomBadge = ({ text }: { text: string }) => {
   return (
     <BadgeContainer>
-      <Badge contrast="high" fontWeight="bold" variant="positive" size="small">
+      <Badge emphasis="intense" size="small" color="positive">
         {text.toUpperCase()}
       </Badge>
     </BadgeContainer>
@@ -108,9 +108,7 @@ const NavLinkItem = ({
             weight="regular"
             size="medium"
             color={
-              activeTab === product_id
-                ? 'surface.text.normal.lowContrast'
-                : 'surface.text.subtle.lowContrast'
+              activeTab === product_id ? 'surface.text.gray.normal' : 'surface.text.gray.subtle'
             }
           >
             {title}
@@ -126,9 +124,7 @@ const NavLinkItem = ({
           <Icon className={`i ${icon}`} />
           <Text
             color={
-              activeTab === product_id
-                ? 'surface.text.normal.highContrast'
-                : 'surface.text.normal.lowContrast'
+              activeTab === product_id ? 'surface.text.gray.normal' : 'surface.text.gray.subtle'
             }
           >
             {title}

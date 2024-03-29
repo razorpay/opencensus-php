@@ -1,7 +1,5 @@
-import React from 'react';
 import { Heading } from '@razorpay/blade/components';
-import { connect } from 'react-redux';
-import { Outlet } from 'react-router-dom';
+import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -15,7 +13,9 @@ import {
   StyledTabItem,
 } from 'merchant/views/Transactions/v2/common/styled';
 import { trackTransactionsTabClick } from 'merchant/views/Transactions/v2/common/tracking';
-import { withRouter } from 'common/deprecated/withRouter';
+import React from 'react';
+import { connect } from 'react-redux';
+import { Outlet } from 'react-router-dom';
 
 import { StyledHeading } from './styled';
 import { EntitiesOverviewProps } from './types';
@@ -44,7 +44,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
       {shouldShowOverview ? <EntityAnalytics type={entityAnalyticsType} /> : null}
       {shouldShowHeading ? (
         <StyledHeading id="transactions-header">
-          <Heading size="large">{getHeading(pathname as TransactionsEntityRoute)}</Heading>
+          <Heading size="medium">{getHeading(pathname as TransactionsEntityRoute)}</Heading>
         </StyledHeading>
       ) : (
         <StyledTabHeader id="transactions-header">

@@ -9,14 +9,16 @@ const TabSkeleton = ({ isActive = false }: { isActive?: boolean }): JSX.Element 
       flexDirection="column"
       padding={['spacing.5', 'spacing.7']}
       backgroundColor={
-        isActive ? 'surface.background.level2.lowContrast' : 'surface.background.level3.lowContrast'
+        isActive ? 'surface.background.gray.intense' : 'surface.background.gray.moderate'
       }
       borderTopWidth="none"
-      borderColor="surface.border.normal.lowContrast"
+      borderColor="surface.border.gray.muted"
       borderLeftWidth={isActive ? 'none' : 'thinner'}
       borderRightWidth={isActive ? 'none' : 'thinner'}
       borderBottomWidth="thicker"
-      borderBottomColor={isActive ? 'brand.primary.500' : 'brand.primary.300'}
+      borderBottomColor={
+        isActive ? 'surface.border.primary.normal' : 'surface.border.primary.muted'
+      }
       testID="tab-skeleton"
     >
       <Skeleton width="160px" height="15px" borderRadius="large" />

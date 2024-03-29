@@ -19,7 +19,7 @@ const EcosystemOverallSummary = (): JSX.Element => {
       <div className="icon-container">
         {hasActiveDowntime ? (
           <EcosystemStatusIconContainer height={16} width={16} bgColorKey="neutral">
-            <ActivityIcon color="feedback.icon.positive.highContrast" size="small" />
+            <ActivityIcon color="feedback.icon.positive.intense" size="small" />
           </EcosystemStatusIconContainer>
         ) : (
           STATUS.operational.icon
@@ -27,14 +27,14 @@ const EcosystemOverallSummary = (): JSX.Element => {
       </div>
       <div className="text-container" aria-label="overall-summary-text">
         {hasActiveDowntime ? (
-          <Text contrast="low" size="medium" variant="body" weight="bold">
+          <Text size="medium" variant="body" weight="semibold" color="surface.text.gray.normal">
             Few drops noticed in{' '}
             {downtimesForMethods
               .map((method) => METHOD_NAMES_MAP?.[method] || toTitleCase(method))
               .join(', ')}
           </Text>
         ) : (
-          <Text contrast="low" size="medium" variant="body" weight="bold">
+          <Text size="medium" variant="body" weight="semibold" color="surface.text.gray.normal">
             All methods are operational
           </Text>
         )}

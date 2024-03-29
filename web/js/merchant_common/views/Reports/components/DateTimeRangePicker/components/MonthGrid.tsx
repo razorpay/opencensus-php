@@ -91,12 +91,11 @@ export const MonthGrid = ({
                   <Text
                     size="medium"
                     weight="regular"
-                    type="normal"
                     variant="body"
                     color={
                       isDisabled(monthRange)
-                        ? 'surface.text.muted.lowContrast'
-                        : 'surface.text.normal.lowContrast'
+                        ? 'surface.text.gray.muted'
+                        : 'surface.text.gray.normal'
                     }
                   >
                     {renderedMonthElement(monthRange)}

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import Input from 'common/new-ui/Input';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -5,7 +6,7 @@ import { ISSUERS, PAYMENT_NETWORK_MAP } from '../constants';
 import { deepClone } from '../../../../common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import Amount from '../../../../common/ui/Amount';
-import { DocLink } from 'merchant/components/DocsLink'
+import { DocLink } from 'merchant/components/DocsLink';
 
 export default class NoCostEmiMethods extends React.Component {
   constructor(props) {
@@ -29,7 +30,7 @@ export default class NoCostEmiMethods extends React.Component {
           isLoading: false,
         });
       })
-      .catch((error) => {
+      .catch(() => {
         //todo show error message in the header
       });
     this.setState({

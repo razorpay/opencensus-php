@@ -1,4 +1,4 @@
-import { CloseIcon, Heading } from '@razorpay/blade/components';
+import { CloseIcon, Text } from '@razorpay/blade/components';
 import { ModalLayoutInterface } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
 import React from 'react';
 import { HeadingWrapper, IconWrapper, StyledLayout, StyledLayoutContent, TopBar } from './styled';
@@ -14,11 +14,11 @@ const ModalLayout = ({
     <StyledLayout isCentered={isCentered} minHeight={minHeight}>
       <TopBar>
         <HeadingWrapper>
-          {header?.title ? <Heading size="small">{header.title}</Heading> : null}
+          {header?.title ? <Text size="large">{header.title}</Text> : null}
         </HeadingWrapper>
         {header?.close && (
           <IconWrapper onClick={closeModal}>
-            <CloseIcon color="surface.action.icon.default.lowContrast" size="medium" />
+            <CloseIcon color="interactive.icon.gray.normal" size="medium" />
           </IconWrapper>
         )}
       </TopBar>

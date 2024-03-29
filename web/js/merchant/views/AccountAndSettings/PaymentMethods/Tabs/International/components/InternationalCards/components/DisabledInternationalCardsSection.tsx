@@ -53,7 +53,6 @@ const DisabledInternationalCardsSection = ({ reason, history }: Props): JSX.Elem
             <StyledDisabledHeading>
               Submit the required document to request for international cards
             </StyledDisabledHeading>
-
             <StyledDisabledSubtitle>
               You’ll need to submit one of the following documents of your business to&nbsp;
               <Link href="mailto:riskfundsonhold@razorpay.com">riskfundsonhold@razorpay.com</Link>
@@ -62,9 +61,7 @@ const DisabledInternationalCardsSection = ({ reason, history }: Props): JSX.Elem
             {['Detailed invoices', 'Proof of delivery', 'Any other proof confirming the above'].map(
               (item) => (
                 // Used &nbsp; because li and ul has default styles from the classes
-                <StyledDisabledSubtitle key={item}>
-                  &nbsp;&bull;&nbsp;&nbsp;{item}
-                </StyledDisabledSubtitle>
+                <StyledDisabledSubtitle key={item}>•{item}</StyledDisabledSubtitle>
               ),
             )}
             <StyledDisabledSubtitle>

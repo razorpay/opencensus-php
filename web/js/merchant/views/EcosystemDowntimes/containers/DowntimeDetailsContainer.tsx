@@ -33,9 +33,9 @@ export const processPreviousDowntimeData = (
           </div>
           <div className="badge-container">
             <Badge
-              contrast="low"
+              emphasis="subtle"
               size="large"
-              variant={severity === STATUS.high.slug ? 'negative' : 'notice'}
+              color={severity === STATUS.high.slug ? 'negative' : 'notice'}
             >
               {STATUS[severity].text}
             </Badge>

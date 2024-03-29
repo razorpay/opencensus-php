@@ -74,7 +74,7 @@ const InsightsChartWidget: React.FC<InsightsChartProps> = ({
   return (
     <InsightsChartWrapper>
       <InsightsChartHeaderWrapper>
-        <Heading size="large">{title}</Heading>
+        <Heading size="medium">{title}</Heading>
         {input &&
           renderInput({
             widget: input,
@@ -88,10 +88,9 @@ const InsightsChartWidget: React.FC<InsightsChartProps> = ({
             },
           })}
       </InsightsChartHeaderWrapper>
-
       {error ? (
         <ErrorState
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           text={`${title} couldn't be loaded`}
           retryHandler={() => retryHandler({ id })}
           analyticsProperties={{

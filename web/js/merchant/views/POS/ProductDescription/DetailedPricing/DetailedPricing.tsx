@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Title, Text, Divider } from '@razorpay/blade/components';
+import { Box, Heading, Text, Divider } from '@razorpay/blade/components';
 
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
 import { DETAILED_PRICING, OFFER_DETAILED_PRICING } from 'merchant/views/POS/constants';
@@ -47,9 +47,9 @@ const DetailedPricing = ({ product }: DetailedPricingProps): JSX.Element => {
       marginX={{ base: 'spacing.5', l: 'spacing.3' }}
     >
       <Box marginBottom="spacing.5">
-        <Title size="medium" textAlign="center">
+        <Heading textAlign="center" size="xlarge">
           Detailed Pricing
-        </Title>
+        </Heading>
       </Box>
       {[...(isShowOffer ? OFFER_DETAILED_PRICING : []), ...DETAILED_PRICING].map(
         ({ title, rows, banner }, index) => (
@@ -62,12 +62,12 @@ const DetailedPricing = ({ product }: DetailedPricingProps): JSX.Element => {
               />
             ) : null}
             {title ? (
-              <Text weight="bold" size="large" marginBottom="spacing.5">
+              <Text weight="semibold" size="large" marginBottom="spacing.5">
                 {title}
               </Text>
             ) : null}
             <Box
-              backgroundColor="surface.background.level2.lowContrast"
+              backgroundColor="surface.background.gray.intense"
               marginBottom={
                 index === OFFER_DETAILED_PRICING.length - 1 ? 'spacing.10' : 'spacing.5'
               }
@@ -78,16 +78,16 @@ const DetailedPricing = ({ product }: DetailedPricingProps): JSX.Element => {
                   <React.Fragment key={name}>
                     <Box display="flex" width="100%" padding="spacing.5">
                       <Box width="70%">
-                        <Text weight={title !== null ? 'regular' : 'bold'}>{name}</Text>
+                        <Text weight={title !== null ? 'regular' : 'semibold'}>{name}</Text>
                       </Box>
                       <Box display="flex">
-                        <Text weight="bold" marginRight="spacing.2">
+                        <Text weight="semibold" marginRight="spacing.2">
                           {value}
                         </Text>
                         {isValidFee(Number(prevValue)) && isShowOffer ? (
                           <Text textDecorationLine="line-through">{prevValue}</Text>
                         ) : null}
-                        {text ? <Text weight="bold">{text}</Text> : null}
+                        {text ? <Text weight="semibold">{text}</Text> : null}
                       </Box>
                     </Box>
                     {index !== rows.length - 1 && rows.length > 1 ? (

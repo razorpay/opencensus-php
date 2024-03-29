@@ -10,7 +10,7 @@ const StyledNavLink = styled.div(
   ({ theme, $isActive }: { theme: Theme; $isActive: boolean }) => `
   cursor: pointer;
   padding: 26px 10px 9px;
-  ${$isActive ? `border-bottom: 1.5px solid ${theme.colors.action.text.link.default};` : ''}
+  ${$isActive ? `border-bottom: 1.5px solid ${theme.colors.interactive.text.primary.subtle};` : ''}
 `,
 );
 
@@ -39,8 +39,10 @@ const PlaybookNavLinks = ({ sectionItems }: PlaybookNavLinksProps): JSX.Element 
           {tabsData.map(({ onClick, title, hash, isActive }) => (
             <StyledNavLink $isActive={isActive} onClick={onClick} key={hash}>
               <Text
-                color={isActive ? 'action.text.link.default' : 'action.text.tertiary.default'}
-                weight="bold"
+                color={
+                  isActive ? 'interactive.text.primary.subtle' : 'interactive.text.gray.normal'
+                }
+                weight="semibold"
                 size="medium"
               >
                 {title}

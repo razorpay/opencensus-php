@@ -46,7 +46,7 @@ const InfoWithTooltip = ({ content, icon, fallbackText }) => {
   return (
     <Box display="flex" alignItems="center">
       <IconComponent icon={icon} />
-      <Text size="medium" color="feedback.negative.action.text.link.default.lowContrast">
+      <Text size="medium" color="interactive.text.negative.normal">
         {fallbackText}
       </Text>
     </Box>

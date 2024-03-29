@@ -2,7 +2,6 @@ import React, { Fragment } from 'react';
 import {
   Box,
   Text,
-  Title,
   Heading,
   Tooltip,
   TooltipInteractiveWrapper,
@@ -63,10 +62,10 @@ const StatsOverview = (props: StatsOverviewProps) => {
                       <Text
                         testID="stats-label"
                         size="medium"
-                        weight="bold"
-                        type="subtle"
+                        weight="semibold"
                         marginRight="spacing.2"
                         marginBottom="spacing.2"
+                        color="surface.text.gray.subtle"
                       >
                         {label}
                       </Text>
@@ -84,11 +83,15 @@ const StatsOverview = (props: StatsOverviewProps) => {
                           flexDirection="row"
                           alignItems="baseline"
                         >
-                          <Heading size="small" type="muted" marginRight="spacing.1">
+                          <Text
+                            marginRight="spacing.1"
+                            size="large"
+                            color="surface.text.gray.muted"
+                          >
                             {i18nifyGetCurrencySymbol('INR')}
-                          </Heading>
-                          <Title>{totalValue}</Title>
-                          <Heading weight="regular" type="muted" size="medium">
+                          </Text>
+                          <Heading size="large">{totalValue}</Heading>
+                          <Heading weight="regular" size="small" color="surface.text.gray.muted">
                             .{decimalValue}
                           </Heading>
                         </Box>
@@ -101,8 +104,8 @@ const StatsOverview = (props: StatsOverviewProps) => {
                             gap="spacing.1"
                             alignItems="baseline"
                           >
-                            <Title>{entityRatio}</Title>
-                            <Heading weight="regular" type="muted" size="medium">
+                            <Heading size="large">{entityRatio}</Heading>
+                            <Heading weight="regular" size="small" color="surface.text.gray.muted">
                               %
                             </Heading>
                           </Box>
@@ -116,26 +119,23 @@ const StatsOverview = (props: StatsOverviewProps) => {
                             >
                               <BarChartAltIcon
                                 size="small"
-                                color="feedback.icon.negative.lowContrast"
+                                color="feedback.icon.negative.intense"
                               />
-                              <Text size="small" color="feedback.text.negative.lowContrast">
+                              <Text size="small" color="feedback.text.negative.intense">
                                 {additionalInfo}
                               </Text>
                             </Box>
                           )}
                         </Fragment>
                       ) : (
-                        <Title testID={statsKey}>{entityCount}</Title>
+                        <Heading testID={statsKey} size="large">
+                          {entityCount}
+                        </Heading>
                       )}
                     </Box>
                   </Box>
                   {index < statsConfig.length - 1 && (
-                    <Divider
-                      testID="stats-divider"
-                      orientation="vertical"
-                      contrast="low"
-                      thickness="thinner"
-                    />
+                    <Divider testID="stats-divider" orientation="vertical" thickness="thinner" />
                   )}
                 </Box>
               );

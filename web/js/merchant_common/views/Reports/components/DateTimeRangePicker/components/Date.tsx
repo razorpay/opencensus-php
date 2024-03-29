@@ -197,16 +197,15 @@ export const Date = ({
       <Text
         size="medium"
         weight="regular"
-        type="normal"
         variant="body"
         color={
           isExtremeEnds
-            ? 'surface.text.subtle.highContrast'
+            ? 'surface.text.gray.subtle'
             : isDisabled
-            ? 'surface.text.muted.lowContrast'
+            ? 'surface.text.gray.muted'
             : isToday && showToday
-            ? 'action.text.secondary.focus'
-            : 'surface.text.normal.lowContrast'
+            ? 'interactive.text.primary.normal'
+            : 'surface.text.gray.normal'
         }
       >
         {day.format('D')}

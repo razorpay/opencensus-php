@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Title } from '@razorpay/blade/components';
+import { Box, Heading } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
@@ -297,9 +297,9 @@ function PartnerAppStore(props) {
               paddingX={{ base: 'spacing.7', l: 'spacing.5' }}
               marginBottom={{ base: 'spacing.4', l: 'spacing.1' }}
             >
-              <Title as="h2" size="small">
+              <Heading as="h2" size="large">
                 Explore Apps to get the most out of {businessName}
-              </Title>
+              </Heading>
             </Box>
           )}
           {Object.values(partnerProducts).map((product, index) => {

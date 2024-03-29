@@ -3,10 +3,10 @@ import {
   Amount,
   Badge,
   Box,
-  Heading,
   Text,
   ChevronLeftIcon,
   Link,
+  Heading,
 } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
@@ -33,7 +33,7 @@ export const OrderCardItemContainer = styled.div(
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: ${theme.colors.surface.background.level1.lowContrast} ;
+  background-color: ${theme.colors.surface.background.gray.subtle} ;
   border-radius: 5px;
   padding: 16px 16px;
   margin: 0px 0px 12px 0px;
@@ -115,7 +115,7 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
         <Box display="flex" flexDirection="row" justifyContent="space-between" flexWrap="wrap">
           <Box
             flex={1}
-            backgroundColor="surface.background.level3.lowContrast"
+            backgroundColor="surface.background.gray.moderate"
             marginBottom="spacing.4"
             marginRight="spacing.4"
           >
@@ -124,17 +124,17 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
               display="flex"
               justifyContent="space-between"
               borderBottomWidth="thick"
-              borderBottomColor="surface.border.subtle.lowContrast"
+              borderBottomColor="surface.border.gray.subtle"
             >
               <Box>
-                <Heading size="large" weight="bold">
+                <Heading weight="semibold" size="medium">
                   Order ID: {orderDetails?.id}
                 </Heading>
                 <Box display="flex" marginTop="spacing.3">
-                  <Text size="medium" color="surface.text.subdued.lowContrast">
+                  <Text size="medium" color="surface.text.gray.muted">
                     Order Date:&nbsp;&nbsp;
                   </Text>
-                  <Text size="medium" weight="bold">
+                  <Text size="medium" weight="semibold">
                     {convertUnixToDate(orderDetails?.created_at)}
                   </Text>
                 </Box>
@@ -152,22 +152,20 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
               padding="spacing.6"
               display="flex"
               borderBottomWidth="thick"
-              borderBottomColor="surface.border.subtle.lowContrast"
+              borderBottomColor="surface.border.gray.subtle"
             >
               <Box
                 paddingRight="spacing.6"
                 borderRightWidth="thick"
-                borderRightColor="surface.border.subtle.lowContrast"
+                borderRightColor="surface.border.gray.subtle"
               >
                 <Text marginBottom="spacing.4">Reseller details</Text>
                 <Box display="flex">
                   {/* <StyledImg src={resellerDetails.logo} /> */}
                   <Box display="flex" flexDirection="column" justifyContent="space-between">
-                    <Heading>{resellerDetails?.name || '-'}</Heading>
+                    <Text size="large">{resellerDetails?.name || '-'}</Text>
                     <Box display="flex">
-                      <Text color="surface.text.muted.lowContrast">
-                        ID: {resellerDetails?.id || '-'}
-                      </Text>
+                      <Text color="surface.text.gray.muted">ID: {resellerDetails?.id || '-'}</Text>
                     </Box>
                   </Box>
                 </Box>
@@ -181,8 +179,10 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                     value={
                       <Amount
                         value={orderDetails?.total_amount ? orderDetails.total_amount / 100 : 0}
-                        size="body-medium-bold"
                         isAffixSubtle={false}
+                        type="body"
+                        size="medium"
+                        weight="semibold"
                       />
                     }
                   />
@@ -217,10 +217,8 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                                 imageProps={{ height: '60px', width: '92px' }}
                               />
                               <Box display="flex">
-                                <Text color="surface.text.subdued.lowContrast">
-                                  Discount:&nbsp;&nbsp;
-                                </Text>
-                                <Text weight="bold">
+                                <Text color="surface.text.gray.muted">Discount:&nbsp;&nbsp;</Text>
+                                <Text weight="semibold">
                                   {orderItemsByPrograms[programId][0].discount_percent / 100}%
                                 </Text>
                               </Box>
@@ -231,22 +229,22 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                               <OrderCardItemContainer key={item.id}>
                                 <Box display="flex" alignItems="center" marginBottom="spacing.1">
                                   <Box display="flex" flex={1} minWidth="250px">
-                                    <Text size="small" color="surface.text.subdued.lowContrast">
+                                    <Text size="small" color="surface.text.gray.muted">
                                       SKU
                                     </Text>
                                   </Box>
                                   <Box display="flex" flex={1} minWidth="200px">
-                                    <Text size="small" color="surface.text.subdued.lowContrast">
+                                    <Text size="small" color="surface.text.gray.muted">
                                       Denomination
                                     </Text>
                                   </Box>
                                   <Box display="flex" flex={1} minWidth="200px">
-                                    <Text size="small" color="surface.text.subdued.lowContrast">
+                                    <Text size="small" color="surface.text.gray.muted">
                                       Quantity
                                     </Text>
                                   </Box>
                                   <Box display="flex" flex={1} minWidth="200px">
-                                    <Text size="small" color="surface.text.subdued.lowContrast">
+                                    <Text size="small" color="surface.text.gray.muted">
                                       Total Value
                                     </Text>
                                   </Box>
@@ -258,22 +256,22 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                                   marginTop="spacing.2"
                                 >
                                   <Box display="flex" flex={1} minWidth="250px">
-                                    <Text size="medium" weight="bold">
+                                    <Text size="medium" weight="semibold">
                                       {item.sku_id}
                                     </Text>
                                   </Box>
                                   <Box display="flex" flex={1} minWidth="200px">
-                                    <Text size="medium" weight="bold">
+                                    <Text size="medium" weight="semibold">
                                       {getFormattedAmountNew(item.denomination, true)}
                                     </Text>
                                   </Box>
                                   <Box display="flex" flex={1} minWidth="200px">
-                                    <Text size="medium" weight="bold">
+                                    <Text size="medium" weight="semibold">
                                       {item.quantity}
                                     </Text>
                                   </Box>
                                   <Box display="flex" flex={1} minWidth="200px">
-                                    <Text size="medium" weight="bold">
+                                    <Text size="medium" weight="semibold">
                                       {getFormattedAmountNew(item.total_amount, true)}
                                     </Text>
                                   </Box>

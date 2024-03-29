@@ -15,7 +15,7 @@ const MessagePrompt = ({
         <i className="i i-prompt-message" />
       </StyledMessageIcon>
       <DescriptionContent>
-        <Text size="medium" variant="body" weight="bold">
+        <Text size="medium" variant="body" weight="semibold">
           {title}
         </Text>
         <Text size="small" variant="body">

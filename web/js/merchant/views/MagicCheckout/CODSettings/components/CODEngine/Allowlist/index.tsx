@@ -286,7 +286,7 @@ const CODEngineAllowlistUpload = (props: CODEngineAllowlistUploadProps) => {
               <Button
                 type="button"
                 variant="secondary"
-                color="default"
+                color="primary"
                 onClick={handleDownloadList}
                 size="medium"
                 iconPosition="left"
@@ -299,7 +299,7 @@ const CODEngineAllowlistUpload = (props: CODEngineAllowlistUploadProps) => {
             <Button
               type="button"
               variant="primary"
-              color="default"
+              color="primary"
               onClick={handleUploadClick}
               size="medium"
               iconPosition="left"

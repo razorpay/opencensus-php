@@ -1,5 +1,5 @@
 import React, { useContext, useRef } from 'react';
-import { Amount, ArrowRightIcon, Box, Button, Heading, Text } from '@razorpay/blade/components';
+import { Amount, ArrowRightIcon, Box, Button, Text } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
 
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
@@ -12,7 +12,7 @@ import {
   updateCart,
 } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints, useIsVisible } from 'merchant/views/POS/hooks';
-import { Product as ProductType, ProductPlans, ProductUpdateTypes } from 'merchant/views/POS/types';
+import { ProductPlans, Product as ProductType, ProductUpdateTypes } from 'merchant/views/POS/types';
 
 type PdpActionsProps = {
   productCode: string;
@@ -115,7 +115,7 @@ const PdpActions = ({ productCode, plan, containerRef }: PdpActionsProps): JSX.E
         >
           <Box
             display="flex"
-            backgroundColor="surface.background.level2.lowContrast"
+            backgroundColor="surface.background.gray.intense"
             elevation="highRaised"
             paddingY="spacing.4"
             paddingX="spacing.5"
@@ -127,7 +127,7 @@ const PdpActions = ({ productCode, plan, containerRef }: PdpActionsProps): JSX.E
             minWidth="750px"
           >
             <Box>
-              <Heading>{productDescription.productTitle}</Heading>
+              <Text size="large">{productDescription.productTitle}</Text>
               <Box display="flex" alignItems="center">
                 {pricingBreakups.map(({ key, value, description }, index) => (
                   <Box
@@ -142,9 +142,11 @@ const PdpActions = ({ productCode, plan, containerRef }: PdpActionsProps): JSX.E
                       <Amount
                         value={value}
                         suffix="none"
-                        size="heading-small-bold"
                         isAffixSubtle={false}
                         marginRight="spacing.2"
+                        type="body"
+                        size="large"
+                        weight="semibold"
                       />
                       <Text size="large">{description}</Text>
                     </Box>

@@ -51,14 +51,14 @@ const SettlementsListViewV3 = ({
                 <React.Fragment key={idx + header.title}>
                   {shouldShowHeader ? (
                     <StyledSettlementListTableHeaderCell hasToolTip={!!header.tooltip}>
-                      <Text weight="bold" type="subtle">
+                      <Text weight="semibold" color="surface.text.gray.subtle">
                         {header.title}
                         {header.tooltip && (
                           <>
                             <InfoIcon
                               marginLeft="spacing.2"
                               size="medium"
-                              color="surface.text.normal.lowContrast"
+                              color="interactive.icon.gray.normal"
                             />
                             <PopoverComponent
                               align="right"

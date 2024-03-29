@@ -49,8 +49,6 @@ describe('testing prepay cod toggle component', () => {
 
   test('should be able to enable toggle if disabled', async () => {
     const setState = jest.fn();
-    jest.spyOn(React, 'useState').mockImplementationOnce((initState) => [initState, setState]);
-
     renderApp({
       ...PREPAY_TOGGLE_PROPS,
       isPrepayCODEnabled: false,

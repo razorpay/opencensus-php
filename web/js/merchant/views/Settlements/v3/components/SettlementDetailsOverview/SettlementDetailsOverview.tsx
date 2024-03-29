@@ -47,11 +47,11 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
                 <Box display="flex" flexDirection="column" alignItems="center">
                   <Box display="flex" alignItems="center">
                     <Badge
-                      contrast="low"
+                      emphasis="subtle"
                       marginRight="spacing.3"
                       marginTop="spacing.2"
                       size="large"
-                      variant={getBaseVariant(status)}
+                      color={getBaseVariant(status)}
                       icon={(props) => (
                         <Tooltip content={BADGE_INFO[status?.toUpperCase()]} {...props} />
                       )}
@@ -65,9 +65,9 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
                 </Box>
                 <Box display="flex" justifyContent="center" marginTop="spacing.3">
                   <OverviewSubtextWrapper isMobile={isMobile}>
-                    <Text color="surface.text.normal.lowContrast" css={{ display: 'flex' }}>
+                    <Text color="surface.text.gray.normal" css={{ display: 'flex' }}>
                       Created on {createdDay},
-                      <Text color="surface.text.subdued.lowContrast">{createdTime}</Text>
+                      <Text color="surface.text.gray.muted">{createdTime}</Text>
                     </Text>
                   </OverviewSubtextWrapper>
                 </Box>
@@ -87,11 +87,11 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
 
                   <Box display="flex" alignItems="center">
                     <Badge
-                      contrast="low"
+                      emphasis="subtle"
                       marginRight="spacing.3"
                       marginTop="spacing.2"
                       size="large"
-                      variant={getBaseVariant(status)}
+                      color={getBaseVariant(status)}
                       icon={(props) => (
                         <Tooltip content={BADGE_INFO[status?.toUpperCase()]} {...props} />
                       )}
@@ -101,9 +101,9 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
                   </Box>
                 </Box>
                 <OverviewSubtextWrapper isMobile={isMobile}>
-                  <Text color="surface.text.normal.lowContrast" css={{ display: 'flex' }}>
+                  <Text color="surface.text.gray.normal" css={{ display: 'flex' }}>
                     Created on {createdDay},
-                    <Text color="surface.text.subdued.lowContrast">{createdTime}</Text>
+                    <Text color="surface.text.gray.muted">{createdTime}</Text>
                   </Text>
                 </OverviewSubtextWrapper>
               </Box>

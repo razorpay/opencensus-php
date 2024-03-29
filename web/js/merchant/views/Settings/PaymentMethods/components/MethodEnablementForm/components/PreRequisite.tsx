@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
 import {
   Box,
-  Text,
-  Heading,
   Collapsible,
-  CollapsibleLink,
   CollapsibleBody,
+  CollapsibleLink,
+  Heading,
+  Text,
 } from '@razorpay/blade/components';
+import React, { useState } from 'react';
 
 import { BulletPointsProps } from 'merchant/views/Settings/PaymentMethods/components/MethodEnablementForm/types';
 
 const BulletPoints = ({ title, description }: BulletPointsProps) => (
   <Box>
-    <Text marginBottom="spacing.3" weight="bold" size="medium">
+    <Text marginBottom="spacing.3" weight="semibold" size="medium">
       {title}
     </Text>
     <Text>{description}</Text>
@@ -35,7 +35,7 @@ const PreRequisiteTab = (): React.ReactElement => {
         marginRight={{ base: 'spacing.0', m: 'spacing.11' }}
       >
         <Box marginBottom={{ base: 'spacing.5', m: 'spacing.8' }}>
-          <Heading size="medium">Pre-requisite Information</Heading>
+          <Heading size="small">Pre-requisite Information</Heading>
         </Box>
         <Text marginBottom={{ base: 'spacing.5', m: 'spacing.8' }}>
           One or more documents to be uploaded in the next step would require digital signature of

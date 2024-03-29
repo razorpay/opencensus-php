@@ -45,7 +45,7 @@ const CartFooter = ({ isMaxReached }: CartFooterProps): JSX.Element => {
 
   return (
     <Box
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       position="absolute"
       bottom="spacing.0"
       width="100%"
@@ -72,10 +72,12 @@ const CartFooter = ({ isMaxReached }: CartFooterProps): JSX.Element => {
       >
         <Box>
           <Amount
-            size="heading-large-bold"
             value={deviceCharges}
             suffix="none"
             isAffixSubtle={false}
+            type="heading"
+            size="medium"
+            weight="semibold"
           />
           <Text>Not inclusive of tax</Text>
         </Box>

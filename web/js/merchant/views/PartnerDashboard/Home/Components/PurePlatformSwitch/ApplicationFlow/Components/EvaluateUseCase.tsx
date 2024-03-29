@@ -132,7 +132,7 @@ const EvaluateUseCase = ({
 
       <IntegrateAPIBanner>
         <IntegrateAPIHeading>
-          <InfoIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+          <InfoIcon color="feedback.icon.neutral.intense" size="medium" />
           <span>Integrating APIs</span>
         </IntegrateAPIHeading>
         <IntegrateAPIDesc>

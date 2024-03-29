@@ -1,19 +1,17 @@
 import React from 'react';
-
-import { Heading } from '@razorpay/blade/components';
-
-import { AnalyticsEventsPreviewPropsType } from 'merchant/views/MagicCheckout/AnalyticsSettings/types';
+import { Text } from '@razorpay/blade/components';
 
 import {
-  EventsPreviewContainer,
-  PreviewHeader,
   EditIconContainer,
-  PreviewContentContainer,
-  Seperator,
+  EventsPreviewContainer,
   PreviewContent,
+  PreviewContentContainer,
   PreviewContentTitle,
   PreviewContentValue,
+  PreviewHeader,
+  Seperator,
 } from 'merchant/views/MagicCheckout/AnalyticsSettings/styledComponents/AnalyticsEventsPreview';
+import { AnalyticsEventsPreviewPropsType } from 'merchant/views/MagicCheckout/AnalyticsSettings/types';
 
 const AnalyticsEventsPreview = (props: AnalyticsEventsPreviewPropsType): JSX.Element => {
   const { analyticsEvents, setShowPreviewMode, eventConfigs } = props;
@@ -21,9 +19,9 @@ const AnalyticsEventsPreview = (props: AnalyticsEventsPreviewPropsType): JSX.Ele
   return (
     <EventsPreviewContainer>
       <PreviewHeader>
-        <Heading size="small" weight="bold" color="surface.text.subtle.lowContrast">
+        <Text weight="semibold" color="surface.text.gray.subtle" size="large">
           Events settings
-        </Heading>
+        </Text>
         <EditIconContainer onClick={() => setShowPreviewMode(false)} data-testid="edit-icon">
           <i className="i i-edit_board" />
           Edit

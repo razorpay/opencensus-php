@@ -42,13 +42,13 @@ const ProgramHeader = ({
         padding="spacing.5"
         alignItems="center"
         height="108px"
-        backgroundColor="surface.background.level2.lowContrast"
+        backgroundColor="surface.background.gray.intense"
       >
         <Box flexBasis="8%">
           <img width="80px" src={ProgramFolderIcon} alt="folder" />
         </Box>
         <Box flexBasis="18%">
-          <Text weight="bold">{title}</Text>
+          <Text weight="semibold">{title}</Text>
         </Box>
 
         {!isMobile ? (
@@ -57,7 +57,7 @@ const ProgramHeader = ({
           </Box>
         ) : null}
         <Box flexBasis="10%">
-          <Badge testID={`badge-${hash}-${folderIndex}`} variant="blue" size="large">
+          <Badge testID={`badge-${hash}-${folderIndex}`} size="large" color="primary">
             {count} {count === 1 ? 'item' : 'items'}
           </Badge>
         </Box>
@@ -72,13 +72,13 @@ const ProgramHeader = ({
                 <ChevronUpIcon
                   marginLeft="spacing.1"
                   size="large"
-                  color="badge.icon.blue.lowContrast"
+                  color="surface.icon.primary.normal"
                 />
               ) : (
                 <ChevronDownIcon
                   marginLeft="spacing.1"
                   size="large"
-                  color="badge.icon.blue.lowContrast"
+                  color="surface.icon.primary.normal"
                 />
               )}
             </Box>
@@ -127,7 +127,7 @@ const ProgramFolders = ({
   return (
     <Box display="flex" flexDirection="column" gap="spacing.3">
       {folders.map(({ header, items }, folderIndex) => (
-        <Box key={folderIndex} backgroundColor="surface.background.level2.lowContrast">
+        <Box key={folderIndex} backgroundColor="surface.background.gray.intense">
           {header ? (
             <ProgramHeader
               isExpanded={isExpandedState[folderIndex]}

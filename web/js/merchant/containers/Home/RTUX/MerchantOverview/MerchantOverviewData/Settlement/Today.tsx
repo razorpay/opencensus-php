@@ -30,7 +30,7 @@ const TodaySettlement: React.FC<ITodaysSettlement & IAnalyticsProperties> = ({
       }
     >
       <Box display="flex" flexDirection="column" gap="spacing.2">
-        <Text size="medium" weight="bold">
+        <Text size="medium" weight="semibold">
           {isTodayMultipleSettlements
             ? `Today, ${total_count} settlements worth`
             : "Today's settlement"}
@@ -38,7 +38,9 @@ const TodaySettlement: React.FC<ITodaysSettlement & IAnalyticsProperties> = ({
         <Amount
           value={i18CurrencyConversionFromMinorUnitToCommonUnit(total_amount, settlement_currency)}
           currency={settlement_currency}
-          size="heading-large-bold"
+          type="heading"
+          size="medium"
+          weight="semibold"
         />
         {isTodayMultipleSettlements ? (
           <TodaySettlementMultiple

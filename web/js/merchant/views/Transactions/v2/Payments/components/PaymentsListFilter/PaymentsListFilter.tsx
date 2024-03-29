@@ -328,9 +328,7 @@ const PaymentsListFilter = ({
         <Box maxWidth="auto" display="flex" alignItems="center" flexDirection="row">
           {method ? (
             <Box display="flex" alignItems="center" flexDirection="row">
-              <Text type="normal" color="surface.text.subtle.lowContrast">
-                Payment Method:
-              </Text>
+              <Text color="surface.text.gray.subtle">Payment Method:</Text>
               <Tag marginLeft="spacing.3" size="medium" onDismiss={clearMethod}>
                 {defaultMethodOption?.title || method}
               </Tag>
@@ -341,9 +339,7 @@ const PaymentsListFilter = ({
           ) : null}
           {channel ? (
             <Box display="flex" alignItems="center" flexDirection="row">
-              <Text type="normal" color="surface.text.subtle.lowContrast">
-                Channel:
-              </Text>
+              <Text color="surface.text.gray.subtle">Channel:</Text>
               <Tag marginLeft="spacing.3" size="medium" onDismiss={clearChannel}>
                 {defaultChannelOption?.title || channel}
               </Tag>

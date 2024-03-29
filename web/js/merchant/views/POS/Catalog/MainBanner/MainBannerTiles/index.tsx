@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text } from '@razorpay/blade/components';
+import { BladeProvider, Text } from '@razorpay/blade/components';
 
 import {
   MainBannerTileFooter,
@@ -9,6 +9,7 @@ import {
   MainBannerTitleContainer,
 } from 'merchant/views/POS/Catalog/MainBanner/styles';
 import { MainBannerItemStyleProps } from 'merchant/views/POS/types';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 type MainBannerTile = {
   name: string;
@@ -23,19 +24,21 @@ const MainBannerTile = ({ name, text, image, styleProps }: MainBannerTile): JSX.
   const handleMouseLeave = () => setIsHovered(false);
 
   return (
-    <MainBannerTitleContainer onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <MainBannerTileOverlay isHovered={isHovered} />
-      <MainBannerTileFooter>
-        <MainBannerTileText isHovered={isHovered}>
-          <Text size="small" color="surface.text.muted.highContrast" textAlign="center">
-            {text}
-          </Text>
-        </MainBannerTileText>
-      </MainBannerTileFooter>
-      <MainBannerTileImage isHovered={isHovered} imageStyles={styleProps}>
-        <img src={image} alt={name} />
-      </MainBannerTileImage>
-    </MainBannerTitleContainer>
+    <BladeProvider themeTokens={bladeTheme} colorScheme="dark">
+      <MainBannerTitleContainer onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        <MainBannerTileOverlay isHovered={isHovered} />
+        <MainBannerTileFooter>
+          <MainBannerTileText isHovered={isHovered}>
+            <Text size="small" color="surface.text.gray.muted" textAlign="center">
+              {text}
+            </Text>
+          </MainBannerTileText>
+        </MainBannerTileFooter>
+        <MainBannerTileImage isHovered={isHovered} imageStyles={styleProps}>
+          <img src={image} alt={name} />
+        </MainBannerTileImage>
+      </MainBannerTitleContainer>
+    </BladeProvider>
   );
 };
 

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Box, Heading, Link, TextInput } from '@razorpay/blade/components';
+import React, { useRef, useState } from 'react';
+import { Box, Link, Text, TextInput } from '@razorpay/blade/components';
 import analytics, { SignUpEvents, StatusT } from '@razorpay/universe-utils/analytics';
 
 import { useSplitzService } from 'common/splitz';
@@ -103,10 +103,10 @@ const DeliveryInfo = ({ productTitle }: { productTitle: string }): JSX.Element =
 
   return (
     <Box marginBottom="spacing.4">
-      <Heading>
+      <Text size="large">
         Delivery Info &nbsp;
         <i className="i i-delivery-truck" />
-      </Heading>
+      </Text>
       <Box
         display="flex"
         gap="spacing.4"

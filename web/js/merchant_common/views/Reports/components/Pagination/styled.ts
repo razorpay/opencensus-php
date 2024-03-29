@@ -27,7 +27,7 @@ export const PageButton = styled(ClickableButton)<BaseValidationStyledProps>(
   cursor: pointer;
   border: none;
   border-radius: ${theme.border.radius.round};
-  background-color: ${focused ? theme.colors.action.border.primary.default : 'transparent'};
+  background-color: ${focused ? 'transparent' : 'transparent'};
   p {
     color: ${focused ? '#ffffff' : 'black'} !important;
   }
@@ -35,7 +35,7 @@ export const PageButton = styled(ClickableButton)<BaseValidationStyledProps>(
     !disabled &&
     `
     &:hover {
-      background-color: ${theme.colors.action.border.primary.hover};
+      background-color: transparent;
       p {
         color: #ffffff !important;
       }

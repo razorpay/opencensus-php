@@ -45,12 +45,12 @@ export default function ReconConfig({ product, handleCtaClick, isConfigCreation 
                   <Radio
                     value={type}
                     helpText={
-                      <Text type="muted" size="small">
+                      <Text size="small" color="surface.text.gray.muted">
                         {data.description}
                       </Text>
                     }
                   >
-                    <Text weight="bold" marginBottom="spacing.2">
+                    <Text weight="semibold" marginBottom="spacing.2">
                       {data.header}
                     </Text>
                   </Radio>

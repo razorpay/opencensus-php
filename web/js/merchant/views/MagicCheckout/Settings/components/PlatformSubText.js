@@ -98,7 +98,7 @@ const PlatformSubText = ({
         {apps_installed?.length > 1 ? (
           <>
             <div className="display-flex align-center margin-t-16 apps-toggle">
-              <Text size="medium" weight="bold" marginRight="12px">
+              <Text size="medium" weight="semibold" marginRight="12px">
                 Toggle checkout platform:
               </Text>
               <Input.Radio
@@ -108,7 +108,7 @@ const PlatformSubText = ({
                 onChange={onAppChange}
               />
             </div>
-            <Text size="small" type="subdued" marginTop="8px">
+            <Text size="small" marginTop="8px" color="surface.text.gray.muted">
               Please select your active checkout on Shopify - Magic Checkout/Shopify One-page
               Checkout(Magic X)
             </Text>

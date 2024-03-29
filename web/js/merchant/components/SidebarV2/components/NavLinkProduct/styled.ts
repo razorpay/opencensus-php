@@ -3,7 +3,7 @@ import styled from 'styled-components';
 export const ProductHeading = styled.div`
   margin: 0 16px 2px;
   height: 22px;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 10px;
   line-height: 22px;
   text-transform: uppercase;
@@ -14,7 +14,7 @@ export const Toggler = styled.button`
   display: flex;
   align-items: center;
   color: #80a5ff;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 10px;
   height: 32px;
   margin-left: 40px;

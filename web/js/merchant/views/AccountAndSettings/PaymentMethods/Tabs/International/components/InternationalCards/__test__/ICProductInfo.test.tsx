@@ -33,7 +33,7 @@ jest.mock('@razorpay/blade/components', () => ({
     const { Badge } = jest.requireActual('@razorpay/blade/components');
     return (
       <>
-        <p>Badge Variant: {props.variant}</p>
+        <p>Badge Color: {props.color}</p>
         <Badge {...props} />
       </>
     );
@@ -122,7 +122,7 @@ describe('ICProductInfo', () => {
         status,
       },
     });
-    expect(screen.getByText(`Badge Variant: ${badgeInfo?.variant}`)).toBeInTheDocument();
+    expect(screen.getByText(`Badge Color: ${badgeInfo?.color}`)).toBeInTheDocument();
     if (badgeInfo?.tooltip) {
       expect(screen.getByText(badgeInfo.tooltip)).toBeInTheDocument();
     }

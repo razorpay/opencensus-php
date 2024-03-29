@@ -44,8 +44,8 @@ const ChartLegend = (props: ChartLegendProps) => {
             flexDirection="row"
             alignItems="center"
             padding="spacing.3"
-            borderColor="surface.border.normal.lowContrast"
-            backgroundColor="surface.background.level3.lowContrast"
+            borderColor="surface.border.gray.muted"
+            backgroundColor="surface.background.gray.moderate"
           >
             {value === ENTITY_RATIO ? (
               <>

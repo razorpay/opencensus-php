@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Amount, Box, CheckIcon, CloseIcon, Heading, Text } from '@razorpay/blade/components';
+import { Amount, Box, CheckIcon, CloseIcon, Text } from '@razorpay/blade/components';
 
 import { useSplitzService } from 'common/splitz';
 import { ProductListFeatureIcon } from 'merchant/views/POS/Catalog/ProductFeatureTable/styles';
@@ -41,47 +41,47 @@ const CustomRow = ({ feature, boxSize, code }): JSX.Element | null => {
       if (!product?.pricing) return null;
       const isPartnerPricing = product?.isPartnerPricing && !isOfferEnabled;
       const pricings = getPricingByProduct({ productDescription: product });
-      const amountTextIntent = isPartnerPricing ? 'notice' : undefined;
+      const amountTextIntent = isPartnerPricing ? 'feedback.text.notice.intense' : undefined;
       return (
         <Box paddingX="spacing.5" height={`${BOX_SIZE_MAP[boxSize ?? 'medium']}px`}>
-          <Heading weight="regular" marginX="spacing.2">
+          <Text weight="regular" marginX="spacing.2" size="large">
             Subscription Pricing:
-          </Heading>
-          <Heading
+          </Text>
+          <Text
             weight="regular"
-            color={
-              isPartnerPricing
-                ? 'feedback.text.notice.lowContrast'
-                : 'surface.text.normal.lowContrast'
-            }
+            color={isPartnerPricing ? 'feedback.text.notice.intense' : 'surface.text.gray.normal'}
+            size="large"
           >
             <Amount
               value={pricings.monthly}
               suffix="none"
-              size="heading-small"
               isAffixSubtle={false}
-              intent={amountTextIntent}
+              color={amountTextIntent}
+              type="body"
+              size="large"
             />
             /month +{' '}
             <Amount
               value={pricings.setupFee}
               suffix="none"
-              size="heading-small"
               isAffixSubtle={false}
-              intent={amountTextIntent}
+              color={amountTextIntent}
+              type="body"
+              size="large"
             />{' '}
             setup fee
-          </Heading>
-          <Heading weight="regular" marginX="spacing.2">
+          </Text>
+          <Text weight="regular" marginX="spacing.2" size="large">
             Lifetime Pricing:{' '}
             <Amount
               value={pricings.lifetime}
               suffix="none"
-              size="heading-small"
               isAffixSubtle={false}
-              intent={amountTextIntent}
+              color={amountTextIntent}
+              type="body"
+              size="large"
             />
-          </Heading>
+          </Text>
         </Box>
       );
     }
@@ -130,17 +130,13 @@ const ProductFeatureRows = ({ featureColumns, isColumn, product }: FeatureRows):
               {feature?.isAvailable ? (
                 <CheckIcon size="large" color="currentColor" />
               ) : (
-                <CloseIcon size="large" color="surface.text.muted.lowContrast" />
+                <CloseIcon size="large" color="interactive.icon.gray.muted" />
               )}
             </Box>
             <Text
               size="large"
               marginLeft="spacing.3"
-              color={
-                feature?.isAvailable
-                  ? 'surface.text.normal.lowContrast'
-                  : 'surface.text.muted.lowContrast'
-              }
+              color={feature?.isAvailable ? 'surface.text.gray.normal' : 'surface.text.gray.muted'}
             >
               {feature?.name}
             </Text>

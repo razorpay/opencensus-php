@@ -17,7 +17,7 @@ const HeaderBodyDivider = styled.div(
   ({ theme }: { theme: Theme }) => `
   width: 100%;
   height: 0;
-  border: ${theme.border.width.thin}px solid ${theme.colors.surface.border.normal.lowContrast};
+  border: ${theme.border.width.thin}px solid ${theme.colors.surface.border.gray.muted};
 `,
 );
 
@@ -29,7 +29,7 @@ const StyledPricingPlans = styled.div(
   justify-content: center;
   align-items: flex-start;
   padding: ${theme.spacing[6]}px;
-  background-color: ${theme.colors.surface.background.level2.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.intense};
   border: 1px solid #E2E8EA;
 `,
 );

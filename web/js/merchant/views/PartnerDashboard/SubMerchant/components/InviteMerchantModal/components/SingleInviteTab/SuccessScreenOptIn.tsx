@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Heading, Text, Link } from '@razorpay/blade/components';
+import { Box, Button, Heading, Link, Text } from '@razorpay/blade/components';
 
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
 import { PARTNERSHIPS_WEBSITE_LINKS } from 'merchant/views/PartnerDashboard/constants';
@@ -13,28 +13,28 @@ type SuccessScreenOptInProps = {
 };
 const SuccessScreenOptIn = ({ onDismiss }: SuccessScreenOptInProps): JSX.Element => {
   return (
-    <Box backgroundColor="surface.background.level2.lowContrast" marginTop="spacing.4">
+    <Box backgroundColor="surface.background.gray.intense" marginTop="spacing.4">
       <Box display="flex" flexDirection="column" gap="spacing.5" alignItems="start">
         <SuccessBackground height="190px" />
         <img src={SuccessIcon} height="48" alt="Invite Successful" />
 
         <Box display="flex" flexDirection="column" gap="spacing.3" justifyContent="center">
-          <Heading size="medium">Invite successfully sent</Heading>
+          <Heading size="small">Invite successfully sent</Heading>
           <Box display="flex" flexDirection="column" gap="spacing.2">
-            <Text color="surface.text.subdued.lowContrast">
+            <Text color="surface.text.gray.muted">
               A signup link has been sent to the invited contacts.
             </Text>
           </Box>
         </Box>
       </Box>
-      <Heading marginTop="spacing.10" marginBottom="spacing.5">
+      <Text marginTop="spacing.10" marginBottom="spacing.5" size="large">
         What next?
-      </Heading>
+      </Text>
       <Box display="flex" flexDirection="column" gap="spacing.7" marginBottom="spacing.11">
         <Box display="flex" gap="spacing.3" flex="1" alignItems="start">
           <img src={Ellipse} alt="ellipse" />
           <Box display="flex" flexDirection="column" gap="spacing.2">
-            <Text color="surface.text.subtle.lowContrast" weight="bold">
+            <Text color="surface.text.gray.subtle" weight="semibold">
               Sign up and approval from the client
             </Text>
             <Text size="small">
@@ -46,7 +46,7 @@ const SuccessScreenOptIn = ({ onDismiss }: SuccessScreenOptInProps): JSX.Element
         <Box display="flex" gap="spacing.3" flex="1" alignItems="start">
           <img src={Ellipse} alt="ellipse" />
           <Box display="flex" flexDirection="column" gap="spacing.2">
-            <Text color="surface.text.subtle.lowContrast" weight="bold">
+            <Text color="surface.text.gray.subtle" weight="semibold">
               Find the client in Affiliate Accounts
             </Text>
             <Text size="small">
@@ -58,7 +58,7 @@ const SuccessScreenOptIn = ({ onDismiss }: SuccessScreenOptInProps): JSX.Element
         <Box display="flex" gap="spacing.3" flex="1" alignItems="start">
           <img src={Ellipse} alt="ellipse" />
           <Box display="flex" flexDirection="column" gap="spacing.2">
-            <Text color="surface.text.subtle.lowContrast" weight="bold">
+            <Text color="surface.text.gray.subtle" weight="semibold">
               Perform KYC for your client
             </Text>
             <Text size="small">
@@ -75,7 +75,6 @@ const SuccessScreenOptIn = ({ onDismiss }: SuccessScreenOptInProps): JSX.Element
           </Box>
         </Box>
       </Box>
-
       <ModalFooter>
         <Button onClick={onDismiss}>Got it</Button>
       </ModalFooter>

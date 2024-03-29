@@ -179,7 +179,7 @@ const InviteMerchantTabs = ({
           ))}
           {tabPanes.map((tab) => (
             <Tab key={tab.id} title={tab.title}>
-              <Text weight="bold" size="small">
+              <Text weight="semibold" size="small">
                 {tab.title}
               </Text>
             </Tab>

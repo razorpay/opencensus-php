@@ -4,11 +4,10 @@ import { ActionListComponentProps } from './types';
 
 const ActionListComponent = <T,>({
   options,
-  surfaceLevel = 2,
   itemComponent,
 }: ActionListComponentProps<T>): JSX.Element => {
   return (
-    <ActionL surfaceLevel={surfaceLevel}>
+    <ActionL>
       {options.map((data, index) => {
         return itemComponent({ data, index });
       })}

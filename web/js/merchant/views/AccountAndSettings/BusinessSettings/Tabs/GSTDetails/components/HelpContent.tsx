@@ -3,7 +3,7 @@ import { Box, Text } from '@razorpay/blade/components';
 
 const HelpContent = (): JSX.Element => (
   <Box>
-    <Text weight="bold" size="small">
+    <Text weight="semibold" size="small">
       Want to add a different GST?
     </Text>
     <Text size="small">

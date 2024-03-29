@@ -1,4 +1,4 @@
-import { Text } from '@razorpay/blade/components';
+import { BladeProvider, Text } from '@razorpay/blade/components';
 import { FadeTransition } from 'common/components/Transition';
 import { trackSearchBarInfo } from 'merchant/components/HeaderNav/UniversalSearch/utils';
 import {
@@ -7,6 +7,7 @@ import {
 } from 'merchant/components/HeaderNav/UniversalSearch/utils/ftuxVisibility';
 import React, { useEffect, useState } from 'react';
 import { FtuxAction, StyledFtuxContainer } from './styled';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 const FtuxTooltip = ({
   setIsFtuxVisible,
@@ -38,19 +39,25 @@ const FtuxTooltip = ({
 
   return (
     <FadeTransition duration={400} in={isShow} appear>
-      <StyledFtuxContainer>
-        <Text weight="bold" type="subtle" contrast="high">
-          Introducing Search
-        </Text>
-        <Text type="subtle" contrast="high">
-          You can search for payment products, Account & Settings, and more
-        </Text>
-        <FtuxAction onClick={handleClick}>
-          <Text weight="bold" type="subtle" contrast="high" data-testid="search-ftux-gotit">
-            GOT IT
+      <BladeProvider themeTokens={bladeTheme} colorScheme="dark">
+        <StyledFtuxContainer>
+          <Text weight="semibold" color="surface.text.gray.subtle">
+            Introducing Search
           </Text>
-        </FtuxAction>
-      </StyledFtuxContainer>
+          <Text color="surface.text.gray.subtle">
+            You can search for payment products, Account & Settings, and more
+          </Text>
+          <FtuxAction onClick={handleClick}>
+            <Text
+              weight="semibold"
+              color="surface.text.gray.subtle"
+              data-testid="search-ftux-gotit"
+            >
+              GOT IT
+            </Text>
+          </FtuxAction>
+        </StyledFtuxContainer>{' '}
+      </BladeProvider>
     </FadeTransition>
   );
 };

@@ -42,11 +42,11 @@ const CommsBanner = ({ mode, user }: CommsBanner): JSX.Element | null => {
 
   return (
     <Box
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       marginX={{ base: 'spacing.4', xl: 'spacing.6' }}
       marginTop="75px"
       borderWidth="thin"
-      borderColor="brand.gray.400.lowContrast"
+      borderColor="surface.border.gray.muted"
       position="relative"
       display="flex"
     >

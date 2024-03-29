@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
-import { Box, Heading, IconButton, Text, TextInput, TrashIcon } from '@razorpay/blade/components';
+import { Box, IconButton, Text, TextInput, TrashIcon } from '@razorpay/blade/components';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { queryClient } from 'common/components/Bootstrap/Wrapper';
@@ -162,10 +162,10 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
                                 padding={['spacing.0', 'spacing.4']}
                               >
                                 <Box width="200px">
-                                  <Text color="surface.text.subdued.lowContrast">Denomination</Text>
+                                  <Text color="surface.text.gray.muted">Denomination</Text>
                                 </Box>
                                 <Box width="200px">
-                                  <Text color="surface.text.subdued.lowContrast">Quantity</Text>
+                                  <Text color="surface.text.gray.muted">Quantity</Text>
                                 </Box>
                                 <Box flex={1} display="flex" justifyContent="flex-end">
                                   <IconButton
@@ -185,9 +185,9 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
                                 padding={['spacing.1', 'spacing.4']}
                               >
                                 <Box width="200px">
-                                  <Heading size="small" color="surface.text.subdued.lowContrast">
+                                  <Text color="surface.text.gray.muted" size="large">
                                     {getFormattedAmountNew(item.denomination, true)}
-                                  </Heading>
+                                  </Text>
                                 </Box>
                                 <Box width="200px">
                                   <Box width="175px">

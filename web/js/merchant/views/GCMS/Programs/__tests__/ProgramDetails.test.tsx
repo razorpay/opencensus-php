@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render as rootRender, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
@@ -30,7 +30,7 @@ describe('GCMS: Programs', () => {
     rootRender(
       <Provider store={storeWithInitialState(initialState)}>
         <QueryClientProvider client={queryClient}>
-          <BladeProvider themeTokens={paymentTheme}>
+          <BladeProvider themeTokens={bladeTheme}>
             <MemoryRouter initialEntries={['/gcms/programs/iprog_NEC3fO5GTvvX2S']}>
               <Routes>
                 <Route path="/gcms/programs/:program_id" element={<ProgramDetails />} />
@@ -57,7 +57,7 @@ describe('GCMS: Programs', () => {
     rootRender(
       <Provider store={storeWithInitialState(initialState)}>
         <QueryClientProvider client={queryClient}>
-          <BladeProvider themeTokens={paymentTheme}>
+          <BladeProvider themeTokens={bladeTheme}>
             <MemoryRouter initialEntries={['/gcms/programs/iprog_NEC3fO5GTvvX2Z']}>
               <Routes>
                 <Route path="/gcms/programs/:programId" element={<ProgramDetails />} />

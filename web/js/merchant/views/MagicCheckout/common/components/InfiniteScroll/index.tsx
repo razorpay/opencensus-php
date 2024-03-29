@@ -111,7 +111,7 @@ const InfiniteScroll = <T extends Record<string, unknown>>({
             <p>{error?.errors?.[0] || 'Something went wrong'}</p>
           ) : data?.length === 0 ? (
             <>
-              <SearchIcon color="feedback.icon.information.highContrast" size="large" />
+              <SearchIcon color="feedback.icon.information.intense" size="large" />
               <p>No results found</p>
             </>
           ) : null}

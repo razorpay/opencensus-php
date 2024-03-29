@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
-import EntityTabs from 'merchant/views/Settlements/v3/components/EntityTabs';
+import { Heading, Spinner } from '@razorpay/blade/components';
 import { removeUnreconciledEntity } from 'merchant/views/Settlements/v2/util';
 import EntityListNew from 'merchant/views/Settlements/v3/components/EntityList/EntityList';
-import { Heading, Spinner } from '@razorpay/blade/components';
+import EntityTabs from 'merchant/views/Settlements/v3/components/EntityTabs';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import { StyledEntityContainer } from './styled';
 
 const DeductionsEntities = (props) => {
@@ -37,7 +37,7 @@ const DeductionsEntities = (props) => {
   if (activeTab) {
     return (
       <StyledEntityContainer>
-        <Heading size="medium" weight="bold" contrast="low">
+        <Heading weight="semibold" size="small" color="surface.text.gray.normal">
           Deductions
         </Heading>
         <EntityTabs

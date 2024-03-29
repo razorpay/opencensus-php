@@ -11,7 +11,7 @@ import { CreateBatchOptions } from 'merchant/views/Wallet/BatchActions/BatchOpti
 import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 const storeState = {
   session: {
@@ -59,7 +59,7 @@ describe('BatchOptions tests', () => {
   test('it should display a dropdown to select load type', async () => {
     render(
       <Provider store={storeWithInitialState(storeState)}>
-        <BladeProvider themeTokens={paymentTheme}>
+        <BladeProvider themeTokens={bladeTheme}>
           <LoadsBatchUpload />
         </BladeProvider>
       </Provider>,
@@ -76,7 +76,7 @@ describe('BatchOptions tests', () => {
   test('it should display create batch reversals modal', () => {
     render(
       <Provider store={storeWithInitialState(storeState)}>
-        <BladeProvider themeTokens={paymentTheme}>
+        <BladeProvider themeTokens={bladeTheme}>
           <ReversalsBatchUpload />
         </BladeProvider>
       </Provider>,

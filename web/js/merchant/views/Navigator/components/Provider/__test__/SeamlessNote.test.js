@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 
@@ -19,7 +19,7 @@ describe('SeamlessNote component', () => {
   const renderComponent = (props) =>
     render(
       <Provider store={storeWithInitialState({})}>
-        <BladeProvider themeTokens={paymentTheme}>
+        <BladeProvider themeTokens={bladeTheme}>
           <SeamlessNote {...props} />
         </BladeProvider>
       </Provider>,

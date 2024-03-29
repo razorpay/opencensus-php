@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Text, Title } from '@razorpay/blade/components';
+import { Box, Text, Heading } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import moment from 'moment';
 import Lottie from 'react-lottie';
@@ -59,11 +59,13 @@ const ConfirmationBanner = ({ arrivingDate }: ConfirmationBanner): JSX.Element =
         </Box>
       </Box>
       <img src={ConfirmIcon} alt="Order Confirmed Icon" height="80px" />
-      <Title color="feedback.text.positive.lowContrast">Your order is successfully placed!</Title>
-      <Text textAlign="center" type="subtle">
+      <Heading color="feedback.text.positive.intense" size="large">
+        Your order is successfully placed!
+      </Heading>
+      <Text textAlign="center" color="surface.text.gray.subtle">
         Your Order <b>{orderId}</b> has successfully been placed with us
       </Text>
-      <Text marginBottom="spacing.7" textAlign="center" type="subtle">
+      <Text marginBottom="spacing.7" textAlign="center" color="surface.text.gray.subtle">
         Arriving by: <b>{moment.unix(arrivingDate).format('MMMM DD, YYYY')}</b>
       </Text>
       {!isMobile ? (
@@ -77,7 +79,7 @@ const ConfirmationBanner = ({ arrivingDate }: ConfirmationBanner): JSX.Element =
           bottom="spacing.0"
           left="spacing.0"
           right="spacing.0"
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           padding="spacing.4"
         >
           <OrderDetailsCTA />

@@ -1,45 +1,45 @@
 // TODO: Fix the imports, currently out of scope
 // @ts-nocheck
-import React, { useEffect, useState } from 'react';
-import { compose, bindActionCreators, AnyAction, Dispatch } from 'redux';
-import { connect } from 'react-redux';
-import {
-  Box,
-  Card,
-  CardBody,
-  Spinner,
-  Link,
-  Text,
-  RefreshIcon,
-  Divider,
-  Button,
-  Heading,
-} from '@razorpay/blade/components';
-import RefundModal from 'apps/self-serve/src/App/Transactions/v1/Payments/components/RefundModalNew';
-import * as PaymentActions from 'merchant/reducers/payments/details';
 import { deepClone } from '@dashboard/shared-utils/rzp-utils';
 import {
+  Box,
+  Button,
+  Card,
+  CardBody,
+  Divider,
+  Heading,
+  Link,
+  RefreshIcon,
+  Spinner,
+  Text,
+} from '@razorpay/blade/components';
+import {
+  fetchBankTransfer,
   fetchInstantRefundFeeFn,
+  fetchPaymentIdTimelineData,
   fetchTransfersFn,
   refundPaymentFn,
-  fetchBankTransfer,
-  fetchPaymentIdTimelineData,
 } from 'apps/self-serve/src/App/Transactions/model';
+import RefundModal from 'apps/self-serve/src/App/Transactions/v1/Payments/components/RefundModalNew';
+import TimeLine from 'apps/self-serve/src/App/Transactions/v2/Payments/components/Timeline';
+import { IconBackground } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/Timeline/styled';
+import { TimelineJourneyPoint } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/Timeline/types';
+import { PaymentsTimeline } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
+import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import RefundIcon from 'apps/self-serve/src/assets/refund.svg';
+import * as PaymentActions from 'merchant/reducers/payments/details';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { AnyAction, Dispatch, bindActionCreators, compose } from 'redux';
 import { useStore } from 'shell/commonStore';
+import { IBankTransfer, IPaymentDetails, IPaymentIdRefundDetail } from './types';
 import {
-  getSettlementTimelineData,
   getDisputesTimelineData,
-  getRefundsTimelineData,
   getPaymentTimelineData,
+  getRefundsTimelineData,
+  getSettlementTimelineData,
   isIssueRefundDisabled,
 } from './utils';
-import { IPaymentDetails, IPaymentIdRefundDetail, IBankTransfer } from './types';
-import RefundIcon from 'apps/self-serve/src/assets/refund.svg';
-import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
-import { IconBackground } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/Timeline/styled';
-import { PaymentsTimeline } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
-import { TimelineJourneyPoint } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/Timeline/types';
-import TimeLine from 'apps/self-serve/src/App/Transactions/v2/Payments/components/Timeline';
 
 interface PaymentDetailsTimelineProps {
   paymentIdDetails: IPaymentDetails;
@@ -164,7 +164,7 @@ function PaymentDetailsTimeline({
         {paymentTimelineData ? (
           <Box>
             <Box marginLeft="-8px">
-              <Heading weight="bold" color="surface.text.normal.lowContrast" size="medium">
+              <Heading weight="semibold" color="surface.text.gray.normal" size="small">
                 Timeline
               </Heading>
             </Box>
@@ -178,7 +178,7 @@ function PaymentDetailsTimeline({
           </Box>
         ) : didPaymentTimelineDataError ? (
           <Box>
-            <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+            <Text variant="body" size="medium" weight="regular" color="surface.text.gray.subtle">
               We couldn’t load your payment timeline. Refresh to try again
             </Text>
             <Box paddingTop="spacing.3">

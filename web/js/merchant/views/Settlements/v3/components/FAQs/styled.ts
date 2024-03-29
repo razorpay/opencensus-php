@@ -22,7 +22,7 @@ export const TabList = styled.div<{
     display: none;
   }
   border-style: solid;
-  border-color: ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border-color: ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
   border-radius: 4px 0 0 4px;
   ${({ isFirstActive, isLastActive }) => {
     if (isFirstActive) {
@@ -66,7 +66,7 @@ export const TabListItem = styled.div<{
   align-items: center;
   border-width: 1px 1px 0 1px;
   border-style: solid;
-  border-color: ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border-color: ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
   &:first-child {
     border-width: 0 1px 0 1px;
     border-radius: 4px 0 0 0;
@@ -99,7 +99,7 @@ export const TabListItem = styled.div<{
     isActive &&
     css`
       &&& {
-        border-color: ${theme.colors.brand.primary[500]};
+        border-color: ${theme.colors.surface.background.primary.intense};
         border-width: 1px;
         background: rgba(21, 102, 241, 0.09);
       }
@@ -109,10 +109,10 @@ export const TabListItem = styled.div<{
 export const TabContent = styled.div<{ isDeviceUnderBreakpoint?: boolean; isLast?: boolean }>`
   flex: 1;
   padding: 32px;
-  background: ${({ theme }) => `${theme.colors.surface.background.level3.lowContrast}`};
+  background: ${({ theme }) => `${theme.colors.surface.background.gray.moderate}`};
   border-width: 1px 1px 1px 0;
   border-style: solid;
-  border-color: ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border-color: ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
   border-radius: 0 4px 4px 0;
   overflow-y: scroll;
   -ms-overflow-style: none;

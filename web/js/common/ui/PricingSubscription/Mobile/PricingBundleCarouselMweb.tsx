@@ -1,8 +1,11 @@
 import * as React from 'react';
-import { compose } from 'redux';
-import rTracking from 'react-tracking';
-import { RTrackingT } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import { ChevronLeftIcon, ChevronRightIcon, Box } from '@razorpay/blade/components';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
+import { TOUCH_SPEED } from 'common/ui/PricingSubscription/constants';
+import { RTrackingT } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
+
 import {
   StyleRightSlide,
   StyleLeftSlide,
@@ -12,7 +15,7 @@ import {
   StyledCarouselSlides,
   StyleSlideContainer,
 } from './PricingMwebStyle';
-import { TOUCH_SPEED } from 'common/ui/PricingSubscription/constants';
+
 import type { TrackingObjectType } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
 interface CarouselProps {
   children: JSX.Element[];
@@ -114,7 +117,7 @@ const Carousel = ({
         <StyleLeftSlide onClick={handleLeftClick} data-testid="carouselLeftPane">
           <ChevronLeftIcon
             data-testid="ChevronLeftIcon"
-            color="feedback.icon.neutral.lowContrast"
+            color="feedback.icon.neutral.intense"
             size="xlarge"
           />
         </StyleLeftSlide>
@@ -129,7 +132,7 @@ const Carousel = ({
         <StyleRightSlide onClick={handleRightClick} data-testid="carouselRightPane">
           <ChevronRightIcon
             data-testid="ChevronRightIcon"
-            color="feedback.icon.neutral.lowContrast"
+            color="feedback.icon.neutral.intense"
             size="xlarge"
           />
         </StyleRightSlide>

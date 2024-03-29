@@ -45,7 +45,7 @@ export const Table = <RowType, AdditionalInfoType = void>({
                   centered={centeredHeaders.includes(index)}
                   aria-label={header}
                 >
-                  <Text variant="body" type="subdued" weight="bold" contrast="low">
+                  <Text variant="body" weight="semibold" color="surface.text.gray.muted">
                     {header}
                   </Text>
                 </TableHeader>
@@ -75,7 +75,6 @@ export const Table = <RowType, AdditionalInfoType = void>({
           <EmptyComponentContainer>{renderOnEmpty()}</EmptyComponentContainer>
         ) : null}
       </TableWrapper>
-
       {Boolean(!loading && rows.length != 0) && (
         <div
           style={{

@@ -4,7 +4,7 @@ import { reportsTheme } from 'merchant_common/views/Reports/configs';
 
 export const ExpandMore = styled.p<{ active: boolean }>(({ theme, active }) => {
   return `
-      background: ${theme.colors.feedback.background.neutral.highContrast};
+      background: ${theme.colors.feedback.background.neutral.intense};
       border-radius: ${theme.border.radius.max}px;
       color: #ffffff;
       height: 20px;

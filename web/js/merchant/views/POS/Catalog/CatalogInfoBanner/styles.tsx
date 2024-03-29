@@ -10,8 +10,8 @@ export const TimelineIconStyled = styled.img(
 
 export const DashedLines = styled.div(
   ({ theme, isHidden }: { theme: Theme; isHidden: boolean }) => `
-  border-top: ${theme.border.width.thin}px dashed ${theme.colors.surface.text.subdued.lowContrast};
-  border-color: ${theme.colors.brand.gray[500].lowContrast};
+  border-top: ${theme.border.width.thin}px dashed ${theme.colors.surface.text.gray.muted};
+  border-color: ${theme.colors.interactive.border.gray.highlighted};
   opacity: ${isHidden ? 0 : 1};
   margin: 0;`,
 );
@@ -21,7 +21,7 @@ export const Ellipse1 = styled.div(
     width: 90%;    
     aspect-ratio: 1/1;
     border-radius: ${theme.border.radius.round};
-    background-color: ${theme.colors.brand.primary[400]};
+    background-color: ${theme.colors.surface.background.primary.subtle};
     position: absolute;
     right: 0;
     left: 0;
@@ -43,7 +43,7 @@ export const Ellipse2 = styled.div(
     width: 35%;    
     aspect-ratio: 1/1;
     border-radius: ${theme.border.radius.round};
-    background-color: ${theme.colors.brand.primary[400]};
+    background-color: ${theme.colors.surface.background.primary.subtle};
     position: absolute;
     left: 70%;
     top: 50%;

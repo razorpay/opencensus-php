@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Title,
+  Heading,
   Card,
   CardBody,
   Text,
@@ -27,15 +27,15 @@ const ReconInitiatedSuccess = (props) => {
   return (
     <Card margin="spacing.6">
       <CardBody>
-        <Title>
-          <CheckCircleIcon color="brand.secondary.500" />{' '}
+        <Heading size="large">
+          <CheckCircleIcon color="surface.text.onSea.onSubtle" />{' '}
           {props.isConfigCreation ? 'Process Setup completed' : 'New Reconciliation Initiated'}
-        </Title>
+        </Heading>
         <Box marginBottom="spacing.6" />
         <Divider marginBottom="spacing.6" />
         <Box width="480px">
           <Box
-            backgroundColor="brand.primary.300"
+            backgroundColor="surface.background.primary.subtle"
             display="flex"
             borderRadius="max"
             paddingY="spacing.2"
@@ -44,12 +44,16 @@ const ReconInitiatedSuccess = (props) => {
             alignItems="center"
             width="fit-content"
           >
-            <LoaderIcon size="small" color="brand.primary.500" marginRight="spacing.2" />
-            <Text size="small" color="brand.primary.500">
+            <LoaderIcon
+              size="small"
+              color="interactive.icon.primary.normal"
+              marginRight="spacing.2"
+            />
+            <Text size="small" color="surface.text.primary.normal">
               Processing
             </Text>
           </Box>
-          <Text type="subdued" marginBottom="spacing.4" size="medium">
+          <Text marginBottom="spacing.4" size="medium" color="surface.text.gray.muted">
             {props.isConfigCreation ? successMessage.config : successMessage.runs}
           </Text>
           <Box display="flex" justifyContent="flex-end" marginTop="spacing.6">

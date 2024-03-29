@@ -6,9 +6,9 @@ const ProductsText = ({ text }: { text: string }): JSX.Element => {
     <Box
       paddingX="spacing.6"
       paddingY="spacing.5"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
     >
-      <Text weight="bold">{text}</Text>
+      <Text weight="semibold">{text}</Text>
     </Box>
   );
 };

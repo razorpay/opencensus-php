@@ -15,15 +15,13 @@ const ApplicationDetails = ({
     gap="spacing.3"
     alignItems="center"
     padding={['spacing.3', 'spacing.6']}
-    borderColor="surface.border.normal.lowContrast"
+    borderColor="surface.border.gray.muted"
     marginTop="spacing.6"
   >
     <Box display="flex" gap="spacing.4" alignItems="center" flex="1">
       <Box>
-        <Text color="surface.text.subdued.lowContrast" type="subdued">
-          {name}
-        </Text>
-        <Text type="subdued">App Id : {id}</Text>
+        <Text color="surface.text.gray.muted">{name}</Text>
+        <Text color="surface.text.gray.muted">App Id : {id}</Text>
       </Box>
     </Box>
     <Link size="large" onClick={handleChange}>

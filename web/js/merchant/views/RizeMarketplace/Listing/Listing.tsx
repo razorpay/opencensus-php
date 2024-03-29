@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { Box, Heading, Spinner, Text, Title } from '@razorpay/blade/components';
+import { BladeProvider, Box, Heading, Spinner, Text } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 import {
   trackDealTileClicked,
@@ -86,7 +87,7 @@ const ListingPage = ({ slug }: ListingPageProps): JSX.Element => {
         ) : null}
         {isProductError ? (
           <>
-            <Text size="large" weight="bold" color="surface.text.subtle.lowContrast">
+            <Text size="large" weight="semibold" color="surface.text.gray.subtle">
               Could not load product details, please try again later.
             </Text>
             <BackToMarketplaceLink marginTop="spacing.5" />
@@ -97,72 +98,78 @@ const ListingPage = ({ slug }: ListingPageProps): JSX.Element => {
   }
 
   return (
-    <Box backgroundColor="surface.background.level3.lowContrast">
-      <Box paddingTop="spacing.9" paddingBottom="spacing.11" position="relative" zIndex={1}>
-        <BackgroundIntroVideo />
-        <Container>
-          <BackToMarketplaceLink color="white" alignSelf="flex-start" />
-          <Box
-            display="flex"
-            flexDirection={{ base: 'column', l: 'row' }}
-            justifyContent="space-between"
-            alignItems="center"
-            gap={{ base: '36px', l: 'spacing.0' }}
-            marginTop={{ base: '5.5rem', l: 'spacing.7' }}
-          >
-            <Box display="flex" flexDirection="column" gap="spacing.5" maxWidth="60%" width="100%">
+    <Box backgroundColor="surface.background.gray.moderate">
+      <BladeProvider colorScheme="dark" themeTokens={bladeTheme}>
+        <Box paddingTop="spacing.9" paddingBottom="spacing.11" position="relative" zIndex={1}>
+          <BackgroundIntroVideo />
+          <Container>
+            <BackToMarketplaceLink color="white" alignSelf="flex-start" />
+            <Box
+              display="flex"
+              flexDirection={{ base: 'column', l: 'row' }}
+              justifyContent="space-between"
+              alignItems="center"
+              gap={{ base: '36px', l: 'spacing.0' }}
+              marginTop={{ base: '5.5rem', l: 'spacing.7' }}
+            >
               <Box
                 display="flex"
-                flexDirection={{ base: 'column', l: 'row' }}
-                alignItems="center"
+                flexDirection="column"
                 gap="spacing.5"
+                maxWidth="60%"
+                width="100%"
               >
-                <ProductLogo
-                  src={resolveToRizeUrl(product.data.logo_src)}
-                  alt={`${product.data.name} logo`}
-                />
-                <Title as="h1" size="large" color="surface.text.normal.highContrast">
-                  {product.data.name}
-                </Title>
-              </Box>
-              <Text size="small" weight="bold" color="surface.text.normal.highContrast">
-                {product.data.category.toUpperCase()}
-              </Text>
-              <Box maxWidth="75%" display={{ base: 'none', l: 'block' }}>
-                <Heading
-                  size="large"
-                  weight="regular"
-                  as="span"
-                  color="surface.text.normal.highContrast"
+                <Box
+                  display="flex"
+                  flexDirection={{ base: 'column', l: 'row' }}
+                  alignItems="center"
+                  gap="spacing.5"
                 >
-                  {product.data.excerpt}
-                </Heading>
+                  <ProductLogo
+                    src={resolveToRizeUrl(product.data.logo_src)}
+                    alt={`${product.data.name} logo`}
+                  />
+                  <Heading as="h1" color="surface.text.staticWhite.normal" size="xlarge">
+                    {product.data.name}
+                  </Heading>
+                </Box>
+                <Text size="small" weight="semibold" color="surface.text.staticWhite.normal">
+                  {product.data.category.toUpperCase()}
+                </Text>
+                <Box maxWidth="75%" display={{ base: 'none', l: 'block' }}>
+                  <Heading
+                    weight="regular"
+                    as="span"
+                    color="surface.text.staticWhite.normal"
+                    size="medium"
+                  >
+                    {product.data.excerpt}
+                  </Heading>
+                </Box>
               </Box>
+              <StyledYoutubeVideo src={product.data.video_src} title={product.data.name} />
             </Box>
-            <StyledYoutubeVideo src={product.data.video_src} title={product.data.name} />
-          </Box>
-        </Container>
-      </Box>
-
+          </Container>
+        </Box>
+      </BladeProvider>
       <ListingDetails product={product} />
-
       <Box
-        backgroundColor="surface.background.level1.lowContrast"
+        backgroundColor="surface.background.gray.subtle"
         paddingTop={{ base: '28px', l: 'spacing.11' }}
         paddingBottom="74px"
       >
         <Container>
-          <Title as="h2" size="small" color="surface.text.normal.lowContrast">
+          <Heading as="h2" color="surface.text.gray.normal" size="large">
             More in {product.data.category}
-          </Title>
+          </Heading>
 
           {!isSimilarProductsLoading &&
           (!similarProducts || similarProducts.results.length === 0) ? (
             <Box display="flex" justifyContent="center" marginY="spacing.11">
               <Text
-                color="surface.text.subtle.lowContrast"
+                color="surface.text.gray.subtle"
                 size="large"
-                weight="bold"
+                weight="semibold"
                 textAlign="center"
               >
                 {!similarProducts
@@ -197,7 +204,6 @@ const ListingPage = ({ slug }: ListingPageProps): JSX.Element => {
           )}
         </Container>
       </Box>
-
       <RizeFooter source="productpage" />
     </Box>
   );

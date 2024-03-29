@@ -113,7 +113,7 @@ const ResellerOrders = ({ mode }: { mode: ModeT }) => {
             </div>
             <Box>
               <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
-                <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+                <Text size="small" color="surface.text.gray.muted">{`Total ${
                   orders?.total_count || 0
                 } Orders`}</Text>
               </Box>

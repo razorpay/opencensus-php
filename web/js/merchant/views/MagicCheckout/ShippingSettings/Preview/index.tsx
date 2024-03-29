@@ -22,7 +22,7 @@ const PreviewSettings = ({ setProfile, default_profile }): JSX.Element => {
 
   return (
     <>
-      <Heading size="medium">Shipping Profiles</Heading>
+      <Heading size="small">Shipping Profiles</Heading>
       <Box display="flex" alignItems="center" justifyContent="space-between" marginY="spacing.7">
         <Box
           display="flex"
@@ -32,8 +32,8 @@ const PreviewSettings = ({ setProfile, default_profile }): JSX.Element => {
           flexDirection="column"
           width="80%"
         >
-          <Heading>Custom Shipping Profile</Heading>
-          <Text type="subdued" size="small">
+          <Text size="large">Custom Shipping Profile</Text>
+          <Text size="small" color="surface.text.gray.muted">
             Create distinct shipping profiles for specific products or categories, ensuring optimal
             rates, faster deliveries, and delighted customer experience.
           </Text>
@@ -52,8 +52,8 @@ const PreviewSettings = ({ setProfile, default_profile }): JSX.Element => {
           flexDirection="column"
           width="75%"
         >
-          <Heading>Default Shipping Profile (Mandatory)</Heading>
-          <Text type="subdued" size="small">
+          <Text size="large">Default Shipping Profile (Mandatory)</Text>
+          <Text size="small" color="surface.text.gray.muted">
             This profile acts as your safety net, ensuring there's always a shipping rate available
             for your products. Whenever configurations for products added to cart aren't found,
             we'll rely on these generic rates to provide a seamless checkout experience for your

@@ -2,7 +2,7 @@ import Divider from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/co
 import styled, { css } from 'styled-components';
 
 export const StyledBreakUp = styled.div`
-  background: ${({ theme }) => `${theme.colors.surface.background.level2.lowContrast}`};
+  background: ${({ theme }) => `${theme.colors.surface.background.gray.intense}`};
   width: 100%;
   flex-direction: column;
   flex: 1.8;
@@ -14,7 +14,7 @@ export const StyledBreakUp = styled.div`
 
 export const BreakupHeader = styled.div`
   padding: 12px 24px;
-  border-bottom: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+  border-bottom: 1px solid ${({ theme }) => `${theme.colors.surface.border.gray.muted}`};
 `;
 
 export const BreakupContent = styled.div`

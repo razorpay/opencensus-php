@@ -65,8 +65,8 @@ export const CarouselDataWidget: React.FC<CarouselDataWidgetProps> = ({
     >
       {variantIcon ? <Box testID="carousel-data-icon">{variantIcon()}</Box> : null}
       <Box gap="spacing.2" display="flex" flexDirection="column" paddingRight="spacing.2">
-        <Text weight="bold">{title}</Text>
-        <Text type="subdued">{description}</Text>
+        <Text weight="semibold">{title}</Text>
+        <Text color="surface.text.gray.muted">{description}</Text>
       </Box>
       {action ? (
         <Box alignItems="center" display="flex">

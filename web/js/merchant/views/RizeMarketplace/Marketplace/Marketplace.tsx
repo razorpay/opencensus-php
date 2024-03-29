@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import {
   ArrowLeftIcon,
+  BladeProvider,
   Box,
   Button,
   Display,
@@ -9,9 +10,9 @@ import {
   Spinner,
   Text,
   Theme,
-  Title,
   useTheme,
 } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -124,13 +125,13 @@ const MarketplaceSearchSection = ({
           position="sticky"
           top="spacing.0"
           zIndex="20"
-          backgroundColor="surface.background.level3.lowContrast"
+          backgroundColor="surface.background.gray.moderate"
           paddingY={{ base: 'spacing.7', l: 'spacing.8' }}
         >
           <Container>
-            <Title as="h2" size="small" type="normal" color="surface.text.normal.lowContrast">
+            <Heading as="h2" color="surface.text.gray.normal" size="large">
               All Rize Deals
-            </Title>
+            </Heading>
             <Box
               display="grid"
               gridTemplateColumns={{ base: '1fr', l: '1fr 280px' }}
@@ -165,9 +166,9 @@ const MarketplaceSearchSection = ({
               </Box>
             ) : searchedProducts?.length === 0 ? (
               <Text
-                color="surface.text.subtle.lowContrast"
+                color="surface.text.gray.subtle"
                 size="large"
-                weight="bold"
+                weight="semibold"
                 textAlign="center"
                 marginY="spacing.11"
               >
@@ -210,7 +211,6 @@ const MarketplaceSearchSection = ({
           <DesktopFiltering value={filters.category} onChange={handleFiltersChange} />
         </Container>
       </Box>
-
       <AnimatedBottomMobileBanner isVisible>
         <MobileFiltering value={filters.category} onChange={handleFiltersChange} />
       </AnimatedBottomMobileBanner>
@@ -223,11 +223,22 @@ const StyledRizeLogo = styled(RizeLogo)(
   height: ${theme.spacing[6]}px;
   width: auto;
   margin-top: ${theme.spacing[10]}px;
-  color: ${theme.colors.static.white};
+  color: ${theme.colors.interactive.icon.staticWhite.normal};
 
   @media (min-width: ${theme.breakpoints.m}px) {
     height: 26px;
   }
+`,
+);
+export const StyledFadedBox = styled.div(
+  ({ theme }: { theme: Theme }) => `
+    padding: ${theme.spacing[7]}px ${theme.spacing[4]}px;  
+    margin-top: ${theme.spacing[5]}px;
+    border-radius: ${theme.border.radius.large}px;  
+    gap: ${theme.spacing[3]}px;
+    display: flex;
+    align-items: center;
+    background-color: ${theme.colors.interactive.background.gray.disabled};
 `,
 );
 
@@ -254,75 +265,66 @@ const RizeMarketplacePage = ({ showNotification }: RizeMarketplacePageProps): JS
   };
 
   return (
-    <Box backgroundColor="surface.background.level1.lowContrast">
-      <Box paddingBottom="10rem" paddingTop="spacing.9" position="relative" zIndex={1}>
-        <BackgroundIntroVideo />
-        <Container
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Link
-            variant="button"
-            size="medium"
-            icon={ArrowLeftIcon}
-            iconPosition="left"
-            color="white"
-            alignSelf="flex-start"
-            onClick={(): void => navigate('/dashboard')}
-          >
-            Back to dashboard
-          </Link>
-          <StyledRizeLogo />
-          <Display
-            as="h1"
-            size={isL ? 'xlarge' : 'medium'}
-            type="normal"
-            color="surface.text.normal.highContrast"
-            textAlign="center"
-            marginTop="spacing.3"
-          >
-            Marketplace
-          </Display>
-          <Heading
-            as="span"
-            size="large"
-            weight="regular"
-            type="normal"
-            marginTop="spacing.5"
-            textAlign="center"
-            color="surface.text.normal.highContrast"
-          >
-            Discover Exclusive Product Deals
-          </Heading>
-
-          <Box
+    <Box backgroundColor="surface.background.gray.subtle">
+      <BladeProvider colorScheme="dark" themeTokens={bladeTheme}>
+        <Box paddingBottom="10rem" paddingTop="spacing.9" position="relative" zIndex={1}>
+          <BackgroundIntroVideo />
+          <Container
             display="flex"
+            flexDirection="column"
             alignItems="center"
-            gap="spacing.3"
-            backgroundColor="brand.gray.a100.highContrast"
-            paddingY="spacing.4"
-            paddingX="spacing.7"
-            marginTop="spacing.5"
-            borderRadius="large"
+            justifyContent="center"
           >
-            <Text color="surface.text.normal.highContrast" size="large">
-              <i className="i i-sparkles" />
-            </Text>
-            <Text color="surface.text.normal.highContrast" size={isL ? 'large' : 'medium'}>
-              Curated by Founders; Built for Businesses
-            </Text>
-          </Box>
-        </Container>
-      </Box>
-
-      <Box marginTop="-6.5rem">
-        <Container position="relative" zIndex={1}>
-          <Title as="h2" size="small" type="normal" color="surface.text.normal.highContrast">
-            New Rize Deals
-          </Title>
-        </Container>
+            <Link
+              variant="button"
+              size="medium"
+              icon={ArrowLeftIcon}
+              iconPosition="left"
+              color="white"
+              alignSelf="flex-start"
+              onClick={(): void => navigate('/dashboard')}
+            >
+              Back to dashboard
+            </Link>
+            <StyledRizeLogo />
+            <Display
+              as="h1"
+              size={isL ? 'xlarge' : 'medium'}
+              color="surface.text.staticWhite.normal"
+              textAlign="center"
+              marginTop="spacing.3"
+            >
+              Marketplace
+            </Display>
+            <Heading
+              as="span"
+              size="large"
+              weight="regular"
+              marginTop="spacing.5"
+              textAlign="center"
+              color="surface.text.staticWhite.normal"
+            >
+              Discover Exclusive Product Deals
+            </Heading>
+            <StyledFadedBox>
+              <Text color="surface.text.staticWhite.normal" size="large">
+                <i className="i i-sparkles" />
+              </Text>
+              <Text color="surface.text.staticWhite.normal" size={isL ? 'large' : 'medium'}>
+                Curated by Founders; Built for Businesses
+              </Text>
+            </StyledFadedBox>
+          </Container>
+        </Box>
+        <Box marginTop="-6.5rem">
+          <Container position="relative" zIndex={1}>
+            <Heading as="h2" color="surface.text.staticWhite.normal" size="large">
+              New Rize Deals
+            </Heading>
+          </Container>
+        </Box>
+      </BladeProvider>
+      <Box>
         <Box>
           <Container
             display={{ base: 'flex', l: 'grid' }}
@@ -356,9 +358,7 @@ const RizeMarketplacePage = ({ showNotification }: RizeMarketplacePageProps): JS
           </Container>
         </Box>
       </Box>
-
       <MarketplaceSearchSection showNotification={showNotification} />
-
       <RizeFooter source="homepage" />
     </Box>
   );

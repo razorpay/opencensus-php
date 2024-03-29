@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Box, Heading, Text } from '@razorpay/blade/components';
-import ShippingMethodsTable from 'merchant/views/MagicCheckout/ShippingSettings/ProfileSettings/ShippingMethods/ShippingMethodsTable';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 
 import Slider from 'common/ui/Slider';
+import ShippingMethodsTable from 'merchant/views/MagicCheckout/ShippingSettings/ProfileSettings/ShippingMethods/ShippingMethodsTable';
 import {
   Separator,
   SettingsWrapper,
-  SliderWrapper,
   SliderItem,
+  SliderWrapper,
 } from 'merchant/views/MagicCheckout/ShippingSettings/styles';
 import { openSlider } from 'merchant_common/reducers/slider';
 
@@ -34,14 +34,14 @@ const ProfileSlider = ({ profile, openSlider }) => {
       {isOpen ? (
         <Slider>
           <SliderWrapper>
-            <Heading size="large">{profile.name}</Heading>
+            <Heading size="medium">{profile.name}</Heading>
             <Separator />
             {profile?.zones?.length > 0 ? (
               profile.zones?.map((zone, index) => {
                 return (
                   <SliderItem key={index}>
                     <SettingsWrapper>
-                      <Text size="large" weight="bold">
+                      <Text size="large" weight="semibold">
                         {zone.name}
                       </Text>
                       {zone.shipping_methods?.length > 0 ? (

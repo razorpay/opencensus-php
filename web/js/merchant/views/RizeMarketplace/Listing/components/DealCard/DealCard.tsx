@@ -11,7 +11,6 @@ import {
   Heading,
   Link,
   Text,
-  Title,
 } from '@razorpay/blade/components';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -87,9 +86,9 @@ const LargeDealCard = ({
       width="100%"
       ref={unaviledCardRef}
     >
-      <Title size="small" textAlign="center">
+      <Heading textAlign="center" size="large">
         {offer}
-      </Title>
+      </Heading>
       <Button
         size="large"
         isFullWidth
@@ -113,7 +112,7 @@ const LargeDealCard = ({
     >
       <AvailedBackground />
       <Box
-        backgroundColor="brand.primary.500"
+        backgroundColor="surface.background.primary.intense"
         paddingY="spacing.4"
         width="100%"
         borderTopLeftRadius="medium"
@@ -121,9 +120,9 @@ const LargeDealCard = ({
         position="relative"
         zIndex={1}
       >
-        <Heading color="surface.text.normal.highContrast" size="small" textAlign="center">
+        <Text color="surface.text.staticWhite.normal" textAlign="center" size="large">
           {offer}
-        </Heading>
+        </Text>
       </Box>
       <Box marginY="auto" paddingX="spacing.11" paddingY="spacing.5" width="100%">
         <Box
@@ -135,7 +134,7 @@ const LargeDealCard = ({
           position="relative"
           borderRadius="medium"
           overflow="hidden"
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           maxWidth="100%"
         >
           <Box
@@ -148,7 +147,7 @@ const LargeDealCard = ({
           >
             <Box maxWidth="100%" whiteSpace="break-spaces">
               <Text
-                weight="bold"
+                weight="semibold"
                 size="large"
                 textAlign="center"
                 testID="large-deal-card-coupon-code"
@@ -159,8 +158,8 @@ const LargeDealCard = ({
             {isCopied ? (
               <Text
                 size="small"
-                weight="bold"
-                color="surface.text.subtle.lowContrast"
+                weight="semibold"
+                color="surface.text.gray.subtle"
                 textAlign="center"
               >
                 Code copied!
@@ -200,7 +199,7 @@ const LargeDealCard = ({
     <Box display="flex" flexDirection="column" alignItems="center" width="100%">
       <AvailedBackground />
       <Box
-        backgroundColor="brand.primary.500"
+        backgroundColor="surface.background.primary.intense"
         paddingY="spacing.4"
         width="100%"
         borderTopLeftRadius="medium"
@@ -208,9 +207,9 @@ const LargeDealCard = ({
         position="relative"
         zIndex={1}
       >
-        <Heading color="surface.text.normal.highContrast" size="small" textAlign="center">
+        <Text color="surface.text.staticWhite.normal" textAlign="center" size="large">
           {offer}
-        </Heading>
+        </Text>
       </Box>
       <Box
         display="flex"
@@ -231,7 +230,7 @@ const LargeDealCard = ({
           Apply here
         </Button>
         <Box marginTop="spacing.3" paddingX="spacing.8">
-          <Text color="surface.text.subtle.lowContrast" textAlign="center">
+          <Text color="surface.text.gray.subtle" textAlign="center">
             You can avail the deal on product’s website
           </Text>
         </Box>
@@ -273,12 +272,12 @@ const SmallDealCard = ({
         justifyContent="space-between"
         gap="spacing.5"
         padding={['spacing.6', isSticky ? 'spacing.8' : 'spacing.4']}
-        backgroundColor="brand.gray.a50.lowContrast"
+        backgroundColor="surface.background.gray.moderate"
         borderRadius={isSticky ? 'none' : 'medium'}
         borderTopWidth={isSticky ? 'thin' : 'none'}
-        borderTopColor={isSticky ? 'surface.border.normal.lowContrast' : undefined}
+        borderTopColor={isSticky ? 'surface.border.gray.muted' : undefined}
       >
-        <Heading size="medium" weight="bold">
+        <Heading weight="semibold" size="small">
           {offer}
         </Heading>
         <Box flexShrink={0}>
@@ -293,7 +292,6 @@ const SmallDealCard = ({
           </Button>
         </Box>
       </Box>
-
       <BottomSheet
         /**
          * This high zIndex is to overlay the mobile filters section on top of the "Help" button.

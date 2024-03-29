@@ -64,7 +64,7 @@ export const MobileHeader = ({
         <span className="mobile-header-content">{title}</span>
       </MobileHeaderContent>
       <MobileHeaderCloseIcon onClick={onClose}>
-        <CloseIcon size="large" color="feedback.icon.neutral.lowContrast" />
+        <CloseIcon size="large" color="feedback.icon.neutral.intense" />
       </MobileHeaderCloseIcon>
     </MobileHeaderWrapper>
   );
@@ -168,7 +168,7 @@ const Header = ({ closeModal, step, setStep, trackingExperiments }: HeaderProps)
           data-testid="back-id"
           onClick={goBack}
         >
-          <ChevronLeftIcon color="feedback.icon.neutral.lowContrast" size="large" />
+          <ChevronLeftIcon color="feedback.icon.neutral.intense" size="large" />
         </span>
         <span>Want to manage your clients?</span>
       </HeaderBlock>
@@ -183,7 +183,7 @@ const Header = ({ closeModal, step, setStep, trackingExperiments }: HeaderProps)
           <ProgressBar value={progress.thirdStep} showPercentage={false} size="medium" />
         </div>
         <div className="icon-block" onClick={onClose}>
-          <CloseIcon color="surface.action.icon.default.lowContrast" size="large" />
+          <CloseIcon color="interactive.icon.gray.normal" size="large" />
         </div>
       </HeaderBlockRight>
     </HeaderWrapper>

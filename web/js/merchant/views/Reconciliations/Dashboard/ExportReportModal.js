@@ -13,7 +13,6 @@ import {
   CardBody,
   Text,
   CheckCircleIcon,
-  Heading,
   FileTextIcon,
   Badge,
 } from '@razorpay/blade/components';
@@ -94,16 +93,16 @@ export default function ExportReportModal({ isOpen, setIsOpen, filters, merchant
             <Box display="flex">
               <FileTextIcon marginRight="spacing.2" marginTop="spacing.2" />
               <Box>
-                <Text weight="bold" type="subtle">
+                <Text weight="semibold" color="surface.text.gray.subtle">
                   Reconciliation report
                 </Text>
                 <Box display="flex" alignItems="center">
-                  <Text type="muted">
+                  <Text color="surface.text.gray.muted">
                     {from} to {to}
                   </Text>
                   {filters?.type ? (
                     <Badge size="small" marginLeft="spacing.2">
-                      <Text type="subtle" weight="bold">
+                      <Text weight="semibold" color="surface.text.gray.subtle">
                         {filters?.type}
                       </Text>
                     </Badge>
@@ -117,7 +116,7 @@ export default function ExportReportModal({ isOpen, setIsOpen, filters, merchant
           <>
             <Box display="flex" alignItems="center" marginBottom="spacing.4">
               <UsersIcon />
-              <Text marginLeft="spacing.2" weight="bold">
+              <Text marginLeft="spacing.2" weight="semibold">
                 Sharing With
               </Text>
             </Box>
@@ -133,9 +132,11 @@ export default function ExportReportModal({ isOpen, setIsOpen, filters, merchant
         ) : null}
         {step === 2 ? (
           <SuccessBox>
-            <CheckCircleIcon size="2xlarge" color="brand.secondary.500" />
-            <Heading type="subtle">Generating report</Heading>
-            <Text type="subtle">
+            <CheckCircleIcon size="2xlarge" color="surface.text.onSea.onSubtle" />
+            <Text size="large" color="surface.text.gray.subtle">
+              Generating report
+            </Text>
+            <Text color="surface.text.gray.subtle">
               We&apos;ve received your request for report. It&apos;ll take a few minutes to generate
               and you&apos;ll receive an email shortly with the report.
             </Text>

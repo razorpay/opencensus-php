@@ -1,5 +1,5 @@
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { rest } from 'msw';
 import { Provider } from 'react-redux';
@@ -24,7 +24,7 @@ describe('WithdrawDetails - Repay Now', () => {
   }) => {
     return (
       <Provider store={storeWithInitialState(initialState)}>
-        <BladeProvider themeTokens={paymentTheme}>
+        <BladeProvider themeTokens={bladeTheme}>
           <QueryClientProvider client={queryClient}>
             <RepayNow withdrawalId="123" />
           </QueryClientProvider>

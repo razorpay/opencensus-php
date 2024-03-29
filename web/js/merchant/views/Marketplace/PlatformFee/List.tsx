@@ -37,11 +37,11 @@ const transferStatus = {
 
 const platformAmount = {
   title: 'Platform Fee Amount',
-  value: (item) => <Amount value={paiseToRupees(item.amount)} size="body-small" />,
+  value: (item) => <Amount value={paiseToRupees(item.amount)} type="body" size="small" />,
 };
 const partnerAmount = {
   title: 'Partner Fee Amount',
-  value: (item) => <Amount value={paiseToRupees(item.amount)} size="body-small" />,
+  value: (item) => <Amount value={paiseToRupees(item.amount)} type="body" size="small" />,
 };
 
 const platformFeeId = {

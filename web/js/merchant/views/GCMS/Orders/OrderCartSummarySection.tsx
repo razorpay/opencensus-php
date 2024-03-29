@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Box, Divider, Heading, Text } from '@razorpay/blade/components';
+import { Box, Divider, Text } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
 import { Error } from 'common/new-ui/Input';
@@ -57,9 +57,9 @@ const OrderCartSummarySection = () => {
             <Box width="400px">
               <div className="content">
                 <Box padding="spacing.6">
-                  <Heading weight="bold" size="small">
+                  <Text weight="semibold" size="large">
                     Order Details:
-                  </Heading>
+                  </Text>
                   <Box padding={['spacing.4', 'spacing.0', 'spacing.6', 'spacing.0']}>
                     <Divider />
                   </Box>
@@ -76,13 +76,13 @@ const OrderCartSummarySection = () => {
                             alignItems="center"
                             justifyContent="space-between"
                           >
-                            <Text weight="bold">{program?.name}</Text>
+                            <Text weight="semibold">{program?.name}</Text>
                             <Box display="flex" flexDirection="row" alignItems="center">
                               <Box paddingRight="spacing.2">
-                                <Text color="surface.text.subdued.lowContrast">Discount:</Text>
+                                <Text color="surface.text.gray.muted">Discount:</Text>
                               </Box>
                               <Box>
-                                <Text weight="bold">
+                                <Text weight="semibold">
                                   {/* @ts-expect-error parseInt Number */}
                                   {parseFloat(program?.default_discount / 100, 10)}%
                                 </Text>
@@ -103,7 +103,7 @@ const OrderCartSummarySection = () => {
                                   <Box display="flex" flexDirection="row" alignItems="center">
                                     <Box padding={['spacing.2', 'spacing.0']}>
                                       <Box width="100px">
-                                        <Text size="small" color="surface.text.subdued.lowContrast">
+                                        <Text size="small" color="surface.text.gray.muted">
                                           Denomination
                                         </Text>
                                       </Box>
@@ -115,7 +115,7 @@ const OrderCartSummarySection = () => {
                                     </Box>
                                     <Box padding={['spacing.2', 'spacing.0']}>
                                       <Box width="100px">
-                                        <Text size="small" color="surface.text.subdued.lowContrast">
+                                        <Text size="small" color="surface.text.gray.muted">
                                           Quantity
                                         </Text>
                                       </Box>
@@ -150,10 +150,10 @@ const OrderCartSummarySection = () => {
                         alignItems="center"
                       >
                         <Box>
-                          <Text weight="bold">Total Value</Text>
+                          <Text weight="semibold">Total Value</Text>
                         </Box>
                         <Box>
-                          <Text weight="bold">
+                          <Text weight="semibold">
                             {getFormattedAmountNew(order?.total_amount, true)}
                           </Text>
                         </Box>
@@ -166,7 +166,7 @@ const OrderCartSummarySection = () => {
                         padding={['spacing.2', 'spacing.0']}
                       >
                         <Box>
-                          <Text color="surface.text.subdued.lowContrast">Less: Discount</Text>
+                          <Text color="surface.text.gray.muted">Less: Discount</Text>
                         </Box>
                         <Box>
                           <Text>
@@ -187,10 +187,10 @@ const OrderCartSummarySection = () => {
                         padding={['spacing.2', 'spacing.0']}
                       >
                         <Box>
-                          <Text weight="bold">Net Price</Text>
+                          <Text weight="semibold">Net Price</Text>
                         </Box>
                         <Box>
-                          <Text weight="bold">
+                          <Text weight="semibold">
                             {getFormattedAmountNew(order?.net_amount, true)}
                           </Text>
                         </Box>

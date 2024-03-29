@@ -124,7 +124,7 @@ const InputContainer = (props: InputContainerPropsType): JSX.Element => {
       <TableHeader>
         <HeadingText>
           <img src={headerIcon} alt="analytics-icon" />
-          <Text size="medium" weight="bold">
+          <Text size="medium" weight="semibold">
             {tableHeader}
           </Text>
         </HeadingText>

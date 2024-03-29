@@ -152,7 +152,7 @@ const ProcessCharts = ({ stats, currency }) => {
       <Card marginTop="spacing.6" width="49%">
         <CardBody>
           <Box>
-            <Heading weight="bold" size="medium" type="subtle">
+            <Heading weight="semibold" size="small" color="surface.text.gray.subtle">
               Reconciliation trend
             </Heading>
             <Box>
@@ -167,10 +167,15 @@ const ProcessCharts = ({ stats, currency }) => {
                   marginTop="spacing.2"
                 >
                   <Box textAlign="center">
-                    <Text size="small" type="muted" marginLeft="spacing.2">
+                    <Text size="small" marginLeft="spacing.2" color="surface.text.gray.muted">
                       Last run at
                     </Text>
-                    <Text size="medium" weight="bold" type="muted" marginLeft="spacing.2">
+                    <Text
+                      size="medium"
+                      weight="semibold"
+                      marginLeft="spacing.2"
+                      color="surface.text.gray.muted"
+                    >
                       {moment(
                         statsData?.recon_trend[statsData?.recon_trend.length - 1]?.time * 1000,
                       ).format('ll')}
@@ -181,13 +186,13 @@ const ProcessCharts = ({ stats, currency }) => {
               <Box display="flex" marginTop="spacing.10">
                 <Box display="flex" alignItems="center">
                   <LegendBox color="#B2E949" />
-                  <Text size="medium" type="subtle" marginLeft="spacing.2">
+                  <Text size="medium" marginLeft="spacing.2" color="surface.text.gray.subtle">
                     Reconciled
                   </Text>
                 </Box>
                 <Box display="flex" alignItems="center" marginLeft="spacing.4">
                   <LegendBox color="#F13737" />
-                  <Text size="medium" type="subtle" marginLeft="spacing.2">
+                  <Text size="medium" marginLeft="spacing.2" color="surface.text.gray.subtle">
                     Unreconciled
                   </Text>
                 </Box>
@@ -199,7 +204,7 @@ const ProcessCharts = ({ stats, currency }) => {
       <Card marginTop="spacing.6" width="49%">
         <CardBody>
           <Box>
-            <Heading weight="bold" size="medium" type="subtle">
+            <Heading weight="semibold" size="small" color="surface.text.gray.subtle">
               Unreconciled Reasons Split
             </Heading>
             <Box>
@@ -214,13 +219,13 @@ const ProcessCharts = ({ stats, currency }) => {
                       <Box key={item?.reason} display="flex" marginTop="spacing.4">
                         <LegendBox color={bgColor[index]} />
                         <Box marginLeft="spacing.4">
-                          <Text size="medium" type="subtle">
+                          <Text size="medium" color="surface.text.gray.subtle">
                             {item?.reason}
                           </Text>
-                          <Text size="medium" weight="bold" type="normal">
+                          <Text size="medium" weight="semibold" color="surface.text.gray.normal">
                             {item?.count} records
                           </Text>
-                          <Text size="medium" type="subtle">
+                          <Text size="medium" color="surface.text.gray.subtle">
                             {formatAmount(item?.sum / 100, true, currency)}
                           </Text>
                         </Box>

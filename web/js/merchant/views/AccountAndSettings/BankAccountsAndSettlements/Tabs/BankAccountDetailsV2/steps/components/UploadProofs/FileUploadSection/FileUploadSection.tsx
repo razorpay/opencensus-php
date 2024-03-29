@@ -39,15 +39,15 @@ const FileUploadSection = ({
   return (
     <StyledFileUploadSection>
       <FileDescription>
-        <Text type="subtle">{description.title}</Text>
+        <Text color="surface.text.gray.subtle">{description.title}</Text>
         {description.details && (
           <>
-            <Text type="subtle">{description.details.title}</Text>
+            <Text color="surface.text.gray.subtle">{description.details.title}</Text>
             <DetailList>
               {description.details.items.map((each, index) => (
                 <DetailListItem key={`details-${index}`}>
                   <Dot />
-                  <Text type="subtle">{each}</Text>
+                  <Text color="surface.text.gray.subtle">{each}</Text>
                 </DetailListItem>
               ))}
             </DetailList>
@@ -60,8 +60,8 @@ const FileUploadSection = ({
             href={description?.video?.link}
             onClick={handleWatchVideo}
           >
-            <PlayCircleIcon color="action.icon.tertiary.default" size="medium" />
-            <Text weight="bold" size="small">
+            <PlayCircleIcon color="interactive.icon.gray.normal" size="medium" />
+            <Text weight="semibold" size="small">
               Watch sample video
             </Text>
           </StyledWatchVideo>

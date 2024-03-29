@@ -413,7 +413,7 @@ export const PlaceholderImage = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 20px;
   line-height: 24px;
   color: #0b2144;

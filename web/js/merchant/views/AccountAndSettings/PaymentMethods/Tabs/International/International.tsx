@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Heading, Box } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -207,10 +207,9 @@ const International = ({
             if (Array.isArray(leafListItem.leafList)) {
               return (
                 <Box key={leafListItem.header}>
-                  <Heading as="h4" type="subtle" marginBottom="spacing.4">
+                  <Text marginBottom="spacing.4" size="large" color="surface.text.gray.subtle">
                     {leafListItem.header}
-                  </Heading>
-
+                  </Text>
                   {leafListItem.leafList.map((leafListItem) => (
                     <Box key={leafListItem.header} marginBottom="spacing.5">
                       <LeafListItemDiv

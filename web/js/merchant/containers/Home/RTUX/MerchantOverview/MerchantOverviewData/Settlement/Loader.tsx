@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Heading, Skeleton } from '@razorpay/blade/components';
+import { Box, Heading, Skeleton, Text } from '@razorpay/blade/components';
 
 import { TimelineItemIconKeys } from 'merchant/containers/Home/RTUX/MerchantOverview/types';
 
@@ -20,14 +20,14 @@ const SettlementLoader = () => (
       justifyContent="center"
       width={{ base: '100%', l: '30%' }}
     >
-      <Heading size="large">Current balance</Heading>
+      <Heading size="medium">Current balance</Heading>
       <Skeleton width="250px" height="24px" borderRadius="max" />
     </Box>
     <Box display="flex" flexDirection="column" justifyContent="space-between" width="100%">
       <Timeline>
         <TimelineItem icon={TimelineItemIconKeys.loading}>
           <Box display="flex" flexDirection="column" gap="spacing.2">
-            <Heading variant="subheading">Today’s settlement</Heading>
+            <Text size="small">Today’s settlement</Text>
             <Skeleton width="110px" height="24px" borderRadius="max" />
             <Skeleton width="180px" height="14px" borderRadius="medium" />
           </Box>

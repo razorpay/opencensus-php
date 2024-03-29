@@ -185,9 +185,9 @@ const Non3dsCardsActivation = ({
                 <Alert
                   description={`You have requested for non 3D Secure card support on ${states.updatedAt}. This can take
               upto 5-7 business days to get processed by our fraud protection team.`}
-                  intent="information"
                   isFullWidth
                   isDismissible={false}
+                  color="information"
                 />
               </div>
             ) : (
@@ -202,9 +202,9 @@ const Non3dsCardsActivation = ({
               <div className="mt20">
                 <Alert
                   description={states.rejectionReason}
-                  intent="negative"
                   isDismissible={false}
                   isFullWidth
+                  color="negative"
                 />
               </div>
             ) : (

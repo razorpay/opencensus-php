@@ -243,7 +243,7 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
           <React.Fragment key={leafList.header}>
             <div className="level-3--header">
               <div className="heading">
-                <Text weight="bold">{leafList?.header}</Text>
+                <Text weight="semibold">{leafList?.header}</Text>
                 <DocumentLink link={leafList?.docLink} method={instrument?.name} />
               </div>
               {getDescription()}

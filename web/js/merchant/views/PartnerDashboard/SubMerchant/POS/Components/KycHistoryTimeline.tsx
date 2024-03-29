@@ -39,7 +39,7 @@ export const KycHistoryTimeline = ({
   };
   return (
     <Box>
-      <Text weight="bold" color="surface.text.subtle.lowContrast">
+      <Text weight="semibold" color="surface.text.gray.subtle">
         KYC History:
       </Text>
       {data.length ? (
@@ -50,9 +50,9 @@ export const KycHistoryTimeline = ({
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                   <Box display="flex">
                     <TimelineStatus status={item.status} />
-                    <Text weight="bold">{getStatus(item.status)}</Text>
+                    <Text weight="semibold">{getStatus(item.status)}</Text>
                   </Box>
-                  <Text size="small" color="surface.text.placeholder.lowContrast">
+                  <Text size="small" color="surface.text.gray.disabled">
                     {item.date || 'N/A'}
                   </Text>
                 </Box>
@@ -60,7 +60,7 @@ export const KycHistoryTimeline = ({
                   marginY="spacing.2"
                   marginX="spacing.3"
                   borderLeftWidth={index === data.length - 1 ? 'none' : 'thin'}
-                  borderLeftColor="surface.border.normal.lowContrast"
+                  borderLeftColor="surface.border.gray.muted"
                   paddingX="spacing.7"
                   paddingBottom="spacing.6"
                   paddingTop="spacing.2"

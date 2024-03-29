@@ -7,7 +7,7 @@ import { Formik, Form } from 'formik';
 ///- Formik Components
 
 // components
-import { Button, Box, Heading, Spinner, Link, ExternalLinkIcon } from '@razorpay/blade/components';
+import { Button, Box, Spinner, Link, ExternalLinkIcon, Heading } from '@razorpay/blade/components';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import BuyerAddressForm from 'merchant/views/Transactions/v1/B2bPayments/components/BuyerAddressModal/BuyerAddressForm';
@@ -75,7 +75,7 @@ const BuyerAddressModal = ({
               <Form data-testid="buyer-address-form">
                 <main className="form-container">
                   <FormHeader>
-                    <Heading size="medium" contrast="low">
+                    <Heading size="small" color="surface.text.gray.normal">
                       ADDRESS DETAILS
                     </Heading>
                   </FormHeader>

@@ -1,7 +1,7 @@
 import React from 'react';
 
 // Components
-import { Button, Box, Heading, Text } from '@razorpay/blade/components';
+import { Button, Box, Text, Heading } from '@razorpay/blade/components';
 ///- Components
 
 /**
@@ -23,17 +23,16 @@ const TicketSuccess = ({ onClose }) => {
             alt="success"
           />
         </Box>
-        <Heading size="large" textAlign="center" marginBottom="spacing.8">
+        <Heading textAlign="center" marginBottom="spacing.8" size="medium">
           Purpose code update request has been sent!
         </Heading>
-        <Text contrast="low" textAlign="center" marginBottom="spacing.6">
+        <Text textAlign="center" marginBottom="spacing.6" color="surface.text.gray.normal">
           Your new purpose code will be reviewed by our banking partner before it is approved.
         </Text>
-        <Text contrast="low" type="muted" textAlign="center" marginBottom="spacing.6">
+        <Text textAlign="center" marginBottom="spacing.6" color="surface.text.gray.muted">
           Purpose code changes are reflected on the dashboard usually within 48 hours.
         </Text>
       </div>
-
       <Box
         display="flex"
         gap="1rem"

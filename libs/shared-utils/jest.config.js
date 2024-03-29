@@ -6,14 +6,11 @@ module.exports = {
   transform: {
     '\\.(js|ts|jsx|tsx)?$': '../jest-transformer.js',
   },
-  transformIgnorePatterns: ['/node_modules/(?!(@razorpay/blade)|uuid/)'],
+  transformIgnorePatterns: ['/node_modules/(?!(@razorpay/blade)|uuid|@table-library/)'],
   moduleNameMapper: {
     // Since jest doesn't know how to resolve these static assets, we mock them
     '\\.(css)$': `${nodeModulesRootDir}/../jest-styleMock.js`,
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|docx)$': `${nodeModulesRootDir}/../jest-fileMock.js`,
-    '@razorpay/blade/components': `${nodeModulesRootDir}/../node_modules/@razorpay/blade/build/components/index.development.web.js`,
-    '@razorpay/blade/utils': `${nodeModulesRootDir}/../node_modules/@razorpay/blade/build/utils/index.development.web.js`,
-    '@razorpay/blade/tokens': `${nodeModulesRootDir}/../node_modules/@razorpay/blade/build/tokens/index.development.web.js`,
     '^@dashboard/shared-utils(/.*)?$': `${nodeModulesRootDir}/../libs/shared-utils/src$1`,
     '^shell/commonStore': `${nodeModulesRootDir}/../web/js/merchant/commonStore/index`,
     '^merchant(/.*)?$': `${nodeModulesRootDir}/../web/js/merchant$1`,

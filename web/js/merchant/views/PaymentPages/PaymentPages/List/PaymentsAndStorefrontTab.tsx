@@ -14,8 +14,8 @@ const Wrapper = styled.div(
 
 const CustomRadio = styled.span(
   ({ active, theme }: { active: boolean; theme: Theme }) => `
-  border: ${active ? 'none' : `1.5px solid ${theme.colors.brand.primary[500]}`};
-  background: ${theme.colors.brand.primary[300]};
+  border: ${active ? 'none' : `1.5px solid ${theme.colors.surface.background.primary.intense}`};
+  background: ${theme.colors.surface.background.primary.subtle};
   margin-right: ${theme.spacing[4]}px;
   display: flex;
   width: ${theme.spacing[5]}px;
@@ -27,33 +27,33 @@ const CustomRadio = styled.span(
 
 const Tab = styled.button(
   ({ active, theme }: { active: boolean; theme: Theme }) => `
-  background: ${theme.colors.brand.primary[300]};
-  border: 1px solid ${theme.colors.brand.primary[300]};
+  background: ${theme.colors.surface.background.primary.subtle};
+  border: 1px solid ${theme.colors.surface.background.primary.subtle};
   border-radius: ${theme.spacing[1]}px;
   margin-right: ${theme.spacing[6]}px;
   padding: ${theme.spacing[4]}px ${theme.spacing[5]}px;
   display: flex;
   align-items: center;
-  color: ${theme.colors.surface.text.normal.lowContrast};
+  color: ${theme.colors.surface.text.gray.normal};
   font-size: ${theme.typography.fonts.size[100]}px;
   flex-shrink: 0;
 
   .i-done {
     display: ${active ? 'inherit' : 'none'};
-    color: ${theme.colors.brand.primary[500]};
+    color: ${theme.colors.surface.background.primary.intense};
   }
 
   ${
     active
       ? `
-    border: 1px solid ${theme.colors.brand.primary[500]};
+    border: 1px solid ${theme.colors.surface.background.primary.intense};
     position: relative;
 
     &:after {
       content: '\\25bc';
       position: absolute;
       top: 39px;
-      color: ${theme.colors.brand.primary[500]};
+      color: ${theme.colors.surface.background.primary.intense};
       left: 45%;
     }
   `

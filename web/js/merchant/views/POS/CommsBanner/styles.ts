@@ -4,24 +4,24 @@ import { CommsBannerItemVariants } from 'merchant/views/POS/types';
 
 const bgColorFn = ({ theme }: { theme: Theme }) => ({
   positive: {
-    bgColor: theme.colors.feedback.background.positive.highContrast,
-    bgShadow: theme.colors.feedback.background.positive.lowContrast,
+    bgColor: theme.colors.feedback.background.positive.intense,
+    bgShadow: theme.colors.feedback.background.positive.subtle,
   },
   negative: {
-    bgColor: theme.colors.feedback.background.negative.highContrast,
-    bgShadow: theme.colors.feedback.background.negative.lowContrast,
+    bgColor: theme.colors.feedback.background.negative.intense,
+    bgShadow: theme.colors.feedback.background.negative.subtle,
   },
   notice: {
-    bgColor: theme.colors.feedback.background.notice.highContrast,
-    bgShadow: theme.colors.feedback.background.notice.lowContrast,
+    bgColor: theme.colors.feedback.background.notice.intense,
+    bgShadow: theme.colors.feedback.background.notice.subtle,
   },
   information: {
-    bgColor: theme.colors.feedback.background.information.highContrast,
-    bgShadow: theme.colors.feedback.background.information.lowContrast,
+    bgColor: theme.colors.feedback.background.information.intense,
+    bgShadow: theme.colors.feedback.background.information.subtle,
   },
   neutral: {
-    bgColor: theme.colors.brand.gray[400].lowContrast,
-    bgShadow: theme.colors.brand.gray[300].lowContrast,
+    bgColor: theme.colors.interactive.border.gray.faded,
+    bgShadow: theme.colors.surface.background.gray.subtle,
   },
 });
 

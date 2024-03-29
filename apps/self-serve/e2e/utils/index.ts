@@ -56,7 +56,7 @@ export const assertCollapsibleRefundProcessedTimeline = async ({ page, count = 0
 };
 
 export const assertRefundDetails = async ({ page, id, amount }) => {
-  await expect(page.getByRole('heading', { name: 'Refund' })).toBeVisible();
+  await expect(page.getByTestId('refund-heading')).toBeVisible();
   const refundDetails = page.getByTestId(`payment-refunded-${id}`);
   await expect(refundDetails.getByText('Refund ID')).toBeVisible();
   await expect(refundDetails.getByText(id)).toBeVisible();

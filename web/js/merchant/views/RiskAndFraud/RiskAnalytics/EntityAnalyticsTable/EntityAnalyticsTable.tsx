@@ -102,7 +102,7 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
                 </ActionList>
               </DropdownOverlay>
             </Dropdown>
-            <Text weight="bold" size="large">
+            <Text weight="semibold" size="large">
               {ANALYTICS_TABLE_HEADER[entity]}
             </Text>
           </Box>
@@ -173,7 +173,7 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
         {queryData?.length > 0 && (
           <Box display="flex" marginTop="spacing.3">
             <Box display="flex" alignItems="center" marginLeft="auto">
-              <Text color="surface.text.subdued.lowContrast">
+              <Text color="surface.text.gray.muted">
                 {startIndex}-{endIndex} of {dataLength}
               </Text>
               <Box marginLeft="spacing.4">

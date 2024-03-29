@@ -106,7 +106,7 @@ export const SelectionOptionsContainer = styled.div`
 
 export const SelectedOption = styled.div`
   border-radius: 12px;
-  background-color: ${({ theme }) => theme.colors.brand.primary[300]};
+  background-color: ${({ theme }) => theme.colors.surface.background.primary.subtle};
   display: flex;
   flex-direction: row;
   align-items: center;

@@ -5,7 +5,7 @@ import {
   Text,
   Tooltip,
   TooltipInteractiveWrapper,
-  Title,
+  Heading,
 } from '@razorpay/blade/components';
 import React from 'react';
 import { CardInfoShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
@@ -28,13 +28,13 @@ const CardInfo = ({
   return (
     <>
       <Box display="flex" alignItems="center" gap="spacing.2">
-        <Text weight="bold" marginX={isAmount ? 'spacing.2' : 'none'}>
+        <Text weight="semibold" marginX={isAmount ? 'spacing.2' : 'none'}>
           {title}
         </Text>
         <TooltipWrapper>
           <Tooltip content={toolTipText} placement="top">
             <TooltipInteractiveWrapper>
-              <InfoIcon color="feedback.icon.neutral.lowContrast" size="small" />
+              <InfoIcon color="feedback.icon.neutral.intense" size="small" />
             </TooltipInteractiveWrapper>
           </Tooltip>
         </TooltipWrapper>
@@ -52,7 +52,8 @@ const CardInfo = ({
                     isAffixSubtle={false}
                     suffix="decimals"
                     currency={currency}
-                    size="title-medium"
+                    type="heading"
+                    size="xlarge"
                   />
                 </StyledAmount>
               ) : (
@@ -61,17 +62,18 @@ const CardInfo = ({
                   isAffixSubtle={true}
                   suffix="decimals"
                   currency={currency}
-                  size="title-medium"
+                  type="heading"
+                  size="xlarge"
                 />
               )
             ) : (
-              <Title color="surface.text.normal.lowContrast" size={isLeader ? 'large' : 'small'}>
+              <Heading color="surface.text.gray.normal" size={isLeader ? 'large' : 'small'}>
                 {value}
-              </Title>
+              </Heading>
             )}
           </Box>
           <Text
-            color="surface.text.subtle.lowContrast"
+            color="surface.text.gray.subtle"
             size="medium"
             marginX={isAmount ? 'spacing.2' : 'none'}
           >

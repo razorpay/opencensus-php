@@ -36,31 +36,31 @@ export const KYC_STATUS_TYPES = {
 
 export const STATUS_ASSETS_MAPPING: Record<CommsStatus, StatusAssets> = {
   active: {
-    icon: <CheckIcon size="medium" color="feedback.icon.neutral.highContrast" />,
+    icon: <CheckIcon size="medium" color="surface.icon.staticWhite.normal" />,
     variant: 'positive',
   },
   failed: {
-    icon: <CloseIcon size="medium" color="feedback.icon.neutral.highContrast" />,
+    icon: <CloseIcon size="medium" color="surface.icon.staticWhite.normal" />,
     variant: 'negative',
   },
   pending: {
-    icon: <ClockIcon size="medium" color="surface.action.icon.default.lowContrast" />,
+    icon: <ClockIcon size="medium" color="interactive.icon.gray.normal" />,
     variant: 'neutral',
   },
   notice: {
-    icon: <AlertOnlyIcon size="medium" color="feedback.icon.neutral.highContrast" />,
+    icon: <AlertOnlyIcon size="medium" color="surface.icon.staticWhite.normal" />,
     variant: 'notice',
   },
   informationRequired: {
-    icon: <UserIcon size="medium" color="surface.action.icon.default.lowContrast" />,
+    icon: <UserIcon size="medium" color="interactive.icon.gray.normal" />,
     variant: 'neutral',
   },
   processing: {
-    icon: <ClockIcon size="medium" color="feedback.icon.neutral.highContrast" />,
+    icon: <ClockIcon size="medium" color="surface.icon.staticWhite.normal" />,
     variant: 'information',
   },
   refund_pending: {
-    icon: <SubscriptionsIcon size="medium" color="feedback.icon.neutral.highContrast" />,
+    icon: <SubscriptionsIcon size="medium" color="surface.icon.staticWhite.normal" />,
     variant: 'neutral',
   },
   dispatched: {

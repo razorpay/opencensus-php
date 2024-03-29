@@ -64,7 +64,7 @@ const GoogleAccount = (props: GoogleAccountPropsType) => {
         <TableHeader>
           <HeadingText>
             <img src={GoogleIcon} alt="google-icon" />
-            <Text size="medium" weight="bold">
+            <Text size="medium" weight="semibold">
               Google Account
             </Text>
           </HeadingText>

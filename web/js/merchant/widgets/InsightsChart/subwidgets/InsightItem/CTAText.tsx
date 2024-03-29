@@ -7,8 +7,8 @@ import { CTATextProps } from './types';
 const HeadingWrapper = styled.div(
   ({ theme }) => `
   display: inline-flex;
-  color: ${theme.colors.surface.text.normal.lowContrast};
-  font-size: ${theme.typography.fonts.size[800]}px;
+  color: ${theme.colors.surface.text.gray.normal};
+  font-size: ${theme.typography.fonts.size[600]}px;
   font-weight: ${theme.typography.fonts.weight.bold};
 `,
 );
@@ -27,7 +27,9 @@ export const CTAText = ({ value, value_type, currency }: CTATextProps) => {
         <Amount
           value={formattedValue as number}
           currency={currency as any}
-          size="heading-large-bold"
+          type="heading"
+          size="medium"
+          weight="semibold"
         />
       ) : (
         formattedValue

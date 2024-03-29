@@ -6,7 +6,6 @@ import {
   CollapsibleForm,
   CollapsibleFormSection,
   Dropdown,
-  Heading,
   DateTimeRangePicker,
   Switch,
   Text,
@@ -324,17 +323,12 @@ export const ScheduleReportModal = ({
     <Fragment>
       <ReportModalHeader>
         <Box display="flex" alignItems="center">
-          <Heading variant="regular">{actionViaModal} Report Schedule &nbsp;</Heading>
-          <Badge contrast="high" size="small" variant="blue">
+          <Text size="large">{actionViaModal} Report Schedule &nbsp;</Text>
+          <Badge emphasis="intense" size="small" color="primary">
             New
           </Badge>
         </Box>
-        <Text
-          variant="body"
-          size="medium"
-          weight="regular"
-          color="surface.text.subdued.lowContrast"
-        >
+        <Text variant="body" size="medium" weight="regular" color="surface.text.gray.muted">
           You can create schedules on your reports and automate their delivery to your email. Choose
           what reports, where and how frequently you want them delivered.
         </Text>
@@ -452,7 +446,7 @@ export const ScheduleReportModal = ({
 
             <>
               <Box alignItems="center" justifyContent="space-between" display="flex">
-                <Text variant="body" type="subdued" size="small" weight="bold">
+                <Text variant="body" size="small" weight="semibold" color="surface.text.gray.muted">
                   Data & Repetition
                 </Text>
                 <Switch

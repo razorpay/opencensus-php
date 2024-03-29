@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import { Alert, Button, Text, TextInput } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
-import { Button, TextInput, Alert } from '@razorpay/blade/components';
-import { Heading, SubHeading } from './styled';
+
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { IPaymentPagesCategory } from 'merchant/reducers/paymentPages/storefront';
+import { ICategory } from 'merchant/reducers/paymentPages/types';
 import {
   addStorefrontCategory,
   updateStorefrontCategory,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
+import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { validateCategory } from './utils';
+
 import { CATEGORY_MESSAGES } from './constants';
-import { ICategory } from 'merchant/reducers/paymentPages/types';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { SubHeading } from './styled';
+import { validateCategory } from './utils';
 
 const ADD_DATA = {
   heading: 'Add new category',
@@ -159,7 +161,7 @@ const CategoryDrawer = ({
       hasTransparentBackground={hasTransparentBackground}
       top={top}
     >
-      <Heading>{heading}</Heading>
+      <Text size="large">{heading}</Text>
       {subHeading && <SubHeading>{subHeading}</SubHeading>}
       <TextInput
         label="Category name"
@@ -178,10 +180,10 @@ const CategoryDrawer = ({
         <>
           <br />
           <Alert
-            contrast="low"
+            emphasis="subtle"
             description="Changes will be saved across all payment pages that use this category"
-            intent="notice"
             isDismissible={false}
+            color="notice"
           />
         </>
       )}

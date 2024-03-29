@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Heading, Title } from '@razorpay/blade/components';
+import { Box, Heading } from '@razorpay/blade/components';
 
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 import { FeatureGallery } from 'merchant/views/POS/types';
@@ -43,15 +43,19 @@ const ProductFeaturesGallery = ({ featureGallery }: ProductFeatureGallery): JSX.
             justifyContent="center"
           >
             <Box marginX="spacing.4">
-              <Title size="large" type="subtle" textAlign={isMobile ? 'center' : 'left'}>
+              <Heading
+                textAlign={isMobile ? 'center' : 'left'}
+                size="xlarge"
+                color="surface.text.gray.subtle"
+              >
                 {title}
-              </Title>
+              </Heading>
               <Heading
                 weight="regular"
-                size="medium"
                 marginTop="spacing.4"
-                type="subtle"
                 textAlign={isMobile ? 'center' : 'left'}
+                size="small"
+                color="surface.text.gray.subtle"
               >
                 {description}
               </Heading>

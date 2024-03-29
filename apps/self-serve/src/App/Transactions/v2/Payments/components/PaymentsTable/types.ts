@@ -5,7 +5,7 @@ import { ListContainerProps } from 'apps/self-serve/src/App/Transactions/v2/comm
 export type PaymentsTableProps = ListContainerProps<Payments['items']>;
 
 export type StatusProps = {
-  variant: BadgeProps['variant'];
+  variant: BadgeProps['color'];
   content: string;
   status: Item['status'];
 };

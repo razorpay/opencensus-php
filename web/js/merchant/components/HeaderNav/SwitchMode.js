@@ -35,10 +35,10 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked, isRT
                 }
               />
             </Box>
-            <Text weight="bold" color="surface.text.subtle.lowContrast">
+            <Text weight="semibold" color="surface.text.gray.subtle">
               {modeFormatted} Mode
             </Text>
-            <ChevronDownIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+            <ChevronDownIcon size="medium" color="feedback.icon.neutral.intense" />
           </ModesDropdownWrapper>
         ) : (
           <div

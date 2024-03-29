@@ -8,7 +8,7 @@ export default () => (
         functions and industries for mentoring/training/coaching/advisory purposes.
       </p>
       <br />
-      <p style={{ fontWeight: 'bold' }}>
+      <p style={{ fontWeight: 600 }}>
         Following are the offers built specifically for Razorpay merchants:{' '}
       </p>
       <ul>

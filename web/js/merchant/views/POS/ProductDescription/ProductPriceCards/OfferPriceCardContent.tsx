@@ -5,8 +5,6 @@ import { OFFER_CARDS_STRUCT } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { ProductDescriptionPricing } from 'merchant/views/POS/types';
 
-import AmountWithStrikeThrough from './AmountWithStrikeThrough';
-
 type OfferPriceCardContentProps = {
   pricing: ProductDescriptionPricing;
   showHeaders?: boolean;
@@ -25,7 +23,7 @@ const OfferPriceCardContent = ({
   return (
     <Box testID="pos-offer-price-cards">
       {showHeaders ? (
-        <Text color="brand.primary.500" marginBottom="spacing.4" weight="bold">
+        <Text color="surface.text.primary.normal" marginBottom="spacing.4" weight="semibold">
           {name.toUpperCase()}
         </Text>
       ) : null}
@@ -40,18 +38,33 @@ const OfferPriceCardContent = ({
               marginBottom="spacing.3"
               key={`offer-card-${index}`}
             >
-              <CheckCircleIcon size="medium" color="brand.primary.500" marginRight="spacing.4" />
-              <Text color="surface.text.subdued.lowContrast">
+              <CheckCircleIcon
+                size="medium"
+                color="interactive.icon.primary.normal"
+                marginRight="spacing.4"
+              />
+              <Text color="surface.text.gray.muted">
                 <Amount
                   value={offerPricing.currentValue}
                   currency={user?.merchant?.currency as CurrencyTypes}
                   isAffixSubtle={false}
                   suffix="none"
                   marginRight="spacing.2"
-                  size="heading-small-bold"
+                  type="body"
+                  size="large"
+                  weight="semibold"
                 />
                 {offerPricing.prevValue !== null && !isNaN(offerPricing.prevValue) ? (
-                  <AmountWithStrikeThrough value={offerPricing.prevValue} />
+                  <Amount
+                    value={offerPricing.prevValue}
+                    isAffixSubtle={false}
+                    suffix="none"
+                    marginRight="spacing.2"
+                    isStrikethrough={true}
+                    color="surface.text.gray.muted"
+                    size="medium"
+                    weight="semibold"
+                  />
                 ) : null}
                 {offerObj.text}
               </Text>

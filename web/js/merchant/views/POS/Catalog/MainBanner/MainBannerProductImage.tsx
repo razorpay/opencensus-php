@@ -4,7 +4,6 @@ import { Amount, Box } from '@razorpay/blade/components';
 import PartnerPosPriceTagImage from 'assets/partner-dashboard/PartnerPosPriceTag.svg';
 import MainBannerAndroidSmartPosImg from 'assets/pos/main-banner/androidpos.webp';
 import PricingTagImage from 'assets/pos/main-banner/pricetag.webp';
-import AmountWithStrikeThrough from 'merchant/views/POS/ProductDescription/ProductPriceCards/AmountWithStrikeThrough';
 
 import { StyledPriceTagImage, StyledMainBannerImage } from './styles';
 
@@ -44,14 +43,23 @@ const PriceTag = ({
           value={price}
           isAffixSubtle={false}
           suffix="none"
-          size="heading-small-bold"
           testID="price-tag-amount"
+          type="body"
+          size="large"
+          weight="semibold"
         />
         {prevPrice ? (
-          <AmountWithStrikeThrough
+          <Amount
             value={prevPrice}
-            size="heading-small-bold"
+            isAffixSubtle={false}
+            suffix="none"
             testID="price-tag-prev-amount"
+            marginRight="spacing.2"
+            isStrikethrough={true}
+            color="surface.text.gray.muted"
+            type="body"
+            size="large"
+            weight="semibold"
           />
         ) : null}
       </Box>

@@ -91,9 +91,8 @@ export const OverviewCard = connect(
             <Text
               truncateAfterLines={3}
               variant="body"
-              type="subdued"
               weight="regular"
-              contrast="low"
+              color="surface.text.gray.muted"
             >
               {description}
             </Text>

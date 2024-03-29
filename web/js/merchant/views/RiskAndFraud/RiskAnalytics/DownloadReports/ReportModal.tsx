@@ -6,7 +6,6 @@ import {
   Button,
   Dropdown,
   DropdownOverlay,
-  Heading,
   SelectInput,
   Text,
 } from '@razorpay/blade/components';
@@ -152,21 +151,16 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
         <IconButton
           accessibilityLabel="close-modal"
           size="large"
-          contrast="low"
           onClick={handleClose}
+          emphasis="intense"
           icon={CloseIcon}
         />
       </ReportCloseButton>
       <Suspense minWidth={750}>
         <ReportModalWrapper width={625} height="auto">
           <ReportModalHeader>
-            <Heading variant="regular">{title}</Heading>
-            <Text
-              variant="body"
-              size="medium"
-              weight="regular"
-              color="surface.text.subdued.lowContrast"
-            >
+            <Text size="large">{title}</Text>
+            <Text variant="body" size="medium" weight="regular" color="surface.text.gray.muted">
               The file would be sent within 10 minutes of initiating request
             </Text>
           </ReportModalHeader>
@@ -226,12 +220,7 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
                   </ActionList>
                 ) : (
                   <Box paddingX="spacing.5" paddingY="spacing.4">
-                    <Text
-                      size="medium"
-                      type="normal"
-                      contrast="low"
-                      color="surface.text.normal.lowContrast"
-                    >
+                    <Text size="medium" color="surface.text.gray.normal">
                       No emails available
                     </Text>
                   </Box>

@@ -4,7 +4,12 @@ import { Text, Box, Card, CardBody, Skeleton } from '@razorpay/blade/components'
 export const CapturePaymentShimmer = (): JSX.Element => {
   return (
     <Box flex={1} testID="loading-shimmer">
-      <Card elevation="none" padding="spacing.3" surfaceLevel={2} marginY="spacing.5">
+      <Card
+        elevation="none"
+        padding="spacing.3"
+        backgroundColor="surface.background.gray.moderate"
+        marginY="spacing.5"
+      >
         <CardBody>
           <Box
             display="flex"
@@ -15,7 +20,7 @@ export const CapturePaymentShimmer = (): JSX.Element => {
             padding="spacing.4"
             marginX="spacing.2"
           >
-            <Text type="subtle" weight="bold" contrast="low" size="medium">
+            <Text weight="semibold" size="medium" color="surface.text.gray.subtle">
               Collected Amount
             </Text>
             <Skeleton width="25%" height="28px" borderRadius="max" />
@@ -30,7 +35,11 @@ export const CapturePaymentShimmer = (): JSX.Element => {
 export const CardShimmer = (): JSX.Element => {
   return (
     <Box flex={1} maxHeight="120px" marginY="spacing.2" testID="loading-shimmer">
-      <Card elevation="lowRaised" padding="spacing.5" surfaceLevel={2}>
+      <Card
+        elevation="lowRaised"
+        padding="spacing.5"
+        backgroundColor="surface.background.gray.moderate"
+      >
         <CardBody>
           <Box display="flex" gap="spacing.3" flexDirection="column" minWidth="220px" flex={1}>
             <Skeleton width="5%" height="15px" borderRadius="medium" />

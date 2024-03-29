@@ -17,17 +17,17 @@ export const OrderStatusContainer = styled.div(
         padding: ${theme.spacing[3]}px  ${theme.spacing[2]}px;
         background-color: ${
           isActive && !isDimmed
-            ? theme.colors.feedback.icon.positive.lowContrast
+            ? theme.colors.feedback.icon.positive.intense
             : isActive && isDimmed
-            ? theme.colors.feedback.background.neutral.highContrast
+            ? theme.colors.feedback.background.neutral.intense
             : 'none'
         };
         margin: ${theme.spacing[isMobile ? 0 : 3]}px ${theme.spacing[6]}px;
         font-size: ${theme.typography.fonts.size[100]};
         color: ${
           isActive || isDimmed
-            ? theme.colors.surface.text.normal.highContrast
-            : theme.colors.surface.text.normal.lowContrast
+            ? theme.colors.surface.text.staticWhite.normal
+            : theme.colors.surface.text.gray.normal
         };
         text-align: ${isMobile && !isActive ? 'left' : 'center'};
         border-radius: ${theme.border.radius.medium}px;
@@ -43,10 +43,10 @@ export const IconContainer = styled.div(
     border-radius: ${theme.border.radius.round};
     background-color: ${
       status === 'active'
-        ? theme.colors.feedback.background.positive.lowContrast
+        ? theme.colors.feedback.background.positive.subtle
         : status === 'failed'
-        ? theme.colors.feedback.background.negative.lowContrast
-        : theme.colors.feedback.background.neutral.lowContrast
+        ? theme.colors.feedback.background.negative.subtle
+        : theme.colors.feedback.background.neutral.subtle
     }
   `,
 );

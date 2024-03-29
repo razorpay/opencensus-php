@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Title, Box, Text, Badge } from '@razorpay/blade/components';
+import { Heading, Box, Text, Badge } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
@@ -98,7 +98,9 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
     <Wrapper>
       <div className="tabbed-container">
         <Box marginBottom="spacing.5">
-          <Title color="surface.text.subtle.lowContrast">Reseller</Title>
+          <Heading color="surface.text.gray.subtle" size="large">
+            Reseller
+          </Heading>
         </Box>
 
         <div className="content">
@@ -158,7 +160,7 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
               </div>
               <Box>
                 <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
-                  <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+                  <Text size="small" color="surface.text.gray.muted">{`Total ${
                     resellers?.total_count || 0
                   } Resellers`}</Text>
                 </Box>

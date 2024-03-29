@@ -1,13 +1,13 @@
 import React, { useRef, useState } from 'react';
+import { useMobile } from '@dashboard/shared-ui/hooks';
 import {
   Dropdown as BladeDropdown,
-  ChevronUpIcon,
   ChevronDownIcon,
+  ChevronUpIcon,
   VisuallyHidden,
 } from '@razorpay/blade/components';
-import { DropdownProps, Option, ClickProps, DropdownCommonProps } from './types';
+import { ClickProps, DropdownCommonProps, DropdownProps, Option } from './types';
 import { getAllOptions, getDropdownContent, getDropdownTarget } from './utils';
-import { useMobile } from '@dashboard/shared-ui/hooks';
 
 const Dropdown = ({
   prefixTitle = '',
@@ -104,7 +104,15 @@ const Dropdown = ({
           <button ref={closeButtonRef}>Close</button>
         </VisuallyHidden>
       ) : null}
-      <BladeDropdown onDismiss={onDismiss} selectionType={selectionType} testID={testID}>
+      <BladeDropdown
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            onDismiss();
+          }
+        }}
+        selectionType={selectionType}
+        testID={testID}
+      >
         {getDropdownTarget({
           isLink,
           isSelectInput,

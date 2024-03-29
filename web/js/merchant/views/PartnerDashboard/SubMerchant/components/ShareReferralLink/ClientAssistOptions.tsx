@@ -39,7 +39,7 @@ const ClientAssistOptions = ({
           flexDirection="column"
           gap="spacing.5"
           padding={['spacing.5', 'spacing.5', 'spacing.7']}
-          backgroundColor="surface.background.level3.lowContrast"
+          backgroundColor="surface.background.gray.moderate"
         >
           <Radio value="yes">Yes, I will assist my client with their KYC</Radio>
           {isAssistClient === 'yes' ? (
@@ -56,7 +56,7 @@ const ClientAssistOptions = ({
           flexDirection="column"
           gap="spacing.5"
           padding="spacing.5"
-          backgroundColor="surface.background.level3.lowContrast"
+          backgroundColor="surface.background.gray.moderate"
         >
           <Radio value="no">No, my client will perform KYC on their own</Radio>
           {isAssistClient === 'no' ? (

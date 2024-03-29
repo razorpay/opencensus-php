@@ -19,7 +19,7 @@ const UserInfo = ({ infoData, onClick, isMobile }: UserInfoPropsInterface): JSX.
         return (
           <UserInfoItem key={`${each.id}_${index}`}>
             <IconText>
-              <Text type="subtle" weight="bold">
+              <Text weight="semibold" color="surface.text.gray.subtle">
                 {each.displayName}
               </Text>
               {each.tooltip && (
@@ -34,7 +34,7 @@ const UserInfo = ({ infoData, onClick, isMobile }: UserInfoPropsInterface): JSX.
               )}
             </IconText>
             <SubInfo>
-              <Text type="subtle">{truncatedString(each.value, 26)}</Text>
+              <Text color="surface.text.gray.subtle">{truncatedString(each.value, 26)}</Text>
               {each.isEditEnable ? (
                 <Pointer className="i i-icon-container" onClick={() => onClick(each)} />
               ) : null}

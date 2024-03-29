@@ -14,17 +14,17 @@ export const StyledMerchantTabs = styled.div(
       li {
         &.active {
           a {
-            border-bottom: 1.5px solid ${theme.colors.action.text.link.active};
+            border-bottom: 1.5px solid ${theme.colors.interactive.text.primary.normal};
           }
           p {
-            color: ${theme.colors.action.text.link.active};
+            color: ${theme.colors.interactive.text.primary.normal};
           }
         }
         a {
           border: none;
-          border-bottom: 1px solid ${theme.colors.surface.text.muted.lowContrast};
+          border-bottom: 1px solid ${theme.colors.surface.text.gray.muted};
           p {
-            color: ${theme.colors.surface.text.muted.lowContrast};
+            color: ${theme.colors.surface.text.gray.muted};
           }
         }
       }

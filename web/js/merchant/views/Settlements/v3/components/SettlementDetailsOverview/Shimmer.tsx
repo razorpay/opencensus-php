@@ -5,7 +5,7 @@ import React from 'react';
 export const SettlementDetailsOverviewRevampShimmer = (): JSX.Element => {
   return (
     <Box
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       display="flex"
       flexDirection={{ base: 'column', m: 'row' }}
       padding="spacing.5"

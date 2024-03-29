@@ -307,7 +307,11 @@ class NewApplicationForm extends Component {
             <header>
               <StyledHeader>
                 <StyledLink to="/partners/applications">
-                  <ArrowLeftIcon color="action.icon.link.default" size="medium" marginRight="5px" />
+                  <ArrowLeftIcon
+                    color="interactive.icon.primary.subtle"
+                    size="medium"
+                    marginRight="5px"
+                  />
                   All Applications
                 </StyledLink>
                 <strong>
@@ -337,7 +341,7 @@ class NewApplicationForm extends Component {
                 <i className="i i-arrow-back" />
                 <span> Back&nbsp;</span>
               </Link>
-              <Text weight="bold" color="action.tertiary.primary.default">
+              <Text weight="semibold" color="action.tertiary.primary.default">
                 {' '}
                 /&nbsp; {edit ? 'Edit' : 'Create'} Application
               </Text>

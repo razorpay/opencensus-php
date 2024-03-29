@@ -6,7 +6,7 @@ export const FieldLabel = ({ label, necessityIndicator }) => {
   return Boolean(label) ? (
     <FieldLabelWrapper>
       <Box display="flex" alignItems="center">
-        <Text variant="body" type="subdued" size="small" weight="bold">
+        <Text variant="body" size="small" weight="semibold" color="surface.text.gray.muted">
           {label}
         </Text>
         <NecessityIndicator necessityIndicator={necessityIndicator} />

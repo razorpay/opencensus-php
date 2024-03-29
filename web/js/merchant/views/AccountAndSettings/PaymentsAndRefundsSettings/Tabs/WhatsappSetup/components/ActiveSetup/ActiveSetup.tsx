@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
   Box,
-  Heading,
   Text,
   Card,
   CardBody,
@@ -31,7 +30,7 @@ const modalViewMap = {
 };
 
 const Dot = (): JSX.Element => (
-  <Text type="subdued" size="small" weight="bold">
+  <Text size="small" weight="semibold" color="surface.text.gray.muted">
     •
   </Text>
 );
@@ -158,7 +157,9 @@ const ActiveSetup = ({
         {' '}
         <Card
           padding={isMobile ? 'spacing.5' : 'spacing.7'}
-          surfaceLevel={isMobile ? 3 : 2}
+          backgroundColor={
+            isMobile ? 'surface.background.gray.intense' : 'surface.background.gray.moderate'
+          }
           elevation="none"
         >
           <CardBody>
@@ -174,16 +175,16 @@ const ActiveSetup = ({
                 flexDirection="column"
                 gap={{ base: 'spacing.4', m: 'spacing.2' }}
               >
-                <Heading size="small" weight="bold">
+                <Text weight="semibold" size="large">
                   Your Whatsapp Business Account
-                </Heading>
+                </Text>
                 {isMobile ? (
                   <Box display="flex" gap="spacing.3" flexDirection="column">
                     <Box display="flex" gap="spacing.2">
-                      <Text type="subdued" weight="bold" size="small">
+                      <Text weight="semibold" size="small" color="surface.text.gray.muted">
                         Business Service Provider:
                       </Text>
-                      <Text type="subdued" size="small">
+                      <Text size="small" color="surface.text.gray.muted">
                         {businessProvider.title}
                       </Text>
                     </Box>
@@ -195,10 +196,10 @@ const ActiveSetup = ({
                   </Box>
                 ) : (
                   <Box display="flex" gap="spacing.2" alignItems="center">
-                    <Text type="subdued" weight="bold">
+                    <Text weight="semibold" color="surface.text.gray.muted">
                       Business Service Provider:
                     </Text>
-                    <Text type="subdued">{businessProvider.title}</Text>
+                    <Text color="surface.text.gray.muted">{businessProvider.title}</Text>
                     <Dot />
                     <Badge color="positive" size="small">
                       Account Linked
@@ -228,16 +229,18 @@ const ActiveSetup = ({
         </Card>
         <Card
           padding={isMobile ? 'spacing.5' : 'spacing.7'}
-          surfaceLevel={isMobile ? 3 : 2}
+          backgroundColor={
+            isMobile ? 'surface.background.gray.intense' : 'surface.background.gray.moderate'
+          }
           elevation="none"
         >
           <CardBody>
             {isMobile ? (
               <Box display="flex" flexDirection="column" gap="spacing.4">
                 <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-                  <Heading size="small" weight="bold">
+                  <Text weight="semibold" size="large">
                     Send all payment links on Whatsapp
-                  </Heading>
+                  </Text>
                   <SwitchWithLoader
                     isChecked={isNotificationsEnabled}
                     businessProvider={businessProvider}
@@ -245,17 +248,17 @@ const ActiveSetup = ({
                     isLoading={isUpdating || isFeatureLoading}
                   />
                 </Box>
-                <Text size="medium" type="subtle">
+                <Text size="medium" color="surface.text.gray.subtle">
                   Now, all customers will be notified about payments links over Whatsapp.
                 </Text>
               </Box>
             ) : (
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box display="flex" flexDirection="column" gap="spacing.2">
-                  <Heading size="small" weight="bold">
+                  <Text weight="semibold" size="large">
                     Send all payment links on Whatsapp
-                  </Heading>
-                  <Text size="medium" type="subtle">
+                  </Text>
+                  <Text size="medium" color="surface.text.gray.subtle">
                     Now, all customers will be notified about payments links over Whatsapp.
                   </Text>
                 </Box>

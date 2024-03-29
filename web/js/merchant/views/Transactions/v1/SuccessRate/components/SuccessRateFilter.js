@@ -1,30 +1,30 @@
+import { AlertOctagonIcon, Box, Button, Text } from '@razorpay/blade/components';
 import React, { useEffect, useState } from 'react';
-import { AlertOctagonIcon, Box, Button, Heading, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { useSplitzService } from 'common/splitz';
 import {
-  updateDateRange,
-  fetchSuccessRate,
   fetchMerchantErrors,
+  fetchSuccessRate,
+  resetSRDashboard,
+  setActiveTab,
   setDefaultInterval,
   setDefaultLastUpdatedAt,
-  setActiveTab,
   setGroupTypeFilter,
   setMerchantIDSearch,
-  resetSRDashboard,
+  updateDateRange,
 } from 'merchant/reducers/successRate';
 import {
-  PRESETS,
-  DEFAULT_INTERVAL,
   DEFAULT_GROUP_BY,
+  DEFAULT_INTERVAL,
+  PRESETS,
 } from 'merchant/views/Transactions/v1/SuccessRate/constants';
 import {
   getBreakdownInterval,
+  getMerchantErrorsPayload,
   initialFilters,
   queryFilters,
-  getMerchantErrorsPayload,
   validateDateRange,
 } from 'merchant/views/Transactions/v1/SuccessRate/helper';
 import {
@@ -154,7 +154,9 @@ const SuccessRateFilter = (props) => {
     <div className="sr-filter" data-testid="success-rate-filter">
       <Box>
         <Box>
-          <Heading marginBottom="spacing.2">Date Range</Heading>
+          <Text marginBottom="spacing.2" size="large">
+            Date Range
+          </Text>
           <div className="datepicker-group">
             <DateRangePreset
               presets={PRESETS}
@@ -187,20 +189,13 @@ const SuccessRateFilter = (props) => {
 
         {errors.date ? (
           <Box display="flex" alignItems="center" testID="sr-filter-error">
-            <AlertOctagonIcon
-              size="medium"
-              color="feedback.negative.action.icon.primary.active.lowContrast"
-            />
-            <Text
-              color="feedback.negative.action.text.primary.active.lowContrast"
-              marginLeft="spacing.2"
-            >
+            <AlertOctagonIcon size="medium" color="interactive.icon.negative.subtle" />
+            <Text color="interactive.text.negative.subtle" marginLeft="spacing.2">
               {errors.date}
             </Text>
           </Box>
         ) : null}
       </Box>
-
       <div className="sr-filter-extras">
         {isSrAdminEnabled ? (
           <SearchMerchant

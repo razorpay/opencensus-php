@@ -67,10 +67,10 @@ const AccountSection = ({
     <StyledAccountSectionContainer>
       <StyledAccountSectionHeader>
         <HeaderTopBar>
-          <Heading size="medium">{title}</Heading>
+          <Heading size="small">{title}</Heading>
           {isCollapsible ? (
             <CollapsibleIcon onClick={handleToggle} open={isShow} data-testid="collapse-btn">
-              <ChevronDownIcon size="large" color="action.icon.link.default" />
+              <ChevronDownIcon size="large" color="interactive.icon.primary.subtle" />
             </CollapsibleIcon>
           ) : !isMobile && isCtaAction && isBankAccountUpdateAllowed ? (
             <Button
@@ -83,7 +83,7 @@ const AccountSection = ({
             </Button>
           ) : null}
         </HeaderTopBar>
-        <Text type="subtle">{description}</Text>
+        <Text color="surface.text.gray.subtle">{description}</Text>
         {isMobile && isCtaAction && isBankAccountUpdateAllowed && (
           <Button
             variant="primary"
@@ -109,7 +109,7 @@ const AccountSection = ({
               ),
             )
           ) : (
-            <Text type="subtle">NO BANK ACCOUNT AVAILABLE</Text>
+            <Text color="surface.text.gray.subtle">NO BANK ACCOUNT AVAILABLE</Text>
           )}
         </StyledAccountSectionContent>
       </Collapsible>

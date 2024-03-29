@@ -2,9 +2,9 @@ import React from 'react';
 import { Text } from '@razorpay/blade/components';
 
 import { useMobile } from '@dashboard/shared-ui/hooks';
-import { CreatedOnProps } from './types';
 import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { getCreatedOnTime } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
+import { CreatedOnProps } from './types';
 
 const CreatedOn = ({ created_at }: CreatedOnProps): JSX.Element => {
   const createdAt = getCreatedOnTime({ created_at });
@@ -16,7 +16,7 @@ const CreatedOn = ({ created_at }: CreatedOnProps): JSX.Element => {
     return (
       <>
         <Text>{date}</Text>
-        <Text size="small" color="surface.text.muted.lowContrast">
+        <Text size="small" color="surface.text.gray.muted">
           {time}
         </Text>
       </>

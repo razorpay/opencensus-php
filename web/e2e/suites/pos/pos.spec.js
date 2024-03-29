@@ -34,7 +34,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await expect(
         page
           .getByTestId('android-mini-pos-product-card')
-          .getByRole('heading', { name: 'Android Smart Mini POS' }),
+          .getByText('Android Smart Mini POS', { exact: true }),
       ).toBeVisible();
 
       await expect(
@@ -306,7 +306,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await expect(
         page
           .getByTestId('android-mini-pos-product-card')
-          .getByRole('heading', { name: 'Android Smart Mini POS' }),
+          .getByText('Android Smart Mini POS', { exact: true }),
       ).toBeVisible();
     });
   });

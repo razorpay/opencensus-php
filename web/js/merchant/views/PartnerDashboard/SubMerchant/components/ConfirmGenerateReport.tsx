@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button, CloseIcon, Heading, Link, Text } from '@razorpay/blade/components';
-
 import imageExportAll from 'assets/partner-dashboard/export-all-csv-icon.svg';
 
 import { StyledConfirmGenerateReport } from './styles';
@@ -23,12 +22,12 @@ const ConfirmGenerateReport = ({
     <StyledConfirmGenerateReport>
       <div className="modal-header">
         <div className="close" onClick={closeModal}>
-          <CloseIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+          <CloseIcon size="medium" color="feedback.icon.neutral.intense" />
         </div>
       </div>
       <img src={imageExportAll} />
       <div className="export-all">
-        <Heading size="large">Export all (CSV)</Heading>
+        <Heading size="medium">Export all (CSV)</Heading>
       </div>
       <div className="content">
         <Text size="medium">

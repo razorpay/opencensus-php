@@ -12,14 +12,14 @@ import { TooltipWrapper } from './styled';
 type TooltipContentKeys = keyof typeof tooltipContent;
 
 interface IProps {
-  type: TooltipContentKeys;
+  type?: TooltipContentKeys;
   partnerApplicationName?: string;
   size?: IconProps['size'];
 }
 
 function Tooltip(props: IProps): React.ReactElement {
   const { type, partnerApplicationName, ...restProps } = props;
-  let content = tooltipContent[type] || '';
+  let content = type ? tooltipContent[type] || '' : '';
 
   if (partnerApplicationName) {
     content = `${content} ${partnerApplicationName}`;
@@ -28,7 +28,7 @@ function Tooltip(props: IProps): React.ReactElement {
     <TooltipWrapper>
       <BladeTooltip content={content}>
         <TooltipInteractiveWrapper>
-          <InfoIcon size="medium" color="surface.text.subtle.lowContrast" {...restProps} />
+          <InfoIcon size="medium" color="interactive.icon.gray.subtle" {...restProps} />
         </TooltipInteractiveWrapper>
       </BladeTooltip>
     </TooltipWrapper>

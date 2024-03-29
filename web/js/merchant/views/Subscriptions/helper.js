@@ -39,9 +39,9 @@ export const shouldHideDebitPattern = (frequency) => {
 const getCardErrorDescription = (maxAmount, currency) => (
   <>
     You can <strong>automatically</strong> charge the customer upto{' '}
-    <Amount size="body-small" value={Number(maxAmount)} currency={currency} />
+    <Amount value={Number(maxAmount)} currency={currency} type="body" size="small" />
     for each recurring payment. Payments above{' '}
-    <Amount size="body-small" value={Number(maxAmount)} currency={currency} />
+    <Amount value={Number(maxAmount)} currency={currency} type="body" size="small" />
     will ask for OTP verification from the customer.
   </>
 );
@@ -61,8 +61,9 @@ export const maxAmountValidator = (amount, maxAllowedLimit, currency) => (value)
         Max amount should not be greater than
         <Amount
           value={Number(i18CurrencyConversionFromMinorUnitToCommonUnit(maxAllowedLimit, currency))}
-          intent="negative"
-          size="body-small"
+          color="feedback.text.negative.intense"
+          type="body"
+          size="small"
         />
       </>
     );
@@ -72,8 +73,13 @@ export const maxAmountValidator = (amount, maxAllowedLimit, currency) => (value)
     return (
       <>
         The maximum amount should be equal to or greater than
-        <Amount value={Number(amount)} intent="negative" size="body-small" />, which is the minimum
-        for this payment method.
+        <Amount
+          value={Number(amount)}
+          color="feedback.text.negative.intense"
+          type="body"
+          size="small"
+        />
+        , which is the minimum for this payment method.
       </>
     );
   }
@@ -87,10 +93,11 @@ export const cardMaxAmountValidator = (maxAllowedAmount, currency) => (value) =>
         Please enter an amount below
         <Amount
           testID={`${currency}${maxAllowedAmount}`}
-          size="body-small"
-          intent="negative"
+          color="feedback.text.negative.intense"
           value={Number(maxAllowedAmount)}
           currency={currency}
+          type="body"
+          size="small"
         />
       </>
     );
@@ -112,7 +119,8 @@ export const getMaxAmountProps = (method, amount, user, mandateMaxAmount = 0) =>
         Max Amount for Mandate (Up to{' '}
         <Amount
           value={i18CurrencyConversionFromMinorUnitToCommonUnit(MAX_TOKEN_AMOUNT, currency)}
-          size="body-small"
+          type="body"
+          size="small"
         />
         )
       </>
@@ -151,7 +159,8 @@ export const getMaxAmountProps = (method, amount, user, mandateMaxAmount = 0) =>
       maxAmountProps.validator = maxAmountValidator(amount, MAX_TOKEN_AMOUNT_NACH, currency);
       maxAmountProps.description = (
         <>
-          Max Amount for Nach (Up to <Amount value={MAX_TOKEN_AMOUNT_NACH} size="body-small" />)
+          Max Amount for Nach (Up to{' '}
+          <Amount value={MAX_TOKEN_AMOUNT_NACH} type="body" size="small" />)
         </>
       );
       return maxAmountProps;

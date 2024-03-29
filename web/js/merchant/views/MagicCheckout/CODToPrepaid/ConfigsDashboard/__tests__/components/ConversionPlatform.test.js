@@ -21,10 +21,7 @@ describe('testing conversion platform component', () => {
 
   test('should be able to change the dropdown value', async () => {
     const setState = jest.fn();
-    jest.spyOn(React, 'useState').mockImplementationOnce((initState) => [initState, setState]);
-
     renderApp({ convertOn: 'whatsapp', setConvertOn: setState });
-
     const fieldElement = screen.getByRole('combobox');
     await userEvent.selectOptions(fieldElement, 'whatsapp');
 

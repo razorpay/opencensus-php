@@ -19,7 +19,7 @@ export const ActionText = styled.div`
   gap: 8px;
   color: #333333;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
 
   & > img {
     height: 14px;

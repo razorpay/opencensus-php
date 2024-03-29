@@ -24,7 +24,7 @@ export const Tab = styled.div`
   cursor: pointer;
   margin-bottom: 4px;
   color: #999;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 14px;
   &.active {
     background-color: #fff;

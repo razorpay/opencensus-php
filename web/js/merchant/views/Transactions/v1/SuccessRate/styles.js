@@ -10,17 +10,17 @@ export const StyledContainer = styled.div(
           cursor: pointer;
         }
         ::-webkit-scrollbar-track {
-          background: ${theme.colors.surface.border.normal.highContrast};
+          background: ${theme.colors.interactive.background.gray.default};
           border-radius: ${theme.border.radius.small}px;
           cursor: pointer;
         }
         ::-webkit-scrollbar-thumb {
-          background: ${theme.colors.brand.gray[600].highContrast};
+          background: ${theme.colors.overlay.background.moderate};
           border-radius:  ${theme.border.radius.large}px;
           cursor: pointer;
         }
         :hover::-webkit-scrollbar-thumb {
-          background: ${theme.colors.brand.gray[400].highContrast};
+          background: ${theme.colors.surface.border.gray.normal};
           border-radius: ${theme.border.radius.large}px;
           cursor: pointer;
         }

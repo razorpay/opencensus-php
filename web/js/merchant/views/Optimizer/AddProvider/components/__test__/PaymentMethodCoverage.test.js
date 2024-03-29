@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { render, screen } from '@testing-library/react';
 
 import { PaymentMethodCoverage } from '../PaymentMethodCoverage';
@@ -39,7 +39,7 @@ describe('Add Provider > PaymentMethodCoverage', () => {
 
   const App = (props) => {
     return (
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <PaymentMethodCoverage {...props} />
       </BladeProvider>
     );

@@ -40,22 +40,24 @@ export const StyledTab = styled(FlexCentered)<StyledTabProps>(({ theme, active }
   return `
     padding: ${theme.spacing[4]}px;
     margin-inline: ${theme.spacing[4]}px;
-    border-bottom: 2px solid ${active ? theme.colors.brand.primary['500'] : 'transparent'};      
-    color: ${active ? theme.colors.brand.primary['500'] : 'unset'} !important; 
+    border-bottom: 2px solid ${
+      active ? theme.colors.surface.background.primary.intense : 'transparent'
+    };      
+    color: ${active ? theme.colors.surface.background.primary.intense : 'unset'} !important; 
   `;
 });
 
 export const SectionWrapper = styled.div<FlattenSimpleInterpolation>`
   display: flex;
   flex-direction: column;
-  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+  background-color: ${({ theme }) => theme.colors.surface.background.gray.intense};
   margin-top: ${({ theme }) => theme.spacing[5]}px;
   padding: ${({ theme }) =>
     [theme.spacing[5], theme.spacing[7], theme.spacing[5], theme.spacing[7]].join(' ')};
 `;
 
 export const StyledButtonText = styled.button`
-  color: ${({ theme }) => theme.colors.brand.primary['500']};
+  color: ${({ theme }) => theme.colors.surface.background.primary.intense};
   background: transparent;
   border: none;
   outline: none;
@@ -80,17 +82,17 @@ export const StyledTabButton = styled.button(
     height: 140px;
     background-color: ${
       isActive
-        ? theme.colors.surface.background.level2.lowContrast
-        : theme.colors.surface.background.level3.lowContrast
+        ? theme.colors.surface.background.gray.intense
+        : theme.colors.surface.background.gray.moderate
     };
-    border-color: ${theme.colors.surface.border.subtle.lowContrast};
+    border-color: ${theme.colors.surface.border.gray.subtle};
     border-width: 0px;
     border-right-width: ${theme.border.width.thick}px;
     border-style: solid;
     cursor: pointer;
     pointer-events: all;
     &:hover {
-      background-color: ${theme.colors.surface.background.level2.lowContrast};
+      background-color: ${theme.colors.surface.background.gray.intense};
     }
     &:first-child {
       border-top-left-radius: ${theme.border.radius.medium}px;
@@ -125,7 +127,7 @@ export const StyledChartLoader = styled.div(
       content: 'Loading...';
       font-size: ${theme.typography.fonts.size[200]}px;
       font-weight: ${theme.typography.fonts.weight.bold};
-      color: ${theme.colors.surface.text.normal.lowContrast};
+      color: ${theme.colors.surface.text.gray.normal};
     }
   `,
 );
@@ -138,7 +140,7 @@ export const StyledChartError = styled.div(
       content: 'Fetching failed! Try later';
       font-size: ${theme.typography.fonts.size[200]}px;
       font-weight: ${theme.typography.fonts.weight.bold};
-      color: ${theme.colors.surface.text.normal.lowContrast};
+      color: ${theme.colors.surface.text.gray.normal};
     }
   `,
 );
@@ -156,7 +158,7 @@ export const Grid = styled.div`
   display: grid;
   grid-gap: ${({ theme }) => theme.spacing[4]}px;
   grid-template-columns: repeat(8, 1fr);
-  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+  background-color: ${({ theme }) => theme.colors.surface.background.gray.intense};
 
   @media (max-width: 768px) {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
@@ -173,7 +175,7 @@ export const GridItem = styled.div<GridItemProps>`
 `;
 
 export const AnalyticsTableWrapper = styled.div`
-  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+  background-color: ${({ theme }) => theme.colors.surface.background.gray.intense};
 
   @media (max-width: 700px) {
     grid-row: 1;
@@ -196,7 +198,7 @@ export const BlocklistContainer = styled.div`
 
 export const TableContainer = styled.div`
   width: 100%;
-  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+  background-color: ${({ theme }) => theme.colors.surface.background.gray.intense};
   padding: ${({ theme }) => `${theme.spacing[5]}px ${theme.spacing[8]}px`};
   border: 1px solid #e0e8f4;
   border-radius: ${({ theme }) => theme.border.radius.medium}px;
@@ -209,12 +211,12 @@ export const Table = styled.table`
 `;
 
 export const TableHead = styled.thead`
-  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+  background-color: ${({ theme }) => theme.colors.surface.background.gray.intense};
   border-bottom: 1px solid #e0e8f4;
 `;
 
 export const TableBody = styled.tbody`
-  background-color: ${({ theme }) => theme.colors.surface.background.level2.lowContrast};
+  background-color: ${({ theme }) => theme.colors.surface.background.gray.intense};
 `;
 
 export const TableRow = styled.tr<TableRowProps>`

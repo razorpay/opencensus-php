@@ -3,6 +3,6 @@ import styled from 'styled-components';
 
 export const StyledLink = styled(Link)`
   text-decoration: underline;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0 2px;
 `;

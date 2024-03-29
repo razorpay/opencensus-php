@@ -48,7 +48,7 @@ const Cta = styled.button`
   border-radius: 2px;
   padding: 8px 16px;
   margin-left: 8px;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 13px;
   line-height: 16px;
   color: #2a86f3;

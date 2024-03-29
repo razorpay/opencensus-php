@@ -18,18 +18,6 @@ module.exports = {
   moduleNameMapper: {
     '\\.(css|less|styl)$': 'identity-obj-proxy',
     '^assets/(.*)': 'css/assets/$1',
-    '@razorpay/blade/components': path.resolve(
-      __dirname,
-      'node_modules/@razorpay/blade/build/components/index.development.web.js',
-    ),
-    '@razorpay/blade/utils': path.resolve(
-      __dirname,
-      'node_modules/@razorpay/blade/build/utils/index.development.web.js',
-    ),
-    '@razorpay/blade/tokens': path.resolve(
-      __dirname,
-      'node_modules/@razorpay/blade/build/tokens/index.development.web.js',
-    ),
     '^shell/commonStore': path.resolve(__dirname, './js/merchant/commonStore'),
     '^shell/SpiltzServiceContext': path.resolve(
       __dirname,
@@ -60,7 +48,9 @@ module.exports = {
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
-  transformIgnorePatterns: ['/node_modules/(?!(@commander|@razorpay|copy-anything|is-what)/).*/'],
+  transformIgnorePatterns: [
+    '/node_modules/(?!(@commander|@razorpay|copy-anything|is-what|@table-library)/).*',
+  ],
 
   // The root directory that Jest should scan for tests and modules within
   rootDir: 'js',

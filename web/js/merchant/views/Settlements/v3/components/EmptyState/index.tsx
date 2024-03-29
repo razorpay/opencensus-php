@@ -8,8 +8,8 @@ const EmptySettlementState = ({ handleAction }): JSX.Element => {
   return (
     <StyledEmptySettlementsBox>
       <Image src={ReceiveSettlements} alt="receive-settlements" width={64} height={64} />
-      <Heading size="medium">Get settlements in your bank account</Heading>
-      <Text type="subtle">
+      <Heading size="small">Get settlements in your bank account</Heading>
+      <Text color="surface.text.gray.subtle">
         Collected payments get deposited in your bank account after adjusting for platform fees and
         applicable charges and appear as settlements here
       </Text>

@@ -172,7 +172,7 @@ const SamedayDetailTop = styled.div`
 
 const SamedayDetailTitle = styled.h3`
   margin: 0;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 14px;
   line-height: 20px;
   color: #324664;
@@ -196,7 +196,7 @@ const InstantSettlementsBenefits = styled.div`
 `;
 
 const BigDiscount = styled.div`
-  font-weight: 900;
+  font-weight: 800;
   font-size: 80px;
   line-height: 120px;
   background: linear-gradient(#baf4f5, #30c5d8);
@@ -248,7 +248,7 @@ const StrikeThrough = styled.span`
 `;
 
 const InstantSettlementsOfferFee = styled.span`
-  font-weight: bold;
+  font-weight: 600;
   font-size: 16px;
   line-height: 22px;
   color: #008cb1;
@@ -277,7 +277,7 @@ const FeeInfo = styled.p`
   color: #324664;
   margin-bottom: 6px;
   span {
-    font-weight: bold;
+    font-weight: 600;
   }
 `;
 

@@ -1,21 +1,22 @@
-import { Button, Checkbox, Heading, Text, PlusIcon } from '@razorpay/blade/components';
+import React, { useEffect, useState } from 'react';
+import { Button, Checkbox, Heading, PlusIcon, Text } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import {
   addProducts,
   fetchProducts,
   IPaymentPagesProduct,
 } from 'merchant/reducers/paymentPages/storefront';
-import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { SelectProductSkeleton } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/styled';
 import { showNotification } from 'merchant_common/reducers/notifications';
+
+import CheckboxItem from './CheckboxItem';
 import { AddFooterWrapper, SelectCheckboxContainer, SelectProductDrawerWrapper } from './styled';
 import { ICheckbox, ISelectProductDrawer } from './types';
 import { generateCheckboxesFromAllProducts } from './utils';
-import CheckboxItem from './CheckboxItem';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const SelectProductDrawer = ({
   handleClose,
@@ -140,10 +141,10 @@ const SelectProductDrawer = ({
       onClose={handleClose}
       footerButtons={footerButtons}
     >
-      <Heading size="large" contrast="low" variant="regular" weight="bold">
+      <Heading weight="semibold" size="medium" color="surface.text.gray.normal">
         Add products to page
       </Heading>
-      <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
+      <Text variant="body" size="medium" weight="regular" color="surface.text.gray.subtle">
         Choose from your existing products or add a new product
       </Text>
       <SelectCheckboxContainer data-testid="select-checkbox-container">

@@ -1,5 +1,5 @@
-import React, { useEffect, Suspense, useCallback } from 'react';
-import { Heading, Box, Text, Divider, Button, Alert } from '@razorpay/blade/components';
+import React, { Suspense, useCallback, useEffect } from 'react';
+import { Alert, Box, Button, Divider, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -104,8 +104,10 @@ const UnlockMoreMethods = ({
     <Box>
       <Box display="flex">
         <Box display="flex" flexDirection="column" gap="spacing.2">
-          <Heading type="subtle">{instrument.header}</Heading>
-          <Text type="subtle">{instrument.listDescription}</Text>
+          <Text size="large" color="surface.text.gray.subtle">
+            {instrument.header}
+          </Text>
+          <Text color="surface.text.gray.subtle">{instrument.listDescription}</Text>
         </Box>
 
         {status === MORE_PAYMENT_METHOD_STATUS.INITIAL ? (

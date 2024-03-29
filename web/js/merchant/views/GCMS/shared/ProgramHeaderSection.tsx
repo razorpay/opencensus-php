@@ -1,5 +1,5 @@
+import { Box, BoxProps, Heading, Text, TextProps } from '@razorpay/blade/components';
 import React, { memo } from 'react';
-import { Box, BoxProps, Heading, Text, HeadingProps } from '@razorpay/blade/components';
 
 import { capitalize } from 'common/utils/rzp-utils';
 import { getProgramHeaderSections } from 'merchant/views/GCMS/Programs/constants';
@@ -10,7 +10,7 @@ type Props = {
   containerProps?: BoxProps;
   imageProps?: BoxProps;
   showOverview?: boolean;
-  headingProps?: HeadingProps<any>;
+  headingProps?: TextProps<any>;
   sectionItemProps?: BoxProps;
 };
 
@@ -38,7 +38,7 @@ const ProgramHeaderSection: React.FC<Props> = ({
       </Box>
       <Box paddingLeft="spacing.8">
         <Box>
-          <Heading size="large" weight="bold" {...headingProps}>
+          <Heading weight="semibold" {...headingProps} size="medium">
             {program.name}
           </Heading>
         </Box>
@@ -59,16 +59,16 @@ const ProgramHeaderSection: React.FC<Props> = ({
                 alignItems="center"
                 {...sectionItemProps}
               >
-                <Text color="surface.text.muted.lowContrast">{section.name}:&nbsp;&nbsp;</Text>
-                <Text color="surface.text.subdued.lowContrast" weight="bold">
+                <Text color="surface.text.gray.muted">{section.name}:&nbsp;&nbsp;</Text>
+                <Text color="surface.text.gray.muted" weight="semibold">
                   {capitalize(section.value)}
                 </Text>
               </Box>
             ))
           ) : (
             <Box display="flex" flexDirection="row" paddingTop="spacing.2">
-              <Text color="surface.text.muted.lowContrast">Program ID:&nbsp;&nbsp;</Text>
-              <Text color="surface.text.subdued.lowContrast" weight="bold">
+              <Text color="surface.text.gray.muted">Program ID:&nbsp;&nbsp;</Text>
+              <Text color="surface.text.gray.muted" weight="semibold">
                 {program.program_id}
               </Text>
             </Box>

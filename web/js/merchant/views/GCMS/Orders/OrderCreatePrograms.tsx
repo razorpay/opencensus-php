@@ -1,5 +1,5 @@
 import React, { Suspense, useContext, useEffect, useState } from 'react';
-import { Box, ChevronLeftIcon, Divider, Heading, Link, Title } from '@razorpay/blade/components';
+import { Box, ChevronLeftIcon, Divider, Heading, Link, Text } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -97,11 +97,15 @@ const OrderCreatePrograms = () => {
           </Link>
         </Box>
         <Box paddingBottom="spacing.6">
-          <Title color="surface.text.subtle.lowContrast">Create Order</Title>
+          <Heading color="surface.text.gray.subtle" size="large">
+            Create Order
+          </Heading>
         </Box>
         <ResellerDetailsHeader mode={mode} merchantId={merchantId} resellerId={resellerId || ''} />
         <Box paddingTop="spacing.6">
-          <Heading color="surface.text.subtle.lowContrast">Select Program</Heading>
+          <Text color="surface.text.gray.subtle" size="large">
+            Select Program
+          </Text>
         </Box>
         <Box padding={['spacing.6', 'spacing.0', 'spacing.2', 'spacing.0']}>
           <Divider />

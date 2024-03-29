@@ -33,7 +33,7 @@ const DowntimeDetailsCurrentStatus = ({
             {subText}
           </Text>
         }
-        intent={activeDowntime ? statusInfo.colorKey : 'positive'}
+        color={activeDowntime ? statusInfo.colorKey : 'positive'}
         isDismissible={false}
         title={activeDowntime ? `Ongoing ${statusInfo.text} Downtime` : 'Operational'}
         isFullWidth

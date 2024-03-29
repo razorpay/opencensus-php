@@ -7,8 +7,8 @@ const SummaryTable = ({ shippingConfig }): JSX.Element => {
   return (
     <SummaryItemWrapper>
       <Box display="flex" flexDirection="column" gap="spacing.4">
-        <Text weight="bold">{shippingConfig.zone.name}</Text>
-        <Text type="subdued">Delivery in {shippingConfig.delivery_in}</Text>
+        <Text weight="semibold">{shippingConfig.zone.name}</Text>
+        <Text color="surface.text.gray.muted">Delivery in {shippingConfig.delivery_in}</Text>
       </Box>
     </SummaryItemWrapper>
   );

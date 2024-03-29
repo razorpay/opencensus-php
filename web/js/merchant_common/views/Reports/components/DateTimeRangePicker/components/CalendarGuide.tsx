@@ -23,12 +23,11 @@ export const CalendarGuide = ({
     <CalendarGuideContainer>
       <Text
         variant="caption"
-        type="normal"
-        weight="bold"
+        weight="semibold"
         color={
           Boolean(validationError)
-            ? 'feedback.text.negative.lowContrast'
-            : 'feedback.text.information.lowContrast'
+            ? 'feedback.text.negative.intense'
+            : 'feedback.text.information.intense'
         }
       >
         {validationErrorText}

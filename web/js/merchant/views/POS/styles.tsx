@@ -12,8 +12,8 @@ export const MainContainer = styled.section(
     isIgnoreMarginBottom?: boolean;
   }) => `
     display: block;
-    background-color: ${theme.colors.surface.background.level2.lowContrast};
-    border: ${theme.border.width.thin}px solid ${theme.colors.brand.gray[400].lowContrast};
+    background-color: ${theme.colors.surface.background.gray.intense};
+    border: ${theme.border.width.thin}px solid ${theme.colors.interactive.border.gray.faded};
     border-top: ${theme.border.width.none};
     position: relative;
     padding: ${isIgnorePadding ? theme.spacing[0] : theme.spacing[7]}px;

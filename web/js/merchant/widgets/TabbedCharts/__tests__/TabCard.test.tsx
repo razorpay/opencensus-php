@@ -20,7 +20,7 @@ describe('widgets->TabbedCharts->TabCard', () => {
         }}
       />,
     );
-    expect(screen.getByText('0.')).toBeInTheDocument();
+    expect(screen.getByText('0')).toBeInTheDocument();
     expect(screen.queryByText(tabChartResponse.data.sub_text)).not.toBeInTheDocument();
   });
 

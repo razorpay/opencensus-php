@@ -49,11 +49,11 @@ const RenderTabs = ({
             isActive={isTabActive}
             isCountSuffix={isDetailsRevampFlow}
           >
-            <Badge size="small" variant={isTabActive ? 'blue' : 'neutral'}>
+            <Badge size="small" color={isTabActive ? 'primary' : 'neutral'}>
               {tabCount}
             </Badge>
             <StyledDivTabText isActive={isTabActive}>
-              <Text weight="bold">{titleCase(tabKey)} </Text>
+              <Text weight="semibold">{titleCase(tabKey)} </Text>
             </StyledDivTabText>
           </Tab>
         );

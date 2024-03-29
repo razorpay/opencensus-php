@@ -1,11 +1,13 @@
-import { Box, CopyIcon, Heading, Text } from '@razorpay/blade/components';
 import React from 'react';
-import { ProfilePhotoContainer, StyledInitialsImage } from './styled';
+import { Box, CopyIcon, Text } from '@razorpay/blade/components';
+
 // eslint-disable-next-line
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { titleCase } from 'common/utils/rzp-utils';
 import { getInitials } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/Profile/views/v2/utils';
 import { User } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+
+import { ProfilePhotoContainer, StyledInitialsImage } from './styled';
 
 interface ProfileInfoInterface {
   user: User;
@@ -35,25 +37,25 @@ const ProfileInfo = ({ user, userRole }: ProfileInfoInterface): JSX.Element => {
         flex="1"
       >
         <Box display="flex" flexDirection="column">
-          <Heading size="small" weight="bold">
+          <Text weight="semibold" size="large">
             {loggedInUserName ? titleCase(loggedInUserName) : '--'}
-          </Heading>
+          </Text>
           {userRole && (
-            <Text size="medium" type="subdued">
+            <Text size="medium" color="surface.text.gray.muted">
               {userRole}
             </Text>
           )}
         </Box>
         <Box display="flex" flexDirection="column">
-          <Text size="medium" type="subdued">
+          <Text size="medium" color="surface.text.gray.muted">
             Merchant ID
           </Text>
           <Box display="flex" gap="spacing.3" alignItems="end">
-            <Text size="medium" weight="bold">
+            <Text size="medium" weight="semibold">
               {merchantId}
             </Text>
             <CustomClipboard value={merchantId}>
-              <CopyIcon color="action.icon.link.default" size="medium" />
+              <CopyIcon color="interactive.icon.primary.subtle" size="medium" />
             </CustomClipboard>
           </Box>
         </Box>

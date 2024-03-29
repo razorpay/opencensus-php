@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Title, Text, Box } from '@razorpay/blade/components';
+import { Heading, Text, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
 import { useMobile } from 'common/hooks/useMobile';
@@ -25,10 +25,10 @@ const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps>
         testID="merchant-overview"
       >
         <Box display="flex" flexDirection="column" gap="spacing.2" alignItems="center">
-          <Title color="white.action.text.link.default" size="medium">
+          <Heading color="interactive.text.staticWhite.normal" size="xlarge">
             {greeting}, {username}!
-          </Title>
-          <Text color="white.action.text.link.default" size="large">
+          </Heading>
+          <Text color="interactive.text.staticWhite.normal" size="large">
             {formattedDate}
           </Text>
         </Box>

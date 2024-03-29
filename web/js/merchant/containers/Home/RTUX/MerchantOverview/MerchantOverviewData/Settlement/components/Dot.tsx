@@ -6,7 +6,7 @@ import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constant
 const Dot = () => {
   const isMobile = useMobile(mobileBreakoints);
   return isMobile ? null : (
-    <Text type="subdued" size="small" weight="bold">
+    <Text size="small" weight="semibold" color="surface.text.gray.muted">
       •
     </Text>
   );

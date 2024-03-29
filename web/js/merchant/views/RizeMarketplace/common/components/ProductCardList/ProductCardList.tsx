@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Card, CardBody, Text, Theme, Title } from '@razorpay/blade/components';
+import { Box, Card, CardBody, Text, Theme, Heading } from '@razorpay/blade/components';
 import { useHref, useLinkClickHandler } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -11,8 +11,8 @@ import { ProductCardListProps } from './types';
 const ProductLogo = styled.img(
   ({ theme }: { theme: Theme }) => `
   border-radius: ${theme.border.radius.medium}px;
-  border: ${theme.border.width.thin}px solid ${theme.colors.surface.border.normal.lowContrast};
-  background-color: ${theme.colors.static.white};
+  border: ${theme.border.width.thin}px solid ${theme.colors.surface.border.gray.muted};
+  background-color: ${theme.colors.interactive.icon.staticWhite.normal};
   width: 36px;
   height: 36px;
   object-fit: cover;
@@ -54,7 +54,7 @@ const ProductCardList = ({
       <CardBody>
         <Box
           borderWidth="thin"
-          borderColor="surface.border.normal.lowContrast"
+          borderColor="surface.border.gray.muted"
           borderRadius="medium"
           padding={['spacing.7', 'spacing.6']}
           minWidth={{ base: '270px', s: '332px' }}
@@ -72,18 +72,12 @@ const ProductCardList = ({
                 gap={{ base: 'spacing.4', l: 'spacing.5' }}
               >
                 <ProductLogo src={resolveToRizeUrl(logoSrc)} alt={`${name} logo`} />
-                <Title as="h3" size="small" type="normal">
+                <Heading as="h3" size="large" color="surface.text.gray.normal">
                   {name}
-                </Title>
+                </Heading>
               </Box>
 
-              <Text
-                variant="body"
-                size="small"
-                weight="bold"
-                type="normal"
-                color="surface.text.muted.lowContrast"
-              >
+              <Text variant="body" size="small" weight="semibold" color="surface.text.gray.muted">
                 {category.toUpperCase()}
               </Text>
             </Box>
@@ -91,8 +85,7 @@ const ProductCardList = ({
           </Box>
           <Text
             size="large"
-            type="normal"
-            color="surface.text.normal.lowContrast"
+            color="surface.text.gray.normal"
             marginTop={{ base: 'spacing.5', l: 'spacing.7' }}
           >
             {excerpt}

@@ -127,7 +127,7 @@ const CategoryDropdown = ({
             <DropdownTrigger>
               <ActiveCategory>
                 {activeCategoryName}
-                <ChevronDownIcon size="medium" color="surface.text.subtle.lowContrast" />
+                <ChevronDownIcon size="medium" color="interactive.icon.gray.subtle" />
               </ActiveCategory>
             </DropdownTrigger>
             <DropdownContent>
@@ -144,7 +144,7 @@ const CategoryDropdown = ({
                         >
                           {cat.name}
                           {isActive && (
-                            <CheckIcon size="medium" color="action.icon.secondary.default" />
+                            <CheckIcon size="medium" color="interactive.icon.primary.normal" />
                           )}
                         </CategoryItem>
                       );

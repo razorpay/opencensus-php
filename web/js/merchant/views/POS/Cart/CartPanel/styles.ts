@@ -15,12 +15,14 @@ export const PricingCard = styled.div(
   ({ theme, isSelected }: { theme: Theme; isSelected: boolean }) => `
   flex: 0 1 50%;
   border: ${theme.border.width.thin}px solid ${
-    isSelected ? theme.colors.brand.primary[500] : theme.colors.surface.border.normal.lowContrast
+    isSelected
+      ? theme.colors.surface.background.primary.intense
+      : theme.colors.surface.border.gray.muted
   };
   padding: ${theme.spacing[4]}px;
   border-radius: ${theme.border.radius.medium}px;
   cursor: pointer;
-  background-color: ${isSelected ? theme.colors.surface.background.level3.lowContrast : 'none'};
+  background-color: ${isSelected ? theme.colors.surface.background.gray.moderate : 'none'};
   margin-bottom: ${theme.spacing[4]}px;
 `,
 );
@@ -37,7 +39,7 @@ export const CartBackdropStyled = styled.div`
 
 export const CartFooterContainer = styled.div(
   ({ theme }: { theme: Theme }) => `
-  background-color: ${theme.colors.surface.background.level2.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.intense};
   position: absolute;
   bottom: 0;
   width:100%;

@@ -83,10 +83,10 @@ const BuyerAddressModal = ({
                   marginBottom="spacing.10"
                 >
                   <Alert
-                    contrast="low"
+                    emphasis="subtle"
                     description={fieldConfig.alert}
-                    intent="information"
                     isDismissible={false}
+                    color="information"
                   />
                 </Box>
               )}
@@ -148,7 +148,7 @@ const BuyerAddressModal = ({
                     onBlur={handleFieldOnChange(fieldConfig, onBlur)}
                   />
                   <DropdownOverlay>
-                    <ActionList surfaceLevel={2}>
+                    <ActionList>
                       {states.map((state) => (
                         <ActionListItem key={state.value} title={state.label} value={state.value} />
                       ))}
@@ -179,7 +179,7 @@ const BuyerAddressModal = ({
                   onBlur={handleFieldOnChange(fieldConfig, onBlur)}
                 />
                 <DropdownOverlay>
-                  <ActionList surfaceLevel={2}>
+                  <ActionList>
                     {countries.map((country) => (
                       <ActionListItem
                         key={country.code}

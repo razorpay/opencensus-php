@@ -8,7 +8,7 @@ import { IMAGE_PATH } from './constant';
 const QuickGuideStep = ({ title, onCloseClick, tiles = [] }: QuickGuideStepProps) => {
   return (
     <Box
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       display={{ base: 'none', m: 'flex' }}
       flexDirection="column"
       padding="spacing.7"
@@ -19,12 +19,12 @@ const QuickGuideStep = ({ title, onCloseClick, tiles = [] }: QuickGuideStepProps
         justifyContent="space-between"
         alignItems="flex-start"
       >
-        <Text marginBottom="spacing.7" weight="bold" size="large">
+        <Text marginBottom="spacing.7" weight="semibold" size="large">
           {title}
         </Text>
         <IconButton
           accessibilityLabel="quick-guide-close"
-          icon={() => <CloseIcon color="surface.action.icon.active.lowContrast" />}
+          icon={() => <CloseIcon color="interactive.icon.gray.normal" />}
           onClick={onCloseClick}
         />
       </Box>
@@ -47,7 +47,7 @@ const QuickGuideStep = ({ title, onCloseClick, tiles = [] }: QuickGuideStepProps
               key={title}
             >
               <img height="37px" width="37px" src={IMAGE_PATH.QUICK_GUIDE_ICON} />
-              <Text weight="bold" marginBottom="spacing.4" marginTop="spacing.5">
+              <Text weight="semibold" marginBottom="spacing.4" marginTop="spacing.5">
                 {title}
               </Text>
               <Text textAlign="center" size="small">

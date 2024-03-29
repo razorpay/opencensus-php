@@ -51,13 +51,13 @@ const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps):
       {shouldShowFtuxContent ? (
         <>
           <Box display="flex" gap="spacing.3" alignItems="center" marginTop="spacing.9">
-            <Badge contrast="high" variant="information" size="large">
+            <Badge emphasis="intense" size="large" color="information">
               New update
             </Badge>
             <Divider />
           </Box>
           <Box display="flex" flexDirection="column" gap="spacing.0" marginTop="spacing.5">
-            <Text weight="bold">Assist the client with their KYC</Text>
+            <Text weight="semibold">Assist the client with their KYC</Text>
             <Text size="small">
               to provide them with a quick and seamless onboarding experience.
             </Text>
@@ -86,7 +86,7 @@ const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps):
             flexDirection="column"
             gap="spacing.5"
             padding={['spacing.5', 'spacing.5', 'spacing.7']}
-            backgroundColor="surface.background.level3.lowContrast"
+            backgroundColor="surface.background.gray.moderate"
           >
             <SocialShareGroup
               isKycAssistedSelected={null}
@@ -103,10 +103,10 @@ const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps):
       ) : null}
       {shouldShowAlert ? (
         <Alert
-          contrast="high"
+          emphasis="intense"
           description="Please copy the new link before sharing it."
-          intent="notice"
           title="Your public link has changed"
+          color="notice"
         />
       ) : null}
     </>

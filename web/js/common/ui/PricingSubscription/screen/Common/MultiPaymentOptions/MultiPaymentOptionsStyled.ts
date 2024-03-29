@@ -18,8 +18,8 @@ const StyledRadioBox = styled.div(
         border-style: solid;
         border-color:${
           isRadioClick === paymentType
-            ? theme.colors.brand.primary[500]
-            : theme.colors.surface.border.normal.lowContrast
+            ? theme.colors.surface.background.primary.intense
+            : theme.colors.surface.border.gray.muted
         };
         &:hover {
           cursor: pointer;

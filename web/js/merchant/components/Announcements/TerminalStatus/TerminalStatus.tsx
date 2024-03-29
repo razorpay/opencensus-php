@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import { Link, Box } from '@razorpay/blade/components';
-import { Banner, Title, Description } from './Styled';
+import { Link, Box, Heading } from '@razorpay/blade/components';
+import { Banner, Description } from './Styled';
 import {
   updateModalConfigDetails,
   fetchModalConfigDetails,
@@ -96,7 +96,7 @@ const TerminalStatus = ({ isMobile, user }: TerminalStatusProps): JSX.Element | 
     return (
       <Banner status={status}>
         <div>
-          <Title>{title}</Title>
+          <Heading size="large">{title}</Heading>
           <Description>{message}</Description>
           <Link onClick={handleGotItClick}>Okay, got it</Link>
         </div>

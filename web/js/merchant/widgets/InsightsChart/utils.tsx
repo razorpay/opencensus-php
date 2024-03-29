@@ -44,7 +44,7 @@ export const InsightsChartWrapper = ({ children }: InsightsChartWrapperProps) =>
     gap="spacing.5"
     padding="spacing.7"
     marginX={{ base: 'spacing.0', m: 'spacing.6' }}
-    backgroundColor="surface.background.level2.lowContrast"
+    backgroundColor="surface.background.gray.intense"
     borderRadius="large"
   >
     {children}

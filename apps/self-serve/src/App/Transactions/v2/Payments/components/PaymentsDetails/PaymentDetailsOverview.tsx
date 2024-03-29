@@ -17,6 +17,7 @@ import {
 } from '@dashboard/shared-utils/reducers/settlements';
 import * as ModalActions from '@dashboard/shared-utils/reducers/modals';
 
+import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import Tooltip from './Tooltip';
 import { OverviewIconWrapper, OverviewSubtextWrapper, StyledAmountWrapper } from './styled';
 import { IPaymentDetails, IPaymentIdRefundDetails, ApplicationDetails } from './types';
@@ -29,7 +30,6 @@ import {
   getDisputesOverviewDetails,
 } from './utils';
 import { ERROR_DESCRIPTION_CONTENT_MAP } from './constants';
-import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 
 const OverviewIcon = ({ status }: { status: IPaymentDetails['status'] }) => {
   const Icon = getBadgeIcon(status);
@@ -90,22 +90,22 @@ function PaymentDetailsOverview({
                 <Box display="flex" flexDirection="column" alignItems="center">
                   <Box display="flex" alignItems="center">
                     <Badge
-                      contrast="low"
+                      emphasis="subtle"
                       marginRight="spacing.3"
                       marginTop="spacing.2"
                       size="large"
-                      variant={getBaseVariant(status)}
+                      color={getBaseVariant(status)}
                       icon={(props) => <Tooltip type={status} {...props} />}
                     >
                       {titleCase(status)}
                     </Badge>
                     {applicationDetails?.name ? (
                       <Badge
-                        contrast="low"
+                        emphasis="subtle"
                         marginRight="spacing.3"
                         marginTop="spacing.2"
                         size="large"
-                        variant={getBaseVariant(status)}
+                        color={getBaseVariant(status)}
                       >
                         Payment initiated via {applicationDetails?.name}
                       </Badge>
@@ -117,9 +117,9 @@ function PaymentDetailsOverview({
                 </Box>
                 <Box display="flex" justifyContent="center" marginTop="spacing.3">
                   <OverviewSubtextWrapper isMobile={isMobile}>
-                    <Text color="surface.text.normal.lowContrast">
+                    <Text color="surface.text.gray.normal">
                       Created on {createdDay},
-                      <Text color="surface.text.subdued.lowContrast">{createdTime}</Text>
+                      <Text color="surface.text.gray.muted">{createdTime}</Text>
                     </Text>
                   </OverviewSubtextWrapper>
                 </Box>
@@ -139,22 +139,22 @@ function PaymentDetailsOverview({
 
                   <Box display="flex" alignItems="center">
                     <Badge
-                      contrast="low"
+                      emphasis="subtle"
                       marginRight="spacing.3"
                       marginTop="spacing.2"
                       size="large"
-                      variant={getBaseVariant(status)}
+                      color={getBaseVariant(status)}
                       icon={(props) => <Tooltip type={status} {...props} />}
                     >
                       {titleCase(status)}
                     </Badge>
                     {applicationDetails?.name ? (
                       <Badge
-                        contrast="low"
+                        emphasis="subtle"
                         marginRight="spacing.3"
                         marginTop="spacing.2"
                         size="large"
-                        variant={getBaseVariant(status)}
+                        color={getBaseVariant(status)}
                       >
                         Payment initiated via {applicationDetails?.name}
                       </Badge>
@@ -162,9 +162,9 @@ function PaymentDetailsOverview({
                   </Box>
                 </Box>
                 <OverviewSubtextWrapper isMobile={isMobile}>
-                  <Text color="surface.text.normal.lowContrast">
+                  <Text color="surface.text.gray.normal">
                     Created on {createdDay},
-                    <Text color="surface.text.subdued.lowContrast">{createdTime}</Text>
+                    <Text color="surface.text.gray.muted">{createdTime}</Text>
                   </Text>
                 </OverviewSubtextWrapper>
               </Box>
@@ -173,7 +173,7 @@ function PaymentDetailsOverview({
           {paymentDetails?.status === 'failed' && paymentDetails?.error_description ? (
             <Box marginTop="spacing.5">
               <Divider marginBottom="spacing.3" />
-              <Text type="normal" variant="body" size="small" weight="bold" contrast="low">
+              <Text variant="body" size="small" weight="semibold" color="surface.text.gray.normal">
                 {ERROR_DESCRIPTION_CONTENT_MAP[
                   paymentDetails?.error_description as keyof typeof ERROR_DESCRIPTION_CONTENT_MAP
                 ]
@@ -232,13 +232,13 @@ function PaymentDetailsOverview({
                         {!isOpen ? (
                           <ChevronDownIcon
                             size="medium"
-                            color="feedback.icon.neutral.lowContrast"
+                            color="feedback.icon.neutral.intense"
                             data-testid="chevron-down"
                           />
                         ) : (
                           <ChevronUpIcon
                             size="medium"
-                            color="feedback.icon.neutral.lowContrast"
+                            color="feedback.icon.neutral.intense"
                             data-testid="chevron-up"
                           />
                         )}
@@ -287,7 +287,7 @@ function PaymentDetailsOverview({
                     </StyledAmountWrapper>
                   </StyledAmountContainer>
                 </Box>
-                <Divider contrast="low" dividerStyle="solid" thickness="thick" variant="normal" />
+                <Divider dividerStyle="solid" thickness="thick" variant="normal" />
                 <Box display="flex" justifyContent="space-between" paddingY="spacing.3">
                   <Text type="normal" size="medium" weight="bold">
                     Net amount

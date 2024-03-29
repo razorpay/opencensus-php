@@ -72,12 +72,12 @@ const TimelineView = ({
           )}
           <Box>
             <Icon>
-              <ClockIcon size="medium" color="feedback.icon.notice.lowContrast" />
+              <ClockIcon size="medium" color="feedback.icon.notice.intense" />
             </Icon>
           </Box>
           <Box display="flex" gap="spacing.1" flex="1">
             <Box display="flex" flexDirection="column" gap="spacing.1" flex="1">
-              <Text weight="bold" size="large">
+              <Text weight="semibold" size="large">
                 {step.title}
               </Text>
               <Text>
@@ -93,7 +93,7 @@ const TimelineView = ({
               {step.id === KYC_DOCUMENTS && status && (
                 <Box as="span">
                   {kycDocumentStatus !== ICProductStates.REJECTED ? (
-                    <Badge contrast="high" color={status.status} size="large" icon={InfoIcon}>
+                    <Badge emphasis="intense" color={status.status} size="large" icon={InfoIcon}>
                       {status.label as string}
                     </Badge>
                   ) : (
@@ -108,7 +108,7 @@ const TimelineView = ({
                   {![V_KYC_STATUS.REJECTED, V_KYC_STATUS.INITIATED].includes(
                     vKycStatus as 'rejected' | 'initiated',
                   ) && vStatus ? (
-                    <Badge contrast="high" color={vStatus.status} size="large" icon={InfoIcon}>
+                    <Badge emphasis="intense" color={vStatus.status} size="large" icon={InfoIcon}>
                       {vStatus.label as string}
                     </Badge>
                   ) : (

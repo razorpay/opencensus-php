@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
+import { Box, Text, Divider, Heading } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Box, Heading, Text, Divider } from '@razorpay/blade/components';
-import InitiateSetup from './components/InitiateSetup';
-import ActiveSetup from './components/ActiveSetup';
+
 import { fetchOauthConnectedApplications as fetchOauthConnectedApplicationsfn } from 'merchant/reducers/applications';
-import Shimmer from './components/Shimmer';
-import { getApplicationStatus, whatsappAccountSetupAnalyticsTrack } from './utils';
 import { fetchGenericFeatureStatus } from 'merchant/reducers/genericFeature';
 import { FEATURE_WHATSAPP_PL } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/constants';
+
+import ActiveSetup from './components/ActiveSetup';
+import InitiateSetup from './components/InitiateSetup';
+import Shimmer from './components/Shimmer';
+import { getApplicationStatus, whatsappAccountSetupAnalyticsTrack } from './utils';
 
 const WhatsAppSetup = ({
   user,
@@ -36,10 +38,10 @@ const WhatsAppSetup = ({
       padding={{ base: 'spacing.7', m: 'spacing.0' }}
     >
       <Box display="flex" flexDirection="column" gap={{ base: '10px', m: 'spacing.2' }}>
-        <Heading size="large" weight="bold">
+        <Heading weight="semibold" size="medium">
           Whatsapp Account Set-up
         </Heading>
-        <Text size="medium" type="subtle">
+        <Text size="medium" color="surface.text.gray.subtle">
           To send payment requests via WhatsApp, please set-up your WABA account with Razorpay
         </Text>
       </Box>

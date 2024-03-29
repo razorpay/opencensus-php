@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Box, Heading, Text } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
 import { Error } from 'common/new-ui/Input';
@@ -27,9 +27,9 @@ const OrderCartBillingSection = () => {
   return (
     <Box padding={['spacing.2', 'spacing.0', 'spacing.4', 'spacing.0']}>
       <Box paddingBottom="spacing.4">
-        <Heading size="small" color="surface.text.subtle.lowContrast">
+        <Text color="surface.text.gray.subtle" size="large">
           Billing Details
-        </Heading>
+        </Text>
       </Box>
       <div className="content">
         {isLoadingMerchantResellerRelationshipDetails ? (
@@ -39,13 +39,13 @@ const OrderCartBillingSection = () => {
         ) : (
           <Box>
             <Box padding={['spacing.6']}>
-              <Text color="surface.text.subdued.lowContrast">
+              <Text color="surface.text.gray.muted">
                 {merchantResellerRelationshipDetails?.billing_detail?.business_name}
               </Text>
-              <Text color="surface.text.subdued.lowContrast">
+              <Text color="surface.text.gray.muted">
                 {merchantResellerRelationshipDetails?.region}
               </Text>
-              <Text color="surface.text.subdued.lowContrast">
+              <Text color="surface.text.gray.muted">
                 {`GSTIN: ${merchantResellerRelationshipDetails?.billing_detail?.gst_number}`}
               </Text>
             </Box>

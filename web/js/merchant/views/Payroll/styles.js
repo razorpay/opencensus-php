@@ -41,7 +41,7 @@ export const LeftPanel = styled.div`
 `;
 
 export const MainTitle = styled.h1`
-  font-weight: 900;
+  font-weight: 800;
   color: #ffffff;
   font-size: 40px;
   line-height: 48px;

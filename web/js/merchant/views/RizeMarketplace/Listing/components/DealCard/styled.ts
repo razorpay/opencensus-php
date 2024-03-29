@@ -7,7 +7,7 @@ export const DashedBox = styled.div(
   inset: ${theme.spacing[0]}px;
   border-width: ${theme.border.width.thin}px;
   border-style: dashed;
-  border-color: ${theme.colors.brand.primary[600]};
+  border-color: ${theme.colors.surface.background.primary.intense};
   border-radius: ${theme.border.radius.medium}px;
   pointer-events: none;
 `,

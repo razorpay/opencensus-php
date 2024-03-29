@@ -78,7 +78,7 @@ const DataTableWrapper = <
   const columns = getColumns({ user, org, experiments });
 
   return (
-    <Box padding="spacing.6" backgroundColor="surface.background.level3.lowContrast">
+    <Box padding="spacing.6" backgroundColor="surface.background.gray.moderate">
       {renderFiltersSection({ user, paginationState, setPagination, refetch })}
       {isFetching ? (
         <SpinnerContainer>

@@ -1,6 +1,8 @@
-import { Box, Heading, Link, Text } from '@razorpay/blade/components';
-import { DetailsViewCardProps } from 'merchant/views/AccountAndSettings/BusinessSettings/typings';
 import React from 'react';
+import { Box, Link, Text } from '@razorpay/blade/components';
+
+import { DetailsViewCardProps } from 'merchant/views/AccountAndSettings/BusinessSettings/typings';
+
 import { StyledDetailListing, StyledDivider } from './styled';
 
 const DetailsViewCard = ({ title, info, handleAction }: DetailsViewCardProps): JSX.Element => {
@@ -8,19 +10,19 @@ const DetailsViewCard = ({ title, info, handleAction }: DetailsViewCardProps): J
     <Box
       display="flex"
       flexDirection="column"
-      backgroundColor="surface.background.level3.lowContrast"
+      backgroundColor="surface.background.gray.moderate"
       padding={{
         base: ['spacing.4', 'spacing.5', 'spacing.6'],
         m: ['spacing.6', 'spacing.7', 'spacing.7'],
       }}
       gap="spacing.5"
     >
-      <Heading>{title}</Heading>
+      <Text size="large">{title}</Text>
       <StyledDivider />
       <Box display="flex" flexDirection="column" gap="spacing.7">
         {info.map((item, index) => (
           <Box key={index} display="flex" flexDirection="column">
-            <Text type="subtle">{item.label}</Text>
+            <Text color="surface.text.gray.subtle">{item.label}</Text>
             <StyledDetailListing>
               <Box
                 display="flex"
@@ -28,7 +30,7 @@ const DetailsViewCard = ({ title, info, handleAction }: DetailsViewCardProps): J
                 justifyContent={{ base: 'space-between', m: 'initial' }}
                 alignItems="center"
               >
-                <Text weight="bold">{item.value || '----'}</Text>
+                <Text weight="semibold">{item.value || '----'}</Text>
                 {item.isEditEnable || item.showDisabledCTA ? (
                   <Link
                     variant="button"

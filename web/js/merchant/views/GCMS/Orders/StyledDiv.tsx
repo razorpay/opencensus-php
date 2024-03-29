@@ -41,9 +41,9 @@ export const StyledFilterDiv = styled.div(
       > .btn:first-child {
         border: transparent;
         background: transparent;
-        color: ${theme.colors.action.text.link.default};
+        color: ${theme.colors.interactive.text.primary.subtle};
         font-size: 14px;
-        font-weight: 700;
+        font-weight: 600;
         width: 160px;
         padding-left: 0;
         text-align: left;

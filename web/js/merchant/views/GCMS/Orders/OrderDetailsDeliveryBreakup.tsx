@@ -15,27 +15,27 @@ const OrderDetailsDeliveryBreakup = ({
   return (
     <OrderDetailsDeliverySectionDistributionContainer>
       <Box>
-        <Text weight="bold">Delivery Breakup</Text>
+        <Text weight="semibold">Delivery Breakup</Text>
       </Box>
       <Box display="flex" flexDirection="row">
         <Box width="80px">
-          <Text color="surface.text.subdued.lowContrast">Uploaded</Text>
+          <Text color="surface.text.gray.muted">Uploaded</Text>
           <Box paddingTop="spacing.1">
-            <Text weight="bold">{uploaded}</Text>
+            <Text weight="semibold">{uploaded}</Text>
           </Box>
         </Box>
         <Box width="80px">
-          <Text color="surface.text.subdued.lowContrast">Delivered</Text>
+          <Text color="surface.text.gray.muted">Delivered</Text>
           <Box paddingTop="spacing.1">
-            <Text color="feedback.positive.action.text.link.active.lowContrast" weight="bold">
+            <Text color="interactive.text.positive.subtle" weight="semibold">
               {delivered}
             </Text>
           </Box>
         </Box>
         <Box width="80px">
-          <Text color="surface.text.subdued.lowContrast">Failed</Text>
+          <Text color="surface.text.gray.muted">Failed</Text>
           <Box paddingTop="spacing.1">
-            <Text color="feedback.negative.action.text.primary.default.lowContrast" weight="bold">
+            <Text color="interactive.text.negative.subtle" weight="semibold">
               {failed}
             </Text>
           </Box>

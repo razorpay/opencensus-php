@@ -53,15 +53,15 @@ export const CarouselWidget: React.FC<CarouselWidgetProps & CommonWidgetProps> =
     <CarouselWidgetWrapper background_img={background_img}>
       <Box display="flex" gap="spacing.2" marginBottom="spacing.6">
         <Heading
-          size="large"
-          color={background_img ? 'feedback.text.information.highContrast' : undefined}
+          color={background_img ? 'surface.text.staticWhite.normal' : undefined}
+          size="medium"
         >
           {title}
         </Heading>
       </Box>
       {error ? (
         <ErrorState
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           text={`${title} couldn't be loaded`}
           retryHandler={() => retryHandler({ id })}
           analyticsProperties={{

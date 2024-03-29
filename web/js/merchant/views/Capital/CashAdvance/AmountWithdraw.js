@@ -1497,7 +1497,6 @@ class AmountWithdraw extends React.Component {
             <div class="cash-advance-first-withdrawal-background" />
           </React.Fragment>
         ) : null}
-
         <div class="no-margin full-width" style={{ position: 'relative' }}>
           {isWithdrawlDisabled ? (
             this.withdrawOnholdReasonSection(
@@ -1548,7 +1547,7 @@ class AmountWithdraw extends React.Component {
               <div className="full-width no-margin">
                 {lenderBalanceDiffReason ? (
                   <Box width="100%" display="flex" marginBottom="spacing.4">
-                    <Badge variant="notice" icon={InfoIcon}>
+                    <Badge icon={InfoIcon} color="notice">
                       {lenderBalanceDiffReason}
                     </Badge>
                   </Box>

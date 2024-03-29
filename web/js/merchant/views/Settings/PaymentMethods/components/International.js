@@ -52,7 +52,7 @@ const International = ({
     <li className="international-leaf-item">
       <Box>
         <Box>
-          <Text as="span" weight="bold">
+          <Text as="span" weight="semibold">
             International Cards
           </Text>
           <Text>On Payment Gateway, Pages, Links and Invoices</Text>
@@ -72,15 +72,13 @@ const International = ({
               }}
               type="prime"
             />
-            <Text as="span" weight="bold" color="action.text.link.default">
+            <Text as="span" weight="semibold" color="interactive.text.primary.subtle">
               Enabled
             </Text>
           </Box>
         )}
       </Box>
-
       {internationalEnabled && <Non3dsCardsActivation />}
-
       {!!isAnyProductIntlApproved && (
         <>
           <Box height="spacing.4" />

@@ -45,8 +45,8 @@ export const AccountDetail = ({ match }: AccountDetailProps): JSX.Element => {
             <Alert
               testID="error-message"
               isFullWidth
-              intent="negative"
               description="Something went wrong"
+              color="negative"
             />
           )}
 
@@ -76,19 +76,13 @@ export const AccountDetail = ({ match }: AccountDetailProps): JSX.Element => {
 
               {data?.status && (
                 <EntityDetailRow label="Status">
-                  <Badge {...STATUS_BADGE_PROPS[data.status]} fontWeight="bold">
-                    {toTitleCase(data.status)}
-                  </Badge>
+                  <Badge {...STATUS_BADGE_PROPS[data.status]}>{toTitleCase(data.status)}</Badge>
                 </EntityDetailRow>
               )}
 
               {data?.type === 'account' && (
                 <EntityDetailRow label="Full KYC">
-                  <Badge
-                    variant={data?.full_kyc ? 'positive' : 'notice'}
-                    fontWeight="bold"
-                    contrast="high"
-                  >
+                  <Badge color={data?.full_kyc ? 'positive' : 'notice'} emphasis="intense">
                     {data?.full_kyc ? 'Completed' : 'Not Completed'}
                   </Badge>
                 </EntityDetailRow>

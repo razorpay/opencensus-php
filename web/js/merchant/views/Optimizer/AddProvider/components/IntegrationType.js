@@ -5,7 +5,7 @@ import {
   Radio,
   RadioGroup,
   Text,
-  Title,
+  Heading,
   EditIcon,
   Dropdown,
   SelectInput,
@@ -111,7 +111,7 @@ const IntegrationType = (props) => {
               <Text>Integration type</Text>
             </Box>
             <Box minWidth="280px">
-              <Text weight="bold">{integrationType}</Text>
+              <Text weight="semibold">{integrationType}</Text>
             </Box>
           </Box>
         </Box>
@@ -164,7 +164,7 @@ const IntegrationType = (props) => {
                   <Radio value="banking_vas">Banking VAS</Radio>
                 </RadioGroup>
               ) : (
-                <Text weight="bold">
+                <Text weight="semibold">
                   {gatewayAcquirer === 'razorpay' ? 'Regular' : 'Banking VAS'}
                 </Text>
               )}
@@ -193,7 +193,7 @@ const IntegrationType = (props) => {
                     </DropdownOverlay>
                   </Dropdown>
                 ) : (
-                  <Text weight="bold">{bankName}</Text>
+                  <Text weight="semibold">{bankName}</Text>
                 )}
               </Box>
             </Box>
@@ -218,17 +218,19 @@ const IntegrationType = (props) => {
       flexDirection="column"
       padding="spacing.7"
       gap={isFormEdit ? 'spacing.9' : 'spacing.6'}
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
     >
       <Box display="flex" justifyContent="space-between">
         <Box display="flex" flexDirection="column" gap="spacing.3">
-          <Title color="surface.text.subtle.lowContrast">{header}</Title>
-          {isFormEdit && <Text color="surface.text.subtle.lowContrast">{subText}</Text>}
+          <Heading color="surface.text.gray.subtle" size="large">
+            {header}
+          </Heading>
+          {isFormEdit && <Text color="surface.text.gray.subtle">{subText}</Text>}
         </Box>
 
         <Box display="flex" flexDirection="column" gap="spacing.3" alignItems="end">
           {isFormEdit || (isEdit && isAccountType) ? (
-            <Text color="surface.text.subdued.lowContrast">STEP 2 OUT OF 4</Text>
+            <Text color="surface.text.gray.muted">STEP 2 OUT OF 4</Text>
           ) : (
             <Button
               icon={EditIcon}
@@ -241,7 +243,6 @@ const IntegrationType = (props) => {
           )}
         </Box>
       </Box>
-
       {isAccountType ? (
         <RenderAccountBlock
           isBankingVasAccount={isBankingVasAccount}
@@ -260,7 +261,6 @@ const IntegrationType = (props) => {
           integrationType={integrationType}
         />
       )}
-
       {isFormEdit && (
         <Box display="flex" justifyContent="end">
           <Box display="flex" alignItems="center" gap="spacing.7">

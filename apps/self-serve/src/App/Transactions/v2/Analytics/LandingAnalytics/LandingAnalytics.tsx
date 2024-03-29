@@ -11,8 +11,6 @@ import {
 } from '@dashboard/shared-utils/reducers/settlements';
 import { useStore } from 'shell/commonStore';
 import { useMobile } from '@dashboard/shared-ui/hooks';
-import TopOverviewContainer from './TopOverview';
-import BottomOverview from './BottomOverview';
 import OverviewContainer from 'apps/self-serve/src/App/Transactions/v2/Analytics/components/OverviewContainer';
 import {
   usePaymentsData,
@@ -37,6 +35,8 @@ import {
 } from 'apps/self-serve/src/App/Transactions/v2/Analytics/types';
 import { Currency } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import { trackOverviewDuration } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import BottomOverview from './BottomOverview';
+import TopOverviewContainer from './TopOverview';
 
 const LandingAnalytics = (): JSX.Element => {
   const session = useStore((state) => state.session);
@@ -199,7 +199,7 @@ const LandingAnalytics = (): JSX.Element => {
         justifyContent="space-between"
       >
         <Box display="flex" flexDirection="row" gap="spacing.2">
-          <Text type="normal" weight="bold" contrast="low">
+          <Text weight="semibold" color="surface.text.gray.normal">
             Overview
           </Text>
           <Dropdown

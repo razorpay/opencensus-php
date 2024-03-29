@@ -7,7 +7,7 @@ import {
   ReportFeatureBtnWrapper,
 } from './style';
 import {
-  Title,
+  Heading,
   Text,
   Button,
   DownloadIcon,
@@ -60,16 +60,16 @@ const OverviewBannerComponent = ({ loading, openModal }): JSX.Element => {
       overflow="hidden"
       marginBottom="spacing.5"
       minHeight="254px"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
     >
       <OverViewContent>
         <Box>
-          <Title contrast="low">
+          <Heading size="large" color="surface.text.gray.normal">
             {isSchedulesEnabled
               ? 'Generate & schedule reports for all your business transactions, settlements & subscription'
               : 'Generate reports for all your business transactions, settlements & subscriptions'}
-          </Title>
-          <Text variant="body" type="muted" contrast="low">
+          </Heading>
+          <Text variant="body" color="surface.text.gray.muted">
             All your products reports in one place, now with new and better interface.
           </Text>
         </Box>

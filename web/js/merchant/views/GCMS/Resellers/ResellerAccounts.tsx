@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Title } from '@razorpay/blade/components';
+import { Box, Heading } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -7,8 +7,8 @@ import { useParams } from 'react-router-dom';
 import { ModeT } from 'common/services/mode';
 import Spinner from 'common/ui/Spinner';
 
-import { fetchResellerBalance } from './queries';
 import VirtualAccountDetails from './VirtualAccountDetails';
+import { fetchResellerBalance } from './queries';
 
 interface ResellerAccountsProps {
   mode: ModeT;
@@ -33,7 +33,9 @@ const ResellerAccounts = ({ mode, merchantId }: ResellerAccountsProps) => {
         ) : (
           <>
             <Box paddingTop={'spacing.5'} paddingLeft={'spacing.6'}>
-              <Title color="surface.text.subtle.lowContrast">Account</Title>
+              <Heading color="surface.text.gray.subtle" size="large">
+                Account
+              </Heading>
             </Box>
             <VirtualAccountDetails
               accountNumber={virtual_account?.bank_account_number}

@@ -1,6 +1,6 @@
 import { BadgeProps } from '@razorpay/blade/components';
 interface RefundStatus {
-  variant: BadgeProps['variant'];
+  variant: BadgeProps['color'];
   content: string;
 }
 

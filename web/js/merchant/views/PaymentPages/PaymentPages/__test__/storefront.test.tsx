@@ -64,11 +64,7 @@ describe('Storefront -> Create', () => {
         await userEvent.click(addProductButton);
 
         await waitFor(() => {
-          expect(
-            screen.getByRole('heading', {
-              name: 'Add new product',
-            }),
-          ).toBeInTheDocument();
+          expect(screen.getByText('Add new product')).toBeInTheDocument();
         });
         const product_name = container.querySelector('input[name=product_name]') as Element;
         const amount = container.querySelector('input[name=amount]') as Element;

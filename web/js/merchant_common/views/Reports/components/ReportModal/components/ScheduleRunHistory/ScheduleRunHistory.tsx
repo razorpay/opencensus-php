@@ -4,7 +4,6 @@ import {
   PlusIcon,
   ReportModal,
   Dropdown,
-  Heading,
   Text,
   SelectInput,
   DropdownOverlay,
@@ -71,34 +70,19 @@ const ScheduleRunHistory = connect(
     return (
       <>
         <ReportModalHeader>
-          <Heading variant="regular">History of Report Run</Heading>
-          <Text
-            variant="body"
-            size="medium"
-            weight="regular"
-            color="surface.text.subdued.lowContrast"
-          >
+          <Text size="large">History of Report Run</Text>
+          <Text variant="body" size="medium" weight="regular" color="surface.text.gray.muted">
             Revisit the reports you have received in this schedule
           </Text>
         </ReportModalHeader>
         <ControlPanel>
           <RepeatOnWrapper>
             <FlexCentered>
-              <Text
-                variant="body"
-                size="medium"
-                weight="regular"
-                color="surface.text.subdued.lowContrast"
-              >
+              <Text variant="body" size="medium" weight="regular" color="surface.text.gray.muted">
                 Repeat on:
               </Text>
               &nbsp; &nbsp;
-              <Text
-                variant="body"
-                size="medium"
-                weight="bold"
-                color="surface.text.subdued.lowContrast"
-              >
+              <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.muted">
                 {scheduleData.period[0].toUpperCase() + scheduleData.period.slice(1)}
               </Text>
             </FlexCentered>

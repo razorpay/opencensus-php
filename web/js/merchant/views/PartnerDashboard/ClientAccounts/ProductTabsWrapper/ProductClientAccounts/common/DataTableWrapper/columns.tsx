@@ -24,13 +24,7 @@ export const inviteAcceptedOn: DataTableColumn = {
     <Box minWidth="155px">
       <Time value={item.created_at} format="ll" />
       {isInviteRecentlyAccepted(item.created_at) && (
-        <Badge
-          display="inline-block"
-          contrast="high"
-          fontWeight="bold"
-          marginLeft="spacing.3"
-          color="positive"
-        >
+        <Badge display="inline-block" emphasis="intense" marginLeft="spacing.3" color="positive">
           NEW
         </Badge>
       )}

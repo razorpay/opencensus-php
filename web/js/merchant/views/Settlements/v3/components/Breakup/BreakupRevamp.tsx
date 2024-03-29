@@ -40,21 +40,21 @@ const Breakup = ({
       width="100%"
       flexDirection="column"
       flex="1.8"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       minWidth={{ base: 'spacing.0', m: '410px' }}
       borderRadius="medium"
-      borderColor="surface.border.normal.lowContrast"
+      borderColor="surface.border.gray.muted"
     >
       <Box display="flex" flexDirection="column" padding="spacing.6">
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <StyledBox onClick={toggleDrawer.bind(null, 'gross')}>
             <Box display="flex" alignItems="center" gap={{ base: '5px' }}>
-              <Text size="medium" weight="bold" color="surface.text.subtle.lowContrast">
+              <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
                 Gross settlement
               </Text>
               <CollapsibleIcon open={collapseState.gross}>
                 <Box display="flex" alignItems="center" justifyContent="cemter">
-                  <ChevronDownIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                  <ChevronDownIcon size="medium" color="feedback.icon.neutral.intense" />
                 </Box>
               </CollapsibleIcon>
             </Box>
@@ -62,7 +62,7 @@ const Breakup = ({
           <Amount
             amount={grossSettlements.amount}
             type="breakup"
-            color="feedback.text.positive.lowContrast"
+            color="feedback.text.positive.intense"
             currency={currency}
           />
         </Box>
@@ -81,7 +81,7 @@ const Breakup = ({
                   }}
                 >
                   <Box display="flex" alignItems="center" gap={{ base: '5px' }}>
-                    <Text size="medium" type="subtle">
+                    <Text size="medium" color="surface.text.gray.subtle">
                       {each.name}
                     </Text>
                     <Tooltip content={each.tooltipInfo} />
@@ -100,12 +100,12 @@ const Breakup = ({
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <StyledBox onClick={toggleDrawer.bind(null, 'deduction')}>
                 <Box display="flex" alignItems="center" gap={{ base: '5px' }}>
-                  <Text size="medium" weight="bold" color="surface.text.subtle.lowContrast">
+                  <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
                     Deductions
                   </Text>
                   <CollapsibleIcon open={collapseState.deduction}>
                     <Box display="flex" alignItems="center" justifyContent="cemter">
-                      <ChevronDownIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                      <ChevronDownIcon size="medium" color="feedback.icon.neutral.intense" />
                     </Box>
                   </CollapsibleIcon>
                 </Box>
@@ -113,7 +113,7 @@ const Breakup = ({
               <Amount
                 amount={deductions.amount}
                 type="breakup"
-                color="feedback.text.negative.lowContrast"
+                color="feedback.text.negative.intense"
                 currency={currency}
               />
             </Box>
@@ -132,7 +132,7 @@ const Breakup = ({
                       }}
                     >
                       <Box display="flex" alignItems="center" gap={{ base: '5px' }}>
-                        <Text size="medium" type="subtle">
+                        <Text size="medium" color="surface.text.gray.subtle">
                           {each.name}
                         </Text>
                         <Tooltip content={each.tooltipInfo} />
@@ -146,9 +146,9 @@ const Breakup = ({
           </>
         ) : null}
         <Box />
-        <Divider variant="normal" marginY="spacing.4" thickness="thick" />
+        <Divider variant="muted" marginY="spacing.4" thickness="thick" />
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Text size="medium" weight="bold">
+          <Text size="medium" weight="semibold">
             Net settlements
           </Text>
           <Amount amount={netSettlements.amount} type="net" currency={currency} />

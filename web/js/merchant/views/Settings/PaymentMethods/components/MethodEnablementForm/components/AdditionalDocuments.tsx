@@ -1,22 +1,22 @@
-import React from 'react';
 import {
-  Box,
-  Text,
-  Dropdown,
-  SelectInput,
-  DropdownOverlay,
   ActionList,
   ActionListItem,
+  Box,
+  Button,
+  Checkbox,
+  DownloadIcon,
+  Dropdown,
+  DropdownOverlay,
   Heading,
   InfoIcon,
-  Checkbox,
-  Tooltip,
-  Button,
-  TooltipInteractiveWrapper,
-  DownloadIcon,
   Link,
+  SelectInput,
+  Text,
+  Tooltip,
+  TooltipInteractiveWrapper,
 } from '@razorpay/blade/components';
 import { useFormikContext } from 'formik';
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
@@ -92,7 +92,7 @@ const AdditionalDocuments = ({ user, showNotification }: AdditionalDocumentsProp
           {selectedDocument[index] ? (
             <Box>
               <Box display="flex" flexDirection="row" alignItems="center" paddingBottom="spacing.3">
-                <Text weight="bold" marginRight="spacing.2" type="subdued">
+                <Text weight="semibold" marginRight="spacing.2" color="surface.text.gray.muted">
                   {selectedDocument[index].label}
                 </Text>
                 {selectedDocument[index].tooltip && (
@@ -102,7 +102,7 @@ const AdditionalDocuments = ({ user, showNotification }: AdditionalDocumentsProp
                     placement="top"
                   >
                     <TooltipInteractiveWrapper>
-                      <InfoIcon color="surface.action.icon.active.lowContrast" size="medium" />
+                      <InfoIcon color="interactive.icon.gray.normal" size="medium" />
                     </TooltipInteractiveWrapper>
                   </Tooltip>
                 )}
@@ -123,7 +123,7 @@ const AdditionalDocuments = ({ user, showNotification }: AdditionalDocumentsProp
                 />
               </StyledFieldContainer>
               <Box marginTop="spacing.2">
-                <Text type="muted" as="span" size="xsmall">
+                <Text as="span" size="xsmall" color="surface.text.gray.muted">
                   This document needs to be e-signed/self-attested.{' '}
                 </Text>
                 <Link variant="button" onClick={onHowToEsign} size="xsmall">
@@ -139,13 +139,13 @@ const AdditionalDocuments = ({ user, showNotification }: AdditionalDocumentsProp
       <Box maxWidth="560px" marginBottom="spacing.7">
         <Box>
           <Box display="flex" flexDirection="row" alignItems="center" paddingBottom="spacing.3">
-            <Text weight="bold" marginRight="spacing.2" type="subdued">
+            <Text weight="semibold" marginRight="spacing.2" color="surface.text.gray.muted">
               {doc.label}
             </Text>
             {doc.tooltip && (
               <Tooltip content={doc.tooltip} placement="top">
                 <TooltipInteractiveWrapper>
-                  <InfoIcon color="surface.action.icon.active.lowContrast" size="medium" />
+                  <InfoIcon color="interactive.icon.gray.normal" size="medium" />
                 </TooltipInteractiveWrapper>
               </Tooltip>
             )}
@@ -183,19 +183,19 @@ const AdditionalDocuments = ({ user, showNotification }: AdditionalDocumentsProp
           </StyledFieldContainer>
           {doc.name === 'ubo' ? (
             <Box marginTop="spacing.2">
-              <Text type="muted" as="span" size="xsmall">
+              <Text as="span" size="xsmall" color="surface.text.gray.muted">
                 Please{' '}
               </Text>
               <Link variant="button" onClick={onDownloadSampleUbo} size="xsmall">
                 download sample UBO,{' '}
               </Link>
-              <Text type="muted" as="span" size="xsmall">
+              <Text as="span" size="xsmall" color="surface.text.gray.muted">
                 insert organization letterhead and fill in the details before uploading it above
               </Text>
             </Box>
           ) : (
             <Box marginTop="spacing.2">
-              <Text type="muted" as="span" size="xsmall">
+              <Text as="span" size="xsmall" color="surface.text.gray.muted">
                 This document needs to be e-signed/self-attested.{' '}
               </Text>
               <Link variant="button" onClick={onHowToEsign} size="xsmall">
@@ -222,7 +222,7 @@ const AdditionalDocuments = ({ user, showNotification }: AdditionalDocumentsProp
 
   return (
     <Box>
-      <Heading size="medium" marginBottom="spacing.8">
+      <Heading marginBottom="spacing.8" size="small">
         KYC Documents
       </Heading>
       <Box>
@@ -232,7 +232,7 @@ const AdditionalDocuments = ({ user, showNotification }: AdditionalDocumentsProp
         <Box
           paddingTop="spacing.7"
           marginTop="spacing.8"
-          borderTopColor="surface.border.normal.lowContrast"
+          borderTopColor="surface.border.gray.muted"
         >
           <Checkbox
             value={FORMIK_FORM_KEYS.KYC_TNC_ACCEPTED}

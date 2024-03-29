@@ -25,14 +25,14 @@ const KYCAccessFormContent = ({
   return (
     <>
       <Box display="flex" gap="spacing.3" alignItems="center">
-        <Badge display="inline" contrast="high" variant="information" size="large">
+        <Badge display="inline" emphasis="intense" size="large" color="information">
           New feature
         </Badge>
         <Divider />
       </Box>
       <Box display="flex" flexDirection="column" gap="spacing.3" marginTop="spacing.5">
         <Box display="flex" flexDirection="column" gap="spacing.0">
-          <Text weight="bold">Assist the client with their KYC</Text>
+          <Text weight="semibold">Assist the client with their KYC</Text>
           <Text size="small">to provide them with a quick and seamless onboarding experience.</Text>
         </Box>
         <RadioGroup

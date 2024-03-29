@@ -16,7 +16,7 @@ export const StyledAmount = styled.div(
   ({ theme }: { theme: Theme }) => `
   [data-blade-component='amount'] div,
   span {
-    font-size: ${theme.typography.fonts.size[1000]}px;
+    font-size: ${theme.typography.fonts.size[700]}px;
   }
 `,
 );
@@ -29,7 +29,7 @@ export const BorderWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
   border-radius: 2px;
   margin-top:  ${theme.spacing[5]}px;
-  border: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+  border: 1px solid ${theme.colors.surface.border.gray.muted};
 `,
 );
 
@@ -37,13 +37,13 @@ export const ViewDetailsPrefix = styled.div(
   ({ theme }: { theme: Theme }) => `
   button {
     cursor: pointer;
-    color: ${theme.colors.action.text.link.default};
+    color: ${theme.colors.interactive.text.primary.subtle};
     position: relative;
     @media (max-width: ${theme.breakpoints.s}px) {
       &::before {
         content: 'View All';
-        font-weight: bold;
-        color: ${theme.colors.action.text.link.default};
+        font-weight: 600;
+        color: ${theme.colors.interactive.text.primary.subtle};
       }
     }
   }
@@ -58,13 +58,13 @@ export const BottomCardWrapper = styled.div(
       button{
         &::before {
           content: 'View All';
-          font-weight: bold;
-          color: ${theme.colors.action.text.link.default};
+          font-weight: 600;
+          color: ${theme.colors.interactive.text.primary.subtle};
         }
       }
     }
     [data-blade-component='heading']{
-      font-size: ${theme.typography.fonts.size[600]}px;
+      font-size: ${theme.typography.fonts.size[500]}px;
     }
 `,
 );

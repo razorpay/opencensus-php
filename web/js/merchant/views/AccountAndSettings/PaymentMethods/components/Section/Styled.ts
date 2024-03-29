@@ -26,8 +26,8 @@ export const SectionHeader = styled.div(
   background: #ffffff;
 
   h3 {
-    font-weight: 700;
-    color: ${theme.colors.surface.text.normal.lowContrast};
+    font-weight: 600;
+    color: ${theme.colors.surface.text.gray.normal};
     font-size: 18px;
     line-height: 28px;
     margin-bottom: ${theme.spacing[3]}px ;
@@ -37,12 +37,12 @@ export const SectionHeader = styled.div(
     font-weight: 400;
     font-size: 14px;
     line-height: ${theme.spacing[6]}px ;
-    color: ${theme.colors.surface.text.subtle.lowContrast};
+    color: ${theme.colors.surface.text.gray.subtle};
   }
 
   a {
     line-height: 28px;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 14px;
     line-height: ${theme.spacing[6]}px ;
     height: max-content;

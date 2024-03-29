@@ -116,6 +116,6 @@ export const SidebarBackgroundOverlay = styled.div(
   right: 0;
   z-index: 1110;
   cursor: pointer;
-  background-color: ${theme.colors.surface.overlay.background[800]};
+  background-color: ${theme.colors.overlay.background.subtle};
 `,
 );

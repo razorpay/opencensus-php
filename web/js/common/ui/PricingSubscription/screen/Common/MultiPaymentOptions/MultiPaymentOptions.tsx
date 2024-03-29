@@ -1,7 +1,6 @@
 import React, { useState, memo, useEffect } from 'react';
 import {
   Button,
-  Heading,
   Text,
   Modal,
   ModalBody,
@@ -62,15 +61,15 @@ export const PaymentOptionCard = ({
             src={isRadioClick === paymentType ? Checked : Unchecked}
             alt={isRadioClick === paymentType ? 'Checked' : 'Unchecked'}
           />
-          <Text weight={isRadioClick === paymentType ? 'bold' : 'regular'}>{title}</Text>
+          <Text weight={isRadioClick === paymentType ? 'semibold' : 'regular'}>{title}</Text>
         </StyledHover>
         {shouldPreferred ? (
-          <Badge marginLeft="spacing.3" fontWeight="bold" variant="positive">
+          <Badge marginLeft="spacing.3" color="positive">
             PREFERRED{' '}
           </Badge>
         ) : null}
       </Box>
-      <Text type="muted" marginLeft="spacing.8">
+      <Text marginLeft="spacing.8" color="surface.text.gray.muted">
         {subText}
       </Text>
     </StyledRadioBox>
@@ -117,7 +116,7 @@ export const MultiPaymentOptions = ({
       <Box
         borderWidth="none"
         borderBottomWidth="thin"
-        borderBottomColor="surface.border.normal.lowContrast"
+        borderBottomColor="surface.border.gray.muted"
         display="flex"
         padding={['spacing.7', 'spacing.7', 'spacing.4', 'spacing.7']}
         marginBottom="spacing.4"
@@ -126,8 +125,8 @@ export const MultiPaymentOptions = ({
           <Image src={multiPaymentData.icon} alt={multiPaymentData.planName} />
         </Box>
         <Box display="flex" flexDirection="column">
-          <Heading>{multiPaymentData.planName}</Heading>
-          <Text type="muted">Select how you want to pay :</Text>
+          <Text size="large">{multiPaymentData.planName}</Text>
+          <Text color="surface.text.gray.muted">Select how you want to pay :</Text>
         </Box>
       </Box>
       <Box marginTop="spacing.6" padding={['spacing.3', 'spacing.7', 'spacing.0', 'spacing.7']}>
@@ -136,7 +135,7 @@ export const MultiPaymentOptions = ({
       <Box
         borderWidth="none"
         borderTopWidth="thin"
-        borderTopColor="surface.border.normal.lowContrast"
+        borderTopColor="surface.border.gray.muted"
         display="flex"
         justifyContent="space-between"
         padding="spacing.7"
@@ -144,12 +143,14 @@ export const MultiPaymentOptions = ({
         <Box>
           <Box display="flex">
             <Amount value={parseFloat((multiPaymentData.amount / 100).toFixed(2))} />/
-            <Text weight="bold">
+            <Text weight="semibold">
               {multiPaymentData.frequency?.charAt(0)?.toUpperCase() +
                 multiPaymentData.frequency?.slice(1)}
             </Text>
           </Box>
-          <Text type="muted">Including {multiPaymentData.taxPercentage}% GST</Text>
+          <Text color="surface.text.gray.muted">
+            Including {multiPaymentData.taxPercentage}% GST
+          </Text>
         </Box>
         <Button
           isLoading={checkoutPayment && checkoutPayment.isLoading}

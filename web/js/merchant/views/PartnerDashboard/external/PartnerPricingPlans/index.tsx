@@ -44,11 +44,7 @@ const PartnerPricingPlans = ({ showNotification, org }: PartnerPricingPlansProps
   return (
     <Box>
       <img width="100%" src={PartnerPricingHeader} alt="Partner Pricing Plans" />
-      <Box
-        padding="spacing.5"
-        margin="spacing.5"
-        backgroundColor="surface.background.level2.lowContrast"
-      >
+      <Box padding="spacing.5" margin="spacing.5" backgroundColor="surface.background.gray.intense">
         <Box minHeight="500px">
           {!isEmpty(groupedRules) ? (
             <>
@@ -62,7 +58,7 @@ const PartnerPricingPlans = ({ showNotification, org }: PartnerPricingPlansProps
                 return (
                   <Box
                     key={payment_method}
-                    backgroundColor="brand.gray.300.lowContrast"
+                    backgroundColor="surface.background.gray.subtle"
                     marginBottom="spacing.5"
                   >
                     <PricingRulesTable
@@ -75,7 +71,7 @@ const PartnerPricingPlans = ({ showNotification, org }: PartnerPricingPlansProps
             </>
           ) : null}
           {isEmpty(groupedRules) ? (
-            <Text color="feedback.text.negative.lowContrast">
+            <Text color="feedback.text.negative.intense">
               No Pricing Plan found for partner ID: &apos;{partnerId}&apos;
             </Text>
           ) : null}

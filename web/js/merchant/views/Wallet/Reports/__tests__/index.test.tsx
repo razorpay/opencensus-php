@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -30,7 +30,7 @@ const ReportsTab = () => {
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
     >
       <Provider store={storeWithInitialState(storeState)}>
-        <BladeProvider themeTokens={paymentTheme}>
+        <BladeProvider themeTokens={bladeTheme}>
           <Reports openModal={jest.fn()} />
         </BladeProvider>
       </Provider>

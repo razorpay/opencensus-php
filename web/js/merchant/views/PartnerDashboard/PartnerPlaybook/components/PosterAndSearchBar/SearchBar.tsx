@@ -20,7 +20,7 @@ const StyledSearchBar = styled.div(
     input {
       width: 380px;
       font-size: ${theme.typography.fonts.size[300]}px;
-      background-color: ${theme.colors.surface.background.level2.lowContrast};
+      background-color: ${theme.colors.surface.background.gray.intense};
     }
     input::placeholder{
       font-size: ${theme.typography.fonts.size[300]}px;
@@ -83,7 +83,11 @@ const SearchBar = ({ formik }: SearchBarProps): JSX.Element => {
 
   return (
     <StyledSearchBar onClick={() => inputRef?.current?.focus()}>
-      <Card elevation="lowRaised" padding="spacing.5" surfaceLevel={2}>
+      <Card
+        elevation="lowRaised"
+        padding="spacing.5"
+        backgroundColor="surface.background.gray.moderate"
+      >
         <CardBody>
           <Box display="flex" flexDirection="column" gap="27px" justifyContent="center">
             <Box
@@ -95,7 +99,7 @@ const SearchBar = ({ formik }: SearchBarProps): JSX.Element => {
               alignItems="center"
             >
               <Box display="flex" flexDirection="row" gap="spacing.2" alignItems="center">
-                <SearchIcon size="large" color="action.icon.secondary.default" />
+                <SearchIcon size="large" color="interactive.icon.primary.normal" />
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();

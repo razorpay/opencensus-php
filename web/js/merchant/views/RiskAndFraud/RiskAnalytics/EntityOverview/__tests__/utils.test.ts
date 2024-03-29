@@ -27,22 +27,22 @@ describe('getRatioPayload', () => {
 test('getLabelComparision returns correct results', () => {
   // Test case 1: actual value is higher than compared value
   expect(getLabelComparision(10, 5)).toEqual({
-    iconColor: 'feedback.icon.negative.lowContrast',
-    textColor: 'feedback.text.negative.lowContrast',
+    iconColor: 'feedback.icon.negative.intense',
+    textColor: 'feedback.text.negative.intense',
     label: 'Higher than industry average',
   });
 
   // Test case 2: actual value is lower than compared value
   expect(getLabelComparision(2, 8)).toEqual({
-    iconColor: 'surface.text.subdued.lowContrast',
-    textColor: 'surface.text.subdued.lowContrast',
+    iconColor: 'surface.icon.gray.muted',
+    textColor: 'surface.text.gray.muted',
     label: 'Lower than industry average',
   });
 
   // Test case 3: actual value is equal to compared value
   expect(getLabelComparision(7, 7)).toEqual({
-    iconColor: 'surface.text.subdued.lowContrast',
-    textColor: 'surface.text.subdued.lowContrast',
+    iconColor: 'surface.icon.gray.muted',
+    textColor: 'surface.text.gray.muted',
     label: 'At par with industry average',
   });
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 import { SUPPORTED_GATEWAYS } from 'merchant/views/Navigator/components/AddProvider/components/__test__/mocks/constants';
 import { RAZORPAY_GATEWAY_KEY, PROVIDER_KEYS } from 'merchant/views/Navigator/constants';
@@ -28,7 +28,7 @@ describe('Add Provider > IntegrationType', () => {
 
   const App = (props = {}) => {
     return (
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <IntegrationType {...props} />
       </BladeProvider>
     );
@@ -77,7 +77,7 @@ describe('Add Provider > IntegrationType', () => {
     mockProps.selectedProvider = RAZORPAY_GATEWAY_KEY;
     mockProps.validateStep = jest.fn(() => true);
     render(<App {...mockProps} />);
-    expect(screen.getByRole('heading', { name: 'Select account type' })).toBeInTheDocument();
+    expect(screen.getByText('Select account type')).toBeInTheDocument();
     expect(
       screen.getByText('Select the type of account for the selected gateway'),
     ).toBeInTheDocument();
@@ -95,7 +95,7 @@ describe('Add Provider > IntegrationType', () => {
     const changeGatewayDetails = jest.fn();
     mockProps.changeGatewayDetails = changeGatewayDetails;
     render(<App {...mockProps} />);
-    expect(screen.getByRole('heading', { name: 'Select account type' })).toBeInTheDocument();
+    expect(screen.getByText('Select account type')).toBeInTheDocument();
     expect(
       screen.getByText('Select the type of account for the selected gateway'),
     ).toBeInTheDocument();
@@ -115,7 +115,7 @@ describe('Add Provider > IntegrationType', () => {
     mockProps.isFormEdit = false;
     mockProps.gatewayDetails[PROVIDER_KEYS.GATEWAY_ACQUIRER] = 'axis_vas';
     render(<App {...mockProps} />);
-    expect(screen.getByRole('heading', { name: 'Select account type' })).toBeInTheDocument();
+    expect(screen.getByText('Select account type')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Edit account type' })).toBeInTheDocument();
     expect(screen.getByText('Account type')).toBeInTheDocument();
     expect(screen.getByText('Banking VAS')).toBeInTheDocument();

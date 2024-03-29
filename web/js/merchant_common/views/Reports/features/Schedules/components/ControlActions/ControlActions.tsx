@@ -186,7 +186,7 @@ const ControlActionsComponent = connect(
         />
 
         {status === 'finished' ? (
-          <MinusIcon size="medium" color="action.icon.secondary.disabled" />
+          <MinusIcon size="medium" color="interactive.icon.primary.disabled" />
         ) : isActionsLoading.includes('pause') || isActionsLoading.includes('resume') ? (
           <Spinner size="medium" accessibilityLabel="Status Change In Process" />
         ) : status === 'active' ? (

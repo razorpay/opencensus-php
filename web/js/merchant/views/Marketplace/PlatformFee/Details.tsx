@@ -173,21 +173,37 @@ const PlatformFeeDetailsContainer = ({
                       </span>
                       <AmountContainer>
                         Payment to {transferData.recipient_details.name} ={' '}
-                        <Amount value={paiseToRupees(transferData.amount)} size="body-small" />
+                        <Amount
+                          value={paiseToRupees(transferData.amount)}
+                          type="body"
+                          size="small"
+                        />
                       </AmountContainer>
                       <ContentToggler>
                         <AmountContainer>
                           Razorpay Charges Incl Tax ={' '}
-                          <Amount value={paiseToRupees(transferData.fees)} size="body-small" />
+                          <Amount
+                            value={paiseToRupees(transferData.fees)}
+                            type="body"
+                            size="small"
+                          />
                         </AmountContainer>
                         <div className="m-t m-l">
                           <AmountContainer>
                             Razorpay Transfer Fee ={' '}
-                            <Amount value={paiseToRupees(transferData.fees)} size="body-small" />
+                            <Amount
+                              value={paiseToRupees(transferData.fees)}
+                              type="body"
+                              size="small"
+                            />
                           </AmountContainer>
                           <AmountContainer>
                             GST ={' '}
-                            <Amount value={paiseToRupees(transferData.tax)} size="body-small" />
+                            <Amount
+                              value={paiseToRupees(transferData.tax)}
+                              type="body"
+                              size="small"
+                            />
                           </AmountContainer>
                         </div>
                       </ContentToggler>
@@ -275,7 +291,7 @@ const PlatformFeeDetailsContainer = ({
                               transferData.linked_account_notes.indexOf(key) > -1 && (
                                 <IconContainer>
                                   <InfoIcon
-                                    color="feedback.icon.neutral.lowContrast"
+                                    color="feedback.icon.neutral.intense"
                                     size="small"
                                     marginRight={'5px'}
                                   />

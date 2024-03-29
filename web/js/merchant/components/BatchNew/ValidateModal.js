@@ -1,11 +1,11 @@
 import { Component } from 'react';
 import {
   Box,
-  Heading,
   List,
   Link as LinkBlade,
   ListItem,
   ListItemText,
+  Text,
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Link as RouterLink } from 'react-router-dom';
@@ -111,7 +111,6 @@ class BatchValidateModal extends Component {
           )}
           {!status && !notifyMsg ? nullStatusNotification : null}
         </div>
-
         {/* Show batch upload modal info when no file uploaded */}
         {!status || status === 'exceed' ? (
           <>
@@ -124,9 +123,9 @@ class BatchValidateModal extends Component {
                 alignItems="flex-start"
                 paddingTop="spacing.3"
                 marginBottom="spacing.1"
-                backgroundColor="surface.background.level3.lowContrast"
+                backgroundColor="surface.background.gray.moderate"
               >
-                <Heading>Keep in mind</Heading>
+                <Text size="large">Keep in mind</Text>
                 <Box
                   display="flex"
                   flexDirection="column"
@@ -321,7 +320,6 @@ class BatchValidateModal extends Component {
             )}
           </>
         ) : null}
-
         {/* Show batch modal error-info when file upload */}
         {fileUrl ? (
           <div className="modal-info error stretch">

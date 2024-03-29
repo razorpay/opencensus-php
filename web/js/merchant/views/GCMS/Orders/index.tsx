@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Badge, Box, Text, Title } from '@razorpay/blade/components';
+import { Badge, Box, Text, Heading } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
@@ -113,7 +113,9 @@ const Orders = ({ mode }: { mode: ModeT }) => {
     <Wrapper>
       <div className="tabbed-container">
         <Box marginBottom="spacing.5">
-          <Title color="surface.text.subtle.lowContrast">Orders</Title>
+          <Heading color="surface.text.gray.subtle" size="large">
+            Orders
+          </Heading>
         </Box>
         {/**
          * TODO: layout breaks on small screens
@@ -121,7 +123,7 @@ const Orders = ({ mode }: { mode: ModeT }) => {
         {/* <Box
           display={'flex'}
           flex={1}
-          backgroundColor={'brand.gray.400.lowContrast'}
+          backgroundColor={'interactive.border.gray.faded'}
           paddingY={'spacing.4'}
           width={'100%'}
         >
@@ -208,7 +210,7 @@ const Orders = ({ mode }: { mode: ModeT }) => {
               </div>
               <Box>
                 <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
-                  <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+                  <Text size="small" color="surface.text.gray.muted">{`Total ${
                     orders?.total_count || 0
                   } Orders`}</Text>
                 </Box>

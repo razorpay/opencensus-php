@@ -1,20 +1,21 @@
+import { useCallback, useEffect, useState } from 'react';
 import { Box, Heading } from '@razorpay/blade/components';
+import isEmpty from 'lodash/isEmpty';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
-import isEmpty from 'lodash/isEmpty';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
-import FeeConfiguration from 'merchant/views/MagicCheckout/common/components/FeeConfiguration';
-import { isFeeRuleValid } from 'merchant/views/MagicCheckout/common/feeUtils';
-import { DEFAULT_RULE, FEE_RULES } from 'merchant/views/MagicCheckout/constants';
 import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
 import {
   FETCH_STATUS,
   PLATFORMS,
   SHIPPING_SETTINGS,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import { useCallback, useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import FeeConfiguration from 'merchant/views/MagicCheckout/common/components/FeeConfiguration';
+import { isFeeRuleValid } from 'merchant/views/MagicCheckout/common/feeUtils';
+import { DEFAULT_RULE, FEE_RULES } from 'merchant/views/MagicCheckout/constants';
 
 const ShippingForm = ({ settings, updateSettings }) => {
   const [formValid, setFormValid] = useState(false);
@@ -93,9 +94,9 @@ const ShippingForm = ({ settings, updateSettings }) => {
         padding="spacing.6"
         paddingLeft="spacing.0"
         paddingRight="spacing.0"
-        backgroundColor="surface.background.level2.lowContrast"
+        backgroundColor="surface.background.gray.intense"
       >
-        <Heading size="large">Shipping Settings</Heading>
+        <Heading size="medium">Shipping Settings</Heading>
       </Box>
       <div className="woocommerce-shipping-container">
         <div className="padding-16">

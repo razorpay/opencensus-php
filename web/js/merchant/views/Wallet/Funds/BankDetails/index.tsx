@@ -8,20 +8,20 @@ const BankDetails = (): JSX.Element => {
     <Box padding="spacing.7">
       <EscrowDetailsContainer>
         <TitleContainer>
-          <Text size="medium" variant="body" weight="bold">
+          <Text size="medium" variant="body" weight="semibold">
             Escrow Account
           </Text>
         </TitleContainer>
         <Box
           padding="spacing.6"
           display="grid"
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           gap="spacing.6"
           columnGap="80px"
         >
           <Box gridRow="1" gridColumn="1">
             <Box display="inline-flex" flexDirection="column" gap="spacing.2">
-              <Text size="small" type="subdued">
+              <Text size="small" color="surface.text.gray.muted">
                 Beneficiary Name
               </Text>
               <Text>RAZORPAY TECHNOLOGIES PRIVATE LIMITED</Text>
@@ -30,7 +30,7 @@ const BankDetails = (): JSX.Element => {
 
           <Box gridRow="2" gridColumn="1">
             <Box display="inline-flex" flexDirection="column" gap="spacing.2">
-              <Text size="small" type="subdued">
+              <Text size="small" color="surface.text.gray.muted">
                 Account Number
               </Text>
               <Text>921020056336542</Text>
@@ -39,7 +39,7 @@ const BankDetails = (): JSX.Element => {
 
           <Box gridRow="2" gridColumn="2">
             <Box display="inline-flex" flexDirection="column" gap="spacing.2">
-              <Text size="small" type="subdued">
+              <Text size="small" color="surface.text.gray.muted">
                 Bank Name
               </Text>
               <Text>Axis Bank</Text>
@@ -48,7 +48,7 @@ const BankDetails = (): JSX.Element => {
 
           <Box gridRow="3" gridColumn="1">
             <Box display="inline-flex" flexDirection="column" gap="spacing.2">
-              <Text size="small" type="subdued">
+              <Text size="small" color="surface.text.gray.muted">
                 Branch
               </Text>
               <Text>Kormangala</Text>
@@ -57,7 +57,7 @@ const BankDetails = (): JSX.Element => {
 
           <Box gridRow="3" gridColumn="2">
             <Box display="inline-flex" flexDirection="column" gap="spacing.2">
-              <Text size="small" type="subdued">
+              <Text size="small" color="surface.text.gray.muted">
                 IFSC Code
               </Text>
               <Text>UTIB0001506</Text>
@@ -66,7 +66,7 @@ const BankDetails = (): JSX.Element => {
 
           <Box gridRow="4" gridColumn="1/4">
             <Box display="inline-flex" flexDirection="column" gap="spacing.2">
-              <Text size="small" type="subdued">
+              <Text size="small" color="surface.text.gray.muted">
                 Address
               </Text>
               <Text>

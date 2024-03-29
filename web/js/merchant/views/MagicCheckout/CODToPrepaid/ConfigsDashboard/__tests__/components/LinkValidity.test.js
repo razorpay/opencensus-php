@@ -23,7 +23,6 @@ describe('testing the link validity component', () => {
 
   test('should be able to select from drop down', async () => {
     const setState = jest.fn();
-    jest.spyOn(React, 'useState').mockImplementationOnce((initState) => [initState, setState]);
 
     renderApp({ ...LINK_VALIDITY_PROPS, setValidityType: setState });
     const fieldElement = screen.getByRole('combobox');

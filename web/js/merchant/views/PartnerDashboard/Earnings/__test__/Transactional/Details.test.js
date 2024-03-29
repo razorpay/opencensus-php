@@ -35,7 +35,7 @@ describe('test suite for Earnings Transactional Detail', () => {
     await waitFor(() => {
       expect(screen.getByTestId('transactional-details-panel')).toBeVisible();
       expect(screen.getByText('Earnings from Curlec')).toBeInTheDocument();
-      expect(screen.getByTestId('amount-transactional-details')).toHaveTextContent('RM7.00');
+      expect(screen.getByTestId('amount-transactional-details')).toHaveTextContent('MYR7.00');
     });
   });
 

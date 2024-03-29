@@ -6,7 +6,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 import {
   Text,
   Button,
-  Title,
+  Heading,
   ArrowRightIcon,
   ChevronsDownIcon,
   ChevronsUpIcon,
@@ -145,28 +145,28 @@ const PricingSectionMweb = ({
         <StylePlanIconMweb>
           <Image src={plans?.icon?.src} alt={plans?.icon?.alt} />
         </StylePlanIconMweb>
-        <Title size="medium">{plans?.title}</Title>
+        <Heading size="xlarge">{plans?.title}</Heading>
       </PricingPlanName>
       <StyleDescription>
         <Text size="large">{plans?.description}</Text>
       </StyleDescription>
       <StylePrice>
-        <Title size="medium">
+        <Heading size="xlarge">
           {togglePlan === TogglePlanValue.monthly
             ? `₹${plans?.monthlyPrice?.toLocaleString()}/Month`
             : `₹${plans?.annualPrice?.toLocaleString()}/Year`}
-        </Title>
+        </Heading>
       </StylePrice>
       {togglePlan === TogglePlanValue.monthly ? (
         <StyleMonthlyPrice>
-          <Text contrast="high" size="large" type="placeholder">
+          <Text color="surface.text.gray.muted" size="large">
             ₹{Math.floor(plans?.annualPrice / 12).toLocaleString()}/Month with Annual Plan
           </Text>
         </StyleMonthlyPrice>
       ) : null}
       {togglePlan === TogglePlanValue.annual ? (
         <StyleStrikePrice isMobile>
-          <Text contrast="high" size="large" type="placeholder" variant="body">
+          <Text color="surface.text.gray.muted" size="large" variant="body">
             ₹
             {getMonthlyDiscount(
               plans?.monthlyPrice,
@@ -221,9 +221,9 @@ const PricingSectionMweb = ({
       <StyleViewMore onClick={toggleViewMore}>
         <Text size="large">{isViewMore ? 'View Less' : 'View All Benefits'}</Text>
         {isViewMore ? (
-          <ChevronsUpIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+          <ChevronsUpIcon color="feedback.icon.neutral.intense" size="medium" />
         ) : (
-          <ChevronsDownIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+          <ChevronsDownIcon color="feedback.icon.neutral.intense" size="medium" />
         )}
       </StyleViewMore>
     </PricingPlanContainer>

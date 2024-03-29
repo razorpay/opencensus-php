@@ -51,7 +51,7 @@ const ResellerAccounts = ({ mode, merchantId }: ResellerAccountsProps) => {
   return (
     <Wrapper>
       <div className="content-wrapper" style={{ marginTop: '-16px' }}>
-        <Box backgroundColor="surface.background.level2.lowContrast" paddingBottom="spacing.3">
+        <Box backgroundColor="surface.background.gray.intense" paddingBottom="spacing.3">
           <div className="table-responsive">
             <ResellerAccountsFilter onSearch={handleSearch} />
 
@@ -98,7 +98,7 @@ const ResellerAccounts = ({ mode, merchantId }: ResellerAccountsProps) => {
           </div>
           <Box>
             <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
-              <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+              <Text size="small" color="surface.text.gray.muted">{`Total ${
                 resellerAccounts?.count || 0
               } Reseller Accounts`}</Text>
             </Box>

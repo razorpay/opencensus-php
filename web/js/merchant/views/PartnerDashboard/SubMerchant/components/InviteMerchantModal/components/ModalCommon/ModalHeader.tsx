@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, CloseIcon, Divider, Heading, IconButton } from '@razorpay/blade/components';
+import { Box, CloseIcon, Divider, IconButton, Text } from '@razorpay/blade/components';
 type ModalHeaderProps = {
   modalTitle: string | null;
   onDismiss: () => void;
@@ -21,19 +21,22 @@ const ModalHeader = ({
         flexDirection="row"
       >
         <Box paddingRight="spacing.5" flex="1 1 auto">
-          {modalTitle ? <Heading display="inline-block">{modalTitle}</Heading> : null}
+          {modalTitle ? (
+            <Text display="inline-block" size="large">
+              {modalTitle}
+            </Text>
+          ) : null}
         </Box>
         <Box display="inline-block" height="28px">
           <IconButton
             icon={CloseIcon}
-            contrast="low"
+            emphasis="intense"
             accessibilityLabel="Close"
             onClick={onDismiss}
             size="large"
           />
         </Box>
       </Box>
-
       {showDivider ? (
         <Box paddingBottom="spacing.5">
           <Divider />

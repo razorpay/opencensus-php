@@ -55,8 +55,8 @@ const NonSettlement = ({
       <Image src={`/img/rtux/${illustration}`} />
       <Box display="flex" flexDirection="column" justifyContent="space-between" gap="spacing.5">
         <Box textAlign={{ base: 'center', l: 'unset' }}>
-          <Heading size="medium">{title}</Heading>
-          <Text type="subdued" size="medium">
+          <Heading size="small">{title}</Heading>
+          <Text size="medium" color="surface.text.gray.muted">
             {subtitle}
           </Text>
         </Box>

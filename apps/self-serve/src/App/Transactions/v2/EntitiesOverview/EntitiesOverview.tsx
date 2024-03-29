@@ -8,9 +8,6 @@ import { useI18Service } from 'common/i18';
 import ErrorBoundary from '@dashboard/shared-ui/ErrorBoundary';
 import ShowWhen from 'shell/components/ShowWhen';
 import { withRouter } from 'shell/deprecated/withRouter';
-import { StyledHeading } from './styled';
-import { EntitiesOverviewProps } from './types';
-import { getHeading } from './utils';
 import EntityAnalytics from 'apps/self-serve/src/App/Transactions/v2/Analytics/EntityAnalytics';
 import { EntityOverviewType } from 'apps/self-serve/src/App/Transactions/v2/Analytics/types';
 import GoBack from 'apps/self-serve/src/App/Transactions/v2/common/components/GoBack';
@@ -21,6 +18,9 @@ import {
   StyledTabItem,
 } from 'apps/self-serve/src/App/Transactions/v2/common/styled';
 import { trackTransactionsTabClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import { getHeading } from './utils';
+import { EntitiesOverviewProps } from './types';
+import { StyledHeading } from './styled';
 
 const { FAILED_PAYMENTS, DISPUTES, SUCCESS_RATE, REFUNDS, BATCH_REFUNDS, BATCH_REFUNDS_UPLOAD } =
   TransactionsEntityRoute;
@@ -45,7 +45,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
       {shouldShowOverview ? <EntityAnalytics type={entityAnalyticsType} /> : null}
       {shouldShowHeading ? (
         <StyledHeading id="transactions-header">
-          <Heading size="large">{getHeading(pathname as TransactionsEntityRoute)}</Heading>
+          <Heading size="medium">{getHeading(pathname as TransactionsEntityRoute)}</Heading>
         </StyledHeading>
       ) : (
         <StyledTabHeader id="transactions-header">

@@ -161,9 +161,9 @@ class PaypalOnboardingButton extends Component {
                       </Popover>
                     </>
                   )}
-                  variant="information"
-                  contrast="low"
+                  emphasis="subtle"
                   size="large"
+                  color="information"
                 >
                   {paypalMerchantId}
                 </Badge>
@@ -205,8 +205,8 @@ class PaypalOnboardingButton extends Component {
         {showStatusMessage && (
           <div className="mt20">
             <Alert
-              intent={getBadgeVariant(status)}
-              contrast="high"
+              color={getBadgeVariant(status)}
+              emphasis="intense"
               size="large"
               isDismissible={false}
               description={getStatusMessage(status)}

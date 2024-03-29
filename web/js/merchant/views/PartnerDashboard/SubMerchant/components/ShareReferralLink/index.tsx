@@ -92,7 +92,7 @@ const ShareReferralLink = ({
               display="flex"
               flexDirection="column"
               justifyContent="center"
-              backgroundColor="surface.background.level2.lowContrast"
+              backgroundColor="surface.background.gray.intense"
             >
               {productTypeVisibilityMap[PRODUCT_TYPE.POS] ? (
                 <div onClick={() => setProductType(PRODUCT_TYPE.POS)}>
@@ -102,8 +102,8 @@ const ShareReferralLink = ({
                     gap="spacing.5"
                     justifyContent="center"
                     padding="spacing.6"
-                    backgroundColor="surface.background.level2.lowContrast"
-                    borderColor="surface.border.normal.lowContrast"
+                    backgroundColor="surface.background.gray.intense"
+                    borderColor="surface.border.gray.normal"
                     borderWidth="thin"
                   >
                     <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -116,7 +116,7 @@ const ShareReferralLink = ({
                         <Box display="flex" flexDirection="column" gap="spacing.2">
                           <Box display="flex" flexDirection="column" gap="spacing.2">
                             <Badge color="positive">NEW</Badge>
-                            <Text weight="bold">{orgName} POS</Text>
+                            <Text weight="semibold">{orgName} POS</Text>
                             <Text size="small">
                               Refer merchants to {orgName} POS, a robust payment ecosystem and
                               receive competitive commissions.
@@ -155,8 +155,8 @@ const ShareReferralLink = ({
                     gap="spacing.5"
                     justifyContent="center"
                     padding="spacing.6"
-                    backgroundColor="surface.background.level2.lowContrast"
-                    borderColor="surface.border.normal.lowContrast"
+                    backgroundColor="surface.background.gray.intense"
+                    borderColor="surface.border.gray.normal"
                     borderWidth="thin"
                   >
                     <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -168,7 +168,7 @@ const ShareReferralLink = ({
                       >
                         <Box display="flex" flexDirection="column" gap="spacing.2">
                           <Box display="flex" flexDirection="column" gap="spacing.2">
-                            <Text weight="bold">{orgName} Payments</Text>
+                            <Text weight="semibold">{orgName} Payments</Text>
                             <Text size="small">
                               Invite clients to use {orgName} Payment products to collect payments
                             </Text>
@@ -208,8 +208,8 @@ const ShareReferralLink = ({
                     gap="spacing.5"
                     justifyContent="center"
                     padding="spacing.6"
-                    backgroundColor="surface.background.level2.lowContrast"
-                    borderColor="surface.border.normal.lowContrast"
+                    backgroundColor="surface.background.gray.intense"
+                    borderColor="surface.border.gray.normal"
                     borderWidth="thin"
                   >
                     <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -221,7 +221,7 @@ const ShareReferralLink = ({
                       >
                         <Box display="flex" flexDirection="column" gap="spacing.2">
                           <Box display="flex" flexDirection="column" gap="spacing.2">
-                            <Text weight="bold">{xProductName}</Text>
+                            <Text weight="semibold">{xProductName}</Text>
                             <Text size="small">
                               Refer merchants to {xProductName} products like Current account to
                               process payouts
@@ -251,8 +251,8 @@ const ShareReferralLink = ({
                     gap="spacing.5"
                     justifyContent="center"
                     padding="spacing.6"
-                    backgroundColor="surface.background.level2.lowContrast"
-                    borderColor="surface.border.normal.lowContrast"
+                    backgroundColor="surface.background.gray.intense"
+                    borderColor="surface.border.gray.normal"
                     borderWidth="thin"
                   >
                     <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -264,7 +264,7 @@ const ShareReferralLink = ({
                       >
                         <Box display="flex" flexDirection="column" gap="spacing.2">
                           <Box display="flex" flexDirection="column" gap="spacing.2">
-                            <Text weight="bold">Line of Credit</Text>
+                            <Text weight="semibold">Line of Credit</Text>
                             <Text size="small">
                               Refer merchants to Capital products like Line of Credit
                             </Text>

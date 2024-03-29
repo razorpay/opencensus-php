@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import {
+  BladeProvider,
   Box,
   Button,
   Card,
@@ -7,9 +8,9 @@ import {
   Carousel,
   CarouselItem,
   ExternalLinkIcon,
+  Heading,
   Link,
   Text,
-  Title,
   useTheme,
 } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
@@ -26,6 +27,7 @@ import {
 import RizeTag from 'merchant/views/RizeMarketplace/common/components/RizeTag';
 import { Result } from 'merchant/views/RizeMarketplace/common/types';
 import { useMarketplaceWhatsNew } from 'merchant/views/RizeMarketplace/common/utils';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 const RizeMarketplaceAppStoreBanner = (): JSX.Element => {
   const { isLoading, isError, data } = useMarketplaceWhatsNew();
@@ -50,7 +52,7 @@ const RizeMarketplaceAppStoreBanner = (): JSX.Element => {
   };
 
   return (
-    <Card surfaceLevel={2} padding="spacing.0">
+    <Card backgroundColor="surface.background.gray.moderate" padding="spacing.0">
       <CardBody>
         <Box
           display="grid"
@@ -66,62 +68,63 @@ const RizeMarketplaceAppStoreBanner = (): JSX.Element => {
           borderRadius="medium"
           position="relative"
         >
-          <Box marginTop={{ l: 'spacing.6' }}>
-            <Box
-              position={{ l: 'absolute' }}
-              top="spacing.7"
-              left="-8px"
-              display="inline-block"
-              marginBottom="spacing.4"
-            >
-              <RizeTag showFlap={isL} />
-            </Box>
-            <Title as="h2" size="small" color="surface.text.normal.highContrast">
-              {isL
-                ? 'Unlock Marketplace for Exclusive Deals'
-                : 'Discover 40 + exciting deals on Rize marketplace'}
-            </Title>
-            <Text
-              size="large"
-              color="surface.text.normal.highContrast"
-              marginTop="spacing.4"
-              display={{ base: 'none', l: 'block' }}
-            >
-              Access 40+ Product deals exclusively built by Startup Founders.
-            </Text>
-
-            {isL ? (
-              <Button
-                href="/app/rize-marketplace"
-                target="_blank"
-                icon={ExternalLinkIcon}
-                iconPosition="right"
+          <BladeProvider colorScheme="dark" themeTokens={bladeTheme}>
+            <Box marginTop={{ l: 'spacing.6' }}>
+              <Box
+                position={{ l: 'absolute' }}
+                top="spacing.7"
+                left="-8px"
+                display="inline-block"
+                marginBottom="spacing.4"
+              >
+                <RizeTag showFlap={isL} />
+              </Box>
+              <Heading as="h2" color="surface.text.staticWhite.normal" size="large">
+                {isL
+                  ? 'Unlock Marketplace for Exclusive Deals'
+                  : 'Discover 40 + exciting deals on Rize marketplace'}
+              </Heading>
+              <Text
                 size="large"
-                marginTop="spacing.7"
-                onClick={(): void => {
-                  trackVisitMarketplaceInitiated();
-                }}
-              >
-                Visit Marketplace
-              </Button>
-            ) : (
-              <Link
-                href="/app/rize-marketplace"
-                target="_blank"
-                icon={ExternalLinkIcon}
-                iconPosition="right"
-                size="medium"
-                color="white"
+                color="surface.text.staticWhite.normal"
                 marginTop="spacing.4"
-                onClick={(): void => {
-                  trackVisitMarketplaceInitiated();
-                }}
+                display={{ base: 'none', l: 'block' }}
               >
-                Visit Marketplace
-              </Link>
-            )}
-          </Box>
+                Access 40+ Product deals exclusively built by Startup Founders.
+              </Text>
 
+              {isL ? (
+                <Button
+                  href="/app/rize-marketplace"
+                  target="_blank"
+                  icon={ExternalLinkIcon}
+                  iconPosition="right"
+                  size="large"
+                  marginTop="spacing.7"
+                  onClick={(): void => {
+                    trackVisitMarketplaceInitiated();
+                  }}
+                >
+                  Visit Marketplace
+                </Button>
+              ) : (
+                <Link
+                  href="/app/rize-marketplace"
+                  target="_blank"
+                  icon={ExternalLinkIcon}
+                  iconPosition="right"
+                  size="medium"
+                  color="white"
+                  marginTop="spacing.4"
+                  onClick={(): void => {
+                    trackVisitMarketplaceInitiated();
+                  }}
+                >
+                  Visit Marketplace
+                </Link>
+              )}
+            </Box>
+          </BladeProvider>
           <Box overflow="hidden">
             <Carousel
               navigationButtonPosition={isL ? 'side' : 'bottom'}

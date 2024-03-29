@@ -21,7 +21,7 @@ import ValueAddedService from './icons/value-added-service.svg';
 // Utility component
 const RowTextItem = ({ children }) => {
   return (
-    <Text weight="bold" size="small" color="surface.text.subtle.lowContrast">
+    <Text weight="semibold" size="small" color="surface.text.gray.subtle">
       {children}
     </Text>
   );
@@ -74,7 +74,7 @@ const FAQContent = ({
         gap="spacing.3"
         justifyContent="center"
         alignItems="center"
-        backgroundColor="surface.background.level3.lowContrast"
+        backgroundColor="surface.background.gray.moderate"
       >
         <Accordion
           onExpandChange={({ expandedIndex }) =>
@@ -86,7 +86,7 @@ const FAQContent = ({
             // eslint-disable-next-line
             // @ts-ignore
             title={
-              <Text weight="bold" size="medium">
+              <Text weight="semibold" size="medium">
                 {titlesForTracking.WHY_ASSIST}
               </Text>
             }
@@ -98,7 +98,7 @@ const FAQContent = ({
                     <img src={QuickerOnboarding} />
                   </Box>
                   <Box display="flex" flexDirection="column" gap="spacing.2">
-                    <Text weight="bold" size="small">
+                    <Text weight="semibold" size="small">
                       Quicker onboarding
                     </Text>
                     <Text variant="caption">
@@ -111,7 +111,7 @@ const FAQContent = ({
                     <img src={ValueAddedService} />
                   </Box>
                   <Box display="flex" flexDirection="column" gap="spacing.2">
-                    <Text weight="bold" size="small">
+                    <Text weight="semibold" size="small">
                       Value added services
                     </Text>
                     <Text variant="caption">
@@ -130,7 +130,7 @@ const FAQContent = ({
         gap="spacing.3"
         justifyContent="center"
         alignItems="center"
-        backgroundColor="surface.background.level3.lowContrast"
+        backgroundColor="surface.background.gray.moderate"
       >
         <Accordion
           onExpandChange={({ expandedIndex }) =>
@@ -142,7 +142,7 @@ const FAQContent = ({
             // eslint-disable-next-line
             // @ts-ignore
             title={
-              <Text weight="bold" size="medium">
+              <Text weight="semibold" size="medium">
                 {titlesForTracking.WHAT_TO_DO}
               </Text>
             }
@@ -166,7 +166,6 @@ const FAQContent = ({
                           <img src={GSTIN} />
                         </Box>
                       </Box>
-                      {/* eslint-disable-next-line i18n-rules/no-region-specific-keyword */}
                       <RowTextItem>GSTIN</RowTextItem>
                     </Box>
                     <Box display="flex" gap="spacing.3" alignItems="center" flex="1">
@@ -175,11 +174,7 @@ const FAQContent = ({
                       </Box>
                       <RowTextItem>
                         Business Address{' '}
-                        <Text
-                          display="inline-block"
-                          size="small"
-                          color="surface.text.subtle.lowContrast"
-                        >
+                        <Text display="inline-block" size="small" color="surface.text.gray.subtle">
                           (self declared, no proof needed)
                         </Text>
                       </RowTextItem>

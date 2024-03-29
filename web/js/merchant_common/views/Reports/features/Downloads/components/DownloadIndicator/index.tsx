@@ -107,7 +107,7 @@ const DownloadIndicatorComponent = connect(
               accessibilityLabel="Download Report"
               onClick={() => onDownloadClick(accountId)}
               size="large"
-              contrast="low"
+              emphasis="intense"
             />
           </div>
         );

@@ -25,8 +25,8 @@ const PositiveBox = styled.div(({ theme }) => ({
   flexDirection: 'column',
   gap: theme.spacing[5],
   padding: theme.spacing[5],
-  backgroundColor: theme.colors.feedback.background.positive.lowContrast,
-  borderLeft: `2px solid ${theme.colors.feedback.border.positive.highContrast}`,
+  backgroundColor: theme.colors.feedback.background.positive.subtle,
+  borderLeft: `2px solid ${theme.colors.feedback.border.positive.intense}`,
   margin: '10px 0',
 }));
 
@@ -35,8 +35,8 @@ const NegativeBox = styled.div(({ theme }) => ({
   flexDirection: 'column',
   gap: theme.spacing[5],
   padding: theme.spacing[5],
-  backgroundColor: theme.colors.feedback.background.negative.lowContrast,
-  borderLeft: `2px solid ${theme.colors.feedback.border.negative.highContrast}`,
+  backgroundColor: theme.colors.feedback.background.negative.subtle,
+  borderLeft: `2px solid ${theme.colors.feedback.border.negative.intense}`,
   margin: '10px 0',
 }));
 
@@ -159,23 +159,19 @@ export const UploadBankStatement = ({
           onFileRemove={handleFileRemoval}
         />
         <PositiveBox>
-          <Text
-            weight="bold"
-            size="small"
-            color="feedback.positive.action.text.primary.default.lowContrast"
-          >
+          <Text weight="semibold" size="small" color="interactive.text.positive.subtle">
             Do’s
           </Text>
           <Box display="flex" flexDirection="column" gap="spacing.4">
             <Box display="flex" gap="spacing.3" flex="1">
               <Box display="flex" gap="spacing.3">
-                <CheckIcon size="medium" color="feedback.icon.positive.lowContrast" />
+                <CheckIcon size="medium" color="feedback.icon.positive.intense" />
               </Box>
               <Text>Upload original PDF shared by the bank.</Text>
             </Box>
             <Box display="flex" gap="spacing.3" flex="1">
               <Box display="flex" gap="spacing.3">
-                <CheckIcon size="medium" color="feedback.icon.positive.lowContrast" />
+                <CheckIcon size="medium" color="feedback.icon.positive.intense" />
               </Box>
               <Text>
                 Upload statements of most frequently used account in last 6 months for business
@@ -184,7 +180,7 @@ export const UploadBankStatement = ({
             </Box>
             <Box display="flex" gap="spacing.3" flex="1">
               <Box display="flex" gap="spacing.3">
-                <CheckIcon size="medium" color="feedback.icon.positive.lowContrast" />
+                <CheckIcon size="medium" color="feedback.icon.positive.intense" />
               </Box>
               <Text>
                 Upload either monthly statements or a single statement with all the details.
@@ -194,7 +190,7 @@ export const UploadBankStatement = ({
         </PositiveBox>
         <NegativeBox>
           <Box display="flex" gap="spacing.3" alignItems="center">
-            <Text weight="bold" size="small">
+            <Text weight="semibold" size="small">
               Dont’s
             </Text>
           </Box>
@@ -206,11 +202,11 @@ export const UploadBankStatement = ({
               padding={['spacing.0', '35px', 'spacing.0', 'spacing.0']}
               width="264px"
             >
-              <CloseIcon size="medium" color="feedback.icon.negative.lowContrast" />
+              <CloseIcon size="medium" color="feedback.icon.negative.intense" />
               <Text>Uploaded files should NOT be edited.</Text>
             </Box>
             <Box display="flex" gap="spacing.3" alignItems="center">
-              <CloseIcon size="medium" color="feedback.icon.negative.lowContrast" />
+              <CloseIcon size="medium" color="feedback.icon.negative.intense" />
               <Text>Should NOT be a scanned document.</Text>
             </Box>
           </Box>

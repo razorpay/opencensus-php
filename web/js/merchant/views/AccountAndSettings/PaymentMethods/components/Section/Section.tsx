@@ -63,23 +63,23 @@ const PaymentMethodsSection = ({
       {!isLiveMerchant ? (
         <Alert
           description={
-            <Text type="subdued">
+            <Text color="surface.text.gray.muted">
               Request for Payment methods is unavailable as your account is not enabled to accept
               transactions.
             </Text>
           }
           marginTop="spacing.4"
           isDismissible={false}
-          intent="notice"
           testID="non-live-banner"
           isFullWidth
+          color="notice"
         />
       ) : null}
 
       {!isActivatedUser ? (
         <Alert
           description={
-            <Text type="subdued">
+            <Text color="surface.text.gray.muted">
               KYC verification is mandatory to request for new payment methods. Please complete your
               <Link to="/activation" onClick={() => trackLinkClick('Go To - Activation Form')}>
                 &nbsp; activation form
@@ -89,8 +89,8 @@ const PaymentMethodsSection = ({
           }
           marginTop="spacing.4"
           isDismissible={false}
-          intent="notice"
           isFullWidth
+          color="notice"
         />
       ) : null}
 

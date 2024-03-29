@@ -65,9 +65,7 @@ export const Option = <ItemType, AllowMultiple>(
         <DefaultOption>
           <Text
             size="medium"
-            type="normal"
-            contrast="low"
-            color={disabled ? 'surface.text.muted.lowContrast' : 'surface.text.normal.lowContrast'}
+            color={disabled ? 'surface.text.gray.muted' : 'surface.text.gray.normal'}
             truncateAfterLines={1}
           >
             {label}

@@ -7,16 +7,16 @@ const SettlementBreakup = ({ isMobile }: FaqInterface): JSX.Element => {
   return (
     <StyledFaqContent>
       {!isMobile && (
-        <Text weight="bold" marginBottom="spacing.2">
+        <Text weight="semibold" marginBottom="spacing.2">
           Why have I received less money in my account?
         </Text>
       )}
-      <Text type="subtle">
+      <Text color="surface.text.gray.subtle">
         Your final settlement amount will vary after adjusting for platform fees, taxes, refunds,
         credits, or any other charges.
       </Text>
       <TextLink>
-        <Text marginRight="spacing.2" type="subtle">
+        <Text marginRight="spacing.2" color="surface.text.gray.subtle">
           To know more about it, refer to the video below or check our
         </Text>
         <Link

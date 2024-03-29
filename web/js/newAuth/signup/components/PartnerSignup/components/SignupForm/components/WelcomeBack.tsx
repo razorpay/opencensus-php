@@ -94,14 +94,14 @@ const WelcomeBack = ({ setMobileNumber, setStep, mobileNumber }: WelcomeBackProp
             <Box display="flex" alignItems="center" marginTop="spacing.11">
               <Divider />
               <Box padding="spacing.5">
-                <Text weight="bold" color="surface.text.subdued.lowContrast">
+                <Text weight="semibold" color="surface.text.gray.muted">
                   or
                 </Text>
               </Box>
               <Divider />
             </Box>
             <Box marginTop="spacing.5" textAlign="center">
-              <Text size="small" weight="regular" color="surface.text.muted.lowContrast">
+              <Text size="small" weight="regular" color="surface.text.gray.muted">
                 Want to create a separate Partner account?{' '}
                 <Link size="small" onClick={handleSignupClick}>
                   Sign Up

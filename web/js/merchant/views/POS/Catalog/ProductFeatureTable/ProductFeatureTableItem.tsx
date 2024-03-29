@@ -5,7 +5,7 @@ import {
   CollapsibleBody,
   Divider,
   Heading,
-  Title,
+  Text,
 } from '@razorpay/blade/components';
 
 import {
@@ -40,14 +40,12 @@ const ProductTableItem = ({
     <ProductItemContainer>
       {isColumn ? (
         <Box minHeight="230px" paddingTop="spacing.5">
-          <Title size="large">Choose the best devices for your business</Title>
+          <Heading size="xlarge">Choose the best devices for your business</Heading>
         </Box>
       ) : null}
       <Box
         backgroundColor={
-          isElevated
-            ? 'surface.background.level2.lowContrast'
-            : 'surface.background.level1.lowContrast'
+          isElevated ? 'surface.background.gray.intense' : 'surface.background.gray.subtle'
         }
         borderTopRightRadius={isColumn ? 'none' : 'large'}
         borderBottomRightRadius={isColumn ? 'none' : 'large'}
@@ -71,12 +69,12 @@ const ProductTableItem = ({
           {isColumn ? (
             <>
               <Box paddingY="spacing.4" paddingX="spacing.5">
-                <Heading>Features</Heading>
+                <Text size="large">Features</Text>
               </Box>
               <Divider marginBottom="spacing.3" />
             </>
           ) : (
-            <Heading size="large" textAlign="center">
+            <Heading textAlign="center" size="medium">
               {product?.productTitle}
             </Heading>
           )}

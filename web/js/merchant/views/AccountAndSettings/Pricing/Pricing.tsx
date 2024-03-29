@@ -41,7 +41,7 @@ const Pricing = ({ location }): JSX.Element => {
         <StyledHeader className="scrollable-tab-header">
           <NavLink className="flex-link" to={ROUTES_INFO.PRICING_PLANS} data-testid="flex-link">
             Pricing Plans
-            <Badge contrast="low" variant="positive" size="medium" icon={OffersIcon}>
+            <Badge emphasis="subtle" size="medium" icon={OffersIcon} color="positive">
               NEW
             </Badge>
           </NavLink>

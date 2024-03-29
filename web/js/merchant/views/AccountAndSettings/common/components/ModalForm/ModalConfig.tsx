@@ -47,7 +47,7 @@ export const modalConfig = ({
         <Text size="small">
           Use this ID as my contact email and receive all Razorpay related communication to this ID
         </Text>
-        <Text size="small" color="surface.text.muted.lowContrast">
+        <Text size="small" color="surface.text.gray.muted">
           Currently your contact email has been set to {user.user?.email}
         </Text>
       </>

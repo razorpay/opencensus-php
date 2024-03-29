@@ -127,7 +127,6 @@ class Notify extends React.Component {
           <Alert
             title={title}
             marginTop="spacing.4"
-            intent="information"
             isDismissible={false}
             actions={{
               primary: {
@@ -145,6 +144,7 @@ class Notify extends React.Component {
                 text: CtaText,
               },
             }}
+            color="information"
           />
         ) : null}
       </>

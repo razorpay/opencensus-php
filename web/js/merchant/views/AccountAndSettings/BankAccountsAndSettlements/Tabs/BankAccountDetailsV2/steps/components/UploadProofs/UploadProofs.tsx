@@ -1,26 +1,27 @@
-import { Heading, Text } from '@razorpay/blade/components';
+import { Text } from '@razorpay/blade/components';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { MAX_FILE_SIZE_LIMIT } from 'merchant/views/Account/constants';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { showWorkflowStatus } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
+import { MAX_FILE_SIZE_LIMIT } from 'merchant/views/Account/constants';
 import BottomActions from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/BottomActions';
 import { StyledDivider } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/common/styled';
 import { getBankAccountBannerContent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/steps/components/Form/utils';
 import LoadingStep from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/steps/components/LoadingStep/LoadingStep';
 import {
   BANK_ACCOUNT_UPDATE_STEPS,
-  FileChangeArgs,
   FILE_CHANGE_ACTION,
+  FileChangeArgs,
   LOADING_STATE,
   UploadProofsPropsInterface,
 } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
+import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
-import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
+import { TabData } from './data';
 import {
   StyledAlert,
   StyledStepContainer,
@@ -31,7 +32,6 @@ import {
   TabsHeaderItem,
   UploadSectionTab,
 } from './styled';
-import { TabData } from './data';
 
 const initialState = {
   [LOADING_STATE.UPLOAD_CANCELLED_CHEQUE_DETAIL]: [],
@@ -49,13 +49,14 @@ const UploadProofs = ({
   const [activeTab, setActiveTab] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isFileUploaded, setIsFileUploaded] = useState<boolean>(false);
-  const [proofs, setProofs] = useState<
-    Record<
-      | LOADING_STATE.UPLOAD_CANCELLED_CHEQUE_DETAIL
-      | LOADING_STATE.UPLOAD_VERIFICATION_LETTER_DETAIL,
-      any[]
-    >
-  >(initialState);
+  const [proofs, setProofs] =
+    useState<
+      Record<
+        | LOADING_STATE.UPLOAD_CANCELLED_CHEQUE_DETAIL
+        | LOADING_STATE.UPLOAD_VERIFICATION_LETTER_DETAIL,
+        any[]
+      >
+    >(initialState);
   const Component = TabData[activeTab].component;
 
   const onFileLimitFailure = (): void => {
@@ -142,13 +143,13 @@ const UploadProofs = ({
       {isMobile ? (
         <>
           <StyledSubHeader>
-            <Text type="subtle">
+            <Text color="surface.text.gray.subtle">
               As your bank account couldn’t be automatically verified, choose an additional proof
               from below for our team to verify in 2-3 days
             </Text>
             <StyledAlert
-              contrast="low"
-              intent="notice"
+              emphasis="subtle"
+              color="notice"
               isDismissible={false}
               description={getBankAccountBannerContent(user)}
             />
@@ -157,8 +158,8 @@ const UploadProofs = ({
         </>
       ) : (
         <StyledAlert
-          contrast="low"
-          intent="notice"
+          emphasis="subtle"
+          color="notice"
           isDismissible={false}
           description={getBankAccountBannerContent(user)}
           isFullWidth
@@ -166,7 +167,7 @@ const UploadProofs = ({
       )}
       <StyledUploadContainer>
         {!isMobile && (
-          <Text type="subtle">
+          <Text color="surface.text.gray.subtle">
             As your bank account couldn’t be automatically verified, choose an additional proof from
             below for our team to verify in 2-3 days
           </Text>
@@ -179,7 +180,7 @@ const UploadProofs = ({
                 isActive={index === activeTab}
                 onClick={() => setActiveTab(index)}
               >
-                <Heading size="small">{each.title}</Heading>
+                <Text size="large">{each.title}</Text>
               </TabsHeaderItem>
             ))}
           </TabsHeader>

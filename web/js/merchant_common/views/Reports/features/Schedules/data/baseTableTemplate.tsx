@@ -35,10 +35,10 @@ export const baseSchedulesTableTemplate: TableTemplateType<
             height: 40,
           }}
         >
-          <Text variant="body" type="normal" weight="regular" contrast="low">
+          <Text variant="body" weight="regular" color="surface.text.gray.normal">
             {name}
           </Text>
-          <Text type="normal" variant="caption" weight="regular">
+          <Text variant="caption" weight="regular" color="surface.text.gray.normal">
             {config_name}
           </Text>
         </div>

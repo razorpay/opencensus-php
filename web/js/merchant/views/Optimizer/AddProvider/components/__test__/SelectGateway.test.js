@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 import { deepClone } from 'common/utils/rzp-utils';
 import { GATEWAY_CATEGORIES, RAZORPAY_GATEWAY_KEY } from 'merchant/views/Navigator/constants';
@@ -47,7 +47,7 @@ const mockProps = {
 describe('Add Provider SelectGateway component', () => {
   const App = (props = {}) => {
     return (
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <SelectGateway {...props} />
       </BladeProvider>
     );

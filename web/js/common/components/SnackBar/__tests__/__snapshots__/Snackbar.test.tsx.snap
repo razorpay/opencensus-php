@@ -9,18 +9,18 @@ exports[`<Snackbar /> error error 1`] = `
         data-testid="component-wrapper"
       >
         <div
-          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 iQCSLV Spaceweb__Space-sc-1abqisc-0 dGGICH"
+          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 ehWzOq Spaceweb__Space-sc-1abqisc-0 jYZKZM"
           color="negative.900"
           type="failure"
         >
           <div
-            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 ivPNaT"
+            class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 jBnbhY"
           >
             <div
-              class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fqGRZo"
+              class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 loumMX"
             >
               <div
-                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fRwLwk"
+                class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 ksaEmr"
               >
                 <svg
                   fill="none"
@@ -46,7 +46,7 @@ exports[`<Snackbar /> error error 1`] = `
                 </svg>
               </div>
               <div
-                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bhuqZ Spaceweb__Space-sc-1abqisc-0 kCHaiv"
+                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bHJUdK Spaceweb__Space-sc-1abqisc-0 hKvRhQ"
                 color="light.900"
                 data-testid="ds-text"
               >
@@ -54,7 +54,7 @@ exports[`<Snackbar /> error error 1`] = `
               </div>
             </div>
             <button
-              class="Buttonweb__StyledButton-sc-18xf15a-0 gJPCxv Spaceweb__Space-sc-1abqisc-0 iZssHR Sizeweb__Size-sc-1e5yf1-0 dmNVka Flexweb__Flex-sc-1yhcoea-0 iWcLkq"
+              class="Buttonweb__StyledButton-sc-18xf15a-0 krVilw Spaceweb__Space-sc-1abqisc-0 cDSfVW Sizeweb__Size-sc-1e5yf1-0 gnTzN Flexweb__Flex-sc-1yhcoea-0 fInNWl"
               data-testid="ds-snackbar"
               type="button"
             >
@@ -92,18 +92,18 @@ exports[`<Snackbar /> error success 1`] = `
         data-testid="component-wrapper"
       >
         <div
-          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 fcQdAW Spaceweb__Space-sc-1abqisc-0 dGGICH"
+          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 emteaB Spaceweb__Space-sc-1abqisc-0 jYZKZM"
           color="positive.900"
           type="success"
         >
           <div
-            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 ivPNaT"
+            class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 jBnbhY"
           >
             <div
-              class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fqGRZo"
+              class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 loumMX"
             >
               <div
-                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fRwLwk"
+                class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 ksaEmr"
               >
                 <svg
                   fill="none"
@@ -135,7 +135,7 @@ exports[`<Snackbar /> error success 1`] = `
                 </svg>
               </div>
               <div
-                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bhuqZ Spaceweb__Space-sc-1abqisc-0 kCHaiv"
+                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bHJUdK Spaceweb__Space-sc-1abqisc-0 hKvRhQ"
                 color="light.900"
                 data-testid="ds-text"
               >
@@ -143,7 +143,7 @@ exports[`<Snackbar /> error success 1`] = `
               </div>
             </div>
             <button
-              class="Buttonweb__StyledButton-sc-18xf15a-0 gJPCxv Spaceweb__Space-sc-1abqisc-0 iZssHR Sizeweb__Size-sc-1e5yf1-0 dmNVka Flexweb__Flex-sc-1yhcoea-0 iWcLkq"
+              class="Buttonweb__StyledButton-sc-18xf15a-0 krVilw Spaceweb__Space-sc-1abqisc-0 cDSfVW Sizeweb__Size-sc-1e5yf1-0 gnTzN Flexweb__Flex-sc-1yhcoea-0 fInNWl"
               data-testid="ds-snackbar"
               type="button"
             >
@@ -181,18 +181,18 @@ exports[`<Snackbar /> showSnackbar hide snackbar 1`] = `
         data-testid="component-wrapper"
       >
         <div
-          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 iQCSLV Spaceweb__Space-sc-1abqisc-0 dGGICH"
+          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 ehWzOq Spaceweb__Space-sc-1abqisc-0 jYZKZM"
           color="negative.900"
           type="failure"
         >
           <div
-            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 ivPNaT"
+            class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 jBnbhY"
           >
             <div
-              class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fqGRZo"
+              class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 loumMX"
             >
               <div
-                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fRwLwk"
+                class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 ksaEmr"
               >
                 <svg
                   fill="none"
@@ -218,7 +218,7 @@ exports[`<Snackbar /> showSnackbar hide snackbar 1`] = `
                 </svg>
               </div>
               <div
-                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bhuqZ Spaceweb__Space-sc-1abqisc-0 kCHaiv"
+                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bHJUdK Spaceweb__Space-sc-1abqisc-0 hKvRhQ"
                 color="light.900"
                 data-testid="ds-text"
               >
@@ -226,7 +226,7 @@ exports[`<Snackbar /> showSnackbar hide snackbar 1`] = `
               </div>
             </div>
             <button
-              class="Buttonweb__StyledButton-sc-18xf15a-0 gJPCxv Spaceweb__Space-sc-1abqisc-0 iZssHR Sizeweb__Size-sc-1e5yf1-0 dmNVka Flexweb__Flex-sc-1yhcoea-0 iWcLkq"
+              class="Buttonweb__StyledButton-sc-18xf15a-0 krVilw Spaceweb__Space-sc-1abqisc-0 cDSfVW Sizeweb__Size-sc-1e5yf1-0 gnTzN Flexweb__Flex-sc-1yhcoea-0 fInNWl"
               data-testid="ds-snackbar"
               type="button"
             >
@@ -264,18 +264,18 @@ exports[`<Snackbar /> showSnackbar show snackbar 1`] = `
         data-testid="component-wrapper"
       >
         <div
-          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 iQCSLV Spaceweb__Space-sc-1abqisc-0 dGGICH"
+          class="Viewweb__View-sc-1o0hmxm-0 Snackbar__StyledView-sc-18zefp4-0 ehWzOq Spaceweb__Space-sc-1abqisc-0 jYZKZM"
           color="negative.900"
           type="failure"
         >
           <div
-            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 ivPNaT"
+            class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 jBnbhY"
           >
             <div
-              class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fqGRZo"
+              class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 loumMX"
             >
               <div
-                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fRwLwk"
+                class="Viewweb__View-sc-1o0hmxm-0 keGkCv Flexweb__Flex-sc-1yhcoea-0 ksaEmr"
               >
                 <svg
                   fill="none"
@@ -301,7 +301,7 @@ exports[`<Snackbar /> showSnackbar show snackbar 1`] = `
                 </svg>
               </div>
               <div
-                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bhuqZ Spaceweb__Space-sc-1abqisc-0 kCHaiv"
+                class="Textweb__Text-sc-1qrdpx3-0 Snackbar__SnackbarText-sc-18zefp4-1 bHJUdK Spaceweb__Space-sc-1abqisc-0 hKvRhQ"
                 color="light.900"
                 data-testid="ds-text"
               >
@@ -309,7 +309,7 @@ exports[`<Snackbar /> showSnackbar show snackbar 1`] = `
               </div>
             </div>
             <button
-              class="Buttonweb__StyledButton-sc-18xf15a-0 gJPCxv Spaceweb__Space-sc-1abqisc-0 iZssHR Sizeweb__Size-sc-1e5yf1-0 dmNVka Flexweb__Flex-sc-1yhcoea-0 iWcLkq"
+              class="Buttonweb__StyledButton-sc-18xf15a-0 krVilw Spaceweb__Space-sc-1abqisc-0 cDSfVW Sizeweb__Size-sc-1e5yf1-0 gnTzN Flexweb__Flex-sc-1yhcoea-0 fInNWl"
               data-testid="ds-snackbar"
               type="button"
             >

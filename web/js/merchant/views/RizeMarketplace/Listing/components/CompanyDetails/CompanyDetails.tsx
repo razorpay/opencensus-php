@@ -8,7 +8,6 @@ import {
   Link,
   Text,
   Theme,
-  Title,
 } from '@razorpay/blade/components';
 import styled from 'styled-components';
 
@@ -45,7 +44,7 @@ const CompanyDetails = ({ slug }: CompanyDetailsProps): JSX.Element | null => {
           alignItems="center"
           marginBottom="spacing.3"
         >
-          <Text color="surface.text.subtle.lowContrast" size="large">
+          <Text color="surface.text.gray.subtle" size="large">
             About the company
           </Text>
           <Link
@@ -59,12 +58,13 @@ const CompanyDetails = ({ slug }: CompanyDetailsProps): JSX.Element | null => {
           </Link>
         </Box>
 
-        <Title as="span">{company.name}</Title>
+        <Heading as="span" size="large">
+          {company.name}
+        </Heading>
       </Box>
-
       {company.co_founders.length > 0 ? (
         <Box>
-          <Text color="surface.text.subtle.lowContrast" size="large">
+          <Text color="surface.text.gray.subtle" size="large">
             Team
           </Text>
 
@@ -76,7 +76,7 @@ const CompanyDetails = ({ slug }: CompanyDetailsProps): JSX.Element | null => {
                   target="_blank"
                   key={cofounder.user_id}
                   padding="spacing.0"
-                  surfaceLevel={3}
+                  backgroundColor="surface.background.gray.intense"
                   elevation="lowRaised"
                   testID="cofounder-card"
                 >
@@ -90,9 +90,9 @@ const CompanyDetails = ({ slug }: CompanyDetailsProps): JSX.Element | null => {
                         }
                         alt={`Profile picture of ${cofounder.name}`}
                       />
-                      <Heading as="span" size="small" weight="bold">
+                      <Text as="span" weight="semibold" size="large">
                         {cofounder.name}
-                      </Heading>
+                      </Text>
                     </Box>
                   </CardBody>
                 </Card>

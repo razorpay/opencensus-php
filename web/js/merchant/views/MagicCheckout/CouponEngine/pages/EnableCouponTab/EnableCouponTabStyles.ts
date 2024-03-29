@@ -6,7 +6,7 @@ export const ContentWrapper = styled.div`
 
 export const Title = styled.div`
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 30px;
 `;
 
@@ -37,13 +37,13 @@ export const LogoImage = styled.img`
 
 export const CardTitle = styled.div`
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 600;
   color: #162f56de;
 `;
 
 export const CreateCouponLink = styled.div`
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: #5591ed;
   cursor: pointer;
 `;
@@ -73,7 +73,7 @@ export const ShopifySyncModalWrapper = styled.div`
 
   label {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     color: #162F56BD';
   }
 `;

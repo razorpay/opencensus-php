@@ -58,7 +58,7 @@ export const Chip = styled.span<any>`
   cursor: pointer;
   background: ${({ value }) => handleChipColor(value)};
   span {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 12px;
   }
   .i {

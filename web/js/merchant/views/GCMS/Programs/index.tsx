@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Box, Text, Title } from '@razorpay/blade/components';
+import { Box, Text, Heading } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -51,7 +51,9 @@ const Programs = ({ mode }: { mode: ModeT }) => {
     <Wrapper>
       <div className="tabbed-container">
         <Box>
-          <Title color="surface.text.subtle.lowContrast">Programs</Title>
+          <Heading color="surface.text.gray.subtle" size="large">
+            Programs
+          </Heading>
         </Box>
         <div className="content">
           {isLoading ? (
@@ -104,7 +106,7 @@ const Programs = ({ mode }: { mode: ModeT }) => {
               </Box>
               <Box>
                 <Box position="absolute" paddingLeft="spacing.6" paddingTop="spacing.1">
-                  <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+                  <Text size="small" color="surface.text.gray.muted">{`Total ${
                     programs?.total_count || 0
                   } Programs`}</Text>
                 </Box>

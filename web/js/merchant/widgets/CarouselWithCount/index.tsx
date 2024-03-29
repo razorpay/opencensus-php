@@ -57,8 +57,8 @@ export const CarouselWithCountWidget: React.FC<
     return (
       <CarouselWithCountWrapper background_img={background_img}>
         <Heading
-          color={background_img ? 'feedback.text.information.highContrast' : undefined}
-          size="large"
+          color={background_img ? 'surface.text.staticWhite.normal' : undefined}
+          size="medium"
         >
           {title} - You're all caught up!
         </Heading>
@@ -69,20 +69,20 @@ export const CarouselWithCountWidget: React.FC<
     <CarouselWithCountWrapper background_img={background_img}>
       <Box display="flex" gap="spacing.2" marginBottom="spacing.6" alignItems="center">
         <Heading
-          color={background_img ? 'feedback.text.information.highContrast' : undefined}
-          size="large"
+          color={background_img ? 'surface.text.staticWhite.normal' : undefined}
+          size="medium"
         >
           {title}
         </Heading>
         {error ? null : (
-          <Heading size="medium" type="subtle">
+          <Heading size="small" color="surface.text.gray.subtle">
             ({components.length})
           </Heading>
         )}
       </Box>
       {error ? (
         <ErrorState
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           text={`${title} couldn't be loaded`}
           analyticsProperties={{
             screen,

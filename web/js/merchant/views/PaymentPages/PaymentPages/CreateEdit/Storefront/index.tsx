@@ -46,12 +46,12 @@ import StorefrontPageTitle from './PageTitle';
 import PageSettings from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings/StorefrontSettings';
 import ReceiptSettings from 'merchant/views/PaymentPages/PaymentPages/components/Modals/StorefrontPaymentReceipt';
 import {
-  Heading,
   InfoIcon,
   Link,
   Text,
   Button as BladeButton,
   PlusCircleIcon,
+  Heading,
 } from '@razorpay/blade/components';
 import {
   emitIframeEvent,
@@ -757,16 +757,18 @@ const StoreFront = ({
               )}
               {(!isMobile || (isMobile && isMobilePreview)) && (
                 <StorefrontRightWrapper>
-                  <Heading type="subtle" size="medium" weight="bold" contrast="low">
+                  <Heading weight="semibold" size="small" color="surface.text.gray.subtle">
                     Preview of your store
                   </Heading>
                   <DescriptionWrapper>
                     <DescriptionLeftWrapper>
-                      <InfoIcon
-                        size="medium"
-                        color="feedback.neutral.action.icon.link.default.lowContrast"
-                      />
-                      <Text type="subtle" variant="body" size="small" weight="regular">
+                      <InfoIcon size="medium" color="interactive.icon.neutral.normal" />
+                      <Text
+                        variant="body"
+                        size="small"
+                        weight="regular"
+                        color="surface.text.gray.subtle"
+                      >
                         Customize your store with your{' '}
                         <Link onClick={openBrandColorSettingsPage} variant="button">
                           brand color

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Button, Heading, Text, TextInput } from '@razorpay/blade/components';
+import { Box, Button, Text, TextInput } from '@razorpay/blade/components';
+import SalesPocIcon from 'assets/pos/icons/sales-poc.svg';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import SalesPocIcon from 'assets/pos/icons/sales-poc.svg';
 import { updateSalePoc } from 'merchant/views/POS/services';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
@@ -63,10 +63,10 @@ const SalesPocBanner = ({
             <img src={SalesPocIcon} alt="sales poc icon" height="30" />
           </Box>
           <Box>
-            <Heading marginBottom="spacing.1">
+            <Text marginBottom="spacing.1" size="large">
               Have you been assisted by our Sales Executive?
-            </Heading>
-            <Text type="subdued" marginBottom={{ base: 'spacing.5', l: '0px' }}>
+            </Text>
+            <Text marginBottom={{ base: 'spacing.5', l: '0px' }} color="surface.text.gray.muted">
               If so, please enter the code provided by the them
             </Text>
           </Box>

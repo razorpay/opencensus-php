@@ -236,7 +236,7 @@ class HeaderNav extends Component {
                       <MenuIcon
                         size="medium"
                         onClick={this.onToggleAppMenu}
-                        color="surface.text.subtle.lowContrast"
+                        color="interactive.icon.gray.subtle"
                         margin="spacing.2"
                       />
                     </Box>

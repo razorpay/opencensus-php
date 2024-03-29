@@ -10,7 +10,7 @@ const CardIcon = ({ name }: { name: PaymentTypes }): JSX.Element | null => {
     case PaymentTypes.Refunds:
       return <img src={RefundsCardIcon} alt="refund details" />;
     case PaymentTypes.Disputes:
-      return <AlertTriangleIcon color="feedback.icon.negative.lowContrast" size="medium" />;
+      return <AlertTriangleIcon color="feedback.icon.negative.intense" size="medium" />;
     case PaymentTypes.Failed:
       return <img src={FailedCardIcon} alt="failed payment details" />;
     /* istanbul ignore next */

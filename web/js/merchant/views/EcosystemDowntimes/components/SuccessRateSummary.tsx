@@ -95,7 +95,7 @@ const SuccessRateSummary = ({
       <AlertWrapper aria-label="sr-summary-error">
         <Alert
           description="Something went wrong while fetching successful payments"
-          intent="negative"
+          color="negative"
         />
       </AlertWrapper>
     );
@@ -106,8 +106,8 @@ const SuccessRateSummary = ({
       <AlertWrapper aria-label="no-payments-sr">
         <Alert
           description={`No payments were attempted via ${instrumentName} (${methodName}) in the past one week`}
-          intent="information"
           isDismissible={false}
+          color="information"
         />
       </AlertWrapper>
     );

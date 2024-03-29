@@ -1,20 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  ArrowRightIcon,
-  Box,
-  Heading,
-  Link,
-  Spinner,
-  Text,
-  Title,
-} from '@razorpay/blade/components';
+import { ArrowRightIcon, Box, Heading, Link, Spinner, Text } from '@razorpay/blade/components';
+import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import EmptyOrderImg from 'assets/pos/icons/empty-order.svg';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { compose } from 'redux';
-import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
-import EmptyOrderImg from 'assets/pos/icons/empty-order.svg';
 import { ORDER_LIST_STATUS_TYPES } from 'merchant/views/POS/constants';
 import { getOrderList } from 'merchant/views/POS/services';
 import { MainContainer } from 'merchant/views/POS/styles';
@@ -106,15 +98,16 @@ const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element =
             marginTop="10%"
           >
             <img src={EmptyOrderImg} height="130px" alt="empty order image" />
-            <Heading
-              type="subtle"
+            <Text
               marginTop="spacing.6"
               marginBottom="spacing.3"
               textAlign="center"
+              size="large"
+              color="surface.text.gray.subtle"
             >
               No Order History
-            </Heading>
-            <Text type="subtle" marginBottom="spacing.5" textAlign="center">
+            </Text>
+            <Text marginBottom="spacing.5" textAlign="center" color="surface.text.gray.subtle">
               It looks like you have not placed any orders yet. Explore our store and place your
               first order to get started.
             </Text>
@@ -140,11 +133,10 @@ const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element =
           </Box>
         </Box>
       ) : null}
-
       {orderListData.length > 0 ? (
         <>
           <Box marginBottom="spacing.5">
-            <Title>Your Orders</Title>
+            <Heading size="large">Your Orders</Heading>
           </Box>
           {orderListData.map((orderListItem) => (
             <OrderListItem key={orderListItem.id} orderListItem={orderListItem} />

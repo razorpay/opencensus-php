@@ -35,7 +35,7 @@ export const ModalContainer = styled.div`
 
     span {
       color: rgba(22, 47, 86, 0.74);
-      font-weight: 700;
+      font-weight: 600;
     }
   }
 

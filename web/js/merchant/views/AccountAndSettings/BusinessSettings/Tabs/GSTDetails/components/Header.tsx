@@ -8,7 +8,7 @@ import {
   ACTION_QUERY_PARAM_KEY,
 } from 'merchant/views/Account/Profile/deeplink-constants';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
-import { Heading, Button, Box, StampIcon } from '@razorpay/blade/components';
+import { Button, Box, StampIcon, Text } from '@razorpay/blade/components';
 import { useMobile } from 'common/hooks/useMobile';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import lazy from 'merchant/routes/LazyLoader';
@@ -53,7 +53,7 @@ const Header = ({ openModal, gstList, defaultGSTIn, setAlertStatus }: HeaderProp
       justifyContent="space-between"
       alignItems="center"
       padding="spacing.7"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       gap="spacing.5"
     >
       {isMobile ? (
@@ -62,17 +62,17 @@ const Header = ({ openModal, gstList, defaultGSTIn, setAlertStatus }: HeaderProp
             display="flex"
             gap="spacing.3"
             padding="spacing.3"
-            backgroundColor="surface.background.level1.lowContrast"
+            backgroundColor="surface.background.gray.subtle"
             borderRadius="medium"
-            borderColor="brand.gray.400.lowContrast"
+            borderColor="surface.border.gray.muted"
           >
-            <StampIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+            <StampIcon size="medium" color="feedback.icon.neutral.intense" />
           </Box>
-          <Heading>GST details</Heading>
+          <Text size="large">GST details</Text>
         </Box>
       ) : (
         <Box paddingTop="6px" paddingBottom="6px">
-          <Heading>GST details</Heading>
+          <Text size="large">GST details</Text>
         </Box>
       )}
       <ShowWhen myRole="owner admin" additionalCondition={(usr) => usr.isAllowedEdit('profile')}>

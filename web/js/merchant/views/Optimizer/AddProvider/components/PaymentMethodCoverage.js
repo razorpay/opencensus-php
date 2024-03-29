@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Title, Text, Button, Alert } from '@razorpay/blade/components';
+import { Box, Heading, Text, Button, Alert } from '@razorpay/blade/components';
 
 import { titleCase } from 'common/utils/rzp-utils';
 import { CoverageIcon } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/CoverageIcon';
@@ -10,7 +10,7 @@ const ShowCoverage = ({ methods, coverage }) => {
     <Box display="flex" flexDirection="column" gap="spacing.5" key={method}>
       <Text>
         <CoverageIcon status={coverage[method]?.supported ? 'positive' : 'negative'} />
-        <Text as="span" marginLeft="spacing.3" weight="bold">
+        <Text as="span" marginLeft="spacing.3" weight="semibold">
           {titleCase(method)}
         </Text>
         {` is ${coverage[method]?.supported ? 'Covered' : 'Not Covered'}`}
@@ -34,19 +34,19 @@ export const PaymentMethodCoverage = ({
       flexDirection="column"
       padding="spacing.7"
       gap={isFormEdit ? 'spacing.9' : 'spacing.6'}
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
     >
       <Box display="flex" justifyContent="space-between">
         <Box display="flex" flexDirection="column" gap="spacing.3">
-          <Title color="surface.text.subtle.lowContrast">Payment Method Coverage</Title>
+          <Heading color="surface.text.gray.subtle" size="large">
+            Payment Method Coverage
+          </Heading>
         </Box>
       </Box>
-
       <Box display="flex" flexDirection="column" gap="spacing.5">
         <Text>Method coverage on {selectedProvider}</Text>
         <ShowCoverage methods={methods} coverage={gatewayCoverage} />
       </Box>
-
       <Box display="flex" flexDirection="column" gap="spacing.3">
         {!areMandatoryMethodsCovered(mandatoryMethods, gatewayCoverage) ? (
           <Alert
@@ -57,12 +57,10 @@ export const PaymentMethodCoverage = ({
           />
         ) : null}
       </Box>
-
       <Box display="flex" flexDirection="column" gap="spacing.5">
         <Text>Method coverage on {businessName}</Text>
         <ShowCoverage methods={methods} coverage={razorpayCoverage} />
       </Box>
-
       <Box display="flex" flexDirection="column" gap="spacing.3">
         {!areMandatoryMethodsCovered(mandatoryMethods, razorpayCoverage) ? (
           <Alert
@@ -81,7 +79,6 @@ export const PaymentMethodCoverage = ({
           />
         ) : null}
       </Box>
-
       <Box display="flex" justifyContent="end" alignItems="center" gap="spacing.7">
         <Button isDisabled={true}>Test integration</Button>
       </Box>

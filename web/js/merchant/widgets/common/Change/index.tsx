@@ -21,11 +21,11 @@ export const Change: React.FC<ChangeProps> = ({
     <Box display="flex" alignItems="center" gap="spacing.2" testID="change-component">
       <Arrow variant={variant} fill={colors[finalVariant]} />
       <Text
-        weight="bold"
+        weight="semibold"
         color={
           finalVariant === 'increase'
-            ? 'feedback.positive.action.text.link.default.lowContrast'
-            : 'feedback.negative.action.text.link.default.lowContrast'
+            ? 'interactive.text.positive.normal'
+            : 'interactive.text.negative.normal'
         }
       >
         {text}

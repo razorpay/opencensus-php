@@ -1,6 +1,6 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'react-redux';
 import { Router } from 'react-router-dom';
@@ -46,7 +46,7 @@ export const GCMSTestPageRenderer = ({ children }) => {
 
   return (
     <Provider store={storeWithInitialState(initialState)}>
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <QueryClientProvider client={queryClient}>
           <SessionContext.Provider value={{ mode: 'test', merchantId: 'NDnRD3epJ6P60L' }}>
             <OrderSessionContext.Provider

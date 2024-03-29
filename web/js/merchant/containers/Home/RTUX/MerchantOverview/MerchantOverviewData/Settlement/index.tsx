@@ -59,10 +59,10 @@ const Settlement: React.FC<ISettlement & IAnalyticsProperties> = ({
         width={{ base: '100%', l: '30%' }}
       >
         <Box display="flex" gap="spacing.2" alignItems="flex-end">
-          <Heading size="medium">Current balance</Heading>
+          <Heading size="small">Current balance</Heading>
           <Tooltip content="This is the total amount that is due to be deposited in your bank account after deduction of taxes, platform fees, any other applicable charges, and adjustment of refunds and credits">
             <TooltipInteractiveWrapper>
-              <InfoIcon size="small" color="surface.text.muted.lowContrast" />
+              <InfoIcon size="small" color="interactive.icon.gray.muted" />
             </TooltipInteractiveWrapper>
           </Tooltip>
         </Box>
@@ -72,7 +72,9 @@ const Settlement: React.FC<ISettlement & IAnalyticsProperties> = ({
             current_balance_currency,
           )}
           currency={current_balance_currency}
-          size="title-medium"
+          type="heading"
+          size="xlarge"
+          weight="semibold"
         />
       </Box>
       <Box display="flex" flexDirection="column" justifyContent="space-between" width="100%">

@@ -2581,7 +2581,7 @@ class ActivationWizard extends React.Component {
                 {!this.props.user.activation_form_milestone ? (
                   <div className="header-container">
                     <div>
-                      <div style={{ fontWeight: 'bold', fontSize: '20px' }}>
+                      <div style={{ fontWeight: 600, fontSize: '20px' }}>
                         Welcome {this.props.data.contact_name},
                       </div>
                       <div style={{ fontSize: '15px' }}>

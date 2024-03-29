@@ -31,13 +31,10 @@ export const DropdownSingleSelectedInput = ({
     <SingleSelectedOption shouldShowDropDown={shouldShowDropDown} theme={theme}>
       <Text
         size="medium"
-        type="normal"
         variant="body"
         truncateAfterLines={1}
         color={
-          value && !shouldShowDropDown
-            ? 'surface.text.subtle.lowContrast'
-            : 'surface.text.muted.lowContrast'
+          value && !shouldShowDropDown ? 'surface.text.gray.subtle' : 'surface.text.gray.muted'
         }
       >
         {renderDropdownText()}

@@ -36,16 +36,18 @@ import {
 } from 'merchant/views/PaymentHandle/style';
 import PaymentHandleOnboardingLottie from 'merchant/helpers/lottieConfigs/PaymentHandleOnboarding.json';
 
-const CustomLottie = lazy(() =>
-  import(
-    /* webpackChunkName: 'CustomLottiePaymentHandleOnboardingLottie' */ 'common/new-ui/Lottie'
-  ),
+const CustomLottie = lazy(
+  () =>
+    import(
+      /* webpackChunkName: 'CustomLottiePaymentHandleOnboardingLottie' */ 'common/new-ui/Lottie'
+    ),
 );
 
-const EditPaymentHandle = lazy(() =>
-  import(
-    /* webpackChunkName: 'EditPaymentHandle' */ 'merchant/views/PaymentHandle/views/Onboarding/EditPaymentHandle'
-  ),
+const EditPaymentHandle = lazy(
+  () =>
+    import(
+      /* webpackChunkName: 'EditPaymentHandle' */ 'merchant/views/PaymentHandle/views/Onboarding/EditPaymentHandle'
+    ),
 );
 
 const Onboarding: React.FC<OnboardingPropTypes> = ({

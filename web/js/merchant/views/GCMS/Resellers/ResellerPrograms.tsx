@@ -81,7 +81,7 @@ const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
             <Box position="absolute" paddingLeft="spacing.6" paddingTop="spacing.1">
               <Text
                 size="small"
-                color="surface.text.subdued.lowContrast"
+                color="surface.text.gray.muted"
               >{`Total ${programs?.total_count} Programs`}</Text>
             </Box>
             <Pagination

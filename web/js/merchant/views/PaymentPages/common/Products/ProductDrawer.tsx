@@ -4,7 +4,6 @@ import {
   Alert,
   ArrowUpRightIcon,
   Button,
-  Heading,
   Link,
   TextArea,
   TextInput,
@@ -13,6 +12,7 @@ import {
   TrashIcon,
   Text,
   Box,
+  Heading,
 } from '@razorpay/blade/components';
 import CatalogStatusLabel from 'merchant/views/PaymentPages/common/Products/CatalogStatusLabel';
 import ConfirmModal from 'merchant/views/PaymentPages/common/ConfirmModal';
@@ -182,11 +182,7 @@ const ProductDrawer = ({
           }}
           header={
             <>
-              <TrashIcon
-                size="large"
-                color="feedback.negative.action.icon.primary.default.lowContrast"
-              />{' '}
-              Delete product
+              <TrashIcon size="large" color="interactive.icon.negative.subtle" /> Delete product
             </>
           }
           message={
@@ -385,7 +381,7 @@ const ProductDrawer = ({
       top={top}
     >
       <HeadingContainer>
-        <Heading size="large" contrast="low" variant="regular" weight="bold">
+        <Heading weight="semibold" size="medium" color="surface.text.gray.normal">
           {isEdit ? 'Edit product' : 'Add new product'}
         </Heading>
         {isEdit && (
@@ -459,7 +455,7 @@ const ProductDrawer = ({
               <Text
                 position="absolute"
                 bottom="-24px"
-                color="feedback.negative.action.text.primary.active.lowContrast"
+                color="interactive.text.negative.subtle"
                 size="small"
               >
                 {errors.discounted_amount ?? errors.amount}
@@ -484,9 +480,9 @@ const ProductDrawer = ({
         {images.length === 0 ? (
           <Box marginTop={'spacing.5'}>
             <Text
-              weight="bold"
+              weight="semibold"
               size="small"
-              color="surface.text.subdued.lowContrast"
+              color="surface.text.gray.muted"
               marginBottom={'spacing.3'}
             >
               Upload images <StyledItalics style={{}}>(optional)</StyledItalics>
@@ -496,9 +492,9 @@ const ProductDrawer = ({
         ) : (
           <Box marginTop={'spacing.5'}>
             <Text
-              weight="bold"
+              weight="semibold"
               size="small"
-              color="surface.text.subdued.lowContrast"
+              color="surface.text.gray.muted"
               marginBottom={'spacing.4'}
             >
               Uploaded images
@@ -545,13 +541,12 @@ const ProductDrawer = ({
         />
         {showCentralCatalogueInfo ? (
           <Alert
-            contrast="low"
+            emphasis="subtle"
             description={
               <>
                 This product will be saved to the{' '}
                 <Link
                   href={`/app/paymentpages/products`}
-                  variant="anchor"
                   icon={ArrowUpRightIcon}
                   iconPosition="right"
                   size="small"
@@ -563,16 +558,16 @@ const ProductDrawer = ({
                 <br /> After this is saved, you can add it to any page
               </>
             }
-            intent="information"
             isDismissible={false}
+            color="information"
           />
         ) : (
           isEdit && (
             <Alert
-              contrast="low"
+              emphasis="subtle"
               description="Changes will be saved across all payment pages that use this product"
-              intent="notice"
               isDismissible={false}
+              color="notice"
             />
           )
         )}

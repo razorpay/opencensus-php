@@ -14,10 +14,10 @@ jest.mock('@razorpay/blade/components', () =>
   Object.assign({
     __esModule: true,
     ...jest.requireActual('@razorpay/blade/components'),
-    Badge: ({ variant, icon }) => {
+    Badge: ({ color, icon }) => {
       return (
         <>
-          <span data-testid="variant">{variant}</span>
+          <span data-testid="color">{color}</span>
           {icon({})}
         </>
       );
@@ -32,7 +32,7 @@ describe('StatusBadge', () => {
     [VariantMap.PROCESSED, BADGE_INFO.PROCESSED, 'processed'],
   ])('should render %s variant and %s tooltip when status is %s', (variant, tooltip, status) => {
     render(<StatusBadge status={status} />);
-    expect(screen.getByTestId('variant')).toHaveTextContent(variant);
+    expect(screen.getByTestId('color')).toHaveTextContent(variant);
     expect(screen.getByText(tooltip)).toBeInTheDocument();
   });
 });

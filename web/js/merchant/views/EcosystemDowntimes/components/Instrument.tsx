@@ -41,12 +41,11 @@ const Instrument = ({ instrument, status, onClick }: InstrumentType): JSX.Elemen
     <InstrumentItem aria-label="instrument" status={downtimeType} onClick={handleOnClick}>
       <img className="instrument-logo" src={logo} alt={name} />
       <Text
-        contrast="low"
         size="medium"
         truncateAfterLines={1}
-        type="normal"
         variant="body"
         weight="regular"
+        color="surface.text.gray.normal"
       >
         {name}
       </Text>

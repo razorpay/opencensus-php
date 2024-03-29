@@ -1,5 +1,5 @@
 import React from 'react';
-import { Title, Text, Box, Button, PlusIcon } from '@razorpay/blade/components';
+import { Heading, Text, Box, Button, PlusIcon } from '@razorpay/blade/components';
 import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
 import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
 import { connect } from 'react-redux';
@@ -43,15 +43,11 @@ const CommonWelcomeScreen = ({
   const i18 = useI18Service();
   const { handleAddMerchant } = useProductActions();
   return (
-    <Box
-      backgroundColor="surface.background.level2.lowContrast"
-      paddingTop="135px"
-      paddingBottom="200px"
-    >
+    <Box backgroundColor="surface.background.gray.intense" paddingTop="135px" paddingBottom="200px">
       <Box display="flex" flexDirection="row" flexWrap="wrap" gap="28px" justifyContent="center">
         <Box display="flex" flexDirection="column" gap="28px" alignItems="center">
           <Box display="flex" flexDirection="column" gap="spacing.2" alignItems="center">
-            <Title>{mainTitle}</Title>
+            <Heading size="large">{mainTitle}</Heading>
             <Text size="large">Get Started by adding clients on {orgName}</Text>
           </Box>
 
@@ -89,7 +85,7 @@ const CommonWelcomeScreen = ({
                 </Box>
                 <Text size="large">
                   Share the{' '}
-                  <Text display="inline-block" size="large" weight="bold">
+                  <Text display="inline-block" size="large" weight="semibold">
                     invite link
                   </Text>{' '}
                   on social media

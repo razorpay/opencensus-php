@@ -97,23 +97,21 @@ export const ProductItem = ({
     <li>
       <div className="product-item-left">
         <img src={image} width={28} height={28} alt={`${product_name} image`} />
-        <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+        <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
           {product_name}
         </Text>
       </div>
-
       <div className={`product-item-right ${discounted_amount ? 'discount-applicable' : ''}`}>
         <Text
-          type={discounted_amount ? 'muted' : 'normal'}
+          color={discounted_amount ? 'surface.text.gray.muted' : 'surface.text.gray.normal'}
           variant="body"
           size="medium"
           weight="regular"
-          contrast="low"
         >
           {formatTextAmountField(amount)}
         </Text>
         {discounted_amount && (
-          <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+          <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
             {formatTextAmountField(discounted_amount)}
           </Text>
         )}
@@ -122,19 +120,19 @@ export const ProductItem = ({
           ref={ref}
           className="storefront-options"
         >
-          <MoreHorizontalIcon color="action.icon.tertiary.default" size="small" />
+          <MoreHorizontalIcon color="interactive.icon.gray.normal" size="small" />
           {/* handling state in parent, as only one dropdown can be open at a time */}
           {isDropdownOpen ? (
             !isMobile ? (
               <OptionsDropdownWrapper>
                 {editProduct && (
                   <div onClick={() => handleEdit(id)}>
-                    <EditComposeIcon color="action.icon.link.default" size="small" /> Edit
+                    <EditComposeIcon color="interactive.icon.primary.subtle" size="small" /> Edit
                   </div>
                 )}
                 {removeProduct && (
                   <div className="danger" onClick={() => handleRemove(id)}>
-                    <TrashIcon color="feedback.icon.negative.lowContrast" size="small" /> Remove
+                    <TrashIcon color="feedback.icon.negative.intense" size="small" /> Remove
                   </div>
                 )}
               </OptionsDropdownWrapper>
@@ -143,13 +141,13 @@ export const ProductItem = ({
                 <BottomSheetWrapper>
                   {editProduct && (
                     <BottomSheetItem onClick={() => handleEdit(id)} gap="12px">
-                      <EditIcon color="feedback.icon.neutral.lowContrast" size="medium" />{' '}
+                      <EditIcon color="feedback.icon.neutral.intense" size="medium" />{' '}
                       <span>Edit</span>
                     </BottomSheetItem>
                   )}
                   {removeProduct && (
                     <BottomSheetItem onClick={() => handleRemove(id)} gap="12px">
-                      <TrashIcon color="feedback.icon.negative.lowContrast" size="medium" />{' '}
+                      <TrashIcon color="feedback.icon.negative.intense" size="medium" />{' '}
                       <span className="pp-danger-text">Remove</span>
                     </BottomSheetItem>
                   )}
@@ -200,7 +198,7 @@ const ProductSection = ({
 }: IProductSection): React.ReactElement => {
   return (
     <ProductsWrapper className={className}>
-      <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
+      <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
         {title}
       </Text>
       <ProductItems

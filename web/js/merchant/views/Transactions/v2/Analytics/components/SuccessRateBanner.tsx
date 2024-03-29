@@ -21,7 +21,7 @@ const SuccessRateBanner = ({
           <img src={SuccessRateEmoji} alt="success rate emoji" />
         </Box>
       ) : null}
-      <Text weight="bold">{successRateData}% success rate</Text>
+      <Text weight="semibold">{successRateData}% success rate</Text>
       <Link
         icon={ChevronRightIcon}
         iconPosition="right"

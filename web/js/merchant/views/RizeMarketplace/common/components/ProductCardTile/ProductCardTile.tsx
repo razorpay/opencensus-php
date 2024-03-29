@@ -7,7 +7,7 @@ import {
   Skeleton,
   Text,
   Theme,
-  Title,
+  Heading,
   useTheme,
 } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
@@ -22,8 +22,8 @@ import { ProductCardTileProps } from './types';
 const ProductLogo = styled.img(
   ({ theme }: { theme: Theme }) => `
   border-radius: ${theme.border.radius.medium}px;
-  border: ${theme.border.width.thin}px solid ${theme.colors.surface.border.normal.lowContrast};
-  background-color: ${theme.colors.static.white};
+  border: ${theme.border.width.thin}px solid ${theme.colors.surface.border.gray.muted};
+  background-color: ${theme.colors.interactive.icon.staticWhite.normal};
   width: 36px;
   height: 36px;
   object-fit: cover;
@@ -100,7 +100,7 @@ const ProductCardTile = ({
       <CardBody height="100%">
         <Box
           borderWidth="thin"
-          borderColor="surface.border.normal.lowContrast"
+          borderColor="surface.border.gray.muted"
           borderRadius="medium"
           padding={['spacing.7', 'spacing.6']}
           minWidth={{ base: '270px', s: '332px' }}
@@ -114,16 +114,15 @@ const ProductCardTile = ({
           >
             <ProductLogo src={resolveToRizeUrl(logoSrc)} alt={`${name} logo`} />
             <Box>
-              <Title as="h3" type="normal">
+              <Heading as="h3" size="large" color="surface.text.gray.normal">
                 {name}
-              </Title>
+              </Heading>
               <Text
                 variant="body"
                 size="small"
-                weight="bold"
-                type="normal"
+                weight="semibold"
                 marginTop={{ base: 'spacing.4', l: 'spacing.3' }}
-                color="surface.text.muted.lowContrast"
+                color="surface.text.gray.muted"
               >
                 {category.toUpperCase()}
               </Text>
@@ -139,8 +138,7 @@ const ProductCardTile = ({
           >
             <Text
               size="large"
-              type="normal"
-              color="surface.text.normal.lowContrast"
+              color="surface.text.gray.normal"
               truncateAfterLines={truncateExcerpt}
             >
               {excerpt}
@@ -160,7 +158,7 @@ const ProductCardTileSkeleton = (): JSX.Element => (
     <CardBody>
       <Box
         borderWidth="thin"
-        borderColor="surface.border.normal.lowContrast"
+        borderColor="surface.border.gray.muted"
         borderRadius="medium"
         padding={['spacing.7', 'spacing.6']}
         minWidth={{ base: '270px', s: '332px' }}

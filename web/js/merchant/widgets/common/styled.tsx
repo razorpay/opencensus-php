@@ -6,8 +6,8 @@ export const AlertIconWrapper = styled.div<{ variant: 'error' | 'warning' }>(
     padding: theme.spacing[4],
     backgroundColor:
       variant === 'error'
-        ? theme.colors.feedback.background.negative.lowContrast
-        : theme.colors.feedback.background.notice.lowContrast,
+        ? theme.colors.feedback.background.negative.subtle
+        : theme.colors.feedback.background.notice.subtle,
     borderRadius: theme.border.radius.round,
   }),
 );

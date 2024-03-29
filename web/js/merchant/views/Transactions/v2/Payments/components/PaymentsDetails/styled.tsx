@@ -9,17 +9,17 @@ import CustomClipboard from 'common/ui/Clipboard/Custom'; // eslint-disable-line
 export const getOverviewBgColor = (theme: Theme, status: IPaymentDetails['status']): string => {
   switch (status) {
     case PaymentStatus.CREATED:
-      return theme.colors.feedback.background.notice.lowContrast;
+      return theme.colors.feedback.background.notice.subtle;
     case PaymentStatus.AUTHENTICATED:
     case PaymentStatus.AUTHORIZED:
-      return theme.colors.feedback.background.neutral.lowContrast;
+      return theme.colors.feedback.background.neutral.subtle;
     case PaymentStatus.CAPTURED:
-      return theme.colors.feedback.background.positive.lowContrast;
+      return theme.colors.feedback.background.positive.subtle;
     case PaymentStatus.FAILED:
-      return theme.colors.feedback.background.notice.lowContrast;
+      return theme.colors.feedback.background.notice.subtle;
     case PaymentStatus.REFUNDED:
     default:
-      return theme.colors.feedback.background.information.lowContrast;
+      return theme.colors.feedback.background.information.subtle;
   }
 };
 
@@ -52,11 +52,11 @@ export const DashedDivider = (): JSX.Element => (
 
 export const SectionFooter = styled.div(
   ({ theme }: { theme: Theme }) => `
-  background-color: ${theme.colors.surface.background.level3.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.moderate};
   padding: ${theme.spacing[4]}px ${theme.spacing[5]}px;
-  border-left: 1px solid ${theme.colors.surface.border.normal.lowContrast};
-  border-bottom: 1px solid ${theme.colors.surface.border.normal.lowContrast};
-  border-right: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+  border-left: 1px solid ${theme.colors.surface.border.gray.muted};
+  border-bottom: 1px solid ${theme.colors.surface.border.gray.muted};
+  border-right: 1px solid ${theme.colors.surface.border.gray.muted};
   border-bottom-right-radius: ${({ theme }) => `${theme.spacing[2]}px`};
   border-bottom-left-radius: ${({ theme }) => `${theme.spacing[2]}px`};
 `,
@@ -74,16 +74,16 @@ export const SectionHeader = styled.div(
     theme: Theme;
     enableBorderBottomRadius?: boolean;
   }) => `
-  background-color: ${theme.colors.brand.gray.a50.lowContrast};
+  background-color: ${theme.colors.surface.background.gray.moderate};
   padding: ${theme.spacing[5]}px ${theme.spacing[6]}px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-top-left-radius: ${theme.border.radius.medium}px;
   border-top-right-radius: ${theme.border.radius.medium}px;
-  border-top: 1px solid ${theme.colors.surface.border.normal.lowContrast};
-  border-left: 1px solid ${theme.colors.surface.border.normal.lowContrast};
-  border-right: 1px solid ${theme.colors.surface.border.normal.lowContrast};
+  border-top: 1px solid ${theme.colors.surface.border.gray.muted};
+  border-left: 1px solid ${theme.colors.surface.border.gray.muted};
+  border-right: 1px solid ${theme.colors.surface.border.gray.muted};
 
   border-bottom: ${
     !enableBorderBottomRadius ? `${theme.border.radius.none}px` : `${theme.border.radius.medium}px`
@@ -171,7 +171,7 @@ export const BoxContainer = styled.div(
 const CopyIconWrapper = styled.span(
   ({ theme }: { theme: Theme }) => `
   & svg path {
-    fill: ${theme.colors.action.icon.link.default}
+    fill: ${theme.colors.interactive.icon.primary.subtle}
   }
 `,
 );
@@ -250,7 +250,7 @@ export const StyledAmountWrapper = styled.div<{ type: string; fontSize }>`
     .rzp-whole,
     .rzp-paise {
       color: ${({ type, theme }) => getAmountColor(type, theme)};
-      font-weight: bolder;
+      font-weight: 600;
       font-size: ${({ fontSize }) => `${fontSize}px`};
     }
   }

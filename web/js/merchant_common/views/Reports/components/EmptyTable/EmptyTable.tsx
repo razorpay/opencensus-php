@@ -2,7 +2,7 @@ import React from 'react';
 import { Block } from 'merchant_common/views/Reports/components/styled';
 import { EmptyTablePropsType } from './types';
 import { EmptyTableWrapper } from './styled';
-import { Title, Text } from 'merchant_common/views/Reports/components';
+import { Text, Heading } from '@razorpay/blade/components';
 
 export const EmptyTable = ({ src, title, desc, children }: EmptyTablePropsType): JSX.Element => {
   return (
@@ -17,10 +17,10 @@ export const EmptyTable = ({ src, title, desc, children }: EmptyTablePropsType):
           objectFit: 'contain',
         }}
       />
-      <Title contrast="low" size="small" type="normal">
+      <Heading size="large" color="surface.text.gray.normal">
         {title}
-      </Title>
-      <Text type="subdued" size="medium" contrast="low">
+      </Heading>
+      <Text size="medium" color="surface.text.gray.muted">
         {desc}
       </Text>
       <Block m={10}>{children}</Block>

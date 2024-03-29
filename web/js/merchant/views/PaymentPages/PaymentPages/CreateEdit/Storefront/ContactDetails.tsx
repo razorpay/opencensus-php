@@ -36,15 +36,13 @@ const ContactDetails = ({
         More options
         <ChevronDownIcon
           size="medium"
-          color={
-            !hasError ? 'surface.text.subtle.lowContrast' : 'feedback.icon.negative.lowContrast'
-          }
+          color={!hasError ? 'surface.icon.gray.subtle' : 'feedback.icon.negative.intense'}
         />
       </ContactDetailsHeading>
       <ContactDetailsSubHeading showError={hasError}>
         {hasError && (
           <>
-            <InfoIcon size="small" color="feedback.icon.negative.lowContrast" />
+            <InfoIcon size="small" color="feedback.icon.negative.intense" />
             &nbsp;
           </>
         )}

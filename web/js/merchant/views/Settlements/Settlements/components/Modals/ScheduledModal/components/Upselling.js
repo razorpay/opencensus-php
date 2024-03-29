@@ -55,7 +55,7 @@ const DidYouKnowContainer = styled.div`
 `;
 
 const DidYouKnow = styled.span`
-  font-weight: bold;
+  font-weight: 600;
   font-size: 16px;
   line-height: 20px;
   color: #ffffff;
@@ -67,7 +67,7 @@ const Detail = styled.div`
   color: #dfe3e9;
   margin-bottom: 12px;
   span {
-    font-weight: 900;
+    font-weight: 800;
   }
 `;
 
@@ -80,7 +80,7 @@ const DiscountContainer = styled.div`
 `;
 
 const BigDiscount = styled.div`
-  font-weight: 900;
+  font-weight: 800;
   font-size: 32px;
   line-height: 40px;
   color: #f1ffed;
@@ -130,7 +130,7 @@ const StrikeThrough = styled.span`
 `;
 
 const InstantSettlementsOfferFee = styled.span`
-  font-weight: bold;
+  font-weight: 600;
   font-size: 14px;
   line-height: 22px;
   color: #324664;
@@ -156,7 +156,7 @@ const Button = styled(AsyncBtn)`
   text-align: center;
   padding: 10px 0 !important;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 600;
   text-transform: capitalize;
   margin: 0 !important;
   ${({ outline }) =>

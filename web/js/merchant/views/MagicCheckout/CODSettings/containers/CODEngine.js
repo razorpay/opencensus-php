@@ -1,21 +1,18 @@
 import React from 'react';
-import { bindActionCreators } from 'redux';
+import { Button, Text, Heading } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
-import { Button, Heading, Text } from '@razorpay/blade/components';
-import Spinner from 'common/ui/Spinner';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
-
+import Spinner from 'common/ui/Spinner';
+import { setEditMode, validateConfig } from 'merchant/reducers/magicCheckout/codEngine/action';
 import EmptyView from 'merchant/views/MagicCheckout/CODSettings/EmptyView';
+import { SERVICEABILITY_TYPES } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
 import PreviewView from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/PreviewView';
 import SettingsView from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/SettingsView';
 import ConfirmSettings from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/ConfirmSettings';
-
-import { openModal } from 'merchant_common/reducers/modals';
-import { validateConfig, setEditMode } from 'merchant/reducers/magicCheckout/codEngine/action';
-
 import { COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/constants';
-import { SERVICEABILITY_TYPES } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
+import { openModal } from 'merchant_common/reducers/modals';
 
 function CODEngine(props) {
   const { codEngineConfig, openModal, validateConfig, setEditMode, settings } = props;
@@ -78,8 +75,8 @@ function CODEngine(props) {
       <div className="cod-content-wrapper">
         <div className="cod-content">
           <div className="text-container">
-            <Heading size="large">COD Settings</Heading>
-            <Text type="subdued">
+            <Heading size="medium">COD Settings</Heading>
+            <Text color="surface.text.gray.muted">
               {`Configure COD eligibility, rate, ${
                 !rcodEnabled ? 'zones, product catalogues, ' : ''
               }fees`}

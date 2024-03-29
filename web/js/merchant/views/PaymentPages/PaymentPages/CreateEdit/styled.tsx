@@ -49,7 +49,7 @@ export const TemplateSelectionModalContent = styled(ModalContent)(
         }
         &.selected,
         &:hover {
-          background: ${theme.colors.brand.gray[500].lowContrast};
+          background: ${theme.colors.interactive.border.gray.highlighted};
         }
       }
     }
@@ -196,7 +196,7 @@ export const FeatureWrapper = styled.span`
 `;
 
 export const Tag = styled.div`
-  font-weight: 700;
+  font-weight: 600;
   font-size: 9px;
   line-height: 20px;
   letter-spacing: 0.02em;
@@ -330,7 +330,7 @@ export const ProductsSkeleton = (): React.ReactElement => {
     <ProductsWrapper className="product-section">
       <LoadingTextWrapper>
         <Spinner accessibilityLabel="Loading products" />
-        <Text type="normal" variant="body" size="medium" weight="regular" contrast="low">
+        <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
           Please wait while we load your products...
         </Text>
       </LoadingTextWrapper>
@@ -372,7 +372,6 @@ export const SelectProductSkeleton = (): React.ReactElement => {
 export const TemplateSelectionHeading = styled.h4(
   ({ theme }: { theme: Theme }) => `
   color: hsla(217,56%,17%,1);
-  font-family: Lato,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
   font-size: 1.25rem;
   font-weight: ${theme.typography.fonts.weight.bold};
   font-style: normal;

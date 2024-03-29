@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import Dropdown from '@dashboard/shared-ui/components/Dropdown/Dropdown';
 import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
 import { useMobile } from '@dashboard/shared-ui/hooks';
-import AnalyticsBoilerPlate from './AnalyticsBoilerPlate';
 import LoadFailed from 'apps/self-serve/src/App/Transactions/v2/Analytics/components/LoadFailed';
 import OverviewContainer from 'apps/self-serve/src/App/Transactions/v2/Analytics/components/OverviewContainer';
 import { useRefundsData } from 'apps/self-serve/src/App/Transactions/v2/Analytics/hooks';
@@ -21,6 +20,7 @@ import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common
 import { trackOverviewDuration } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
 import { Duration, DurationOption } from 'apps/self-serve/src/App/Transactions/v2/common/types';
 import { endOfDay, getFromTime } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
+import AnalyticsBoilerPlate from './AnalyticsBoilerPlate';
 
 const RefundsOverview = ({ mode, user }: RefundsOverviewProps): JSX.Element => {
   const isRefundPendingEnabled = user.isRefundPendingStatusEnabled;
@@ -69,7 +69,7 @@ const RefundsOverview = ({ mode, user }: RefundsOverviewProps): JSX.Element => {
         justifyContent="space-between"
       >
         <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.2">
-          <Text type="normal" weight="bold" contrast="low">
+          <Text weight="semibold" color="surface.text.gray.normal">
             Refunds
           </Text>
           <Dropdown

@@ -15,7 +15,7 @@ export default ({ step }) => {
       <div className="sub-heading">
         Most of our partners earn more than
         <span className="rupee-icon">
-          <RupeeIcon color="feedback.icon.neutral.highContrast" size="xlarge" />
+          <RupeeIcon color="surface.icon.staticWhite.normal" size="xlarge" />
         </span>
         7500 in commissions every month!
       </div>

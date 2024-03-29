@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, getByText, render, screen } from '@testing-library/react';
 import InputSelector from 'merchant/views/Wallet/BatchActions/components/InputSelector';
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 describe('InputSelector tests', () => {
   test('should render InputSelector as expected', async () => {
@@ -17,7 +17,7 @@ describe('InputSelector tests', () => {
       },
     ];
     const { container } = render(
-      <BladeProvider themeTokens={paymentTheme}>
+      <BladeProvider themeTokens={bladeTheme}>
         <InputSelector options={options} setInput={jest.fn()} />,
       </BladeProvider>,
     );

@@ -15,7 +15,7 @@ export const StyledFieldContainer = styled.div`
     font-size: 14px;
     padding: 8px;
     margin-left: 20px;
-    font-weight: 700;
+    font-weight: 600;
     max-width: 150px;
     text-align: right;
 

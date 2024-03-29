@@ -1,7 +1,9 @@
 import { Box, ChevronDownIcon, ChevronRightIcon, Heading, Text } from '@razorpay/blade/components';
 import Collapsible from 'common/components/Collapsible';
 import { useResizeLayout } from 'common/hooks/useResizeLayout';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import { Queries } from './FAQQueries';
 import {
   CollapsibleIcon,
@@ -12,8 +14,6 @@ import {
   TabOrder,
   TabQueryItem,
 } from './styled';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { connect } from 'react-redux';
 
 const FAQs = (props): JSX.Element => {
   const [activeQuery, setActiveQuery] = useState<number>(0);
@@ -49,10 +49,10 @@ const FAQs = (props): JSX.Element => {
       display="flex"
       flexDirection="column"
       gap="spacing.5"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       padding={{ base: ['10px', 'spacing.5'], m: ['spacing.4', 'spacing.9', 'spacing.9'] }}
     >
-      <Heading weight="bold" size="medium">
+      <Heading weight="semibold" size="small">
         FAQs
       </Heading>
       {isDeviceUnderBreakpoint ? (
@@ -77,7 +77,14 @@ const FAQs = (props): JSX.Element => {
                   >
                     <TabQueryItem>
                       <TabOrder />
-                      <Text size="medium" type={index === activeQuery ? 'normal' : 'subtle'}>
+                      <Text
+                        size="medium"
+                        color={
+                          index === activeQuery
+                            ? 'surface.text.gray.normal'
+                            : 'surface.text.gray.subtle'
+                        }
+                      >
                         {query}
                       </Text>
                     </TabQueryItem>
@@ -86,8 +93,8 @@ const FAQs = (props): JSX.Element => {
                         size="large"
                         color={
                           index === activeQuery
-                            ? 'action.icon.link.default'
-                            : 'feedback.icon.neutral.lowContrast'
+                            ? 'interactive.icon.primary.subtle'
+                            : 'feedback.icon.neutral.intense'
                         }
                       />
                     </CollapsibleIcon>
@@ -121,7 +128,14 @@ const FAQs = (props): JSX.Element => {
                 >
                   <TabQueryItem>
                     <TabOrder />
-                    <Text size="medium" type={index === activeQuery ? 'normal' : 'subtle'}>
+                    <Text
+                      size="medium"
+                      color={
+                        index === activeQuery
+                          ? 'surface.text.gray.normal'
+                          : 'surface.text.gray.subtle'
+                      }
+                    >
                       {each.query}
                     </Text>
                   </TabQueryItem>
@@ -129,8 +143,8 @@ const FAQs = (props): JSX.Element => {
                     size="large"
                     color={
                       index === activeQuery
-                        ? 'action.icon.link.default'
-                        : 'feedback.icon.neutral.lowContrast'
+                        ? 'interactive.icon.primary.subtle'
+                        : 'feedback.icon.neutral.intense'
                     }
                   />
                 </TabListItem>

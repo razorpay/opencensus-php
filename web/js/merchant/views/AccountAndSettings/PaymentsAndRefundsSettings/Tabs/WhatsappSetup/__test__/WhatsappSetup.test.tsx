@@ -44,7 +44,7 @@ describe('WhatsappSetup Landing Page', () => {
 
   test('should render whatsapp setup landing page', () => {
     renderApp({});
-    expect(screen.getByRole('heading', { name: 'Whatsapp Account Set-up' })).toBeInTheDocument();
+    expect(screen.getByText('Whatsapp Account Set-up')).toBeInTheDocument();
     expect(
       screen.getByText(
         'To send payment requests via WhatsApp, please set-up your WABA account with Razorpay',
@@ -55,7 +55,7 @@ describe('WhatsappSetup Landing Page', () => {
   test('should render whatsapp setup landing page in mobile', () => {
     (useMobile as jest.Mock).mockImplementation(() => true);
     renderApp({});
-    expect(screen.getByRole('heading', { name: 'Whatsapp Account Set-up' })).toBeInTheDocument();
+    expect(screen.getByText('Whatsapp Account Set-up')).toBeInTheDocument();
     expect(
       screen.getByText(
         'To send payment requests via WhatsApp, please set-up your WABA account with Razorpay',

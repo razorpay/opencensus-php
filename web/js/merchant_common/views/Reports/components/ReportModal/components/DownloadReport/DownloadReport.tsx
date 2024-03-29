@@ -7,7 +7,6 @@ import {
   CollapsibleForm,
   CollapsibleFormSection,
   Dropdown,
-  Heading,
   DateTimeRangePicker,
   Switch,
   Text,
@@ -314,14 +313,14 @@ export const DownloadReportModal = ({
   const customComponent = ({ name, id, email }: AccountType) => {
     return (
       <div aria-label={`${name} (${id})`}>
-        <Text size="medium" variant="body" weight="bold">
+        <Text size="medium" variant="body" weight="semibold">
           {name}
         </Text>
         <Box marginTop="spacing.3" display="flex" alignItems="center">
-          <Badge icon={UserIcon} variant="neutral">
+          <Badge icon={UserIcon} color="neutral">
             {id}
           </Badge>
-          <Badge icon={MailIcon} marginLeft="spacing.3" variant="neutral">
+          <Badge icon={MailIcon} marginLeft="spacing.3" color="neutral">
             {email}
           </Badge>
         </Box>
@@ -332,13 +331,7 @@ export const DownloadReportModal = ({
   const customBatchPagesOption = ({ title, id }) => {
     return (
       <Box aria-label={`${title}-${id}`}>
-        <Text
-          size="medium"
-          type="normal"
-          contrast="low"
-          color="surface.text.normal.lowContrast"
-          truncateAfterLines={1}
-        >
+        <Text size="medium" color="surface.text.gray.normal" truncateAfterLines={1}>
           {`${title} - ${id}`}
         </Text>
       </Box>
@@ -448,13 +441,8 @@ export const DownloadReportModal = ({
   return (
     <Fragment>
       <ReportModalHeader>
-        <Heading variant="regular">Download report for your business</Heading>
-        <Text
-          variant="body"
-          size="medium"
-          weight="regular"
-          color="surface.text.subdued.lowContrast"
-        >
+        <Text size="large">Download report for your business</Text>
+        <Text variant="body" size="medium" weight="regular" color="surface.text.gray.muted">
           A new improved version of reports now available for you to download. You can now select
           the specific date and time period for which you would like to see the report.
         </Text>

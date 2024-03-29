@@ -10,7 +10,7 @@ export const CouponStatus = styled.div<CouponStatusVaraints>`
   text-align: center;
   padding: 4px 12px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
 
   ${(props) => {
     switch (props.variant) {
@@ -58,7 +58,7 @@ export const SyncStatus = styled.span<SyncStatusVariants>`
   text-align: center;
   padding: 4px 12px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
 
   ${(props) => {
     switch (props.variant) {

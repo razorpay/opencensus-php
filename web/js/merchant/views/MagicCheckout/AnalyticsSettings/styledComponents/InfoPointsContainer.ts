@@ -15,7 +15,7 @@ export const InfoContent = styled.div`
 `;
 export const InfoHighlight = styled.p`
   color: #515761;
-  font-weight: 700;
+  font-weight: 600;
 `;
 export const InfoText = styled.p`
   color: #515761;

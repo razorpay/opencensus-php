@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { ArrowUpRightIcon, Box, Heading, Text } from '@razorpay/blade/components';
+import { ArrowUpRightIcon, Box, Text } from '@razorpay/blade/components';
 import { ProductCardWidgetProps } from 'merchant/widgets/Carousel/subWidget/ProductCard/types';
 import {
   AnimatedBox,
@@ -70,14 +70,14 @@ export const ProductCardWidget: React.FC<
       />
       <Box
         position="relative"
-        backgroundColor="surface.background.level2.lowContrast"
+        backgroundColor="surface.background.gray.intense"
         height="116px"
         borderBottomLeftRadius="medium"
         borderBottomRightRadius="medium"
       >
         <Box
           padding="spacing.6"
-          backgroundColor="surface.background.level2.lowContrast"
+          backgroundColor="surface.background.gray.intense"
           display="flex"
           flexDirection="column"
           gap="spacing.3"
@@ -87,10 +87,12 @@ export const ProductCardWidget: React.FC<
           borderBottomRightRadius="medium"
         >
           <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Heading>{title}</Heading>
-            {isMobile ? <ArrowUpRightIcon color="surface.text.muted.highContrast" /> : null}
+            <Text size="large" weight="semibold">
+              {title}
+            </Text>
+            {isMobile ? <ArrowUpRightIcon color="surface.icon.gray.muted" /> : null}
           </Box>
-          <Text type="subdued" marginBottom="spacing.3">
+          <Text marginBottom="spacing.3" color="surface.text.gray.muted">
             {description}
           </Text>
           <Box>

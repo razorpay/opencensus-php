@@ -27,7 +27,7 @@ export const getIconBackgroundColor = (status: string, theme: Theme): string => 
       SettlementStatusIcons.DONE,
     ].includes(status as PaymentStatus | DisputeStatus | RefundStatus)
   ) {
-    return `${theme.colors.feedback.background.positive.lowContrast}`;
+    return `${theme.colors.feedback.background.positive.subtle}`;
   } else if (
     [
       'not-authorized',
@@ -38,10 +38,10 @@ export const getIconBackgroundColor = (status: string, theme: Theme): string => 
       SettlementStatusIcons.IN_PROGRESS,
     ].includes(status)
   ) {
-    return `${theme.colors.feedback.background.notice.lowContrast}`;
+    return `${theme.colors.feedback.background.notice.subtle}`;
   } else if ([PaymentStatus.FAILED, 'auth-failed', SettlementStatusIcons.FAILED].includes(status)) {
-    return `${theme.colors.feedback.background.negative.lowContrast}`;
+    return `${theme.colors.feedback.background.negative.subtle}`;
   } else {
-    return `${theme.colors.feedback.background.neutral.lowContrast}`;
+    return `${theme.colors.feedback.background.neutral.subtle}`;
   }
 };

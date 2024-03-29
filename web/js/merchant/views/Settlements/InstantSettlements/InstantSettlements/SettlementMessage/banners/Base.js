@@ -27,7 +27,7 @@ const Image = styled.img`
 `;
 
 export const Title = styled.h2`
-  font-weight: bold;
+  font-weight: 600;
   font-size: 14px;
   line-height: 18px;
   color: #324664;
@@ -57,7 +57,7 @@ export const DiscountBlock = styled.div`
 
 export const Percentage = styled.span`
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 40px;
   color: ${({ color }) => color ?? `#2a86f3`};
 `;
@@ -86,7 +86,7 @@ export const Rupee = styled.span`
 `;
 
 export const Amount = styled.span`
-  font-weight: 800;
+  font-weight: 600;
   font-size: 24px;
   line-height: 40px;
   color: ${({ color }) => color ?? `#2a86f3`};

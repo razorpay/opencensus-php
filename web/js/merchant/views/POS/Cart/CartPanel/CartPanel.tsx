@@ -3,10 +3,10 @@ import {
   Box,
   ShoppingCartIcon,
   Divider,
-  Heading,
   Counter,
   IconButton,
   ArrowLeftIcon,
+  Text,
 } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import Modal from 'react-modal';
@@ -64,7 +64,7 @@ const ModalContent = ({
   return (
     <Box
       minHeight="100vh"
-      backgroundColor="surface.background.level2.lowContrast"
+      backgroundColor="surface.background.gray.intense"
       minWidth="300px"
       zIndex={10}
     >
@@ -75,17 +75,19 @@ const ModalContent = ({
           size="large"
           accessibilityLabel="cart close button"
         />
-        <Heading marginX="spacing.4">Your Cart</Heading>
-        <Heading type="subdued" weight="regular">
+        <Text marginX="spacing.4" size="large">
+          Your Cart
+        </Text>
+        <Text weight="regular" size="large" color="surface.text.gray.muted">
           {isCartItemsAvailable
             ? `${cartItems.length} ${cartItems.length > 1 ? 'Items' : 'Item'}`
             : null}
-        </Heading>
+        </Text>
       </Box>
       <Divider />
       {isCartItemsAvailable ? (
         <Box
-          backgroundColor="surface.background.level1.lowContrast"
+          backgroundColor="surface.background.gray.subtle"
           height="90vh"
           position="relative"
           width="100%"
@@ -162,16 +164,16 @@ const CartPanel = ({ toggleHelpWidget, isHidden = false }: CartPanelProps): JSX.
       <CartButtonContainer onClick={handleCartOpen} data-testid="cart-button" isMobile={isMobile}>
         {!isHidden ? (
           <Box display="flex" alignItems="center" paddingX="spacing.4" position="relative">
-            <ShoppingCartIcon size="xlarge" color="surface.action.icon.active.lowContrast" />
+            <ShoppingCartIcon size="xlarge" color="interactive.icon.gray.normal" />
             {isCartItemsAvailable ? (
               <Box position="absolute" bottom="spacing.0" left="30px">
                 <Counter
-                  contrast="high"
+                  emphasis="intense"
                   marginRight="spacing.3"
                   marginTop="spacing.2"
                   size="medium"
                   value={cartItems.length}
-                  color="default"
+                  color="primary"
                   testID="cart-panel-counter"
                 />
               </Box>

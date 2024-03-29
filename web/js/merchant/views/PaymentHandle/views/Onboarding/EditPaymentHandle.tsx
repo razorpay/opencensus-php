@@ -134,7 +134,7 @@ const EditSlugModal = ({
                 </View>
               </Space>
               <View>
-                <Text type="subtle" contrast="low" size="xsmall">
+                <Text size="xsmall" color="surface.text.gray.subtle">
                   Don’t forget to share your updated Razorpay.me link with your customers
                 </Text>
               </View>

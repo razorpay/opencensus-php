@@ -90,7 +90,7 @@ const BulkInviteForm = ({
               maxFileSize={52428800}
               batchClass="batch-upload-modal"
               nullStatusNotification={
-                <Text size="small" color="feedback.text.negative.lowContrast">
+                <Text size="small" color="feedback.text.negative.intense">
                   {formik.errors.file_id}
                 </Text>
               }

@@ -7,10 +7,9 @@ import { Text } from 'merchant_common/views/Reports/components';
 export const Switch = ({ label, value, onChange }: SwitchPropsType): JSX.Element => {
   return (
     <SwitchWrapper>
-      <Text size="medium" variant="body" weight="bold" type="subtle">
+      <Text size="medium" variant="body" weight="semibold" color="surface.text.gray.subtle">
         {label}
       </Text>
-
       {/* when onChange is passed to SwitchField, it's not called when clicked via userEvent in test  
           so as to make sure it works, placing a onClick handler here
       */}

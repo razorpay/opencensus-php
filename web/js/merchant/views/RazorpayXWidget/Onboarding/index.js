@@ -101,7 +101,7 @@ const Onboarding = ({ x_banking_widget }) => {
       <OnBoardingWrapper class="RazorpayX">
         <Box
           backgroundImage={`url(${widgetData?.background_illustration?.url})`}
-          backgroundColor="surface.background.level1.highContrast"
+          backgroundColor="surface.background.gray.subtle"
           minWidth="90%"
           margin="0 auto"
           height="100%"

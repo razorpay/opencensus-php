@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BladeProvider, Box } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -13,7 +13,6 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { trackViewedBankingNavBar } from 'merchant/components/Sidebar/ga';
 import { getIsBankingEnabled } from 'merchant/components/Sidebar/helpers';
 import ActivationProgress from 'merchant/components/SidebarV2/components/ActivationProgress';
-import Theme from 'merchant/components/SidebarV2/theme';
 import { LOYALTY_PRODUCTS_SECTION } from 'merchant/components/SidebarV2/utils/Fallback';
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
 import { isOrgFeatureExist } from 'merchant/models/User';
@@ -161,7 +160,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   // Enabled for sidebarV2 in blade and check redux value only on mobile
   const shouldShowMobileOverlay = isRTUXHomepage && isMobileDevice() && shouldShowMobileMenu;
   return (
-    <BladeProvider themeTokens={isRTUXHomepage ? paymentTheme : Theme} colorScheme="light">
+    <BladeProvider themeTokens={bladeTheme} colorScheme={isRTUXHomepage ? 'light' : 'dark'}>
       <SidebarContainer
         isRTUXHomepage={isRTUXHomepage}
         isVisible={isSidebarVisible}

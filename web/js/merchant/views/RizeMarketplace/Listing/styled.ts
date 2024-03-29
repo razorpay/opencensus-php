@@ -6,7 +6,7 @@ import YoutubeVideo from './components/YoutubeVideo';
 export const ProductLogo = styled.img(
   ({ theme }: { theme: Theme }) => `
   border-radius: ${theme.border.radius.large}px;
-  background-color: ${theme.colors.static.white};
+  background-color: ${theme.colors.interactive.icon.staticWhite.normal};
   width: 64px;
   height: 64px;
   object-fit: cover;

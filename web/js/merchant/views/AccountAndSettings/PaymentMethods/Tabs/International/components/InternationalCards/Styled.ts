@@ -34,10 +34,10 @@ export const StyledNotActivatedTopSection = styled.div(
 
 export const StyledDisabledHeading = styled.p(
   ({ theme }: { theme: Theme }) => `
-  font-weight: 700;
+  font-weight: 600;
   font-size: ${theme.spacing[5]}px;
   line-height: ${theme.spacing[7]}px;
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
 `,
 );
 
@@ -45,7 +45,7 @@ export const StyledDisabledSubtitle = styled.p(
   ({ theme }: { theme: Theme }) => `
   font-size: 14px;
   line-height: ${theme.spacing[6]}px;
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
 `,
 );
 
@@ -70,7 +70,7 @@ export const StyledProductInfo = styled.div(
   font-weight: 400;
   font-size: 14px;
   line-height: ${theme.spacing[6]}px;
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  color: ${theme.colors.surface.text.gray.subtle};
 
   &:nth-child(3) {
     padding-bottom: ${theme.spacing[3]}px;
@@ -130,8 +130,8 @@ span {
 
 .rzp-amount .rzp-whole,
 .rzp-amount .rzp-paise {
-  font-weight: 700;
-  color: ${theme.colors.surface.text.subtle.lowContrast};
+  font-weight: 600;
+  color: ${theme.colors.surface.text.gray.subtle};
 }
 
 @media screen and (max-width: 768px) {
@@ -148,7 +148,7 @@ span {
 
 export const StyledProductInfoHeading = styled.p(
   ({ theme }: { theme: Theme }) => `
-  font-weight: 700;
+  font-weight: 600;
   font-size: ${theme.spacing[5]}px;
   line-height: ${theme.spacing[7]}px;;
 `,
@@ -185,17 +185,17 @@ export const StyledUpdateBusinessDetailsContent = styled.div(
   }
 
   h4 {
-    font-weight: 700;
+    font-weight: 600;
     font-size: ${theme.spacing[5]}px;
     line-height: ${theme.spacing[7]}px;
-    color: ${theme.colors.surface.text.normal.lowContrast};
+    color: ${theme.colors.surface.text.gray.normal};
     margin-bottom: ${theme.spacing[5]}px;
   }
 
   p {
     font-size: ${theme.spacing[5]}px;
     line-height: ${theme.spacing[7]}px;
-    color: ${theme.colors.surface.text.subtle.lowContrast};
+    color: ${theme.colors.surface.text.gray.subtle};
   }
 `,
 );

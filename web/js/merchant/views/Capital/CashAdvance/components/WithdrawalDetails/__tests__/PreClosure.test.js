@@ -1,5 +1,5 @@
 import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { rest } from 'msw';
 import { Provider } from 'react-redux';
@@ -39,7 +39,7 @@ describe('WithdrawDetails - PreClosure', () => {
   }) => {
     return (
       <Provider store={storeWithInitialState(initialState)}>
-        <BladeProvider themeTokens={paymentTheme}>
+        <BladeProvider themeTokens={bladeTheme}>
           <QueryClientProvider client={queryClient}>
             <PreClosure withdrawalId="123" dueDate="2023-11-28T18:29:59Z" />
           </QueryClientProvider>

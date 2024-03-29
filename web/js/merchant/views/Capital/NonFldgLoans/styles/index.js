@@ -6,7 +6,7 @@ export const Container = styled.div`
     text-align: left;
     border-bottom: 1px solid rgba(22, 47, 86, 0.1);
     color: rgba(22, 47, 86, 0.87);
-    font-weight: 900;
+    font-weight: 800;
     font-size: 20px;
     line-height: 24px;
     margin: 0 32px;
@@ -57,7 +57,7 @@ export const Container = styled.div`
       .cta {
         color: white;
         margin-top: 24px;
-        font-weight: bold;
+        font-weight: 600;
         padding: 8px 29px 8px 24px;
       }
       img {

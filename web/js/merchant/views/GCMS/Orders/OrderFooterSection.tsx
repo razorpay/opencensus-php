@@ -24,15 +24,15 @@ const OrderFooterSection = ({ items, onClickViewCart }: Props) => {
           alignItems="center"
           height="70px"
           borderTopWidth="thicker"
-          borderColor="surface.border.normal.lowContrast"
+          borderColor="surface.border.gray.muted"
           padding="spacing.6"
         >
           <Box display="flex" flexDirection="row" alignItems="center">
             <Box>
-              <ShoppingCartIcon size="xlarge" color="surface.action.icon.active.lowContrast" />
+              <ShoppingCartIcon size="xlarge" color="interactive.icon.gray.normal" />
             </Box>
             <Box paddingLeft="spacing.4">
-              <Text weight="bold" color="surface.text.subdued.lowContrast">{`${
+              <Text weight="semibold" color="surface.text.gray.muted">{`${
                 items || 0
               } Gift Card Program selected`}</Text>
             </Box>

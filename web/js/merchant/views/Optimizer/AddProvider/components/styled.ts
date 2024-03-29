@@ -11,8 +11,8 @@ export const StyledProviderItem = styled.div<StyledProviderItemProps>`
   min-width: 200px;
   height: 52px;
   padding: 7px;
-  background-color: ${({ theme }) => theme.colors.surface.background.level3.lowContrast};
-  border: 1px solid ${({ theme }) => theme.colors.surface.border.subtle.lowContrast};
+  background-color: ${({ theme }) => theme.colors.surface.background.gray.moderate};
+  border: 1px solid ${({ theme }) => theme.colors.surface.border.gray.subtle};
   border-radius: ${({ theme }) => `${theme.spacing[2]}px`};
   cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
 `;
@@ -41,7 +41,7 @@ export const StyledDivider = styled.hr(
   ({ theme }) => `
   border: 0;
   height: 1px;
-  background-color: ${theme.colors.surface.border.normal.lowContrast};
+  background-color: ${theme.colors.surface.border.gray.muted};
   margin: ${theme.spacing[5]}px 0;
 `,
 );
@@ -54,6 +54,6 @@ export const IconBackground = styled.div<{ status: string }>`
   vertical-align: bottom;
   background-color: ${({ status, theme }) =>
     status === 'positive'
-      ? theme.colors.feedback.background.positive.lowContrast
-      : theme.colors.feedback.background.negative.lowContrast};
+      ? theme.colors.feedback.background.positive.subtle
+      : theme.colors.feedback.background.negative.subtle};
 `;
