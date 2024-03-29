@@ -1443,7 +1443,10 @@ class Service extends Base\Service
             // Adding this for type safety, works like a runtime enum check.
             $appType = OneClickCheckoutConstants::SHOPIFY_APP_TYPE_MAGIC_CHECKOUT;
         }
-        $address['city'] = empty($address['city']) === false ? $address['city'] : 'NA';
+        if (empty($address['city']) === false || empty($address['state_code']) === false || empty($address['state']) === false)
+        {
+            $address['city'] = empty($address['city']) === false ? $address['city'] : 'NA';
+        }
 
         $address['zipcode'] = empty($address['zipcode']) === false ? $address['zipcode'] : $address['state_code']; //handles null check
 
