@@ -1880,23 +1880,26 @@ class Core extends Base\Core
     {
         $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
 
-        $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
-
-        $payment = $this->repo->payment->findByPublicId($transactorPublicId);
-
-        $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($payment->merchant);
-
-        if (($isExpEnabled === true) and ($transactorEvent === LedgerConstants::MERCHANT_CAPTURED))
+        if (($transactorEvent === LedgerConstants::MERCHANT_CAPTURED))
         {
-            $bucketCore = new Bucket\Core;
+            $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
 
-            $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntityForPayments($journal);
+            $payment = $this->repo->payment->findByPublicId($transactorPublicId);
 
-            $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
+            $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($payment->merchant);
 
-            if ($status === true)
+            if ($isExpEnabled === true)
             {
+                $bucketCore = new Bucket\Core;
+
+                $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntityForPayments($journal);
+
+                $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
+
+                if ($status === true)
+                {
                 $bucketCore->publishForSettlement($virtualPaymentTransaction);
+                }
             }
         }
     }
