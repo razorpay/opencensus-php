@@ -4441,7 +4441,7 @@ class PayoutTest extends OAuthTestCase
                     self::assertEquals('/transfer', $endpoint);
                     self::assertEquals('POST', $method);
 
-                    self::assertEquals('payout_refund', $input[FTSConstants::PRODUCT]);
+                    self::assertEquals('customer_wallet', $input[FTSConstants::PRODUCT]);
                     self::assertEquals('axis', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_CHANNEL]);
                     self::assertNull($input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_MODE]);
 

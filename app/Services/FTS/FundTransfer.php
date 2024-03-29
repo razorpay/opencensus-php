@@ -298,6 +298,12 @@ class FundTransfer extends Base
             {
                 $product = Constants::ES_ON_DEMAND;
             }
+
+            if (($source->isCustomerPayout() === true) and
+                ($source->getChannel() === Channel::AXIS))
+            {
+                $product = Constants::CUSTOMER_WALLET;
+            }
         }
 
         $request = [

@@ -174,6 +174,8 @@ final class Constants
 
     const ES_ON_DEMAND                   = 'ES_ON_DEMAND';
 
+    const CUSTOMER_WALLET                = 'customer_wallet';
+
     const CA_PAYOUT                      = 'CA_PAYOUT';
 
     const IS_BATCH                       = 'is_batch';
