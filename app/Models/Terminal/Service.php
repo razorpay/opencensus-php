@@ -1817,7 +1817,7 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::TERMINALS_RETRIEVAL_EVENT, [
                 'terminal_id' => $terminalId,
                 'route_name'  => $routeName,
-                'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15),
+                'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 30),
                 'action' => $action,
             ]);
         }
