@@ -658,6 +658,38 @@ return [
         ],
     ],
 
+    'testBankingInvoiceDownloadFromMerchantDashboardForCARblAfterFeb2024' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/reports/invoice/banking',
+            'content' => [
+                "month"          => 3,
+                "year"           => 2024,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => 'file_MQgsR8C9eceTxZ',
+            ],
+        ],
+    ],
+
+    'testBankingInvoiceDownloadFromMerchantDashboardForCARblBeforeMarch2024' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/reports/invoice/banking',
+            'content' => [
+                "month"          => 2,
+                "year"           => 2024,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => 'file_MQgsR8C9eceTxZ',
+            ],
+        ],
+    ],
+
     'testBankingInvoiceDownloadFromAdminDashboard' => [
         'request'  => [
             'method'  => 'POST',
