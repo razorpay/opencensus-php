@@ -234,7 +234,7 @@ class AsvRouterTest extends TestCase
         $this->setRequestRoute('fund_transfer_attempt_initiate_action');
         $this->assertEquals(false, $asvRouter->isExclusionFlowOrFailure());
 
-        $emailCheckRouteArray = ['payout_create'];
+        $emailCheckRouteArray = ['payment_notify'];
 
         foreach ($emailCheckRouteArray as $route) {
             $this->setRequestRoute($route);
