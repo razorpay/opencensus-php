@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Acs\Traits;
 use Redis;
 use Cache;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Metric;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base\QueryCache\Constants;
@@ -50,6 +51,10 @@ trait AsvFindWithCache
                         return $this->AsvFindEntity($id, $columns, $connectionType);
                     });
         }
+
+        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
+            'source' => $connectionType ?? \RZP\Models\Merchant\Constants::API_DB,
+        ]);
 
         return $this->FindUsingCacheQueries($id, $columns, $connectionType);
     }

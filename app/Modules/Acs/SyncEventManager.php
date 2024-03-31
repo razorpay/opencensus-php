@@ -450,36 +450,23 @@ class SyncEventManager
         $routeName    = $logData['route'] ?? 'none';
         $asyncJobName = $logData['async_job_name'] ?? 'none';
         $entityName   = $logData['entity']['name'] ?? 'none';
+        $connection = $logData['connection'] ?? 'none';
 
 
         $metricDimensions = [
             Metric::LABEL_ROUTE => $routeName,
             Metric::LABEL_ASYNC_JOB_NAME => $asyncJobName,
-            Metric::LABEL_ENTITY_NAME => $entityName
+            Metric::LABEL_ENTITY_NAME => $entityName,
+        ];
+
+        $connectionMetricDimensions = [
+            Metric::LABEL_ENTITY_NAME => $entityName,
+            Metric::LABEL_DB_CONNECTION_NAME => $connection
         ];
 
         if (config('applications.acs.read_traffic_metric_enabled', false) === true) {
             app('trace')->count(Metric::MERCHANT_RELATED_ENTITIES_READ_TRAFFIC_TOTAL, $metricDimensions);
-
-            if ($this->repo->isTransactionActive() === true) {
-                if (array_key_exists($entityName, $this->currentTransactionStats) === true) {
-                    $count = $this->currentTransactionStats[$entityName]['count'] ?? 0;
-                    if ($count > 0) {
-                        $metricDimensions = [
-                            Metric::LABEL_ROUTE => $routeName,
-                            Metric::LABEL_ASYNC_JOB_NAME => $asyncJobName,
-                            Metric::ENTITY_UPDATED => $entityName,
-                        ];
-                        app('trace')->info(TraceCode::ACS_READ_AFTER_WRITE_FETCH, [
-                            Metric::LABEL_ROUTE => $routeName,
-                            Metric::LABEL_ASYNC_JOB_NAME => $asyncJobName,
-                            Metric::ENTITY_UPDATED => $entityName,
-                            'count' => $count
-                        ]);
-                        app('trace')->count(Metric::MERCHANT_ENTITIES_READ_AFTER_WRITE_TOTAL, $metricDimensions);
-                    }
-                }
-            }
+            app('trace')->count(Metric::MERCHANT_RELATED_ENTITIES_READ_CONNECTIONS_TOTAL, $connectionMetricDimensions);
         }
 
         if ((config('app.acs.verbose_log') === true) or ($this->stats['total']['count'] > 0)) {

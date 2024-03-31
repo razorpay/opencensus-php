@@ -25,6 +25,15 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as AsvSdkIntegra
 
 class AsvRouter
 {
+    const REQUEST_WITH_COLUMN_OR_MULTIPLE_IDS = 'REQUEST_WITH_COLUMN_OR_MULTIPLE_IDS';
+
+    const GOT_EXCEPTION = 'GOT_EXCEPTION';
+
+    const READ_EXCLUSION_FLOW = 'READ_EXCLUSION_FLOW';
+    const WRITE_FLOW = 'WRITE_FLOW';
+
+    const FLOW_WITH_TRANSACTION = 'FLOW_WITH_TRANSACTION';
+    const SPLITZ_REJECTED = 'SPLITZ_REJECTED';
 
     const None = "none";
 
@@ -184,6 +193,11 @@ class AsvRouter
         try {
             if ($connectionType != null || $columns != array("*") || !is_string($id)) {
                 $this->logAndTrackRequestNotRoutedToAsv($id, $columns, $connectionType, $repoClass, $functionName, "normal");
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::REQUEST_WITH_COLUMN_OR_MULTIPLE_IDS,
+                ]);
+
                 return false;
             }
 
@@ -193,9 +207,20 @@ class AsvRouter
                 return true;
             }
 
-            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $id);
+            $result = $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $id);
+            if ($result === false) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::SPLITZ_REJECTED,
+                ]);
+            }
+            return $result;
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::GOT_EXCEPTION,
+            ]);
             return false;
         }
     }
@@ -222,12 +247,20 @@ class AsvRouter
         try {
             if ($connectionType != null || $columns != array("*") || !is_string($id)) {
                 $this->logAndTrackRequestNotRoutedToAsv($id, $columns, $connectionType, $repoClass, $functionName, "normal");
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::REQUEST_WITH_COLUMN_OR_MULTIPLE_IDS,
+                ]);
                 return false;
             }
 
             return $this->shouldRouteToAccountService($id, $repoClass, $functionName);
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::GOT_EXCEPTION,
+            ]);
             return false;
         }
     }
@@ -237,6 +270,10 @@ class AsvRouter
         try {
             if ($this->isWriteFlowOrFailure() === true) {
                 if ($this->isTransactionActive($repoClass) === true) {
+                    $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                        'routeOrWorkerName' => $this->getRouteOrJobName(),
+                        'reason' => self::FLOW_WITH_TRANSACTION,
+                    ]);
                     return false;
                 }
 
@@ -246,6 +283,10 @@ class AsvRouter
             $isExclusionFlow = $this->isExclusionFlowOrFailure();
 
             if ($isExclusionFlow === true) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::READ_EXCLUSION_FLOW,
+                ]);
                 return false;
             }
 
@@ -255,9 +296,20 @@ class AsvRouter
                 return true;
             }
 
-            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $id);
+            $result = $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $id);
+            if ($result === false) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::SPLITZ_REJECTED,
+                ]);
+            }
+            return $result;
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::GOT_EXCEPTION,
+            ]);
             return false;
         }
     }
@@ -323,6 +375,10 @@ class AsvRouter
             $isExclusionFlow = $this->isExclusionFlowOrFailure();
 
             if ($isExclusionFlow === true) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::READ_EXCLUSION_FLOW,
+                ]);
                 return false;
             }
 
@@ -339,6 +395,13 @@ class AsvRouter
                 'function_identifier' => $repoClass . '::' . $functionName,
             ]);
 
+            if ($resp === false) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::SPLITZ_REJECTED,
+                ]);
+            }
+
             return $resp;
         } catch (\Throwable $e) {
             $this->trace->traceException
@@ -350,6 +413,10 @@ class AsvRouter
                     'flow' => 'implicit_join'
                 ]
             );
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::GOT_EXCEPTION,
+            ]);
             return false;
         }
     }
@@ -358,6 +425,10 @@ class AsvRouter
         try {
             if ($connectionType != null || $columns != array("*") || !is_string($id)) {
                 $this->logAndTrackRequestNotRoutedToAsv($id, $columns, $connectionType, $repoClass, $functionName, "implicit");
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::REQUEST_WITH_COLUMN_OR_MULTIPLE_IDS,
+                ]);
                 return false;
             }
 
@@ -372,6 +443,10 @@ class AsvRouter
                     'flow' => 'implicit_join'
                 ]
             );
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::GOT_EXCEPTION,
+            ]);
             return false;
         }
     }
@@ -417,14 +492,29 @@ class AsvRouter
             $isExclusionFlow = $this->isExclusionFlowOrFailure();
 
             if ($isExclusionFlow === true) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::READ_EXCLUSION_FLOW,
+                ]);
                 return false;
             }
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForFilterMigration();
+            $resp = $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
+            if ($resp === false) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::SPLITZ_REJECTED,
+                ]);
+            }
 
-            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
+            return $resp;
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::GOT_EXCEPTION,
+            ]);
             return false;
         }
     }

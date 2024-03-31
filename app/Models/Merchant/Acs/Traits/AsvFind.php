@@ -3,10 +3,12 @@
 namespace RZP\Models\Merchant\Acs\Traits;
 
 use Database\Connection;
+use RZP\Constants\Metric;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
+use RZP\Models\Merchant\Constants;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\RepoToSdkWrapperMap;
@@ -14,8 +16,12 @@ use RZP\Exception;
 
 trait AsvFind
 {
+
     public function findOrFailDatabase($id, $columns = array('*'), string $connectionType = null, $oldConnection = null)
     {
+        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
+            'source' => $connectionType ?? Constants::API_DB,
+        ]);
         $model = parent::findOrFail($id, $columns, $connectionType);
         $this->setOldConnection($model, $oldConnection);
         return $model;
@@ -23,6 +29,9 @@ trait AsvFind
 
     public function findOrFailPublicDatabase($id, $columns = array('*'), string $connectionType = null, $oldConnection = null)
     {
+        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
+            'source' => $connectionType ?? Constants::API_DB,
+        ]);
         $model =  parent::findOrFailPublic($id, $columns, $connectionType);
         $this->setOldConnection($model, $oldConnection);
         return $model;
@@ -39,6 +48,10 @@ trait AsvFind
 
         $this->setOldConnection($model, $oldConnection);
 
+        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
+            'source' => Constants::ASV_SERVICE,
+        ]);
+
         return $model;
     }
 
@@ -47,6 +60,7 @@ trait AsvFind
      */
     public function findOrFailAsv($id, $oldConnection = null)
     {
+
         $model = $this->getDetailsFromAsvIgnoreValidationAndNotFound($id, $oldConnection);
 
         if ($model != null) {
@@ -62,6 +76,7 @@ trait AsvFind
      */
     public function findOrFailPublicAsv($id)
     {
+
         $model = $this->getDetailsFromAsvIgnoreValidationAndNotFound($id);
 
         if (is_null($model) === false) {
@@ -157,6 +172,9 @@ trait AsvFind
 
     public function findDatabase($id, $columns = array('*'), string $connectionType = null, string $oldConnection = null)
     {
+        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
+            'source' => $connectionType ?? Constants::API_DB,
+        ]);
         $model = parent::find($id, $columns, $connectionType);
         $this->setOldConnection($model, $oldConnection);
         return $model;

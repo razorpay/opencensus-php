@@ -59,6 +59,9 @@ class Metric
     const ASV_TIDB_MIGRATION_SHADOW_MODE_DIFF_TOTAL = 'asv_tidb_migration_shadow_mode_diff_total';
 
     const ACCOUNT_SERVICE_CHECK_WRITE_FLOW_RESULT = 'account_service_check_write_flow_result';
+
+    const ASV_REQUEST_NOT_ROUTED = 'asv_read_request_not_routed';
+    const ASV_READ_REQUEST_ROUTING_RESULT = 'asv_read_request_routing_result';
     const DUAL_WRITES_TOTAL                     = 'dual_writes_total';
     const DUAL_WRITES_FAILED                    = 'dual_writes_failed';
     const DUAL_WRITES_TIME_TAKEN                = 'dual_writes_time_taken';
@@ -67,6 +70,8 @@ class Metric
     const ARCHIVED_ENTITY_FETCH_TIME_TAKEN      = 'archived_entity_fetch_time_taken';
     const DB_CONNECTION_CLASSIFICATION          = 'db_connection_classification';
     const MERCHANT_RELATED_ENTITIES_READ_TRAFFIC_TOTAL = 'merchant_related_entities_read_traffic_total';
+
+    const MERCHANT_RELATED_ENTITIES_READ_CONNECTIONS_TOTAL = 'merchant_related_entities_read_connections_total';
     const MERCHANT_ENTITIES_READ_AFTER_WRITE_TOTAL = 'merchant_entities_read_after_write_total';
     const MERCHANT_RELATED_ENTITIES_WRITE_TRAFFIC_TOTAL = 'merchant_related_entities_write_traffic_total';
     const RAVEN_REQUEST_FAILED                  = 'raven_request_failed';
@@ -128,6 +133,8 @@ class Metric
     const LABEL_TYPE                            = 'type';
     const LABEL_HAS_PASSPORT                    = 'has_passport';
     const LABEL_ENTITY_NAME                     = 'entity';
+
+    const LABEL_DB_CONNECTION_NAME                    = 'db_connection_name';
     const LABEL_EVENT_NAME                      = 'event_name';
     const LABEL_HOST                            = 'host';
     const LABEL_TABLE_NAME                      = 'table_name';
