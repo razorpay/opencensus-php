@@ -1748,6 +1748,7 @@ trait Authorize
             'amount'                => number_format(($payment->getAmount() / 100), 2),
             'formatted_amount'      => $payment->getFormattedAmount(),
             'wallet'                => $payment->getWallet(),
+            'method'                => $payment->getMethod(),
             'merchant'              => $merchant->getBillingLabel(),
             'merchant_id'           => $merchant->getId(),
             'theme_color'           => $merchant->getBrandColorElseDefault(),
@@ -1842,6 +1843,7 @@ trait Authorize
                 'network'    => $card->getNetworkCode(),
                 'last4'      => $card->getLast4(),
                 'iin'        => $card->getIin(),
+                'card_type'  => $card->getType(),
             ];
 
            $library = (new Payment\Service)->getLibraryFromPayment($payment);
