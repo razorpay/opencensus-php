@@ -171,9 +171,7 @@ class Entity extends Base\PublicEntity
         self::BANK_NAME,
         self::NAME,
         self::NOTES,
-        self::ACCOUNT_NUMBER,
-        self::BANK_IDENTIFIER,
-        self::IDENTIFIER_TYPE
+        self::ACCOUNT_NUMBER
     ];
 
     protected $hosted = [
