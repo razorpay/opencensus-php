@@ -379,18 +379,18 @@ class Constants
 
 
         Type::EMI => [
-            self::AXIS     => ['axiscards.emi@razorpay.com'],
-            self::HSBC     => ['hsbc-cards.emi@razorpay.com'],
-            self::INDUSIND => ['indusind.emi@razorpay.com'],
-            self::KOTAK    => ['kotakcards.emi@razorpay.com'],
-            self::RBL      => ['Rblcards.emi@razorpay.com'],
-            self::SCBL     => ['scbl.emi@razorpay.com'],
-            self::SBI      => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com', 'albin.george@razorpay.com'],
-            self::SBI_NCE  => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com'],
-            self::CITI     => ['emi-citibank@razorpay.com'],
-            self::BOB      => ['bob.cc.emi@razorpay.com'],
-            self::ICICI    => ['icicicards.emi@razorpay.com'],
-            self::YESB     => ['yesbcards.emi@razorpay.com'],
+            self::AXIS     => ['axiscards.emi@razorpay.com', 'affordability-business@razorpay.com'],
+            self::HSBC     => ['hsbc-cards.emi@razorpay.com', 'affordability-business@razorpay.com'],
+            self::INDUSIND => ['indusind.emi@razorpay.com', 'affordability-business@razorpay.com'],
+            self::KOTAK    => ['kotakcards.emi@razorpay.com', 'affordability-business@razorpay.com'],
+            self::RBL      => ['Rblcards.emi@razorpay.com', 'affordability-business@razorpay.com'],
+            self::SCBL     => ['scbl.emi@razorpay.com', 'affordability-business@razorpay.com'],
+            self::SBI      => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com', 'albin.george@razorpay.com', 'affordability-business@razorpay.com'],
+            self::SBI_NCE  => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com', 'affordability-business@razorpay.com'],
+            self::CITI     => ['emi-citibank@razorpay.com', 'affordability-business@razorpay.com'],
+            self::BOB      => ['bob.cc.emi@razorpay.com', 'affordability-business@razorpay.com'],
+            self::ICICI    => ['icicicards.emi@razorpay.com', 'affordability-business@razorpay.com'],
+            self::YESB     => ['yesbcards.emi@razorpay.com', 'affordability-business@razorpay.com'],
         ],
 
         Type::REFUND_FAILED => [
