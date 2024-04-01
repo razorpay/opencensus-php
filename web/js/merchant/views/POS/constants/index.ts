@@ -408,7 +408,7 @@ export const OFFER_CARDS_STRUCT: OfferCardsStruct = {
           prevValue: lifetimePricing?.prevValue ?? 0,
         };
       },
-      text: 'rental first 3 months',
+      text: 'Lifetime pricing',
     },
     {
       pricing: (): OfferPricing => ({

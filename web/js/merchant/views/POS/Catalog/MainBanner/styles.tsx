@@ -43,7 +43,7 @@ export const MainBannerTitleContainer = styled.div(
     min-width: 120px;
     max-height: 140px;
     min-height: 90px;
-    border: ${theme.border.width.thinner}px solid ${theme.colors.surface.background.gray.moderate};
+    border: ${theme.border.width.thinner}px solid ${theme.colors.surface.border.gray.normal};
     border-radius: ${theme.border.radius.large}px;
     margin-bottom:${theme.spacing[6]}px;
     overflow: hidden;
