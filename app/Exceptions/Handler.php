@@ -98,7 +98,9 @@ class Handler extends ExceptionHandler
             // Change Level to INFO
             $level = Trace::INFO;
         }
-
+        else if($e instanceof TokenMismatchException){
+            $level=Trace::ERROR;
+        }
         $context = $this->getExceptionDetails($e);
 
         $app = \App::getFacadeRoot();
@@ -214,10 +216,10 @@ class Handler extends ExceptionHandler
 
             // adding this status to push status code on prometheus
             $data['http_status_code'] = $this->getStatusCodeForUnhandledException($e);
-    
+
             // Debugging Unauthorized exception
             $app['trace']->info(TraceCode::ERROR_EXCEPTION, ['context' => $context, 'status_code' => $data['http_status_code']]);
-            
+
             $response = Response::json($data);
             AppResponse::pushDownstreamMetrics($data);
 
@@ -242,9 +244,9 @@ class Handler extends ExceptionHandler
     protected function getStatusCodeForUnhandledException(Throwable $e)
     {
         $app = \App::getFacadeRoot();
-        
+
         $context = $this->getExceptionDetails($e);
-        
+
         if ($e->getMessage() === 'Unauthorized Access')
         {
             return 401;
@@ -255,9 +257,9 @@ class Handler extends ExceptionHandler
 
             return $e->getHttpStatusCode();
         }
-        
+
         $app['trace']->info(TraceCode::ERROR_EXCEPTION, ['context' => $context, 'status_code' => 500]);
-        
+
         return 500;
     }
 
