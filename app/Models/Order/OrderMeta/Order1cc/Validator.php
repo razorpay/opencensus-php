@@ -36,6 +36,7 @@ class Validator extends Base\Validator
     protected static $editCustomerDetailsRules = [
         Fields::CUSTOMER_DETAILS => 'required|array|custom',
         Fields::SHIPPING_METHOD  => 'sometimes|array|custom',
+        Fields::SERVICE          => 'sometimes|string|in:mcs,api',
     ];
 
     protected static $shippingMethodRules = [

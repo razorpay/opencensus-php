@@ -17,6 +17,7 @@ class Fields
     const CUSTOMER_DETAILS                  = 'customer_details';
     const COD_INTELLIGENCE                  = 'cod_intelligence';
     const PROMOTIONS                        = 'promotions';
+    const SERVICE                           = 'service';
     // Line Item fields
     const LINE_ITEM_TYPE                    = 'type';
     const LINE_ITEM_SKU                     = 'sku';

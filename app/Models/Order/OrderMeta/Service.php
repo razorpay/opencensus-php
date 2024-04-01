@@ -120,8 +120,7 @@ class Service extends \RZP\Models\Base\Service
                 $taxesApplied = [];
 
                 try {
-                    $useMCS = (new SplitzExperimentEvaluator())->isShippingInfoDecompEnabled();
-                    if ($useMCS === true) {
+                    if (isset($input[Order1cc\Fields::SERVICE]) === true && $input[Order1cc\Fields::SERVICE] === 'mcs') {
                         $merchant_id = $this->merchant->getId();
                         $shippingInfoReq['email'] = $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_EMAIL];
                         $shippingInfoReq['contact'] = $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_CONTACT];
