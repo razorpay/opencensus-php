@@ -1105,6 +1105,12 @@ class Validator extends Base\Validator
                 ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]) and
                 ($rule[Entity::APP_NAME] === $newRule[Entity::APP_NAME]))
             {
+                app('trace')->info(
+                    TraceCode::PRICING_RULE_ALREADY_EXISTS,
+                    [
+                        'rule'      => $rule,
+                        'new rule'  => $newRule
+                    ]);
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }

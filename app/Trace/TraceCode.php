@@ -5983,6 +5983,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';
     const BATCH_SERVICE_MULTIPART_PAYLOAD                       = 'BATCH_SERVICE_MULTIPART_PAYLOAD';
     const BATCH_ADD_PRICING_RULE_REQUEST                        = 'BATCH_ADD_PRICING_RULE_REQUEST';
+    const PRICING_RULE_ALREADY_EXISTS                           = 'PRICING_RULE_ALREADY_EXISTS';
     const VAS_PRICING_FETCH_REQUEST                             = 'VAS_PRICING_FETCH_REQUEST';
     const BATCH_ADD_BUY_PRICING_RULE_REQUEST                    = 'BATCH_ADD_BUY_PRICING_RULE_REQUEST';
     const BATCH_BULK_VIRTUAL_ACCOUNT_EDIT_REQUEST               = 'BATCH_BULK_VIRTUAL_ACCOUNT_EDIT_REQUEST';
