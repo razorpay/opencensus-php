@@ -9800,7 +9800,7 @@ class Service extends Base\Service
         $defaultConfig = array(
             'capture' => "automatic",
             'capture_options' => [
-                'automatic_expiry_period' => 7200,
+                'automatic_expiry_period' => 12,
                 'refund_speed' => 'normal'
             ]
         );
