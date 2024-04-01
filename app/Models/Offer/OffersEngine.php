@@ -1088,6 +1088,15 @@ class OffersEngine extends Base\Core
                         'fact' => $fact,
                     ]);
                 }
+                elseif ($response['error']['description'] === "No Active offers found")
+                {
+                    return [
+                        'offer_id' => $offer->getPublicId(),
+                        'calculated_benefits' => [
+                            'discount' => []
+                        ],
+                    ];
+                }
             }
 
             return $response;

@@ -5917,7 +5917,9 @@ class Processor
         $resp = $core->validateOnOffersEngine(
             $payment, $payment->order, $this->offer, false);
 
-        if ($resp[Offer\Constants::VALIDATE_OFFER_CALLED] === true)
+        if ($resp[Offer\Constants::VALIDATE_OFFER_CALLED] === true  &&
+                isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]) === true &&
+                isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']) === true)
         {
             $payment->setAttribute(Payment\Entity::OFFER_BENEFITS,
                 $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']);
