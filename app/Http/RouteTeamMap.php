@@ -555,6 +555,7 @@ class RouteTeamMap
         'dispute_dcs_config_add'                          => [self::TEAM_CMMA],
         'dispute_dcs_config_get'                          => [self::TEAM_CMMA],
         'dispute_dcs_config_update'                       => [self::TEAM_CMMA],
+        'merchant_fetch_payment_failure_analysis'         => [self::TEAM_PAYMENTS_DASHBOARD]
     ];
 
     /**
