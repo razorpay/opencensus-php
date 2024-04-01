@@ -29,6 +29,7 @@ class UpiTerminalOnboarding extends Base
         $allowCC            = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_CC];
         $allowWallet        = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_WALLET];
         $allowCreditLine    = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_CREDIT_LINE];
+        $directPush         = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_DIRECT_PUSH];
 
         $identifiers = [
             Terminal\Entity::VPA                  => $vpa,
@@ -47,7 +48,8 @@ class UpiTerminalOnboarding extends Base
             Terminal\Entity::UPI_FEATURES_TYPE      => $merchantType,
             Terminal\Entity::CC_ON_UPI              => (boolval($allowCC) === true) ? '1' : '0',
             Terminal\Entity::WALLET_ON_UPI          => (boolval($allowWallet) === true) ? '1' : '0',
-            Terminal\Entity::CREDIT_LINE_ON_UPI     => (boolval($allowCreditLine) === true) ? '1' : '0'
+            Terminal\Entity::CREDIT_LINE_ON_UPI     => (boolval($allowCreditLine) === true) ? '1' : '0',
+            Terminal\Entity::DIRECT_PUSH_ON_UPI     => $directPush
         ];
 
         $otherInputs = [];

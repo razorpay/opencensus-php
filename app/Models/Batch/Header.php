@@ -1047,6 +1047,7 @@ class Header
     const UPI_TERMINAL_ONBOARDING_ALLOW_CC             = 'Allow CC';
     const UPI_TERMINAL_ONBOARDING_ALLOW_WALLET         = 'Allow Wallet';
     const UPI_TERMINAL_ONBOARDING_ALLOW_CREDIT_LINE    = 'Allow Credit Line';
+    const UPI_TERMINAL_ONBOARDING_DIRECT_PUSH          = 'Direct Push';
 
 
     // Pricing Rules Addition Headers
@@ -2109,6 +2110,7 @@ class Header
                 self::UPI_TERMINAL_ONBOARDING_ALLOW_CC,
                 self::UPI_TERMINAL_ONBOARDING_ALLOW_WALLET,
                 self::UPI_TERMINAL_ONBOARDING_ALLOW_CREDIT_LINE,
+                self::UPI_TERMINAL_ONBOARDING_DIRECT_PUSH,
             ],
             self::OUTPUT => [
                 self::UPI_TERMINAL_ONBOARDING_MERCHANT_ID,
