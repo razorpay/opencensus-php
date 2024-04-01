@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Acs\Traits;
 
+use Cache;
 use Database\Connection;
 use RZP\Constants\Metric;
 use RZP\Error\ErrorCode;
@@ -16,6 +17,9 @@ use RZP\Exception;
 
 trait AsvFind
 {
+    use AsvCacheKeys {
+        AsvCacheKeys::getCacheKey as getAsvCacheKey;
+    }
 
     public function findOrFailDatabase($id, $columns = array('*'), string $connectionType = null, $oldConnection = null)
     {
@@ -205,11 +209,28 @@ trait AsvFind
 
     public function findForImplicitJoin($id, string $entityName, $columns = array('*'), string $connectionType = null)
     {
-        $oldConnection = $connectionType;
         $shouldCallAsv = $this->asvRouter->shouldRouteFindForImplicitJoinToAccountService($id, $entityName, $columns, $connectionType, get_class($this), FunctionConstant::FIND_FOR_IMPLICIT_JOIN);
-
         if ($shouldCallAsv === true) {
+            $shouldCacheResults = in_array($this->entity, ["merchant"]);
+            if ($shouldCacheResults === true) {
+                return Cache::store('query_cache_live')
+                    ->tags(strtolower($this->entity) . '_' . $id)
+                    ->remember(
+                        $this->getAsvCacheKey($id, $columns, $connectionType),
+                        $this->getCacheTtl(),
+                        function () use ($id, $columns, $connectionType) {
+                            return $this->getResultForImplicitJoin($id, $columns, $connectionType, $connectionType, true);
+                        }
+                    );
+            } else {
+                return $this->getResultForImplicitJoin($id, $columns, $connectionType, $connectionType, true);
+            }
+        }
+        return $this->getResultForImplicitJoin($id, $columns, $connectionType, $connectionType, false);
+    }
 
+    public function getResultForImplicitJoin($id, $columns, $connectionType, $oldConnection, $shouldCallAsv) {
+        if ($shouldCallAsv === true) {
             if ($this->isTransactionActive()) {
                 $connectionType = Connection::ASV_WRITER;
             } else {

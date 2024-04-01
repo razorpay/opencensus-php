@@ -106,6 +106,7 @@ class RepositoryTestHelper extends TestCase
             $this->updateAuditIdAndAssert($entityRepo, $associatedEntity, $entity1Array, $relationName, $repoName);
 
             //TestCase6 - call is going to asv
+            $this->flushCache();
             $associatedEntity->unsetRelation($relationName);
             if ($asvMockMethod == "getByMerchantId")
             {
@@ -122,6 +123,7 @@ class RepositoryTestHelper extends TestCase
             $this->updateAuditIdAndAssert($entityRepo, $associatedEntity, $entity1Array, $relationName, $repoName);
 
             //TestCase7 - should go to account service - Exception occurs fallback to DB
+            $this->flushCache();
             $associatedEntity->unsetRelation($relationName);
             $this->setEntityMockClientWithIdentifierAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), $asvMockMethod, 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
@@ -129,6 +131,7 @@ class RepositoryTestHelper extends TestCase
             $this->updateAuditIdAndAssert($entityRepo, $associatedEntity, $entity1Array, $relationName, $repoName);
 
             //TestCase8 - Not found in asv;
+            $this->flushCache();
             $associatedEntity->unsetRelation($relationName);
             $this->setEntityMockClientWithIdentifierAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"), $asvMockMethod, 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
@@ -139,6 +142,7 @@ class RepositoryTestHelper extends TestCase
             //TestCase9 - invalid argument in asv;
             if($relationName != "merchant") {
                 $associatedEntity->unsetRelation($relationName);
+                $this->flushCache();
                 $this->setEntityMockClientWithIdentifierAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"), $asvMockMethod, 1, $asvEntityClass, $setterFunction, $mockBuilderInterface);
                 $this->setSplitzWithOutputForBulk(["true", "true"], 1);
                 $entityRepo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
