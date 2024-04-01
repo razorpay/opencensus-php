@@ -47,7 +47,7 @@ export const StyledTable = styled.div(
         }
       }
       vertical-align: middle;
-      background-color: ${theme.colors.surface.text.gray.subtle};
+      background-color: ${theme.colors.surface.background.gray.subtle};
     }
     tbody > tr > td {
       height: 52px;

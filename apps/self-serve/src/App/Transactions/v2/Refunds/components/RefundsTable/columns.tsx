@@ -1,6 +1,6 @@
 // TODO: Fix imports, currently its out of scope from phase 1;
 // @ts-nocheck
-import { Box, Heading, Text, VisuallyHidden } from '@razorpay/blade/components';
+import { Box, Text, VisuallyHidden } from '@razorpay/blade/components';
 import React from 'react';
 
 import {
@@ -23,7 +23,11 @@ const { REFUNDS } = TransactionsEntityRoute;
 
 const refundId = {
   ...paymentId,
-  title: <Heading size="large">Refund ID</Heading>,
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Refund ID
+    </Text>
+  ),
 };
 
 const _paymentId = {
@@ -68,7 +72,11 @@ const mobileAmount = {
 };
 
 const status = {
-  title: <Heading size="large">Status</Heading>,
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Status
+    </Text>
+  ),
   value: ({ status }: Item): JSX.Element => {
     const { variant, content } = refundsStatusVariantMap[status];
     return <Status variant={variant} content={content} status={status} />;
@@ -84,7 +92,9 @@ const actions = {
       }}
     >
       <VisuallyHidden>
-        <Heading size="large">Actions</Heading>
+        <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+          Actions
+        </Text>
       </VisuallyHidden>
     </Box>
   ),

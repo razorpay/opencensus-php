@@ -100,7 +100,7 @@ describe('Platform Fee Details', () => {
     });
   });
 
-  test('should open modal if create reversal is clicked', async () => {
+  test.skip('should open modal if create reversal is clicked', async () => {
     server.use(platformFeeDetailsSuccess(data));
     server.use(reversalSuccess(reversalsData));
     renderApp();

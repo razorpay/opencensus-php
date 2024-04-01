@@ -1,4 +1,4 @@
-import { Box, CopyIcon, Heading, Text, VisuallyHidden } from '@razorpay/blade/components';
+import { Box, CopyIcon, Text, VisuallyHidden } from '@razorpay/blade/components';
 import React from 'react';
 
 import { Amount } from '@dashboard/shared-ui/components';
@@ -22,7 +22,11 @@ import { paymentStatusVariantMap } from './constants';
 const { FAILED_PAYMENTS, PAYMENTS } = TransactionsEntityRoute;
 
 export const paymentId = {
-  title: <Heading size="large">Payment ID</Heading>,
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Payment ID
+    </Text>
+  ),
   value: ({ id }: { id: Item['id'] }): JSX.Element => (
     <Box display="flex" testID="payment-id" columnGap="spacing.2">
       <Text>{id}</Text>
@@ -34,7 +38,11 @@ export const paymentId = {
 };
 
 export const omniPaymentId = {
-  title: <Heading size="large">Payment ID</Heading>,
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Payment ID
+    </Text>
+  ),
   value: ({
     id,
     source_channel,
@@ -52,7 +60,11 @@ export const omniPaymentId = {
 };
 
 export const bankRRN = {
-  title: <Heading size="large">Bank RRN</Heading>,
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Bank RRN
+    </Text>
+  ),
   value: (item: Item): JSX.Element => {
     const { acquirer_data: { arn, rrn } = {} } = item;
     return (
@@ -67,7 +79,11 @@ export const bankRRN = {
 };
 
 export const customerDetail = {
-  title: <Heading size="large">Customer detail</Heading>,
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Customer detail
+    </Text>
+  ),
   value: ({ contact }: Item, _: any, extraData: { user: User }): JSX.Element => {
     const { user } = extraData;
     return <Text>{contact ? maskContact(contact, user?.isHidePIDetails) : '--'}</Text>;
@@ -75,14 +91,22 @@ export const customerDetail = {
 };
 
 export const createdOn = {
-  title: <Heading size="large">Created on</Heading>,
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Created on
+    </Text>
+  ),
   value: ({ created_at }: Item): JSX.Element => {
     return <CreatedOn created_at={created_at} />;
   },
 };
 
 export const amount = {
-  title: <Heading size="large">Amount</Heading>,
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Amount
+    </Text>
+  ),
   value: ({ amount, currency }: Item): JSX.Element => {
     return (
       <Amount
@@ -123,7 +147,11 @@ export const mobileAmount = {
 };
 
 export const status = {
-  title: <Heading size="large">Status</Heading>,
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Status
+    </Text>
+  ),
   value: ({ status }: Item): JSX.Element => {
     if (!paymentStatusVariantMap[status]) {
       return <Text>--</Text>;
@@ -142,7 +170,9 @@ export const actions = {
       }}
     >
       <VisuallyHidden>
-        <Heading size="large">Actions</Heading>
+        <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+          Actions
+        </Text>
       </VisuallyHidden>
     </Box>
   ),
