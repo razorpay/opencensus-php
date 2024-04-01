@@ -522,6 +522,12 @@ class Repository extends Base\Repository
                     ->where(Entity::NAME, $featureName)
                     ->first();
 
+                $this->trace->info(TraceCode::FEATURE_DEBUG_LOG, [
+                    "live_entity"   => $liveEntity,
+                    "test_entity"   => $testEntity,
+                    "entity"        => $entity
+                ]);
+
                 if ($testEntity === null) {
                     $this->cloneAndSaveToModeOrFail($entity, Mode::TEST);
                 }
@@ -532,6 +538,8 @@ class Repository extends Base\Repository
             }
             catch (\Throwable $e)
             {
+                $this->trace->traceException($e);
+
                 $this->removeOnDCS($entity, Mode::TEST, true);
                 $this->removeOnDCS($entity, Mode::LIVE, true);
                 throw $e;
