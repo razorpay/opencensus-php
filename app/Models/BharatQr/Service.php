@@ -606,7 +606,7 @@ class Service extends Base\Service
         $merchantId = $terminal->getMerchantId();
 
         $midVariant = $this->app->razorx->getTreatment($merchantId,
-                                                       RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS, $mode);
+                                                       RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP, $mode);
 
         if (strtolower($midVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
         {

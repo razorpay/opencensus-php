@@ -901,6 +901,8 @@ final class RazorxTreatment
 
     const QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS = 'qrv2_static_qr_unrecognised_payment_process';
 
+    const QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP = 'qrv2_static_qr_unrecognised_payment_ramp';
+
     const QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS = 'qr_gateway_unrecognised_payment_process';
 
     const HDFC_QR_EXPIRY = 'hdfc_qr_expiry';
