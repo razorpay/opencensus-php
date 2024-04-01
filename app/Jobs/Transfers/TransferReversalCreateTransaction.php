@@ -16,12 +16,12 @@ class TransferReversalCreateTransaction extends Job
 
     protected  $delaySecs = 900;
 
-    const MAX_RETRY_ATTEMPT = 10;
+    const MAX_RETRY_ATTEMPT = 20;
 
     protected $queueConfigKey = 'transfer_reversal_transaction_create_process';
 
 
-    public function __construct(string $mode, $reversalAndRefundJournalIds, $delaySecs = 0)
+    public function __construct(string $mode, $reversalAndRefundJournalIds, $delaySecs = 900)
     {
         parent::__construct($mode);
 

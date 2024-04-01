@@ -319,7 +319,7 @@ class Core extends Base\Core
 
     public function dispatchForTransferReversalTransactionCreation(array $reversalAndRefundJournalIds = [])
     {
-        $delaySecs = 3600;
+        $delaySecs = 900;
 
         try
         {
