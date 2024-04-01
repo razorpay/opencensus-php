@@ -4,6 +4,8 @@ import { routes } from 'testConstants';
 import { loginByEmail } from 'utils/common';
 
 const EASY_ONBOARDING_WEBSITE = 'https://sme-dashboard.dev.razorpay.in/';
+const UNIFIED_ONBOARDING_BASE_URL = 'https://accounts.np.razorpay.in';
+
 const ENV = getEnv();
 const constants = {
   EASY_ONBOARDING: {
@@ -23,6 +25,7 @@ const constants = {
   SIGNUP_REDIRECTION_URL: `${EASY_ONBOARDING_WEBSITE}onboarding?source=website`,
   FTUX_REDIRECTION_URL: `${EASY_ONBOARDING_WEBSITE}onboarding/overview`,
   P2PM_REDIRECTION_URL: `${EASY_ONBOARDING_WEBSITE}onboarding/p2pm`,
+  UNIFIED_SIGNUP_REDIRECTION_URL: `${UNIFIED_ONBOARDING_BASE_URL}/auth/?redirecturl=https%3A%2F%2Fsme-dashboard.dev.razorpay.in&auth_intent=signup`,
 };
 
 test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payments', () => {
@@ -31,7 +34,13 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
     const signUpButton = page.getByRole('button', { name: 'Sign Up' });
     await signUpButton.waitFor({ state: 'visible', timeout: 10000 });
     await signUpButton.click();
-    await expect(page).toHaveURL(constants.SIGNUP_REDIRECTION_URL);
+    try {
+      await expect(page).toHaveURL(constants.UNIFIED_SIGNUP_REDIRECTION_URL, {
+        timeout: 10000,
+      });
+    } catch {
+      await expect(page).toHaveURL(constants.SIGNUP_REDIRECTION_URL);
+    }
   });
 
   test.skip('should redirect the user to easy dashboard if user has initiated signup on easy', async ({

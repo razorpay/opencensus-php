@@ -232,7 +232,7 @@ const StyledRizeLogo = styled(RizeLogo)(
 );
 export const StyledFadedBox = styled.div(
   ({ theme }: { theme: Theme }) => `
-    padding: ${theme.spacing[7]}px ${theme.spacing[4]}px;  
+    padding: ${theme.spacing[4]}px ${theme.spacing[7]}px;  
     margin-top: ${theme.spacing[5]}px;
     border-radius: ${theme.border.radius.large}px;  
     gap: ${theme.spacing[3]}px;
