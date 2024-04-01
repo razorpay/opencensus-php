@@ -34,7 +34,6 @@ class CacheEventListener
         $this->trace = app('trace');
 
         $cacheEventType = $this->getCacheEventType();
-
         if (isset($cacheEventType) === false)
         {
             return;
@@ -67,6 +66,7 @@ class CacheEventListener
     {
         switch (true)
         {
+            case str_contains($this->event->key, Constants::ASV_CACHE_PREFIX):
             case str_contains($this->event->key, Constants::QUERY_CACHE_PREFIX):
                 return Metric::TYPE_QUERY_CACHE;
 
@@ -115,6 +115,10 @@ class CacheEventListener
         if (preg_match('/^rememberable:(?<version>[^:]*):(?<entity>[^:]*).*$/', $this->event->key, $matches) === 1)
         {
             return array_only($matches, ['version', 'entity']);
+        }
+        else if (preg_match('/^tag:asv:{(?<entity>[^_]*).*$/', $this->event->key, $matches) === 1)
+        {
+            return ['v1', $matches['entity'] ?? 'none'];
         }
         else
         {
