@@ -13,6 +13,9 @@ class Repository extends Base\Repository
     use Base\RepositoryUpdateTestAndLive;
     use CacheQueries;
 
+    const BIN_SERVICE_PRIMARY_READ_MODE = 'primary';
+    const BIN_SERVICE_SHADOW_READ_MODE  = 'shadow';
+
     protected $entity = 'iin';
 
     protected $appFetchParamRules = array(
@@ -110,20 +113,30 @@ class Repository extends Base\Repository
 
     public function find($iin, $columns = array('*'), string $connectionType = null)
     {
+        $iinService = (new Service());
+        $binService = (new BinService());
+
         $apiServiceIINEntity = parent::find($iin, $columns, $connectionType);
 
-        $iinService = (new Service());
-
-        if (!empty($iin) && $iinService->shouldReadFromBinService() === true)
+        if (!empty($iin) && $iinService->shouldReadBinServiceInPrimaryMode($iin) === true)
         {
-            $binService = (new BinService());
-
-            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin);
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_PRIMARY_READ_MODE);
+            
+            if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
+            {
+                $iinEntity = new Entity();
+        
+                return $iinEntity->forceFill($binServiceIINEntity);
+            }
         }
-
-        if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
+        else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
         {
-            $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_SHADOW_READ_MODE);
+
+            if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
+            {
+                $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+            }
         }
 
         return $apiServiceIINEntity;
@@ -131,20 +144,27 @@ class Repository extends Base\Repository
 
     public function findOrFail($iin, $columns = array('*'), string $connectionType = null)
     {
+        $iinService = (new Service());
+        $binService = (new BinService());
+
         $apiServiceIINEntity = parent::findOrFail($iin, $columns, $connectionType);
 
-        $iinService = (new Service());
-
-        if (!empty($iin) && $iinService->shouldReadFromBinService() === true)
+        if (!empty($iin) && $iinService->shouldReadBinServiceInPrimaryMode($iin) === true)
         {
-            $binService = (new BinService());
-
-            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin);
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_PRIMARY_READ_MODE);
+    
+            $iinEntity = new Entity();
+    
+            return $iinEntity->forceFill($binServiceIINEntity);
         }
-
-        if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
+        else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
         {
-            $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_SHADOW_READ_MODE);
+
+            if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
+            {
+                $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+            }
         }
 
         return $apiServiceIINEntity;
@@ -152,20 +172,27 @@ class Repository extends Base\Repository
 
     public function findOrFailPublic($iin, $columns = array('*'), string $connectionType = null)
     {
+        $iinService = (new Service());
+        $binService = (new BinService());
+
         $apiServiceIINEntity = parent::findOrFailPublic($iin, $columns, $connectionType);
 
-        $iinService = (new Service());
-
-        if (!empty($iin) && $iinService->shouldReadFromBinService() === true)
+        if (!empty($iin) && $iinService->shouldReadBinServiceInPrimaryMode($iin) === true)
         {
-            $binService = (new BinService());
-
-            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin);
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_PRIMARY_READ_MODE);
+    
+            $iinEntity = new Entity();
+    
+            return $iinEntity->forceFill($binServiceIINEntity);
         }
-
-        if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
+        else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
         {
-             $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_SHADOW_READ_MODE);
+
+            if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
+            {
+                $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+            }
         }
 
         return $apiServiceIINEntity;

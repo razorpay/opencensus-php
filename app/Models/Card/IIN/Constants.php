@@ -11,12 +11,15 @@ class Constants
     const ENTITY = 'entity';
 
     // Bin Service Entity Constants
-    const FEATURES = 'features';
-    const MANDATEHUBS = 'mandateHubs';
-    const ISSUERNAME = 'issuerName';
-    const SUBTYPE = 'subType';
-    const MESSAGETYPE = 'messageType';
+    const FEATURES          = 'features';
+    const MANDATEHUBS       = 'mandateHubs';
+    const ISSUERNAME        = 'issuerName';
+    const SUBTYPE           = 'subType';
+    const MESSAGETYPE       = 'messageType';
     const COBRANDINGPARTNER = 'cobrandingPartner';
+    const PRODUCTCODE       = 'productCode';
+    const CREATEDAT         = 'createdAt';
+    const UPDATEDAT         = 'updatedAt';
 
     const BIN_SERVICE_ENTITY_TO_API_IIN_ENTITY_KEY_MAPPING = [
         self::ISSUERNAME        => Entity::ISSUER_NAME,
@@ -24,6 +27,9 @@ class Constants
         self::MESSAGETYPE       => Entity::MESSAGE_TYPE,
         self::COBRANDINGPARTNER => Entity::COBRANDING_PARTNER,
         self::MANDATEHUBS       => Entity::MANDATE_HUBS,
+        self::PRODUCTCODE       => Entity::PRODUCT_CODE,
+        self::CREATEDAT         => Entity::CREATED_AT,
+        self::UPDATEDAT         => Entity::UPDATED_AT,
     ];
 
     const COMPARABLE_FIELDS_BETWEEN_IIN_ENTITY_AND_BIN_SERVICE = [

@@ -935,6 +935,8 @@ class Service extends Base\Service
 
     public function compareBinServiceEntityAndApiServiceEntity($apiServiceEntity, $binServiceEntity, $extraTraceData)
     {
+        $binServiceEntity = $this->convertBinServiceFieldsToHexForComparison($binServiceEntity);
+
         // matches the api service IIN entity fields with bin service entity
         foreach (Constants::COMPARABLE_FIELDS_BETWEEN_IIN_ENTITY_AND_BIN_SERVICE as $field)
         {
@@ -974,6 +976,19 @@ class Service extends Base\Service
         }
     }
 
+    public function convertBinServiceFieldsToHexForComparison($entity)
+    {
+        $flows = $entity[Entity::FLOWS];
+
+        $entity[Entity::FLOWS] = !empty($flows) ? Flow::getHexValue($flows) : 0;
+
+        $mandateHubs = $entity[Entity::MANDATE_HUBS];
+
+        $entity[Entity::MANDATE_HUBS] = !empty($mandateHubs) ? MandateHub::getHexValue($mandateHubs) : 0;
+
+        return $entity;
+    }
+
     public function transformBinServiceEntityToApiServiceEntity($entity)
     {
         foreach (Constants::BIN_SERVICE_ENTITY_TO_API_IIN_ENTITY_KEY_MAPPING as $binServiceKeyName => $apiServiceKeyName)
@@ -995,40 +1010,36 @@ class Service extends Base\Service
 
             unset($features[Constants::FEATURES]);
 
-            foreach($features as $key => $value)
-            {
-                $entity[$key] = isset($value) ? $value : false;
-            }
-
-            // Flow::getHexValue function expects value to be set as 1 to calculate hex
-            // instead of changing it in older function which is getting used at multiple
-            // place transforming the payload to use the same functionality
             foreach($flows as $flow)
             {
                 $flows[$flow] = '1';
             }
+    
+            $entity[Entity::FLOWS] = $flows;
 
-            $entity[Entity::FLOWS] = !empty($flows) ? Flow::getHexValue($flows) : 0;
+            foreach($features as $key => $value)
+            {
+                $entity[$key] = isset($value) ? $value : false;
+            }
         }
 
         $mandateHubs = $entity[Entity::MANDATE_HUBS];
 
-        unset($entity[Entity::MANDATE_HUBS]);
-
-        // MandateHub::getHexValue function expects value to be set as 1 to calculate hex
-        // instead of changing it in older function which is getting used at multiple
-        // place transforming the payload to use the same functionality
         foreach($mandateHubs as $mandateHub)
         {
             $mandateHubs[$mandateHub] = '1';
         }
 
-        $entity[Entity::MANDATE_HUBS] = !empty($mandateHubs) ? MandateHub::getHexValue($mandateHubs) : 0;
+        $entity[Entity::MANDATE_HUBS] = $mandateHubs;
 
         foreach($entity as $key => $value)
         {
             $entity[$key] = $this->transformEmptyStringToNullIfApplicable($value);
         }
+
+        // otp_read is deprecated in bin service, making it default as false to avoid key read
+        // failures in code
+        $entity[Entity::OTP_READ] = false;
 
         return $entity;
     }
@@ -1043,20 +1054,35 @@ class Service extends Base\Service
         return $val;
     }
 
-    public function shouldReadFromBinService() : bool
+    public function shouldReadFromBinServiceInShadowMode() : bool
     {
-        if (Environment::isTestingEnvironment($this->app['env']) === true)
+        if (Environment::isTestingEnvironment($this->app['env']) === true || 
+            Environment::isEnvironmentQA($this->app['env']) === true || 
+            Environment::isEnvironmentItf($this->app['env']) === true )
         {
             return false;
         }
 
         $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ALLOW_BIN_SERVICE_SHADOW_READS, $this->mode);
 
-        $this->trace->info(TraceCode::BIN_SERVICE_SHADOW_READS_VARIANT, [
-            'razorx_variant' => $variant,
-            'mode'           => $this->mode,
-            'env'            => $this->app['env'],
-        ]);
+        if (strtolower($variant) === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function shouldReadBinServiceInPrimaryMode(string $iin) : bool
+    {
+        if (Environment::isTestingEnvironment($this->app['env']) === true || 
+            Environment::isEnvironmentQA($this->app['env']) === true || 
+            Environment::isEnvironmentItf($this->app['env']) === true)
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment($iin, RazorxTreatment::BIN_SERVICE_IIN_FETCH_PRIMARY, $this->mode);
 
         if (strtolower($variant) === 'on')
         {

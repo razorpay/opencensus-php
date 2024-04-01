@@ -81,7 +81,7 @@ class BinService
         return $hooks;
     }
 
-    public function fetchEntityByIINFromBinService($iin)
+    public function fetchEntityByIINFromBinService($iin, $readMode)
     {
         // expand=true helps in fetching flows as well
         $url = 'iins/' . $iin . '?expand=true';
@@ -97,7 +97,8 @@ class BinService
         }
 
         $this->trace->info(TraceCode::BIN_SERVICE_IIN_NOT_FOUND, [
-            'iin'       => $iin
+            'iin'       => $iin,
+            'read_mode' => $readMode
         ]);
 
         return [];
