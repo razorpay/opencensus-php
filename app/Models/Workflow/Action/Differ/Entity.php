@@ -61,6 +61,8 @@ class Entity extends Base\Entity
     const ACTION_ID                 = 'action_id';
     const STATE                     = 'state';
     const AUTH_DETAILS              = 'auth_details';
+    const AGENT_ID                  = 'agent_id';
+    const AGENT_NAME                = 'agent_name';
 
     const CREATED_AT                = 'created_at';
 

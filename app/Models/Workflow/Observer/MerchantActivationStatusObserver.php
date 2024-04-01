@@ -185,55 +185,82 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
     public function onCreate(array $observerData)
     {
-        $this->app['trace']->info(TraceCode::MERCHANT_ACTIVATION_STATUS_OBSERVER,[
-            'on_create'                => 'on_create observer invoked.',
-            'permission_name' => $this->permissionName
-        ]);
+        try {
 
-        $data = Constants::MERCHANT_ACTION_METRO_BODY;
+            $this->app['trace']->info(TraceCode::MERCHANT_ACTIVATION_STATUS_OBSERVER, [
+                'on_create' => 'on_create observer invoked.',
+                'permission_name' => $this->permissionName
+            ]);
 
-        if ( $this->permissionName === PermissionName::NEEDS_CLARIFICATION_RESPONDED)
-        {
-            if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true)
-            {
+            $data = Constants::MERCHANT_ACTION_METRO_BODY;
+
+            if ($this->permissionName === PermissionName::NEEDS_CLARIFICATION_RESPONDED) {
+                if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true) {
+                    $cmmaCaseEventData = [
+                        Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                        Constants::PERMISSION_NAME => PermissionName::NEEDS_CLARIFICATION_RESPONDED,
+                        Constants::STATUS => Constants::OPEN,
+                        DifferEntity::ENTITY_ID => $this->entityId,
+                        DifferEntity::ENTITY_NAME => Constants::MERCHANT,
+                        Constants::EVENT_TYPE => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+                        Constants::CMMA_CASE_TYPE => Constants::CMMA_ACTIVATION_CASE_TYPE,
+                    ];
+
+                    $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
+
+                    $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                            'data' => $cmmaCaseEventData,
+                            'topic' => $cmmaCaseEventTopic,
+                            'merchant_id' => $this->entityId,
+                        ]
+                    );
+
+                    (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
+                } else {
+                    $data[DifferEntity::ENTITY_ID] = $this->entityId;
+
+                    $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
+
+                    $data[Constants::PERMISSION_NAME] = PermissionName::NEEDS_CLARIFICATION_RESPONDED;
+
+                    $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus) === true) ? Status::NEEDS_CLARIFICATION : $this->oldActivationStatus;
+
+                    $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus) === true) ? Status::UNDER_REVIEW : $this->newActivationStatus;
+
+                    $data[Constants::STATUS] = Constants::OPEN;
+
+                    $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+                }
+
+            }
+
+            if ($this->permissionName === PermissionName::POS_EDIT_ACTIVATE_MERCHANT) {
                 $cmmaCaseEventData = [
-                    Constants::WORKFLOW_ACTION_ID =>  'w_action_' . $observerData[DifferEntity::ACTION_ID],
-                    Constants::PERMISSION_NAME    => PermissionName::NEEDS_CLARIFICATION_RESPONDED,
-                    Constants::STATUS             =>  Constants::OPEN,
-                    DifferEntity::ENTITY_ID       => $this->entityId,
-                    DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
-                    Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
-                    Constants::CMMA_CASE_TYPE     => Constants::CMMA_ACTIVATION_CASE_TYPE,
+                    Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::PERMISSION_NAME => PermissionName::POS_EDIT_ACTIVATE_MERCHANT,
+                    Constants::STATUS => Constants::OPEN,
+                    Constants::AGENT_Id => 'admin_'.$observerData[DifferEntity::AGENT_ID] ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME =>$observerData[DifferEntity::AGENT_NAME] ?? Constants::UNDEFINED_AGENT,
+                    DifferEntity::ENTITY_ID => $this->entityId,
+                    DifferEntity::ENTITY_NAME => Constants::MERCHANT,
+                    Constants::EVENT_TYPE => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+                    Constants::CMMA_CASE_TYPE => Constants::CMMA_POS_ACTIVATION_CASE_TYPE,
                 ];
 
                 $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
 
-                $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
-                        'data'        => $cmmaCaseEventData,
-                        'topic'       => $cmmaCaseEventTopic,
+                $this->app['trace']->info(TraceCode::POS_CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                        'data' => $cmmaCaseEventData,
+                        'topic' => $cmmaCaseEventTopic,
                         'merchant_id' => $this->entityId,
                     ]
                 );
 
-                (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
+                app('kafkaProducerClient')->produce($cmmaCaseEventTopic, stringify($cmmaCaseEventData));
             }
-            else
-            {
-                $data[DifferEntity::ENTITY_ID] = $this->entityId;
-
-                $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
-
-                $data[Constants::PERMISSION_NAME] = PermissionName::NEEDS_CLARIFICATION_RESPONDED;
-
-                $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::NEEDS_CLARIFICATION : $this->oldActivationStatus;
-
-                $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::UNDER_REVIEW : $this->newActivationStatus;
-
-                $data[Constants::STATUS] = Constants::OPEN;
-
-                $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
-            }
-
+        }
+        catch(\Throwable $exception) {
+            $this->app['trace']->traceException($exception);
         }
     }
 

@@ -261,6 +261,11 @@ class Service extends Base\Service
         $observerData = $workflowRequestData[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [];
         // action id at times is not present in $workflowRequestData, pass it explicitly
         $observerData[DifferEntity::ACTION_ID] = $actionId;
+
+        // passing agent_id and agent_name explicitly
+        $observerData[DifferEntity::AGENT_ID] = $workflowData[DifferEntity::MAKER_ID];
+        $observerData[DifferEntity::AGENT_NAME] = $workflowData[DifferEntity::MAKER];
+
         $observerClassInstance = new $observerClass($workflowRequestData);
 
         $this->trace->info(TraceCode::PERFORM_ACTION_OBSERVER_DATA, [

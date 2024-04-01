@@ -6,10 +6,14 @@ use DB;
 use Hash;
 use Config;
 
+use Mockery;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Account;
 use Rzp\Models\Admin\Permission;
+use RZP\Models\Workflow\Observer\MerchantActivationStatusObserver;
+use RZP\Services\KafkaProducerClient;
+use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
 use RZP\Tests\Functional\TestCase;
 use Rzp\Models\Admin\Admin\Token;
 use RZP\Models\Workflow\Constants;
@@ -24,6 +28,7 @@ use RZP\Models\Admin\Role\Repository as RoleRepository;
 use RZP\Tests\Functional\Fixtures\Entity\WorkflowAction;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Trace\TraceCode;
 
 class WorkflowActionTest extends TestCase
 {
@@ -656,4 +661,53 @@ class WorkflowActionTest extends TestCase
 
         $this->assertEquals(sizeof($response[Constants::WORKFLOW_ACTION_IDS]), 0);
     }
+
+    public function testOnCreateActionForPos()
+    {
+        $observerData = [
+            'action_id' => WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            'agent_id' => 'Adrii8leYwh4sm',
+            'agent_name'=> 'test_agent',
+        ];
+
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $merchantActivationStatusObserver = new MerchantActivationStatusObserver(
+            [
+                Action\Differ\Entity::ENTITY_ID => 'No72z8gsJTcHKu',
+                Action\Differ\Entity::PERMISSION => Permission\Name::POS_EDIT_ACTIVATE_MERCHANT,
+            ]
+        );
+
+        $merchantActivationStatusObserver->onCreate($observerData);
+
+        $kafkaProducerMock->shouldHaveReceived('produce');
+    }
+
+    public function testOnCreateActionForOnline()
+    {
+        $observerData = [
+            'action_id' => WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            'agent_id' => 'Adrii8leYwh4sm',
+            'agent_name'=> 'test_agent',
+        ];
+
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $merchantActivationStatusObserver = new MerchantActivationStatusObserver(
+            [
+                Action\Differ\Entity::ENTITY_ID => 'No72z8gsJTcHKu',
+                Action\Differ\Entity::PERMISSION => Permission\Name::EDIT_ACTIVATE_MERCHANT,
+            ]
+        );
+
+        $merchantActivationStatusObserver->onCreate($observerData);
+
+        $kafkaProducerMock->shouldNotHaveReceived('produce');
+    }
+
 }
