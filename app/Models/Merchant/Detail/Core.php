@@ -4416,7 +4416,35 @@ class Core extends Base\Core
         (new Validator())->validateCIN($businessType, $cin);
 
     }
-
+    
+    protected function isMerchantEligibleToRemoveNGO($merchantDetail)
+    {
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            =>  $merchantDetail->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.remove_ngo_business_type'),
+            ],
+            'variables'
+        );
+        
+        if($isExpEnabled === false)
+        {
+            return false;
+        }
+        
+        if ($this->mcore->isMerchantEligibleForComplianceCheck($merchantDetail->merchant) === true)
+        {
+            $this->app['trace']->info(TraceCode::REMOVE_NGO_BUSINESS_TYPE, [
+                'merchant_id' => $merchantDetail->getMerchantId(),
+            ]);
+            
+            return true;
+        }
+        
+       return false;
+        
+    }
+    
     public function shouldTriggerActivatedWebhook(string $merchantId, string $newStatus = null) : bool
     {
         if ($newStatus === Status::ACTIVATED)
@@ -10302,13 +10330,24 @@ class Core extends Base\Core
     public function getBusinessTypes($merchantId): array
     {
         $result = [];
-
+        if(empty($merchantId) === false)
+        {
+            $merchant             = $this->repo->merchant->findOrFailPublic($merchantId);
+            $merchantBusinessType = $merchant->merchantDetail->getBusinessType();
+        }
         foreach (BusinessType::$businessTypeBuckets as $bucketName => $businessTypes)
         {
             $result[$bucketName] = [];
 
             foreach ($businessTypes as $businessType)
             {
+               
+                if (empty($merchantId) ===  false and $merchantBusinessType != BusinessType::NGO and $businessType === BusinessType::NGO and $this->isMerchantEligibleToRemoveNGO($merchant->merchantDetail) === true)
+                {
+                    continue;
+                }
+                    
+                
                 if (empty($merchantId) === false and
                     array_key_exists($businessType, BusinessType::$businessTypeExperiments))
                 {
@@ -10320,9 +10359,7 @@ class Core extends Base\Core
                     $this->trace->info(
                         TraceCode::RAZORX_EXPERIMENT_RESULT,
                         [$experimentName => $isRazorxExperimentEnabled]);
-
-                    $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
+                    
                     if ($isRazorxExperimentEnabled === true && (new Merchant\Core())->isBlockedMerchantType($merchant,[Merchant\Core::SUB_MERCHANT,
                                                                                                                        Merchant\Core::PARTNER_MERCHANT,
                                                                                                                        Merchant\Core::LINKED_ACCOUNT], $businessType)===false)

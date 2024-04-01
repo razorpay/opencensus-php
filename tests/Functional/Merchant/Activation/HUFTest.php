@@ -63,14 +63,112 @@ class HUFTest extends OAuthTestCase
         $this->fixtures->create('merchant_detail', [
             'merchant_id'       => $merchant->getId()
         ]);
-
+        
+        $input = [
+            "experiment_id" => "NrNH1e3F8IjUfb",
+            "id"            => $merchant->id,
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => '',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
+        
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->id);
 
         $this->ba->proxyAuth('rzp_test_' . $merchant->id, $merchantUser['id']);
 
         $this->startTest();
     }
-
+    
+    public function testGetBusinessTypeWithoutNGO()
+    {
+        $merchant = $this->fixtures->create('merchant');
+        
+        $this->createAndFetchMocks(true);
+        
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $merchant->getId()
+        ]);
+        
+        $input = [
+            "experiment_id" => "NrNH1e3F8IjUfb",
+            "id"            => $merchant->id,
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
+        
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->id);
+        
+        $this->ba->proxyAuth('rzp_test_' . $merchant->id, $merchantUser['id']);
+        
+        $this->startTest();
+    }
+    
+    public function testGetBusinessTypeWithoutNGOWhenMerchantOptedPrivateLimted()
+    {
+        $merchant = $this->fixtures->create('merchant');
+        
+        $this->createAndFetchMocks(true);
+        
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $merchant->getId(),
+            'business_type' => 4
+        ]);
+        
+        $input = [
+            "experiment_id" => "NrNH1e3F8IjUfb",
+            "id"            => $merchant->id,
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
+        
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->id);
+        
+        $this->ba->proxyAuth('rzp_test_' . $merchant->id, $merchantUser['id']);
+        
+        $this->startTest();
+    }
+    
+    public function testGetBusinessTypeWithNGO()
+    {
+        $merchant = $this->fixtures->create('merchant');
+        
+        $this->createAndFetchMocks(true);
+        
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $merchant->getId(),
+            'business_type' => 7
+        ]);
+        
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->id);
+        
+        $this->ba->proxyAuth('rzp_test_' . $merchant->id, $merchantUser['id']);
+        
+        $this->startTest();
+    }
+    
     public function testGetBusinessTypeExperimentOff()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -80,6 +178,21 @@ class HUFTest extends OAuthTestCase
         $this->fixtures->create('merchant_detail', [
             'merchant_id'       => $merchant->getId()
         ]);
+        
+        $input = [
+            "experiment_id" => "NrNH1e3F8IjUfb",
+            "id"            => $merchant->id,
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => '',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->id);
 
@@ -104,7 +217,22 @@ class HUFTest extends OAuthTestCase
         ];
 
         $this->fixtures->create('merchant_access_map', $accessMapData);
-
+        
+        $input = [
+            "experiment_id" => "NrNH1e3F8IjUfb",
+            "id"            => $subMerchantId,
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => '',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
+        
         $this->createAndFetchMocks(true);
 
         $this->fixtures->create('merchant_detail', [
@@ -138,7 +266,22 @@ class HUFTest extends OAuthTestCase
             'merchant_id'     => $subMerchantId,
             'entity_owner_id' => '10000000000000',
         ];
-
+        
+        $input = [
+            "experiment_id" => "NrNH1e3F8IjUfb",
+            "id"            => $subMerchantId,
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => '',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
+        
         $this->fixtures->create('merchant_access_map', $accessMapData);
 
         $this->createAndFetchMocks(true);
@@ -163,7 +306,22 @@ class HUFTest extends OAuthTestCase
         $merchant = $this->fixtures->create('merchant');
 
         $this->fixtures->edit('merchant', $merchant->getId(), ['partner_type' => 'aggregator']);
-
+        
+        $input = [
+            "experiment_id" => "NrNH1e3F8IjUfb",
+            "id"            => $merchant->getId(),
+        ];
+        
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => '',
+                ]
+            ]
+        ];
+        
+        $this->mockSplitzTreatment($input, $output);
+        
         $this->createAndFetchMocks(true);
 
         $this->mockAllSplitzTreatment();

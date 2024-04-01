@@ -708,7 +708,9 @@ return array(
     'add_delay_timestamp_for_kafka_event' => env('ADD_DELAY_TIMESTAMP_FOR_KAFKA_EVENT'),
 
     'enable_compliance_checks_on_admin_activation_workflows' => env('ENABLE_COMPLIANCE_CHECKS_ON_ADMIN_ACTIVATION_WORKFLOWS'),
-
+    
+    'remove_ngo_business_type' => env('REMOVE_NGO_BUSINESS_TYPE'),
+    
     'enable_unverified_email_check_for_easy_onboarding' => env('ENABLE_UNVERIFIED_EMAIL_CHECK_FOR_EASY_ONBOARDING_EXP_ID'),
 
 
