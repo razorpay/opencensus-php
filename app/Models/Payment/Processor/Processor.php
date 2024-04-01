@@ -6742,6 +6742,13 @@ class Processor
 
         $payment = $this->retrieve($id);
 
+        if(($payment->getMethod() === Method::NETBANKING) and
+            ($payment->getBank() === Payment\Processor\Netbanking::HDFC_C) and
+            ($this->checkNetbankingCorporateSplitzExperiment() === true))
+        {
+            return $this->getCorporateNetbankingPaymentStatus();
+        }
+
         if ($payment->isRoutedThroughPaymentsUpiPaymentService() === true)
         {
             $value = [
@@ -6971,6 +6978,61 @@ class Processor
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+    }
+
+    public function checkNetbankingCorporateSplitzExperiment()
+    {
+
+        $merchantID = $this->merchant->getMerchantId();
+
+        $properties = [
+            'id'            => $merchantID,
+            'experiment_id' => $this->app['config']->get('app.checkout_netbanking_corporate_splitz_experiment_id'),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? 'control';
+
+        $this->trace->info(TraceCode::CORPORATE_NETBANKING_PAYMENT_SPLITZ_VARIANT, [
+            'merchant_id' => $merchantID,
+            'variant' => $variant,
+        ]);
+
+        return $variant === 'corporate_netbanking';
+    }
+
+    public function getCorporateNetbankingPaymentStatus() : array
+    {
+        $response = [];
+
+        if ($this->payment->isCreated() === true || $this->payment->isFailed() === true)
+        {
+            if ($this->payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
+            {
+                $response['status'] = 'pending';
+
+                $response['message'] = 'Payment is pending for authorization. Request for authorization from approver.';
+            }
+            else if ($this->payment->isCreated() === true)
+            {
+                $response['status'] = 'created';
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    $this->payment->getInternalErrorCode());
+            }
+        }
+
+        if ($this->payment->isAuthorized() || $this->payment->isCaptured())
+        {
+            $response['status'] = 'successful';
+
+            $response['razorpay_payment_id'] = $this->payment->getId();
+        }
+
+        return $response;
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)

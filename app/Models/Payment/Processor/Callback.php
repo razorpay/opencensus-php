@@ -1102,16 +1102,35 @@ trait Callback
                 'merchant_id'      => $this->payment->getMerchantId(),
                 'application' => $this->payment->getAuthenticationGateway()]);
         }
-        else
+        else if(($this->payment->getMethod() === Payment\Method::NETBANKING) and
+            ($this->payment->getBank() === Payment\Processor\Netbanking::HDFC_C) and
+            ($this->checkNetbankingCorporateSplitzExperiment() === true) and
+            ($internalErrorCode === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION))
         {
+            $error = [
+                'metadata' => [
+                    'netbanking_corporate_action' => 'pending'
+                ]
+            ];
+
             $e->setData([
                 'payment_id'  => $this->payment->getPublicId(),
                 'order_id'    => $this->payment->getPublicOrderId(),
                 'method'      => $this->payment->getMethod(),
                 'application' => $this->payment->getAuthenticationGateway(),
+                'error'       => $error,
                 'previous_exception_data' => $previousExceptionData,
                 ]
             );
+        }else {
+           $e->setData([
+                'payment_id'  => $this->payment->getPublicId(),
+                'order_id'    => $this->payment->getPublicOrderId(),
+                'method'      => $this->payment->getMethod(),
+                'application' => $this->payment->getAuthenticationGateway(),
+                'previous_exception_data' => $previousExceptionData,
+            ]
+        );
         }
 
         if (Error\Error::hasAction($internalErrorCode) === false)

@@ -18,7 +18,7 @@ body{background:#fff;font-family:ubuntu,helvetica,verdana,sans-serif;margin:0;pa
 </style>
 <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 </head><body>
-<div id="text"><div id="icon"></div><br>Payment<br>
+<div id="text"><div id="icon"></div><br>Payment
 </div>
 <div id="delayed-prompt">
   <div class="early text">Redirecting...</div>
@@ -34,6 +34,15 @@ var data = {!!utf8_json_encode($data)!!};
 // Callback data //
 
 var s = 'razorpay_payment_id' in data;
+var netbanking_corporate_action = false;
+
+if (data &&
+    data.error &&
+    data.error.metadata &&
+    data.error.metadata['netbanking_corporate_action'] === "pending") {
+    netbanking_corporate_action = true;
+}
+
 data = JSON.stringify(data);
 if (window.CheckoutBridge) {
   if (typeof CheckoutBridge.oncomplete == 'function') {
@@ -74,14 +83,28 @@ function razorpay_callback() {
 }
 
 var t = g('text');
-t.innerHTML += s ? 'Successful' : 'Failed';
-t.className = 'show ' + (s ? 's' : 'f');
-g('icon').innerHTML = s ? '&#10004' : '!';
+
+if (!netbanking_corporate_action) {
+    t.innerHTML += '<br>';
+    t.innerHTML += s ? 'Successful' : 'Failed';
+    t.className = 'show ' + (s ? 's' : 'f');
+    g('icon').innerHTML = s ? '&#10004' : '!';
+} else{
+    t.innerHTML += 'is pending for authorization. <br> Request for authorization from approver.';
+    t.className = 'show f';
+    g('icon').innerHTML = '!';
+}
 
 if (!window.CheckoutBridge) {
-  try { window.opener.onComplete(data) } catch(e){}
-  try { (window.opener || window.parent).postMessage(data, '*') } catch(e){}
-  setTimeout(close, 999);
+    if(!netbanking_corporate_action) {
+        try { window.opener.onComplete(data) } catch(e){}
+        try { (window.opener || window.parent).postMessage(data, '*') } catch(e){}
+        setTimeout(close, 999);
+    } else{
+        try { window.opener.onComplete(data) } catch(e){}
+        try { (window.opener || window.parent).postMessage(data, '*') } catch(e){}
+        setTimeout(close, 4999);
+    }
 }
 
 </script></body></html>
