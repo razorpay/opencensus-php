@@ -630,4 +630,23 @@ class Repository extends Base\Repository
 
         DB::connection($mode)->statement($query);
     }
+
+    public function fetchBASLinkedWithTransaction(string $accountNumber, string $txnId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::TRANSACTION_ID, $txnId)
+                    ->get();
+    }
+
+    public function fetchUnlinkedBasRecordsPostGivenId(string $id, string $accountNumber, string $channel, $limit)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::ID, '>', $id)
+                    ->orderBy(Entity::ID)
+                    ->limit($limit)
+                    ->get();
+    }
 }

@@ -352,6 +352,8 @@ final class RazorxTreatment
     // some merchants require more attempts to fetch their whole statement. hence special attempt limit should be enabled for them.
     const BANKING_ACCOUNT_STATEMENT_SPECIAL_ATTEMPT_LIMIT = 'banking_account_statement_special_attempt_limit';
 
+    const BANKING_ACCOUNT_STATEMENT_FETCH_UNLINKED_QUERY_OPTIMIZE = 'banking_account_statement_fetch_unlinked_query_optimize';
+
     // for creating upi recurring auth link via batch upload pick up as presented frequency by default
     const UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT = 'upi_auth_link_frequency_as_presented_default';
 

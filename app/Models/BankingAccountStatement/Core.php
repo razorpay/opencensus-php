@@ -2240,14 +2240,19 @@ class Core extends Base\Core
         {
             $this->mutex->acquireAndRelease(
                 'banking_account_statement_process_' . $accountNumber . '_' . $channel,
-                function () use ($channel, $accountNumber, $input, $limit, & $saveLimit, $merchant)
+                function () use ($channel, $accountNumber, $input, $limit, & $saveLimit, $merchant, $basDetails)
                 {
                     $this->setCreditBeforeDebitUtrsFromRedis($accountNumber);
 
                     while ($saveLimit > 0)
                     {
-                        // If merchant is on Ledger reverse shadow, fetch unlikned BAS for processing by null source instead of null transaction
-                        $basEntities = $this->repo->banking_account_statement->fetchUnlinkedBasRecords($accountNumber, $channel, $limit);
+                        list($fetchUsingDefaultQuery, $basEntities) = $this->fetchUnlinkedRecordsUsingOptimizedQueryIfApplicable($accountNumber, $basDetails, $channel, $limit);
+
+                        if ($fetchUsingDefaultQuery === true)
+                        {
+                            // If merchant is on Ledger reverse shadow, fetch unlikned BAS for processing by null source instead of null transaction
+                            $basEntities = $this->repo->banking_account_statement->fetchUnlinkedBasRecords($accountNumber, $channel, $limit);
+                        }
 
                         $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ROWS_FETCHED, [
                             'count'             => count($basEntities),
@@ -5706,5 +5711,56 @@ class Core extends Base\Core
         $missingStatementConfig[BASConstants::MISMATCH_DATA] = $modifiedConfig;
 
         return $missingStatementConfig;
+    }
+
+    /**
+     * @param                $accountNumber
+     * @param Details\Entity $basDetails
+     * @param                $channel
+     * @param int            $limit
+     *
+     * @return array
+     */
+    private function fetchUnlinkedRecordsUsingOptimizedQueryIfApplicable($accountNumber, Details\Entity $basDetails, $channel, int $limit): array
+    {
+        $variant = $this->app->razorx->getTreatment($accountNumber,
+                                                    Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_UNLINKED_QUERY_OPTIMIZE,
+                                                    $this->mode);
+
+        $fetchUsingDefaultQuery = true;
+
+        $basEntities = null;
+
+        try
+        {
+            if ($variant == 'on')
+            {
+                $txns = $this->repo->transaction->fetchLatestTxnForBalanceId($basDetails->getBalanceId());
+
+                if (count($txns) > 0)
+                {
+                    $basRecords = $this->repo->banking_account_statement->fetchBASLinkedWithTransaction($accountNumber, $txns[0]->getId());
+
+                    if (count($basRecords) > 0)
+                    {
+                        $basEntities = $this->repo->banking_account_statement->fetchUnlinkedBasRecordsPostGivenId($basRecords[0]->getId(), $accountNumber, $channel, $limit);
+                        $fetchUsingDefaultQuery = false;
+                    }
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::BAS_FETCH_USING_OPTIMIZED_QUERY_FAILURE,
+                [
+                    'channel'       => $channel,
+                    'merchant_id'   => $basDetails->getMerchantId(),
+                    'error'         => $e,
+                    'error_message' => $e->getMessage()
+                ]);
+        }
+
+        return array($fetchUsingDefaultQuery, $basEntities);
     }
 }

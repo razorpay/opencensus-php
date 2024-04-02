@@ -16061,4 +16061,102 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals("2224440041626905" , $activeSheet->getCell($account_num_cell)->getValue());
         $this->assertEquals("2023/08/02" , $activeSheet->getCell($activation_date_cell)->getValue());
     }
+
+    public function testStatementProcessingJobViaOptimizedQueryForFetch()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_UNLINKED_QUERY_OPTIMIZE => 'on']);
+
+        $this->setupForRblPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     =>  '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'SUCCESS',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1234567,
+                'mode'                => 'IMPS',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check the status by calling getStatus API.',
+                'source_id'           => $payout['id'],
+                'source_type'         => 'payout',
+                'status'              => 'processed',
+                'utr'                 => '933815383814',
+                'source_account_id'   => 111111111,
+                'bank_account_type'   => 'current'
+            ],
+        ];
+
+        $this->ba->ftsAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        $this->assertEquals('933815383814', $payout->getUtr());
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
+
+        $transaction = $this->fixtures->create('transaction', [
+            'merchant_id'  => '10000000000000',
+            'type' => 'payout',
+            'balance' => 30019891,
+            'balance_id' => $payout['balance_id']
+        ]);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], [
+            'balance' => 30019891,
+        ]);
+
+        $this->fixtures->create('banking_account_statement',[
+            'type'                      => 'debit',
+            'amount'                    => '104',
+            'channel'                   => 'rbl',
+            'account_number'            => 2224440041626905,
+            'transaction_id'            => $transaction['id'],
+            'entity_id'                 => $payout['id'],
+            'entity_type'               =>  'payout',
+            'bank_transaction_id'       => 'SDHDH',
+            'balance'                   => 30019891,
+            'transaction_date'          => 1584987183
+        ]);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'debit',
+                                    'utr'                       => '933815383814',
+                                    'amount'                    => '105',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'SDHDH1',
+                                    'balance'                   => 30019786,
+                                    'transaction_date'          => 1584987184,
+                                    'posted_date'               => Carbon::now()->getTimestamp(),
+                                ]);
+
+        $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
+
+        $this->fixtures->edit('banking_account_statement_details', $basDetails->getId(), [
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 30019786,
+        ]);
+
+        BankingAccountStatementProcessor::dispatch('test', [
+            'channel'           => Channel::RBL,
+            'account_number'    => 2224440041626905
+        ]);
+
+        $newBAS = $this->getDbEntity('banking_account_statement', ['utr' => '933815383814']);
+
+        $this->assertNotNull("transaction_id", $newBAS->getTransactionId());
+    }
 }

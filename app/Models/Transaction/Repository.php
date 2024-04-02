@@ -2938,4 +2938,14 @@ class Repository extends Base\Repository
 
         return $txn;
     }
+
+    public function fetchLatestTxnForBalanceId(string $balanceId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select("*")
+                    ->where(Transaction\Entity::BALANCE_ID, '=', $balanceId)
+                    ->orderBy(Transaction\Entity::ID, 'desc')
+                    ->limit(1)
+                    ->get();
+    }
 }
