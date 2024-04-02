@@ -1,7 +1,7 @@
 const { universeUsage } = require('../utils');
 const { I18N_LINTER_CHECKS } = require('../constants');
 
-const trackI18nLinterReport = ({ prNumber, prRaisedBy, errorCodeCountMap }) => {
+const trackI18nLinterReport = ({ prNumber, prRaisedBy, errorCodeCountMap, step }) => {
   Object.entries(errorCodeCountMap).forEach(([lintRule, errorCount]) => {
     universeUsage.log({
       eventName: I18N_LINTER_CHECKS,
@@ -12,6 +12,7 @@ const trackI18nLinterReport = ({ prNumber, prRaisedBy, errorCodeCountMap }) => {
         prNumber, // PR number raised by developer
         prRaisedBy, //  PR author github id
         projectName: 'dashboard', // project name
+        report: step, // Master or PR level error.
       },
     });
   });

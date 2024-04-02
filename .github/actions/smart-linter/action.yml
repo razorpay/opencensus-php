@@ -1,0 +1,38 @@
+name: Smart Linter Action
+
+inputs:
+  dangerjs_args:
+    required: true
+  github_access_token:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Use Node v18.12.1
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.12.1
+
+    - name: Filter I18n Errors
+      run: ./scripts/linter/filter-errors.sh
+      shell: bash
+
+    - name: Check ESLint Report for i18n Errors
+      id: linter-check
+      run: ./scripts/linter/check-errors.sh
+      shell: bash
+
+    - name: Calculate i18n Linter Metrics
+      id: linter-metrics
+      run: ./scripts/linter/error-metrics.sh
+      shell: bash
+
+    - name: Run DangerJS for I18n Linter
+      id: i18n_linter_dangerjs
+      uses: danger/danger-js@11.3.0
+      with:
+        args:  "--id i18n_linter_dangerjs --dangerfile dangerfile-i18nlinter.js ${{ inputs.dangerjs_args }}"
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_access_token }}
+        DANGER_DISABLE_TRANSPILATION: true
