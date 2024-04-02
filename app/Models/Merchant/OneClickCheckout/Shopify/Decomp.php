@@ -116,7 +116,6 @@ class Decomp extends Base\Service
             $this->merchant->isFeatureEnabled('one_cc_opt_shipping_tax') ||
             $this->merchant->isFeatureEnabled('one_cc_tax_inclusion') ||
             $merchantId === 'LsgXO1I1dfZNeI' || // wingreens for fullfilment centres
-            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_COUPON_ENGINE) ||
             $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_ENABLE_GUPSHUP)
         )
         {
@@ -125,7 +124,8 @@ class Decomp extends Base\Service
         // These are the feature flags currently being migrated.
         if (
             $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_ENABLE_NECTOR_COINS) ||
-            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_GIFT_CARD)
+            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_GIFT_CARD) ||
+            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_COUPON_ENGINE)
         )
         {
             return (new SplitzExperimentEvaluator())->useMCSForShopifyCompleteCheckoutForFeatureFlags($merchantId);
