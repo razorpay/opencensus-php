@@ -396,6 +396,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['/smartcollect/virtualaccounts'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'enable_smartcollect_vpa_option',
+          experimentId: {
+            beta: 'Nj6CqlLpTkrs3o',
+            production: 'NiBZ5qQptf8t43',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       matchByDashboard: ['linkedAccount'],
       routesToMatch: ['/reports'],
       abExperiments: [
