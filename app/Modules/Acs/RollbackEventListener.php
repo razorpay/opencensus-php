@@ -4,12 +4,14 @@ namespace RZP\Modules\Acs;
 
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
+use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 
 class RollbackEventListener
 {
     const ASV_OUTBOX_JOB_NAME = 'acs.sync_account.v1';
+    const MERCHANT_ENTITY = 'merchant';
 
     public $app;
     public $trace;
@@ -37,10 +39,17 @@ class RollbackEventListener
             $this->trace->info(TraceCode::ASV_ROLLBACK_EVENT_HANDLER,
                 ["entity" => $event->entity?->getEntityName(), 'routeOrJobName' => $routeOrJobName]
             );
+
+
+            if (($event->entity instanceof PublicEntity) === true
+                && $event->entity?->getEntityName() == self::MERCHANT_ENTITY
+                && $event->entity->getConnectionName() === Mode::LIVE) {
+                $event->entity->flushCache($event->entity->getEntityName() . '_' . $event->entity->getId());
+            }
+
             app(SyncEventManager::SINGLETON_NAME)->resetTransactionStats();
         } catch (\Exception $e) {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::ASV_ROLLBACK_EVENT_LISTENER_EXCEPTION, $event->entity);
-
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::ASV_ROLLBACK_EVENT_LISTENER_EXCEPTION, $event->entity->toArray());
         }
     }
 
