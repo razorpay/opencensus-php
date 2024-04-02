@@ -4,6 +4,7 @@ namespace RZP\Services\Wallet;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Http\RequestHeader;
 use \WpOrg\Requests\Response;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -35,6 +36,7 @@ class Base
     const ADMIN_EMAIL           = 'admin_email';
     const CONTENT_TYPE          = 'Content-Type';
     const X_REQUEST_ID          = 'X-Request-ID';
+
     const REQUEST_TIMEOUT       = 30;
 
     /**
@@ -192,6 +194,7 @@ class Base
         $headers[self::ACCEPT]       = 'application/json';
         $headers[self::CONTENT_TYPE] = 'application/json';
         $headers[self::X_REQUEST_ID]  = $this->request->getId();
+        $headers[RequestHeader::DEV_SERVE_USER] = $this->request->header(RequestHeader::DEV_SERVE_USER);
 
         $this->headers = $headers;
     }
