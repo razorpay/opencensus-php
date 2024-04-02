@@ -2784,7 +2784,7 @@ trait Authorize
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if ($token === null and $this->isAutoRecurringCardPayment($payment->getMethod(), $input) === false)
+        if ($token === null and $this->isAutoRecurringCardPayment($payment->getMethod(), $input) === false and ($payment->isWallet() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT,
