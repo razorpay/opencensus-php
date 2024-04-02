@@ -38,6 +38,10 @@ class BatchCreateModal extends Component {
     pendingText: 'Creating...',
   };
 
+  state = {
+    token: null,
+  };
+
   //shift input caret to the end
   moveCaretAtEnd(e) {
     const temp_value = e.target.value;
@@ -45,7 +49,12 @@ class BatchCreateModal extends Component {
     e.target.value = temp_value;
   }
   onOtpConfirm = ({ otp }) => {
-    const value = this.props.onCreateBatch({ ...this.props.initialValues, otp });
+    const value = this.props.onCreateBatch({
+      ...this.props.initialValues,
+      otp,
+      action: 'second_factor_auth',
+      token: this.state.token,
+    });
     return Promise.resolve(value);
   };
 
@@ -114,7 +123,10 @@ class BatchCreateModal extends Component {
       } else triggerOTP = triggerOtpOnSMS;
 
       return triggerOTP()
-        .then(() => {
+        .then((data) => {
+          this.setState({
+            token: data.token,
+          });
           // Dont show when 2fa modal is already being shown
           if (!isResend) {
             this.show2faModal();

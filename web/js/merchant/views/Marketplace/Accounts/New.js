@@ -195,6 +195,7 @@ class AddAccount extends Component {
       email: this.state.email,
       otp,
       token: this.state.token,
+      action: 'second_factor_auth',
     };
     return this.save({ ...payload });
   };
@@ -315,6 +316,7 @@ class AddAccount extends Component {
                   autoFocus={true}
                   validate={required()}
                   disabled={!!accountData}
+                  onChange={(e) => this.setState({ name: e.target.value })}
                 />
                 <small class="help-block">
                   The business/individual name for the account, which will appear on all reports
