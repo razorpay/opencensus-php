@@ -4,6 +4,7 @@ namespace RZP\Models\User;
 use App;
 use Hash;
 use RZP\Constants\Mode;
+use RZP\Constants\Product;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Base\PublicCollection;
@@ -263,6 +264,9 @@ class Entity extends Base\PublicEntity
     /**
      * Order by owned first. In case of multiple owned merchants with same
      * email, pick first. Followed by owned merchants with different emails.
+     *
+     * Excluding billing product merchant users here, to avoid billing users access to PG merchants.
+     * Zero impact on existing PG/RX flows because of this change.
      */
     public function merchants()
     {
@@ -271,6 +275,7 @@ class Entity extends Base\PublicEntity
                      else 2 END";
 
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->where(self::PRODUCT, '!=', Product::BILLING)
                     ->withPivot([self::ROLE, self::PRODUCT])
                     ->orderByRaw($sql, [$this->getEmail()]);
     }
