@@ -25,6 +25,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import InstantActivationModal from './InstantActivationModal';
 import { kycModalContent } from './KycStatusModalContent';
 import { isMobileDevice } from './data';
+import { useLatestOrder } from 'merchant/views/POS/hooks';
 
 const MODAL_CONTENT = {
   KYC_CLARIFICATION_SUBMIT_MODAL: {
@@ -68,6 +69,7 @@ const KYCStatusModal = ({
   const activationState = getActivationState(user, user.isUnregisteredBusiness, isNcEligibile);
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
   const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const { latestOrder } = useLatestOrder();
 
   const isNewNc = isNewNcActivationStatus(activationState);
 
@@ -143,6 +145,7 @@ const KYCStatusModal = ({
     trackEvents,
     isNcEligibile,
     goToNCOnEasy,
+    latestOrder,
   };
 
   const content =
@@ -163,7 +166,8 @@ const KYCStatusModal = ({
       activationState === 'needs_clarification_payments_settlement_enabled' ||
       activationState === 'needs_clarification_with_payments_enabled' ||
       activationState === 'needs_clarification_with_payment_disabled' ||
-      activationState === 'rejected';
+      activationState === 'rejected' ||
+      activationState === 'needs_clarification_for_pos';
     if (content) {
       trackEvents({
         objectName: 'Pop Up',

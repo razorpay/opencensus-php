@@ -206,7 +206,8 @@ class AnalyticsDesktop extends Component {
       activationState === 'needs_clarification_with_payment_disabled' ||
       activationState === 'needs_clarification_with_payments_enabled' ||
       activationState === 'funds_on_hold' ||
-      activationState === 'rejected';
+      activationState === 'rejected' ||
+      activationState === 'needs_clarification_for_pos';
 
     if (user.isInstantActivationEnabled && shouldShowModal) {
       this.props.showKYCStatusModal({

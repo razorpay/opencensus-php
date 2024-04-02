@@ -13,6 +13,7 @@ const getStorageStatePath = (BASE_PATH) => ({
   OPTIMIZER_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-login.json`,
   POS_LOGIN_STATE: `${BASE_PATH}/pos-login.json`,
   POS_ORDER_DETAILS_LOGIN_STATE: `${BASE_PATH}/pos-login-order-details.json`,
+  POS_KYC_STATUS_NC: `${BASE_PATH}/pos-kyc-status-nc.json`,
   OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
   INTERNATIONAL_ACTIVATION_STATE: `${BASE_PATH}/international-activation.json`,
   WALLET_REPORTS_LOGIN_STATE: `${BASE_PATH}/mobile-wallet-reports-login.json`,

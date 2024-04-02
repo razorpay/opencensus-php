@@ -519,6 +519,7 @@ function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEli
     merchant_tnc,
     isL2AllowedForPoiInitiated,
     activation_flow,
+    pos_activation_status,
   } = activationData;
 
   const isSignupWithEasyOnboarding = activationData?.user?.signup_campaign === 'easy_onboarding';
@@ -547,6 +548,11 @@ function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEli
       activation_status !== 'needs_clarification' // if nc skip dedupe state
     ) {
       activationState = 'L2_dedupe_blocked';
+    } else if (
+      pos_activation_status === 'needs_clarification' &&
+      activation_status != 'needs_clarification'
+    ) {
+      activationState = 'needs_clarification_for_pos';
     } else if (
       activation_status === 'under_review' ||
       activation_status === 'kyc_qualified_unactivated'
@@ -779,6 +785,7 @@ const isNewNcActivationStatus = (activationStatus) => {
     'needs_clarification_payments_settlement_enabled',
     'needs_clarification_with_payments_enabled',
     'needs_clarification_with_payment_disabled',
+    'needs_clarification_for_pos',
   ];
 
   return newNcActivationStatus.includes(activationStatus);

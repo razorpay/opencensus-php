@@ -16,9 +16,11 @@ export const kycModalContent = (args = {}, navigate) => {
     args.isUnregisteredBusiness,
     args.isNcEligibile,
   );
+
   const activationFormUrl = args.isActivationFormFullView ? '/kyc' : '/activation';
   const isSignupWithEasyOnboarding = args?.user?.user?.signup_campaign === EASY_ONBOARDING;
   const expiryDate = getNcExpiryDate(args.activationData?.kyc_clarification_reasons);
+  const latestOrder = args.latestOrder;
 
   switch (activationState) {
     case 'L2_dedupe_blocked':
@@ -581,6 +583,42 @@ export const kycModalContent = (args = {}, navigate) => {
           </button>
         ),
       };
+    }
+
+    case 'needs_clarification_for_pos': {
+      if (latestOrder) {
+        return {
+          title: 'We need a few clarifications to complete POS KYC verification',
+          body: (
+            <div>
+              Your response on the identified items is crucial for us to dispatch your POS device
+              and to process your account further.
+            </div>
+          ),
+          pill: 'ACTION REQUIRED',
+          button: (
+            <button type="button" className="btn btn-primary nc-button" onClick={args.goToNCOnEasy}>
+              Resolve now
+            </button>
+          ),
+        };
+      } else {
+        return {
+          title: 'We need a few clarifications to complete POS KYC verification',
+          body: (
+            <div>
+              Your response on the identified items is crucial for us to process your account
+              further.
+            </div>
+          ),
+          pill: 'ACTION REQUIRED',
+          button: (
+            <button type="button" className="btn btn-primary nc-button" onClick={args.goToNCOnEasy}>
+              Resolve now
+            </button>
+          ),
+        };
+      }
     }
 
     default:
