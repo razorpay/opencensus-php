@@ -2071,7 +2071,8 @@ class Gateway
             self::OPTIMIZER_RAZORPAY,
             self::UPI_KOTAK,
             self::ATOM,
-            self::EASEBUZZ_OPTIMIZER
+            self::EASEBUZZ_OPTIMIZER,
+            self::UPI_RZPAPB
         ],
 
         Method::AEPS => [
