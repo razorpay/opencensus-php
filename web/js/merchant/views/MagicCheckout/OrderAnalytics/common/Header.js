@@ -3,7 +3,6 @@ import moment from 'moment';
 
 import DateRangePicker from 'common/ui/DateRangePicker';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { getPresetsValue } from 'merchant/views/MagicCheckout/CODOrdersTab/utils';
 import { useOrderAnalyticsContext } from 'merchant/views/MagicCheckout/OrderAnalytics/OrderAnalyticsContext';
 import { TABS } from 'merchant/views/MagicCheckout/OrderAnalytics/constants/tabs';
 import SummaryWidget from 'merchant/views/MagicCheckout/OrderAnalytics/widgets/Summary';
@@ -23,9 +22,11 @@ const DEFAULT_PRESET = 1;
 const TODAY = moment();
 const DAY_BEFORE = moment().subtract('1', 'day');
 
-const Header = ({ setTimeRange, updated_at, dashboardView, org }) => {
+const Header = (props) => {
+  const { setTimeRange, setReportsTimeRange, updated_at, dashboardView, org } = props;
   const { activeTab } = useOrderAnalyticsContext();
   const isConversionTab = activeTab.label === TABS.CONVERSION.label;
+  const isReportsTab = activeTab.label === TABS.REPORTS.label;
   const orgName = org?.business_name || ORG_NAME.RZP;
 
   const presetList = useMemo(
@@ -34,13 +35,9 @@ const Header = ({ setTimeRange, updated_at, dashboardView, org }) => {
   );
 
   const defaultPreset = useMemo(() => {
-    if (isConversionTab) {
-      const timeDiff = DAY_BEFORE.unix() - moment().subtract(2, 'days').unix();
-      return { name: 'Custom Range', value: timeDiff };
-    } else {
-      return getPresetsValue([DATE_RANGE_PRESETS[DEFAULT_PRESET]])[0];
-    }
-  }, [isConversionTab]);
+    const timeDiff = DAY_BEFORE.unix() - moment().subtract(2, 'days').unix();
+    return { name: 'Custom Range', value: timeDiff };
+  }, [activeTab]);
 
   const [selectedPreset, setSelectedPreset] = useState(defaultPreset);
 
@@ -53,7 +50,7 @@ const Header = ({ setTimeRange, updated_at, dashboardView, org }) => {
   }, [selectedPreset]);
 
   const onDatesChange = (start, end) => {
-    setTimeRange({ start, end });
+    isReportsTab ? setReportsTimeRange({ start, end }) : setTimeRange({ start, end });
   };
 
   const handlePresetChange = (preset) => {
@@ -61,30 +58,28 @@ const Header = ({ setTimeRange, updated_at, dashboardView, org }) => {
   };
 
   useEffect(() => {
-    if (isConversionTab) {
-      setSelectedPreset(defaultPreset);
-    }
-  }, [defaultPreset, isConversionTab]);
+    setSelectedPreset(defaultPreset);
+  }, [defaultPreset, activeTab]);
 
   const isOutsideRange = (day) => {
     const defaults =
       day.isBefore(moment().subtract(91, 'days')) || day.isBefore(moment('2023-03-01'));
-    if (isConversionTab) {
+    if (isConversionTab || isReportsTab) {
       return defaults || day.isAfter(DAY_BEFORE);
     }
     return defaults || day.isAfter(TODAY);
   };
 
   const getHeaderText = () => {
-    if (dashboardView === RCOD_APP_NAME || dashboardView === SOPC_APP_NAME)
-      return `This data is only for ${orgName} MagicX processed orders`;
-    return `This data is only for ${orgName} Magic processed orders`;
+    const productName =
+      dashboardView === RCOD_APP_NAME || dashboardView === SOPC_APP_NAME ? 'MagicX' : 'Magic';
+    return `This data is only for ${orgName} ${productName} processed orders`;
   };
 
   return (
     <div className="sticky-header dashboard-header">
       <div>
-        {!isConversionTab ? (
+        {!isConversionTab && !isReportsTab ? (
           <>
             <SummaryWidget />
             <small>

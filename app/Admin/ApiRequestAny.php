@@ -110,7 +110,8 @@ class ApiRequestAny
         'vendor-payments',
         'gcoms',
         'payments_cross_border',
-        'terminals/proxy/qc'
+        'terminals/proxy/qc',
+        'magic/analytics/reports',
     ];
 
     /**

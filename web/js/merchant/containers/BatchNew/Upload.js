@@ -63,10 +63,11 @@ class BatchUpload extends Component {
 
   onModalClose = () => {
     const { currentStatus } = this.state;
-    const { closeSuccessModal, gaEvents, closeModal, trackCloseModal } = this.props;
+    const { closeSuccessModal, gaEvents, closeModal, trackCloseModal, onCloseModal } = this.props;
 
     gaEvents?.trackUploadBatch?.('Close');
     closeModal();
+    onCloseModal && onCloseModal();
 
     if (currentStatus === 'success' && closeSuccessModal) {
       closeSuccessModal();

@@ -57,7 +57,7 @@ describe('COD Engine', () => {
 
     const CODEngineTab = await screen.findByText('Magic COD');
     const BlockListTab = await screen.findByText('Block List');
-    const AllowListTab = await screen.findByText('Manual Zipcode upload');
+    const AllowListTab = await screen.findByText('Manual Zipcode Upload');
 
     expect(CODEngineTab).toBeInTheDocument();
     expect(BlockListTab).toBeInTheDocument();
@@ -89,7 +89,7 @@ describe('COD Engine', () => {
     };
 
     render(<App state={customState} />);
-    const AllowListTab = await screen.findByText('Manual Zipcode upload');
+    const AllowListTab = await screen.findByText('Manual Zipcode Upload');
     expect(AllowListTab).toBeInTheDocument();
   });
 });

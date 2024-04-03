@@ -21,11 +21,14 @@ const App = ({ state = {}, ...props }) => {
 describe('Magic - Header', () => {
   test('should render the header for Magic Checkout', () => {
     const setTimeRange = jest.fn();
+    const setReportsTimeRange = jest.fn();
     render(
       <App
         updated_at={moment.unix()}
         setTimeRange={setTimeRange}
-        dashboardView={'magic_checkout'}
+        setReportsTimeRange={setReportsTimeRange}
+        dashboardView="magic_checkout"
+        org="Razorpay"
       />,
     );
     expect(
@@ -34,7 +37,16 @@ describe('Magic - Header', () => {
   });
   test('should render the header for MagicX', () => {
     const setTimeRange = jest.fn();
-    render(<App updated_at={moment.unix()} setTimeRange={setTimeRange} dashboardView={'rcod'} />);
+    const setReportsTimeRange = jest.fn();
+    render(
+      <App
+        updated_at={moment.unix()}
+        setTimeRange={setTimeRange}
+        setReportsTimeRange={setReportsTimeRange}
+        dashboardView="rcod"
+        org="Razorpay"
+      />,
+    );
     expect(
       screen.getByText('This data is only for Razorpay MagicX processed orders'),
     ).toBeInTheDocument();

@@ -1,3 +1,5 @@
+import Reports from 'merchant/views/MagicCheckout/OrderAnalytics/Reports/components';
+
 import { CHART_LABEL_MAPPING } from '.';
 import { RCOD_APP_NAME, SOPC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 
@@ -56,10 +58,17 @@ export const TABS = {
     layout: OVERVIEW_LAYOUT,
     condition: (_user, dashboardView) =>
       dashboardView !== SOPC_APP_NAME && dashboardView !== RCOD_APP_NAME,
+    isCharts: true,
   },
   CONVERSION: {
     label: 'Conversion',
     condition: (_user) => _user.isMagicOrderAnalyticsCREnabled,
     layout: CONVERSION_LAYOUT,
+    isCharts: true,
+  },
+  REPORTS: {
+    label: 'Reports',
+    isCharts: false,
+    Component: Reports,
   },
 };

@@ -231,7 +231,7 @@ function ZoneModal({ closeModal, mode, id, showNotification, zones, createZone, 
   if (isLoading) {
     return (
       <div className="page-spinner-container">
-        <Spinner />
+        <Spinner center={true} />
       </div>
     );
   }

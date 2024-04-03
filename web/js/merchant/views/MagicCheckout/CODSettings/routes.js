@@ -28,7 +28,7 @@ const routes = [
     className: 'cod-blocklist-container',
   },
   {
-    title: 'Manual Zipcode upload',
+    title: 'Manual Zipcode Upload',
     id: 'allowlist',
     component: <Allowlist />,
     className: 'cod-allowlist-container',

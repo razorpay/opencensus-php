@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Modal, ModalHeader, ModalBody } from '@razorpay/blade/components';
+import { Modal, ModalBody } from '@razorpay/blade/components';
 
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
@@ -86,7 +86,6 @@ const ZonesUpload = (props: ZonesUploadProps): JSX.Element => {
 
   return (
     <Modal isOpen={isOpen} onDismiss={closeModal} size="medium">
-      <ModalHeader title="" />
       <ModalBody>
         <ErrorBoundary team={Teams?.MAGIC_CHECKOUT} rank={Ranks.P0} resetOnProps>
           <BatchUpload
@@ -100,6 +99,7 @@ const ZonesUpload = (props: ZonesUploadProps): JSX.Element => {
             validateModalInfo={<ValidateModalInfo />}
             maxFileSize={52428800} // 50MB
             batchListClass="shipping-settings-zipcodes-upload"
+            onCloseModal={closeModal}
           />
         </ErrorBoundary>
       </ModalBody>
