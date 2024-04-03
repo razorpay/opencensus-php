@@ -10578,6 +10578,8 @@ class Core extends Base\Core
             switch ($artefactType . $validationUnit) {
                 case Constant::BANK_ACCOUNT. BvsValidationConstants::IDENTIFIER:
                     return new BankAccountRequestDispatcher($merchant, $merchantDetails);
+                case Constant::GSTIN. BvsValidationConstants::IDENTIFIER:
+                    return new GstinAuth($merchant, $merchantDetails);
 
             }
         }

@@ -626,7 +626,8 @@ class Constants
 
     const SUPPORTED_VERIFICATION_RESPONSE_TYPES = [
         BVSConstants::AADHAAR,
-        BVSConstants::BANK_ACCOUNT
+        BVSConstants::BANK_ACCOUNT,
+        BVSConstants::GSTIN,
     ];
 
     const VERIFICATION_RESPONSE_KEYS = [
@@ -671,6 +672,7 @@ class Constants
         BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC27'                       => 'INVALID_ACCOUNT',
         BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC40'                       => 'INVALID_BENEFICIARY_IFSC_CODE_OR_NBIN',
         BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::RULE_EXECUTION_FAILED                           => 'NOT_MATCHED',
+        BVSConstants::GSTIN . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::RULE_EXECUTION_FAILED . 'inactive_gstin'               => 'INACTIVE_GSTIN',
     ];
 
     const LINKED_ACCOUNT_VERIFICATION_RESPONSE_ERROR_CODES = [

@@ -97,4 +97,13 @@ class GstinAuth extends Base
 
         }
     }
+
+    public function getVerificationResponseKey($validation)
+    {
+        $errorCode              = $validation->getErrorCode();
+
+        $errorDescription       = $validation->getErrorDescription();
+
+        return Constant::GSTIN . BvsValidationConstants::IDENTIFIER . $errorCode . $errorDescription;
+    }
 }
