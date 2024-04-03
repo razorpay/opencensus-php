@@ -9183,7 +9183,7 @@ class Service extends Base\Service
         $providerName = '';
         $providerType = '';
 
-        $resultWithAdditionalColumns = collect($merchantIds2)->map(function ($item) use ($Category, $tokenisationType, $terminalGateway, $gatewayTerminalId, $providerName, $providerType) {
+        $resultWithAdditionalColumns = collect($merchantIds2)->flatMap(function ($item) use ($Category, $tokenisationType, $terminalGateway, $gatewayTerminalId, $providerName, $providerType) {
             return collect($Category)->map(function ($category) use ($item, $tokenisationType, $terminalGateway, $gatewayTerminalId, $providerName, $providerType) {
                 $newItem = $item;
                 $newItem['category'] = $category;
