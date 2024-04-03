@@ -1,5 +1,5 @@
 import React from 'react';
-import { parseTimeoutValues } from './data';
+import { parseTimeoutValues, maxTimeoutValue } from './data';
 import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
 
 const CAPTURE_ASSETS_CDN_URL = 'https://cdn.razorpay.com/static/assets/capture-settings';
@@ -92,7 +92,7 @@ export const GraphicalExplanation = ({
             {refundMode === 'manually' ? manualTimeoutValue : timeLabel}
           </div>
           <div className="graphical-explain-div--info graphical-explain-div--info-secondary-header">
-            {timeoutValue === 7200 || captureMode === 'manual' || refundMode ? (
+            {timeoutValue === maxTimeoutValue || captureMode === 'manual' || refundMode ? (
               <>
                 <img src={`${CAPTURE_ASSETS_CDN_URL}/auto_refund.svg`} />
                 Auto Refund

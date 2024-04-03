@@ -7,7 +7,7 @@ import RefundMode from './RefundMode';
 import CaptureMode from './CaptureMode';
 import { fetchLateAuthConfig, createLateAuthConfig } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { parseTimeoutValues } from './data';
+import { parseTimeoutValues, maxTimeoutValue } from './data';
 import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
 import { GraphicalExplanation } from './GraphicalExplanation';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
@@ -27,12 +27,12 @@ function RefundSpeed(props) {
         size: 'medium',
         component: <CaptureMode />,
       });
-    } else if (props.captureMode === 'automatic' && props.captureModeTimeout === 7200) {
+    } else if (props.captureMode === 'automatic' && props.captureModeTimeout === maxTimeoutValue) {
       props.openModal({
         size: 'medium',
         component: <CaptureMode />,
       });
-    } else if (props.captureMode === 'automatic' && props.captureModeTimeout !== 7200) {
+    } else if (props.captureMode === 'automatic' && props.captureModeTimeout !== maxTimeoutValue) {
       props.openModal({
         size: 'medium',
         component: (
@@ -66,7 +66,7 @@ function RefundSpeed(props) {
     let label;
 
     if (props.captureMode === 'automatic') {
-      if (props.captureModeTimeout === 7200) {
+      if (props.captureModeTimeout === maxTimeoutValue) {
         label = `Change | Automatic Capture | Next | Normal Refund | Save`;
       } else {
         // eslint-disable-next-line no-lonely-if

@@ -1,8 +1,11 @@
 /* eslint-disable no-undef */
 import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
 
+export const maxTimeoutValue = 4320;
+export const defaultTimeoutValue = 12;
+
 export const TIMEOUT_VALUES = [
-  { label: '12 Mins', name: 12 },
+  { label: '12 Mins', name: defaultTimeoutValue },
   { label: '30 Mins', name: 30 },
   { label: '1 Hr', name: 60 },
   { label: '2 Hrs', name: 120 },
@@ -10,9 +13,7 @@ export const TIMEOUT_VALUES = [
   { label: '12 Hrs', name: 720 },
   { label: '1 Day', name: 1440 },
   { label: '2 Days', name: 2880 },
-  { label: '3 Days', name: 4320 },
-  { label: '4 Days', name: 5760 },
-  { label: '5 Days', name: 7200 },
+  { label: '3 Days', name: maxTimeoutValue },
 ];
 
 export const parseTimeoutValues = (timeoutValue) => {

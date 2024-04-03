@@ -11,6 +11,7 @@ import {
   parseTimeoutValues,
   TIMEOUT_VALUES,
   filterTimeoutBasedOnLimit,
+  maxTimeoutValue,
 } from './data';
 import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
 import { GraphicalExplanation } from './GraphicalExplanation';
@@ -34,12 +35,12 @@ function RefundMode(props) {
   });
 
   const [dropdownValue, setdropdownValue] = useState(() => {
-    if (props.lateAuthConfig.data.items.length === 0) return 7200;
+    if (props.lateAuthConfig.data.items.length === 0) return maxTimeoutValue;
 
     const captureOptions = props.lateAuthConfig.data.items[0].config.capture_options;
 
     if (isSelected === 'automatically') {
-      return 7200;
+      return maxTimeoutValue;
     } else {
       return props.captureModeTimeout > captureOptions.manual_expiry_period
         ? filterTimeoutBasedOnLimit(TIMEOUT_VALUES, props.captureModeTimeout)[0].name

@@ -5,7 +5,7 @@ import { bindActionCreators } from 'redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
-import { getTimeoutOptions, TIMEOUT_VALUES } from './data';
+import { getTimeoutOptions, TIMEOUT_VALUES, maxTimeoutValue, defaultTimeoutValue } from './data';
 import RefundSpeed from './RefundSpeed';
 import { GraphicalExplanation } from './GraphicalExplanation';
 
@@ -16,7 +16,7 @@ function CaptureMode(props) {
     return props.lateAuthConfig.data.items[0].config.capture;
   });
   const [timeoutValue, settimeoutValue] = useState(() => {
-    if (props.lateAuthConfig.data.items.length === 0) return 7200;
+    if (props.lateAuthConfig.data.items.length === 0) return defaultTimeoutValue;
 
     let tvalue = null;
     const captureOptions = props.lateAuthConfig.data.items[0].config.capture_options;
@@ -50,12 +50,12 @@ function CaptureMode(props) {
         size: 'medium',
         component: <RefundSpeed captureMode={captureMode} captureModeTimeout={timeoutValue} />,
       });
-    } else if (captureMode === 'automatic' && _tValue === 7200) {
+    } else if (captureMode === 'automatic' && _tValue === maxTimeoutValue) {
       props.openModal({
         size: 'medium',
         component: <RefundSpeed captureMode={captureMode} captureModeTimeout={timeoutValue} />,
       });
-    } else if (captureMode === 'automatic' && _tValue !== 7200) {
+    } else if (captureMode === 'automatic' && _tValue !== maxTimeoutValue) {
       props.openModal({
         size: 'medium',
         component: <RefundMode captureMode={captureMode} captureModeTimeout={timeoutValue} />,
@@ -118,7 +118,7 @@ function CaptureMode(props) {
                         defaultValue={timeoutValue}
                         onChange={onTimeoutValueChange}
                       />
-                      <p class="highlight__subtext">Minimum 12 mins and maximum 5 days</p>
+                      <p class="highlight__subtext">Minimum 12 mins and maximum 3 days</p>
                     </>
                   )}
                 </div>
@@ -155,7 +155,7 @@ function CaptureMode(props) {
                         defaultValue={timeoutValue}
                         onChange={onTimeoutValueChange}
                       />
-                      <p class="highlight__subtext">Minimum 12 mins and maximum 5 days</p>
+                      <p class="highlight__subtext">Minimum 12 mins and maximum 3 days</p>
                     </React.Fragment>
                   )}
                 </div>
@@ -165,7 +165,7 @@ function CaptureMode(props) {
           <div class={`lower-panel ${captureMode ? `flex-3` : ''}`}>
             <div class="note">
               <p>
-                <strong>Note</strong> : Payments not captured within 5 days of creation will be auto
+                <strong>Note</strong> : Payments not captured within 3 days of creation will be auto
                 refunded
               </p>
             </div>
