@@ -4399,6 +4399,25 @@ class Service extends Base\Service
             {
                 return $this->app['upi.payments']->action(Payment\Action::VALIDATE_VPA_PROXY, $input, "");
             }
+            catch (Exception\GatewayErrorException $exception)
+            {
+                $this->trace->error(
+                    TraceCode::VALIDATE_VPA_UPS_GATEWAY_REQUEST_FAILED,
+                    [
+                        'error_message' => $exception->getMessage(),
+                    ]);
+
+                if ($exception->getCode() === ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA)
+                {
+                    return [
+                        'vpa'           => $input['vpa'],
+                        'success'       => false,
+                        'customer_name' => null,
+                    ];
+                }
+
+                throw $exception;
+            }
             catch(\Throwable $e)
             {
                 $this->trace->error(
