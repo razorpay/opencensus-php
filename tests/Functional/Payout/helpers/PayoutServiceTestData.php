@@ -6182,4 +6182,52 @@ return [
             ],
         ],
     ],
+
+    'testPayoutsServiceBASProcessStatementPostReconSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/banking_account_statement/batch/process',
+            'content' => [
+                'data' => [
+                    [
+                        'banking_account_statement_id' => 'NnA1VnU7tFZMGq',
+                        'recon_status' => 'Reconciled',
+                        'entity_id' => '1042936109,PROCESSED,NnA1VnU7tFZopl',
+                        'entity_type' => 'payouts_fts_attempts_id,payouts_fts_status,payouts_payout_id'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPayoutsServiceBASProcessStatementPostReconServerError' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/banking_account_statement/batch/process',
+            'content' => [
+                'data' => [
+                    [
+                        'banking_account_statement_id' => 'NnA1VnU7tFZMGq',
+                        'recon_status' => 'Reconciled',
+                        'entity_id' => '1042936109,PROCESSED,NnA1VnU7tFZopl',
+                        'entity_type' => 'payouts_fts_attempts_id,payouts_fts_status,payouts_payout_id'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR,
+        ],
+    ],
 ];

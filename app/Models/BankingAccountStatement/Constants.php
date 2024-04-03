@@ -40,4 +40,11 @@ class Constants
     const BANKING_ACCOUNT_STATEMENT_CLEAN_UP          = 'BankingAccountStatementCleanUp';
     const BANKING_ACCOUNT_MISSING_STATEMENT_INSERT    = 'BankingAccountMissingStatementInsert';
     const BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO = 'worker:banking_account_statement_recon_process_neo';
+
+    // Processing post recon request
+    const DATA                         = 'data';
+    const BANKING_ACCOUNT_STATEMENT_ID = 'banking_account_statement_id';
+    const RECON_STATUS                 = 'recon_status';
+    const ENTITY_ID                    = 'entity_id';
+    const ENTITY_TYPE                  = 'entity_type';
 }

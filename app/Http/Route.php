@@ -2150,6 +2150,9 @@ class Route
 
         'update_merchant_sla_for_on_hold_payouts'  => ['put',      'payouts/merchant_on_hold_slas',                  'PayoutController@updateMerchantOnHoldSlas'],
 
+        // Payouts Banking Account Statement routes
+        'payouts_bas_process_post_recon'           => ['post',      'banking_account_statement/batch/process',      'BankingAccountStatementController@processStatementPostRecon'],
+
         'payout_get_holiday_details'              => ['get',     'holidays',                                        'PayoutController@getHolidayDetails'],
 
         //fund_management_routes
@@ -6581,6 +6584,7 @@ class Route
 
         // emandate service internal auth
         'customer_fetch_token_emandate_internal',
+        'payouts_bas_process_post_recon',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17046,6 +17050,7 @@ class Route
             'create_ledger_journal_batch',
             'merchant_upload_miq_admin',
             'irctc_settlement_batch_service',
+            'payouts_bas_process_post_recon',
         ],
 
         'stork' => [
@@ -18558,6 +18563,7 @@ class Route
         'fund_account_bulk_create',
 
         'banking_account_statement_generate',
+        'payouts_bas_process_post_recon',
 
         //'bank_transfer_process',
         //'bank_transfer_process_icici',

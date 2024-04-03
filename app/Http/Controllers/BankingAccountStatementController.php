@@ -151,4 +151,13 @@ class BankingAccountStatementController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function processStatementPostRecon()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processStatementPostRecon($input);
+
+        return ApiResponse::json($response);
+    }
 }

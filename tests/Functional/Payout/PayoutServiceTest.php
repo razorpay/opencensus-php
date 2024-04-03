@@ -61,6 +61,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Services\PayoutService\DataConsistencyChecker;
 use RZP\Tests\Functional\Helpers\PayoutAttachmentTrait;
 use RZP\Services\PayoutService\Get as PayoutServiceGet;
+use RZP\Services\PayoutService\BankingAccountStatement;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\Merchant\Balance\AccountType as AccountType;
@@ -8105,6 +8106,20 @@ class PayoutServiceTest extends TestCase
         return $response;
     }
 
+    public function payoutsServiceBankingAccountStatementResponseMock(int $statusCode)
+    {
+        $response = new Response();
+
+        if ($statusCode !== 500)
+        {
+            $response->body        = json_encode([]);
+        }
+        $response->success     = true;
+        $response->status_code = $statusCode;
+
+        return $response;
+    }
+
     public function payoutsServiceUpdateFailureProcessingCronResponseMock($fail)
     {
         $response = new \WpOrg\Requests\Response();
@@ -10435,6 +10450,57 @@ class PayoutServiceTest extends TestCase
         );
 
         $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testPayoutsServiceBASProcessStatementPostReconSuccess()
+    {
+        $this->ba->batchAppAuth();
+
+        $payoutServiceBankingAccountStatementClient = Mockery::mock(
+            'RZP\Services\PayoutService\BankingAccountStatement', [$this->app])->makePartial();
+
+        $requestPayload = $this->testData[__FUNCTION__]['request']['content'];
+        $requestUrl = BankingAccountStatement::BANKING_ACCOUNT_STATEMENT_PROCESS_POST_RECON_URI;
+        $requestMethod = 'POST';
+
+        $payoutServiceBankingAccountStatementClient->shouldReceive('sendRequest')
+                                                   ->withArgs(
+                                                        function($arg) use($requestMethod, $requestUrl, $requestPayload) {
+                                                            if ($arg['method'] == $requestMethod &&
+                                                                $arg['content'] == stringify($requestPayload) &&
+                                                                ends_with($arg['url'], $requestUrl))
+                                                            {
+                                                                return true;
+                                                            }
+                                                            return false;
+                                                        }
+                                                    )
+                                                       ->andReturn(
+                                                           $this->payoutsServiceBankingAccountStatementResponseMock(200)
+                                                       );
+
+        $this->app->instance(BankingAccountStatement::PAYOUT_SERVICE_BANKING_ACCOUNT_STATEMENT,
+                             $payoutServiceBankingAccountStatementClient);
+
+        $this->startTest();
+    }
+
+    public function testPayoutsServiceBASProcessStatementPostReconServerError()
+    {
+        $this->ba->batchAppAuth();
+
+        $payoutServiceBankingAccountStatementClient = Mockery::mock(
+            'RZP\Services\PayoutService\BankingAccountStatement', [$this->app])->makePartial();
+
+        $payoutServiceBankingAccountStatementClient->shouldReceive('sendRequest')
+                                                   ->andReturn(
+                                                       $this->payoutsServiceBankingAccountStatementResponseMock(500)
+                                                   );
+
+        $this->app->instance(BankingAccountStatement::PAYOUT_SERVICE_BANKING_ACCOUNT_STATEMENT,
+                             $payoutServiceBankingAccountStatementClient);
 
         $this->startTest();
     }

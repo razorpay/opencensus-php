@@ -804,6 +804,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceUpdateAttachments();
 
+        $this->registerPayoutServiceBankingAccountStatement();
+
         $this->registerFTSChannelNotification();
 
         $this->registerSettlementsPayout();
@@ -2617,6 +2619,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Workflow::PAYOUT_SERVICE_WORKFLOW, function($app)
         {
             return new PayoutService\Workflow($app);
+        });
+    }
+
+    protected function registerPayoutServiceBankingAccountStatement()
+    {
+        $this->app->singleton(PayoutService\BankingAccountStatement::PAYOUT_SERVICE_BANKING_ACCOUNT_STATEMENT, function($app)
+        {
+            return new PayoutService\BankingAccountStatement($app);
         });
     }
 

@@ -9,11 +9,24 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Services\PayoutService;
 use RZP\Jobs\MissingAccountStatementDetection;
 use RZP\Models\BankingAccountStatement\Details as BASD;
 
 class Service extends Base\Service
 {
+    /**
+     * @var PayoutService\BankingAccountStatement
+     */
+    protected $payoutServiceBankingAccountStatementClient;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->payoutServiceBankingAccountStatementClient = $this->app[PayoutService\BankingAccountStatement::PAYOUT_SERVICE_BANKING_ACCOUNT_STATEMENT];
+    }
+
     public function fetchStatementForAccount(array $input): array
     {
         $response = $this->core()->processStatementForAccount($input);
@@ -323,5 +336,32 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_DETECTION_SUMMARY, $jobDispatchSummary);
 
         return $jobDispatchSummary;
+    }
+
+    public function processStatementPostRecon($input)
+    {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_POST_RECON_REQUEST, $input);
+
+        try
+        {
+            $this->payoutServiceBankingAccountStatementClient->triggerStatementProcessingPostReconViaMicroService($input);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_POST_RECON_FAILURE,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+
+            throw $exception;
+        }
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_POST_RECON_RESPONSE, $input);
+
+        return [
+            "success" => true
+        ];
     }
 }
