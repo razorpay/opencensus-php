@@ -101,7 +101,14 @@ class Authorized extends Base
                         'first_value'               => $data['payment']['method'][0],
                         'second_value'              => $data['payment']['method'][1],
                     ],
-                    'unsigned_id'               => $data['payment']['id'],
+                    'unsigned_id'                   => $data['payment']['id'],
+                    'dcc'                           => $data['payment']['dcc'],
+                    'payment_currency'              => $data['payment']['currency'],
+                    'gateway_currency'              => $data['payment']['gateway_currency'],
+                    'exchange_rate'                 => $data['payment']['exchange_rate'],
+                    'payment_amount_without_symbol' => $data['payment']['amount_without_symbol'],
+                    'gateway_amount_without_symbol' => $data['payment']['gateway_amount_without_symbol'],
+                    'currency_conversion_fee_without_symbol' => $data['payment']['currency_conversion_fee_without_symbol'],
                 ],
 
                 'customer'  => [
@@ -137,9 +144,10 @@ class Authorized extends Base
         {
             $storkParams['params']['rewards'] = $data['rewards'];
             $storkParams['template_name'] = 'customer.payment.authorized_with_rewards';
-        }
-        else
-        {
+        } elseif (isset($data['payment']['dcc']) && $data['payment']['dcc']) {
+            $storkParams['template_namespace'] = "payments_crossborder";
+            $storkParams['template_name'] = 'customer.payment.authorized_with_compliant_dcc';
+        } else {
             $storkParams['template_name'] = 'customer.payment.authorized_without_rewards';
         }
 

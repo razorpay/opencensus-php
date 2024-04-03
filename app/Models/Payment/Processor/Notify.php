@@ -24,6 +24,7 @@ use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Models\Merchant\Email as MerchantEmail;
 use RZP\Models\Reward\Repository as RewardRepository;
 use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Notify
 {
@@ -592,6 +593,8 @@ class Notify
 
                 'dcc'                  => ($this->payment->isDCC() and $this->merchant->isDCCMarkupVisible()),
                 'gateway_amount_spread'=> $this->payment->getAmountComponents($this->payment->isDCC()),
+                'currency'             => $this->payment->getCurrency(),
+                'amount_without_symbol'=> $this->payment->getFormattedAmountWithoutSymbol()
             ],
             'org'       => [
                 'id'                   => $this->org->getId(),
@@ -602,7 +605,7 @@ class Notify
             ],
         ];
 
-        // Add Org Data from commit 1dad91cb6e6e here instead of doing in Payment/Base constructor, 
+        // Add Org Data from commit 1dad91cb6e6e here instead of doing in Payment/Base constructor,
         // that was wrong implementation since child class has power to override not parent
         $orgData = OrgWiseConfig::getOrgDataForEmail($this->merchant);
 
@@ -664,6 +667,12 @@ class Notify
             $gatewayCurrency = $paymentMeta->getGatewayCurrency();
 
             $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent());
+            $data['payment']['exchange_rate'] = $paymentMeta->getGatewayAmount() / $this->payment->getAmount();
+            if($this->merchant->isDCCMarkupVisible()) {
+                $reducedDccMarkupPercent = ceil($paymentMeta->getDccMarkUpPercent() - ($paymentMeta->getDccMarkUpPercent() * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT/100)));
+                $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $reducedDccMarkupPercent);
+            }
+
             $feeAsPerCurrency = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $fee);
             $data['payment']['currency_conversion_fee'] = $feeAsPerCurrency;
 
@@ -672,6 +681,9 @@ class Notify
 
             $dccBaseAmount = $gatewayAmount - $fee;
             $data['payment']['dcc_base_amount'] = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $dccBaseAmount);
+            $data['payment']['gateway_currency'] = $gatewayCurrency;
+            $data['payment']['currency_conversion_fee_without_symbol'] = $this->payment->getFormattedAmountWithoutSymbol($gatewayCurrency, $fee);
+            $data['payment']['gateway_amount_without_symbol'] = $this->payment->getFormattedAmountWithoutSymbol($gatewayCurrency, $gatewayAmount);
         }
 
         if (($this->payment->isFailed() === false) and $this->fetchReward === true)

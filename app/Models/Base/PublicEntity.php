@@ -991,6 +991,24 @@ class PublicEntity extends UniqueIdEntity
         return $currencySymbol . ' ' . $amount;
     }
 
+    public function getFormattedAmountWithoutSymbol(string $currency = null, int $amount = null)
+    {
+        if ($currency === null)
+        {
+            $currency = $this->getCurrency();
+        }
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency] ?? 100;
+
+        if ($amount === null)
+        {
+            $amount = $this->getAmount();
+        }
+
+        $amount = $amount / $denominationFactor;
+
+        return sprintf($amount === intval($amount) ? '%d' : '%.2f', $amount);
+    }
+
     /**
      * 12012(in paise) as  ['₹',120, 12] (rupees paise as separate entry in array)
      *

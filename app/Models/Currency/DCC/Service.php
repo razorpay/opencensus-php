@@ -9,6 +9,7 @@ use RZP\Models\Currency;
 use RZP\Models\Payment\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 
 class Service extends Base\Service
@@ -212,6 +213,7 @@ class Service extends Base\Service
                 $supportedCurrencies[$currency]['fee'] =
                     (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
                 $supportedCurrencies[$currency]['conversion_percentage'] = $markUpPercent;
+                $supportedCurrencies[$currency]['show_markup_conversion_percentage'] = ceil($markUpPercent - ($markUpPercent * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT/100)));
             }
             else
             {
@@ -270,6 +272,7 @@ class Service extends Base\Service
                 $supportedCurrencies[$currency]['fee'] =
                     (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
                 $supportedCurrencies[$currency]['conversion_percentage'] = $markUpPercent;
+                $supportedCurrencies[$currency]['show_markup_conversion_percentage'] = ceil($markUpPercent - ($markUpPercent * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT/100)));
             }
             else
             {
