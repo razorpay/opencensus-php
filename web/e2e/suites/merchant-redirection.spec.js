@@ -34,12 +34,21 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
     const signUpButton = page.getByRole('button', { name: 'Sign Up' });
     await signUpButton.waitFor({ state: 'visible', timeout: 10000 });
     await signUpButton.click();
-    try {
-      await expect(page).toHaveURL(constants.UNIFIED_SIGNUP_REDIRECTION_URL, {
-        timeout: 10000,
-      });
-    } catch {
-      await expect(page).toHaveURL(constants.SIGNUP_REDIRECTION_URL);
+
+    const promises = [
+      expect(page).toHaveURL(constants.UNIFIED_SIGNUP_REDIRECTION_URL, { timeout: 10000 }),
+      expect(page).toHaveURL(constants.SIGNUP_REDIRECTION_URL, { timeout: 10000 }),
+    ];
+
+    const results = await Promise.allSettled(promises);
+
+    const fulfilledResults = results.filter((result) => result.status === 'fulfilled');
+
+    if (fulfilledResults.length > 0) {
+      console.log('one of the two redirection passed');
+    } else {
+      console.error(results);
+      throw new Error('Redirection failed');
     }
   });
 

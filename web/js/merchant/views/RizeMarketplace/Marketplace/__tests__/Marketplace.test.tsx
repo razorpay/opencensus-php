@@ -78,19 +78,17 @@ describe('RizeMarketplacePage', () => {
     mockFetchProductsAPIResponse({});
     const { history } = renderApp();
 
-    await waitFor(async () => {
-      // Product card tile
-      const [productCardTile] = screen.getAllByTestId('product-card-tile');
-      let deal = within(productCardTile).getByRole('link');
-      await userEvent.click(deal);
-      expect(history.location.pathname).toEqual(`/rize-marketplace/${mockData[0].slug}`);
+    // Product card tile
+    const [productCardTile] = await screen.findAllByTestId('product-card-tile');
+    let deal = within(productCardTile).getByRole('link');
+    await userEvent.click(deal);
+    expect(history.location.pathname).toEqual(`/rize-marketplace/${mockData[0].slug}`);
 
-      // Product card list
-      const [, productCardList] = screen.getAllByTestId('product-card-list');
-      deal = within(productCardList).getByRole('link');
-      await userEvent.click(deal);
-      expect(history.location.pathname).toEqual(`/rize-marketplace/${mockData[1].slug}`);
-    });
+    // Product card list
+    const [, productCardList] = await screen.findAllByTestId('product-card-list');
+    deal = within(productCardList).getByRole('link');
+    await userEvent.click(deal);
+    expect(history.location.pathname).toEqual(`/rize-marketplace/${mockData[1].slug}`);
   });
 
   test('should show toast when API call fails', async () => {
