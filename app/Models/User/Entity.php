@@ -568,7 +568,7 @@ class Entity extends Base\PublicEntity
 
     protected function isSecondFactorAuthEnabledForUserMerchants()
     {
-        $newAsvFlow = (new AsvRouter())->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $this->getAttribute(self::ID));
+        $newAsvFlow = (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__);
         if ($newAsvFlow === true) {
             return (new MerchantUser\Repository)->secondFactorAuthEnabledForUserMerchants($this->getAttribute(self::ID));
         }

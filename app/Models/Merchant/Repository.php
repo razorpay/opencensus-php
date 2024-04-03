@@ -1267,7 +1267,7 @@ class Repository extends Base\Repository
 
 
 
-        if(!$this->repo->isTransactionActive() && $this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $merchantId)) {
+        if(!$this->repo->isTransactionActive() && $this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
             $merchant = $this->findForWrite($merchantId);
         } else {
             $query = $useWritePdo === true ?  $this->newQueryWithConnection($mode)->useWritePdo() : $this->newQuery();
@@ -1686,13 +1686,7 @@ class Repository extends Base\Repository
     {
         $accessMapRepo = $this->repo->merchant_access_map;
 
-        if (
-            $this->asvRouter->shouldRouteWriteRequestToAccountService(
-                get_class($this),
-                __FUNCTION__,
-                $partnerId
-            )
-        )
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
             try
             {
@@ -2032,7 +2026,7 @@ class Repository extends Base\Repository
     {
         $limit = 1000;
 
-        if ($this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $merchantId))
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
             if (!$this->repo->isTransactionActive())
             {
@@ -2067,7 +2061,7 @@ class Repository extends Base\Repository
         $limit  = 1000;
         $reason = Constants::ACCOUNT_SUSPENDED_DUE_TO_PARENT_MERCHANT_SUSPENSION;
 
-        if ($this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $merchantId))
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
             if (!$this->repo->isTransactionActive())
             {

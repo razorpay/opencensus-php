@@ -282,25 +282,14 @@ class RepositoryTest extends RepositoryTestHelper
             $merchantDocument1Array = $merchantDocument1->toArray();
             $merchantDocumentProto1 = $this->getMerchantDocumentProtoFromJson($this->merchantDocumentEntityJson1);
 
-            // TestCase1 - when route belongs to write flow - splitz off, data will be fetched from db
-            $this->setSplitzWithOutputForBulk(["false", "false"], 1);
-            $merchantDocumentRepo            = new Repository();
-            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 2, true, null);
-            $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
 
-            // TestCase1.1 - when route belongs to exclusive flow and non write route - splitz off, data will be fetched from db
-            $entity->unsetRelation('merchantDocuments');
-            $merchantDocumentRepo            = new Repository();
-            $merchantDocumentRepo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, false, null);
-            $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
-
-            // TestCase2 - when route belongs to exclusive flow -splitz on, data will be fetched from db
+//            // TestCase2 - when route belongs to exclusive flow -splitz on, data will be fetched from db
             $entity->unsetRelation('merchantDocuments');
             $merchantDocumentRepo            = new Repository();
             $this->setSplitzWithOutputForBulk(["true", "true"], 0);
-            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isWriteFlowOrFailure'])->getMock();
-            $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(true);
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn(false);
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isTransactionActive'])->getMock();
+            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->willReturn(true);
+            $asvRouterMock->expects($this->exactly(0))->method('isExclusionFlowOrFailure')->willReturn(true);
             $merchantDocumentRepo->asvRouter = $asvRouterMock;
             $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
 
@@ -308,9 +297,9 @@ class RepositoryTest extends RepositoryTestHelper
             //TestCase3 both experiment is false, data will be fetched from db
             $entity->unsetRelation('merchantDocuments');
             $this->setSplitzWithOutputForBulk(["false", "false"], 1);
-            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isWriteFlowOrFailure'])->getMock();
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isTransactionActive'])->getMock();
+            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->willReturn(false);
             $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn(false);
             $merchantDocumentRepo            = new Repository();
             $merchantDocumentRepo->asvRouter = $asvRouterMock;
             $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
@@ -318,9 +307,9 @@ class RepositoryTest extends RepositoryTestHelper
             //TestCase4 - experiment respons - false, true, data will be fetched from db
             $entity->unsetRelation('merchantDocuments');
             $this->setSplitzWithOutputForBulk(["false", "true"], 1);
-            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isWriteFlowOrFailure'])->getMock();
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isTransactionActive'])->getMock();
+            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->willReturn(false);
             $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn(false);
             $merchantDocumentRepo            = new Repository();
             $merchantDocumentRepo->asvRouter = $asvRouterMock;
             $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
@@ -328,9 +317,9 @@ class RepositoryTest extends RepositoryTestHelper
             //TestCase5 - experiment respons - true, false. data will be fetched from db
             $entity->unsetRelation('merchantDocuments');
             $this->setSplitzWithOutputForBulk(["true", "false"], 1);
-            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isWriteFlowOrFailure'])->getMock();
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isTransactionActive'])->getMock();
+            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->willReturn(false);
             $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn(false);
             $merchantDocumentRepo            = new Repository();
             $merchantDocumentRepo->asvRouter = $asvRouterMock;
             $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
@@ -340,9 +329,9 @@ class RepositoryTest extends RepositoryTestHelper
             $merchantDocumentResponseByMerchantId = (new MerchantDocumentResponseByMerchantId())->setDocuments([$merchantDocumentProto1]);
             $this->setMerchantDocumentMockClientWithIdAndResponse($data["merchant_id"], $merchantDocumentResponseByMerchantId, null, "getByMerchantId", 1);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
-            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isWriteFlowOrFailure'])->getMock();
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isTransactionActive'])->getMock();
+            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->willReturn(false);
             $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn(false);
             $merchantDocumentRepo            = new Repository();
             $merchantDocumentRepo->asvRouter = $asvRouterMock;
             $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
@@ -351,47 +340,35 @@ class RepositoryTest extends RepositoryTestHelper
             $entity->unsetRelation('merchantDocuments');
             $this->setMerchantDocumentMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), "getByMerchantId", 1);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
-            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isWriteFlowOrFailure'])->getMock();
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isTransactionActive'])->getMock();
+            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->willReturn(false);
             $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn(false);
             $merchantDocumentRepo            = new Repository();
             $merchantDocumentRepo->asvRouter = $asvRouterMock;
             $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
 
             //TestCase8 - Not found in asv;  data will be null
             $entity->unsetRelation('merchantDocuments');
-            $this->setMerchantDocumentMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"), "getByMerchantId", 1);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
-            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isWriteFlowOrFailure'])->getMock();
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure' , 'isTransactionActive'])->getMock();
             $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn(false);
+            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->willReturn(false);
             $merchantDocumentRepo          = new Repository();
             $merchantDocumentRepo->asvRouter = $asvRouterMock;
             app('repo')->merchant_document = $merchantDocumentRepo;
+            $this->setMerchantDocumentMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"), "getByMerchantId", 1);
             $this->assertEquals(count($entity->merchantDocuments), 0);
 
             //TestCase9 - invalid argument in asv; data will be null
             $entity->unsetRelation('merchantDocuments');
-            $this->setMerchantDocumentMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"), "getByMerchantId", 1);
             $this->setSplitzWithOutputForBulk(["true", "true"], 1);
-            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isWriteFlowOrFailure'])->getMock();
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure' , 'isTransactionActive'])->getMock();
+            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->willReturn(false);
             $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn(false);
             $merchantDocumentRepo            = new Repository();
             $merchantDocumentRepo->asvRouter = $asvRouterMock;
             app('repo')->merchant_document   = $merchantDocumentRepo;
-            $this->assertEquals(count($entity->merchantDocuments), 0);
-
-            //TestCase10 - invalid argument in asv; data will be null for write flow
-            $entity->unsetRelation('merchantDocuments');
             $this->setMerchantDocumentMockClientWithIdAndResponse($data["merchant_id"], null, new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"), "getByMerchantId", 1);
-            $this->setSplitzWithOutputForBulk(["true", "true"], 1);
-            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isWriteFlowOrFailure'])->getMock();
-            $asvRouterMock->expects($this->exactly(0))->method('isExclusionFlowOrFailure')->willReturn(false);
-            $asvRouterMock->expects($this->exactly(2))->method('isWriteFlowOrFailure')->willReturn(true);
-            $merchantDocumentRepo            = new Repository();
-            $merchantDocumentRepo->asvRouter = $asvRouterMock;
-            app('repo')->merchant_document   = $merchantDocumentRepo;
             $this->assertEquals(count($entity->merchantDocuments), 0);
         }
     }

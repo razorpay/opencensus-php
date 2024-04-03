@@ -107,7 +107,7 @@ class Repository extends Base\Repository
      */
     public function getNonPurePlatformPartnerMapping(string $subMerchantId)
     {
-        $newflow = (new AsvRouter())->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $subMerchantId);
+        $newflow = (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__);
         if ($newflow == true)
         {
             $accessMapsEntityId = $this->dbColumn(Entity::ENTITY_ID);

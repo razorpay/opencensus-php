@@ -112,9 +112,6 @@ final class RepoAndFunctionToSplitzMap
         return self::SPLITZ_REMOVAL_MAP[$experimentName] ?? false;
     }
 
-    public static function getExperimentNameForWriteMigration(): string {
-        return self::ROUTE_WRITE_FLOW_TO_ASV;
-    }
 
     public static function getExperimentNameForFilterMigration(): string {
         return self::ROUTE_FILTER_REQUEST_TO_ASV;

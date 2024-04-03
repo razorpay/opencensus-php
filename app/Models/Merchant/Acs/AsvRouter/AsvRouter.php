@@ -96,37 +96,6 @@ class AsvRouter
         }
     }
 
-    public function isWriteFlowOrFailure(): bool
-    {
-        try {
-            $routeOrWorkerName = $this->getRouteOrJobName();
-            if ($routeOrWorkerName === self::None) {
-                // if we get a none route, we should let the request go to the database
-                // Since, it is possible there was some exception, or we are not able to extract out the
-                // route name correctly.
-                return false;
-            }
-
-
-            $isWriteFLow = AsvFlows::isWriteFLow($routeOrWorkerName);
-
-            // temporarily added this log if the check is working correctly.
-            $this->trace->count(Metric::ACCOUNT_SERVICE_CHECK_WRITE_FLOW_RESULT, [
-                'routeOrWorkerName' => $routeOrWorkerName,
-                'isWriteFlow' => $isWriteFLow
-            ]);
-
-            return $isWriteFLow;
-        } catch (\Exception $e) {
-
-            $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_CHECK_WRITE_FLOW_EXCEPTION);
-
-            // if we are getting and exception here, we should
-            // block the request and let it go to the api
-            return false;
-        }
-    }
-
     public function getRouteOrJobName()
     {
         try {
@@ -268,16 +237,12 @@ class AsvRouter
     function shouldRouteToAccountService($id, $repoClass, $functionName): bool
     {
         try {
-            if ($this->isWriteFlowOrFailure() === true) {
-                if ($this->isTransactionActive($repoClass) === true) {
-                    $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                        'routeOrWorkerName' => $this->getRouteOrJobName(),
-                        'reason' => self::FLOW_WITH_TRANSACTION,
-                    ]);
-                    return false;
-                }
-
-                return $this->shouldRouteWriteRequestToAccountService($repoClass, $functionName, $id);
+            if ($this->isTransactionActive($repoClass) === true) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::FLOW_WITH_TRANSACTION,
+                ]);
+                return false;
             }
 
             $isExclusionFlow = $this->isExclusionFlowOrFailure();
@@ -314,35 +279,6 @@ class AsvRouter
         }
     }
 
-    public function shouldRouteWriteRequestToAccountService($repoClass, $functionName, $id): bool
-    {
-        try {
-            if ($this->isWriteFlowOrFailure() === false) {
-                return false;
-            }
-
-            $experimentName       = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForWriteMigration();
-            $routeOrWorkerName    = $this->getRouteOrJobName();
-            $isRequestRoutedToAsv = $this->splitzHelper->isSplitzOnForWriteByExperimentName(
-                $experimentName,
-                $id,
-                $routeOrWorkerName,
-            );
-
-
-            $this->logAndReportMetrics($repoClass, $routeOrWorkerName, $isRequestRoutedToAsv, $functionName);
-
-            return $isRequestRoutedToAsv;
-        } catch (\Throwable $e) {
-            $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_ERROR, [
-                'error_code' => $e->getCode(),
-            ]);
-
-            $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
-            return false;
-        }
-    }
-
     public function shouldWriteToASVDB($repoClass, $functionName, $id): bool
     {
         try {
@@ -362,14 +298,12 @@ class AsvRouter
 
     public function shouldRouteImplicitJoinToAccountService($id, $entityName, $repoClass, $functionName): bool {
         try {
-
-            if ($this->isWriteFlowOrFailure() === true) {
-
-                if ($this->isTransactionActive($repoClass) === true) {
-                    return false;
-                }
-
-                return $this->shouldRouteWriteRequestToAccountService($repoClass, $functionName, $id);
+            if ($this->isTransactionActive($repoClass) === true) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::FLOW_WITH_TRANSACTION,
+                ]);
+                return false;
             }
 
             $isExclusionFlow = $this->isExclusionFlowOrFailure();
@@ -517,15 +451,6 @@ class AsvRouter
             ]);
             return false;
         }
-    }
-
-    public function shouldCreateTransactionWithAsvAlso(): bool
-    {
-        return $this->shouldWriteToASVDB(
-            RepositoryManager::class,
-            self::CREATE_TRANSACTION_WITH_ASV_ALSO,
-            self::REPOSITORY_MANAGER_ID
-        );
     }
 
     public function isTransactionActive($repoClass): bool {

@@ -57,90 +57,12 @@ class AsvRouterTest extends TestCase
         ]
     ];
 
-    public function testShouldRouteWriteRequestToAccountService() {
-
-        Config::set('applications.asv_v2.splitz_send_write_to_asv', 'K1ZaAHZ7Lnumc62');
-        Config::set('applications.asv_v2.splitz_experiment_send_write_route_or_worker_to_asv', 'K1ZaAHZ7Lnumc3');
-
-        $tests = [
-            [
-                "splitz_call_count" => 1,
-                "is_enabled_write_on_entity" => true,
-                "is_enabled_write_on_route" => true,
-                "splitz_exception" => false,
-                "is_write_flow" => true,
-                "expected_result" => true,
-                "test_id" => "test_id"
-            ],
-            [
-                "splitz_call_count" => 1,
-                "is_enabled_write_on_entity" => false,
-                "is_enabled_write_on_route" => true,
-                "splitz_exception" => false,
-                "is_write_flow" => true,
-                "expected_result" => false,
-                "test_id" => "test_id"
-            ],
-            [
-                "splitz_call_count" => 1,
-                "is_enabled_write_on_entity" => true,
-                "is_enabled_write_on_route" => true,
-                "splitz_exception" => true,
-                "is_write_flow" => true,
-                "expected_result" => false,
-                "test_id" => "test_id"
-            ],
-            [
-                "splitz_call_count" => 0,
-                "is_enabled_write_on_entity" => true,
-                "is_enabled_write_on_route" => true,
-                "splitz_exception" => true,
-                "is_write_flow" => false,
-                "expected_result" => false,
-                "test_id" => "test_id"
-            ]
-        ];
-
-        for ($i = 0; $i < count($tests); $i++) {
-            $test = $tests[$i];
-            list($request, $response) = $this->getSplitzRequestAndResponse($test);
-
-            $this->setSplitzWithOutputForBulk($response, $request, $test["splitz_call_count"], $test["splitz_exception"]);
-            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)
-                ->enableOriginalConstructor()
-                ->onlyMethods(["isWriteFlowOrFailure"])
-                ->getMock();
-
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn($test['is_write_flow']);
-
-            $this->assertEquals($test["expected_result"], $asvRouterMock->shouldRouteWriteRequestToAccountService(
-                Repository::class,
-                FunctionConstant::SAVE_OR_FAIL,
-                "test_id",
-            ));
-        }
-
-    }
-
 
     public function testShouldRouteImplicitJoinToAccountService() {
         $tests = [
             [
-                "is_write_flow" => true,
-                "expected_result" => true,
-                "is_transaction_active" => false,
-                "shouldRouteWriteRequestToAccountService" => true,
-            ],
-            [
-                "is_write_flow" => true,
                 "expected_result" => false,
                 "is_transaction_active" => true,
-            ],
-            [
-                "is_write_flow" => true,
-                "expected_result" => false,
-                "is_transaction_active" => false,
-                "shouldRouteWriteRequestToAccountService" => false,
             ],
         ];
 
@@ -148,16 +70,11 @@ class AsvRouterTest extends TestCase
             $test          = $tests[$i];
             $asvRouterMock = $this->getMockBuilder(AsvRouter::class)
                 ->enableOriginalConstructor()
-                ->onlyMethods(["isWriteFlowOrFailure", 'isTransactionActive', 'shouldRouteWriteRequestToAccountService'])
+                ->onlyMethods(['isTransactionActive'])
                 ->getMock();
 
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn($test['is_write_flow']);
-            if ($test['is_write_flow'] === true) {
-                $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->with(Repository::class)->willReturn($test['is_transaction_active']);
-                if ($test['is_transaction_active'] === false) {
-                    $asvRouterMock->expects($this->exactly(1))->method('shouldRouteWriteRequestToAccountService')->willReturn($test['shouldRouteWriteRequestToAccountService']);
-                }
-            }
+            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->with(Repository::class)->willReturn($test['is_transaction_active']);
+
 
             $actualResult = $asvRouterMock->shouldRouteImplicitJoinToAccountService(
                 "test_id",
@@ -175,21 +92,8 @@ class AsvRouterTest extends TestCase
 
         $tests = [
             [
-                "is_write_flow" => true,
-                "expected_result" => true,
-                "is_transaction_active" => false,
-                "shouldRouteWriteRequestToAccountService" => true,
-            ],
-            [
-                "is_write_flow" => true,
                 "expected_result" => false,
                 "is_transaction_active" => true,
-            ],
-            [
-                "is_write_flow" => true,
-                "expected_result" => false,
-                "is_transaction_active" => false,
-                "shouldRouteWriteRequestToAccountService" => false,
             ],
         ];
 
@@ -197,17 +101,11 @@ class AsvRouterTest extends TestCase
             $test = $tests[$i];
             $asvRouterMock = $this->getMockBuilder(AsvRouter::class)
                 ->enableOriginalConstructor()
-                ->onlyMethods(["isWriteFlowOrFailure", 'isTransactionActive', 'shouldRouteWriteRequestToAccountService'])
+                ->onlyMethods(['isTransactionActive'])
                 ->getMock();
 
-            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn($test['is_write_flow']);
-            if($test['is_write_flow'] === true) {
-                $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->with(Repository::class)->willReturn($test['is_transaction_active']);
+            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->with(Repository::class)->willReturn($test['is_transaction_active']);
 
-                if ($test['is_transaction_active'] === false) {
-                    $asvRouterMock->expects($this->exactly(1))->method('shouldRouteWriteRequestToAccountService')->willReturn($test['shouldRouteWriteRequestToAccountService']);
-                }
-            }
 
             $actualResult = $asvRouterMock->shouldRouteToAccountService(
                 "test_id",

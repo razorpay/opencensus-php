@@ -628,12 +628,6 @@ class RepositoryManager extends Illuminate\Support\Manager
      */
     public function transactionOnLiveAndTestAndAsv(callable $callback)
     {
-        // if this is merchant related write flow then only call this method
-        // else calls transactionOnLiveAndTest which saves data in test and live only
-        if ((new AsvRouter())->shouldCreateTransactionWithAsvAlso() === false) {
-            return $this->transactionOnLiveAndTest($callback);
-        }
-
         //
         // We need to grab and assign the default connection here
         // because in the callback code, the functions try to change
