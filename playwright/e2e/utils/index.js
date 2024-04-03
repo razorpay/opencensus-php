@@ -1,6 +1,22 @@
 export const loginByMobile = async ({ page, mobile }) => {
   await page.click('input[type="text"]');
   await page.fill('input[type="text"]', mobile);
+  await page.route('**/user/signin/otp', async (route, request) => {
+    console.log('SMS mock request intercepted');
+    if (request.postData) {
+      const existingBody = await request.postData();
+      const requestBody = JSON.parse(existingBody);
+
+      // add sms mock flag
+      requestBody.skip_sms_request = true;
+
+      const newRequestBody = JSON.stringify(requestBody);
+
+      route.continue({ postData: newRequestBody });
+    } else {
+      route.continue();
+    }
+  });
   await page.click('text="Next"');
   await page.click('input[id="Enter OTP"]');
   await page.fill('input[id="Enter OTP"]', '000007');

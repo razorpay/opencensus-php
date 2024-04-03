@@ -137,11 +137,11 @@ const getMobileCredentials = () => {
       mobile: ENV.MOBILE_TEST_MODE_GCMS_MOBILE,
       storagePath: StorageStatePath.MOBILE_TEST_GCMS_STATE,
     },
-    {
-      type: 'pos-kyc-status-nc.json',
-      mobile: ENV.MOBILE_TEST_MODE_POS_KYC_STATUS_NC,
-      storagePath: StorageStatePath.POS_KYC_STATUS_NC,
-    },
+    // {
+    //   type: 'pos-kyc-status-nc.json',
+    //   mobile: ENV.MOBILE_TEST_MODE_POS_KYC_STATUS_NC,
+    //   storagePath: StorageStatePath.POS_KYC_STATUS_NC,
+    // },
   ];
 };
 
