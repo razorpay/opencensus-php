@@ -606,7 +606,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $migrateFreePayoutPayoutsServiceRules = [
-        EntityConstants::ACTION             => 'required|in:enable,disable',
+        EntityConstants::ACTION             => 'required|in:enable,disable,basd_status,ps_basd_status,ps_basd_create',
         'ids'                               => 'required|array',
         'ids' . '.*.' . Entity::MERCHANT_ID => 'required|alpha_num|size:14',
         'ids' . '.*.' . Entity::BALANCE_ID  => 'required|alpha_num|size:14',

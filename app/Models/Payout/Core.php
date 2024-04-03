@@ -6296,6 +6296,15 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::MIGRATE_FREE_PAYOUT_TO_PAYOUTS_SERVICE_DISPATCH_INITIATE, $traceInfo);
 
+            if (($action == "basd_status") or
+                ($action == "ps_basd_status") or
+                ($action == "ps_basd_create"))
+            {
+                $request[EntityConstant::ACTION] = $action;
+
+                return (new BankingAccountStatement\Details\Core)->handleBasDetailsActions($request);
+            }
+
             try
             {
                 FreePayoutMigrationForPayoutsService::dispatch($this->mode, $action, $merchantId, $balanceId);

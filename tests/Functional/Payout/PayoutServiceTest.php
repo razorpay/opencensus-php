@@ -6232,6 +6232,90 @@ class PayoutServiceTest extends TestCase
         $this->assertNotContains(Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArray);
     }
 
+    public function testBasDetailsStatusUpdateAdminAction()
+    {
+        $this->fixtures->on('live')->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $this->bankingBalance->getId();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        /** @var Details\Entity $basDetails */
+        $basDetails = $this->getDbEntityById(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, 'xbas0000000002', 'live');
+
+        $this->assertEquals(Details\Status::INACTIVE, $basDetails->getStatus());
+
+    }
+
+    public function testBasDetailsStatusUpdateInPSAdminAction()
+    {
+        $basDetailsInput = [
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+            Details\Entity::CREATED_AT => 0,
+            Details\Entity::UPDATED_AT => 0,
+        ];
+
+        \DB::connection('test')->table('ps_banking_account_statement_details')->insert($basDetailsInput);
+
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $this->bankingBalance->getId();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $psBasDetails = \DB::connection('test')->select("select * from ps_banking_account_statement_details where id = 'xbas0000000002'")[0];
+
+        $this->assertEquals(Details\Status::INACTIVE, $psBasDetails->status);
+    }
+
+    public function testBasDetailsStatusCreateInPSAdminAction()
+    {
+        $basDetailsInput = [
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+            Details\Entity::CREATED_AT     => 0,
+            Details\Entity::UPDATED_AT     => 0,
+        ];
+
+        $testData = $this->testData['testBasDetailsStatusUpdateInPSAdminAction'];
+        $testData['request']['content']['action'] = 'ps_basd_create';
+        $testData['request']['content']['ids'][0][Details\Entity::BALANCE_ID] = $this->bankingBalance->getId();
+        $testData['request']['content']['ids'][0]['data'] = $basDetailsInput;
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $psBasDetails = \DB::connection('test')->select("select * from ps_banking_account_statement_details where id = 'xbas0000000002'")[0];
+
+        $this->assertEquals('xbas0000000002', $psBasDetails->id);
+        $this->assertEquals(Details\Status::ACTIVE, $psBasDetails->status);
+        $this->assertEquals('2224440041626905', $psBasDetails->account_number);
+        $this->assertEquals($this->bankingBalance->getId(), $psBasDetails->balance_id);
+        $this->assertEquals('10000000000000', $psBasDetails->merchant_id);
+        $this->assertEquals('rbl', $psBasDetails->channel);
+        $this->assertEquals('direct', $psBasDetails->account_type);
+    }
+
     public function testFreePayoutMigrationAdminActionWithIdempotencyPsToApiFeatureEnabled()
     {
         $this->mockPayoutServiceFreePayoutMigration();

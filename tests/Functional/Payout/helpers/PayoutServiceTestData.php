@@ -2582,6 +2582,48 @@ return [
         ],
     ],
 
+    'testBasDetailsStatusUpdateAdminAction' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION           => 'basd_status',
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000',
+                        Entity::ID => 'xbas0000000002',
+                        Entity::STATUS => 'inactive',
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testBasDetailsStatusUpdateInPSAdminAction' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION           => 'ps_basd_status',
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000',
+                        Entity::ID => 'xbas0000000002',
+                        Entity::STATUS => 'inactive',
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testFreePayoutMigrationAdminActionWithLedgerReverseShadowNotAssigned' => [
         'request'  => [
             'url'     => '/admin/payouts/free_payout_migration',

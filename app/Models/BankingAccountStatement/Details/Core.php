@@ -15,6 +15,8 @@ class Core extends Base\Core
 
     const DEFAULT_MUTEX_LOCK_RETRIES = 4;
 
+    const PAYOUT_SERVICE_BAS_DETAILS_TABLE = 'banking_account_statement_details';
+
     public function __construct()
     {
         parent::__construct();
@@ -157,5 +159,81 @@ class Core extends Base\Core
         $this->repo->banking_account_statement_details->saveOrFail($basDetailObj);
 
         return $basDetailObj;
+    }
+
+    public function handleBasDetailsActions($input)
+    {
+        $action = $input['action'];
+
+        switch ($action)
+        {
+            case 'basd_status':
+                $id = $input[Entity::ID];
+                $status = $input[Entity::STATUS];
+
+                /** @var Entity $basDetails */
+                $basDetails = $this->repo->banking_account_statement_details->findOrFail($id);
+
+               $basDetails->setStatus($status);
+
+               $this->repo->banking_account_statement_details->saveOrFail($basDetails);
+
+               break;
+
+            case 'ps_basd_status':
+                $id = $input[Entity::ID];
+                $status = $input[Entity::STATUS];
+
+                $this->updateBasDetailsInPayoutService($id, $status);
+
+                break;
+
+            case 'ps_basd_create':
+                $this->createBasDetailsInPayoutService($input['data']);
+
+        }
+
+        return ['success' => $input];
+    }
+
+    public function updateBasDetailsInPayoutService(string $basDetailsId, $status)
+    {
+        Status::validate($status);
+
+        $tableName = self::PAYOUT_SERVICE_BAS_DETAILS_TABLE;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        $data = [
+            Entity::STATUS       => $status,
+            Entity::UPDATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_BAS_DETAILS_UPDATE,
+            $data
+        );
+
+        $this->repo->payout->updateInPayoutServiceDB($tableName, $basDetailsId, $data);
+    }
+
+    public function createBasDetailsInPayoutService(array $data)
+    {
+        $tableName = self::PAYOUT_SERVICE_BAS_DETAILS_TABLE;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_BAS_DETAILS_CREATE,
+            $data
+        );
+
+        $this->repo->payout->insertIntoPayoutServiceDB($tableName, $data);
     }
 }
