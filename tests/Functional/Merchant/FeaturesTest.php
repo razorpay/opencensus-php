@@ -395,9 +395,7 @@ class FeaturesTest extends OAuthTestCase
 
         $this->app->instance('dcs_config_service', $dcsConfigService);
 
-        $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([DcsConfigConst::PaymentNotesKeyColumns => ""]);
-
-        $this->app->dcs_config_service->method('createConfiguration')->willReturn([DcsConfigConst::PaymentNotesKeyColumns => '{
+        $this->app->dcs_config_service->method('editConfiguration')->willReturn([DcsConfigConst::PaymentNotesKeyColumns => '{
                 "user_notes_key_columns": [
                      "Dealer Code",
                      "Merchant Name",

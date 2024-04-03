@@ -171,8 +171,6 @@ class Core extends Base\Core
 
         $dcsConfigService = app(Constants::DCS_CONFIG_SERVICE);
 
-        $userTotalColumns = $dcsConfigService->fetchConfiguration(DcsConfigConst::PaymentNotesKeyColumns, $userId, [DcsConfigConst::PaymentNotesKeyColumns], $this->mode);
-
         $requestBody = [
             Constants::PAYMENT_OPTIONAL_KEYS_COLUMNS => $input["data"][Constants::PAYMENT_OPTIONAL_KEYS_COLUMNS],
             Constants::USER_NOTES_KEYS_COLUMNS  => $input["data"][Constants::USER_NOTES_KEYS_COLUMNS],
@@ -180,15 +178,7 @@ class Core extends Base\Core
 
         $jsonString = json_encode($requestBody);
 
-        if(empty($userTotalColumns) === true or
-            $userTotalColumns[DcsConfigConst::PaymentNotesKeyColumns] === "")
-        {
-            $dcsResponse = $dcsConfigService->createConfiguration(DcsConfigConst::PaymentNotesKeyColumns, $userId, [DcsConfigConst::PaymentNotesKeyColumns => $jsonString], $this->mode);
-        }
-        else
-        {
-            $dcsResponse =  $dcsConfigService->editConfiguration(DcsConfigConst::PaymentNotesKeyColumns, $userId, [DcsConfigConst::PaymentNotesKeyColumns => $jsonString], $this->mode);
-        }
+        $dcsResponse =  $dcsConfigService->editConfiguration(DcsConfigConst::PaymentNotesKeyColumns, $userId, [DcsConfigConst::PaymentNotesKeyColumns => $jsonString], $this->mode);
 
         $response['data'] = json_decode($dcsResponse[DcsConfigConst::PaymentNotesKeyColumns]);
 
