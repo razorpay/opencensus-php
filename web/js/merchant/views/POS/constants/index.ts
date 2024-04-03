@@ -457,10 +457,10 @@ export const CART_OFFER_CONTENT: OfferCardsStruct = {
 //The pricing keys like [monthly, setup_fee] should match the keys with devcie config api
 export const PRODUCT_OFFER_CONFIG: Record<string, OfferConfig> = {
   [ANDROID_SMART_POS.code]: {
-    offerText: 'Limited Time Offer till 31st March',
-    pdpOfferText: 'Offer valid on orders placed before 31st March',
-    partnerOfferText: 'Partner Exclusive Time Offer till 31st March',
-    partnerPdpOfferText: 'Partner offer valid on orders placed before 31st March',
+    offerText: 'Limited Time Offer till 30th April',
+    pdpOfferText: 'Offer valid on orders placed before 30th April',
+    partnerOfferText: 'Partner Exclusive Time Offer till 30th April',
+    partnerPdpOfferText: 'Partner offer valid on orders placed before 30th April',
     preRateConfig: {
       monthly: 549,
       lifetime: 12000,
@@ -473,10 +473,10 @@ export const PRODUCT_OFFER_CONFIG: Record<string, OfferConfig> = {
     },
   },
   [ANDROID_MINI_POS.code]: {
-    offerText: 'Limited Time Offer till 31st March',
-    pdpOfferText: 'Offer valid on orders placed before 31st March',
-    partnerOfferText: 'Partner Exclusive Time Offer till 31st March',
-    partnerPdpOfferText: 'Partner offer valid on orders placed before 31st March',
+    offerText: 'Limited Time Offer till 30th April',
+    pdpOfferText: 'Offer valid on orders placed before 30th April',
+    partnerOfferText: 'Partner Exclusive Time Offer till 30th April',
+    partnerPdpOfferText: 'Partner offer valid on orders placed before 30th April',
     preRateConfig: {
       monthly: 499,
       lifetime: 10500,

@@ -62,7 +62,7 @@ describe('<MainBanner/> with offer', () => {
     server.use(getProductPricingHandler(MOCK_PRODUCT_PRICING));
     renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
-    expect(screen.getByText('Limited Time Offer till 31st March')).toBeVisible();
+    expect(screen.getByText('Limited Time Offer till 30th April')).toBeVisible();
     expect(screen.getByTestId('prev-monthly')).toHaveTextContent('₹549');
     expect(screen.getByTestId('prev-setup')).toHaveTextContent('3,000');
     expect(screen.getByText('/month after 3 months*')).toBeVisible();
@@ -89,6 +89,6 @@ describe('<MainBanner/> with offer', () => {
     server.use(getPartnerProductPricingHandler(PARTNER_MOCK_PRODUCT_PRICING));
     renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
-    expect(screen.getByText('Partner Exclusive Time Offer till 31st March')).toBeVisible();
+    expect(screen.getByText('Partner Exclusive Time Offer till 30th April')).toBeVisible();
   });
 });
