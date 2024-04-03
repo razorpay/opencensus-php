@@ -118,7 +118,7 @@ class CacheEventListener
         }
         else if (preg_match('/^tag:asv:{(?<entity>[^_]*).*$/', $this->event->key, $matches) === 1)
         {
-            return ['v1', $matches['entity'] ?? 'none'];
+            return ['version' =>'v2', 'entity' => $matches['entity'] ?? 'none'];
         }
         else
         {
