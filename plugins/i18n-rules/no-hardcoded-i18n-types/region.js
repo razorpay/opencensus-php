@@ -1,3 +1,6 @@
+//  Dev's only used these basic regions names in our codebase, so we are only focus on them at this moment. If required, we will add the more in later.
+const commonUsedPlaceNames = ['mumbai', 'bangalore'];
+
 /**
  * A list of country, continent names or location names
  * Removed the north from "north macedonia", as just checking with macedonia is enough, done same for the other region name.
@@ -7,6 +10,7 @@
  * @type {string[]}
  */
 const regionNamesList = [
+  ...commonUsedPlaceNames,
   'uk',
   'usa',
   'afghanistan',
@@ -447,10 +451,11 @@ function isRegionNameOrCodeHardCoded(_value, node) {
 
     Search algos are not required to optimize search, since this is a single of check.
   */
-  if (node.type === 'Literal' && regionISOs.some((iso) => value === iso)) {
-    errorMessage = `Avoid using hardcoded "region code" in your code, this feature may not be available for all countries. If you think this error is wrong, ignore the it.`;
-  } else if (regionNamesList.some((regionName) => value.includes(regionName))) {
-    errorMessage = `Avoid using hardcoded "region names" in your code, this feature may not be available for all regions. If required wrap this feature under the feature flag.`;
+  if (
+    (node.type === 'Literal' && regionISOs.some((iso) => value === iso)) ||
+    regionNamesList.some((regionName) => value.includes(regionName))
+  ) {
+    errorMessage = `Avoid using hardcoded "region code or region names" in your code. This feature may not be available for all countries, if required wrap this feature under the feature flag. If you think this error is wrong, please ignore it.`;
   }
 
   return errorMessage.length > 0 ? errorMessage : false;

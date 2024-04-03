@@ -40,3 +40,5 @@ web/js/merchant/views/Optimizer                   @parth-p-ui @prem-io @pcprasha
 config/splitz.php                                 @razorpay/ssab-fe @abhayp @pcprashant
 web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe @pcprashant
 web/js/merchant/views/POS                         @amitabh-blade @prashant-kush @nashcheez @pcprashant
+plugins/i18n-rules                                @razorpay/i18n-fe
+smart-linter.js                                   @razorpay/i18n-fe

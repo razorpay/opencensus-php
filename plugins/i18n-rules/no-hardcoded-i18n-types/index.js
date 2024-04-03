@@ -38,6 +38,9 @@ const isDateHardCoded = require('./date');
 const isDialCodeHardCoded = require('./dialCode');
 const isBrandDetailsHardCoded = require('./branding');
 const isRegionNameOrCodeHardCoded = require('./region');
+const isZipCodeHardCoded = require('./zipcode');
+const isTimeZoneHardCoded = require('./timezone');
+const isRegionCentricFeaturesFound = require('./features');
 
 const hardCodedCheckFunctionsList = [
   isDateHardCoded,
@@ -45,6 +48,9 @@ const hardCodedCheckFunctionsList = [
   isRegionNameOrCodeHardCoded,
   isBrandDetailsHardCoded,
   isFlagImageFound,
+  isZipCodeHardCoded,
+  isTimeZoneHardCoded,
+  isRegionCentricFeaturesFound,
 ];
 
 module.exports = {

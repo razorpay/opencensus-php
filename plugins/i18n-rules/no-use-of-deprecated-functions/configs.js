@@ -46,4 +46,11 @@ module.exports = [
     importPackageFrom: '@razorpay/i18nify-js/phoneNumber',
     specifierToImport: 'isValidPhoneNumber',
   },
+  {
+    deprecatedSpecifiers: ['isValidPinCode', 'pinCode'],
+    deprecatedSpecifiersFrom: 'common/utils/validators',
+    // importPackageFrom: '',
+    // specifierToImport: '',
+    message: `"isValidPinCode" is function specific to india, once "@razorpay/i18nify-js" is ready with pincode validator, please use that.`,
+  },
 ];

@@ -1,4 +1,4 @@
 const CURRENCIES = ['INR', 'MYR', 'USD'];
-const FORBIDDEN_KEYWORDS = ['SBI', 'RBI', 'GST', 'CIN', '$', '₹'];
+const FORBIDDEN_KEYWORDS = ['$', '₹'];
 
 module.exports = { CURRENCIES, FORBIDDEN_KEYWORDS };

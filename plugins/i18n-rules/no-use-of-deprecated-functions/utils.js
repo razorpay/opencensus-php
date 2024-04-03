@@ -78,13 +78,16 @@ const createConfigForDeprecatedFunction = ({
   deprecatedSpecifiersFrom,
   importPackageFrom,
   specifierToImport,
+  message,
 }) => {
   return {
     deprecatedSpecifiers,
     deprecatedSpecifiersFrom,
     importPackageFrom,
     specifierToImport,
-    message: `Use "${specifierToImport}" from "${importPackageFrom}" instead of "${deprecatedSpecifiers}" from "${deprecatedSpecifiersFrom}"`,
+    message:
+      message ||
+      `Use "${specifierToImport}" from "${importPackageFrom}" instead of "${deprecatedSpecifiers}" from "${deprecatedSpecifiersFrom}"`,
     processImports: (node, sourceCode, fixer) =>
       processImports({
         node,
