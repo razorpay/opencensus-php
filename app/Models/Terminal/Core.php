@@ -104,6 +104,13 @@ class Core extends Base\Core
                 'merchant_id'   => $merchant->getId(),
             ]);
 
+        $syncInstruments = true;
+        if( isset($input[TerminalConstants::SYNC_INSTRUMENTS]) )
+        {
+            $syncInstruments = $input[TerminalConstants::SYNC_INSTRUMENTS];
+            unset($input[TerminalConstants::SYNC_INSTRUMENTS]);
+        }
+
         $this->validateAndTokenizeMpansIfPresentInInput($input);
 
         $input[Entity::MERCHANT_ID] = $merchant->getKey();
@@ -137,7 +144,7 @@ class Core extends Base\Core
 
         $terminal->setId($id);
 
-        $this->repo->saveOrFail($terminal);
+        $this->repo->saveOrFail($terminal,[TerminalConstants::SYNC_INSTRUMENTS => $syncInstruments]);
 
         return $terminal;
     }
