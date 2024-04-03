@@ -687,6 +687,7 @@ class OffersEngine extends Base\Core
 
     private function mapOfferMetadata(array $offerMetadata, Entity $offer)
     {
+
         $offer->setAttribute(Entity::ID, Entity::verifyIdAndStripSign($offerMetadata[Constants::OFFER_ID]));
         $offer->setAttribute(Entity::NAME, $offerMetadata[Constants::NAME]);
         $offer->setAttribute(Entity::DISPLAY_TEXT, $offerMetadata[Constants::DESCRIPTION]);
@@ -960,6 +961,7 @@ class OffersEngine extends Base\Core
 
         $input = $this->getDefaultTransactionInput($payment,$offer);
 
+
         try
         {
             $this->app['offers_engine']->redeem($payment->getMerchantId(),$input);
@@ -1003,20 +1005,9 @@ class OffersEngine extends Base\Core
 
         $input = $this->getDefaultTransactionInput($payment, $offer);
 
-        if (empty($offer->getMaxPaymentCount()) === false)
-        {
-            $par = (new Core())->getParValue($payment, false);
-
-            if (empty($par) === false)
-            {
-                $input['customer_indentifier'] =
-                    [
-                    // todo: do not persist par here once offers engine ramp up is 100% done
-                    'card_number' => $par,
-                ];
-            }
-        }
         $input['benefit_applied'] = $benefitApplied;
+
+        $input['customer_indentifier'] = $this->getCustomerContactIdentifier($payment,$offer);
 
         try
         {
@@ -1028,13 +1019,34 @@ class OffersEngine extends Base\Core
         }
     }
 
+    private function getCustomerContactIdentifier(Payment\Entity $payment, Entity $offer): array
+    {
+        $identifier = [
+            Constants::MOBILE_NUMBER => $payment->getContact(),
+            Constants::EMAIL => $payment->getEmail(),
+        ];
+        if (empty($offer->getMaxPaymentCount()) === false)
+        {
+            $par = (new Core())->getParValue($payment, false);
+
+            if (empty($par) === false)
+            {
+                // todo: do not persist par here once offers engine ramp up is 100% done
+                $identifier[Constants::CARD_NUMBER] = $par;
+            }
+        }
+        return $identifier;
+    }
+
     public function getDefaultTransactionInput(Payment\Entity $payment, Entity $offer): array
     {
         return [
-            'offer_id'       => $offer->getPublicId(),
-            'transaction_id' => $payment->getPublicId(),
-            'channel'        => Constants::CHANNEL_RZP_CHECKOUT,
-            'check_usage'    => true
+            'offer_id'          => $offer->getPublicId(),
+            'transaction_id'    => $payment->getPublicId(),
+            'channel'           => Constants::CHANNEL_RZP_CHECKOUT,
+            'check_usage'       => true,
+            'transaction_amount'=> $payment->getAmount(),
+            'transaction_currency'=> $payment->getCurrency(),
         ];
     }
 
@@ -1175,6 +1187,9 @@ class OffersEngine extends Base\Core
         {
             $fact[Constants::CUSTOMER_FACT] = [
                 Constants::CARD_NUMBER => $this->getCardParValue(),
+                Constants::MOBILE_NUMBER => $this->payment->getContact(),
+                Constants::EMAIL => $this->payment->getEmail(),
+
             ];
         }
 
@@ -1182,6 +1197,8 @@ class OffersEngine extends Base\Core
         {
             $fact[Constants::CUSTOMER_FACT] = [
                 Constants::CARD_NUMBER => Constants::DUMMY_PAYMENT_CARD_NUMBER,
+                Constants::MOBILE_NUMBER => $this->payment->getContact(),
+                Constants::EMAIL => $this->payment->getEmail(),
             ];
         }
 

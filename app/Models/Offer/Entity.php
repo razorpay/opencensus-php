@@ -526,6 +526,14 @@ class Entity extends Base\PublicEntity
         }
         return false;
     }
+    public function isPlatformOffer(): bool
+    {
+        if ($this->getMerchantId() === '100000razorpay')
+        {
+            return true;
+        }
+        return false;
+    }
 // --------------------- Calculator --------------------------------------------
 
     public function getDiscountedAmountForPayment(int $amount, $payment): int

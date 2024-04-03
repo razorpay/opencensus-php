@@ -6124,6 +6124,11 @@ class Processor
         // If offer is present in the payment request, we need to validate it against the order.
         if ($payment->order->offers->contains($offerId) === false)
         {
+            // platform offer can be there without orders as well
+            if ($offer->isPlatformOffer() === true)
+            {
+                return $offer;
+            }
 
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
             [

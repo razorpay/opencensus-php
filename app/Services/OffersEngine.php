@@ -429,6 +429,8 @@ class OffersEngine
      */
     public function fetch(string $entity, string $id, string $merchantId, array $input)
     {
+        $this->userType = 'publisher';
+
         $this->merchantId = 'rzp.merchant.' . $merchantId;
 
         $endpoint = sprintf(self::OffersEngineGetOfferByID, $id);
@@ -463,6 +465,8 @@ class OffersEngine
      */
     public function fetchBulk(string $merchantId, array $ids = [], array $input = [])
     {
+        $this->userType = 'publisher';
+
         $this->merchantId = 'rzp.merchant.' . $merchantId;
 
         $input['publisher_id'] = $this->merchantId;

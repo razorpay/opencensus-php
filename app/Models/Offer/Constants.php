@@ -178,6 +178,10 @@ final class Constants
 
     const CARD_NUMBER = 'card_number'; // has card PAR value
 
+    const MOBILE_NUMBER = 'mobile_number';
+
+    const EMAIL = 'email';
+
     const DUMMY_PAYMENT_CARD_NUMBER = '4111111111111111'; // for checkout validate call
 
     const SUBSCRIPTION_FACT = 'subscription';
