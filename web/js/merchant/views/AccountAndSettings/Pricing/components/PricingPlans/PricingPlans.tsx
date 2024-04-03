@@ -90,7 +90,7 @@ const PricingPlans = ({
   if (!statusData) {
     return (
       <StyledPricingPlans>
-        <Text>{defaultErrorMessage}</Text>
+        <Text>{enrollmentStatus.message || defaultErrorMessage}</Text>
       </StyledPricingPlans>
     );
   }

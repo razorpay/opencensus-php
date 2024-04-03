@@ -101,7 +101,7 @@ const showGSCenterCTAModal = (id) => {
 const showPricingBundleModal = (id, variant) => {
   const RenderPricingUi = () => (
     <Suspense fallback={<Loader />}>
-      <PricingSubscriptionComponent templateId={id} variant={variant} />,
+      <PricingSubscriptionComponent templateId={id} variant={variant} />
     </Suspense>
   );
   if (isMobileAndTablet()) {

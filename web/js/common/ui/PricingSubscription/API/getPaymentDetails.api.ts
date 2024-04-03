@@ -61,6 +61,7 @@ export const getPaymentOptions = async ({
     method: 'post',
     url: `pricing/merchant/subscriptions/getPaymentDetails?plan_id=${plans.id}&frequency=${togglePlan}`,
     mode: 'live',
+    data: {},
   });
   const isPaymentMethod =
     getPaymentOptionsResponseSchema[MULTI_PAYMENT_MODE].isValidSync(paymentMethod);
