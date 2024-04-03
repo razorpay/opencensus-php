@@ -49,8 +49,6 @@ class Repository extends Base\Repository
      */
     public function getFailedSettlementsForRetry(array $setlIds)
     {
-        $callingViaTidb = false;
-
         $merchantId = $this->repo->merchant->dbColumn(M\Entity::ID);
 
         $settlementId = $this->dbColumn(Entity::ID);
@@ -61,38 +59,46 @@ class Repository extends Base\Repository
         $query = $this->newQuery();
 
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
-            if ($this->isTransactionActive()) {
 
-                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+            $merchantIdsConsidered = $query->select($settlementMerchantId)
+                                           ->whereIn($settlementId, $setlIds)
+                                           ->get()
+                                           ->pluck(Entity::MERCHANT_ID)
+                                           ->toArray();
+
+            if (empty($merchantIdsConsidered))
+            {
+                return [];
+            }
+            else
+            {
+                if ($this->isTransactionActive())
+                {
+                    $filteredMerchantIds = $this->repo->merchant->newQueryWithConnection(
+                        $this->getConnectionFromType(Connection::ASV_WRITER)
+                    )->where(M\Entity::HOLD_FUNDS, '=', 0)
+                     ->whereIn(M\Entity::ID, $merchantIdsConsidered)
+                     ->pluck(M\Entity::ID)
+                     ->toArray();
+                }
+                else
+                {
+                    $filteredMerchantIds = (new AsvSdkMerchantQuery())->filterMerchantsWithFundsNotOnHold(
+                        $merchantIdsConsidered
+                    );
+
+                }
+
                 $setls = $query->select($cols)
-                               ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
                                ->where(Entity::STATUS, '=', Status::FAILED)
                                ->whereIn($settlementId, $setlIds)
-                               ->where(M\Entity::HOLD_FUNDS, '=', 0)
+                               ->whereIn($settlementMerchantId, $filteredMerchantIds)
                                ->where(Entity::IS_NEW_SERVICE, '=', 0)
                                ->with('merchant', 'merchant.bankAccount');
             }
-            else {
-                $merchantIdsConsidered = $query->select($settlementMerchantId)
-                                               ->whereIn($settlementId, $setlIds)
-                                               ->get()
-                                               ->pluck(Entity::MERCHANT_ID)
-                                               ->toArray();
-
-                if (count($merchantIdsConsidered) > 0) {
-                    $filteredMerchantIds = (new AsvSdkMerchantQuery())->filterMerchantsWithFundsNotOnHold($merchantIdsConsidered);
-
-                    $setls = $query->select($cols)
-                                   ->where(Entity::STATUS, '=', Status::FAILED)
-                                   ->whereIn($settlementId, $setlIds)
-                                   ->whereIn($settlementMerchantId, $filteredMerchantIds)
-                                   ->where(Entity::IS_NEW_SERVICE, '=', 0)
-                                   ->with('merchant', 'merchant.bankAccount');
-                } else {
-                    return [];
-                }
-            }
-        } else {
+        }
+        else
+        {
             $setls = $query->select($cols)
                            ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
                            ->where(Entity::STATUS, '=', Status::FAILED)
