@@ -646,8 +646,7 @@ class Service extends Base\Service
 
                     $userCore->verifyOtp($input,
                         $this->merchant,
-                        $this->user,
-                        ($this->mode === Mode::TEST));
+                        $this->user);
 
                     $input = array_except($input, ['otp', 'token', 'action']);
                 }

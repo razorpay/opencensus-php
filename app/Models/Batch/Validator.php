@@ -3081,8 +3081,7 @@ class Validator extends Base\Validator
 
                 $userCore->verifyOtp($input,
                     $merchant,
-                    app('basicauth')->getUser(),
-                    ($this->getMode() === Mode::TEST));
+                    app('basicauth')->getUser());
 
                 $input = array_except($input, ['otp', 'token', 'action']);
             }
