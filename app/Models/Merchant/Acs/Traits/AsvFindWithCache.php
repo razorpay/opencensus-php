@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base\QueryCache\Constants;
 use RZP\Models\Base\QueryCache\CacheQueries;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Entity;
@@ -54,6 +55,7 @@ trait AsvFindWithCache
 
         $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
             'source' => $connectionType ?? \RZP\Models\Merchant\Constants::API_DB,
+            'route' => (new AsvRouter())->getRouteOrJobName(),
         ]);
 
         return $this->FindUsingCacheQueries($id, $columns, $connectionType);

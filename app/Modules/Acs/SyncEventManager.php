@@ -11,6 +11,8 @@ use RZP\Constants\Mode;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Consumer\Service as Consumer;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Constants;
 use RZP\Trace\TraceCode;
 use Razorpay\Outbox\Job\Core as Outbox;
 use RZP\Models\Merchant\Acs\AsvClient;
@@ -460,6 +462,7 @@ class SyncEventManager
         ];
 
         $connectionMetricDimensions = [
+            Metric::LABEL_ROUTE => (new AsvRouter())->getRouteOrJobName(),
             Metric::LABEL_ENTITY_NAME => $entityName,
             Metric::LABEL_DB_CONNECTION_NAME => $connection
         ];
@@ -467,6 +470,10 @@ class SyncEventManager
         if (config('applications.acs.read_traffic_metric_enabled', false) === true) {
             app('trace')->count(Metric::MERCHANT_RELATED_ENTITIES_READ_TRAFFIC_TOTAL, $metricDimensions);
             app('trace')->count(Metric::MERCHANT_RELATED_ENTITIES_READ_CONNECTIONS_TOTAL, $connectionMetricDimensions);
+            app('trace')->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
+                Metric::LABEL_TRACE_SOURCE => $connection ?? Constants::API_DB,
+                Metric::LABEL_ROUTE => (new AsvRouter())->getRouteOrJobName(),
+            ]);
         }
 
         if ((config('app.acs.verbose_log') === true) or ($this->stats['total']['count'] > 0)) {

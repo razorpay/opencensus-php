@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Constants;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -25,6 +26,7 @@ trait AsvFind
     {
         $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
             'source' => $connectionType ?? Constants::API_DB,
+            'route' => (new AsvRouter())->getRouteOrJobName(),
         ]);
         $model = parent::findOrFail($id, $columns, $connectionType);
         $this->setOldConnection($model, $oldConnection);
@@ -35,6 +37,7 @@ trait AsvFind
     {
         $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
             'source' => $connectionType ?? Constants::API_DB,
+            'route' => (new AsvRouter())->getRouteOrJobName(),
         ]);
         $model =  parent::findOrFailPublic($id, $columns, $connectionType);
         $this->setOldConnection($model, $oldConnection);
@@ -54,6 +57,7 @@ trait AsvFind
 
         $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
             'source' => Constants::ASV_SERVICE,
+            'route' => (new AsvRouter())->getRouteOrJobName(),
         ]);
 
         return $model;
@@ -178,6 +182,7 @@ trait AsvFind
     {
         $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
             'source' => $connectionType ?? Constants::API_DB,
+            'route' => (new AsvRouter())->getRouteOrJobName(),
         ]);
         $model = parent::find($id, $columns, $connectionType);
         $this->setOldConnection($model, $oldConnection);
