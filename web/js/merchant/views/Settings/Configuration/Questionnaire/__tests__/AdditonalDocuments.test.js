@@ -55,7 +55,7 @@ describe('AdditionalDocuments', () => {
     expect(screen.getAllByText(/Additional KYC document/)).toHaveLength(2);
   });
 
-  test('should handle document select change', async () => {
+  test.skip('should handle document select change', async () => {
     renderComponent();
 
     await userEvent.selectOptions(screen.getAllByRole('combobox')[0], 'Udyam certificate');

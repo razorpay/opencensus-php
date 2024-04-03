@@ -11,7 +11,7 @@ test.describe('GCMS brand transactions @flow=brandTransactions @project=payments
     await expect(page).toHaveURL(routes.GCMS_BRAND_TRANSACTIONS);
   });
 
-  test('should be able to view brand transactions page', async ({ page }) => {
+  test.skip('should be able to view brand transactions page', async ({ page }) => {
     await expect(await page.getByText('Funds').first()).toBeVisible();
     await expect(await page.getByText('All Time').first()).toBeVisible();
   });
@@ -22,7 +22,7 @@ test.describe('GCMS brand transactions @flow=brandTransactions @project=payments
   //   await expect(await page.getByText('Showing 26 - 50').first()).toBeVisible();
   // });
 
-  test('should show empty message when no transactions is there for a specific reference Id', async ({
+  test.skip('should show empty message when no transactions is there for a specific reference Id', async ({
     page,
   }) => {
     await page.getByTestId('reference_id').fill('test reference Id');

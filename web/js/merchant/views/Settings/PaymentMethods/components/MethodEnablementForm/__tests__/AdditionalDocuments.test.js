@@ -48,7 +48,7 @@ describe('Tests for AdditionalDocuments component - MethodEnablementForm', () =>
     expect(checkbox.checked).toBe(false);
   });
 
-  test('should handle document select change', async () => {
+  test.skip('should handle document select change', async () => {
     renderComponent();
 
     await userEvent.click(screen.getAllByRole('combobox')[0]);

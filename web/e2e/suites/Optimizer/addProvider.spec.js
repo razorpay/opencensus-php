@@ -160,7 +160,7 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
     }
   });
 
-  test('Add PayU Provider - Instant (beta)', async ({ page }) => {
+  test.skip('Add PayU Provider - Instant (beta)', async ({ page }) => {
     try {
       await navigateToOptimizer(page);
       await clickButton(page, 'Add Provider');

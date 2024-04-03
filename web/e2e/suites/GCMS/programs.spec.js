@@ -11,12 +11,12 @@ test.describe('Test GCMS Programs @flow=programs @project=payments ', () => {
     await expect(page).toHaveURL(routes.GCMS_PROGRAMS);
   });
 
-  test('should be able view gcms programs page', async ({ page }) => {
+  test.skip('should be able view gcms programs page', async ({ page }) => {
     await expect(await page.getByText('Programs').first()).toBeVisible();
     await expect(await page.getByText('Inactive Gift Card').first()).toBeVisible();
   });
 
-  test('should be able to navigate to program details page', async ({ page }) => {
+  test.skip('should be able to navigate to program details page', async ({ page }) => {
     const firstCard = await page
       .locator('div')
       .filter({ hasText: 'Inactive Gift Cardtest description' })

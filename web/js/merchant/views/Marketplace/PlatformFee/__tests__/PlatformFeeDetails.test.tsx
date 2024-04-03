@@ -1,12 +1,15 @@
 import React from 'react';
+
 import { render, screen, waitFor, server, userEvent } from 'common/services/test/test-utils';
+import { getInitialUserOrgState } from 'common/tests/utils';
+import * as analytics from 'common/utils/analytics';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import PlatformFeeDetails from 'merchant/views/Marketplace/PlatformFee/Details';
+import * as store from 'merchant/views/Marketplace/store';
+import * as modals from 'merchant_common/reducers/modals';
+
 import { platformFeedDetailsData as data, reversalsData } from './mocks/fixtures';
 import { platformFeeDetailsSuccess, reversalSuccess } from './mocks/handlers';
-import * as modals from 'merchant_common/reducers/modals';
-import * as analytics from 'common/utils/analytics';
-import * as store from 'merchant/views/Marketplace/store';
 
 jest.mock('@razorpay/blade/components', () => {
   const bladeActual = jest.requireActual('@razorpay/blade/components');
@@ -35,19 +38,26 @@ jest.mock('merchant/views/Marketplace/Transfers/components/TransferReversal', ()
 
 jest.spyOn(modals, 'openModal');
 
-const state = {
-  session: {
-    user: {
-      id: 'testUserId',
-    },
-  },
+const defaultUserExtra = {
+  id: 'testUserId',
+  isAllowedEdit: () => true,
 };
 describe('Platform Fee Details', () => {
   const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
-
-  const renderApp = () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  const renderApp = ({ userExtra = {}, orgExtra = {} } = {}) => {
+    const session = getInitialUserOrgState({
+      isRzpOrg: true,
+      userExtra: {
+        ...defaultUserExtra,
+        ...userExtra,
+      },
+      orgExtra,
+    });
     render(<PlatformFeeDetails id={data.id} />, {
-      initialState: state,
+      initialState: { session },
     });
   };
 
