@@ -2446,7 +2446,10 @@ class Service extends Base\Service
 
         $entity = $this->fetch($id, $input);
 
-        if ($this->app['basicauth']->isMerchantDashboardApp() === true)
+
+        // Add additional error details for failed payments to show on merchant dashboard
+        // Whitelisting admin dashboard as well to show the details for admin login as merchant
+        if (in_array($this->app['basicauth']->getInternalApp(), ['merchant_dashboard', 'admin_dashboard']) === true)
         {
             $this->addAdditionalPaymentErrorDetails($entity);
         }
@@ -2470,6 +2473,10 @@ class Service extends Base\Service
         $entity[PaymentsConstants::ERROR_MONEY_IMPLICATION] = $error_details[PaymentsConstants::MONEY_IMPLICATION] ?? null;
 
         $entity[PaymentsConstants::ERROR_NEXT_STEP] =  $error_details[PaymentsConstants::NEXT_STEP] ?? null;
+
+        $entity[PaymentsConstants::ERROR_MERCHANT_DESC] = $error_details[PaymentsConstants::MERCHANT_DESC] ?? null;
+
+        $entity[PaymentsConstants::ERROR_PERCEPTION] =  $error_details[PaymentsConstants::PERCEPTION] ?? null;
     }
 
     public function fetch(string $id, array $input = []): array

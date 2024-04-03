@@ -83,7 +83,9 @@ class Payment extends Validator
         Entity::REWARD_ID           => 'sometimes',
         Entity::REWARD              => 'sometimes',
         PaymentsConstants::ERROR_MONEY_IMPLICATION => 'sometimes',
-        PaymentsConstants::ERROR_NEXT_STEP => 'sometimes',
+        PaymentsConstants::ERROR_NEXT_STEP         => 'sometimes',
+        PaymentsConstants::ERROR_PERCEPTION        => 'sometimes',
+        PaymentsConstants::ERROR_MERCHANT_DESC     => 'sometimes',
     );
 
     protected function validateMethod($attribute, $value)

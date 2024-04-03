@@ -21,4 +21,12 @@ class Constant
 
     const NEXT_STEP               = 'next_step';
 
+    const PERCEPTION              = 'perception';
+
+    const ERROR_PERCEPTION        = 'error_perception';
+
+    const MERCHANT_DESC           = 'merchant_desc';
+
+    const ERROR_MERCHANT_DESC     = 'error_merchant_desc';
+
 }
