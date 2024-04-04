@@ -51,9 +51,22 @@ export const IconBackground = styled.div<{ status: string }>`
   width: 20px;
   border-radius: 50%;
   display: inline-flex;
-  vertical-align: bottom;
+  vertical-align: text-bottom;
   background-color: ${({ status, theme }) =>
     status === 'positive'
       ? theme.colors.feedback.background.positive.subtle
       : theme.colors.feedback.background.negative.subtle};
+`;
+
+export const StepWrapper = styled.div<{ active: boolean }>`
+  border-radius: 4px;
+  background-color: ${({ active, theme }) =>
+    active ? theme.colors.surface.background.primary.subtle : 'transparent'};
+  
+  #-actionlist {
+    div:nth-child(1) {
+      padding: 0;
+    }
+  }
+}
 `;
