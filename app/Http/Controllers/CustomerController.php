@@ -213,7 +213,11 @@ class CustomerController extends Controller
             $sendOTP = false;
         }
 
-        $status = $this->service()->fetchGlobalCustomerStatus($contact, $input, $sendOTP);
+        $isOneCc = !empty($input['is_one_cc']);
+
+        unset($input['is_one_cc']);
+
+        $status = $this->service()->fetchGlobalCustomerStatus($contact, $input, $sendOTP, $isOneCc);
 
         return ApiResponse::json($status);
     }

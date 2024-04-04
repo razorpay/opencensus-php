@@ -18,4 +18,7 @@ final class Metric
     const GLOBAL_CUSTOMER_EDIT_COUNT                          = 'global_customer_edit_count';
     const GLOBAL_CUSTOMER_EDIT_ERROR                          = 'global_customer_edit_error';
 
+    const THIRD_PARTY_ADDRESS_COUNT                           = 'third_party_address_count';
+    const THIRD_PARTY_ADDRESS_API_ERROR_COUNT                  = 'third_party_address_api_error_count';
+
 }

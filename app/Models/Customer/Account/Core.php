@@ -962,7 +962,7 @@ class Core extends Base\Core
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\InvalidArgumentException
      */
-    public function createGlobalAddress($input)
+    public function createGlobalAddress($input, string $customerId = '')
     {
         $this->trace->count(AddressMetric::GLOBAL_CREATE_ADDRESS_COUNT);
 
@@ -976,6 +976,11 @@ class Core extends Base\Core
             $appToken = session()->get($this->mode . '_app_token');
 
             $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
+            if ($customerId !== '')
+            {
+                $globalCustomerId = $customerId;
+            }
 
             if (empty($appToken) && empty($globalCustomerId)) {
                 throw new Exception\BadRequestException(

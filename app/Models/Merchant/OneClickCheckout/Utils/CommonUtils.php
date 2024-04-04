@@ -275,4 +275,38 @@ class CommonUtils extends Base\Core
 
         return $expResult['variant'] === 'magic';
     }
+
+    public function isExternalCustomerAddressExperimentEnabled(): bool
+    {
+        $isExperimentEnabled = false;
+
+        if (getenv('APP_ENV') === 'testing')
+        {
+            return $isExperimentEnabled;
+        }
+
+        $experimentRequest = $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.one_cc_external_customer_address_experiment_id',
+            ['merchant_id' => $this->merchant->getId()]
+        );
+
+        try
+        {
+            $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment($experimentRequest);
+
+            $isExperimentEnabled = ($expResult['variant'] === 'test');
+        }
+        catch (\Throwable $e) {
+
+            $this->trace->error(
+                TraceCode::MAGIC_SPLITZ_ERROR,
+                [
+                    'type'         => 'isExternalCustomerAddressExperimentEnabled',
+                    'errorMessage' => $e->getMessage()
+                ]
+            );
+        }
+        return $isExperimentEnabled;
+    }
 }

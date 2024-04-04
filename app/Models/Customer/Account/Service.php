@@ -5,6 +5,7 @@ namespace RZP\Models\Customer;
 use Illuminate\Support\Arr;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Mode;
+use RZP\Constants\Tracing;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Request;
@@ -29,6 +30,7 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Customer\Account\Constants as AccountConstants;
 use RZP\Error\PublicErrorDescription;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 
 class Service extends Base\Service
 {
@@ -761,7 +763,7 @@ class Service extends Base\Service
      *
      * @return array global customer existence, send otp if true
      */
-    public function fetchGlobalCustomerStatus($contact, $input, $sendOtp = false)
+    public function fetchGlobalCustomerStatus($contact, $input, $sendOtp = false, bool $isOneCc = false)
     {
         Customer\Validator::validateSmsHash($input);
 
@@ -881,6 +883,48 @@ class Service extends Base\Service
         $contact = Customer\Validator::validateAndParseContact($contact);
 
         $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
+
+        $isExperimentEnabled = (new CommonUtils())->isExternalCustomerAddressExperimentEnabled();
+
+        if($isOneCc && $isExperimentEnabled)
+        {
+            if ($customer === null)
+            {
+                $this->createGlobalCustomer(['contact' => $contact]);
+
+                $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
+            }
+
+            $addressCount = $this->repo->address->fetchRzpAddressCountFor1cc($customer);
+
+            if ($addressCount === 0)
+            {
+                try
+                {
+                    $response = (new MagicCheckoutService\Service())->fetchCustomerAddress($contact);
+
+                    $externalAddressCount = sizeof($response['addresses']);
+
+                    if ($externalAddressCount > 0) {
+                        $this->saveUnicommerceAddress($customer->getId(), $customer->getContact(), $response['addresses']);
+                    }
+
+                    $this->trace->count(Metric::THIRD_PARTY_ADDRESS_COUNT, [
+                        'source' => 'unicommerce_turbo',
+                        'address_count' => $externalAddressCount,
+                    ]);
+                } catch (\Throwable $e)
+                {
+                    $this->trace->error(TraceCode::UNICOMMERC_CUSTOMER_ADDRESS_API_ERROR, [
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    $this->trace->count(Metric::THIRD_PARTY_ADDRESS_API_ERROR_COUNT,[
+                        'source' => 'unicommerce_turbo',
+                    ]);
+                }
+            }
+        }
 
         if ($customer !== null)
         {
@@ -1129,9 +1173,9 @@ class Service extends Base\Service
         return $this->core->fetchPaymentsByCustomerContact($customer, $skip, $count);
     }
 
-    public function createGlobalAddress(array $input)
+    public function createGlobalAddress(array $input, string $customerId = '')
     {
-        $address = $this->core->createGlobalAddress($input);
+        $address = $this->core->createGlobalAddress($input, $customerId);
 
         return $address;
     }
@@ -1627,5 +1671,32 @@ class Service extends Base\Service
         $tokens = $tokenCore->removeNonUpiTokens($tokens);
 
         return count($tokens);
+    }
+
+    private function saveUnicommerceAddress($customerId, $contact, $addressList)
+    {
+        $externalAddressList = [];
+        foreach($addressList as $address){
+            $globalAddress = [
+                'contact' => $contact,
+                'shipping_address' => [
+                    'name' => $address['name'] ?? '',
+                    'contact' => $contact,
+                    'type' => 'shipping_address' ?? '',
+                    'line1' => $address['line1'] ?? '',
+                    'line2' => $address['line2'] ?? '',
+                    'city' => $address['city'] ?? '',
+                    'zipcode' => $address['zipcode'] ?? '',
+                    'state' => $address['state'] ?? '',
+                    'country' => $address['country'] ?? '',
+                    'source_type' => 'unicommerce_turbo'
+                ],
+            ];
+            $externalAddress = $this->createGlobalAddress($globalAddress, $customerId);
+            array_push($externalAddressList,$externalAddress);
+        }
+
+        return $externalAddressList;
+
     }
 }

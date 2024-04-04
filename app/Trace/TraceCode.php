@@ -11311,6 +11311,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ONBOARDING_API_CATEGORY_ACTIVATION_STATUS            = 'ONBOARDING_API_CATEGORY_ACTIVATION_STATUS';
 
+    const UNICOMMERC_CUSTOMER_ADDRESS_API_ERROR                = 'UNICOMMERC_CUSTOMER_ADDRESS_API_ERROR';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
