@@ -158,19 +158,22 @@ class Validator extends Base\Validator
             );
         }
 
-        $amountInWord = (new HyperVerge)->getFormattedAmountInWords($amount);
+        // removing this validation because biggest number with biggest len in words is 7373373 in 1- 1cr range
+        // and this number is also working fine able to create nach form successfully.
 
-        if (strlen($amountInWord) > 65)
-        {
-            throw new BadRequestValidationFailureException(
-                'converting the given amount exceeds the 65 characters, please try to give a whole number',
-                Entity::AMOUNT,
-                [
-                    Entity::AMOUNT => $amount,
-                    'amount_in_word' => $amountInWord
-                ]
-            );
-        }
+//        $amountInWord = (new HyperVerge)->getFormattedAmountInWords($amount);
+//
+//        if (strlen($amountInWord) > 65)
+//        {
+//            throw new BadRequestValidationFailureException(
+//                'converting the given amount exceeds the 65 characters, please try to give a whole number',
+//                Entity::AMOUNT,
+//                [
+//                    Entity::AMOUNT => $amount,
+//                    'amount_in_word' => $amountInWord
+//                ]
+//            );
+//        }
     }
 
     public function validateToAuthenticate()
