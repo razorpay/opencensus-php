@@ -26,7 +26,7 @@ class FundAccountValidationStatusEvent extends Event
         $merchant = $fav->merchant;
 
         $properties['fav'] = [
-            'id'              => $fav->getPublicId(),
+            'id'              => $fav->getId(),
             'merchant_id'     => $merchant->getId(),
             'status'          => $fav->getStatus(),
             'account_status'  => $fav->getAccountStatus()

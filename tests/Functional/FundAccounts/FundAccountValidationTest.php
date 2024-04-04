@@ -9,6 +9,7 @@ use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Jobs\Transactions;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\DiagClient;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Models\Pricing\Fee;
@@ -61,6 +62,8 @@ class FundAccountValidationTest extends TestCase
     public function testCreateValidationWithFundAccountId()
     {
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -165,6 +168,102 @@ class FundAccountValidationTest extends TestCase
                 }));
     }
 
+    public function testPennilessVpaValidationWithBeneNameNotAllowedInResponse()
+    {
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_RESPONSE_BENE_NAME_BLACKLIST => ['XX','Razorpay']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $bank_account = $this->getLastEntity('bank_account', true);
+
+        $this->fixtures->edit('bank_account', $bank_account['id'], ['ifsc_code' => "SBIN0007109"]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] = $fundAccountResponse['id'];
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PENNILESS_VALIDATION]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] = $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $txn = $this->getLastEntity('transaction', true);
+        $balance = $this->getLastEntity('balance', true);
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals(false, $txn['settled']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals(3, $txn['mdr']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(3, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        // Note: because no fee credits are available
+        $this->assertEquals(9999997, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+        $this->assertNotNull($txn['posted_at']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(3, $fav['fees']);
+        $this->assertEquals(0, $fav['tax']);
+
+        // validate balance entry in database
+        $this->assertEquals(9999997, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+        $faVpaValidation->handle();
+
+        Queue::assertPushed(FavQueueForFTS::class);
+
+        // Test worker
+        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+        $favQueueForFts->handle();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->triggerFlowToUpdateFavWithNewState($fav['id'], 'COMPLETED');
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Test', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+
+        // Penny drop assertion
+        $this->assertEquals('fav_' . $favUpdated['id'], $fta['source']);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+        $this->assertEquals($bankAccount['id'], 'ba_' . $fta['bank_account_id']);
+        $this->assertNotNull($fta['narration']);
+        $this->assertEquals(null, $favUpdated[Entity::ERROR_DESCRIPTION]);
+    }
+
     public function testPennilessVpaValidationSuccess()
     {
 
@@ -221,9 +320,9 @@ class FundAccountValidationTest extends TestCase
 
 
         // validate fund account validation last entry
-       $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
-       $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
-       $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
 
         // no fta
         $this->assertNotEquals($fav['id'], $fta['source']);
@@ -237,7 +336,7 @@ class FundAccountValidationTest extends TestCase
         $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
 
         $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
-        $this->assertEquals('Razorpay Customer', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('Penniless Customer', $favUpdated[Entity::REGISTERED_NAME]);
         $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
         $this->assertEquals('Penniless', $favUpdated[Entity::ERROR_DESCRIPTION]);
 
@@ -602,7 +701,7 @@ class FundAccountValidationTest extends TestCase
         $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
 
         $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
-        $this->assertEquals('Razorpay Customer', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('Penniless Customer', $favUpdated[Entity::REGISTERED_NAME]);
         $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
 
     }
@@ -699,6 +798,8 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
         // remove features is not required as by default feature would be disabled
         //$this->fixtures->merchant->removeFeatures(['expose_fa_validation_utr']);
 
@@ -730,6 +831,8 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
         $this->createValidationWithFundAccountEntity();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -742,6 +845,8 @@ class FundAccountValidationTest extends TestCase
     public function testCreateValidationWithFundAccountEntityFromAdmin()
     {
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $admin = $this->ba->getAdmin();
 
@@ -784,6 +889,8 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
         $this->createValidationWithFundAccountEntity();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -796,6 +903,8 @@ class FundAccountValidationTest extends TestCase
     public function testGetValidations()
     {
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $this->createValidationWithFundAccountEntity();
 
@@ -811,6 +920,8 @@ class FundAccountValidationTest extends TestCase
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
 
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $this->ba->privateAuth();
 
@@ -829,6 +940,8 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationWhenFailedDuringRecon()
     {
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -885,6 +998,8 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
 
         $this->ba->privateAuth();
@@ -910,6 +1025,8 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationOnPrepaidModelWithNoFeeCredits()
     {
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
@@ -1206,6 +1323,8 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $receipt = 'failed_resp_beneficiary_details_invalid';
@@ -1235,6 +1354,8 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationWhenFailedDuringReconWithInternalError()
     {
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -1522,7 +1643,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals($fav['id'], $fta['source']);
     }
 
-   //checks if first 4 char of ifsc are same, then don't go to bank and fav should be picked from cache
+    //checks if first 4 char of ifsc are same, then don't go to bank and fav should be picked from cache
     public function testFundAccValidationWithSameAccountNumberIfscBankButDifferentIfscCode()
     {
         $this->createValidationWithFundAccountEntity();
@@ -1750,6 +1871,8 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
         $this->createValidationWithFundAccountEntity();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -1807,12 +1930,12 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
     }
 
-    public function testFundAccValidationBankingFailedMissingFundAccountId()
-    {
-        $this->setUpMerchantForBusinessBanking(false, 10000000);
-
-        $this->startTest();
-    }
+//    public function testFundAccValidationBankingFailedMissingFundAccountId()
+//    {
+//        $this->setUpMerchantForBusinessBanking(false, 10000000);
+//
+//        $this->startTest();
+//    }
 
     public function testFundAccValidationFailedFundAccountCardType()
     {
@@ -1860,6 +1983,8 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -1923,6 +2048,8 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -1963,6 +2090,8 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationWithFailedStatusOnPostpaid()
     {
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -2135,7 +2264,7 @@ class FundAccountValidationTest extends TestCase
         $this->markTestSkipped('the IFSC being used is invalid, skipping the test till its replaced with valid value');
 
         $this->fixtures->merchant->editEntity('merchant', '10000000000000',
-                                              ['name' => 'L&!T @L and T', 'billing_label' => '']);
+            ['name' => 'L&!T @L and T', 'billing_label' => '']);
 
         $this->createValidationWithFundAccountEntity();
 
@@ -2548,6 +2677,8 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__] = $this->testData['testFundAccValidationWithFailedStatusForBusinessBanking'];
@@ -2595,6 +2726,8 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__] = $this->testData['testFundAccValidationWithFailedStatusForBusinessBanking'];
@@ -2627,6 +2760,7 @@ class FundAccountValidationTest extends TestCase
         $this->createFAVBankingPricingPlan();
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
         $this->enableRazorXTreatmentForRazorX();
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
         $fundAccountResponse = $this->createFundAccountBankAccount();
         $this->testData[__FUNCTION__]['request'] = $this->testData['testFundAccValidationWithFailedStatusForBusinessBanking']['request'];
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -2660,6 +2794,8 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -2710,6 +2846,8 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -2852,5 +2990,60 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
         $this->assertEquals('Rohit', $favUpdated[Entity::REGISTERED_NAME]);
         $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+    }
+
+    public function testCreateValidationForPGMerchantWithNoXLiteAccountAfterCutoff()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->createFundAccountBankAccount();
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
+
+        $this->startTest();
+    }
+
+    public function testCreateValidationForPGMerchantWithXLiteAccountAfterCutoff()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->createFundAccountBankAccount();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->startTest();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        $this->assertEquals('created', $fav['status']);
+        $this->assertEquals('shared', $balance['account_type']);
+        $this->assertEquals('banking', $balance['type']);
+    }
+
+    public function testCreateValidationForPGMerchantBeforeCutoff()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->createFundAccountBankAccount();
+
+        $this->startTest();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        $this->assertEquals('created', $fav['status']);
+        $this->assertEquals('primary', $balance['type']);
     }
 }

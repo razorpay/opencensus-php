@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Helpers\FundAccount;
 
 use RZP\Jobs\FavQueueForFTS;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
@@ -13,6 +14,8 @@ trait FundAccountValidationTrait
     protected function createValidationWithFundAccountEntity(): array
     {
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $response = $this->startTest();
 
@@ -176,6 +179,8 @@ trait FundAccountValidationTrait
     protected function createValidationWithFundAccountEntityFromAdmin(): array
     {
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
         $response = $this->startTest();
 

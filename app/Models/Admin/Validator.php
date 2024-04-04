@@ -290,6 +290,7 @@ class Validator extends Base\Validator
         ConfigKey::P2P_SCHEDULE_POST_APPROVAL_MERCHANT_LIST                            => 'filled|array',
         ConfigKey::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT                                    => 'filled|array',
         ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST                                    => 'filled|array',
+        ConfigKey::PENNILESS_RESPONSE_BENE_NAME_BLACKLIST                              => 'filled|array',
         ConfigKey::TOKENS_SERVICE_ENABLED                                              => 'filled|boolean',
     ];
 

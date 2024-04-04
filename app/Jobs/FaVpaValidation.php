@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use Throwable;
 use Razorpay\Trace\Logger;
 
+use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Metric;
@@ -130,7 +131,10 @@ class FaVpaValidation extends Job
 
                 if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT))
                 {
-                    if (($success === true) && ($name != null) && ($accountStatus === AccountStatus::ACTIVE))
+                    if (($success === true) &&
+                        ($name != null) &&
+                        ($this->isNameReceivedFromPennilessValid($name, $ifsc) === true) &&
+                        ($accountStatus === AccountStatus::ACTIVE))
                     {
                         $this->trace->info(
                             TraceCode::BANK_ACCOUNT_VALIDATED_USING_VPA,
@@ -271,6 +275,45 @@ class FaVpaValidation extends Job
         }
 
         return $data;
+    }
+
+    protected function isNameReceivedFromPennilessValid(string $name = null, string $ifsc = null)
+    {
+        try
+        {
+            $benificiaryNameNotAllowedArray = (new Admin\Service)->getConfigKey([
+                'key' => Admin\ConfigKey::PENNILESS_RESPONSE_BENE_NAME_BLACKLIST
+            ]);
+
+            foreach ($benificiaryNameNotAllowedArray as $beneName)
+            {
+                if(stripos($name, $beneName) !== false)
+                {
+                    $this->trace->info(TraceCode::VALIDATE_VPA_PENNILESS_INVALID_NAME,
+                        [
+                            "bene_substring_found" => $beneName,
+                            "bank"                => substr($ifsc, 0, 4)
+                        ]);
+
+                    return false;
+                }
+            }
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::VALIDATE_VPA_PENNILESS_NAME_FAILURE,
+                [
+                    'fa_validation_id' => $this->favId,
+                ]
+            );
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

@@ -27,6 +27,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FundTransfer\Redaction;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
@@ -153,7 +154,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @return Entity
      */
-    protected function buildValidationEntity(array $input, Merchant\Entity $merchant): Entity
+    protected function buildValidationEntity(array &$input, Merchant\Entity $merchant): Entity
     {
         $validation = new Entity;
 
@@ -206,6 +207,8 @@ class Core extends Base\Core
         $fundAccount = $this->createOrGetFundAccount($input, $merchant);
 
         $validation->associateFundAccount($fundAccount);
+
+        $input[Entity::FUND_ACCOUNT][Entity::ID] = $fundAccount->getId();
 
         if (self::shouldFavGoThroughLedgerReverseShadowFlow($validation) === true)
         {
@@ -600,13 +603,45 @@ class Core extends Base\Core
         }
     }
 
-    protected function associateBalance(Entity $fundAccValidation, array $input)
+    protected function associateBalance(Entity $fundAccValidation, array &$input)
     {
         $balanceId = $input[Entity::BALANCE_ID] ?? null;
 
         if (empty($balanceId) === true)
         {
-            $balance = $fundAccValidation->merchant->primaryBalance;
+            $shouldDefaultToXBalance = $this->app->razorx->getTreatment($fundAccValidation->merchant->getId(),
+                RazorxTreatment::FAV_PG_LEDGER_CUTOFF,
+                $this->mode);
+
+            if ($shouldDefaultToXBalance === RazorxTreatment::RAZORX_VARIANT_ON)
+            {
+                $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                    $fundAccValidation->merchant->getId(),
+                    Balance\Type::BANKING,
+                    Balance\AccountType::SHARED,
+                    $this->mode);
+
+                //if X shared account is present then use it else throw an error
+                if ($balance === null)
+                {
+                    $this->trace->info(TraceCode::FAV_PG_LEDGER_CUTTOFF_ACCOUNT_NOT_FOUND,
+                        [
+                            "variant"      => $shouldDefaultToXBalance,
+                            "merchant_id"  => $fundAccValidation->merchant->getId()
+                        ]);
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_RAZORPAYX_ACCOUNT_NUMBER_IS_INVALID,
+                        Balance\Entity::ACCOUNT_NUMBER,
+                        []);
+                }
+
+                $input[Entity::BALANCE_ID] = $balance->getId();
+            }
+            else
+            {
+                $balance = $fundAccValidation->merchant->primaryBalance;
+            }
         }
         else
         {

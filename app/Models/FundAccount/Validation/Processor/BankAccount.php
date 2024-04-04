@@ -51,7 +51,11 @@ class BankAccount extends Base
         'RBL BANK',
         'ICICI BANK NODAL A',
         'IMPS CUSTOMER',
+        'NOT FOUND',
+        'NOTFOUND',
+        'RAZORPAY'
     ];
+
 
     public function preProcessValidation()
     {
