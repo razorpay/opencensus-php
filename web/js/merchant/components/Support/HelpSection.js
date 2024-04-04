@@ -139,7 +139,7 @@ const HelpSection = ({
   return (
     <ErrorBoundary
       resetOnProps
-      rank={Ranks.P1}
+      rank={Ranks.P0}
       team={Teams.CARE}
       FallbackComponent={ErrorFallbackComponent}
     >

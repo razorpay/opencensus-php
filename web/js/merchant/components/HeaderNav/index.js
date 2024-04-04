@@ -38,6 +38,7 @@ import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
 import { isRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -356,12 +357,18 @@ class HeaderNav extends Component {
                 </ShowWhen>
                 {this.isRAYEnabled() ? (
                   <li style={{ top: '18px' }}>
-                    <Ray
-                      user={user}
-                      onRAYOpen={this.onRAYOpenCallback}
-                      onRAYClose={this.onRAYCloseCallback}
-                      isDrawerVisible={openedCareWidget === 'RAY'}
-                    />
+                    <ErrorBoundary
+                      rank={Ranks.P0}
+                      team={Teams.CARE}
+                      FallbackComponent={() => <></>}
+                    >
+                      <Ray
+                        user={user}
+                        onRAYOpen={this.onRAYOpenCallback}
+                        onRAYClose={this.onRAYCloseCallback}
+                        isDrawerVisible={openedCareWidget === 'RAY'}
+                      />
+                    </ErrorBoundary>
                   </li>
                 ) : null}
                 <li id="profile-dropdown">

@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 /* eslint-disable react/no-unsafe */
 import { withRouter } from 'common/deprecated/withRouter';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { ModalMask } from 'common/new-ui/Modal';
 import { withSplitzService } from 'common/splitz';
 import Loader from 'common/ui/Loader';
@@ -2398,9 +2398,16 @@ class Content extends Component {
             {ModalFormView}
             <MultiSlider />
             {!(this.checkIsHelpWidgetDisabled() || window?.RZP?.appName == 'businessbanking') && (
-              <Suspense fallback={null}>
-                <HelpSection user={user} />
-              </Suspense>
+              <ErrorBoundary
+                resetOnProps
+                rank={Ranks.P0}
+                team={Teams.CARE}
+                FallbackComponent={() => <></>}
+              >
+                <Suspense fallback={null}>
+                  <HelpSection user={user} />
+                </Suspense>
+              </ErrorBoundary>
             )}
           </Suspense>
         </ErrorBoundary>
