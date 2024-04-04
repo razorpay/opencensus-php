@@ -2,6 +2,7 @@ import ShipRocketIcon from 'merchant/views/MagicCheckout/ShippingServices/assets
 import DelhiveryIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/delhivery.svg';
 import IThinkLogisticsIcon from 'assets/ithink-logistics-logo.png';
 import UnicommerceIcon from 'assets/unicommerce.png';
+import ClickpostIcon from 'assets/clickpost-logo.png';
 import lazy from 'merchant/routes/LazyLoader';
 
 const ShipRocketModal = lazy(() =>
@@ -25,6 +26,12 @@ const IThinkModal = lazy(() =>
 const UnicommerceModal = lazy(() =>
   import(
     /* webpackChunckName: "MagicShippingService" */ 'merchant/views/MagicCheckout/ShippingServices/UnicommerceAccountModal'
+  ),
+);
+
+const ClickpostModal = lazy(() =>
+  import(
+    /* webpackChunckName: "MagicShippingService" */ 'merchant/views/MagicCheckout/ShippingServices/ClickPostAccountModal'
   ),
 );
 
@@ -121,8 +128,8 @@ export const BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE = [
     subText: 'Share order data from your logistic partner account directly.',
   },
   {
-    startingText: 'RTO protection on COD orders',
-    subText: 'You will be eligible for RTO protection on these orders.',
+    startingText: 'RTO Protection on COD orders',
+    subText: 'You will be eligible for RTO Protection on these orders.',
     image: true,
   },
 ];
@@ -157,6 +164,11 @@ export const SHIPPING_PARTNERS = {
     image: UnicommerceIcon,
     component: <UnicommerceModal />,
   },
+  clickpost: {
+    provider_type: 'Clickpost',
+    image: ClickpostIcon,
+    component: <ClickpostModal />,
+  },
 };
 
 export const DISCONNECT_TEXTS = {
@@ -177,21 +189,28 @@ export const DISCONNECT_TEXTS = {
   delhivery: {
     header: 'Disconnect Delhivery',
     subText: 'Are you sure you want to disconnect ?',
-    desc: 'Razorpay will stop receiving delivery status updates from your Delhivery account. Orders shipped via Delhivery will no longer be eligible for RTO insurance.',
+    desc: 'Razorpay will stop receiving delivery status updates from your Delhivery account. Orders shipped via Delhivery will no longer be eligible for RTO Protection.',
     secondaryCtaLabel: 'No, don’t disconnect',
     primaryCtaLabel: 'Yes, disconnect',
   },
   ithink_logistics: {
     header: 'Disconnect iThink Logistics',
     subText: 'Are you sure you want to disconnect ?',
-    desc: 'Razorpay will stop receiving delivery status updates from your iThink Logistics account. Orders shipped via iThink Logistics will no longer be eligible for RTO insurance.',
+    desc: 'Razorpay will stop receiving delivery status updates from your iThink Logistics account. Orders shipped via iThink Logistics will no longer be eligible for RTO Protection.',
     secondaryCtaLabel: 'No, don’t disconnect',
     primaryCtaLabel: 'Yes, disconnect',
   },
   unicommerce: {
     header: 'Disconnect Unicommerce',
     subText: 'Are you sure you want to disconnect ?',
-    desc: 'Razorpay will stop receiving delivery status updates from your Unicommerce account. Orders shipped via Unicommerce will no longer be eligible for RTO insurance.',
+    desc: 'Razorpay will stop receiving delivery status updates from your Unicommerce account. Orders shipped via Unicommerce will no longer be eligible for RTO Protection.',
+    secondaryCtaLabel: 'No, don’t disconnect',
+    primaryCtaLabel: 'Yes, disconnect',
+  },
+  clickpost: {
+    header: 'Disconnect Clickpost',
+    subText: 'Are you sure you want to disconnect ?',
+    desc: 'Razorpay will stop receiving delivery status updates from your Clickpost account. Orders shipped via Clickpost will no longer be eligible for RTO Protection.',
     secondaryCtaLabel: 'No, don’t disconnect',
     primaryCtaLabel: 'Yes, disconnect',
   },

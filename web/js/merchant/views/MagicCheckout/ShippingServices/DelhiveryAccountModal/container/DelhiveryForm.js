@@ -54,7 +54,7 @@ const DelhiveryForm = ({ closeModal, createProviders, showNotification, user }) 
     <>
       <ModalHeader
         onCloseClick={closeModal}
-        title="Delhivery Credential"
+        title="Link Delhivery account"
         extraClass="delhivery-form-title"
       />
       <div className="delhivery-form-content">

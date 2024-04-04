@@ -59,8 +59,8 @@ const ShippingAccount = ({
                 ? 'Check pincode serviceability directly via Shiprocket.'
                 : null}
               {magicIntelligence
-                ? 'Connect your delivery partner with Razorpay for better RTO protection on COD orders'
-                : 'Get better RTO protection with realtime order status updates.'}
+                ? 'Connect your delivery partner with Razorpay for better RTO Protection on COD orders'
+                : 'Get better RTO Protection with realtime order status updates.'}
             </div>
             {providers.map((item, idx) => (
               <Listing
