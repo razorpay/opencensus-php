@@ -166,9 +166,7 @@ export function createProductDiscountPayload({
     },
     customer_whitelist,
     disabled_methods: couponDetails.prepaidMethodsOnly ? ['cod'] : null,
-    flags: {
-      force_display: couponDetails.display && couponDetails.couponDiscoveryEnabled,
-    },
+    force_display: couponDetails.display && Boolean(couponDetails.couponDiscoveryEnabled),
     combined_coupons: [
       {
         type: combineCoupons.shouldCombineFreeShippingCoupon ? 'shipping_fee' : null,

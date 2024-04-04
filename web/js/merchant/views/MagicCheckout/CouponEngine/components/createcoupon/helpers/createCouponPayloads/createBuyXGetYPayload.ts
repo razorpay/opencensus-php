@@ -2,7 +2,13 @@ import isEmpty from 'lodash/isEmpty';
 import moment from 'moment';
 
 import { sanitizePayload } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads/common';
-
+import {
+  CouponPayload,
+  Condition,
+  CustomerWhitelist,
+  CustomerBuys,
+  CartEntity,
+} from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads/couponForm.d';
 import {
   CouponDetails,
   CouponValidity,
@@ -11,13 +17,6 @@ import {
   ProductsPurchased,
   CombineCoupons,
 } from 'merchant/views/MagicCheckout/CouponEngine/types.d';
-import {
-  CouponPayload,
-  Condition,
-  CustomerWhitelist,
-  CustomerBuys,
-  CartEntity,
-} from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads/couponForm.d';
 
 export function createBuyXGetYPayload({
   couponDetails,
@@ -352,7 +351,7 @@ export function createBuyXGetYPayload({
     customer_whitelist,
     disabled_methods: couponDetails.prepaidMethodsOnly ? ['cod'] : null,
     flags: {
-      force_display: couponDetails.display && couponDetails.couponDiscoveryEnabled,
+      force_display: couponDetails.display && Boolean(couponDetails.couponDiscoveryEnabled),
     },
     combined_coupons: [
       {
