@@ -32,7 +32,8 @@ class DebitProvider
     ];
 
     public static $experimentCheckRequiredDebitEmiBanks = [
-        self::HDFC => 'app.hdfc_dcemi_whitelisted_mid_experiment_id'
+        self::HDFC => 'app.hdfc_dcemi_whitelisted_mid_experiment_id',
+        self::ICIC => 'app.icici_dcemi_whitelisted_mid_experiment_id'
     ];
 
     public static function checkProviderValidity($provider)

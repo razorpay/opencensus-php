@@ -9909,7 +9909,7 @@ class Core extends Base\Core
             $this->trace->traceException(
                 $e,
                 null,
-                TraceCode::HDFC_DCEMI_WHITELISTED_MERCHANTS_SPLITZ_ERROR
+                TraceCode::DEBIT_EMI_WHITELISTED_MERCHANTS_SPLITZ_ERROR
             );
         }
 
