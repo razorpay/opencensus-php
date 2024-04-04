@@ -189,7 +189,7 @@ class Core extends Base\Core
         {
             $this->handleTransactionCreationOnAcknowledgement($journal, $transactorId, $transactorEvent, false);
         }
-        catch (Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
