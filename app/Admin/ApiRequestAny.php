@@ -289,8 +289,6 @@ class ApiRequestAny
 
                     $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
 
-                    $this->options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
-
                     // Only string can be sent in http headers
                     // bool value is converted to '1' for true & '0' for false
                     $this->options['headers']['X-Dashboard-User-2FA-Verified'] =

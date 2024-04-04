@@ -47,8 +47,6 @@ class SetApiHeaders {
 
         ApiRequest::addHeader('X-Request-Origin', $originDomain);
 
-        ApiRequest::addHeader('X-Dashboard-User-Session-Id', Session::getId());
-
         ApiRequest::addHeader(Headers::DEV_SERVE_USER,$request->header(Headers::DEV_SERVE_USER));
 
         ApiRequest::addHeader(Headers::X_RAZORPAY_REQUEST_ID, $request->header(Headers::X_RAZORPAY_REQUEST_ID));
