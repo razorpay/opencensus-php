@@ -813,6 +813,7 @@ class Gateway
     // in case of any changes in gateway config, please contact smart routing team
     // changes done here won't be reflected in routing
     const ENACH_NPCI_NB_AUTH_NETBANKING_BANKS = [
+        IFSC::ANDB,
         IFSC::AIRP,
         IFSC::APGB,
         IFSC::AUBL,
