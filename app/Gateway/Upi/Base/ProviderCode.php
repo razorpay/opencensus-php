@@ -206,6 +206,8 @@ class ProviderCode
     const BPAYWALLET         = 'bpaywallet';
     const PAYU               = 'payu';
     const FIFEDERAL          = 'fifederal';
+    const YESFAM             = 'yesfam';
+
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
 
@@ -401,6 +403,9 @@ class ProviderCode
         self::DIGIKHATA          => 'NPCI',
         self::BPAYWALLET         => 'NPCI',
         self::PAYU               => 'NPCI',
+        self::YESFAM             => 'NPCI',
+        self::SIB                => 'NPCI',
+        self::BARODAMPAY         => 'NPCI',
     ];
 
     /**
@@ -520,6 +525,9 @@ class ProviderCode
         ProviderPsp::CITRUS,
         ProviderPsp::FI,
         ProviderPsp::TIMEPAY,
+        ProviderPsp::FAMPAY,
+        ProviderPsp::SIB_MIRROR_PLUS,
+        ProviderPsp::BOB_WORLD_UPI,
     ];
 
     /**

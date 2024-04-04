@@ -56,6 +56,9 @@ class ProviderPsp
     Const FI                = 'fi';
     Const CITRUS            = 'citrus';
     Const TIMEPAY            = 'timepay';
+    Const BOB_WORLD_UPI      = 'bob_world_upi';
+    Const SIB_MIRROR_PLUS    = 'sib_mirror_plus';
+    Const FAMPAY             = 'fampay';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';
