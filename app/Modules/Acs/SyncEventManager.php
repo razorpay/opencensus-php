@@ -476,7 +476,7 @@ class SyncEventManager
             ]);
         }
 
-        if ((config('app.acs.verbose_log') === true) or ($this->stats['total']['count'] > 0)) {
+        if (config('app.acs.verbose_log') === true) {
             app('trace')->info(TraceCode::ACS_ENTITY_FETCH, $logData);
         }
     }
