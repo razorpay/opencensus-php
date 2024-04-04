@@ -58,7 +58,7 @@ export const REPORTS_PRESETS: Preset[] = [
   { label: 'Last 1 month', value: '30d', duration: 30, unit: 'days' },
   { label: 'Last 2 months', value: '60d', duration: 60, unit: 'days' },
   { label: 'Last 3 months', value: '90d', duration: 90, unit: 'days' },
-  { label: 'Custom', value: 'custom', duration: 0, unit: 'custom' },
+  { label: 'Custom', value: 'custom', duration: 0, unit: 'days' },
 ];
 
 export const CONFIG_IDS = {

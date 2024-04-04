@@ -1,4 +1,4 @@
-export const getFeaturesData = (businessName) => [
+export const getFeaturesData = (businessName: string) => [
   {
     icon: '/dist/css/assets/risk-analytics/risk-guide-1.svg',
     title: 'What are frauds and disputes?',
@@ -12,13 +12,13 @@ export const getFeaturesData = (businessName) => [
   {
     icon: '/dist/css/assets/risk-analytics/risk-guide-3.svg',
     title: `What can you do on ${businessName}?`,
-    desc: 'You can identify patterns in disputes or frauds by looking at the highest fraud and dispute contributors. You can also download a lit of all frauds/disputes to further analyse the data and reach out in case you want to set up blacklists.',
+    desc: 'You can identify patterns in disputes or frauds by looking at the highest fraud and dispute contributors. You can also download a list of all frauds/disputes to further analyse the data and reach out in case you want to set up blacklists.',
   },
 ];
 
 export const FEATURES_LINKS = [
   {
     label: 'Know more',
-    url: 'https://razorpay.com/docs/risk-visibility/',
+    url: 'https://razorpay.com/docs/payments/payments/risk-visibility-dashboard/',
   },
 ];

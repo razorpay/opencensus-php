@@ -18,7 +18,7 @@ import RiskAndFraudOnBoarding, {
 import QuickGuide, { getRiskAndFraudQuickGuideIsClosed } from './QuickGuide';
 import { DOCUMENT_LINK, RiskFraudEntityRoute, RiskFraudPagesMap } from './common/constant';
 import { trackEvent } from './common/trackEvents';
-import { getDocLink } from './common/utils';
+import { replaceBusinessName } from './common/utils';
 import { StyledTab, TabsHeader } from './components/styled';
 
 const { RISK_ANALYTICS_ROUTE } = RiskFraudEntityRoute;
@@ -39,7 +39,7 @@ const Tab = ({ children, to, exact, onClick }) => {
 
 const RiskAndFraud = ({ riskAndFraudProductOnBoarding, handleProductQuickGuide, businessName }) => {
   const { showOnboarding, isQuickGuideOpen, isTour } = riskAndFraudProductOnBoarding;
-  const docLink = getDocLink(DOCUMENT_LINK, businessName);
+  const docLink = replaceBusinessName({ str: DOCUMENT_LINK, businessName });
 
   const initRiskAndFraudOnboarding = () => {
     if (isTour) {

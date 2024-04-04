@@ -50,8 +50,8 @@ describe('EntityAnalyticsTable - Risk Visibility', () => {
   test('renders table metric selector', () => {
     renderComponent();
     expect(screen.getByTestId('metric-selector')).toBeVisible();
-    expect(screen.getByText('count')).toBeVisible();
-    expect(screen.getByText('amount')).toBeVisible();
+    expect(screen.getByText('Count')).toBeVisible();
+    expect(screen.getByText('Value (in ₹)')).toBeVisible();
   });
 
   test('renders table headers', () => {

@@ -31,7 +31,7 @@ export const fetchRatios = async ({
       const { data } = response.data;
       return Object.fromEntries(
         Object.entries(data).map(([key, value]) => {
-          return [key, Number((value as number).toFixed(2))];
+          return [key, Number((value as number).toFixed(3))];
         }),
       );
     }

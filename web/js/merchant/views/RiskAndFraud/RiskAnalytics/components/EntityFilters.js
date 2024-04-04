@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, useRef, useState } from 'react';
 import {
   Box,
   SelectInput,
@@ -10,6 +10,8 @@ import {
 } from '@razorpay/blade/components';
 import moment from 'moment';
 
+import { useMobile } from 'common/hooks/useMobile';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import {
   CHART_OPTIONS_MAPPING,
   CHART_ORDER,
@@ -18,7 +20,16 @@ import {
   RISK_DECLINED,
   ENTITY_PRESETS,
   METRIC_OPTIONS,
+  CUSTOM,
+  MOBILE_BREAKPOINTS,
+  MOBILE_CALENDAR_NUMBER_OF_MONTHS,
+  DESKTOP_CALENDAR_NUMBER_OF_MONTHS,
 } from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
+import { StyledDateRangePicker } from 'merchant/views/RiskAndFraud/components/styled';
+
+const DateRangePicker = lazy(() =>
+  import(/* webpackChunkName: 'DateRangePicker' */ 'common/ui/Forms/DateRangePickerField'),
+);
 
 const EntityFilters = (props) => {
   const {
@@ -30,23 +41,49 @@ const EntityFilters = (props) => {
     handleMetricChange,
     handleGraphOptions,
   } = props;
+  const isMobile = useMobile();
+  const isMediumDesktopAndMobile = useMobile(MOBILE_BREAKPOINTS);
+  const defaultFocusedInput = useRef(null);
+  const [shouldShowDateRangePicker, setShowDateRangePicker] = useState(false);
+
   const presetOptions = ENTITY_PRESETS[entity];
   const metricOptions = METRIC_OPTIONS;
   const chartOptions = CHART_OPTIONS_MAPPING[entity][metric] ?? [];
+  const numberOfMonths = isMediumDesktopAndMobile
+    ? MOBILE_CALENDAR_NUMBER_OF_MONTHS
+    : DESKTOP_CALENDAR_NUMBER_OF_MONTHS;
 
   const onDurationChange = ({ values }) => {
     const selectedOption = presetOptions.find((preset) => preset.value === values[0]);
-    const { duration, unit } = selectedOption;
+    const { value, duration, unit } = selectedOption;
     const currentDate = moment().subtract(1, 'day');
     const endDate = moment(currentDate).startOf('day');
     const startDate = endDate.clone().subtract(duration, unit).startOf('day');
-    if (handleDurationChange) {
+
+    if (value === CUSTOM) {
+      defaultFocusedInput.current = 'startDate';
+      setShowDateRangePicker(true);
+      handleDurationChange({
+        ...dateRange,
+        preset: selectedOption,
+      });
+    } else {
+      setShowDateRangePicker(false);
       handleDurationChange({
         startDate: startDate.unix(),
         endDate: endDate.unix(),
         preset: selectedOption,
       });
     }
+  };
+
+  const onDatesChange = ({ from, to }) => {
+    if (from === dateRange.startDate && to === dateRange.endDate) return;
+    handleDurationChange({
+      startDate: from,
+      endDate: to,
+      preset: dateRange.preset,
+    });
   };
 
   const onMetricChange = ({ values }) => handleMetricChange(values[0]);
@@ -56,10 +93,18 @@ const EntityFilters = (props) => {
     const sortedValues = values
       .slice()
       .sort((a, b) => CHART_ORDER.indexOf(a) - CHART_ORDER.indexOf(b));
+
     handleGraphOptions(sortedValues);
   };
 
-  const { preset } = dateRange;
+  // Function to check if the date is before 2 years
+  const isOutsideRange = (day) => {
+    const currentDate = moment().subtract(1, 'day');
+    const twoYearsAgo = moment(currentDate).subtract(2, 'years').startOf('day');
+    return day.isBefore(twoYearsAgo);
+  };
+
+  const { startDate, endDate, preset } = dateRange;
 
   return (
     <Box
@@ -69,26 +114,48 @@ const EntityFilters = (props) => {
       paddingBottom="spacing.7"
       borderBottomColor="surface.border.gray.muted"
     >
-      <Box marginRight="spacing.7" minWidth="180px">
-        <BladeDropdown selectionType="single">
-          <SelectInput
-            accessibilityLabel="Duration"
-            name="Duration"
-            placeholder="Select Duration"
-            value={preset.value}
-            onChange={onDurationChange}
-          />
-          <DropdownOverlay>
-            <ActionList>
-              <ActionListSection title="Duration">
-                {presetOptions.map(({ label, value }) => (
-                  <ActionListItem key={value} title={label} value={value} />
-                ))}
-              </ActionListSection>
-            </ActionList>
-          </DropdownOverlay>
-        </BladeDropdown>
-      </Box>
+      <StyledDateRangePicker>
+        <Box minWidth="180px">
+          <BladeDropdown selectionType="single">
+            <SelectInput
+              accessibilityLabel="Duration"
+              name="Duration"
+              placeholder="Select Duration"
+              value={preset.value}
+              onChange={onDurationChange}
+            />
+            <DropdownOverlay>
+              <ActionList>
+                <ActionListSection title="Duration">
+                  {presetOptions.map(({ label, value }) => (
+                    <ActionListItem key={value} title={label} value={value} />
+                  ))}
+                </ActionListSection>
+              </ActionList>
+            </DropdownOverlay>
+          </BladeDropdown>
+        </Box>
+        {shouldShowDateRangePicker && startDate && endDate ? (
+          <div className="risk-daterange-picker">
+            <div className="daterange-container">
+              <SuspenseWithLoader>
+                <DateRangePicker
+                  onDatesChange={onDatesChange}
+                  startDate={moment.unix(startDate)}
+                  endDate={moment.unix(endDate)}
+                  // disabled={loading}
+                  numberOfMonths={numberOfMonths}
+                  withPortal={isMobile}
+                  defaultFocusedInput={defaultFocusedInput.current}
+                  isOutsideRange={isOutsideRange}
+                />
+              </SuspenseWithLoader>
+            </div>
+          </div>
+        ) : null}
+      </StyledDateRangePicker>
+
+      {/* Select Metric */}
       <Box marginRight="spacing.7" minWidth="235px">
         <BladeDropdown selectionType="single">
           <SelectInput
@@ -110,6 +177,7 @@ const EntityFilters = (props) => {
         </BladeDropdown>
       </Box>
 
+      {/* Select Graph Options */}
       {entity !== RISK_DECLINED && (
         <Box marginRight="spacing.7" minWidth="235px">
           <BladeDropdown selectionType="multiple">

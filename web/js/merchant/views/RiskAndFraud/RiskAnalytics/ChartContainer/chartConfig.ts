@@ -1,8 +1,13 @@
 import moment from 'moment';
 
-import { METRIC_COUNT, RISK_DECLINED } from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
+import {
+  METRIC_COUNT,
+  METRIC_VALUE,
+  RISK_DECLINED,
+} from 'merchant/views/RiskAndFraud/RiskAnalytics/constants';
 
-import { CHART_LABELS_MAPPING } from './constants';
+import { CHART_LABELS_MAPPING, CHART_OPTIONS_MAPPING, ENTITY_RATIO } from './constants';
+import custumTooltip from './customTooltip';
 import {
   ChartConfigOptions,
   ChartDataset,
@@ -18,19 +23,26 @@ const chartGridColor = '#F1F3F6';
 const desiredTicksLimit = 6;
 
 export function calculateStepSize(
-  dataset: ChartDataset | null,
+  dataset: ChartDataset | null | undefined,
 ): CalculateStepSizeResult | Record<string, unknown> {
   if (!(dataset && dataset?.data?.length > 0)) return {};
 
   const { data } = dataset;
-  const maxDataPoints = Math.max(...data);
-  const interval = maxDataPoints / (desiredTicksLimit - 1);
+  // Round up maxDataPoint to the nearest multiple of 5
+  const maxDataPoint = Math.ceil(Math.max(...data) / 5) * 5;
+  const interval = maxDataPoint / (desiredTicksLimit - 1);
 
-  const yAxesTicks = Array.from({ length: desiredTicksLimit }, (_, index) =>
-    Math.round(index * interval),
+  const yAxesTicks = Array.from(
+    { length: desiredTicksLimit },
+    (_, index) => Math.ceil(index * interval * 100) / 100, // round up to two decimal places
   );
 
-  return { min: 0, max: maxDataPoints, stepSize: interval, labels: yAxesTicks };
+  return {
+    min: 0,
+    max: maxDataPoint,
+    stepSize: interval,
+    labels: yAxesTicks,
+  };
 }
 
 export const getChartAreaConfig = ({
@@ -45,9 +57,7 @@ export const getChartAreaConfig = ({
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    layout: {
-      padding: { top: 0, left: 0, right: 0, bottom: 0 },
-    },
+    layout: { padding: { top: 0, left: 0, right: 0, bottom: 0 } },
     scales: {
       xAxes: [
         {
@@ -107,9 +117,12 @@ export const getChartAreaConfig = ({
                 ticks: {
                   fontFamily: 'Lato',
                   beginAtZero: true,
-                  min: 0,
-                  stepSize: 0.25,
                   maxTicksLimit: desiredTicksLimit,
+                  ...calculateStepSize(
+                    chartData.datasets.find(
+                      (dataset) => dataset?.label === `${entity}:${metric}:entity_ratio`,
+                    ),
+                  ),
                   callback: (value: number) => {
                     if (value === 0) return '';
                     return `${value}%`;
@@ -145,9 +158,9 @@ export const getChartAreaConfig = ({
             ],
     },
     tooltips: {
-      mode: 'point',
+      enabled: false,
+      custom: custumTooltip,
       position: 'nearest',
-      intersect: true,
       bodySpacing: 4,
       borderWidth: 1,
       backgroundColor: '#FFFFFF',
@@ -165,6 +178,31 @@ export const getChartAreaConfig = ({
       callbacks: {
         title: ([tooltipItem]) => {
           return moment(tooltipItem.xLabel).format('DD MMM YYYY');
+        },
+        label: (tooltipItem, { datasets }) => {
+          const { datasetIndex, yLabel } = tooltipItem;
+          const labelString = datasets[datasetIndex]?.label;
+          // Ensure labelString exists and contains a colon
+          if (!labelString || !labelString.includes(':')) {
+            return '';
+          }
+          const [entity, metric, option] = labelString.split(':');
+          // Check if the entity, metric, and option are valid
+          const entityOptions = CHART_OPTIONS_MAPPING[entity];
+          if (!entityOptions || !entityOptions[metric]) {
+            return '';
+          }
+          const metricOption = entityOptions[metric].find(({ value }) => value === option);
+          // Construct the tooltip label based on the metric and option
+          let labelText = metricOption?.label ?? labelString;
+          labelText += ': ';
+          if (option === ENTITY_RATIO) {
+            return `${labelText}: ${yLabel}%`;
+          } else if (metric === METRIC_VALUE) {
+            return `${labelText}: ${yLabel} (in ₹)`;
+          } else {
+            return `${labelText}: ${yLabel}`;
+          }
         },
       },
     } as TooltipsConfig,

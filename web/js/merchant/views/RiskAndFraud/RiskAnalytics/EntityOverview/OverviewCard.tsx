@@ -36,6 +36,7 @@ const OverviewCard: React.FC<OverviewCardProps> = (props) => {
           <Text
             weight={isActive ? 'semibold' : 'regular'}
             marginY="spacing.2"
+            marginRight="spacing.2"
             color="surface.text.gray.subtle"
           >
             {title}

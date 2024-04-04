@@ -19,6 +19,7 @@ import RadioButtonGroup from 'common/components/RadioButtonGroup';
 
 import SkeletonTable from './SkeletonTable';
 import { ANALYTICS_TABLE_COLUMNS, ANALYTICS_TABLE_HEADER, TABLE_METRIC_OPTIONS } from './constants';
+import { trackEvent } from '../../common/trackEvents';
 import {
   AnalyticsTableWrapper,
   TableContainer,
@@ -41,7 +42,7 @@ export interface EntityAnalyticsTableProps {
 
 const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
   const { entity, dateRange } = props;
-  const [groupBy, setGroupBy] = useState<'card_iin' | 'countries'>('card_iin');
+  const [groupBy, setGroupBy] = useState<'cards_iin' | 'cards_country'>('cards_iin');
   const [tableMetric, setTableMetric] = useState('amount');
   const [currentPage, setCurrentPage] = useState(1);
   const { startDate, endDate } = dateRange;
@@ -53,10 +54,11 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
   } = useQuery({
     queryKey: [entity, { startDate, endDate, groupBy }],
     queryFn: () => fetchTableData({ entity, dateRange, groupBy }),
-    cacheTime: 0,
-    staleTime: 0,
-    retry: 0,
+    cacheTime: 15 * 60 * 1000, // Cache data for 15 minutes
+    staleTime: 15 * 60 * 1000, // Data remains fresh for 15 minutes
+    retry: false,
     refetchOnWindowFocus: false,
+    enabled: startDate !== null && endDate !== null,
   });
 
   const tableHeaders = ANALYTICS_TABLE_COLUMNS[entity];
@@ -79,6 +81,20 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
   const handleGroupby = ({ name }) => {
     setGroupBy(name);
     setCurrentPage(1);
+    trackEvent({
+      objectName: 'GroupBy',
+      actionName: 'Change',
+      properties: { section: entity, groupBy: name },
+    });
+  };
+
+  const handleMetricChange = (value: string) => {
+    setTableMetric(value);
+    trackEvent({
+      objectName: 'TableMetric',
+      actionName: 'Change',
+      properties: { section: entity, metric: value },
+    });
   };
 
   // Function to handle previous page
@@ -93,12 +109,12 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
           <Box display="flex" alignItems="center" flexWrap="wrap" gap="spacing.4">
             <Dropdown>
               <DropdownLink icon={ChevronDownIcon} iconPosition="right">
-                {groupBy === 'card_iin' ? 'Card BINs' : 'Countries'}
+                {groupBy === 'cards_iin' ? 'Card BINs' : 'Countries'}
               </DropdownLink>
               <DropdownOverlay>
                 <ActionList>
-                  <ActionListItem title="Card BINs" value="card_iin" onClick={handleGroupby} />
-                  <ActionListItem title="Countries" value="countries" onClick={handleGroupby} />
+                  <ActionListItem title="Card BINs" value="cards_iin" onClick={handleGroupby} />
+                  <ActionListItem title="Countries" value="cards_country" onClick={handleGroupby} />
                 </ActionList>
               </DropdownOverlay>
             </Dropdown>
@@ -110,14 +126,14 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
             testID="metric-selector"
             options={TABLE_METRIC_OPTIONS}
             selectedOption={tableMetric}
-            onChange={setTableMetric}
+            onChange={handleMetricChange}
             isDisabled={isLoading}
           />
         </Box>
         <Table>
           <TableHead>
             <TableRow>
-              <TableHeaderCell>{groupBy === 'card_iin' ? 'Card BIN' : 'Coutries'}</TableHeaderCell>
+              <TableHeaderCell>{groupBy === 'cards_iin' ? 'Card BIN' : 'Coutries'}</TableHeaderCell>
               {tableHeaders.map((heading) => (
                 <TableHeaderCell key={heading}>{heading}</TableHeaderCell>
               ))}
@@ -131,7 +147,7 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
                 {visibleRows?.length > 0 &&
                   visibleRows.map((dataItem, index) => {
                     const { card_iin, card_country, entity_data, payment } = dataItem ?? {};
-                    const entityGroup = groupBy === 'card_iin' ? card_iin : card_country;
+                    const entityGroup = groupBy === 'cards_iin' ? card_iin : card_country;
 
                     // Extracting values and ensuring they are numeric, defaulting to 0 if they are falsy
                     const paymentAmount =

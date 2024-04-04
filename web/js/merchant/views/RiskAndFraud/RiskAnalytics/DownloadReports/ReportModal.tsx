@@ -9,7 +9,7 @@ import {
   SelectInput,
   Text,
 } from '@razorpay/blade/components';
-import moment, { unitOfTime } from 'moment';
+import moment from 'moment';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
@@ -32,16 +32,16 @@ import {
   REPORT_POST_SUCCESS,
 } from './constants';
 import { ReportModalWrapper } from './styled';
-import { ReportModalProps, SelectedRangeType } from './types';
+import { ReportInitialState, ReportModalProps, SelectedRangeType } from './types';
 import { getDurationCoveredInReports, getInitialState } from './utils';
 import { trackEvent } from '../../common/trackEvents';
+import { RISK_DECLINED } from '../constants';
 
 const ReportModal: React.FC<ReportModalProps> = (props) => {
   const { entity, availableEmails, generatedBy, onCloseCallback, showNotification } = props;
   const { title, filename } = REPORT_MODAL_CONTENT[entity];
 
-  const [dateRange, setDateRange] = useState(() => getInitialState());
-  const [isCustomDurationEnabled, setCustomDuration] = useState(false);
+  const [dateRange, setDateRange] = useState<ReportInitialState>(() => getInitialState());
   const [customDurationRange, setCustomDurationRange] = useState<SelectedRangeType>();
   const [recipients, setRecipients] = useState([]);
   const [isSubmitButtonLoading, setSubmitButtonLoading] = useState(false);
@@ -59,7 +59,6 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
     if (!selectedOption) return;
 
     if (selectedOption.value === 'custom') {
-      setCustomDuration(true);
       setDateRange({ startDate: null, endDate: null, preset: selectedOption });
       return;
     }
@@ -67,11 +66,7 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
     const { duration, unit } = selectedOption;
     const currentDate = moment().subtract(1, 'day');
     const endDate = moment(currentDate).startOf('day');
-    const startDate = endDate
-      .clone()
-      .subtract(duration, unit as unitOfTime.DurationConstructor)
-      .startOf('day');
-
+    const startDate = endDate.clone().subtract(duration, unit).startOf('day');
     const newDateRange = {
       startDate: startDate.unix(),
       endDate: endDate.unix(),
@@ -88,10 +83,18 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
   };
 
   const handleCustomRange = (newDateRange: SelectedRangeType) => {
+    const { startDate, endDate } = newDateRange;
     trackEvent({
       objectName: 'Download list - Custom Duration',
       actionName: 'Change',
-      properties: { section: entity, dateRange: newDateRange },
+      properties: {
+        section: entity,
+        dateRange: {
+          startDate: startDate.unix(),
+          endDate: endDate.unix(),
+          preset: dateRange.preset,
+        },
+      },
     });
     setCustomDurationRange(newDateRange);
   };
@@ -99,23 +102,26 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
   const handleRecipients = ({ values }) => setRecipients(values);
 
   const validateCustomDurationForPicker = ({ startDate, endDate }) => {
-    switch (true) {
-      case endDate.diff(startDate, 'day') > 90:
-        return { error: 'Max allowed range is 90 days.' };
-      case Boolean(endDate.diff(startDate, 'day') > 90):
-        return { error: 'Max allowed range is 31 days for aggregated partner reports.' };
-      default:
-        return true;
+    if (endDate.diff(startDate, 'day') > 90) {
+      return { error: 'Max allowed range is 90 days.' };
+    } else {
+      return true;
     }
   };
 
   const handleSubmit = async () => {
+    const { preset } = dateRange;
+
     const payload = {
       generated_by: generatedBy,
       config_id: CONFIG_IDS[entity],
       emails: recipients?.length ? recipients : undefined,
       template_overrides: { file_meta: { extension: 'xlsx', filename: `${filename}-report` } },
-      ...getDurationCoveredInReports({ isCustomDurationEnabled, customDurationRange, dateRange }),
+      ...getDurationCoveredInReports({
+        isCustomDurationEnabled: preset.value === 'custom',
+        customDurationRange,
+        dateRange,
+      }),
     };
     setSubmitButtonLoading(true);
     try {
@@ -171,43 +177,47 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
             paddingTop="spacing.4"
             paddingBottom="spacing.11"
           >
-            {isCustomDurationEnabled ? (
-              <DateTimeRangePicker
+            <Dropdown selectionType="single">
+              <SelectInput
                 label="Select Duration"
-                helpText="Choose a duration to cover in report."
+                helpText={preset.value !== 'custom' ? 'Select duration to cover in report.' : ''}
+                placeholder="Select duration"
+                necessityIndicator="required"
+                value={preset.value}
+                onChange={handlePreset}
+              />
+              <DropdownOverlay>
+                <ActionList>
+                  {REPORTS_PRESETS.map(({ label, value }) => (
+                    <ActionListItem key={value} title={label} value={value} />
+                  ))}
+                </ActionList>
+              </DropdownOverlay>
+            </Dropdown>
+
+            {preset.value === 'custom' && (
+              <DateTimeRangePicker
+                label=""
                 placeHolder="Select duration"
+                helpText="Select duration to cover in report."
                 onChange={handleCustomRange}
                 value={customDurationRange}
-                minDate={moment().subtract(90, 'days')}
+                minDate={
+                  entity !== RISK_DECLINED
+                    ? moment().subtract(2, 'years')
+                    : moment().subtract(6, 'months')
+                }
                 maxDate={moment().subtract(1, 'day')}
                 validateRange={validateCustomDurationForPicker}
                 necessityIndicator="required"
                 disableTimeSelection
               />
-            ) : (
-              <Dropdown selectionType="single">
-                <SelectInput
-                  label="Select Duration"
-                  helpText="Select duration to cover in report."
-                  placeholder="Select duration"
-                  necessityIndicator="required"
-                  value={preset.value}
-                  onChange={handlePreset}
-                />
-                <DropdownOverlay>
-                  <ActionList>
-                    {REPORTS_PRESETS.map(({ label, value }) => (
-                      <ActionListItem key={value} title={label} value={value} />
-                    ))}
-                  </ActionList>
-                </DropdownOverlay>
-              </Dropdown>
             )}
+
             <Dropdown selectionType="multiple">
               <SelectInput
                 label="Add Recipient's Details"
                 placeholder="Select Email IDs"
-                helpText="This is in addition to the email id already associated with this account"
                 value={recipients}
                 onChange={handleRecipients}
               />

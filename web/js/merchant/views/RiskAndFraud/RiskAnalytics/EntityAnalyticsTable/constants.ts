@@ -11,6 +11,6 @@ export const ANALYTICS_TABLE_COLUMNS = {
 };
 
 export const TABLE_METRIC_OPTIONS = [
-  { label: 'count', value: 'count' },
-  { label: 'amount', value: 'amount' },
+  { label: 'Count', value: 'count' },
+  { label: 'Value (in ₹)', value: 'amount' },
 ];

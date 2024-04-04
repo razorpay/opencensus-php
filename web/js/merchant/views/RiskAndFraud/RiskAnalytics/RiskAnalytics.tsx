@@ -5,6 +5,7 @@ import EntityAnalytics from 'merchant/views/RiskAndFraud/RiskAnalytics/EntityAna
 import EntityOverview from './EntityOverview';
 import { INITIAL_RATIOS, ENTITY_SECTIONS } from './constants';
 import { trackEvent } from '../common/trackEvents';
+import './risk-analytics.styl';
 
 const RiskAnalytics = () => {
   const [ratios, setRatio] = useState(INITIAL_RATIOS);

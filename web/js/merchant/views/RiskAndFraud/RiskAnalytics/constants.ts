@@ -1,3 +1,5 @@
+import { Theme } from '@razorpay/blade/components';
+
 import { AnalyticsEntity, DateRangePreset, MetricOptions, Ratios } from './types';
 
 export const ASSETS_PATH = '/dist/css/assets/risk-analytics';
@@ -20,7 +22,7 @@ export const INITIAL_RATIOS = {
 export const ENTITY_HEADER = {
   [FRAUD]: {
     title: 'Frauds',
-    description: 'Analyze fraudulent transactions and identify patterns',
+    description: 'Analyze fraudulent transactions and identify patterns.',
     popoverText: 'How is fraud-to-sales ratio calculated?',
     popoverTitle: 'Fraud-to-sales ratio',
     popoverContent:
@@ -28,34 +30,35 @@ export const ENTITY_HEADER = {
     popoverImage: `${ASSETS_PATH}/fraud-to-sales-ratio.png`,
     imageAlt: 'fraud-to-sales-ratio',
     docLink:
-      'https://_domain_.com/docs/payments/payments/risk-visibility-dashboard/fraud-sales-ratio/#calculating-fraud-to-sales-ratio',
+      'https://_businessName_.com/docs/payments/payments/risk-visibility-dashboard/fraud-sales-ratio/#calculating-fraud-to-sales-ratio',
   },
   [DISPUTES]: {
     title: 'Disputes',
     description: 'Analyze disputes and identify patterns.',
     popoverText: 'How is dispute-to-sales ratio calculated?',
-    popoverTitle: 'Fraud-to-sales ratio',
+    popoverTitle: 'Dispute-to-sales ratio',
     popoverContent:
-      'Fraud transactions reported by card networks as a % of total captured transactions in a given time period',
-    popoverImage: `${ASSETS_PATH}/risk-decline-ratio.png`,
-    imageAlt: 'risk-decline-ratio',
+      'A dispute is said to occur when a cardholder questions your payment with their card issuer. It is calculated as:',
+    popoverImage: `${ASSETS_PATH}/disputes-to-sales-ratio.png`,
+    imageAlt: 'disputes-to-sales-ratio',
     docLink:
-      'https://_domain_.com/docs/payments/payments/risk-visibility-dashboard/dispute-sales-ratio/#calculating-disputes-to-sales-ratio',
+      'https://_businessName_.com/docs/payments/payments/risk-visibility-dashboard/dispute-sales-ratio/#calculating-disputes-to-sales-ratio',
   },
   [RISK_DECLINED]: {
     title: 'Risk Declines',
     description: 'Analyze risk declines and identify patterns.',
-    popoverText: 'How is risk decline rate calculated',
-    popoverTitle: 'Fraud-to-sales ratio',
+    popoverText: 'How is risk decline rate calculated?',
+    popoverTitle: 'Risk decline rate',
     popoverContent:
-      'Fraud transactions reported by card networks as a % of total captured transactions in a given time period',
-    popoverImage: `${ASSETS_PATH}/disputes-to-sales-ratio.png`,
-    imageAlt: 'disputes-to-sales-ratio',
+      'A risk decline occurs when the algorithm (_businessName_, bank or network) declines or blocks risky transactions that might be potentially fraudulent or have high likelihood of being disputed. It is calculated as:',
+    popoverImage: `${ASSETS_PATH}/risk-decline-ratio.png`,
+    imageAlt: 'risk-decline-ratio',
     docLink:
-      'https://_domain_.com/docs/payments/payments/risk-visibility-dashboard/risk-decline-rate/#calculating-risk-decline-rate',
+      'https://_businessName_.com/docs/payments/payments/risk-visibility-dashboard/risk-decline-rate/#calculating-risk-decline-rate',
   },
 };
 
+export const CUSTOM = 'custom';
 export const PRESETS = [
   { label: 'Last 2 weeks', value: '14d', duration: 14, unit: 'days' },
   { label: 'Last 1 month', value: '30d', duration: 30, unit: 'days' },
@@ -64,6 +67,7 @@ export const PRESETS = [
   { label: 'Last 6 months', value: '6m', duration: 6, unit: 'months' },
   { label: 'Last 1 year', value: '12m', duration: 12, unit: 'months' },
   { label: 'Last 2 years', value: '24m', duration: 24, unit: 'months' },
+  { label: 'Custom', value: 'custom', duration: 14, unit: 'days' },
 ];
 
 export const RISK_DECLINED_PRESETS = [
@@ -73,6 +77,7 @@ export const RISK_DECLINED_PRESETS = [
   { label: 'Last 2 months', value: '60d', duration: 60, unit: 'days' },
   { label: 'Last 3 months', value: '90d', duration: 90, unit: 'days' },
   { label: 'Last 6 months', value: '6m', duration: 6, unit: 'months' },
+  { label: 'Custom', value: 'custom', duration: 14, unit: 'days' },
 ];
 
 export const ENTITY_PRESETS = {
@@ -86,6 +91,16 @@ export const DEFAULT_PRESET: { [entity: string]: DateRangePreset } = {
   [DISPUTES]: { label: 'Last 2 weeks', value: '14d', duration: 14, unit: 'days' },
   [RISK_DECLINED]: { label: 'Last 1 week', value: '7d', duration: 7, unit: 'days' },
 };
+
+export const MOBILE_BREAKPOINTS: Readonly<Array<keyof Theme['breakpoints']>> = [
+  'base',
+  'xs',
+  's',
+  'm',
+];
+
+export const MOBILE_CALENDAR_NUMBER_OF_MONTHS = 1;
+export const DESKTOP_CALENDAR_NUMBER_OF_MONTHS = 2;
 
 export const METRIC_COUNT: MetricOptions = 'count';
 export const METRIC_VALUE: MetricOptions = 'amount';

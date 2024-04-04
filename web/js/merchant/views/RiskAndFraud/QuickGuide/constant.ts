@@ -1,4 +1,4 @@
-export const getQuickGuideData = (businessName) => [
+export const getQuickGuideData = (businessName: string) => [
   {
     title: '1. What are frauds and disputes?',
     content:
@@ -12,7 +12,7 @@ export const getQuickGuideData = (businessName) => [
   {
     title: `3. What can you do on ${businessName}?`,
     content:
-      'You can identify patterns in disputes or frauds by looking at the highest fraud and dispute contributors. You can also download a lit of all frauds/disputes to further analyse the data and reach out in case you want to set up blacklists.',
+      'You can identify patterns in disputes or frauds by looking at the highest fraud and dispute contributors. You can also download a list of all frauds/disputes to further analyse the data and reach out in case you want to set up blacklists.',
   },
 ];
 

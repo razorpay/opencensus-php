@@ -33,11 +33,7 @@ const StatsOverview = (props: StatsOverviewProps) => {
         : statsConfig.map(
             ({ key: statsKey, label, tooltip, format, comparisionKey, additionalInfo }, index) => {
               const showThresholdText =
-                comparisionKey &&
-                stats?.[statsKey] &&
-                ratios?.[comparisionKey] &&
-                stats[statsKey] > ratios[comparisionKey] &&
-                additionalInfo;
+                comparisionKey && stats[statsKey] > ratios[comparisionKey] && additionalInfo;
 
               const totalValue = stats?.[statsKey]?.value ?? '0';
               const decimalValue = stats?.[statsKey]?.decimal ?? '00';

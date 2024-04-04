@@ -13,19 +13,19 @@ const FRAUDS_VALUE_STATS = [
   {
     key: 'total_payment_amount',
     label: 'Total sales value',
-    tooltip: 'total sales value',
+    tooltip: 'Total sales value',
     format: 'currency' as StatsFormat,
   },
   {
     key: 'entity_payment_amount',
     label: 'Value of reported fraud',
-    tooltip: 'value of reported fraud',
+    tooltip: 'Value of reported fraud',
     format: 'currency' as StatsFormat,
   },
   {
     key: 'entity_payment_ratio',
     label: 'Fraud-to-sales ratio',
-    tooltip: 'fraud-to-sales ratio',
+    tooltip: 'Fraud-to-sales ratio',
     format: 'percentage' as StatsFormat,
     comparisionKey: 'industry_fraud_to_sales_ratio',
     additionalInfo: 'Higher than industry average',
@@ -33,7 +33,7 @@ const FRAUDS_VALUE_STATS = [
   {
     key: 'total_entity_count',
     label: 'Number of reported frauds',
-    tooltip: 'number of reported frauds',
+    tooltip: 'Number of reported frauds',
     format: 'integer' as StatsFormat,
   },
 ];
@@ -48,13 +48,13 @@ const FRAUDS_COUNT_STATS = [
   {
     key: 'total_entity_count',
     label: 'Number of reported frauds',
-    tooltip: 'number of reported frauds',
+    tooltip: 'Number of reported frauds',
     format: 'integer' as StatsFormat,
   },
   {
     key: 'entity_payment_ratio',
     label: 'Fraud-to-sales ratio',
-    tooltip: 'fraud-to-sales ratio',
+    tooltip: 'Fraud-to-sales ratio',
     format: 'percentage' as StatsFormat,
     comparisionKey: 'industry_fraud_to_sales_ratio',
     additionalInfo: 'Higher than industry average',
@@ -62,7 +62,7 @@ const FRAUDS_COUNT_STATS = [
   {
     key: 'entity_payment_amount',
     label: 'Value of reported fraud',
-    tooltip: 'value of reported fraud',
+    tooltip: 'Value of reported fraud',
     format: 'currency' as StatsFormat,
   },
 ];
@@ -72,19 +72,19 @@ const DISPUTES_VALUE_STATS = [
   {
     key: 'total_payment_amount',
     label: 'Total sales value',
-    tooltip: 'Tooltip for total sales value',
+    tooltip: 'Total sales value',
     format: 'currency' as StatsFormat,
   },
   {
     key: 'entity_payment_amount',
     label: 'Value of reported disputes',
-    tooltip: 'Tooltip for value of reported disputes',
+    tooltip: 'Value of reported disputes',
     format: 'currency' as StatsFormat,
   },
   {
     key: 'entity_payment_ratio',
     label: 'Dispute-to-sales ratio',
-    tooltip: 'Tooltip for dispute-to-sales ratio',
+    tooltip: 'Dispute-to-sales ratio',
     format: 'percentage' as StatsFormat,
     comparisionKey: 'industry_disputes_to_sales_ratio',
     additionalInfo: 'Higher than industry average',
@@ -92,7 +92,7 @@ const DISPUTES_VALUE_STATS = [
   {
     key: 'total_entity_count',
     label: 'Number of reported disputes',
-    tooltip: 'Tooltip for number of reported disputes',
+    tooltip: 'Number of reported disputes',
     format: 'integer' as StatsFormat,
   },
 ];
@@ -101,19 +101,19 @@ const DISPUTES_COUNT_STATS = [
   {
     key: 'total_payment_amount',
     label: 'Total sales value',
-    tooltip: 'Tooltip for total sales value',
+    tooltip: 'Total sales value',
     format: 'currency' as StatsFormat,
   },
   {
     key: 'entity_payment_amount',
     label: 'Value of reported disputes',
-    tooltip: 'Tooltip for value of reported disputes',
+    tooltip: 'Value of reported disputes',
     format: 'currency' as StatsFormat,
   },
   {
     key: 'entity_payment_ratio',
     label: 'Dispute-to-sales ratio',
-    tooltip: 'Tooltip for dispute-to-sales ratio',
+    tooltip: 'Dispute-to-sales ratio',
     format: 'percentage' as StatsFormat,
     comparisionKey: 'industry_disputes_to_sales_ratio',
     additionalInfo: 'Higher than industry average',
@@ -121,7 +121,7 @@ const DISPUTES_COUNT_STATS = [
   {
     key: 'total_entity_count',
     label: 'Number of reported disputes',
-    tooltip: 'Tooltip for number of reported disputes',
+    tooltip: 'Number of reported disputes',
     format: 'integer' as StatsFormat,
   },
 ];
@@ -131,19 +131,19 @@ const RISK_DECLINES_VALUE_STATS = [
   {
     key: 'total_payment_amount',
     label: 'Total sales value',
-    tooltip: 'Tooltip for total sales value',
+    tooltip: 'Total sales value',
     format: 'currency' as StatsFormat,
   },
   {
     key: 'entity_payment_amount',
     label: 'Value of risk declines',
-    tooltip: 'Tooltip for value of risk declines',
+    tooltip: 'Value of risk declines',
     format: 'currency' as StatsFormat,
   },
   {
     key: 'entity_payment_ratio',
     label: 'Risk decline rate',
-    tooltip: 'Tooltip for risk decline rate',
+    tooltip: 'Risk decline rate',
     format: 'percentage' as StatsFormat,
     comparisionKey: 'industry_risk_declined_to_sales_ratio',
     additionalInfo: 'Higher than industry average',
@@ -151,7 +151,7 @@ const RISK_DECLINES_VALUE_STATS = [
   {
     key: 'total_entity_count',
     label: 'Number of risk declines',
-    tooltip: 'Tooltip for number of risk declines',
+    tooltip: 'Number of risk declines',
     format: 'integer' as StatsFormat,
   },
 ];

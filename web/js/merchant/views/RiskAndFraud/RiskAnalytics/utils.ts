@@ -1,13 +1,12 @@
 import {
   CHART_COLORS_MAPPING,
-  CHART_OPTIONS_MAPPING,
   VALUE_OF_REPORTED_ENTITY,
   TOTAL_SALES_VALUE,
   ENTITY_RATIO,
 } from './ChartContainer/constants';
 import { ChartData, GenerateChartDataType } from './ChartContainer/types';
 import { Stats } from './StatsOverview/types';
-import { RISK_DECLINED } from './constants';
+import { METRIC_VALUE, METRIC_COUNT, RISK_DECLINED } from './constants';
 
 import type {
   PresetValue,
@@ -33,8 +32,8 @@ export const getChartInterval = (presetValue: PresetValue): ChartInterval[] => {
         { label: 'Weekly', value: 'week', disabled: true },
         { label: 'Monthly', value: 'month' },
       ];
-    case '1y':
-    case '2y':
+    case '12m':
+    case '24m':
       return [
         { label: 'Monthly', value: 'month' },
         { label: 'Quarterly', value: 'quarter' },
@@ -63,27 +62,34 @@ export const generateChartData = ({
   queryData.forEach((item) => {
     Xlabels.push(Number(item.start_date) * 1000);
     if (entity !== RISK_DECLINED) {
-      totalSales.push(parseFloat(item.payment[metric]) / 100);
-      reportedEntities.push(parseFloat(item.entity_data[metric]) / 100);
+      totalSales.push(
+        metric === METRIC_VALUE
+          ? parseFloat(item.payment[METRIC_VALUE]) / 100
+          : parseFloat(item.payment[METRIC_COUNT]),
+      );
+      reportedEntities.push(
+        metric === METRIC_VALUE
+          ? parseFloat(item.entity_data[METRIC_VALUE]) / 100
+          : parseFloat(item.entity_data[METRIC_COUNT]),
+      );
     }
 
     const ratio =
       parseFloat(
         ((parseFloat(item.entity_data[metric]) / parseFloat(item.payment[metric])) * 100).toFixed(
-          3,
+          2,
         ),
       ) || 0;
     entityRatio.push(ratio);
   });
+
   const datasets = graphOptions.map((option) => {
+    const label = `${entity}:${metric}:${option}`;
     const datasetColor = CHART_COLORS_MAPPING[option];
-    const metricOption = CHART_OPTIONS_MAPPING[entity][metric].find(
-      ({ value }) => value === option,
-    );
 
     if (option === TOTAL_SALES_VALUE) {
       return {
-        label: metricOption?.label ?? 'Transaction Value',
+        label,
         data: totalSales,
         backgroundColor: datasetColor,
         order: 1,
@@ -92,7 +98,7 @@ export const generateChartData = ({
       };
     } else if (option === VALUE_OF_REPORTED_ENTITY) {
       return {
-        label: metricOption?.label ?? 'Reported Entity',
+        label,
         data: reportedEntities,
         backgroundColor: datasetColor,
         order: graphOptions.includes(TOTAL_SALES_VALUE) ? 2 : 1,
@@ -101,7 +107,7 @@ export const generateChartData = ({
       };
     } else if (option === ENTITY_RATIO) {
       return {
-        label: metricOption?.label ?? 'Entity Ratio',
+        label,
         data: entityRatio,
         backgroundColor: 'rgba(21, 102, 241, 1)',
         borderColor: datasetColor,
@@ -145,7 +151,7 @@ export const formatAmount = (
   };
 };
 
-export function calculateStats(data: QueryResponseItem[]): Stats {
+export function calculateStats(data: QueryResponseItem[], metric = METRIC_VALUE): Stats {
   // Initialize variables
   let totalPaymentAmount = 0;
   let entityPaymentAmount = 0;
@@ -161,7 +167,10 @@ export function calculateStats(data: QueryResponseItem[]): Stats {
   });
 
   // Calculate ratios
-  const entityPaymentRatio = ((totalEntityCount / totalPaymentCount) * 100).toFixed(2); // ratio
+  const entityPaymentRatio =
+    metric === METRIC_VALUE
+      ? ((entityPaymentAmount / totalPaymentAmount) * 100).toFixed(2)
+      : ((totalEntityCount / totalPaymentCount) * 100).toFixed(2);
 
   /**
    * Format the result

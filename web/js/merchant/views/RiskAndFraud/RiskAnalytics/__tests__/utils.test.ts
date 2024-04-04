@@ -35,12 +35,12 @@ describe('getChartInterval', () => {
   });
 
   it('should return monthly and quarterly for 1y and 2y', () => {
-    const intervals = getChartInterval('1y');
+    const intervals = getChartInterval('12m');
     expect(intervals).toEqual([
       { label: 'Monthly', value: 'month' },
       { label: 'Quarterly', value: 'quarter' },
     ]);
-    expect(getChartInterval('2y')).toEqual(intervals);
+    expect(getChartInterval('24m')).toEqual(intervals);
   });
 
   it('should return daily and weekly for default case', () => {

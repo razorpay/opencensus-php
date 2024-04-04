@@ -107,6 +107,22 @@ export const StyledTabButton = styled.button(
   `,
 );
 
+export const StyledDateRangePicker = styled.div`
+  display: flex;
+  align-items: center;
+  margin-right: ${({ theme }) => theme.spacing[7]}px;
+
+  .risk-daterange-picker {
+    > .daterange-container {
+      margin-top: ${({ theme }) => theme.spacing[3]}px;
+    }
+
+    [role='loader'] {
+      margin-left: ${({ theme }) => theme.spacing[3]}px;
+    }
+  }
+`;
+
 const getOverlayStyles = css`
   position: absolute;
   top: 0;

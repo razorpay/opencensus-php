@@ -30,13 +30,14 @@ export const getInitialState = (entity: AnalyticsEntity): EntityAnalyticsState =
   const { duration, unit } = preset;
 
   // Get the previous day since there is no data available for the current day.
-  const endDate = moment().startOf('day').unix();
-  const startDate = moment().subtract(duration, unit).startOf('day').unix();
-  const interval = getBreakdownInterval(startDate, endDate);
+  const currentDate = moment().subtract(1, 'day');
+  const endDate = moment(currentDate).startOf('day');
+  const startDate = endDate.clone().subtract(duration, unit).startOf('day');
+  const interval = getBreakdownInterval(startDate.unix(), endDate.unix());
 
   const payload = {
     queryData: null,
-    dateRange: { startDate, endDate, preset },
+    dateRange: { startDate: startDate.unix(), endDate: endDate.unix(), preset },
     metric: DEFAULT_METRIC,
     graphOptions: DEFAULT_CHART_OPTIONS[entity],
     interval,

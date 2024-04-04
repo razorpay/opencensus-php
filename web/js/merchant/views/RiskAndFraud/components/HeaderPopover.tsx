@@ -7,7 +7,7 @@ import Image from 'common/ui/Image';
 import { StyledButtonText } from './styled';
 import { AnalyticsEntity } from '../RiskAnalytics/types';
 import { trackEvent } from '../common/trackEvents';
-import { getDocLink } from '../common/utils';
+import { replaceBusinessName } from '../common/utils';
 
 interface IProps {
   entity: AnalyticsEntity;
@@ -27,7 +27,7 @@ const HeaderPopover = (props: IProps): JSX.Element => {
   const handleClick = () => setIsOpen(true);
 
   const handleLink = () => {
-    const link = getDocLink(docLink, businessName);
+    const link = replaceBusinessName({ str: docLink, businessName });
     trackEvent({
       objectName: 'Read More',
       properties: {
@@ -50,7 +50,7 @@ const HeaderPopover = (props: IProps): JSX.Element => {
       title={title}
       content={
         <Box>
-          <Text>{content}</Text>
+          <Text>{replaceBusinessName({ str: content, businessName, isCaps: true })}</Text>
           {contentImage && <Image src={contentImage} alt={imageAlt} />}
         </Box>
       }

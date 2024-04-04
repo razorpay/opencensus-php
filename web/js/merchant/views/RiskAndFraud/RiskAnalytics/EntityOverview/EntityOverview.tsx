@@ -1,5 +1,5 @@
 import React, { useState, Dispatch, SetStateAction } from 'react';
-import { Box, Heading } from '@razorpay/blade/components';
+import { Box, Heading, Text } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
 import {
@@ -26,7 +26,8 @@ const EntityOverview: React.FC<EntityOverviewProps> = ({ setRatio }) => {
   const { data } = useQuery({
     queryKey: ['Ratios', { startDate, endDate }],
     queryFn: () => fetchRatios({ startDate, endDate }),
-    cacheTime: 0,
+    cacheTime: 15 * 60 * 1000, // Cache data for 15 minutes
+    staleTime: 15 * 60 * 1000, // Data remains fresh for 15 minutes
     retry: false,
     refetchOnWindowFocus: false,
     onSuccess: (ratios: Ratios) => setRatio(ratios),
@@ -50,9 +51,15 @@ const EntityOverview: React.FC<EntityOverviewProps> = ({ setRatio }) => {
       backgroundColor="surface.background.gray.intense"
       marginTop="spacing.5"
     >
-      <Heading marginBottom="24px" size="small">
-        {OVERVIEW_HEADER}
-      </Heading>
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        marginBottom="spacing.7"
+      >
+        <Heading size="small">{OVERVIEW_HEADER}</Heading>
+        <Text variant="caption">Last 6 months</Text>
+      </Box>
       <Box
         display="flex"
         flexDirection="row"

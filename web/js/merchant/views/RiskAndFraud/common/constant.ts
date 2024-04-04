@@ -7,4 +7,4 @@ export const RiskFraudPagesMap = {
 };
 
 export const DOCUMENT_LINK =
-  'https://_domain_.com/docs/payments/payments/risk-visibility-dashboard/';
+  'https://_businessName_.com/docs/payments/payments/risk-visibility-dashboard/';

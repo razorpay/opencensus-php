@@ -1,6 +1,6 @@
 import React, { useReducer } from 'react';
 import { Box } from '@razorpay/blade/components';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import BlockRule from 'merchant/views/RiskAndFraud/RiskAnalytics/BlockRule';
 import ChartContainer from 'merchant/views/RiskAndFraud/RiskAnalytics/ChartContainer';
@@ -27,6 +27,7 @@ import {
 } from '../../components/styled';
 import { SelectedGraphOption } from '../ChartContainer/types';
 import EntityAnalyticsTable from '../EntityAnalyticsTable';
+import { calculateStats } from '../utils';
 
 import type { EntityAnalyticsProps, AnalyticsReducer } from './types';
 import type {
@@ -36,6 +37,7 @@ import type {
 } from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
 
 const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => {
+  const queryClient = useQueryClient();
   const initialState = getInitialState(entity);
   const [state, dispatch] = useReducer<AnalyticsReducer>(riskAnalyticsReducer, initialState);
 
@@ -49,10 +51,11 @@ const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => 
   } = useQuery({
     queryKey: [entity, { startDate, endDate, interval }],
     queryFn: () => fetchAnalytics({ entity, metric, dateRange, interval, graphOptions }),
-    cacheTime: 0,
-    staleTime: 0,
-    retry: 0,
+    cacheTime: 15 * 60 * 1000, // Cache data for 15 minutes
+    staleTime: 15 * 60 * 1000, // Data remains fresh for 15 minutes
+    retry: false,
     refetchOnWindowFocus: false,
+    enabled: startDate !== null && endDate !== null,
   });
 
   const handleDurationChange = (newValue: DateRange) => {
@@ -68,6 +71,11 @@ const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => 
 
   const handleMetricChange = (newValue: MetricOptions) => {
     dispatch({ type: SET_METRIC, payload: newValue });
+    const newStats = calculateStats(queryData?.data ?? [], newValue);
+    queryClient.setQueryData([entity, { startDate, endDate, interval }], (prevData) => ({
+      ...(prevData as object),
+      stats: newStats,
+    }));
     trackEvent({
       objectName: 'Duration',
       actionName: 'Change',

@@ -22,11 +22,9 @@ const EntityHeader = (props) => {
       <Heading marginBottom="spacing.1" size="small">
         {title}
       </Heading>
-      <Box display="flex" flexDirection="row">
-        <Text size="large" marginRight="spacing.1" color="surface.text.gray.muted">
-          {description}
-        </Text>
-        <Box width="fit-content" mr={3}>
+      <Box display="flex" alignItems="center">
+        <Text color="surface.text.gray.muted">{description}</Text>
+        <Box width="fit-content">
           <HeaderPopover
             entity={entity}
             text={popoverText}

@@ -6,7 +6,7 @@ export enum AnalyticsEntity {
   RISK_DECLINED = 'risk_declined',
 }
 
-export type ReportPresetUnit = 'days' | 'months' | 'custom';
+export type ReportPresetUnit = 'days' | 'months';
 export interface Preset {
   label: string;
   value: string;
