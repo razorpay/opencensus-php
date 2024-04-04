@@ -51,9 +51,10 @@ export const isPosExperimentEnabled = ({
 }): boolean => {
   const isUnregisteredMerchant = user?.business_type === '11' || user.business_type === '2';
 
-  const isWhitelistedForPos = user?.pos_activation_status
-    ? user?.pos_activation_flow === 'whitelist'
-    : true;
+  const isWhitelistedForPos =
+    user?.pos_activation_status !== null && typeof user?.pos_activation_status !== 'undefined'
+      ? user?.pos_activation_flow === 'whitelist'
+      : true;
 
   return (
     isExperimentEnabled(abExperiments?.pos_onboarding) &&
