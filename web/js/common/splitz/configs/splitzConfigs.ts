@@ -22,6 +22,22 @@ export const splitzConfig: SplitzInitConfig = {
     default: [],
     merchant: [
       {
+        uniqueHashKey: 'inviteTeamMember2fa',
+        experimentId: {
+          beta: 'NJk8Ms2EafN0KA',
+          production: 'NJmW82vPbjCU1e',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'two_fa_route',
         experimentId: {
           beta: 'Ng1ZfgSF38n7J5',

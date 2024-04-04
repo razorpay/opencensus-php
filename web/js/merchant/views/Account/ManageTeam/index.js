@@ -1,5 +1,11 @@
 import React from 'react';
-import { Box, Heading } from '@razorpay/blade/components';
+import {
+  Box,
+  Heading,
+  Button,
+  Tooltip,
+  TooltipInteractiveWrapper,
+} from '@razorpay/blade/components';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Styled from 'styled-components';
@@ -21,6 +27,7 @@ import PendingInvitationsList from './PendingInvitations/List';
 import TeamMembersList from './TeamMembers/List';
 import Merchant2FASettings from './components/Merchant2FASettings';
 import NewInvitation from './components/NewInvitation';
+import { withSplitzService } from 'common/splitz';
 
 const StyledDiv = Styled.div`
   margin-top:${({ isFlowRevamped }) => (isFlowRevamped ? '40px' : '0px')};
@@ -33,6 +40,28 @@ const StyledDiv = Styled.div`
 class ManageTeamContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
+  };
+
+  isInviteTeamMember2faEnabled = () => {
+    const {
+      abExperiments: { inviteTeamMember2fa },
+    } = this.props.splitz;
+
+    // Disbaling 2fa for linked accoount since otp verification is not allowed for these two roles, handled in BE as well.
+    const isLinkedAcoount =
+      this.props.user?.role === 'linked_account_admin' ||
+      this.props.user?.role === 'linked_account_owner';
+
+    // disabling for curlec and partner dashboard
+    const isCurlec = this.props.user?.isOrgCurlec;
+    const isPartnerDashboard = window.location.pathname.includes('/partners');
+
+    return (
+      inviteTeamMember2fa.variables.result === 'on' &&
+      !isLinkedAcoount &&
+      !isCurlec &&
+      !isPartnerDashboard
+    );
   };
 
   inviteNewMember = () => {
@@ -76,6 +105,7 @@ class ManageTeamContainer extends React.Component {
               onFormSubmit={sendInvitation}
               successMsg={(data) => `Invitation has been successfully sent to ${data.email}`}
               ctaText="Send Invitation"
+              isInviteTeamMember2faEnabled={this.isInviteTeamMember2faEnabled()}
             />
           </div>
         </>
@@ -106,6 +136,41 @@ class ManageTeamContainer extends React.Component {
       },
     });
   }
+
+  renderInviteNewMemberButton = () => {
+    const { user } = this.props.user;
+
+    const is2faEnabledAndMobileVerified = user?.second_factor_auth && user?.contact_mobile_verified;
+
+    // disabling for curlec and partner dashboard
+    const isCurlec = this.props.user?.isOrgCurlec;
+    const isPartnerDashboard = window.location.pathname.includes('/partners');
+
+    if (!is2faEnabledAndMobileVerified && !isCurlec && !isPartnerDashboard) {
+      return (
+        <Tooltip
+          content={'2 step verification needs to be enabled to Invite team members'}
+          placement="bottom"
+        >
+          <TooltipInteractiveWrapper>
+            <Button onClick={this.inviteNewMember} isDisabled={!is2faEnabledAndMobileVerified}>
+              Invite New Member
+            </Button>
+          </TooltipInteractiveWrapper>
+        </Tooltip>
+      );
+    }
+
+    return (
+      <Button
+        onClick={this.inviteNewMember}
+        isDisabled={!is2faEnabledAndMobileVerified && !isCurlec && !isPartnerDashboard}
+      >
+        Invite New Member
+      </Button>
+    );
+  };
+
   render() {
     const {
       user,
@@ -139,11 +204,15 @@ class ManageTeamContainer extends React.Component {
               </ShowWhen>
 
               <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedEdit('team')}>
-                {/* To make the CTAs on header to be sticky in the bottom need to add a wrapper to them added same */}
+                {/* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */}
                 <span className="cta-container">
-                  <button className="btn btn-primary" onClick={this.inviteNewMember}>
-                    Invite New Member
-                  </button>
+                  {this.isInviteTeamMember2faEnabled() ? (
+                    this.renderInviteNewMemberButton()
+                  ) : (
+                    <button className="btn btn-primary" onClick={this.inviteNewMember}>
+                      Invite New Member
+                    </button>
+                  )}
                 </span>
               </ShowWhen>
             </div>
@@ -181,5 +250,5 @@ const mapStateToProps = (state) => ({
 });
 
 export default connect(mapStateToProps, { sendInvitation, openModal, closeModal })(
-  withI18Service(ManageTeamContainer),
+  withI18Service(withSplitzService(ManageTeamContainer)),
 );

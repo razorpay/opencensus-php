@@ -17,6 +17,33 @@ const trackInviteNewMemberModalClickedSpy = jest.spyOn(
   analytics,
   'trackInviteNewMemberModalClicked',
 );
+
+jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) =>
+    (
+      <Component
+        {...props}
+        splitz={{
+          abExperiments: {
+            inviteTeamMember2fa: {
+              variables: {
+                result: 'off',
+              },
+            },
+          },
+        }}
+      />
+    ),
+  useSplitzService: () => ({}),
+}));
+
+jest.mock('common/ui/HeaderAction', () => ({
+  __esModule: true,
+  default: ({ children }) => {
+    return <div>{children}</div>;
+  },
+}));
+
 const defaultPartnerDashboardExperiments = {
   isPartnershipsForPosEnabled: true,
 };

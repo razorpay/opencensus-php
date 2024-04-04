@@ -23,8 +23,15 @@ import {
   trackInviteNewMemberModalClicked,
 } from 'merchant/views/PartnerDashboard/Home/Components/POS/analytics';
 import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
-import { closeModal } from 'merchant_common/reducers/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+
+import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
+import {
+  triggerOtpOnEmail,
+  triggerOtpOnSMS,
+  triggerOtpOnBoth,
+} from 'merchant_common/reducers/twoFactor';
 
 const selector = formValueSelector('newInvitation');
 @reduxForm({
@@ -35,6 +42,7 @@ const selector = formValueSelector('newInvitation');
   },
 })
 class NewInvitation extends Component {
+  state = {};
   static defaultProps = {
     ctaText: 'Submit',
   };
@@ -47,6 +55,7 @@ class NewInvitation extends Component {
       ...this.props.defaults,
     });
   }
+
   save = (body) => {
     const { ctaText, screen, experiments, successMsg, onFormSubmit, isRenderedFromPartnerRoute } =
       this.props;
@@ -117,6 +126,99 @@ class NewInvitation extends Component {
       });
   };
 
+  getOTPDestination = () => {
+    const { user } = this.props.user;
+    const hasOnlyEmail = Boolean(user.email && user.confirmed);
+    const hasOnlyMobile = Boolean(user.contact_mobile && user.contact_mobile_verified);
+    const hasBothEmailAndMobile = hasOnlyEmail && hasOnlyMobile;
+
+    return {
+      hasOnlyEmail,
+      hasOnlyMobile,
+      hasBothEmailAndMobile,
+    };
+  };
+
+  onCloseClick = () => {
+    this.props.closeModal();
+  };
+
+  sendVerificationOtp = (isResend = false) => {
+    return () => {
+      const { hasBothEmailAndMobile, hasOnlyEmail } = this.getOTPDestination();
+
+      const triggerOTP = hasBothEmailAndMobile
+        ? triggerOtpOnBoth
+        : hasOnlyEmail
+        ? triggerOtpOnEmail
+        : triggerOtpOnSMS;
+
+      return triggerOTP()
+        .then(({ data }) => {
+          this.setState({
+            token: data.token,
+          });
+          if (!isResend) {
+            this.show2faModal();
+          }
+        })
+        .catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
+    };
+  };
+
+  onOtpConfirm = ({ otp }) => {
+    const { selectedRole, invitedEmail, senderName } = this.props;
+    const payload = {
+      sender_name: senderName,
+      role: selectedRole,
+      email: invitedEmail,
+      otp,
+      action: 'second_factor_auth',
+      token: this.state.token,
+    };
+    return this.save(payload);
+  };
+
+  show2faModal = () => {
+    const { user } = this.props.user;
+    const { hasBothEmailAndMobile, hasOnlyEmail, hasOnlyMobile } = this.getOTPDestination();
+
+    const isNewAccountAndSettingsPage = this.props.user?.isAccountAndSettingsRevampEnabled;
+
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <TwoFactorVerificationOTP
+          onConfirm={this.onOtpConfirm}
+          onClose={this.onCloseClick}
+          onResend={this.sendVerificationOtp(true)}
+          title="Invite new member"
+          renderMessage={() => (
+            <p class="m-b">
+              Inviting new member requires you to enter OTP sent over to your{' '}
+              {hasOnlyEmail && (
+                <>
+                  registered email address <strong>{user.email}</strong>
+                </>
+              )}
+              {hasBothEmailAndMobile && ' and '}
+              {hasOnlyMobile && (
+                <>
+                  registered phone number <strong>{user.contact_mobile}</strong>
+                </>
+              )}
+            </p>
+          )}
+          isNewAccountAndSettingsPage={isNewAccountAndSettingsPage}
+        />
+      ),
+    });
+  };
   componentDidMount() {
     const { screen, experiments, isRenderedFromPartnerRoute } = this.props;
     if (experiments?.isPartnershipsForPosEnabled) {
@@ -147,6 +249,7 @@ class NewInvitation extends Component {
       user,
       visibleFields,
       experiments,
+      isInviteTeamMember2faEnabled,
       isRenderedFromPartnerRoute,
       ...props
     } = this.props;
@@ -255,8 +358,12 @@ class NewInvitation extends Component {
               class="btn btn-primary btn-block"
               text={props.ctaText}
               type="submit"
-              pendingText="Processing..."
-              onClick={handleSubmit(this.save)}
+              pendingText={isInviteTeamMember2faEnabled ? 'Sending OTP...' : 'Processing...'}
+              onClick={
+                isInviteTeamMember2faEnabled
+                  ? handleSubmit(this.sendVerificationOtp())
+                  : handleSubmit(this.save)
+              }
             />
           </div>
         </div>
@@ -267,7 +374,10 @@ class NewInvitation extends Component {
 
 const mapStateToProps = (state) => {
   return {
+    user: state.session.user,
     selectedRole: selector(state, 'role'),
+    invitedEmail: selector(state, 'email'),
+    senderName: selector(state, 'sender_name'),
     ...state.session,
   };
 };
@@ -277,5 +387,6 @@ export default compose(
   connect(mapStateToProps, {
     showNotification,
     closeModal,
+    openModal,
   }),
 )(NewInvitation);
