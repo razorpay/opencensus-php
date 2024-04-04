@@ -2663,7 +2663,14 @@ class GatewayController extends Controller
 
                     $this->trace->info(TraceCode::TOKEN_CREATE,[ "token_data" => $token['id']]);
 
-                    (new Customer\Token\Core()) -> notifyAppsTokenStatus($token, Customer\Token\RecurringStatus::CONFIRMED);
+                    if($tokenStatus === TokenConstants::ACTIVE)
+                    {
+                        (new Customer\Token\Core())->notifyAppsTokenStatus($token, Customer\Token\RecurringStatus::CONFIRMED);
+                    }
+                    else if($tokenStatus === TokenConstants::DEACTIVATED)
+                    {
+                        (new Customer\Token\Core()) -> notifyAppsTokenStatus($token, Customer\Token\RecurringStatus::CANCELLED);
+                    }
 
                     return $response['data']['callback_response'];
                 }
