@@ -107,7 +107,7 @@ class Core extends Base\Core
         // A superadmin should be able to execute any open workflow bypassing all the steps
         if (($checkerType === 'admin') and ($checkerEntity->isSuperAdmin() === true))
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($action, $checkerEntity, $input, $permissionName)
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($action, $checkerEntity, $input, $permissionName)
             {
                 // State change if checker rejected
                 if ($input[Entity::APPROVED] == 1)
