@@ -15,12 +15,14 @@ use RZP\Exception\LogicException;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZp\Models\Merchant\MerchantApplications as MerchantApp;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
 class Repository extends Base\Repository
 {
     use RepositoryUpdateTestAndLive;
+    use AsvEntityConnection;
 
     protected $entity = 'merchant_access_map';
 
@@ -136,25 +138,27 @@ class Repository extends Base\Repository
 
     public function fetchAffiliatedPartnersForSubmerchant(string $subMerchantId)
     {
-        $newflow = (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__);
-        if ($newflow == true)
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__))
         {
             // fetch entity owner ids
             $accessMaps = $this->newQueryWithConnection($this->getSlaveConnection())
                 ->where(Entity::MERCHANT_ID, $subMerchantId)
                 ->get();
+
             $entityOwnerIds = $accessMaps->pluck(Entity::ENTITY_OWNER_ID)->unique()->toArray();
             // fetch merchants for entity owner ids
             // check if transaction is active
+
             if ($this->isTransactionActive() === true)
             {
-                // update this to use asv db integration
-                $merchants = $this->repo->merchant->findMany($entityOwnerIds);
+                $merchants = $this->repo->merchant->findMerchantsByIds($entityOwnerIds); // updated this to use asv db
             }
             else
             {
                 $merchants = (new AsvSdkIntegration\Merchant())->fetchMerchantsByIds($entityOwnerIds);
+                $this->resetConnectionOnModels($merchants, $this->getSlaveConnection());
             }
+
             // set entity owner relation
             foreach ($accessMaps as $accessMap)
             {
@@ -163,6 +167,7 @@ class Repository extends Base\Repository
             }
             return $accessMaps;
         }
+
         $accessMapsEntityOwnerId = $this->dbColumn(Entity::ENTITY_OWNER_ID);
         $merchantsId             = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         return $this->newQuery()

@@ -45,19 +45,21 @@ use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\State\Entity as ActionState;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Modules\Acs\Wrapper\Merchant as MerchantWrapper;
 use RZP\Models\Merchant\Acs\Traits\AsvFindWithCache;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as AsvSdkMerchantQuery;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLiveAndAsv;
-
-   use AsvFindWithCache;
+    use AsvEntityConnection;
+    use AsvFindWithCache;
 
     function __construct()
     {
@@ -233,11 +235,11 @@ class Repository extends Base\Repository
     /**
      * @param string $legalEntityId
      *
-     * @return \Illuminate\Database\Eloquent\Collection|PublicCollection
+     * @return EloquentCollection|PublicCollection
      * @throws Exception\BadRequestException
      * @throws Exception\BaseException
      */
-    public function fetchMerchantsByLegalEntityId(string $legalEntityId): \Illuminate\Database\Eloquent\Collection|PublicCollection
+    public function fetchMerchantsByLegalEntityId(string $legalEntityId): EloquentCollection|PublicCollection
     {
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
@@ -249,7 +251,11 @@ class Repository extends Base\Repository
             }
             else
             {
-                return (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByLegalEntityId($legalEntityId);
+                $results = (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByLegalEntityId($legalEntityId);
+
+                $this->resetConnectionOnModels($results);
+
+                return $results;
             }
         }
         else
@@ -257,7 +263,11 @@ class Repository extends Base\Repository
             $query = $this->newQuery();
         }
 
-        return $query->where(Entity::LEGAL_ENTITY_ID, $legalEntityId)->whereNotNull(Entity::LEGAL_ENTITY_ID)->get();
+        $results = $query->where(Entity::LEGAL_ENTITY_ID, $legalEntityId)->whereNotNull(Entity::LEGAL_ENTITY_ID)->get();
+
+        $this->resetConnectionOnModels($results);
+
+        return $results;
     }
 
     public function fetchActivatedMerchantsBeforeTimestamp(
@@ -267,15 +277,23 @@ class Repository extends Base\Repository
       array $merchantIds = [],
       array $merchantIdsExcluded = []): array
     {
-
-        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
-            if ($this->isTransactionActive()) {
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->isTransactionActive())
+            {
                 $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
             }
-            else {
-                return (new AsvSdkMerchantQuery())->fetchActivatedMerchantsBeforeTimestamp($limit, $skip, $end, $merchantIds, $merchantIdsExcluded);
+            else
+            {
+                $results = (new AsvSdkMerchantQuery())->fetchActivatedMerchantsBeforeTimestamp(
+                    $limit, $skip, $end, $merchantIds, $merchantIdsExcluded
+                );
+
+                return $results->pluck(Entity::ID)->toArray();
             }
-        } else {
+        }
+        else
+        {
             $query = $this->newQueryWithConnection($this->getSlaveConnection());
         }
 
@@ -474,14 +492,19 @@ class Repository extends Base\Repository
 
     public function fetchFeeBearersForPlanId($planId)
     {
-        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
-            if ($this->isTransactionActive()) {
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->isTransactionActive())
+            {
                 $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
             }
-            else {
+            else
+            {
                 return (new AsvSdkMerchantQuery())->fetchFeeBearersForPlanId($planId);
             }
-        } else {
+        }
+        else
+        {
             $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
         }
 
@@ -493,21 +516,28 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchMerchantsCountWithPricingPlanId($planId)
+    public function fetchMerchantsCountWithPricingPlanId($planId): int
     {
-        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
-            if ($this->isTransactionActive()) {
-                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
             }
-            else {
+            else
+            {
                 return (new AsvSdkMerchantQuery())->fetchMerchantsCountWithPricingPlanId($planId);
             }
-        } else {
+        }
+        else
+        {
             $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
         }
 
         return $query->where(Entity::PRICING_PLAN_ID, '=', $planId)
-                    ->count();
+                     ->count();
     }
 
     public function isMerchantIdRequiredForFetch()
@@ -529,14 +559,21 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsCreatedBetween($from, $to)
     {
-        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
-            if ($this->isTransactionActive()) {
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->isTransactionActive())
+            {
                 $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
             }
-            else {
-                return (new AsvSdkMerchantQuery())->fetchMerchantsCreatedBetween($from, $to);
+            else
+            {
+                $results = (new AsvSdkMerchantQuery())->fetchMerchantsCreatedBetween($from, $to);
+
+                return $results->pluck('id')->toArray();
             }
-        } else {
+        }
+        else
+        {
             $query = $this->newQueryWithConnection($this->getSlaveConnection());
         }
 
@@ -1016,6 +1053,8 @@ class Repository extends Base\Repository
                  */
                 $account = $this->findOrFailPublicAsv($accountId);
 
+                $this->resetConnectionOnModels($account);
+
                 if ($account !== null)
                 {
                     if ($account->getParentId() == $parent->getId())
@@ -1044,6 +1083,8 @@ class Repository extends Base\Repository
 
         $query   = $query->where(Entity::PARENT_ID, $parent->getId());
         $account = $query->findOrFailPublic($accountId);
+
+        $this->resetConnectionOnModels($account);
 
         $account?->parent()->associate($parent);
 
@@ -1083,6 +1124,8 @@ class Repository extends Base\Repository
                     $merchantId, $count, $skip
                 );
 
+                $this->resetConnectionOnModels($merchants);
+
                 if (count($relations) > 0)
                 {
                     $merchants->load(...$relations);
@@ -1106,7 +1149,11 @@ class Repository extends Base\Repository
             $merchants->with(...$relations);
         }
 
-        return $merchants->get();
+        $results = $merchants->get();
+
+        $this->resetConnectionOnModels($results);
+
+        return $results;
     }
 
     /**
@@ -2006,7 +2053,9 @@ class Repository extends Base\Repository
             }
             else
             {
-                return (new AsvSdkMerchantQuery())->fetchLinkedAccountsFromParentId($merchantId);
+                $results = (new AsvSdkMerchantQuery())->fetchLinkedAccountsFromParentId($merchantId);
+
+                return $results->pluck('id')->toArray();
             }
         }
         else
@@ -2030,9 +2079,11 @@ class Repository extends Base\Repository
         {
             if (!$this->repo->isTransactionActive())
             {
-                return (new Acs\AsvSdkIntegration\Merchant())->fetchUnsuspendedLinkedAccountMids(
+                $results = (new Acs\AsvSdkIntegration\Merchant())->fetchUnsuspendedLinkedAccountMids(
                     $merchantId, $limit, $offset,
                 );
+
+                return $results->pluck('id')->toArray();
             }
             else
             {
@@ -2065,9 +2116,11 @@ class Repository extends Base\Repository
         {
             if (!$this->repo->isTransactionActive())
             {
-                return (new Acs\AsvSdkIntegration\Merchant())->fetchLinkedAccountMidsSuspendedDueToParentMerchantSuspension(
+                $results = (new Acs\AsvSdkIntegration\Merchant())->fetchLinkedAccountMidsSuspendedDueToParentMerchantSuspension(
                     $merchantId, $reason, $limit, $offset,
                 );
+
+                return $results->pluck('id')->toArray();
             }
             else
             {
@@ -2114,9 +2167,11 @@ class Repository extends Base\Repository
             }
             else
             {
-                return (new AsvSdkMerchantQuery())->fetchLinkedAccountIdsFromParentIdWithActivated(
+                $results = (new AsvSdkMerchantQuery())->fetchLinkedAccountIdsFromParentIdWithActivated(
                     $parentMerchantId, $checkForActivated
                 );
+
+                $results->pluck(MerchantEntity::ID)->toArray();
             }
         }
         else
@@ -2140,7 +2195,9 @@ class Repository extends Base\Repository
     {
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
-            return (new Acs\AsvSdkIntegration\Merchant())->fetchLinkedAccountsFromMultipleParentIds($parentMerchantIds);
+            $results = (new Acs\AsvSdkIntegration\Merchant())->fetchLinkedAccountsFromMultipleParentIds($parentMerchantIds);
+
+            return $results->pluck('id')->toArray();
         }
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->select(Entity::ID)
@@ -3176,7 +3233,13 @@ class Repository extends Base\Repository
             {
                 if ($this->repo->isTransactionActive())
                 {
-                    return $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER))->findMany($ids, array('*'));
+                    $results = $this->newQueryWithConnection(
+                        $this->getConnectionFromType(Connection::ASV_WRITER)
+                    )->findMany($ids, array('*'));
+
+                    $this->resetConnectionOnModels($results);
+
+                    return $results;
                 }
                 else
                 {
@@ -3184,7 +3247,12 @@ class Repository extends Base\Repository
                         $this->trace->info(TraceCode::ACCOUNT_SERVICE_FILTER_REQUEST, [
                             "identifier" => __FUNCTION__
                         ]);
-                        return (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($ids);
+
+                        $results = (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($ids);
+
+                        $this->resetConnectionOnModels($results);
+
+                        return $results;
                     }
                     catch (\Exception $e) {
                         $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FILTER_QUERY_EXCEPTION, [
@@ -3210,7 +3278,14 @@ class Repository extends Base\Repository
             {
                 if ($this->repo->isTransactionActive())
                 {
-                    return $this->newQuery(Connection::ASV_WRITER)->findMany($ids)->where(Entity::SUSPENDED_AT, null);
+                    $results = $this->newQueryWithConnection(
+                        $this->getConnectionFromType(Connection::ASV_WRITER)
+                    )->findMany($ids)
+                     ->where(Entity::SUSPENDED_AT, null);
+
+                    $this->resetConnectionOnModels($results);
+
+                    return $results;
                 }
                 else
                 {
@@ -3219,7 +3294,11 @@ class Repository extends Base\Repository
                             "identifier" => __FUNCTION__
                         ]);
 
-                        return (new Acs\AsvSdkIntegration\Merchant())->getNonSuspendedMerchantsFromIds($ids);
+                        $results = (new Acs\AsvSdkIntegration\Merchant())->getNonSuspendedMerchantsFromIds($ids);
+
+                        $this->resetConnectionOnModels($results);
+
+                        return $results;
                     }
                     catch (\Exception $e) {
                         $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FILTER_QUERY_EXCEPTION, [

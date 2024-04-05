@@ -85,8 +85,8 @@ class Repository extends Base\Repository
                 {
                     $filteredMerchantIds = (new AsvSdkMerchantQuery())->filterMerchantsWithFundsNotOnHold(
                         $merchantIdsConsidered
-                    );
-
+                    )->pluck(M\Entity::ID)
+                     ->toArray();
                 }
 
                 $setls = $query->select($cols)

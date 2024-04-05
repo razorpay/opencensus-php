@@ -16,6 +16,7 @@ use RZP\Modules\Acs\Wrapper\MerchantEmail;
 use RZP\Models\Base\RepositoryUpdateTestAndLiveAndAsv;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
+use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantEmail as MerchantEmailSDKWrapper;
 
@@ -24,6 +25,7 @@ class Repository extends Base\Repository
     use RepositoryUpdateTestAndLiveAndAsv;
     use AsvFetchCommon, AsvFindEntity;
     use AsvFind;
+    use AsvEntityConnection;
 
     protected $entity = 'merchant_email';
 
@@ -116,7 +118,7 @@ class Repository extends Base\Repository
         {
             if ($this->repo->isTransactionActive())
             {
-                return $this->getEmailByMerchantIdFromDatabase(
+                $results = $this->getEmailByMerchantIdFromDatabase(
                     $merchantId, Connection::ASV_WRITER
                 );
             }
@@ -127,10 +129,14 @@ class Repository extends Base\Repository
                     MerchantEmailSDKWrapper::FILTER_TIMEOUT_IN_MICRO_SECONDS
                 );
 
-                return (new MerchantEmailSDKWrapper())->getAllExceptPartnerDummyByMerchantId(
+                $results = (new MerchantEmailSDKWrapper())->getAllExceptPartnerDummyByMerchantId(
                     $merchantId, $requestMetadata
                 );
             }
+
+            $this->resetConnectionOnModels($results);
+
+            return $results;
         }
 
         return $this->getEmailByMerchantIdFromDatabase($merchantId);
@@ -199,9 +205,13 @@ class Repository extends Base\Repository
             }
             else
             {
-                return (new MerchantEmailSDKWrapper())->getEmailsByMerchantIdsAndTypes(
+                $results = (new MerchantEmailSDKWrapper())->getEmailsByMerchantIdsAndTypes(
                   $merchantIds, $types
                 );
+
+                $this->resetConnectionOnModels($results);
+
+                return $results;
             }
         }
         else
@@ -209,11 +219,15 @@ class Repository extends Base\Repository
             $query = $this->newQuery();
         }
 
-        return $query
+        $results = $query
             ->select(Base\PublicEntity::MERCHANT_ID, Entity::TYPE, Entity::EMAIL)
             ->whereIn(Base\PublicEntity::MERCHANT_ID, $merchantIds)
             ->whereIn(Entity::TYPE, $types)
             ->get();
+
+        $this->resetConnectionOnModels($results);
+
+        return $results;
     }
 
     /**

@@ -75,11 +75,11 @@ class Merchant extends Base
      * @param string $parentId
      * @param bool   $checkForActivated
      *
-     * @return array
+     * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function fetchLinkedAccountIdsFromParentIdWithActivated(string $parentId, bool $checkForActivated): array
+    public function fetchLinkedAccountIdsFromParentIdWithActivated(string $parentId, bool $checkForActivated): Collection|PublicCollection
     {
         if (!$checkForActivated)
         {
@@ -92,7 +92,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
 
-        return $this->getMerchantCollectionFromResponse($response)->pluck(MerchantEntity::ID)->toArray();
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
     /**
@@ -161,11 +161,13 @@ class Merchant extends Base
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function fetchActivatedMerchantsBeforeTimestamp(int   $limit,
-                                                           int   $skip,
-                                                           int   $end,
-                                                           array $merchantIds = [],
-                                                           array $merchantIdsExcluded = []): array
+    public function fetchActivatedMerchantsBeforeTimestamp(
+        int   $limit,
+        int   $skip,
+        int   $end,
+        array $merchantIds = [],
+        array $merchantIdsExcluded = []
+    ): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier('merchant_03');
@@ -177,7 +179,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
 
-        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
     /**
@@ -189,11 +191,13 @@ class Merchant extends Base
      * @param int    $limit
      * @param int    $offset
      *
-     * @return array
+     * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function fetchLinkedAccountMidsSuspendedDueToParentMerchantSuspension(string $parentId, string $reason, int $limit, int $offset): array
+    public function fetchLinkedAccountMidsSuspendedDueToParentMerchantSuspension(
+        string $parentId, string $reason, int $limit, int $offset
+    ): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_SUSPENDED_DUE_TO_PARENT_SUSPENSION_FROM_PARENT_ID);
@@ -203,17 +207,17 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
     /**
      * @param string $parentId
      *
-     * @return array
+     * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function fetchLinkedAccountsFromParentId(string $parentId): array
+    public function fetchLinkedAccountsFromParentId(string $parentId): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_FROM_PARENT_ID);
@@ -223,17 +227,17 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
     /**
      * @param array $parentIds
      *
-     * @return array
+     * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function fetchLinkedAccountsFromMultipleParentIds(array $parentIds): array
+    public function fetchLinkedAccountsFromMultipleParentIds(array $parentIds): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_FROM_MULTIPLE_PARENT_IDS);
@@ -243,7 +247,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
     /**
@@ -253,11 +257,11 @@ class Merchant extends Base
      * @param int    $limit
      * @param int    $offset
      *
-     * @return array
+     * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function fetchUnsuspendedLinkedAccountMids(string $parentId, int $limit, int $offset): array
+    public function fetchUnsuspendedLinkedAccountMids(string $parentId, int $limit, int $offset): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::GET_NON_SUSPENDED_LINKED_ACCOUNTS_FROM_PARENT_ID);
@@ -267,7 +271,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
     /**
@@ -290,7 +294,7 @@ class Merchant extends Base
         return $this->getMerchantCollectionFromResponse($response);
     }
 
-    public function fetchMerchantsByIds(array $ids)
+    public function fetchMerchantsByIds(array $ids): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::MERCHANT_FIND_BY_IDS);
@@ -330,7 +334,7 @@ class Merchant extends Base
         return $this->getMerchantCollectionFromResponse($response);
     }
 
-    public function fetchMerchantsCreatedBetween($from, $to): array
+    public function fetchMerchantsCreatedBetween($from, $to): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier('fetch_merchants_created_between');
@@ -342,10 +346,10 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
-    public function getMerchantsForSettlementsEventsCron($from, $to): array
+    public function getMerchantsForSettlementsEventsCron($from, $to): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier('get_merchants_for_settlements_event_cron');
@@ -357,7 +361,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response)->toArray();
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
 
@@ -403,7 +407,7 @@ class Merchant extends Base
 
         return $feeBearersList;
     }
-    public function filterMerchantsWithFundsNotOnHold(array $merchantIds): array
+    public function filterMerchantsWithFundsNotOnHold(array $merchantIds): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::FILTER_MERCHANTS_WITH_FUNDS_NOT_ON_HOLD);
@@ -415,7 +419,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
 }

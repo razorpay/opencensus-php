@@ -290,13 +290,13 @@ class MerchantDocument extends Base
      * @param string $merchantId
      * @param string $validationId
      *
-     * @return MerchantDocumentEntity|null
+     * @return PublicCollection|Collection
      * @throws BadRequestException
      * @throws BaseException
      */
     public function findNonDeletedDocumentForMerchantIdAndValidationId(
         string $merchantId, string $validationId
-    ): ?MerchantDocumentEntity
+    ): Collection|PublicCollection
     {
         $filterRequest = (new FilterRequest())
             ->setQueryIdentifier(
@@ -308,6 +308,6 @@ class MerchantDocument extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantDocumentCollectionFromResponse($response)->first();
+        return $this->getMerchantDocumentCollectionFromResponse($response);
     }
 }
