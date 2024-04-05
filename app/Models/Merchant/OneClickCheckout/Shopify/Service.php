@@ -1098,9 +1098,13 @@ class Service extends Base\Service
         {
             $newUrl = $newUrl . '&email=' . $shopifyCustomer['email'];
         }
-        else if (empty($shopifyCustomer['contact']) == false)
+        else if (empty($shopifyCustomer['phone']) == false)
         {
-            $newUrl = $newUrl . '&phone=' . $shopifyCustomer['contact'];
+            $newUrl = $newUrl . '&phone=' . $shopifyCustomer['phone'];
+        }
+        else
+        {
+            $newUrl = $orderStatusUrl;
         }
 
         // Do not log PII.
