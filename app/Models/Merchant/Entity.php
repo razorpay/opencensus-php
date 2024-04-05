@@ -692,7 +692,7 @@ class Entity extends Base\PublicEntity
     const RISK_THRESHOLD_DEFAULT                      = 8;
     const DCC_MARKUP_PERCENTAGE_DEFAULT               = 8;
     // This is being used for dcc compliant
-    const VARIABLE_DCC_MARKUP_PERCENT                 = 0;
+    const VARIABLE_DCC_MARKUP_PERCENT                 = 70;
     const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_APPS      = 6;
     const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_INTL_BANK_TRANSFER = 3;
     const DCC_RECURRING_MARKUP_PERCENTAGE_DEFAULT     = 4;
