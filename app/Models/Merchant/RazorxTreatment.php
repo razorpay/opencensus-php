@@ -863,6 +863,8 @@ final class RazorxTreatment
 
     const REFUND_READS_FOR_RECON_FROM_SCROOGE = 'refund_reads_for_recon_from_scrooge';
 
+    const REFUND_READS_FOR_ADMIN_FROM_SCROOGE = 'refund_reads_for_admin_from_scrooge';
+
     // Experiment to ramp up international refunds
     const SCROOGE_INTERNATIONAL_REFUND = 'scrooge_international_refund';
 

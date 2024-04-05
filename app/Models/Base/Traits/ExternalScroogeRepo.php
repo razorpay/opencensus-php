@@ -1059,6 +1059,20 @@ trait ExternalScroogeRepo
             }
         }
 
+        if ($routeName === 'admin_fetch_entity_by_id')
+        {
+            $mode = $this->app['rzp.mode'] ?? 'live';
+            $result = $this->app['razorx']->getTreatment(
+                UniqueIdEntity::generateUniqueId(),
+                RazorxTreatment::REFUND_READS_FOR_ADMIN_FROM_SCROOGE,
+                $mode);
+
+            if ($result === 'on')
+            {
+                return false;
+            }
+        }
+
         $routes = \RZP\Http\Route::$forceRefundsLoadFromApiRoutes;
 
         return (in_array($routeName, $routes, true) === true);
