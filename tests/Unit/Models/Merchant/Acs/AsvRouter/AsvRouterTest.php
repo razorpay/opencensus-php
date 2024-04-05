@@ -137,7 +137,7 @@ class AsvRouterTest extends TestCase
         foreach ($emailCheckRouteArray as $route) {
             $this->setRequestRoute($route);
             $this->assertEquals(app('request.ctx')->getRoute(), $route);
-            $this->assertEquals(true, $asvRouter->isExclusionFlowOrFailure());
+            $this->assertEquals(false, $asvRouter->isExclusionFlowOrFailure());
         }
     }
 

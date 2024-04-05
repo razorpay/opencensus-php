@@ -24,10 +24,6 @@ trait AsvFind
 
     public function findOrFailDatabase($id, $columns = array('*'), string $connectionType = null, $oldConnection = null)
     {
-        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
-            'source' => $connectionType ?? Constants::API_DB,
-            'route' => (new AsvRouter())->getRouteOrJobName(),
-        ]);
         $model = parent::findOrFail($id, $columns, $connectionType);
         $this->setOldConnection($model, $oldConnection);
         return $model;
@@ -35,10 +31,6 @@ trait AsvFind
 
     public function findOrFailPublicDatabase($id, $columns = array('*'), string $connectionType = null, $oldConnection = null)
     {
-        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
-            'source' => $connectionType ?? Constants::API_DB,
-            'route' => (new AsvRouter())->getRouteOrJobName(),
-        ]);
         $model =  parent::findOrFailPublic($id, $columns, $connectionType);
         $this->setOldConnection($model, $oldConnection);
         return $model;
@@ -180,10 +172,6 @@ trait AsvFind
 
     public function findDatabase($id, $columns = array('*'), string $connectionType = null, string $oldConnection = null)
     {
-        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
-            'source' => $connectionType ?? Constants::API_DB,
-            'route' => (new AsvRouter())->getRouteOrJobName(),
-        ]);
         $model = parent::find($id, $columns, $connectionType);
         $this->setOldConnection($model, $oldConnection);
         return $model;
