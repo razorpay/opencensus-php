@@ -22,8 +22,8 @@ jobs:
       github.event.pull_request.draft == false &&
       !contains(github.event.pull_request.labels.*.name, 'ignore-i18n-linter')
     outputs:
-      has_error: ${{ steps.linter-check.outputs.hardcoding_found }}
-      linter_metrics: ${{ steps.linter-metrics.outputs.i18n_errors_metrics }}
+      has_error: ${{ steps.filters.outputs.hardcoding_found }}
+      linter_metrics: ${{ steps.filters.outputs.i18n_errors_metrics }}
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v2
@@ -59,9 +59,15 @@ jobs:
 
       - name: Filter smart linter errors
         uses: ./.github/actions/smart-linter
+        id: filters
         with:
           dangerjs_args: pr
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Log Smart Linter Outputs
+        run: |
+          echo "Hardcoding Found: ${{ steps.filters.outputs.hardcoding_found }}"
+          echo "i18n Errors Metrics: ${{ steps.filters.outputs.i18n_errors_metrics }}"
 
       - name: Annotate ES lint issues
         uses: ataylorme/eslint-annotate-action@v2
