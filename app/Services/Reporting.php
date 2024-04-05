@@ -45,6 +45,7 @@ class Reporting implements ExternalService
     const LOG_PATH                 = '/v1/logs';
     const FILE_CONFIG_PATH         = '/v1/file_configs';
     const FILE_LOG_PATH            = '/v1/file_logs';
+    const FILE_STORE_PATH         = '/v1/file_store';
     const ADMIN_LOG_PATH           = '/v1/admin-logs';
     const SCHEDULE_PATH            = '/v1/schedules';
     const SCHEDULE_PATH_V2         = '/v2/schedules';
@@ -58,6 +59,7 @@ class Reporting implements ExternalService
     const SCHEDULES     = 'schedules';
     const FILE_LOGS     = 'file_logs';
     const FILE_CONFIGS  = 'file_configs';
+    const FILE_STORE    = 'file_store';
 
     const REPORT_TYPE = 'report_type';
 
@@ -261,6 +263,9 @@ class Reporting implements ExternalService
 
             case self::FILE_CONFIGS:
                 return $this->fetchFileConfigsMultipleAdmin($input);
+
+            case self::FILE_STORE:
+                return $this->fetchFileStoreMultipleAdmin($input);
         }
 
         return [];
@@ -284,6 +289,9 @@ class Reporting implements ExternalService
 
             case self::FILE_CONFIGS:
                 return $this->fetchFileConfigByIdAdmin($id);
+
+            case self::FILE_STORE:
+                return $this->fetchFileStoreByIdAdmin($id);
         }
 
         return [];
@@ -717,6 +725,13 @@ class Reporting implements ExternalService
         return $this->createAndSendRequest(Requests::GET, $path);
     }
 
+    public function fetchFileStoreByIdAdmin(string $id): array
+    {
+        $path = self::FILE_STORE_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::GET, $path);
+    }
+
     public function fetchLogMultipleAdmin(array $input): array
     {
         $headers = $this->fetchHeadersFromInput($input);
@@ -769,6 +784,13 @@ class Reporting implements ExternalService
         $headers = $this->fetchHeadersFromInput($input);
 
         return $this->createAndSendRequest(Requests::GET, self::FILE_CONFIG_PATH, $input, $headers);
+    }
+
+    public function fetchFileStoreMultipleAdmin(array $input): array
+    {
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::FILE_STORE_PATH, $input, $headers);
     }
 
     protected function createScheduleOnApi(array $input)

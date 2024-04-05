@@ -386,7 +386,8 @@ class AdminFetch
                         'generated',
                         'sent',
                         'failed',
-                        'processing'
+                        'processing',
+                        'processed'
                     ],
                 ],
                 'type' => [
@@ -394,13 +395,15 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'emandate_debit',
+                        'emandate_nach_debit',
                     ],
                 ],
                 'target' => [
                     Fetch::LABEL  => 'Target',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
-                        'rbl'
+                        'rbl',
+                        'citi'
                     ],
                 ]
             ],
@@ -408,6 +411,31 @@ class AdminFetch
                 'config_id'        => [
                     Fetch::LABEL        => 'Config Id',
                     Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::REPORTING_FILE_STORE => [
+                'file_log_id'         => [
+                    Fetch::LABEL        => 'File Log Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'type'        => [
+                    Fetch::LABEL  => 'Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'report',
+                        'summary'
+                    ],
+                ],
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'generated',
+                        'uploading',
+                        'failed',
+                        'successful',
+                        'timed_out'
+                    ],
                 ],
             ],
             Entity::AUTH_SERVICE_APPLICATIONS => [

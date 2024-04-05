@@ -253,6 +253,7 @@ class Name
     const EDIT_SCORECARD_GOVERNOR_CONF        = 'edit_scorecard_governor_conf';
     const DELETE_GOVERNOR_RULE                = 'delete_governor_rule';
     const VIEW_MERCHANT_REPORT                = 'view_merchant_report';
+    const VIEW_NON_MERCHANT_REPORT            = 'view_non_merchant_report';
     const VIEW_SPECIAL_MERCHANT_REPORT        = 'view_special_merchant_report';
     const CREATE_MERCHANT_OFFER               = 'create_merchant_offer';
     const EDIT_MERCHANT_OFFER                 = 'edit_merchant_offer';
