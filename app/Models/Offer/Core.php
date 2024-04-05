@@ -1288,7 +1288,13 @@ class Core extends Base\Core
 
         if ($mismatch === true)
         {
-            $this->trace->info(TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH, [
+            $this->trace->count(Metric::OFFERS_ENGINE_DISCOUNT_MISMATCH,
+                [
+                    'offer_type' => $offer->getOfferType(),
+                    'emi_subvention' => $offer->getEmiSubvention(),
+                ]);
+
+            $this->trace->debug(TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH, [
                 'API_RESPONSE' => $apiResp,
                 'OE_RESPONSE' => $oeResp
             ]);

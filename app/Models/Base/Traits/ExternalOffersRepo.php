@@ -42,6 +42,7 @@ trait ExternalOffersRepo
 
                 $this->trace->traceException(
                     $e,
+                    Logger::ERROR,
                     TraceCode::OFFERS_ENGINE_FETCH_BY_ID_FAIL, [
                 ]);
             }
@@ -100,6 +101,7 @@ trait ExternalOffersRepo
 
                 $this->trace->traceException(
                     $exception,
+                    Logger::ERROR,
                     TraceCode::OFFERS_ENGINE_FETCH_OFFERS_FAIL, [
                 ]);
             }
@@ -160,6 +162,7 @@ trait ExternalOffersRepo
 
                 $this->trace->traceException(
                     $exception,
+                    Logger::ERROR,
                     TraceCode::OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFER_BY_ID_FAIL, [
                 ]);
             }
@@ -208,6 +211,7 @@ trait ExternalOffersRepo
 
                 $this->trace->traceException(
                     $exception,
+                    Logger::ERROR,
                     TraceCode::OFFERS_ENGINE_FETCH_ACTIVE_NONSUBSCRIPTION_OFFERS_FAIL, [
                 ]);
             }
@@ -274,6 +278,7 @@ trait ExternalOffersRepo
                 $this->trace->count(Metric::OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFERS_FAIL);
                 $this->trace->traceException(
                     $exception,
+                    Logger::ERROR,
                     TraceCode::OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFERS_FAIL, [
                 ]);
                 }
@@ -308,6 +313,7 @@ trait ExternalOffersRepo
                 $this->trace->count(Metric::OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL);
                 $this->trace->traceException(
                     $exception,
+                    Logger::ERROR,
                     TraceCode::OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL, [
                 ]);
             }
