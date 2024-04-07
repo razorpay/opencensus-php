@@ -69,14 +69,6 @@ class AsvRouter
         try {
             $routeOrWorkerName = $this->getRouteOrJobName();
 
-            if ($routeOrWorkerName === self::None) {
-                // if we get a none route, we should let the request go to the database
-                // Since, it is possible there was some exception, or we are not able to extract out the
-                // route name correctly.
-                return true;
-            }
-
-
             $isExclusionFlow = AsvFlows::isExclusionFLow($routeOrWorkerName);
 
             // temporarily added this log if the check is working correctly.
@@ -441,6 +433,12 @@ class AsvRouter
                     'reason' => self::SPLITZ_REJECTED,
                 ]);
             }
+
+            $this->trace->count(Metric::ASV_FILTER_ROUTING_RESULT, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'isFilterRequestRouted' => $resp,
+                'identifier' => $callingIdentifier
+            ]);
 
             return $resp;
         } catch (\Exception $e) {

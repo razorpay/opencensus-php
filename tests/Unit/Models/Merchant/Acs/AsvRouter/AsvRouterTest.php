@@ -126,7 +126,7 @@ class AsvRouterTest extends TestCase
         $asvRouter->isExclusionFlowOrFailure();
 
         // if we set no value, this should be true, don't route if we are not sure.
-        $this->assertEquals(true, $asvRouter->isExclusionFlowOrFailure());
+        $this->assertEquals(false, $asvRouter->isExclusionFlowOrFailure());
 
         // set value not included on email route
         $this->setRequestRoute('fund_transfer_attempt_initiate_action');
