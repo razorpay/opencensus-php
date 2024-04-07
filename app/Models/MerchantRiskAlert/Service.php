@@ -2,6 +2,7 @@
 
 namespace RZP\Models\MerchantRiskAlert;
 
+use RZP\Jobs\MerchantHoldFundsSync;
 use RZP\Services\MerchantRiskAlertClient;
 use View;
 use RZP\Exception;
@@ -126,6 +127,13 @@ class Service extends Base\Service
             foreach (Constants::REDIS_REMINDER_MAP_NAME as $redisMap)
             {
                 $this->app['cache']->connection()->hdel($redisMap, $merchantId);
+            }
+
+            $linkedAccountCount = $this->repo->merchant->fetchLinkedAccountsCount($merchant->getId());
+
+            if ($linkedAccountCount > 0)
+            {
+                MerchantHoldFundsSync::dispatch($this->mode, $merchant->getId(), 1);
             }
         }
     }
