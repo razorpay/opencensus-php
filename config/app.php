@@ -867,4 +867,6 @@ return array(
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID'),
 
     'onboarding_api_bmc_experiment_id'  => env('ONBOARDING_API_BMC_EXPERIMENT_ID'),
+
+    'optimize_fetch_submerchants_experiment_id'  => env('OPTIMIZE_FETCH_SUBMERCHANTS_EXPERIMENT_ID'),
 );

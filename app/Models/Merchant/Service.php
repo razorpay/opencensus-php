@@ -8158,17 +8158,33 @@ class Service extends Base\Service
         }
         else if ($merchant->isPartner() === true)
         {
-            // submerchant accounts
-            $submerchants = ($this->core()->listSubmerchants($merchant, []))[0];
+            $optimizeFetchSubmerchants = $this->isOptimizedFetchSubmerchantsFlowEnabled($merchant->getId());
 
-            $associatedAccounts = $submerchants->getIds();
+            if($optimizeFetchSubmerchants)
+            {
+                $associatedAccounts = $this->core()->listSubmerchantIds($merchant);
 
-            $this->trace->info(TraceCode::ASSOCIATED_MERCHANT_DATA_FOR_PARTNER_MERCHANTS,
-                [
-                    'partner_id'            => $merchantId,
-                    'associated_accounts'   => $associatedAccounts
-                ]
-            );
+                $this->trace->info(TraceCode::ASSOCIATED_MERCHANT_DATA_FOR_PARTNER_MERCHANTS,
+                    [
+                        'partner_id'                => $merchantId,
+                        'associated_accounts_count' => count($associatedAccounts)
+                    ]
+                );
+            }
+            else
+            {
+                // submerchant accounts
+                $submerchants = ($this->core()->listSubmerchants($merchant, []))[0];
+
+                $associatedAccounts = $submerchants->getIds();
+
+                $this->trace->info(TraceCode::ASSOCIATED_MERCHANT_DATA_FOR_PARTNER_MERCHANTS,
+                    [
+                        'partner_id'            => $merchantId,
+                        'associated_accounts'   => $associatedAccounts
+                    ]
+                );
+            }
         }
         else if ($merchant->hasAggregatorFeature() === true)
         {
@@ -8177,6 +8193,16 @@ class Service extends Base\Service
         }
 
         return ['associated_accounts' => array_unique($associatedAccounts)];
+    }
+
+    public function isOptimizedFetchSubmerchantsFlowEnabled(string $merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.optimize_fetch_submerchants_experiment_id'),
+        ];
+
+        return  $this->core()->isSplitzExperimentEnable($properties, 'enable');
     }
 
     /**

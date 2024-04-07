@@ -452,6 +452,34 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getSubmerchantIDsOfAPartner(string $partnerId, $params)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->where(Entity::ENTITY_OWNER_ID, $partnerId);
+
+        if(empty($params[Merchant\Constants::WITHOUT_TAGS]) === false)
+        {
+            $tags = array_unique(array_map('mb_strtolower', array_map('str_slug', $params[Merchant\Constants::WITHOUT_TAGS])));
+
+            $tagsTable = 'tagging_tagged';
+
+            $query->whereNotIn(
+                'merchant_access_map.merchant_id',
+                function($query)
+                use ($tags, $tagsTable) {
+                    $query->select($tagsTable . '.taggable_id')
+                        ->from($tagsTable)
+                        ->where($tagsTable . '.taggable_type', '=', E::MERCHANT)
+                        ->whereIn($tagsTable . '.tag_slug', $tags);
+                });
+        }
+
+        $query->groupBy(Entity::MERCHANT_ID);
+
+        return $query->get()->pluck(Entity::MERCHANT_ID);
+    }
+
     public function getMappingsFromEntityOwnerId(string $entityOwnerId, $limit = null)
     {
         $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))

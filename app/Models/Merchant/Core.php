@@ -5731,6 +5731,33 @@ class Core extends Base\Core
         return $applyProductFilter ? [$merchants, 'offset' => $offset] : [$merchants];
     }
 
+    public function listSubmerchantIds(Entity $partner)
+    {
+        $params = [];
+        if ($this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId()) === true) {
+            $params[Constants::WITHOUT_TAGS] = [
+                Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+                Constants::CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+            ];
+        }
+
+        $reqStartAt = millitime();
+
+        $submerchantIDs = $this->repo->merchant_access_map->getSubmerchantIDsOfAPartner($partner->getId(), $params)->toArray();
+
+        $fetchSubMerchantsLatency = millitime() - $reqStartAt;
+
+        $this->trace->info(
+            TraceCode::PARTNER_FETCH_SUBMERCHANTS_LATENCY,
+            [
+                'partner_id'  => $partner->getId(),
+                'latency'     => $fetchSubMerchantsLatency
+            ]
+        );
+
+        return $submerchantIDs;
+    }
+
     /**
      * @param Entity $partner
      *
