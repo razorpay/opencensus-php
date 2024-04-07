@@ -63,9 +63,9 @@ class BatchCreate extends Component {
 
       data.schedule = schedule;
     }
-
-    if (props.otp) {
+    if (props.otp && props.token) {
       data.otp = props.otp;
+      data.token = props.token;
     }
 
     const trackSelfServe = () => {

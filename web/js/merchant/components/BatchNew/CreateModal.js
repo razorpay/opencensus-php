@@ -123,9 +123,9 @@ class BatchCreateModal extends Component {
       } else triggerOTP = triggerOtpOnSMS;
 
       return triggerOTP()
-        .then((data) => {
+        .then((response) => {
           this.setState({
-            token: data.token,
+            token: response?.data.token,
           });
           // Dont show when 2fa modal is already being shown
           if (!isResend) {
@@ -167,6 +167,13 @@ class BatchCreateModal extends Component {
     const { abExperiments } = this.props.splitz;
 
     const is2faExperimentActive = is2faRouteExperimentEnabled(abExperiments);
+    const isBatchCreate = this.props.batchType === 'linked_account_create';
+
+    // disabling for curlec and partner dashboard
+    const isCurlec = this.props.user?.isOrgCurlec;
+    const isPartnerDashboard = window.location.pathname.includes('/partners');
+    const isBatchUpload2faEnabled =
+      is2faExperimentActive && isBatchCreate && !isCurlec && !isPartnerDashboard;
 
     return (
       <div class={`modal-body ${batch_type_refund ? 'batch-refund-create-modal' : ''}`}>
@@ -355,7 +362,7 @@ class BatchCreateModal extends Component {
               text={ctaText}
               pendingText={pendingText}
               onClick={
-                is2faExperimentActive ? this.sendVerificationOtp() : handleSubmit(onCreateBatch)
+                isBatchUpload2faEnabled ? this.sendVerificationOtp() : handleSubmit(onCreateBatch)
               }
               disabled={isCreatingBatch}
             />
