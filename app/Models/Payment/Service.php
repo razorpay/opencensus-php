@@ -2441,33 +2441,15 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchPaymentDetails(string $id, array $input = []): array
+    public function addAdditionalPaymentErrorDetails(&$entity, $internal_error_code)
     {
-
-        $entity = $this->fetch($id, $input);
-
-
-        // Add additional error details for failed payments to show on merchant dashboard
-        // Whitelisting admin dashboard as well to show the details for admin login as merchant
-        if (in_array($this->app['basicauth']->getInternalApp(), ['merchant_dashboard', 'admin_dashboard']) === true)
-        {
-            $this->addAdditionalPaymentErrorDetails($entity);
-        }
-
-        return $entity;
-    }
-
-    public function addAdditionalPaymentErrorDetails(&$entity)
-    {
-        $errorCode = $entity['error_code'] ?? null;
-
         $method = $entity['method'] ?? null;
 
         $error_details = [];
 
-        if ($errorCode != null and $method != null)
+        if ($internal_error_code != null and $method != null)
         {
-            [$error_details,] = $this->app['error_mapper']->getErrorMapping($errorCode, $method);
+            [$error_details,] = $this->app['error_mapper']->getErrorMapping($internal_error_code, $method);
         }
 
         $entity[PaymentsConstants::ERROR_MONEY_IMPLICATION] = $error_details[PaymentsConstants::MONEY_IMPLICATION] ?? null;
@@ -2549,6 +2531,14 @@ class Service extends Base\Service
                 }
             }
         }
+
+        // Add additional error details for failed payments to show on merchant dashboard
+        // Whitelisting admin dashboard as well to show the details for admin login as merchant
+        if (in_array($this->app['basicauth']->getInternalApp(), ['merchant_dashboard', 'admin_dashboard']) === true)
+        {
+            $this->addAdditionalPaymentErrorDetails($entity, $payment->getInternalErrorCode());
+        }
+
         return $entity;
     }
 
