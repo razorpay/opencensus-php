@@ -1742,12 +1742,14 @@ class Repository extends Base\Repository
 
                 if ($this->isTransactionActive())
                 {
-                    return $this->findMany($merchantIds);
+                    return $this->repo->merchant->findMerchantsByIds($merchantIds);
                 }
-                else
-                {
-                    return (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($merchantIds);
-                }
+
+                $results = (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($merchantIds);
+
+                $this->resetConnectionOnModels($results);
+
+                return $results;
             }
             catch (\Throwable $e)
             {
@@ -2993,7 +2995,11 @@ class Repository extends Base\Repository
                 $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
             }
             else {
-                return (new AsvSdkMerchantQuery())->getMerchantsForSettlementsEventsCron($updatedAtFrom, $updateAtTo);
+                $results = (new AsvSdkMerchantQuery())->getMerchantsForSettlementsEventsCron($updatedAtFrom, $updateAtTo);
+
+                $this->resetConnectionOnModels($results, $this->getReportingReplicaConnection());
+
+                return $results;
             }
         } else {
             $query = $this->newQueryWithConnection($this->getReportingReplicaConnection());
@@ -3003,7 +3009,11 @@ class Repository extends Base\Repository
                       ->where(Entity::UPDATED_AT, '<=', $updateAtTo)
                       ->orderBy(Entity::UPDATED_AT, 'asc');
 
-        return $query->get();
+        $results = $query->get();
+
+        $this->resetConnectionOnModels($results, $this->getReportingReplicaConnection());
+
+        return $results;
     }
 
     public function fetchMerchantsCreatedBetweenOfOrg($from, $to, $org = Org\Entity::RAZORPAY_ORG_ID)
