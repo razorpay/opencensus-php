@@ -2094,6 +2094,7 @@ class Service extends Base\Service
             'activated_at' => $merchant->getActivatedAt(),
             'website' => $merchant->getWebsite(),
             'whitelisted_domains' => $merchant->getWhitelistedDomains(),
+            'email' => $merchant->getEmail(),
         ];
 
         $optionalInputConfig = $merchant->getOptionalInputConfig();

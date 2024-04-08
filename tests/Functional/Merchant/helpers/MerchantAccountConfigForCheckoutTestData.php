@@ -28,6 +28,7 @@ return [
                 'brand_name' => 'Tester 2',
                 'currency' => 'INR',
                 'category_name' => 'ecommerce',
+                'email' => 'test@gmail.com',
             ],
         ],
     ],

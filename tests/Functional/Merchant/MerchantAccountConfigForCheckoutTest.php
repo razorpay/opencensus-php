@@ -33,6 +33,7 @@ class MerchantAccountConfigForCheckoutTest extends TestCase
             MerchantEntity::PARTNERSHIP_URL => 'https://dummycdn.razorpay.com/logos/partnership.png',
             MerchantEntity::CATEGORY2 => 'ecommerce',
             MerchantEntity::CATEGORY => '5945',
+            MerchantEntity::EMAIL => 'test@gmail.com'
         ]);
 
         $keyEntity = $this->fixtures->create('key', ['merchant_id' => $merchantId]);

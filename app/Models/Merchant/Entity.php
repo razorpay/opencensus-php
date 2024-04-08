@@ -482,6 +482,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED_AT,
         self::WEBSITE,
         self::WHITELISTED_DOMAINS,
+        self::EMAIL,
     ];
 
     protected $public = [
