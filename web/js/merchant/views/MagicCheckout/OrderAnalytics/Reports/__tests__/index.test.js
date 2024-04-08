@@ -23,10 +23,8 @@ describe('Magic - Order Analytics Reports', () => {
     renderReports();
     const orderReportsBtn = screen.queryByText(/Order Reports/i);
     const checkoutReportsBtn = screen.queryByText(/Checkout Reports/i);
-    const landingPagesReportsBtn = screen.queryByText(/Landing Pages Reports/i);
     expect(orderReportsBtn).toBeInTheDocument();
     expect(checkoutReportsBtn).toBeInTheDocument();
-    expect(landingPagesReportsBtn).toBeInTheDocument();
 
     userEvent.click(orderReportsBtn);
     screen.findByText(/Generating Order Reports/i);

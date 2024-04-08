@@ -23,9 +23,13 @@ export const reportsCards = [
     heading: 'Checkout Reports',
     desc: 'Download all checkouts created - Gather insights on where customers dropped off, performing campaigns, etc',
   },
-  {
-    category: CATEGORY_TYPES.LANDING_PAGES,
-    heading: 'Landing Pages Reports',
-    desc: 'Track conversion and performance of Landing pages',
-  },
 ];
+
+/*
+Add obj for landing page:
+{
+  category: CATEGORY_TYPES.LANDING_PAGES,
+  heading: 'Landing Pages Reports',
+  desc: 'Track conversion and performance of Landing pages',
+}
+*/
