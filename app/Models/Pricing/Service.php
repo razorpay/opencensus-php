@@ -587,8 +587,15 @@ class Service extends Base\Service
                 unset($rules[$i][Entity::ACCOUNT_TYPE]);
             }
 
-            if (isset($rules[$i][Entity::ACCOUNT_TYPE]) === false or
-                $rules[$i][Entity::ACCOUNT_TYPE] !== Merchant\Balance\AccountType::DIRECT)
+            if ($rules[$i][Entity::PRODUCT] === Product::BANKING &&
+                (isset($rules[$i][Entity::ACCOUNT_TYPE]) === false or
+                $rules[$i][Entity::ACCOUNT_TYPE] !== Merchant\Balance\AccountType::DIRECT))
+            {
+                unset($rules[$i][Entity::CHANNEL]);
+            }
+
+            // Adding this as the earlier logic was unsetting channel input for all requests except account_type:direct
+            if (empty($rules[$i][Entity::CHANNEL]))
             {
                 unset($rules[$i][Entity::CHANNEL]);
             }

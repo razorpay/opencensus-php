@@ -11145,8 +11145,15 @@ class Service extends Base\Service
                 unset($rule[PricingEntity::ACCOUNT_TYPE]);
             }
 
-            if ((isset($rule[PricingEntity::ACCOUNT_TYPE]) === false) or
-                ($rule[PricingEntity::ACCOUNT_TYPE] !== Merchant\Balance\AccountType::DIRECT))
+            if ($rule[PricingEntity::PRODUCT] === Product::BANKING &&
+                ((isset($rule[PricingEntity::ACCOUNT_TYPE]) === false) or
+                    ($rule[PricingEntity::ACCOUNT_TYPE] !== Merchant\Balance\AccountType::DIRECT)))
+            {
+                unset($rule[PricingEntity::CHANNEL]);
+            }
+
+            // Adding this as the earlier logic was unsetting channel input for all requests except account_type:direct
+            if (empty($rule[PricingEntity::CHANNEL]))
             {
                 unset($rule[PricingEntity::CHANNEL]);
             }
