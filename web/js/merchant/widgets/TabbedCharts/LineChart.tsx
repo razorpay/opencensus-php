@@ -4,11 +4,12 @@ import { Line } from 'react-chartjs-2';
 
 import { getTabbedChartOptions } from 'merchant/widgets/TabbedCharts/utils';
 import { getChartData } from 'merchant/widgets/common/utils';
-import { COLORS } from 'merchant/containers/Home/RTUX/colors';
 import { ChartProps } from 'merchant/widgets/common/types';
+import { useTheme } from '@razorpay/blade/components';
 
 const LineChart: React.FC<ChartProps> = ({ chartData, unit }): JSX.Element | null => {
   const isEmpty = chartData.data.length === 0;
+  const { theme } = useTheme();
 
   const handleChartData = useCallback(
     (canvas) => {
@@ -17,13 +18,13 @@ const LineChart: React.FC<ChartProps> = ({ chartData, unit }): JSX.Element | nul
       }
       const ctx = canvas.getContext('2d');
       const gradient = ctx.createLinearGradient(0, -20, 0, 100);
-      gradient.addColorStop(0, COLORS.blue);
+      gradient.addColorStop(0, theme.colors.surface.border.primary.normal);
       gradient.addColorStop(1, 'white');
 
       const { labels, datasets } = getChartData(chartData, unit);
 
       datasets[0]['backgroundColor'] = gradient;
-      datasets[0]['borderColor'] = COLORS.blue;
+      datasets[0]['borderColor'] = theme.colors.surface.border.primary.normal;
       datasets[0]['fill'] = true;
 
       return {
@@ -34,7 +35,7 @@ const LineChart: React.FC<ChartProps> = ({ chartData, unit }): JSX.Element | nul
     [chartData, isEmpty],
   );
 
-  const options = getTabbedChartOptions();
+  const options = getTabbedChartOptions(theme.colors);
 
   return <Line data={handleChartData} options={options} />;
 };

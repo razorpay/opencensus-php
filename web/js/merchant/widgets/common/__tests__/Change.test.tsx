@@ -3,7 +3,6 @@ import React from 'react';
 import { Change } from 'merchant/widgets/common/Change';
 import { render, screen } from 'test-utils';
 import { ChangeProps } from 'merchant/widgets/common/Change/types';
-import { COLORS } from 'merchant/containers/Home/RTUX/colors';
 
 const text = '14% increase';
 
@@ -38,8 +37,12 @@ describe('Widget->common->Change', () => {
 
     // arrow direction is unchanged, color changes
     expect(changeWrapperElement.querySelector('svg')).toHaveStyle('transform: rotateX(180deg)');
-    expect(changeWrapperElement.querySelector('svg path')).toHaveAttribute('fill', COLORS.red);
+    expect(changeWrapperElement.querySelector('svg path')).toHaveAttribute(
+      'fill',
+      'hsla(4, 74%, 49%, 1)',
+    );
   });
+
   test('should render decrease flow correctly when inverted', () => {
     renderApp({ props: { variant: 'decrease', isInverted: true } });
     expect(screen.getByText(text)).toBeVisible();
@@ -47,6 +50,9 @@ describe('Widget->common->Change', () => {
 
     // arrow direction is unchanged, color changes
     expect(changeWrapperElement.querySelector('svg')).not.toHaveStyle('transform: rotateX(180deg)');
-    expect(changeWrapperElement.querySelector('svg path')).toHaveAttribute('fill', COLORS.green);
+    expect(changeWrapperElement.querySelector('svg path')).toHaveAttribute(
+      'fill',
+      'hsla(150, 100%, 27%, 1)',
+    );
   });
 });

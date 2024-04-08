@@ -1,5 +1,4 @@
 import { Theme } from '@razorpay/blade/components';
-import { COLORS } from 'merchant/containers/Home/RTUX/colors';
 import styled, { css } from 'styled-components';
 
 export const StyledInputBox = styled.div(
@@ -21,7 +20,7 @@ export const StyledInputBox = styled.div(
     gap: 6px;
     background: ${
       isRTUXHomepage
-        ? COLORS.searchBarColor
+        ? theme.colors.surface.background.gray.subtle
         : isMobile
         ? theme.colors.interactive.text.staticWhite.normal
         : theme.colors.feedback.background.neutral.subtle

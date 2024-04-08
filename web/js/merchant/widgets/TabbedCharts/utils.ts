@@ -1,6 +1,6 @@
-import { COLORS } from 'merchant/containers/Home/RTUX/colors';
+import { Theme } from '@razorpay/blade/components';
 
-export const getTabbedChartOptions = (): unknown => {
+export const getTabbedChartOptions = (colors: Theme['colors']): unknown => {
   return {
     responsive: true,
     legend: {
@@ -8,7 +8,7 @@ export const getTabbedChartOptions = (): unknown => {
       position: 'bottom',
       align: 'start',
       labels: {
-        fontColor: COLORS.dimBlue,
+        fontColor: colors.surface.text.gray.subtle,
         boxWidth: 12,
       },
     },
@@ -24,7 +24,7 @@ export const getTabbedChartOptions = (): unknown => {
           ticks: {
             autoSkip: true,
             fontSize: 12,
-            fontColor: COLORS.lightBlue,
+            fontColor: colors.surface.text.gray.subtle,
           },
         },
       ],
@@ -34,11 +34,11 @@ export const getTabbedChartOptions = (): unknown => {
             padding: 0,
             fontSize: 12,
             maxTicksLimit: 5,
-            fontColor: COLORS.lightBlue,
+            fontColor: colors.surface.text.gray.subtle,
           },
           gridLines: {
-            color: COLORS.backgroundPrimarySubtle,
-            zeroLineColor: COLORS.backgroundPrimarySubtle,
+            color: colors.surface.background.gray.subtle,
+            zeroLineColor: colors.surface.background.gray.subtle,
             display: true,
             drawTicks: false,
             drawBorder: false,

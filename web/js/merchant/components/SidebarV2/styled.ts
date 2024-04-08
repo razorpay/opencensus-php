@@ -1,5 +1,4 @@
 import { makeMotionTime } from '@razorpay/blade/utils';
-import { COLORS } from 'merchant/containers/Home/RTUX/colors';
 import styled, { css } from 'styled-components';
 
 interface RTUXProps {
@@ -19,7 +18,11 @@ export const SidebarContainer = styled.div<SidebarContainerProps>(
   top: 0;
   bottom: 0;
   background-color: ${
-    isRTUXHomepage ? (isMobile ? COLORS.navBarMobileColor : 'transparent') : '#2e3345'
+    isRTUXHomepage
+      ? isMobile
+        ? theme.colors.surface.background.cloud.subtle
+        : 'transparent'
+      : '#2e3345'
   };
   width: ${isRTUXHomepage ? 216 : 248}px;
   z-index: 1111;
@@ -38,7 +41,7 @@ export const SidebarContainer = styled.div<SidebarContainerProps>(
 );
 
 export const SidebarSection = styled.section<RTUXProps>(
-  ({ isRTUXHomepage, isMobile }) => `
+  ({ isRTUXHomepage, isMobile, theme }) => `
   ${
     isRTUXHomepage
       ? ''
@@ -57,7 +60,11 @@ export const SidebarSection = styled.section<RTUXProps>(
     padding: 10px;
   }
   background-color: ${
-    isRTUXHomepage ? (isMobile ? COLORS.navBarMobileColor : 'transparent') : undefined
+    isRTUXHomepage
+      ? isMobile
+        ? theme.colors.surface.background.cloud.subtle
+        : 'transparent'
+      : undefined
   };
 `,
 );

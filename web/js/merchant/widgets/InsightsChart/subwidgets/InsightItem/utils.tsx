@@ -1,8 +1,8 @@
 import React from 'react';
-import { COLORS } from 'merchant/containers/Home/RTUX/colors';
 import { ChartComponentProps, Line } from 'react-chartjs-2';
+import { Theme, useTheme } from '@razorpay/blade/components';
 
-export const getTabbedChartOptions = (): ChartComponentProps['options'] => {
+export const getTabbedChartOptions = (colors: Theme['colors']): ChartComponentProps['options'] => {
   return {
     maintainAspectRatio: false,
     responsive: true,
@@ -23,7 +23,7 @@ export const getTabbedChartOptions = (): ChartComponentProps['options'] => {
           ticks: {
             autoSkip: true,
             fontSize: 12,
-            fontColor: COLORS.lightBlue,
+            fontColor: colors.surface.text.gray.subtle,
             display: false,
           },
         },
@@ -33,7 +33,7 @@ export const getTabbedChartOptions = (): ChartComponentProps['options'] => {
           ticks: {
             padding: 0,
             fontSize: 12,
-            fontColor: COLORS.lightBlue,
+            fontColor: colors.surface.text.gray.subtle,
             display: false,
             beginAtZero: true,
           },
@@ -59,12 +59,13 @@ export const getTabbedChartOptions = (): ChartComponentProps['options'] => {
 };
 
 export const EmptyLineChart = () => {
+  const { theme } = useTheme();
   const handleChartData = () => ({
     datasets: [
       {
         label: '',
         data: [0, 0],
-        borderColor: COLORS.lightBlue,
+        borderColor: theme.colors.surface.text.gray.subtle,
       },
     ],
   });

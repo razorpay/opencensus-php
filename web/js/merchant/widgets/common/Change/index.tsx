@@ -1,14 +1,8 @@
 import React from 'react';
-import { Box, Text } from '@razorpay/blade/components';
+import { Box, Text, useTheme } from '@razorpay/blade/components';
 
 import { Arrow } from './Arrow';
 import { ChangeProps } from './types';
-import { COLORS } from 'merchant/containers/Home/RTUX/colors';
-
-const colors = {
-  increase: COLORS.green,
-  decrease: COLORS.red,
-};
 
 // If inverted arrow direction is unchanged, but color changes
 export const Change: React.FC<ChangeProps> = ({
@@ -16,10 +10,18 @@ export const Change: React.FC<ChangeProps> = ({
   text,
   isInverted,
 }): JSX.Element | null => {
+  const { theme } = useTheme();
   const finalVariant = isInverted ? (variant === 'increase' ? 'decrease' : 'increase') : variant;
   return (
     <Box display="flex" alignItems="center" gap="spacing.2" testID="change-component">
-      <Arrow variant={variant} fill={colors[finalVariant]} />
+      <Arrow
+        variant={variant}
+        fill={
+          finalVariant === 'increase'
+            ? theme.colors.interactive.text.positive.normal
+            : theme.colors.interactive.text.negative.normal
+        }
+      />
       <Text
         weight="semibold"
         color={
