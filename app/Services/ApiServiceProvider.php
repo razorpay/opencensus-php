@@ -30,6 +30,7 @@ use RZP\Services\CircuitBreaker\Store\StoreInterface;
 use RZP\Services\CircuitBreaker\Store\RedisClusterStore;
 use RZP\Services\Mock\DruidService as MockDruidService;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
+use RZP\Services\RzpKms\KeyManagementService  as RzpKmsService;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
@@ -739,6 +740,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerSettlementsReminder();
 
         $this->registerDCSClient();
+
+        $this->registerRzpKmsClient();
 
         $this->registerWalletApi();
 
@@ -2181,6 +2184,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('dcs_config_service', function($app)
         {
             return new DcsConfigService($app);
+        });
+    }
+
+    protected function registerRzpKmsClient()
+    {
+        $this->app->singleton('rzp_kms_service', function($app)
+        {
+            return new RzpKmsService();
         });
     }
 

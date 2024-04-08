@@ -1253,7 +1253,10 @@ class Route
         'edit_netbanking_configs'                  => ['put',        'netbanking/merchant_configs',                    'NetbankingController@editNetbankingConfigs'                       ],
 
         //Razorpay kms service
-        'rzp_kms_service'                              => ['post',        'rzp_kms/service/{path?}',                            'RzpKmsController@handleAnyPost'                      ],
+        'internal_rzp_kms_service'                  => ['post',        'internal/rzp_kms/service/{path?}',               'RzpKmsController@handleAnyPost'                      ],
+        'rzp_kms_service'                           => ['post',        'rzp_kms/service/{path?}',                        'RzpKmsController@handleAnyPost'                      ],
+        'create_rzp_kms_l1_workflow'                => ['post',        'rzp_kms/workflow/l1',                            'RzpKmsController@createL1Workflow'                      ],
+        'create_rzp_kms_terminal_l2_workflow'       => ['post',        'rzp_kms/workflow/l2/terminal',                   'RzpKmsController@createL2WorkflowTerminal'                      ],
 
         // Routes for DCS banking configs
         'fetch_all_banking_configs'                => ['get',        'all_banking_configs',                          'BankingConfigController@fetchAllBankingConfigs'                    ],
@@ -5538,6 +5541,7 @@ class Route
         'irctc_settlement_batch_service',
         'internal_org_get',
         'banking_org_merchant_onboarding_escalations',
+        'internal_rzp_kms_service',
         'internal_get_banking_config',
         'payments_rearch_backfill',
         'update_shopify_1cc_credentials',
@@ -9270,6 +9274,8 @@ class Route
         'edit_netbanking_configs',
 
         'rzp_kms_service',
+        'create_rzp_kms_l1_workflow',
+        'create_rzp_kms_terminal_l2_workflow',
         'fetch_all_banking_configs',
         'get_banking_config',
         'edit_banking_configs',
@@ -9803,7 +9809,9 @@ class Route
         'create_netbanking_configs'                => Permission::CREATE_NETBANKING_REFUND,
         'edit_netbanking_configs'                  => Permission::CREATE_NETBANKING_REFUND,
 
-        'rzp_kms_service'                              =>  Permission::ALLOW_KEY_ROTATION_INITIATION,
+        'rzp_kms_service'                          => Permission::ALLOW_KEY_ROTATION_INITIATION,
+        'create_rzp_kms_l1_workflow'               => Permission::RZP_KMS_KEY_ROTATION_L1_APPROVAL,
+        'create_rzp_kms_terminal_l2_workflow'      => Permission::RZP_KMS_KEY_ROTATION_TERMINAL_L2_APPROVAL,
 
         'fetch_merchant_da_payout_mode_config'     => Permission::MANAGE_PAYOUT_MODE_CONFIG,
         'create_merchant_da_payout_mode_config'    => Permission::MANAGE_PAYOUT_MODE_CONFIG,
@@ -14944,6 +14952,8 @@ class Route
             'edit_netbanking_configs',
 
             'rzp_kms_service',
+            'create_rzp_kms_l1_workflow',
+            'create_rzp_kms_terminal_l2_workflow',
 
             'fetch_all_banking_configs',
             'get_banking_config',
@@ -17113,6 +17123,7 @@ class Route
             'terminal_compare_and_sync_internal',
             'merchant_fetch_methods_internal',
             'internal_get_banking_config',
+            'internal_rzp_kms_service',
             'feature_get_multiple_internal',
             'internal_org_get',
             'internal_merchant_fetch',

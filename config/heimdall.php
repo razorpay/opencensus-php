@@ -2211,7 +2211,17 @@ return [
             Permission::ALLOW_KEY_ROTATION_INITIATION => [
                 'description'   => 'Manage access to kms actions on admin dashboard',
                 'assignable'    => true,
-            ]
+            ],
+            Permission::RZP_KMS_KEY_ROTATION_L1_APPROVAL => [
+                'description'   => 'L1 workflow approval for key rotation of org',
+                'assignable'    => true,
+                'workflow'    => true,
+            ],
+            Permission::RZP_KMS_KEY_ROTATION_TERMINAL_L2_APPROVAL => [
+                'description'   => 'L2 workflow approval for key rotation of terminal',
+                'assignable'    => true,
+                'workflow'    => true,
+            ],
         ],
 
         PermissionCategory::FTS_DASHBOARD_ADMIN => [

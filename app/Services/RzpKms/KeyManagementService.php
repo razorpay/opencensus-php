@@ -3,7 +3,9 @@
 namespace RZP\Services\RzpKms;
 
 use GuzzleHttp\RequestOptions;
+use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use GuzzleHttp\Client as Guzzle;
@@ -113,6 +115,25 @@ class KeyManagementService
 
     private function formatResponse($response)
     {
+        if ($response->status_code >= 500) {
+
+            throw new Exception\ServerErrorException('Error completing the request',
+                ErrorCode::SERVER_ERROR);
+
+        } else if ($response->status_code >= 400) {
+
+            $error = json_decode($response->body);
+            $errorDescription = $error->error->description;
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null, $errorDescription);
+        }
+
+        if ($response->body === "null" or $response->body === '') {
+            throw new Exception\ServerErrorException('Error completing the request',
+                ErrorCode::SERVER_ERROR);
+        }
+
         $responseArray = json_decode($response->getBody(), true);
 
         $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_RESPONSE, [

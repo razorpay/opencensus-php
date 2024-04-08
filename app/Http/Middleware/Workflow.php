@@ -25,6 +25,8 @@ class Workflow
     // Workflows for EXCLUDED_PERMISSIONS will be triggered from inside
     // the code.
     const EXCLUDED_PERMISSIONS = [
+        Permission::RZP_KMS_KEY_ROTATION_L1_APPROVAL,
+        Permission::RZP_KMS_KEY_ROTATION_TERMINAL_L2_APPROVAL,
         Permission::EDIT_THROTTLE_SETTINGS,
         Permission::EDIT_MERCHANT_METHODS,
         Permission::ASSIGN_MERCHANT_BANKS,
