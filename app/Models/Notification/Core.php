@@ -99,7 +99,7 @@ class Core extends Base\Core
         return [
             "token_id"          => 'token_'.$notification->getTokenId(),
             "payment_after"     => $notification->getPaymentAfter(),
-            "notification_id"   => 'notification_'.$notification->getId(),
+            "id"                => 'notification_'.$notification->getId(),
         ];
     }
 
