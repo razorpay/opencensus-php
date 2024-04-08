@@ -963,7 +963,7 @@ class MethodsTest extends TestCase
             'fdrl'  => 0,
             'idfb'  => 1,
             'hcin'  => 1,
-            'krbe'  => 1,
+            'krbe'  => 0,
             'cshe'  => 1,
             'tvsc'  => 1,
         ], array_slice($merchantMethods->getCardlessEmiProviders(), 0, 10));

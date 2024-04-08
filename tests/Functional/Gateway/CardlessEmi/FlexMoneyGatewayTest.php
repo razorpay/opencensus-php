@@ -461,7 +461,7 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
 
 //        $this->assertEquals($preferences['methods']['cardless_emi']['barb'],true); // barb is deprecated
 
-        $this->assertEquals($preferences['methods']['cardless_emi']['krbe'],true);
+        $this->assertNotEquals($preferences['methods']['cardless_emi']['krbe'],true);
 
         $this->assertEquals($preferences['methods']['cardless_emi']['cshe'],true);
 
