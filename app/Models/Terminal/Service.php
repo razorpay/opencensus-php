@@ -11,7 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Gateway;
@@ -1080,13 +1080,13 @@ class Service extends Base\Service
                 ]);
             try
             {
-                if (in_array(Currency::INR, $terminal->getCurrency()) === false)
+                if (in_array(Currency\Currency::INR, $terminal->getCurrency()) === false)
                 {
                     $input = [Entity::STATUS => Status::DEACTIVATED];
                 }
                 else
                 {
-                    $input = [Entity::CURRENCY => Currency::SUPPORTED_CURRENCIES];
+                    $input = [Entity::CURRENCY => (new Currency\Core)->getSupportedCurrencies()];
                 }
 
                 $this->editTerminal($terminal->getId(), $input);

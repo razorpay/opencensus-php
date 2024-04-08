@@ -12,7 +12,7 @@ use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 
 use RZP\Http\Controllers\TerminalController;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Currency;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Terminal;
@@ -2152,7 +2152,7 @@ class TerminalTest extends TestCase
 
         $terminal2 = (new Terminal\Repository)->getById($t2->getId());
 
-        $this->assertEquals(Currency::SUPPORTED_CURRENCIES, $terminal1->getCurrency());
+        $this->assertEquals((new Currency\Core)->getSupportedCurrencies(), $terminal1->getCurrency());
         $this->assertEquals('activated', $terminal1->getStatus());
         $this->assertEquals('deactivated', $terminal2->getStatus());
     }

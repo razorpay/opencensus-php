@@ -6,7 +6,7 @@ use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Contact\Validator as fundAccountValidator;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Currency;
 
 class Validator extends Base\Validator
 {
@@ -58,7 +58,7 @@ class Validator extends Base\Validator
     protected function validateAcceptedCurrency($attribute, $currency)
     {
 
-        if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
+        if (in_array($currency, (new Currency\Core)->getSupportedCurrencies(), true) === false)
         {
             throw new BadRequestValidationFailureException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,

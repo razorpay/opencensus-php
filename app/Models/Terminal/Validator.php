@@ -14,7 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\TpvType;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Currency;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
@@ -3475,7 +3475,7 @@ class Validator extends Base\Validator
         {
             $currency = array_unique((array) $input['currency']);
 
-            if (count(array_intersect($currency, Currency::SUPPORTED_CURRENCIES)) !== count($currency))
+            if (count(array_intersect($currency, (new Currency\Core)->getSupportedCurrencies())) !== count($currency))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);

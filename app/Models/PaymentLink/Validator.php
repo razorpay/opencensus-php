@@ -19,7 +19,7 @@ use RZP\Models\LineItem;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Currency;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfType;
 use RZP\Models\PaymentLink\Template\Pattern;
@@ -995,7 +995,7 @@ class Validator extends Base\Validator
         // Non International accounts should not create PL in other currencies.
         if ((($merchant->convertOnApi() === null) and
             ($currency !== $merchant->getCurrency())) or
-            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false))
+            (in_array($currency, (new Currency\Core)->getSupportedCurrencies(), true) === false))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,

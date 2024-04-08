@@ -104,105 +104,6 @@ class Currency
     const YER = 'YER';
     const ZAR = 'ZAR';
 
-    const SUPPORTED_CURRENCIES = [
-        self::AED,
-        self::ALL,
-        self::AMD,
-        self::ARS,
-        self::AUD,
-        self::AWG,
-        self::BBD,
-        self::BDT,
-        self::BHD,
-        self::BMD,
-        self::BND,
-        self::BOB,
-        self::BSD,
-        self::BWP,
-        self::BZD,
-        self::CAD,
-        self::CHF,
-        self::CNY,
-        self::COP,
-        self::CRC,
-        self::CUP,
-        self::CZK,
-        self::DKK,
-        self::DOP,
-        self::DZD,
-        self::EGP,
-        self::ETB,
-        self::EUR,
-        self::FJD,
-        self::GBP,
-        self::GHS,
-        self::GIP,
-        self::GMD,
-        self::GTQ,
-        self::GYD,
-        self::HKD,
-        self::HNL,
-        self::HRK,
-        self::HTG,
-        self::HUF,
-        self::IDR,
-        self::ILS,
-        self::INR,
-        self::JMD,
-        self::KES,
-        self::KGS,
-        self::KHR,
-        self::KWD,
-        self::KYD,
-        self::KZT,
-        self::LAK,
-        self::LKR,
-        self::LRD,
-        self::LSL,
-        self::MAD,
-        self::MDL,
-        self::MKD,
-        self::MMK,
-        self::MNT,
-        self::MOP,
-        self::MUR,
-        self::MVR,
-        self::MWK,
-        self::MXN,
-        self::MYR,
-        self::NAD,
-        self::NGN,
-        self::NIO,
-        self::NOK,
-        self::NPR,
-        self::NZD,
-        self::OMR,
-        self::PEN,
-        self::PGK,
-        self::PHP,
-        self::PKR,
-        self::QAR,
-        self::RUB,
-        self::SAR,
-        self::SCR,
-        self::SEK,
-        self::SGD,
-        self::SLL,
-        self::SOS,
-        self::SSP,
-        self::SVC,
-        self::SZL,
-        self::THB,
-        self::TRY,
-        self::TTD,
-        self::TZS,
-        self::USD,
-        self::UYU,
-        self::UZS,
-        self::YER,
-        self::ZAR,
-    ];
-
     const THREE_DECIMAL_CURRENCIES = [
         self::BHD,
         self::KWD,
@@ -1055,7 +956,7 @@ class Currency
     ];
 
     // Currency list supported for JPMC
-    // 
+    //
     // Some currencies which are not supported:
     // - BAM
     // - BGN
@@ -1171,7 +1072,9 @@ class Currency
     {
         $currencyDetails = [];
 
-        foreach (self::SUPPORTED_CURRENCIES as $currency)
+        $supportedCurrencies = (new Core)->getSupportedCurrencies();
+
+        foreach ($supportedCurrencies as $currency)
         {
             $currencyDetails[$currency] = [
                 'code'            => self::getIsoCode($currency),
@@ -1188,7 +1091,8 @@ class Currency
 
     public static function isSupportedCurrency($currency)
     {
-        if (in_array($currency, self::SUPPORTED_CURRENCIES, true) === true)
+
+        if (in_array($currency, (new Core)->getSupportedCurrencies(), true) === true)
         {
             return true;
         }

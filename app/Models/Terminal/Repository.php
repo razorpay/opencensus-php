@@ -14,7 +14,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Currency;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Gateway;
@@ -1342,7 +1342,7 @@ class Repository extends Base\Repository
 
         $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
-        $currencyLength = strlen(json_encode(Currency::SUPPORTED_CURRENCIES));
+        $currencyLength = strlen(json_encode((new Currency\Core)->getSupportedCurrencies()));
 
         return $this->newQuery()
                      ->where(Entity::GATEWAY, 'hitachi')

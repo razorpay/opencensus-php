@@ -11316,6 +11316,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UNICOMMERC_CUSTOMER_ADDRESS_API_ERROR                = 'UNICOMMERC_CUSTOMER_ADDRESS_API_ERROR';
 
+    const GET_DCS_DISABLED_CARD_CURRENCIES_ERROR               = 'GET_DCS_DISABLED_CARD_CURRENCIES_ERROR';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

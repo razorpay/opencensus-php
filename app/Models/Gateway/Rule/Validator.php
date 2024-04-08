@@ -11,7 +11,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Category;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 
 class Validator extends Base\Validator
@@ -508,7 +508,7 @@ class Validator extends Base\Validator
 
     protected function validateCurrency($attribute, $currency)
     {
-        if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
+        if (in_array($currency, (new Currency\Core)->getSupportedCurrencies(), true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'currency not supported');

@@ -36,6 +36,8 @@ class Constants
     const DCCCurrencyLevelMarkup = 'dcc_currency_level_markup';
     const CurrencyLevelMarkups = 'currency_level_markups';
 
+    const DisabledCardCurrencies = 'disabled_card_currencies';
+
     const PaymentNotesKeyColumns = 'payment_notes_key_columns';
 
     /**
@@ -57,6 +59,7 @@ class Constants
         self::UpiInAppPrefetch               => "rzp/pg/merchant/upi/in_app/Prefetch",
         self::UpiInAppRewardConfigs         => "rzp/pg/merchant/upi/in_app/RewardConfigs",
         self::PaymentNotesKeyColumns         => "rzp/pg/merchant/dashboard/banking_program/UIControls",
+        self::DisabledCardCurrencies         => "rzp/pg/org/cross_border/Currency",
     ];
 
 }

@@ -2,11 +2,17 @@
 
 namespace RZP\Models\Currency;
 
+use Monolog\Logger;
 use RZP\Constants\Environment;
+use RZP\Constants\Mode;
+use RZP\Models\Admin\Org;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
+use RZP\Trace\TraceCode;
+
 
 class Core extends Base\Core
 {
@@ -180,27 +186,27 @@ class Core extends Base\Core
         }
 
         if (isset($input) && isset($input['is_lrs_merchant'])) {
-                return $this->getLrsRates($amount, $input);
+            return $this->getLrsRates($amount, $input);
         } else if (isset($input) && isset($input['mcc_request_id'])) {
-                $rates = $this->getRatesById($currency, $input);
+            $rates = $this->getRatesById($currency, $input);
         } else {
-                $rates = $this->getOrUpdateRates($currency, $input);
+            $rates = $this->getOrUpdateRates($currency, $input);
         }
 
-            $denominationFactorMerchantCurrency = Currency::DENOMINATION_FACTOR[$merchantCurrency];
+        $denominationFactorMerchantCurrency = Currency::DENOMINATION_FACTOR[$merchantCurrency];
 
-            $denominationFactorInputCurr = Currency::DENOMINATION_FACTOR[$currency];
+        $denominationFactorInputCurr = Currency::DENOMINATION_FACTOR[$currency];
 
-            $denominationFactor = $denominationFactorMerchantCurrency / $denominationFactorInputCurr;
+        $denominationFactor = $denominationFactorMerchantCurrency / $denominationFactorInputCurr;
 
-            $baseAmount = $amount * $rates[$merchantCurrency] * $denominationFactor;
+        $baseAmount = $amount * $rates[$merchantCurrency] * $denominationFactor;
 
-            $baseAmount = (int)ceil($baseAmount);
+        $baseAmount = (int)ceil($baseAmount);
 
-            $input['mcc_applied'] = true;
-            $input['mcc_forex_rate'] = $rates[Currency::INR];
+        $input['mcc_applied'] = true;
+        $input['mcc_forex_rate'] = $rates[Currency::INR];
 
-            return $baseAmount;
+        return $baseAmount;
     }
 
     public function getLrsRates($amount, &$input)
@@ -222,7 +228,7 @@ class Core extends Base\Core
 
     public function getLrsQuote($param)
     {
-         return  $this->app['payments-cross-border']->getLRSQuote($param);
+        return  $this->app['payments-cross-border']->getLRSQuote($param);
     }
 
     public function convertAmount($amount, $fromCurrency, $toCurrency)
@@ -259,6 +265,131 @@ class Core extends Base\Core
         return $key;
     }
 
+    /**
+     * Function to get all rzp supported_currency
+     * minus disabled card currencies if any
+     * @return array|null
+     */
+    public function getSupportedCurrencies($orgId = Org\Constants::RZP)
+    {
+        try {
+            $mode = $this->mode ?? Mode::LIVE;
+            $dcsConfigService = app('dcs_config_service');
+            $disabledCardCurrencies = $dcsConfigService->fetchConfiguration(DcsConfigConst::DisabledCardCurrencies,
+                $orgId, [DcsConfigConst::DisabledCardCurrencies], $mode);
+
+            $disabledCurrencies = [];
+            foreach ($disabledCardCurrencies[DcsConfigConst::DisabledCardCurrencies] as $currency) {
+                $disabledCurrencies[] = $currency;
+            }
+            $supportedCurrencies = array_diff($this->getAllCurrencies(), $disabledCurrencies);
+        } catch (\Exception $e) {
+            // trace the error and let supported currencies as default array
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::GET_DCS_DISABLED_CARD_CURRENCIES_ERROR);
+            $supportedCurrencies = $this->getAllCurrencies();
+        }
+        return array_values($supportedCurrencies);
+    }
+    protected function getAllCurrencies () {
+        return  [
+            Currency::AED,
+            Currency::ALL,
+            Currency::AMD,
+            Currency::ARS,
+            Currency::AUD,
+            Currency::AWG,
+            Currency::BBD,
+            Currency::BDT,
+            Currency::BHD,
+            Currency::BMD,
+            Currency::BND,
+            Currency::BOB,
+            Currency::BSD,
+            Currency::BWP,
+            Currency::BZD,
+            Currency::CAD,
+            Currency::CHF,
+            Currency::CNY,
+            Currency::COP,
+            Currency::CRC,
+            Currency::CUP,
+            Currency::CZK,
+            Currency::DKK,
+            Currency::DOP,
+            Currency::DZD,
+            Currency::EGP,
+            Currency::ETB,
+            Currency::EUR,
+            Currency::FJD,
+            Currency::GBP,
+            Currency::GHS,
+            Currency::GIP,
+            Currency::GMD,
+            Currency::GTQ,
+            Currency::GYD,
+            Currency::HKD,
+            Currency::HNL,
+            Currency::HRK,
+            Currency::HTG,
+            Currency::HUF,
+            Currency::IDR,
+            Currency::ILS,
+            Currency::INR,
+            Currency::JMD,
+            Currency::KES,
+            Currency::KGS,
+            Currency::KHR,
+            Currency::KWD,
+            Currency::KYD,
+            Currency::KZT,
+            Currency::LAK,
+            Currency::LKR,
+            Currency::LRD,
+            Currency::LSL,
+            Currency::MAD,
+            Currency::MDL,
+            Currency::MKD,
+            Currency::MMK,
+            Currency::MNT,
+            Currency::MOP,
+            Currency::MUR,
+            Currency::MVR,
+            Currency::MWK,
+            Currency::MXN,
+            Currency::MYR,
+            Currency::NAD,
+            Currency::NGN,
+            Currency::NIO,
+            Currency::NOK,
+            Currency::NPR,
+            Currency::NZD,
+            Currency::OMR,
+            Currency::PEN,
+            Currency::PGK,
+            Currency::PHP,
+            Currency::PKR,
+            Currency::QAR,
+            Currency::RUB,
+            Currency::SAR,
+            Currency::SCR,
+            Currency::SEK,
+            Currency::SGD,
+            Currency::SLL,
+            Currency::SOS,
+            Currency::SSP,
+            Currency::SVC,
+            Currency::SZL,
+            Currency::THB,
+            Currency::TRY,
+            Currency::TTD,
+            Currency::TZS,
+            Currency::USD,
+            Currency::UYU,
+            Currency::UZS,
+            Currency::YER,
+            Currency::ZAR,
+        ];
+    }
     /**
      * Function to get all rzp supported_currency, min supported
      * amount, code, symbol and exponent

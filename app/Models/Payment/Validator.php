@@ -26,7 +26,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Admin\ConfigKey;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Currency;
 use Illuminate\Validation\Concerns;
 use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Upi\Base\ProviderCode;
@@ -1260,7 +1260,7 @@ class Validator extends Base\Validator
                 $opgspLimitAmountUSD = Constants::OPGSP_TRANSACTION_LIMIT_USD;
             }
 
-            $opgspLimitAmountINR = (new CurrencyCore)->getBaseAmount($opgspLimitAmountUSD, Currency::USD);
+            $opgspLimitAmountINR = (new CurrencyCore)->getBaseAmount($opgspLimitAmountUSD, Currency\Currency::USD);
 
             if($baseAmount > $opgspLimitAmountINR)
             {
@@ -1579,7 +1579,7 @@ class Validator extends Base\Validator
 
     protected function validateCurrency($attribute, $currency)
     {
-        if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
+        if (in_array($currency, (new Currency\Core)->getSupportedCurrencies(), true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -1921,7 +1921,7 @@ class Validator extends Base\Validator
 
     protected function validateDccCurrency($attribute, $dccCurrency)
     {
-        if (Currency::isSupportedCurrency($dccCurrency) === false)
+        if (Currency\Currency::isSupportedCurrency($dccCurrency) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid Currency selected');

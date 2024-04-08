@@ -6,13 +6,13 @@ use App;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
-use RZP\Models\Currency\Currency;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Currency\Core as CurrencyCore;
@@ -244,7 +244,7 @@ class Validator extends Base\Validator
         // if currency conversion is enabled, it should be a valid currency
         if ((($merchant->convertOnApi() === null) and
             ($currency !== $merchant->getCurrency())) or
-            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false))
+            (in_array($currency, (new Currency\Core)->getSupportedCurrencies(), true) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED,
@@ -260,7 +260,7 @@ class Validator extends Base\Validator
         $method = $input[Entity::METHOD];
 
         if (($method !== Payment\Method::CARD) and
-            ($currency !== Currency::INR))
+            ($currency !== Currency\Currency::INR))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The currency should be INR when method is ' . $method);

@@ -20,7 +20,7 @@ class CurrencyController extends Controller
     {
         $data = [];
 
-        $currencies = Currency\Currency::SUPPORTED_CURRENCIES;
+        $currencies = (new Currency\Core)->getSupportedCurrencies();
 
         foreach ($currencies as $currency)
         {

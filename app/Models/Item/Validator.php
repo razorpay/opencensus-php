@@ -4,7 +4,7 @@ namespace RZP\Models\Item;
 
 use RZP\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Currency;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -136,7 +136,7 @@ class Validator extends Base\Validator
     {
         $currency = $input[Entity::CURRENCY] ?? $this->entity->getCurrency();
 
-        if ($currency !== Currency::INR)
+        if ($currency !== Currency\Currency::INR)
         {
             $invalidKeys = array_intersect_key($input, array_flip(self::TAX_ATTRIBUTES));
 
@@ -282,7 +282,7 @@ class Validator extends Base\Validator
 
         if ((($merchant->convertOnApi() === null) and
             ($currency !== $merchant->getCurrency())) or
-            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false))
+            (in_array($currency, (new Currency\Core)->getSupportedCurrencies(), true) === false))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,
