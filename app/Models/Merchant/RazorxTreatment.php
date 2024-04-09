@@ -415,6 +415,9 @@ final class RazorxTreatment
 
     const NON_TPV_REFUNDS_VIA_X = 'non_tpv_refunds_via_x';
 
+    // Used to enable custom logic for idempotency key to make ledger requests.
+    const PAYOUTS_LEDGER_IDEM_KEY = 'payouts_ledger_idem_key';
+
     /**
      * Experiment to indicate if a payment should go via capture queue for Master Card Network
      */

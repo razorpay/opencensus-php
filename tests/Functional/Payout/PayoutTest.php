@@ -29343,9 +29343,73 @@ class PayoutTest extends OAuthTestCase
 
         $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
 
+        /** @var PayoutEntity $payout */
         $payout = $this->getDbLastEntity('payout');
 
         $payoutId = $payout->getId();
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('ledger', $ledgerMock);
+
+        $ledgerMock->shouldReceive('createJournal')
+            ->withArgs(function($payload, $headers, $throwExOnFailure) use ($payout) {
+                $this->assertNotEquals($payout->getPublicId() . $payload['transaction_date'] .  "_" . "2",$headers["idempotency-key"]);
+
+                return true;
+            })
+            ->once();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'       => 'processed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+    }
+
+    public function testPayoutProcessedInLedgerReverseShadowModeWithCustomIdemKey()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::PAYOUTS_LEDGER_IDEM_KEY => 'on']);
+
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('ledger', $ledgerMock);
+
+        $ledgerMock->shouldReceive('createJournal')
+            ->withArgs(function($payload, $headers, $throwExOnFailure) use ($payout) {
+                $this->assertArraySelectiveEquals(
+                    [
+                        "idempotency-key" => $payout->getPublicId() . $payload['transaction_date'] .  "_" . "2",
+                    ],
+                    $headers);
+
+                return true;
+            })
+            ->once();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
             'fta_status'       => 'processed',

@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction\Processor\Ledger;
 
 use RZP\Constants;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout\Metric;
 use Ramsey\Uuid\Uuid;
 use RZP\Error\ErrorCode;
@@ -66,6 +67,23 @@ class Payout extends Base
     const DA_FEE_PAYOUT_REVERSED        = "da_fee_payout_reversed";
     const DA_EXT_FEE_PAYOUT_PROCESSED   = "da_ext_fee_payout_processed";
     const DA_EXT_FEE_PAYOUT_REVERSED    = "da_ext_fee_payout_reversed";
+
+    const MAX_IDEM_KEY_LENGTH = 36;
+
+    // This is used to maintain the idempotency key for ledger.
+    // Do not add events in between or repeat any value.
+    const TRANSACTOR_EVENT_TO_ENUM = [
+        self::PAYOUT_INITIATED => 1,
+        self::PAYOUT_PROCESSED => 2,
+        self::PAYOUT_REVERSED => 3,
+        self::PAYOUT_FAILED => 4,
+        self::INTER_ACCOUNT_PAYOUT_INITIATED => 5,
+        self::INTER_ACCOUNT_PAYOUT_PROCESSED => 6,
+        self::INTER_ACCOUNT_PAYOUT_REVERSED => 7,
+        self::INTER_ACCOUNT_PAYOUT_FAILED => 8,
+        self::VA_TO_VA_PAYOUT_INITIATED => 9,
+        self::VA_TO_VA_PAYOUT_FAILED => 10,
+    ];
 
     protected $eventsWithoutFtsInfo = [self::PAYOUT_FAILED,
                                        self::PAYOUT_INITIATED,
@@ -506,6 +524,11 @@ class Payout extends Base
     {
         try
         {
+            if ($iKey === null)
+            {
+                $iKey = $this->getIdempotencyKeyFromPayload($payload);
+            }
+
             $response = parent::createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit, $iKey);
         }
         catch (BadRequestException $e)
@@ -569,6 +592,47 @@ class Payout extends Base
         }
 
         return $response;
+    }
+
+    protected function getIdempotencyKeyFromPayload(array $payload): ?string
+    {
+        $transactorId = $payload[self::TRANSACTOR_ID];
+        $transactorEvent = $payload[self::TRANSACTOR_EVENT];
+        $transactionDate = $payload[self::TRANSACTION_DATE];
+        $merchantId = $payload[self::MERCHANT_ID];
+
+        $useCustomLogic = $this->app['razorx']->getTreatment($merchantId,
+            RazorxTreatment::PAYOUTS_LEDGER_IDEM_KEY,
+            $this->mode,
+            3);
+
+        if ($useCustomLogic != 'on')
+        {
+            return null;
+        }
+
+        if (!array_key_exists($transactorEvent, self::TRANSACTOR_EVENT_TO_ENUM))
+        {
+            throw new LogicException(
+                'Transactor enum not available',
+                null,
+                $payload);
+        }
+
+        $idemKey = $transactorId . $transactionDate . "_" . self::TRANSACTOR_EVENT_TO_ENUM[$transactorEvent];
+
+        if (strlen($idemKey) > self::MAX_IDEM_KEY_LENGTH)
+        {
+            throw new LogicException(
+                'Idempotency key is longer than expected',
+                null,
+                [
+                    'ikey' => $idemKey,
+                    'payload' => $payload
+                ]);
+        }
+
+        return $idemKey;
     }
 
     protected function updatePayloadForPrePaidSourceAccounts(array &$payload,
