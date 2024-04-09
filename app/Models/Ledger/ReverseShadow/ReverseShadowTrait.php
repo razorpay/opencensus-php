@@ -281,7 +281,6 @@ trait ReverseShadowTrait
         try
         {
             $response = $ledgerService->fetchByTransactor($fetchJournalPayload, $requestHeaders, true);
-
             return $response['body'];
         }
         catch(\Exception $e)

@@ -486,7 +486,9 @@ class Core extends Base\Core
         if (($adj->isBalanceTypeBanking() === false) ||
                 ($adj->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false))
         {
-            if($adj->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            if(($adj->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            && (in_array($adj->getBalanceType(),[Balance\Type::PRIMARY,Balance\Type::RESERVE_PRIMARY]))
+            )
             {
                 return $adj;
             }

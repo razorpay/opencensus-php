@@ -1752,6 +1752,113 @@ class RefundLedgerTest extends TestCase
     }
 
 
+    public function testNormalRefundReversalJournalAbsentTransactionPresentReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals(true, $refund['gateway_refunded']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertNotNull($refund['transaction_id']);
+        $this->assertNotNull($refund['balance_id']);
+        $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
+        $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_decisioned']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->merchant->addFeatures('pg_ledger_reverse_shadow');
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->withArgs(function ($journalPayload, $requestHeaders, $throwException) use ($refund) {
+
+                $this->assertEquals($refund['id'], $journalPayload['transactor_id']);
+                $this->assertEquals('refund_processed', $journalPayload['transactor_event']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn(["body" => null]);
+
+        // create reversal
+        $this->scroogeUpdateRefundStatus($refund, 'failed_event');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals(RefundStatus::REVERSED, $refund['status']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertEquals($reversal['entity_type'], 'refund');
+        $this->assertEquals('rfnd_' . $reversal['entity_id'], $refund['id']);
+        $this->assertEquals($refund['balance_id'], $reversal['balance_id']);
+        $this->assertNotNull(50000, $reversal['amount']);
+        $this->assertNull($reversal['transaction_id'], 'reversal txn should not be created in sync');
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" => "10000000000000",
+            "currency" => "INR",
+            "transactor_event" => "refund_reversed",
+            "money_params" => [
+                "reversed_amount" => "50000",
+                "merchant_balance_amount" => "50000",
+            ],
+            "ledger_integration_mode" => "reverse-shadow",
+            "identifiers" => [
+                "gateway" => "hdfc"
+            ],
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($reversal['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertNotNull($actualLedgerOutboxEntry['idempotency_key']);
+    }
+
+
     public function testInstantRefundFeeOnlyReversalPostpaidReverseShadow()
     {
         Mail::fake();
@@ -4295,7 +4402,7 @@ class RefundLedgerTest extends TestCase
         $this->assertEquals("refund", $txn['type']);
     }
 
-    private function getJournal()
+    private function getJournal($transactor_event="refund_processed")
     {
 
         return [
@@ -4307,7 +4414,7 @@ class RefundLedgerTest extends TestCase
             "currency"=> "INR",
             "tenant"=> "PG",
             "transactor_id"=> "rfnd_LLJMDzXXyjd7UI",
-            "transactor_event"=> "refund_processed",
+            "transactor_event"=> $transactor_event,
             "transaction_date"=> 1677466530,
             "ledger_entry"=> [
                 [
@@ -4356,6 +4463,92 @@ class RefundLedgerTest extends TestCase
                 ]
             ]
         ];
+    }
+
+    public function testDisputeRefundReverseShadowReversalCreation()
+    {
+        Mail::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $payment = $this->defaultAuthPayment();
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->createRefundForReversalRefundShadow($mockLedger);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->fixtures->edit(
+            'refund',
+            $refund['id'],
+            [
+                'notes' => [
+                    'reason'    => 'disp_abcdefghijkl16'
+                ]
+            ]);
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->withArgs(function ($journalPayload, $requestHeaders, $throwException) use ($refund) {
+
+                $this->assertEquals($refund['id'], $journalPayload['transactor_id']);
+                $this->assertEquals('dispute_refund_processed', $journalPayload['transactor_event']);
+
+                echo "\ni was here \n";
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn([
+                "body" => $this->getJournalCreateSuccessResponse()
+            ]);
+
+        // create reversal
+        $this->scroogeUpdateRefundStatus($refund, 'failed_event');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(RefundStatus::REVERSED, $refund['status']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertEquals($reversal['entity_type'], 'refund');
+        $this->assertEquals('rfnd_' . $reversal['entity_id'], $refund['id']);
+        $this->assertEquals($refund['balance_id'], $reversal['balance_id']);
+        $this->assertNotNull(50000, $reversal['amount']);
+        $this->assertNull($reversal['transaction_id'], 'reversal txn should not be created in sync');
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" => "10000000000000",
+            "currency" => "INR",
+            "transactor_event" => "refund_reversed",
+            "money_params" => [
+                "reversed_amount" => "50000",
+                "merchant_balance_amount" => "50000",
+            ],
+            "ledger_integration_mode" => "reverse-shadow",
+            "identifiers" => [
+                "gateway" => "hdfc"
+            ],
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($reversal['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertNotNull($actualLedgerOutboxEntry['idempotency_key']);
     }
 
 }

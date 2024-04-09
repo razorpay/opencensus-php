@@ -5,6 +5,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use Ramsey\Uuid\Uuid;
+use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Ledger\Constants;
@@ -12,6 +13,7 @@ use RZP\Models\Payment\Refund\Speed as Speed;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -99,49 +101,83 @@ class Core extends Base\Core
             $transactorEvent = Constants::TRANSFER_REVERSAL_PROCESSED;
         }
 
-        $journal = $this->getJournalByTransactorInfo($refund->getPublicId(), $transactorEvent, $ledgerService);
-
-        if ($journal ===  null)
+        if (empty($refund->getNotes() === false))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUND_JOURNAL_NOT_FOUND_ERROR,
-                null,
-                [
-                    'reversal_id'=>$reversal->getPublicId(),
-                    'refund_id'=>$refund->getPublicId(),
-                ],
-            );
-        }
-        $ledgerEntries = $journal[Constants::LEDGER_ENTRY];
+            $notes = $refund->getNotes();
 
-        foreach ($ledgerEntries as $ledgerEntry)
-        {
-            if($ledgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_DEBIT)
+            if ((isset($notes['reason']) === true) and
+                (str_starts_with($notes['reason'], DisputeEntity::getSign()) === true))
             {
-                $accountEntities = $ledgerEntry[Constants::ACCOUNT_ENTITIES];
-
-                $fundAccountTypeArr = $accountEntities[Constants::FUND_ACCOUNT_TYPE];
-
-                $fundAccountType = (count($fundAccountTypeArr) > 0) ? $fundAccountTypeArr[0] : "";
-
-                // To ensure that refund forward transaction has this amount / fees debited, if debit is 0, it
-                // could be a Direct Settlement just an authorized transaction refund - for which we have handled before this.
-
-                if((intval($ledgerEntry[Constants::AMOUNT]) === 0) and ($fundAccountType === Constants::MERCHANT_BALANCE))
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_REFUND_REVERSAL_NOT_APPLICABLE,
-                        null,
-                        [
-                            'refund_id'=>$refund->getPublicId(),
-                        ],
-                    );
-                }
-                break;
+                $transactorEvent = Constants::DISPUTE_REFUND_PROCESSED;
             }
         }
 
-        $isRefundCredits = $this->isRefundCreditsUsed($ledgerEntries);
+        $journal = $this->getJournalByTransactorInfo($refund->getPublicId(), $transactorEvent, $ledgerService);
+
+        $isRefundCredits = false;
+
+        if ($journal ===  null)
+        {
+            // use refund transaction if journal is not available to determine the source of refund
+            $refundTransaction = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
+
+            if($refundTransaction === null)
+            {
+                $this->trace->info(TraceCode::BAD_REQUEST_REFUND_TRANSACTION_NOT_FOUND_ERROR, [
+                    'reversal_id'   =>  $reversal->getPublicId(),
+                    'refund_id'     =>  $refund->getPublicId(),
+                ]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::SERVER_ERROR,
+                    null,
+                    [
+                        'reversal_id'   =>  $reversal->getPublicId(),
+                        'refund_id'     =>  $refund->getPublicId(),
+                    ],
+                );
+            }
+
+            if($refundTransaction->isRefundCredits() === true)
+            {
+                $isRefundCredits = true;
+            }
+        }
+        else
+        {
+
+            $ledgerEntries = $journal[Constants::LEDGER_ENTRY];
+
+            foreach ($ledgerEntries as $ledgerEntry)
+            {
+                if($ledgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_DEBIT)
+                {
+                    $accountEntities = $ledgerEntry[Constants::ACCOUNT_ENTITIES];
+
+                    $fundAccountTypeArr = $accountEntities[Constants::FUND_ACCOUNT_TYPE];
+
+                    $fundAccountType = (count($fundAccountTypeArr) > 0) ? $fundAccountTypeArr[0] : "";
+
+                    // To ensure that refund forward transaction has this amount / fees debited, if debit is 0, it
+                    // could be a Direct Settlement just an authorized transaction refund - for which we have handled before this.
+
+                    if((intval($ledgerEntry[Constants::AMOUNT]) === 0) and ($fundAccountType === Constants::MERCHANT_BALANCE))
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_REFUND_REVERSAL_NOT_APPLICABLE,
+                            null,
+                            [
+                                'refund_id'=>$refund->getPublicId(),
+                            ],
+                        );
+                    }
+                    break;
+                }
+            }
+
+            $isRefundCredits = $this->isRefundCreditsUsed($ledgerEntries);
+        }
+
 
         // all feeOnlyReversal cases occur in instant refunds where we have charged commission and tax.
         // We try to only reverse the fee and the reversed amount to merchant becomes only the fee and tax paid

@@ -1098,6 +1098,63 @@ class AdjustmentLedgerTest extends TestCase
 
     }
 
+    public function testCommissionBalanceAdjustmentTransactionCreateSuccessInReverseShadow()
+    {
+        Mail::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow'], '100abc000abc00');
+
+        $this->fixtures->create(
+            'balance',
+            [
+                'id'            => '100efg000efg00',
+                'balance'       => 1000,
+                'type'          => 'commission',
+                'merchant_id'   => '100abc000abc00'
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $adjId = $response['id'];
+
+        $adjustment = $this->getDbEntityById('adjustment', $adjId);
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+        $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
+        $this->assertEquals(-500, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
+        $this->assertNotNull($adjustment['transaction_id'], 'transaction should not be null');
+
+        $balanceId = $adjustment['balance_id'];
+        $this->assertEquals('100efg000efg00', $balanceId);
+
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $this->assertNotNull($balance, 'balance should not be null');
+        $this->assertEquals('commission', $balance['type']);
+        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
+        // balance  updated as transaction not created yet
+        $this->assertEquals(500, $balance['balance']);
+
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertNotNull($txn, 'transaction should not be null');
+        $this->assertNotNull($txn, 'transaction should not be null');
+        $this->assertEquals(str_replace("adj_", "", $adjId), $txn['entity_id']);
+        $this->assertEquals(500, $txn['debit']);
+        $this->assertEquals('adjustment', $txn['type']);
+        $this->assertEquals('100abc000abc00', $txn['merchant_id']);
+        $this->assertEquals(500, $txn['amount']);
+        $this->assertEquals($balanceId, $txn['balance_id']);
+
+    }
+
     private function getJournal()
     {
 

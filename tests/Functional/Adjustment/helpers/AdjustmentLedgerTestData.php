@@ -195,6 +195,28 @@ return [
             ],
         ]
     ],
+
+    'testCommissionBalanceAdjustmentTransactionCreateSuccessInReverseShadow' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount' => -500,
+                'type' => 'commission',
+                'merchant_id' => '100abc000abc00',
+                'currency' => 'INR',
+                'description' => 'debit commission balance in reverse shadow'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'adjustment',
+                'amount' => -500,
+                'currency' => 'INR',
+                'description' => 'debit commission balance in reverse shadow'
+            ],
+        ]
+    ],
 ];
 
 
