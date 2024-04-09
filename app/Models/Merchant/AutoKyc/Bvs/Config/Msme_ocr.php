@@ -19,42 +19,31 @@ class Msme_ocr extends BaseConfig
             '0' => [
                 'rule_type' => 'string_comparison_rule',
                 'rule_def'  => [
-                    'if' => [
+                    "or" => [
                         [
-                            "===" => [
+                            'fuzzy_suzzy' => [
                                 [
-                                    "var" => "enrichments.ocr.details.1.issuer.value"
+                                    
+                                    'var' => 'artefact.details.trade_name.value',
                                 ],
-                                "Udyog Aadhaar Memorandum"
-                            ]
+                                [
+                                    'var' => 'enrichments.ocr.details.1.trade_name.value',
+                                ],
+                                81,
+                            ],
                         ],
                         [
-                            "fuzzy_suzzy" => [
+                            'fuzzy_suzzy' => [
                                 [
                                     'var' => 'artefact.details.signatory_name.value',
                                 ],
                                 [
-                                    'var' => 'enrichments.ocr.details.1.signatory_name.value',
+                                    'var' => 'enrichments.ocr.details.1.trade_name.value',
                                 ],
                                 81,
-                            ]
-                        ],
-                        true
-                    ],
-                ],
-            ],
-            '1' => [
-                'rule_type' => 'string_comparison_rule',
-                'rule_def'  => [
-                    'fuzzy_suzzy' => [
-                        [
-                            'var' => 'artefact.details.trade_name.value',
-                        ],
-                        [
-                            'var' => 'enrichments.ocr.details.1.trade_name.value',
-                        ],
-                        81,
-                    ],
+                            ],
+                        ]
+                    ]
                 ],
             ],
         ],

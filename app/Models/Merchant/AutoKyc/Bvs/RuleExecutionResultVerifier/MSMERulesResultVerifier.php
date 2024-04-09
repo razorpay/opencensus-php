@@ -38,9 +38,8 @@ class MSMERulesResultVerifier extends BaseRuleResultVerifier
         $ruleExecutionList = $validation->getRuleExecutionList();
 
         $ruleExecutionList = $ruleExecutionList['details'] ?? $ruleExecutionList;
-
-        if (isset($ruleExecutionList[0]['rule_execution_result']['result']) === false or
-            isset($ruleExecutionList[1]['rule_execution_result']['result']) === false)
+       
+        if (isset($ruleExecutionList[0]['rule_execution_result']['result']) === false)
         {
             $data[Constants::IS_ARTEFACT_VALIDATED] = $validation->getValidationStatus() === DetailConstants::SUCCESS;
 
@@ -49,7 +48,7 @@ class MSMERulesResultVerifier extends BaseRuleResultVerifier
 
         $data[Constants::IS_SIGNATORY_VALIDATED]       = $ruleExecutionList[0]['rule_execution_result']['result'];
 
-        $data[Constants::IS_ARTEFACT_VALIDATED]        = $ruleExecutionList[1]['rule_execution_result']['result'];
+        $data[Constants::IS_ARTEFACT_VALIDATED]        = $ruleExecutionList[0]['rule_execution_result']['result'];
 
         return $data;
     }

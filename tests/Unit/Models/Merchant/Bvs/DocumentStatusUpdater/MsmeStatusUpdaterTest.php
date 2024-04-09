@@ -75,49 +75,15 @@ class MsmeStatusUpdaterTest extends TestCase
         $this->processKafkaEvent('failed', 'failed', [], '');
     }
 
-    public function testMsmeDocVerificationSignatorySuccessAndExperimentOn()
+    public function testMsmeDocVerificationSignatorySuccessTradeNameMatchesPromoterPanNameAndExperimentOn()
     {
         $kafkaPayload = [
-                    "0" => [
-                        "rule"                  => [
-                            "rule_type" => "string_comparison_rule",
-                            "rule_def"  => [
-                                "if" => [
-                                    [
-                                        "===" => [
-                                            [
-                                                "var" => "enrichments.ocr.details.1.issuer.value"
-                                            ],
-                                            "Udyog Aadhaar Memorandum"
-                                        ]
-                                    ],
-                                    [
-                                        "fuzzy_suzzy" => [
-                                            [
-                                                "var" => "artefact.details.signatory_name.value"
-                                            ],
-                                            [
-                                                "var" => "enrichments.ocr.details.1.signatory_name.value"
-                                            ],
-                                            81
-                                        ]
-                                    ],
-                                    true
-                                ]
-                            ]
-                        ],
-                        "rule_execution_result" => [
-                            "result"   => true,
-                            "operator" => "",
-                            "operands" => null,
-                            "remarks"  => ""
-                        ],
-                        "error"                 => ""
-                    ],
-                    "1" => [
-                        "rule"                  => [
-                            "rule_type" => "string_comparison_rule",
-                            "rule_def"  => [
+            "0" => [
+                "error"                 => "",
+                "rule"                  => [
+                    "rule_def"  => [
+                        "or" => [
+                            [
                                 "fuzzy_suzzy" => [
                                     [
                                         "var" => "artefact.details.trade_name.value"
@@ -127,47 +93,88 @@ class MsmeStatusUpdaterTest extends TestCase
                                     ],
                                     81
                                 ]
+                            ],
+                            [
+                                "fuzzy_suzzy" => [
+                                    [
+                                        "var" => "artefact.details.signatory_name.value"
+                                    ],
+                                    [
+                                        "var" => "enrichments.ocr.details.1.trade_name.value"
+                                    ],
+                                    81
+                                ]
                             ]
-                        ],
-                        "rule_execution_result" => [
-                            "result"   => true,
-                            "operator" => "fuzzy_suzzy",
+                        ]
+                    ],
+                    "rule_type" => "string_comparison_rule"
+                ],
+                "rule_execution_result" => [
+                    "operands" => [
+                        "operand_1" => [
                             "operands" => [
-                                "operand_1" => "TANIDRAPES",
-                                "operand_2" => "TANIDRAPES",
+                                "operand_1" => "PRIVATE LIMITED",
+                                "operand_2" => "CBROZ TRAINING RESEARCH AND DEVELOPMENT",
                                 "operand_3" => 81
                             ],
+                            "operator" => "fuzzy_suzzy",
                             "remarks"  => [
                                 "algorithm_type"      => "fuzzy_suzzy_lev_token_set_algorithm",
-                                "match_percentage"    => 100,
+                                "match_percentage"    => 45,
                                 "required_percentage" => 81
-                            ]
+                            ],
+                            "result"   => false
                         ],
-                        "error"                 => ""
-                    ]
+                        "operand_2" => [
+                            "operands" => [
+                                "operand_1" => "BROZ TRAINING RESEARCH AND DEVELOPMENT",
+                                "operand_2" => "CBROZ TRAINING RESEARCH AND DEVELOPMENT",
+                                "operand_3" => 81
+                            ],
+                            "operator" => "fuzzy_suzzy",
+                            "remarks"  => [
+                                "algorithm_type"      => "fuzzy_suzzy_lev_token_set_algorithm",
+                                "match_percentage"    => 96,
+                                "required_percentage" => 81
+                            ],
+                            "result"   => true
+                        ]
+                    ],
+                    "operator" => "or",
+                    "remarks"  => [
+                        "algorithm_type"      => "fuzzy_suzzy_lev_token_set_algorithm",
+                        "match_percentage"    => 96,
+                        "required_percentage" => 81
+                    ],
+                    "result"   => true
+                ]
+            ]
         ];
-
+        
         $this->processKafkaEvent('success', 'verified', $kafkaPayload, 'true');
-
+        
         $verificationDetail = $this->getDbLastEntity('merchant_verification_detail', 'live');
-
+        
         $this->assertEquals('verified', $verificationDetail->getStatus());
     }
 
-    public function testMsmeDocVerificationSignatoryFailureAndExperimentOn()
+    public function testMsmeDocVerificationSignatorySuccessTradeNameMatchesBusinessNameAndExperimentOn()
     {
         $kafkaPayload = [
             "0" => [
+                "error"                 => "",
                 "rule"                  => [
-                    "rule_type" => "string_comparison_rule",
                     "rule_def"  => [
-                        "if" => [
+                        "or" => [
                             [
-                                "===" => [
+                                "fuzzy_suzzy" => [
                                     [
-                                        "var" => "enrichments.ocr.details.1.issuer.value"
+                                        "var" => "artefact.details.trade_name.value"
                                     ],
-                                    "Udyog Aadhaar Memorandum"
+                                    [
+                                        "var" => "enrichments.ocr.details.1.trade_name.value"
+                                    ],
+                                    81
                                 ]
                             ],
                             [
@@ -176,77 +183,81 @@ class MsmeStatusUpdaterTest extends TestCase
                                         "var" => "artefact.details.signatory_name.value"
                                     ],
                                     [
-                                        "var" => "enrichments.ocr.details.1.signatory_name.value"
+                                        "var" => "enrichments.ocr.details.1.trade_name.value"
                                     ],
                                     81
                                 ]
-                            ],
-                            true
+                            ]
                         ]
-                    ]
-                ],
-                "rule_execution_result" => [
-                    "result"   => false,
-                    "operator" => "",
-                    "operands" => null,
-                    "remarks"  => ""
-                ],
-                "error"                 => ""
-            ],
-            "1" => [
-                "rule"                  => [
-                    "rule_type" => "string_comparison_rule",
-                    "rule_def"  => [
-                        "fuzzy_suzzy" => [
-                            [
-                                "var" => "artefact.details.trade_name.value"
-                            ],
-                            [
-                                "var" => "enrichments.ocr.details.1.trade_name.value"
-                            ],
-                            81
-                        ]
-                    ]
-                ],
-                "rule_execution_result" => [
-                    "result"   => true,
-                    "operator" => "fuzzy_suzzy",
-                    "operands" => [
-                        "operand_1" => "TANIDRAPES",
-                        "operand_2" => "TANIDRAPES",
-                        "operand_3" => 81
                     ],
+                    "rule_type" => "string_comparison_rule"
+                ],
+                "rule_execution_result" => [
+                    "operands" => [
+                        "operand_1" => [
+                            "operands" => [
+                                "operand_1" => "CBROZ TRAINING RESEARCH AND DEVELOPMENT",
+                                "operand_2" => "CBROZ TRAINING RESEARCH AND DEVELOPMENT",
+                                "operand_3" => 81
+                            ],
+                            "operator" => "fuzzy_suzzy",
+                            "remarks"  => [
+                                "algorithm_type"      => "fuzzy_suzzy_lev_token_set_algorithm",
+                                "match_percentage"    => 96,
+                                "required_percentage" => 81
+                            ],
+                            "result"   => true
+                        ],
+                        "operand_2" => [
+                            "operands" => [
+                                "operand_1" => "INFO LIMITED",
+                                "operand_2" => "CBROZ TRAINING RESEARCH AND DEVELOPMENT",
+                                "operand_3" => 81
+                            ],
+                            "operator" => "fuzzy_suzzy",
+                            "remarks"  => [
+                                "algorithm_type"      => "fuzzy_suzzy_lev_token_set_algorithm",
+                                "match_percentage"    => 45,
+                                "required_percentage" => 81
+                            ],
+                            "result"   => false
+                        ]
+                    ],
+                    "operator" => "or",
                     "remarks"  => [
                         "algorithm_type"      => "fuzzy_suzzy_lev_token_set_algorithm",
-                        "match_percentage"    => 100,
+                        "match_percentage"    => 96,
                         "required_percentage" => 81
-                    ]
-                ],
-                "error"                 => ""
+                    ],
+                    "result"   => true
+                ]
             ]
         ];
-
-        $this->processKafkaEvent('failed', 'verified', $kafkaPayload, 'true', 'RULE_EXECUTION_FAILED');
-
+        
+        $this->processKafkaEvent('success', 'verified', $kafkaPayload, 'true', 'RULE_EXECUTION_FAILED');
+        
         $verificationDetail = $this->getDbLastEntity('merchant_verification_detail', 'live');
-
-        $this->assertEquals('not_matched', $verificationDetail->getStatus());
+        
+        $this->assertEquals('verified', $verificationDetail->getStatus());
     }
 
     public function testMsmeDocVerificationTradeNameAndSignatoryFailureAndExperimentOn()
     {
         $kafkaPayload = [
             "0" => [
+                "error"                 => "",
                 "rule"                  => [
-                    "rule_type" => "string_comparison_rule",
                     "rule_def"  => [
-                        "if" => [
+                        "or" => [
                             [
-                                "===" => [
+                                "fuzzy_suzzy" => [
                                     [
-                                        "var" => "enrichments.ocr.details.1.issuer.value"
+                                        "var" => "artefact.details.trade_name.value"
                                     ],
-                                    "Udyog Aadhaar Memorandum"
+                                    [
+                                        "var" => "enrichments.ocr.details.1.trade_name.value"
+                                    ],
+                                    81
                                 ]
                             ],
                             [
@@ -255,60 +266,61 @@ class MsmeStatusUpdaterTest extends TestCase
                                         "var" => "artefact.details.signatory_name.value"
                                     ],
                                     [
-                                        "var" => "enrichments.ocr.details.1.signatory_name.value"
+                                        "var" => "enrichments.ocr.details.1.trade_name.value"
                                     ],
                                     81
                                 ]
-                            ],
-                            false
+                            ]
                         ]
-                    ]
-                ],
-                "rule_execution_result" => [
-                    "result"   => false,
-                    "operator" => "",
-                    "operands" => null,
-                    "remarks"  => ""
-                ],
-                "error"                 => ""
-            ],
-            "1" => [
-                "rule"                  => [
-                    "rule_type" => "string_comparison_rule",
-                    "rule_def"  => [
-                        "fuzzy_suzzy" => [
-                            [
-                                "var" => "artefact.details.trade_name.value"
-                            ],
-                            [
-                                "var" => "enrichments.ocr.details.1.trade_name.value"
-                            ],
-                            81
-                        ]
-                    ]
-                ],
-                "rule_execution_result" => [
-                    "result"   => false,
-                    "operator" => "fuzzy_suzzy",
-                    "operands" => [
-                        "operand_1" => "TANIDRAPES",
-                        "operand_2" => "TANIDRAPES",
-                        "operand_3" => 81
                     ],
+                    "rule_type" => "string_comparison_rule"
+                ],
+                "rule_execution_result" => [
+                    "operands" => [
+                        "operand_1" => [
+                            "operands" => [
+                                "operand_1" => "PRIVATE LIMITED",
+                                "operand_2" => "CBROZ TRAINING RESEARCH AND DEVELOPMENT",
+                                "operand_3" => 81
+                            ],
+                            "operator" => "fuzzy_suzzy",
+                            "remarks"  => [
+                                "algorithm_type"      => "fuzzy_suzzy_lev_token_set_algorithm",
+                                "match_percentage"    => 45,
+                                "required_percentage" => 81
+                            ],
+                            "result"   => false
+                        ],
+                        "operand_2" => [
+                            "operands" => [
+                                "operand_1" => "INFO LIMITED",
+                                "operand_2" => "CBROZ TRAINING RESEARCH AND DEVELOPMENT",
+                                "operand_3" => 81
+                            ],
+                            "operator" => "fuzzy_suzzy",
+                            "remarks"  => [
+                                "algorithm_type"      => "fuzzy_suzzy_lev_token_set_algorithm",
+                                "match_percentage"    => 45,
+                                "required_percentage" => 81
+                            ],
+                            "result"   => false
+                        ]
+                    ],
+                    "operator" => "or",
                     "remarks"  => [
                         "algorithm_type"      => "fuzzy_suzzy_lev_token_set_algorithm",
-                        "match_percentage"    => 100,
+                        "match_percentage"    => 45,
                         "required_percentage" => 81
-                    ]
-                ],
-                "error"                 => ""
+                    ],
+                    "result"   => false
+                ]
             ]
         ];
-
+        
         $this->processKafkaEvent('failed', 'not_matched', $kafkaPayload, 'true', 'RULE_EXECUTION_FAILED');
-
+        
         $verificationDetail = $this->getDbLastEntity('merchant_verification_detail', 'live');
-
+        
         $this->assertEquals('not_initiated', $verificationDetail->getStatus());
     }
     protected function mockSplitzTreatment($mid, $variantName)
