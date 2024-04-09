@@ -2061,6 +2061,11 @@ class Constants
      */
     const PENNILESS_VALIDATION = 'penniless_validation';
 
+    /*
+     * Feature flag to enabled merchant on FAV Microservice
+     */
+    const FAV_SERVICE_ENABLED = 'fav_service_enabled';
+
     /**
      * These 3 feature flags are used for sending low-balance alerts on X & blocking payouts for current-accounts
      */

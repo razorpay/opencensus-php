@@ -4,19 +4,22 @@ namespace RZP\Tests\Functional\FundAccount;
 
 use App;
 use Queue;
+use Mockery;
 use \RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Jobs\Transactions;
 use RZP\Models\Admin\Admin;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\DiagClient;
-use RZP\Jobs\FaVpaValidation;
 use RZP\Models\Pricing\Fee;
 use RZP\Jobs\FavQueueForFTS;
+use RZP\Jobs\FaVpaValidation;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Services\FavService\Update;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -28,10 +31,14 @@ use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Services\FavService\Create as FavServiceCreate;
+use RZP\Services\FavService\Update as FavServiceUpdate;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
+use function PHPUnit\Framework\assertEquals;
+use function PHPUnit\Framework\assertNotNull;
 
 class FundAccountValidationTest extends TestCase
 {
@@ -790,6 +797,310 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
         $this->assertNotNull($fta['narration']);
+    }
+
+    public function testValidateTypeVpaInternal()
+    {
+        Queue::fake();
+
+        $this->ba->payoutInternalAppAuth();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $content = $this->testData[__FUNCTION__]['request']['content'];
+
+        $mock = Mockery::mock(Update::class);
+
+        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
+
+        $input = [
+            'account_status' => "active",
+            'name' => "Razorpay Customer",
+            'success' => true,
+            'fav_status' => "completed",
+        ];
+
+        $mock->shouldReceive('updateFavInMicroservice')
+            ->withArgs(["fav_000000000000", $input])
+            ->times(1);
+
+        $this->startTest();
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        $faVpaValidation = new FaVpaValidation('test', $content['fav_id'], $content);
+
+        $faVpaValidation->handle();
+    }
+
+//    TODO: add remaining cases response as well
+    public function createBankResponseForFavServiceMock($status='created', $contact = false)
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        $content = [
+            'id'=> 'fav_00000000000001',
+            'entity'=> 'fund_account.validation',
+            'status'=> 'created',
+            'validation_results'=> [
+                'account_status'=> null,
+                'registered_name'=> null,
+                'details'=> null,
+                'name_match_score'=> null
+            ],
+            'status_details'=> [
+                'description'=> 'Validation request is created',
+                'source'=> 'internal',
+                'reason'=> 'validation_request_created'
+            ],
+            'reference_id'=> '112233',
+            'notes'=> [
+                'random_key_1'=> 'Make it so.',
+                'random_key_2'=> 'Tea. Earl Grey. Hot.'
+            ],
+            'fund_account'=> [
+                'id'=> 'fa_00000000000001',
+                'entity'=> 'fund_account',
+                'account_type'=> 'bank_account',
+                'bank_account'=> [
+                    'name'=> 'Gaurav Kumar',
+                    'bank_name'=> 'HDFC',
+                    'ifsc'=> 'HDFC0000053',
+                    'account_number'=> '765432123456789'
+                ],
+                'active'=> true,
+                'created_at'=> 1567064019,
+            ]
+        ];
+
+        if ($contact === true)
+        {
+            $content['fund_account']['contact'] = [
+                    'id'=> 'cont_00000000000001',
+                    'entity'=> 'contact',
+                    'name'=> 'Gaurav Kumar',
+                    'email'=> 'gaurav.kumar@example.com',
+                    'contact'=> '9123456789',
+                    'type'=> 'employee',
+                    'reference_id'=> 'Acme Contact ID 12345',
+                    'active'=> true,
+                    'created_at'=> 1567064019,
+                    'notes'=> [
+                        'notes_key_1'=> 'Tea, Earl Grey, Hot',
+                        'notes_key_2'=> 'Tea, Earl Grey... decaf.']
+                ];
+        }
+
+        $response->body = json_encode($content);
+        $response->status_code = 200;
+        $response->success = true;
+
+        return $response;
+    }
+
+    public function createVpaResponseForFavServiceMock($status='created', $contact = false)
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        $content = [
+            'id'=> 'fav_00000000000001',
+            'entity'=> 'fund_account.validation',
+            'status'=> 'created',
+            'validation_results'=> [
+                'account_status'=> null,
+                'registered_name'=> null,
+                'details'=> null,
+                'name_match_score'=> null
+            ],
+            'status_details'=> [
+                'description'=> 'Validation request is created',
+                'source'=> 'internal',
+                'reason'=> 'validation_request_created'
+            ],
+            'reference_id'=> '112233',
+            'notes'=> [
+                'random_key_1'=> 'Make it so.',
+                'random_key_2'=> 'Tea. Earl Grey. Hot.'
+            ],
+            'fund_account'=> [
+                'id'=> 'fa_00000000000001',
+                'entity'=> 'fund_account',
+                'account_type'=> 'vpa',
+                'vpa'=> [
+                    'address' => 'gaurav.kumar@exampleupi'
+                ],
+                'active'=> true,
+                'created_at'=> 1567064019,
+            ]
+        ];
+
+        if ($contact === true)
+        {
+            $content['fund_account']['contact'] = [
+                'id'=> 'cont_00000000000001',
+                'entity'=> 'contact',
+                'name'=> 'Gaurav Kumar',
+                'email'=> 'gaurav.kumar@example.com',
+                'contact'=> '9123456789',
+                'type'=> 'employee',
+                'reference_id'=> 'Acme Contact ID 12345',
+                'active'=> true,
+                'created_at'=> 1567064019,
+                'notes'=> [
+                    'notes_key_1'=> 'Tea, Earl Grey, Hot',
+                    'notes_key_2'=> 'Tea, Earl Grey... decaf.'
+                ]
+            ];
+        }
+
+        $response->body = json_encode($content);
+        $response->status_code = 200;
+        $response->success = true;
+
+        return $response;
+    }
+
+    public function mockFavServiceCreate($account_type, $status = 'created', $contact = false)
+    {
+        $FavServiceCreateMock = $this->getMockBuilder(FavServiceCreate::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['sendRequest'])
+            ->getMock();
+
+        $this->app->instance(FavServiceCreate::FAV_SERVICE_CREATE, $FavServiceCreateMock);
+
+        if ($status === 'failed')
+        {
+            $this->app->fav_service_create
+                ->expects($this->once())
+                ->method('sendRequest')
+                ->willReturn(new \RZP\Exception\ServerErrorException(
+                    'server error',
+                    code: ErrorCode::SERVER_ERROR
+
+                ));
+            return;
+        }
+        else if ($account_type === 'bank_account') {
+            $response = $this->createBankResponseForFavServiceMock($status, $contact);
+        }
+        else
+        {
+            $response = $this->createVpaResponseForFavServiceMock($status, $contact);
+        }
+
+        $this->app->fav_service_create
+                  ->expects($this->once())
+                  ->method('sendRequest')
+                  ->willReturn($response);
+    }
+
+    public function testCreateFaOfTypeBankAndSendRequestToFavService(){
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $this->mockFavServiceCreate('bank_account', status: 'created');
+
+        $response = $this->startTest();
+
+        $fundAccount = $this->getDbLastEntity('fund_account', 'test');
+
+        $bankAccount = $this->getDbLastEntity('bank_account', mode: 'test');
+
+        $this->assertEquals('HDFC0000053', $bankAccount['ifsc']);
+
+        $this->assertEquals('765432123456789', $bankAccount['account_number']);
+
+        $this->assertNotNull($fundAccount);
+
+        $this->assertNotNull($response['fund_account']['id']);
+    }
+
+    public function testCreateFaOfTypeVpaAndSendRequestToFavService(){
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $this->mockFavServiceCreate('vpa', status: 'created');
+
+        $response = $this->startTest();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $vpa = $this->getLastEntity('vpa', true);
+
+        $this->assertEquals('gaurav.kumar@exampleupi', $vpa['address']);
+
+        $this->assertNotNull($fundAccount);
+
+        $this->assertNotNull($response['fund_account']['id']);
+    }
+
+    public function testCreateFaAndContactOfTypeBankAndSendRequestToFavService(){
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $this->mockFavServiceCreate('bank_account', status: 'created', contact:true);
+
+        $response = $this->startTest();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $bankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals('HDFC0000053', $bankAccount['ifsc']);
+
+        $this->assertEquals('765432123456789', $bankAccount['account_number']);
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
+
+        $this->assertNotNull($contact);
+
+        $this->assertNotNull($fundAccount);
+
+        $this->assertNotNull($response['fund_account']['id']);
+    }
+
+    public function testCreateFaOfTypeBankAndSendRequestToFavServiceFailure(){
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $this->expectException('\RZP\Exception\ServerErrorException');
+
+        $this->expectExceptionCode(ErrorCode::SERVER_ERROR);
+
+        $this->mockFavServiceCreate('bank_account', status: 'failed');
+
+        $this->startTest();
+    }
+
+    public function testCreateFaAndContactOfTypeVpaAndSendRequestToFavService(){
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $this->mockFavServiceCreate('vpa', status: 'created', contact: true);
+
+        $response = $this->startTest();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $vpa = $this->getLastEntity('vpa', true);
+
+        $this->assertEquals('gaurav.kumar@exampleupi', $vpa['address']);
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
+
+        $this->assertNotNull($vpa);
+
+        $this->assertNotNull($contact);
+
+        $this->assertNotNull($fundAccount);
+
+        $this->assertNotNull($response['fund_account']['id']);
     }
 
     public function testCreateValidationWithExposeUTRNotSetInResponse()

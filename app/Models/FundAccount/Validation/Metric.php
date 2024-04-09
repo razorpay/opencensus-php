@@ -23,6 +23,15 @@ class Metric extends Base\Core
     const FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED_COUNT       = 'fav_update_from_fts_webhook_failed';
     const FTS_FAILURE_EXCEPTION_COUNT                    = 'fts_failure_exception_count';
 
+    // FAV Service Metrics/Alerts
+    const INVALID_FAV_CREATE_REQUEST_TO_FAV_SERVICE      = 'invalid_fav_create_request_to_fav_service';
+
+    const FAV_SERVICE_TIME_OUT_EXCEPTION                 = "fav_service_time_out_exception";
+
+    const FAV_SERVICE_REQUEST_FAILED                     = "fav_service_request_failed";
+
+    const SERVER_ERROR_FAV_SERVICE_REQUEST_FAILED        = "server_error_fav_service_request_failed";
+
     // Metric Names
     const FUND_ACCOUNT_VALIDATION_CREATED                = 'fund_account_validation_created';
     const FUND_ACCOUNT_VALIDATION_FAILED                 = 'fund_account_validation_failed';

@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Services\FTS;
 use RZP\Models\Admin;
+use RZP\Models\Contact;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -19,6 +20,7 @@ use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
+use RZP\Jobs\FaVpaValidation;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Channel;
@@ -33,6 +35,8 @@ use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Services\FTS\Constants as FtsConstants;
+use RZP\Services\FavService\Create as FavServiceCreate;
+use RZP\Services\FavService\Update as FavServiceUpdate;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Services\FTS\Transfer\RequestFields as FtsRequestFields;
@@ -41,6 +45,11 @@ use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation as FavLedgerPr
 class Core extends Base\Core
 {
     protected $fundAccountCore;
+
+    protected $favCreateServiceClient;
+
+    protected $favUpdateServiceClient;
+
     private $mutex;
 
     const VALIDATION_UPDATE_MUTEX = "FUND_ACCOUNT_VALIDATION_BEING_UPDATED";
@@ -60,6 +69,10 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
 
         $this->fundAccountCore = new FundAccount\Core();
+
+        $this->favCreateServiceClient = $this->app[FavServiceCreate::FAV_SERVICE_CREATE];
+
+        $this->favUpdateServiceClient = $this->app[FavServiceUpdate::FAV_SERVICE_UPDATE];
     }
 
     /**
@@ -73,6 +86,52 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_REQUEST, [
             'input' => $input
         ]);
+
+        $isCompositeFavRequest = false;
+
+        if ((isset($input[Entity::FUND_ACCOUNT][Entity::ID]) === false))
+        {
+            $isCompositeFavRequest = true;
+        }
+
+        $isFavServiceEnabled = $merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED);
+
+        $this->trace->info(TraceCode::FAV_MERCHANT_FLAGS_STATUS, [
+            'merchant_id'           => $merchant->getId(),
+            'fav_service_enabled'   => $isFavServiceEnabled,
+            'isCompositeFavRequest' => $isCompositeFavRequest
+        ]);
+
+        if (($isCompositeFavRequest === true) && ($isFavServiceEnabled === true))
+        {
+            $fundAccountData = $this->createFundAccountForCompositeFav($input, $merchant);
+
+            $favInput = $this->createInputForFavMicroService($input, $fundAccountData);
+
+            $response =  $this->favCreateServiceClient->createFavViaMicroservice($favInput, $merchant->getId());
+
+            $this->trace->info(
+                TraceCode::FAV_CREATE_RESPONSE_FROM_MICROSERVICE,
+                [
+                    'fav_id' => $response['id'],
+                    'merchant_id' => $merchant->getId(),
+                    'response' => $response
+                ]);
+
+            $id = $response[Entity::ID];
+
+            $id = Entity::verifyIdAndStripSign($id);
+
+            $fundAccountValidation = new FundAccount\Validation\Entity();
+
+            $fundAccountValidation->setId($id);
+
+            $fundAccountValidation->setIsCreatedUsingFavService(1);
+
+            $fundAccountValidation->favServiceResponse = $response;
+
+            return $fundAccountValidation;
+        }
 
         if ((isset($input['balance_id']) === false) and
             (isset($input['fund_account']['id']) === true))
@@ -148,6 +207,38 @@ class Core extends Base\Core
 
         return $fundAccountValidation;
     }
+
+
+    public function validateVpa(array $vpaInput)
+    {
+        $this->trace->info(
+            TraceCode::FAV_QUEUE_FOR_VPA_VALIDATE_JOB_REQUEST,
+            [
+                'vpa'         => $vpaInput['vpa'],
+                'merchant_id' => $vpaInput['merchant_id']
+            ]
+        );
+
+        FaVpaValidation::dispatch($this->mode, $vpaInput['fav_id'], $vpaInput);
+
+        $this->trace->info(
+            TraceCode::FAV_QUEUE_FOR_VPA_VALIDATE_JOB_REQUEST_DISPATCHED,
+            [
+                'vpa'         => $vpaInput['vpa'],
+                'merchant_id' => $vpaInput['merchant_id']
+            ]
+        );
+
+        return [
+            'message' => 'vpa validation request pushed to queue',
+        ];
+    }
+
+    public function updateFavInMicroservice(string $favId, array $data)
+    {
+        return $this->favUpdateServiceClient->updateFavInMicroservice($favId, $data);
+    }
+
 
     /**
      * @param array $input
@@ -246,6 +337,63 @@ class Core extends Base\Core
         });
 
         return $validation;
+    }
+
+    protected function createContactForCompositeFav(array $input): Contact\Entity
+    {
+        $contactInput = $input[Entity::FUND_ACCOUNT][Entity::CONTACT];
+
+        $contactInput[Entity::IS_COMPOSITE] = true;
+
+        $contactResponse = (new Contact\Service)->create($contactInput);
+
+        return $contactResponse[Contact\Entity::CONTACT_ENTITY];
+    }
+
+    protected function getInputForFundAccountCreateFromComposite(array $input, Contact\Entity $contactEntity): array
+    {
+        $fundAccountInput = $input[Entity::FUND_ACCOUNT];
+
+        unset($fundAccountInput[Entity::CONTACT]);
+
+        $fundAccountInput[FundAccount\Entity::CONTACT_ID] = $contactEntity->getPublicId();
+
+        $fundAccountInput[FundAccount\Entity::CONTACT_ENTITY] = $contactEntity;
+
+        return $fundAccountInput;
+    }
+
+    protected function createFundAccountForCompositeFav(array $input, Merchant\Entity $merchant): array
+    {
+        if (isset($input[Entity::FUND_ACCOUNT][Entity::CONTACT]) === true)
+        {
+            $contact = $this->createContactForCompositeFav($input);
+
+            $fundAccountInput = $this->getInputForFundAccountCreateFromComposite($input, $contact);
+
+            $fundAccountResponse = (new FundAccount\Service)->create($fundAccountInput);
+        }
+        else
+        {
+            $fundAccountResponse = (new FundAccount\Core)->create($input[Entity::FUND_ACCOUNT], $merchant);
+
+            return $fundAccountResponse->toArrayPublic();
+        }
+
+        return $fundAccountResponse[Entity::FUND_ACCOUNT]->toArrayPublic();
+    }
+
+    protected function createInputForFavMicroService($input, $fundAccountData)
+    {
+        $favInput = $input;
+
+        unset($favInput[Entity::FUND_ACCOUNT]);
+
+        $favInput[Entity::FUND_ACCOUNT] = [
+            Entity::ID => $fundAccountData[Entity::ID],
+        ];
+
+        return $favInput;
     }
 
     public function processFavThroughLedger(Entity $validation, Merchant\Entity $merchant, array $input): Entity

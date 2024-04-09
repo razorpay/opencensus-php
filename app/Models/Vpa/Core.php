@@ -8,12 +8,19 @@ use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
-    public function createForSource(array $input, Base\PublicEntity $source, bool $compositePayoutSaveOrFail = true): Entity
+    public function createForSource(array $input, Base\PublicEntity $source = null, bool $compositePayoutSaveOrFail = true, Merchant\Entity $merchantEntity = null): Entity
     {
         $vpa = (new Entity)->build($input);
 
         /** @var Merchant\Entity $merchant */
-        $merchant = $source->merchant;
+        if ($source !== null)
+        {
+            $merchant = $source->merchant;
+        }
+        else
+        {
+            $merchant = $merchantEntity;
+        }
 
         $vpa->merchant()->associate($merchant);
 

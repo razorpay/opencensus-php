@@ -3599,6 +3599,7 @@ class Route
         'fund_account_validate_fetch'              => ['get',      'fund_accounts/validations',                      'FundAccountValidationController@list'                              ],
         'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
         'fund_account_validate_bulk_patch_status'  => ['patch',    'fund_accounts/validations/bulk/fail',            'FundAccountValidationController@bulkPatchFavAsFailed'              ],
+        'fund_account_validate_vpa_internal'       => ['post',     'fund_accounts/validations_internal/vpa',         'FundAccountValidationController@validateVpaInternal'                        ],
 
         //admin dashboard access
         'admin_fetch_fund_account_validate'        => ['get',      'fund_accounts/validations/{merchantId}/{favId}', 'FundAccountValidationController@getFavByMerchantIdAndFavId'        ],
@@ -6589,6 +6590,9 @@ class Route
         // emandate service internal auth
         'customer_fetch_token_emandate_internal',
         'payouts_bas_process_post_recon',
+
+        // Fund Account Validation routes
+        'fund_account_validate_vpa_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17434,6 +17438,7 @@ class Route
             'payouts_service_mail_and_sms',
             'payouts_source_update',
             'status_details_source_update',
+            'fund_account_validate_vpa_internal',
         ],
 
         'ledger' => [

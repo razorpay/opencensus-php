@@ -6,6 +6,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
+use RZP\Trace\TraceCode;
 
 return [
     'testGetValidations' => [
@@ -497,6 +498,328 @@ return [
                     'account_status'  => null,
                     'registered_name' => null,
                 ],
+            ],
+        ],
+    ],
+
+    'testCreateFaOfTypeBankAndSendRequestToFavServiceFailure' => [
+
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::BANK_ACCOUNT => [
+                        BankAccount::NAME => 'Gaurav Kumar',
+                        BankAccount::IFSC => 'HDFC0000053',
+                        BankAccount::ACCOUNT_NUMBER => '765432123456789'
+                    ]
+                ],
+                Validation::SOURCE_ACCOUNT_NUMBER => "7878780080316316",
+                Validation::VALIDATION_TYPE => "optimized",
+                Validation::REFERENCE_ID => "112233",
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                ]
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'internal_error_code' => ErrorCode::SERVER_ERROR,
+        ],
+    ],
+
+    'testCreateFaOfTypeBankAndSendRequestToFavService' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::BANK_ACCOUNT => [
+                        BankAccount::NAME => 'Gaurav Kumar',
+                        BankAccount::IFSC => 'HDFC0000053',
+                        BankAccount::ACCOUNT_NUMBER => '765432123456789'
+                    ]
+                ],
+                Validation::SOURCE_ACCOUNT_NUMBER => "7878780080316316",
+                Validation::VALIDATION_TYPE => "optimized",
+                Validation::REFERENCE_ID => "112233",
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'=> 'fav_00000000000001',
+                'entity'=> 'fund_account.validation',
+                'status'=> 'created',
+                'validation_results'=> [
+                    'account_status'=> null,
+                    'registered_name'=> null,
+                    'details'=> null,
+                    'name_match_score'=> null
+                ],
+                'status_details'=> [
+                    'description'=> 'Validation request is created',
+                    'source'=> 'internal',
+                    'reason'=> 'validation_request_created'
+                ],
+                'reference_id'=> '112233',
+                'notes'=> [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'fund_account'=> [
+                    'id'=> 'fa_00000000000001',
+                    'entity'=> 'fund_account',
+                    'account_type'=> 'bank_account',
+                    'bank_account'=> [
+                        'name'=> 'Gaurav Kumar',
+                        'bank_name'=> 'HDFC',
+                        'ifsc'=> 'HDFC0000053',
+                        'account_number'=> '765432123456789'
+                    ],
+                    'active'=> true,
+                    'created_at'=> 1567064019
+                ]
+            ],
+        ],
+    ],
+
+    'testValidateTypeVpaInternal' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations_internal/vpa',
+            'method'  => 'POST',
+            'content' => [
+                'fav_id' => 'fav_000000000000',
+                'vpa' => 'withname@razorpay',
+                'merchant_id' => 10000000000000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'vpa validation request pushed to queue'
+            ],
+        ],
+    ],
+
+    'testCreateFaOfTypeVpaAndSendRequestToFavService' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ACCOUNT_TYPE => 'vpa',
+                    FundAccount::VPA => [
+                        'address' => 'gaurav.kumar@exampleupi'
+                    ]
+                ],
+                Validation::SOURCE_ACCOUNT_NUMBER => "7878780080316316",
+                Validation::VALIDATION_TYPE => "optimized",
+                Validation::REFERENCE_ID => "112233",
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'=> 'fav_00000000000001',
+                'entity'=> 'fund_account.validation',
+                'status'=> 'created',
+                'validation_results'=> [
+                    'account_status'=> null,
+                    'registered_name'=> null,
+                    'details'=> null,
+                    'name_match_score'=> null
+                ],
+                'status_details'=> [
+                    'description'=> 'Validation request is created',
+                    'source'=> 'internal',
+                    'reason'=> 'validation_request_created'
+                ],
+                'reference_id'=> '112233',
+                'notes'=> [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'fund_account'=> [
+                    'id'=> 'fa_00000000000001',
+                    'entity'=> 'fund_account',
+                    'account_type'=> 'vpa',
+                    'vpa'=> [
+                        'address' => 'gaurav.kumar@exampleupi'
+                    ],
+                    'active'=> true,
+                    'created_at'=> 1567064019,
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateFaAndContactOfTypeBankAndSendRequestToFavService' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::BANK_ACCOUNT => [
+                        BankAccount::NAME => 'Gaurav Kumar',
+                        BankAccount::IFSC => 'HDFC0000053',
+                        BankAccount::ACCOUNT_NUMBER => '765432123456789'
+                    ],
+                    'contact'=> [
+                        'name'=>'Gaurav Kumar',
+                        'email'=>'gaurav.kumar@example.com',
+                        'contact'=>'9123456789',
+                        'type'=>'employee',
+                        'reference_id'=>'Acme Contact ID 12345',
+                        'notes'=>[
+                            'notes_key_1'=>'Tea, Earl Grey, Hot',
+                            'notes_key_2'=>'Tea, Earl Grey... decaf.'
+                        ]
+                    ]
+
+                ],
+                Validation::SOURCE_ACCOUNT_NUMBER => "7878780080316316",
+                Validation::VALIDATION_TYPE => "optimized",
+                Validation::REFERENCE_ID => "112233",
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'=> 'fav_00000000000001',
+                'entity'=> 'fund_account.validation',
+                'status'=> 'created',
+                'validation_results'=> [
+                    'account_status'=> null,
+                    'registered_name'=> null,
+                    'details'=> null,
+                    'name_match_score'=> null
+                ],
+                'status_details'=> [
+                    'description'=> 'Validation request is created',
+                    'source'=> 'internal',
+                    'reason'=> 'validation_request_created'
+                ],
+                'reference_id'=> '112233',
+                'notes'=> [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'fund_account'=> [
+                    'id'=> 'fa_00000000000001',
+                    'entity'=> 'fund_account',
+                    'account_type'=> 'bank_account',
+                    'bank_account'=> [
+                        'name'=> 'Gaurav Kumar',
+                        'bank_name'=> 'HDFC',
+                        'ifsc'=> 'HDFC0000053',
+                        'account_number'=> '765432123456789'
+                    ],
+                    'active'=> true,
+                    'created_at'=> 1567064019,
+                    'contact'=> [
+                        'id'=> 'cont_00000000000001',
+                        'entity'=> 'contact',
+                        'name'=> 'Gaurav Kumar',
+                        'email'=> 'gaurav.kumar@example.com',
+                        'contact'=> '9123456789',
+                        'type'=> 'employee',
+                        'reference_id'=> 'Acme Contact ID 12345',
+                        'active'=> true,
+                        'created_at'=> 1567064019,
+                        'notes'=> [
+                            'notes_key_1'=> 'Tea, Earl Grey, Hot',
+                            'notes_key_2'=> 'Tea, Earl Grey... decaf.'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateFaAndContactOfTypeVpaAndSendRequestToFavService' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ACCOUNT_TYPE => 'vpa',
+                    FundAccount::VPA => [
+                        'address' => 'gaurav.kumar@exampleupi'
+                    ],
+                    'contact'=> [
+                        'name'=>'Gaurav Kumar',
+                        'email'=>'gaurav.kumar@example.com',
+                        'contact'=>'9123456789',
+                        'type'=>'employee',
+                        'reference_id'=>'Acme Contact ID 12345',
+                        'notes'=>[
+                            'notes_key_1'=>'Tea, Earl Grey, Hot',
+                            'notes_key_2'=>'Tea, Earl Grey... decaf.'
+                        ]
+                    ]
+
+                ],
+                Validation::SOURCE_ACCOUNT_NUMBER => "7878780080316316",
+                Validation::VALIDATION_TYPE => "optimized",
+                Validation::REFERENCE_ID => "112233",
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'=> 'fav_00000000000001',
+                'entity'=> 'fund_account.validation',
+                'status'=> 'created',
+                'validation_results'=> [
+                    'account_status'=> null,
+                    'registered_name'=> null,
+                    'details'=> null,
+                    'name_match_score'=> null
+                ],
+                'status_details'=> [
+                    'description'=> 'Validation request is created',
+                    'source'=> 'internal',
+                    'reason'=> 'validation_request_created'
+                ],
+                'reference_id'=> '112233',
+                'notes'=> [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'fund_account'=> [
+                    'id'=> 'fa_00000000000001',
+                    'entity'=> 'fund_account',
+                    'account_type'=> 'vpa',
+                    'vpa'=> [
+                        'address' => 'gaurav.kumar@exampleupi'
+                    ],
+                    'active'=> true,
+                    'created_at'=> 1567064019,
+                    'contact'=> [
+                        'id'=> 'cont_00000000000001',
+                        'entity'=> 'contact',
+                        'name'=> 'Gaurav Kumar',
+                        'email'=> 'gaurav.kumar@example.com',
+                        'contact'=> '9123456789',
+                        'type'=> 'employee',
+                        'reference_id'=> 'Acme Contact ID 12345',
+                        'active'=> true,
+                        'created_at'=> 1567064019,
+                        'notes'=> [
+                            'notes_key_1'=> 'Tea, Earl Grey, Hot',
+                            'notes_key_2'=> 'Tea, Earl Grey... decaf.'
+                        ]
+                    ]
+                ]
             ],
         ],
     ],

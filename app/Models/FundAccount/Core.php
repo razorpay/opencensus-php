@@ -526,7 +526,7 @@ class Core extends Base\Core
                 break;
 
             case Type::VPA:
-                $account = (new Vpa\Core)->createForSource($accountInput, $source, $compositePayoutSaveOrFail);
+                $account = (new Vpa\Core)->createForSource($accountInput, $source, $compositePayoutSaveOrFail, $merchant);
                 break;
 
             case Type::CARD:

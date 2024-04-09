@@ -807,6 +807,10 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceUpdateAttachments();
 
+        $this->registerFavServiceCreate();
+
+        $this->registerFavServiceUpdate();
+
         $this->registerPayoutServiceBankingAccountStatement();
 
         $this->registerFTSChannelNotification();
@@ -1885,6 +1889,22 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new Stork;
+        });
+    }
+
+    protected function registerFavServiceCreate()
+    {
+        $this->app->singleton(FavService\Create::FAV_SERVICE_CREATE, function($app)
+        {
+            return new FavService\Create($app);
+        });
+    }
+
+    protected function registerFavServiceUpdate()
+    {
+        $this->app->singleton(FavService\Update::FAV_SERVICE_UPDATE, function($app)
+        {
+            return new FavService\Update($app);
         });
     }
 

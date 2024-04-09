@@ -24,4 +24,13 @@ class FundAccountValidationController extends Controller
 
         return ApiResponse::json($entity);
     }
+
+    public function validateVpaInternal()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->validateVpaInternal($input);
+
+        return ApiResponse::json($response);
+    }
 }

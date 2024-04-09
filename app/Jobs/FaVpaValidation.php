@@ -3,12 +3,11 @@
 namespace RZP\Jobs;
 
 use Throwable;
-use Razorpay\Trace\Logger;
-
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Metric;
+use Razorpay\Trace\Logger;
 use RZP\Services\RazorXClient;
 use RZP\Models\FundAccount\Type;
 use RZP\Models\Feature\Constants;
@@ -20,6 +19,7 @@ use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Payment\Service as PaymentService;
 use RZP\Models\FundAccount\Validation\AccountStatus;
+use RZP\Models\FundAccount\Validation\Core as FAVCore;
 use RZP\Models\FundAccount\Validation\Processor\Factory;
 use RZP\Models\FundAccount\Validation\Constants as FavConstants;
 use RZP\Models\FundAccount\Validation\Processor\Vpa as VpaProcessor;
@@ -31,17 +31,22 @@ class FaVpaValidation extends Job
      */
     protected $favId;
 
+    protected $vpaInput;
+
     /**
      * Create a new job instance.
      *
      * @param string $mode
      * @param string $favId
+     * @param string $vpaInput
      */
-    public function __construct(string $mode, string $favId)
+    public function __construct(string $mode, string $favId, array $vpaInput = [])
     {
         parent::__construct($mode);
 
         $this->favId = $favId;
+
+        $this->vpaInput = $vpaInput;
     }
 
     /**
@@ -55,79 +60,104 @@ class FaVpaValidation extends Job
         {
             parent::handle();
 
-            /** @var Entity $faValidation */
-            $faValidation = $this->repoManager
-                                 ->fund_account_validation
-                                 ->findOrFail($this->favId);
-
-            $vpaProcessor = new VpaProcessor($faValidation);
-
-            $fundAccount = $faValidation->fundAccount;
-
-            $isPenniless = $faValidation->merchant->isFeatureEnabled(Constants::PENNILESS_VALIDATION);
-
-            $this->trace->info(
-                TraceCode::VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE,
-                [
-                    'account_type' => $fundAccount->getAccountType(),
-                    'id'           => $fundAccount->getId()
-                ]
-            );
-
-            if (($isPenniless === false) && ($fundAccount->getAccountType() !== Type::VPA))
-            {
-                throw new LogicException("Invalid fund account type");
-            }
-
-            if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT))
-            {
-                $accountNumber = $fundAccount->account->getAccountNumber();
-
-                $ifsc = $fundAccount->account->getIfscCode();
-
-                $vpaInput = [
-                    'vpa'         => $accountNumber . "@" . $ifsc . ".ifsc.npci",
-                    'merchant_id' => $fundAccount->getMerchantId(),
-                ];
-            }
-            else
+            if (empty($this->vpaInput) === false)
             {
                 $vpaInput = [
-                    'vpa'         => $fundAccount->account->getAddress(),
-                    'merchant_id' => $fundAccount->getMerchantId(),
+                    'vpa'         => $this->vpaInput['vpa'],
+                    'merchant_id' => $this->vpaInput['merchant_id']
                 ];
-            }
 
-            $this->trace->info(
-                TraceCode::VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE,
-                $vpaInput
-            );
-
-            $data = $this->getVpaValidateResponse($vpaInput);
-
-            if ((array_key_exists('fav_status', $data)) && ($data['fav_status'] === Status::COMPLETED))
-            {
-                $faValidation->setRegisteredName($data['name']);
-
-                $accountStatus = array_key_exists('account_status', $data) ? $data['account_status'] : null;
-
-                $name = array_key_exists('name', $data) ? $data['name'] : null;
-
-                $success = array_key_exists('success', $data) ? $data['success'] : null;
+                $data = $this->getVpaValidateResponse($vpaInput);
 
                 $traceable = [
-                    'isPenniless'      =>  $isPenniless,
-                    'account_status'   =>  $accountStatus,
-                    'customer_name'    =>  $name,
-                    'fav_status'       =>  $data['fav_status'],
-                    'id'               =>  $faValidation->getId(),
-                    'success'          =>  $success
+                    'merchant_id'    => $this->vpaInput['merchant_id'],
+                    'fav_id'         => $this->vpaInput['fav_id'],
+                    'success'        => $data['success'],
+                    'account_status' => $data['account_status'],
+                    'customer_name'  => $data['name'],
+                    'fav_status'     => $data['fav_status'],
                 ];
 
                 $this->trace->info(
                     TraceCode::VPA_VALIDATION_FINAL_RESPONSE,
                     $traceable
                 );
+
+                $favCore = new FAVCore();
+
+                $favCore->updateFavInMicroservice($this->favId, $data);
+
+            }
+            else {
+
+                /** @var Entity $faValidation */
+                $faValidation = $this->repoManager
+                    ->fund_account_validation
+                    ->findOrFail($this->favId);
+
+                $vpaProcessor = new VpaProcessor($faValidation);
+
+                $fundAccount = $faValidation->fundAccount;
+
+                $isPenniless = $faValidation->merchant->isFeatureEnabled(Constants::PENNILESS_VALIDATION);
+
+                $this->trace->info(
+                    TraceCode::VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE,
+                    [
+                        'account_type' => $fundAccount->getAccountType(),
+                        'id' => $fundAccount->getId()
+                    ]
+                );
+
+                if (($isPenniless === false) && ($fundAccount->getAccountType() !== Type::VPA)) {
+                    throw new LogicException("Invalid fund account type");
+                }
+
+                if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT)) {
+                    $accountNumber = $fundAccount->account->getAccountNumber();
+
+                    $ifsc = $fundAccount->account->getIfscCode();
+
+                    $vpaInput = [
+                        'vpa' => $accountNumber . "@" . $ifsc . ".ifsc.npci",
+                        'merchant_id' => $fundAccount->getMerchantId(),
+                    ];
+                } else {
+                    $vpaInput = [
+                        'vpa' => $fundAccount->account->getAddress(),
+                        'merchant_id' => $fundAccount->getMerchantId(),
+                    ];
+                }
+
+                $this->trace->info(
+                    TraceCode::VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE,
+                    $vpaInput
+                );
+
+                $data = $this->getVpaValidateResponse($vpaInput);
+
+                if ((array_key_exists('fav_status', $data)) && ($data['fav_status'] === Status::COMPLETED)) {
+                    $faValidation->setRegisteredName($data['name']);
+
+                    $accountStatus = array_key_exists('account_status', $data) ? $data['account_status'] : null;
+
+                    $name = array_key_exists('name', $data) ? $data['name'] : null;
+
+                    $success = array_key_exists('success', $data) ? $data['success'] : null;
+
+                    $traceable = [
+                        'isPenniless' => $isPenniless,
+                        'account_status' => $accountStatus,
+                        'customer_name' => $name,
+                        'fav_status' => $data['fav_status'],
+                        'id' => $faValidation->getId(),
+                        'success' => $success
+                    ];
+
+                    $this->trace->info(
+                        TraceCode::VPA_VALIDATION_FINAL_RESPONSE,
+                        $traceable
+                    );
 
                 if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT))
                 {
@@ -141,41 +171,38 @@ class FaVpaValidation extends Job
                             $traceable
                         );
 
-                        $vpaProcessor->markValidationAsCompleted($data['account_status'],
-                            errDesc: FavConstants::PENNILESS);
+                            $vpaProcessor->markValidationAsCompleted($data['account_status'],
+                                errDesc: FavConstants::PENNILESS);
+                        }
+                        else
+                        {
+                            $this->handlePennilessVPAValidationFailure($faValidation, $traceable);
+                        }
                     }
                     else
                     {
-                        $this->handlePennilessVPAValidationFailure($faValidation, $traceable);
+                        $vpaProcessor->markValidationAsCompleted($data['account_status']);
                     }
                 }
                 else
                 {
-                    $vpaProcessor->markValidationAsCompleted($data['account_status']);
+                    $traceable = [
+                        'fav_status' => $data['fav_status'],
+                        'id' => $faValidation->getId()
+                    ];
+
+                    $this->trace->info(
+                        TraceCode::VPA_VALIDATION_FINAL_RESPONSE,
+                        $traceable
+                    );
+
+                    if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT)) {
+                        $this->handlePennilessVpaValidationFailure($faValidation, $traceable);
+                    } else {
+                        $vpaProcessor->markValidationAsFailed();
+                    }
                 }
             }
-            else
-            {
-                $traceable = [
-                    'fav_status'  =>  $data['fav_status'],
-                    'id'          =>  $faValidation->getId()
-                ];
-
-                $this->trace->info(
-                    TraceCode::VPA_VALIDATION_FINAL_RESPONSE,
-                    $traceable
-                );
-
-                if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT))
-                {
-                    $this->handlePennilessVpaValidationFailure($faValidation, $traceable);
-                }
-                else
-                {
-                    $vpaProcessor->markValidationAsFailed();
-                }
-            }
-
         }
         catch (RuntimeException $e)
         {
@@ -364,33 +391,54 @@ class FaVpaValidation extends Job
 
     protected function handleFavException(Throwable $e, string $traceCode)
     {
-        $faValidation = $this->repoManager
-            ->fund_account_validation
-            ->findOrFail($this->favId);
-
-        $fundAccount = $faValidation->fundAccount;
-
-        $isPenniless = $faValidation->merchant->isFeatureEnabled(Constants::PENNILESS_VALIDATION);
-
-        if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT))
+        if (empty($this->vpaInput) === false)
         {
-            $traceable = [
-                'id'        => $faValidation->getId(),
-                'exception' => $e
+            $favCore = new FAVCore();
+
+            $data = [
+                'error'  => $e->getMessage()
             ];
 
-            $this->handlePennilessVpaValidationFailure($faValidation, $traceable);
-        }
-        else
-        {
+            $favCore->updateFavInMicroservice($this->favId, $data);
+
             $this->trace->traceException(
                 $e,
                 Logger::ERROR,
                 $traceCode,
                 [
-                    'fa_validation_id' => $this->favId
+                    'vpa' => $this->vpaInput['vpa'],
+                    'merchant_id' => $this->vpaInput['merchant_id'],
                 ]
             );
+        }
+        else
+        {
+
+            $faValidation = $this->repoManager
+                ->fund_account_validation
+                ->findOrFail($this->favId);
+
+            $fundAccount = $faValidation->fundAccount;
+
+            $isPenniless = $faValidation->merchant->isFeatureEnabled(Constants::PENNILESS_VALIDATION);
+
+            if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT)) {
+                $traceable = [
+                    'id' => $faValidation->getId(),
+                    'exception' => $e
+                ];
+
+                $this->handlePennilessVpaValidationFailure($faValidation, $traceable);
+            } else {
+                $this->trace->traceException(
+                    $e,
+                    Logger::ERROR,
+                    $traceCode,
+                    [
+                        'fa_validation_id' => $this->favId
+                    ]
+                );
+            }
         }
     }
 }

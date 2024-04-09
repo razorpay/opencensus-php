@@ -54,10 +54,29 @@ class Entity extends Base\PublicEntity
     // Key for the response
     const FUND_ACCOUNT          = 'fund_account';
 
+    const CONTACT               = 'contact';
+
     // Key for retry API
     const FUND_ACCOUNT_VALIDATION_IDS   = 'fund_account_validation_ids';
 
+    const VALIDATION_TYPE        = 'validation_type';
+
+    const SOURCE_ACCOUNT_NUMBER  = 'source_account_number';
+
+    const REFERENCE_ID           = 'reference_id';
+
+    const ACCOUNT_TYPE           = 'account_type';
+
+    const ERROR                  = 'error';
+
+    const IS_COMPOSITE           = 'isComposite';
+
+//    TODO: add it in fillable and visible
+    const IS_CREATED_USING_FAV_SERVICE = 'IS_CREATED_USING_FAV_SERVICE';
+
     protected $entity = Constants\Entity::FUND_ACCOUNT_VALIDATION;
+
+    public $favServiceResponse;
 
     const PUBLIC_ENTITY_NAME = 'fund_account.validation';
 
@@ -168,6 +187,11 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------- Setters --------------
+
+    public function setIsCreatedUsingFavService(int $isCreatedUsingFavService = 0)
+    {
+        $this->setAttribute(self::IS_CREATED_USING_FAV_SERVICE, $isCreatedUsingFavService);
+    }
 
     public function setAmount(int $amount = null)
     {
@@ -298,6 +322,11 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------- Getters --------------
+
+    public function isCreatedUsingFavService()
+    {
+        return $this->getAttribute(self::IS_CREATED_USING_FAV_SERVICE);
+    }
 
     public function getBalanceId()
     {

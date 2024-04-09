@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Attempt;
@@ -46,7 +47,27 @@ class Service extends Base\Service
 
         $entity = $this->core->create($input, $this->merchant);
 
+        if($entity->isCreatedUsingFavService())
+        {
+            return $entity->favServiceResponse;
+        }
+
         return $entity->toArrayPublic();
+    }
+
+    public function validateVpaInternal(array $input)
+    {
+        // check that the auth in internal
+        if ($this->auth->isPrivilegeAuth() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        $this->trace->info(TraceCode::VPA_VALIDATION_REQUEST_FROM_MICROSERVICE, [
+            'input' => $input
+        ]);
+
+        return $this->core->validateVpa($input);
     }
 
     public function fetchMultiple(array $input): array
