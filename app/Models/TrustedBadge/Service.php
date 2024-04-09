@@ -77,6 +77,12 @@ class Service extends Base\Service
 
         $action = $input['action'];
 
+        $statusToUpdate = $status;
+
+        if ($action === "remove") {
+            $statusToUpdate = Entity::INELIGIBLE;
+        }
+
         $response = [
             'success' => 0,
             'failures' => [],
@@ -97,18 +103,13 @@ class Service extends Base\Service
                      * We should remove merchant from blacklist if and only if they are already in blacklist.
                      * similarly, remove them from whitelist if and only if they are already in whitelist
                      */
-                    if ($currentTrustedBadge[Entity::STATUS] === $status)
-                    {
-                        $status = Entity::INELIGIBLE;
-                    }
-                    else
-                    {
+                    if ($currentTrustedBadge[Entity::STATUS] !== $status) {
                         $response['success']++;
                         continue;
                     }
                 }
 
-                $this->core->upsertStatus($merchantId, $status);
+                $this->core->upsertStatus($merchantId, $statusToUpdate);
 
                 $response['success']++;
 
