@@ -169,6 +169,8 @@ class Metadata
 
     const OPGSP_SUPPORTED_LIBRARIES = [
         self::S2S,
+        self::RAZORPAYJS,
+        self::CHECKOUTJS,
     ];
 
     const JPMC_IMPORT_FLOW_SUPPORTED_LIBRARIES = [
