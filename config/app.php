@@ -869,4 +869,6 @@ return array(
     'onboarding_api_bmc_experiment_id'  => env('ONBOARDING_API_BMC_EXPERIMENT_ID'),
 
     'optimize_fetch_submerchants_experiment_id'  => env('OPTIMIZE_FETCH_SUBMERCHANTS_EXPERIMENT_ID'),
+
+    'migrate_partner_increase_resources_exp_id'  => env('MIGRATE_PARTNER_INCREASE_RESOURCES_EXP_ID'),
 );

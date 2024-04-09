@@ -284,6 +284,25 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_REQUEST, $traceInfo);
         $result = null;
 
+        $properties = [
+            'id'            => $input["merchant_id"],
+            'experiment_id' => $this->app['config']->get('app.migrate_partner_increase_resources_exp_id'),
+        ];
+
+        $isExpEnabled = $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
+
+        if ($isExpEnabled === true)
+        {
+            $this->trace->info(TraceCode::ADMIN_PARTNER_MIGRATION_RESOURCES_LIMIT, [
+                'flow'     => "Migrate Reseller to Aggregator",
+                'message' => "Increasing resources limit"
+            ]);
+
+            RuntimeManager::setTimeLimit(500);
+            RuntimeManager::setMaxExecTime(500);
+            RuntimeManager::setMemoryLimit('1024M');
+        }
+
         try
         {
             $result = $this->core()->migrateResellerToAggregatorPartner($input);
