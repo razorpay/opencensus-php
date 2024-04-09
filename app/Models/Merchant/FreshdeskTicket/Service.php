@@ -1914,7 +1914,7 @@ class Service extends Base\Service
             $input['email'] = $this->merchant->getEmail() ?? $this->user->getEmail();
         }
 
-        $pattern = '/^[a-zA-Z0-9,| -]+$/';
+        $pattern = '/^[a-zA-Z0-9,|\/\\\ -:\[\]]+$/';
 
         $subject = $input[Constants::SUBJECT];
 
