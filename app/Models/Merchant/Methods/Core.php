@@ -696,6 +696,19 @@ class Core extends Base\Core
                 {
                     $recurringData['emandate'][$ifsc]['auth_types'][] = $authType;
                     $recurringData['emandate'][$ifsc]['name'] = $name;
+
+                    $mergedBankIfsc = Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$ifsc] ?? null;
+
+                    if($mergedBankIfsc !== null)
+                    {
+                        $recurringData['emandate'][$ifsc]['is_merged_bank'] = true;
+
+                        $recurringData['emandate'][$ifsc]['bank_code'] = $mergedBankIfsc;
+                    }
+                    else
+                    {
+                        $recurringData['emandate'][$ifsc]['is_merged_bank'] = false;
+                    }
                 }
             }
         }

@@ -511,9 +511,14 @@ class Core extends Base\Core
             // mapping merged banks
             if ($tokenRegistration->getMethod() === Methods\Entity::EMANDATE)
             {
+                if ($order->getMethod() === Methods\Entity::EMANDATE && $order->getBank() !== null)
+                {
+                    $data[Entity::BANK] = $order->getBank();
+                }
+
                 if(empty($data[Entity::BANK]) === false)
                 {
-                    $mappedBank = Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$data[Entity::BANK]] ?? null;
+                    $mappedBank = Payment\Gateway::ENACH_NPCI_BANKS_WITH_DIFFERENT_IFSC_CODE_MAPPING[$data[Entity::BANK]] ?? null;
 
                     if ($mappedBank !== null)
                     {

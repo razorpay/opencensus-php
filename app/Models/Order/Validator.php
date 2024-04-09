@@ -587,11 +587,14 @@ class Validator extends Base\Validator
             {
                 $isMergedBank = isset(Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$order->getBank()]);
 
+                $isMismatchIfsc = isset(Payment\Gateway::ENACH_NPCI_BANKS_WITH_DIFFERENT_IFSC_CODE_MAPPING[$order->getBank()]);
+
                 $this->trace->info(TraceCode::EMANDATE_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK,
                     [
-                        "order_bank"   => $order->getBank(),
-                        "payment_bank" => $bank,
-                        "is_merged_bank"  => $isMergedBank
+                        "order_bank"        => $order->getBank(),
+                        "payment_bank"      => $bank,
+                        "is_merged_bank"    => $isMergedBank,
+                        "is_mismatch_ifsc"  => $isMismatchIfsc
                     ]);
 
                 if($isMergedBank === true)
