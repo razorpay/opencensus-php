@@ -16766,6 +16766,10 @@ class Route
             'internal_merchant_fetch',
         ],
 
+        'capital_lender' => [
+            'subscription_registration_create_links',
+        ],
+
         'capital_cards_m2p' =>[
             'capital_cards_m2p_webhook',
         ],
