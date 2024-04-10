@@ -31,6 +31,7 @@ export interface BaseScheduleType {
     };
     month: {
       start: number;
+      end?: number;
     };
     week: {
       start: number;

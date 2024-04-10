@@ -108,6 +108,7 @@ export const getWhenScheduleDetails = ({ whenTime, selectedRepetition, selectedD
           ...baseWhenScheduleConfig.task,
           month: {
             start: -3,
+            end: -1,
           },
         },
       };
@@ -188,7 +189,8 @@ export const getSelectedDataDuration = (scheduleData: ScheduleType) => {
       };
     case scheduleData?.task?.month?.start === -3 &&
       scheduleData?.interval === 3 &&
-      scheduleData?.task.type === 'monthly':
+      scheduleData?.task.type === 'monthly' &&
+      scheduleData?.task?.month?.end === -1:
       return {
         whenTime,
         ...checkSelectedDataDuration('previous_quarter'),
