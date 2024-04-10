@@ -13,11 +13,11 @@ import {
 
 // constants
 import {
-  ONBOARDING_MAGIC_KONNECT_USER,
+  getMagicKonnectSlideDetails,
   MAGIC_KONNECT_BANNER,
 } from 'merchant/views/MagicKonnect/constants';
 
-const FirstSlide = ({ openOnboardingForm, primaryCta, setSlideState }) => {
+const FirstSlide = ({ openOnboardingForm, primaryCta, setSlideState, businessName }) => {
   return (
     <StyledOnboardingSlide className="OnBoarding--ImageSlide OnBoarding--Landing OnBoarding--Slide">
       <StyledOnboardingImg className="Landing--Image">
@@ -25,12 +25,16 @@ const FirstSlide = ({ openOnboardingForm, primaryCta, setSlideState }) => {
       </StyledOnboardingImg>
       <div className="Product--Details">
         <div className="Details-heading">
-          <span className="dash" /> {ONBOARDING_MAGIC_KONNECT_USER.SLIDE_ONE.product}
+          <span className="dash" /> {getMagicKonnectSlideDetails(businessName).SLIDE_ONE.product}
         </div>
         <div className="Details-title">
-          <div className="Details-title">{ONBOARDING_MAGIC_KONNECT_USER.SLIDE_ONE.title}</div>
+          <div className="Details-title">
+            {getMagicKonnectSlideDetails(businessName).SLIDE_ONE.title}
+          </div>
         </div>
-        <div className="Details-desc">{ONBOARDING_MAGIC_KONNECT_USER.SLIDE_ONE.description}</div>
+        <div className="Details-desc">
+          {getMagicKonnectSlideDetails(businessName).SLIDE_ONE.description}
+        </div>
         <StyledButtonContainer className="Button-Container">
           <Button type="button" variant="primary" marginRight="5px" onClick={openOnboardingForm}>
             {primaryCta || 'Get Started'}

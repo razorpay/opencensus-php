@@ -10,13 +10,21 @@ import {
 } from 'merchant/views/MagicKonnect/styled';
 
 //constants
-import { features, ONBOARDING_MAGIC_KONNECT_USER } from 'merchant/views/MagicKonnect/constants';
+import { features, getMagicKonnectSlideDetails } from 'merchant/views/MagicKonnect/constants';
 
-const SecondSlide = ({ navigateBack, openOnboardingForm, secondaryCta, isExistingUser }) => {
+const SecondSlide = ({
+  navigateBack,
+  openOnboardingForm,
+  secondaryCta,
+  isExistingUser,
+  businessName,
+}) => {
   return (
     <StyledOnboardingSlide className="OnBoarding--Features konnect-onboarding-features">
       <div className="Header">
-        <div className="Header-title">{ONBOARDING_MAGIC_KONNECT_USER.SLIDE_TWO.title}</div>
+        <div className="Header-title">
+          {getMagicKonnectSlideDetails(businessName).SLIDE_TWO.title}
+        </div>
         <div className="Header-external-links" />
       </div>
       <StyledFeaturesContainer className="Features konnect-features">

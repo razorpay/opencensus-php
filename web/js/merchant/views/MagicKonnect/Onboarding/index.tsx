@@ -15,6 +15,7 @@ const MagicKonnectOnboarding = ({
   primaryCta = '',
   secondaryCta = '',
   isExistingUser,
+  businessName,
 }) => {
   const [slideState, setSlideState] = useState({
     activeSlide: 'about',
@@ -51,6 +52,7 @@ const MagicKonnectOnboarding = ({
                   openOnboardingForm={onClickNextCtaAction}
                   primaryCta={primaryCta}
                   setSlideState={setSlideState}
+                  businessName={businessName}
                 />
               ) : (
                 <SecondSlide
@@ -58,6 +60,7 @@ const MagicKonnectOnboarding = ({
                   openOnboardingForm={onClickNextCtaAction}
                   secondaryCta={secondaryCta}
                   isExistingUser={isExistingUser}
+                  businessName={businessName}
                 />
               )}
             </StyledSlider>

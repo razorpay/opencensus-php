@@ -2,13 +2,13 @@ import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
 import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
-import { ONBOARDING_MAGIC_KONNECT_USER } from '../../constants';
+import { getMagicKonnectSlideDetails } from '../../constants';
 
 import MagicKonnectOnboarding from 'merchant/views/MagicKonnect/Onboarding';
 
 const INIT_PROPS = {
   onClickNextCtaAction: jest.fn(),
-  slideLabels: ONBOARDING_MAGIC_KONNECT_USER,
+  slideLabels: getMagicKonnectSlideDetails(''),
   isLoading: false,
   primaryCta: 'Login to Magic Konnect',
   secondaryCta: '',

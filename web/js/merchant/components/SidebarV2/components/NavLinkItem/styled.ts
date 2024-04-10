@@ -65,12 +65,20 @@ export const Typo = styled.span`
   font-size: 14px;
 `;
 
-export const Icon = styled.i`
+const IconImageStyles = css`
   display: flex;
   margin: 0 12px 0 16px;
   max-width: 18px;
   min-width: 15px;
   justify-content: center;
+`;
+
+export const Icon = styled.i`
+  ${IconImageStyles}
+`;
+
+export const ImageStyled = styled.img`
+  ${IconImageStyles}
 `;
 
 export const NewTag = styled.span`

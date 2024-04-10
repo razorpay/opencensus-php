@@ -140,4 +140,39 @@ describe('NavLinkItem', () => {
       '/payment-methods?instrument=international',
     );
   });
+
+  test('should render image when image prop is passed instead of logo', () => {
+    const dummyUrl = 'https://dummyurl.com/image.png';
+    renderApp({
+      props: {
+        title: 'Magic Konnect',
+        product_id: 'magic_konnect',
+        image: dummyUrl,
+        routes: {
+          magic_konnect: '/magic-konnect',
+        },
+      },
+    });
+
+    expect(screen.getByAltText('Magic Konnect')).toBeInTheDocument();
+    const imageElement = screen.getByAltText('Magic Konnect');
+    expect(imageElement).toBeInTheDocument();
+    expect(imageElement).toHaveAttribute('src', dummyUrl);
+    expect(document.querySelector('i')).not.toBeInTheDocument();
+  });
+
+  test('shoud render icon only when image is not passed in prop', () => {
+    renderApp({
+      props: {
+        title: 'Magic Konnect',
+        product_id: 'magic_konnect',
+        routes: {
+          magic_konnect: '/magic-konnect',
+        },
+      },
+    });
+
+    expect(screen.getByText('Magic Konnect')).toBeInTheDocument();
+    expect(screen.queryByAltText('Magic Konnect')).not.toBeInTheDocument();
+  });
 });

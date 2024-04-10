@@ -3,16 +3,18 @@ import magicKonnectMarketing from 'assets/magic-konnect/magic-konnect-marketing.
 import magicKonnectCommerce from 'assets/magic-konnect/magic-konnect-commerce.svg';
 import magicKonnectSupport from 'assets/magic-konnect/magic-konnect-support.svg';
 
-export const ONBOARDING_MAGIC_KONNECT_USER = {
-  SLIDE_ONE: {
-    product: 'Razorpay',
-    title: 'Magic Konnect',
-    description: 'An end to end WhatsApp engagement suite for your business',
-  },
-  SLIDE_TWO: {
-    product: 'Razorpay',
-    title: 'Unlock next level of business growth with Magic Konnect',
-  },
+export const getMagicKonnectSlideDetails = (businessName = 'Razorpay') => {
+  return {
+    SLIDE_ONE: {
+      product: businessName,
+      description: 'An end to end WhatsApp engagement suite for your business',
+      title: 'Magic Konnect',
+    },
+    SLIDE_TWO: {
+      product: businessName,
+      title: 'Unlock next level of business growth with Magic Konnect',
+    },
+  };
 };
 
 export const features = [

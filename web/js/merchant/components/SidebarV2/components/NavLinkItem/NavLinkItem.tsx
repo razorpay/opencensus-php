@@ -15,7 +15,15 @@ import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import SelectedSidebarBackground from 'assets/sidebar/sidebar-selected.svg';
 import Image from 'common/ui/Image';
 
-import { BadgeContainer, Icon, LinkButtonItem, LinkItem, LinkItemV2, Typo } from './styled';
+import {
+  BadgeContainer,
+  Icon,
+  ImageStyled,
+  LinkButtonItem,
+  LinkItem,
+  LinkItemV2,
+  Typo,
+} from './styled';
 import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 
 const CustomBadge = ({ text }: { text: string }) => {
@@ -54,6 +62,7 @@ const NavLinkItem = ({
   product_id,
   section,
   location,
+  image,
   toggleMobileMenu,
 }: NavLinkItemInterface & WithRouterProps): JSX.Element | null => {
   const { abExperiments } = useSplitzService();
@@ -121,7 +130,11 @@ const NavLinkItem = ({
           isActive={activeTab === product_id}
           onClick={onNavLinkItemClick}
         >
-          <Icon className={`i ${icon}`} />
+          {image ? (
+            <ImageStyled height="15px" width="15px" src={image} alt={title} />
+          ) : (
+            <Icon className={`i ${icon}`} />
+          )}
           <Text
             color={
               activeTab === product_id ? 'surface.text.gray.normal' : 'surface.text.gray.subtle'

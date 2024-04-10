@@ -20,6 +20,7 @@ import {
 } from 'merchant/components/Activation/ActivationUtils';
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
+import MagicKonnect from 'assets/magicKonnectLogo.png';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
 
 function MerchantNavLinks(props) {
@@ -145,6 +146,18 @@ function MerchantNavLinks(props) {
           currentUser.isAllowedView('invoices') && !isConfigTagEnabled('invoices.invoice')
         }
       />
+
+      <MainNavLink
+        label="Magic Konnect"
+        type="product"
+        image={MagicKonnect}
+        to={routes.magicKonnect}
+        isNew={true}
+        additionalCondition={(currentUser) =>
+          currentUser.isMagicKonnectEnabled && showMagicKonnectTab
+        }
+      />
+
       <MainNavLink
         label="Payment Links"
         type="product"
@@ -301,16 +314,6 @@ function MerchantNavLinks(props) {
           />
         )}
       </MagicCheckoutNavLink>
-
-      <MainNavLink
-        label="Magic Konnect"
-        type="product"
-        icon="i i-magic-konnect"
-        to={routes.magicKonnect}
-        additionalCondition={(currentUser) =>
-          currentUser.isMagicKonnectEnabled && showMagicKonnectTab
-        }
-      />
 
       <MainNavLink
         label="BBPS"

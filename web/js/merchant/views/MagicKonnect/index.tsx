@@ -13,7 +13,7 @@ import { useStore } from 'shell/commonStore';
 // api
 import { getJwtTokenForMagicKonnect } from './api';
 
-const MagicKonnect = ({ user }) => {
+const MagicKonnect = ({ user, org }) => {
   const showNotification = useStore((state) => state.showNotification);
   const { abExperiments } = useSplitzService();
   const shouldShowMagicKonnectLoginCta =
@@ -58,6 +58,7 @@ const MagicKonnect = ({ user }) => {
         primaryCta="Login to Magic Konnect"
         isLoading={isLoading}
         isExistingUser={true}
+        businessName={org.businessName}
       />
     );
   }
@@ -68,12 +69,14 @@ const MagicKonnect = ({ user }) => {
       onClickNextCtaAction={onClickNextCtaActionNewUser}
       isLoading={isLoading}
       isExistingUser={false}
+      businessName={org.businessName}
     />
   );
 };
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  org: state.session.org,
 });
 
 export default connect(mapStateToProps, null)(MagicKonnect);

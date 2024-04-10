@@ -6,6 +6,7 @@ import { ConfigTagType } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
+import magicKonnectLogo from 'assets/magicKonnectLogo.png';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
 
 export type ExtraConfig = {
@@ -102,6 +103,7 @@ export const PRODUCTS_DATA = {
   },
   magic_konnect: {
     icon: 'i-magic-konnect',
+    image: magicKonnectLogo,
     additionalCondition: (user: any, extraConfig: ExtraConfig) =>
       user.isMagicKonnectEnabled && isExperimentEnabled(extraConfig?.abExperiments?.magic_konnect),
   },

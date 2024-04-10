@@ -72,6 +72,7 @@ export interface NavLinkItemInterface extends RouteComponentProps {
   section?: string;
   type?: string;
   heading: string;
+  image?: string;
   toggleMobileMenu: () => void;
 }
 
