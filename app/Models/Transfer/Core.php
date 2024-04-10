@@ -2168,7 +2168,24 @@ class Core extends Base\Core
 
     public function fetchJournalIdFromLedgerForTransfer(Transfer\Entity $transfer, string $merchant)
     {
-        $journal = $this->fetchJournalFromLedgerForTransfer($transfer, $merchant);
+        try
+        {
+            $journal = $this->fetchJournalFromLedgerForTransfer($transfer, $merchant);
+        }
+        catch (\RZP\Exception\BaseException $ex)
+        {
+            $exceptionData = $ex->getData();
+
+            // If no journal found
+            if (str_contains($exceptionData['response_body']['msg'], 'record_not_found'))
+            {
+                return [null, null];
+            }
+            else
+            {
+                throw $ex;
+            }
+        }
 
         return (new LedgerOutbox\Core)->determineJournalIdForAPITransaction($journal, "merchant_balance", "merchant_balance");
     }

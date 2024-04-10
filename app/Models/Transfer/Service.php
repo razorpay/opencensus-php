@@ -20,6 +20,7 @@ use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
 use RZP\Jobs\TransferProcess;
 use RZP\Exception\LogicException;
+use RZP\Jobs\UpdateMerchantContext;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstant;
@@ -1398,7 +1399,7 @@ class Service extends Base\Service
                 // To process order transfers in pending state.
                 // Data should be array of payment IDs
                 // Sample payload:
-                // {"option": "payment_transfer", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+                // {"option": "order_transfer", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
 
                 $this->trace->info(
                     TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
@@ -1502,6 +1503,12 @@ class Service extends Base\Service
 
                     $transfer->setStatus(Status::PENDING);
 
+                    $transfer->setErrorCode(null);
+
+                    $transfer->setMessage(null);
+
+                    $transfer->setAttempts(1);
+
                     $transfer->saveOrFail();
                 }
 
@@ -1588,6 +1595,8 @@ class Service extends Base\Service
                             $transfer->setErrorCode(null);
 
                             $transfer->setMessage(null);
+
+                            $transfer->setAttempts(1);
                         }
 
                         $transfer->setStatus(Status::PROCESSED);
@@ -1598,6 +1607,37 @@ class Service extends Base\Service
 
                         $this->core->createTransactionForTransferViaCron([$transferId]);
                     }
+                }
+
+                break;
+            }
+
+            case 'remove_on_hold':
+            {
+                // To remove the on_hold from transfers
+                // Data should be array of transfer IDs
+                // Sample payload:
+                // {"option": "mark_processed", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'remove_on_hold',
+                        'input'  => $input,
+                    ]
+                );
+
+                $transferIds = $input['data'];
+
+                foreach ($transferIds as $transferId)
+                {
+                    $transfer = $this->repo->transfer->findOrFail($transferId);
+
+                    $transferInput = [];
+
+                    $transferInput[Entity::ON_HOLD] = false;
+
+                    $this->core->edit($transfer, $transferInput);
                 }
 
                 break;
@@ -1633,7 +1673,7 @@ class Service extends Base\Service
                 // To fix the amount_transferred in payment entity or transfer_payment entity
                 // Data should be array of payment IDs
                 // Sample payload:
-                // {"option": "create_txns", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+                // {"option": "create_txns", "data": ["pay_NPBxWRRn778Om9", "pay_X2xpdmU6d29hM1"]}
 
                 $this->trace->info(
                     TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
@@ -1649,6 +1689,83 @@ class Service extends Base\Service
                 {
                     (new Payment\Service())->fixTransferAmountTransferred($paymentId, []);
                 }
+
+                break;
+            }
+
+            case 'create_la_payment':
+            {
+                // To create the LA payment for transfer IDs
+                // Data should be array of transfer IDs
+                // Sample payload:
+                // {"option": "create_la_payment", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'input' => $input,
+                        'option' => 'create_payment',
+                    ]
+                );
+
+                $transferIds = $input['data'];
+
+                foreach ($transferIds as $transferId)
+                {
+                    $transfer = $this->repo->transfer->findOrFail($transferId);
+
+                    $sourcePayment = null;
+
+                    $transferProcessor = null;
+
+                    if ($transfer->getSourceType() === Constant::PAYMENT)
+                    {
+                        $sourcePayment = $transfer->source;
+
+                        $transferProcessor = new OrderTransfer($sourcePayment);
+                    }
+                    else if ($transfer->getSourceType() === Constant::ORDER)
+                    {
+                        $sourceOrderId = $transfer->getSourceId();
+
+                        $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($sourceOrderId, $transfer->getMerchantId());
+
+                        $rearchPayments = $this->app['pg_router']->fetchOrderPayments($sourceOrderId, $transfer->getMerchantId());
+
+                        $allPayments = $apiPayments->merge($rearchPayments);
+
+                        $sourcePayment = null;
+
+                        foreach ($allPayments as $singlePayment)
+                        {
+                            if ($singlePayment->getStatus() === Payment\Status::CAPTURED || $singlePayment->getStatus === Payment\Status::REFUNDED)
+                            {
+                                $sourcePayment = $singlePayment;
+
+                                break;
+                            }
+                        }
+
+                        // fetching payment again to get from sources configured for archived entity
+                        // As of now, archived payment fetch with findOrFail happens on fallback replica
+                        // This will also prevent columns like _record_source from warm storage to be present in entity attributes
+                        $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
+
+                        $transferProcessor = new PaymentTransfer($sourcePayment);
+                    }
+
+                    $transferPayment = $transferProcessor->createTransferredEntity($transfer, $sourcePayment);
+
+                    $this->trace->info(
+                        TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                        [
+                            'status'              => 'success',
+                            'transfer_payment_id' => $transferPayment->getId(),
+                        ]
+                    );
+                }
+
+                break;
             }
 
             case 'unlock_la_form':
@@ -1694,11 +1811,54 @@ class Service extends Base\Service
                 break;
             }
 
+            case 'trigger_update_merchant_context':
+            {
+                // To trigger the UpdateMerchantContext job
+                // Data should be array of JSON of linked account ID and BVS validation ID
+                // Sample payload:
+                //  {
+                //      "option": "trigger_update_merchant_context",
+                //      "data": [
+                //                  {"linked_account_id": "NPBxWRRn778Om9", "bvs_id": "X2xpdmU6d29hM1"}
+                //              ]
+                //  }
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'trigger_update_merchant_context',
+                        'input'  => $input,
+                    ]
+                );
+
+                $linkedAccountsData = $input['data'];
+
+                foreach ($linkedAccountsData as $linkedAccountData)
+                {
+                    $linkedAccountId = $linkedAccountData['linked_account_id'];
+
+                    $bvsId = $linkedAccountData['bvs_id'];
+
+                    (new UpdateMerchantContext($this->mode, $linkedAccountId, $bvsId))->handle();
+                }
+
+                break;
+            }
+
+
             default:
             {
                 throw new LogicException('Option passed is invalid.');
             }
         }
+
+        $this->trace->info(
+            TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+            [
+                'option' => $option,
+                'status' => 'success',
+            ]
+        );
     }
 
     protected function syncSettlementStatus(array $settlementIds)
