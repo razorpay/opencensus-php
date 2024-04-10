@@ -3024,11 +3024,12 @@ class Processor
         }
     }
 
-    protected function validatePaymentForThreeDecimalCurrencies($input){
+    protected function validatePaymentForNonTwoDecimalCurrencies($input){
 
         $isThreeDecimalCurrency = in_array($input['currency'], Currency\Currency::THREE_DECIMAL_CURRENCIES, true);
+        $isZeroDecimalCurrency = in_array($input['currency'], Currency\Currency::ZERO_DECIMAL_CURRENCIES, true);
 
-        if ($isThreeDecimalCurrency === false)
+        if ($isThreeDecimalCurrency === false and $isZeroDecimalCurrency === false)
         {
             return;
         }
@@ -3045,7 +3046,7 @@ class Processor
         }
 
         $variantFlag = $this->app['razorx']->getTreatment($this->merchant->getId(),
-            RazorxTreatment::THREE_DECIMAL_CURRENCY_VALIDATION,
+            RazorxTreatment::NON_TWO_DECIMAL_CURRENCY_VALIDATION,
             $this->app['rzp.mode']);
 
         if ($variantFlag === "on"  ||
@@ -3194,7 +3195,7 @@ class Processor
 
             $this->fetchAndSetOrdertoCurrentContext($input);
 
-            $this->validatePaymentForThreeDecimalCurrencies($input);
+            $this->validatePaymentForNonTwoDecimalCurrencies($input);
 
             $this->preProcessForUpiIfApplicable($input);
 
@@ -3824,7 +3825,8 @@ class Processor
                 {
                     $input['dcc_currency'] = $paymentMeta->getGatewayCurrency();
 
-                    $dccInfo = (new Payment\Service)->getDCCInfo($payment->merchant->getId(), $payment->getAmount(), $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage(), null);
+                    $library = (new Payment\Service)->getLibraryFromPayment($payment);
+                    $dccInfo = (new Payment\Service)->getDCCInfo($payment->merchant->getId(), $payment->getAmount(), $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage(), null, $library);
 
                     $input['currency_request_id'] = $dccInfo['currency_request_id'];
                 }

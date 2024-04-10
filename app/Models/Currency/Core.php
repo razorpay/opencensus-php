@@ -301,6 +301,7 @@ class Core extends Base\Core
             Currency::BBD,
             Currency::BDT,
             Currency::BHD,
+            Currency::BIF,
             Currency::BMD,
             Currency::BND,
             Currency::BOB,
@@ -314,6 +315,7 @@ class Core extends Base\Core
             Currency::CRC,
             Currency::CUP,
             Currency::CZK,
+            Currency::DJF,
             Currency::DKK,
             Currency::DOP,
             Currency::DZD,
@@ -325,6 +327,7 @@ class Core extends Base\Core
             Currency::GHS,
             Currency::GIP,
             Currency::GMD,
+            Currency::GNF,
             Currency::GTQ,
             Currency::GYD,
             Currency::HKD,
@@ -336,9 +339,12 @@ class Core extends Base\Core
             Currency::ILS,
             Currency::INR,
             Currency::JMD,
+            Currency::JPY,
             Currency::KES,
             Currency::KGS,
             Currency::KHR,
+            Currency::KMF,
+            Currency::KRW,
             Currency::KWD,
             Currency::KYD,
             Currency::KZT,
@@ -368,8 +374,10 @@ class Core extends Base\Core
             Currency::PGK,
             Currency::PHP,
             Currency::PKR,
+            Currency::PYG,
             Currency::QAR,
             Currency::RUB,
+            Currency::RWF,
             Currency::SAR,
             Currency::SCR,
             Currency::SEK,
@@ -383,9 +391,14 @@ class Core extends Base\Core
             Currency::TRY,
             Currency::TTD,
             Currency::TZS,
+            Currency::UGX,
             Currency::USD,
             Currency::UYU,
             Currency::UZS,
+            Currency::VUV,
+            Currency::XAF,
+            Currency::XOF,
+            Currency::XPF,
             Currency::YER,
             Currency::ZAR,
         ];
@@ -395,9 +408,17 @@ class Core extends Base\Core
      * amount, code, symbol and exponent
      * @return array|null
      */
-    public function getSupportedCurrenciesDetails()
+    public function getSupportedCurrenciesDetails($isZeroExponentCurrencySupported=false)
     {
         $details = Currency::getDetails();
+
+        if(!$isZeroExponentCurrencySupported)
+        {
+            foreach (Currency::ZERO_DECIMAL_CURRENCIES as $currency)
+            {
+                unset($details[$currency]);
+            }
+        }
 
         return $details;
     }

@@ -1046,7 +1046,7 @@ final class RazorxTreatment
     /*
      * Razorx flag to enable/disable three decimal currency check for invoice and plugins flow
      */
-    const THREE_DECIMAL_CURRENCY_VALIDATION   = 'three_decimal_currency_validation';
+    const NON_TWO_DECIMAL_CURRENCY_VALIDATION   = 'non_two_decimal_currency_validation';
 
     /**
      * Razorx flag to stop sending order data from API to PG-Router
@@ -1078,4 +1078,6 @@ final class RazorxTreatment
      * Razorx flag to route fetch order to PG-Router Test Service
      */
     const ROUTE_ORDER_FETCH_TO_PG_ROUTER_TEST = 'route_order_fetch_to_pg_router_test';
+
+    const ZERO_EXPONENT_CURRENCY_SUPPORT = 'zero_exponent_currency_support';
 }

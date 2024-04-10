@@ -167,6 +167,10 @@ class Metadata
         self::LEGACYJS,
     ];
 
+    const SUPPORTED_LIBRARIES_FOR_ZERO_EXPONENT_CURRENCIES = [
+        self::S2S,
+    ];
+
     const OPGSP_SUPPORTED_LIBRARIES = [
         self::S2S,
         self::RAZORPAYJS,

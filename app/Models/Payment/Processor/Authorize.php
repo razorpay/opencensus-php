@@ -12,6 +12,7 @@ use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Constants\Country;
+use RZP\Exception\BadRequestException;
 use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
@@ -2276,6 +2277,8 @@ trait Authorize
             $this->validateLibraryForInternationalApps($payment, $input);
 
             $this->validateAddressIfPresentWithoutRedirect($payment, $input);
+
+            $this->validateCurrencySupport($payment, $input);
 
             $this->validateRecurringIfApplicable($payment, $input);
 
@@ -5024,8 +5027,9 @@ trait Authorize
             return;
         }
 
-        // Skip DCC for 3 Decimal Currencies
-        if(in_array($dccCurrency, Currency\Currency::THREE_DECIMAL_CURRENCIES, true) === true)
+        // Skip DCC for 0 and 3 exponent currencies
+        if(in_array($dccCurrency, Currency\Currency::THREE_DECIMAL_CURRENCIES, true) === true or
+            in_array($dccCurrency, Currency\Currency::ZERO_DECIMAL_CURRENCIES, true) === true)
         {
             return;
         }
@@ -5036,7 +5040,9 @@ trait Authorize
         }
 
         // Passing Method as Null Here, as we don't want to use Card Method's Currency Level Markup
-        $dccInfo = (new Payment\Service)->getDCCInfo($payment->merchant->getId(), $payment->getAmount(), $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage(), null);
+
+        $dccInfo = (new Payment\Service)->getDCCInfo($payment->merchant->getId(), $payment->getAmount(),
+            $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage(), null, Analytics\Metadata::DIRECT);
 
         $requestedCurrencyData = $dccInfo['all_currencies'][$dccCurrency];
 
@@ -12375,6 +12381,8 @@ trait Authorize
                 //Address validation if required
                 $this->validateAddressIfPresent($payment,$input);
 
+                $this->validateCurrencySupport($payment, $input);
+
                 $key = $payment->getCacheRedirectInputKey();
 
                 $inputDetails = $this->getInputDetails($payment, $key);
@@ -13199,6 +13207,35 @@ trait Authorize
                 null,
                 "Payment method not supported on this integration"
             );
+        }
+    }
+
+    protected function validateCurrencySupport(Payment\Entity $payment, array $input)
+    {
+        // check currency and dcc currency for zero exponent
+        // input[dcc_currency] is only set for redirection flow whereas
+        // payment->gateway_currency is set for checkoutjs flow.
+        if (in_array($payment->getCurrency(), Currency\Currency::ZERO_DECIMAL_CURRENCIES, true) === false and
+            in_array($payment->getGatewayCurrency(), Currency\Currency::ZERO_DECIMAL_CURRENCIES, true) === false and
+            (!isset($input['dcc_currency']) or
+                in_array($input['dcc_currency'], Currency\Currency::ZERO_DECIMAL_CURRENCIES, true) === false))
+        {
+            return;
+        }
+        // check if the library supports zero exponent currencies
+        if(in_array((new Payment\Service)->getLibraryFromPayment($payment),
+                Analytics\Metadata::SUPPORTED_LIBRARIES_FOR_ZERO_EXPONENT_CURRENCIES, true) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED, 'currency');
+        }
+        // check the experiment
+        $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
+            RazorxTreatment::ZERO_EXPONENT_CURRENCY_SUPPORT, $this->mode);
+        if (strtolower($variant) !== 'on')
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED, 'currency');
         }
     }
 

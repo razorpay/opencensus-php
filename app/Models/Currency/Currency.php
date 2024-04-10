@@ -15,6 +15,7 @@ class Currency
     const BBD = 'BBD';
     const BDT = 'BDT';
     const BHD = 'BHD';
+    const BIF = 'BIF';
     const BMD = 'BMD';
     const BND = 'BND';
     const BOB = 'BOB';
@@ -28,6 +29,7 @@ class Currency
     const CRC = 'CRC';
     const CUP = 'CUP';
     const CZK = 'CZK';
+    const DJF = 'DJF';
     const DKK = 'DKK';
     const DOP = 'DOP';
     const DZD = 'DZD';
@@ -39,6 +41,7 @@ class Currency
     const GHS = 'GHS';
     const GIP = 'GIP';
     const GMD = 'GMD';
+    const GNF = 'GNF';
     const GTQ = 'GTQ';
     const GYD = 'GYD';
     const HKD = 'HKD';
@@ -50,9 +53,12 @@ class Currency
     const ILS = 'ILS';
     const INR = 'INR';
     const JMD = 'JMD';
+    const JPY = 'JPY';
     const KES = 'KES';
     const KGS = 'KGS';
     const KHR = 'KHR';
+    const KMF = 'KMF';
+    const KRW = 'KRW';
     const KWD = 'KWD';
     const KYD = 'KYD';
     const KZT = 'KZT';
@@ -83,8 +89,10 @@ class Currency
     const PGK = 'PGK';
     const PHP = 'PHP';
     const PKR = 'PKR';
+    const PYG = 'PYG';
     const QAR = 'QAR';
     const RUB = 'RUB';
+    const RWF = 'RWF';
     const SAR = 'SAR';
     const SCR = 'SCR';
     const SEK = 'SEK';
@@ -98,9 +106,14 @@ class Currency
     const TRY = 'TRY';
     const TTD = 'TTD';
     const TZS = 'TZS';
+    const UGX = 'UGX';
     const USD = 'USD';
     const UYU = 'UYU';
     const UZS = 'UZS';
+    const VUV = 'VUV';
+    const XAF = 'XAF';
+    const XOF = 'XOF';
+    const XPF = 'XPF';
     const YER = 'YER';
     const ZAR = 'ZAR';
 
@@ -108,6 +121,22 @@ class Currency
         self::BHD,
         self::KWD,
         self::OMR,
+    ];
+
+    const ZERO_DECIMAL_CURRENCIES = [
+        self::BIF,
+        self::DJF,
+        self::GNF,
+        self::JPY,
+        self::KMF,
+        self::KRW,
+        self::PYG,
+        self::RWF,
+        self::UGX,
+        self::VUV,
+        self::XAF,
+        self::XOF,
+        self::XPF,
     ];
 
     const LRS_SUPPORTED_CURRENCIES = [
@@ -134,6 +163,7 @@ class Currency
         self::BBD => '052',
         self::BDT => '050',
         self::BHD => '048',
+        self::BIF => '108',
         self::BMD => '060',
         self::BND => '096',
         self::BOB => '068',
@@ -147,6 +177,7 @@ class Currency
         self::CRC => '188',
         self::CUP => '192',
         self::CZK => '203',
+        self::DJF => '262',
         self::DKK => '208',
         self::DOP => '214',
         self::DZD => '012',
@@ -158,6 +189,7 @@ class Currency
         self::GHS => '936',
         self::GIP => '292',
         self::GMD => '270',
+        self::GNF => '324',
         self::GTQ => '320',
         self::GYD => '328',
         self::HKD => '344',
@@ -169,9 +201,12 @@ class Currency
         self::ILS => '376',
         self::INR => '356',
         self::JMD => '388',
+        self::JPY => '392',
         self::KES => '404',
         self::KGS => '417',
         self::KHR => '116',
+        self::KMF => '174',
+        self::KRW => '410',
         self::KWD => '414',
         self::KYD => '136',
         self::KZT => '398',
@@ -201,8 +236,10 @@ class Currency
         self::PGK => '598',
         self::PHP => '608',
         self::PKR => '586',
+        self::PYG => '600',
         self::QAR => '634',
         self::RUB => '643',
+        self::RWF => '646',
         self::SAR => '682',
         self::SCR => '690',
         self::SEK => '752',
@@ -216,9 +253,14 @@ class Currency
         self::TRY => '949',
         self::TTD => '780',
         self::TZS => '834',
+        self::UGX => '800',
         self::USD => '840',
         self::UYU => '858',
         self::UZS => '860',
+        self::VUV => '548',
+        self::XAF => '950',
+        self::XOF => '952',
+        self::XPF => '953',
         self::YER => '886',
         self::ZAR => '710',
     ];
@@ -236,7 +278,10 @@ class Currency
         Country::BB => self::BBD,
         Country::BD => self::BDT,
         Country::BE => self::EUR,
+        Country::BF => self::XOF,
         Country::BH => self::BHD,
+        Country::BI => self::BIF,
+        Country::BJ => self::XOF,
         Country::BL => self::EUR,
         Country::BM => self::BMD,
         Country::BN => self::BND,
@@ -245,7 +290,11 @@ class Currency
         Country::BW => self::BWP,
         Country::BZ => self::BZD,
         Country::CA => self::CAD,
+        Country::CF => self::XAF,
+        Country::CG => self::XAF,
         Country::CH => self::CHF,
+        Country::CI => self::XOF,
+        Country::CM => self::XAF,
         Country::CN => self::CNY,
         Country::CO => self::COP,
         Country::CR => self::CRC,
@@ -253,6 +302,7 @@ class Currency
         Country::CY => self::EUR,
         Country::CZ => self::CZK,
         Country::DE => self::EUR,
+        Country::DJ => self::DJF,
         Country::DK => self::DKK,
         Country::DO => self::DOP,
         Country::DZ => self::DZD,
@@ -263,14 +313,18 @@ class Currency
         Country::FI => self::EUR,
         Country::FJ => self::FJD,
         Country::FR => self::EUR,
+        Country::GA => self::XAF,
         Country::GB => self::GBP,
         Country::GF => self::EUR,
         Country::GH => self::GHS,
         Country::GI => self::GIP,
         Country::GM => self::GMD,
+        Country::GN => self::GNF,
         Country::GP => self::EUR,
+        Country::GQ => self::XAF,
         Country::GR => self::EUR,
         Country::GT => self::GTQ,
+        Country::GW => self::XOF,
         Country::GY => self::GYD,
         Country::HK => self::HKD,
         Country::HN => self::HNL,
@@ -283,9 +337,12 @@ class Currency
         Country::IN => self::INR,
         Country::IT => self::EUR,
         Country::JM => self::JMD,
+        Country::JP => self::JPY,
         Country::KE => self::KES,
         Country::KG => self::KGS,
         Country::KH => self::KHR,
+        Country::KM => self::KMF,
+        Country::KR => self::KRW,
         Country::KW => self::KWD,
         Country::KY => self::KYD,
         Country::KZ => self::KZT,
@@ -302,6 +359,7 @@ class Currency
         Country::ME => self::EUR,
         Country::MF => self::EUR,
         Country::MK => self::MKD,
+        Country::ML => self::XOF,
         Country::MM => self::MMK,
         Country::MN => self::MNT,
         Country::MO => self::MOP,
@@ -313,6 +371,8 @@ class Currency
         Country::MX => self::MXN,
         Country::MY => self::MYR,
         Country::NA => self::NAD,
+        Country::NC => self::XPF,
+        Country::NE => self::XOF,
         Country::NG => self::NGN,
         Country::NI => self::NIO,
         Country::NL => self::EUR,
@@ -321,38 +381,47 @@ class Currency
         Country::NZ => self::NZD,
         Country::OM => self::OMR,
         Country::PE => self::PEN,
+        Country::PF => self::XPF,
         Country::PG => self::PGK,
         Country::PH => self::PHP,
         Country::PK => self::PKR,
         Country::PM => self::EUR,
         Country::PT => self::EUR,
+        Country::PY => self::PYG,
         Country::QA => self::QAR,
         Country::RE => self::EUR,
         Country::RU => self::RUB,
+        Country::RW => self::RWF,
         Country::SA => self::SAR,
         Country::SC => self::SCR,
         Country::SE => self::SEK,
-        Country::SI => self::EUR,
         Country::SG => self::SGD,
+        Country::SI => self::EUR,
         Country::SK => self::EUR,
         Country::SL => self::SLL,
         Country::SM => self::EUR,
+        Country::SN => self::XOF,
         Country::SO => self::SOS,
         Country::SS => self::SSP,
         Country::SV => self::SVC,
         Country::SZ => self::SZL,
+        Country::TD => self::XAF,
         Country::TF => self::EUR,
+        Country::TG => self::XOF,
         Country::TH => self::THB,
         Country::TR => self::TRY,
         Country::TT => self::TTD,
         Country::TZ => self::TZS,
+        Country::UG => self::UGX,
         Country::US => self::USD,
         Country::UY => self::UYU,
         Country::UZ => self::UZS,
         Country::VA => self::EUR,
+        Country::VU => self::VUV,
+        Country::WF => self::XPF,
         Country::YE => self::YER,
         Country::YT => self::EUR,
-        Country::ZA => self::ZAR
+        Country::ZA => self::ZAR,
     ];
 
     // Factor by which currency's more acceptable denomination is greater
@@ -367,6 +436,7 @@ class Currency
         self::BBD => 100,
         self::BDT => 100,
         self::BHD => 1000,
+        self::BIF => 1,
         self::BMD => 100,
         self::BND => 100,
         self::BOB => 100,
@@ -380,6 +450,7 @@ class Currency
         self::CRC => 100,
         self::CUP => 100,
         self::CZK => 100,
+        self::DJF => 1,
         self::DKK => 100,
         self::DOP => 100,
         self::DZD => 100,
@@ -391,6 +462,7 @@ class Currency
         self::GHS => 100,
         self::GIP => 100,
         self::GMD => 100,
+        self::GNF => 1,
         self::GTQ => 100,
         self::GYD => 100,
         self::HKD => 100,
@@ -402,9 +474,12 @@ class Currency
         self::ILS => 100,
         self::INR => 100,
         self::JMD => 100,
+        self::JPY => 1,
         self::KES => 100,
         self::KGS => 100,
         self::KHR => 100,
+        self::KMF => 1,
+        self::KRW => 1,
         self::KWD => 1000,
         self::KYD => 100,
         self::KZT => 100,
@@ -434,8 +509,10 @@ class Currency
         self::PGK => 100,
         self::PHP => 100,
         self::PKR => 100,
+        self::PYG => 1,
         self::QAR => 100,
         self::RUB => 100,
+        self::RWF => 1,
         self::SAR => 100,
         self::SCR => 100,
         self::SEK => 100,
@@ -449,9 +526,14 @@ class Currency
         self::TRY => 100,
         self::TTD => 100,
         self::TZS => 100,
+        self::UGX => 1,
         self::USD => 100,
         self::UYU => 100,
         self::UZS => 100,
+        self::VUV => 1,
+        self::XAF => 1,
+        self::XOF => 1,
+        self::XPF => 1,
         self::YER => 100,
         self::ZAR => 100,
     ];
@@ -468,6 +550,7 @@ class Currency
         self::BBD => 2,
         self::BDT => 2,
         self::BHD => 3,
+        self::BIF => 0,
         self::BMD => 2,
         self::BND => 2,
         self::BOB => 2,
@@ -481,6 +564,7 @@ class Currency
         self::CRC => 2,
         self::CUP => 2,
         self::CZK => 2,
+        self::DJF => 0,
         self::DKK => 2,
         self::DOP => 2,
         self::DZD => 2,
@@ -492,6 +576,7 @@ class Currency
         self::GHS => 2,
         self::GIP => 2,
         self::GMD => 2,
+        self::GNF => 0,
         self::GTQ => 2,
         self::GYD => 2,
         self::HKD => 2,
@@ -503,9 +588,12 @@ class Currency
         self::ILS => 2,
         self::INR => 2,
         self::JMD => 2,
+        self::JPY => 0,
         self::KES => 2,
         self::KGS => 2,
         self::KHR => 2,
+        self::KMF => 0,
+        self::KRW => 0,
         self::KWD => 3,
         self::KYD => 2,
         self::KZT => 2,
@@ -535,8 +623,10 @@ class Currency
         self::PGK => 2,
         self::PHP => 2,
         self::PKR => 2,
+        self::PYG => 0,
         self::QAR => 2,
         self::RUB => 2,
+        self::RWF => 0,
         self::SAR => 2,
         self::SCR => 2,
         self::SEK => 2,
@@ -550,9 +640,14 @@ class Currency
         self::TRY => 2,
         self::TTD => 2,
         self::TZS => 2,
+        self::UGX => 0,
         self::USD => 2,
         self::UYU => 2,
         self::UZS => 2,
+        self::VUV => 0,
+        self::XAF => 0,
+        self::XOF => 0,
+        self::XPF => 0,
         self::YER => 2,
         self::ZAR => 2,
     ];
@@ -568,6 +663,7 @@ class Currency
         self::BBD => 10,
         self::BDT => 168,
         self::BHD => 1,
+        self::BIF => 100,
         self::BMD => 10,
         self::BND => 10,
         self::BOB => 14,
@@ -581,6 +677,7 @@ class Currency
         self::CRC => 1000,
         self::CUP => 53,
         self::CZK => 46,
+        self::DJF => 10,
         self::DKK => 250,
         self::DOP => 102,
         self::DZD => 239,
@@ -592,6 +689,7 @@ class Currency
         self::GHS => 3,
         self::GIP => 10,
         self::GMD => 100,
+        self::GNF => 1000,
         self::GTQ => 16,
         self::GYD => 418,
         self::HKD => 400,
@@ -603,9 +701,12 @@ class Currency
         self::ILS => 10,
         self::INR => 100,
         self::JMD => 250,
+        self::JPY => 10,
         self::KES => 201,
         self::KGS => 140,
         self::KHR => 1000,
+        self::KMF => 10,
+        self::KRW => 100,
         self::KWD => 1,
         self::KYD => 10,
         self::KZT => 759,
@@ -635,8 +736,10 @@ class Currency
         self::PGK => 10,
         self::PHP => 106,
         self::PKR => 227,
+        self::PYG => 1000,
         self::QAR => 10,
         self::RUB => 130,
+        self::RWF => 100,
         self::SAR => 10,
         self::SCR => 28,
         self::SEK => 300,
@@ -650,9 +753,14 @@ class Currency
         self::TRY => 100,
         self::TTD => 14,
         self::TZS => 1000,
+        self::UGX => 100,
         self::USD => 10,
         self::UYU => 67,
         self::UZS => 1000,
+        self::VUV => 10,
+        self::XAF => 100,
+        self::XOF => 100,
+        self::XPF => 10,
         self::YER => 501,
         self::ZAR => 29,
     ];
@@ -668,6 +776,7 @@ class Currency
         self::BBD => 10,
         self::BDT => 168,
         self::BHD => 1,
+        self::BIF => 100,
         self::BMD => 10,
         self::BND => 10,
         self::BOB => 14,
@@ -681,6 +790,7 @@ class Currency
         self::CRC => 1000,
         self::CUP => 53,
         self::CZK => 46,
+        self::DJF => 10,
         self::DKK => 250,
         self::DOP => 102,
         self::DZD => 239,
@@ -692,6 +802,7 @@ class Currency
         self::GHS => 3,
         self::GIP => 10,
         self::GMD => 100,
+        self::GNF => 1000,
         self::GTQ => 16,
         self::GYD => 418,
         self::HKD => 400,
@@ -703,9 +814,12 @@ class Currency
         self::ILS => 10,
         self::INR => 100,
         self::JMD => 250,
+        self::JPY => 10,
         self::KES => 201,
         self::KGS => 140,
         self::KHR => 1000,
+        self::KMF => 10,
+        self::KRW => 100,
         self::KWD => 1,
         self::KYD => 10,
         self::KZT => 759,
@@ -735,8 +849,10 @@ class Currency
         self::PGK => 10,
         self::PHP => 106,
         self::PKR => 227,
+        self::PYG => 1000,
         self::QAR => 10,
         self::RUB => 130,
+        self::RWF => 100,
         self::SAR => 10,
         self::SCR => 28,
         self::SEK => 300,
@@ -750,9 +866,14 @@ class Currency
         self::TRY => 100,
         self::TTD => 14,
         self::TZS => 1000,
+        self::UGX => 100,
         self::USD => 50,
         self::UYU => 67,
         self::UZS => 1000,
+        self::VUV => 10,
+        self::XAF => 100,
+        self::XOF => 100,
+        self::XPF => 10,
         self::YER => 501,
         self::ZAR => 29,
     ];
@@ -767,6 +888,7 @@ class Currency
         self::BBD => '$',
         self::BDT => '৳',
         self::BHD => 'د.ب',
+        self::BIF => 'FBu',
         self::BMD => '$',
         self::BND => 'BND',
         self::BOB => 'Bs',
@@ -780,6 +902,7 @@ class Currency
         self::CRC => '₡',
         self::CUP => '$MN',
         self::CZK => 'Kč',
+        self::DJF => 'Fdj',
         self::DKK => 'DKK',
         self::DOP => 'RD$',
         self::DZD => 'د.ج',
@@ -791,6 +914,7 @@ class Currency
         self::GHS => 'GH₵',
         self::GIP => 'GIP',
         self::GMD => 'D',
+        self::GNF => 'FG',
         self::GTQ => 'Q',
         self::GYD => 'G$',
         self::HKD => 'HK$',
@@ -802,9 +926,12 @@ class Currency
         self::ILS => '₪',
         self::INR => '₹',
         self::JMD => 'J$',
+        self::JPY => '¥',
         self::KES => 'Ksh',
         self::KGS => 'Лв',
         self::KHR => '៛',
+        self::KMF => 'CF',
+        self::KRW => '₩',
         self::KWD => 'د.ك',
         self::KYD => 'CI$',
         self::KZT => '₸',
@@ -834,8 +961,10 @@ class Currency
         self::PGK => 'PGK',
         self::PHP => '₱',
         self::PKR => '₨',
+        self::PYG => '₲',
         self::QAR => 'QR',
         self::RUB => '₽',
+        self::RWF => 'FRw',
         self::SAR => 'SR',
         self::SCR => 'SRe',
         self::SEK => 'SEK',
@@ -849,9 +978,14 @@ class Currency
         self::TRY => '₺',
         self::TTD => 'TT$',
         self::TZS => 'Sh',
+        self::UGX => 'USh',
         self::USD => '$',
         self::UYU => '$U',
         self::UZS => 'so\'m',
+        self::VUV => 'Vt',
+        self::XAF => 'FCFA',
+        self::XOF => 'CFA',
+        self::XPF => 'CFP',
         self::YER => '﷼',
         self::ZAR => 'R',
     ];
@@ -866,6 +1000,7 @@ class Currency
         self::BBD => 'Barbadian or Bajan Dollar',
         self::BDT => 'Bangladeshi Taka',
         self::BHD => 'Bahraini Dinar',
+        self::BIF => 'Burundi Franc',
         self::BMD => 'Bermudian Dollar',
         self::BND => 'Bruneian Dollar',
         self::BOB => 'Bolivian Bolíviano',
@@ -879,6 +1014,7 @@ class Currency
         self::CRC => 'Costa Rican Colon',
         self::CUP => 'Cuban Peso',
         self::CZK => 'Czech Koruna',
+        self::DJF => 'Djibouti Franc',
         self::DKK => 'Danish Krone',
         self::DOP => 'Dominican Peso',
         self::DZD => 'Algerian Dinar',
@@ -890,6 +1026,7 @@ class Currency
         self::GHS => 'Ghanaian Cedi',
         self::GIP => 'Gibraltar Pound',
         self::GMD => 'Gambian Dalasi',
+        self::GNF => 'Guinea Franc',
         self::GTQ => 'Guatemalan Quetzal',
         self::GYD => 'Guyanese Dollar',
         self::HKD => 'Hong Kong Dollar',
@@ -901,9 +1038,12 @@ class Currency
         self::ILS => 'Israeli Shekel',
         self::INR => 'Indian Rupee',
         self::JMD => 'Jamaican Dollar',
+        self::JPY => 'Yen',
         self::KES => 'Kenyan Shilling',
         self::KGS => 'Kyrgyzstani Som',
         self::KHR => 'Cambodian Riel',
+        self::KMF => 'Comorian Franc',
+        self::KRW => 'Won',
         self::KWD => 'Kuwaiti Dinar',
         self::KYD => 'Caymanian Dollar',
         self::KZT => 'Kazakhstani Tenge',
@@ -933,8 +1073,10 @@ class Currency
         self::PGK => 'Papua New Guinean Kina',
         self::PHP => 'Philippine Peso',
         self::PKR => 'Pakistani Rupee',
+        self::PYG => 'Guarani',
         self::QAR => 'Qatari Riyal',
         self::RUB => 'Russian Ruble',
+        self::RWF => 'Rwandan Franc',
         self::SAR => 'Saudi Arabian Riyal',
         self::SCR => 'Seychellois Rupee',
         self::SEK => 'Swedish Krona',
@@ -948,9 +1090,14 @@ class Currency
         self::TRY => 'Turkish Lira',
         self::TTD => 'Trinidadian Dollar',
         self::TZS => 'Tanzanian Shilling',
+        self::UGX => 'Ugandan Shilling',
         self::USD => 'US Dollar',
         self::UYU => 'Uruguayan Peso',
         self::UZS => 'Uzbekistani Som',
+        self::VUV => 'Vatu',
+        self::XAF => 'CFA Franc BEAC',
+        self::XOF => 'CFA Franc BCEAO',
+        self::XPF => 'CFP Franc',
         self::YER => 'Yemeni Rial',
         self::ZAR => 'South African Rand',
     ];
@@ -1053,6 +1200,12 @@ class Currency
         return self::DENOMINATION_FACTOR[$currency] ?? 100;
     }
 
+    public static function getDenominationFromISONumericCode(string $isoCode)
+    {
+        $currency = self::getCurrency($isoCode);
+        return self::getDenomination($currency);
+    }
+
     public static function getMinAmount(string $currency)
     {
         return self::MIN_VALUE[$currency] ?? 100;
@@ -1125,18 +1278,6 @@ class Currency
         }
 
         return false;
-    }
-
-    public static function isThreeDecimalCurrencyFromISOCode(string $isoCode = '')
-    {
-        if (empty($isoCode) === true)
-        {
-            return false;
-        }
-
-        $currency = self::getCurrency($isoCode);
-
-        return (in_array($currency, self::THREE_DECIMAL_CURRENCIES) === true);
     }
 
     public static function isJPMCImportFlowSupportedCurrency($currency): bool

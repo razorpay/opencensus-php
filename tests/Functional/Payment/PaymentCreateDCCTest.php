@@ -7,6 +7,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -14,6 +15,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Traits\MocksSplitz;
 use Mockery;
 use Crypt;
@@ -24,6 +26,7 @@ class PaymentCreateDCCTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use MocksSplitz;
+    use MocksRazorx;
 
     protected function setUp(): void
     {
@@ -247,10 +250,11 @@ class PaymentCreateDCCTest extends TestCase
         }
     }
 
-    protected function paymentValidateAndRedirectDCCS2SForShaadiCom(bool $featureEnabled=true)
+    protected function paymentValidateAndRedirectDCCS2SWithCurrencySelection($dccCurrency)
     {
         $payment = $this->payment;
         $features = array('s2s','s2s_json');
+        $this->mockRazorxTreatmentV2('zero_exponent_currency_support', 'on');
 
         $this->fixtures->merchant->addFeatures($features);
 
@@ -287,7 +291,7 @@ class PaymentCreateDCCTest extends TestCase
 
         list($url, $method, $content) = $this->getFormDataFromResponse($content, 'http://localhost');
 
-        $content['dcc_currency'] = "BHD";
+        $content['dcc_currency'] = $dccCurrency;
 
         $firstRequest = [
             'content'=>['currency_request_id'=>$content['currency_request_id'],'dcc_currency'=>$content['dcc_currency']],
@@ -383,7 +387,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
         $payment['card']['number'] = '5428590000004146';
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -391,7 +395,7 @@ class PaymentCreateDCCTest extends TestCase
 
     public function testPaymentValidateAndRedirectDCCS2SForShaadiComFeatureEnabled()
     {
-        $id = $this->paymentValidateAndRedirectDCCS2SForShaadiCom();
+        $id = $this->paymentValidateAndRedirectDCCS2SWithCurrencySelection("BHD");
 
         $paymentEntity = $this->getEntityById('payment', $id,true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);
@@ -402,6 +406,70 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
         $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
         $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+    }
+
+    public function testDCCPaymentOfZeroExponentCurrencyOnS2S()
+    {
+        $id = $this->paymentValidateAndRedirectDCCS2SWithCurrencySelection("JPY");
+
+        $paymentEntity = $this->getEntityById('payment', $id,true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('JPY', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+    }
+
+    public function testMCCPaymentOfZeroExponentCurrencyOnS2S()
+    {
+        $payment = $this->payment;
+        $features = array('s2s','s2s_json');
+
+        $this->fixtures->merchant->addFeatures($features);
+        $payment['amount'] = 5000;
+        $payment['currency'] = 'JPY';
+
+        $this->mockRazorxTreatmentV2('zero_exponent_currency_support', 'on');
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+        $this->assertArrayHasKey('next', $responseContent);
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToDCCInfoUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/dcc_info');
+
+        $paymentEntity = $this->getEntityById('payment', $id,true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals(10,$paymentMeta['mcc_forex_rate']);
+    }
+
+    public function testPaymentOfZeroExponentCurrencyOnStandardCheckout()
+    {
+        $payment = $this->payment;
+        $payment['amount'] = 5000;
+        $payment['currency'] = 'JPY';
+
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
+        try
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+            $this->assertEquals("Currency is not supported", $e->getMessage());
+        }
     }
 
     public function testPaymentCreateWithDCC()
@@ -422,7 +490,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -477,7 +545,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -521,7 +589,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = 'INR';
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -567,7 +635,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = 'INR';
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -696,7 +764,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = 'INR';
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -761,7 +829,7 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment = $this->payment;
         $payment['currency'] = 'EUR';
-        
+
         $flowsData = [
         'content' => ['amount' => $payment['amount'], 'currency' => $payment['currency'], 'card_number' => $payment['card']['number']],
                     'method'  => 'POST',
@@ -770,7 +838,7 @@ class PaymentCreateDCCTest extends TestCase
 
         $response = $this->sendRequest($flowsData);
         $responseContent = json_decode($response->getContent(), true);
-    
+
         $currencyRequestId = $responseContent['currency_request_id'];
         $cardCurrency = $responseContent['card_currency'];
 
@@ -781,8 +849,8 @@ class PaymentCreateDCCTest extends TestCase
 
         $usdAmount = $responseContent['all_currencies'][$payment['dcc_currency']]['amount'];
         $inrAmount = $responseContent['all_currencies']['INR']['amount'];
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
-        
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
+
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
 
@@ -844,7 +912,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['currency_request_id'] = $currencyRequestId;
 
         $inrAmount = $responseContent['all_currencies']['INR']['amount'];
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -907,7 +975,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['currency'] = 'EUR';
         $payment['dcc_currency'] = 'EUR';
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -1204,7 +1272,7 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment['order_id'] = $order->getPublicId();
         $payment['amount']   = $order->getAmount();
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
 
         $this->doAuthPayment($payment);
@@ -1247,7 +1315,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['offer_id'] = $offer->getPublicId();
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $this->doAuthPayment($payment);
 
@@ -1286,7 +1354,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['offer_id'] = $offer->getPublicId();
         $payment['dcc_currency'] = 'INR';
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $this->mockCardVaultWithCryptogram();
 
@@ -1311,7 +1379,7 @@ class PaymentCreateDCCTest extends TestCase
     public function testPaymentCreateWithDCCCustomCheckout()
     {
         $payment = $this->payment;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::RAZORPAYJS;
+        $payment['_']['library'] = Metadata::RAZORPAYJS;
         $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL);
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
 
@@ -1338,7 +1406,7 @@ class PaymentCreateDCCTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Constants::DCC_ON_OTHER_LIBRARY]);
         $payment = $this->payment;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CUSTOM;
+        $payment['_']['library'] = Metadata::CUSTOM;
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $this->assertTrue($this->redirectToDCCInfo);
@@ -1364,7 +1432,7 @@ class PaymentCreateDCCTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Constants::DCC_ON_OTHER_LIBRARY]);
         $payment = $this->payment;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::EMBEDDED;
+        $payment['_']['library'] = Metadata::EMBEDDED;
         $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL);
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
 
@@ -1465,7 +1533,7 @@ class PaymentCreateDCCTest extends TestCase
     public function testPaymentCreateWithDCCCustomLibraryWithoutFeature()
     {
         $payment = $this->payment;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CUSTOM;
+        $payment['_']['library'] = Metadata::CUSTOM;
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $this->assertTrue($this->redirectToDCCInfo);
@@ -1490,7 +1558,7 @@ class PaymentCreateDCCTest extends TestCase
     public function testPaymentCreateWithDCCEmbeddedLibraryWithoutFeature()
     {
         $payment = $this->payment;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::EMBEDDED;
+        $payment['_']['library'] = Metadata::EMBEDDED;
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
 
 
@@ -1516,7 +1584,7 @@ class PaymentCreateDCCTest extends TestCase
     public function testPaymentCreateWithDCCDirectLibraryWithoutFeature()
     {
         $payment = $this->payment;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+        $payment['_']['library'] = Metadata::DIRECT;
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
@@ -1529,7 +1597,7 @@ class PaymentCreateDCCTest extends TestCase
         $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL);
 
         $payment = $this->payment;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::RAZORPAYJS;
+        $payment['_']['library'] = Metadata::RAZORPAYJS;
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
@@ -1541,7 +1609,7 @@ class PaymentCreateDCCTest extends TestCase
         $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL);
 
         $payment = $this->payment;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::RAZORPAYJS;
+        $payment['_']['library'] = Metadata::RAZORPAYJS;
         $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL, 'control');
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
 
@@ -1640,7 +1708,7 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
         $payment['card']['number'] = '4012010000000007';
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+        $payment['_']['library'] = Metadata::DIRECT;
 
         $this->fixtures->merchant->addFeatures(['recurring_auto']);
 
@@ -1705,7 +1773,7 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
         $payment['card']['number'] = '4012010000000007';
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+        $payment['_']['library'] = Metadata::DIRECT;
 
         $this->fixtures->merchant->addFeatures(['recurring_auto']);
 
@@ -1776,7 +1844,7 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
         $payment['card']['number'] = '4012010000000007';
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+        $payment['_']['library'] = Metadata::DIRECT;
 
         $this->fixtures->merchant->addFeatures(['recurring_auto']);
 
@@ -1825,7 +1893,7 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
         $payment['card']['number'] = '4012001038443335';
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+        $payment['_']['library'] = Metadata::DIRECT;
 
         $this->fixtures->merchant->addFeatures(['recurring_auto']);
 
@@ -1878,7 +1946,7 @@ class PaymentCreateDCCTest extends TestCase
             'flows'   => ['3ds' => '1']]);
 
         $payment['card']['number'] = '4001553716254122';
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+        $payment['_']['library'] = Metadata::DIRECT;
 
         $this->fixtures->merchant->addFeatures(['recurring_auto']);
 
@@ -2072,7 +2140,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
         $payment['card']['number'] = '5428590000004146';
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -2144,7 +2212,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
         $payment['card']['number'] = '5428590000004146';
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -2208,7 +2276,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
         $payment['card']['number'] = '5428590000004146';
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -2283,7 +2351,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -2336,7 +2404,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -2485,7 +2553,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
@@ -2574,7 +2642,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['email'] =  "qa.testing@razorpay.com";
         $payment['method'] =  'card';
         $payment['currency_request_id'] = $currencyRequestId;
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        $payment['_']['library'] = Metadata::CHECKOUTJS;
 
         $request = [
             'method'  => 'POST',
@@ -2589,7 +2657,7 @@ class PaymentCreateDCCTest extends TestCase
         $paymentResponse = $this->getLastEntity('payment', true);
         $this->assertEquals('created', $paymentResponse['status']);
 
-        // create payment meta 
+        // create payment meta
         $paymentID = ltrim($paymentResponse['id'], 'pay_');
         $metaAttributes = [
             'payment_id'        => $paymentID,
@@ -2614,7 +2682,7 @@ class PaymentCreateDCCTest extends TestCase
         $auth_step = '3ds2Auth';
         $content['browser'] = $browser;
         $content['auth_step'] = $auth_step;
-        
+
         $request = [
             'url'   => $url,
             'method' => 'POST',
@@ -2631,7 +2699,7 @@ class PaymentCreateDCCTest extends TestCase
             "oauth_client_id"=>null,
         ]);
         $this->app['cache']->put($key, $encryptData);
-        
+
         $authResponse = $this->makeRequestParent($request);
         $authContent = $authResponse->getContent();
         // Check select currency on authenticate page
