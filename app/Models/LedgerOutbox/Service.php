@@ -3,6 +3,8 @@
 namespace RZP\Models\LedgerOutbox;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Facades\Trace;
+use RZP\Jobs\Ledger\CreateMissingRefundTransactionsForReverseShadow;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
@@ -56,7 +58,7 @@ class Service extends Base\Service
                 {
                     $currentRefundId = $refundsArr[$i];
 
-                    $this->createMissingRefundTransaction($currentRefundId);
+                    CreateMissingRefundTransactionsForReverseShadow::dispatch($this->mode, $currentRefundId);
 
                     array_push($successIds, $currentRefundId);
                 }
@@ -72,8 +74,8 @@ class Service extends Base\Service
             }
 
             $response->push([
-                "failures" => $failureIds,
-                "success" => $successIds
+                "failures"  => $failureIds,
+                "success"   => $successIds
             ]);
 
             return $response;
@@ -92,66 +94,33 @@ class Service extends Base\Service
             try
             {
                 $currentRefund = $refundsWithMissingTxn[$i];
-
                 $currentRefundId = $currentRefund["id"];
-                $this->createMissingRefundTransaction($currentRefundId);
+
+                CreateMissingRefundTransactionsForReverseShadow::dispatch($this->mode, $currentRefundId);
 
                 array_push($successIds, $currentRefundId);
             }
             catch(\Exception $e)
             {
+
+                $currentRefund = $refundsWithMissingTxn[$i];
+                $currentRefundId = $currentRefund["id"];
+
                 $this->trace->traceException($e, [
                     "msg"       => $e->getMessage(),
-                    "refund_id" => $refundsWithMissingTxn[$i],
+                    "refund_id" => $currentRefundId,
                 ]);
 
-                array_push($failureIds, [$refundsWithMissingTxn[$i] => $e->getMessage()]);
+                array_push($failureIds, [ $currentRefundId => $e->getMessage()]);
             }
         }
 
-        $this->trace->info(TraceCode::NO_REFUND_IN_INPUT, $input);
+        $response->push([
+            "failures" => $failureIds,
+            "success" => $successIds
+        ]);
 
-        return [];
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function createMissingRefundTransaction(string $refundId)
-    {
-        try
-        {
-            $refund = $this->repo->refund->findOrFail($refundId);
-
-            return $this->core->validateAndCreateMissingRefundTransaction($refund);
-        }
-        catch(\Exception $e)
-        {
-            $this->trace->traceException($e, [
-                "msg"       => $e->getMessage(),
-                "refund_id" => $refundId,
-            ]);
-
-            throw $e;
-        }
-    }
-
-    public function createMissingTransactionsForReverseShadowAdjustments(array $input)
-    {
-        $currentTime = Carbon::now()->getTimestamp();
-
-        $startDate = (isset($input["start_date"]) === true) ? $input["start_date"] : $currentTime - self::DEFAULT_START_TIME_FOR_SYNC_FLOW_TXN_CREATION;
-        $endDate = (isset($input["end_date"]) === true) ? $input["end_date"] : $currentTime - self::DEFAULT_END_TIME_FOR_SYNC_FLOW_TXN_CREATION;
-
-        $transactorIds = [];
-
-        if(isset($input["transactor_ids"]) === true)
-        {
-            $transactorIds = explode(',', $input["transactor_ids"]);
-        }
-
-        $responses = $this->core->createMissingAdjustmentTransactions($startDate, $endDate, $transactorIds);
-        return $responses;
+        return $response;
     }
 
     protected function increaseAllowedSystemLimits()

@@ -658,4 +658,38 @@ class Repository extends Base\Repository
 
         return $merchantsCredits;
     }
+
+    public function fetchExpiredCreditsForReverseShadowMerchants($startTime, $endTime)
+    {
+        $MISSING_TRANSACTIONS_QUERY = "
+
+            SELECT
+              *
+            FROM
+              realtime_hudi_api.credits
+            WHERE
+              type = 'amount'
+              AND expired_at > %d
+              AND expired_at < %d
+              AND merchant_id IN (
+                SELECT
+                  entity_id
+                FROM
+                  realtime_hudi_api.features
+                WHERE
+                  name = 'pg_ledger_reverse_shadow'
+                  AND _is_row_deleted IS NULL
+              )
+              ";
+
+        $dataLakeQuery      = sprintf($MISSING_TRANSACTIONS_QUERY, $startTime, $endTime);
+
+        $lakeData           = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        $this->trace->info(TraceCode::FETCH_EXPIRING_AMOUNT_CREDITS_FROM_LAKE, [
+            "credits_count" => count($lakeData)
+        ]);
+
+        return $lakeData;
+    }
 }

@@ -4393,13 +4393,6 @@ class RefundLedgerTest extends TestCase
         $this->ba->cronAuth();
 
         $this->startTest($testData);
-
-        $txn = $this->getLastEntity('transaction', true);
-
-        $this->assertNotNull($txn);
-
-        $this->assertEquals("rfnd_".$refund['id'], $txn['entity_id']);
-        $this->assertEquals("refund", $txn['type']);
     }
 
     private function getJournal($transactor_event="refund_processed")
