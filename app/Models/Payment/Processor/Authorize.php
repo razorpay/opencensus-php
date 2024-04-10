@@ -3464,6 +3464,8 @@ trait Authorize
 
         $this->preProcessHdfcVasSurcharge($payment);
 
+        $this->appendOrUpdateTerminalDetailsInPaymentNotesForOptimizer($payment);
+
         $this->repo->saveOrFail($payment);
 
         if (empty($payment->getGooglePayMethods()) === true)
@@ -14176,6 +14178,87 @@ trait Authorize
         }
     }
 
+    protected function validatePaymentNotesKeyValue(array $notes)
+    {
+        $code = null;
+        $notify = false;
+
+        foreach ($notes as $key => $note)
+        {
+            if (is_array($note))
+            {
+                $code = ErrorCode::BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY;
+            }
+            else if (strlen($note) > 512)
+            {
+                $code = ErrorCode::BAD_REQUEST_NOTES_VALUE_TOO_LARGE;
+            }
+            else if (strlen($key) > 256)
+            {
+                $code = ErrorCode::BAD_REQUEST_NOTES_KEY_TOO_LARGE;
+            }
+            else if (is_numeric($key))
+            {
+                $notify = true;
+            }
+
+            if ($code !== null)
+                break;
+        }
+
+        // Collecting data for notes with integer keys
+        if ($notify === true)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_NOTES_INVALID,
+                $notes);
+        }
+
+        return $code;
+    }
+
+    public function checkOptimizerTerminal($terminal)
+    {
+        $isOptimizerTerminal = false;
+        $terminalTypeArray = $terminal->getType();
+
+        if (($terminalTypeArray != null) && (in_array('optimizer', $terminalTypeArray) === true))
+        {
+            $isOptimizerTerminal = true;
+        }
+        return $isOptimizerTerminal;
+    }
+
+    public function appendOrUpdateTerminalDetailsInPaymentNotesForOptimizer(Payment\Entity $payment)
+    {
+        if ($payment->terminal !== null) {
+            $terminal = $payment->terminal;
+        }
+        else {
+            return;
+        }
+        try {
+            if ((empty($payment) === false) and (empty($payment->merchant) === false) and $payment->merchant->isFeatureEnabled(Feature\Constants::RAAS)) {
+                if (($this->checkOptimizerTerminal($terminal) === true)) {
+                    $paymentNotes = $payment->getNotes()->toArray();
+                    $error = $this->validatePaymentNotesKeyValue($paymentNotes);
+                    if ($error !== null) {
+                        return;
+                    }
+                    $paymentNotes['optimizer_provider_name'] = $terminal->getOptimizerProviderNameIfPresent();
+                    $payment->setNotes($paymentNotes);
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PAYMENT_NOTES_WITH_OPTIMIZER_PROVIDER_NAME_UPDATE_FAILED
+            );
+        }
+    }
 
     /**
      * @param $payment

@@ -125,6 +125,7 @@ class Entity extends Base\PublicEntity
     const VIRTUAL_UPI_MERCHANT_PREFIX    = 'virtual_upi_merchant_prefix';
     const VIRTUAL_UPI_HANDLE             = 'virtual_upi_handle';
     const TOKENISATION_MASTERCARD        = 'tokenisation_mastercard';
+    const RAZORPAY        = 'razorpay';
 
 
     //
@@ -229,6 +230,7 @@ class Entity extends Base\PublicEntity
         self::PLAN_ID,
         self::APP,
         self::OFFLINE,
+        self::RAZORPAY
     ];
 
     protected $public = [
@@ -1871,6 +1873,23 @@ class Entity extends Base\PublicEntity
 
         // Check if 'optimizer_instant_onboarding' exists in the notes and is set to true
         return isset($notesArray['optimizer_instant_onboarding']) && $notesArray['optimizer_instant_onboarding'] === true;
+    }
+
+    public function getOptimizerProviderNameIfPresent()
+    {
+        $notes = $this->getNotes();
+
+        $notesArray = json_decode($notes, true);
+
+        // Check if 'optimizer_provider_name' exists in the notes
+        if (isset($notesArray['optimizer_provider_name']))
+        {
+            return $notesArray['optimizer_provider_name'];
+        }
+        else
+        {
+            return $this->getAttribute(self::RAZORPAY);
+        }
     }
 
     public function isEnableAutoDebit()

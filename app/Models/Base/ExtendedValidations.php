@@ -546,14 +546,14 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             return true;
         }
         else
-        {   
+        {
             if((empty($value) === false) and (is_null($value) === false))
             {
                 return (preg_match(self::COMPANY_PAN_NUMBER_REGEX, $value) === 1);
             }else
             {
                 throw new BadRequestValidationFailureException("The company pan field is required.");
-            }      
+            }
         }
     }
 
@@ -572,16 +572,16 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
                 return (preg_match(self::COMPANY_CIN_REGEX, $value) === 1);
             }
             return true;
-        }else 
-        {   
+        }else
+        {
             if((empty($value) === false) and (is_null($value) === false))
             {
                 return (preg_match(self::COMPANY_CIN_REGEX, $value) === 1);
             }else
             {
                 throw new BadRequestValidationFailureException("The company cin field is required.");
-            }      
-        } 
+            }
+        }
     }
 
     /**
