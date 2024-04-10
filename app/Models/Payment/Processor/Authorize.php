@@ -13262,11 +13262,12 @@ trait Authorize
             }
         }
 
-        if($payment->merchant->isOpgspImportEnabled() and
+        /* No longer required.
+         * if($payment->merchant->isOpgspImportEnabled() and
             (in_array($library,Analytics\Metadata::OPGSP_SUPPORTED_LIBRARIES) === true))
         {
             $addressRequiredWithName = true;
-        }
+        }*/
 
         if ($addressRequired === true || $addressRequiredWithName === true) {
             //TODO : Validate Address fields as well

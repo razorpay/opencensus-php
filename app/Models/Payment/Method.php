@@ -115,6 +115,8 @@ class Method
     const OPGSP_IMPORT_SUPPORTED_METHODS= [
         self::CARD,
         self::NETBANKING,
+        self::UPI,
+        self::EMANDATE,
     ];
 
     const JPMC_IMPORT_FLOW_SUPPORTED_METHODS = [
