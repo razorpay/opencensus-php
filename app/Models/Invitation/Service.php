@@ -227,11 +227,18 @@ class Service extends Base\Service
 
     public function createXperienceUserInvitation(array $input): array
     {
-        $input[Entity::PRODUCT] = Product::BANKING;
+        $input[Entity::PRODUCT] = $input[Entity::PRODUCT] ?? Product::BANKING;
 
         $invitation = $this->core()->createXperienceUserInvitation($input);
 
         return $invitation->toArrayInternal();
+    }
+
+    public function resendXperienceUserInvitation(string $inviteId, array $input): array
+    {
+        (new Validator())->setStrictFalse()->validateInput(Validator::RESEND_XPERIENCE_USER_INVITE, $input);
+
+        return $this->resend($inviteId, $input);
     }
 
     /**

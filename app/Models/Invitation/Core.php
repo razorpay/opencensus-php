@@ -277,6 +277,10 @@ class Core extends Base\Core
 
     public function resend(Entity $invitation, array $input): Entity
     {
+        $invitationDetails = $input[Entity::INVITATION_DETAILS] ?? [];
+
+        unset($input[Entity::INVITATION_DETAILS]);
+
         $invitation->edit($input, 'resend');
 
         $senderName = $this->getSenderName($input);
@@ -287,7 +291,7 @@ class Core extends Base\Core
 
         $invitedUserExists = (empty($invitedUser) === false);
 
-        $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser);
+        $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, false, $invitationDetails);
 
         return $invitation;
     }
@@ -574,6 +578,7 @@ class Core extends Base\Core
                     [
                         'merchant_id'  => $invitation->getMerchantId(),
                         'user_id'      => $user->getId(),
+                        'invite_id'    => $invitation->getId(),
                         'invite_token' => $invitation->getToken(),
                     ]
                 );

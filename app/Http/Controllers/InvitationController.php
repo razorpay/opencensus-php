@@ -120,6 +120,22 @@ class InvitationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function resendXperienceUserInvitation(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->resendXperienceUserInvitation($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteXperienceUserInvitation(string $id)
+    {
+        $data = $this->service()->delete($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function resendVendorPortalInvitation()
     {
         $input = Request::all();

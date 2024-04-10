@@ -17,6 +17,7 @@ class Validator extends Base\Validator
     const CREATE_BANK_LMS_USER          = 'createBankLmsUser';
     const CREATE_XPERIENCE_INVITATION   = 'createXperienceInvitation';
     const CREATE_INVITATION_VERIFY_OTP  = 'createInvitationVerifyOtp';
+    const RESEND_XPERIENCE_USER_INVITE  = 'resendXperienceUserInvite';
 
     protected static $createRules = [
         Entity::ROLE               => 'required|string|custom',
@@ -51,6 +52,11 @@ class Validator extends Base\Validator
 
     protected static $resendRules = [
         Entity::SENDER_NAME => 'sometimes|string',
+    ];
+
+    protected static $resendXperienceUserInviteRules = [
+        Entity::SENDER_NAME        => 'sometimes|string',
+        Entity::INVITATION_DETAILS => 'sometimes|array|custom',
     ];
 
     protected static $actionRules = [

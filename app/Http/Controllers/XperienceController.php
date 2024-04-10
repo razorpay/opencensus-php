@@ -181,6 +181,20 @@ class XperienceController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function resendUserInvite($inviteId)
+    {
+        $response = $this->xperience->resendUserInvite($inviteId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function cancelUserInvite($inviteId)
+    {
+        $response = $this->xperience->cancelUserInvite($inviteId);
+
+        return ApiResponse::json($response);
+    }
+
     public function deleteUser(string $id)
     {
         $response = $this->xperience->deleteUser($id);

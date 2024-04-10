@@ -48,6 +48,8 @@ class Xperience
     const SINGLE_USER_DETAILS_PATH           = 'v1/users/%s';
     const LIST_USER_DETAILS_PATH             = 'v1/users';
     const ADD_USER_PATH                      = 'v1/users';
+    const RESEND_USER_INVITE_PATH            = 'v1/users/invitations/%s/resend';
+    const CANCEL_USER_INVITE_PATH            = 'v1/users/invitations/%s';
     const LIST_GROUPS_OF_USER                = 'v1/user/%s/groups';
     const LIST_USERS_OF_GROUP                = 'v1/group/%s/users';
     const REMOVE_GROUP_OF_USERS              = 'v1/users/group';
@@ -324,7 +326,7 @@ class Xperience
                     'status_code' => $response->status_code,
                 ], 'Something went wrong. Please try again.');
         }
-        
+
         return json_decode($response->body, true);
     }
 
@@ -552,6 +554,20 @@ class Xperience
         $url = $this->getConstructedUrl(self::ADD_USER_PATH);
 
         return $this->makeRequest($url, $input);
+    }
+
+    public function resendUserInvite(string $invite_id)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::RESEND_USER_INVITE_PATH, $invite_id));
+
+        return $this->makeRequest($url);
+    }
+
+    public function cancelUserInvite(string $invite_id)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::CANCEL_USER_INVITE_PATH, $invite_id));
+
+        return $this->makeRequest($url, [], [], self::DELETE);
     }
 
     public function deleteUser(string $id)
