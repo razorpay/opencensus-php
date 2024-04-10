@@ -60,7 +60,8 @@ class CBPaymentCreateTest extends TestCase
         $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
     }
 
-    public function testOpgspImportPaymentWithAmountGreaterThanOpgspLimit()
+    //Not needed
+    /*public function testOpgspImportPaymentWithAmountGreaterThanOpgspLimit()
     {
         $merchantId = "10000000000000";
 
@@ -96,9 +97,10 @@ class CBPaymentCreateTest extends TestCase
             \RZP\Exception\BadRequestValidationFailureException::class,
             'Amount exceeds maximum amount allowed.');
 
-    }
+    }*/
 
-    public function testOpgspImportPaymentWithAmountGreaterThanOpgspLimitConfigKey()
+    //Not needed
+    /*public function testOpgspImportPaymentWithAmountGreaterThanOpgspLimitConfigKey()
     {
         $merchantId = "10000000000000";
 
@@ -139,7 +141,7 @@ class CBPaymentCreateTest extends TestCase
             \RZP\Exception\BadRequestValidationFailureException::class,
             'Amount exceeds maximum amount allowed.');
 
-    }
+    }*/
 
     public function testOpgspImportPaymentWithoutInvoiceNumber()
     {

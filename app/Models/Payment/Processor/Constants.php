@@ -128,7 +128,8 @@ class Constants
 
     const AUTO_CAPTURE_DEFAULT_TIMEOUT_CARD_RECURRING_AUTO = 4320;
 
-    const OPGSP_TRANSACTION_LIMIT_USD = 200000;
+    //Not needed.
+    //const OPGSP_TRANSACTION_LIMIT_USD = 200000;
 
     // optimizer
     const OPTIMIZER_GATEWAY_DATA = 'optimizer_gateway_data';

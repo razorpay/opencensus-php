@@ -1251,7 +1251,8 @@ class Validator extends Base\Validator
         }
 
         // For OPGSP import flow, max trasaction limit is USD 2000
-        if($this->entity->merchant->isOpgspImportEnabled())
+        //Not needed.
+        /*if($this->entity->merchant->isOpgspImportEnabled())
         {
             $opgspLimitAmountUSD = ConfigKey::get(ConfigKey::DEFAULT_OPGSP_TRANSACTION_LIMIT_USD);
 
@@ -1274,7 +1275,7 @@ class Validator extends Base\Validator
                     ['amount' => $baseAmount,
                       'opgsp' =>  $opgspLimitAmountINR, ]);
             }
-        }
+        }*/
     }
 
     public function validatePosPaymentCreation($input)
