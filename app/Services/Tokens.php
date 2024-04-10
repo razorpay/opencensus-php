@@ -261,6 +261,8 @@ class Tokens
 
             $token->forceFill($response);
 
+            $token->setExternal(true);
+
             return $token;
         }
         return null;

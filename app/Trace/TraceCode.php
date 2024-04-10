@@ -1693,6 +1693,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENS_FETCHED_COUNT_FOR_MIGRATE                      = 'TOKENS_FETCHED_COUNT_FOR_MIGRATE';
     const TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED                 = 'TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED';
     const TOKEN_BEING_MIGRATED                                  = 'TOKEN_BEING_MIGRATED';
+    const TOKEN_SKIP_SAVE_ON_EXTERNAL                           = 'TOKEN_SKIP_SAVE_ON_EXTERNAL';
     const GATEWAY_TOKEN_MIGRATED                                = 'GATEWAY_TOKEN_MIGRATED';
     const TOKEN_RECURRING_STATUS_ALREADY_SET                    = 'TOKEN_RECURRING_STATUS_ALREADY_SET';
     const GATEWAY_RECURRING_STATUS_NOT_SET                      = 'GATEWAY_RECURRING_STATUS_NOT_SET';

@@ -34,6 +34,7 @@ use RZP\Models\PaperMandate\PaperMandateUpload\Entity as PaperMandateUploadEntit
 use RZP\Models\SubscriptionRegistration\Entity as SubscriptionRegistrationEntity;
 use RZP\Models\Customer;
 use RZP\Constants\Mode;
+use RZP\Models\Base\Traits\ExternalOwner;
 
 /**
  * @property Vpa\Entity  $vpa
@@ -45,7 +46,7 @@ use RZP\Constants\Mode;
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes, NotesTrait, AsvGetAttribute;
+    use SoftDeletes, NotesTrait, AsvGetAttribute, ExternalOwner;
 
     const MERCHANT_ID               = 'merchant_id';
     const CUSTOMER_ID               = 'customer_id';
@@ -1371,13 +1372,13 @@ class Entity extends Base\PublicEntity
         }
         return $tokenLength;
     }
-    
+
     public function toArrayInternalToken()
     {
         $internalArray = parent::toArrayInternal();
-        
+
         $internalArray[self::TERMINAL_ID] = $this->getTerminalId();
-        
+
         return $internalArray;
     }
 

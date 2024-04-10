@@ -137,6 +137,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const APP_ID                = 'app_id';
     const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
+    const LOCAL_TOKEN           = 'localToken';
     const API_VAULT             = 'api_vault';
     const TOKEN_ID              = 'token_id';
     const GLOBAL_TOKEN_ID       = 'global_token_id';
@@ -2042,6 +2043,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
        }
 
         $this->attributes[self::FEE_BEARER] = Merchant\FeeBearer::getValueForBearerString($feeBearer);
+    }
+
+    // As part of Token migration the relations between token entity
+    // need to be ignored since token creation and store has moved to
+    // tokens service.
+    public function setTokenRelations()
+    {
+        $this->ignoredRelations = [self::ORDER, self::LOCAL_TOKEN];
     }
 
 // ----------------------- Mutator Ends ----------------------------------------

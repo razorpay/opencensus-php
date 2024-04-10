@@ -4867,6 +4867,13 @@ EOT;
     {
        if ($payment->isExternal() === false)
        {
+          if ($payment->isUpi() === true
+              and $payment->localToken !== null
+              and $payment->localToken->isExternal() === true)
+          {
+              $payment->setTokenRelations();
+          }
+
           $emiPlan = $this->stripEmiRelation($payment);
 
            // Source Channel column is introduced by omni channel team in harvester replica,

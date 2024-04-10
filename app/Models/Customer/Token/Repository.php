@@ -1155,4 +1155,18 @@ EOT;
 
         return $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
     }
+
+    public function saveOrFail($token, array $options = array())
+    {
+        if (($token !== null) and ($token->isExternal() === true)) {
+
+            $this->trace->info(
+                TraceCode::TOKEN_SKIP_SAVE_ON_EXTERNAL
+            );
+
+            return;
+        }
+
+        parent::saveOrFail($token, $options);
+    }
 }
