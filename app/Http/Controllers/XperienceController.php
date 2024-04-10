@@ -313,4 +313,22 @@ class XperienceController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function bulkCreateUserDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->bulkCreateUserDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkCreateUserDetailsRaw()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->bulkCreateUserDetailsRaw($input);
+
+        return ApiResponse::json($response);
+    }
 }

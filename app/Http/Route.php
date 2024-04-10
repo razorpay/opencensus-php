@@ -1990,6 +1990,8 @@ class Route
         'list_group_types_admin'                    => ['get',      'xperience/admin/group-types',              'XperienceController@listGroupTypes'],
         'create_group_type'                         => ['post',     'xperience/group-types',                    'XperienceController@createGroupType'],
         'create_group_type_admin'                   => ['post',     'xperience/admin/group-types',              'XperienceController@createGroupType'],
+        'bulk_create_user_details_admin'            => ['post',     'xperience/admin/bulk-users',               'XperienceController@bulkCreateUserDetails'],
+        'bulk_create_user_details_admin_raw'        => ['post',     'xperience/admin/bulk-users-raw',           'XperienceController@bulkCreateUserDetailsRaw'],
 
 
         'pending_entities_approval_email_cron'      => ['post',     'xperience/pending-approval-email',         'XperienceController@pendingEntitiesApprovalEmailCron'],
@@ -9254,6 +9256,8 @@ class Route
         'create_group_admin',
         'list_group_types_admin',
         'create_group_type_admin',
+        'bulk_create_user_details_admin',
+        'bulk_create_user_details_admin_raw',
 
         //1cc rto model configs
         '1cc_rto_mlmodel_configs_create_admin',
@@ -10897,6 +10901,8 @@ class Route
         'create_group_admin'                        => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'list_group_types_admin'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'create_group_type_admin'                   => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'bulk_create_user_details_admin'            => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'bulk_create_user_details_admin_raw'        => Permission::VIEW_ACTIVATION_FORM,
 
         'salesforce_event_admin'                    => Permission::VIEW_ACTIVATION_FORM,
         'salesforce_event_admin_one_ca'             => Permission::SUBMIT_ONE_CA,
@@ -15969,6 +15975,8 @@ class Route
             'create_group_admin',
             'list_group_types_admin',
             'create_group_type_admin',
+            'bulk_create_user_details_admin',
+            'bulk_create_user_details_admin_raw',
 
             '1cc_configs_update',
             '1cc_configs_get',
