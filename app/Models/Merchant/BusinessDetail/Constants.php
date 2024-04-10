@@ -94,4 +94,6 @@ class Constants
 
     // Fields not present in Entity, but in database. Added for ASV migration.
     const GST_DETAILS = 'gst_details';
+
+    const FINGERPRINT_REQUEST_ID = 'fingerprint_request_id';
 }

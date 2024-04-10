@@ -39,6 +39,8 @@ class Constants
 
     const POA_ZIP_CODE = 'poa_zip_code';
 
+    const FINGERPRINT_REQUEST_ID = 'fingerprint_request_id';
+
     const MERCHANT_RISK_CONFIG = [
         Detail\Entity::PROMOTER_PAN => [
             'lists' => [
@@ -133,6 +135,12 @@ class Constants
                 self::HIGH_RISK_LIST,
             ],
             'config_key' => "business_zip_code"
+        ],
+        self::FINGERPRINT_REQUEST_ID => [
+            'lists' => [
+                self::BLACKLIST,
+            ],
+            'config_key' => "fingerprint_request_id"
         ],
     ];
 
@@ -345,9 +353,17 @@ class Constants
                 ]
             ],
         ],
+        [
+            'keysToCheck' => [
+                self::FINGERPRINT_REQUEST_ID => [
+                    'list' => self::BLACKLIST,
+                    'matchType' => self::EXACT_MATCH
+                ]
+            ],
+        ],
     ];
 
-    const MERCHANT_RISK_CONFIG_NOT_IN_MERCHANT_DETAILS_ENTITY = [self::CLIENT_IP, UserEntity::CLIENT_ID];
+    const MERCHANT_RISK_CONFIG_NOT_IN_MERCHANT_DETAILS_ENTITY = [self::CLIENT_IP, UserEntity::CLIENT_ID, self::FINGERPRINT_REQUEST_ID];
 
     const MERCHANT_RISK_FIELD_CONFIG_KEY_MAP = [
         Detail\Entity::PROMOTER_PAN  => 'promoter_pan',

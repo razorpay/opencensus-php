@@ -17,6 +17,7 @@ use RZP\Models\User\Service as UserService;
 use RZP\Services\MerchantRiskClient;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Merchant\Detail\RetryStatus as RetryStatus;
+use RZP\Trace\TraceCode;
 
 
 class Core extends Base\Core
@@ -147,7 +148,7 @@ class Core extends Base\Core
         return false;
     }
 
-    public function match(Merchant\Entity $merchant, $force = false): array
+    public function match(Merchant\Entity $merchant, $force = false, $fingerprintRequestId = ''): array
     {
         if ((new MerchantRiskAlert\Service())->isRasSignupFraudMerchant($merchant->getId()) === true)
         {
@@ -179,7 +180,7 @@ class Core extends Base\Core
                     'config_key' => $value['config_key']
                 ];
 
-                $field['value'] = $this->getFieldValue($key, $merchant);
+                $field['value'] = $this->getFieldValue($key, $merchant, $fingerprintRequestId);
 
                 if ($field['value'] != null)
                 {
@@ -343,7 +344,7 @@ class Core extends Base\Core
         return Constants::DEDUPE_TAG;
     }
 
-    public function getFieldValue(string $key, $merchant)
+    public function getFieldValue(string $key, $merchant, $fingerprintRequestId = '')
     {
         $value = null;
 
@@ -365,6 +366,16 @@ class Core extends Base\Core
                     if ($key === Constants::CLIENT_IP)
                     {
                         $value = $this->app['request']->getClientIp();
+                    }
+                }
+                if ($key === Constants::FINGERPRINT_REQUEST_ID)
+                {
+                    $value = $fingerprintRequestId;
+
+                    // null values wont be passed for dedupe check
+                    if ($value === '')
+                    {
+                        $value = null;
                     }
                 }
             }

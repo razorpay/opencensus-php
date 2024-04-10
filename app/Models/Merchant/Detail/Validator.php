@@ -192,6 +192,7 @@ class Validator extends Base\Validator
         Entity::MSME_DOC_VERIFICATION_STATUS            => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
         Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS    => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
         Entity::BANK_DETAILS_VERIFICATION_STATUS        => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        BDConstants::FINGERPRINT_REQUEST_ID             => 'sometimes|string',
     ];
 
     protected static $editRules = [
@@ -331,7 +332,7 @@ class Validator extends Base\Validator
         Entity::MSME_DOC_VERIFICATION_STATUS            => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
         Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS    => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
         Entity::BANK_DETAILS_VERIFICATION_STATUS        => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
-
+        BDConstants::FINGERPRINT_REQUEST_ID             => 'sometimes|string',
    ];
 
     protected static $preSignupRules = [
