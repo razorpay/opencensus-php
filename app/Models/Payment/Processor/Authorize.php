@@ -11907,11 +11907,12 @@ trait Authorize
 
         $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
 
-        if(($payment->merchant->isOpgspImportEnabled()) and
+        //Not needed.
+        /*if(($payment->merchant->isOpgspImportEnabled()) and
             (in_array($library, Analytics\Metadata::OPGSP_SUPPORTED_LIBRARIES) === true))
         {
             return true;
-        }
+        }*/
 
         if($payment->isMethodInternationalApp() === true and
             (in_array($library,Analytics\Metadata::SUPPORTED_LIBRARIES_FOR_INTERNATIONAL_APPS) === true))

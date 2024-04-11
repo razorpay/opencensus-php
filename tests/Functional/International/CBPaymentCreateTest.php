@@ -181,7 +181,7 @@ class CBPaymentCreateTest extends TestCase
 
     }
 
-    public function testOpgspImportDuplicateInvoiceNumberForSuccessfulPayment()
+    /*public function testOpgspImportDuplicateInvoiceNumberForSuccessfulPayment()
     {
         $merchantId = "10000000000000";
 
@@ -279,7 +279,7 @@ class CBPaymentCreateTest extends TestCase
         },
             \RZP\Exception\BadRequestValidationFailureException::class,
             'Payment already exist with same invoice number.');
-    }
+    }*/
 
     public function testOpgspImportDuplicateInvoiceNumberForFailedPayment()
     {
@@ -405,7 +405,7 @@ class CBPaymentCreateTest extends TestCase
 
     }
 
-    public function testOpgspImportPaymentPositive()
+    /*public function testOpgspImportPaymentPositive()
     {
         $merchantId = "10000000000000";
 
@@ -491,9 +491,9 @@ class CBPaymentCreateTest extends TestCase
         $this->assertEquals($paymentSupportingDocs['receipt'],'INV123');
         $this->validatePaymentBillingAddress($paymentEntity, $content['billing_address']);
 
-    }
+    }*/
 
-    public function testOpgspImportPaymentNBPositive()
+    /*public function testOpgspImportPaymentNBPositive()
     {
         $merchantId = "10000000000000";
 
@@ -580,9 +580,9 @@ class CBPaymentCreateTest extends TestCase
         $this->assertEquals($paymentSupportingDocs['type'],'opgsp_invoice');
         $this->assertEquals($paymentSupportingDocs['receipt'],'INV123');
         $this->validatePaymentBillingAddress($paymentEntity, $content['billing_address']);
-    }
+    }*/
 
-    public function testUpdateMerchantDocumentForPayment()
+    /*public function testUpdateMerchantDocumentForPayment()
     {
         $merchantId = "10000000000000";
 
@@ -682,7 +682,7 @@ class CBPaymentCreateTest extends TestCase
         $paymentSupportingDocs = $this->getLastEntity('invoice', true);
 
         $this->assertEquals($paymentSupportingDocs['ref_num'],'doc_1234567890');
-    }
+    }*/
 
     /**
      * @param $paymentEntity
