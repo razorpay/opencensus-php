@@ -3,14 +3,16 @@
 namespace RZP\Services\NbPlus;
 
 use App;
+use Request;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
-use RZP\Exception;
 use \WpOrg\Requests\Session as Requests_Session;
 
+use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorClass;
+use RZP\Http\RequestHeader;
 use Illuminate\Support\Arr;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -125,6 +127,11 @@ class Service
             self::X_RAZORPAY_APP_HEADER    => 'api',
         ];
 
+        $devLabel = Request::header(RequestHeader::DEV_SERVE_USER);
+        if (empty($devLabel) === false)
+        {
+            $headers[RequestHeader::DEV_SERVE_USER] = $devLabel;
+        }
         return $headers;
     }
 
