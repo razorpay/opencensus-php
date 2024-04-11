@@ -145,7 +145,7 @@ class Repository extends Base\Repository
                 ->where(Entity::MERCHANT_ID, $subMerchantId)
                 ->get();
 
-            $entityOwnerIds = $accessMaps->pluck(Entity::ENTITY_OWNER_ID)->unique()->toArray();
+            $entityOwnerIds = array_values($accessMaps->pluck(Entity::ENTITY_OWNER_ID)->unique()->toArray());
             // fetch merchants for entity owner ids
             // check if transaction is active
 
