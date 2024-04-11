@@ -2081,7 +2081,7 @@ class Validator extends Base\Validator
 
     public function validateUploadPaymentSupportingDocument($input)
     {
-        if(!isset($_FILES) or !sizeof($_FILES)>0 or !isset($_FILES['file']))
+        if((!isset($_FILES) or !sizeof($_FILES)>0 or !isset($_FILES['file'])) && !isset($input['input_file']))
         {
             throw new Exception\BadRequestException(Error\ErrorCode::BAD_REQUEST_FILE_NOT_FOUND);
         }

@@ -65,4 +65,13 @@ class LambdaController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function processMerchantPaymentInvoiceUpload(string $merchantId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processMerchantPaymentInvoice($input, $merchantId);
+
+        return ApiResponse::json($data);
+    }
 }

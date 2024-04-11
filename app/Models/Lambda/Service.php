@@ -11,6 +11,8 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Excel\Import as ExcelImport;
 use RZP\Exception;
 use RZP\Error;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\ServerErrorException;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Mail\Base\Constants;
@@ -39,6 +41,7 @@ use RZP\Models\Settlement\InternationalRepatriation\Service as RepatService;
 use RZP\Models\Transaction\Entity as TEntity;
 use RZP\Models\Settlement\Entity as SEntity;
 use Carbon\Carbon;
+use RZP\Models\Payment\Service as PaymentService;
 
 class Service extends Base\Service
 {
@@ -330,6 +333,38 @@ class Service extends Base\Service
         ];
 
         return $documentMetaData;
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
+     */
+    public function processMerchantPaymentInvoice(array $input, string $merchantId)
+    {
+        $this->merchant = $this->repo->merchant->find($merchantId);
+
+        if ($this->merchant === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+        }
+
+        $this->trace->info(TraceCode::LAMBDA_REQUEST_MERCHANT_PAYMENT_INVOICE,
+            [
+                'input' => $input,
+            ]);
+
+        [$file, $locationType] = $this->getFileDetails($input, 'merchant_payment_invoice', true);
+
+        $fileDetails = $this->fileProcessor->getFileDetails($file, $locationType, false);
+
+        if ($fileDetails['mime_type'] != 'application/pdf')
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
+        }
+
+        $file = new HttpFoundation\File\UploadedFile($fileDetails['file_path'], $this->fileProcessor->getFileName($file), $fileDetails['mime_type'], null, true);
+
+        return (new PaymentService())->uploadPaymentInvoiceDocument($file);
     }
 
     protected function uploadFileAndSaveInMerchantDocument(HttpFoundation\File\UploadedFile $file, array $input, $mode = Mode::LIVE)

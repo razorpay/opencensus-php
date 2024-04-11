@@ -2782,7 +2782,7 @@ class Route
         'process_on_hold_transactions_for_import'  => ['post',     'import/transactions/onhold/clear',  'SettlementController@onholdClearForImportFlow'                                  ],
         'generate_settlement_file_opgsp_import'    => ['post',     'settlements/import/generate',  'SettlementController@sendIciciOpgspImportSettlementFile'                                  ],
         'send_opgsp_import_invoices'               => ['post',     'import/invoices/send',  'SettlementController@sendIciciOpgspImportInvoices'                                  ],
-
+        'merchant_payment_invoice_upload'          => ['post',     'merchant/{id}/payment/invoice',        'LambdaController@processMerchantPaymentInvoiceUpload'],
 
         //Location Route
         'country_fetch'                            => ['get',      'countries',                                       'LocationController@getCountryDetails'                              ],
@@ -6603,6 +6603,7 @@ class Route
 
         // Fund Account Validation routes
         'fund_account_validate_vpa_internal',
+        'merchant_payment_invoice_upload',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -16965,6 +16966,7 @@ class Route
             'process_settlement_repatriation',
             'process_opgsp_settlement_repatriation',
             'process_jpmc_settlement_repatriation',
+            'merchant_payment_invoice_upload',
         ],
 
         'merchants-risk' => [

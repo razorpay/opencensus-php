@@ -98,6 +98,8 @@ use RZP\Models\GenericDocument\Service as DocumentService;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
 use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
+use RZP\Models\GenericDocument\Constants as GenericDocumentConstants;
+use Symfony\Component\HttpFoundation;
 
 
 class Service extends Base\Service
@@ -7713,8 +7715,22 @@ class Service extends Base\Service
         $response = [];
 
         $fileData = $_FILES['file'];
+        $fileName = "";
 
-        $documentNumber = substr($fileData['name'], 0 , (strrpos($fileData['name'], ".")));
+        if (!empty($_FILES['file'])) {
+            $fileName = $fileData['name'];
+        }
+
+        /* input_file is the invoice file which is locally downloaded from s3 sftp location */
+        if (isset($input['input_file'])) {
+            $fileName = $input['input_file']->getClientOriginalName();
+
+            // set file and unset input_file params in input for ufh function to utilize it
+            $input['file'] = $input['input_file'];
+            unset($input['input_file']);
+        }
+
+        $documentNumber = substr($fileName, 0, strrpos($fileName, "."));
 
         $merchant = $this->merchant;
 
@@ -7806,6 +7822,34 @@ class Service extends Base\Service
         $response['document_updated'] = $isDocumentUpdated;
 
         return $response;
+    }
+
+    /**
+     * uploadPaymentInvoiceDocument Creates payload for invoice upload using merchant features and file downloaded from s3.
+     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
+     */
+    public function uploadPaymentInvoiceDocument(HttpFoundation\File\UploadedFile $file): array
+    {
+        // Initialize input array with file
+        $input = ['input_file' => $file];
+
+        if ($this->merchant->isOpgspImportEnabled())
+        {
+            $input['purpose'] = GenericDocumentConstants::OPGSP_INVOICE;
+        }
+        elseif ($this->merchant->isJpmcImportFlowEnabled())
+        {
+            $input['purpose'] = GenericDocumentConstants::JPMC_INVOICE;
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_INVALID_ACTION
+            );
+        }
+
+        return $this->uploadPaymentSupportingDocument($input);
     }
 
     private function moveTimedoutRecurringNachPaymentTokensToRejectedState($payment)
