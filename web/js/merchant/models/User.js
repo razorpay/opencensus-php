@@ -880,7 +880,7 @@ export default class User {
   }
 
   get isIssuingBulkUploadEnabled() {
-    const allowedRoles = [rolesList.MANAGER, rolesList.OWNER, rolesList.FINANCE];
+    const allowedRoles = [rolesList.MANAGER, rolesList.OWNER, rolesList.FINANCE, rolesList.ADMIN];
     return this.isFeatureEnabled('razorpay_wallet') && allowedRoles.indexOf(this.userRole) > -1;
   }
 
