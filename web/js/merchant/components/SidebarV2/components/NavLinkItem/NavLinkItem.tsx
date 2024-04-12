@@ -1,19 +1,19 @@
 import React from 'react';
 import { Badge, Text } from '@razorpay/blade/components';
-import { withRouter } from 'common/deprecated/withRouter';
+import SelectedSidebarBackground from 'assets/sidebar/sidebar-selected.svg';
 
+import { withRouter } from 'common/deprecated/withRouter';
+import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
+import Image from 'common/ui/Image';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { DASHBOARD_LANDING_URL } from 'merchant/components/SidebarV2/constants/constants';
 import { NavLinkItemInterface } from 'merchant/components/SidebarV2/typings';
-import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
-import { useI18Service } from 'common/i18';
-import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
-import SelectedSidebarBackground from 'assets/sidebar/sidebar-selected.svg';
-import Image from 'common/ui/Image';
+import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
+import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 
 import {
   BadgeContainer,
@@ -24,7 +24,8 @@ import {
   LinkItemV2,
   Typo,
 } from './styled';
-import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
+
+import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 
 const CustomBadge = ({ text }: { text: string }) => {
   return (

@@ -228,35 +228,35 @@ export const PRODUCTS_DATA = {
     },
   },
   gcms_programs: {
-    icon: 'i-lightning',
+    icon: 'i-program',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
       isExperimentEnabled(abExperiments.razorpay_gcms) &&
       user.isIssuingGcmsEnabled,
   },
   gcms_resellers: {
-    icon: 'i-cell',
+    icon: 'i-reseller',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
       isExperimentEnabled(abExperiments.razorpay_gcms) &&
       user.isIssuingGcmsEnabled,
   },
   gcms_orders: {
-    icon: 'i-file-invoice',
+    icon: 'i-order',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
       isExperimentEnabled(abExperiments.razorpay_gcms) &&
       user.isIssuingGcmsEnabled,
   },
   gcms_funds: {
-    icon: 'i-file-dollar',
+    icon: 'i-funds',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
       isExperimentEnabled(abExperiments.razorpay_gcms) &&
       user.isIssuingGcmsEnabled,
   },
   gcms_reports: {
-    icon: 'i-report',
+    icon: 'i-reports',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
       isExperimentEnabled(abExperiments.razorpay_gcms) &&

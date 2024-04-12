@@ -228,22 +228,22 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                             return (
                               <OrderCardItemContainer key={item.id}>
                                 <Box display="flex" alignItems="center" marginBottom="spacing.1">
-                                  <Box display="flex" flex={1} minWidth="250px">
+                                  <Box display="flex" flex={1} minWidth="170px">
                                     <Text size="small" color="surface.text.gray.muted">
                                       SKU
                                     </Text>
                                   </Box>
-                                  <Box display="flex" flex={1} minWidth="200px">
+                                  <Box display="flex" flex={1} minWidth="110px">
                                     <Text size="small" color="surface.text.gray.muted">
                                       Denomination
                                     </Text>
                                   </Box>
-                                  <Box display="flex" flex={1} minWidth="200px">
+                                  <Box display="flex" flex={1} minWidth="110px">
                                     <Text size="small" color="surface.text.gray.muted">
                                       Quantity
                                     </Text>
                                   </Box>
-                                  <Box display="flex" flex={1} minWidth="200px">
+                                  <Box display="flex" flex={1} minWidth="110px">
                                     <Text size="small" color="surface.text.gray.muted">
                                       Total Value
                                     </Text>
@@ -255,22 +255,22 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                                   alignItems="center"
                                   marginTop="spacing.2"
                                 >
-                                  <Box display="flex" flex={1} minWidth="250px">
+                                  <Box display="flex" flex={1} minWidth="170px">
                                     <Text size="medium" weight="semibold">
                                       {item.sku_id}
                                     </Text>
                                   </Box>
-                                  <Box display="flex" flex={1} minWidth="200px">
+                                  <Box display="flex" flex={1} minWidth="110px">
                                     <Text size="medium" weight="semibold">
                                       {getFormattedAmountNew(item.denomination, true)}
                                     </Text>
                                   </Box>
-                                  <Box display="flex" flex={1} minWidth="200px">
+                                  <Box display="flex" flex={1} minWidth="110px">
                                     <Text size="medium" weight="semibold">
                                       {item.quantity}
                                     </Text>
                                   </Box>
-                                  <Box display="flex" flex={1} minWidth="200px">
+                                  <Box display="flex" flex={1} minWidth="110px">
                                     <Text size="medium" weight="semibold">
                                       {getFormattedAmountNew(item.total_amount, true)}
                                     </Text>
