@@ -280,6 +280,7 @@ class Validator extends Base\Validator
         Entity::DEFAULT_REFUND_SPEED     => 'sometimes|filled|string|in:normal,optimum',
         Entity::FEE_BEARER               => 'sometimes|in:customer,platform',
         Entity::NOTES                    => 'sometimes|notes',
+        'rect_logo_url'                  => 'sometimes'
     ];
 
     protected static $actionRules = [
@@ -1123,7 +1124,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateLogo($imageDetails)
+    public function validateLogo($imageDetails, $isRectangularLogo = false)
     {
         $fileSize = $imageDetails['size'];
         $width    = $imageDetails['width'];
@@ -1136,8 +1137,17 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG);
         }
 
-        // The image should be square
-        if ($width !== $height)
+        if ($isRectangularLogo === true)
+        {
+            if ($width === $height)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_RECTANGLE
+                );
+            }
+        }
+
+        else if ($width !== $height)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE
@@ -1145,7 +1155,7 @@ class Validator extends Base\Validator
         }
 
         // The minimum dimensions should be 256*256
-        if ($width < 256)
+        if ($height < 60)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL

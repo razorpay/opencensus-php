@@ -78,6 +78,13 @@ class Constants {
                 allow passing the information (merchant related to identify merchant) into UDF(1-5) and restrict
                 the notes values and default value from being captured in the UDF"
             ],
+        ],
+        "rzp/pg/merchant/onboarding/banking_program/MerchantConfigDetails" => [
+            "rectangular_logo_url" => [
+                "type" => self::STRING,
+                "short_key" => DcsConstants::RectangularLogoUrl,
+                "description" => "Rectangular logo URLs will be stored here when the custom_merchant_upi_qr feature flag is enabled for the merchant."
+            ],
         ]
     ];
 }

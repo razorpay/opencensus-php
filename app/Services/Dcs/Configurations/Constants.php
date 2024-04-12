@@ -40,6 +40,8 @@ class Constants
 
     const PaymentNotesKeyColumns = 'payment_notes_key_columns';
 
+    const RectangularLogoUrl = 'rectangular_logo_url';
+
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
      */
@@ -59,6 +61,7 @@ class Constants
         self::UpiInAppPrefetch               => "rzp/pg/merchant/upi/in_app/Prefetch",
         self::UpiInAppRewardConfigs         => "rzp/pg/merchant/upi/in_app/RewardConfigs",
         self::PaymentNotesKeyColumns         => "rzp/pg/merchant/dashboard/banking_program/UIControls",
+        self::RectangularLogoUrl             => "rzp/pg/merchant/onboarding/banking_program/MerchantConfigDetails",
         self::DisabledCardCurrencies         => "rzp/pg/org/cross_border/Currency",
     ];
 

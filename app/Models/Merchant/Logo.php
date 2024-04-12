@@ -22,7 +22,7 @@ class Logo extends Base\Core
     const JPG_EXTENSION  = 'jpg';
     const JPEG_EXTENSION = 'jpeg';
 
-    public function setUpMerchantLogo($input)
+    public function setUpMerchantLogo($input, $isRectangularLogo = false)
     {
         $logoImage = $input['logo'];
 
@@ -57,7 +57,7 @@ class Logo extends Base\Core
         );
 
         // Performs validation checks on the logo.
-        $merchantValidator->validateLogo($imageDetails);
+        $merchantValidator->validateLogo($imageDetails, $isRectangularLogo);
 
         // Moves locally.
         $logoImage->move($destinationPath, $fileName);
@@ -65,7 +65,7 @@ class Logo extends Base\Core
         try
         {
             // Create local copies of different sizes of the logo.
-            $this->resizeImage($imageDetails);
+            $this->resizeImage($imageDetails, $isRectangularLogo);
 
             // Store the logos in AWS
             $logoUrl = $this->saveToAws($imageDetails);
@@ -98,7 +98,7 @@ class Logo extends Base\Core
         $this->deleteFile($baseFilePath);
     }
 
-    protected function resizeImage($imageDetails)
+    protected function resizeImage($imageDetails, $isRectangularLogo = false)
     {
         $width = $imageDetails['width'];
         $height = $imageDetails['height'];
@@ -114,6 +114,13 @@ class Logo extends Base\Core
         {
             $newWidth = $dimension[0];
             $newHeight = $dimension[1];
+
+            // If it's a rectangular logo and we want to keep it rectangular, skip resizing.
+            if ($isRectangularLogo === true)
+            {
+                $newWidth = $width;
+                $newHeight = $height;
+            }
 
             $extension = $imageDetails['extension'];
 

@@ -9013,6 +9013,67 @@ Team Razorpay',
         return $uploadedFile;
     }
 
+    public function testStoreRectangularLogoAndGetLogoUrl()
+    {
+        $this->fixtures->merchant->addFeatures([Features::CUSTOM_MERCHANT_UPI_QR]);
+
+        $originalFile = $this->createUploadedFile(public_path() . '/img/diwali.png');
+        copy($originalFile, 'tests/Functional/Storage/a2.png');
+        $testFile = $this->createUploadedFile('tests/Functional/Storage/a2.png');
+
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['files']['logo'] = $testFile;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertStringContainsString('/logos/', $response['rect_logo_url']);
+    }
+
+    public function testStoreRectangularLogoAndGetLogoUrlWithoutFeatureFlag()
+    {
+        $originalFile = $this->createUploadedFile(public_path() . '/img/diwali.png');
+        copy($originalFile, 'tests/Functional/Storage/a2.png');
+        $testFile = $this->createUploadedFile('tests/Functional/Storage/a2.png');
+
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['files']['logo'] = $testFile;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNull($response['logo_url']);
+    }
+
+    public function testStoreRectangularLogoNegativeAndGetLogoUrl()
+    {
+        $this->fixtures->merchant->addFeatures([Features::CUSTOM_MERCHANT_UPI_QR]);
+        $originalFile = $this->createUploadedFile('tests/Functional/Storage/a.png');
+        copy($originalFile, 'tests/Functional/Storage/a2.png');
+        $testFile = $this->createUploadedFile('tests/Functional/Storage/a2.png');
+
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['files']['logo'] = $testFile;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNull($response['logo_url']);
+    }
+
+
     public function testStoreImageAndGetLogoUrl()
     {
         $originalFile = $this->createUploadedFile('tests/Functional/Storage/a.png');

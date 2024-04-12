@@ -55,7 +55,7 @@ class Core extends Base\Core
         return true;
     }
 
-    public function upsertBankingConfigs($input, $sessionOrgId)
+    public function upsertBankingConfigs($input, $sessionOrgId, $skipSessionValidation = false)
     {
         (new Validator)->validateInput(
             'upsert',
@@ -74,7 +74,10 @@ class Core extends Base\Core
 
         $entityOrgId = $this->getEntityOrgId($key, $entityId);
 
-        (new Validator())->isAdminAuthorized($sessionOrgId, $entityOrgId);
+        if($skipSessionValidation === false)
+        {
+            (new Validator())->isAdminAuthorized($sessionOrgId, $entityOrgId);
+        }
 
         (new Validator())->validateConfigOwnership($key, $fieldName);
 
@@ -88,14 +91,7 @@ class Core extends Base\Core
 
         $fieldValue = $input[Constants::FIELD_VALUE];
 
-        $createNewConfig = $this->createNewConfig($input);
-
-        if ($createNewConfig === true)
-        {
-            return $dcsConfigService->createConfiguration($key, $entityId, [$fieldName => $fieldValue], $this->mode);
-        }
-
-        return $dcsConfigService->editConfiguration($key, $entityId, [$fieldName => $fieldValue], $this->mode);
+        return $dcsConfigService->editConfiguration($key, $entityId, [$fieldName => $fieldValue]);
     }
 
     // returns the orgid of entity

@@ -19,7 +19,6 @@ use Request;
 use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Models\Merchant\MerchantCsvCreateTrait;
 use RZP\Models\Merchant\OneClickCheckout\Constants as ShopifyConstants;
-
 use Illuminate\Support\Str;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\OAuth;
@@ -89,6 +88,7 @@ use RZP\Models\Transaction;
 use RZP\Services\DiagClient;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
+use RZP\Models\BankingConfig;
 use RZP\Models\Payment\Refund;
 use RZP\Services\HubspotClient;
 use RZP\Models\Workflow\Action;
@@ -102,6 +102,7 @@ use RZP\Models\Admin as MainAdmin;
 use RZP\Models\Merchant\Attribute;
 use RZP\Jobs\MerchantHoldFundsSync;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Services\Dcs\Configurations;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Services\SalesForceClient;
 use RZP\Models\Base\UniqueIdEntity;
@@ -1828,8 +1829,16 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_INVALID_INPUT_LOGO_URL);
         }
 
+        $isRectangularLogo = false;
+
+        $requestData = Request::all();
+
+        if ((isset($requestData['isRectangularLogo']) === true) && !empty($requestData['isRectangularLogo']) && ($this->merchant->isCustomMerchantUpiQrEnabled() === true)) {
+            $isRectangularLogo = true;
+        }
+
         // Adds uploaded logo's url to the input.
-        $this->uploadLogoIfFound($input);
+        $this->uploadLogoIfFound($input, $isRectangularLogo);
 
         //remove the email field from payload
         if($this->merchant->org->isFeatureEnabled(Feature\Constants::ORG_EMAIL_UPDATE_2FA_ENABLED) === true)
@@ -1839,7 +1848,14 @@ class Service extends Base\Service
 
         $this->core()->editConfig($this->merchant, $input);
 
-        return $this->merchant->toArrayConfig();
+        $response =  $this->merchant->toArrayConfig();
+
+        if($isRectangularLogo === true)
+        {
+            $response['rect_logo_url'] = $this->merchant->getFullUrlFromRelativeUrl($input['rect_logo_url']);
+        }
+
+        return $response;
     }
 
     /**
@@ -1921,15 +1937,36 @@ class Service extends Base\Service
 
     }
 
-    protected function uploadLogoIfFound(&$input)
+    protected function uploadLogoIfFound(&$input, $isRectangularLogo = false)
     {
         // if ($input->hasFile('logo') and $input['logo']->isValid())
         if (isset($input['logo']))
         {
             // Store the logos in AWS
-            $logoUrl = (new Logo)->setUpMerchantLogo($input);
+            $logoUrl = (new Logo)->setUpMerchantLogo($input, $isRectangularLogo);
 
-            $input['logo_url'] = $logoUrl;
+            if($isRectangularLogo === true)
+            {
+                if($this->app->runningUnitTests() === false)
+                {
+                    $field_name = Configurations\Constants::RectangularLogoUrl;
+                    $bankingConfigInput =
+                        [
+                            BankingConfig\Constants::FIELD_NAME => $field_name,
+                            BankingConfig\Constants::FIELD_VALUE => $logoUrl,
+                            BankingConfig\Constants::ENTITY_ID => $this->merchant->getId(),
+                            BankingConfig\Constants::KEY => Configurations\Constants::$configurationsToDCSKeyMapping[$field_name],
+                            BankingConfig\Constants::SHORT_KEY => $field_name
+                        ];
+
+                    (new BankingConfig\Core())->upsertBankingConfigs($bankingConfigInput, '', true);
+                }
+                $input['rect_logo_url'] = $logoUrl;
+            }
+            else
+            {
+                $input['logo_url'] = $logoUrl;
+            }
             unset($input['logo']);
         }
     }
@@ -1966,6 +2003,21 @@ class Service extends Base\Service
         $response = $merchant->toArray();
 
         $response['logo_large_size_url'] = $this->merchant->getFullLogoUrlWithSize(Logo::LARGE_SIZE);
+
+        if($this->merchant->isCustomMerchantUpiQrEnabled() === true)
+        {
+            $field_name = Configurations\Constants::RectangularLogoUrl;
+
+            $bankingConfigInput =
+                [
+                    BankingConfig\Constants::FIELDS => [$field_name],
+                    BankingConfig\Constants::ENTITY_ID => $this->merchant->getId(),
+                    BankingConfig\Constants::KEY => Configurations\Constants::$configurationsToDCSKeyMapping[$field_name],
+                    BankingConfig\Constants::SHORT_KEY => $field_name
+                ];
+
+            $response['rect_logo_url'] = $this->merchant->getRectangularLogoUrlWithFeatureFlagEnabled($bankingConfigInput);
+        }
 
         $response[Refund\Constants::REFUND_STATUS_FILTER] =
             (new Refund\Service)->getRefundStatusFilterFlagForMerchantDashboard($merchantId);

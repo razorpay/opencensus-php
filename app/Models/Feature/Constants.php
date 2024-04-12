@@ -1838,6 +1838,11 @@ class Constants
 
     const CUSTOM_ORG_UPI_QR = 'custom_org_upi_qr';
 
+    /*
+     * Feature used to store the rectangular logo for merchant when 'custom_merchant_upi_qr' is enabled
+     * */
+    const RECTANGULAR_LOGO_URL  = 'rectangular_logo_url';
+
     /**
      * NB : Enable only for maker-checker corporate flow
      *

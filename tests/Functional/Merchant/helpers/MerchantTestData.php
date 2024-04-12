@@ -2405,7 +2405,79 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testStoreRectangularLogoAndGetLogoUrl' => [
+        'request' => [
+            'content' => [
+                'isRectangularLogo' => true,
+            ],
+            'url' => '/account/config/logo',
+            'method' => 'post',
+            'files' => [
 
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+            ]
+        ]
+    ],
+
+    'testStoreRectangularLogoAndGetLogoUrlWithoutFeatureFlag' => [
+        'request' => [
+            'content' => [
+                'isRectangularLogo' => true,
+            ],
+            'url' => '/account/config/logo',
+            'method' => 'post',
+            'files' => [
+
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE,
+        ],
+    ],
+
+    'testStoreRectangularLogoNegativeAndGetLogoUrl' => [
+        'request' => [
+            'content' => [
+                'isRectangularLogo' => true,
+            ],
+            'url' => '/account/config/logo',
+            'method' => 'post',
+            'files' => [
+
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_RECTANGLE,
+        ],
+    ],
     'testStoreImageAndGetLogoUrl' => [
         'request' => [
             'content' => [],

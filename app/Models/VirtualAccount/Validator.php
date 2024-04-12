@@ -32,6 +32,7 @@ class Validator extends Base\Validator
         Entity::CLOSE_BY                        => 'filled|epoch|custom',
         Entity::CUSTOMER                        => 'sometimes|array',
         Entity::ALLOWED_PAYERS                  => 'sometimes|array|min:1|max:10',
+        'isRectangularLogo'                     => 'sometimes|boolean'
     ];
 
     protected static $createForBankingRules = [
