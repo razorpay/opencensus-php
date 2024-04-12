@@ -7,12 +7,6 @@ then
   exit 0
 fi
 
-if [ "${BUGFIX_LABEL}" = "true" ]
-then
-  echo "This branch contains bug fix. Jira check is not needed here."
-  exit 0
-fi
-
 if [ "${JIRA_ISSUE_ID}" = "" ]
 then
   echo "Jira Id is not present for PR."
