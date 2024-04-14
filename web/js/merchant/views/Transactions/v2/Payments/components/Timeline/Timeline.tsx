@@ -269,13 +269,14 @@ const EntityStatusTimeline = ({
   const getRefundsJourneyMeta = (journeyPoint: TimelineJourneyPoint): JSX.Element => {
     const refund = journeyPoint.metadata.refund;
     const amount = refund?.amount;
+    const currency = refund?.currency;
 
     return (
       <StyledJourneyMetadata>
         {amount && (
           <Box paddingBottom="spacing.2">
             <Text size="small" color="surface.text.gray.subtle" weight="regular">
-              Amount: <Amount value={amount} />
+              Amount: <Amount value={amount} currency={currency} />
             </Text>
           </Box>
         )}
