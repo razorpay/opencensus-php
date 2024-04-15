@@ -46,7 +46,48 @@ class MerchantAccountConfigForCheckoutTest extends TestCase
 
         $this->assertEquals($keyId, $response['key']);
     }
+    public function testGetInternalFetchConfig(): void
+    {
+        $this->fixtures->create('org',[
+                'id' => 'NMt44KU8fXpHdB',
+                'invoice_logo_url' => '/logos/random_image_url.png']
+        );
 
+        $merchant = $this->fixtures->create('merchant',
+            ['org_id' => 'NMt44KU8fXpHdB']
+        );
+        $this->fixtures->create('feature',
+            ['name' => 'org_custom_branding',
+                'entity_id' => $merchant->id,
+                'entity_type' => 'merchant'
+            ]);
+
+        $this->fixtures->merchant->edit($merchant->id, [
+            MerchantEntity::BRAND_COLOR => '123456',
+            MerchantEntity::LOGO_URL => '/logos/random_image_original.png',
+            MerchantEntity::DISPLAY_NAME => 'Tester Account 2',
+            MerchantEntity::PARTNERSHIP_URL => 'https://dummycdn.razorpay.com/logos/partnership.png',
+            MerchantEntity::CATEGORY2 => 'ecommerce',
+            MerchantEntity::CATEGORY => '5945',
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $merchant->getId(),
+            'business_registered_address' => "B-85 Bais godam industrial area Bangalore",
+            'business_registered_address_l2' => 'Koramangala',
+            'business_registered_country'     => 'India',
+            'business_registered_state' => 'Karnataka',
+            'business_registered_city' =>'Bangalore',
+            'business_registered_pin' => '560029',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->id);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->id, $merchantUser['id']);
+
+        $this->startTest();
+
+    }
     protected function createMerchant($attributes = [])
     {
         $this->ba->adminAuth();

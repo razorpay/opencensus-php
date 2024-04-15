@@ -32,4 +32,23 @@ return [
             ],
         ],
     ],
+    'testGetInternalFetchConfig' => [
+        'request' => [
+            'url' => '/internal/account/config',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'brand_color' => '#123456',
+                'logo_url' => '/logos/random_image_original.png',
+                'display_name' => 'Tester Account 2',
+                'invoice_logo'=>'/logos/random_image_url.png',
+                'category' => '5945',
+                'org_id' => 'NMt44KU8fXpHdB',
+                'custom_org_branding' => true,
+                'business_registered_address'=>'B-85 Bais godam industrial area Bangalore',
+                'business_registered_address_text' => 'B-85 Bais godam industrial area Bangalore, Koramangala, Bangalore, India - 560029'
+            ],
+        ],
+    ],
 ];

@@ -2056,6 +2056,17 @@ class Service extends Base\Service
 
             $response['time_zone'] = $this->merchant->getTimeZone();
 
+            $response['business_registered_address'] = optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress();
+
+            $response['business_registered_address_text'] = $this->merchant->getBusinessRegisteredAddressAsText(', ');
+
+            if( $response['custom_org_branding'] === true){
+
+                $response['invoice_logo'] = $this->merchant->org->getInvoiceLogo();
+
+            }
+
+
             if ($supportDetails !== null)
             {
                 $supportDetails = $supportDetails->toArrayPublic();
