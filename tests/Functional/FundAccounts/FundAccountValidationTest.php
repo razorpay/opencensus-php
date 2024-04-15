@@ -16,6 +16,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Jobs\FavQueueForFTS;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Services\FavService\Fetch;
 use RZP\Services\FavService\Update;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
@@ -23,9 +24,9 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -33,12 +34,11 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Services\FavService\Create as FavServiceCreate;
 use RZP\Services\FavService\Update as FavServiceUpdate;
+use RZP\Services\FavService\Fetch as FavServiceFetch;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
-use function PHPUnit\Framework\assertEquals;
-use function PHPUnit\Framework\assertNotNull;
 
 class FundAccountValidationTest extends TestCase
 {
@@ -809,7 +809,7 @@ class FundAccountValidationTest extends TestCase
 
         $content = $this->testData[__FUNCTION__]['request']['content'];
 
-        $mock = Mockery::mock(Update::class);
+        $mock = Mockery::mock(FavServiceUpdate::class);
 
         $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
 
@@ -821,7 +821,7 @@ class FundAccountValidationTest extends TestCase
         ];
 
         $mock->shouldReceive('updateFavInMicroservice')
-            ->withArgs(["fav_000000000000", $input])
+            ->withArgs(["fav_000000000000", $input, 'vpa'])
             ->times(1);
 
         $this->startTest();
@@ -831,6 +831,41 @@ class FundAccountValidationTest extends TestCase
         $faVpaValidation = new FaVpaValidation('test', $content['fav_id'], $content);
 
         $faVpaValidation->handle();
+    }
+
+    public function testValidateTypeBankAccountInternal()
+    {
+        Queue::fake();
+
+        $this->ba->payoutInternalAppAuth();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $content = $this->testData[__FUNCTION__]['request']['content'];
+
+        $mock = Mockery::mock(FavServiceUpdate::class);
+
+        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
+
+        $mock->shouldReceive('updateFavInMicroservice')
+            ->withArgs(function ($fav_id, $fund_transfer_id, $type){
+                return ($fav_id === '1234567890' && empty($fund_transfer_id) == false);})
+            ->times(1);
+
+        $this->startTest();
+
+        Queue::assertPushed(FavQueueForFTS::class);
+
+        $favQueueForFts = new FavQueueForFTS('test', $content['fav_id'], $content);
+
+        $favQueueForFts->handle();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'test');
+
+        // Penny drop assertion
+        $this->assertEquals("1234567890", $fta['source_id']);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($content['bank_account']['id'], $fta['bank_account_id']);
     }
 
 //    TODO: add remaining cases response as well
@@ -1954,6 +1989,48 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals($fav['id'], $fta['source']);
     }
 
+    //testcase to check if for fav details but bene name is not a valid one according to penniless redis key
+    //it should not pick the fav status from cache..instead it should call fts and do a fresh validation
+    public function testFundAccValidationWithSameDetailsButBeneNameNotAllowed()
+    {
+        $this->createValidationWithFundAccountEntity();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_RESPONSE_BENE_NAME_BLACKLIST => ['XX','Razorpay']]);
+
+        $this->fixtures->merchant->editEntity('fund_account_validation', $fav['id'], ['registered_name' => 'xxx yyy']);
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts/validations',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'SBIN0010411',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => [],
+                Validation::RECEIPT       => '12345667',
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals(1, $fav['attempts']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals($fav['id'], $fta['source']);
+    }
+
     //checks if first 4 char of ifsc are same, then don't go to bank and fav should be picked from cache
     public function testFundAccValidationWithSameAccountNumberIfscBankButDifferentIfscCode()
     {
@@ -2285,6 +2362,97 @@ class FundAccountValidationTest extends TestCase
         $request['url'] = sprintf($request['url'], $fav['id']);
 
         $this->ba->adminAuth('live');
+
+        $this->startTest();
+    }
+
+    public function testGetFavByIdInAPI()
+    {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
+        $this->testCreateValidationWithFundAccountId();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $fav['id']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function createGetApiResponseForFavServiceMock()
+    {
+        $content = [
+        'entity' => "fund_account.validation",
+        'fund_account' => [
+            'entity' => "fund_account",
+            'contact_id' => "cont_1000000contact",
+            'account_type' => "bank_account",
+            'bank_account' => [
+                'ifsc' => "SBIN0007105",
+                'bank_name' => "State Bank of India",
+                'name' => "Amit M",
+                'notes' => [],
+                'account_number' => "111000111"
+            ],
+            'batch_id' => null,
+            'active' => true,
+            'details' => [
+                'ifsc' => "SBIN0007105",
+                'bank_name' => "State Bank of India",
+                'name' => "Amit M",
+                'notes' => [],
+                'account_number' => "111000111"
+            ],
+        ],
+        'status' => "completed",
+        'amount' => 100,
+        'currency' => "INR",
+        'notes' => [],
+        'results' => [
+            'account_status' => "active",
+            'registered_name' => "Razorpay Test"
+        ],
+        ];
+
+        return $content;
+    }
+
+    public function testGetFavByIdFromMicroservice()
+    {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $attribute = [
+            Entity::MERCHANT_ID     => '10000000000000',
+            Entity::REGISTERED_NAME => "Razorpay Test",
+            Entity::ACCOUNT_STATUS  => "active",
+            Entity::NOTES           => [
+            ],
+        ];
+
+        $this->fixtures->on('live')->create('fund_account_validation', $attribute);
+
+        $fav = $this->getLastEntity('fund_account_validation', true, 'live');
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $fav['id']);
+
+        $this->ba->privateAuth();
+
+        $mock->shouldReceive('fetch')
+            ->withArgs(["fund_account_validation", $fav['id'], []])
+            ->andReturn($this->createGetApiResponseForFavServiceMock())
+            ->times(1);
 
         $this->startTest();
     }
@@ -3357,4 +3525,6 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('created', $fav['status']);
         $this->assertEquals('primary', $balance['type']);
     }
+
+
 }

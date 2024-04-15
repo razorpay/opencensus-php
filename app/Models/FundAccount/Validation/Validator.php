@@ -21,6 +21,13 @@ class Validator extends Base\Validator
         Entity::BALANCE_ID   => 'sometimes|unsigned_id',
     ];
 
+    protected static $compositeCreateRules = [
+        Entity::FUND_ACCOUNT                => 'required|associative_array',
+        Entity::SOURCE_ACCOUNT_NUMBER       => 'required',
+        Entity::NOTES                       => 'sometimes|notes',
+        Entity::REFERENCE_ID                => 'sometimes',
+    ];
+
     // This is only used for banking bank account creation request
     protected static $bankingBankAccountRules = [
         Entity::AMOUNT                          => 'required|integer|min:100|max:200',

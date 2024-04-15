@@ -2,23 +2,11 @@
 
 namespace RZP\Services\FavService;
 
-
-use RZP\Models\Vpa;
-use RZP\Models\Card;
-use RZP\Models\Payout;
-use RZP\Models\Contact;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
-use RZP\Models\BankAccount;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use RZP\Models\IdempotencyKey;
-use RZP\Models\PayoutsDetails;
-use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Models\Base\PublicEntity;
-use Razorpay\Edge\Passport\Passport;
-use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\FundAccount\Validation\Entity as FavEntity;
 
 class Create extends Base
@@ -92,7 +80,7 @@ class Create extends Base
     {
         $requestBody = [
             FavEntity::SOURCE_ACCOUNT_NUMBER     => (string)$input[FavEntity::SOURCE_ACCOUNT_NUMBER],
-            FavEntity::VALIDATION_TYPE           => (string)$input[FavEntity::VALIDATION_TYPE],
+            FavEntity::VALIDATION_TYPE           => $input[FavEntity::VALIDATION_TYPE] ?? null,
             FavEntity::REFERENCE_ID              => $input[FavEntity::REFERENCE_ID] ?? null,
             FavEntity::FUND_ACCOUNT              => $input[FavEntity::FUND_ACCOUNT],
             FavEntity::MERCHANT_ID               => $merchantId

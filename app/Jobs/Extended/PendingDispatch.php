@@ -53,6 +53,10 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
 
     const QR_STATUS_CHECK                             = 'qr_status_check';
 
+    const FAV_QUEUE_FOR_FTS                           = 'fav_queue_for_fts';
+
+    const FA_VPA_VALIDATION                           = 'fa_vpa_validation';
+
     protected $shouldThrowErrorOnFailure = [
         self::PAYOUT_POST_CREATE_PROCESS,
         self::PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY,
@@ -70,6 +74,8 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
         self::FTS_FUND_TRANSFER,
         self::RBL_VIRTUAL_ACCOUNT_FOR_BANKING,
         self::QR_STATUS_CHECK,
+        self::FAV_QUEUE_FOR_FTS,
+        self::FA_VPA_VALIDATION,
     ];
 
     /**

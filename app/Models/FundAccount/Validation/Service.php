@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount\Validation;
 
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -11,6 +12,7 @@ use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Redaction;
+use RZP\Error\PublicErrorDescription;
 use RZP\Services\FTS\Transfer\Client as FtsClient;
 
 class Service extends Base\Service
@@ -35,6 +37,37 @@ class Service extends Base\Service
         $this->core = new Core();
 
         $this->entityRepo = $this->repo->fund_account_validation;
+    }
+
+
+    public function fetchFAV(string $id, array $input)
+    {
+        $fav = null;
+
+        if ($this->core->shouldFetchFavByIdViaMicroservice($this->merchant))
+        {
+            try
+            {
+                $fav = $this->core->fetchByIdFromFavService($id, $input);
+            }
+
+            catch (\Exception $e)
+            {
+                if ($e->getMessage() !== PublicErrorDescription::BAD_REQUEST_INVALID_ID)
+                {
+                    throw $e;
+                }
+            }
+        }
+
+        if (empty($fav) === true)
+        {
+            $fav = $this->repo->fund_account_validation->findByPublicIdAndMerchant($id, $this->merchant);
+
+            return $fav->toArrayPublic();
+        }
+
+        return $fav;
     }
 
     public function create(array $input): array
@@ -70,12 +103,31 @@ class Service extends Base\Service
         return $this->core->validateVpa($input);
     }
 
+    public function validateBankAccountInternal(array $input)
+    {
+        if ($this->auth->isPrivilegeAuth() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        $this->trace->info(TraceCode::BANK_ACCOUNT_VALIDATION_REQUEST_FROM_MICROSERVICE, [
+            'input' => $input
+        ]);
+
+        return $this->core->validateBankAccount($input);
+    }
+
     public function fetchMultiple(array $input): array
     {
         if (empty($input[Balance\Entity::ACCOUNT_NUMBER]) === false)
         {
             // mandates account number and converts to balance id
             $this->processAccountNumber($input);
+        }
+
+        if ($this->core->shouldFetchFavByIdViaMicroservice($this->merchant))
+        {
+            return $this->core->fetchMultipleFromFavService($input);
         }
 
         $entities = $this->entityRepo->fetch($input, $this->merchant->getId());

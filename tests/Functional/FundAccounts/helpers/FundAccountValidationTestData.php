@@ -609,6 +609,30 @@ return [
         ],
     ],
 
+    'testValidateTypeBankAccountInternal' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations_internal/pennydrop',
+            'method'  => 'POST',
+            'content' => [
+                'fav_id' => '1234567890',
+                'amount' => 1000.00,
+                'merchant_id' => '10000000000000',
+                'bank_account' => [
+                    'id' => '987654321',
+                    'ifsc_code' => 'HDFC0000053',
+                    'account_type' => 'savings',
+                    'account_number' => '765432123456789',
+                    'beneficiary_name' => 'Gaurav'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'bank account validation request pushed to fts queue'
+            ],
+        ],
+    ],
+
     'testCreateFaOfTypeVpaAndSendRequestToFavService' => [
         'request' => [
             'url'     => '/fund_accounts/validations',
@@ -1730,6 +1754,59 @@ return [
                     'account_status'  => "active",
                     'registered_name' => "random name",
                 ]
+            ],
+        ],
+    ],
+
+    'testGetFavByIdInAPI' => [
+        'request' => [
+            'url' => '/fund_accounts/validations/%s',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "fund_account.validation",
+                'fund_account' => [
+                    'entity' => "fund_account",
+                    'contact_id' => "cont_1000000contact",
+                    'account_type' => "bank_account",
+                    'bank_account' => [
+                        'ifsc' => "SBIN0007105",
+                        'bank_name' => "State Bank of India",
+                        'name' => "Amit M",
+                        'notes' => [],
+                        'account_number' => "111000111"
+                    ],
+                    'batch_id' => null,
+                    'active' => true,
+                    'details' => [
+                        'ifsc' => "SBIN0007105",
+                        'bank_name' => "State Bank of India",
+                        'name' => "Amit M",
+                        'notes' => [],
+                        'account_number' => "111000111"
+                    ],
+                ],
+                'status' => "completed",
+                'amount' => 100,
+                'currency' => "INR",
+                'notes' => [],
+                'results' => [
+                    'account_status' => "active",
+                    'registered_name' => "Razorpay Test"
+                ],
+            ]
+        ],
+    ],
+
+    'testGetFavByIdFromMicroservice' => [
+        'request'  => [
+            'url'    => '/fund_accounts/validations/%s',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+
             ],
         ],
     ],

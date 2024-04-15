@@ -20,6 +20,7 @@ use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Payment\Service as PaymentService;
 use RZP\Models\FundAccount\Validation\AccountStatus;
 use RZP\Models\FundAccount\Validation\Core as FAVCore;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\FundAccount\Validation\Processor\Factory;
 use RZP\Models\FundAccount\Validation\Constants as FavConstants;
 use RZP\Models\FundAccount\Validation\Processor\Vpa as VpaProcessor;
@@ -85,7 +86,7 @@ class FaVpaValidation extends Job
 
                 $favCore = new FAVCore();
 
-                $favCore->updateFavInMicroservice($this->favId, $data);
+                $favCore->updateFavInMicroservice($this->favId, $data, FundAccountEntity::VPA);
 
             }
             else {
@@ -161,9 +162,11 @@ class FaVpaValidation extends Job
 
                 if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT))
                 {
+                    $favCore = new FAVCore();
+
                     if (($success === true) &&
                         ($name != null) &&
-                        ($this->isNameReceivedFromPennilessValid($name, $ifsc) === true) &&
+                        ($favCore->isNameReceivedFromPennilessValid($name, $ifsc) === true) &&
                         ($accountStatus === AccountStatus::ACTIVE))
                     {
                         $this->trace->info(
@@ -393,14 +396,6 @@ class FaVpaValidation extends Job
     {
         if (empty($this->vpaInput) === false)
         {
-            $favCore = new FAVCore();
-
-            $data = [
-                'error'  => $e->getMessage()
-            ];
-
-            $favCore->updateFavInMicroservice($this->favId, $data);
-
             $this->trace->traceException(
                 $e,
                 Logger::ERROR,
@@ -410,6 +405,14 @@ class FaVpaValidation extends Job
                     'merchant_id' => $this->vpaInput['merchant_id'],
                 ]
             );
+
+            $favCore = new FAVCore();
+
+            $data = [
+                'error'  => $e->getMessage()
+            ];
+
+            $favCore->updateFavInMicroservice($this->favId, $data, FundAccountEntity::VPA);
         }
         else
         {

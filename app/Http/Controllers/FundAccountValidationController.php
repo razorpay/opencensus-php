@@ -33,4 +33,33 @@ class FundAccountValidationController extends Controller
 
         return ApiResponse::json($response);
     }
+
+
+    public function getFundAccountValidation($id)
+    {
+        $input = Request::all();
+
+        $entity = $this->service()->fetchFAV($id, $input);
+
+        return ApiResponse::json($entity);
+    }
+
+    public function getFundAccountValidations()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+
+    public function validateBankAccountInternal()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->validateBankAccountInternal($input);
+
+        return ApiResponse::json($response);
+    }
 }

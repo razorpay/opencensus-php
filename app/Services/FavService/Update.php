@@ -7,11 +7,13 @@ use RZP\Http\Request\Requests;
 
 class Update extends Base
 {
-    const UPDATE_FAV_SERVICE_URI = '/fund_accounts/validations/update';
+    const UPDATE_FAV_VPA_SERVICE_URI = '/fund_accounts/validations/update/vpa';
+
+    const UPDATE_FAV_BA_SERVICE_URI = '/fund_accounts/validations/update/fts';
 
     const FAV_SERVICE_UPDATE     = 'fav_service_update';
 
-    public function updateFavInMicroservice(string $favId, array $input)
+    public function updateFavInMicroservice(string $favId, array $input, string $type)
     {
         $request = $this->createRequestBody($favId, $input);
 
@@ -22,9 +24,11 @@ class Update extends Base
 
         $headers = $this->getHeadersWithJwt();
 
+        $uri = ($type === 'vpa') ? self::UPDATE_FAV_VPA_SERVICE_URI : self::UPDATE_FAV_BA_SERVICE_URI ;
+
         return $this->makeRequestAndGetContent(
             $request,
-            self::UPDATE_FAV_SERVICE_URI,
+            $uri,
             Requests::POST,
             $headers
         );

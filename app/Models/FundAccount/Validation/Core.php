@@ -2,9 +2,11 @@
 
 namespace RZP\Models\FundAccount\Validation;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Trace\Tracer;
 use RZP\Services\FTS;
 use RZP\Models\Admin;
@@ -20,6 +22,7 @@ use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
+use RZP\Jobs\FavQueueForFTS;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Balance;
@@ -35,6 +38,7 @@ use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Services\FTS\Constants as FtsConstants;
+use RZP\Services\FavService\Fetch as FavServiceFetch;
 use RZP\Services\FavService\Create as FavServiceCreate;
 use RZP\Services\FavService\Update as FavServiceUpdate;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -49,6 +53,8 @@ class Core extends Base\Core
     protected $favCreateServiceClient;
 
     protected $favUpdateServiceClient;
+
+    protected $favGetServiceClient;
 
     private $mutex;
 
@@ -73,6 +79,8 @@ class Core extends Base\Core
         $this->favCreateServiceClient = $this->app[FavServiceCreate::FAV_SERVICE_CREATE];
 
         $this->favUpdateServiceClient = $this->app[FavServiceUpdate::FAV_SERVICE_UPDATE];
+
+        $this->favGetServiceClient = $this->app[FavServiceFetch::FAV_SERVICE_FETCH];
     }
 
     /**
@@ -104,6 +112,12 @@ class Core extends Base\Core
 
         if (($isCompositeFavRequest === true) && ($isFavServiceEnabled === true))
         {
+            $validator = new Validator();
+
+            $validator->setStrictFalse();
+
+            $validator->validateInput('composite_create', $input);
+            
             $fundAccountData = $this->createFundAccountForCompositeFav($input, $merchant);
 
             $favInput = $this->createInputForFavMicroService($input, $fundAccountData);
@@ -211,32 +225,73 @@ class Core extends Base\Core
 
     public function validateVpa(array $vpaInput)
     {
-        $this->trace->info(
-            TraceCode::FAV_QUEUE_FOR_VPA_VALIDATE_JOB_REQUEST,
-            [
-                'vpa'         => $vpaInput['vpa'],
+        try {
+            $traceable = [
+                'fav_id'      => $vpaInput['fav_id'],
                 'merchant_id' => $vpaInput['merchant_id']
-            ]
-        );
+            ];
 
-        FaVpaValidation::dispatch($this->mode, $vpaInput['fav_id'], $vpaInput);
+            $this->trace->info(
+                TraceCode::FAV_QUEUE_FOR_VPA_VALIDATE_JOB_REQUEST,
+                $traceable
+            );
 
-        $this->trace->info(
-            TraceCode::FAV_QUEUE_FOR_VPA_VALIDATE_JOB_REQUEST_DISPATCHED,
-            [
-                'vpa'         => $vpaInput['vpa'],
-                'merchant_id' => $vpaInput['merchant_id']
-            ]
-        );
+            FaVpaValidation::dispatch($this->mode, $vpaInput['fav_id'], $vpaInput);
 
-        return [
-            'message' => 'vpa validation request pushed to queue',
-        ];
+            $this->trace->info(
+                TraceCode::FAV_QUEUE_FOR_VPA_VALIDATE_JOB_REQUEST_DISPATCHED,
+                $traceable
+            );
+
+            return [
+                'message' => 'vpa validation request pushed to queue',
+            ];
+        }
+        catch(\Throwable $exception)
+        {
+            throw new Exception\RuntimeException("Failed to Dispatch Job",
+                ['fav_id' => $vpaInput['fav_id']],
+                null,
+                ErrorCode::FAILED_TO_DISPATCH_JOB);
+        }
     }
 
-    public function updateFavInMicroservice(string $favId, array $data)
+    public function validateBankAccount(array $input)
     {
-        return $this->favUpdateServiceClient->updateFavInMicroservice($favId, $data);
+        try {
+            $traceable = [
+                'fav_id'      => $input['fav_id'],
+                'merchant_id' => $input['merchant_id']
+            ];
+
+            $this->trace->info(
+                TraceCode::FAV_QUEUE_FOR_BANK_ACCOUNT_VALIDATE_JOB_REQUEST,
+                $traceable
+            );
+
+            FavQueueForFTS::dispatch($this->mode, $input['fav_id'], $input);
+
+            $this->trace->info(
+                TraceCode::FAV_QUEUE_FOR_BANK_ACCOUNT_VALIDATE_JOB_REQUEST_DISPATCHED,
+                $traceable
+            );
+
+            return [
+                'message' => 'bank account validation request pushed to fts queue',
+            ];
+        }
+        catch (\Throwable $exception)
+        {
+            throw new Exception\RuntimeException("Failed to Dispatch Job",
+                ['fav_id' => $input['fav_id']],
+                null,
+                ErrorCode::FAILED_TO_DISPATCH_JOB);
+        }
+    }
+
+    public function updateFavInMicroservice(string $favId, array $data, string $type)
+    {
+        return $this->favUpdateServiceClient->updateFavInMicroservice($favId, $data, $type);
     }
 
 
@@ -446,6 +501,21 @@ class Core extends Base\Core
         }
 
         return $validation;
+    }
+
+    /**
+     * @param array $input
+     * @return bool
+     */
+    public function shouldFetchFavByIdViaMicroservice(Merchant\Entity $merchant): bool
+    {
+        // Doing it this way so that we can avoid as many db calls as possible for fetching features.
+//        if ($this->mode !== Mode::LIVE)
+//        {
+//            return false;
+//        }
+
+        return $merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED);
     }
 
     public function processFavAfterLedgerStatusCheck($validation, $ledgerResponse, $feesSplit = null)
@@ -751,6 +821,46 @@ class Core extends Base\Core
         }
     }
 
+    public function fetchByIdFromFavService(string $id, array $input)
+    {
+        $this->trace->info(
+            TraceCode::FAV_FETCH_BY_ID_VIA_MICROSERVICE_REQUEST,
+            [
+                'id'    => $id,
+                'input' => $input,
+            ]);
+
+        $response = $this->favGetServiceClient->fetch(EntityConstant::FUND_ACCOUNT_VALIDATION, $id, $input);
+
+        $this->trace->info(
+            TraceCode::FAV_FETCH_BY_ID_VIA_MICROSERVICE_RESPONSE,
+            [
+                'response' => $response
+            ]);
+
+        return $response;
+    }
+
+    // Fetch fund_account_validation multiple from fav service
+    public function fetchMultipleFromFavService(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::FAV_FETCH_MULTIPLE_VIA_MICROSERVICE_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        $response = $this->favGetServiceClient->fetchMultiple(EntityConstant::FUND_ACCOUNT_VALIDATION, $input);
+
+        $this->trace->info(
+            TraceCode::FAV_FETCH_MULTIPLE_VIA_MICROSERVICE_RESPONSE,
+            [
+                'response' => $response
+            ]);
+
+        return $response;
+    }
+
     protected function associateBalance(Entity $fundAccValidation, array &$input)
     {
         $balanceId = $input[Entity::BALANCE_ID] ?? null;
@@ -972,11 +1082,11 @@ class Core extends Base\Core
      *
      * @return mixed
      */
-    public function sendFAVRequestToFTS(string $favId)
+    public function sendFAVRequestToFTS(string $favId, array $input = [])
     {
         return $this->mutex->acquireAndRelease(
             'fav_queue_for_fts_mutex_' . $favId,
-            function() use ($favId) {
+            function() use ($favId, $input) {
                 $this->trace->info(
                     TraceCode::FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT,
                     [
@@ -984,9 +1094,17 @@ class Core extends Base\Core
                     ]
                 );
 
-                $fav = $this->repo->fund_account_validation->findOrFail($favId);
+                // Creating request separately for input received from FAV service
+                if (empty($input) === false)
+                {
+                    $request = $this->createRequestBodyFromInputForFTS($input);
+                }
+                else
+                {
+                    $fav = $this->repo->fund_account_validation->findOrFail($favId);
 
-                $request = $this->createRequestBodyFromFavForFTS($fav);
+                    $request = $this->createRequestBodyFromFavForFTS($fav);
+                }
 
                 $ftsClient = new FTS\Transfer\Client($this->app);
 
@@ -1112,6 +1230,71 @@ class Core extends Base\Core
         return $request;
     }
 
+    protected function createRequestBodyFromInputForFTS($input)
+    {
+        $this->trace->info(
+            TraceCode::FAV_QUEUE_FOR_FTS_REQUEST_BODY_CREATION_INIT,
+            [
+                'fav_id'      => $input['fav_id'],
+                'merchant_id' => $input['merchant_id']
+            ]
+        );
+
+        // Create the basic request body
+        $request = [
+            FtsRequestFields::TRANSFER => [
+                FtsRequestFields::SOURCE_ID             => $input['fav_id'],
+                FtsRequestFields::SOURCE_TYPE           => FtsConstants::FUND_ACCOUNT_VALIDATION,
+                FtsRequestFields::AMOUNT                => $input['amount'],
+                FtsRequestFields::MERCHANT_ID           => $input['merchant_id'],
+                FtsRequestFields::TRANSFER_ACCOUNT_TYPE => FtsConstants::BANK_ACCOUNT,
+                FtsRequestFields::PURPOSE               => FtsConstants::PENNY_TESTING,
+                FtsRequestFields::PREFERRED_MODE        => FtsConstants::MODE_IMPS,
+            ],
+        ];
+
+        $merchantEntity = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $tempFav = new Entity();
+
+        $narration = $this->getNarration($tempFav, $merchantEntity);
+
+        if (empty($narration) === false)
+        {
+            $request[FtsRequestFields::TRANSFER][FtsRequestFields::NARRATION] = $narration;
+        }
+
+        $bankAccount = $input['bank_account'];
+
+        // Fill the request array further, by nesting bank_account sub-array, using the contents of $bankAccount var
+        $request[FtsRequestFields::BANK_ACCOUNT] = [
+            FtsRequestFields::ID             => $bankAccount["id"],
+            FtsConstants::IFSC_CODE          => $bankAccount["ifsc_code"],
+            FtsRequestFields::ACCOUNT_TYPE   => $bankAccount["account_type"],
+            FtsRequestFields::ACCOUNT_NUMBER => $bankAccount["account_number"],
+            FtsConstants::BENEFICIARY_NAME   => $bankAccount["beneficiary_name"],
+        ];
+
+        if (is_null($bankAccount[FtsRequestFields::ACCOUNT_TYPE]) === true || empty($bankAccount[FtsRequestFields::ACCOUNT_TYPE]) === true)
+        {
+            $request[FtsRequestFields::BANK_ACCOUNT][FtsRequestFields::ACCOUNT_TYPE] = FtsConstants::SAVING;
+        }
+
+        $this->trace->info(
+            TraceCode::FAV_QUEUE_FOR_FTS_REQUEST_CREATED,
+            [
+                'fav_id'       => $input['fav_id'],
+                'merchant_id'  => $input['merchant_id'],
+                'request_body' => [
+                    FtsRequestFields::TRANSFER     => $request[FtsRequestFields::TRANSFER],
+                    FtsRequestFields::BANK_ACCOUNT => ['id' => $request[FtsRequestFields::BANK_ACCOUNT]['id']],
+                ],
+            ]
+        );
+
+        return $request;
+    }
+
     public function setTransferId(string $favId, string $transferId)
     {
         $this->trace->info(
@@ -1127,9 +1310,49 @@ class Core extends Base\Core
         $this->repo->fund_account_validation->saveOrFail($fav);
     }
 
-    protected function getNarration(Entity $fav)
+    public function isNameReceivedFromPennilessValid(string $name = null, string $ifsc = null)
     {
-        $merchant = $fav->merchant;
+        try
+        {
+            $benificiaryNameNotAllowedArray = (new Admin\Service)->getConfigKey([
+                'key' => Admin\ConfigKey::PENNILESS_RESPONSE_BENE_NAME_BLACKLIST
+            ]);
+
+            foreach ($benificiaryNameNotAllowedArray as $beneName)
+            {
+                if(stripos($name, $beneName) !== false)
+                {
+                    $this->trace->info(TraceCode::VALIDATE_VPA_PENNILESS_INVALID_NAME,
+                        [
+                            "bene_substring_found" => $beneName,
+                            "bank"                => substr($ifsc, 0, 4)
+                        ]);
+
+                    return false;
+                }
+            }
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::VALIDATE_VPA_PENNILESS_NAME_FAILURE,
+                [
+                    'bank' => substr($ifsc, 0, 4)
+                ]
+            );
+            return false;
+        }
+        return true;
+    }
+
+
+    protected function getNarration(Entity $fav, Merchant\Entity $merchant = null)
+    {
+        if ($merchant === null) {
+            $merchant = $fav->merchant;
+        }
 
         $merchantBillingLabel = $merchant->getBillingLabel();
 
@@ -1286,6 +1509,27 @@ class Core extends Base\Core
         }
     }
 
+    protected function updateFavInFAVService(array $mapping)
+    {
+        try
+        {
+            //update call to ps for fav
+            $this->updateFavInMicroservice($mapping[Entity::ID], $mapping, FundAccountEntity::BANK_ACCOUNT);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FAV_UPDATE_IN_SERVICE_FROM_FTS_WEBHOOK_FAILED,
+                [
+                    'fav_id' => $mapping[Entity::ID]
+                ]);
+
+            throw $exception;
+        }
+    }
+
     protected function updateFav(array $mapping)
     {
         $this->trace->info(
@@ -1296,11 +1540,20 @@ class Core extends Base\Core
 
         $fav = $this->repo->fund_account_validation->findOrFail($mapping[Entity::ID]);
 
-        $fav->setFTSTransferId($mapping[Entity::FTS_TRANSFER_ID]);
+        $isFavServiceEnabled = $fav->merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED);
 
-        $this->updateWithDetailsBeforeFtaRecon($fav, $mapping);
+        if($isFavServiceEnabled === true)
+        {
+            $this->updateFavInFAVService($mapping);
+        }
+        else
+        {
+            $fav->setFTSTransferId($mapping[Entity::FTS_TRANSFER_ID]);
 
-        $this->updateStatusAfterFtaRecon($fav, $mapping);
+            $this->updateWithDetailsBeforeFtaRecon($fav, $mapping);
+
+            $this->updateStatusAfterFtaRecon($fav, $mapping);
+        }
     }
 
     public function updateTransactionEntity($source, $reset = false, $reconciledType = ReconciledType::MIS)

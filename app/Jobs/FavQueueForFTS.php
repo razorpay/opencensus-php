@@ -4,12 +4,14 @@ namespace RZP\Jobs;
 
 use Razorpay\Trace\Logger;
 
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Trace\Tracer;
 use RZP\Services\FTS;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 use RZP\Constants\HyperTrace;
 use RZP\Services\RazorXClient;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundAccount\Validation\Core as FAVCore;
 use RZP\Models\FundAccount\Validation\Metric as FAVMetric;
 
@@ -31,16 +33,22 @@ class FavQueueForFTS extends Job
 
     protected $favId;
 
-    public function __construct(string $mode, string $id)
+    protected $favInput;
+
+    public function __construct(string $mode, string $id, array $favInput = [])
     {
         // FAV ID
         $this->favId = $id;
+
+        $this->favInput = $favInput;
 
         parent::__construct($mode);
     }
 
     public function handle()
     {
+        $favCore = new FAVCore();
+
         try
         {
             parent::handle();
@@ -61,15 +69,24 @@ class FavQueueForFTS extends Job
              * If the response received above is a Status OK, then remove the job from the queue.
              */
 
-            $favCore = new FAVCore();
-
-            $response = $favCore->sendFAVRequestToFTS($this->favId);
+            $response = $favCore->sendFAVRequestToFTS($this->favId, $this->favInput);
 
             if (empty($response[FTS\Constants::BODY][FTS\Constants::FUND_TRANSFER_ID]) === false)
             {
                 $ftsTransferId = $response[FTS\Constants::BODY][FTS\Constants::FUND_TRANSFER_ID];
 
-                $favCore->setTransferId($this->favId, $ftsTransferId);
+                if (empty($this->favInput) === false)
+                {
+                    $data = [
+                        'fund_transfer_id' => $ftsTransferId
+                    ];
+
+                    $favCore->updateFavInMicroservice($this->favId, $data, FundAccountEntity::BANK_ACCOUNT);
+                }
+                else
+                {
+                    $favCore->setTransferId($this->favId, $ftsTransferId);
+                }
             }
 
             $this->trace->info(
@@ -134,6 +151,15 @@ class FavQueueForFTS extends Job
             $this->trace->count(FAVMetric::FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED);
 
             Tracer::startSpanWithAttributes( HyperTrace::FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED);
+
+            (new SlackNotification)->send(
+                'Could not validate Fund Account. All Penny drop attempts exhausted',
+                [
+                    'fav_id' => $this->favId,
+                ],
+                null,
+                $noOfAttempts,
+                'x-payouts-apps-and-txn-alerts');
 
             $this->delete();
         }

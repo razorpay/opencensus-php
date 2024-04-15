@@ -811,6 +811,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerFavServiceUpdate();
 
+        $this->registerFavServiceFetch();
+
         $this->registerPayoutServiceBankingAccountStatement();
 
         $this->registerFTSChannelNotification();
@@ -1897,6 +1899,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(FavService\Create::FAV_SERVICE_CREATE, function($app)
         {
             return new FavService\Create($app);
+        });
+    }
+
+    protected function registerFavServiceFetch()
+    {
+        $this->app->singleton(FavService\Fetch::FAV_SERVICE_FETCH, function($app)
+        {
+            return new FavService\Fetch($app);
         });
     }
 

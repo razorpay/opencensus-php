@@ -2,11 +2,14 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
+use Mockery;
 use RZP\Models\Feature;
 use RZP\Models\Payout\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\PayoutServiceDataMigration;
+use RZP\Services\FavService\Fetch;
+use RZP\Services\FavService\Fetch as FavServiceFetch;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -484,6 +487,10 @@ class StatementTest extends TestCase
 
     public function testFetchStatementForFailedFavFromLedger()
     {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
         // use ledger mock to create journal for FAV
         $this->app['config']->set('applications.ledger.enabled', false);
 
@@ -839,6 +846,10 @@ class StatementTest extends TestCase
 
     public function testFAVBankAccountTransaction()
     {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
         $this->ba->privateAuth();
 
         $this->createFAVBankAccount();
@@ -855,6 +866,10 @@ class StatementTest extends TestCase
 
     public function testFAVFetchStatement()
     {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
         $this->ba->privateAuth();
 
         $this->createFAVBankAccount();

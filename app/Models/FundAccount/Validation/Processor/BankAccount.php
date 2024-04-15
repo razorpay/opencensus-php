@@ -128,7 +128,8 @@ class BankAccount extends Base
                 // if beneficiary Name exist then only copy details
                 // Also, not checking for empty because older beneficiary Names
                 // can still have names from $benificiaryNameNotAllowedArray
-                if ($this->isBeneficiaryNamePresent($beneficiaryName) === true)
+                if (($this->isBeneficiaryNamePresent($beneficiaryName) === true) and
+                    ((new Core)->isNameReceivedFromPennilessValid($beneficiaryName, $ifscCode) === true))
                 {
                     $this->trace->info(
                         TraceCode::FUND_ACCOUNT_ALREADY_VALIDATED,
