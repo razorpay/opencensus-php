@@ -10,8 +10,6 @@ use RZP\Constants\Metric;
 
 class RollbackEventListener
 {
-    const ASV_OUTBOX_JOB_NAME = 'acs.sync_account.v1';
-    const MERCHANT_ENTITY = 'merchant';
 
     public $app;
     public $trace;
@@ -42,7 +40,7 @@ class RollbackEventListener
 
 
             if (($event->entity instanceof PublicEntity) === true
-                && $event->entity?->getEntityName() == self::MERCHANT_ENTITY
+                && in_array($event->entity?->getEntityName(), ["merchant", "merchant_detail"])
                 && $event->entity->getConnectionName() === Mode::LIVE) {
                 $event->entity->flushCache($event->entity->getEntityName() . '_' . $event->entity->getId());
             }

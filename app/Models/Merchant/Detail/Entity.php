@@ -6,6 +6,7 @@ use App;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lib\PhoneBook;
 use RZP\Models\Base;
+use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Feature;
 use RZP\Models\Address;
 use RZP\Models\Merchant;
@@ -36,6 +37,7 @@ use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
  */
 class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 {
+    use Cacheable;
     use TransactionalModelEvents\TransactionalAwareEvents;
 
     const MERCHANT_ID                        = 'merchant_id';
@@ -1819,5 +1821,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         $businessDetail = $this->businessDetail;
 
         return $businessDetail ? $businessDetail->getEsAttributes():[];
+    }
+
+    protected function getQueryCacheDriver(): string
+    {
+        return 'query_cache_live';
     }
 }

@@ -469,59 +469,26 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantDetailEntity1Array = $merchantDetailEntity1->toArray();
         $merchantDetailProto1 = $this->getMerchantDetailProtoFromJson($this->merchantDetailEntityJson1);
 
-        // Test Case 1 - ExcludedRoute true - Request for findOrFail & findOrFailPublic  should not go to account service
-        $this->setSplitzWithOutput("false", 0);
+        // Test Case 1 - shouldRouteFindToAccountService false - Request for find or fail should not go to account service
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, true, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 3, false, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
 
-        // Test Case 2 - SaveRoute false - Splitz off - Request for findOrFail & findOrFailPublic  should not go to account service
-        $this->setSplitzWithOutput("false", 3);
+//        // Test Case 2 - shouldRouteFindToAccountService true - Request for find or fail should go to account service with shouldRouteFindToAccountService called two times
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
-        $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
+        $repo->repo->transactionOnLiveAndTestAndAsv( function () use ($repo, $merchantDetailEntity1Array) {
+            $this->flushCache();
+            $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 5, true, null);
+            $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
+        });
 
-        // Test Case 3 - SaveRoute false - Splitz Exception - Request for findOrFail & findOrFailPublic  should not go to account service
-        $this->splitzShouldThrowException(3);
+        // Test Case 3 - shouldRouteFindToAccountService true - Request for find or fail should go to account service with shouldRouteFindToAccountService called 1 times
+        // as results are already cached
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
-        $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
-
-        // Test Case 4 - SaveRoute false - Column Selection - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
-        $merchantDetailEntityForFindOrFail = $repo->findOrFail("CzmiCwTPCL3t2K", ["merchant_id"]);
-        $merchantDetailEntityForFindOrFailPublic = $repo->findOrFailPublic("CzmiCwTPCL3t2K", ["merchant_id"]);
-        $this->assertEquals(["merchant_id" => $merchantDetailEntity1Array['merchant_id']], $merchantDetailEntityForFindOrFail->toArray());
-        $this->assertEquals(["merchant_id" => $merchantDetailEntity1Array['merchant_id']], $merchantDetailEntityForFindOrFailPublic->toArray());
-
-        // Test Case 5 - SaveRoute false - array of ids - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
-        $merchantDetailEntityForFindOrFail = $repo->findOrFail(["CzmiCwTPCL3t2K"]);
-        $merchantDetailEntityForFindOrFailPublic = $repo->findOrFailPublic(["CzmiCwTPCL3t2K"]);
-        $merchantDetailEntityForFindOrFailArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($merchantDetailEntity1Array, $merchantDetailEntityForFindOrFail->first()->toArray());
-        $merchantDetailEntityForFindOrFailPublicArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($merchantDetailEntity1Array, $merchantDetailEntityForFindOrFailPublic->first()->toArray());
-        $this->assertEquals($merchantDetailEntity1Array, $merchantDetailEntityForFindOrFailArray);
-        $this->assertEquals($merchantDetailEntity1Array, $merchantDetailEntityForFindOrFailPublicArray);
-
-        $merchantDetailResponse = (new MerchantDetailResponse())->setMerchantDetail($merchantDetailProto1);
-
-        // Test Case 6 - SaveRoute false - Splitz on - Request for findOrFail & findOrFailPublic  should go to account service
-        $this->setSplitzWithOutput("true", 2);
-        $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t2K", $merchantDetailResponse, null, "getById", 2);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
-        $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
-
-        // Test Case 7 - SaveRoute false - Splitz on - Request for findOrFail & findOrFailPublic  should go to account service - Exception occurs fallback to DB
-        $this->setSplitzWithOutput("true", 3);
-        $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t2K", null, new GrpcError(STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), "getById", 3);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
-        $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
+        $repo->repo->transactionOnLiveAndTestAndAsv(function () use ($repo, $merchantDetailEntity1Array) {
+            $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 2, true, null);
+            $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
+        });
     }
 
     public function testMerchantRepositoryFindOrFailErrors() {
@@ -563,53 +530,21 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantDetailEntity1Array = $merchantDetailEntity1->toArray();
         $merchantDetailProto1 = $this->getMerchantDetailProtoFromJson($this->merchantDetailEntityJson1);
 
-        // Test Case 1 - ExcludedRoute true - Request for find should not go to account service
-        $this->setSplitzWithOutput("false", 0);
+        // Test Case 1 - shouldRouteFindToAccountService false - Request for find should not go to account service
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, true, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 1, false, null);
         $this->callFindAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
 
-        // Test Case 2 - SaveRoute false - Splitz off - Request for find  should not go to account service
-        $this->setSplitzWithOutput("false", 1);
+        // Test Case 2 - shouldRouteFindToAccountService true - Request for find should go to account service with shouldRouteFindToAccountService called two times
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+        $this->flushCache();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 2, true, null);
         $this->callFindAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
 
-        // Test Case 3 - SaveRoute false - Splitz Exception - Request for find  should not go to account service
-        $this->splitzShouldThrowException(1);
+        // Test Case 3 - shouldRouteFindToAccountService true - Request for find should go to account service with shouldRouteFindToAccountService called 1 times
+        // as results are already cached
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
-        $this->callFindAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
-
-        // Test Case 4 - SaveRoute false - Column Selection - Request for find should not go to account service
-        $this->setSplitzWithOutput("false", 0);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
-        $merchantDetailEntityForFind = $repo->find("CzmiCwTPCL3t2K", ["merchant_id"]);
-        $this->assertEquals(["merchant_id" => $merchantDetailEntity1Array['merchant_id']], $merchantDetailEntityForFind->toArray());
-
-        // Test Case 5 - SaveRoute false - array of ids - Request for find should not go to account service
-        $this->setSplitzWithOutput("false", 0);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
-        $merchantDetailEntityForFind = $repo->find(["CzmiCwTPCL3t2K"]);
-        $merchantDetailEntityForFindArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($merchantDetailEntity1Array, $merchantDetailEntityForFind->first()->toArray());
-        $this->assertEquals($merchantDetailEntity1Array, $merchantDetailEntityForFindArray);
-
-        $merchantDetailResponse = (new MerchantDetailResponse())->setMerchantDetail($merchantDetailProto1);
-
-        // Test Case 6 - SaveRoute false - Splitz on - Request for find  should go to account service
-        $this->setSplitzWithOutput("true", 1);
-        $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t2K", $merchantDetailResponse, null, "getById", 1);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
-        $this->callFindAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
-
-        // Test Case 7 - SaveRoute false - Splitz on - Request for find  should go to account service - Exception occurs fallback to DB
-        $this->setSplitzWithOutput("true", 1);
-        $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t2K", null, new GrpcError(STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), "getById", 1);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 1, true, null);
         $this->callFindAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
     }
 

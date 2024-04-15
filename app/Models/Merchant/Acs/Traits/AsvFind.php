@@ -204,7 +204,7 @@ trait AsvFind
     {
         $shouldCallAsv = $this->asvRouter->shouldRouteFindForImplicitJoinToAccountService($id, $entityName, $columns, $connectionType, get_class($this), FunctionConstant::FIND_FOR_IMPLICIT_JOIN);
         if ($shouldCallAsv === true) {
-            $shouldCacheResults = in_array($this->entity, ["merchant"]);
+            $shouldCacheResults = in_array($this->entity, ["merchant", "merchant_detail"]);
             if ($shouldCacheResults === true) {
                 return Cache::store('query_cache_live')
                     ->tags(strtolower($this->entity) . '_' . $id)

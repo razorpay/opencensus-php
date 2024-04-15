@@ -3941,7 +3941,7 @@ class Core extends Base\Core
 
     public function invalidateCache(string $entityName, string $merchantId): void
     {
-        $this->trace->info(TraceCode::INVALIDATING_CACHE_FOR_MERCHANT, [
+        $this->trace->info(TraceCode::INVALIDATING_CACHE_FROM_ASV_EVENT, [
             Constants::MERCHANT_ID => $merchantId,
             Constants::ENTITY_NAME => $entityName,
         ]);

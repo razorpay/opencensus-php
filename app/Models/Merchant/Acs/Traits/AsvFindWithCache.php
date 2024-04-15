@@ -53,10 +53,9 @@ trait AsvFindWithCache
                     });
         }
 
-        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
-            'source' => $connectionType ?? \RZP\Models\Merchant\Constants::API_DB,
-            'route' => (new AsvRouter())->getRouteOrJobName(),
-        ]);
+        if ($this->entity === Entity::MERCHANT_DETAIL) {
+            return $this->findDatabase($id, $columns, $connectionType);
+        }
 
         return $this->FindUsingCacheQueries($id, $columns, $connectionType);
     }

@@ -58,8 +58,14 @@ class AsvMerchantUpdateJob extends Job
         }
 
         switch ($updateEventPayload[self::ENTITY_NAME]) {
-            case Entity::MERCHANT: {
+            case Entity::MERCHANT:
                 (new Core())->invalidateCache(
+                    $updateEventPayload[self::ENTITY_NAME],
+                    $updateEventPayload[self::MERCHANT_ID]
+                );
+                break;
+            case Entity::MERCHANT_DETAIL :{
+                (new \RZP\Models\Merchant\Detail\Core())->invalidateCache(
                     $updateEventPayload[self::ENTITY_NAME],
                     $updateEventPayload[self::MERCHANT_ID]
                 );

@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Database\Connection;
 use DB;
 
+use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
+use RZP\Models\Merchant\Acs\Traits\AsvFindWithCache;
 use Throwable;
 use Exception;
 use RZP\Base\ConnectionType;
@@ -35,7 +37,8 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDetail as AsvSdkMerchantDe
 
 class Repository extends Base\Repository
 {
-    use AsvFind, AsvFindEntity;
+    use AsvFindWithCache;
+    use AsvEntityConnection;
     use Base\RepositoryUpdateTestAndLiveAndAsv
     {
         saveOrFail as saveOrFailTestAndLive;

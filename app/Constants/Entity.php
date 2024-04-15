@@ -820,6 +820,10 @@ class Entity
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 10,
         ],
+        self::MERCHANT_DETAIL => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 10,
+        ],
         self::ACCOUNT  => [
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 1,

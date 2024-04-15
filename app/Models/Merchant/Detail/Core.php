@@ -12775,5 +12775,15 @@ class Core extends Base\Core
 
         return $kafkaActivationFormSubmissionEventData;
     }
+
+    public function invalidateCache(string $entityName, string $merchantId): void
+    {
+        $this->trace->info(TraceCode::INVALIDATING_CACHE_FROM_ASV_EVENT, [
+            Constants::MERCHANT_ID => $merchantId,
+            Constants::ENTITY_NAME => $entityName,
+        ]);
+
+        (new Detail\Entity())->flushCache(strtolower($entityName) . '_' . $merchantId);
+    }
 }
 
