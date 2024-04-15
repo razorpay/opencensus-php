@@ -160,7 +160,7 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
     }
   });
 
-  test.skip('Add PayU Provider - Instant (beta)', async ({ page }) => {
+  test('Add PayU Provider - Instant (beta)', async ({ page }) => {
     try {
       await navigateToOptimizer(page);
       await clickButton(page, 'Add Provider');
@@ -201,7 +201,6 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
         optionSelector: ELEMENTS.WALLET_OPTION_PHONEPE,
       });
       expect(submitBtn).toBeEnabled();
-      await clickButton(page, 'Go Back');
     } catch (error) {
       console.error('Error Add PayU Provider - Instant(beta): ', error?.message);
     }
@@ -251,7 +250,6 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
         optionSelector: ELEMENTS.WALLET_OPTION_PHONEPE,
       });
       expect(submitBtn).toBeEnabled();
-      await clickButton(page, 'Go Back');
     } catch (error) {
       console.error('Error Add PayU Provider - Serer-to-Server: ', error?.message);
     }
@@ -291,7 +289,6 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
       // Assert for TPV options
       await assertTPVOption(page);
       expect(submitBtn).toBeEnabled();
-      await clickButton(page, 'Go Back');
     } catch (error) {
       console.error('Error Add Billdesk Provider: ', error?.message);
     }
@@ -322,7 +319,6 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
       // Assert for TPV options
       await assertTPVOption(page);
       expect(submitBtn).toBeEnabled();
-      await clickButton(page, 'Go Back');
     } catch (error) {
       console.error('Error Add Easebuzz Optimizer Provider: ', error?.message);
     }
@@ -363,7 +359,6 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
       await typeTextIntoElement(page, ELEMENTS.PROVIDER_SECRET, 'IJK762TEST');
       await clickMethodsByText(page, methods);
       expect(submitBtn).toBeEnabled();
-      await clickButton(page, 'Go Back');
     } catch (error) {
       console.error('Error Add optimizer razorpay provider: ', error?.message);
     }
@@ -404,7 +399,6 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
       await typeTextIntoElement(page, ELEMENTS.PROVIDER_SECRET, 'IJK762TEST');
       await clickMethodsByText(page, methods);
       expect(submitBtn).toBeEnabled();
-      await clickButton(page, 'Go Back');
     } catch (error) {
       console.error('Error Add optimizer razorpay provider: ', error?.message);
     }
