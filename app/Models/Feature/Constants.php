@@ -2050,6 +2050,10 @@ class Constants
 
     const SOURCE_TO_PAY_PRO = 'source_to_pay_pro';
 
+    // Feature flag changes sinch_sms_email
+    //Sinch Integration for SMS and Emails - for Payment Links
+    const SINCH_EMAIL_SMS= 'sinch_email_sms';
+
     /**
      * Feature flags to enable/disable Account Statement in X Dashboard
      */
@@ -2852,6 +2856,7 @@ class Constants
         self::LIQUILOANS_DIRECT_FEE                        => true,
         self::DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN => true,
         self::DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN  => true,
+        self::SINCH_EMAIL_SMS                              => true,
         self::ONLY_DS                                      => true,
         self::ORG_PROGRAM_DS_CHECK                         => true,
         self::OPTIMIZER_ONLY_MERCHANT                      => true,
