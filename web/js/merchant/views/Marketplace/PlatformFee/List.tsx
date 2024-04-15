@@ -1,29 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
-import { compose, ActionCreator, bindActionCreators } from 'redux';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
 import { Amount } from '@razorpay/blade/components';
+import { useQuery } from '@tanstack/react-query';
 import { History, Location } from 'history';
-import { paiseToRupees } from 'common/utils/rzp-utils';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { recipient, createdAt } from 'common/ui/item/pair';
-import { RZPFeatures } from 'merchant/helpers/data';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { compose, ActionCreator, bindActionCreators } from 'redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import { User } from 'common/typings';
+import { Notification } from 'common/typings/Store/notifications';
+import ProductWrapper from 'common/ui/ProductWrapper';
 import DataTable from 'common/ui/Table/DataTable';
+import { recipient, createdAt } from 'common/ui/item/pair';
 import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import TransferSource from 'merchant/views/Marketplace/Transfers/components/TransferSource';
 import { RouteTransfersStatusLabel } from 'merchant/components/StatusLabel';
+import TestModeBanner from 'merchant/components/TestModeBanner';
+import { RZPFeatures } from 'merchant/helpers/data';
+import { convertToMajorUnitInUserCurrency } from 'merchant/utils/currency';
+import { platformFeeOpenedAnalytics } from 'merchant/views/Marketplace/MarketplaceAnalytics';
+import { navItems } from 'merchant/views/Marketplace/NavItems';
 import { PlatformFeeListFilter } from 'merchant/views/Marketplace/PlatformFee/components/PlatformFeeListFilter';
 import { ContentBox } from 'merchant/views/Marketplace/PlatformFee/components/styles';
-import { Notification } from 'common/typings/Store/notifications';
-import { User } from 'common/typings';
-import TestModeBanner from 'merchant/components/TestModeBanner';
-import ProductWrapper from 'common/ui/ProductWrapper';
-import { navItems } from 'merchant/views/Marketplace/NavItems';
+import TransferSource from 'merchant/views/Marketplace/Transfers/components/TransferSource';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
 import { fetchTransfers } from './api';
-import { platformFeeOpenedAnalytics } from 'merchant/views/Marketplace/MarketplaceAnalytics';
 
 const source = {
   title: 'Source Id',
@@ -33,15 +35,6 @@ const source = {
 const transferStatus = {
   title: 'Status',
   value: (item) => <RouteTransfersStatusLabel status={item.status} />,
-};
-
-const platformAmount = {
-  title: 'Platform Fee Amount',
-  value: (item) => <Amount value={paiseToRupees(item.amount)} type="body" size="small" />,
-};
-const partnerAmount = {
-  title: 'Partner Fee Amount',
-  value: (item) => <Amount value={paiseToRupees(item.amount)} type="body" size="small" />,
 };
 
 const platformFeeId = {
@@ -89,6 +82,19 @@ const PlatformFee = ({
   user,
   isPartnerPlatformFeeEnabled,
 }: PlatformFeeProps): JSX.Element => {
+  const platformAmount = {
+    title: 'Platform Fee Amount',
+    value: (item) => (
+      <Amount value={convertToMajorUnitInUserCurrency(item.amount + item.fees)} size="small" />
+    ),
+  };
+  const partnerAmount = {
+    title: 'Partner Fee Amount',
+    value: (item) => (
+      <Amount value={convertToMajorUnitInUserCurrency(item.amount + item.fees)} size="small" />
+    ),
+  };
+
   const [paginationState, setPagination] = useState({
     skip: 0,
     count: 25,
@@ -163,7 +169,7 @@ const PlatformFee = ({
             isPartnerPlatformFeeEnabled={isPartnerPlatformFeeEnabled}
           />
           <DataTable
-            title="Platform Fee"
+            title={isPartnerPlatformFeeEnabled ? 'Platform Fee' : 'Partner Fee'}
             columns={[
               isPartnerPlatformFeeEnabled ? platformFeeId : partnerFeeId,
               source,

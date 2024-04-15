@@ -34,6 +34,7 @@ describe('Platform Fee Filter', () => {
   test('should render all fields', () => {
     renderApp();
     expect(screen.getByLabelText('Partner Fee ID')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Enter Partner Fee ID')).toBeInTheDocument();
     expect(screen.getByLabelText('Payment ID')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByLabelText('Recipient ID')).toBeInTheDocument();
@@ -41,6 +42,7 @@ describe('Platform Fee Filter', () => {
     expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Clear' })).toBeInTheDocument();
   });
+
   test('should render Platform Fee ID if isPartnerPlatformFeeEnabled is enabled', () => {
     const isPartnerPlatformFeeEnabled = true;
     renderApp(location, isPartnerPlatformFeeEnabled);

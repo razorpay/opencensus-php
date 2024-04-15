@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen, waitFor, server, userEvent } from 'common/services/test/test-utils';
 import { getInitialUserOrgState } from 'common/tests/utils';
 import * as analytics from 'common/utils/analytics';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { convertToMajorUnitInUserCurrency } from 'merchant/utils/currency';
 import PlatformFeeDetails from 'merchant/views/Marketplace/PlatformFee/Details';
 import * as store from 'merchant/views/Marketplace/store';
 import * as modals from 'merchant_common/reducers/modals';
@@ -78,12 +78,16 @@ describe('Platform Fee Details', () => {
     expect(screen.getByText(data.id)).toBeInTheDocument();
     expect(screen.getByText('Partner Fee Amount')).toBeInTheDocument();
 
-    expect(screen.getByText(paiseToRupees(data.amount + data.fees))).toBeInTheDocument();
+    expect(
+      screen.getByText(convertToMajorUnitInUserCurrency(data.amount + data.fees)),
+    ).toBeInTheDocument();
 
     await waitFor(() => {
       expect(
         screen.getByText(
-          `Payment to ${data.recipient_details.name} = ${paiseToRupees(data.amount)}`,
+          `Payment to ${data.recipient_details.name} = ${convertToMajorUnitInUserCurrency(
+            data.amount,
+          )}`,
         ),
       );
       expect(screen.getByText('No reversals created')).toBeInTheDocument();
@@ -119,7 +123,9 @@ describe('Platform Fee Details', () => {
     });
     expect(screen.getByText(data.id)).toBeInTheDocument();
     expect(screen.getByText(`Partner Fee Amount`)).toBeInTheDocument();
-    expect(screen.getByText(paiseToRupees(data.amount + data.fees))).toBeInTheDocument();
+    expect(
+      screen.getByText(convertToMajorUnitInUserCurrency(data.amount + data.fees)),
+    ).toBeInTheDocument();
     const reversalButton = screen.getByRole('button', { name: 'Create reversal' });
     expect(reversalButton).toBeInTheDocument();
     await userEvent.click(reversalButton);

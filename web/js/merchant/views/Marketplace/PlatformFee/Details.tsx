@@ -1,33 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
-import { compose, ActionCreator, bindActionCreators } from 'redux';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import shallow from 'zustand/shallow';
 import { Amount, Spinner, InfoIcon } from '@razorpay/blade/components';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { useQuery } from '@tanstack/react-query';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { compose, ActionCreator, bindActionCreators } from 'redux';
+import shallow from 'zustand/shallow';
+
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { User } from 'common/typings';
+import { OpenModalPayload } from 'common/typings/Store/modal';
+import { Notification } from 'common/typings/Store/notifications';
 import Definition from 'common/ui/Definition';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
-import TransferSource from 'merchant/views/Marketplace/Transfers/components/TransferSource';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { RouteTransfersStatusLabel } from 'merchant/components/StatusLabel';
-import TransferReversal from 'merchant/views/Marketplace/Transfers/components/TransferReversal';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { convertToMajorUnitInUserCurrency } from 'merchant/utils/currency';
+import { platformFeeDetailsOpenedAnalytics } from 'merchant/views/Marketplace/MarketplaceAnalytics';
 import {
   AmountContainer,
   ErrorText,
   DetailsSpinnerContainer,
   IconContainer,
 } from 'merchant/views/Marketplace/PlatformFee/components/styles';
-import { openModal } from 'merchant_common/reducers/modals';
 import ReversalModal from 'merchant/views/Marketplace/Transfers/ReversalModal';
-import { OpenModalPayload } from 'common/typings/Store/modal';
-import { Notification } from 'common/typings/Store/notifications';
-import { User } from 'common/typings';
-import { fetchTransfersById, fetchReversals } from './api';
-import { platformFeeDetailsOpenedAnalytics } from 'merchant/views/Marketplace/MarketplaceAnalytics';
+import TransferReversal from 'merchant/views/Marketplace/Transfers/components/TransferReversal';
+import TransferSource from 'merchant/views/Marketplace/Transfers/components/TransferSource';
 import { useMarketplaceStore } from 'merchant/views/Marketplace/store';
+import { openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { fetchTransfersById, fetchReversals } from './api';
 
 const ERROR_CODE_CTAS_MAP = {
   BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT: 'Please create another transfer.',
@@ -169,12 +171,16 @@ const PlatformFeeDetailsContainer = ({
                   {transferData?.amount ? (
                     <Definition>
                       <span>
-                        <Amount value={paiseToRupees(transferData.amount + transferData.fees)} />
+                        <Amount
+                          value={convertToMajorUnitInUserCurrency(
+                            transferData.amount + transferData.fees,
+                          )}
+                        />
                       </span>
                       <AmountContainer>
                         Payment to {transferData.recipient_details.name} ={' '}
                         <Amount
-                          value={paiseToRupees(transferData.amount)}
+                          value={convertToMajorUnitInUserCurrency(transferData.amount)}
                           type="body"
                           size="small"
                         />
@@ -183,7 +189,7 @@ const PlatformFeeDetailsContainer = ({
                         <AmountContainer>
                           Razorpay Charges Incl Tax ={' '}
                           <Amount
-                            value={paiseToRupees(transferData.fees)}
+                            value={convertToMajorUnitInUserCurrency(transferData.fees)}
                             type="body"
                             size="small"
                           />
@@ -192,7 +198,7 @@ const PlatformFeeDetailsContainer = ({
                           <AmountContainer>
                             Razorpay Transfer Fee ={' '}
                             <Amount
-                              value={paiseToRupees(transferData.fees)}
+                              value={convertToMajorUnitInUserCurrency(transferData.fees)}
                               type="body"
                               size="small"
                             />
@@ -200,7 +206,7 @@ const PlatformFeeDetailsContainer = ({
                           <AmountContainer>
                             GST ={' '}
                             <Amount
-                              value={paiseToRupees(transferData.tax)}
+                              value={convertToMajorUnitInUserCurrency(transferData.tax)}
                               type="body"
                               size="small"
                             />
@@ -293,7 +299,7 @@ const PlatformFeeDetailsContainer = ({
                                   <InfoIcon
                                     color="feedback.icon.neutral.intense"
                                     size="small"
-                                    marginRight={'5px'}
+                                    marginRight="5px"
                                   />
                                   This note is shown to the linked account
                                 </IconContainer>

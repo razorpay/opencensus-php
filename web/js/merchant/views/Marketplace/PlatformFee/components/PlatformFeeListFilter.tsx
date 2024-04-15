@@ -131,7 +131,9 @@ export const PlatformFeeListFilter = ({
         <TextInput
           label={isPartnerPlatformFeeEnabled ? 'Platform Fee ID' : 'Partner Fee ID'}
           name="id"
-          placeholder="Enter Platform Fee ID"
+          placeholder={
+            isPartnerPlatformFeeEnabled ? 'Enter Platform Fee ID' : 'Enter Partner Fee ID'
+          }
           value={formData.id}
           onChange={handleChange}
         />
