@@ -2065,6 +2065,11 @@ class Service extends Base\Service
                     'application_type'      => 'RBL_ONBOARDING_APPLICATION'
                 ]);
 
+                if ($bankingAccount->getAttribute('status') === \RZP\Models\BankingAccount\Status::ARCHIVED)
+                {
+                    $bankingAccountApplication['sales_team'] = empty($activationDetail->getSalesTeam())? $activationDetail->getSalesTeam(): 'X_SME';
+                }
+
                 // compute partner LMS flag
                 try
                 {
@@ -2125,13 +2130,25 @@ class Service extends Base\Service
                     'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
                     'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
                     'business_id'           => '', // will be computed at BAS
-                    'status'                => 'ACTIVE',
                     'account_type'          => 'CA_DIRECT',
                     'partner_bank'          => 'RBL',
                     'balance_id'            => empty($balance) ? '' : $balance->getId(),
                     'fts_fund_account_id'   => $bankingAccount->getAttribute('fts_fund_account_id'),
                     'credentials'           => $credentials
                 ]);
+
+                $bankingAccountStatus = $bankingAccount->getAttribute('status');
+
+                if ($bankingAccountStatus === \RZP\Models\BankingAccount\Status::ACTIVATED ||
+                    $bankingAccountStatus === \RZP\Models\BankingAccount\Status::ACCOUNT_ACTIVATION ||
+                    $bankingAccountStatus === \RZP\Models\BankingAccount\Status::ACCOUNT_OPENING)
+                {
+                    $basBankingAccount['status'] = 'ACTIVE';
+                }
+                else
+                {
+                    $basBankingAccount['status'] = 'IN_PROGRESS';
+                }
 
                 // 5. generate partner_bank_application for BAS
                 $partnerBankApplication = array_merge($basInput['partner_bank_application'], [

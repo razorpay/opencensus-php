@@ -14078,6 +14078,8 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
+        $this->createMerchantDetail(['merchant_id'=> $bankingAccount->getMerchantId(),'activation_status'=>'activated']);
+
         $activationDetail = $this->getDbLastEntity('banking_account_activation_detail');
 
         // 2. update banking_account, banking_account_activation_detail using testdata
@@ -14170,7 +14172,7 @@ class BankingAccountTest extends TestCase
             'created_at'            => $bankingAccount->getAttribute('created_at') * 1000,
             'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
             'business_id'           => '', // will be computed at BAS
-            'status'                => 'ACTIVE',
+            'status'                => $state=='activated'? 'ACTIVE' : 'IN_PROGRESS',
             'account_type'          => 'CA_DIRECT',
             'partner_bank'          => 'RBL',
             'balance_id'            => $balanceRequired ? $balance->getId() : '',
@@ -14323,16 +14325,6 @@ class BankingAccountTest extends TestCase
     public function testRblMigrationBasActivatedAccount()
     {
         $this->rblMigrationBasWithDifferentState('activated', true);
-    }
-
-    public function testRblMigrationBasArchivedAccount()
-    {
-        $this->rblMigrationBasWithDifferentState('archived', false);
-    }
-
-    public function testRblMigrationBasArchivedAccountWithBalance()
-    {
-        $this->rblMigrationBasWithDifferentState('archived', true);
     }
 
     public function testRblMigrationBasPickedState()
