@@ -158,6 +158,7 @@ const HelpSection = ({
             isTransacted: user?.isTransacted || false,
             features: user?.features || [],
             pos_activation_status: getPosActivationStatus(user, splitz),
+            activationStatusChangeLogs: user.activationStatusChangeLogs,
           }}
           onError={handleError}
           track={analyticsTrack}
