@@ -115,6 +115,17 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function addTokenMapping($input) : array
+    {
+        $response = array();
+        $iin = $input['actual_iin'];
+        $tokenIin = $input['token_iin'];
+        if(isset($iin) === true && isset($tokenIin) === true){
+            $response = $this->addMapping($iin, $tokenIin);
+        }
+        return $response;
+    }
+
     public function addMapping($iin, $tokenIin) : array
     {
         $response = array();
