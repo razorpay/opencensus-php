@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\MerchantUser;
 
 use Rzp\Accounts\Account\V1\ENTITY_NAME;
 use RZP\Constants;
+use RZP\Constants\Product;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -81,6 +82,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
             ->select(Entity::MERCHANT_ID, Entity::ROLE, Entity::PRODUCT, Entity::USER_ID)
+            ->where(Entity::PRODUCT, '!=', Product::BILLING)
             ->where(Entity::USER_ID, $userId)
             ->limit($limit)
             ->orderByRaw($sql)
