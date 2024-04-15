@@ -658,21 +658,34 @@ class UserController extends Controller
         return true;
     }
 
-    private function isRedirectionApplicableToUnifiedLogin(array $org): bool {
+    private function isRedirectionApplicableToUnifiedLogin(array $org): bool
+    {
 
         $existingRedirectionConditions = $this->redirectionApplicableForGuest($org);
 
         $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
-            '$existingRedirectionConditions'     => $existingRedirectionConditions,
+            'existingRedirectionConditions' => $existingRedirectionConditions,
         ]);
 
         if ($existingRedirectionConditions === false) {
             return false;
         }
 
-        $uuid = Cookie::get('ab_user_id') ?? UniqueIdEntity::generateUniqueId();
+        $uuid = UniqueIdEntity::generateUniqueId();
 
-        Cookie::queue('ab_user_id', $uuid, null, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+        if (empty($_COOKIE['ab_user_id']) === false) {
+            $cookie = $_COOKIE['ab_user_id'];
+
+            $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+                'cookieSetFromFE' => $_COOKIE['ab_user_id'],
+            ]);
+
+            $uuid = $cookie;
+        } else {
+            if (isset($this->options['cookies']['ab_user_id']) === false) {
+                $this->options['cookies']['ab_user_id'] = $uuid;
+            }
+        }
 
         // UNIFIED LOGIN SIGN UP EASY_ONBOARDING_REDIRECT as true.
         $unifiedExperimentID = \Config::get('splitz.experiments')['UNIFIED_PG_REDIRECTION_ENABLED'];
@@ -680,7 +693,7 @@ class UserController extends Controller
         $data = (new SplitzService())->getVariantBulk($uuid, [$unifiedExperimentID], [], "splitz/bulkEvaluate");
 
         $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
-            '$data'     => $data,
+            '$data' => $data,
         ]);
 
         return ($data[$unifiedExperimentID]['variables']['result'] ?? null) === 'on';
