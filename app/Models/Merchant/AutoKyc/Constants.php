@@ -114,6 +114,7 @@ class Constants
             Operator::AND => [
                 Operator:: AND                => [
                     Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
+                    Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
                     Operator:: OR                   => [
                         Entity::GSTIN_VERIFICATION_STATUS              => self::GSTIN_CONDITION,
                         Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS => self::SHOP_ESTABLISHMENT_CONDITION,
@@ -138,6 +139,7 @@ class Constants
                 Operator:: AND                => [
                     Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
                     Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                    Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
                     Operator:: AND                          => [
                         Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
                         Operator:: OR  => self::POA_VERIFICATION_CONDITION
@@ -156,6 +158,7 @@ class Constants
                 Operator:: AND                => [
                     Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
                     Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                    Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
                     Operator:: AND                          => [
                         Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
                         Operator:: OR  => self::POA_VERIFICATION_CONDITION
@@ -174,6 +177,7 @@ class Constants
                 Operator:: AND                => [
                     Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
                     Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
+                    Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
                     Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
                     'partnership_deed|doc'                   => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
                     Operator:: OR                            => self::POA_VERIFICATION_CONDITION,
@@ -187,6 +191,7 @@ class Constants
                 Operator:: AND                => [
                     Entity::POI_VERIFICATION_STATUS              => self::POI_CONDITION,
                     Entity::COMPANY_PAN_VERIFICATION_STATUS      => self::COMPANY_PAN_CONDITION,
+                    Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
                     Operator:: OR                                => self::POA_VERIFICATION_CONDITION,
                     Entity::BANK_DETAILS_VERIFICATION_STATUS     => self::DEFAULT_CONDITION,
                     'trust_society_ngo_business_certificate|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
@@ -200,6 +205,7 @@ class Constants
                 Operator:: AND                => [
                     Entity::POI_VERIFICATION_STATUS              => self::POI_CONDITION,
                     Entity::COMPANY_PAN_VERIFICATION_STATUS      => self::COMPANY_PAN_CONDITION,
+                    Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
                     Operator:: OR                                => self::POA_VERIFICATION_CONDITION,
                     Entity::BANK_DETAILS_VERIFICATION_STATUS     => self::DEFAULT_CONDITION,
                     'trust_society_ngo_business_certificate|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
@@ -213,6 +219,7 @@ class Constants
                 Operator:: AND                => [
                     Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
                     Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                    Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
                     Operator:: AND                          => [
                         Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
                         Operator:: OR  => self::POA_VERIFICATION_CONDITION

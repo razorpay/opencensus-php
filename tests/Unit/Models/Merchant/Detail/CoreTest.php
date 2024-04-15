@@ -596,6 +596,7 @@ class CoreTest extends TestCase
             "issue_fields"                        => "business_website",
             "submitted"                           => 1,
             "poi_verification_status"             => "verified",
+            "personal_pan_doc_verification_status"=> "verified",
             "poa_verification_status"             => "verified",
             "bank_details_verification_status"    => "verified",
             "live_transaction_done"               => 0,
@@ -6622,6 +6623,7 @@ class CoreTest extends TestCase
             'bank_details_verification_status'     => 'verified',
             'gstin_verification_status'            => 'verified',
             'company_pan_verification_status'      => 'verified',
+            'company_pan_doc_verification_status'  => 'verified',
             'bank_details_doc_verification_status' =>  null,
             Entity::CIN_VERIFICATION_STATUS        => 'verified',
         ]);
@@ -6935,6 +6937,7 @@ class CoreTest extends TestCase
             'bank_details_verification_status'     => 'verified',
             'gstin_verification_status'            => 'verified',
             'company_pan_verification_status'      => 'verified',
+            'company_pan_doc_verification_status'  => 'verified',
             'bank_details_doc_verification_status' =>  null,
             Entity::CIN_VERIFICATION_STATUS        => 'verified',
         ]);
@@ -14575,7 +14578,7 @@ class CoreTest extends TestCase
         ]);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+                               ->setMethods([ 'canSubmit', 'updateActivationStatus'])
                                ->getMock();
 
         $detailCoreMock->expects($this->never())
