@@ -2,10 +2,9 @@ import 'react-dates/initialize';
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 
+import ResellerOrders from 'merchant/views/GCMS/Resellers/ResellerOrders';
 import { GCMSTestPageRenderer } from 'merchant/views/GCMS/shared/test-utils';
 import { render, userEvent } from 'test-utils';
-
-import ResellerOrders from 'merchant/views/GCMS/Resellers/ResellerOrders';
 
 const variantOn = { razorpay_gcms: { variables: { result: 'on' } } };
 
@@ -29,7 +28,7 @@ describe('GCMS: Reseller Orders', () => {
     renderOrders();
 
     await waitFor(() => {
-      expect(screen.getByText('Duration')).toBeInTheDocument();
+      expect(screen.getByText('Order Date')).toBeInTheDocument();
       expect(screen.getByText('Order ID')).toBeInTheDocument();
     });
   });

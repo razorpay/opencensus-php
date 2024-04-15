@@ -24,6 +24,12 @@ export const PROGRAM_TYPES = {
 };
 
 export const ORDERS_STATUS = {
+  //For status in filters dropdown
+  all: {
+    label: 'All',
+    value: 'all',
+    color: 'neutral',
+  },
   draft: {
     label: 'Draft',
     value: 'draft',
@@ -48,12 +54,6 @@ export const ORDERS_STATUS = {
     label: 'Cancelled',
     value: 'cancelled',
     color: 'negative',
-  },
-  //For status in filters dropdown
-  all: {
-    label: 'All',
-    value: 'all',
-    color: 'neutral',
   },
 };
 

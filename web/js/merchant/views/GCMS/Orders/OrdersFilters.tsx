@@ -95,9 +95,9 @@ const OrdersFilter = ({ onSearch, isResellerOrderFilter = false }: OrdersFilterP
   return (
     <StyledFilterDiv>
       <div className={`gcms-orders-filter-group ${isAllTimeFilter && 'all-time-filter-selected'}`}>
-        <Box paddingY={'spacing.4'} display={'flex'}>
+        <Box paddingY="spacing.4" marginLeft="-13px" display="flex">
           <div className="form-group list-filter-item">
-            <label>Order Id</label>
+            <label>Order ID</label>
             <input
               name="order_id"
               className="form-control input-sm"
@@ -122,7 +122,7 @@ const OrdersFilter = ({ onSearch, isResellerOrderFilter = false }: OrdersFilterP
             </div>
           ) : null}
           <div className="form-group datepicker-group">
-            <label>Duration</label>
+            <label>Order Date</label>
             <DateRangePickerV2
               presets={presetsToShow}
               setSelectedPreset={onSelectPreset}

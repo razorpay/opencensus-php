@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Box, Text, Heading } from '@razorpay/blade/components';
+import { Box, Text, Heading, Divider } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -54,8 +54,11 @@ const Programs = ({ mode }: { mode: ModeT }) => {
           <Heading color="surface.text.gray.subtle" size="large">
             Programs
           </Heading>
+          <Box paddingTop="spacing.4" paddingBottom="spacing.4">
+            <Divider />
+          </Box>
         </Box>
-        <div className="content">
+        <div>
           {isLoading ? (
             <div className="page-spinner-container">
               <Spinner center={undefined} />
@@ -70,7 +73,6 @@ const Programs = ({ mode }: { mode: ModeT }) => {
             >
               <Box
                 marginTop="spacing.4"
-                padding="spacing.4"
                 display="flex"
                 flex={1}
                 flexDirection="row"
