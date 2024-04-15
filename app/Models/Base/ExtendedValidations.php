@@ -60,6 +60,15 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         'Epoch',
     ];
 
+    protected $defaultNumericRules = [
+        'Numeric',
+        'Integer',
+        'MysqlSignedInt',
+        'MysqlUnsignedInt',
+        'IntPercentage',
+        'Epoch',
+    ];
+
     protected function validatePublicId($attribute, $id)
     {
         //

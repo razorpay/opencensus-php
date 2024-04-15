@@ -108,6 +108,7 @@ class Entity extends Base\Entity
         'amount'       => 'int',
         'gateway_data' => 'array',
         'gateway_error'=> 'array',
+        self::ACCOUNT_NUMBER => 'string',
 
     ];
 

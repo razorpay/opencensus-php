@@ -2,6 +2,7 @@
 
 namespace RZP\Trace;
 
+use Monolog\LogRecord;
 use RZP\Models\P2p\Base\Libraries\Context;
 
 class P2pTraceProcessor
@@ -16,9 +17,9 @@ class P2pTraceProcessor
         $this->context = $context;
     }
 
-    public function __invoke(array $record)
+    public function __invoke(LogRecord $record): LogRecord
     {
-        $record['p2p'] = [
+        $record['extra']['p2p'] = [
             'p2p_handle_acquirer'   => $this->getHandleAcquirer(),
             'handle'                => $this->getHandleCode(),
             'request_id'            => $this->getRequestId(),

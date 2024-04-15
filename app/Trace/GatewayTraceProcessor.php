@@ -3,6 +3,7 @@
 namespace RZP\Trace;
 
 use App;
+use Monolog\LogRecord;
 use Request;
 
 class GatewayTraceProcessor
@@ -28,7 +29,7 @@ class GatewayTraceProcessor
         $this->input = $this->action = null;
     }
 
-    public function __invoke(array $record)
+    public function __invoke(LogRecord $record): LogRecord
     {
         if (isset($this->input) === false)
         {
@@ -56,77 +57,77 @@ class GatewayTraceProcessor
         return $record;
     }
 
-    protected function addGateway(& $record)
+    protected function addGateway(LogRecord &$record)
     {
         if (isset($this->input['payment']['gateway']) === true)
         {
-            $record['payment']['gateway'] = $this->input['payment']['gateway'];
+            $record['extra']['payment']['gateway'] = $this->input['payment']['gateway'];
         }
     }
 
-    protected function addPaymentId(& $record)
+    protected function addPaymentId(LogRecord &$record)
     {
         if (isset($this->input['payment']['id']) === true)
         {
-            $record['payment']['payment_id'] = $this->input['payment']['id'];
+            $record['extra']['payment']['payment_id'] = $this->input['payment']['id'];
         }
     }
 
-    protected function addTerminalId(& $record)
+    protected function addTerminalId(LogRecord &$record)
     {
         if (isset($this->input['terminal']['id']) === true)
         {
-            $record['payment']['terminal_id'] = $this->input['terminal']['id'];
+            $record['extra']['payment']['terminal_id'] = $this->input['terminal']['id'];
         }
     }
 
-    protected function addRefundId(& $record)
+    protected function addRefundId(LogRecord &$record)
     {
         if (isset($this->input['refund']['id']) === true)
         {
-            $record['payment']['refund_id'] = $this->input['refund']['id'];
+            $record['extra']['payment']['refund_id'] = $this->input['refund']['id'];
         }
     }
 
-    protected function addCardDetails(& $record)
+    protected function addCardDetails(LogRecord &$record)
     {
         if (isset($this->input['card']['network']) === true)
         {
-            $record['payment']['card']['network'] = $this->input['card']['network'];
-            $record['payment']['card']['issuer'] = $this->input['card']['issuer'];
-            $record['payment']['card']['iin'] = $this->input['card']['iin'] ?? null;
+            $record['extra']['payment']['card']['network'] = $this->input['card']['network'];
+            $record['extra']['payment']['card']['issuer'] = $this->input['card']['issuer'];
+            $record['extra']['payment']['card']['iin'] = $this->input['card']['iin'] ?? null;
         }
     }
 
-    protected function addPsp(& $record)
+    protected function addPsp(LogRecord &$record)
     {
         if (isset($this->input['payment']['vpa']) === true)
         {
-            $record['payment']['psp'] = explode('@', $this->input['payment']['vpa'])[1];
+            $record['extra']['payment']['psp'] = explode('@', $this->input['payment']['vpa'])[1];
         }
     }
 
-    protected function addBank(& $record)
+    protected function addBank(LogRecord &$record)
     {
         if (isset($this->input['payment']['bank']) === true)
         {
-            $record['payment']['bank'] = $this->input['payment']['bank'];
+            $record['extra']['payment']['bank'] = $this->input['payment']['bank'];
         }
     }
 
-    protected function addMerchantId(& $record)
+    protected function addMerchantId(LogRecord &$record)
     {
         if (isset($this->input['merchant']['id']) === true)
         {
-            $record['request']['merchant_id'] = $this->input['merchant']['id'];
+            $record['extra']['request']['merchant_id'] = $this->input['merchant']['id'];
         }
     }
 
-    protected function addAction(& $record)
+    protected function addAction(LogRecord &$record)
     {
         if (isset($this->action) === true)
         {
-            $record['payment']['action'] = $this->action;
+            $record['extra']['payment']['action'] = $this->action;
         }
     }
 }

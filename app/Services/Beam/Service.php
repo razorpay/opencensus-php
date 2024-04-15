@@ -91,9 +91,9 @@ class Service
         // For some cases, we need to parse the response from beam and proceed
         if ($synchronous === true)
         {
-            $beam = new BeamJob($request, $intervalInfo, $mailInfo, $this->config['mock']);
+            $job = new BeamJob($request, $intervalInfo, $mailInfo, $this->config['mock']);
 
-            return dispatch_now($beam);
+            return $job->handle();
         }
 
         BeamJob::dispatch($request, $intervalInfo, $mailInfo, $this->config['mock']);

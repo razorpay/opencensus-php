@@ -209,6 +209,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::MOBILE_BANKING_ENABLED => 'bool',
+        self::ACCOUNT_NUMBER => 'string',
     ];
 
     protected $ignoredRelations = [

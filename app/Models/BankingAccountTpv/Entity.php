@@ -127,6 +127,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::IS_ACTIVE => 'bool',
+        self::PAYER_ACCOUNT_NUMBER => 'string',
     ];
 
     // -------------------- Getters -----------------------------

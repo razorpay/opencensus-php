@@ -396,7 +396,7 @@ trait RepositoryUpdateTestAndLive
             // Map the ASV Error to DB QueryException, so that the handling for this error is not impacted.
             // However, we are not Setting SQL and binding and the SQL generated will be empty.
             // It is not possible to get the query executed as it is done on Account Service.
-            throw new \Illuminate\Database\QueryException("", [], $th);
+            throw new \Illuminate\Database\QueryException($entity->getConnectionName(),"", [], $th);
         }
     }
 }

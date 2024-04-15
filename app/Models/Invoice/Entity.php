@@ -560,6 +560,8 @@ class Entity extends Base\PublicEntity
         self::BILLING_START            => 'int',
         self::BILLING_END              => 'int',
         self::GROUP_TAXES_DISCOUNTS    => 'bool',
+        self::IDEMPOTENCY_KEY          => 'string',
+        self::RECEIPT                  => 'string',
     ];
 
     protected $amounts = [

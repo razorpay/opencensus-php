@@ -11305,11 +11305,11 @@ Team Razorpay',
 
         $this->startTest();
 
-        $testKeyValue = Redis::connection('query_cache_redis')->get('test:tag:merchant_10000000000000:key');
-        $liveKeyValue = Redis::connection('query_cache_redis')->get('live:tag:merchant_10000000000000:key');
+        $testKeyValue = Redis::connection('query_cache_redis')->zrange('test:tag:merchant_10000000000000:entries', 0, 10);
+        $liveKeyValue = Redis::connection('query_cache_redis')->zrange('live:tag:merchant_10000000000000:entries', 0, 10);
 
-        $this->assertNull($testKeyValue);
-        $this->assertNotNull($liveKeyValue);
+        $this->assertEmpty($testKeyValue);
+        $this->assertNotEmpty($liveKeyValue);
 
         $this->flushCache();
 
@@ -11317,11 +11317,11 @@ Team Razorpay',
 
         $this->startTest();
 
-        $testKeyValue = Redis::connection('query_cache_redis')->get('test:tag:merchant_10000000000000:key');
-        $liveKeyValue = Redis::connection('query_cache_redis')->get('live:tag:merchant_10000000000000:key');
+        $testKeyValue = Redis::connection('query_cache_redis')->zrange('test:tag:merchant_10000000000000:entries', 0, 10);
+        $liveKeyValue = Redis::connection('query_cache_redis')->zrange('live:tag:merchant_10000000000000:entries', 0, 10);
 
-        $this->assertNull($testKeyValue);
-        $this->assertNotNull($liveKeyValue);
+        $this->assertEmpty($testKeyValue);
+        $this->assertNotEmpty($liveKeyValue);
     }
 
     public function testBeneficiaryRegisterApiYesbankWithMailNotQueued()

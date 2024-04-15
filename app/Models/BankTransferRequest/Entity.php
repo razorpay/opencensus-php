@@ -157,6 +157,8 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::IS_CREATED    => 'bool',
         self::AMOUNT        => 'int',
+        self::PAYEE_ACCOUNT => 'string',
+        self::PAYER_ACCOUNT => 'string'
     ];
 
     public function generateUtr($input)

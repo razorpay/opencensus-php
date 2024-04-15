@@ -416,6 +416,10 @@ class Entity extends Base\PublicEntity
         self::PAYLATER                  => 'boolean',
         self::DIRECT                    => 'boolean',
         self::OFFLINE                   => 'boolean',
+        self::GATEWAY_ACCESS_CODE       => 'string',
+        self::GATEWAY_MERCHANT_ID       => 'string',
+        self::GATEWAY_MERCHANT_ID2      => 'string',
+        self::GATEWAY_TERMINAL_ID       => 'string',
     ];
 
     const featureToGatewayMap = [

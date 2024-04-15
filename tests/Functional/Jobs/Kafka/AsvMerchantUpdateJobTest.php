@@ -5,9 +5,7 @@ namespace Functional\Jobs\Kafka;
 use Redis;
 
 use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
-use RZP\Models\Merchant\Core;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Repository;
 use RZP\Jobs\Kafka\AsvMerchantUpdateJob;
@@ -28,16 +26,16 @@ class AsvMerchantUpdateJobTest extends TestCase
         // populates redis cache
         (new Repository())->findOrFail($merchant->getId());
 
-        $liveKeyValue = Redis::connection('query_cache_redis')->get('live:tag:merchant_'.$merchant->getId().':key');
-        $this->assertNotNull($liveKeyValue);
+        $liveKeyValue = Redis::connection('query_cache_redis')->zrange('live:tag:merchant_'.$merchant->getId().':entries', 0, 10);
+        $this->assertNotEmpty($liveKeyValue);
 
         $job = new AsvMerchantUpdateJob($payload);
 
         // Act
         $job->handle();
 
-        $liveKeyValue = Redis::connection('query_cache_redis')->get('live:tag:merchant_'.$merchant->getId().':key');
-        $this->assertNull($liveKeyValue);
+        $liveKeyValue = Redis::connection('query_cache_redis')->zrange('live:tag:merchant_'.$merchant->getId().':entries', 0, 10);
+        $this->assertEmpty($liveKeyValue);
 
     }
 

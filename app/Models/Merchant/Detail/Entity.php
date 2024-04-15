@@ -500,6 +500,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::KYC_CLARIFICATION_REASONS => 'array',
         self::KYC_ADDITIONAL_DETAILS    => 'array',
         self::ADDITIONAL_WEBSITES       => 'array',
+        self::BANK_ACCOUNT_NUMBER       => 'string',
     ];
 
     const UPLOADED_FIELDS = [

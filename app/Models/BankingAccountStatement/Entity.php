@@ -135,6 +135,7 @@ class Entity extends Base\PublicEntity
         self::BALANCE           => 'int',
         self::POSTED_DATE       => 'int',
         self::TRANSACTION_DATE  => 'int',
+        self::ACCOUNT_NUMBER    => 'string',
     ];
 
     protected $defaults = [

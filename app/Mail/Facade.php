@@ -2,6 +2,7 @@
 
 namespace RZP\Mail;
 
+use Illuminate\Mail\MailManager;
 use Illuminate\Support\Facades\Mail as BaseFacade;
 
 /**
@@ -18,6 +19,6 @@ class Facade extends BaseFacade
      */
     public static function fake()
     {
-        static::swap(new MailFake);
+        static::swap(new MailFake(new MailManager(app())));
     }
 }

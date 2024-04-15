@@ -88,6 +88,10 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE              => AccountType::DIRECT,
     ];
 
+    protected $casts = [
+        self::ACCOUNT_NUMBER    => 'string',
+    ];
+
     // ============================= MUTATORS =============================
 
     protected function setGatewayBalanceAttribute($gatewayBalance)

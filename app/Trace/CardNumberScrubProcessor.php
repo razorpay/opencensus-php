@@ -3,6 +3,7 @@
 namespace RZP\Trace;
 
 use App;
+use Monolog\LogRecord;
 use Request;
 use RZP\Exception;
 
@@ -31,13 +32,13 @@ class CardNumberScrubProcessor extends \Monolog\Processor\WebProcessor
     }
 
     /**
-     * @param  array $record
+     * @param  LogRecord $record
      * @throws Exception\CardNumberTraceException
-     * @return array
+     * @return LogRecord
      */
-    public function __invoke(array $record)
+    public function __invoke(LogRecord $record): LogRecord
     {
-        $data = $record['context'];
+        $data = $record->context;
 
         $scrubbed = false;
 
@@ -64,8 +65,6 @@ class CardNumberScrubProcessor extends \Monolog\Processor\WebProcessor
             }
         }
 
-        $record['context'] = $data;
-
-        return $record;
+        return $record->with(context: $data);
     }
 }

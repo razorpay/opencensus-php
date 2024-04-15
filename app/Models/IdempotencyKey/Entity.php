@@ -59,6 +59,11 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
+    protected $casts = [
+        self::IDEMPOTENCY_KEY => 'string',
+        self::REQUEST_HASH => 'string',
+    ];
+
     protected $ignoredRelations = [
         self::SOURCE,
     ];

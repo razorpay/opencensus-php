@@ -380,6 +380,10 @@ class Entity extends Base\PublicEntity
         self::FASTER_DOC_COLLECTION_ENABLED,
     ];
 
+    protected $casts = [
+        self::ACCOUNT_NUMBER    => 'string',
+    ];
+
     // ---------------------------- Setters ----------------------------------- //
 
     public function setStatus(string $status)

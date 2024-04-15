@@ -188,6 +188,8 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::ACTIVE => 'bool',
+        self::IDEMPOTENCY_KEY => 'string',
+        self::UNIQUE_HASH => 'string',
     ];
 
     protected $dates = [

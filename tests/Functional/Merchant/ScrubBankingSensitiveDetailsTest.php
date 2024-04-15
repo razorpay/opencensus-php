@@ -3,6 +3,9 @@
 namespace Functional\Merchant;
 
 use Illuminate\Routing\Router;
+use Monolog\DateTimeImmutable;
+use Monolog\Level;
+use Monolog\LogRecord;
 use RZP\Trace\ApiTraceProcessor;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccountTpv\Status;
@@ -39,8 +42,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
 
         $this->mockRouter('fund_account_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'contact_id' => 'cont_BXV5GAmaJEcGr1',
                 'account_type' => 'bank_account',
                 'bank_account' => [
@@ -48,13 +50,18 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                     'account_number' => '145410038647',
                     'name' => '4687796724004887',
                 ],
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord = $trace($record);
 
-        $expectedResponse = [
-            'context' => [
+        $expectedContext = [
                 'contact_id' => 'cont_BXV5GAmaJEcGr1',
                 'account_type' => 'bank_account',
                 'bank_account' => [
@@ -62,9 +69,8 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                     'account_number' => 'SCRUBBED(12)',
                     'name' => 'SCRUBBED(24)',
                 ],
-            ]
         ];
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedContext, $updatedRecord->context);
     }
 
     public function testSensitiveDataContactCreate()
@@ -74,26 +80,29 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
 
         $this->mockRouter('contact_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'name' => '51037205',
                 'contact' => '8979253299',
                 'email' => 'sachingangwarbly123@gmail.com',
                 'type' => 'customer',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord = $trace($record);
 
-        $expectedResponse = [
-            'context' => [
+        $expectedContext = [
                 'name' => 'SCRUBBED(8)',
                 'contact' => 'PHONE_NUMBER_SCRUBBED(10)',
                 'email' => 'EMAIL_SCRUBBED(29)',
                 'type' => 'customer',
-            ]
         ];
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedContext, $updatedRecord->context);
     }
 
     public function testSensitiveDataBankingAccountCreate()
@@ -103,8 +112,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
 
         $this->mockRouter('banking_account_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'pincode' => '51037205',
                 'channel' => 'rbl',
                 'account_ifsc' => 'IFSC2345',
@@ -113,13 +121,18 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                 'beneficiary_name' => 'raj',
                 'beneficiary_address1' => 'Koramangala',
                 'bank_reference_number' => 'YesBank123',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord = $trace($record);
 
-        $expectedResponse = [
-            'context' => [
+        $expectedContext = [
                 'pincode' => '51037205',
                 'channel' => 'rbl',
                 'account_ifsc' => 'SCRUBBED(8)',
@@ -128,9 +141,8 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                 'beneficiary_name' => 'SCRUBBED(3)',
                 'beneficiary_address1' => 'SCRUBBED(11)',
                 'bank_reference_number' => 'YesBank123'
-            ]
         ];
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedContext, $updatedRecord->context);
     }
 
     public function testUnSensitiveDataFundAccountCreate()
@@ -140,8 +152,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
 
         $this->mockRouter('fund_account_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'contact_id' => 'cont_BXV5GAmaJEcGr1',
                 'account_type' => 'bank_account',
                 'bank_account' => [
@@ -149,13 +160,18 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                     'bank_name' => 'YESBank',
                 ],
                 'merchantId' => '10000000000000',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord = $trace($record);
 
-        $expectedResponse = [
-            'context' => [
+        $expectedContext = [
                 'contact_id' => 'cont_BXV5GAmaJEcGr1',
                 'account_type' => 'bank_account',
                 'bank_account' => [
@@ -163,9 +179,8 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                     'bank_name' => 'YESBank',
                 ],
                 'merchantId' => '10000000000000',
-            ]
         ];
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedContext, $updatedRecord->context);
     }
 
     public function testMultipleAccountsScrubbingFundAccountCreate()
@@ -175,8 +190,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
 
         $this->mockRouter('fund_account_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'contact_id' => 'cont_BXV5GAmaJEcGr1',
                 'account_type' => 'bank_account',
                 'bank_account' => [
@@ -185,13 +199,18 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                         '743697163173631',
                     ],
                 ],
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord = $trace($record);
 
-        $expectedResponse = [
-            'context' => [
+        $expectedContext = [
                 'contact_id' => 'cont_BXV5GAmaJEcGr1',
                 'account_type' => 'bank_account',
                 'bank_account' => [
@@ -200,9 +219,8 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                         'SCRUBBED(15)',
                     ],
                 ],
-            ]
         ];
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedContext, $updatedRecord->context);
     }
 
     public function testingForNonBankingRouteCheckout()
@@ -212,21 +230,24 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
 
         $this->mockRouter('checkout');
 
-        $record = [
-            'context' => [
+        $context = [
                 'account_number' => '4012888888881881',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord = $trace($record);
 
-        $expectedResponse = [
-            'context' => [
+        $expectedContext = [
                 'account_number' => "4012888888881881"
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedContext, $updatedRecord->context);
     }
 
     public function testSensitiveDataTpvCreate()
@@ -236,8 +257,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
 
         $this->mockRouter('admin_tpv_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'merchant_id'          => '10000000000000',
                 'balance_id'           => '10000000000000',
                 'status'               => Status::APPROVED,
@@ -245,13 +265,18 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                 'payer_account_number' => '98711120003344',
                 'payer_ifsc'           => 'CITI0000006',
                 'created_by'           => 'OPS_A',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord = $trace($record);
 
-        $expectedResponse = [
-            'context' => [
+        $expectedContext = [
                 'merchant_id'          => '10000000000000',
                 'balance_id'           => '10000000000000',
                 'status'               => Status::APPROVED,
@@ -259,9 +284,8 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                 'payer_account_number' => 'SCRUBBED(14)',
                 'payer_ifsc'           => 'CITI0000006',
                 'created_by'           => 'OPS_A',
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedContext, $updatedRecord->context);
     }
 }

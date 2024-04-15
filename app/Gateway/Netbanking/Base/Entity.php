@@ -94,6 +94,10 @@ class Entity extends Base\Entity
         self::SI_MSG,
     ];
 
+    protected $casts = [
+        self::ACCOUNT_NUMBER => 'string',
+    ];
+
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);

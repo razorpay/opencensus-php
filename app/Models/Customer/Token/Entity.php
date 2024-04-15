@@ -395,6 +395,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT    => 'int',
         self::USED_COUNT    => 'int',
         self::EXPIRED_AT    => 'int',
+        self::ACCOUNT_NUMBER => 'string',
     ];
 
     protected static $generators = [

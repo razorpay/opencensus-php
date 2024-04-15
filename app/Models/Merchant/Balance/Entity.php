@@ -159,6 +159,7 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS    => 'integer',
         self::REFUND_CREDITS => 'integer',
         self::BALANCE        => 'integer',
+        self::ACCOUNT_NUMBER  => 'string',
     ];
 
     protected $dates = [

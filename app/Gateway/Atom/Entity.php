@@ -68,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT   => 'int',
         self::RECEIVED => 'bool',
         self::SUCCESS  => 'bool',
+        self::ACCOUNT_NUMBER  => 'string',
     ];
 
     protected $primaryKey = self::ID;

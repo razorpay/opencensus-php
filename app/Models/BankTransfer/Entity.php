@@ -179,6 +179,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT   => 'int',
         self::EXPECTED => 'bool',
         self::NOTIFIED => 'bool',
+        self::PAYER_ACCOUNT => 'string',
+        self::PAYEE_ACCOUNT => 'string',
     ];
 
     protected static $generators = [

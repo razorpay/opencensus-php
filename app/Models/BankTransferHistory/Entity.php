@@ -32,6 +32,10 @@ class Entity extends Base\PublicEntity
         self::CREATED_BY,
     ];
 
+    protected $casts = [
+        self::PAYER_ACCOUNT => 'string'
+    ];
+
 
     // ------------------------- Associations -------------------------
 

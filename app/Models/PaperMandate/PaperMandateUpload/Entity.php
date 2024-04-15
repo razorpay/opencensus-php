@@ -223,6 +223,10 @@ class Entity extends Base\PublicEntity
         self::NOT_MATCHING                => null,
     ];
 
+    protected $casts = [
+        self::ACCOUNT_NUMBER => 'string',
+    ];
+
     protected $fieldsToBeValidated = [
         self::FORM_CHECKSUM,
         self::SIGNATURE_PRESENT_PRIMARY,

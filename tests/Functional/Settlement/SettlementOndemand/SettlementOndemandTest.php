@@ -3867,7 +3867,7 @@ class SettlementOndemandTest extends TestCase
 
         $ondemandpayout = $this->getLastEntity('settlement.ondemand_payout',true);
 
-        dispatch_now(new RequestOndemandPayout(Mode::TEST, substr($ondemandpayout['id'], -14, 14),
+        dispatch_sync(new RequestOndemandPayout(Mode::TEST, substr($ondemandpayout['id'], -14, 14),
             $this->merchantDetail['merchant_id'], 'inr'));
 
         $reversal = $this->getDbEntity('reversal');
@@ -3897,7 +3897,7 @@ class SettlementOndemandTest extends TestCase
 
         $ondemandpayout = $this->getLastEntity('settlement.ondemand_payout',true);
 
-        dispatch_now(new RequestOndemandPayout(Mode::TEST, substr($ondemandpayout['id'], -14, 14),
+        dispatch_sync(new RequestOndemandPayout(Mode::TEST, substr($ondemandpayout['id'], -14, 14),
             $this->merchantDetail['merchant_id'], 'inr'));
 
         $reversals = $this->getDbEntities('reversal');

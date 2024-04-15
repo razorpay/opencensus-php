@@ -152,7 +152,7 @@ class Service extends Base\Service
             {
                 $D2cCsvReport = new D2cCsvReportCreate($this->mode, $bureauReport);
 
-                dispatch_now($D2cCsvReport);
+                dispatch_sync($D2cCsvReport);
 
                 $bureauReport = $this->repo->d2c_bureau_report->findByPublicId($id);
 

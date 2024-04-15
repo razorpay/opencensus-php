@@ -3,6 +3,7 @@
 namespace RZP\Trace;
 
 use App;
+use Monolog\LogRecord;
 use Request;
 use Route as RouteFacade;
 use OpenCensus\Trace\Tracer;
@@ -155,7 +156,7 @@ class ApiTraceProcessor
         }
     }
 
-    public function __invoke(array $record)
+    public function __invoke(LogRecord $record): LogRecord
     {
         $this->addMode($record);
 
@@ -207,70 +208,70 @@ class ApiTraceProcessor
     }
 
     // adds route name
-    protected function addRouteName(& $record): void
+    protected function addRouteName(LogRecord &$record): void
     {
-        $record['request']['route_name'] = optional($this->app['router'])->currentRouteName();
+        $record['extra']['request']['route_name'] = optional($this->app['router'])->currentRouteName();
     }
 
-    protected function addHighTierLogEntry(& $record): void
+    protected function addHighTierLogEntry(LogRecord &$record): void
     {
         $route = optional($this->app['router'])->currentRouteName();
 
         if (in_array($route, self::highTierLogRoutes, true))
         {
-            $record['tier'] = 'high';
+            $record['extra']['tier'] = 'high';
         }
     }
 
-    protected function addMode(& $record)
+    protected function addMode(LogRecord &$record)
     {
-        $record['mode'] = $this->app['basicauth']->getMode();
+        $record['extra']['mode'] = $this->app['basicauth']->getMode();
     }
 
-    protected function addOAuthAttributes(& $record)
+    protected function addOAuthAttributes(LogRecord &$record)
     {
         $accessTokenId = $this->app['basicauth']->getAccessTokenId();
 
         if (empty($accessTokenId) === false)
         {
-            $record['request']['access_token_id'] = $accessTokenId;
+            $record['extra']['request']['access_token_id'] = $accessTokenId;
         }
 
         $oauthClientId = $this->app['basicauth']->getOAuthClientId();
 
         if (empty($oauthClientId) === false)
         {
-            $record['request']['oauth_client_id'] = $oauthClientId;
+            $record['extra']['request']['oauth_client_id'] = $oauthClientId;
         }
     }
 
-    protected function addPartnerAttributes(& $record)
+    protected function addPartnerAttributes(LogRecord &$record)
     {
         $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
 
         if (empty($partnerMerchantId) === false)
         {
-            $record['request']['partner_merchant_id'] = $partnerMerchantId;
+            $record['extra']['request']['partner_merchant_id'] = $partnerMerchantId;
         }
     }
 
-    protected function updateClientIp(& $record)
+    protected function updateClientIp(LogRecord &$record)
     {
-        $record['request']['client_ip'] = $this->app['request']->ip();
+        $record['extra']['request']['client_ip'] = $this->app['request']->ip();
     }
 
-    protected function addMerchantId(& $record)
+    protected function addMerchantId(LogRecord &$record)
     {
-        $record['request']['merchant_id'] = $this->app['basicauth']->getMerchantId();
+        $record['extra']['request']['merchant_id'] = $this->app['basicauth']->getMerchantId();
     }
 
     protected function addDashboardHeaders(&$record)
     {
         if ($this->app['basicauth']->isDashboardApp() === true)
         {
-            $record['request'] += $this->app['basicauth']->getDashboardHeaders();
+            $record['extra']['request'] += $this->app['basicauth']->getDashboardHeaders();
 
-            $record['request']['dashboard_app'] = $this->app['basicauth']->getInternalApp() ?? '';
+            $record['extra']['request']['dashboard_app'] = $this->app['basicauth']->getInternalApp() ?? '';
         }
     }
 
@@ -278,28 +279,28 @@ class ApiTraceProcessor
     {
         $product = $this->app['basicauth']->getProduct();
 
-        $record['request']['product'] = $product;
+        $record['extra']['request']['product'] = $product;
     }
 
-    protected function addRouteNameForExceptions(& $record)
+    protected function addRouteNameForExceptions(LogRecord &$record)
     {
         // If this is an exception, a stack key is present in the context array
         $isException = (
-            isset($record['context']['stack'])
-            or (isset($record['message']) and $record['message'] === TraceCode::ERROR_RESPONSE_DATA)
-            or (isset($record['code']) and $record['code'] === TraceCode::ERROR_EXCEPTION)
+            isset($record->context['stack'])
+            or (isset($record->message) and $record->message === TraceCode::ERROR_RESPONSE_DATA)
+            or (isset($record['extra']['code']) and $record['extra']['code'] === TraceCode::ERROR_EXCEPTION)
         );
 
         if ($isException === true)
         {
-            $record['request']['route_name'] = optional($this->app['router'])->currentRouteName();
-            $record['request']['method'] = $this->app->request->method();
+            $record['extra']['request']['route_name'] = optional($this->app['router'])->currentRouteName();
+            $record['extra']['request']['method'] = $this->app->request->method();
         }
     }
 
-    protected function scrubCardNumberViaCcPay(& $record)
+    protected function scrubCardNumberViaCcPay(LogRecord &$record)
     {
-        $context = $record['context'] ?? null;
+        $context = $record->context ?? null;
 
         if (empty($context) === true)
         {
@@ -317,10 +318,10 @@ class ApiTraceProcessor
             }
         });
 
-        $record['context'] = $context;
+        $record = $record->with(context: $context);
     }
 
-    protected function scrubSensitiveInfoForBankingRoutes(& $record)
+    protected function scrubSensitiveInfoForBankingRoutes(LogRecord &$record)
     {
         // adding Try catch here. In case some unhandled exception comes up, we don't fail the whole
         // request because of logging.
@@ -335,7 +336,7 @@ class ApiTraceProcessor
                 return;
             }
 
-            $context = $record['context'] ?? null;
+            $context = $record->context ?? null;
 
             if (empty($context) === true)
             {
@@ -415,7 +416,7 @@ class ApiTraceProcessor
                     }
                 }
             });
-            $record['context'] = $context;
+            $record = $record->with(context: $context);
         }
         catch (\Exception $e)
         {
@@ -427,7 +428,7 @@ class ApiTraceProcessor
         }
     }
 
-    protected function keysBasedScrubbingForBankingRoutes(& $record)
+    protected function keysBasedScrubbingForBankingRoutes(LogRecord &$record)
     {
         try
         {
@@ -437,7 +438,8 @@ class ApiTraceProcessor
 
             if (in_array($route, $bankingRoutes, true) === true)
             {
-                $record['context'] = $this->visitEachNode($record['context']);
+                $context = $this->visitEachNode($record->context);
+                $record = $record->with(context: $context);
             }
         }
         catch (\Exception $e)
@@ -451,7 +453,7 @@ class ApiTraceProcessor
 
     }
 
-    protected function visitEachNode(& $context)
+    protected function visitEachNode($context)
     {
         if (!empty($context))
         {
@@ -463,7 +465,7 @@ class ApiTraceProcessor
                 }
                 if (is_array($value) === true)
                 {
-                    $this->visitEachNode($value);
+                    $value = $this->visitEachNode($value);
                 }
             }
         }
@@ -502,19 +504,19 @@ class ApiTraceProcessor
      *
      * @return void
      */
-    protected function overrideRequestAttributes(array &$record)
+    protected function overrideRequestAttributes(LogRecord &$record)
     {
-        $record['request']['url'] = Tracing::maskUrl($this->app->request->getUri());
-        $this->scrubData($record['request']['user_email']);
+        $record['extra']['request']['url'] = Tracing::maskUrl($this->app->request->getUri());
+        $this->scrubData($record['extra']['request']['user_email']);
     }
 
-    private function addTraceId(array &$record)
+    private function addTraceId(LogRecord &$record)
     {
         if ($this->app['basicauth']->isProxyOrPrivilegeAuth() === true)
         {
             $traceId = $this->app->request->headers->get(RequestHeader::X_REQUEST_TRACE_ID);
 
-            $record['request']['x_request_trace_id'] = $traceId;
+            $record['extra']['request']['x_request_trace_id'] = $traceId;
         }
     }
 
@@ -523,7 +525,7 @@ class ApiTraceProcessor
     // uber_trace_id. Following the same convention here.
     // Also this id will be added only in case routes are enabled for
     // distributed tracing
-    private function addDistributedTraceId(array &$record)
+    private function addDistributedTraceId(LogRecord &$record)
     {
         if ((Tracing::isEnabled($this->app) === true) and
             (is_null(RouteFacade::current()) === false) and
@@ -531,32 +533,32 @@ class ApiTraceProcessor
         {
             $distributedTraceId = Tracer::spanContext()->traceId();
 
-            $record['request']['uber_trace_id'] =  $distributedTraceId;
+            $record['extra']['request']['uber_trace_id'] =  $distributedTraceId;
         }
     }
 
-    private function addAwsTraceId(array &$record)
+    private function addAwsTraceId(LogRecord &$record)
     {
         $traceId = $this->app->request->headers->get(RequestHeader::X_AMAZON_TRACE_ID);
 
-        $record['request']['aws_trace_id'] = $traceId;
+        $record['extra']['request']['aws_trace_id'] = $traceId;
     }
 
-    private function addAwsTlsVersion(array &$record)
+    private function addAwsTlsVersion(LogRecord &$record)
     {
         $tlsVersion = $this->app->request->headers->get(RequestHeader::X_AMAZON_TLS_VERSION);
 
-        $record['request']['x-amzn-tls-version'] = $tlsVersion;
+        $record['extra']['request']['x-amzn-tls-version'] = $tlsVersion;
     }
 
-    private function addRazorpayRequestId(array &$record)
+    private function addRazorpayRequestId(LogRecord &$record)
     {
         $razorpayId = $this->app->request->headers->get(RequestHeader::X_RAZORPAY_REQUEST_ID);
 
-        $record['request']['x-razorpay-request-id'] = $razorpayId;
+        $record['extra']['request']['x-razorpay-request-id'] = $razorpayId;
     }
 
-    protected function addTraceAttributesForWorkers(&$record)
+    protected function addTraceAttributesForWorkers(LogRecord &$record)
     {
         /**@var Context $workerContext */
         $workerContext = $this->app['worker.ctx'];
@@ -567,28 +569,28 @@ class ApiTraceProcessor
         // This will be useful for fetching logs for a single execution of a job
         if ($uniqueJobId !== null)
         {
-            $record['request']['unique_job_id'] = $uniqueJobId;
+            $record['extra']['request']['unique_job_id'] = $uniqueJobId;
         }
 
         // This will be useful for debugging if job is released multiple times by the queue.
         if ($jobUuid !== null)
         {
-            $record['request']['job_uuid'] = $jobUuid;
+            $record['extra']['request']['job_uuid'] = $jobUuid;
         }
     }
 
-    private function blockLogs(array &$record): void
+    private function blockLogs(LogRecord &$record): void
     {
         // If this is an exception, a stack key is present in the context array
-        $isException = isset($record['context']['stack']);
+        $isException = isset($record->context['stack']);
 
         // If trace code contains any of these words(case-insensitive) don't block those logs
         $ignoreMessages = ['error', 'exception', 'bad', 'fail'];
-        if ($isException === false && isset($record['message']) === true)
+        if ($isException === false && isset($record->message) === true)
         {
             foreach ($ignoreMessages as $ignoreMessage)
             {
-                $isErrorMsg = stripos($record['message'], $ignoreMessage);
+                $isErrorMsg = stripos($record->message, $ignoreMessage);
                 if ($isErrorMsg !== false)
                 {
                     $isException = true;
@@ -604,9 +606,9 @@ class ApiTraceProcessor
                 $route = optional($this->app['router'])->currentRouteName();
 
                 if (in_array($route, $this->blockedLogRoutes, true) or
-                    (isset($record['message']) and in_array($record['message'], $this->blockedLogTraces)))
+                    (isset($record->message) and in_array($record->message, $this->blockedLogTraces)))
                 {
-                    $record['tier'] = 'cx_log_blocked';
+                    $record['extra']['tier'] = 'cx_log_blocked';
                 }
             }
         }
@@ -620,23 +622,23 @@ class ApiTraceProcessor
         }
     }
     // Drops recurring and superfluous log fields
-    private function dropRecurringLogFields(array &$record): void
+    private function dropRecurringLogFields(LogRecord &$record): void
     {
         if ($this->isFirstLog === false) {
             // unset product it remains same throughout request
-            unset($record['request']['product']);
+            unset($record['extra']['request']['product']);
 
             // user_email is either not available or gets scrubbed
-            unset($record['request']['user_email']);
+            unset($record['extra']['request']['user_email']);
 
             // mode remains constant for request
-            unset($record['mode']);
+            unset($record['extra']['mode']);
 
             // tlsVersion not required
-            unset($record['request']['x-amzn-tls-version']);
+            unset($record['extra']['request']['x-amzn-tls-version']);
 
             // remove channel constant values
-            unset($record['channel']);
+            unset($record['extra']['channel']);
         }
     }
 }

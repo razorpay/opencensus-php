@@ -897,6 +897,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT      => 'int',
         self::FEES        => 'int',
         self::TAX         => 'int',
+        self::IDEMPOTENCY_KEY => 'string',
     ];
 
     protected $dates = [

@@ -4,6 +4,10 @@ namespace Functional\Merchant;
 
 use Illuminate\Routing\Router;
 
+use Monolog\DateTimeImmutable;
+use Monolog\Level;
+use Monolog\Logger;
+use Monolog\LogRecord;
 use RZP\Constants\Product;
 use RZP\Http\BasicAuth\Type;
 use RZP\Trace\ApiTraceProcessor;
@@ -107,42 +111,40 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'cc_number' => '4012888888881881',
-            ]
-        ];
+            ];
 
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
         $updatedRecord =  $trace($record);
 
-        $expectedResponse = [
-            'context' => [
+        $expectedContext = [
                 'cc_number' => "CARD_NUMBER_SCRUBBED(16)"
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedContext, $updatedRecord->context);
     }
 
     public function testScrubCardDetails()
     {
-        $record = [
-            'context' => [
-                'cc_number' => '4012888888881881',
-                'payee_vpa' => 'ccpay.4315810629729001@icici',
-            ]
+        $context = [
+            'cc_number' => '4012888888881881',
+            'payee_vpa' => 'ccpay.4315810629729001@icici',
         ];
 
-        RZPUtility::scrubCardDetails($record, $this->app);
+        RZPUtility::scrubCardDetails($context, $this->app);
 
         $expectedResponse = [
-            'context' => [
-                'cc_number' => "CARD_NUMBER_SCRUBBED(16)",
-                'payee_vpa' => 'ccpay.CARD_NUMBER_SCRUBBED(16)@icici',
-            ]
+            'cc_number' => "CARD_NUMBER_SCRUBBED(16)",
+            'payee_vpa' => 'ccpay.CARD_NUMBER_SCRUBBED(16)@icici'
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $record);
+        $this->assertArraySelectiveEquals($expectedResponse, $context);
     }
 
     public function testMasterCardRedaction()
@@ -152,8 +154,7 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'cc_number'  => '5105105105105100',
                 'cc_number2' => '2224184047998409',
                 'cc_number3' => '2238741973989812',
@@ -161,13 +162,18 @@ class CardRedactionTest extends TestCase
                 'cc_number5' => '2720650392744411',
                 'cc_number6' => '2719705517784880',
                 'cc_number7' => '271970551778',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'cc_number'  => "CARD_NUMBER_SCRUBBED(16)",
                 'cc_number2' => "CARD_NUMBER_SCRUBBED(16)",
                 'cc_number3' => "CARD_NUMBER_SCRUBBED(16)",
@@ -175,10 +181,9 @@ class CardRedactionTest extends TestCase
                 'cc_number5' => "CARD_NUMBER_SCRUBBED(16)",
                 'cc_number6' => "CARD_NUMBER_SCRUBBED(16)",
                 'cc_number7' => "271970551778",
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testDiscoverCardRedaction()
@@ -188,23 +193,26 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'cc_number'  => '6011111111111117',
-                'cc_number2' => '6543096311433360',
-            ]
+                'cc_number2' => '6543096311433360'
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'cc_number'  => "CARD_NUMBER_SCRUBBED(16)",
                 'cc_number2' => "CARD_NUMBER_SCRUBBED(16)",
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testAmexCardWithSeries37Redaction()
@@ -214,21 +222,24 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            'context' => [
-                'cc_number' => '371449635398431',
-            ]
+        $context = [
+            'cc_number' => '371449635398431',
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
-                'cc_number' => "CARD_NUMBER_SCRUBBED(15)"
-            ]
+            'cc_number' => "CARD_NUMBER_SCRUBBED(15)"
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testAmexCardWithSeries34Redaction()
@@ -238,21 +249,24 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'cc_number' => '341111111111111',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'cc_number' => "CARD_NUMBER_SCRUBBED(15)"
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testDinnersClubCardRedaction()
@@ -262,25 +276,28 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            'context' => [
-                'cc_number'  => '38520000023237',
-                'cc_number2' => '30569309025904',
-                'cc_number3' => '36776789121015',
-            ]
+        $context = [
+            'cc_number'  => '38520000023237',
+            'cc_number2' => '30569309025904',
+            'cc_number3' => '36776789121015',
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
-                'cc_number'  => "CARD_NUMBER_SCRUBBED(14)",
-                'cc_number2' => "CARD_NUMBER_SCRUBBED(14)",
-                'cc_number3' => "CARD_NUMBER_SCRUBBED(14)",
-            ]
+            'cc_number'  => "CARD_NUMBER_SCRUBBED(14)",
+            'cc_number2' => "CARD_NUMBER_SCRUBBED(14)",
+            'cc_number3' => "CARD_NUMBER_SCRUBBED(14)",
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testJCBCardRedaction()
@@ -290,25 +307,28 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'cc_number'  => '213153807879568',
                 'cc_number2' => '180046392961848',
                 'cc_number3' => '3551175593815246',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
-                'cc_number'  => "CARD_NUMBER_SCRUBBED(15)",
-                'cc_number2' => "CARD_NUMBER_SCRUBBED(15)",
-                'cc_number3' => "CARD_NUMBER_SCRUBBED(16)",
-            ]
+            'cc_number'  => "CARD_NUMBER_SCRUBBED(15)",
+            'cc_number2' => "CARD_NUMBER_SCRUBBED(15)",
+            'cc_number3' => "CARD_NUMBER_SCRUBBED(16)",
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testVisaCardRedactionForNonBankingRoute()
@@ -318,21 +338,24 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('checkout');
 
-        $record = [
-            'context' => [
-                'cc_number' => '4012888888881881',
-            ]
+        $context = [
+            'cc_number' => '4012888888881881'
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
-                'cc_number' => "4012888888881881"
-            ]
+            'cc_number' => "4012888888881881"
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testRedactionViaRegexFromRedisWithRegexBeingDifferentThanCCNumberSeries()
@@ -345,23 +368,26 @@ class CardRedactionTest extends TestCase
 
         $response = $this->setRegexViaRedis($regex);
 
-        $record = [
-            'context' => [
+        $context = [
                 'cc_number' => '4012888888881881',  // visa card
-            ]
         ];
 
         $this->mockRouter('payout_create');
 
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
+
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'cc_number' => "CARD_NUMBER_SCRUBBED(16)"
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testRedactionViaRegexFromRedisWithRegexBeingSameAsCCNumberSeries()
@@ -374,23 +400,26 @@ class CardRedactionTest extends TestCase
 
         $response = $this->setRegexViaRedis($regex);
 
-        $record = [
-            'context' => [
+        $context = [
                 'cc_number' => '371449635398431',  // amex card
-            ]
         ];
 
         $this->mockRouter('payout_create');
 
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
+
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'cc_number' => "CARD_NUMBER_SCRUBBED(15)"
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testRedactionForNormalStrings()
@@ -398,31 +427,34 @@ class CardRedactionTest extends TestCase
         /** @var ApiTraceProcessor $trace */
         $trace = new ApiTraceProcessor($this->app);
 
-        $record = [
-            'context' => [
+        $context = [
                 'cc_number'  => '1234567891011',
                 'cc_number2' => 'hehehehwwkwk',
                 'cc_number3' => 'normalString',
                 'cc_number4' => '9834728',
                 'visa card'       => '4012888888881881',
-            ]
         ];
 
         $this->mockRouter('payout_create');
 
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
+
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'cc_number'  => '1234567891011',
                 'cc_number2' => 'hehehehwwkwk',
                 'cc_number3' => 'normalString',
                 'cc_number4' => '9834728',
                 'visa card'  => 'CARD_NUMBER_SCRUBBED(16)',
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testCardRedactionInExceptionData()
@@ -432,38 +464,39 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            "timestamp" => "2020-03-27T07:08:13.893",
-            "code"      => "BANK_TRANSFER_PROCESSING_FAILED",
-            "message"   => "BANK_TRANSFER_PROCESSING_FAILED",
-            "context"   => [
-                "class"   => "RZP\\Exception\\GatewayErrorException",
-                "code"    => "BAD_REQUEST_PAYMENT_FAILED",
-                "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
-                "data"    => [
-                    "payer_account"  => "4012888888881881",
-                    "payer_ifsc"     => "HDFC0000001",
-                    "mode"           => "neft",
-                    "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
-                    "time"           => 1543052014,
-                    "amount"         => 10000,
-                    "description"    => "Test bank transfer",
-                    "payee_account"  => "371449635398431",
-                    "payee_ifsc"     => "RAZRB000000"
-                ],
-                "stack"   => [
-                    "#0 /app/app/Models/VirtualAccount/Processor.php(70)=>" .
-                     "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
-                    "#1 /app/app/Models/BankTransfer/Core.php(02)=> RZP\\Models\\VirtualAccount\\Processor->" .
-                    "process(Object(RZP\\Models\\BankTransfer\\Entity))",
-                ]
+        $context   = [
+            "class"   => "RZP\\Exception\\GatewayErrorException",
+            "code"    => "BAD_REQUEST_PAYMENT_FAILED",
+            "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
+            "data"    => [
+                "payer_account"  => "4012888888881881",
+                "payer_ifsc"     => "HDFC0000001",
+                "mode"           => "neft",
+                "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
+                "time"           => 1543052014,
+                "amount"         => 10000,
+                "description"    => "Test bank transfer",
+                "payee_account"  => "371449635398431",
+                "payee_ifsc"     => "RAZRB000000"
+            ],
+            "stack"   => [
+                "#0 /app/app/Models/VirtualAccount/Processor.php(70)=>" .
+                "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
+                "#1 /app/app/Models/BankTransfer/Core.php(02)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                "process(Object(RZP\\Models\\BankTransfer\\Entity))",
             ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'BANK_TRANSFER_PROCESSING_FAILED',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            "context" => [
                 "class"   => "RZP\\Exception\\GatewayErrorException",
                 "code"    => "BAD_REQUEST_PAYMENT_FAILED",
                 "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
@@ -484,10 +517,9 @@ class CardRedactionTest extends TestCase
                     "#1 /app/app/Models/BankTransfer/Core.php(02)=> RZP\\Models\\VirtualAccount\\Processor->" .
                     "process(Object(RZP\\Models\\BankTransfer\\Entity))",
                 ]
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testCardRedactionInExceptionStackTrace()
@@ -497,45 +529,48 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            "timestamp" => "2020-03-26T14:43:12.457",
-            "code"      => "ERROR_EXCEPTION",
-            "message"   => "Unhandled critical exception occured",
-            "context"   => [
-                "class"   => "RZP\\Exception\\GatewayErrorException",
-                "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
-                "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
-                "data"    => [],
-                "stack"   => [
-                    "#0 /app/app/Http/Controllers/BankTransferController.php(25): RZP\\Models\\BankTransfer\\Service" .
-                    "->process1(371449635398431, 4012888888881881, NormalText, 37144963539)",
-                    "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
-                    "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
-                ]
+        $time = (new DateTimeImmutable(true))
+            ->setTime(14, 43, 12, 457)
+            ->setDate(2020, 03, 26);
+
+        $context = [
+            "class"   => "RZP\\Exception\\GatewayErrorException",
+            "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
+            "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
+            "data"    => [],
+            "stack"   => [
+                "#0 /app/app/Http/Controllers/BankTransferController.php(25): RZP\\Models\\BankTransfer\\Service" .
+                "->process1(371449635398431, 4012888888881881, NormalText, 37144963539)",
+                "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
+                "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
             ]
         ];
+
+        $record = new LogRecord(datetime: $time,
+            channel: 'test',
+            level: Level::Debug,
+            message: 'Unhandled critical exception occured',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            "timestamp" => "2020-03-26T14:43:12.457",
-            "code"      => "ERROR_EXCEPTION",
-            "message"   => "Unhandled critical exception occured",
-            "context"   => [
-                "class"   => "RZP\\Exception\\GatewayErrorException",
-                "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
-                "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
-                "data"    => [],
-                "stack"   => [
-                    "#0 /app/app/Http/Controllers/BankTransferController.php(25): RZP\\Models\\BankTransfer\\Service" .
-                    "->process1(CARD_NUMBER_SCRUBBED(15), CARD_NUMBER_SCRUBBED(16), NormalText, 37144963539)",
-                    "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
-                    "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
-                ]
+            "class"   => "RZP\\Exception\\GatewayErrorException",
+            "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
+            "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
+            "data"    => [],
+            "stack"   => [
+                "#0 /app/app/Http/Controllers/BankTransferController.php(25): RZP\\Models\\BankTransfer\\Service" .
+                "->process1(CARD_NUMBER_SCRUBBED(15), CARD_NUMBER_SCRUBBED(16), NormalText, 37144963539)",
+                "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
+                "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
             ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
+        $this->assertEquals("Unhandled critical exception occured", $updatedRecord->message);
+        $this->assertEquals($time, $updatedRecord->datetime);
     }
 
     // In this test first scrubbing is disabled and then enabled again
@@ -548,33 +583,36 @@ class CardRedactionTest extends TestCase
 
         $this->setRegexViaRedis('off');
 
-        $record = [
-            'context' => [
+        $context = [
                 'cc_number'  => '1234567891011',
                 'cc_number2' => 'hehehehwwkwk',
                 'cc_number3' => 'normalString',
                 'cc_number4' => '9834728',
                 'visa card'       => '4012888888881881',
-            ]
         ];
 
         $originalRouter = $this->app['router'];
 
         $this->mockRouter('payout_create');
 
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
+
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'cc_number'  => '1234567891011',
                 'cc_number2' => 'hehehehwwkwk',
                 'cc_number3' => 'normalString',
                 'cc_number4' => '9834728',
                 'visa card'       => 'CARD_NUMBER_SCRUBBED(16)',
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
 
         // re-enabling scrubbing again
         $regex = "/\\b(?:4[0-9]{12}(?:[0-9]{3})?|(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}" .
@@ -590,16 +628,14 @@ class CardRedactionTest extends TestCase
         $updatedRecord1 =  $trace($record);
 
         $expectedResponse1 = [
-            'context' => [
                 'cc_number'  => '1234567891011',
                 'cc_number2' => 'hehehehwwkwk',
                 'cc_number3' => 'normalString',
                 'cc_number4' => '9834728',
                 'visa card'       => 'CARD_NUMBER_SCRUBBED(16)',
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse1, $updatedRecord1);
+        $this->assertArraySelectiveEquals($expectedResponse1, $updatedRecord1->context);
     }
 
     public function testCardRedactionWhenExceptionComesWhileScrubbing()
@@ -634,21 +670,24 @@ class CardRedactionTest extends TestCase
 
         $this->app->instance('router', $routerMock);
 
-        $record = [
-            'context' => [
+        $context = [
                 'cc_number' => '4012888888881881',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord = $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'cc_number' => "4012888888881881"
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
 
         $this->app->instance('router', $originalRouter);
     }
@@ -662,27 +701,30 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'email' => 'xyz@razorpay.com',
                 'mobile' => '6302839647',
                 'cvv' => '921',
                 'cc_number' => "4012888888881881",
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'email' => 'EMAIL_SCRUBBED(16)',
                 'mobile' => 'PHONE_NUMBER_SCRUBBED(10)',
                 'cvv' => '921',
                 'cc_number' => 'CARD_NUMBER_SCRUBBED(16)',
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testScrubbingForBankingRoute()
@@ -692,8 +734,7 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('banking_account_webhook_account_info');
 
-        $record = [
-            'context' => [
+        $context = [
                 'account_ifsc' => 'RATN0000057',
                 'account_number' => '758123260280',
                 "client_secret"  => "TSULZXMONAARZUQOOOXPERQQIFBXADANSPBZTPPUOEFEQELBVO",
@@ -704,13 +745,18 @@ class CardRedactionTest extends TestCase
                     "client_id"      => "K7V3PG6JWHVOA5FVAUF6RGCZDE0W7DV7VVRN",
                     "client_secret"  => "TSULZXMONAARZUQOOOXPERQQIFBXADANSPBZTPPUOEFEQELBVO",
                 ],
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'account_ifsc' => 'SCRUBBED(11)',
                 'account_number' => 'SCRUBBED(12)',
                 "client_secret"  => "SCRUBBED(50)",
@@ -721,10 +767,9 @@ class CardRedactionTest extends TestCase
                     "client_id"      => "K7V3PG6JWHVOA5FVAUF6RGCZDE0W7DV7VVRN",
                     "client_secret"  => "SCRUBBED(50)",
                 ],
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testEmailCvvMobileForNonBankingRoute()
@@ -734,27 +779,30 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('checkout');
 
-        $record = [
-            'context' => [
+        $context = [
                 'email' => 'xyz@razorpay.com',
                 'mobile' => '6302839647',
                 'cvv' => '921',
                 'cc_number' => "4012888888881881",
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'email' => 'xyz@razorpay.com',
                 'mobile' => '6302839647',
                 'cvv' => '921',
                 'cc_number' => "4012888888881881",
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testInvalidEmailCvvMobile()
@@ -764,25 +812,28 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'email' => 'xyzrazorpay.com',
                 'mobile' => '6302839647123',
                 'cvv' => '92155',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'email' => 'xyzrazorpay.com',
                 'mobile' => '6302839647123',
                 'cvv' => '92155',
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     // The regex value is now moved to config hence the test case is not
@@ -794,68 +845,72 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            "timestamp" => "2020-03-27T07:08:13.893",
-            "code"      => "BANK_TRANSFER_PROCESSING_FAILED",
-            "message"   => "BANK_TRANSFER_PROCESSING_FAILED",
-            "context"   => [
-                "class"   => "RZP\\Exception\\GatewayErrorException",
-                "code"    => "BAD_REQUEST_PAYMENT_FAILED",
-                "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
-                "data"    => [
-                    "payer_account"  => "4012888888881881",
-                    "payer_ifsc"     => "HDFC0000001",
-                    "mode"           => "neft",
-                    "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
-                    "time"           => 1543052014,
-                    "amount"         => 10000,
-                    "description"    => "Test bank transfer",
-                    "payee_account"  => "371449635398431",
-                    "payee_ifsc"     => "RAZRB000000",
-                    "payee_email"    => "xyz@razorpay.com",
-                    "payee_phone"    => "6302839641",
-                    "payee_cvv"      => "564",
-                ],
-                "stack"   => [
-                    "#0 /app/app/Models/VirtualAccount/Processor.php(170)=>" .
-                    "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
-                    "#1 /app/app/Models/BankTransfer/Core.php(10)=> RZP\\Models\\VirtualAccount\\Processor->" .
-                    "process(Object(RZP\\Models\\BankTransfer\\Entity))",
-                ]
+        $time = (new DateTimeImmutable(true))->setDate(2020,03,27)->setTime(7,8,13,893);
+
+        $context = [
+            "class"   => "RZP\\Exception\\GatewayErrorException",
+            "code"    => "BAD_REQUEST_PAYMENT_FAILED",
+            "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
+            "data"    => [
+                "payer_account"  => "4012888888881881",
+                "payer_ifsc"     => "HDFC0000001",
+                "mode"           => "neft",
+                "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
+                "time"           => 1543052014,
+                "amount"         => 10000,
+                "description"    => "Test bank transfer",
+                "payee_account"  => "371449635398431",
+                "payee_ifsc"     => "RAZRB000000",
+                "payee_email"    => "xyz@razorpay.com",
+                "payee_phone"    => "6302839641",
+                "payee_cvv"      => "564",
+            ],
+            "stack"   => [
+                "#0 /app/app/Models/VirtualAccount/Processor.php(170)=>" .
+                "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
+                "#1 /app/app/Models/BankTransfer/Core.php(10)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                "process(Object(RZP\\Models\\BankTransfer\\Entity))",
             ]
         ];
+
+        $record = new LogRecord(datetime: $time,
+            channel: 'test',
+            level: Level::Debug,
+            message: 'BANK_TRANSFER_PROCESSING_FAILED',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            "context" => [
-                "class"   => "RZP\\Exception\\GatewayErrorException",
-                "code"    => "BAD_REQUEST_PAYMENT_FAILED",
-                "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
-                "data"    => [
-                    "payer_account"  => "CARD_NUMBER_SCRUBBED(16)",
-                    "payer_ifsc"     => "HDFC0000001",
-                    "mode"           => "neft",
-                    "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
-                    "time"           => 1543052014,
-                    "amount"         => 10000,
-                    "description"    => "Test bank transfer",
-                    "payee_account"  => "CARD_NUMBER_SCRUBBED(15)",
-                    "payee_ifsc"     => "RAZRB000000",
-                    "payee_email"    => "EMAIL_SCRUBBED(16)",
-                    "payee_phone"    => "PHONE_NUMBER_SCRUBBED(10)",
-                    "payee_cvv"      => "564",
-                ],
-                "stack"   => [
-                    "#0 /app/app/Models/VirtualAccount/Processor.php(170)=>" .
-                    "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
-                    "#1 /app/app/Models/BankTransfer/Core.php(10)=> RZP\\Models\\VirtualAccount\\Processor->" .
-                    "process(Object(RZP\\Models\\BankTransfer\\Entity))",
-                ]
+            "class"   => "RZP\\Exception\\GatewayErrorException",
+            "code"    => "BAD_REQUEST_PAYMENT_FAILED",
+            "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
+            "data"    => [
+                "payer_account"  => "CARD_NUMBER_SCRUBBED(16)",
+                "payer_ifsc"     => "HDFC0000001",
+                "mode"           => "neft",
+                "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
+                "time"           => 1543052014,
+                "amount"         => 10000,
+                "description"    => "Test bank transfer",
+                "payee_account"  => "CARD_NUMBER_SCRUBBED(15)",
+                "payee_ifsc"     => "RAZRB000000",
+                "payee_email"    => "EMAIL_SCRUBBED(16)",
+                "payee_phone"    => "PHONE_NUMBER_SCRUBBED(10)",
+                "payee_cvv"      => "564",
+            ],
+            "stack"   => [
+                "#0 /app/app/Models/VirtualAccount/Processor.php(170)=>" .
+                "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
+                "#1 /app/app/Models/BankTransfer/Core.php(10)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                "process(Object(RZP\\Models\\BankTransfer\\Entity))",
             ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
+        $this->assertEquals("BANK_TRANSFER_PROCESSING_FAILED", $updatedRecord->message);
+        $this->assertEquals($time, $updatedRecord->datetime);
     }
 
     // The regex value is now moved to config hence the test case is not
@@ -871,25 +926,23 @@ class CardRedactionTest extends TestCase
 
         $updatedRecord =  $trace($record);
 
-        $expectedResponse = [
-            "timestamp" => "2020-03-26T14:43:12.457",
-            "code"      => "ERROR_EXCEPTION",
-            "message"   => "Unhandled critical exception occured",
-            "context"   => [
-                "class"   => "RZP\\Exception\\GatewayErrorException",
-                "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
-                "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
-                "data"    => [],
-                "stack"   => [
-                    "#0 /app/app/Http/Controllers/BankTransferController.php(125): RZP\\Models\\BankTransfer\\Service" .
-                    "->process1(CARD_NUMBER_SCRUBBED(15), CARD_NUMBER_SCRUBBED(16), NormalText, 37144963539, EMAIL_SCRUBBED(16), Random, PHONE_NUMBER_SCRUBBED(10), 567, EMAIL_SCRUBBED(20))",
-                    "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
-                    "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
-                ]
+        $expectedContext = [
+            "class"   => "RZP\\Exception\\GatewayErrorException",
+            "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
+            "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
+            "data"    => [],
+            "stack"   => [
+                "#0 /app/app/Http/Controllers/BankTransferController.php(125): RZP\\Models\\BankTransfer\\Service" .
+                "->process1(CARD_NUMBER_SCRUBBED(15), CARD_NUMBER_SCRUBBED(16), NormalText, 37144963539, EMAIL_SCRUBBED(16), Random, PHONE_NUMBER_SCRUBBED(10), 567, EMAIL_SCRUBBED(20))",
+                "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
+                "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
             ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedContext, $updatedRecord->context);
+        $this->assertEquals($record->datetime, $updatedRecord->datetime);
+        $this->assertEquals($record->message, $updatedRecord->message);
+        $this->assertArraySelectiveEquals($record->extra, $updatedRecord->extra);
     }
 
     // The regex value is now moved to config hence the test case is not
@@ -905,27 +958,30 @@ class CardRedactionTest extends TestCase
 
         $this->setEmailPhoneNumberCVVRegexViaRedis($emailRegex, $phoneRegex, $cvvRegex);
 
-        $record = [
-            'context' => [
+        $context = [
                 'email' => 'xyz@razorpay.com',
                 'cvv'   => '567',
                 'phone' => '9177278066',
-            ]
         ];
 
         $this->mockRouter('payout_create');
 
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
+
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'email' => 'EMAIL_SCRUBBED(16)',
                 'cvv'   => '567',
                 'phone' => 'PHONE_NUMBER_SCRUBBED(10)',
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     // In this test first scrubbing is disabled and then enabled again
@@ -938,29 +994,32 @@ class CardRedactionTest extends TestCase
 
         $this->setEmailPhoneNumberCVVRegexViaRedis('off', 'off', 'off');
 
-        $record = [
-            'context' => [
+        $context = [
                 'email' => 'xyz@razorpay.com',
                 'cvv'   => '567',
                 'phone' => '9177278066',
-            ]
         ];
 
         $originalRouter = $this->app['router'];
 
         $this->mockRouter('payout_create');
 
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
+
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'email' => 'EMAIL_SCRUBBED(16)',
                 'cvv'   => '567',
                 'phone' => 'PHONE_NUMBER_SCRUBBED(10)',
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
 
         $this->app->instance('router', $originalRouter);
 
@@ -971,14 +1030,12 @@ class CardRedactionTest extends TestCase
         $updatedRecord1 =  $trace($record);
 
         $expectedResponse1 = [
-            'context' => [
                 'email' => 'EMAIL_SCRUBBED(16)',
                 'cvv'   => '567',
                 'phone' => 'PHONE_NUMBER_SCRUBBED(10)',
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse1, $updatedRecord1);
+        $this->assertArraySelectiveEquals($expectedResponse1, $updatedRecord1->context);
     }
 
     // The regex value is now moved to config hence the test case is not
@@ -990,8 +1047,7 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            'context' => [
+        $context = [
                 'email' => 'xyz@razorpay.com',
                 'mobile' => '6302839647',
                 'mobile1' => '6302839647739191',
@@ -1010,13 +1066,18 @@ class CardRedactionTest extends TestCase
                 'email13' => 'admin@domain.org',
                 'email15' => '0123456789xyz@example.com',
                 'email16' => 'ks@subdomain.domain.com',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 'email' => 'EMAIL_SCRUBBED(16)',
                 'mobile' => 'PHONE_NUMBER_SCRUBBED(10)',
                 'mobile1' => '6302839647739191',
@@ -1035,10 +1096,9 @@ class CardRedactionTest extends TestCase
                 'email13' => 'EMAIL_SCRUBBED(16)',
                 'email15' => 'EMAIL_SCRUBBED(25)',
                 'email16' => 'EMAIL_SCRUBBED(23)',
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testPayerNameInExceptionData()
@@ -1049,7 +1109,7 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('bank_transfer_process_rbl');
 
-        $record = [
+        $context = [
             "timestamp" => "2020-03-11T11:09:33.175",
             "code"      => "BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED",
             "message"   => "BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED",
@@ -1078,8 +1138,15 @@ class CardRedactionTest extends TestCase
             ]
         ];
 
-        $updatedRecord =  $trace($record);
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
+        $updatedRecord =  $trace($record);
+//TODO skipped
         $expectedResponse = [
             "context" => [
                 "class"   => "RZP\\Exception\\BadRequestValidationFailureException",
@@ -1106,7 +1173,7 @@ class CardRedactionTest extends TestCase
             ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testPayerName()
@@ -1117,25 +1184,28 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('bank_transfer_process_rbl');
 
-        $record = [
-            'context' => [
+        $context = [
                 "payer_account"  => "4012888888881881",
                 "payer_name"     => "AXI2b63f52d070743b6bd163f564e4379eb",
                 "payer_ifsc"     => "HDFC0000001",
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord = $trace($record);
 
         $expectedResponse = [
-            'context' => [
                 "payer_account"  => "CARD_NUMBER_SCRUBBED(16)",
                 "payer_name"     => "SCRUBBED(35)",
                 "payer_ifsc"     => "HDFC0000001",
-            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord->context);
     }
 
     public function testBankingProductInExceptionStackTrace()
@@ -1144,7 +1214,7 @@ class CardRedactionTest extends TestCase
 
         $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, Product::BANKING);
 
-        $this->assertEquals($updatedRecord['request']['product'], Product::BANKING);
+        $this->assertEquals($updatedRecord->extra['request']['product'], Product::BANKING);
     }
 
     public function testPrimaryProductPresentInExceptionStackTrace()
@@ -1153,59 +1223,79 @@ class CardRedactionTest extends TestCase
 
         $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, Product::PRIMARY);
 
-        $this->assertEquals($updatedRecord['request']['product'], Product::PRIMARY);
+        $this->assertEquals($updatedRecord->extra['request']['product'], Product::PRIMARY);
     }
 
     public function testPrimaryProductPresentInTrace()
     {
-        $record = [
-            'context' => [
+        $context = [
                 'email' => 'xyz@razorpay.com',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, Product::PRIMARY);
 
-        $this->assertEquals($updatedRecord['request']['product'], Product::PRIMARY);
+        $this->assertEquals($updatedRecord->extra['request']['product'], Product::PRIMARY);
     }
 
     public function testBankingProductPresentInTrace()
     {
-        $record = [
-            'context' => [
+        $context = [
                 'email' => 'xyz@razorpay.com',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $this->getUpdatedTrace('payout_create', $record, Product::BANKING);
 
-        $this->assertEquals($updatedRecord['request']['product'], Product::BANKING);
+        $this->assertEquals($updatedRecord->extra['request']['product'], Product::BANKING);
     }
 
     public function testBankingProductPresentInTracePrivateAuth()
     {
-        $record = [
-            'context' => [
+        $context = [
                 'email' => 'xyz@razorpay.com',
-            ]
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $this->getUpdatedTrace('payout_create', $record, Product::BANKING, Type::PRIVATE_AUTH);
 
-        $this->assertEquals($updatedRecord['request']['product'], Product::BANKING);
+        $this->assertEquals($updatedRecord->extra['request']['product'], Product::BANKING);
     }
 
     public function testPrimaryProductPresentInTracePrivateAuth()
     {
-        $record = [
-            'context' => [
-                'email' => 'xyz@razorpay.com',
-            ]
+        $context = [
+            'email' => 'xyz@razorpay.com',
         ];
+
+        $record = new LogRecord(datetime: new DateTimeImmutable(true),
+            channel: 'test',
+            level: Level::Debug,
+            message: 'test',
+            context: $context,
+            extra: []);
 
         $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, Product::PRIMARY, Type::PRIVATE_AUTH);
 
-        $this->assertEquals($updatedRecord['request']['product'], Product::PRIMARY);
+        $this->assertEquals(Product::PRIMARY, $updatedRecord->extra['request']['product']);
     }
 
     public function testPrimaryProductPresentInTraceDashboardAppAuth()
@@ -1242,7 +1332,7 @@ class CardRedactionTest extends TestCase
     }
 
     protected function getUpdatedTrace(string $routeName,
-                                       array $record,
+                                       LogRecord $record,
                                        string $product = null,
                                        string $authType = null)
     {
@@ -1255,24 +1345,26 @@ class CardRedactionTest extends TestCase
         return $trace($record);
     }
 
-    protected function getExceptionRecord()
+    protected function getExceptionRecord(): LogRecord
     {
-        return [
-            "timestamp" => "2020-03-26T14:43:12.457",
-            "code"      => "ERROR_EXCEPTION",
-            "message"   => "Unhandled critical exception occured",
-            "context"   => [
-                "class"   => "RZP\\Exception\\GatewayErrorException",
-                "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
-                "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
-                "data"    => [],
-                "stack"   => [
-                    "#0 /app/app/Http/Controllers/BankTransferController.php(125): RZP\\Models\\BankTransfer\\Service" .
-                    "->process1(371449635398431, 4012888888881881, NormalText, 37144963539, xyz@razorpay.com, Random, 6302839641, 567, abcd123@razorpay.com)",
-                    "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
-                    "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
-                ]
+        $time = (new DateTimeImmutable(true))->setDate(2020,3,26)->setTime(14,43,12,457);
+        $context = [
+            "class"   => "RZP\\Exception\\GatewayErrorException",
+            "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
+            "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
+            "data"    => [],
+            "stack"   => [
+                "#0 /app/app/Http/Controllers/BankTransferController.php(125): RZP\\Models\\BankTransfer\\Service" .
+                "->process1(371449635398431, 4012888888881881, NormalText, 37144963539, xyz@razorpay.com, Random, 6302839641, 567, abcd123@razorpay.com)",
+                "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
+                "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
             ]
         ];
+        return new LogRecord(datetime: $time,
+            channel: 'test',
+            level: Level::Debug,
+            message: 'Unhandled critical exception occured',
+            context: $context,
+            extra: ["code" => "ERROR_EXCEPTION",]);
     }
 }
