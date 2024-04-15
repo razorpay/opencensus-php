@@ -177,14 +177,14 @@ class Service extends Base\Service
 
         $toMode = $input[self::TO_MODE];
 
-        $entityFrom = $this->repo->$entity->connection($fromMode)->findOrFailPublic($id);
+        $entityFrom = $this->repo->$entity->findOrFailPublic($id, array('*') , $fromMode);
 
         if (!(method_exists($this->repo->$entity, 'entityShouldSync') && $this->entityShouldSync($entityFrom)))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONLY_SYNCED_ENTITIES_CAN_BE_SYNCED, null, null, 'requested entity is not a synced entity');
         }
 
-        $entityTo = $this->repo->$entity->connection($toMode)->findOrFailPublic($id);
+        $entityTo = $this->repo->$entity->findOrFailPublic($id, array('*') , $toMode);
 
         $entityFieldsBefore = array();
         $entityFieldsAfter = array();
