@@ -1076,10 +1076,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
         $this->assertEquals('refunded', $response['payment']['status']);
 
-        $this->assertArrayHasKey('refunds', $response);
-
-        $this->assertEquals($response['payment']['id'], $response['refunds'][0]['payment_id']);
-        $this->assertEquals($response['payment']['amount'], $response['refunds'][0]['amount']);
     }
 
     public function testProcessIciciQrPaymentInternalTerminalNotFound()

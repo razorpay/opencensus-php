@@ -307,8 +307,6 @@ class Service extends Base\Service
 
             $response = ['payment' => $payment->toArrayRecon()];
 
-            $response['refunds'] = $payment->refunds->toArrayRecon();
-
             return $response;
         }
 
