@@ -372,6 +372,11 @@ class Processor
     const PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER = 'payment_links_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if PP/PB/PH card payment should go via PG Router and CPS or just via API service
+     */
+    const PL_CARD_PAYMENTS_VIA_PGROUTER = 'pl_card_payments_via_pg_router';
+
+    /**
      * Razorx flag to indicate if a saved card token payment should go via PG Router and CPS or just via API service
      */
     const SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_token_payments_via_pg_router';
@@ -1173,11 +1178,31 @@ class Processor
                     }
                 }
 
-                if (empty($order) === false and ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or
+                if (empty($order) === false and ($order->getProductId() !== null
+                        and in_array($order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())))
+                {
+
+                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::PL_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+                    if ($result != 'on') {
+                        return false;
+                    }
+
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "pp_pb_ph",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+
+                    return false;
+                }
+
+                if (empty($order) === false and ($order->getProductId() !== null
+                        and $order->getProductType() !== ProductType::PAYMENT_LINK_V2
+                        and !in_array($order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())) or
                     ($order->invoice !== null))
                 {
+
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "no_code_apps",
+                        'reason' => "other_apps_and_invoice",
                         'merchant_id' => $merchant->getId(),
                     ]);
 
