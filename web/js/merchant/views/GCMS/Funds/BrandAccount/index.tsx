@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text, Divider } from '@razorpay/blade/components';
+import {
+  Box,
+  Text,
+  Divider,
+  TableBody,
+  Table,
+  TableHeader,
+  TableHeaderRow,
+  TableHeaderCell,
+  TableRow,
+  TableCell,
+} from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
 import Shimmer from 'common/components/Shimmer';
-import TableBody from 'common/ui/TableBody';
+import Spinner from 'common/ui/Spinner';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
 import store from 'merchant/store';
 import { ACCOUNT_ID_SUFFIX } from 'merchant/views/GCMS/Funds/constants';
 import { trackFundsPageLoadSuccess } from 'merchant/views/GCMS/Funds/events';
@@ -97,6 +107,9 @@ const BrandAccount = (): JSX.Element => {
     setFromDate(date.from);
     setToDate(date.to);
   };
+  const tableData = {
+    nodes: transactions?.items ?? [],
+  };
 
   return (
     <Wrapper>
@@ -133,61 +146,65 @@ const BrandAccount = (): JSX.Element => {
             </Text>
             <Divider />
             <BrandAccountFilters onSearch={handleSearch} />
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  {brandTrasactionColumns.map(({ label }) => (
-                    <th key={label} style={{ paddingLeft: 16 }}>
-                      {label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <TableBody
-                isLoading={isFetchTransactionsLoading || isFetchBrandBalanceLoading}
-                colSpan={8}
-                rows={transactions?.items || []}
-                emptyTableRow={() => (
-                  <EmptyListWithTableRow
-                    colSpan={8}
-                    description={<div>There are no transactions yet</div>}
+            {isFetchTransactionsLoading ? (
+              <div className="page-spinner-container">
+                <Spinner center={undefined} />
+              </div>
+            ) : Array.isArray(tableData.nodes) && tableData.nodes.length > 0 ? (
+              <>
+                <Table data={tableData} showStripedRows={true}>
+                  {(orderItems) => {
+                    return (
+                      <>
+                        <TableHeader>
+                          <TableHeaderRow>
+                            {brandTrasactionColumns.map(({ label }) => (
+                              <TableHeaderCell key={label}>{label}</TableHeaderCell>
+                            ))}
+                          </TableHeaderRow>
+                        </TableHeader>
+                        <TableBody>
+                          {orderItems.map((order, index) => (
+                            <TableRow key={index} item={order}>
+                              {brandTrasactionColumns.map(({ label, value }) => (
+                                <TableCell key={label}>{value(order)}</TableCell>
+                              ))}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </>
+                    );
+                  }}
+                </Table>
+                <Box>
+                  <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
+                    <Text size="small" color="surface.text.gray.muted">{`Total ${
+                      transactions?.count || 0
+                    } Transactions`}</Text>
+                  </Box>
+                  <Pagination
+                    next={handleNext}
+                    prev={handlePrev}
+                    listData={transactions?.items || []}
+                    skip={skip}
+                    count={LIST_FETCH_BATCH_SIZE}
                   />
-                )}
-              >
-                {transactions?.items?.map((transaction) => (
-                  <EntityItemRow key={transaction.id} id={transaction.id}>
-                    {brandTrasactionColumns.map(({ label, value }) => (
-                      <td
-                        style={{
-                          paddingTop: 16,
-                          paddingBottom: 16,
-                          paddingLeft: 16,
-                          paddingRight: 16,
-                        }}
-                        key={`${transaction.id} + ${label}`}
-                      >
-                        {value(transaction)}
-                      </td>
-                    ))}
-                  </EntityItemRow>
-                ))}
-              </TableBody>
-            </table>
+                </Box>
+              </>
+            ) : (
+              <Box display="flex" alignItems="center" justifyContent="center">
+                <EmptyListWithTableRow
+                  colSpan={8}
+                  description={
+                    <React.Fragment>
+                      <div>There are no transactions yet!!</div>
+                      <div>Start creating new transactions now.</div>
+                    </React.Fragment>
+                  }
+                />
+              </Box>
+            )}
           </div>
-          <Box>
-            <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
-              <Text size="small" color="surface.text.gray.muted">{`Total ${
-                transactions?.count || 0
-              } Transactions`}</Text>
-            </Box>
-            <Pagination
-              next={handleNext}
-              prev={handlePrev}
-              listData={transactions?.items || []}
-              skip={skip}
-              count={LIST_FETCH_BATCH_SIZE}
-            />
-          </Box>
         </div>
       </div>
     </Wrapper>

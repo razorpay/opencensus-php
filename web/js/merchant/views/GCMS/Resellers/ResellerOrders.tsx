@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
-import { Box, Text } from '@razorpay/blade/components';
+import {
+  Box,
+  Text,
+  TableBody,
+  Table,
+  TableHeader,
+  TableHeaderRow,
+  TableHeaderCell,
+  TableRow,
+  TableCell,
+} from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { ModeT } from 'common/services/mode';
 import Spinner from 'common/ui/Spinner';
-import TableBody from 'common/ui/TableBody';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
 import ResellerOrdersFilter from 'merchant/views/GCMS/Orders/OrdersFilters';
 import { fetchResellerOrders } from 'merchant/views/GCMS/Orders/queries';
 import { RESELLER_ORDER_LIST_COLUMNS } from 'merchant/views/GCMS/Resellers/constants';
@@ -54,63 +62,44 @@ const ResellerOrders = ({ mode }: { mode: ModeT }) => {
     setToDate(date.to);
     setOrderId(orderId);
   };
-
+  const tableData = {
+    nodes: orders?.items ?? [],
+  };
   return (
     <div>
       <div className="content">
         <ResellerOrdersFilter onSearch={handleSearch} isResellerOrderFilter={true} />
+
         {isLoading ? (
           <div className="page-spinner-container">
             <Spinner center={undefined} />
           </div>
-        ) : (
+        ) : Array.isArray(tableData.nodes) && tableData.nodes.length > 0 ? (
           <>
-            <div className="table-responsive">
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    {RESELLER_ORDER_LIST_COLUMNS.map(({ label }) => (
-                      <th key={label} style={{ paddingLeft: 24 }}>
-                        {label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <TableBody
-                  isLoading={isLoading}
-                  colSpan={8}
-                  rows={orders?.items || []}
-                  emptyTableRow={() => (
-                    <EmptyListWithTableRow
-                      colSpan={8}
-                      description={
-                        <React.Fragment>
-                          <div>There are no orders yet!!</div>
-                        </React.Fragment>
-                      }
-                    />
-                  )}
-                >
-                  {orders?.items?.map((order) => (
-                    <EntityItemRow key={order.id} id={order.id}>
-                      {RESELLER_ORDER_LIST_COLUMNS.map(({ label, value }) => (
-                        <td
-                          style={{
-                            paddingTop: 16,
-                            paddingBottom: 16,
-                            paddingLeft: 24,
-                            paddingRight: 16,
-                          }}
-                          key={`${order.id} + ${label}`}
-                        >
-                          {value(order)}
-                        </td>
+            <Table data={tableData} showStripedRows={true}>
+              {(orderItems) => {
+                return (
+                  <>
+                    <TableHeader>
+                      <TableHeaderRow>
+                        {RESELLER_ORDER_LIST_COLUMNS.map(({ label }) => (
+                          <TableHeaderCell key={label}>{label}</TableHeaderCell>
+                        ))}
+                      </TableHeaderRow>
+                    </TableHeader>
+                    <TableBody>
+                      {orderItems.map((order, index) => (
+                        <TableRow key={index} item={order}>
+                          {RESELLER_ORDER_LIST_COLUMNS.map(({ label, value }) => (
+                            <TableCell key={label}>{value(order)}</TableCell>
+                          ))}
+                        </TableRow>
                       ))}
-                    </EntityItemRow>
-                  ))}
-                </TableBody>
-              </table>
-            </div>
+                    </TableBody>
+                  </>
+                );
+              }}
+            </Table>
             <Box>
               <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
                 <Text size="small" color="surface.text.gray.muted">{`Total ${
@@ -126,6 +115,10 @@ const ResellerOrders = ({ mode }: { mode: ModeT }) => {
               />
             </Box>
           </>
+        ) : (
+          <Box display="flex" alignItems="center" justifyContent="center">
+            <EmptyListWithTableRow colSpan={8} description={<div>There are no orders yet!!</div>} />
+          </Box>
         )}
       </div>
     </div>

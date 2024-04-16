@@ -81,7 +81,7 @@ const BrandAccountFilters = ({ onSearch }: BrandAccountFiltersProps) => {
     <StyledFilterDiv>
       <div className={`gcms-funds-filter-group ${isAllTimeFilter && 'all-time-filter-selected'}`}>
         <Box paddingY="spacing.4" display="flex">
-          <div className="form-group list-filter-item">
+          <div className="form-group gcms-list-filter-item">
             <label>Reference Id</label>
             <input
               name="reference_id"

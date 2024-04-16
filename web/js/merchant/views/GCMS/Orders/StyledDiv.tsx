@@ -1,5 +1,5 @@
-import styled from 'styled-components';
 import { Theme } from '@razorpay/blade/components';
+import styled from 'styled-components';
 
 export const StyledFilterDiv = styled.div(
   ({ theme }: { theme: Theme }) => `
@@ -12,6 +12,10 @@ export const StyledFilterDiv = styled.div(
   .filter-buttons-wrapper{
     display: flex;
     column-gap: ${theme.spacing[3]}px;
+  }
+
+  .gcms-list-filter-item {
+    margin-left: ${theme.spacing[4]}px;
   }
 
   @media screen and (max-width: 768px) {
@@ -61,6 +65,6 @@ export const StyledFilterDiv = styled.div(
     }
   }
 
-  
+
 `,
 );

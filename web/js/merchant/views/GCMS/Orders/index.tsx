@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { Badge, Box, Text, Heading } from '@razorpay/blade/components';
+import {
+  Badge,
+  Box,
+  Text,
+  Heading,
+  TableBody,
+  Table,
+  TableHeader,
+  TableHeaderRow,
+  TableHeaderCell,
+  TableRow,
+  TableCell,
+} from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
 import { ModeT } from 'common/services/mode';
 import Spinner from 'common/ui/Spinner';
-import TableBody from 'common/ui/TableBody';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
 import { ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
@@ -109,6 +119,11 @@ const Orders = ({ mode }: { mode: ModeT }) => {
   useEffect(() => {
     trackOrdersPageLoadSuccess();
   }, []);
+
+  const tableData = {
+    nodes: orders?.items ?? [],
+  };
+
   return (
     <Wrapper>
       <div className="tabbed-container">
@@ -121,93 +136,70 @@ const Orders = ({ mode }: { mode: ModeT }) => {
          * TODO: layout breaks on small screens
          */}
         {/* <Box
-          display={'flex'}
-          flex={1}
-          backgroundColor={'interactive.border.gray.faded'}
-          paddingY={'spacing.4'}
-          width={'100%'}
-        >
-          <MetricsOverview title="Monthly Volume" b2bValue={26839} b2cValue={3764} />
-          <MetricsOverview title="Discount Burn" b2bValue={15672} b2cValue={8372} />
-          <MetricsOverview title="Breakage" b2bValue={74873} b2cValue={2992} />
-        </Box> */}
+        display={'flex'}
+        flex={1}
+        backgroundColor={'brand.gray.400.lowContrast'}
+        paddingY={'spacing.4'}
+        width={'100%'}
+      >
+        <MetricsOverview title="Monthly Volume" b2bValue={26839} b2cValue={3764} />
+        <MetricsOverview title="Discount Burn" b2bValue={15672} b2cValue={8372} />
+        <MetricsOverview title="Breakage" b2bValue={74873} b2cValue={2992} />
+      </Box> */}
         {/* <Box
-          backgroundColor={'transparent'}
-          marginY={'spacing.4'}
-          display={'flex'}
-          justifyContent={'space-between'}
+        backgroundColor={'transparent'}
+        marginY={'spacing.4'}
+        display={'flex'}
+        justifyContent={'space-between'}
+      >
+        <Box
+          width={{
+            l: '50%',
+            m: '80%',
+            s: '80%',
+          }}
         >
-          <Box
-            width={{
-              l: '50%',
-              m: '80%',
-              s: '80%',
-            }}
-          >
-            <TextInput placeholder="Search" icon={SearchIcon} />
-          </Box>
-          <IconButton
-            size="large"
-            accessibilityLabel="filter"
-            icon={FilterIcon}
-            onClick={() => {}}
-          />
-        </Box> */}
+          <TextInput placeholder="Search" icon={SearchIcon} />
+        </Box>
+        <IconButton
+          size="large"
+          accessibilityLabel="filter"
+          icon={FilterIcon}
+          onClick={() => {}}
+        />
+      </Box> */}
         <div className="content">
           <OrdersFilter onSearch={handleSearch} />
           {isLoading ? (
             <div className="page-spinner-container">
               <Spinner center={undefined} />
             </div>
-          ) : (
+          ) : Array.isArray(tableData.nodes) && tableData.nodes.length > 0 ? (
             <>
-              <div className="table-responsive">
-                <table className="table table-hover">
-                  <thead>
-                    <tr>
-                      {ORDER_LIST_COLUMNS.map(({ label }) => (
-                        <th key={label} style={{ paddingLeft: 16 }}>
-                          {label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <TableBody
-                    isLoading={isLoading}
-                    colSpan={8}
-                    rows={orders?.items || []}
-                    emptyTableRow={() => (
-                      <EmptyListWithTableRow
-                        colSpan={8}
-                        description={
-                          <React.Fragment>
-                            <div>There are no orders yet!!</div>
-                            <div>Start creating new orders now.</div>
-                          </React.Fragment>
-                        }
-                      />
-                    )}
-                  >
-                    {orders?.items?.map((order) => (
-                      <EntityItemRow key={order.id} id={order.id}>
-                        {ORDER_LIST_COLUMNS.map(({ label, value }) => (
-                          <td
-                            style={{
-                              paddingTop: 16,
-                              paddingBottom: 16,
-                              paddingLeft: 16,
-                              paddingRight: 16,
-                            }}
-                            key={`${order.id} + ${label}`}
-                          >
-                            {value(order)}
-                          </td>
+              <Table data={tableData} showStripedRows={true}>
+                {(orderItems) => {
+                  return (
+                    <>
+                      <TableHeader>
+                        <TableHeaderRow>
+                          {ORDER_LIST_COLUMNS.map(({ label }) => (
+                            <TableHeaderCell key={label}>{label}</TableHeaderCell>
+                          ))}
+                        </TableHeaderRow>
+                      </TableHeader>
+                      <TableBody>
+                        {orderItems.map((order, index) => (
+                          <TableRow key={index} item={order}>
+                            {ORDER_LIST_COLUMNS.map(({ label, value }) => (
+                              <TableCell key={label}>{value(order)}</TableCell>
+                            ))}
+                          </TableRow>
                         ))}
-                      </EntityItemRow>
-                    ))}
-                  </TableBody>
-                </table>
-              </div>
+                      </TableBody>
+                    </>
+                  );
+                }}
+              </Table>
               <Box>
                 <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
                   <Text size="small" color="surface.text.gray.muted">{`Total ${
@@ -223,6 +215,18 @@ const Orders = ({ mode }: { mode: ModeT }) => {
                 />
               </Box>
             </>
+          ) : (
+            <Box display="flex" alignItems="center" justifyContent="center">
+              <EmptyListWithTableRow
+                colSpan={8}
+                description={
+                  <React.Fragment>
+                    <div>There are no orders yet!!</div>
+                    <div>Start creating new orders now.</div>
+                  </React.Fragment>
+                }
+              />
+            </Box>
           )}
         </div>
       </div>

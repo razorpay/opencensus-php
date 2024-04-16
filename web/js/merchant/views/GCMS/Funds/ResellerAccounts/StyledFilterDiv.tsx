@@ -8,29 +8,40 @@ export const StyledFilterDiv = styled.div(
       display: none;
     }
   }
+
   .filter-buttons-wrapper{
     display: flex;
     column-gap: ${theme.spacing[3]}px;
   }
+
+  .gcms-list-filter-item {
+    margin-left: ${theme.spacing[4]}px;
+  }
+
   @media screen and (max-width: 768px) {
     .presets-container.pull-left {
       width: calc(100% - 30px);
     }
+
     .datepicker-group .PowerSelect {
       width: 100%;
     }
+
     .rzp-daterange-picker > div.daterange-container{
       margin-top: ${theme.spacing[3]}px;
     }
+
     .list-filter-container{
       padding-right: ${theme.spacing[7]}px;
     }
+
     .list-filter-item.btn-toolbar{
       margin-top: 0px !important;
       width: 100%;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+
       > .btn:first-child {
         border: transparent;
         background: transparent;
@@ -40,6 +51,7 @@ export const StyledFilterDiv = styled.div(
         width: 160px;
         padding-left: 0;
         text-align: left;
+
         i {
           font-size: 1.25rem;
           line-height: 0.5;
@@ -47,10 +59,12 @@ export const StyledFilterDiv = styled.div(
         }
       }
     }
+
     .filter-buttons-wrapper{
       margin-top: ${theme.spacing[5]}px;
     }
   }
-  
+
+
 `,
 );

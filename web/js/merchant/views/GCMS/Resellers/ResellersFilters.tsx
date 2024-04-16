@@ -37,9 +37,9 @@ const ResellersFilter = ({ onSearch }: ResellersFilterProps) => {
 
   return (
     <StyledFilterDiv>
-      <div className={`gcms-orders-filter-group ${'all-time-filter-selected'}`}>
+      <div className={`gcms-filter-group ${'all-time-filter-selected'}`}>
         <Box paddingY="spacing.4" display="flex">
-          <div className="form-group list-filter-item">
+          <div className="form-group gcms-list-filter-item">
             <label>Reseller Name</label>
             <input
               name="merchant_name"

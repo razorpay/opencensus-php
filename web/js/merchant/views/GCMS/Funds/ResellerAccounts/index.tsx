@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
-import { Box, Text } from '@razorpay/blade/components';
+import {
+  Box,
+  Text,
+  TableBody,
+  Table,
+  TableHeader,
+  TableHeaderRow,
+  TableHeaderCell,
+  TableRow,
+  TableCell,
+} from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 
-import TableBody from 'common/ui/TableBody';
+import Spinner from 'common/ui/Spinner';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { fetchResellersBalances, LIST_FETCH_BATCH_SIZE } from 'merchant/views/GCMS/Funds/queries';
 import { ListApiResponse, ResellersBalance } from 'merchant/views/GCMS/Funds/types';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
@@ -47,7 +56,9 @@ const ResellerAccounts = ({ mode, merchantId }: ResellerAccountsProps) => {
   const handleSearch = ({ merchantName }) => {
     setMerchantNameFilter(merchantName);
   };
-
+  const tableData = {
+    nodes: resellerAccounts?.items ?? [],
+  };
   return (
     <Wrapper>
       <div className="content-wrapper" style={{ marginTop: '-16px' }}>
@@ -55,61 +66,60 @@ const ResellerAccounts = ({ mode, merchantId }: ResellerAccountsProps) => {
           <div className="table-responsive">
             <ResellerAccountsFilter onSearch={handleSearch} />
 
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  {resellerAccountsColumns.map(({ label }) => (
-                    <th key={label} style={{ paddingLeft: 16 }}>
-                      {label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <TableBody
-                isLoading={isLoading}
-                colSpan={8}
-                rows={resellerAccounts?.items || []}
-                emptyTableRow={() => (
-                  <EmptyListWithTableRow
-                    colSpan={8}
-                    description={<Text>No Reseller Accounts Found!</Text>}
+            {isLoading ? (
+              <div className="page-spinner-container">
+                <Spinner center={undefined} />
+              </div>
+            ) : Array.isArray(tableData.nodes) && tableData.nodes.length > 0 ? (
+              <>
+                <Table data={tableData} showStripedRows={true}>
+                  {(orderItems) => {
+                    return (
+                      <>
+                        <TableHeader>
+                          <TableHeaderRow>
+                            {resellerAccountsColumns.map(({ label }) => (
+                              <TableHeaderCell key={label}>{label}</TableHeaderCell>
+                            ))}
+                          </TableHeaderRow>
+                        </TableHeader>
+                        <TableBody>
+                          {orderItems.map((order, index) => (
+                            <TableRow key={index} item={order}>
+                              {resellerAccountsColumns.map(({ label, value }) => (
+                                <TableCell key={label}>{value(order)}</TableCell>
+                              ))}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </>
+                    );
+                  }}
+                </Table>
+                <Box>
+                  <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
+                    <Text size="small" color="surface.text.gray.muted">{`Total ${
+                      resellerAccounts?.count || 0
+                    } Reseller Accounts`}</Text>
+                  </Box>
+                  <Pagination
+                    next={handleNext}
+                    prev={handlePrev}
+                    listData={resellerAccounts?.items || []}
+                    skip={skip}
+                    count={LIST_FETCH_BATCH_SIZE}
                   />
-                )}
-              >
-                {resellerAccounts?.items?.map((transaction) => (
-                  <EntityItemRow key={transaction.id} id={transaction.id}>
-                    {resellerAccountsColumns.map(({ label, value }) => (
-                      <td
-                        style={{
-                          paddingTop: 16,
-                          paddingBottom: 16,
-                          paddingLeft: 16,
-                          paddingRight: 16,
-                        }}
-                        key={`${transaction.id} + ${label}`}
-                      >
-                        {value(transaction)}
-                      </td>
-                    ))}
-                  </EntityItemRow>
-                ))}
-              </TableBody>
-            </table>
+                </Box>
+              </>
+            ) : (
+              <Box display="flex" alignItems="center" justifyContent="center">
+                <EmptyListWithTableRow
+                  colSpan={8}
+                  description={<div>No Reseller Accounts Found!</div>}
+                />
+              </Box>
+            )}
           </div>
-          <Box>
-            <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
-              <Text size="small" color="surface.text.gray.muted">{`Total ${
-                resellerAccounts?.count || 0
-              } Reseller Accounts`}</Text>
-            </Box>
-            <Pagination
-              next={handleNext}
-              prev={handlePrev}
-              listData={resellerAccounts?.items || []}
-              skip={skip}
-              count={LIST_FETCH_BATCH_SIZE}
-            />
-          </Box>
         </Box>
       </div>
     </Wrapper>

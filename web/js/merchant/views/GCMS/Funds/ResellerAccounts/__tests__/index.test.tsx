@@ -45,9 +45,9 @@ describe('GCMS: Funds: ResellerAccounts', () => {
     renderResellerAccounts();
 
     await waitFor(() => {
-      expect(screen.getByText('Reseller Name', { selector: 'th' })).toBeInTheDocument();
-      expect(screen.getByText('Reseller ID', { selector: 'th' })).toBeInTheDocument();
-      expect(screen.getByText('Total Available Fund', { selector: 'th' })).toBeInTheDocument();
+      expect(screen.getByText('Reseller Name', { selector: 'p' })).toBeInTheDocument();
+      expect(screen.getByText('Reseller ID', { selector: 'p' })).toBeInTheDocument();
+      expect(screen.getByText('Total Available Fund', { selector: 'p' })).toBeInTheDocument();
       expect(screen.getAllByTestId('fund-amount').length).toBe(numberOfItems);
     });
   });
@@ -56,9 +56,9 @@ describe('GCMS: Funds: ResellerAccounts', () => {
     renderResellerAccounts();
 
     await waitFor(() => {
-      expect(screen.getByText('Reseller Name', { selector: 'th' })).toBeInTheDocument();
-      expect(screen.getByText('Reseller ID', { selector: 'th' })).toBeInTheDocument();
-      expect(screen.getByText('Total Available Fund', { selector: 'th' })).toBeInTheDocument();
+      expect(screen.getByText('Reseller Name', { selector: 'p' })).toBeInTheDocument();
+      expect(screen.getByText('Reseller ID', { selector: 'p' })).toBeInTheDocument();
+      expect(screen.getByText('Total Available Fund', { selector: 'p' })).toBeInTheDocument();
       expect(screen.getByText('Ibacoo')).toBeInTheDocument();
     });
   });
