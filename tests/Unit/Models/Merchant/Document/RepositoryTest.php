@@ -288,8 +288,8 @@ class RepositoryTest extends RepositoryTestHelper
             $merchantDocumentRepo            = new Repository();
             $this->setSplitzWithOutputForBulk(["true", "true"], 0);
             $asvRouterMock = $this->getMockBuilder(AsvRouter::class)->enableOriginalConstructor()->onlyMethods(['isExclusionFlowOrFailure', 'isTransactionActive'])->getMock();
-            $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->willReturn(true);
-            $asvRouterMock->expects($this->exactly(0))->method('isExclusionFlowOrFailure')->willReturn(true);
+            $asvRouterMock->expects($this->exactly(0))->method('isTransactionActive')->willReturn(true);
+            $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(true);
             $merchantDocumentRepo->asvRouter = $asvRouterMock;
             $this->updateDocumentAuditIdAndAssert($merchantDocumentRepo, $entity, $merchantDocument1Array);
 

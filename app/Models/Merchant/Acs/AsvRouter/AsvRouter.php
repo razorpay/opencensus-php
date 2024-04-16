@@ -229,14 +229,6 @@ class AsvRouter
     function shouldRouteToAccountService($id, $repoClass, $functionName): bool
     {
         try {
-            if ($this->isTransactionActive($repoClass) === true) {
-                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                    'routeOrWorkerName' => $this->getRouteOrJobName(),
-                    'reason' => self::FLOW_WITH_TRANSACTION,
-                ]);
-                return false;
-            }
-
             $isExclusionFlow = $this->isExclusionFlowOrFailure();
 
             if ($isExclusionFlow === true) {
@@ -245,6 +237,18 @@ class AsvRouter
                     'reason' => self::READ_EXCLUSION_FLOW,
                 ]);
                 return false;
+            }
+
+            if ($this->isTransactionActive($repoClass) === true) {
+                $transactionFlowExperimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForTransactionFlow();
+                $result = $this->splitzHelper->isSplitzOnByExperimentName($transactionFlowExperimentName, $id);
+                if ($result === false) {
+                    $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                        'routeOrWorkerName' => $this->getRouteOrJobName(),
+                        'reason' => self::FLOW_WITH_TRANSACTION,
+                    ]);
+                }
+                return $result;
             }
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
@@ -290,13 +294,6 @@ class AsvRouter
 
     public function shouldRouteImplicitJoinToAccountService($id, $entityName, $repoClass, $functionName): bool {
         try {
-            if ($this->isTransactionActive($repoClass) === true) {
-                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                    'routeOrWorkerName' => $this->getRouteOrJobName(),
-                    'reason' => self::FLOW_WITH_TRANSACTION,
-                ]);
-                return false;
-            }
 
             $isExclusionFlow = $this->isExclusionFlowOrFailure();
 
@@ -306,6 +303,18 @@ class AsvRouter
                     'reason' => self::READ_EXCLUSION_FLOW,
                 ]);
                 return false;
+            }
+
+            if ($this->isTransactionActive($repoClass) === true) {
+                $transactionFlowExperimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForTransactionFlow();
+                $result = $this->splitzHelper->isSplitzOnByExperimentName($transactionFlowExperimentName, $id);
+                if ($result === false) {
+                    $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                        'routeOrWorkerName' => $this->getRouteOrJobName(),
+                        'reason' => self::FLOW_WITH_TRANSACTION,
+                    ]);
+                }
+                return $result;
             }
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);

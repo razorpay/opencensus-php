@@ -553,18 +553,18 @@ class RepositoryTest extends RepositoryTestHelper
         $this->createMerchantDetailInDatabase($this->merchantDetailEntityJson1);
 
         //Fetch From Test Mode ASV DB
-        $this->setSplitzWithOutput("true", 0);
+        $this->setSplitzWithOutput("true",  1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDetail = $repo->repo->transactionOnLiveAndTestAndAsv(function() use ($repo) {
             return $repo->connection(Mode::TEST)->find("CzmiCwTPCL3t2K");
         });
         $this->assertEquals($merchantDetail->getConnectionName(), 'test');
 
         //Fetch From LIVE Mode ASV DB
-        $this->setSplitzWithOutput("true", 0);
+        $this->setSplitzWithOutput("true", 1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDetail = $repo->repo->transactionOnLiveAndTestAndAsv(function() use ($repo) {
             return $repo->connection(Mode::LIVE)->find("CzmiCwTPCL3t2K");
         });
