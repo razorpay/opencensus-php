@@ -4,6 +4,7 @@ namespace RZP\Models\LedgerOutbox;
 
 use Carbon\Carbon;
 use Razorpay\Trace\Facades\Trace;
+use RZP\Constants\Timezone;
 use RZP\Jobs\Ledger\CreateMissingRefundTransactionsForReverseShadow;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -122,6 +123,27 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function createMissingTransactionsForReverseShadowAdjustments(array $input)
+    {
+        $response = new Base\Collection();
+
+        $createdAtLessThanMinutes = (int) ($input['less_than'] ?? 60);
+        $endDateTimestamp = Carbon::now(Timezone::IST)->subMinutes($createdAtLessThanMinutes)->getTimestamp();
+
+        $createdAtGreaterThanMinutes = (int) ($input['greater_than'] ?? 24*60);
+        $startDateTimestamp = Carbon::now(Timezone::IST)->subMinutes($createdAtGreaterThanMinutes)->getTimestamp();
+
+        $txnResponse = $this->core->createMissingAdjustmentTransactions($startDateTimestamp, $endDateTimestamp, $input["transactor_ids"] );
+
+        $response->push([
+            "response" => $txnResponse,
+        ]);
+
+        return $response;
+    }
+
+
 
     protected function increaseAllowedSystemLimits()
     {

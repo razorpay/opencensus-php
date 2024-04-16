@@ -2,6 +2,7 @@
 namespace RZP\Models\Ledger\ReverseShadow\Reversals;
 
 use App;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Exception;
 use RZP\Models\Base;
 use Ramsey\Uuid\Uuid;
@@ -72,7 +73,10 @@ class Core extends Base\Core
 
         $outboxPayload = $this->prepareOutboxPayload($payloadName, $journalPayload);
 
-       $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($outboxPayload,$transactorEvent)
+        {
+            $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
+        }));
     }
 
     private function generateMoneyParamsAndRulesForRefundReversals(ReversalEntity $reversal, RefundEntity $refund, bool $feeOnlyReversal): array
