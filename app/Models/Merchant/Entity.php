@@ -36,7 +36,6 @@ use RZP\Models\Invitation;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Detail;
-use RZP\Services\Dcs\Configurations;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Detail\BusinessType;
@@ -2596,23 +2595,16 @@ class Entity extends Base\PublicEntity
     /**
      * Retrieves the full URL of the rectangular logo stored in DCS based on the 'custom_merchant_upi_qr' feature flag.
      *
+     * @param array  $input  Input array containing logo information.
+     * @param string $size   Size of the logo.
+     *
      * @return string        Full URL of the rectangular logo.
      */
-
-    public function getRectangularLogoUrl($size = self::ORIGINAL_SIZE)
+    public function getRectangularLogoUrlWithFeatureFlagEnabled(array $input, $size = self::ORIGINAL_SIZE)
     {
-        $field_name = Configurations\Constants::RectangularLogoUrl;
+        $relativeLogoUrl =  (new BankingConfig\Service())->getBankingConfig($input)['rectangular_logo_url'];
 
-        $bankingConfigInput = [
-                BankingConfig\Constants::FIELDS => [$field_name],
-                BankingConfig\Constants::ENTITY_ID => $this->getId(),
-                BankingConfig\Constants::KEY => Configurations\Constants::$configurationsToDCSKeyMapping[$field_name],
-                BankingConfig\Constants::SHORT_KEY => $field_name
-        ];
-
-        $relativeLogoUrl =  (new BankingConfig\Service())->getBankingConfig($bankingConfigInput)['rectangular_logo_url'];
-
-        if ($relativeLogoUrl === null or $relativeLogoUrl === "" or $relativeLogoUrl === 'null')
+        if ($relativeLogoUrl === null)
         {
             return null;
         }

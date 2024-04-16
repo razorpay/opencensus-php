@@ -27,7 +27,6 @@ use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Services\Dcs\Configurations;
 use RZP\Exception\BadRequestException;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -526,15 +525,11 @@ class Generator extends QrCode\Generator
     {
         $logoUrl = null;
 
-        $rectangularLogoUrl =  $this->merchant->getRectangularLogoUrl();
-
-        $rectangularLogoImage = $rectangularLogoUrl === null ? false :imagecreatefrompng($rectangularLogoUrl);
-
         if ($this->merchant->isCustomMerchantUpiQrEnabled() === true)
         {
             $logoUrl = $this->app->runningUnitTests() ?
-                public_path() . $this->merchant->getLogoUrl()
-                :  ($rectangularLogoImage === false ? $this->merchant->getFullLogoUrlWithSize() : $rectangularLogoUrl);
+                public_path() . $this->merchant->getLogoUrl() :
+                $this->merchant->getFullLogoUrlWithSize();
         }
         else
         {
@@ -733,41 +728,6 @@ class Generator extends QrCode\Generator
         imagedestroy($logoImage);
 
         imagedestroy($qrCodeImage);
-
-        return $localFilePath;
-    }
-
-    public function getPreviewImage()
-    {
-        $localFilePath = $this->getLocalSaveDir() . '/' . 'preview_' . time() . '.' . Constants::QR_CODE_EXTENSION;
-
-        $path = $this->getBaseImagePath();
-
-        $logo = $this->getLogoForFeatureFlag();
-
-        if ($logo === false)
-        {
-            $path = $this->getImagePathFromOrg($this->merchant->org);
-        }
-
-        $logoImage = imagecreatefrompng(public_path(). $path);
-
-        imageAlphaBlending($logoImage, true);
-
-        imageSaveAlpha($logoImage, true);
-
-        list($baseImageWidth, $baseImageHeight) = $this->getImageDimensions($logoImage);
-
-        if($logo !== false and  $this->isHdfcOrg($this->merchant->org) === false)
-        {
-            $this->setLogoOnQrBaseImage($logo, $logoImage, $baseImageWidth, $baseImageHeight);
-        }
-
-        $color = imagecolorallocate($logoImage, 4, 9, 63);
-
-        imagepng($logoImage, $localFilePath);
-
-        imagedestroy($logoImage);
 
         return $localFilePath;
     }
