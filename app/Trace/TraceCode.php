@@ -1662,6 +1662,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SETTLEMENT_MERCHANT_ON_HOLD                           = 'SETTLEMENT_MERCHANT_ON_HOLD';
     const SETTLEMENT_MERCHANT_SKIPPED                           = 'SETTLEMENT_MERCHANT_SKIPPED';
+    const SETTLEMENT_TRANSACTION_READ_MIGRATION_RAZORX          = 'SETTLEMENT_TRANSACTION_READ_MIGRATION_RAZORX';
 
     const TOGGLE_TRANSACTION_HOLD                               = 'TOGGLE_TRANSACTION_HOLD';
     const TOGGLE_TRANSACTION_RELEASE                            = 'TOGGLE_TRANSACTION_RELEASE';

@@ -1080,4 +1080,6 @@ final class RazorxTreatment
     const ROUTE_ORDER_FETCH_TO_PG_ROUTER_TEST = 'route_order_fetch_to_pg_router_test';
 
     const ZERO_EXPONENT_CURRENCY_SUPPORT = 'zero_exponent_currency_support';
+
+    const SETTLEMENT_TRANSACTION_READ_MIGRATION = 'settlement_transaction_read_migration';
 }

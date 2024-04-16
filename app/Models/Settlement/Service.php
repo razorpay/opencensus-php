@@ -45,6 +45,7 @@ use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Batch;
 use RZP\Jobs;
 use RZP\Models\Merchant\InternationalIntegration\Entity as MIIEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 
 
 
@@ -977,9 +978,17 @@ class Service extends Base\Service
 
         if ($this->auth->isOptimiserDashboardRequest() === false)
         {
-            $txns = $this->repo
-                ->transaction
-                ->fetchBySettlementIdAndSource($id, $sourceType, $skip, $limit, $sourceId);
+            // Exp check
+            if($this->isSettlementTransactionReadMigrationExpEnabled(__FUNCTION__)){
+                $txns = $this->repo
+                    ->transaction
+                    ->fetchBySettlementIdAndSourceFromTiDB($id, $sourceType, $skip, $limit, $sourceId);
+            }
+            else {
+                $txns = $this->repo
+                    ->transaction
+                    ->fetchBySettlementIdAndSource($id, $sourceType, $skip, $limit, $sourceId);
+            }
         }
         else
         {
@@ -1111,7 +1120,13 @@ class Service extends Base\Service
 
         $start = microtime(true);
 
-        $txns = $this->repo->transaction->fetchBySettlement($setl, $txnToRelationFetchMap);
+        // Exp check
+        if($this->isSettlementTransactionReadMigrationExpEnabled(__FUNCTION__)){
+            $txns = $this->repo->transaction->fetchBySettlementFromTiDB($setl, $txnToRelationFetchMap);
+        }
+        else {
+            $txns = $this->repo->transaction->fetchBySettlement($setl, $txnToRelationFetchMap);
+        }
 
         $timeTaken = get_diff_in_millisecond($start);
 
@@ -1271,13 +1286,20 @@ class Service extends Base\Service
 
         $start = microtime(true);
 
-        $transactions = $this->repo->transaction->findMany($input['ids']);
-
         $source = $input['source_type'];
 
-        $txns = $this->repo->transaction
-                           ->fetchAssociatedRelationsWithLoadedEntities(
-                               $transactions,'source', $txnToRelationFetchMap[$source]);
+        // Exp check
+        if($this->isSettlementTransactionReadMigrationExpEnabled(__FUNCTION__)){
+            $txns = $this->repo->transaction
+                ->fetchTxnsForGetSettlementSourceDetailsFromTiDB($input['ids'], $source, $txnToRelationFetchMap);
+        }
+        else {
+            $transactions = $this->repo->transaction->findMany($input['ids']);
+
+            $txns = $this->repo->transaction
+                ->fetchAssociatedRelationsWithLoadedEntities(
+                    $transactions,'source', $txnToRelationFetchMap[$source]);
+        }
 
         $timeTaken = get_diff_in_millisecond($start);
 
@@ -1439,12 +1461,20 @@ class Service extends Base\Service
         ];
 
         $transactionId = $input['transaction_id'];
-        $transaction = $this->repo->transaction->findById($transactionId);
+
         $source = $input['source_type'];
 
-        $txn = $this->repo->transaction
-            ->fetchAssociatedRelationsWithLoadedEntities(
-                $transaction,'source', $txnToRelationFetchMap[$source]);
+        // Exp check
+        if($this->isSettlementTransactionReadMigrationExpEnabled(__FUNCTION__)){
+            $txn = $this->repo->transaction->fetchTxnForSettlementTimelineFromTiDB($transactionId, $source, $txnToRelationFetchMap);
+        }
+        else {
+            $transaction = $this->repo->transaction->findById($transactionId);
+
+            $txn = $this->repo->transaction
+                ->fetchAssociatedRelationsWithLoadedEntities(
+                    $transaction,'source', $txnToRelationFetchMap[$source]);
+        }
 
         $this->trace->info(
             TraceCode::TRANSACTION_ENTITY_FETCH,
@@ -2765,5 +2795,23 @@ class Service extends Base\Service
 
         return app('settlements_merchant_dashboard')->getSettlementTransactionTimeline($input);
 
+    }
+
+    public function isSettlementTransactionReadMigrationExpEnabled($id): bool
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app->razorx->getTreatment(
+            $id, RazorxTreatment::SETTLEMENT_TRANSACTION_READ_MIGRATION, $mode);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTION_READ_MIGRATION_RAZORX,
+            [
+                'result' => $result,
+                'mode' => $mode,
+                'id' => $id,
+            ]);
+
+        return (strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON);
     }
 }

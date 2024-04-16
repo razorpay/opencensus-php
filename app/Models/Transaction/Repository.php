@@ -279,7 +279,7 @@ class Repository extends Base\Repository
 
         $connectionType = $this->getPaymentFetchReplicaConnection();
 
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        if ($this->isExperimentEnabledForId(self::SETTLEMENT_TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
             $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
         }
@@ -321,7 +321,7 @@ class Repository extends Base\Repository
 
         $connectionType = $this->getPaymentFetchReplicaConnection();
 
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        if ($this->isExperimentEnabledForId(self::SETTLEMENT_TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
             $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
         }
@@ -942,6 +942,20 @@ class Repository extends Base\Repository
         return $txns;
     }
 
+    public function fetchBySettlementFromTiDB($setl, $txnToRelationFetchMap, $connectionType=ConnectionType::DATA_WAREHOUSE_MERCHANT)
+    {
+        $connection = $this->getDataWarehouseConnection($connectionType);
+
+        $txns = $this->newQueryWithConnection($connection)
+            ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setl->getId())
+            ->with('merchant', 'settlement')
+            ->get();
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $txnToRelationFetchMap);
+
+        return $txns;
+    }
+
     public function fetchBySettlementIdAndSource($settlementId, $source, $skip, $limit, $sourceId)
     {
         $result = $this->newQueryWithConnection($this->getSlaveConnection())
@@ -956,6 +970,24 @@ class Repository extends Base\Repository
         return $result->take($limit)
                       ->skip($skip)
                       ->get();
+    }
+
+    public function fetchBySettlementIdAndSourceFromTiDB($settlementId, $source, $skip, $limit, $sourceId, $connectionType=ConnectionType::DATA_WAREHOUSE_MERCHANT)
+    {
+        $connection = $this->getDataWarehouseConnection($connectionType);
+
+        $result = $this->newQueryWithConnection($connection)
+            ->where(Transaction\Entity::SETTLEMENT_ID, '=', $settlementId)
+            ->where(Transaction\Entity::TYPE, '=', $source);
+
+        if($sourceId != null)
+        {
+            $result = $result->where(Transaction\Entity::ENTITY_ID, '=', $sourceId);
+        }
+
+        return $result->take($limit)
+            ->skip($skip)
+            ->get();
     }
 
     /**
@@ -2948,4 +2980,31 @@ class Repository extends Base\Repository
                     ->limit(1)
                     ->get();
     }
+
+    public function fetchTxnForSettlementTimelineFromTiDB($id, $source, $txnToRelationFetchMap, $connectionType=ConnectionType::DATA_WAREHOUSE_MERCHANT)
+    {
+        $idColumn = $this->repo->transaction->dbColumn(Entity::ID);
+
+        $connection = $this->getDataWarehouseConnection($connectionType);
+
+        $transaction = $this->newQueryWithConnection($connection)
+            ->where($idColumn, '=', $id)
+            ->get();
+
+        return $this->repo->transaction
+            ->fetchAssociatedRelationsWithLoadedEntities(
+                $transaction,'source', $txnToRelationFetchMap[$source]);
+    }
+
+    public function fetchTxnsForGetSettlementSourceDetailsFromTiDB($ids, $source, $txnToRelationFetchMap, $connectionType=ConnectionType::DATA_WAREHOUSE_MERCHANT)
+    {
+        $connection = $this->getDataWarehouseConnection($connectionType);
+
+        $transactions = $this->newQueryWithConnection($connection)->findMany($ids, array('*'));;
+
+        return $this->repo->transaction
+            ->fetchAssociatedRelationsWithLoadedEntities(
+                $transactions,'source', $txnToRelationFetchMap[$source]);
+    }
+
 }
