@@ -19,6 +19,7 @@ use RZP\Models\BankingAccount\Gateway\Fields;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Modules\Manager as ModuleManager;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Services\Dcs\Features\Service;
 use RZP\Services\Mock;
 use RZP\Models\Comment;
@@ -26,6 +27,7 @@ use RZP\Diag\EventCode;
 use RZP\Models\User\Role;
 use RZP\Services\Aws\Sns;
 use RZP\Models\Base\EsDao;
+use RZP\Models\BankingConfig;
 use RZP\Services\Mock\BankingAccountService;
 use RZP\Services\Mock\Mozart;
 use RZP\Services\Mock\Raven;
@@ -95,6 +97,7 @@ use RZP\Services\HubspotClient;
 use RZP\Services\RazorXClient;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
+use RZP\Services\Dcs\Configurations;
 use RZP\Services\SalesForceClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\User\Core as UserCore;
@@ -191,6 +194,8 @@ class MerchantTest extends TestCase
     const RELEASE_FUNDS_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE    = 'RELEASE_FUNDS_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE';
 
     const RELEASE_FUNDS_WORKFLOW_ES_DATA_WITH_OBSERVER                 = 'RELEASE_FUNDS_WORKFLOW_ES_DATA_WITH_OBSERVER';
+
+    const DUMMY_LOGO_URL = 'https://dummycdn.razorpay.com/logos/random_image_original.png';
 
     protected $esDao;
 
@@ -9166,6 +9171,72 @@ Team Razorpay',
         $this->assertEquals($defaultMerchantId, $response['id']);
 
         $this->assertEquals(null, $response['logo_url']);
+    }
+    public function mockDCSService($isDeleted = false)
+    {
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        if($isDeleted === true) {
+            $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([Configurations\Constants::RectangularLogoUrl => null]);
+            $this->app->dcs_config_service->method('editConfiguration')->willReturn([Configurations\Constants::RectangularLogoUrl => null]);
+        }
+        else {
+            $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([Configurations\Constants::RectangularLogoUrl => self::DUMMY_LOGO_URL]);
+            $this->app->dcs_config_service->method('editConfiguration')->willReturn([Configurations\Constants::RectangularLogoUrl => self::DUMMY_LOGO_URL]);
+        }
+    }
+
+    public function testDeleteRectangularLogo()
+    {
+        $defaultMerchantId = '10000000000000';
+        $fieldName = Configurations\Constants::RectangularLogoUrl;
+
+        $request = function ($fieldValue) use ($fieldName, $defaultMerchantId) {
+            return [
+                'url' => '/banking_configs_upsert',
+                'method' => 'post',
+                'content' => [
+                    'key' => Configurations\Constants::$configurationsToDCSKeyMapping[$fieldName],
+                    'field_name' => $fieldName,
+                    'field_value' => $fieldValue,
+                    'short_key' => $fieldName,
+                    'entity_id' => $defaultMerchantId
+                ]
+            ];
+        };
+
+        // Set Rectangular logo
+        $this->ba->adminAuth();
+        $this->mockDCSService();
+        $response = $this->makeRequestAndGetContent($request(self::DUMMY_LOGO_URL));
+        $this->assertStringContainsString('https', $response['rectangular_logo_url']);
+
+        // Delete Rectangular logo
+        $testData = $this->testData['testDeleteRectangularLogo'];
+        $this->ba->proxyAuth();
+        $response = $this->runRequestResponseFlow($testData);
+        $this->assertEquals($defaultMerchantId, $response['id']);
+
+        $this->mockDCSService(true);
+
+        // Verify deletion of Rectangular logo
+        $response = $this->makeRequestAndGetContent([
+            'url' => '/banking_configs',
+            'method' => 'get',
+            'content' => [
+                'key' => Configurations\Constants::$configurationsToDCSKeyMapping[$fieldName],
+                'short_key' => $fieldName,
+                'fields' => [$fieldName],
+                'entity_id' => $defaultMerchantId,
+            ]
+        ]);
+
+        $this->assertNull($response['rectangular_logo_url']);
     }
 
     public function testValidateImage()
