@@ -100,6 +100,10 @@ class Core extends Base\Core
         {
             $entityOrigin = $this->fetchEntityOrigin($entity);
 
+            if($entity->getEntityName() === E::PAYMENT) {
+                $this->checkEntityOriginV2Parity($entity, $entityOrigin);
+            }
+
             if (empty($entityOrigin) === false)
             {
                 // override origin type (introduced for route marketplace usecase)
@@ -127,6 +131,50 @@ class Core extends Base\Core
             $this->trace->count(Metric::ENTITY_ORIGIN_CREATE_FAILED_TOTAL, $dimensions);
         }
     }
+
+    /**
+     * @param Base\PublicEntity $entity
+     * @param Entity $entityOrigin
+     * @return void
+     */
+    public function checkEntityOriginV2Parity(Base\PublicEntity $entity, Entity $entityOrigin)
+    {
+        try
+        {
+            $entityOriginV2 = $this->fetchEntityOriginV2($entity);
+
+            $paymentKey = null;
+
+            if(empty($entity->getPublicKey()) === false)
+            {
+                $paymentKey = $entity->getPublicKey();
+            }
+            else if (empty(optional($entity->order)->getPublicKey()) === false)
+            {
+                $paymentKey = optional($entity->order)->getPublicKey();
+            }
+
+            $this->trace->info(TraceCode::ENTITY_ORIGIN_PARITY, [
+                'entity_origin'  => $entityOrigin->toArray(),
+                'entity_origin_v2'      => $entityOriginV2->toArray(),
+                'payment_key' => $paymentKey,
+            ]);
+
+        }
+        catch (\Throwable $e)
+        {
+            // The payment should not be blocked even if the origin cannot be created. Log an error and proceed.
+            $this->trace->error(TraceCode::ENTITY_ORIGIN_PARITY_FAILED,
+                [
+                    'message'           => $e->getMessage(),
+                    Entity::ENTITY_TYPE => $entity->getEntityName(),
+                    Entity::ENTITY_ID   => $entity->getId(),
+                    'stack_trace'       => $e->getTraceAsString(),
+                ]);
+        }
+    }
+
+
 
     /**
      * @param Base\PublicEntity $entity
@@ -187,10 +235,10 @@ class Core extends Base\Core
             // if public key is not found in payment check for public key in order.
             if( $entity->getEntityName() === E::PAYMENT && $entity->getPublicKey() != null)
             {
-//                $this->trace->info(TraceCode::SET_ORIGIN_FROM_PAYMENT_PUBLIC_KEY, [
-//                    'payment_id'  => $entity->getId(),
-//                    'method'      => $entity->getMethod()
-//                ]);
+                $this->trace->info(TraceCode::SET_ORIGIN_FROM_PAYMENT_PUBLIC_KEY, [
+                    'payment_id'  => $entity->getId(),
+                    'method'      => $entity->getMethod()
+                ]);
                 $dimensions = array('Method' => $entity->getMethod());
                 $this->trace->count(Metric::ENTITY_ORIGIN_CREATE_FROM_PAYMENT_PUBLIC_KEY, $dimensions);
                 $originEntity = $this->getOriginEntityFromPublicKey($entity->getPublicKey());
@@ -208,11 +256,74 @@ class Core extends Base\Core
             }
             else if($entity->getEntityName() === E::TRANSFER && $entity->isOrderTransfer() === true)
             {
-                $this->trace->info(TraceCode::SET_ORIGIN_FROM_ORDER_PUBLIC_KEY, [
+                $this->trace->info(TraceCode::SET_ORIGIN_FROM_PUBLIC_KEY_FOR_TRANSFER, [
                     'transfer_id'  => $entity->getId(),
                 ]);
                 $originEntity = $this->getOriginEntityFromPublicKey($entity->source->getPublicKey());
             }
+        }
+        return empty($originEntity) === false  ? $this->build($entity, $originEntity) : null;
+    }
+
+    /**
+     * @param Base\PublicEntity $entity
+     * @return Entity|null
+     */
+    public function fetchEntityOriginV2(Base\PublicEntity $entity)
+    {
+        if(($entity->getEntityName() === E::PAYMENT) and ($entity->getReceiverType() === Receiver::POS))
+        {
+            return null;
+        }
+
+        $receiver       = $entity->receiver;      // Example receiver: Qr_code entity
+
+        $subscriptionId = null;
+
+        // check if subscription payment and is payment entity
+        if ($entity->getEntityName() === E::PAYMENT)
+        {
+            $subscriptionId = $entity->getSubscriptionId();
+        }
+
+        //
+        // If the txn has an associated subscription entity, fetch the subscription's entity_origin.
+        // If the txn has an associated receiver entity, it is a VA txn. We extract the VA from the receiver
+        // and set the VA's entity_origin as the entity_origin for this txn.
+        // If the txn does not have either of those, basic auth is used to extract the origin entity's details.
+        //
+        if (optional($entity->order)->getProductType() === Order\ProductType::PAYMENT_LINK_V2)
+        {
+            $originEntity = $this->getOriginEntityFromPaymentLinkIdV2($entity);
+        }
+        else if (optional($entity->order)->getProductType() === Order\ProductType::INVOICE)
+        {
+            $originEntity = $this->getOriginEntityFromInvoiceV2($entity);
+        }
+        else if (empty($subscriptionId) === false)
+        {
+            $originEntity = $this->getOriginEntityFromSubscription($subscriptionId);
+        }
+        else if (empty($receiver) === false)
+        {
+            $originEntity = $this->getOriginEntityFromReceiver($receiver);
+        }
+        else if(($entity->getEntityName() === E::PAYMENT) and (empty($entity->getPublicKey()) === false))
+        {
+            $this->trace->info(TraceCode::SET_ORIGIN_FROM_PAYMENT_PUBLIC_KEY_FALLBACK, [
+                'payment_id'  => $entity->getId(),
+                'method'      => $entity->getMethod()
+            ]);
+            $originEntity = $this->getOriginEntityFromPublicKey($entity->getPublicKey());
+        }
+        else if(optional($entity->order)->getPublicKey() !== null)
+        {
+            $this->trace->info(TraceCode::SET_ORIGIN_FROM_ORDER_PUBLIC_KEY_FALLBACK, [
+                'payment_id'    => $entity->getId(),
+                'method'        => $entity->getMethod(),
+                'product_type'  => $entity->order->getProductType()
+            ]);
+            $originEntity = $this->getOriginEntityFromPublicKey($entity->order->getPublicKey());
         }
         return empty($originEntity) === false  ? $this->build($entity, $originEntity) : null;
     }
@@ -378,6 +489,14 @@ class Core extends Base\Core
         return optional($entityOrigin)->origin ?? $this->getOriginEntityFromAuth();
     }
 
+    protected function getOriginEntityFromInvoiceV2(Base\PublicEntity  $entity): mixed
+    {
+        $invoiceId = $entity->order->getProductId();
+        $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityId('invoice', $invoiceId);
+
+        return optional($entityOrigin)->origin;
+    }
+
     /**
      * Returns origin entity for the payment link if present
      *
@@ -392,6 +511,14 @@ class Core extends Base\Core
         $origin = optional($entityOrigin)->origin ?? $this->getOriginEntityFromAuth();
 
         return $origin;
+    }
+
+    protected function getOriginEntityFromPaymentLinkIdV2(Base\PublicEntity  $entity)
+    {
+        $paymentLinkId = $entity->order->getProductId();
+        $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityId('payment_link', $paymentLinkId);
+
+        return optional($entityOrigin)->origin;
     }
 
     /**
@@ -417,6 +544,7 @@ class Core extends Base\Core
 
         return $originEntity;
     }
+
 
     /**
      * Extracts the origin entity from public key
