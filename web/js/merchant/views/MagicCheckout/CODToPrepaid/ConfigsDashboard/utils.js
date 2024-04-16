@@ -60,8 +60,12 @@ export const getExpiryTimeString = (configs) => {
 export const getConvertOrderOnString = (configs) => {
   const { methods = [] } = configs?.communication || {};
 
-  if (methods[0] === 'whatsapp') {
-    return 'WhatsApp message';
+  if (methods.length === 2) {
+    return 'Both WhatsApp message & Order status page';
+  }
+
+  if (methods.length === 1) {
+    return methods[0] === 'checkout' ? 'Order status page' : 'WhatsApp message';
   }
 
   return '';

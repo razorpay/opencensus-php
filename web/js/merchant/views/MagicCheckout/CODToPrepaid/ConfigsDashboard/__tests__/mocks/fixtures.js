@@ -64,13 +64,13 @@ export const UTILS_DUMMY = [
       },
       communication: {
         expire_seconds: 7200,
-        methods: ['whatsapp'],
+        methods: ['whatsapp', 'checkout'],
       },
     },
     riskResponse: 'All COD orders',
     discountResponse: '₹10% off upto ₹100 on minimum order of ₹200',
     expireTimeResponse: '2 hours',
-    conversionPlatformResponse: 'WhatsApp message',
+    conversionPlatformResponse: 'Both WhatsApp message & Order status page',
   },
   {
     configs: {

@@ -20,7 +20,11 @@ export const VALIDITY_OPTIONS = [
   { label: 'Custom time', name: 'custom' },
 ];
 
-export const CONVERT_ON_OPTIONS = [{ label: 'WhatsApp message', name: 'whatsapp' }];
+export const CONVERT_ON_OPTIONS = [
+  { label: 'WhatsApp message', name: 'whatsapp' },
+  { label: 'Order status page', name: 'checkout' },
+  { label: 'Both WhatsApp message & Order status page', name: 'both' },
+];
 
 export const DISCOUNT_OPTIONS = [
   {

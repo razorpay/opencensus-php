@@ -68,7 +68,7 @@ const CODPrepaidConfigs = (props) => {
     error: null,
   });
   const [validityType, setValidityType] = useState('');
-  const [convertOn, setConvertOn] = useState(methods[0] ?? 'whatsapp');
+  const [convertOn, setConvertOn] = useState('whatsapp');
   const [isPrepayCODEnabled, setIsPrepayCODEnabled] = useState(isPrepayCODOpted);
   const [durationVal, setDurationVal] = useState({
     hours: 0,
@@ -148,6 +148,14 @@ const CODPrepaidConfigs = (props) => {
     if (!Object.entries(prepayCODConfigs).length) setIsPrepayCODEnabled(true);
   }, [prepayCODConfigs]);
 
+  useEffect(() => {
+    if (methods.length === 2) {
+      setConvertOn('both');
+    } else {
+      setConvertOn(methods[0]);
+    }
+  }, [methods]);
+
   const showAlertNotification = () => {
     showNotification({
       type: 'neutral',
@@ -187,7 +195,7 @@ const CODPrepaidConfigs = (props) => {
               validityType !== 'custom'
                 ? parseInt(validityType, 10)
                 : parseInt(getTimeInSeconds(durationVal), 10),
-            methods: [convertOn],
+            methods: convertOn === 'both' ? ['whatsapp', 'checkout'] : [convertOn],
           },
         },
       },

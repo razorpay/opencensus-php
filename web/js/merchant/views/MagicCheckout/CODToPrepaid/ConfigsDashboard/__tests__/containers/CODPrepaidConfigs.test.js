@@ -196,4 +196,32 @@ describe('testing the cod prepaid configs component', () => {
     await userEvent.click(discountToggle);
     expect(screen.getByText(/enabled/i)).toBeInTheDocument();
   });
+
+  test('should be able to change conversion platform', async () => {
+    const configs = {
+      discount: {
+        type: 'zero',
+        discount_percentage: 0,
+        max_discount: 0,
+        minimum_order_value: 0,
+      },
+      risk_category: [],
+      communication: {
+        expire_seconds: 173400,
+        methods: ['whatsapp', 'checkout'],
+      },
+    };
+
+    renderApp({
+      ...COD_PREPAID_CONFIGS_PROPS,
+      showPrepayCODToggle: false,
+      prepayCODConfigs: { ...configs },
+    });
+
+    expect(screen.getByText(/both whatsapp message & order status page/i)).toBeInTheDocument();
+
+    const dropdownElement = screen.getByTestId('conversion-platform');
+    await userEvent.selectOptions(dropdownElement, 'WhatsApp message');
+    expect(screen.getByRole('option', { name: 'WhatsApp message' }).selected).toBe(true);
+  });
 });
