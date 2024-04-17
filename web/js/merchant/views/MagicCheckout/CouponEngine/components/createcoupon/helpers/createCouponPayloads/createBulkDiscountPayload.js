@@ -3,6 +3,9 @@ import moment from 'moment';
 
 import { sanitizePayload } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads/common';
 
+// constant imports
+import { COUPON_KEYS } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CombinedCouponsWidget/constants';
+
 export function createBulkDiscountPayload({
   couponDetails,
   productsPurchased,
@@ -200,7 +203,7 @@ export function createBulkDiscountPayload({
     },
     combined_coupons: [
       {
-        type: combineCoupons.shouldCombineFreeShippingCoupon ? 'shipping_fee' : null,
+        type: combineCoupons.shouldCombineFreeShippingCoupon ? COUPON_KEYS.free_shipping : null,
       },
     ],
   };

@@ -1,55 +1,40 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useSplitzService } from 'common/splitz';
 
-// ui imports
-import Input from 'common/new-ui/Input';
-import {
-  FormGroup,
-  Label,
-} from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
+// UI imports
 import { Accordion } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/common/Accordian';
 
-// context imports
-import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
+//constants
+import {
+  DEFAULT_MULTI_COUPON_CONFIG,
+  DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG,
+} from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CombinedCouponsWidget/constants';
+import CombinedCoupon from './CombinedCouponAccordion';
 
-const AccordionBody: React.FC = () => {
-  const { widgetsData, setWidgetsData } = useContext(ModalContext);
+interface CombinedCouponProps {
+  couponName: string;
+  combinedCouponConfig: object;
+}
 
-  return (
-    <FormGroup>
-      <div className="form-label">Combine this discount with</div>
-      <div className="form-input max-width-100">
-        <div className="display-flex">
-          <Input.Check
-            checked={widgetsData.combineCoupons.shouldCombineFreeShippingCoupon}
-            type="checkbox"
-            name="shouldCombineFreeShippingCoupon"
-            onChange={(e) => {
-              setWidgetsData((prev) => ({
-                ...prev,
-                combineCoupons: {
-                  ...prev.combineCoupons,
-                  shouldCombineFreeShippingCoupon: e.target.checked,
-                },
-              }));
-            }}
-            autoRender
-          />
-          <Label>Free Shipping Coupons</Label>
-        </div>
-      </div>
-    </FormGroup>
-  );
-};
-
-const CombineCouponsWidget: React.FC | null = () => {
+const CombineCouponsWidget: React.FC<CombinedCouponProps> | null = ({ couponName }) => {
   const { abExperiments } = useSplitzService();
   const shouldShowCheckoutV2Changes = abExperiments?.checkout_v2?.variables?.result === 'on';
+  const shouldShowMultiCoupons =
+    abExperiments?.magic_multi_coupons_enabled?.variables?.result === 'on';
 
-  if (shouldShowCheckoutV2Changes) {
+  const combinedCouponConfig = shouldShowMultiCoupons
+    ? DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG
+    : DEFAULT_MULTI_COUPON_CONFIG;
+
+  if (shouldShowCheckoutV2Changes && combinedCouponConfig[couponName]) {
     return (
       <div>
-        <Accordion header={<div>Coupon combinations (optional) </div>} body={<AccordionBody />} />
+        <Accordion
+          header={<div>Coupon combinations (optional) </div>}
+          body={
+            <CombinedCoupon couponName={couponName} combinedCouponConfig={combinedCouponConfig} />
+          }
+        />
       </div>
     );
   }

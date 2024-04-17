@@ -82,6 +82,10 @@ interface BulkDiscountDetails {
 
 export interface CombineCoupons {
   shouldCombineFreeShippingCoupon: boolean;
+  shouldCombineAmountOffOrderCoupon: boolean;
+  shouldCombineOtherAmountOffProductCoupons: boolean;
+  shouldCombineBulkDiscountCoupon: boolean;
+  shouldCombineBxGyDiscountCoupon: boolean;
 }
 
 export interface CouponDetails {

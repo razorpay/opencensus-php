@@ -18,6 +18,9 @@ import {
   CombineCoupons,
 } from 'merchant/views/MagicCheckout/CouponEngine/types.d';
 
+// constant imports
+import { COUPON_KEYS } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CombinedCouponsWidget/constants';
+
 export function createBuyXGetYPayload({
   couponDetails,
   productsPurchased,
@@ -355,7 +358,7 @@ export function createBuyXGetYPayload({
     },
     combined_coupons: [
       {
-        type: combineCoupons.shouldCombineFreeShippingCoupon ? 'shipping_fee' : null,
+        type: combineCoupons.shouldCombineFreeShippingCoupon ? COUPON_KEYS.free_shipping : null,
       },
     ],
   };

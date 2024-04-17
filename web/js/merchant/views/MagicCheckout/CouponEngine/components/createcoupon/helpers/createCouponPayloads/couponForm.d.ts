@@ -79,6 +79,7 @@ export interface CouponPayload {
       couponValidity: CouponValidity;
       couponEligibility: CouponEligibility;
       usageRestriction: UsageRestriction;
+      combineCoupons?: combineCoupons;
     };
   };
   customer_whitelist: CustomerWhitelist;
@@ -86,6 +87,7 @@ export interface CouponPayload {
   flags: {
     force_display: boolean;
   };
+  combined_coupons: Array<Record<string, unknown>>;
 }
 
 export interface CustomerBuys {

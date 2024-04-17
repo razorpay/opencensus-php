@@ -790,6 +790,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'magic_multi_coupons_enabled',
+          experimentId: {
+            beta: 'NrkxHs8EKw6kL9',
+            production: 'Nrkzkkk9biFr55',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

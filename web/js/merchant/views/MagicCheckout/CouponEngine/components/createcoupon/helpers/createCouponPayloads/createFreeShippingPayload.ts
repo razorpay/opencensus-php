@@ -11,6 +11,7 @@ import {
   CouponValidity,
   CouponEligibility,
   UsageRestriction,
+  CombineCoupons,
 } from 'merchant/views/MagicCheckout/CouponEngine/types.d';
 import {
   CouponPayload,
@@ -18,11 +19,15 @@ import {
   CustomerWhitelist,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads/couponForm.d';
 
+//constant imports
+import { COUPON_KEYS } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CombinedCouponsWidget/constants';
+
 export function createFreeShippingCouponPayload({
   couponDetails,
   discountDetails,
   couponValidity,
   couponEligibility,
+  combineCoupons,
   usageRestriction,
   status,
   source,
@@ -32,6 +37,7 @@ export function createFreeShippingCouponPayload({
   discountDetails: DiscountDetails;
   couponValidity: CouponValidity;
   couponEligibility: CouponEligibility;
+  combineCoupons: CombineCoupons;
   usageRestriction: UsageRestriction;
   status: string;
   source: string;
@@ -118,6 +124,7 @@ export function createFreeShippingCouponPayload({
         couponValidity,
         couponEligibility,
         usageRestriction,
+        combineCoupons,
       },
     },
     customer_whitelist,
@@ -125,6 +132,24 @@ export function createFreeShippingCouponPayload({
     flags: {
       force_display: couponDetails.display && Boolean(couponDetails.couponDiscoveryEnabled),
     },
+    combined_coupons: [
+      {
+        type: combineCoupons.shouldCombineAmountOffOrderCoupon
+          ? COUPON_KEYS.amount_off_order
+          : null,
+      },
+      {
+        type: combineCoupons.shouldCombineOtherAmountOffProductCoupons
+          ? COUPON_KEYS.amount_off_products
+          : null,
+      },
+      {
+        type: combineCoupons.shouldCombineBxGyDiscountCoupon ? COUPON_KEYS.buyx_gety : null,
+      },
+      {
+        type: combineCoupons.shouldCombineBulkDiscountCoupon ? COUPON_KEYS.bulk_order : null,
+      },
+    ],
   };
 
   return sanitizePayload(couponPayload);
