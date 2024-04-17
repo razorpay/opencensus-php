@@ -555,7 +555,21 @@ class Tracing
             'merchant_nc_revamp_eligibility',
             'get_instant_refunds_pricing_merchant',
             'currency_fetch_all_proxy',
-            'action_request_execute'
+            'action_request_execute',
+            'internal_transactions',
+            'payment_verify_new',
+            'payment_notify',
+            'order_payments',
+            'internal_payment_pricing',
+            'gateway_payment_callback_post',
+            'payment_create_ajax',
+            'send_email_for_pl_service',
+            'scrooge_entities_fetch',
+            'payment_timeout_new',
+            'internal_create_order_relations',
+            'merchant_details_fetch',
+            'payment_calculate_fees',
+            'merchant_entities_info',
         ]);
     }
 
