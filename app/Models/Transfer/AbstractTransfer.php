@@ -240,6 +240,7 @@ abstract class AbstractTransfer
     {
         $this->merchant = $merchant;
 
+//       Todo: $subMerchant should be renamed to the linkedAccount
         $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
 
         $processViaReverseShadow = false;
@@ -289,6 +290,8 @@ abstract class AbstractTransfer
                 {
                     // Attempt to update amount transferred value without saving to perform validation
                     $this->updatePaymentAmountTransferred($payment, $transfer->getAmount(), false);
+
+                   $this->validateParentMerchant($transfer, $payment);
 
                     $payloadName = $this->getPayloadName($transfer->getPublicId(), LedgerConstants::TRANSFER);
 
@@ -388,6 +391,15 @@ abstract class AbstractTransfer
                 $metric->pushWebhookDispatchFailureMetrics();
             }
         }
+    }
+
+    public function validateParentMerchant($transfer, $payment)
+    {
+        $paymentMerchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
+
+        $parentMerchant = (new Core())->fetchAccountParentMerchant($paymentMerchant, $payment->getPublicKey() ?? null, $payment);
+
+        $this->repo->account->findByIdAndMerchant($transfer->getToId(), $parentMerchant);
     }
 
     protected function updateTransferAmount($transfer, $payment)

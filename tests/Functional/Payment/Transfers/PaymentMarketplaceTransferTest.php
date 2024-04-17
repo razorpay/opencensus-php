@@ -1145,6 +1145,38 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
     }
 
+    public function testCreatePaymentTransferWithOAuthForMarketplaceInReverseShadow()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'on');
+
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->setupMarketPlace(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow'], Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow'], '10000000000001');
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['items'][0]['id']);
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
+    }
+
     public function testCreatePaymentTransferWithOAuthForMarketplaceWithAppLevelFeature()
     {
         $this->setPurePlatformContext(Mode::TEST);
