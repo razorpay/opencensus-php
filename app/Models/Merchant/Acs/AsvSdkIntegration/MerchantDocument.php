@@ -167,17 +167,20 @@ class MerchantDocument extends Base
     }
 
     /**
-     * @param array $merchantIds
+     * @param array  $merchantIds
+     * @param string $lastDocumentId
      *
      * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function findDocumentsForMerchantIds(array $merchantIds): Collection|PublicCollection
+    public function findDocumentsForMerchantIds(
+        array $merchantIds, string $lastDocumentId = ''
+    ): Collection|PublicCollection
     {
         $filterRequest = (new FilterRequest())
             ->setQueryIdentifier(self::GET_MERCHANT_DOCUMENTS_FROM_MERCHANT_IDS)
-            ->setBindings(json_encode([$merchantIds]));
+            ->setBindings(json_encode([$merchantIds, $lastDocumentId]));
 
         $response = $this->getFilterResponseFromAsv(
             $filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS
@@ -236,19 +239,20 @@ class MerchantDocument extends Base
      *
      * @param string $entityId
      * @param string $entityType
+     * @param string $lastDocumentId
      *
      * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
     public function findDocumentsForEntityTypeAndEntityId(
-        string $entityId, string $entityType
+        string $entityId, string $entityType, string $lastDocumentId = ''
     ): Collection|PublicCollection
     {
         $filterRequest = (new FilterRequest())
             ->setQueryIdentifier(self::FIND_DOCUMENTS_FOR_ENTITY_TYPE_AND_ENTITY_ID)
             ->setBindings(
-                json_encode([$entityId, $entityType])
+                json_encode([$entityId, $entityType, $lastDocumentId])
             );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
@@ -259,17 +263,19 @@ class MerchantDocument extends Base
     /**
      * fetches merchant documents by passed merchant ID and document type
      * with document date between `from` and `to`
+     *
      * @param string $merchantId
      * @param string $documentType
      * @param int    $from
      * @param int    $to
+     * @param string $lastDocumentId
      *
      * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
     public function findDocumentsForMerchantIdAndDocumentTypeAndDate(
-        string $merchantId, string $documentType, int $from, int $to
+        string $merchantId, string $documentType, int $from, int $to, string $lastDocumentId = ''
     ): Collection|PublicCollection
     {
         $filterRequest = (new FilterRequest())
@@ -277,7 +283,7 @@ class MerchantDocument extends Base
                 self::FIND_DOCUMENTS_FOR_MERCHANT_ID_AND_DOCUMENT_TYPE_AND_DATE
             )
             ->setBindings(
-                json_encode([$merchantId, $documentType, $from, $to])
+                json_encode([$merchantId, $documentType, $from, $to, $lastDocumentId])
             );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);

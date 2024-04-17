@@ -240,7 +240,20 @@ class Repository extends Base\Repository
             }
             else
             {
-                $results = (new MerchantDocumentSDKWrapper())->findDocumentsForMerchantIds($merchantIds);
+                $results        = new PublicCollection();
+                $lastDocumentId = '';
+
+                do
+                {
+                    $subset = (new MerchantDocumentSDKWrapper())->findDocumentsForMerchantIds(
+                        $merchantIds, $lastDocumentId,
+                    );
+
+                    $lastDocumentId = $subset->pluck(Base\UniqueIdEntity::ID)->last();
+
+                    $results->push($subset);
+
+                } while(sizeof($subset) == AsvSdkIntegration::FETCH_SERVICE_FILTER_LIMIT);
 
                 $this->resetConnectionOnModels($results);
 
@@ -281,9 +294,20 @@ class Repository extends Base\Repository
             }
             else
             {
-                $results = (new MerchantDocumentSDKWrapper())->findDocumentsForEntityTypeAndEntityId(
-                    $entityId, $entityType
-                );
+                $results        = new PublicCollection();
+                $lastDocumentId = '';
+
+                do
+                {
+                    $subset = (new MerchantDocumentSDKWrapper())->findDocumentsForEntityTypeAndEntityId(
+                        $entityId, $entityType, $lastDocumentId
+                    );
+
+                    $lastDocumentId = $subset->pluck(Base\UniqueIdEntity::ID)->last();
+
+                    $results->push($subset);
+
+                } while(sizeof($subset) == AsvSdkIntegration::FETCH_SERVICE_FILTER_LIMIT);
 
                 $this->resetConnectionOnModels($results);
 
@@ -332,9 +356,20 @@ class Repository extends Base\Repository
             }
             else
             {
-                $results = (new MerchantDocumentSDKWrapper())->findDocumentsForMerchantIdAndDocumentTypeAndDate(
-                    $merchantId, $documentType, $from, $to
-                );
+                $results        = new PublicCollection();
+                $lastDocumentId = '';
+
+                do
+                {
+                    $subset = (new MerchantDocumentSDKWrapper())->findDocumentsForMerchantIdAndDocumentTypeAndDate(
+                        $merchantId, $documentType, $from, $to, $lastDocumentId
+                    );
+
+                    $lastDocumentId = $subset->pluck(Base\UniqueIdEntity::ID)->last();
+
+                    $results->push($subset);
+
+                } while(sizeof($subset) == AsvSdkIntegration::FETCH_SERVICE_FILTER_LIMIT);
 
                 $this->resetConnectionOnModels($results);
 

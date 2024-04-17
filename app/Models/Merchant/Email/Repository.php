@@ -17,6 +17,7 @@ use RZP\Models\Base\RepositoryUpdateTestAndLiveAndAsv;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as BaseAlias;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantEmail as MerchantEmailSDKWrapper;
 
@@ -211,9 +212,20 @@ class Repository extends Base\Repository
             }
             else
             {
-                $results = (new MerchantEmailSDKWrapper())->getEmailsByMerchantIdsAndTypes(
-                  $merchantIds, $types
-                );
+                $results        = new PublicCollection();
+                $lastMerchantEmailId = '';
+
+                do
+                {
+                    $subset = (new MerchantEmailSDKWrapper())->getEmailsByMerchantIdsAndTypes(
+                        $merchantIds, $types, $lastMerchantEmailId
+                    );
+
+                    $lastMerchantEmailId = $subset->pluck(Base\UniqueIdEntity::ID)->last();
+
+                    $results->push($subset);
+
+                } while(sizeof($subset) == BaseAlias::FETCH_SERVICE_FILTER_LIMIT);
 
                 $this->resetConnectionOnModels($results);
 

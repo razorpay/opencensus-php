@@ -57,6 +57,8 @@ class Base
 
     const SAVE_TIMEOUT_IN_MICRO_SECONDS = 2000000;
 
+    const FETCH_SERVICE_FILTER_LIMIT = 2000;
+
     function __construct()
     {
         $app = App::getFacadeRoot();

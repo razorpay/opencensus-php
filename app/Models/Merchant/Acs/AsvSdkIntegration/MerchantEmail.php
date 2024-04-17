@@ -164,19 +164,22 @@ class MerchantEmail extends Base
     }
 
     /**
-     * @param array $merchantIds
-     * @param array $types
+     * @param array  $merchantIds
+     * @param array  $types
+     * @param string $lastMerchantEmailId
      *
      * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function getEmailsByMerchantIdsAndTypes(array $merchantIds, array $types): Collection|PublicCollection
+    public function getEmailsByMerchantIdsAndTypes(
+        array $merchantIds, array $types, string $lastMerchantEmailId = ''
+    ): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::GET_EMAILS_BY_MERCHANT_IDS_AND_TYPES);
         $filterRequest->setBindings(
-            json_encode([$merchantIds, $types])
+            json_encode([$merchantIds, $types, $lastMerchantEmailId])
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);

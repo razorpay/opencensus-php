@@ -550,7 +550,15 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::SUSPENDED_AT);
     }
 
-    public function fetchMerchantsCreatedBetween($from, $to)
+    /**
+     * @param int $from
+     * @param int $to
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchMerchantsCreatedBetween(int $from, int $to): array
     {
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
@@ -560,7 +568,18 @@ class Repository extends Base\Repository
             }
             else
             {
-                $results = (new AsvSdkMerchantQuery())->fetchMerchantsCreatedBetween($from, $to);
+                $results        = new PublicCollection();
+                $lastMerchantId = '';
+
+                do
+                {
+                    $subset = (new AsvSdkMerchantQuery())->fetchMerchantsCreatedBetween($from, $to, $lastMerchantId);
+
+                    $lastMerchantId = $subset->pluck(Entity::ID)->last();
+
+                    $results->push($subset);
+
+                } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
 
                 return $results->pluck('id')->toArray();
             }
@@ -1738,7 +1757,11 @@ class Repository extends Base\Repository
                     return $this->repo->merchant->findMerchantsByIds($merchantIds);
                 }
 
-                $results = (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($merchantIds);
+                $results = new PublicCollection();
+
+                foreach (array_chunk($merchantIds, Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT) as $chunk) {
+                    $results->push((new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($chunk));
+                }
 
                 $this->resetConnectionOnModels($results);
 
@@ -2048,9 +2071,19 @@ class Repository extends Base\Repository
             }
             else
             {
-                $results = (new AsvSdkMerchantQuery())->fetchLinkedAccountsFromParentId($merchantId);
+                $results        = new PublicCollection();
+                $lastMerchantId = '';
 
-                return $results->pluck('id')->toArray();
+                do
+                {
+                    $subset = (new AsvSdkMerchantQuery())->fetchLinkedAccountsFromParentId($merchantId, $lastMerchantId);
+
+                    $lastMerchantId = $subset->pluck(Entity::ID)->last();
+
+                    $results->push($subset);
+                } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
+
+                return $results->pluck(Entity::ID)->toArray();
             }
         }
         else
@@ -2060,7 +2093,7 @@ class Repository extends Base\Repository
 
         return $query
             ->select(Entity::ID)
-            ->where('parent_id', $merchantId)
+            ->where(Entity::PARENT_ID, $merchantId)
             ->get()
             ->pluck(Entity::ID)
             ->toArray();
@@ -2162,11 +2195,22 @@ class Repository extends Base\Repository
             }
             else
             {
-                $results = (new AsvSdkMerchantQuery())->fetchLinkedAccountIdsFromParentIdWithActivated(
-                    $parentMerchantId, $checkForActivated
-                );
+                $results        = new PublicCollection();
+                $lastMerchantId = '';
 
-                $results->pluck(MerchantEntity::ID)->toArray();
+                do
+                {
+                    $subset = (new AsvSdkMerchantQuery())->fetchLinkedAccountIdsFromParentIdWithActivated(
+                        $parentMerchantId, $checkForActivated, $lastMerchantId
+                    );
+
+                    $lastMerchantId = $subset->pluck(Entity::ID)->last();
+
+                    $results->push($subset);
+
+                } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
+
+                return $results->pluck(MerchantEntity::ID)->toArray();
             }
         }
         else
@@ -2186,14 +2230,33 @@ class Repository extends Base\Repository
         return $query->pluck(Entity::ID)->toArray();
     }
 
-    public function fetchLinkedAccountIdsForParentMerchantIds(array $parentMerchantIds)
+    /**
+     * @param array $parentMerchantIds
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchLinkedAccountIdsForParentMerchantIds(array $parentMerchantIds): array
     {
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
-            $results = (new Acs\AsvSdkIntegration\Merchant())->fetchLinkedAccountsFromMultipleParentIds($parentMerchantIds);
+            $results        = new PublicCollection();
+            $lastMerchantId = '';
+
+            do
+            {
+                $subset = (new Acs\AsvSdkIntegration\Merchant())->fetchLinkedAccountsFromMultipleParentIds($parentMerchantIds, $lastMerchantId);
+
+                $lastMerchantId = $subset->pluck(Entity::ID)->last();
+
+                $results->push($subset);
+
+            } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
 
             return $results->pluck('id')->toArray();
         }
+
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->select(Entity::ID)
             ->whereIn(Entity::PARENT_ID, $parentMerchantIds)
@@ -2981,20 +3044,50 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function getMerchantsForSettlementsEventsCron($updatedAtFrom, $updateAtTo)
+    /**
+     * @param int $updatedAtFrom
+     * @param int $updateAtTo
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function getMerchantsForSettlementsEventsCron(
+        int $updatedAtFrom, int $updateAtTo
+    ): Collection|PublicCollection
     {
-        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
-            if ($this->isTransactionActive()) {
-                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
             }
-            else {
-                $results = (new AsvSdkMerchantQuery())->getMerchantsForSettlementsEventsCron($updatedAtFrom, $updateAtTo);
+            else
+            {
+                $results        = new PublicCollection();
+                $lastMerchantId = '';
+
+                do
+                {
+                    $subset = (new AsvSdkMerchantQuery())->getMerchantsForSettlementsEventsCron(
+                        $updatedAtFrom, $updateAtTo, $lastMerchantId
+                    );
+
+                    $lastMerchantId = $subset->pluck(Entity::ID)->last();
+
+                    $results->push($subset);
+
+                } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
 
                 $this->resetConnectionOnModels($results, $this->getReportingReplicaConnection());
 
                 return $results;
             }
-        } else {
+        }
+        else
+        {
             $query = $this->newQueryWithConnection($this->getReportingReplicaConnection());
         }
 

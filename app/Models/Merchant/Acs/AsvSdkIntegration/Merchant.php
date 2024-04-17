@@ -74,21 +74,24 @@ class Merchant extends Base
     /**
      * @param string $parentId
      * @param bool   $checkForActivated
+     * @param string $lastMerchantId
      *
      * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function fetchLinkedAccountIdsFromParentIdWithActivated(string $parentId, bool $checkForActivated): Collection|PublicCollection
+    public function fetchLinkedAccountIdsFromParentIdWithActivated(
+        string $parentId, bool $checkForActivated, string $lastMerchantId = ''
+    ): Collection|PublicCollection
     {
         if (!$checkForActivated)
         {
-            return $this->fetchLinkedAccountsFromParentId($parentId);
+            return $this->fetchLinkedAccountsFromParentId($parentId, $lastMerchantId);
         }
 
         $filterRequest = new FilterRequest();
         $filterRequest->setQueryIdentifier(self::FETCH_LINKED_ACCOUNT_IDS_FROM_PARENT_ID_WITH_ACTIVATED);
-        $filterRequest->setBindings(json_encode([$parentId, 1]));
+        $filterRequest->setBindings(json_encode([$parentId, 1, $lastMerchantId]));
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
 
@@ -212,17 +215,20 @@ class Merchant extends Base
 
     /**
      * @param string $parentId
+     * @param string $lastMerchantId
      *
      * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function fetchLinkedAccountsFromParentId(string $parentId): Collection|PublicCollection
+    public function fetchLinkedAccountsFromParentId(
+        string $parentId, string $lastMerchantId = ''
+    ): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_FROM_PARENT_ID);
         $filterRequest->setBindings(
-            json_encode([$parentId])
+            json_encode([$parentId, $lastMerchantId])
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
@@ -231,18 +237,21 @@ class Merchant extends Base
     }
 
     /**
-     * @param array $parentIds
+     * @param array  $parentIds
+     * @param string $lastMerchantId
      *
      * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function fetchLinkedAccountsFromMultipleParentIds(array $parentIds): Collection|PublicCollection
+    public function fetchLinkedAccountsFromMultipleParentIds(
+        array $parentIds, string $lastMerchantId = ''
+    ): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_FROM_MULTIPLE_PARENT_IDS);
         $filterRequest->setBindings(
-            json_encode([$parentIds])
+            json_encode([$parentIds, $lastMerchantId])
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
@@ -334,14 +343,23 @@ class Merchant extends Base
         return $this->getMerchantCollectionFromResponse($response);
     }
 
-    public function fetchMerchantsCreatedBetween($from, $to): Collection|PublicCollection
+    /**
+     * @param int    $from
+     * @param int    $to
+     * @param string $lastMerchantId
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchMerchantsCreatedBetween(
+        int $from, int $to, string $lastMerchantId = ''
+    ): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier('fetch_merchants_created_between');
         $filterRequest->setBindings(
-            json_encode([
-                            $from, $to
-                        ])
+            json_encode([$from, $to, $lastMerchantId])
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
@@ -349,14 +367,23 @@ class Merchant extends Base
         return $this->getMerchantCollectionFromResponse($response);
     }
 
-    public function getMerchantsForSettlementsEventsCron($from, $to): Collection|PublicCollection
+    /**
+     * @param int    $from
+     * @param int    $to
+     * @param string $lastMerchantId
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function getMerchantsForSettlementsEventsCron(
+        int $from, int $to, string $lastMerchantId = ''
+    ): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier('get_merchants_for_settlements_event_cron');
         $filterRequest->setBindings(
-            json_encode([
-                            $from, $to
-                        ])
+            json_encode([$from, $to, $lastMerchantId])
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
@@ -387,14 +414,19 @@ class Merchant extends Base
         return $count;
     }
 
+    /**
+     * @param string $planId
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BaseException
+     */
     public function fetchFeeBearersForPlanId(string $planId): array
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier('fetch_fee_bearers_for_plan_id');
         $filterRequest->setBindings(
-            json_encode([
-                            $planId
-                        ])
+            json_encode([$planId])
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
@@ -407,14 +439,20 @@ class Merchant extends Base
 
         return $feeBearersList;
     }
+
+    /**
+     * @param array $merchantIds
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
     public function filterMerchantsWithFundsNotOnHold(array $merchantIds): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::FILTER_MERCHANTS_WITH_FUNDS_NOT_ON_HOLD);
         $filterRequest->setBindings(
-            json_encode([
-                            $merchantIds
-                        ])
+            json_encode([$merchantIds])
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);

@@ -38,6 +38,7 @@ use RZP\Models\Merchant\Invoice\EInvoice\PgEInvoice;
 use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Merchant\Invoice\EInvoice\DocumentTypes;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkBase;
 use RZP\Mail\Merchant\MerchantInvoiceExecutionReport as MerchantInvoiceExecutionReport;
 
 class Core extends Base\Core
@@ -526,7 +527,7 @@ class Core extends Base\Core
         $endTimestamp =  $this->getPatchedLastDay($month, $year)
                                 ->getTimestamp();
 
-        $batch = 10000;
+        $batch = AsvSdkBase::FETCH_SERVICE_FILTER_LIMIT;
 
         $skip = 0;
 

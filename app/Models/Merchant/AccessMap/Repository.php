@@ -155,7 +155,10 @@ class Repository extends Base\Repository
             }
             else
             {
-                $merchants = (new AsvSdkIntegration\Merchant())->fetchMerchantsByIds($entityOwnerIds);
+                $merchants = new Base\PublicCollection();
+                foreach (array_chunk($entityOwnerIds, AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT) as $chunk) {
+                    $merchants->push((new AsvSdkIntegration\Merchant())->fetchMerchantsByIds($chunk));
+                }
                 $this->resetConnectionOnModels($merchants, $this->getSlaveConnection());
             }
 

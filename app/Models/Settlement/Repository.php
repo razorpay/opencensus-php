@@ -9,10 +9,13 @@ use RZP\Models\Merchant as M;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Base\ConnectionType;
+use RZP\Exception\BaseException;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Transfer\SettlementStatus;
 use RZP\Modules\Acs\QueryShadowModeEvent;
 use RZP\Models\Transfer\Entity as TransferEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkBase;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as AsvSdkMerchantQuery;
 
 class Repository extends Base\Repository
@@ -45,7 +48,10 @@ class Repository extends Base\Repository
      * for the settlements created via API & won't work for settlement created via NSS.
      *
      * @param array $setlIds
+     *
      * @return mixed
+     * @throws BadRequestException
+     * @throws BaseException
      */
     public function getFailedSettlementsForRetry(array $setlIds)
     {
@@ -83,10 +89,12 @@ class Repository extends Base\Repository
                 }
                 else
                 {
-                    $filteredMerchantIds = (new AsvSdkMerchantQuery())->filterMerchantsWithFundsNotOnHold(
-                        $merchantIdsConsidered
-                    )->pluck(M\Entity::ID)
-                     ->toArray();
+                    $filteredMerchantIds = array();
+                    foreach (array_chunk($merchantIdsConsidered, AsvSdkBase::FETCH_SERVICE_FILTER_LIMIT) as $chunk) {
+                        $filteredMerchantIds += (new AsvSdkMerchantQuery())->filterMerchantsWithFundsNotOnHold($chunk)
+                                                                           ->pluck(M\Entity::ID)
+                                                                           ->toArray();
+                    }
                 }
 
                 $setls = $query->select($cols)
