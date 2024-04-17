@@ -1125,7 +1125,7 @@ class Service extends Base\Service
                     }
 
                     $txnAmount = $transactionEntity->getCredit();
-                    $rowAmount = $row['net_invoice_amount'] * 100;
+                    $rowAmount = round($row['net_invoice_amount'] * 100);
 
                     if ($txnAmount != $rowAmount)
                     {
