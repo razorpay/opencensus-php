@@ -47,6 +47,15 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT . '.' . Entity::ID => 'required|unsigned_id',
     ];
 
+//    TODO: -------------- add fetch pricing rules here ----------------
+    protected static $favServiceFetchPricingInfoRules = [
+        Entity::ID                     => 'required',
+        Entity::BALANCE_ID             => 'required',
+        Entity::AMOUNT                 => 'required',
+        Entity::MERCHANT_ID            => 'required',
+        Entity::FUND_ACCOUNT_ID        => 'required',
+    ];
+
     protected static $bulkPatchFavRules = [
         Entity::FUND_ACCOUNT_VALIDATION_IDS      => 'required|array|min:1',
         Entity::FUND_ACCOUNT_VALIDATION_IDS.".*" => 'required|public_id',

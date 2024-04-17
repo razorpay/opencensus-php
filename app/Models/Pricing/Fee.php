@@ -150,7 +150,9 @@ class Fee extends Base\Core
         $this->validateFees($entity, $totalFee);
 
         $endTimeMs = round(microtime(true) * 1000);
+
         $timeTaken = $endTimeMs - $startTimeMs;
+
         $this->trace->histogram(Metrics::PRICING_FEE_CALCULATION_TIME_IN_MS, $timeTaken);
 
         return [$totalFee, $totalTax, $feeSplit];

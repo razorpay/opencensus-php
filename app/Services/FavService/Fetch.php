@@ -6,7 +6,7 @@ use RZP\Http\Request\Requests;
 
 class Fetch extends Base
 {
-    const FETCH_FAV_URI = '/fund_accounts/validations';
+    const FETCH_FUND_ACCOUNT_VALIDATION_URI = '/fund_accounts/validations';
 
     // fav create service name for singleton class
     const FAV_SERVICE_FETCH     = 'fav_service_fetch';

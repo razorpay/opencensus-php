@@ -83,7 +83,8 @@ class Create extends Base
             FavEntity::VALIDATION_TYPE           => $input[FavEntity::VALIDATION_TYPE] ?? null,
             FavEntity::REFERENCE_ID              => $input[FavEntity::REFERENCE_ID] ?? null,
             FavEntity::FUND_ACCOUNT              => $input[FavEntity::FUND_ACCOUNT],
-            FavEntity::MERCHANT_ID               => $merchantId
+            FavEntity::MERCHANT_ID               => $merchantId,
+            FavEntity::BALANCE_ID                => $input[FavEntity::BALANCE_ID]
         ];
 
         if (empty($input[FavEntity::NOTES]) === false)

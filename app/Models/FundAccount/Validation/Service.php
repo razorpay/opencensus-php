@@ -5,11 +5,13 @@ namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\Error;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Balance;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Redaction;
 use RZP\Error\PublicErrorDescription;
@@ -78,6 +80,13 @@ class Service extends Base\Service
             $this->processAccountNumber($input);
         }
 
+        if (empty($input[Entity::SOURCE_ACCOUNT_NUMBER]) === false)
+        {
+            $input[Balance\Entity::ACCOUNT_NUMBER] = $input[Entity::SOURCE_ACCOUNT_NUMBER];
+
+            $this->processAccountNumber($input);
+        }
+
         $entity = $this->core->create($input, $this->merchant);
 
         if($entity->isCreatedUsingFavService())
@@ -86,6 +95,38 @@ class Service extends Base\Service
         }
 
         return $entity->toArrayPublic();
+    }
+
+    public function fetchPricingInfoForFavService(array $input)
+    {
+        $this->trace->info(
+            TraceCode::FAV_SERVICE_FETCH_PRICING_INFO_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
+        try
+        {
+            (new Validator)->validateInput('fav_service_fetch_pricing_info', $input);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FETCH_PRICING_INFO_FOR_MICROSERVICE_FAILED,
+                [
+                    'input' => $input,
+                ]
+            );
+
+            return [
+                Entity::ERROR            => $exception->getMessage(),
+                Error::PUBLIC_ERROR_CODE => strval($exception->getCode()),
+            ];
+        }
+
+        return $this->core->fetchPricingInfoForFavService($input);
     }
 
     public function validateVpaInternal(array $input)

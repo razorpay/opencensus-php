@@ -62,4 +62,14 @@ class FundAccountValidationController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchPricingInfoForFavService()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchPricingInfoForFavService($input);
+
+        return ApiResponse::json($response);
+    }
+
 }

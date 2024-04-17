@@ -82,6 +82,7 @@ class FavQueueForFTS extends Job
                     ];
 
                     $favCore->updateFavInMicroservice($this->favId, $data, FundAccountEntity::BANK_ACCOUNT);
+
                 }
                 else
                 {

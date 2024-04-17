@@ -71,6 +71,8 @@ class Entity extends Base\PublicEntity
 
     const IS_COMPOSITE           = 'isComposite';
 
+    const PRICING_RULE_ID                       = 'pricing_rule_id';
+
 //    TODO: add it in fillable and visible
     const IS_CREATED_USING_FAV_SERVICE = 'IS_CREATED_USING_FAV_SERVICE';
 

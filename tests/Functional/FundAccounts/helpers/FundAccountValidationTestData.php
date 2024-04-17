@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Models\FundAccount\Validation\Entity;
 use \RZP\Models\Merchant;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\FundAccount\Entity as FundAccount;
@@ -516,7 +517,7 @@ return [
                         BankAccount::ACCOUNT_NUMBER => '765432123456789'
                     ]
                 ],
-                Validation::SOURCE_ACCOUNT_NUMBER => "7878780080316316",
+                Validation::SOURCE_ACCOUNT_NUMBER => "2224440041626905",
                 Validation::VALIDATION_TYPE => "optimized",
                 Validation::REFERENCE_ID => "112233",
                 Validation::NOTES        => [],
@@ -548,7 +549,7 @@ return [
                         BankAccount::ACCOUNT_NUMBER => '765432123456789'
                     ]
                 ],
-                Validation::SOURCE_ACCOUNT_NUMBER => "7878780080316316",
+                Validation::SOURCE_ACCOUNT_NUMBER => "2224440041626905",
                 Validation::VALIDATION_TYPE => "optimized",
                 Validation::REFERENCE_ID => "112233",
                 Validation::NOTES        => [],
@@ -633,6 +634,48 @@ return [
         ],
     ],
 
+    'testFetchPricingInfoForFavService' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations_internal/pricing_info',
+            'method'  => 'POST',
+            'content' => [
+                'id'          => '00000000000001',
+                'amount'      =>  100,
+                'merchant_id' => '10000000000000',
+                'fund_account_id' => '',
+                'balance_id'  => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'fees' => 354,
+                'tax' => 54,
+                'pricing_rule_id' => '1zE31zbybacab4'
+            ],
+        ],
+    ],
+
+    'testFetchPricingInfoForPostpaidMerchantForFavService' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations_internal/pricing_info',
+            'method'  => 'POST',
+            'content' => [
+                'id'          => '00000000000001',
+                'amount'      =>  100,
+                'merchant_id' => '10000000000000',
+                'fund_account_id' => '',
+                'balance_id'  => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'fees' => 0,
+                'tax' => 0,
+                'pricing_rule_id' => ''
+            ],
+        ],
+    ],
+
     'testCreateFaOfTypeVpaAndSendRequestToFavService' => [
         'request' => [
             'url'     => '/fund_accounts/validations',
@@ -644,7 +687,7 @@ return [
                         'address' => 'gaurav.kumar@exampleupi'
                     ]
                 ],
-                Validation::SOURCE_ACCOUNT_NUMBER => "7878780080316316",
+                Validation::SOURCE_ACCOUNT_NUMBER => "2224440041626905",
                 Validation::VALIDATION_TYPE => "optimized",
                 Validation::REFERENCE_ID => "112233",
                 Validation::NOTES        => [],
@@ -710,7 +753,7 @@ return [
                     ]
 
                 ],
-                Validation::SOURCE_ACCOUNT_NUMBER => "7878780080316316",
+                Validation::SOURCE_ACCOUNT_NUMBER => "2224440041626905",
                 Validation::VALIDATION_TYPE => "optimized",
                 Validation::REFERENCE_ID => "112233",
                 Validation::NOTES        => [],
@@ -792,7 +835,7 @@ return [
                     ]
 
                 ],
-                Validation::SOURCE_ACCOUNT_NUMBER => "7878780080316316",
+                Validation::SOURCE_ACCOUNT_NUMBER => "2224440041626905",
                 Validation::VALIDATION_TYPE => "optimized",
                 Validation::REFERENCE_ID => "112233",
                 Validation::NOTES        => [],

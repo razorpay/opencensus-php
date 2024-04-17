@@ -849,6 +849,7 @@ class FundAccountValidationTest extends TestCase
 
         $mock->shouldReceive('updateFavInMicroservice')
             ->withArgs(function ($fav_id, $fund_transfer_id, $type){
+
                 return ($fav_id === '1234567890' && empty($fund_transfer_id) == false);})
             ->times(1);
 
@@ -868,7 +869,38 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals($content['bank_account']['id'], $fta['bank_account_id']);
     }
 
-//    TODO: add remaining cases response as well
+    public function testFetchPricingInfoForFavService()
+    {
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] =  substr($fundAccountResponse['id'], 3);
+
+        $this->ba->payoutInternalAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(354, $response['fees']);
+
+        $this->assertEquals(54, $response['tax']);
+    }
+
+    public function testFetchPricingInfoForPostpaidMerchantForFavService()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] =  substr($fundAccountResponse['id'], 3);
+
+        $this->ba->payoutInternalAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(0, $response['fees']);
+
+        $this->assertEquals(0, $response['tax']);
+    }
+
     public function createBankResponseForFavServiceMock($status='created', $contact = false)
     {
         $response = new \WpOrg\Requests\Response();
@@ -1030,7 +1062,10 @@ class FundAccountValidationTest extends TestCase
                   ->willReturn($response);
     }
 
-    public function testCreateFaOfTypeBankAndSendRequestToFavService(){
+    public function testCreateFaOfTypeBankAndSendRequestToFavService()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
         // enabling the feature here for test merchant
         $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
 
@@ -1051,7 +1086,10 @@ class FundAccountValidationTest extends TestCase
         $this->assertNotNull($response['fund_account']['id']);
     }
 
-    public function testCreateFaOfTypeVpaAndSendRequestToFavService(){
+    public function testCreateFaOfTypeVpaAndSendRequestToFavService()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
         // enabling the feature here for test merchant
         $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
 
@@ -1071,6 +1109,8 @@ class FundAccountValidationTest extends TestCase
     }
 
     public function testCreateFaAndContactOfTypeBankAndSendRequestToFavService(){
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         // enabling the feature here for test merchant
         $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
@@ -1098,7 +1138,10 @@ class FundAccountValidationTest extends TestCase
         $this->assertNotNull($response['fund_account']['id']);
     }
 
-    public function testCreateFaOfTypeBankAndSendRequestToFavServiceFailure(){
+    public function testCreateFaOfTypeBankAndSendRequestToFavServiceFailure()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
         $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
 
         $this->expectException('\RZP\Exception\ServerErrorException');
@@ -1110,7 +1153,9 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateFaAndContactOfTypeVpaAndSendRequestToFavService(){
+    public function testCreateFaAndContactOfTypeVpaAndSendRequestToFavService()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         // enabling the feature here for test merchant
         $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);

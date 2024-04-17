@@ -3,10 +3,10 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Constants\Mode;
+use RZP\Error\Error;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Trace\Tracer;
 use RZP\Services\FTS;
 use RZP\Models\Admin;
@@ -42,6 +42,7 @@ use RZP\Services\FavService\Fetch as FavServiceFetch;
 use RZP\Services\FavService\Create as FavServiceCreate;
 use RZP\Services\FavService\Update as FavServiceUpdate;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Services\FTS\Transfer\RequestFields as FtsRequestFields;
 use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation as FavLedgerProcessor;
@@ -117,7 +118,7 @@ class Core extends Base\Core
             $validator->setStrictFalse();
 
             $validator->validateInput('composite_create', $input);
-            
+
             $fundAccountData = $this->createFundAccountForCompositeFav($input, $merchant);
 
             $favInput = $this->createInputForFavMicroService($input, $fundAccountData);
@@ -294,6 +295,93 @@ class Core extends Base\Core
         return $this->favUpdateServiceClient->updateFavInMicroservice($favId, $data, $type);
     }
 
+    public function fetchPricingInfoForFavService(array $params): array
+    {
+        try
+        {
+            $favId = $params[Entity::ID];
+
+            $favEntity = (new Entity);
+
+            $favEntity->setId($favId);
+
+            $merchantId = $params[Entity::MERCHANT_ID];
+
+            $fundAccountId = $params[Entity::FUND_ACCOUNT_ID];
+
+            $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+            if ($merchant->isPostPaid()) {
+                return [
+                    Entity::FEES => 0,
+                    Entity::TAX => 0,
+                    Entity::PRICING_RULE_ID => "",
+                ];
+            }
+
+            $favEntity->merchant()->associate($merchant);
+
+            $fundAccount = (new FundAccount\Repository)->findOrFail($fundAccountId);
+
+            $favEntity->associateFundAccount($fundAccount);
+
+            $favEntity->setAmount($params[Entity::AMOUNT]);
+
+            $balance = $this->repo->balance->findOrFailById($params[Entity::BALANCE_ID]);
+
+            $favEntity->balance()->associate($balance);
+
+            list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($favEntity);
+
+            $feesSplitData = $feesSplit->toArray();
+
+            $pricingRuleId = "";
+
+            foreach ($feesSplitData as $feesSplit)
+            {
+                // Set pricingRuleId from the feesSplit (there are two entries and at least one has pricingRuleId)
+                if (empty($feesSplit[Entity::PRICING_RULE_ID]) === false)
+                {
+                    $pricingRuleId = $feesSplit[Entity::PRICING_RULE_ID];
+                }
+            }
+
+            $favEntity->setFees($fee);
+
+            $favEntity->setTax($tax);
+
+            $response = [
+                Entity::FEES            => $favEntity->getFees(),
+                Entity::TAX             => $favEntity->getTax(),
+                Entity::PRICING_RULE_ID => $pricingRuleId,
+            ];
+
+            $this->trace->info(TraceCode::FAV_SERVICE_FETCH_PRICING_INFO_RESPONSE,
+                [
+                    'response' => $response
+                ]);
+
+            return $response;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FETCH_PRICING_INFO_FOR_MICROSERVICE_FAILED,
+                [
+                    'fav'         => $params['fav_id'],
+                    'merchant_id' => $params['merchant_id']
+                ]
+            );
+
+            return [
+                Entity::ERROR            => $exception->getMessage(),
+                Error::PUBLIC_ERROR_CODE => strval($exception->getCode()),
+            ];
+        }
+    }
+
 
     /**
      * @param array $input
@@ -467,6 +555,7 @@ class Core extends Base\Core
             list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
 
             $validation->setFees($fee);
+
             $validation->setTax($tax);
 
             $this->repo->saveOrFail($validation);
@@ -1230,6 +1319,43 @@ class Core extends Base\Core
         return $request;
     }
 
+    public function isNameReceivedFromPennilessValid(string $name = null, string $ifsc = null)
+    {
+        try
+        {
+            $benificiaryNameNotAllowedArray = (new Admin\Service)->getConfigKey([
+                'key' => Admin\ConfigKey::PENNILESS_RESPONSE_BENE_NAME_BLACKLIST
+            ]);
+
+            foreach ($benificiaryNameNotAllowedArray as $beneName)
+            {
+                if(stripos($name, $beneName) !== false)
+                {
+                    $this->trace->info(TraceCode::VALIDATE_VPA_PENNILESS_INVALID_NAME,
+                        [
+                            "bene_substring_found" => $beneName,
+                            "bank"                => substr($ifsc, 0, 4)
+                        ]);
+
+                    return false;
+                }
+            }
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::VALIDATE_VPA_PENNILESS_NAME_FAILURE,
+                [
+                    'bank' => substr($ifsc, 0, 4)
+                ]
+            );
+            return false;
+        }
+        return true;
+    }
+
     protected function createRequestBodyFromInputForFTS($input)
     {
         $this->trace->info(
@@ -1309,44 +1435,6 @@ class Core extends Base\Core
         $fav->setFTSTransferId($transferId);
         $this->repo->fund_account_validation->saveOrFail($fav);
     }
-
-    public function isNameReceivedFromPennilessValid(string $name = null, string $ifsc = null)
-    {
-        try
-        {
-            $benificiaryNameNotAllowedArray = (new Admin\Service)->getConfigKey([
-                'key' => Admin\ConfigKey::PENNILESS_RESPONSE_BENE_NAME_BLACKLIST
-            ]);
-
-            foreach ($benificiaryNameNotAllowedArray as $beneName)
-            {
-                if(stripos($name, $beneName) !== false)
-                {
-                    $this->trace->info(TraceCode::VALIDATE_VPA_PENNILESS_INVALID_NAME,
-                        [
-                            "bene_substring_found" => $beneName,
-                            "bank"                => substr($ifsc, 0, 4)
-                        ]);
-
-                    return false;
-                }
-            }
-        }
-        catch(\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::VALIDATE_VPA_PENNILESS_NAME_FAILURE,
-                [
-                    'bank' => substr($ifsc, 0, 4)
-                ]
-            );
-            return false;
-        }
-        return true;
-    }
-
 
     protected function getNarration(Entity $fav, Merchant\Entity $merchant = null)
     {
