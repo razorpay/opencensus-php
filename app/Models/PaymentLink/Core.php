@@ -1023,7 +1023,6 @@ class Core extends Base\Core
      * @throws BadRequestException
      * @throws BadRequestValidationFailureException
      */
-
     public function validatePaymentPagePaymentFromInput(array $input)
     {
         if (array_key_exists(Payment\Entity::PAYMENT_LINK_ID, $input) === false)
@@ -1217,14 +1216,18 @@ class Core extends Base\Core
                 });
             }
 
-            $this->updateDonationGoalTrackerKeys($refund->payment->paymentLink,  [
+            $paymentLink = $this->repo->payment_link->find($refund->payment->order->getProductId());
+
+            $this->updateDonationGoalTrackerKeys($paymentLink,  [
                 Entity::SOLD_UNITS          => $unitsSold,
                 Entity::COLLECTED_AMOUNT    => $refund->getAmount(),
                 Entity::SUPPORTER_COUNT     => $unitsSold === 0 ? 0 : 1,
             ], true);
         });
 
-        $this->updateHostedCache($refund->payment->paymentLink);
+        $paymentLink = $this->repo->payment_link->find($refund->payment->order->getProductId());
+
+        $this->updateHostedCache($paymentLink);
 
         $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_PROCESS_COMPLETED, $context);
     }
@@ -1239,7 +1242,7 @@ class Core extends Base\Core
     {
         assertTrue($payment->hasPaymentLink());
 
-        $paymentLink = $payment->paymentLink;
+        $paymentLink = $this->repo->payment_link->find($payment->order->getProductId());
 
         $this->trace->info(
             TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS,
@@ -3479,7 +3482,7 @@ class Core extends Base\Core
     public function constructPayloadForPartnerWebhook(Payment\Entity $payment): array
     {
         $payload = [];
-        $paymentPage = $payment->paymentLink;
+        $paymentPage = $this->repo->payment_link->find($payment->order->getProductId());
 
         $payload[E::PAYMENT] = $payment->toArrayPublic();
 
@@ -4285,7 +4288,7 @@ class Core extends Base\Core
             null,
             'Receipt is not generated for this payment');
 
-        if (empty($payment->paymentLink) === true)
+        if ($payment->hasPaymentLink() === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,
@@ -4294,7 +4297,9 @@ class Core extends Base\Core
                 'Receipt cannot be generated for this payment as there are no payment page linked');
         }
 
-        if($payment->paymentLink->isReceiptEnabled() === false)
+        $paymentLink = $this->repo->payment_link->find($payment->order->getProductId());
+
+        if($paymentLink->isReceiptEnabled() === false)
         {
             $this->trace->info(TraceCode::PAYMENT_PAGE_RECIEPT_NOT_ENABLED, ["payment_id" => $payment->getPublicId()]);
             throw $error;
@@ -4303,7 +4308,7 @@ class Core extends Base\Core
         try
         {
             $this->trace->info(TraceCode::PAYMENT_PAGE_CREATE_INVOICE, ["payment_id" => $payment->getPublicId()]);
-            $this->createInvoiceIfEnabled($payment->paymentLink, $payment);
+            $this->createInvoiceIfEnabled($paymentLink, $payment);
         }
         catch (\Throwable $e)
         {

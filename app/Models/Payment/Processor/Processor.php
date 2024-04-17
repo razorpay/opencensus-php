@@ -1184,15 +1184,13 @@ class Processor
 
                     $result = $this->app->razorx->getTreatment($merchant->getId(), self::PL_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
                     if ($result != 'on') {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "pp_pb_ph",
+                            'merchant_id' => $merchant->getId(),
+                        ]);
+
                         return false;
                     }
-
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "pp_pb_ph",
-                        'merchant_id' => $merchant->getId(),
-                    ]);
-
-                    return false;
                 }
 
                 if (empty($order) === false and ($order->getProductId() !== null
@@ -3230,6 +3228,12 @@ class Processor
 
             $isSplitPaymentRequest = $this->validateSplitPayment($input);
 
+            // adding this here instead of inside createPaymentEntity.
+            // Since that is inside a transaction, not possible to move certain validation query of payment pages
+            // to slave. so moving out that particular validation here.
+            // Rest of the validations will continue inside createPaymentEntity
+            $this->preProcessAndValidateForPaymentPagesIfApplicable($input);
+
             $isReArchPayment = false;
 
             $isUpiDfb = false;
@@ -3273,12 +3277,6 @@ class Processor
                 $payment = $this->buildPaymentEntity($input);
 
                 $this->preProcessForSubscriptionsIfApplicable($input, $payment);
-
-                // adding this here instead of inside createPaymentEntity.
-                // Since that is inside a transaction, not possible to move certain validation query of payment pages
-                // to slave. so moving out that particular validation here.
-                // Rest of the validations will continue inside createPaymentEntity
-                $this->preProcessAndValidateForPaymentPagesIfApplicable($input);
 
                 $ret = $this->preProcessPaymentInputs($input, $payment);
 

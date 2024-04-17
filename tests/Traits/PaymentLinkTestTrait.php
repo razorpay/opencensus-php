@@ -162,6 +162,11 @@ trait PaymentLinkTestTrait
 
         $data['payment_link'] = $paymentLink;
 
+        $orderAttribute = array_merge([
+            Order\Entity::PRODUCT_TYPE => 'payment_link',
+            Order\Entity::PRODUCT_ID => $paymentLink->getId(),
+        ], $orderAttribute);
+
         $data['payment_link_order'] = $this->createOrderForPaymentLink($paymentPageItems, $orderAttribute);
 
         return $data;

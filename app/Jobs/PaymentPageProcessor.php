@@ -32,7 +32,7 @@ class PaymentPageProcessor extends Job
     const CDS_UPDATE_PLAN_IDS_FOR_MERCHANTS  = 'CDS_UPDATE_PLAN_IDS_FOR_MERCHANTS';
     const CDS_PLANS_BILLING_DATE_UPDATE      = 'CDS_PLANS_BILLING_DATE_UPDATE';
 
-    // Configuration for ocr service validation 
+    // Configuration for ocr service validation
     // TODO: Move this to care service in future
     const OCR_SERVICE_RETRY_DELAY = 50;
     const OCR_SERVICE_MAX_RETRY_ATTEMPTS = 10;
@@ -150,9 +150,9 @@ class PaymentPageProcessor extends Job
         if (empty($paymentId) === true)
         {
             $this->delete();
-    
+
             $this->trace->info(TraceCode::NO_CODE_APPS_EMPTY_PAYMENT_ID_RECEIVED, $this->context);
-            
+
             return;
         }
 
@@ -170,18 +170,18 @@ class PaymentPageProcessor extends Job
                 Trace::ERROR,
                 TraceCode::NO_CODE_APPS_PAYMENT_NOT_FOUND);
         }
-        
+
         if ($payment === null)
         {
             $this->retry($this->attempts() * self::RETRY_DELAY);
-    
+
             $this->trace->info(TraceCode::NO_CODE_APPS_PAYMENT_EVENT_RETRY, [
                 "attempt"   => $this->attempts()
             ]);
-    
+
             return;
         }
-        
+
         $traceContext = $this->context + [
                 'payment_id' => $payment->getId()
             ];
@@ -217,7 +217,7 @@ class PaymentPageProcessor extends Job
         if (empty($paymentId) === true)
         {
             $this->delete();
-            
+
             $this->trace->info(TraceCode::PAYMENT_LINK_EMPTY_PAYMENT_ID, $this->context);
 
             $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
@@ -242,15 +242,15 @@ class PaymentPageProcessor extends Job
         if ($payment === null)
         {
             $this->retry($this->attempts() * self::RETRY_DELAY);
-    
+
             $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_RETRY, [
                 "attempt"   => $this->attempts()
             ]);
-    
+
             return;
         }
-        
-        $paymentLink    = $payment->paymentLink;
+
+        $paymentLink = $this->repoManager->payment_link->find($payment->order->getProductId());
 
         if (empty($paymentLink) === true) {
             $this->delete();
@@ -573,15 +573,15 @@ class PaymentPageProcessor extends Job
         $individualLinkRequestId  = $this->params->get('individualLinkRequestId');
 
         $merchantId  = $this->params->get('merchantId');
-    
+
         $merchant = $this->repoManager->merchant->findByPublicId($merchantId);
-    
+
         $this->setMerchant($merchant);
-        
+
         if(empty($mccRequestId) === true || empty($individualLinkRequestId) === true)
         {
             $this->delete();
-            
+
             $this->trace->info(TraceCode::OCR_SERVICE_REQUEST_ID_NOT_FOUND, $this->context);
 
             return;

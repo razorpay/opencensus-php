@@ -1144,7 +1144,12 @@ The validation failed for dob");
 
         $this->createPaymentPageRecords($paymentLink->getId());
 
-        $this->createOrderForPaymentLink($paymentPageItems);
+        $orderAttribute = [
+            Order\Entity::PRODUCT_TYPE => 'payment_link',
+            Order\Entity::PRODUCT_ID => $paymentLink->getId(),
+        ];
+
+        $this->createOrderForPaymentLink($paymentPageItems, $orderAttribute);
 
         $orderEntity = $this->getDbLastEntity("order");
 
@@ -1199,7 +1204,12 @@ The validation failed for dob");
 
         $this->createPaymentPageRecords($paymentLink->getId());
 
-        $this->createOrderForPaymentLink($paymentPageItems);
+        $orderAttribute = [
+            Order\Entity::PRODUCT_TYPE => 'payment_link',
+            Order\Entity::PRODUCT_ID => $paymentLink->getId(),
+        ];
+
+        $this->createOrderForPaymentLink($paymentPageItems, $orderAttribute);
 
         $orderEntity = $this->getDbLastEntity("order");
 
@@ -1265,7 +1275,12 @@ The validation failed for dob");
         // verify total_amount is initially 0
         $this->assertEquals(0, $entityArray['total_amount']);
 
-        $this->createOrderForPaymentLink($paymentPageItems);
+        $orderAttribute = [
+            Order\Entity::PRODUCT_TYPE => 'payment_link',
+            Order\Entity::PRODUCT_ID => $paymentLink->getId(),
+        ];
+
+        $this->createOrderForPaymentLink($paymentPageItems, $orderAttribute);
 
         $orderEntity = $this->getDbLastEntity("order");
 
@@ -5626,6 +5641,9 @@ Secondary reference id should be unique, duplicate value for test123";
         $orderAttribute = [
             'amount' => $totalAmount,
             Order\Entity::PAYMENT_CAPTURE => true,
+            Order\Entity::PRODUCT_TYPE => 'payment_link',
+            Order\Entity::PRODUCT_ID => $page->getId(),
+
         ];
 
         $order = $this->fixtures->create('order', $orderAttribute);

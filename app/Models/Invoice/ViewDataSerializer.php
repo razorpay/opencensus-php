@@ -823,11 +823,7 @@ class ViewDataSerializer extends Base\Core
     {
         $order = $this->invoice->order;
 
-        $payment = $this->repo->payment->fetchPaymentsForOrderId($order->getId())[0];
-
-        $this->repo->loadRelations($payment);
-
-        $notes = $payment->getNotes()->toArray();
+        $notes = $order->getNotes()->toArray();
 
         return $notes[$selectedInputFiledName] ?? null;
     }
