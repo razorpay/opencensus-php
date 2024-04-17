@@ -16,6 +16,7 @@ class Headers
     // The splitz project id header is passed to upstream service
     // for putting the experiments in the right project.
     const X_SPLITZ_PROJECT                = 'X-Splitz-Project';
+    const ADMIN_USER_PERMISSION           = 'admin-user-permission';
 
     const HEADERS                       = 'headers';
 

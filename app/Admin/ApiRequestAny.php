@@ -205,6 +205,10 @@ class ApiRequestAny
             $headers[Headers::X_SPLITZ_PROJECT] = Request::header(Headers::X_SPLITZ_PROJECT);
         }
 
+        if (empty(Request::header(Headers::ADMIN_USER_PERMISSION)) === false) {
+                            $headers[Headers::ADMIN_USER_PERMISSION] = Request::header(Headers::ADMIN_USER_PERMISSION);
+                        }
+
         // === Request options
 
         $this->options = [
