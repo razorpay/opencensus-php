@@ -549,4 +549,38 @@ return [
             ]
         ]
     ],
+
+    'testLiveDisablePropagationToLinkedAccountWhenMerchantIsLiveDisabled' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => '/merchants/%s/live/disable',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => true,
+                'live' => false,
+                'hold_funds' => false,
+            ]
+        ]
+    ],
+
+    'testLiveEnablePropagationToLinkedAccountWhenMerchantIsLiveEnabled' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => '/merchants/%s/live/enable',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => true,
+                'live' => true,
+                'hold_funds' => false,
+            ]
+        ]
+    ],
 ];

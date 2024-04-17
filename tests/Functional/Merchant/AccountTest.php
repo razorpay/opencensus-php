@@ -660,6 +660,121 @@ class AccountTest extends TestCase
         }
     }
 
+    public function testLiveDisablePropagationToLinkedAccountWhenMerchantIsLiveDisabled()
+    {
+        $parentMerchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->merchant->activate($parentMerchant['id']);
+
+        $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000001', 'parent_id' => $parentMerchant['id']]);
+        $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000002', 'parent_id' => $parentMerchant['id']]);
+        $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000003', 'parent_id' => $parentMerchant['id']]);
+        $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000004', 'parent_id' => $parentMerchant['id']]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $parentMerchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $liveDisabledMerchantIds = [
+            $parentMerchant['id'], '10000000000001', '10000000000002', '10000000000003', '10000000000004'
+        ];
+
+        foreach ($liveDisabledMerchantIds as $liveDisabledMerchantId)
+        {
+            $merchant = $this->getDbEntityById('merchant', $liveDisabledMerchantId);
+
+            $this->assertNull($merchant['suspended_at']);
+            $this->assertFalse($merchant['hold_funds']);
+            $this->assertFalse($merchant['live']);
+
+            if ($liveDisabledMerchantId !== $parentMerchant['id'])
+            {
+                $this->assertEquals('live_disabled_as_parent_merchant_live_disabled', $merchant['live_disable_reason']);
+            }
+        }
+    }
+
+    public function testLiveEnablePropagationToLinkedAccountWhenMerchantIsLiveEnabled()
+    {
+        $parentMerchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->merchant->activate($parentMerchant['id']);
+
+        $this->fixtures->edit('merchant', $parentMerchant['id'],
+            [
+                'live' => false
+            ]);
+        $this->fixtures->create('merchant:marketplace_account',
+            [
+                'id' => '10000000000001', 'parent_id' => $parentMerchant['id'],
+                'live' => false, 'hold_funds' => false, 'live_disable_reason' => 'live disabled due to XYZ'
+            ]);
+        $this->fixtures->create('merchant:marketplace_account',
+            [
+                'id' => '10000000000002', 'parent_id' => $parentMerchant['id'],
+                'live' => false, 'hold_funds' => false, 'live_disable_reason' => 'live disabled due to XYZ'
+            ]);
+        $this->fixtures->create('merchant:marketplace_account',
+            [
+                'id' => '10000000000003', 'parent_id' => $parentMerchant['id'],
+                'live' => false, 'hold_funds' => false, 'live_disable_reason' => 'live_disabled_as_parent_merchant_live_disabled'
+            ]);
+        $this->fixtures->create('merchant:marketplace_account',
+            [
+                'id' => '10000000000004', 'parent_id' => $parentMerchant['id'],
+                'live' => false, 'hold_funds' => false, 'live_disable_reason' => 'live_disabled_as_parent_merchant_live_disabled'
+            ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $parentMerchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $liveEnabledMerchantIds = [
+            $parentMerchant['id'], '10000000000003', '10000000000004'
+        ];
+        $liveDisabledMerchantIds = [
+            '10000000000001', '10000000000002'
+        ];
+
+        foreach ($liveEnabledMerchantIds as $liveEnabledMerchantId)
+        {
+            $merchant = $this->getDbEntityById('merchant', $liveEnabledMerchantId);
+
+            $this->assertNull($merchant['suspended_at']);
+            $this->assertFalse($merchant['hold_funds']);
+            $this->assertTrue($merchant['live']);
+            $this->assertNull($merchant['hold_funds_reason']);
+            $this->assertNull($merchant['live_disable_reason']);
+        }
+
+        foreach ($liveDisabledMerchantIds as $liveDisabledMerchantId)
+        {
+            $merchant = $this->getDbEntityById('merchant', $liveDisabledMerchantId);
+
+            $this->assertNull($merchant['suspended_at']);
+            $this->assertFalse($merchant['hold_funds']);
+            $this->assertFalse($merchant['live']);
+            $this->assertNull($merchant['hold_funds_reason']);
+            $this->assertEquals('live disabled due to XYZ', $merchant['live_disable_reason']);
+        }
+    }
+
     public function setAdminForInternalAuth()
     {
         $this->org = $this->fixtures->create('org');

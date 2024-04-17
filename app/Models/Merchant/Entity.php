@@ -1537,6 +1537,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LIVE, true);
 
         $this->fireEventWithMerchantPayload('api.account.payments_enabled');
+
+        (new Core())->liveEnableLinkedAccountsOfParentMerchantIfPresent($this->getMerchantId());
     }
 
     public function liveDisable()
@@ -1544,6 +1546,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LIVE, false);
 
         $this->fireEventWithMerchantPayload('api.account.payments_disabled');
+
+        (new Core())->liveDisableLinkedAccountsOfParentMerchantIfPresent($this->getMerchantId());
     }
 
     public function archive()

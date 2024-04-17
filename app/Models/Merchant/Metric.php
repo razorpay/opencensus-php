@@ -331,4 +331,11 @@ final class Metric
 
     const PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_CREATED       = 'pg_ledger_amount_credit_expiry_reminder_created';
     const PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_FAILURE       = 'pg_ledger_amount_credit_expiry_reminder_failure';
+
+    const LINKED_ACCOUNT_LIVE_DISABLE_SUCCESS_COUNT = 'linked_account_live_disable_success_count';
+    const LINKED_ACCOUNT_LIVE_DISABLE_FAILED_COUNT = 'linked_account_live_disable_failed_count';
+    const LINKED_ACCOUNT_LIVE_DISABLE_FAILED = 'linked_account_live_disable_failed';
+    const LINKED_ACCOUNT_LIVE_ENABLE_SUCCESS_COUNT = 'linked_account_live_enable_success_count';
+    const LINKED_ACCOUNT_LIVE_ENABLE_FAILED_COUNT = 'linked_account_live_enable_failed_count';
+    const LINKED_ACCOUNT_LIVE_ENABLE_FAILED = 'linked_account_live_enable_failed';
 }

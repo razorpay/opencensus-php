@@ -1967,6 +1967,8 @@ final class Constants
     const API   = 'api';
     const ACCOUNT_SUSPENDED_DUE_TO_PARENT_MERCHANT_SUSPENSION = 'account_suspended_due_to_parent_merchant_suspension';
 
+    const LIVE_DISABLED_AS_PARENT_MERCHANT_LIVE_DISABLED = 'live_disabled_as_parent_merchant_live_disabled';
+
     const ALL_UNDER_REVIEW = [
         Detail\Status::UNDER_REVIEW,
         Detail\Status::KYC_QUALIFIED_UNACTIVATED

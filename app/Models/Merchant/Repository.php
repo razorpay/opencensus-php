@@ -2293,6 +2293,41 @@ class Repository extends Base\Repository
         return $query->select(Entity::ID)->where('parent_id', $merchantId)->count();
     }
 
+    public function fetchLiveEnabledLinkedAccountMids($merchantId, $offset = 0)
+    {
+        $limit = 1000;
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        return $query->select(Entity::ID)
+            ->where(Entity::PARENT_ID, $merchantId)
+            ->where(Entity::LIVE, true)
+            ->offset($offset)
+            ->limit($limit)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
+    public function fetchLinkedAccountMidsLiveDisabledToParentMerchantLiveDisabled($merchantId, $offset = 0)
+    {
+        $limit  = 1000;
+        $reason = Constants::LIVE_DISABLED_AS_PARENT_MERCHANT_LIVE_DISABLED;
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        return $query->select(Entity::ID)
+            ->where(Entity::PARENT_ID, $merchantId)
+            ->where(Entity::LIVE, false)
+            ->where(Entity::LIVE_DISABLE_REASON, $reason)
+            ->offset($offset)
+            ->limit($limit)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
+
     /**
      * @throws \Exception
      */
@@ -3306,6 +3341,52 @@ class Repository extends Base\Repository
                         'suspend'  => $shouldSuspend,
                         'expected' => $countOfLinkedAccounts,
                         'updated'  => $updatedCount,
+                    ]);
+            }
+        }
+    }
+
+    public function updateLinkedAccountsAsLiveEnabledOrLiveDisabledInBulk(array $linkedAccountMids, bool $shouldDisable)
+    {
+        $countOfLinkedAccounts = count($linkedAccountMids);
+
+        if ($countOfLinkedAccounts === 0)
+        {
+            return 0;
+        }
+
+        if ($shouldDisable === true)
+        {
+            $updateColumnValues = [
+                Entity::LIVE                => false,
+                Entity::LIVE_DISABLE_REASON => Constants::LIVE_DISABLED_AS_PARENT_MERCHANT_LIVE_DISABLED
+            ];
+        }
+        else
+        {
+            $updateColumnValues = [
+                Entity::LIVE                 => true,
+                Entity::LIVE_DISABLE_REASON  => null,
+            ];
+        }
+
+        $connectionArray = [Mode::LIVE, Mode::TEST];
+
+        foreach ($connectionArray as $mode)
+        {
+            $updatedCount = $this->newQueryWithConnection($mode)
+                ->whereIn(Entity::ID, $linkedAccountMids)
+                ->update($updateColumnValues);
+
+            if ($updatedCount !== $countOfLinkedAccounts)
+            {
+                throw new Exception\LogicException(
+                    'Failed to update status for expected number of linked accounts',
+                    null,
+                    [
+                        'live_disable'  => $shouldDisable,
+                        'expected'      => $countOfLinkedAccounts,
+                        'updated'       => $updatedCount,
                     ]);
             }
         }

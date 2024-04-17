@@ -126,6 +126,8 @@ class Core extends Base\Core
 {
     use Notify;
 
+    use Base\Traits\MetricTrait;
+
     const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 25;
 
     const LAST_MONTH_GMV = 'last_month_gmv';
@@ -11128,6 +11130,140 @@ class Core extends Base\Core
             $iteration += 1;
         }
         while (empty($linkedAccountMids) === false);
+    }
+
+    public function liveDisableLinkedAccountsOfParentMerchantIfPresent(string $parentMerchantId)
+    {
+        $iteration = 0;
+
+        $numLinkedAccountsDisabled = 0;
+
+        try
+        {
+            do
+            {
+                $offset = $iteration * 1000;
+
+                $linkedAccountMids = $this->repo->merchant->fetchLiveEnabledLinkedAccountMids($parentMerchantId, $offset);
+
+                $this->trace->info(
+                    TraceCode::LINKED_ACCOUNTS_FETCHED_TO_DISABLE_LIVE,
+                    [
+                        'parent_merchant_id'    => $parentMerchantId,
+                        'linked_account_ids'    => $linkedAccountMids,
+                        'linked_accounts_count' => count($linkedAccountMids),
+                        'iteration'             => $iteration,
+                    ]
+                );
+
+                $this->repo->transactionOnLiveAndTest(function () use ($linkedAccountMids) {
+                    $this->repo->merchant->updateLinkedAccountsAsLiveEnabledOrLiveDisabledInBulk($linkedAccountMids, true);
+                });
+
+                $this->trace->info(
+                    TraceCode::LINKED_ACCOUNTS_LIVE_DISABLE_SUCCESSFUL,
+                    [
+                        'parent_merchant_id' => $parentMerchantId,
+                        'linked_account_ids' => $linkedAccountMids,
+                        'iteration'          => $iteration,
+                    ]
+                );
+
+                $numLinkedAccountsDisabled += count($linkedAccountMids);
+
+                $iteration += 1;
+            }
+            while (empty($linkedAccountMids) === false);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::LINKED_ACCOUNTS_LIVE_DISABLE_FAILED,
+                [
+                    'parent_merchant_id' => $parentMerchantId,
+                    'iteration'          => $iteration,
+                ]
+            );
+            $dimensions = $this->getDefaultExceptionDimensions($e);
+
+            $this->pushExceptionMetrics($e, Metric::LINKED_ACCOUNT_LIVE_DISABLE_FAILED, $dimensions);
+
+            throw $e;
+        }
+
+        if ($numLinkedAccountsDisabled > 0)
+        {
+            $this->trace->count(Metric::LINKED_ACCOUNT_LIVE_DISABLE_SUCCESS_COUNT);
+        }
+    }
+
+    public function liveEnableLinkedAccountsOfParentMerchantIfPresent(string $parentMerchantId)
+    {
+        $iteration = 0;
+
+        $numLinkedAccountsEnabled = 0;
+
+        try
+        {
+            do
+            {
+                $offset = $iteration * 1000;
+
+                $linkedAccountMids = $this->repo->merchant->fetchLinkedAccountMidsLiveDisabledToParentMerchantLiveDisabled($parentMerchantId, $offset);
+
+                $this->trace->info(
+                    TraceCode::LINKED_ACCOUNTS_FETCHED_TO_ENABLE_LIVE,
+                    [
+                        'parent_merchant_id'    => $parentMerchantId,
+                        'linked_account_ids'    => $linkedAccountMids,
+                        'linked_accounts_count' => count($linkedAccountMids),
+                        'iteration'             => $iteration
+                    ]
+                );
+
+                $this->repo->transactionOnLiveAndTest(function() use ($linkedAccountMids) {
+                    $this->repo->merchant->updateLinkedAccountsAsLiveEnabledOrLiveDisabledInBulk($linkedAccountMids, false);
+                });
+
+                $this->trace->info(
+                    TraceCode::LINKED_ACCOUNTS_LIVE_ENABLE_SUCCESSFUL,
+                    [
+                        'parent_merchant_id'    => $parentMerchantId,
+                        'linked_account_ids'    => $linkedAccountMids,
+                        'iteration'             => $iteration,
+                    ]
+                );
+
+                $numLinkedAccountsEnabled += count($linkedAccountMids);
+
+                $iteration += 1;
+            }
+            while (empty($linkedAccountMids) === false);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::LINKED_ACCOUNTS_LIVE_ENABLE_FAILED,
+                [
+                    'parent_merchant_id' => $parentMerchantId,
+                    'iteration'          => $iteration,
+                ]
+            );
+            $dimensions = $this->getDefaultExceptionDimensions($e);
+
+            $this->pushExceptionMetrics($e, Metric::LINKED_ACCOUNT_LIVE_ENABLE_FAILED, $dimensions);
+
+            throw $e;
+        }
+
+        if ($numLinkedAccountsEnabled > 0)
+        {
+            $this->trace->count(Metric::LINKED_ACCOUNT_LIVE_ENABLE_SUCCESS_COUNT);
+        }
     }
 
     public function addFeatureFlagForMerchant(Entity $merchant, string $featureFlag)

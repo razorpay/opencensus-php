@@ -222,7 +222,9 @@ class Core extends Base\Core
 
                     if ($transfer->getSourceType() === E::PAYMENT)
                     {
-                        $sourcePayment = $transfer->source;
+                        $sourcePaymentId = $transfer->getSourceId();
+
+                        $sourcePayment = $this->repo->payment->findOrFail($sourcePaymentId);
                     }
                     else if ($transfer->getSourceType() === E::ORDER)
                     {
