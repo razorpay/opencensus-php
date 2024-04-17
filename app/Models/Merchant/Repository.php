@@ -444,21 +444,14 @@ class Repository extends Base\Repository
 
     public function getMerchantOrg(string $merchantId)
     {
-        $orgId = $this->dbColumn(Entity::ORG_ID);
+        $merchant = $this->getMerchant($merchantId);
 
-        $query = $this->newQuery()
-            ->select($orgId)
-            ->where(Entity::ID, '=', $merchantId)
-            ->firstOrFail();
-
-        return $query->org_id;
+        return $merchant?->org_id;
     }
 
     public function getMerchant(string $merchantId)
     {
-        return $this->newQuery()
-            ->where(Entity::ID, '=', $merchantId)
-            ->firstOrFail();
+        return $this->findOrFail($merchantId);
     }
 
     public function getPricingPlanOrFailPublic($merchant)
