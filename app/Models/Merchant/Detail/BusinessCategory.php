@@ -464,7 +464,8 @@ class BusinessCategory
             Sub::GET_RICH_SCHEMES,
             Sub::MONEYSEND_FUNDING,
             Sub::DIGITAL_GOODS,
-            Sub::DIGITAL_GOLD_PURCHASE
+            Sub::DIGITAL_GOLD_PURCHASE,
+            Sub::WALLET_TOP_UP
         ],
 
         self::GAMING => [
