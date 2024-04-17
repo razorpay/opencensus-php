@@ -117,8 +117,8 @@ class Processor extends Base\Core
 
                     $refunds = [];
                     $payments = [];
-                    $buyerAddresses = [];
                     $disputes = [];
+                    $addressMap = array();
                     if(!empty($refundIds))
                     {
                         $refunds = $this->repo->refund->fetchRefundByRefundIds($refundIds);
@@ -132,12 +132,40 @@ class Processor extends Base\Core
                     {
                         $payments = $this->repo->payment->fetchPaymentsGivenIds($paymentIds,Constants::FILE_BATCH_SIZE);
 
-                        $buyerAddresses = $this->repo->address->fetchByEntityIds($paymentIds, 'payment');
+                        foreach ($payments as $payment)
+                        {
+                            if($payment->hasOrder() === false)
+                            {
+                                continue;
+                            }
+
+                            if($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false)
+                            {
+                                continue;
+                            }
+
+                            $cartInfo = $payment->order->getCartInfoOrderMeta();
+
+                            if (!isset($cartInfo) || !isset($cartInfo['customer_details'])) {
+                                continue;
+                            }
+
+                            $shippingAddress = $cartInfo['customer_details']['shipping_address'] ?? null;
+
+                            if ($shippingAddress !== null) {
+                                // updating name field inside shipping address from customer details
+                                $shippingAddress['name'] = $cartInfo['customer_details']['name'];
+                                $addressMap[$payment->getId()] = $shippingAddress;
+                            } else {
+                                $this->trace->info(TraceCode::OPGSP_IMPORT_SHIPPING_ADDRESS_MISSING_IN_ORDER,
+                                    [
+                                        "payment_id" => $payment->getId()
+                                    ]);
+                            }
+                        }
                     }
 
                     $paymentIdMap = $this->getIdMapFromArray($payments);
-
-                    $addressMap = $this->getAddressMapFromArray($buyerAddresses);
 
                     if(!empty($adjustmentIds))
                     {
