@@ -460,6 +460,7 @@ class UserRolesScope
             'dispute_fetch_multiple'                        => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SUPPORT, Role::OPERATIONS, Role::FINANCE, Role::PARTNER,],
             'dispute_fetch_multiple_count'                  => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SUPPORT, Role::FINANCE, Role::AGENT, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR,],
             'dispute_fetch_multiple_aggregate'              => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SUPPORT, Role::FINANCE, Role::AGENT, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::PARTNER],
+            'dispute_merchant_report_download'              => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SUPPORT, Role::FINANCE, Role::AGENT, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::PARTNER],
             'fd_create_ticket'                              => Role::ALL_ROLES,
             'fd_fetch_converations'                         => Role::ALL_ROLES,
             'fd_fetch_ticket'                               => Role::ALL_ROLES,

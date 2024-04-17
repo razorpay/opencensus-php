@@ -2281,6 +2281,28 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function getMerchantReportDownload($input)
+    {
+        $this->trace->info(TraceCode::REQUEST_TO_DISPUTE_SERVICE, [
+                'input'       => $input,
+                'merchant_id' => $this->merchant->getId(),
+                'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+            ]
+        );
+
+        $response = $this->app['disputes']->forwardToDisputesService($input, [
+            'Accept' => 'text/csv'
+        ]);
+
+        $this->trace->info(TraceCode::DISPUTE_DOWNLOAD_REPORT_RESPONSE, [
+                'response'    => $response,
+                'merchant_id' => $this->merchant->getId(),
+            ]
+        );
+
+        return $response;
+    }
+
     private function doRiskAnalysisAndNotifyRas()
     {
         $yesterdayTimestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();

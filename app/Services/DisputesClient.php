@@ -45,6 +45,10 @@ class DisputesClient
     const AUTH_TYPE_PRIVATE = 'private';
     const AUTH_TYPE_EXPRESS = 'express';
 
+    const HEADER_ACCEPT = 'Accept';
+    const HEADER_ACCEPT_MIME_TYPE = [
+        'text/csv',
+    ];
 
     protected $client;
 
@@ -73,9 +77,15 @@ class DisputesClient
             ]]);
     }
 
-    protected function formatResponse($response)
+    protected function formatResponse($response, $headers)
     {
-        $responseArray = json_decode($response->getBody(), true);
+        if ((isset($headers[self::HEADER_ACCEPT]) === true) &&
+            (in_array($headers[self::HEADER_ACCEPT], self::HEADER_ACCEPT_MIME_TYPE) === true))
+        {
+            return $response;
+        }
+
+        $responseArray = json_decode($headers, true);
 
         $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_RESPONSE, [
             'response'  => $responseArray,
@@ -108,7 +118,7 @@ class DisputesClient
     }
 
     // other headers for auth type, admin_id, etc to be added depending on the use-case.
-    private function getDisputesHeaders() : array
+    private function getDisputesHeaders($additionalHeaders = []) : array
     {
         $headers = [
             self::CONTENT_TYPE                  => 'application/json',
@@ -118,6 +128,11 @@ class DisputesClient
             self::X_AUTH_TYPE_LIFECYCLE         => $this->app['basicauth']->getAuthType(),
             self::X_INTERNAL_APP                => $this->app['basicauth']->getInternalApp() ?? '',
         ];
+
+        if (empty($additionalHeaders) === false)
+        {
+            $headers = array_merge($headers, $additionalHeaders);
+        }
 
         if ($this->app['basicauth']->getAdmin() !== null)
         {
@@ -138,14 +153,14 @@ class DisputesClient
      * @throws Exception\BadRequestException
      * @throws \Throwable
      */
-    public function forwardToDisputesService($input = null)
+    public function forwardToDisputesService($input = null, $additionalHeaders = [])
     {
         if ($input == null)
         {
             $input = Request::all();
         }
 
-        return $this->requestAndGetParseBody(Request::method(), Request::path(), $input, 0);
+        return $this->requestAndGetParseBody(Request::method(), Request::path(), $input, 0, $additionalHeaders);
     }
 
     public function fetchMultiple(string $entity, array $input)
@@ -253,12 +268,14 @@ class DisputesClient
      * @throws \Throwable
      * @throws GuzzleException
      */
-    protected function requestAndGetParseBody($method, $path, $payload, $retry_count)
+    protected function requestAndGetParseBody($method, $path, $payload, $retry_count, $additionalHeaders=[])
     {
         $url = $this->config['base_url'] . $path;
 
+        $headers = $this->getDisputesHeaders($additionalHeaders);
+
         $this->options = [
-            'headers' => $this->getDisputesHeaders(),
+            'headers' => $headers,
         ];
 
         if ($method === Requests::GET)
@@ -278,7 +295,7 @@ class DisputesClient
             'url'       => $url,
             'service'   => 'disputes',
             'payload'   => $payload,
-            'headers' => $this->getDisputesHeaders(),
+            'headers'   => $headers,
             'retry_count' => $retry_count
         ]);
 
@@ -286,7 +303,7 @@ class DisputesClient
         {
             $response = $this->client->request($method, $url, $this->options);
 
-            return $this->formatResponse($response);
+            return $this->formatResponse($response, $headers);
         }
         catch (RequestException $e)
         {
@@ -298,7 +315,7 @@ class DisputesClient
 
             if ($e->hasResponse() && $this->is4xxException($e) === true)
             {
-                $resp = $this->formatResponse($e->getResponse());
+                $resp = $this->formatResponse($e->getResponse(), $headers);
 
                 throw new Exception\BadRequestException($resp['error']['code'] ?? ErrorCode::BAD_REQUEST_ERROR, null, $resp['error'],
                     $resp['error']['description'] ?? '');

@@ -357,6 +357,20 @@ class DisputeController extends Controller
          return ApiResponse::json($response);
      }
 
+    public function getMerchantReportDownload()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getMerchantReportDownload($input);
+
+        $content = $response->getBody()->getContents();
+
+        // Return as a response and force download
+        return response($content)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="download.csv"');
+     }
+
     public function postBatchChargebackAutomation($gateway)
     {
         $input = Request::all();

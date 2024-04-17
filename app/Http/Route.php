@@ -3052,6 +3052,7 @@ class Route
         'dispute_bulk_create_internal'             => ['post',     'disputes/bulk-create/internal',                  'DisputeController@bulkCreate'                                      ],
         'payment_dispute_create_internal'          => ['post',     'payments/{paymentId}/disputes/internal',         'DisputeController@createForReverseShadow'                          ],
         'dispute_cron_refunded_payments_details'   => ['post',     'disputes/cron/refunded_payments_details',        'DisputeController@refundedPaymentDetailsCron'],
+        'dispute_merchant_report_download'         => ['get',      'merchant/report/dispute/download',               'DisputeController@getMerchantReportDownload'],
 
 
         // disputes service proxy routes
@@ -5339,6 +5340,7 @@ class Route
         'beta_account_create',
         'beta_account_fetch',
         'beta_account_fetch_multiple',
+        'dispute_merchant_report_download',
         'beta_account_post_bank_account',
         'beta_account_fetch_setl_destinations',
         'linked_account_update_bank_account',
@@ -7689,6 +7691,7 @@ class Route
         'post_dispute_accept_by_id',
         'dispute_fetch_multiple_count',
         'dispute_fetch_multiple_aggregate',
+        'dispute_merchant_report_download',
 
         //Axis bank changes
         'draft_invitation_fetch',
@@ -12291,6 +12294,7 @@ class Route
             'dispute_fetch_multiple',
             'dispute_fetch_multiple_count',
             'dispute_fetch_multiple_aggregate',
+            'dispute_merchant_report_download',
             'dispute_file_delete',
             'dispute_files_fetch',
             'document_upload_v1',
@@ -14043,6 +14047,7 @@ class Route
             'dispute_fetch_multiple',
             'dispute_fetch_multiple_count',
             'dispute_fetch_multiple_aggregate',
+            'dispute_merchant_report_download',
             'dispute_file_delete',
             'dispute_files_fetch',
             'dispute_poc_mails',

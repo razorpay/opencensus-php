@@ -1031,6 +1031,11 @@ class Service extends Base\Service
         return $this->core()->refundedPaymentDetailsCron();
     }
 
+    public function getMerchantReportDownload(array $input)
+    {
+        return $this->core()->getMerchantReportDownload($input);
+    }
+
     public function createDisputes(array $data)
     {
         $orderKeys = $data[0];
