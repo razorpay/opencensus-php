@@ -4236,6 +4236,13 @@ trait Authorize
 
         $paymentNotes = $payment->getNotes()->toArray();
 
+        // validate if invoice_number is present in notes
+        if (empty($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invoice number field is required within the notes.', 'notes.invoice_number');
+        }
+
         //Defaults goods_description value in paymentNotes.
         if (empty($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_GOODS_DESCRIPTION]) === true)
         {
