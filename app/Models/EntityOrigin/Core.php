@@ -100,7 +100,7 @@ class Core extends Base\Core
         {
             $entityOrigin = $this->fetchEntityOrigin($entity);
 
-            if($entity->getEntityName() === E::PAYMENT) {
+            if($entity->getEntityName() === E::PAYMENT and empty($entityOrigin) === false) {
                 $this->checkEntityOriginV2Parity($entity, $entityOrigin);
             }
 
@@ -155,9 +155,10 @@ class Core extends Base\Core
             }
 
             $this->trace->info(TraceCode::ENTITY_ORIGIN_PARITY, [
-                'entity_origin'  => $entityOrigin->toArray(),
-                'entity_origin_v2'      => $entityOriginV2->toArray(),
+                'entity_origin'  => empty($entityOrigin) === false  ? $entityOrigin->toArray() : null,
+                'entity_origin_v2'      => empty($entityOriginV2) === false  ? $entityOriginV2->toArray() : null,
                 'payment_key' => $paymentKey,
+                'payment_method' => $entity->getMethod(),
             ]);
 
         }
