@@ -201,6 +201,7 @@ class Entity extends Base\PublicEntity
                 break;
 
             case 'reconciliate_via_batch_service':
+            case 'payment_create_upi_unexpected':
             case 'payment_callback_bharatqr_internal':
                 $requestSource = [
                     'source'        => 'file',

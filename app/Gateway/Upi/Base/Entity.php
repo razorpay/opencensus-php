@@ -36,6 +36,7 @@ class Entity extends Base\Entity
     const STATUS_CODE           = 'status_code';
     const VPA                   = 'vpa';
     const RECONCILED_AT         = 'reconciled_at';
+    const GATEWAY_TIMESTAMP     = 'gateway_timestamp';
 
     const GATEWAY_DATA          = 'gateway_data';
     const GATEWAY_ERROR         = 'gateway_error';
@@ -65,6 +66,7 @@ class Entity extends Base\Entity
         self::GATEWAY_PAYMENT_ID,
         self::GATEWAY,
         self::NPCI_REFERENCE_ID,
+        self::GATEWAY_TIMESTAMP,
         self::NPCI_TXN_ID,
         self::REFUND_ID,
         self::PAYMENT_ID,
@@ -92,6 +94,7 @@ class Entity extends Base\Entity
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
         self::NPCI_REFERENCE_ID,
+        self::GATEWAY_TIMESTAMP,
         self::NPCI_TXN_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,

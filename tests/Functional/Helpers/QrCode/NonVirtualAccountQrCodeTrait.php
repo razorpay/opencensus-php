@@ -1006,4 +1006,32 @@ trait NonVirtualAccountQrCodeTrait
         $this->app->instance('ufh.service', $ufhServiceMock);
     }
 
+    protected function buildQRUnexpectedPaymentRequest($terminal)
+    {
+        $this->fixtures->merchant->createAccount('100DemoAccount');
+        $this->fixtures->merchant->enableUpi('100DemoAccount');
+
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        unset($content['upi']['account_number'], $content['upi']['ifsc'], $content['upi']['npci_txn_id'], $content['upi']['gateway_data']);
+        $content['upi']['merchant_reference'] = 'SBI4bff5573b6304cabbc98946f2600420e';
+        $content['terminal']['gateway'] = $terminal['gateway'];
+        $content['terminal']['gateway_merchant_id'] = $terminal['gateway_merchant_id'];
+
+        return $content;
+    }
+
+    protected function makeUnexpectedLivePaymentAndGetContent(array $content)
+    {
+        $request = [
+            'url' => '/payments/create/upi/unexpected',
+            'method' => 'POST',
+            'content' => $content,
+        ];
+
+        $this->ba->appAuth('rzp_live');
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
 }

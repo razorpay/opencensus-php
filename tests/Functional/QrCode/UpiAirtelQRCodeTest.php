@@ -1313,4 +1313,130 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->assertNotNull($response['payment']['amount']);
     }
 
+
+    public function testPaymentCreationViaReconForAPBStaticQr()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
+                'api_upi_airtel_pre_process_v1' => 'upi_airtel',
+                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->createPricingForOffline();
+        $qrCode = $this->createQrCode(
+                     [
+                         'usage'        => 'multiple_use',
+                         'type'         => 'upi_qr',
+                         'vpa'   => 'testvpaOffline@mairtel',
+                     ],
+                     'live',
+                     'LiveAccountMer',
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]);
+
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+
+        $qcc   = $this->getDbLastEntity('qr_code_config','live');
+        $this->assertNotNull($qcc);
+
+        $content = $this->buildQRUnexpectedPaymentRequest($terminal);
+        $content['upi']['gateway_merchant_id'] = null;
+        unset($content['terminal']['gateway_merchant_id']);
+        $content['terminal']['gateway_merchant_id2'] = 'testvpaOffline@mairtel';
+
+        $response = $this->makeUnexpectedLivePaymentAndGetContent($content);
+        $this->assertTrue($response['success']);
+
+        $qrPayment   = $this->getDbLastEntity('qr_payment','live');
+        $payment     = $this->getDbLastEntity('payment','live');
+        $upi         = $this->getDbLastEntity('upi','live');
+
+        $this->assertEquals($content['upi']['npci_reference_id'], $upi['npci_reference_id']);
+        $this->assertEquals($content['upi']['merchant_reference'], $upi['merchant_reference']);
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+        $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('upi_airtel', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment_id'], $payment['id']);
+    }
+
+    public function testPaymentCreationViaReconForAPBStaticQrDuplicateCall()
+    {
+        $this->expectException(BadRequestException::class,);
+
+        $this->expectExceptionMessage('Duplicate Unexpected payment with same amount');
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
+                'api_upi_airtel_pre_process_v1' => 'upi_airtel',
+                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $this->createPricingForOffline();
+        $qrCode = $this->createQrCode(
+                     [
+                         'usage'        => 'multiple_use',
+                         'type'         => 'upi_qr',
+                         'vpa'   => 'testvpaOffline@mairtel',
+                     ],
+                     'live',
+                     'LiveAccountMer',
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]);
+
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+
+        $qcc   = $this->getDbLastEntity('qr_code_config','live');
+        $this->assertNotNull($qcc);
+
+        $content = $this->buildQRUnexpectedPaymentRequest($terminal);
+        $content['upi']['gateway_merchant_id'] = null;
+        unset($content['terminal']['gateway_merchant_id']);
+        $content['terminal']['gateway_merchant_id2'] = 'testvpaOffline@mairtel';
+
+        $response = $this->makeUnexpectedLivePaymentAndGetContent($content);
+        $this->assertTrue($response['success']);
+
+        $qrPayment   = $this->getDbLastEntity('qr_payment','live');
+        $payment     = $this->getDbLastEntity('payment','live');
+        $upi         = $this->getDbLastEntity('upi','live');
+
+        $this->assertEquals($content['upi']['npci_reference_id'], $upi['npci_reference_id']);
+        $this->assertEquals($content['upi']['merchant_reference'], $upi['merchant_reference']);
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+        $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('upi_airtel', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment_id'], $payment['id']);
+
+        $this->makeUnexpectedLivePaymentAndGetContent($content);
+
+    }
+
 }

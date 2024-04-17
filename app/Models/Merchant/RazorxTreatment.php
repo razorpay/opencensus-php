@@ -975,6 +975,8 @@ final class RazorxTreatment
      */
     const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_PAYMENTS = 'early_dispatch_of_txns_for_settlements_using_journal_payments';
 
+    const RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE = 'recon_unexpected_qr_payment_via_upi_route';
+
 
     // FeatureFlag to toggle Pricing Rule Fee Model override for BPCL
     const FEE_MODEL_OVERRIDE = 'FEE_MODEL_OVERRIDE';

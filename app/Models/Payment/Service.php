@@ -8,9 +8,11 @@ use Mail;
 use Crypt;
 use Config;
 use RZP\Models\Admin;
+use RZP\Models\BharatQr;
 use RZP\Models\Emi\ProcessingFeePlan;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Reminders\ReminderProcessor;
+use RZP\Http\Controllers\GatewayController;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
@@ -6290,6 +6292,53 @@ class Service extends Base\Service
                 }
             }
 
+            if ($this->shouldCreateQrPaymentFromUnexpectedUpiPayment($gateway) === true)
+            {
+                $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $input['terminal']);
+
+                if (($terminal !== null) and ($terminal->isQrV2Terminal() === true))
+                {
+                    $paymentId = (new BharatQr\Service())->getPaymentIdForQrPayment($input);
+
+                    if(empty($paymentId) === false)
+                    {
+                        return [
+                            'payment_id' => $paymentId,
+                            'success'    => true,
+                        ];
+                    }
+
+                    try
+                    {
+                        $standardInput = $this->prepareInputForQrFromRecon($input);
+
+                        $response = (new BharatQr\Service())->processPaymentInternal($standardInput, $gateway, $terminal);
+                    }
+                    catch (\Throwable $ex)
+                    {
+                        $this->trace->traceException(
+                            $ex,
+                            Trace::ERROR,
+                            TraceCode::UPI_UNEXPECTED_PAYMENT_FAILED,
+                            [
+                                'npci_reference_id' => $npciReferenceId,
+                                'gateway'           => $gateway,
+                            ]
+                        );
+                        throw $ex;
+
+                    }
+
+                    if(empty($response) === false)
+                    {
+                        return [
+                            'payment_id' => Entity::silentlyStripSign($response['payment']['id']),
+                            'success'    => true,
+                        ];
+                    }
+                }
+            }
+
             $response = $this->unexpectedCallback($input, $input['upi']['merchant_reference'], $gateway);
 
             if (empty($response['payment_id']) === false)
@@ -8417,5 +8466,41 @@ class Service extends Base\Service
         );
 
         $input['experiments']['otp_unification_acs_page'] = $otpUnificationAcsPageVariant;
+    }
+
+    private function shouldCreateQrPaymentFromUnexpectedUpiPayment(string $gateway)
+    {
+        $variant = $this->app->razorx->getTreatment($gateway, Merchant\RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE, Mode::LIVE);
+
+        $this->trace->info(
+            TraceCode::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE,
+            [
+                'gateway'           => $gateway,
+                'variant'           => $variant
+            ]
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function prepareInputForQrFromRecon(array $input): array
+    {
+        $standardInput['data'] = $input;
+
+        $standardInput['success'] = true;
+
+        $standardInput['data']['payment']['amount_authorized'] = $input['payment']['amount'];
+
+        return $standardInput;
     }
 }

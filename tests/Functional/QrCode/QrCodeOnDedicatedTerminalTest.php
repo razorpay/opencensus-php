@@ -2007,4 +2007,119 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertContentTypeForResponse('image/png', $response);
     }
 
+    public function testPaymentCreationViaReconForKhatabookStaticQr()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $qrCode = $this->createQrCode(
+            [
+                'usage'        => 'multiple_use',
+                'type'         => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer');
+
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+        $this->fixtures->create(
+            'qr_code_config',
+            [
+                'id'           => "NrLfslWOnumXAJ",
+                'merchant_id'  => 'LiveAccountMer',
+                'config_key'   => "static_qr",
+                'config_value' => '{"102IciciDedTml":"' . $qrCodeId . '"}',
+            ]
+        );
+
+        $qcc   = $this->getDbLastEntity('qr_code_config','live');
+        $this->assertNotNull($qcc);
+
+        $content = $this->buildQRUnexpectedPaymentRequest($terminal);
+        $response = $this->makeUnexpectedLivePaymentAndGetContent($content);
+        $this->assertTrue($response['success']);
+
+        $qrPayment   = $this->getDbLastEntity('qr_payment','live');
+        $payment     = $this->getDbLastEntity('payment','live');
+        $upi         = $this->getDbLastEntity('upi','live');
+
+        $this->assertEquals($content['upi']['npci_reference_id'], $upi['npci_reference_id']);
+        $this->assertEquals($content['upi']['merchant_reference'], $upi['merchant_reference']);
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+        $this->assertEquals($qrCodeId, $qrPayment['merchant_reference']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment_id'], $payment['id']);
+    }
+
+    public function testPaymentCreationViaUpiUnexpecterRouteIfSQRDoesNotExists()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+        $this->createQrCode(
+            [
+                'usage'        => 'multiple_use',
+                'type'         => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer');
+
+        $qrCodeId = 'ABCDEFGHIJKLMN';
+
+        $this->fixtures->create(
+            'qr_code_config',
+            [
+                'id'           => "NrLfslWOnumXAJ",
+                'merchant_id'  => 'LiveAccountMer',
+                'config_key'   => "static_qr",
+                'config_value' => '{"102IciciDedTml":"' . $qrCodeId . '"}',
+            ]
+        );
+
+        $qcc   = $this->getDbLastEntity('qr_code_config','live');
+        $this->assertNotNull($qcc);
+
+        $content = $this->buildQRUnexpectedPaymentRequest($terminal);
+        $response = $this->makeUnexpectedLivePaymentAndGetContent($content);
+        $this->assertTrue($response['success']);
+
+        $payment     = $this->getDbLastEntity('payment');
+        $upi         = $this->getDbLastEntity('upi');
+
+        $this->assertEquals($content['upi']['npci_reference_id'], $upi['npci_reference_id']);
+        $this->assertEquals($content['upi']['merchant_reference'], $upi['merchant_reference']);
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+        $this->assertEquals($payment['id'], $upi['payment_id']);
+        $this->assertEquals($response['payment_id'], $payment['id']);
+        $this->assertEquals('100DemoAccount', $payment['merchant_id']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('123456789012', $payment['reference16']);
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+
+        $qrPayment   = $this->getDbLastEntity('qr_payment','live');
+        $this->assertNull($qrPayment);
+    }
+
 }

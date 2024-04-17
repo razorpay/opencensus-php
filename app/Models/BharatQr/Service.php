@@ -23,6 +23,7 @@ use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Mpan\Entity as MpanEntity;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Gateway\Mozart\Gateway as MozartGateway;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use \RZP\Gateway\Upi\Yesbank\Fields as YesBankFields;
@@ -180,7 +181,7 @@ class Service extends Base\Service
         return $valid;
     }
 
-    private function getTerminalAndGatewayReponse($input, $gatewayClass, $gateway)
+    private function getTerminalAndGatewayReponse($input, $gatewayClass, $gateway, $terminal = null)
     {
         $terminalDetails = null;
 
@@ -198,7 +199,7 @@ class Service extends Base\Service
             $inputJson = json_decode($input, true);
         }
 
-        if (($terminalDetails === null) and (isset($inputJson['data']['terminal']) === true))
+        if ($terminalDetails === null)
         {
             if (($gateway === Gateway::UPI_AIRTEL) and
                 (isset($inputJson['data']['terminal']['vpa']) === true))
@@ -206,10 +207,7 @@ class Service extends Base\Service
                 unset($inputJson['data']['terminal']['vpa']);
                 $terminalDetails = $inputJson['data']['terminal'];
             }
-
         }
-
-        $terminal = null;
 
         if ($terminalDetails !== null)
         {
@@ -226,10 +224,16 @@ class Service extends Base\Service
         {
             $inputJson = json_decode($input, true);
 
-            $this->updateQrCodeInCallbackIfApplicable($inputJson, $terminal);
-
             $gatewayResponse = $gatewayClass->getQrData($inputJson, $gateway);
+        }
 
+        $emptyInput = [];
+
+        $staticQrId = $this->updateQrCodeInCallbackIfApplicable($emptyInput, $terminal);
+
+        if ($staticQrId !== null)
+        {
+            $gatewayResponse['qr_data'][GatewayResponseParams::MERCHANT_REFERENCE] = $staticQrId;
         }
 
         $qrData = $gatewayResponse['qr_data'];
@@ -247,15 +251,17 @@ class Service extends Base\Service
         return [$terminal, $gatewayResponse];
     }
 
-    public function processPaymentInternal($input, $gateway)
+    public function processPaymentInternal($input, $gateway, $terminal = null)
     {
         $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+        $routeName = $this->app['api.route']->getCurrentRouteName();
 
         $qrPaymentRequest = null;
 
         try
         {
-            [$terminal, $gatewayResponse] = $this->getTerminalAndGatewayReponse(json_encode($input), $gatewayClass, $gateway);
+            [$terminal, $gatewayResponse] = $this->getTerminalAndGatewayReponse(json_encode($input), $gatewayClass, $gateway, $terminal);
 
             //todo: from gateway function (getQrData), gatewayResponse['callbackdata'] does not have 'data' entity inside due
             // to which getTrFieldForGateway() function returns null, need to fix this asap
@@ -266,6 +272,13 @@ class Service extends Base\Service
             if ($qrPayment !== null)
             {
                 return $this->getQrPaymentResponseInternal($qrPayment);
+            }
+
+            //This checks if payment was made on vpa (Khatabook or POS terminal) but static QR was not present in DB then payment should be refunded
+            //Reason for route check - For online usecase if qr is not present then payment should be made against FallbackQrCode
+            if (($this->isQrCreatedinDB($gatewayResponse['qr_data']) === false) and ($routeName === 'payment_create_upi_unexpected'))
+            {
+                return null;
             }
 
             $qrPaymentRequest = (new QrPaymentRequest\Service())->create($gatewayResponse, QrPaymentRequest\Type::BHARAT_QR);
@@ -336,6 +349,27 @@ class Service extends Base\Service
             return $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($gatewayQrData[GatewayResponseParams::PROVIDER_REFERENCE_ID],
                                                                               $gatewayQrData[GatewayResponseParams::AMOUNT]);
         }
+    }
+
+    public function findQrPaymentUsingStandardCallbackInput($input)
+    {
+        return $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($input['upi'][UpiEntity::NPCI_REFERENCE_ID],
+                                                                                     $input['terminal'][UpiEntity::GATEWAY],
+                                                                                     $input['payment'][UpiEntity::AMOUNT]);
+    }
+
+    public function getPaymentIdForQrPayment(array $input)
+    {
+        $qrPayment = $this->findQrPaymentUsingStandardCallbackInput($input);
+
+        $paymentId = null;
+
+        if ($qrPayment !== null)
+        {
+            $paymentId = $qrPayment->payment->getId();
+        }
+
+        return $paymentId;
     }
 
     private function isNonVAQrCodePayment($gatewayResponse)
@@ -590,7 +624,7 @@ class Service extends Base\Service
             return null;
         }
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;;
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
         $gatewayVariant = $this->app->razorx->getTreatment($terminal->getGateway(),
                                                            RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS,
@@ -629,5 +663,19 @@ class Service extends Base\Service
         ]);
 
         return $staticQrId;
+    }
+
+    private function isQrCreatedinDB($qrData)
+    {
+        $merchantReference = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
+
+        $qrCode = $this->repo->qr_code->findByMerchantReference($merchantReference);
+
+        if($qrCode === null)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

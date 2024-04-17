@@ -37,6 +37,7 @@ use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Generator;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrEntity;
@@ -151,9 +152,27 @@ class Gateway extends Base\Gateway
             // inaccessible for the gateway.To fix the issue, we assign it to BANK_RRN so that paymentData can
             //access NPCI_REFERENCE_ID using getNpciReferenceId() method.
             //
-            $input[Fields::ORIGINAL_BANK_RRN_REQ] = $input[Fields::BANK_RRN];
 
-            $input[Entity::TYPE] = Base\Type::PAY;
+            $routeName = $this->app['api.route']->getCurrentRouteName();
+
+            if ($routeName === 'payment_create_upi_unexpected')
+            {
+                $input[Fields::ORIGINAL_BANK_RRN_REQ] = $input['upi'][UpiEntity::NPCI_REFERENCE_ID];
+
+                $input[Fields::MERCHANT_TRAN_ID] = $input['upi'][UpiEntity::MERCHANT_REFERENCE];
+
+                $input[Fields::MERCHANT_ID] = $input['terminal'][UpiEntity::GATEWAY_MERCHANT_ID];
+
+                $input[Fields::PAYER_VA] = $input['upi'][UpiEntity::VPA];
+
+                $input[Entity::TYPE] = Base\Type::PAY;
+            }
+            else
+            {
+                $input[Fields::ORIGINAL_BANK_RRN_REQ] = $input[Fields::BANK_RRN];
+
+                $input[Entity::TYPE] = Base\Type::PAY;
+            }
 
             $paymentData = $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
 
@@ -1532,7 +1551,8 @@ class Gateway extends Base\Gateway
 
         if ((($decoded !== null) and (isset($decoded[Fields::UMN]) === true)) or
             (($routeName === 'upi_transfer_process_internal') or
-             ($routeName === 'payment_callback_bharatqr_internal')))
+             ($routeName === 'payment_callback_bharatqr_internal') or
+             (($routeName === 'payment_create_upi_unexpected') and ($isBharatQr === true))))
         {
             $response = $this->parseGatewayResponse($body, false, $isUpiTransfer);
         }
@@ -1556,7 +1576,7 @@ class Gateway extends Base\Gateway
             $merchantReference = $response['data']['upi']['merchant_reference'] ?? '';
 
 
-            if ($this->hasCustomPrefixForIntent($merchantReference) === true) 
+            if ($this->hasCustomPrefixForIntent($merchantReference) === true)
             {
                 return $response;
             }
@@ -1778,6 +1798,13 @@ class Gateway extends Base\Gateway
 
     public function getQrData(array $input)
     {
+        if ((isset($input['data']['upi']) === true) and
+            (isset($input['data']['payment']) === true) and
+            (isset($input['data']['terminal']) === true))
+        {
+            return $this->getQrDataForStandardInput($input);
+        }
+
         $this->checkForBharatQrPaymentFailure($input);
 
         $amount = $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]);
@@ -2523,5 +2550,29 @@ class Gateway extends Base\Gateway
         }
 
         return $merchantReference;
+    }
+
+    protected function getQrDataForStandardInput($input)
+    {
+        $input = $input['data'];
+
+        $qrData = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $input['payment']['amount_authorized'],
+            BharatQr\GatewayResponseParams::VPA                   => $input['upi'][UpiEntity::VPA],
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input['terminal'][UpiEntity::GATEWAY_MERCHANT_ID],
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($input['upi'][UpiEntity::MERCHANT_REFERENCE], $input),
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input['upi'][UpiEntity::NPCI_REFERENCE_ID],
+        ];
+
+        if (isset($input['upi'][UpiEntity::GATEWAY_TIMESTAMP]) === true)
+        {
+            $qrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $input['upi'][UpiEntity::GATEWAY_TIMESTAMP];
+        }
+
+        return [
+            'callback_data' => $input,
+            'qr_data'       => $qrData
+        ];
     }
 }
