@@ -36,7 +36,7 @@ class Constants
     const DCCCurrencyLevelMarkup = 'dcc_currency_level_markup';
     const CurrencyLevelMarkups = 'currency_level_markups';
 
-    const DisabledCardCurrencies = 'disabled_card_currencies';
+    const DisabledCurrencies = 'disabled_currencies';
 
     const PaymentNotesKeyColumns = 'payment_notes_key_columns';
 
@@ -59,10 +59,10 @@ class Constants
         self::AccountingIntegrationConfig    => "rzp/x/merchant/accounting/IntegrationSettings",
         self::DCCCurrencyLevelMarkup         => "rzp/pg/merchant/cross_border/india/DCCConfig",
         self::UpiInAppPrefetch               => "rzp/pg/merchant/upi/in_app/Prefetch",
-        self::UpiInAppRewardConfigs         => "rzp/pg/merchant/upi/in_app/RewardConfigs",
+        self::UpiInAppRewardConfigs          => "rzp/pg/merchant/upi/in_app/RewardConfigs",
         self::PaymentNotesKeyColumns         => "rzp/pg/merchant/dashboard/banking_program/UIControls",
         self::RectangularLogoUrl             => "rzp/pg/merchant/onboarding/banking_program/MerchantConfigDetails",
-        self::DisabledCardCurrencies         => "rzp/pg/org/cross_border/Currency",
+        self::DisabledCurrencies             => "rzp/pg/org/cross_border/Currency",
     ];
 
 }

@@ -275,15 +275,15 @@ class Core extends Base\Core
         try {
             $mode = $this->mode ?? Mode::LIVE;
             $dcsConfigService = app('dcs_config_service');
-            $disabledCardCurrencies = $dcsConfigService->fetchConfiguration(DcsConfigConst::DisabledCardCurrencies,
-                $orgId, [DcsConfigConst::DisabledCardCurrencies], $mode);
+            $disabledCurrencies = $dcsConfigService->fetchConfiguration(DcsConfigConst::DisabledCurrencies,
+                $orgId, [DcsConfigConst::DisabledCurrencies], $mode);
 
-            $disabledCurrencies = [];
-            foreach ($disabledCardCurrencies[DcsConfigConst::DisabledCardCurrencies] as $currency) {
-                $disabledCurrencies[] = $currency;
+            $disabledCurrenciesList = [];
+            foreach ($disabledCurrencies[DcsConfigConst::DisabledCurrencies] as $currency) {
+                $disabledCurrenciesList[] = $currency;
             }
-            $supportedCurrencies = array_diff($this->getAllCurrencies(), $disabledCurrencies);
-        } catch (\Exception $e) {
+            $supportedCurrencies = array_diff($this->getAllCurrencies(), $disabledCurrenciesList);
+        } catch (\Throwable $e) {
             // trace the error and let supported currencies as default array
             $this->trace->traceException($e, Logger::ERROR, TraceCode::GET_DCS_DISABLED_CARD_CURRENCIES_ERROR);
             $supportedCurrencies = $this->getAllCurrencies();

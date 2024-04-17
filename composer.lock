@@ -11116,12 +11116,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "c0b88906cd9e50d317d6082d68f901541658ffd0"
+                "reference": "ff5593bc91ae577beceeb716865deb5e9fa05a00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/c0b88906cd9e50d317d6082d68f901541658ffd0",
-                "reference": "c0b88906cd9e50d317d6082d68f901541658ffd0",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/ff5593bc91ae577beceeb716865deb5e9fa05a00",
+                "reference": "ff5593bc91ae577beceeb716865deb5e9fa05a00",
                 "shasum": ""
             },
             "require": {
@@ -11147,7 +11147,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2024-04-08T12:09:02+00:00"
+            "time": "2024-04-15T12:13:09+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -19644,7 +19644,6 @@
         "symfony/mailgun-mailer": 20,
         "symfony/http-client": 20,
         "razorpay/dcs-php-sdk": 20,
-        "razorpay/config-proto": 20,
         "razorpay/redis-counting-semaphore": 20,
         "roave/no-leaks": 20
     },
@@ -19663,5 +19662,5 @@
         "ext-pdo": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.6.0"
 }
