@@ -17142,6 +17142,7 @@ class Route
 
         'settlements_service' => [
             'setl_transaction_replay',
+            'feature_get_multiple_internal',
             'merchant_la_fetch',
             'merchant_fetch_internal',
             'create_settlement_entry',
