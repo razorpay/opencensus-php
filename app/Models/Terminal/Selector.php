@@ -200,8 +200,6 @@ class Selector extends Base\Core
 
         $verbose = $this->isVerboseLogEnabled();
 
-        $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
-
         $sortedTerminals = [];
 
         $methods = $payment->fetchPaymentMethods();
@@ -298,72 +296,6 @@ class Selector extends Base\Core
                 {
                     $sortedTerminals = $newSelectedTerminals;
                 }
-                else if (($this->shouldFallback()))
-                {
-
-                    $allTerminals = $this->repo->useSlave(function ()
-                    {
-                        return $this->getTerminals();
-                    });
-
-                    $allTerminals = array_filter($allTerminals, function ($terminal)
-                    {
-                        $status = $terminal->getStatus();
-
-                        return (($terminal->isEnabled() === true) and
-                            ($status === Status::ACTIVATED));
-                    });
-
-                    $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
-
-                    if (empty($sortedTerminals) === false)
-                    {
-                        $traceTerminals = [];
-
-                        $terminalsArray = (new DeepCopy)->copy($sortedTerminals);
-
-                        // remove sensitive data from logging
-                        foreach ($terminalsArray as $terminal)
-                        {
-                            unset($terminal['mc_mpan'], $terminal['visa_mpan'], $terminal['rupay_mpan']);
-
-                            array_push($traceTerminals, $terminal);
-                        }
-
-                        $this->trace->error(
-                            TraceCode::SMART_ROUTING_TERMINALS_MISMATCH,
-                            [
-                                'terminals_from_api'            => $traceTerminals,
-                                'terminals_from_smart_routing'  => $newSelectedTerminals,
-                                'payment_id'                    => $payment->getId(),
-                                'method'                        => $payment->getMethod(),
-
-                            ]);
-
-                        if(is_null($payment->token) === true)
-                        {
-                            $this->trace->info(
-                                TraceCode::SMART_ROUTING_NACH_FALLBACK,
-                                [
-                                    'method'                        => $payment->getMethod(),
-                                    'recurring_type'                => $payment->getRecurringType(),
-                                    'selected_terminal'             => $traceTerminals[0],
-                                    'token_terminal'                => 'terminal_not_assigned_to_token',
-                                ]);
-                        }
-                        else
-                        {
-                            $this->trace->info(
-                                TraceCode::SMART_ROUTING_NACH_FALLBACK,
-                                [
-                                    'method'                        => $payment->getMethod(),
-                                    'recurring_type'                => $payment->getRecurringType(),
-                                    'selected_terminal'             => $traceTerminals[0],
-                                    'token_terminal'                => $payment->token->getTerminalId(),
-                                ]);
-                        }
-                    }
-                }
 
                 // sending the event to data link layer
                 $this->app['diag']->trackPaymentEventV2(
@@ -389,11 +321,6 @@ class Selector extends Base\Core
                 $merchant = $this->input['merchant'];
 
                 $sortedTerminals = [];
-
-                if (($merchant->isFeatureEnabled(Features::RAAS) === false) and ($fetchApiTerminals === true))
-                {
-                    $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
-                }
 
                 $this->trace->error(
                     TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR,
@@ -1004,62 +931,6 @@ class Selector extends Base\Core
         return $response;
     }
 
-    protected function shouldFallback()
-    {
-        $payment = $this->input['payment'];
-
-        $merchant = $this->input['merchant'];
-
-        $excludedMethods = array(Method::EMANDATE,Method::CARD,Method::WALLET,Method::NETBANKING, Method::UPI);
-
-        if ((in_array($payment[Entity::METHOD],$excludedMethods)) or
-            ($merchant->isFeatureEnabled(Features::RAAS) === true))
-        {
-            return false;
-        }
-
-        if (in_array($merchant->getOrgId(), [OrgEntity::HDFC_COLLECT_ORG_ID, OrgEntity::HDFC_ORG_ID]))
-        {
-            return false;
-        }
-
-        if($this->merchant->isFeatureEnabled(Feature\Constants::ONLY_DS) === true)
-        {
-            return false;
-        }
-
-        if ($payment->isInAppUPI() === true)
-        {
-            return false;
-        }
-
-        if ($payment[Entity::METHOD] === Method::EMI && !$this->isEMIFallbackApplicable())
-        {
-            return false;
-        }
-
-        $variant = $this->app['razorx']->getTreatment($payment[Entity::METHOD],
-            RazorxTreatment::REMOVE_API_ROUTER_FALLBACK,
-            $this->app['basicauth']->getMode() ?? Mode::LIVE);
-
-        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            $this->trace->count(Terminal\Metric::ROUTER_FALLBACK, [
-                'payment_method' => $payment[Entity::METHOD],
-                'skip_fallback' => true,
-            ]);
-
-            return false;
-        }
-
-        $this->trace->count(Terminal\Metric::ROUTER_FALLBACK, [
-            'payment_method' => $payment[Entity::METHOD],
-            'skip_fallback' => false,
-        ]);
-
-        return true;
-    }
-
     protected function isEMIFallbackApplicable(){
 
         $payment = $this->input['payment'];
@@ -1306,21 +1177,7 @@ class Selector extends Base\Core
             return true;
         }
 
-        $method = $payment[Entity::METHOD];
-
-        $variantFlag = $this->app->razorx->getTreatment($method, "API_ROUTER_NEW_CONTRACT_2",  $this->mode);
-
-        if ($variantFlag === 'proxy_ts')
-        {
-
-            $this->app['config']->set('applications.terminals_service.remove_api.'.$method,true);
-
-            return false;
-        }
-
-        $this->app['config']->set('applications.terminals_service.remove_api.'.$method,false);
-
-        return true;
+        return false;
     }
 
     protected function processDirectTerminalOnBoarding(&$allTerminals, $gateway) {
