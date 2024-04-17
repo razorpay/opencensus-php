@@ -247,6 +247,14 @@ class TerminalsService
         'terminal_restore',
         'action_request_execute',
         'action_checker_create',
+        'merchant_validate_create_terminal_v3',
+        'merchant_create_terminal_v3',
+        'merchant_validate_delete_terminal_v3',
+        'merchant_delete_terminal_v3',
+        'terminal_edit_validatev3',
+        'terminal_edit_v3',
+        'terminal_edit_god_mode_validatev3',
+        'terminal_edit_god_mode_v3',
     ];
 
     public function __construct($app)
