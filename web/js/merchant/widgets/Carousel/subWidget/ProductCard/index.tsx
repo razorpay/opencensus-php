@@ -7,9 +7,10 @@ import {
 } from 'merchant/widgets/Carousel/subWidget/ProductCard/styled';
 import { CommonWidgetProps } from 'merchant/widgets/types';
 import { ProductCardWidgetLoader } from 'merchant/widgets/Carousel/subWidget/ProductCard/Loader';
-import { getCommonWidget } from 'merchant/widgets/common/utils';
+import { getCommonWidget, makeLink } from 'merchant/widgets/common/utils';
 import { useMobile } from 'common/hooks/useMobile';
 import { getBackgroundImage, track } from 'merchant/widgets/utils';
+import { useNavigate } from 'react-router-dom';
 
 export const ProductCardWidget: React.FC<
   ProductCardWidgetProps & Pick<CommonWidgetProps, 'isLoading' | 'analyticsProperties'>
@@ -25,10 +26,12 @@ export const ProductCardWidget: React.FC<
 }): JSX.Element | null => {
   const [isCardHovered, setIsCardHovered] = React.useState(false);
   const isMobile = useMobile();
+  const navigate = useNavigate();
 
   if (isLoading) return <ProductCardWidgetLoader />;
 
-  const [action] = actions;
+  const [firstAction] = actions;
+  const navigationKey = firstAction?.action ?? '';
 
   const { screen, widgetId } = analyticsProperties;
 
@@ -43,12 +46,21 @@ export const ProductCardWidget: React.FC<
 
   const handleProductCardWidgetClick = () => {
     if (isMobile) {
-      window.open(action.action, '_blank');
+      if (/^http/i.test(navigationKey)) {
+        window.open(navigationKey, '_blank');
+      } else {
+        const navigationURL = makeLink(navigationKey);
+        if (navigationURL) navigate(navigationURL);
+      }
       track({
         objectName: 'link',
         actionName: 'clicked',
         screen: analyticsProperties?.screen,
-        properties: { ...analyticsObject, action: action.action, actionLabel: action.title },
+        properties: {
+          ...analyticsObject,
+          action: firstAction.action,
+          actionLabel: firstAction.title,
+        },
       });
     }
   };

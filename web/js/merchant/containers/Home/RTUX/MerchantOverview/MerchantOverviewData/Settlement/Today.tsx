@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { convertToMajorUnit } from '@razorpay/i18nify-js';
 import { Amount, Box, Text } from '@razorpay/blade/components';
 
-import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import {
   IAnalyticsProperties,
   ITodaysSettlement,
@@ -11,6 +11,8 @@ import {
 import TodaySettlementMultiple from './TodaySettlementMultiple';
 import TodaySettlementSingle from './TodaySettlementSingle';
 import { TimelineItem } from './components/Timeline';
+import { getTodaySingleSettlementContent } from './utils';
+import { StatusImage } from './components/StatusImage';
 
 const TodaySettlement: React.FC<ITodaysSettlement & IAnalyticsProperties> = ({
   data,
@@ -19,40 +21,43 @@ const TodaySettlement: React.FC<ITodaysSettlement & IAnalyticsProperties> = ({
   isTodayMultipleSettlements,
   analyticsProperties,
 }) => {
-  const { total_amount, total_count } = data;
-
+  const { total_amount, total_count, title_key } = data;
+  const { status } = useMemo(() => getTodaySingleSettlementContent(title_key), [title_key]);
   return (
-    <TimelineItem
-      icon={
-        isTodaySettlementPastProcessedSLA
-          ? TimelineItemIconKeys.done
-          : TimelineItemIconKeys.in_progress
-      }
-    >
-      <Box display="flex" flexDirection="column" gap="spacing.2">
-        <Text size="medium" weight="semibold">
-          {isTodayMultipleSettlements
-            ? `Today, ${total_count} settlements worth`
-            : "Today's settlement"}
-        </Text>
-        <Amount
-          value={i18CurrencyConversionFromMinorUnitToCommonUnit(total_amount, settlement_currency)}
-          currency={settlement_currency}
-          type="heading"
-          size="medium"
-          weight="semibold"
-        />
-        {isTodayMultipleSettlements ? (
-          <TodaySettlementMultiple
-            data={data}
+    <Box display="flex" justifyContent="space-between">
+      <TimelineItem
+        icon={
+          isTodaySettlementPastProcessedSLA
+            ? TimelineItemIconKeys.done
+            : TimelineItemIconKeys.in_progress
+        }
+      >
+        <Box display="flex" flexDirection="column" gap="spacing.2">
+          <Text size="medium" weight="semibold">
+            {isTodayMultipleSettlements
+              ? `Today, ${total_count} settlements worth`
+              : "Today's settlement"}
+          </Text>
+          <Amount
+            value={convertToMajorUnit(total_amount, { currency: settlement_currency })}
             currency={settlement_currency}
-            analyticsProperties={analyticsProperties}
+            type="heading"
+            size="large"
+            weight="semibold"
           />
-        ) : (
-          <TodaySettlementSingle data={data} analyticsProperties={analyticsProperties} />
-        )}
-      </Box>
-    </TimelineItem>
+          {isTodayMultipleSettlements ? (
+            <TodaySettlementMultiple
+              data={data}
+              currency={settlement_currency}
+              analyticsProperties={analyticsProperties}
+            />
+          ) : (
+            <TodaySettlementSingle data={data} analyticsProperties={analyticsProperties} />
+          )}
+        </Box>
+      </TimelineItem>
+      {isTodayMultipleSettlements ? null : <StatusImage status={status} />}
+    </Box>
   );
 };
 

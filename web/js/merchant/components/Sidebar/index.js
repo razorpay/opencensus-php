@@ -44,7 +44,7 @@ const MAGIC_KONNECT_REGEX = /^\/magic-konnect(\/|$)/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
-const BASE_ROUTES = {
+export const BASE_ROUTES = {
   qrCodes: '/qr_codes',
   transactions: '/payments',
   account: '/profile',

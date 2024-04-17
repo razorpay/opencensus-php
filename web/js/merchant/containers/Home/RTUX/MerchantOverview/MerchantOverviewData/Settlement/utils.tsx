@@ -209,7 +209,7 @@ export const getUpcommingSettlementContent = ({
 
 export const getTodaySingleSettlementContent = (
   title_key: TodaySettlementKeys,
-  analyticsProperties: IAnalyticsProperties['analyticsProperties'],
+  analyticsProperties: IAnalyticsProperties['analyticsProperties'] = {},
 ): IGetTodaySingleSettlementContent => {
   const content: IGetTodaySingleSettlementContent = {
     status: SettlementStatusBadge.created,
@@ -420,5 +420,48 @@ export const upcommingSettlementBlockedContent = (
       };
     default:
       return {};
+  }
+};
+
+export const getSettlementStatusImage = (status: string) => {
+  switch (status.toLowerCase()) {
+    case SettlementStatusBadge.on_track:
+      return {
+        name: 'settlement-on-track.gif',
+        duration: 7000,
+        styles: { width: 108, height: 108 },
+      };
+    case SettlementStatusBadge.delayed:
+      return {
+        name: 'settlement-delayed.gif',
+        duration: 7000,
+        styles: { width: 108, height: 108 },
+      };
+    case SettlementStatusBadge.failed:
+      return {
+        name: 'settlement-failed.gif',
+        duration: 7000,
+        styles: { width: 108, height: 108 },
+      };
+    case SettlementStatusBadge.processed:
+      return {
+        name: 'settlement-processed.gif',
+        duration: 7000,
+        styles: { width: 108, height: 108 },
+      };
+    case SettlementStatusBadge.blocked:
+      return {
+        name: 'settlement-blocked.gif',
+        duration: 7000,
+        styles: { width: 108, height: 108 },
+      };
+    case SettlementStatusBadge.paused:
+      return {
+        name: 'settlement-paused.gif',
+        duration: 7000,
+        styles: { width: 108, height: 108 },
+      };
+    default:
+      return null;
   }
 };

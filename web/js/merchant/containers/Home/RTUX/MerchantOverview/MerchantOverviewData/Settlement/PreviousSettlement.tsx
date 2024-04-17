@@ -16,6 +16,7 @@ import { TimelineItem } from './components/Timeline';
 import TimelineCardWithAmount from './components/TimelineCardWithAmount';
 import { getFormattedDateFromTimestamp } from './utils';
 import { track } from 'merchant/widgets/utils';
+import { StatusImage } from './components/StatusImage';
 
 const PreviousSettlement: React.FC<IPreviousSettlement & IAnalyticsProperties> = ({
   data,
@@ -45,27 +46,30 @@ const PreviousSettlement: React.FC<IPreviousSettlement & IAnalyticsProperties> =
   return (
     <TimelineItem icon={TimelineItemIconKeys.done}>
       {showOnlyPreviousSettlement ? (
-        <TimelineCardWithAmount
-          amount={total_amount}
-          currency={settlement_currency}
-          status={SettlementStatusBadge.processed}
-          heading="Last settlement"
-          subheading={`Deposited in your bank account on ${getFormattedDateFromTimestamp(
-            created_at,
-          )}`}
-          action={
-            <NavLink to={ROUTES.SETTLEMENT}>
-              <Link
-                size="medium"
-                icon={ArrowRightIcon}
-                iconPosition="right"
-                onClick={viewAllSettlementsHandler}
-              >
-                View all settlements
-              </Link>
-            </NavLink>
-          }
-        />
+        <Box display="flex" justifyContent="space-between">
+          <TimelineCardWithAmount
+            amount={total_amount}
+            currency={settlement_currency}
+            status={SettlementStatusBadge.processed}
+            heading="Last settlement"
+            subheading={`Deposited in your bank account on ${getFormattedDateFromTimestamp(
+              created_at,
+            )}`}
+            action={
+              <NavLink to={ROUTES.SETTLEMENT}>
+                <Link
+                  size="medium"
+                  icon={ArrowRightIcon}
+                  iconPosition="right"
+                  onClick={viewAllSettlementsHandler}
+                >
+                  View all settlements
+                </Link>
+              </NavLink>
+            }
+          />
+          <StatusImage status={SettlementStatusBadge.processed} />
+        </Box>
       ) : (
         <Box
           display="flex"

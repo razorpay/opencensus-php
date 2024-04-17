@@ -73,8 +73,14 @@ const IconImageStyles = css`
   justify-content: center;
 `;
 
-export const Icon = styled.i`
+export const Icon = styled.i<{ isRTUXHomepage?: boolean; isActive?: boolean }>`
   ${IconImageStyles}
+  color: ${({ theme, isRTUXHomepage, isActive }) =>
+    isRTUXHomepage
+      ? isActive
+        ? theme.colors.surface.icon.gray.normal
+        : theme.colors.surface.icon.gray.subtle
+      : 'reset'}
 `;
 
 export const ImageStyled = styled.img`

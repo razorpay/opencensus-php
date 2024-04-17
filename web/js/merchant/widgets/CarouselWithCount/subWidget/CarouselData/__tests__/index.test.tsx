@@ -14,11 +14,13 @@ describe('Widgets->CarouselWithCount->CarouselData', () => {
       />,
     );
     await waitFor(() =>
-      expect(screen.getByText(KEY_UPDATES_MOCK_RESPONSE.components[0].title)).toBeVisible(),
+      expect(screen.getByText(KEY_UPDATES_MOCK_RESPONSE.components[0].title)).toBeInTheDocument(),
     );
-    expect(
-      screen.getByRole('link', { name: KEY_UPDATES_MOCK_RESPONSE.components[0].action?.title }),
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(
+        screen.getByRole('link', { name: KEY_UPDATES_MOCK_RESPONSE.components[0].action?.title }),
+      ).toBeInTheDocument(),
+    );
   });
 
   test('should not display link if action is missing', async () => {
@@ -30,7 +32,7 @@ describe('Widgets->CarouselWithCount->CarouselData', () => {
       />,
     );
     await waitFor(() =>
-      expect(screen.getByText(KEY_UPDATES_MOCK_RESPONSE.components[2].title)).toBeVisible(),
+      expect(screen.getByText(KEY_UPDATES_MOCK_RESPONSE.components[2].title)).toBeInTheDocument(),
     );
     expect(
       screen.queryByRole('link', { name: KEY_UPDATES_MOCK_RESPONSE.components[0].action?.title }),

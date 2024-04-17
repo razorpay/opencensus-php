@@ -24,7 +24,7 @@ const TimelineCardWithAmount: React.FC<ITimelineItemWithAmount> = ({
         value={i18CurrencyConversionFromMinorUnitToCommonUnit(amount, currency)}
         currency={currency}
         type="heading"
-        size="medium"
+        size="large"
         weight="semibold"
       />
       <Box

@@ -11,7 +11,6 @@ import {
 import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
 import { ROUTES } from 'merchant/containers/Home/RTUX/MerchantOverview/constants';
 
-import Dot from './components/Dot';
 import Status from './components/Status';
 import { getMultipleSettlementBreakup } from './utils';
 import { track } from 'merchant/widgets/utils';
@@ -48,7 +47,7 @@ const TodaySettlementMultiple: React.FC<
           key={idx}
           display="flex"
           alignItems={{ base: 'start', l: 'center' }}
-          flexDirection={{ base: 'column', l: 'row' }}
+          flexDirection="row"
           gap={{ base: 'spacing.1', l: 'spacing.3' }}
         >
           <Box display="flex" alignItems="center" justifyContent="center" gap="spacing.3">
@@ -62,7 +61,6 @@ const TodaySettlementMultiple: React.FC<
             alignItems="center"
             justifyContent="center"
             gap={{ base: 'spacing.3', l: 'spacing.2' }}
-            marginLeft={{ base: 'spacing.5', l: 'none' }}
           >
             <Amount
               value={i18CurrencyConversionFromMinorUnitToCommonUnit(amount, currency)}
@@ -71,7 +69,9 @@ const TodaySettlementMultiple: React.FC<
               size="medium"
               weight="semibold"
             />
-            <Dot />
+            <Text size="small" weight="semibold" color="surface.text.gray.muted">
+              •
+            </Text>
             <Status status={status} />
           </Box>
         </Box>

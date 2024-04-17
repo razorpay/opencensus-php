@@ -9,9 +9,9 @@ import LineChart from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/Lin
 import { Change } from 'merchant/widgets/common/Change';
 import { durationOptionsSubtextMap } from 'merchant/widgets/InsightsChart/utils';
 import { CTAText } from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/CTAText';
-import { ChartWrapper } from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/styled';
 import { EmptyLineChart } from './utils';
 import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
+import { InsightItemChartWrapper } from '../../styled';
 
 const InsightItem: React.FC<InsightItemProps> = ({
   id,
@@ -135,7 +135,7 @@ const InsightItem: React.FC<InsightItemProps> = ({
           ) : null}
         </Box>
       </Box>
-      <ChartWrapper>
+      <InsightItemChartWrapper>
         <Box
           width={{ base: '80px', m: '140px' }}
           height={{ base: '80px', m: '80px' }}
@@ -152,7 +152,7 @@ const InsightItem: React.FC<InsightItemProps> = ({
             <EmptyLineChart />
           )}
         </Box>
-      </ChartWrapper>
+      </InsightItemChartWrapper>
     </Box>
   );
 };

@@ -112,14 +112,12 @@ const NavLinkItem = ({
               className="sidebar-active"
             />
           )}
-          <Icon className={`i ${icon}`} />
+          <Icon className={`i ${icon}`} isRTUXHomepage={isRTUXHomepage} isActive={isActive} />
           <Text
             variant="body"
-            weight="regular"
+            weight={isActive ? 'medium' : 'regular'}
             size="medium"
-            color={
-              activeTab === product_id ? 'surface.text.gray.normal' : 'surface.text.gray.subtle'
-            }
+            color={isActive ? 'surface.text.gray.normal' : 'surface.text.gray.subtle'}
           >
             {title}
           </Text>
@@ -136,11 +134,7 @@ const NavLinkItem = ({
           ) : (
             <Icon className={`i ${icon}`} />
           )}
-          <Text
-            color={
-              activeTab === product_id ? 'surface.text.gray.normal' : 'surface.text.gray.subtle'
-            }
-          >
+          <Text color={isActive ? 'surface.text.gray.normal' : 'surface.text.gray.subtle'}>
             {title}
           </Text>
           {Tags}

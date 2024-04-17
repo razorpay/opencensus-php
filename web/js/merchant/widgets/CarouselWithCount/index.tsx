@@ -94,7 +94,7 @@ export const CarouselWithCountWidget: React.FC<
           retryHandler={() => retryHandler({ id })}
         />
       ) : (
-        <Carousel carouselItemWidth="375px" navigationButtonPosition="side" showIndicators={false}>
+        <Carousel carouselItemWidth="320px" navigationButtonPosition="side" showIndicators={false}>
           {components.map((componentData) => (
             <CarouselItem key={componentData.id}>
               {getSubWidget({

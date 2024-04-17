@@ -5,6 +5,7 @@ import { useMobile } from 'common/hooks/useMobile';
 import { Change } from 'merchant/widgets/common/Change';
 
 import { TabCardProps } from './types';
+import { TooltipWidget } from 'merchant/widgets/common/Tooltip';
 
 const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) => {
   const isMobile = useMobile();
@@ -16,6 +17,8 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
   const trendText = `${change}%`;
   const trendSubText = tabData.data.sub_text ?? '';
   const isInverseMetric = Boolean(tabData.data.change_behavior_inverted);
+  const tooltipText = tabData.tooltip_text ?? '';
+
   return (
     <Box
       display="flex"
@@ -24,10 +27,10 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
       height="100%"
       padding={['spacing.5', 'spacing.7']}
       backgroundColor={
-        isActive ? 'surface.background.gray.intense' : 'surface.background.gray.moderate'
+        isActive ? 'surface.background.gray.intense' : 'surface.background.gray.subtle'
       }
       borderTopWidth="none"
-      borderColor="surface.border.gray.muted"
+      borderColor="surface.border.gray.subtle"
       borderLeftWidth={isActive ? 'none' : 'thinner'}
       borderRightWidth={isActive ? 'none' : 'thinner'}
       borderBottomWidth="thicker"
@@ -38,13 +41,16 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
       minHeight={{ base: '120px', m: 'initial' }}
       justifyContent="center"
     >
-      <Text
-        size="medium"
-        color={isActive ? 'surface.text.gray.normal' : 'surface.text.gray.subtle'}
-        weight="semibold"
-      >
-        {title}
-      </Text>
+      <Box display="flex" gap="spacing.2" alignItems="center">
+        <Text
+          size="medium"
+          color={isActive ? 'surface.text.gray.normal' : 'surface.text.gray.subtle'}
+          weight="semibold"
+        >
+          {title}
+        </Text>
+        {tooltipText && <TooltipWidget tooltip_text={tooltipText} />}
+      </Box>
       <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.3">
         {value > 0 || cardPosition === 0 ? (
           <Amount
@@ -52,6 +58,7 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
             currency={currency as AmountProps['currency']}
             type="heading"
             size="large"
+            weight="semibold"
           />
         ) : (
           <Text weight="semibold">--</Text>

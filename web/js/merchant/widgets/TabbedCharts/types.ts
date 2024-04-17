@@ -32,6 +32,7 @@ export type ComponentDataType = {
   title: string;
   data: TabDataType;
   action: TabActionType;
+  tooltip_text: string;
   type: string;
 };
 

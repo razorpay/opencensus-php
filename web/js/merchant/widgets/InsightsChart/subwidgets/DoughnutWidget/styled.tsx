@@ -7,10 +7,3 @@ export const ColorBox = styled.div<{ backgroundColor: string }>(
   background-color: ${backgroundColor};
 `,
 );
-
-export const DoughnutWrapper = styled.div(({ theme }) => ({
-  backgroundColor: theme.colors.surface.background.gray.subtle,
-  padding: theme.spacing[3],
-  borderRadius: theme.border.radius.medium,
-  height: 'fit-content',
-}));

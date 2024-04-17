@@ -15,7 +15,6 @@ import {
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 
 import { getNonSettlementCardContent } from './utils';
-import { Image } from 'merchant/containers/Home/RTUX/MerchantOverview/styled';
 
 const NonSettlement = ({
   fetchSettlementConfig,
@@ -33,7 +32,7 @@ const NonSettlement = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { title, subtitle, action, illustration } = useMemo(
+  const { title, subtitle, action } = useMemo(
     () =>
       getNonSettlementCardContent({
         is_transacted,
@@ -52,7 +51,6 @@ const NonSettlement = ({
       justifyContent={{ base: 'center', l: 'unset' }}
       alignItems={{ base: 'center', l: 'unset' }}
     >
-      <Image src={`/img/rtux/${illustration}`} />
       <Box display="flex" flexDirection="column" justifyContent="space-between" gap="spacing.5">
         <Box textAlign={{ base: 'center', l: 'unset' }}>
           <Heading size="small">{title}</Heading>

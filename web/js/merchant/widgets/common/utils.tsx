@@ -10,6 +10,7 @@ import { ChartDataType, ChartSchemaType, PointType } from './types';
 import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import moment from 'moment';
 import { DateRangeValues } from './Select/types';
+import { BASE_ROUTES } from 'merchant/components/Sidebar';
 
 export const getLinkWidgetIcon = (type: string): LinkProps['icon'] => {
   if (type === 'arrow_right') {
@@ -44,6 +45,10 @@ export const makeLink = (key: string, params: Record<string, any> = {}) => {
       return `/payments?${new URLSearchParams(params).toString()}`;
     case `refund_failed`:
       return `/refunds?${new URLSearchParams(params).toString()}`;
+    case `qr_codes`:
+      return BASE_ROUTES.qrCodes;
+    case 'payment_links':
+      return BASE_ROUTES.paymentlinks;
     default:
       return null;
   }

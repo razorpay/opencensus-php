@@ -1,17 +1,7 @@
 import React from 'react';
-import styled from 'styled-components';
-import { Amount } from '@razorpay/blade/components';
+import { Amount, Box, Heading } from '@razorpay/blade/components';
 import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import { CTATextProps } from './types';
-
-const HeadingWrapper = styled.div(
-  ({ theme }) => `
-  display: inline-flex;
-  color: ${theme.colors.surface.text.gray.normal};
-  font-size: ${theme.typography.fonts.size[600]}px;
-  font-weight: ${theme.typography.fonts.weight.bold};
-`,
-);
 
 export const CTAText = ({ value, value_type, currency }: CTATextProps) => {
   // TODO: currency text size should be made larger. currency is not used currently
@@ -22,7 +12,7 @@ export const CTAText = ({ value, value_type, currency }: CTATextProps) => {
       ? i18CurrencyConversionFromMinorUnitToCommonUnit(value, currency)
       : value;
   return (
-    <HeadingWrapper>
+    <Box display="inline-flex">
       {value_type === 'currency' ? (
         <Amount
           value={formattedValue as number}
@@ -32,8 +22,10 @@ export const CTAText = ({ value, value_type, currency }: CTATextProps) => {
           weight="semibold"
         />
       ) : (
-        formattedValue
+        <Heading color="surface.text.gray.normal" weight="semibold" size="large">
+          {formattedValue}
+        </Heading>
       )}
-    </HeadingWrapper>
+    </Box>
   );
 };

@@ -8,9 +8,9 @@ import { ErrorState } from 'merchant/widgets/common/ErrorState';
 import { TooltipWidget } from 'merchant/widgets/common/Tooltip';
 import { DoughnutWidgetProps } from 'merchant/widgets/InsightsChart/subwidgets/DoughnutWidget/types';
 import ChartTable from 'merchant/widgets/InsightsChart/subwidgets/DoughnutWidget/ChartTable';
-import { DoughnutWrapper } from 'merchant/widgets/InsightsChart/subwidgets/DoughnutWidget/styled';
 import { EmptyDoughnutChart, emptyChartTableData } from './utils';
 import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
+import { InsightItemChartWrapper } from '../../styled';
 
 const DoughnutWidget: React.FC<DoughnutWidgetProps> = ({
   id,
@@ -103,7 +103,7 @@ const DoughnutWidget: React.FC<DoughnutWidgetProps> = ({
         ) : (
           <ChartTable chartData={emptyChartTableData} />
         )}
-        <DoughnutWrapper>
+        <InsightItemChartWrapper>
           <Box
             width={{ base: '80px', m: '130px' }}
             height={{ base: '80px', m: '130px' }}
@@ -116,7 +116,7 @@ const DoughnutWidget: React.FC<DoughnutWidgetProps> = ({
               <EmptyDoughnutChart />
             )}
           </Box>
-        </DoughnutWrapper>
+        </InsightItemChartWrapper>
       </Box>
     </Box>
   );

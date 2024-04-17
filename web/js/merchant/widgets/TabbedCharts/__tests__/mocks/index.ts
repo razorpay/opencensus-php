@@ -25,6 +25,7 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
       analytics: {
         enabled: true,
       },
+      tooltip_text: 'This is the total amount collected from your customers.',
       data: {
         value: 3900032,
         value_type: 'amount',
@@ -131,6 +132,7 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
       analytics: {
         enabled: true,
       },
+      tooltip_text: 'This is the total amount refunded to your customers.',
       data: {
         value: 3900032,
         value_type: 'amount',
@@ -236,6 +238,7 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
       analytics: {
         enabled: true,
       },
+      tooltip_text: 'This is the total amount disputed by your customers.',
       handler_id: 'disputes_overview',
       data: {
         value: 3900032,

@@ -11,7 +11,7 @@ export const TEXT_CONTENT = {
   PROCESSED_DEPOSITED: 'Deposited in your bank account Today',
   SOH_UPDATE_BANK_ACCOUNT: 'Update your bank account details to resume settlements',
   FAIL_SLA_NOT_BREACHED: "Settlement is being automatically retried. We'll update you soon",
-  FAIL_SLA_BREACHED: 'Contact support as payment failed due to an issue at the Bank server',
+  FAIL_SLA_BREACHED: 'Payment failed due to a bank server issue',
   FOH_UPCOMMING_BLOCK:
     "Your settlements are on-hold as we've noticed unusual activity in your account. Contact support to resume settlements for your account.",
   SOH_UPCOMMING_BLOCK:

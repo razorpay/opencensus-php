@@ -14,6 +14,9 @@ import {
   ISettlement,
 } from 'merchant/containers/Home/RTUX/MerchantOverview/types';
 
+import { useMobile } from 'common/hooks/useMobile';
+import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
+
 import PreviousSettlement from './PreviousSettlement';
 import SettlementBlocked from './SettlementBlocked';
 import TodaySettlement from './Today';
@@ -44,6 +47,8 @@ const Settlement: React.FC<ISettlement & IAnalyticsProperties> = ({
     isTodaySettlementPastProcessedSLA,
   } = useMemo(() => getSettlementConfig(settlement), [settlement]);
 
+  const isMobile = useMobile(mobileBreakoints);
+
   return (
     <Box
       display="flex"
@@ -62,7 +67,7 @@ const Settlement: React.FC<ISettlement & IAnalyticsProperties> = ({
           <Heading size="small">Current balance</Heading>
           <Tooltip content="This is the total amount that is due to be deposited in your bank account after deduction of taxes, platform fees, any other applicable charges, and adjustment of refunds and credits">
             <TooltipInteractiveWrapper>
-              <InfoIcon size="small" color="interactive.icon.gray.muted" />
+              <InfoIcon size="medium" color="interactive.icon.gray.muted" />
             </TooltipInteractiveWrapper>
           </Tooltip>
         </Box>
@@ -84,7 +89,7 @@ const Settlement: React.FC<ISettlement & IAnalyticsProperties> = ({
             analyticsProperties={analyticsProperties}
           />
         ) : (
-          <Timeline>
+          <Timeline isMobile={isMobile}>
             {shouldShowToday && today ? (
               <TodaySettlement
                 data={today}

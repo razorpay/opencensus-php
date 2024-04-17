@@ -17,18 +17,22 @@ const TimelineItemIcon = styled.div`
 
 const TimelineItemContainer = styled.li`
   margin-left: 1rem;
-  margin-bottom: 2rem;
 `;
 
 export const Timeline = styled.ul(
-  ({ theme }: { theme: Theme }) => `
+  ({ theme, isMobile }: { theme: Theme; isMobile?: boolean }) => `
     list-style: none;
     padding-left: 0;
     margin: 0;
     position: relative;
-    border-left: ${theme.border.width.thicker}px solid #e4e7eb;
+    border-left: ${theme.border.width.thicker}px solid ${theme.colors.surface.border.gray.muted};
     border-right: 0;
     margin-left: 6px;
+    margin-bottom: ${theme.spacing[4]}px;
+
+    & > *:not(:last-child) {
+      margin-bottom:  ${theme.spacing[isMobile ? 6 : 0]}px;
+    }
   `,
 );
 

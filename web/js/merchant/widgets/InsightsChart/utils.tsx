@@ -24,13 +24,13 @@ export const getSubWidget = ({
 export const durationOptionsMap: Record<DateRangeValues, string> = {
   today: 'Today',
   last_7_days: 'Last week',
-  last_30_days: 'Last 30 days',
+  last_30_days: 'Last month',
 };
 
 export const durationOptionsSubtextMap: Record<DateRangeValues, string> = {
   today: 'Today',
-  last_7_days: 'Last 7 days',
-  last_30_days: 'Last 30 days',
+  last_7_days: 'Last week',
+  last_30_days: 'Last month',
 };
 
 interface InsightsChartWrapperProps {

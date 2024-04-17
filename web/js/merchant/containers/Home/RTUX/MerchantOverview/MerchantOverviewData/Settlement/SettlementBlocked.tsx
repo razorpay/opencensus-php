@@ -5,11 +5,8 @@ import {
   UpcomingSettlementKeys,
 } from 'merchant/containers/Home/RTUX/MerchantOverview/types';
 
-import GradientBox from './components/GradientBox';
 import { upcommingSettlementBlockedContent } from './utils';
-import { useMobile } from 'common/hooks/useMobile';
-import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
-import { Image } from 'merchant/containers/Home/RTUX/MerchantOverview/styled';
+import { StatusImage } from './components/StatusImage';
 
 const SettlementBlocked: React.FC<
   {
@@ -21,33 +18,36 @@ const SettlementBlocked: React.FC<
     [title_key],
   );
 
-  const isMobile = useMobile(mobileBreakoints);
   return (
-    <GradientBox>
-      <Box display="flex" justifyContent="space-between" margin="spacing.6">
-        <Box
-          display="flex"
-          flexDirection="column"
-          justifyContent="center"
-          gap="spacing.3"
-          maxWidth="500px"
-        >
-          <Box>
-            <Text display="inline" weight="semibold">
-              Upcoming settlements are
-            </Text>{' '}
-            <Text display="inline" weight="semibold" color="feedback.text.negative.intense">
-              {status}
-            </Text>
-          </Box>
-          <Text color="surface.text.gray.muted" size="small">
-            {subheading}
+    <Box
+      display="flex"
+      justifyContent="space-between"
+      padding="spacing.6"
+      backgroundImage="linear-gradient(90deg, #fee4e2 -2.86%, #fff5f5 46.32%, rgba(255, 245, 245, 0) 102.53%)"
+      borderRadius="large"
+    >
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        gap="spacing.3"
+        maxWidth="500px"
+      >
+        <Box>
+          <Text display="inline" weight="semibold">
+            Upcoming settlements are
+          </Text>{' '}
+          <Text display="inline" weight="semibold" color="feedback.text.negative.intense">
+            {status}
           </Text>
-          <Text size="small">{action}</Text>
         </Box>
-        {!isMobile ? <Image src="/img/rtux/payment-unsuccessful.png" /> : null}
+        <Text color="surface.text.gray.subtle" size="small">
+          {subheading}
+        </Text>
+        <Text size="small">{action}</Text>
       </Box>
-    </GradientBox>
+      <StatusImage status={status ?? ''} />
+    </Box>
   );
 };
 

@@ -17,7 +17,7 @@ const LineChart: React.FC<ChartProps> = ({ chartData, unit }): JSX.Element | nul
         return { labels: [], datasets: [] };
       }
       const ctx = canvas.getContext('2d');
-      const gradient = ctx.createLinearGradient(0, -20, 0, 100);
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
       gradient.addColorStop(0, theme.colors.surface.border.primary.normal);
       gradient.addColorStop(1, 'white');
 

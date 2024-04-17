@@ -5,7 +5,12 @@ import { carouselDataWidgetIconMap } from 'merchant/widgets/CarouselWithCount/su
 import { CarouselDataWidgetProps } from 'merchant/widgets/CarouselWithCount/subWidget/CarouselData/types';
 import { CarouselDataWidgetLoader } from 'merchant/widgets/CarouselWithCount/subWidget/CarouselData/Loader';
 import { makeLink, getCommonWidget } from 'merchant/widgets/common/utils';
-import { CarouselDataWidgetWrapper } from './styled';
+import {
+  CarouselDataWidgetActionWrapper,
+  CarouselDataWidgetTextWrapper,
+  CarouselDataWidgetTitleWrapper,
+  CarouselDataWidgetWrapper,
+} from './styled';
 import { useMobile } from 'common/hooks/useMobile';
 import { useNavigate } from 'react-router-dom';
 import { track } from 'merchant/widgets/utils';
@@ -64,25 +69,29 @@ export const CarouselDataWidget: React.FC<CarouselDataWidgetProps> = ({
       hasAction={Boolean(navigationKey)}
     >
       {variantIcon ? <Box testID="carousel-data-icon">{variantIcon()}</Box> : null}
-      <Box gap="spacing.2" display="flex" flexDirection="column" paddingRight="spacing.2">
-        <Text weight="semibold">{title}</Text>
-        <Text color="surface.text.gray.muted">{description}</Text>
+      <Box display="flex" flexDirection="column" paddingRight="spacing.2">
+        <CarouselDataWidgetTitleWrapper isMobile={isMobile}>
+          <Text weight="semibold">{title}</Text>
+        </CarouselDataWidgetTitleWrapper>
+        <CarouselDataWidgetTextWrapper isMobile={isMobile}>
+          {description}
+        </CarouselDataWidgetTextWrapper>
+        {action ? (
+          <CarouselDataWidgetActionWrapper isMobile={isMobile}>
+            {getCommonWidget({
+              widget: action,
+              analyticsProperties: {
+                ...analyticsProperties,
+                subWidgetId,
+                actionBy: subWidgetId,
+                title,
+                screen,
+                variant,
+              },
+            })}
+          </CarouselDataWidgetActionWrapper>
+        ) : null}
       </Box>
-      {action ? (
-        <Box alignItems="center" display="flex">
-          {getCommonWidget({
-            widget: action,
-            analyticsProperties: {
-              ...analyticsProperties,
-              subWidgetId,
-              actionBy: subWidgetId,
-              title,
-              screen,
-              variant,
-            },
-          })}
-        </Box>
-      ) : null}
     </CarouselDataWidgetWrapper>
   );
 };
