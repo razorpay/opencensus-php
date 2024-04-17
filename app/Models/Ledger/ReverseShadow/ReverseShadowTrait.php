@@ -709,6 +709,8 @@ trait ReverseShadowTrait
 
         $merchantAmountCreditsLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::REWARD);
 
+        $merchantVASAmountLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::MERCHANT_VAS_ACCOUNT);
+
         $transactionAmount = $this->getTransactionAmountForTransactionTypeFromJournal($journalResponse,$transactionType);
 
         $commissionLedgerEntry = $this->getCommissionLedgerEntryForTransactionTypeFromJournal($journalResponse, $transactionType);
@@ -717,7 +719,19 @@ trait ReverseShadowTrait
 
         $merchantReceivableLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::MERCHANT_INVOICE);
 
-        $merchant = $this->repo->merchant->findOrFail($merchantBalanceLedgerEntry[Constants::MERCHANT_ID]);
+        $merchantId = $this->getMerchantIdFromLedgerEntries($merchantBalanceLedgerEntry,$merchantFeeCreditsLedgerEntry, $merchantAmountCreditsLedgerEntry, $merchantReceivableLedgerEntry, $merchantVASAmountLedgerEntry);
+
+        if ($merchantId === null)
+        {
+            $this->trace->info(TraceCode::MISSING_MERCHANT_ID_LEDGER_ENTRIES,
+                [
+                    'journal'               => $journalResponse,
+                ]);
+        }
+        else
+        {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
 
         $credit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_CREDIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
 
@@ -754,7 +768,7 @@ trait ReverseShadowTrait
             TransactionEntity::BALANCE          => (int) $merchantBalanceLedgerEntry[Constants::BALANCE],
             TransactionEntity::FEE              => (int) $fees,
             TransactionEntity::TAX              => (int) $tax,
-            TransactionEntity::CHANNEL          => $merchant->getChannel(),
+            TransactionEntity::CHANNEL          => isset($merchant) ? $merchant->getChannel(): null,
             TransactionEntity::CREDITS          => (int) $feeCredits,
             TransactionEntity::CREDIT_TYPE      => $creditType,
             TransactionEntity::BALANCE_ID       => null,
@@ -773,6 +787,32 @@ trait ReverseShadowTrait
         $txn->forceFill($transaction);
 
         return $txn;
+    }
+
+    private function getMerchantIdFromLedgerEntries($merchantBalanceLedgerEntry, $merchantFeeCreditsLedgerEntry, $merchantAmountCreditsLedgerEntry, $merchantReceivableLedgerEntry, $merchantVASAmountLedgerEntry)
+    {
+        if(isset($merchantBalanceLedgerEntry) === true)
+        {
+            return $merchantBalanceLedgerEntry[Constants::MERCHANT_ID];
+        }
+        else if (isset($merchantReceivableLedgerEntry) === true)
+        {
+            return $merchantReceivableLedgerEntry[Constants::MERCHANT_ID];
+        }
+        else if (isset($merchantFeeCreditsLedgerEntry) === true)
+        {
+            return $merchantFeeCreditsLedgerEntry[Constants::MERCHANT_ID];
+        }
+        else if (isset($merchantAmountCreditsLedgerEntry) === true)
+        {
+            return $merchantAmountCreditsLedgerEntry[Constants::MERCHANT_ID];
+        }
+        else if (isset($merchantVASAmountLedgerEntry) === true)
+        {
+            return $merchantVASAmountLedgerEntry[Constants::MERCHANT_ID];
+        }
+
+        return null;
     }
 
 
