@@ -3,20 +3,19 @@
 
 namespace RZP\Models\Merchant\Website;
 
-use Razorpay\Asv\RequestMetadata;
+use Database\Connection;
 use RZP\Models\Base;
 use RZP\Base\ConnectionType;
 use RZP\Models\Base\RepositoryUpdateTestAndLiveAndAsv;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
+use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
 use RZP\Models\Merchant\Website\Entity as MerchantWebsiteEntity;
 use RZP\Modules\Acs\Wrapper\MerchantWebsite as MerchantWebsiteWrapper;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantWebsite as MerchantWebsiteSDKWrapper;
-use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 
 
@@ -24,7 +23,7 @@ class Repository extends Base\Repository
 {
     use RepositoryUpdateTestAndLiveAndAsv;
     use AsvFind, AsvFindEntity;
-    use AsvFetchCommon;
+    use AsvFetchCommon, AsvEntityConnection;
 
     protected $entity ='merchant_website';
     public AsvRouter $asvRouter;
@@ -58,33 +57,45 @@ class Repository extends Base\Repository
 
     public function getWebsiteDetailsForMerchantId(string $merchantId)
     {
-        return $this->getEntityDetails(
+        $result = $this->getEntityDetails(
             ASVV2Constant::GET_WEBSITE_BY_MERCHANT_ID,
             true,
             (new MerchantWebsiteSDKWrapper())->getLatestByMerchantIdOrFailCallBack($merchantId),
-            $this->getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId)
+            $this->getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId),
+            $this->getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+        return $result;
     }
 
     public function getWebsiteDetailsForMerchantIdForImplicitJoin(string $merchantId, string $entity)
     {
-        return $this->getEntityDetails(
+        $result = $this->getEntityDetails(
             ASVV2Constant::GET_WEBSITE_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN,
             $this->asvRouter->shouldRouteImplicitJoinToAccountService($merchantId, $entity, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN),
             (new MerchantWebsiteSDKWrapper())->getLatestByMerchantIdCallBack($merchantId),
-            $this->getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId)
+            $this->getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId),
+            $this->getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+        return $result;
     }
 
-    private function getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId): \Closure
+    private function getWebsiteDetailsForMerchantIdFromDatabaseCallBack($merchantId,  $connectionType = null): \Closure
     {
-        return function() use ($merchantId) {
-            return $this->getWebsiteDetailsForMerchantIdFromDatabase($merchantId);
+        return function() use ($connectionType, $merchantId) {
+            return $this->getWebsiteDetailsForMerchantIdFromDatabase($merchantId, $connectionType);
         };
     }
 
-    public function getWebsiteDetailsForMerchantIdFromDatabase(string $merchantId){
-        return $this->newQuery()
+    public function getWebsiteDetailsForMerchantIdFromDatabase(string $merchantId, $connectionType = null){
+
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->orderBy(Entity::ID, 'desc')

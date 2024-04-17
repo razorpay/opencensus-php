@@ -78,25 +78,31 @@ class Repository extends Base\Repository
      */
     public function getEmailByType(string $type, string $merchantId)
     {
-        return $this->getEntityDetails(
+        $result = $this->getEntityDetails(
             ASVV2Constant::GET_EMAIL_BY_TYPE_AND_MERCHANT_ID,
             $this->asvRouter->shouldRouteToAccountService($merchantId, get_class($this), FunctionConstant::GET_BY_TYPE_AND_MERCHANT_ID),
             (new MerchantEmailSDKWrapper())->getByTypeAndMerchantIdCallBack($type, $merchantId),
-            $this->getEmailByTypeFromDatabaseCallBack($type, $merchantId)
+            $this->getEmailByTypeFromDatabaseCallBack($type, $merchantId),
+            $this->getEmailByTypeFromDatabaseCallBack($type, $merchantId, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+        return $result;
     }
 
-    private function getEmailByTypeFromDatabaseCallBack(string $type, string $merchantId): \Closure
+    private function getEmailByTypeFromDatabaseCallBack(string $type, string $merchantId, $connectionType = null): \Closure
     {
-        return function () use ($type, $merchantId) {
-            return $this->getEmailByTypeFromDatabase($type, $merchantId);
+        return function () use ($connectionType, $type, $merchantId) {
+            return $this->getEmailByTypeFromDatabase($type, $merchantId, $connectionType);
         };
     }
 
-    public function getEmailByTypeFromDatabase(string $type, string $merchantId)
+    public function getEmailByTypeFromDatabase(string $type, string $merchantId, $connectionType = null)
     {
-        return $this->newQuery()
-            ->where(Entity::TYPE, $type)
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->where(Entity::TYPE, $type)
             ->merchantId($merchantId)
             ->first();
     }

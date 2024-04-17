@@ -81,50 +81,62 @@ class Repository extends Base\Repository
      */
     public function findDocumentById(string $id)
     {
-        return $this->getEntityDetails(
+        $result = $this->getEntityDetails(
             ASVV2Constant::GET_DOCUMENT_BY_ID,
             $this->asvRouter->shouldRouteToAccountService($id, get_class($this), FunctionConstant::GET_BY_ID),
             (new MerchantDocumentSDKWrapper())->getDocumentByIdCallback($id),
-            $this->findDocumentByIdFromDatabaseCallBack($id)
+            $this->findDocumentByIdFromDatabaseCallBack($id),
+            $this->findDocumentByIdFromDatabaseCallBack($id, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+        return $result;
     }
 
-    private function findDocumentByIdFromDatabaseCallBack(string $id): \Closure
+    private function findDocumentByIdFromDatabaseCallBack(string $id, $connectionType = null): \Closure
     {
-        return function () use ($id) {
-            return $this->findDocumentByIdFromDatabase($id);
+        return function () use ($connectionType, $id) {
+            return $this->findDocumentByIdFromDatabase($id, $connectionType);
         };
     }
 
-    public function findDocumentByIdFromDatabase(string $id)
+    public function findDocumentByIdFromDatabase(string $id, $connectionType = null)
     {
-        return $this->newQuery()
-            ->where(Entity::ID,'=',$id)
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->where(Entity::ID,'=',$id)
             ->first();
     }
 
 
     public function getDocumentsForMerchantIdForImplicitJoin(string $merchantId, string $entity)
     {
-        return $this->getEntityDetails(
+        $result = $this->getEntityDetails(
             ASVV2Constant::GET_DOCUMENT_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN,
             $this->asvRouter->shouldRouteImplicitJoinToAccountService($merchantId, $entity, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN),
             (new MerchantDocumentSDKWrapper())->findDocumentByMerchantIdCallback($merchantId),
-            $this->findDocumentByMerchantIdFromDatabaseCallBack($merchantId)
+            $this->findDocumentByMerchantIdFromDatabaseCallBack($merchantId),
+            $this->findDocumentByMerchantIdFromDatabaseCallBack($merchantId, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+        return $result;
     }
 
-    private function findDocumentByMerchantIdFromDatabaseCallBack(string $merchantId): \Closure
+    private function findDocumentByMerchantIdFromDatabaseCallBack(string $merchantId, $connectionType = null): \Closure
     {
-        return function () use ($merchantId) {
-            return $this->findDocumentByMerchantIdFromDatabase($merchantId);
+        return function () use ($connectionType, $merchantId) {
+            return $this->findDocumentByMerchantIdFromDatabase($merchantId, $connectionType);
         };
     }
 
-    public function findDocumentByMerchantIdFromDatabase(string $merchantId)
+    public function findDocumentByMerchantIdFromDatabase(string $merchantId, $connectionType = null)
     {
-        return $this->newQuery()
-            ->where(Entity::MERCHANT_ID, $merchantId)
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->where(Entity::MERCHANT_ID, $merchantId)
             ->whereNull(Entity::DELETED_AT)
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->orderBy(Entity::ID, 'desc')
@@ -426,25 +438,31 @@ class Repository extends Base\Repository
      */
     public function findDocumentsForMerchantIdAndDocumentType(string $merchantId, string $documentType)
     {
-        return $this->getEntityDetails(
+        $result = $this->getEntityDetails(
             ASVV2Constant::GET_DOCUMENT_BY_TYPE_AND_MERCHANT_ID,
             $this->asvRouter->shouldRouteToAccountService($merchantId, get_class($this), FunctionConstant::GET_BY_TYPE_AND_MERCHANT_ID),
             (new MerchantDocumentSDKWrapper())->getByDocumentsByMerchantIdAndTypeCallBack($merchantId, $documentType),
-            $this->findDocumentsForMerchantIdAndDocumentTypeFromDatabaseCallBack($merchantId, $documentType)
+            $this->findDocumentsForMerchantIdAndDocumentTypeFromDatabaseCallBack($merchantId, $documentType),
+            $this->findDocumentsForMerchantIdAndDocumentTypeFromDatabaseCallBack($merchantId, $documentType, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+        return $result;
     }
 
-    private function findDocumentsForMerchantIdAndDocumentTypeFromDatabaseCallBack(string $merchantId, string $documentType): \Closure
+    private function findDocumentsForMerchantIdAndDocumentTypeFromDatabaseCallBack(string $merchantId, string $documentType, $connectionType = null): \Closure
     {
-        return function () use ($merchantId, $documentType) {
-            return $this->findDocumentsForMerchantIdAndDocumentTypeFromDatabase($merchantId, $documentType);
+        return function () use ($connectionType, $merchantId, $documentType) {
+            return $this->findDocumentsForMerchantIdAndDocumentTypeFromDatabase($merchantId, $documentType, $connectionType);
         };
     }
 
-    public function findDocumentsForMerchantIdAndDocumentTypeFromDatabase(string $merchantId, string $documentType)
+    public function findDocumentsForMerchantIdAndDocumentTypeFromDatabase(string $merchantId, string $documentType, $connectionType = null)
     {
-        return $this->newQuery()
-            ->where(Entity::MERCHANT_ID, $merchantId)
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::DOCUMENT_TYPE, $documentType)
             ->whereNull(Entity::DELETED_AT)
             ->orderBy(Entity::CREATED_AT, 'desc')

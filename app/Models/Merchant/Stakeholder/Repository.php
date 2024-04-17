@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Merchant\Stakeholder;
 
+use Database\Connection;
 use RZP\Models\Base;
 use RZP\Base\ConnectionType;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
@@ -22,7 +24,7 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLiveAndAsv;
     use AsvFetchCommon, AsvFindEntity;
-    use AsvFind;
+    use AsvFind, AsvEntityConnection;
 
     protected $entity = 'stakeholder';
 
@@ -42,49 +44,63 @@ class Repository extends Base\Repository
 
     public function fetchStakeholders(string $merchantId): Base\PublicCollection
     {
-        return $this->getEntityDetails(
+        $result = $this->getEntityDetails(
             ASVV2Constant::GET_STAKEHOLDER_BY_MERCHANT_ID,
             $this->asvRouter->shouldRouteToAccountService($merchantId, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID),
             (new StakeholderSDKWrapper())->getByMerchantIdIgnoreInvalidArgumentCallback($merchantId),
-            $this->fetchStakeholdersDatabaseCallback($merchantId)
+            $this->fetchStakeholdersDatabaseCallback($merchantId),
+            $this->fetchStakeholdersDatabaseCallback($merchantId, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+        return $result;
     }
 
     public function getStakeholderForMerchantIdForImplicitJoin(string $merchantId, string $entity)
     {
-        return $this->getEntityDetails(
+        $result = $this->getEntityDetails(
             ASVV2Constant::GET_STAKEHOLDER_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN,
             $this->asvRouter->shouldRouteImplicitJoinToAccountService($merchantId, $entity, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN),
             (new StakeholderSDKWrapper())->findOneByMerchantIdCallback($merchantId),
-            $this->findOneStakeholdersDatabaseCallback($merchantId)
+            $this->findOneStakeholdersDatabaseCallback($merchantId),
+            $this->findOneStakeholdersDatabaseCallback($merchantId, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+        return $result;
     }
 
-    public function findOneStakeholdersDatabaseCallback(string $merchantId): \Closure
+    public function findOneStakeholdersDatabaseCallback(string $merchantId, $connectionType = null): \Closure
     {
-        return function() use ($merchantId) {
-            return $this->findOneStakeholdersDatabase($merchantId);
+        return function() use ($connectionType, $merchantId) {
+            return $this->findOneStakeholdersDatabase($merchantId, $connectionType);
         };
     }
 
-    public function findOneStakeholdersDatabase(string $merchantId)
+    public function findOneStakeholdersDatabase(string $merchantId, $connectionType = null)
     {
-        return $this->newQuery()
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->get()
             ->first();
     }
 
-    public function fetchStakeholdersDatabaseCallback(string $merchantId): \Closure
+    public function fetchStakeholdersDatabaseCallback(string $merchantId, $connectionType = null): \Closure
     {
-        return function() use ($merchantId) {
-            return $this->fetchStakeholdersDatabase($merchantId);
+        return function() use ($connectionType, $merchantId) {
+            return $this->fetchStakeholdersDatabase($merchantId, $connectionType);
         };
     }
 
-    public function fetchStakeholdersDatabase(string $merchantId): Base\PublicCollection
+    public function fetchStakeholdersDatabase(string $merchantId, $connectionType = null): Base\PublicCollection
     {
-        return $this->newQuery()
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->get();
     }

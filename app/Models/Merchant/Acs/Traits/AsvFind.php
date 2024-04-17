@@ -227,9 +227,7 @@ trait AsvFind
             if ($this->isTransactionActive()) {
                 $connectionType = Connection::ASV_WRITER;
             } else {
-
                 $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_FOR_IMPLICIT_JOIN;
-
                 try {
                     return $this->getDetailsFromAsvIgnoreValidationAndNotFound($id, $oldConnection);
                 } catch (\Exception $e) {

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Address;
 
+use Database\Connection;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Constants\Table;
@@ -10,7 +11,7 @@ use RZP\Models\Address\Entity as AddressEntity;
 use RZP\Models\Base\RepositoryUpdateTestAndLiveAndAsv;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
-use RZP\Models\Merchant\Acs\Traits\AsvFetch;
+use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Stakeholder\Entity as MerchantStakeholderEntity;
 use RZP\Modules\Acs\Wrapper\MerchantStakeholder as MerchantStakeholderWrapper;
@@ -22,7 +23,7 @@ class Repository extends Base\Repository
 {
 
     use RepositoryUpdateTestAndLiveAndAsv;
-    use AsvFetchCommon;
+    use AsvFetchCommon, AsvEntityConnection;
     protected $entity = 'address';
 
     public AsvRouter $asvRouter;
@@ -64,9 +65,12 @@ class Repository extends Base\Repository
         return $currentPrimaryAddresses;
     }
 
-    public function fetchPrimaryAddressOfEntityOfType(Base\Entity $entity, $type)
+    public function fetchPrimaryAddressOfEntityOfType(Base\Entity $entity, $type, $connectionType = null)
     {
-        $primaryAddressOfType = $this->newQuery()
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        $primaryAddressOfType = $query
                                      ->where(Entity::ENTITY_ID, '=', $entity->getId())
                                      ->where(Entity::TYPE, '=', $type)
                                      ->where(Entity::PRIMARY, '=', 1)
@@ -75,19 +79,24 @@ class Repository extends Base\Repository
         return $primaryAddressOfType;
     }
 
-    public function fetchPrimaryAddressOfEntityOfTypeCallBack(Base\Entity $entity, $type) {
-        return function() use ($entity, $type) {
-            return $this->fetchPrimaryAddressOfEntityOfType($entity, $type);
+    public function fetchPrimaryAddressOfEntityOfTypeCallBack(Base\Entity $entity, $type, $connectionType = null) {
+        return function() use ($connectionType, $entity, $type) {
+            return $this->fetchPrimaryAddressOfEntityOfType($entity, $type, $connectionType);
         };
     }
 
     public function fetchPrimaryAddressForStakeholderOfTypeResidential(Base\Entity $stakeholder, $type) {
-        return $this->getEntityDetails(
+         $result = $this->getEntityDetails(
             ASVV2Constant::GET_PRIMARY_ADDRESS_FOR_STAKEHOLDER,
             $this->asvRouter->shouldRouteToAccountService($stakeholder->getId(), get_class($this), FunctionConstant::GET_BY_STAKEHOLDER_ID),
             (new StakeholderSDKWrapper())->getAddressForStakeholderIgnoreInvalidArgumentCallBack($stakeholder->getId()),
-            $this->fetchPrimaryAddressOfEntityOfTypeCallBack($stakeholder, $type)
+            $this->fetchPrimaryAddressOfEntityOfTypeCallBack($stakeholder, $type),
+            $this->fetchPrimaryAddressOfEntityOfTypeCallBack($stakeholder, $type, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+
+        return $result;
     }
 
     public function findByEntityAndId($addressId, Base\Entity $entity)

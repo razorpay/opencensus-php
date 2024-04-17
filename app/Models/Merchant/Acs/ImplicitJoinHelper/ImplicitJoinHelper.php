@@ -66,7 +66,7 @@ class ImplicitJoinHelper
         try
         {
             $parent_mode = $parentInstance->getConnectionName();
-            if($data != null && $parent_mode != null)
+            if($parent_mode != null && $data instanceof \Illuminate\Database\Eloquent\Model)
             {
                 $data->setConnection($parent_mode);
             }

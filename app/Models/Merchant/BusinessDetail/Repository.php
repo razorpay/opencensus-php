@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Merchant\BusinessDetail;
 
+use Database\Connection;
 use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
@@ -14,13 +15,14 @@ use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
+use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZP\Modules\Acs\Wrapper\MerchantBusinessDetail as MerchantBusinessDetailWrapper;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLiveAndAsv;
     use AsvFetchCommon, AsvFindEntity;
-    use AsvFind;
+    use AsvFind, AsvEntityConnection;
 
     protected $entity = 'merchant_business_detail';
 
@@ -35,34 +37,44 @@ class Repository extends Base\Repository
 
     public function getBusinessDetailsForMerchantId(string $merchantId): ?Entity
     {
-        return $this->getEntityDetails(
+         $result = $this->getEntityDetails(
             ASVV2Constant::GET_BUSINESS_DETAIL_BY_MERCHANT_ID,
             $this->asvRouter->shouldRouteToAccountService($merchantId, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID),
             (new BusinessDetailSDKWrapper())->getLatestByMerchantIdOrFailCallBack($merchantId),
-            $this->getBusinessDetailsForMerchantIdDatabaseCallBack($merchantId)
+            $this->getBusinessDetailsForMerchantIdDatabaseCallBack($merchantId),
+            $this->getBusinessDetailsForMerchantIdDatabaseCallBack($merchantId, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+        return $result;
     }
 
     public function getBusinessDetailsForMerchantIdForImplicitJoin(string $merchantId, string $entity)
     {
-        return $this->getEntityDetails(
+        $result = $this->getEntityDetails(
             ASVV2Constant::GET_BUSINESS_DETAIL_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN,
             $this->asvRouter->shouldRouteImplicitJoinToAccountService($merchantId, $entity, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN),
             (new BusinessDetailSDKWrapper())->getLatestByMerchantIdCallBack($merchantId),
-            $this->getBusinessDetailsForMerchantIdDatabaseCallBack($merchantId)
+            $this->getBusinessDetailsForMerchantIdDatabaseCallBack($merchantId),
+            $this->getBusinessDetailsForMerchantIdDatabaseCallBack($merchantId, Connection::ASV_WRITER)
         );
+
+        $this->resetConnectionOnModels($result);
+        return $result;
     }
 
-    public function getBusinessDetailsForMerchantIdDatabaseCallBack(string $merchantId) {
-        return function () use ($merchantId) {
-            return $this->getBusinessDetailsForMerchantIdDatabase($merchantId);
+    public function getBusinessDetailsForMerchantIdDatabaseCallBack(string $merchantId, $connectionType = null) {
+        return function () use ($connectionType, $merchantId) {
+            return $this->getBusinessDetailsForMerchantIdDatabase($merchantId, $connectionType);
         };
     }
 
-    public function getBusinessDetailsForMerchantIdDatabase(string $merchantId): ?Entity
+    public function getBusinessDetailsForMerchantIdDatabase(string $merchantId, $connectionType = null): ?Entity
     {
-        return $this->newQuery()
-            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->orderBy(Entity::ID, 'desc')
             ->first();
