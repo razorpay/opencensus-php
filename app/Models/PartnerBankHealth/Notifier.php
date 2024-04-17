@@ -326,6 +326,7 @@ class Notifier extends \RZP\Models\Base\Core
         $merchantId          = $config->getMerchantId();
         $merchantDisplayName = $config->merchant->getDisplayNameElseName();
         $notificationEmails  = $config->getNotificationEmails();
+        $merchantOrgId       = $config->merchant->getOrgId();
 
         $this->trace->info(TraceCode::PARTNER_BANK_HEALTH_EMAIL_TO_MERCHANT_INIT, ['merchant_id' => $merchantId]);
 
@@ -339,6 +340,7 @@ class Notifier extends \RZP\Models\Base\Core
         $mailInstance = new PartnerBankHealthMail($emailParams);
         $mailInstance->params['merchant_id'] = $merchantId;
         $mailInstance->params['merchant_display_name'] = $merchantDisplayName;
+        $mailInstance->params['org_id'] = $merchantOrgId;
 
         foreach ($notificationEmails as $key => $emailId)
         {

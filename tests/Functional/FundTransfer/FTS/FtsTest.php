@@ -510,7 +510,8 @@ class FtsTest extends TestCase
                 'source'     => 'RBL Bank',
                 'mode'       => 'IMPS',
                 'end_time'   => '25 Dec 4:58 pm',
-                'status'     => 'up'
+                'status'     => 'up',
+                'org_id'     => '100000razorpay'
             ];
 
             $this->assertArraySelectiveEquals($expectedEmailParams, $mail->params);

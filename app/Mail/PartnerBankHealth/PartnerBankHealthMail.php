@@ -96,6 +96,7 @@ class PartnerBankHealthMail extends Mailable
             'template_name'      => 'emails.' . NotificationType::PARTNER_BANK_HEALTH . '.' . $status,
             'params'             => $emailParams,
             'owner_id'           => $this->params['merchant_id'],
+            'ord_id'             => $this->params['org_id'],
         ];
     }
 }
