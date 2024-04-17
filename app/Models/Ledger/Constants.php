@@ -100,6 +100,51 @@ class Constants
     const RESERVE_BALANCE_AMOUNT                            = "reserve_balance_amount";
     const LEDGER_ENTRY                                      = "ledger_entry";
 
+    // Fee Types
+    const UPI_INAPP                                         = "upi_inapp";
+    const OPTIMIZER                                         = "optimizer";
+    const ESAUTOMATIC                                       = "esautomatic";
+    const RECURRING                                         = "recurring";
+    const MAGIC_CHECKOUT                                    = "magic_checkout";
+    const PARTNER_COMMISSION                                = "commission_payment";
+
+    // Tax Types
+    const PARTNER_TAX = "commission_tax";
+
+    // Ledger Config Formulas for Fee Types
+    const UPI_INAPP_FORMULA                              = "upi_inapp_commission";
+    const OPTIMIZER_FORMULA                              = "optimizer_commission";
+    const ESAUTOMATIC_FORMULA                            = "esautomatic_commission";
+    const RECURRING_FORMULA                              = "recurring_commission";
+    const MAGIC_CHECKOUT_FORMULA                         = "magic_checkout_commission";
+    const PARTNER_COMMISSION_FORMULA                     = "partner_commission";
+
+    // Ledger Config Formulas for Tax Types
+    const PARTNER_TAX_FORMULA                            = "partner_tax";
+
+    const FEE_AND_TAX_FORMULAS = [
+        self::UPI_INAPP_FORMULA,
+        self::OPTIMIZER_FORMULA,
+        self::ESAUTOMATIC_FORMULA,
+        self::RECURRING_FORMULA,
+        self::MAGIC_CHECKOUT_FORMULA,
+        self::PARTNER_COMMISSION_FORMULA,
+        self::PARTNER_TAX_FORMULA
+    ];
+
+    const FEE_TYPE_VS_FORMULAS = [
+        self::UPI_INAPP => self::UPI_INAPP_FORMULA,
+        self::OPTIMIZER => self::OPTIMIZER_FORMULA,
+        self::ESAUTOMATIC => self::ESAUTOMATIC_FORMULA,
+        self::RECURRING => self::RECURRING_FORMULA,
+        self::MAGIC_CHECKOUT => self::MAGIC_CHECKOUT_FORMULA,
+        self::PARTNER_COMMISSION => self::PARTNER_COMMISSION_FORMULA
+    ];
+
+    const TAX_TYPE_VS_FORMULAS = [
+        self::PARTNER_TAX => self::PARTNER_TAX_FORMULA
+    ];
+
     //Refund events Direct Settlement
     const REFUND_PROCESSED_DIRECT_SETTLEMENT                = "refund_processed_ds";
     const DIRECT_SETTLEMENT_INSTANT_REFUND_CREDITS          = "direct_settlement_instant_refund_credits";
@@ -215,6 +260,8 @@ class Constants
     const RESERVE_BALANCE_GMV = "reserve_balance_gmv";
     const AMOUNT_CREDIT_GMV   = "amount_credit_gmv";
     const GMV_ACCOUNTING      = "gmv_accounting";
+    const FEE_BREAKUP         = "fee_breakup";
+    const TRUE                = "true";
 
     //Transfers
     const TRANSFER_ID           = 'transfer_id';
