@@ -1,36 +1,38 @@
 import React from 'react';
 import { connect } from 'react-redux';
-// eslint-disable-next-line no-restricted-imports
-import HeaderAction from 'common/ui/HeaderAction';
-import { RZPFeatures } from 'merchant/helpers/data';
-import { classList, findBy, rupeesToPaise } from 'common/utils/rzp-utils';
 
-import DocsLink, { DocLink } from 'merchant/components/DocsLink';
+// eslint-disable-next-line no-restricted-imports
+import { withI18Service } from 'common/i18';
 import Amount from 'common/ui/Amount';
 import Banner from 'common/ui/Banner';
-import SwitchField from 'common/ui/Forms/SwitchField';
-import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import Alert from 'common/ui/Forms/Alert';
+import SwitchField from 'common/ui/Forms/SwitchField';
+// eslint-disable-next-line no-restricted-imports
+import HeaderAction from 'common/ui/HeaderAction';
 import Spinner from 'common/ui/Spinner';
-
+import { classList, findBy, rupeesToPaise } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import DocsLink, { DocLink } from 'merchant/components/DocsLink';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import { RZPFeatures } from 'merchant/helpers/data';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import { fetchSettings, saveSettings } from 'merchant/reducers/subscriptions';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import analytics from 'merchant/views/Subscriptions/analytics';
 import {
   CARD_AFA_MAX_LIMIT,
   GATEWAY_MAX_LIMIT,
   UPI_AFA_MAX_LIMIT,
   EMANDATE_MAX_LIMIT,
   UPI_MAX_LIMIT_FOR_NON_BFSI,
+  DEFAULT_TOUCH_N_GO_MAX_LIMIT,
 } from 'merchant/views/Subscriptions/constants';
-import analytics from 'merchant/views/Subscriptions/analytics';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
-import { withI18Service } from 'common/i18';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const PAYMENT_METHODS = {
   UPI: 'upi',
   CARD: 'card',
   EMANDATE: 'emandate',
+  TOUCH_N_GO_WALLET: 'touchngo_wallet',
 };
 
 const enableDisableMap = {
@@ -41,6 +43,11 @@ const enableDisableMap = {
 const isEnabled = (methodName) => (settings) => {
   const paymentMethod = findBy(settings.items, 'name', methodName) || {};
   return paymentMethod.setting_enabled === '1';
+};
+
+const getMaxAmount = (methodName) => (settings) => {
+  const paymentMethod = findBy(settings.items, 'name', methodName) || {};
+  return paymentMethod.max_amount;
 };
 
 const cardDescription = {
@@ -148,6 +155,8 @@ class SubscriptionsSettings extends React.Component {
     const orgCode = org?.custom_code || 'rzp';
     const cardDescriptionText = cardDescription[orgCode] || cardDescription.rzp;
     const cardNoteText = cardNote[orgCode] || cardNote.rzp;
+
+    const merchantCurrency = user?.merchant?.currency;
     if (settings.loading) {
       return (
         <div class="page-spinner-container">
@@ -213,12 +222,24 @@ class SubscriptionsSettings extends React.Component {
                           Accept payments upto{' '}
                           <strong>
                             {' '}
-                            <Amount value={GATEWAY_MAX_LIMIT} hidePaisa />
+                            <Amount
+                              value={
+                                user.isOrgCurlec
+                                  ? getMaxAmount(PAYMENT_METHODS.CARD)(settings)
+                                  : GATEWAY_MAX_LIMIT
+                              }
+                              currency={merchantCurrency}
+                              hidePaisa
+                            />
                           </strong>
                           <br />
                           Payments above{' '}
-                          <Amount value={rupeesToPaise(CARD_AFA_MAX_LIMIT)} hidePaisa /> will ask
-                          the customer for OTP verification as well.
+                          <Amount
+                            value={rupeesToPaise(CARD_AFA_MAX_LIMIT)}
+                            currency={merchantCurrency}
+                            hidePaisa
+                          />{' '}
+                          will ask the customer for OTP verification as well.
                         </>
                       )}
                       note={() => cardNoteText}
@@ -253,12 +274,70 @@ class SubscriptionsSettings extends React.Component {
                             Accept payments upto{' '}
                             <strong>
                               {' '}
-                              <Amount value={UPI_MAX_LIMIT_FOR_NON_BFSI} hidePaisa />
+                              <Amount
+                                value={UPI_MAX_LIMIT_FOR_NON_BFSI}
+                                currency={merchantCurrency}
+                                hidePaisa
+                              />
                             </strong>{' '}
-                            (For BFSI: <Amount value={GATEWAY_MAX_LIMIT} hidePaisa />)
+                            (For BFSI:{' '}
+                            <Amount
+                              value={GATEWAY_MAX_LIMIT}
+                              currency={merchantCurrency}
+                              hidePaisa
+                            />
+                            )
                             <br />
-                            Payments above <Amount value={UPI_AFA_MAX_LIMIT} hidePaisa /> will ask
-                            the customer for UPI PIN verification as well.
+                            Payments above{' '}
+                            <Amount
+                              value={UPI_AFA_MAX_LIMIT}
+                              currency={merchantCurrency}
+                              hidePaisa
+                            />{' '}
+                            will ask the customer for UPI PIN verification as well.
+                          </>
+                        )}
+                      />
+                    </div>
+                  )}
+
+                  {user.isOrgCurlec && (
+                    <div
+                      class={classList(
+                        user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled
+                          ? 'col-md-4'
+                          : 'col-md-6',
+                        'column',
+                      )}
+                    >
+                      <ToggleCard
+                        title={
+                          <>
+                            <i class="i i-upi m-r" /> Touch 'n Go Wallet
+                          </>
+                        }
+                        onToggleChange={this.onToggleChange(PAYMENT_METHODS.TOUCH_N_GO_WALLET)}
+                        checked={isEnabled(PAYMENT_METHODS.TOUCH_N_GO_WALLET)(settings)}
+                        description={
+                          <>
+                            Accept recurring payments directly via Wallet for your subscriptions.
+                            Only supports Malaysian currency.
+                          </>
+                        }
+                        info={() => (
+                          <>
+                            Accept payments upto{' '}
+                            <strong>
+                              {' '}
+                              <Amount
+                                value={
+                                  getMaxAmount(PAYMENT_METHODS.TOUCH_N_GO_WALLET)(settings) ||
+                                  DEFAULT_TOUCH_N_GO_MAX_LIMIT
+                                }
+                                currency={merchantCurrency}
+                                hidePaisa
+                              />
+                            </strong>
                           </>
                         )}
                       />
@@ -280,7 +359,11 @@ class SubscriptionsSettings extends React.Component {
                           <>
                             Accept payments upto:{' '}
                             <strong>
-                              <Amount value={EMANDATE_MAX_LIMIT} hidePaisa />
+                              <Amount
+                                value={EMANDATE_MAX_LIMIT}
+                                currency={merchantCurrency}
+                                hidePaisa
+                              />
                             </strong>
                           </>
                         }

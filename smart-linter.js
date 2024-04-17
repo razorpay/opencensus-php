@@ -18,6 +18,7 @@ const overrides = [
       '**/*.test.**/*.[jt]s?(x)',
       '**/e2e/**/*.[jt]s?(x)',
       '**/mocks/**/*.[jt]s?(x)',
+      '.playwright/',
     ],
     rules: createRulesConfig('off'), // Disable rules for specified files
   },

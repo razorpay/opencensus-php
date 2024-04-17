@@ -14,6 +14,7 @@ import { screen, userEvent, within, server, waitFor } from 'test-utils';
 
 const defaultProps = {
   i18: { isConfigTagEnabled: jest.fn() },
+  user: { merchant: { currency: 'INR' } },
 };
 describe('Subscription Settings', () => {
   beforeEach(() => {

@@ -7,6 +7,11 @@ export async function navigateTo(page, path) {
   await expect(page).toHaveTitle(/Razorpay Dashboard/);
 }
 
+export async function navigateToInCurlecDashboard(page, path) {
+  await page.goto(path);
+  await expect(page).toHaveTitle(/Curlec By Razorpay/);
+}
+
 export const loginByMobile = async ({ page, mobile }) => {
   await page.click('input[type="text"]');
   await page.fill('input[type="text"]', mobile);

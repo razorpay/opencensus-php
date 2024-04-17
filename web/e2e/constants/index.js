@@ -80,6 +80,8 @@ const routes = {
   GCMS_RESELLERS: '/app/gcms/resellers',
   APP_STORE: '/app/app-store',
   RIZE_MARKETPLACE: '/app/rize-marketplace',
+  SUBSCRIPTIONS: '/app/subscriptions',
+  SUBSCRIPTIONS_SETTINGS: '/app/subscriptions/settings',
   RISK_AND_FRAUD: '/app/risk-and-fraud',
   RECON_DASHBOARD: '/app/reconciliations/dashboard',
 };

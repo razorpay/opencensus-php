@@ -1,24 +1,26 @@
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import Time from 'common/ui/Time';
-import Amount from 'common/ui/Amount';
-import Spinner from 'common/ui/Spinner';
-import Alert from 'common/ui/Forms/Alert';
-import Definition from 'common/ui/Definition';
-import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import ContentToggler from 'common/ui/Toggler/ContentToggler';
-import Button from 'common/new-ui/Button';
-import { DocLink } from 'merchant/components/DocsLink';
-import ShowWhen from 'merchant/components/ShowWhen';
-import CopyLink from 'merchant/components/CopyLink';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import EntityDetailList from 'merchant/views/Subscriptions/Subscriptions/components/EntityDetailList/List';
-import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
-import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
-import { changeData } from 'merchant/views/Subscriptions/SubscriptionLinks/Update/Review';
-import Tooltip from 'common/ui/Tooltip';
-import { trackClickDuplicateSubscription } from 'merchant/views/Subscriptions/Subscriptions/ga';
 import moment from 'moment';
+import { Link, NavLink } from 'react-router-dom';
+
+import Button from 'common/new-ui/Button';
+import Amount from 'common/ui/Amount';
+import Definition from 'common/ui/Definition';
+import Alert from 'common/ui/Forms/Alert';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Tooltip from 'common/ui/Tooltip';
+import { titleCase } from 'common/utils/rzp-utils';
+import CopyLink from 'merchant/components/CopyLink';
+import { DocLink } from 'merchant/components/DocsLink';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
+import { changeData } from 'merchant/views/Subscriptions/SubscriptionLinks/Update/Review';
+import EntityDetailList from 'merchant/views/Subscriptions/Subscriptions/components/EntityDetailList/List';
+import { trackClickDuplicateSubscription } from 'merchant/views/Subscriptions/Subscriptions/ga';
 import analytics from 'merchant/views/Subscriptions/analytics';
 
 export default function SubscriptionDetails(props) {
@@ -185,7 +187,7 @@ export default function SubscriptionDetails(props) {
               </EntityDetailRow>
 
               <EntityDetailRow label="Payment Method">
-                <div class="payment_method">{subscription.payment_method || '--'}</div>
+                <div class="payment_method">{titleCase(subscription.payment_method) || '--'}</div>
                 {(subscription.payment_details || []).map((ele, i) => (
                   <div key={i}>{ele}</div>
                 ))}
