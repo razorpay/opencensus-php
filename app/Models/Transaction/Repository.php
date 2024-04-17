@@ -422,6 +422,11 @@ class Repository extends Base\Repository
 
         foreach ($relationships as $type => $ids)
         {
+            // Certain entities are not present in API and transactions are dual written to API txn table
+            if ( $type == Type::PRODUCT_CHARGE ) {
+                continue;
+            }
+
             // Finds the list of relations to eager load for the given $type
             $eagerLoadRelations = $entityToRelationFetchMap[$type] ?? [];
 
