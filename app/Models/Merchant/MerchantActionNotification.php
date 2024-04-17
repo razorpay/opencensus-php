@@ -281,13 +281,13 @@ class MerchantActionNotification
             $templates = Constants::MERCHANT_RISK_ACTIONS_TEMPLATE_MAP[$action];
 
             $groupIdMapping = [
-                Action::HOLD_FUNDS                       =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
-                Action::SUSPEND                          =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
-                Action::LIVE_DISABLE                     =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+                Action::HOLD_FUNDS                       =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk_transaction'],
+                Action::SUSPEND                          =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk_transaction'],
+                Action::LIVE_DISABLE                     =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk_transaction'],
                 Action::DEBIT_NOTE_CREATE_EMAIL_SIGNUP   =>  $this->freshdeskConfig['group_ids']['rzpind']['debit_note'],
                 Action::DEBIT_NOTE_CREATE_MOBILE_SIGNUP  =>  $this->freshdeskConfig['group_ids']['rzpind']['debit_note'],
-                Action::DISABLE_INTERNATIONAL_PERMANENT   => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-                Action::DISABLE_INTERNATIONAL_TEMPORARY   => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::DISABLE_INTERNATIONAL_PERMANENT   => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk_transaction'],
+                Action::DISABLE_INTERNATIONAL_TEMPORARY   => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk_transaction'],
             ];
 
             $requestParams = array_merge([

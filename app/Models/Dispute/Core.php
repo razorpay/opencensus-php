@@ -176,13 +176,13 @@ class Core extends Base\Core
 
                 $dispute->setAuditAction(Action::CREATE_DISPUTE);
 
-                if ($reverseShadowResp === null)
-                {
-                    $payment->setDisputed(true);
-                }
-
                 $dispute = $this->repo->transaction(function() use ($dispute, $payment, $isShadowModeDualWrite, $reverseShadowResp, $input)
                 {
+                    if ($reverseShadowResp === null)
+                    {
+                        $payment->setDisputed(true);
+                    }
+
                     if (($payment->isRefunded() === true) and
                         ($payment->isFullyRefunded() === true))
                     {

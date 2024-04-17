@@ -288,6 +288,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DEDUCTED,
     ];
 
+    protected $ignoredRelations = [
+        self::PAYMENT,
+    ];
+
     public function preSave()
     {
         $this->traitPreSave();
@@ -388,7 +392,7 @@ class Entity extends Base\PublicEntity
         {
             $array = array_merge($array,[self::UNRECOVERED_AMOUNT => $this->getUnRecoveredAmount(),self::RECOVERY_STATUS => $this->getRecoveryStatus()]);
         }
-        
+
         return $array;
     }
 
