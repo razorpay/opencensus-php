@@ -720,7 +720,7 @@ class Repository extends Base\Repository
 
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_READS, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 

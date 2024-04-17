@@ -7205,6 +7205,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_UNIVERSAL_PROXY                                   = 'TERMINALS_SERVICE_UNIVERSAL_PROXY';
     const TERMINALS_SERVICE_PROXY_V2                                          = 'TERMINALS_SERVICE_PROXY_V2';
     const TERMINALS_SERVICE_PROXY_V1                                          = 'TERMINALS_SERVICE_PROXY_V1';
+
+    const TERMINALS_SERVICE_PROXY_READS                                       = 'TERMINALS_SERVICE_PROXY_READS';
     const TERMINALS_SERVICE_READ_OVERRIDES                                    = 'TERMINALS_SERVICE_READ_OVERRIDES';
     const TERMINALS_SERVICE_READ_OVERRIDES_ERROR                              = 'TERMINALS_SERVICE_READ_OVERRIDES_ERROR';
     const TERMINALS_SERVICE_PROXY_CALL_ERROR                                  = 'TERMINALS_SERVICE_PROXY_CALL_ERROR';
