@@ -97,6 +97,15 @@ class ConfigController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateLateAuthConfigBulkMerchants()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateLateAuthConfigBulkMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createPaymentConfigBulk()
     {
         $input = Request::all();

@@ -141,6 +141,63 @@ class Core extends Base\Core
         $this->app['diag']->trackPaymentConfigEvent($eventCode, null, null, $properties);
     }
 
+    public function checkAndUpdateConfigThreeDays($configEntity)
+    {
+        $configDb =  $configEntity->getConfig();
+        $this->trace->info(TraceCode::PREVIOUS_CONFIG_DURING_UPDATE, [
+            "config_db" => $configDb,
+            "type"  => gettype($configDb)
+        ]);
+
+        $configJson = json_decode($configDb, true);
+        $this->trace->info(TraceCode::PREVIOUS_CONFIG_DURING_UPDATE, [
+            "config_json" => $configJson,
+            "type_json" => gettype($configJson)
+        ]);
+
+        $it =0;
+        while($it<10)
+        {
+            if((gettype($configJson) == "array"))
+            {
+                break;
+            }
+            $configJson = json_decode($configJson, true);
+            $it++;
+        }
+
+        $this->trace->info(TraceCode::PREVIOUS_CONFIG_DURING_UPDATE, [
+            "is_set" => isset($configJson['capture_options']['automatic_expiry_period']) === true,
+            "automatic_expiry_period" => $configJson['capture_options']['automatic_expiry_period'],
+            "greater_than_4320" => $configJson['capture_options']['automatic_expiry_period'] > 4320
+        ]);
+
+        if (isset($configJson['capture_options']['automatic_expiry_period']) === true and
+            $configJson['capture_options']['automatic_expiry_period'] > 4320 )
+        {
+            $configJson['capture_options']['automatic_expiry_period'] = 4320;
+        }
+
+        if (isset($configJson['capture_options']['manual_expiry_period']) === true and
+            $configJson['capture_options']['manual_expiry_period'] > 4320 )
+        {
+            $configJson['capture_options']['manual_expiry_period'] = 4320;
+        }
+
+        if (isset($configJson['capture_options']['manual_expiry_period']) === true and
+            isset($configJson['capture_options']['automatic_expiry_period']) === true and
+            $configJson['capture_options']['automatic_expiry_period'] > $configJson['capture_options']['manual_expiry_period'])
+        {
+            $this->trace->info(TraceCode::AUTH_CONFIG_AUTOMATIC_MORE_THAN_MANUAL, [
+                "automatic_expiry" => $configJson['capture_options']['automatic_expiry_period'],
+                "manual_expiry"   => $configJson['capture_options']['manual_expiry_period']
+            ]);
+            $configJson['capture_options']['automatic_expiry_period'] = $configJson['capture_options']['manual_expiry_period'];
+        }
+
+        return $configJson;
+    }
+
     public function checkAndUpdateConfig(& $input)
     {
         if ((isset($input['config']['capture']) === true) and
@@ -331,6 +388,62 @@ class Core extends Base\Core
 
                     return  $config;
                 }
+            });
+    }
+
+    public function updateLateAuthConfigThreeDays(string $mid)
+    {
+        $this->trace->info(TraceCode::CONFIG_UPDATE_REQUEST, [
+            "merchant_id" => $mid
+        ]);
+
+        $resource = 'config_update_three_days_' . $mid;
+
+        return $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($mid)
+            {
+                $type = Type::LATE_AUTH;
+
+                $configEntity = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($mid, $type);
+
+                if (isset($configEntity) === true)
+                {
+                    $prevConfig =  $configEntity->getConfig();
+
+                    $prevConfigDecoded = json_decode($prevConfig);
+
+                    $this->trace->info(TraceCode::PREVIOUS_CONFIG_DURING_UPDATE, [
+                        "previous_config" => $prevConfigDecoded,
+                        "merchant_id" => $mid,
+                    ]);
+
+                    $updatedConfig = $this->checkAndUpdateConfigThreeDays($configEntity);
+
+                    $configEntity->setConfig(json_encode($updatedConfig));
+
+                    $this->repo->saveOrFail($configEntity);
+
+                    $newConfig =  $configEntity->getConfig();
+
+                    $newConfigDecoded = json_decode($newConfig);
+
+                    $this->trace->info(TraceCode::NEW_CONFIG_AFTER_UPDATE, [
+                        "new_config" => $newConfigDecoded,
+                        "merchant_id" => $mid,
+                    ]);
+
+
+                }
+                else
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_CONFIG_NOT_FOUND, null, null,
+                        'Config is not present for the provided merchant');
+
+                }
+
+                return  $configEntity;
             });
     }
 

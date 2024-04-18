@@ -110,6 +110,7 @@ class Route
         'get_irctc_settlement_file_admin'          => ['get',      'admin/irctc/settlement/{date}',                   'SettlementController@getIrctcSettlementFile'                              ],
         'delete_payment_config'                    => ['delete',   'payment/config',                                 'ConfigController@deletePaymentConfig'                              ],
         'update_late_auth_config_admin_bulk'       => ['patch',    'admin/lateauth/config/bulk',                     'ConfigController@updateLateAuthConfigBulk'                         ],
+        'update_late_auth_config_bulk'             => ['post',    'lateauth/config/bulk/update',                     'ConfigController@updateLateAuthConfigBulkMerchants'                         ],
         'sync_pg_router_order_bulk'                => ['post',     'bulk/sync/orders',                               'OrderController@bulkSyncOrderToPgRouter'                          ],
 
         // TODO: Need to remove below two endpoints once edge team is live with support of proxy auth
@@ -11524,6 +11525,7 @@ class Route
     ];
 
     public static $direct = [
+        'update_late_auth_config_bulk',
         'onboarding_payment_webhook',
         'payment_page_fetch_records',
         'payment_page_fetch_records_option',

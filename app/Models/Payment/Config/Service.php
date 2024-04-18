@@ -119,6 +119,43 @@ class Service extends Base\Service
         return $this->app['payments-cross-border']->getDCSConfiguration($this->merchant->getId());
     }
 
+    public function updateLateAuthConfigBulkMerchants(array  $input)
+    {
+        $this->trace->info(TraceCode::CONFIG_UPDATE_BULK_REQUEST, $input);
+
+        $merchantIds = $input['merchant_ids'];
+
+        $success  = 0;
+        $failures = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+              $this->core->updateLateAuthConfigThreeDays($merchantId);
+
+                $success += 1;
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e,TraceCode::FAILED_TO_UPDATE_AUTH_CONFIG, [
+                    "merchant_id" => $merchantId
+                ]);
+
+                $failures[] = $merchantId;
+            }
+        }
+
+        $summary  = [
+            'success'  => $success,
+            'failures' => $failures
+        ];
+
+        $this->trace->info(TraceCode::CONFIG_UPDATE_BULK_RESPONSE, $summary);
+
+        return $summary;
+    }
+
     public function updateLateAuthConfigBulk(array  $input)
     {
         $this->trace->info(TraceCode::CONFIG_UPDATE_BULK_REQUEST, $input);

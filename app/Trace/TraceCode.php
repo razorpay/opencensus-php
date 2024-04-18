@@ -7471,6 +7471,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CONFIG_UPDATE_BULK_RESPONSE                           = 'CONFIG_UPDATE_BULK_RESPONSE';
     const CONFIG_CREATE_BULK_REQUEST                            = 'CONFIG_CREATE_BULK_REQUEST';
     const CONFIG_CREATE_BULK_RESPONSE                           = 'CONFIG_CREATE_BULK_RESPONSE';
+    const AUTH_CONFIG_AUTOMATIC_MORE_THAN_MANUAL                = 'AUTH_CONFIG_AUTOMATIC_MORE_THAN_MANUAL';
+    const PREVIOUS_CONFIG_DURING_UPDATE                         = 'PREVIOUS_CONFIG_DURING_UPDATE';
+    const NEW_CONFIG_AFTER_UPDATE                               = 'NEW_CONFIG_AFTER_UPDATE';
+    const FAILED_TO_UPDATE_AUTH_CONFIG                          = 'FAILED_TO_UPDATE_AUTH_CONFIG';
 
     // DB wait timeout
     const WAIT_TIMEOUT_EXCEPTION                                = 'WAIT_TIMEOUT_EXCEPTION';
