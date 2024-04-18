@@ -268,7 +268,7 @@ class Core extends Base\Core
 
         $checker->step()->associate($step);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $checker, $checkerEntity, $step, $isAdminAttemptingPayoutReject)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($action, $checker, $checkerEntity, $step, $isAdminAttemptingPayoutReject, $permissionName)
         {
             $this->repo->saveOrFail($checker);
 
@@ -313,11 +313,12 @@ class Core extends Base\Core
                 //
                 (new Action\Core)->checkAndMarkActionApproved($action, $checkerEntity);
             }
+
+            $this->executeAction($action, $step->role, $checkerEntity);
+
+            $this->notifyOnReject($action, $permissionName);
+
         });
-
-        $this->executeAction($action, $step->role, $checkerEntity);
-
-        $this->notifyOnReject($action, $permissionName);
 
         return $checker;
     }
