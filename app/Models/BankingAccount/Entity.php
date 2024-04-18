@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_CURRENCY                  = 'account_currency';
     const ACCOUNT_ACTIVATION_DATE           = 'account_activation_date';
     const MERCHANT                          = 'merchant';
-
+    const ONBOARDED_TIME                    =  'onboarded_time';
     /**
      * Pincode field is being used to store the pincode entered by Merchant
      * while raising request for account creation. This may or may not

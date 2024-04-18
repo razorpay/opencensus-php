@@ -1716,6 +1716,7 @@ class Service extends Base\Service
             try
             {
                 $bankingAccount = $this->repo->banking_account->getBankingAccountWithBalanceViaAccountNumberAndMerchantId($accountNumber, $merchantId);
+                $onboardingTime = optional($bankingAccount)->getCreatedAt();
             }
             catch (\Exception $ex)
             {
@@ -1723,7 +1724,10 @@ class Service extends Base\Service
 
                 // check for banking accounts in BAS
                 $bankingAccount = $this->fetchAccountByBalance($balance);
-
+                if ($bankingAccount !== null)
+                {
+                    $onboardingTime = intdiv($bankingAccount['created_at'], 1000); // CreatedAt is in Milliseconds in BAS
+                }
                 if (empty($bankingAccount))
                 {
                     throw $ex;
@@ -1739,7 +1743,8 @@ class Service extends Base\Service
                 Entity::ACCOUNT_NUMBER       => $bankingAccount->getAccountNumber(),
                 Entity::ACCOUNT_TYPE         => $bankingAccount->balance->getAccountType(),
                 Entity::BALANCE_TYPE         => $bankingAccount->balance->getType(),
-                Entity::FTS_FUND_ACCOUNT_ID  => $bankingAccount->getFtsFundAccountId()
+                Entity::FTS_FUND_ACCOUNT_ID  => $bankingAccount->getFtsFundAccountId(),
+                Entity::ONBOARDED_TIME       => $onboardingTime
             ];
         }
         catch (\Throwable $exception)
