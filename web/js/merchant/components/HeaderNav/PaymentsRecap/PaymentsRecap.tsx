@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 import Stories from 'react-insta-stories';
 import {
   Box,
@@ -17,38 +19,40 @@ import { Modal } from 'common/components/Modal';
 import { getItem, setItem } from 'common/utils/localStorage';
 import { loadImage } from 'common/utils/rzp-utils';
 import { User } from 'common/typings';
-
-import Frame from './Frame';
 import {
-  BannerBtn,
-  CarouselContainer,
-  PaymentsRecapContainer,
-  SocialShareBottomSheet,
-} from './styled';
+  togglePaymentsRecapBannerVisibility as togglePaymentsRecapBannerVisibilityFn,
+  togglePaymentsRecapModal as togglePaymentsRecapModalFn,
+} from 'merchant/reducers/paymentsRecap';
+
+import { CarouselContainer, PaymentsRecapContainer, SocialShareBottomSheet } from './styled';
 import {
   DEFAULT_STORY_INTERVAL,
   getSlides,
+  getStories,
   socialShare,
   trackPaymentsRecapEvent,
   usePaymentsRecap,
 } from './utils';
-import { captureImage } from './imageUtils';
+import { captureImage, downloadAllSlides, getImgBlob } from './imageUtils';
 import { CarouselSlides } from './types';
 import CustomShareComponent from './ShareComponent';
 
-import RzpRewindBannerDesktop from 'assets/razorpay-rewind/razorpay-rewind-banner-desktop.png';
-import RzpMobileBanner from 'assets/razorpay-rewind/razorpay-rewind-banner-mobile.png';
-
 const PaymentsRecap: React.FC<{
   user: User;
-  showMobileBanner: boolean;
-}> = ({ user, showMobileBanner }) => {
+  paymentsRecap: any;
+  togglePaymentsRecapModal: (flag) => void;
+  togglePaymentsRecapBannerVisibility: (flag) => void;
+}> = ({ user, paymentsRecap, togglePaymentsRecapModal, togglePaymentsRecapBannerVisibility }) => {
+  const componentRef = useRef(null);
+
+  const { isOpen } = paymentsRecap;
   const [slides, setSlides] = useState<CarouselSlides[]>([]);
-  const currentStoryKey = useRef('');
-  const { isLoading, isError, data } = usePaymentsRecap();
-  const [isOpen, setIsOpen] = React.useState<boolean>(
-    getItem(`showRazorpayRewind-${user?.current}`) !== 'false',
-  );
+  const [capturedSlides, setCapturedSlides] = useState(new Map());
+
+  const [currentStoryKey, setCurrentStoryKey] = useState('');
+
+  const { isLoading, isError, data } = usePaymentsRecap(user?.current);
+
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const { theme } = useTheme();
   const { matchedBreakpoint } = useBreakpoint({
@@ -58,20 +62,23 @@ const PaymentsRecap: React.FC<{
   const imgDimension = isMobile ? 300 : 400;
 
   const isNativeWebShare = !!navigator.canShare;
-  const componentRef = useRef(null);
 
   const handleShareAction = (action) => {
     trackPaymentsRecapEvent({
       objectName: 'RZP Rewind Card Share',
       actionName: 'Clicked',
       properties: {
-        cardKey: currentStoryKey.current,
+        cardKey: currentStoryKey,
         socialMediaPlatform: action,
       },
     });
     setIsBottomSheetOpen(false);
-    if (['navigator-share', 'download', 'copy'].includes(action)) {
+    if (['navigator-share', 'copy'].includes(action)) {
       captureImage(componentRef, imgDimension, action);
+    } else if (action === 'download') {
+      if (capturedSlides.size) {
+        downloadAllSlides(capturedSlides);
+      }
     } else {
       socialShare(action);
     }
@@ -89,148 +96,143 @@ const PaymentsRecap: React.FC<{
     if (data) {
       const frames = getSlides({ data, handleShare, isMobile });
       setSlides(frames);
+      if (frames.length) {
+        togglePaymentsRecapBannerVisibility(true);
+      }
       frames.forEach(({ imgSrc }) => {
         loadImage(imgSrc);
       });
     }
   }, [data, isMobile]);
 
+  const onStoryStart = (cardKey) => {
+    trackPaymentsRecapEvent({
+      objectName: 'RZP Rewind Card',
+      actionName: 'Displayed',
+      properties: {
+        cardKey,
+      },
+    });
+    setCurrentStoryKey(cardKey);
+    if (!isMobile || !isNativeWebShare) {
+      if (componentRef.current) {
+        getImgBlob(componentRef).then((blob) => {
+          if (blob && !capturedSlides.has(cardKey)) {
+            setCapturedSlides((prevSlides) => new Map(prevSlides.set(cardKey, blob)));
+          }
+        });
+      }
+    }
+  };
+
+  const stories = useMemo(
+    () =>
+      getStories({
+        imgDimension,
+        slides,
+        onStoryStart,
+      }),
+    [imgDimension, slides],
+  );
+
+  useEffect(() => {
+    if (getItem(`showRazorpayRewind-${user?.current}`) !== 'false') {
+      togglePaymentsRecapModal(true);
+    }
+  }, []);
+
   if (isLoading || isError || !slides.length) {
     return null;
   }
 
   return (
-    <>
-      <Box
-        height="100px"
-        borderRadius="medium"
-        position="relative"
-        marginX="spacing.6"
-        paddingTop="20px"
-        elevation="highRaised"
-      >
-        <Box overflow="hidden" height="100%" width="100%" left="0px" position="relative">
-          <img
-            src={showMobileBanner ? RzpMobileBanner : RzpRewindBannerDesktop}
-            width="100%"
-            height="100%"
-            style={{ objectFit: 'cover' }}
-          />
-          <BannerBtn
-            onClick={() => {
-              setIsOpen(true);
-              trackPaymentsRecapEvent({
-                objectName: 'RZP Rewind Banner',
-                actionName: 'Clicked',
-              });
+    <Modal
+      isOpen={isOpen}
+      onClose={() => {
+        togglePaymentsRecapModal(false);
+        setItem(`showRazorpayRewind-${user?.current}`, 'false');
+        setCapturedSlides(new Map());
+      }}
+      closeable={true}
+      isDenserBackdrop={true}
+    >
+      <PaymentsRecapContainer>
+        <CarouselContainer ref={componentRef}>
+          <Stories
+            stories={stories as any}
+            defaultInterval={DEFAULT_STORY_INTERVAL}
+            width={isMobile ? '100%' : 500}
+            height={isMobile ? 400 : 500}
+            progressContainerStyles={{
+              width: imgDimension,
+              paddingRight: 0,
+              paddingLeft: 0,
             }}
-            isMobileBanner={showMobileBanner}
+            storyInnerContainerStyles={{
+              justifyContent: 'center',
+              backgroundColor: '#000000',
+            }}
+            loop={true}
+          />
+        </CarouselContainer>
+        <Box paddingY="spacing.4" display="flex" alignItems="center" justifyContent="center">
+          <Box
+            width={`${imgDimension}px`}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            gap="spacing.5"
           >
-            Check it out now!
-          </BannerBtn>
-        </Box>
-      </Box>
-      <Modal
-        isOpen={isOpen}
-        onClose={() => {
-          setIsOpen(false);
-          setItem(`showRazorpayRewind-${user?.current}`, 'false');
-        }}
-        closeable={true}
-        isDenserBackdrop={true}
-      >
-        <PaymentsRecapContainer>
-          <CarouselContainer ref={componentRef}>
-            <Stories
-              stories={slides.map(({ imgOverlay, imgSrc, key, duration }) => ({
-                content: () => {
-                  // TODO: Fix this later
-                  // eslint-disable-next-line react-hooks/rules-of-hooks
-                  useEffect(() => {
-                    trackPaymentsRecapEvent({
-                      objectName: 'RZP Rewind Card',
-                      actionName: 'Displayed',
-                      properties: {
-                        cardKey: key,
-                      },
-                    });
-                    currentStoryKey.current = key;
-                  }, []);
-                  return (
-                    <Frame
-                      backgroundImageSrc={imgSrc}
-                      children={imgOverlay}
-                      imgDimension={`${imgDimension}px`}
-                    />
-                  );
-                },
-                key,
-                duration: duration ?? DEFAULT_STORY_INTERVAL,
-              }))}
-              defaultInterval={DEFAULT_STORY_INTERVAL}
-              width={isMobile ? '100%' : 500}
-              height={isMobile ? 400 : 500}
-              progressContainerStyles={{
-                width: imgDimension,
-                paddingRight: 0,
-                paddingLeft: 0,
-              }}
-              storyInnerContainerStyles={{
-                justifyContent: 'center',
-                backgroundColor: '#000000',
-              }}
-              onAllStoriesEnd={() => {
-                console.log('all stories ended');
-              }}
-              loop={true}
-            />
-          </CarouselContainer>
-          <Box paddingY="spacing.4" display="flex" alignItems="center" justifyContent="center">
-            <Box
-              width={`${imgDimension}px`}
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              gap="spacing.5"
-            >
-              <Button onClick={handleShare} icon={ShareIcon} iconPosition="left">
-                Share
-              </Button>
-            </Box>
+            <Button onClick={handleShare} icon={ShareIcon} iconPosition="left">
+              Share
+            </Button>
           </Box>
-          <SocialShareBottomSheet>
-            <BottomSheet
-              isOpen={isBottomSheetOpen}
-              onDismiss={() => {
-                setIsBottomSheetOpen(false);
-              }}
-              zIndex={100000}
-            >
-              <BottomSheetBody padding="spacing.5">
-                <Box
-                  display="flex"
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  paddingX="spacing.5"
-                >
-                  <Text color="interactive.text.staticWhite.normal" size="large" weight="semibold">
-                    Share to
-                  </Text>
-                  <IconButton
-                    icon={() => <CloseIcon color="interactive.icon.primary.disabled" />}
-                    onClick={() => setIsBottomSheetOpen(false)}
-                    accessibilityLabel="share-drawer-close"
-                  />
-                </Box>
-                <CustomShareComponent handleShareAction={handleShareAction} />
-              </BottomSheetBody>
-            </BottomSheet>
-          </SocialShareBottomSheet>
-        </PaymentsRecapContainer>
-      </Modal>
-    </>
+        </Box>
+        <SocialShareBottomSheet>
+          <BottomSheet
+            isOpen={isBottomSheetOpen}
+            onDismiss={() => {
+              setIsBottomSheetOpen(false);
+            }}
+            zIndex={100000}
+          >
+            <BottomSheetBody padding="spacing.5">
+              <Box
+                display="flex"
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                paddingX="spacing.5"
+              >
+                <Text color="interactive.text.staticWhite.normal" size="large" weight="semibold">
+                  Share to
+                </Text>
+                <IconButton
+                  icon={() => <CloseIcon color="interactive.icon.primary.disabled" />}
+                  onClick={() => setIsBottomSheetOpen(false)}
+                  accessibilityLabel="share-drawer-close"
+                />
+              </Box>
+              <CustomShareComponent handleShareAction={handleShareAction} />
+            </BottomSheetBody>
+          </BottomSheet>
+        </SocialShareBottomSheet>
+      </PaymentsRecapContainer>
+    </Modal>
   );
 };
 
-export default PaymentsRecap;
+const mapStateToProps = (state) => ({
+  paymentsRecap: state.paymentsRecap,
+});
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      togglePaymentsRecapModal: togglePaymentsRecapModalFn,
+      togglePaymentsRecapBannerVisibility: togglePaymentsRecapBannerVisibilityFn,
+    },
+    dispatch,
+  );
+
+export default connect(mapStateToProps, mapDispatchToProps)(PaymentsRecap);

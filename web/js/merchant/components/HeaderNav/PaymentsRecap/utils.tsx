@@ -1,14 +1,46 @@
-import React from 'react';
+import moment from 'moment';
+import React, { useEffect } from 'react';
 import { Box, Button, ShareIcon } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
+
 import { merchantFetch } from 'merchant/utils/ajax';
-import { StyledTextHeading, StyledTextSubHeading } from './styled';
-import { CarouselSlides } from './types';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+
+import Frame from './Frame';
+import { CarouselSlides } from './types';
+import { StyledTextHeading, StyledTextSubHeading } from './styled';
 
 export const postContent = 'What last year had in store! Check out my #RazorpayRewind';
 
 export const DEFAULT_STORY_INTERVAL = 10000;
+
+const KEY = 'rzp_rewind_cache';
+export const getPaymentsRecapApiCache = ({ merchantId }) => {
+  const paymentsRecapCache = localStorage.getItem(`${KEY}_${merchantId}`);
+  if (!paymentsRecapCache) {
+    return null;
+  }
+  try {
+    const { data, expireAt } = JSON.parse(paymentsRecapCache);
+    if (expireAt && moment().isAfter(expireAt)) {
+      return null;
+    }
+    return data;
+  } catch {
+    // no action is required
+  }
+  return null;
+};
+
+export const setPaymentsRecapApiCache = ({ merchantId, paymentsRecapData }) => {
+  localStorage.setItem(
+    `${KEY}_${merchantId}`,
+    JSON.stringify({
+      data: paymentsRecapData,
+      expireAt: moment().add(15, 'days').format(),
+    }),
+  );
+};
 
 export const trackPaymentsRecapEvent = ({
   objectName,
@@ -28,19 +60,28 @@ export const trackPaymentsRecapEvent = ({
   });
 };
 
-export const usePaymentsRecap = () => {
+export const usePaymentsRecap = (merchantId) => {
   return useQuery({
     queryKey: ['razorrewind-payments-recap'],
     queryFn: async () => {
+      const paymentsRecapCache = getPaymentsRecapApiCache({ merchantId });
+      if (paymentsRecapCache?.is_gvm || paymentsRecapCache?.payment_method_split_industry)
+        return paymentsRecapCache;
+
       const { data } = await merchantFetch({
         url: 'care_service/merchant/twirp/rzp.care.dashboard.home.v1.HomeService/GetMerchantPaymentYearlyRecap',
         data: {},
         method: 'post',
       });
 
+      // only cache for success response
+      if (data?.is_gvm || data?.payment_method_split_industry) {
+        setPaymentsRecapApiCache({ merchantId, paymentsRecapData: data });
+      }
       return data;
     },
     refetchOnWindowFocus: false,
+    retry: false,
   });
 };
 
@@ -307,4 +348,27 @@ export const socialShare = (type): boolean => {
   }
 
   return false;
+};
+
+const Story = ({ slide, onStoryStart, imgDimension }) => {
+  const { imgOverlay, imgSrc, key } = slide;
+  useEffect(() => {
+    onStoryStart(key);
+  }, []);
+  return (
+    <Frame backgroundImageSrc={imgSrc} children={imgOverlay} imgDimension={`${imgDimension}px`} />
+  );
+};
+
+export const getStories = ({ slides, imgDimension, onStoryStart }) => {
+  return slides.map((slide) => {
+    const { key, duration } = slide;
+    return {
+      content: () => (
+        <Story imgDimension={imgDimension} onStoryStart={onStoryStart} slide={slide} />
+      ),
+      key,
+      duration: duration ?? DEFAULT_STORY_INTERVAL,
+    };
+  });
 };

@@ -11,10 +11,7 @@ const FallbackComponent = () => {
 
 const Entry: React.FC<{
   user: User;
-  bannerVariant: 'desktop' | 'mobile';
-}> = ({ user, bannerVariant }) => {
-  const shouldMobileBanner = bannerVariant === 'mobile';
-
+}> = ({ user }) => {
   return (
     <ErrorBoundary
       resetOnProps
@@ -22,7 +19,7 @@ const Entry: React.FC<{
       team={Teams.PG_DASHBOARD}
       FallbackComponent={FallbackComponent}
     >
-      <PaymentsRecap user={user} showMobileBanner={shouldMobileBanner} />
+      <PaymentsRecap user={user} />
     </ErrorBoundary>
   );
 };

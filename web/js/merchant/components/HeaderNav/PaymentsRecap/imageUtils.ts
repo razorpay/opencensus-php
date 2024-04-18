@@ -1,8 +1,42 @@
-import fileDownload from 'common/utils/file-download';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 import { copyImgToClipboard, postContent } from './utils';
 
 const imageType = 'image/png';
+
+const getImgBlob = (componentRef) => {
+  return new Promise((resolve, reject) => {
+    import('html2canvas').then(({ default: html2canvas }) => {
+      html2canvas(componentRef.current, {
+        allowTaint: true,
+        useCORS: true,
+      })
+        .then((canvas) => {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Failed to capture the image as blob.'));
+            }
+          });
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  });
+};
+
+const downloadAllSlides = (capturedSlides) => {
+  const zip = new JSZip();
+  capturedSlides.forEach((blob, key) => {
+    zip.file(`${key}.png`, blob);
+  });
+  zip.generateAsync({ type: 'blob' }).then((content) => {
+    saveAs(content, 'razorpay_rewind.zip');
+  });
+};
 
 const captureImage = (componentRef, imgDimension, action): Promise<void> | undefined => {
   if (!componentRef.current) {
@@ -19,10 +53,8 @@ const captureImage = (componentRef, imgDimension, action): Promise<void> | undef
           if (!blob) return;
           if (action === 'copy') {
             await copyImgToClipboard(blob, imageType);
-          } else if (action === 'download') {
-            fileDownload(blob, 'rewind.png', imageType);
           } else if (action === 'navigator-share') {
-            const file = new File([blob], 'rewind.png', {
+            const file = new File([blob], 'razorpay_rewind.png', {
               type: imageType,
             });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -45,4 +77,4 @@ const captureImage = (componentRef, imgDimension, action): Promise<void> | undef
   });
 };
 
-export { captureImage };
+export { captureImage, getImgBlob, downloadAllSlides };

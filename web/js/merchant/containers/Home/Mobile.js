@@ -32,11 +32,7 @@ import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
-import {
-  getFormattedAmountNew,
-  checkHTML5APIvalidity,
-  isExperimentActive,
-} from 'common/utils/rzp-utils';
+import { getFormattedAmountNew, checkHTML5APIvalidity } from 'common/utils/rzp-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
@@ -66,8 +62,10 @@ const TerminalStatus = lazy(() =>
   ),
 );
 
-const PaymentsRecap = lazy(() =>
-  import(/* webpackChunkName: 'payments-recap' */ 'merchant/components/HeaderNav/PaymentsRecap'),
+const PaymentsRecapBanner = lazy(() =>
+  import(
+    /* webpackChunkName: 'payments-recap-banner' */ 'merchant/components/HeaderNav/PaymentsRecap/Banner'
+  ),
 );
 
 @withI18Service
@@ -168,12 +166,6 @@ class AnalyticsMobile extends Component {
       disableClose: true,
     });
   }
-
-  shouldShowRazorpayRewind = () => {
-    const { user, splitz } = this.props;
-    const { abExperiments: { payments_recap } = {} } = splitz;
-    return user.isOrgRZP && user.isActivated && isExperimentActive(payments_recap);
-  };
 
   renderOnboardingWidgets = () => {
     const { user } = this.props;
@@ -295,9 +287,7 @@ class AnalyticsMobile extends Component {
             Google Chrome, Edge, Safari, Firefox.
           </AnnouncementBanner>
         )}
-        {this.shouldShowRazorpayRewind() ? (
-          <PaymentsRecap user={user} bannerVariant="mobile" />
-        ) : null}
+        <PaymentsRecapBanner bannerVariant="mobile" />
         <DashboardBanner />
         <div
           ref={(node) => onExtraContentMount(node)}

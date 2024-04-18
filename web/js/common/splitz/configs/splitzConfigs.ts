@@ -270,6 +270,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'payments_recap_enhancements',
+        experimentId: {
+          beta: 'Nntc2jFOd01hHO',
+          production: 'NzhndsmADtMZVK',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'recon_sass_flag',
         experimentId: {
           beta: 'NaMSjrxhdTtjFO',
