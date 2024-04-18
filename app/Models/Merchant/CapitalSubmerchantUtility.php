@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Models\Merchant\Referral\Entity as ReferralEntity;
 use Throwable;
 use ApiResponse;
 use RZP\Exception;
@@ -22,16 +21,19 @@ use Illuminate\Http\JsonResponse;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\App;
 use RZP\Jobs\SubMerchantTaggingJob;
+use Illuminate\Support\Facades\Event;
 use RZP\Error\PublicErrorDescription;
 use Illuminate\Foundation\Application;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Batch\Header as BatchHeader;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Models\Merchant\Referral\Entity as ReferralEntity;
 
 class CapitalSubmerchantUtility
 {
@@ -601,18 +603,22 @@ class CapitalSubmerchantUtility
             ]
         );
 
-        // append the tag in current mode
-        SubMerchantTaggingJob::dispatch(
-            Mode::LIVE, $partnerId,
-            $subMerchant->getId(),
-            Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX
-        );
-        SubMerchantTaggingJob::dispatch(
-            Mode::TEST,
-            $partnerId,
-            $subMerchant->getId(),
-            Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX
-        );
+        Event::dispatch(new TransactionalClosureEvent(function () use ($subMerchant, $partnerId) {
+            // Job will be dispatched only if the transaction commits.
+            SubMerchantTaggingJob::dispatch(
+                Mode::LIVE,
+                $partnerId,
+                $subMerchant->getId(),
+                Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX
+            );
+
+            SubMerchantTaggingJob::dispatch(
+                Mode::TEST,
+                $partnerId,
+                $subMerchant->getId(),
+                Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX
+            );
+        }));
 
         /**
          * We ned to force LIVE mode here, because when batch service calls v1/submerchants/batch API or partner adds capital

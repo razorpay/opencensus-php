@@ -271,7 +271,7 @@ class SubMerchantBatchUtility extends Base\Core
             $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner, PartnerConstants::BULK_ONBOARDING_ADMIN);
 
             $subMerchant = $this->repo->merchant->findOrFailPublic(
-                Account::verifyIdAndStripSign($subMerchantArray[ME::ID]));
+                Account::verifyIdAndSilentlyStripSign($subMerchantArray[ME::ID]));
         }
         else
         {

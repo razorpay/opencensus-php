@@ -6,7 +6,8 @@ use RZP\Models\Partner;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\SubMerchantTaggingJob;
-
+use Illuminate\Support\Facades\Event;
+use Neves\Events\TransactionalClosureEvent;
 
 class POSSubMerchantUtility
 {
@@ -29,18 +30,20 @@ class POSSubMerchantUtility
                 ]
             );
 
-            // append the tag in current mode
-            SubMerchantTaggingJob::dispatch(
-                Mode::LIVE, $partnerId,
-                $subMerchant->getId(),
-                Constants::POS_PARTNERSHIP_TAG_PREFIX
-            );
-            SubMerchantTaggingJob::dispatch(
-                Mode::TEST,
-                $partnerId,
-                $subMerchant->getId(),
-                Constants::POS_PARTNERSHIP_TAG_PREFIX
-            );
+            Event::dispatch(new TransactionalClosureEvent(function () use ($subMerchant, $partnerId) {
+                SubMerchantTaggingJob::dispatch(
+                    Mode::LIVE, $partnerId,
+                    $subMerchant->getId(),
+                    Constants::POS_PARTNERSHIP_TAG_PREFIX
+                );
+
+                SubMerchantTaggingJob::dispatch(
+                    Mode::TEST,
+                    $partnerId,
+                    $subMerchant->getId(),
+                    Constants::POS_PARTNERSHIP_TAG_PREFIX
+                );
+            }));
         }
 
     }

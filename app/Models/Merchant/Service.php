@@ -7266,7 +7266,12 @@ class Service extends Base\Service
 
         if ($isLinkedAccount === false)
         {
-            SubMerchantTaggingJob::dispatch($this->mode, $merchant->getId(), $subMerchant->getId(), Constants::PARTNER_REFERRAL_TAG_PREFIX);
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant, $subMerchant) {
+                // Job will be dispatched only if the transaction commits.
+                SubMerchantTaggingJob::dispatch(
+                    $this->mode, $merchant->getId(), $subMerchant->getId(), Constants::PARTNER_REFERRAL_TAG_PREFIX
+                );
+            }));
 
             Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_USER_IF_APPLICABLE], function () use ($ownerId, $subMerchant, $merchant, $product, & $response) {
 
