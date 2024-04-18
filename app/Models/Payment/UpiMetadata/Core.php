@@ -10,6 +10,13 @@ class Core extends Base\Core
 {
     public function create(array $input, Payment\Entity $payment): Entity
     {
+        if ((isset($input[Payment\Entity::VPA]) === false) and
+            (empty($payment->getVpa()) === false) and
+            ((isset($input['flow']) === false) or ($input['flow'] === Payment\Flow::COLLECT)))
+        {
+            $input[Payment\Entity::VPA] = $payment->getVpa();
+        }
+
         $upiMetadata = (new Entity)->build($input);
 
         $upiMetadata->associatePayment($payment);

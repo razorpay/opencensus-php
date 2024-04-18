@@ -12,6 +12,7 @@ use RZP\Models\PaymentsUpi\Vpa\Entity as Vpa;
 use RZP\Tests\Functional\Helpers\PaymentsUpiTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Payment\UpiMetadata\Entity as UpiMetadata;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class SavedVpaPaymentCreateTest extends TestCase
@@ -57,9 +58,10 @@ class SavedVpaPaymentCreateTest extends TestCase
 
         $this->doAuthPaymentViaAjaxRoute($this->payment);
 
-        $payment    = $this->getDbLastPayment();
-        $token      = $this->getDbLastEntity('token');
-        $vpa        = $this->getDbLastEntity('payments_upi_vpa');
+        $payment     = $this->getDbLastPayment();
+        $token       = $this->getDbLastEntity('token');
+        $vpa         = $this->getDbLastEntity('payments_upi_vpa');
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
 
         // Payments got created with save flag
         $this->assertArraySubset([
@@ -102,6 +104,11 @@ class SavedVpaPaymentCreateTest extends TestCase
             Vpa::HANDLE                     => 'icici',
             Vpa::NAME                       => false,
         ], $tokens['items'][0]['vpa']);
+
+        // Vpa saved in upi_metadata
+        $this->assertArraySubset([
+            UpiMetadata::VPA => $payment->getVpa(),
+        ], $upiMetadata->toArray());
     }
 
     public function testLocalSavedVpaPaymentCreateWithToken()
@@ -117,9 +124,10 @@ class SavedVpaPaymentCreateTest extends TestCase
 
         $this->doAuthPaymentViaAjaxRoute($this->payment);
 
-        $payment    = $this->getDbLastPayment();
-        $token      = $this->getEntityById('token', '1000000custupi', true);
-        $vpa        = $this->getEntityById('payments_upi_vpa', $token['vpa_id'], true);
+        $payment     = $this->getDbLastPayment();
+        $token       = $this->getEntityById('token', '1000000custupi', true);
+        $vpa         = $this->getEntityById('payments_upi_vpa', $token['vpa_id'], true);
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
 
         $this->assertArraySubset([
             Payment::GLOBAL_TOKEN_ID      => null,
@@ -135,6 +143,11 @@ class SavedVpaPaymentCreateTest extends TestCase
             Entity::METHOD                  => 'upi',
             Entity::VPA_ID                  => $vpa['id'],
         ], $token);
+
+        // Vpa saved in upi_metadata
+        $this->assertArraySubset([
+            UpiMetadata::VPA => $vpa[Vpa::USERNAME] . '@' . $vpa[Vpa::HANDLE],
+        ], $upiMetadata->toArray());
     }
 
     public function testGlobalSavedVpaPaymentCreate()
@@ -210,6 +223,13 @@ class SavedVpaPaymentCreateTest extends TestCase
         $this->assertEquals($payment[Payment::APP_TOKEN], '1000000custapp');
 
         $this->assertEquals($payment[Payment::GLOBAL_CUSTOMER_ID], '10000gcustomer');
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        // Vpa saved in upi_metadata
+        $this->assertArraySubset([
+            UpiMetadata::VPA => $payment->getVpa(),
+        ], $upiMetadata->toArray());
     }
 
     protected function mockSession($appToken = 'capp_1000000custapp')
