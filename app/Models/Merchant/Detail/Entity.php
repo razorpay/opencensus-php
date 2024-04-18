@@ -232,6 +232,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     //Config to store virtual account ids for fund addition
     const FUND_ADDITION_VA_IDS = 'fund_addition_va_ids';
+
+    const EDD_VERIFICATION_STATUS = 'edd_verification_status';
+
     protected $entity     = 'merchant_detail';
 
     protected $primaryKey = self::MERCHANT_ID;
@@ -549,6 +552,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     protected static $modifiers = [
         'bank_branch_input',
         'contact_mobile'
+    ];
+
+    protected $hidden = [
+        self::EDD_VERIFICATION_STATUS,
     ];
 
     /**

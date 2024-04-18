@@ -70,6 +70,7 @@ trait RepositoryUpdateTestAndLiveAndAsv
                     $asvEntity = $this->createAsvEntity($entity);
                 }
 
+                list($liveEntity, $testEntity, $asvEntity) = $this->removeAsvFieldsFromEntity($liveEntity, $testEntity, $asvEntity);
                 // Persist the entity in both live and test databases.
                 $liveEntity->saveOrFail($options);
 
@@ -182,5 +183,23 @@ trait RepositoryUpdateTestAndLiveAndAsv
         $asvEntity->setConnection(Connection::ASV_WRITER);
 
         return array($testEntity, $liveEntity, $asvEntity);
+    }
+
+    protected function removeAsvFieldsFromEntity($liveEntity, $testEntity, $asvEntity): array
+    {
+        $entityName =  $liveEntity->getEntityName();
+        switch($entityName) {
+            case "merchant_detail" :
+                unset($liveEntity['edd_verification_status'],
+                      $testEntity['edd_verification_status'],
+                      $asvEntity['edd_verification_status']);
+                break;
+            case "merchant_business_detail" :
+                unset($liveEntity['products'],
+                      $testEntity['products'],
+                      $asvEntity['products']);
+        }
+
+        return array($liveEntity, $testEntity, $asvEntity);
     }
 }

@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const MIQ_SHARING_DATE              = 'miq_sharing_date';
     const TESTING_CREDENTIALS_DATE      = 'testing_credentials_date';
     const METADATA                      = 'metadata';
+    const PRODUCTS                      = 'products';
 
     protected $entity = 'merchant_business_detail';
 
@@ -92,6 +93,10 @@ class Entity extends Base\PublicEntity
         self::MIQ_SHARING_DATE               => 0,
         self::TESTING_CREDENTIALS_DATE       => 0,
         self::METADATA                       => null,
+    ];
+
+    protected $hidden = [
+        self::PRODUCTS,
     ];
 
     public function getId()
