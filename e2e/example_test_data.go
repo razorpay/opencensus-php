@@ -12,12 +12,10 @@ var requestTestForHealth = map[string]*httpexpect.RequestTest{
 		ExpectedResponseCode: http.StatusOK,
 		ExpectedResponseBody: &HealthResponse{
 			Redis: "ok",
-			API:   "ok",
 		},
 	},
 }
 
 type HealthResponse struct {
 	Redis string `json:"redis"`
-	API   string `json:"api"`
 }

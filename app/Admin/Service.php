@@ -1789,18 +1789,13 @@ class Service extends Base\Service
         // Check Redis Connection
         $redisStatus = $this->getRedisConnectionStatus();
 
-        // Check API Connection
-        $apiStatus = $this->getAPIConnectionStatus();
-
-        if ($redisStatus['statusCode'] !== 200 or
-            $apiStatus['statusCode'] !== 200)
+        if ($redisStatus['statusCode'] !== 200)
         {
             $statusCode = 500;
         }
 
         $response = [
-            'redis' => $redisStatus['statusMessage'],
-            'api'   => $apiStatus['statusMessage'],
+            'redis' => $redisStatus['statusMessage'],   
             'version' => app()->version(),
         ];
 
