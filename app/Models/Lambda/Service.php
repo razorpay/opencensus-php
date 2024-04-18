@@ -343,6 +343,8 @@ class Service extends Base\Service
     {
         $this->merchant = $this->repo->merchant->find($merchantId);
 
+        $this->app['basicauth']->setMerchant($this->merchant);
+
         if ($this->merchant === null)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
