@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Status;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Settlement\SlackNotification;
@@ -41,6 +42,8 @@ class Processor extends Base\Core
     protected $gstin = null;
 
     protected $invoiceBreakup;
+
+    protected $invoiceBreakupIndependentOfBalanceID;
 
     protected $month;
 
@@ -176,10 +179,88 @@ class Processor extends Base\Core
              }
         }
 
-        $allInvoicesEligibleForEInvoice = [];
-        foreach ($this->invoiceBreakup as $balanceId => & $details)
+        try
         {
-            $balance = $this->repo->balance->findByIdAndMerchantId($balanceId, $this->merchantId);
+            $existingInvoicesForXChargeCollections = $this->checkInvoiceExistsForXChargeCollections($this->merchantId);
+
+            if ((isset($this->invoiceBreakupIndependentOfBalanceID[Balance\Type::BANKING])) and ($existingInvoicesForXChargeCollections->count() == 0))
+            {
+                $this->invoiceBreakupIndependentOfBalanceID[Balance\Type::BANKING][Type::X_CHARGE_COLLECTIONS] = $this->calculateFeesForInvoiceByTypeForBanking(Type::X_CHARGE_COLLECTIONS, null);
+
+                $this->createInvoiceBreakup(null, $this->invoiceBreakupIndependentOfBalanceID[Balance\Type::BANKING]);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED_X_CC,
+                    [
+                        'merchant'              => $this->merchantId,
+                        'month'                 => $this->month,
+                        'year'                  => $this->year,
+                        'invoice_ids'           => $existingInvoicesForXChargeCollections->getIds(),
+                        'mode'                  => $this->mode,
+                        'invoiceBreakup'        => $this->invoiceBreakupIndependentOfBalanceID,
+                    ]);
+            }
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_FAILED_X_CC,
+                [
+                    'merchant_id'           => $this->merchant->getId(),
+                    'month'                 => $this->month,
+                    'year'                  => $this->year,
+                ]);
+
+            $this->trace->count(Metric::MERCHANT_INVOICE_ENTITY_CREATION_FAILED_X_CC);
+        }
+
+        $allInvoiceNumbersEligibleForEInvoice = array_merge($this->invoicesNumbersEligibleForEInvoice($this->invoiceBreakup),
+                    $this->invoicesNumbersEligibleForEInvoice($this->invoiceBreakupIndependentOfBalanceID, true));
+
+        /*
+         * Merchant Invoice is created at balance level, however Merchant E-Invoice is created at invoice number i.e it
+         * contains aggregation of balances, I'm trying to fix the abstraction w/o making too many code changes
+         */
+        $allInvoiceNumbersEligibleForEInvoice = array_unique($allInvoiceNumbersEligibleForEInvoice);
+
+        foreach ($allInvoiceNumbersEligibleForEInvoice as $invoiceNumber)
+        {
+            try
+            {
+                $invoiceCore = new Core;
+                $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
+
+                $data = $invoiceCore->getXEInvoiceDataViaInvoiceNumber($this->month, $this->year, $invoiceNumber, $merchant);
+                $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::EINVOICE_CREATION_FAILED_FOR_X,
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                        'year'        => $this->year,
+                        'month'       => $this->month,
+                    ]);
+
+                $this->trace->count(Metric::EINVOICE_CREATION_FAILED_FOR_X);
+            }
+        }
+    }
+
+    private function invoicesNumbersEligibleForEInvoice($invoiceData, $isIndependentOfBalanceID = false)
+    {
+        $eligibleInvoiceNumbers = [];
+        foreach ($invoiceData as $key => & $details)
+        {
+            $balance = $isIndependentOfBalanceID === true ? null : $this->repo->balance->findByIdAndMerchantId($key, $this->merchantId);
 
             $this->trace->info(
                 TraceCode::IRN_NOT_GENERATED_DEBUG_LOGGING,
@@ -187,11 +268,12 @@ class Processor extends Base\Core
                     'merchant'    => $this->merchantId,
                     'month'       => $this->month,
                     'year'        => $this->year,
+                    'key'         => $key,
                     'balance'     => $balance,
                     'details'     => $details
                 ]);
 
-            if (($balance->isTypeBanking() === true))
+            if (($key === Balance\Type::BANKING) or (($balance !== null) and ($balance->isTypeBanking() === true)))
             {
                 // If invoice not eligible for X
                 if($this->checkEligibleLineItems($details) === false)
@@ -200,11 +282,23 @@ class Processor extends Base\Core
                     //This is a double check to ensure we have not skipped updating transaction details.
                     try
                     {
-                        $invoice = $this->repo->merchant_invoice->fetchBankingInvoiceDataByBalanceIdAndMerchantId(
-                                                    $balanceId,
-                                                    $this->merchantId,
-                                                    $this->month,
-                                                    $this->year);
+                        $invoice = null;
+                        if ($key === Balance\Type::BANKING)
+                        {
+                            $invoice = $this->repo->merchant_invoice->fetchBankingInvoiceDataByBalanceIdAndMerchantId(
+                                null,
+                                $this->merchantId,
+                                $this->month,
+                                $this->year);
+                        }
+                        else
+                        {
+                            $invoice = $this->repo->merchant_invoice->fetchBankingInvoiceDataByBalanceIdAndMerchantId(
+                                $key,
+                                $this->merchantId,
+                                $this->month,
+                                $this->year);
+                        }
 
                         foreach ($invoice as $index => $lineItem)
                         {
@@ -227,7 +321,7 @@ class Processor extends Base\Core
                                 'merchant'      => $this->merchantId,
                                 'month'         => $this->month,
                                 'year'          => $this->year,
-                                'balance_id'    => $balanceId,
+                                'balance_id'    => $key,
                                 'details'       => $details
                             ]);
 
@@ -243,9 +337,9 @@ class Processor extends Base\Core
                         $this->trace->info(TraceCode::EINVOICE_ELIGIBLE_INVOICE_FOR_X,
                             [
                                 'merchant_id' => $this->merchant->getId(),
-                                'month' => $this->month,
-                                'year' => $this->year,
-                                'balance_id' => $balanceId,
+                                'month'       => $this->month,
+                                'year'        => $this->year,
+                                'balance_id'  => $key,
                             ]
                         );
                         $xEInvoiceCore = new Merchant\Invoice\EInvoice\XEInvoice;
@@ -258,7 +352,7 @@ class Processor extends Base\Core
 
                         $invoiceCore = new Core;
 
-                        $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant, $balance);
+                        $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant, $balance, $key == Balance\Type::BANKING);
 
                         if (($shouldGenerateEInvoice === true))
                         {
@@ -270,7 +364,7 @@ class Processor extends Base\Core
 
                                 if(!empty($data[Entity::INVOICE_NUMBER]))
                                 {
-                                    array_push($allInvoicesEligibleForEInvoice,$data[Entity::INVOICE_NUMBER]);
+                                    array_push($eligibleInvoiceNumbers,$data[Entity::INVOICE_NUMBER]);
                                 }
                             }
                             else {
@@ -306,36 +400,7 @@ class Processor extends Base\Core
             }
         }
 
-        /*
-         * Merchant Invoice is created at balance level, however Merchant E-Invoice is created at invoice number i.e it
-         * contains aggregation of balances, I'm trying to fix the abstraction w/o making too many code changes
-         */
-        $allInvoicesEligibleForEInvoice = array_unique($allInvoicesEligibleForEInvoice);
-        foreach ($allInvoicesEligibleForEInvoice as $invoiceNumber)
-        {
-            try
-            {
-                $invoiceCore = new Core;
-
-                $data = $invoiceCore->getXEInvoiceDataViaInvoiceNumber($this->month, $this->year, $invoiceNumber, $merchant);
-
-                $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::EINVOICE_CREATION_FAILED_FOR_X,
-                    [
-                        'merchant_id' => $this->merchant->getId(),
-                        'year'        => $this->year,
-                        'month'       => $this->month,
-                    ]);
-
-                $this->trace->count(Metric::EINVOICE_CREATION_FAILED_FOR_X);
-            }
-        }
+        return $eligibleInvoiceNumbers;
     }
 
     private function checkIfCreditNoteAmountGreaterThanInvoiceAmount($data)
@@ -363,7 +428,12 @@ class Processor extends Base\Core
         return $this->repo->merchant_invoice->fetchFeesDataToCheckInvoiceExists($merchantId, $this->month, $this->year ,$balanceId);
     }
 
-    protected function createInvoiceBreakup(Merchant\Balance\Entity $balance, array $details)
+    protected function checkInvoiceExistsForXChargeCollections(string $merchantId): Base\PublicCollection
+    {
+        return $this->repo->merchant_invoice->fetchFeesDataToCheckInvoiceExistsByType($merchantId, $this->month, $this->year, Type::X_CHARGE_COLLECTIONS);
+    }
+
+    protected function createInvoiceBreakup(Merchant\Balance\Entity $balance = null, array $details)
     {
         $invoiceBreakup =  $this->repo->transaction(function() use ($balance, $details){
 
@@ -394,6 +464,7 @@ class Processor extends Base\Core
                             $params = $this->filterGSTParams($balance, $feeBearer, $params);
 
                             $amount += $params[Entity::AMOUNT];
+
                             $lineItem = (new Core)->create($params, $this->merchant, $balance);
                             $invoiceBreakup->push($lineItem);
                         }
@@ -422,7 +493,7 @@ class Processor extends Base\Core
             return $invoiceBreakup;
         });
 
-        if($balance->isTypePrimary() === true)
+        if(($balance !== null) and ($balance->isTypePrimary() === true))
         {
             try
             {
@@ -480,7 +551,7 @@ class Processor extends Base\Core
 
     private function filterGSTParams($balance, $feeBearer, $params)
     {
-        if (($balance->isTypePrimary() === true) and
+        if (($balance != null) and ($balance->isTypePrimary() === true) and
             ($feeBearer === Merchant\FeeBearer::CUSTOMER)) {
             unset($params[Entity::GSTIN]);
 
@@ -546,11 +617,16 @@ class Processor extends Base\Core
         // sum over fees & tax for different commission types
         foreach ($details as $type => $values)
         {
+            // X charge collections charges are not tied to any balance id
+            if ($type == Type::X_CHARGE_COLLECTIONS)
+            {
+                continue;
+            }
             $details[$type] = $this->calculateFeesForInvoiceByTypeForBanking($type, $balanceId);
         }
     }
 
-    protected function calculateFeesForInvoiceByTypeForBanking(string $type, string $balanceId)
+    protected function calculateFeesForInvoiceByTypeForBanking(string $type, ?string $balanceId)
     {
         // TODO: Check if the invoice already exists for this combination.
 
@@ -1288,6 +1364,8 @@ class Processor extends Base\Core
         // Initialize commission values
         $this->invoiceBreakup = [];
 
+        $this->invoiceBreakupIndependentOfBalanceID = [];
+
         $balances = $this->merchant->balances;
 
         if ($balances->count() === 0)
@@ -1327,10 +1405,21 @@ class Processor extends Base\Core
 
                 foreach ($bankingCommissionTypes as $type)
                 {
-                    $this->invoiceBreakup[$balance->getId()][$type] = [
-                        Entity::TAX             => 0,
-                        Entity::AMOUNT          => 0,
-                    ];
+                    // X charge collections charges are not tied to any balance id
+                    if ($type == Type::X_CHARGE_COLLECTIONS)
+                    {
+                        $this->invoiceBreakupIndependentOfBalanceID[$balance->getType()][$type] = [
+                            Entity::TAX             => 0,
+                            Entity::AMOUNT          => 0,
+                        ];
+                    }
+                    else
+                    {
+                        $this->invoiceBreakup[$balance->getId()][$type] = [
+                            Entity::TAX             => 0,
+                            Entity::AMOUNT          => 0,
+                        ];
+                    }
                 }
             }
         }

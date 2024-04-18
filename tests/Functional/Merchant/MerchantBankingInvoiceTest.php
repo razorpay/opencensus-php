@@ -541,7 +541,7 @@ class MerchantBankingInvoiceTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $data['rx_transactions']['balance_id'] = $balanceId;
-        $data['x_charge_collections']['balance_id'] = $balanceId;
+        $data['x_charge_collections']['balance_id'] = null;
 
         $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
         $this->assertArraySelectiveEquals($invoiceEntities['x_charge_collections'], $data['x_charge_collections']);
@@ -549,11 +549,11 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function setupEInvoiceClientResponse($expectedContent)
+    public function setupEInvoiceClientResponse($expectedContent, $times = 1)
     {
         $this->eInvoiceClientMock
             ->shouldReceive('getEInvoice')
-            ->times(1)
+            ->times($times)
             ->with(Mockery::on(function (string $mode)  use ($expectedContent)
             {
                 if($mode !== Mode::TEST)
@@ -661,7 +661,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $expectedContent = $this->testData[__FUNCTION__]['expectedContent'];
 
-        $this->setupEInvoiceClientResponse($expectedContent);
+        $this->setupEInvoiceClientResponse($expectedContent, 2);
 
         $this->makeRequestAndGetContent($request);
 
@@ -1007,7 +1007,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->eInvoiceClientMock
             ->shouldReceive('getEInvoice')
-            ->times(2)
+            ->times(1)
             ->with(Mockery::on(function (string $mode)  use ($expectedContent)
             {
                 if($mode !== Mode::TEST)
@@ -1019,7 +1019,44 @@ class MerchantBankingInvoiceTest extends TestCase
 
             }), Mockery::on(function(array $input) use ($expectedContent)
             {
-                $this->assertArraySelectiveEquals($expectedContent, $input);
+                $this->assertArraySelectiveEquals($expectedContent[0], $input);
+
+                return true;
+            }))
+            ->andReturnUsing(function () {
+                return [
+                    'status'            => '200',
+                    'body'   => [
+                        'results' => [
+                            'message'   => [
+                                'Status'        => 'generated',
+                                'Irn'           => 'randomirn',
+                                'SignedInvoice' => 'randominvoice',
+                                'SignedQRCode'  => 'randomcode',
+                                'QRCodeUrl'     => 'randomurl',
+                                'EinvoicePdf'   => 'randompdf',
+                            ],
+                            'status'    => 'Success',
+                        ],
+                    ],
+                ];
+            });
+
+        $this->eInvoiceClientMock
+            ->shouldReceive('getEInvoice')
+            ->times(1)
+            ->with(Mockery::on(function (string $mode)  use ($expectedContent)
+            {
+                if($mode !== Mode::TEST)
+                {
+                    return false;
+                }
+
+                return true;
+
+            }), Mockery::on(function(array $input) use ($expectedContent)
+            {
+                $this->assertArraySelectiveEquals($expectedContent[1], $input);
 
                 return true;
             }))
@@ -1117,7 +1154,7 @@ class MerchantBankingInvoiceTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $data['rx_transactions']['balance_id'] = $balanceId;
-        $data['x_charge_collections']['balance_id'] = $balanceId;
+        $data['x_charge_collections']['balance_id'] = null;
 
         $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
         $this->assertArraySelectiveEquals($invoiceEntities['x_charge_collections'], $data['x_charge_collections']);
@@ -1217,7 +1254,7 @@ class MerchantBankingInvoiceTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $data['rx_transactions']['balance_id'] = $balanceId;
-        $data['x_charge_collections']['balance_id'] = $balanceId;
+        $data['x_charge_collections']['balance_id'] = null;
 
         $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
         $this->assertArraySelectiveEquals($invoiceEntities['x_charge_collections'], $data['x_charge_collections']);

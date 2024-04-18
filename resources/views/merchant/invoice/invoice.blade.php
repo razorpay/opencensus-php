@@ -211,8 +211,12 @@
                                         <span class="text-black-o-80 font-weight-600">RazorpayX Virtual Account Transactions</span><br>
                                     @elseif($rowItem['account_type'] === 'direct')
                                         <span class="text-black-o-80 font-weight-600">{{strtoupper($rowItem['channel'])}} Current Account Transactions</span><br>
+                                    @elseif(empty($rowItem['account_type']) === true)
+                                        <span class="text-black-o-80 font-weight-600">{{$rowItem['description']}}</span><br>
                                     @endif
-                                    <span class="text-black-o-60">A/C No. {{$key}}</span>
+                                    @if(empty($key) === false)
+                                        <span class="text-black-o-60">A/C No. {{$key}}</span>
+                                    @endif
                                 </td>
                                 <td class="doc-date">
                                     {{$rowItem['GST.SAC Code']}}

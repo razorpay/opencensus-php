@@ -135,11 +135,20 @@ class BankingInvoiceReport extends BaseReport
 
         $row[self::ACCOUNT_NUMBER] = $invoice->getAccountNumberAttribute();
 
-        $balance = $this->repo->balance->getBalanceByAccountNumberAndMerchantIDOrFail($row[self::ACCOUNT_NUMBER], $this->merchant->getId());
+        $balance = null;
 
-        $row[self::ACCOUNT_TYPE] = $balance->getAccountType();
+        $row[self::ACCOUNT_TYPE] = '';
 
-        $row[self::CHANNEL] = $balance->getChannel();
+        $row[self::CHANNEL] = '';
+
+        if (empty($row[self::ACCOUNT_NUMBER]) === false)
+        {
+            $balance = $this->repo->balance->getBalanceByAccountNumberAndMerchantIDOrFail($row[self::ACCOUNT_NUMBER], $this->merchant->getId());
+
+            $row[self::ACCOUNT_TYPE] = $balance->getAccountType();
+
+            $row[self::CHANNEL] = $balance->getChannel();
+        }
 
         $row[self::GST_SAC_CODE] = Invoice\Type::getGstSacCodeForType($type);
 
@@ -247,11 +256,20 @@ class BankingInvoiceReport extends BaseReport
 
         $row[self::ACCOUNT_NUMBER] = $invoice->getAccountNumberAttribute();
 
-        $balance = $this->repo->balance->getBalanceByAccountNumberOrFail($row[self::ACCOUNT_NUMBER]);
+        $balance = null;
 
-        $row[self::ACCOUNT_TYPE] = $balance->getAccountType();
+        $row[self::ACCOUNT_TYPE] = '';
 
-        $row[self::CHANNEL] = $balance->getChannel();
+        $row[self::CHANNEL] = '';
+
+        if (empty($row[self::ACCOUNT_NUMBER]) === false)
+        {
+            $balance = $this->repo->balance->getBalanceByAccountNumberOrFail($row[self::ACCOUNT_NUMBER]);
+
+            $row[self::ACCOUNT_TYPE] = $balance->getAccountType();
+
+            $row[self::CHANNEL] = $balance->getChannel();
+        }
 
         $row[self::GST_SAC_CODE] = Invoice\Type::getGstSacCodeForType($type);
 

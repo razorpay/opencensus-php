@@ -79,6 +79,7 @@ class XEInvoice extends Core
                 Constants::TOTAL_ITEM_VALUE => $totalItemValue,
                 Constants::ACCOUNT_TYPE => $invoiceItem[BankingInvoiceReport::ACCOUNT_TYPE],
                 Constants::CHANNEL => $invoiceItem[BankingInvoiceReport::CHANNEL],
+                Constants::PRODUCT_DESCRIPTION => $invoiceItem[BankingInvoiceReport::DESCRIPTION],
             ];
         }
 
@@ -97,7 +98,7 @@ class XEInvoice extends Core
 
         foreach ($items as $index => $values)
         {
-            $items[$index][Constants::PRODUCT_DESCRIPTION]  = $this->getModifiedProductDescription($values[Constants::ACCOUNT_TYPE], $values[Constants::CHANNEL]);
+            $items[$index][Constants::PRODUCT_DESCRIPTION]  = $this->getModifiedProductDescription($values[Constants::ACCOUNT_TYPE], $values[Constants::CHANNEL], $values[Constants::PRODUCT_DESCRIPTION]);
             $items[$index][Constants::UNIT_PRICE]           = $this->getAmountInRupees($values[Constants::UNIT_PRICE]);
             $items[$index][Constants::TOTAL_AMOUNT]         = $this->getAmountInRupees($values[Constants::TOTAL_AMOUNT]);
             $items[$index][Constants::ASSESSABLE_VALUE]     = $this->getAmountInRupees($values[Constants::ASSESSABLE_VALUE]);
@@ -296,8 +297,13 @@ class XEInvoice extends Core
         return [null, Constants::RSPL];
     }
 
-    protected function getModifiedProductDescription($account_type, $channel)
+    protected function getModifiedProductDescription($account_type, $channel, $productDescription)
     {
+        if (empty($productDescription) === false)
+        {
+            return $productDescription;
+        }
+
         if($account_type === "shared")
         {
             return "RazorpayX Virtual Account Transactions";

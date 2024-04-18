@@ -14,6 +14,7 @@ use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
@@ -56,6 +57,16 @@ class Core extends Base\Core
         $invoiceEntity->merchant()->associate($merchant);
 
         $invoiceEntity->build($input);
+
+        // X charge collections for X SAAS products are not associated with any RX balance
+        if ($input[Entity::TYPE] === Type::X_CHARGE_COLLECTIONS)
+        {
+            $invoiceEntity->generateInvoiceNumber($input['month'], $input['year'], BalanceType::BANKING,true);
+
+            $this->repo->saveOrFail($invoiceEntity);
+
+            return $invoiceEntity;
+        }
 
         // TODO: Balance should be sent from every caller of this function.
         // Remove `null` default in function argument.
@@ -900,11 +911,11 @@ class Core extends Base\Core
         return $data;
     }
 
-    public function getXEInvoiceData($month, $year, $merchant, ?Balance\Entity $balance)
+    public function getXEInvoiceData($month, $year, $merchant, ?Balance\Entity $balance, $isIndependentOfBalanceID = false)
     {
         $dateString = Carbon::createFromDate($year, $month, 1, Timezone::IST)->format('my');
 
-        $balanceOwnedByRzpx = $this->isBalanceOwnedByRzpx($balance);
+        $balanceOwnedByRzpx = $isIndependentOfBalanceID === true ? $isIndependentOfBalanceID : $this->isBalanceOwnedByRzpx($balance);
 
         $invoiceNumber = Entity::generateInvoiceNumberForX($merchant->getId(),$dateString,$balanceOwnedByRzpx);
 
