@@ -17,7 +17,7 @@ class Mode
     const IFT       = 'IFT';
     const UPI       = 'UPI';
     const AMAZONPAY = 'amazonpay';
-    const DUITNOW   = 'duitnow';
+    const DUITNOW   = 'DUITNOW';
     const IBG       = 'IBG';
 
     // We will be storing mode 'card' for payouts through

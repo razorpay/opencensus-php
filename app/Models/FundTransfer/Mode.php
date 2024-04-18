@@ -27,7 +27,7 @@ class Mode extends Core
     const IMPS    = 'IMPS';
     const NEFT    = 'NEFT';
     const IFT     = 'IFT';
-    const DUITNOW = "duitnow";
+    const DUITNOW = "DUITNOW";
     const IBG     = "IBG";
 
     // We will be storing mode 'card' for payouts through

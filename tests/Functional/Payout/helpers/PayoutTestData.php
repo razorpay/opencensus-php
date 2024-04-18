@@ -54,7 +54,7 @@ return [
                 "account_number" => "2224440041626905",
                 "amount" => 1000,
                 "currency" => "MYR",
-                "mode" => "duitnow",
+                "mode" => "DUITNOW",
                 "purpose" => "payout",
                 "fund_account" => [
                     "account_type" => "bank_account",
@@ -93,7 +93,7 @@ return [
                 'narration'       => 'Acme Corp Fund Transfer',
                 'purpose'         => 'payout',
                 'status'          => 'processing',
-                'mode'            => 'duitnow',
+                'mode'            => 'DUITNOW',
                 'tax'             => 0,
                 'fees'            => 500,
                 'notes'           => [
@@ -111,7 +111,7 @@ return [
                 "account_number" => "2224440041626905",
                 "amount" => 1000,
                 "currency" => "MYR",
-                "mode" => "duitnow",
+                "mode" => "DUITNOW",
                 "purpose" => "payout",
                 "fund_account" => [
                     "account_type" => "bank_account",
@@ -150,7 +150,7 @@ return [
                 'narration'       => 'Acme Corp Fund Transfer',
                 'purpose'         => 'payout',
                 'status'          => 'processing',
-                'mode'            => 'duitnow',
+                'mode'            => 'DUITNOW',
                 'tax'             => 0,
                 'fees'            => 500,
                 'notes'           => [
@@ -168,7 +168,7 @@ return [
                 "account_number" => "2224440041626905",
                 "amount" => 1000,
                 "currency" => "MYR",
-                "mode" => "duitnow",
+                "mode" => "DUITNOW",
                 "purpose" => "payout",
                 "fund_account" => [
                     "account_type" => "bank_account",
@@ -223,7 +223,7 @@ return [
                 "account_number" => "2224440041626905",
                 "amount" => 1000,
                 "currency" => "MYR",
-                "mode" => "duitnow",
+                "mode" => "DUITNOW",
                 "purpose" => "payout",
                 "fund_account" => [
                     "account_type" => "bank_account",
@@ -267,7 +267,7 @@ return [
                 "account_number" => "2224440041626905",
                 "amount" => 1000,
                 "currency" => "MYR",
-                "mode" => "duitnow",
+                "mode" => "DUITNOW",
                 "purpose" => "payout",
                 "fund_account" => [
                     "account_type" => "bank_account",
@@ -324,7 +324,7 @@ return [
                 "account_number" => "2224440041626905",
                 "amount" => 1000,
                 "currency" => "USD",
-                "mode" => "duitnow",
+                "mode" => "DUITNOW",
                 "purpose" => "payout",
                 "fund_account" => [
                     "account_type" => "bank_account",
@@ -379,7 +379,7 @@ return [
                 "account_number" => "2224440041626905",
                 "amount" => 1000,
                 "currency" => "MYR",
-                "mode" => "duitnow",
+                "mode" => "DUITNOW",
                 "purpose" => "refund",
                 "fund_account" => [
                     "account_type" => "bank_account",
