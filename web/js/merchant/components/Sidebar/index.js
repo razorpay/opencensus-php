@@ -69,6 +69,7 @@ export const BASE_ROUTES = {
   paymentMetrics: '/payment-metrics',
   paymentHandle: '/payment-handle',
   reconciliations: '/reconciliations/dashboard',
+  assistedFinancing: '/assisted-financing',
 };
 
 // Note: cannot use Box because textOverflow is not supported.

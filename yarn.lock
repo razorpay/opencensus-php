@@ -5196,6 +5196,11 @@
     react-chartjs-2 "^5.2.0"
     typed.js "^2.1.0"
 
+"@razorpay/i18nify-js@1.4.4":
+  version "1.4.4"
+  resolved "https://npm.pkg.github.com/download/@razorpay/i18nify-js/1.4.4/799f766bd3c87fc014e0f64c9462042e5a10c760#799f766bd3c87fc014e0f64c9462042e5a10c760"
+  integrity sha512-s0XzUuNxPO9LzcJgExWeDIGCbtPwgVmJju6vTuEaXrCvvAIQIrlRb4eatLPtS95iQDatNXLvy0gf1tBejwEnAg==
+
 "@razorpay/i18nify-js@^1.4.0":
   version "1.4.0"
   resolved "https://npm.pkg.github.com/download/@razorpay/i18nify-js/1.4.0/4988e9a10b55c6fbe1b045afa7f0f240eea01845#4988e9a10b55c6fbe1b045afa7f0f240eea01845"

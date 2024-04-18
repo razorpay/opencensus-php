@@ -53,6 +53,8 @@ import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/util
 import { isGCMSExperimentEnabled } from 'merchant/views/GCMS/shared/utils';
 import { isHelpWidgetDisabled } from 'merchant/components/Support/utils';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
+import AssistedFinancing from 'merchant/views/Affordability/AssistedFinancing';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 import MagicKonnect from 'merchant/views/MagicKonnect';
 
@@ -2292,6 +2294,23 @@ class Content extends Component {
               }
             />
           </Route>
+          <Route
+            path="assisted-financing"
+            element={
+              <RouteGuard
+                additionalCondition={(user) => {
+                  return (
+                    user.isAllowedView('payment_links') &&
+                    !isConfigTagEnabled('payment_links.payment_link') &&
+                    isExperimentEnabled(this.props.splitz?.abExperiments.assisted_financing) &&
+                    user.isOrgRZP
+                  );
+                }}
+              >
+                <AssistedFinancing />
+              </RouteGuard>
+            }
+          />
         </Routes>
       </Suspense>
     );

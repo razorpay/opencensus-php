@@ -268,6 +268,20 @@ export const PRODUCTS_DATA = {
       return user.isRiskAndFraudEnabled;
     },
   },
+  assisted_financing: {
+    icon: 'i-at-sign',
+    additionalCondition: (
+      user: any,
+      { isConfigTagEnabled, abExperiments }: ExtraConfig,
+    ): boolean => {
+      return (
+        isExperimentEnabled(abExperiments.assisted_financing) &&
+        user.isAllowedView('payment_links') &&
+        !isConfigTagEnabled('payment_links.payment_link') &&
+        user.isOrgRZP
+      );
+    },
+  },
 };
 
 export const COMMON_PRODUCTS = [

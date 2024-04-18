@@ -84,6 +84,7 @@ const routes = {
   SUBSCRIPTIONS_SETTINGS: '/app/subscriptions/settings',
   RISK_AND_FRAUD: '/app/risk-and-fraud',
   RECON_DASHBOARD: '/app/reconciliations/dashboard',
+  ASSISTED_FINANCING: '/app/assisted-financing',
 };
 
 module.exports = {

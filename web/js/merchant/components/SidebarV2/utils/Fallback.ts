@@ -6,6 +6,12 @@ export const FALLBACK_PRODUCTS = [
     section_id: 'payment_products',
     product_options: [
       {
+        title: SIDEEBAR_PRODUCTS_TITLES.assisted_financing,
+        product_id: 'assisted_financing',
+        category: '',
+        tags: [],
+      },
+      {
         title: SIDEEBAR_PRODUCTS_TITLES.payment_links,
         product_id: 'payment_links',
         category: 'most_used',

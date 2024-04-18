@@ -47,6 +47,7 @@ export const RoutesConfig = {
   '/announcements': Teams.PLATFORM_GROWTH,
   '/api-keys': Teams.PG_DASHBOARD,
   '/applications': Teams.PG_DASHBOARD,
+  '/assisted-financing': Teams.AFFORDABILITY,
   '/bank-accounts-settlements': Teams.BANKING,
   '/bank-accounts-settlements/bank-account-details': Teams.BANKING,
   '/bank-accounts-settlements/firs': Teams.BANKING,

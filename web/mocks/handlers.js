@@ -49,6 +49,7 @@ import gcmsProgramsHandler from 'merchant/views/GCMS/Programs/__tests__/mocks';
 import { sideBarHandlers } from 'merchant/components/SidebarV2/__test__/mocks/handlers';
 import gcmsResellersHandler from 'merchant/views/GCMS/Resellers/__tests__/mocks';
 import gcmsOrdersHandler from 'merchant/views/GCMS/Orders/__tests__/mocks';
+import assistedFinancingHandler from 'merchant/views/Affordability/AssistedFinancing/__tests__/mocks/index';
 
 export const handlers = [
   ...batchHandler,
@@ -889,4 +890,5 @@ export const handlers = [
   ...sideBarHandlers,
   ...gcmsOrdersHandler,
   ...gcmsResellersHandler,
+  ...assistedFinancingHandler,
 ];

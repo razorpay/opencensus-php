@@ -44,6 +44,7 @@ const ROUTE_REG = {
   gcms_funds: /^\/gcms\/funds/,
   gcms_reports: /^\/gcms\/reports/,
   reconciliations: /^\/reconciliations/,
+  assisted_financing: /^\/(assisted-financing)/,
 };
 
 export const BASE_ROUTES = {
@@ -96,6 +97,7 @@ export const BASE_ROUTES = {
   gcms_reports: '/gcms/reports',
   riskAndFraud: '/risk-and-fraud',
   reconciliations: '/reconciliations/dashboard',
+  assisted_financing: '/assisted-financing',
 };
 
 export const initializeRoutes = (location, user) => {
@@ -158,6 +160,8 @@ export const initializeRoutes = (location, user) => {
     routes.gcms_reports = pathname.match(ROUTE_REG.gcms_reports)[0];
   } else if (ROUTE_REG.riskAndFraud.test(pathname)) {
     routes.riskAndFraud = pathname.match(ROUTE_REG.riskAndFraud)[0];
+  } else if (ROUTE_REG.assisted_financing.test(pathname)) {
+    routes.assisted_financing = pathname.match(ROUTE_REG.assisted_financing)[0];
   }
   return routes;
 };

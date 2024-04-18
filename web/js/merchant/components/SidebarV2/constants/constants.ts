@@ -71,4 +71,5 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   gcms_reports: 'Reports',
   riskAndFraud: 'Risk and Fraud',
   reconciliations: 'Reconciliations',
+  assisted_financing: 'Assisted Financing',
 };

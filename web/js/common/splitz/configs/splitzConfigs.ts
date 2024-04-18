@@ -301,6 +301,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'assisted_financing',
+        experimentId: {
+          beta: 'NVwyOLc893cct0',
+          production: 'NYG6BgL7c6x72W',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],
