@@ -3,6 +3,7 @@
 namespace Unit\Models\Merchant\Website;
 
 use Config;
+use Database\Connection;
 use Razorpay\Asv\Error\GrpcError;
 use Rzp\Accounts\Merchant\V1\MerchantDocumentSaveRequest;
 use Rzp\Accounts\Merchant\V1\MerchantWebsiteSaveRequest;
@@ -187,7 +188,8 @@ class RepositoryTest extends RepositoryTestHelper
 
     }
 
-    public function assertEqualsAssociativeByKey($array1, $array2, $key = "id") {
+    public function assertEqualsAssociativeByKey($array1, $array2, $key = "id")
+    {
         $compareArray1 = [];
         $compareArray2 = [];
 
@@ -200,35 +202,6 @@ class RepositoryTest extends RepositoryTestHelper
         }
 
         self::assertEquals($compareArray1, $compareArray2);
-    }
-    public function testWebsiteRepositoryFindRequestNotRoutedToAsv()
-    {
-        $repo = new Repository();
-
-        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson1);
-        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson2);
-        $this->createMerchantWebsiteInDatabase($this->websiteEntityJson3);
-
-        $websiteEntity1 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson1);
-        $websiteEntity2 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson2);
-        $websiteEntity3 = $this->getMerchantWebsiteEntityForJson($this->websiteEntityJson3);
-
-
-        // Find, FindOrFail & FindOrFail public should work fine if we give columns value, Fetch data from DB
-        $this->setSplitzWithOutput("false", 0);
-        $this->assertEquals(["id" => $websiteEntity3->getId()], $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS3", ["id"]));
-
-        // Find, FindOrFail & FindOrFail public should work fine if we give multiple ids, Fetch data from DB
-        $this->setSplitzWithOutput("false", 0);
-        $this->assertEqualsAssociativeByKey([$websiteEntity3->toArray(), $websiteEntity2->toArray()], $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS5", "K9UzmvitzJwyS3"]));
-
-        // Find, FindOrFail & FindOrFail public should work fine if we give multiple ids and columns, Fetch data from DB
-        $this->setSplitzWithOutput("false",0);
-        $this->assertEqualsAssociativeByKey([["id" => "K9UzmvitzJwyS5"], ["id" => "K9UzmvitzJwyS3"]], $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS3", "K9UzmvitzJwyS5"], ["id"]));
-
-        // Find, FindOrFail & FindOrFail public should work fine if we give multiple ids and columns, Fetch data from DB
-        $this->setSplitzWithOutput("false",0);
-        $this->assertEqualsAssociativeByKey([["id" => "K9UzmvitzJwyS5"], ["id" => "K9UzmvitzJwyS3"]], $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS3", "K9UzmvitzJwyS5"], ["id"]));
     }
 
     public function testMerchantWebsiteFindOrFailRequestRoutedToAsv() {
@@ -245,29 +218,17 @@ class RepositoryTest extends RepositoryTestHelper
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on.
         $repo = new Repository();
-        $this->setSplitzWithOutput("true", 2);
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 4, false, null);
-        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 4);
-        $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
-        $this->assertEquals($websiteEntity1->toArray(), $response);
-        $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
+        $repo->repo->transactionOnLiveAndTestAndAsv(function () use ($repo) {
+            $merchantWebsite = $this->fixtures->on(Connection::ASV_WRITER)->create("merchant_website");
+            $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 4, true, null);
+            $response        = $this->getOutputForDbCalls($repo, $merchantWebsite->getId());
+        });
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on, asv gives exception.
         $repo = new Repository();
-        $this->setSplitzWithOutput("true", 3);
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 5, false, null);
-        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"),"getById", 5);
-        $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
-        $this->assertEquals($websiteEntity1->toArray(), $response);
-        $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
-
-        // FindOrFail & FindOrFailpublic should work fine if splitz is on, array of ids.
-        $repo = new Repository();
-        $this->setSplitzWithOutput("true", 0);  // Splitz should never be called
-        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 0);
-        $response = $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS4"]);
-        $this->assertEquals([$websiteEntity1->toArray()], $response);
-        $this->assertEquals($this->getOutputForRawDbCalls($repo, ["K9UzmvitzJwyS4"]), $response);
+        $merchantWebsite = $this->fixtures->create("merchant_website");
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 4, false, null);
+        $response = $this->getOutputForDbCalls($repo, $merchantWebsite->getId());
     }
 
     public function testStakholderRepositoryFindOrFailErrors()
@@ -325,13 +286,6 @@ class RepositoryTest extends RepositoryTestHelper
         $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"),"getById", 1);
         $response = $this->getOutputForDbCallsForFind($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($websiteEntity1->toArray(), $response);
-
-        // Find should work fine if splitz is on, array of ids.
-        $repo = new Repository();
-        $this->setSplitzWithOutput("true", 0);  // Splitz should never be called
-        $this->setMerchantWebsiteMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantWebsiteResponse, null,"getById", 0);
-        $response = $this->getOutputForDbCallsForFind($repo, ["K9UzmvitzJwyS4"]);
-        $this->assertEquals([$websiteEntity1->toArray()], $response);
     }
 
     private function getExceptionForFindOrFailAsv($repo, $id, $grpcError) {

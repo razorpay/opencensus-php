@@ -99,9 +99,15 @@ trait AsvFind
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_OR_FAIL);
 
         if ($shouldCallAsv === true) {
-
-            if ($this->isTransactionActive()) {
-                $connectionType = Connection::ASV_WRITER;
+            if ($connectionType != null || $columns != array("*") || !is_string($id) || $this->isTransactionActive()) {
+                if ($connectionType  == null) {
+                    $connectionType = Connection::ASV_WRITER;
+                } else {
+                    $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                        'routeOrWorkerName' => $this->asvRouter->getRouteOrJobName(),
+                        'reason' => $this->asvRouter::REQUEST_WITH_CONNECTION_TYPE,
+                    ]);
+                }
             } else {
 
                 $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_OR_FAIL;
@@ -138,8 +144,15 @@ trait AsvFind
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_OR_FAIL_PUBLIC);
 
         if ($shouldCallAsv === true) {
-            if ($this->isTransactionActive()) {
-                $connectionType = Connection::ASV_WRITER;
+            if ($connectionType != null || $columns != array("*") || !is_string($id) || $this->isTransactionActive()) {
+                if ($connectionType  == null) {
+                    $connectionType = Connection::ASV_WRITER;
+                } else {
+                    $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                        'routeOrWorkerName' => $this->asvRouter->getRouteOrJobName(),
+                        'reason' => $this->asvRouter::REQUEST_WITH_CONNECTION_TYPE,
+                    ]);
+                }
             } else {
 
                 $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_OR_FAIL_PUBLIC;
@@ -224,8 +237,15 @@ trait AsvFind
 
     public function getResultForImplicitJoin($id, $columns, $connectionType, $oldConnection, $shouldCallAsv) {
         if ($shouldCallAsv === true) {
-            if ($this->isTransactionActive()) {
-                $connectionType = Connection::ASV_WRITER;
+            if ($connectionType != null || $columns != array("*") || !is_string($id) || $this->isTransactionActive()) {
+                if ($connectionType  == null) {
+                    $connectionType = Connection::ASV_WRITER;
+                } else {
+                    $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                        'routeOrWorkerName' => $this->asvRouter->getRouteOrJobName(),
+                        'reason' => $this->asvRouter::REQUEST_WITH_CONNECTION_TYPE,
+                    ]);
+                }
             } else {
                 $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_FOR_IMPLICIT_JOIN;
                 try {

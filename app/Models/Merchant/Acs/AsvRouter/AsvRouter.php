@@ -25,7 +25,7 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as AsvSdkIntegra
 
 class AsvRouter
 {
-    const REQUEST_WITH_COLUMN_OR_MULTIPLE_IDS = 'REQUEST_WITH_COLUMN_OR_MULTIPLE_IDS';
+    const REQUEST_WITH_CONNECTION_TYPE = 'REQUEST_WITH_CONNECTION';
 
     const GOT_EXCEPTION = 'GOT_EXCEPTION';
 
@@ -156,7 +156,7 @@ class AsvRouter
                 $this->logAndTrackRequestNotRoutedToAsv($id, $columns, $connectionType, $repoClass, $functionName, "normal");
                 $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
                     'routeOrWorkerName' => $this->getRouteOrJobName(),
-                    'reason' => self::REQUEST_WITH_COLUMN_OR_MULTIPLE_IDS,
+                    'reason' => self::REQUEST_WITH_CONNECTION_TYPE,
                 ]);
 
                 return false;
@@ -206,15 +206,6 @@ class AsvRouter
     {
 
         try {
-            if ($connectionType != null || $columns != array("*") || !is_string($id)) {
-                $this->logAndTrackRequestNotRoutedToAsv($id, $columns, $connectionType, $repoClass, $functionName, "normal");
-                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                    'routeOrWorkerName' => $this->getRouteOrJobName(),
-                    'reason' => self::REQUEST_WITH_COLUMN_OR_MULTIPLE_IDS,
-                ]);
-                return false;
-            }
-
             return $this->shouldRouteToAccountService($id, $repoClass, $functionName);
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
@@ -228,6 +219,9 @@ class AsvRouter
 
     function shouldRouteToAccountService($id, $repoClass, $functionName): bool
     {
+        if (!is_string($id) === true) {
+            $id = self::REPOSITORY_MANAGER_ID;
+        }
         try {
             $isExclusionFlow = $this->isExclusionFlowOrFailure();
 
@@ -357,16 +351,10 @@ class AsvRouter
     }
 
     public function shouldRouteFindForImplicitJoinToAccountService($id, $entityName, $columns, $connectionType, $repoClass, $functionName): bool {
+        if (!is_string($id) === true) {
+            $id = self::REPOSITORY_MANAGER_ID;
+        }
         try {
-            if ($connectionType != null || $columns != array("*") || !is_string($id)) {
-                $this->logAndTrackRequestNotRoutedToAsv($id, $columns, $connectionType, $repoClass, $functionName, "implicit");
-                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                    'routeOrWorkerName' => $this->getRouteOrJobName(),
-                    'reason' => self::REQUEST_WITH_COLUMN_OR_MULTIPLE_IDS,
-                ]);
-                return false;
-            }
-
             return $this->shouldRouteImplicitJoinToAccountService($id, $entityName, $repoClass, $functionName);
         } catch (\Throwable $e) {
             $this->trace->traceException

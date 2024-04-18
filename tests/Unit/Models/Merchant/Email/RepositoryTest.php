@@ -370,31 +370,21 @@ class RepositoryTest extends TestCase
         $merchantEmailProto1 = $this->getMerchantEmailProtoFromJson($this->merchantEmailEntityJson1);
 
         // Test Case 1 - ExclusionFlow false - Column Selection - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 4, true, null);
         $this->assertEquals(["id" => $merchantEmailEntity1->getId()], $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R", ["id"]));
 
         // Test Case 2 - ExclusionFlow false - Select by multiple Ids - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 4, true, null);
         $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([$merchantEmailEntity1->toArray(), $merchantEmailEntity2->toArray()]), $this->getOutputForDbCalls($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"]));
 
         // Test Case 3 - ExclusionFlow false - Select by multiple Ids, filter by fields - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 4, true, null);
         $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([["id" => "CzmiCwTPCL3t2R"], ["id" => "CzmiD0rBAGOort"]]), $this->getOutputForDbCalls($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"], ["id"]));
 
         $merchantEmailResponse = (new MerchantEmailResponse())->setEmail($merchantEmailProto1);
-
-        // Test Case 4 - ExclusionFlow false - Splitz should never be called - Request for findOrFail & findOrFailPublic  should go to account service
-        $this->setSplitzWithOutput("true", 1);
-        $this->setMerchantEmailMockClientWithIdAndResponse("CzmiCwTPCL3t2R", $merchantEmailResponse, null, "getById", 3);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
-        $this->assertEquals($merchantEmailEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
     }
 
     public function testEmailRepositoryFind()
@@ -411,21 +401,21 @@ class RepositoryTest extends TestCase
         $merchantEmailProto1 = $this->getMerchantEmailProtoFromJson($this->merchantEmailEntityJson1);
 
         // Test Case 1 - ExclusionFlow false - Column Selection - Request for find should not go to account service
-        $this->setSplitzWithOutput("false", 0);
+        $this->setSplitzWithOutput("false", 2);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->assertEquals(["id" => $merchantEmailEntity1->getId()], $this->getOutputForDbCallsForFind($repo, "CzmiCwTPCL3t2R", ["id"]));
 
         // Test Case 2 - ExclusionFlow false - Select by multiple Ids - Request for find should not go to account service
-        $this->setSplitzWithOutput("false", 0);
+        $this->setSplitzWithOutput("false", 2);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([$merchantEmailEntity1->toArray(), $merchantEmailEntity2->toArray()]), $this->getOutputForDbCallsForFind($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"]));
 
         // Test Case 3 - ExclusionFlow false - Select by multiple Ids, filter by fields - Request for find should not go to account service
-        $this->setSplitzWithOutput("false", 0);
+        $this->setSplitzWithOutput("false", 2);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([["id" => "CzmiCwTPCL3t2R"], ["id" => "CzmiD0rBAGOort"]]), $this->getOutputForDbCallsForFind($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"], ["id"]));
 
         $merchantEmailResponse = (new MerchantEmailResponse())->setEmail($merchantEmailProto1);

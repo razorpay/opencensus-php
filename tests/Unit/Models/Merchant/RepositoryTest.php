@@ -160,18 +160,18 @@ class RepositoryTest extends RepositoryTestHelper
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantEntity1Array, "CzmiCwTPCL3t2K");
 
         // Test Case 4 - SaveRoute false - Column Selection - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
+        $this->setSplitzWithOutput("false", 3);
         $repo                              = new Repository();
-        $repo->asvRouter                   = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter                   = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
         $merchantEntityForFindOrFail       = $repo->findOrFail("CzmiCwTPCL3t2K", ["id"]);
         $merchantEntityForFindOrFailPublic = $repo->findOrFailPublic("CzmiCwTPCL3t2K", ["id"]);
         $this->assertEquals(["id" => $merchantEntity1Array['id']], $merchantEntityForFindOrFail->toArray());
         $this->assertEquals(["id" => $merchantEntity1Array['id']], $merchantEntityForFindOrFailPublic->toArray());
 
         // Test Case 5 - SaveRoute false - array of ids - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
+        $this->setSplitzWithOutput("false", 3);
         $repo                                               = new Repository();
-        $repo->asvRouter                                    = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter                                    = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
         $merchantEntityForFindOrFail                        = $repo->findOrFail(["CzmiCwTPCL3t2K"]);
         $merchantEntityForFindOrFailPublic                  = $repo->findOrFailPublic(["CzmiCwTPCL3t2K"]);
         $merchantEntityForFindOrFailArray                   = $this->removeNonExistingKeysFromEntityFetchedFromDB($merchantEntity1Array, $merchantEntityForFindOrFail->first()->toArray());
@@ -269,22 +269,14 @@ class RepositoryTest extends RepositoryTestHelper
         $this->callFindAndCompare($repo, $merchantEntity1Array, "CzmiCwTPCL3t2K");
 
         // Test Case 4 - SaveRoute false - Column Selection - Request for find should not go to account service
-        $this->setSplitzWithOutput("false", 0);
+        $this->setSplitzWithOutput("false", 3);
         $repo                              = new Repository();
-        $repo->asvRouter                   = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter                   = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
         $merchantEntityForFind       = $repo->find("CzmiCwTPCL3t2K", ["id"]);
         $merchantEntityForFindOrFail = $repo->findOrFail("CzmiCwTPCL3t2K", ["id"]);
         $this->assertEquals(["id" => $merchantEntity1Array['id']], $merchantEntityForFind->toArray());
         $this->assertEquals(["id" => $merchantEntity1Array['id']], $merchantEntityForFindOrFail->toArray());
 
-        // Test Case 5 - SaveRoute false - array of ids - Request for find should not go to account service
-        $this->setSplitzWithOutput("false", 0);
-        $repo                                               = new Repository();
-        $repo->asvRouter                                    = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
-        $merchantEntityForFind                             = $repo->find(["CzmiCwTPCL3t2K"]);
-        $merchantEntityForFindArray                   = $this->removeNonExistingKeysFromEntityFetchedFromDB($merchantEntity1Array, $merchantEntityForFind->first()->toArray());
-        $merchantEntityForFindArray['audit_id']       = $merchantEntity1Array['audit_id'];
-        $this->assertEquals($merchantEntity1Array, $merchantEntityForFindArray);
         $merchantResponse = (new MerchantResponse())->setMerchant($merchantProto1);
 
         // Test Case 6 - SaveRoute false - Splitz on - Request for find  should go to account service

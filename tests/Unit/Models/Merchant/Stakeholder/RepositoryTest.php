@@ -284,37 +284,31 @@ class RepositoryTest extends RepositoryTestHelper
         $stakeholderProto1 = $this->getStakeholderProtoFromJson($this->stakeholderEntityJson1);
 
         // Test Case 1 - ExclusionFlow true - Splitz should never be called - Request for findOrFail & findOrFailPublic  should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 4, true, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 4, false, null);
         $this->assertEquals($stakeholderEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
 
 
         // Test Case 2 - ExclusionFlow false - Column Selection - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 4, false, null);
         $this->assertEquals(["id" => $stakeholderEntity1->getId()], $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R", ["id"]));
 
         // Test Case 3 - ExclusionFlow false - Select by multiple Ids - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 4, false, null);
         $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([$stakeholderEntity1->toArray(), $stakeholderEntity2->toArray()]), $this->getOutputForDbCalls($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"]));
 
         // Test Case 4 - ExclusionFlow false - Select by multiple Ids, filter by fields - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 4, false, null);
         $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([["id" => "CzmiCwTPCL3t2R"], ["id" => "CzmiD0rBAGOort"]]), $this->getOutputForDbCalls($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"], ["id"]));
 
         $stakeholderResponse = (new StakeholderResponse())->setStakeholder($stakeholderProto1);
 
         // Test Case 5 - ExclusionFlow false - Splitz should never be called - Request for findOrFail & findOrFailPublic  should go to account service
-        $this->setSplitzWithOutput("true", 1);
-        $this->setStakeholderMockClientWithIdAndResponse("CzmiCwTPCL3t2R", $stakeholderResponse, null, "getById", 3);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 4, true, null);
         $this->assertEquals($stakeholderEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
     }
 
@@ -362,38 +356,31 @@ class RepositoryTest extends RepositoryTestHelper
         $stakeholderProto1 = $this->getStakeholderProtoFromJson($this->stakeholderEntityJson1);
 
         // Test Case 1 - ExclusionFlow true - Splitz should never be called - Request for findOrFail & findOrFailPublic  should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, true, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 2, true, null);
         $this->assertEquals($stakeholderEntity1->toArray(), $this->getOutputForDbCallsForFind($repo, "CzmiCwTPCL3t2R"));
 
 
         // Test Case 2 - ExclusionFlow false - Column Selection - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 2, true, null);
         $this->assertEquals(["id" => $stakeholderEntity1->getId()], $this->getOutputForDbCallsForFind($repo, "CzmiCwTPCL3t2R", ["id"]));
 
         // Test Case 3 - ExclusionFlow false - Select by multiple Ids - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
-        $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([$stakeholderEntity1->toArray(), $stakeholderEntity2->toArray()]), $this->getOutputForDbCalls($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"]));
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 2, true, null);
+        $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([$stakeholderEntity1->toArray(), $stakeholderEntity2->toArray()]), $this->getOutputForDbCallsForFind($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"]));
 
         // Test Case 4 - ExclusionFlow false - Select by multiple Ids, filter by fields - Request for findOrFail & findOrFailPublic should not go to account service
-        $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
-        $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([["id" => "CzmiCwTPCL3t2R"], ["id" => "CzmiD0rBAGOort"]]), $this->getOutputForDbCalls($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"], ["id"]));
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 2, true, null);
+        $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([["id" => "CzmiCwTPCL3t2R"], ["id" => "CzmiD0rBAGOort"]]), $this->getOutputForDbCallsForFind($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"], ["id"]));
 
-        $stakeholderResponse = (new StakeholderResponse())->setStakeholder($stakeholderProto1);
 
         // Test Case 5 - ExclusionFlow false - Splitz should never be called - Request for findOrFail & findOrFailPublic  should go to account service
-        $this->setSplitzWithOutput("true", 1);
-        $this->setStakeholderMockClientWithIdAndResponse("CzmiCwTPCL3t2R", $stakeholderResponse, null, "getById", 3);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 3, false, null);
-        $this->assertEquals($stakeholderEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 2, false, null);
+        $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([["id" => "CzmiCwTPCL3t2R"], ["id" => "CzmiD0rBAGOort"]]), $this->getOutputForDbCallsForFind($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"], ["id"]));
     }
 
     public function testStakeholderAssociation()
