@@ -340,6 +340,8 @@ class Merchant
     {
         $setl = (new Settlement\Entity);
 
+        $setl->merchant()->associate($this->merchant);
+
         if(empty($input) === true)
         {
             $input = [
@@ -361,8 +363,6 @@ class Merchant
 
         $setl = $setl->build($input);
         $setl->setChannel($this->getChannel($input[Settlement\Entity::CHANNEL]));
-
-        $setl->merchant()->associate($this->merchant);
 
         $setl->balance()->associate($balance);
 
