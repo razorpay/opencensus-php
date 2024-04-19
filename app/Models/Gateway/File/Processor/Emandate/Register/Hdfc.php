@@ -37,23 +37,12 @@ class Hdfc extends Base
 
         try
         {
-            $variant = $this->app['razorx']->getTreatment(
-                "EMANDATE_HDFC_REGISTER", self::EMANDATE_QUERY_OPTIMIZATION,
-                $this->mode
-            );
-
-            if($variant === 'on')
-            {
-                $tokens = $this->repo->token->fetchPendingEmandateRegistrationOptimised(static::GATEWAY, $begin, $end);
-            }
-            else{
-                $tokens = $this->repo->token->fetchPendingEmandateRegistration(static::GATEWAY, $begin, $end);
-            }
+            $tokens = $this->repo->token->fetchPendingEmandateRegistrationOptimised(static::GATEWAY, $begin, $end);
         }
         catch (ServerErrorException $e)
         {
             $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
-            
+
             $this->trace->traceException($e);
 
             throw new GatewayFileException(
@@ -64,9 +53,9 @@ class Hdfc extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
         }
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();

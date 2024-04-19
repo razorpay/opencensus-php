@@ -602,6 +602,66 @@ class Repository extends Base\Repository
                     ->with(['merchant', 'terminal'])
                     ->get();
     }
+    
+    public function fetchDeletedTokensForMethodsTidb(array $methods, $gateways, string $acquirer, $from, $to): Base\PublicCollection
+    {        
+        $selectCols = $this->dbColumn('*');
+        
+        $tokenMethodColumn = $this->repo->token->dbColumn(Entity::METHOD);
+        
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Entity::RECURRING);
+        
+        $tokenDeletedAtColumn = $this->repo->token->dbColumn(Entity::DELETED_AT);
+        
+        $tokenTerminalIdColumn = $this->repo->token->dbColumn(Entity::TERMINAL_ID);
+        
+        $tsTerminalGatewayColumn = Terminal\Constants::TS_TERMINAL_GATEWAY;
+        
+        $tsTerminalAcquirerColumn = Terminal\Constants::TS_TERMINAL_ACQUIRER;
+        
+        $startTime = round(microtime(true) * 1000);
+        
+        $this->trace->info(TraceCode::EMANDATE_TIDB_FETCH_TOKEN_DELETE_QUERY_INIT, [
+            "method"        => $methods,
+            "gateways"      => $gateways,
+            "acquirer"      => $acquirer,
+            "from"          => $from,
+            "to"            => $to,
+            "start_time"    => $startTime,
+        ]);
+        
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        
+        $query
+            ->select($selectCols)
+            ->join(Terminal\Constants::TS_TIDB_TABLE, $tokenTerminalIdColumn, '=', Terminal\Constants::TS_TERMINAL_ID)
+            ->whereBetween($tokenDeletedAtColumn, [$from, $to])
+            ->whereIn($tokenMethodColumn, $methods)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
+            ->where($tokenRecurringColumn, '=', 1)
+            ->whereIn($tsTerminalGatewayColumn, $gateways)
+            ->where($tsTerminalAcquirerColumn, '=', $acquirer)
+            ->whereNull(Terminal\Constants::TS_DELETED_AT)
+            ->withTrashed()
+            ->get();
+        
+        $endTime = round(microtime(true) * 1000);
+        
+        $this->trace->info(TraceCode::EMANDATE_TIDB_FETCH_TOKEN_DELETE_QUERY_COMPLETE,
+            [
+                "method"                => $methods,
+                "gateways"              => $gateways,
+                "acquirer"              => $acquirer,
+                "from"                  => $from,
+                "to"                    => $to,
+                "start_time"            => $startTime,
+                "end_time"              => $endTime,
+                "time_taken_by_query"   => $endTime - $startTime,
+        ]);
+        
+        return $query;
+    }
 
     // TODO: need to optimize the query futher
     public function fetchDeletedTokensForMethods(array $methods, $gateways, string $acquirer, $from, $to): Base\PublicCollection

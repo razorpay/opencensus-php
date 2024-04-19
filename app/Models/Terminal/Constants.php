@@ -33,5 +33,7 @@ class Constants
     const TS_NETBANKING_TPV = 'terminals.features->\'$.netbanking.Corporate\'';
 
     const TS_NETBANKING_CORPORATE = 'terminals.features->\'$.netbanking.Tpv\'';
+    const TS_TERMINAL_GATEWAY = 'terminals.gateway';
 
+    const TS_TERMINAL_ACQUIRER = 'terminals.gateway_acquirer';
 }
