@@ -577,7 +577,7 @@ class Repository extends Base\Repository
 
                     $lastMerchantId = $subset->pluck(Entity::ID)->last();
 
-                    $results->push($subset);
+                    $results->push(...$subset);
 
                 } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
 
@@ -1760,7 +1760,7 @@ class Repository extends Base\Repository
                 $results = new PublicCollection();
 
                 foreach (array_chunk($merchantIds, Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT) as $chunk) {
-                    $results->push((new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($chunk));
+                    $results->push(...(new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($chunk));
                 }
 
                 $this->resetConnectionOnModels($results);
@@ -2080,7 +2080,7 @@ class Repository extends Base\Repository
 
                     $lastMerchantId = $subset->pluck(Entity::ID)->last();
 
-                    $results->push($subset);
+                    $results->push(...$subset);
                 } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
 
                 return $results->pluck(Entity::ID)->toArray();
@@ -2206,7 +2206,7 @@ class Repository extends Base\Repository
 
                     $lastMerchantId = $subset->pluck(Entity::ID)->last();
 
-                    $results->push($subset);
+                    $results->push(...$subset);
 
                 } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
 
@@ -2250,7 +2250,7 @@ class Repository extends Base\Repository
 
                 $lastMerchantId = $subset->pluck(Entity::ID)->last();
 
-                $results->push($subset);
+                $results->push(...$subset);
 
             } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
 
@@ -3112,7 +3112,7 @@ class Repository extends Base\Repository
 
                     $lastMerchantId = $subset->pluck(Entity::ID)->last();
 
-                    $results->push($subset);
+                    $results->push(...$subset);
 
                 } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
 

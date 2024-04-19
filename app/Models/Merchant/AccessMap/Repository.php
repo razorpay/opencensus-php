@@ -157,7 +157,7 @@ class Repository extends Base\Repository
             {
                 $merchants = new Base\PublicCollection();
                 foreach (array_chunk($entityOwnerIds, AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT) as $chunk) {
-                    $merchants->push((new AsvSdkIntegration\Merchant())->fetchMerchantsByIds($chunk));
+                    $merchants->push(...(new AsvSdkIntegration\Merchant())->fetchMerchantsByIds($chunk));
                 }
                 $this->resetConnectionOnModels($merchants, $this->getSlaveConnection());
             }

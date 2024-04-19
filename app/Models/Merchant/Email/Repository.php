@@ -223,7 +223,7 @@ class Repository extends Base\Repository
 
                     $lastMerchantEmailId = $subset->pluck(Base\UniqueIdEntity::ID)->last();
 
-                    $results->push($subset);
+                    $results->push(...$subset);
 
                 } while(sizeof($subset) == BaseAlias::FETCH_SERVICE_FILTER_LIMIT);
 

@@ -251,7 +251,7 @@ class Repository extends Base\Repository
 
                     $lastDocumentId = $subset->pluck(Base\UniqueIdEntity::ID)->last();
 
-                    $results->push($subset);
+                    $results->push(...$subset);
 
                 } while(sizeof($subset) == AsvSdkIntegration::FETCH_SERVICE_FILTER_LIMIT);
 
@@ -305,7 +305,7 @@ class Repository extends Base\Repository
 
                     $lastDocumentId = $subset->pluck(Base\UniqueIdEntity::ID)->last();
 
-                    $results->push($subset);
+                    $results->push(...$subset);
 
                 } while(sizeof($subset) == AsvSdkIntegration::FETCH_SERVICE_FILTER_LIMIT);
 
@@ -367,7 +367,7 @@ class Repository extends Base\Repository
 
                     $lastDocumentId = $subset->pluck(Base\UniqueIdEntity::ID)->last();
 
-                    $results->push($subset);
+                    $results->push(...$subset);
 
                 } while(sizeof($subset) == AsvSdkIntegration::FETCH_SERVICE_FILTER_LIMIT);
 
