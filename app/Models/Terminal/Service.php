@@ -1952,4 +1952,66 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function removeAPITerminalReads($function): bool
+    {
+        $app = \App::getFacadeRoot();
+
+        $functionsRamped = explode(",", $app['config']->get('applications.terminals_service.remove_api_terminal_functions'));
+
+        if (in_array($function, $functionsRamped))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function removeAPIEntityTerminalReads($entity): bool
+    {
+        $app = \App::getFacadeRoot();
+
+        $functionsRamped = explode(",", $app['config']->get('applications.terminals_service.override_terminal_entity_reads'));
+
+        if (in_array($entity, $functionsRamped))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function pushTerminalDirectReadMetrics($function, $fetchFromTs)
+    {
+        $metricData = [
+            "function" => $function,
+        ];
+
+        $metricData = $this->addRouteNameToMetrics($metricData);
+
+        if($fetchFromTs)
+        {
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
+        }
+        else
+        {
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
+        }
+
+    }
+
+    public function pushTerminalDirectReadErrorMetrics($function, $exception)
+    {
+        $data = [
+            "function" => $function,
+        ];
+
+        $data = $this->addRouteNameToMetrics($data);
+
+        $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $data);
+
+        $data["exception"] = $exception;
+
+        $this->trace->error(TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+    }
 }

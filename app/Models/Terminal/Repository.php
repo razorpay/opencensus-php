@@ -537,8 +537,28 @@ class Repository extends Base\Repository
 
     public function getByIdNonDeleted($id)
     {
-        return $this->newQuery()
+        try {
+
+            if ((new Terminal\Service())->removeAPITerminalReads(__FUNCTION__)) {
+
+                (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, true);
+
+                return $this->findOrFailPublic($id);
+
+            } else {
+
+                (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, false);
+
+                return $this->newQuery()
                     ->findOrFailPublic($id);
+            }
+        }
+        catch (\Throwable $ex) {
+
+            (new Terminal\Service())->pushTerminalDirectReadErrorMetrics(__FUNCTION__, $ex);
+
+            throw $ex;
+        }
     }
 
     public function getByMerchantId($mid, $withTrashed = true)

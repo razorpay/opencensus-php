@@ -22,6 +22,7 @@ use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 
 class Core extends Base\Core
 {
@@ -212,7 +213,26 @@ class Core extends Base\Core
 
         $producerKey = $payment->getId() . '_' . Constants::REGISTER_PAYMENT_IN_SCHEDULER;
 
-        $terminal = $payment->terminal()->first();
+        try {
+
+            if ((new Terminal\Service())->removeAPITerminalReads(__FUNCTION__)) {
+
+                (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, true);
+
+                $terminal = $payment->terminal;
+            } else {
+
+                (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, false);
+
+                $terminal = $payment->terminal()->first();
+            }
+        }
+        catch (\Throwable $ex) {
+
+            (new Terminal\Service())->pushTerminalDirectReadErrorMetrics(__FUNCTION__, $ex);
+
+            throw $ex;
+        }
 
         if($isReminderVerifyPayment === true)
         {

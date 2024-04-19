@@ -75,4 +75,47 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Relations --------------------
+
+    public function getTerminalAttribute()
+    {
+        $terminal = null;
+
+        if ($this->relationLoaded('terminal') === true)
+        {
+            $terminal = $this->getRelation('terminal');
+        }
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        if(!(new Terminal\Service())->removeAPIEntityTerminalReads("virtualVpaPrefix"))
+        {
+
+            $terminal = $this->terminal()->first();
+
+            if (empty($terminal) === false)
+            {
+                (new Terminal\Service())->pushTerminalReadMetrics( "virtualVpaPrefix",false);
+
+                $this->terminal()->associate($terminal);
+
+                return $terminal;
+            }
+
+        }
+
+        if (empty($this->getTerminalId()))
+        {
+            return null;
+        }
+
+        $terminal = (new Terminal\Repository)->fetchTerminalsToAssociate("virtualVpaPrefix",$this->getTerminalId());
+
+        $this->terminal()->associate($terminal);
+
+        return $terminal;
+
+    }
 }

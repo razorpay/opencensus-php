@@ -1440,6 +1440,8 @@ return [
         'token_associate_terminals_from_ts' => env('TOKEN_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
         'merchant_associate_terminals_from_ts' => env('MERCHANT_ASSOCIATE_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
         'enable_log_api_terminal_read_events' => env('ENABLE_LOG_API_TERMINAL_READ_EVENTS',true),
+        'remove_api_terminal_functions' => env('REMOVE_API_TERMINAL_FUNCTIONS'),
+        'override_terminal_entity_reads' => env('OVERRIDE_TERMINAL_ENTITY_READS'),
     ],
 
     'pos_app' => [

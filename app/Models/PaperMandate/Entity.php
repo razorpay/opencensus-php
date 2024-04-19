@@ -394,4 +394,47 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(PaperMandateUpload\Entity::class);
     }
+
+    public function getTerminalAttribute()
+    {
+        $terminal = null;
+
+        if ($this->relationLoaded('terminal') === true)
+        {
+            $terminal = $this->getRelation('terminal');
+        }
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        if(!(new Terminal\Service())->removeAPIEntityTerminalReads("papermandate"))
+        {
+
+            $terminal = $this->terminal()->first();
+
+            if (empty($terminal) === false)
+            {
+                (new Terminal\Service())->pushTerminalReadMetrics( "papermandate",false);
+
+                $this->terminal()->associate($terminal);
+
+                return $terminal;
+            }
+
+        }
+
+        if (empty($this->getTerminalId()))
+        {
+            return null;
+        }
+
+        $terminal = (new Terminal\Repository)->fetchTerminalsToAssociate("papermandate",$this->getTerminalId());
+
+        $this->terminal()->associate($terminal);
+
+        return $terminal;
+
+    }
 }

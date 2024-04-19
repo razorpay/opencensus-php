@@ -5137,8 +5137,26 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $attributes = parent::toArrayAdminRestricted($attributes);
 
-        /** @var Terminal\Entity $terminal */
-        $terminal = $this->terminal()->first();
+        try {
+
+            if( (new Terminal\Service())->removeAPITerminalReads(__FUNCTION__))
+            {
+                (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, true);
+
+                $terminal = $this->terminal;
+            }
+            else
+            {
+                (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, false);
+
+                $terminal = $this->terminal()->first();
+            }
+
+        } catch(\Throwable $ex) {
+            (new Terminal\Service())->pushTerminalDirectReadErrorMetrics(__FUNCTION__, $ex);
+
+            throw $ex;
+        }
 
         if ($terminal === null)
         {
@@ -5156,8 +5174,27 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $attributes = parent::toArrayAdminRestrictedWithFeature($attributes, $orgType, $orgFeature);
 
-        /** @var Terminal\Entity $terminal */
-        $terminal = $this->terminal()->first();
+        try {
+            if( (new Terminal\Service())->removeAPITerminalReads(__FUNCTION__))
+            {
+                (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, true);
+
+                $terminal = $this->terminal;
+            }
+            else
+            {
+                (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, false);
+
+                $terminal = $this->terminal()->first();
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            (new Terminal\Service())->pushTerminalDirectReadErrorMetrics(__FUNCTION__, $ex);
+
+            throw $ex;
+        }
+
 
         if ($terminal === null)
         {
