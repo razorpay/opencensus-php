@@ -46,7 +46,7 @@ class CardlessEmiLiquiloans extends Base
             ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
             ->first();
 
-        $today = Carbon::now(Timezone::IST)->format('jS F Y');
+        $date = Carbon::now(Timezone::IST)->subDay()->format('jS F Y');
 
         $totalAmount = array_reduce($data, function ($carry, $item)
         {
@@ -62,7 +62,7 @@ class CardlessEmiLiquiloans extends Base
             'signed_url' => $signedUrl,
             'count'      => count($data),
             'amount'     => $totalAmount,
-            'date'       => $today,
+            'date'       => $date,
         ];
 
         return $mailData;
@@ -70,7 +70,7 @@ class CardlessEmiLiquiloans extends Base
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $date = Carbon::now(Timezone::IST)->format('d-m-Y');
+        $date = Carbon::now(Timezone::IST)->subDay()->format('d-m-Y');
 
         // the serial no is hardcoded as the file is generated only once
         return self::FILE_NAME . $date;
