@@ -14225,37 +14225,23 @@ trait Authorize
         return $code;
     }
 
-    public function checkOptimizerTerminal($terminal)
-    {
-        $isOptimizerTerminal = false;
-        $terminalTypeArray = $terminal->getType();
-
-        if (($terminalTypeArray != null) && (in_array('optimizer', $terminalTypeArray) === true))
-        {
-            $isOptimizerTerminal = true;
-        }
-        return $isOptimizerTerminal;
-    }
-
     public function appendOrUpdateTerminalDetailsInPaymentNotesForOptimizer(Payment\Entity $payment)
     {
-        if ($payment->terminal !== null) {
+        if ((empty($payment) === false) and $payment->terminal !== null) {
             $terminal = $payment->terminal;
         }
         else {
             return;
         }
         try {
-            if ((empty($payment) === false) and (empty($payment->merchant) === false) and $payment->merchant->isFeatureEnabled(Feature\Constants::RAAS)) {
-                if (($this->checkOptimizerTerminal($terminal) === true)) {
-                    $paymentNotes = $payment->getNotes()->toArray();
-                    $error = $this->validatePaymentNotesKeyValue($paymentNotes);
-                    if ($error !== null) {
-                        return;
-                    }
-                    $paymentNotes['optimizer_provider_name'] = $terminal->getOptimizerProviderNameIfPresent();
-                    $payment->setNotes($paymentNotes);
+            if ((empty($payment->merchant) === false) and $payment->merchant->isFeatureEnabled(Feature\Constants::RAAS)) {
+                $paymentNotes = $payment->getNotes()->toArray();
+                $error = $this->validatePaymentNotesKeyValue($paymentNotes);
+                if ($error !== null) {
+                    return;
                 }
+                $paymentNotes['optimizer_provider_name'] = $terminal->getOptimizerProviderNameIfPresent();
+                $payment->setNotes($paymentNotes);
             }
         }
         catch (\Exception $e)
