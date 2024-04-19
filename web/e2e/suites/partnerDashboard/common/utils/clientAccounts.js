@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 import { CTA_SELECTORS, CONTENT_SELECTORS } from 'partnerDashboard/common/constants';
+import { routes } from 'testConstants';
 import { waitForSelectorToBeVisible } from 'utils/common';
 
 export const fillInputAndLoadSearchResults = async (
@@ -18,11 +19,13 @@ export const fillInputAndLoadSearchResults = async (
 
 export const clickSubmerchantDetailsAndValidate = async (
   page,
+  productRoute,
   accountId,
   accountName,
-  isNameLink,
+  isNameLink = false,
 ) => {
   await page.click(`a:has-text("${isNameLink ? accountName : accountId}")`);
+  await expect(page).toHaveURL(new RegExp(`${productRoute}/${accountId}/?`));
   await waitForSelectorToBeVisible({
     page,
     selector: `.ModalSlider__Content :text-is("${accountName}")`,
@@ -49,4 +52,13 @@ export const clickAndLoadAllInvites = async (page) => {
     page,
     selector: CONTENT_SELECTORS.CLIENTS_LIST.ALL_INVITES.LAST_INVITED_ON,
   });
+};
+
+export const loadPOSViewOrderDetailsTab = async (page, accountId) => {
+  const newTabPromise = page.waitForEvent('popup');
+  await page.locator(CTA_SELECTORS.DETAILS_PANEL.VIEW_ORDER_DETAILS).click();
+  const newTab = await newTabPromise;
+  await newTab.waitForLoadState();
+  await expect(newTab).toHaveURL(new RegExp(`${routes.CLIENT_ACCOUNTS_POS}/${accountId}/orders/?`));
+  return newTab;
 };

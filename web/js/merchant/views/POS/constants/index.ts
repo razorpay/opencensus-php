@@ -1,8 +1,8 @@
-import * as yup from 'yup';
-
 import FirstTileImage from 'assets/pos/main-banner/pos-tile-image-1.webp';
 import SecondTileImage from 'assets/pos/main-banner/pos-tile-image-2.webp';
 import ThirdTileImage from 'assets/pos/main-banner/pos-tile-image-3.webp';
+import * as yup from 'yup';
+
 import PRODUCTS_TABLE from 'merchant/views/POS/constants/ProductsTable';
 import { getPincodeInfo } from 'merchant/views/POS/services';
 import {
@@ -95,6 +95,7 @@ export const PosStoreInitialState: PosDeviceStoreState = {
   deliveryAddresses: [],
   checkoutErrors: [],
   isDeliveryAddressFormOpen: false,
+  isRenderedFromPartnerRoute: false,
 };
 
 export const AVAILABLE_CITIES = ['Bengaluru'];

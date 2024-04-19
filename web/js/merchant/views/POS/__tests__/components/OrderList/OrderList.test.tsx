@@ -2,11 +2,14 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import OrderList from 'merchant/views/POS/OrderList';
-import { MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
+import { MOCK_ORDER_LIST, MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import {
   getOrdersListHandler,
+  getSubmerchantOrdersListHandler,
   getProductPricingHandler,
+  getSubmerchantProductPricingHandler,
 } from 'merchant/views/POS/__tests__/mocks/handlers';
+import * as posHooks from 'merchant/views/POS/hooks';
 import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
 import * as posServices from 'merchant/views/POS/services';
 import { render, screen, server, userEvent, waitFor, waitForElementToBeRemoved } from 'test-utils';
@@ -36,11 +39,14 @@ const intersect = (element: Element, isIntersecting: boolean) => {
 
 const queryClient = new QueryClient();
 
-const renderApp = () => {
+const renderApp = ({ isRenderedFromPartnerRoute = false, ...props } = {}) => {
   render(
     <QueryClientProvider client={queryClient}>
-      <PosDeviceStoreProvider user={MOCK_USER}>
-        <OrderList pageSize={3} />
+      <PosDeviceStoreProvider
+        user={MOCK_USER}
+        isRenderedFromPartnerRoute={isRenderedFromPartnerRoute}
+      >
+        <OrderList pageSize={3} {...props} />
       </PosDeviceStoreProvider>
     </QueryClientProvider>,
   );
@@ -102,5 +108,64 @@ describe('<OrderList/>', () => {
 
     await userEvent.click(screen.getByText('Shop now'));
     expect(mockedUseNavigate).toHaveBeenCalledWith('/pos/catalog');
+  });
+});
+
+describe('OrderList with isRenderedFromPartnerRoute = true', () => {
+  beforeEach(() => {
+    server.use(
+      getProductPricingHandler(),
+      getOrdersListHandler(),
+      getSubmerchantOrdersListHandler(),
+      getSubmerchantProductPricingHandler(),
+    );
+  });
+  afterEach(() => {
+    server.resetHandlers();
+    queryClient.clear();
+  });
+  test('should disable CTAs in order list in Desktop View', async () => {
+    renderApp({ isRenderedFromPartnerRoute: true });
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await waitFor(() => {
+      expect(screen.getAllByText('Order Placed').length).toBe(3);
+    });
+    expect(screen.getAllByRole('button', { name: 'View Order Details' })[0]).toBeDisabled();
+  });
+  test('should disable CTAs in order list in Mobile View', async () => {
+    jest.spyOn(posHooks, 'useBladeBreakpoints').mockReturnValue({
+      matchedBreakpoint: 'm',
+      isMobile: true,
+      isDesktop: false,
+      isLargeScreen: false,
+    });
+    renderApp({ isRenderedFromPartnerRoute: true });
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await waitFor(() => {
+      expect(screen.getAllByText('Order Placed').length).toBe(3);
+    });
+    // In Mobile device the Button is hidden and the tile itself becomes the CTA
+    expect(screen.queryByRole('button', { name: 'View Order Details' })).not.toBeInTheDocument();
+
+    // Click first tile
+    await userEvent.click(screen.getByTestId(`order-list-item-${MOCK_ORDER_LIST[0].id}`));
+    expect(mockedUseNavigate).not.toHaveBeenCalled();
+  });
+
+  test('should render order list with enabled CTA in Mobile View if isRenderedFromPartnerRoute = false', async () => {
+    jest.spyOn(posHooks, 'useBladeBreakpoints').mockReturnValue({
+      matchedBreakpoint: 'm',
+      isMobile: true,
+      isDesktop: false,
+      isLargeScreen: false,
+    });
+    renderApp({ isRenderedFromPartnerRoute: false });
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await waitFor(() => {
+      expect(screen.getAllByText('Order Placed').length).toBe(3);
+    });
+    // Click first tile
+    await userEvent.click(screen.getByTestId(`order-list-item-${MOCK_ORDER_LIST[0].id}`));
+    expect(mockedUseNavigate).toHaveBeenCalledWith(`/pos/orders/${MOCK_ORDER_LIST[0].id}`);
   });
 });

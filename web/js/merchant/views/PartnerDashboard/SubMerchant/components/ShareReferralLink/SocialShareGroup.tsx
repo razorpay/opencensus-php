@@ -56,9 +56,17 @@ const SocialShareGroup = ({
           flex="1"
           backgroundColor="surface.background.gray.intense"
         >
-          <Text weight="semibold" color="surface.text.gray.muted">
-            {referralUrl}
-          </Text>
+          <Box width="160px">
+            <Text
+              truncateAfterLines={1}
+              variant="body"
+              weight="regular"
+              size="medium"
+              color="surface.text.gray.muted"
+            >
+              {referralUrl}
+            </Text>
+          </Box>
           <Button size="small" onClick={onCopyLinkClicked}>
             Copy Link
           </Button>

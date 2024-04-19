@@ -53,6 +53,9 @@ export const CONTENT_SELECTORS = {
   SHARE_REFERRAL_LINK_MODAL: {
     HEADER: 'div[data-blade-component="modal"] :text-is("Share Referral Link")',
   },
+  CLIENT_ORDERS: {
+    HEADER: 'text=Client Orders',
+  },
 };
 
 export const INPUT_SELECTORS = {
@@ -88,6 +91,7 @@ export const CTA_SELECTORS = {
   },
   DETAILS_PANEL: {
     REQUEST_FOR_KYC_ACCESS: 'text=Request for KYC access',
+    VIEW_ORDER_DETAILS: 'text=View Order Details',
   },
   FTUX_POPUPS: {
     NEW_INVITES_FLOW_GOT_IT: 'text=GOT IT',

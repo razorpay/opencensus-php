@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 
 import { useSplitzService } from 'common/splitz';
+import { SpiltzContextState } from 'common/splitz/types';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import { User } from 'common/typings';
 import { getUser } from 'merchant/store';
 
 /**
@@ -28,12 +30,19 @@ const isPartnerPlaybookEnabled = ({ abExperiments, user }) => {
   );
 };
 
-const isPartnershipsForPosEnabled = ({ abExperiments, user }) => {
+type isPartnershipsForPosEnabledArgs = {
+  abExperiments: SpiltzContextState['abExperiments'];
+  user: User;
+};
+export const isPartnershipsForPosEnabled = ({
+  abExperiments,
+  user,
+}: isPartnershipsForPosEnabledArgs): boolean => {
   return (
     user.isPartner('reseller') &&
     user.isOrgRZP &&
-    isExperimentEnabled(abExperiments.partnerships_accounts_list_revamp) &&
-    (user.isPartnerAgentRole || isExperimentEnabled(abExperiments.partnerships_for_pos))
+    isExperimentEnabled(abExperiments?.partnerships_accounts_list_revamp) &&
+    (user.isPartnerAgentRole || isExperimentEnabled(abExperiments?.partnerships_for_pos))
   );
 };
 

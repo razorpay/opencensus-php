@@ -8,7 +8,7 @@ import { downloadSubmerchants } from 'merchant/reducers/submerchant';
 import { OpenModalT } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import ConfirmGenerateReport from 'merchant/views/PartnerDashboard/SubMerchant/components/ConfirmGenerateReport';
 import { trackListFilterSectionCta } from 'merchant/views/PartnerDashboard/SubMerchant/components/utils/analytics';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { INVITE_VIEW_TYPE, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -26,7 +26,7 @@ const ExportButton = ({
   showNotification,
   user,
 }: ExportButtonProps) => {
-  const inviteView = 'Accepted Invites';
+  const inviteView = INVITE_VIEW_TYPE.ACCEPTED;
   const buttonText = 'Export All (CSV)';
   const [isDownloading, setIsDownloading] = useState(false);
 

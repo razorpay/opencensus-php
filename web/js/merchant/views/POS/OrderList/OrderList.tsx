@@ -1,14 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { ArrowRightIcon, Box, Heading, Link, Spinner, Text } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import EmptyOrderImg from 'assets/pos/icons/empty-order.svg';
 import { connect } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { compose } from 'redux';
 
 import { ORDER_LIST_STATUS_TYPES } from 'merchant/views/POS/constants';
-import { getOrderList } from 'merchant/views/POS/services';
+import { PosDeviceStoreContext } from 'merchant/views/POS/context';
+import { getOrderList, getSubmerchantOrderList } from 'merchant/views/POS/services';
 import { MainContainer } from 'merchant/views/POS/styles';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -19,10 +20,15 @@ type OrderList = {
   showNotification: (args) => void;
 };
 
+// Note: The state value isRenderedFromPartnerRoute is for rendering this component inside
+// Partner Dashboard to show Submerchant's POS Orders to their Partner and/or POS agents.
 const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element => {
+  const {
+    state: { isRenderedFromPartnerRoute },
+  } = useContext(PosDeviceStoreContext);
   const navigate = useNavigate();
   const nextPageTriggerRef = useRef(null);
-
+  const location = useLocation();
   const {
     data,
     fetchNextPage: fetchOrderList,
@@ -43,7 +49,8 @@ const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element =
         count: pageSize.toString(),
         status: ORDER_LIST_STATUS_TYPES,
       };
-      return getOrderList(payload);
+      if (isRenderedFromPartnerRoute) return getSubmerchantOrderList(payload, location.pathname);
+      else return getOrderList(payload);
     },
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage?.order_list?.length < pageSize) return false;
@@ -55,7 +62,10 @@ const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element =
   });
 
   const orderListData = React.useMemo(
-    () => (data?.pages ?? []).flatMap((item) => item?.order_list),
+    () =>
+      (data?.pages ?? [])
+        .flatMap((item) => item?.order_list)
+        .filter((orderListItem) => !!orderListItem),
     [data],
   );
 
@@ -80,11 +90,12 @@ const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element =
   }, [nextPageTriggerRef, hasNextPage]);
 
   useEffect(() => {
+    if (isRenderedFromPartnerRoute) return;
     analytics.track_EXPERIMENTAL(SignUpEvents.pageViewed, {
       pageType: 'Post Checkout - Order details',
       orderId: '',
     });
-  }, []);
+  }, [isRenderedFromPartnerRoute]);
 
   return (
     <MainContainer>
@@ -115,7 +126,9 @@ const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element =
               icon={ArrowRightIcon}
               iconPosition="right"
               variant="button"
+              isDisabled={isRenderedFromPartnerRoute}
               onClick={() => {
+                if (isRenderedFromPartnerRoute) return;
                 analytics.track_EXPERIMENTAL(SignUpEvents.linkClicked, {
                   label: 'Shop Now',
                   whatsAppUpdates: 'No',
@@ -139,7 +152,11 @@ const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element =
             <Heading size="large">Your Orders</Heading>
           </Box>
           {orderListData.map((orderListItem) => (
-            <OrderListItem key={orderListItem.id} orderListItem={orderListItem} />
+            <OrderListItem
+              key={orderListItem?.id}
+              orderListItem={orderListItem}
+              shouldDisableCTAs={isRenderedFromPartnerRoute}
+            />
           ))}
         </>
       ) : null}

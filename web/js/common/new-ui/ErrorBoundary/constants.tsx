@@ -125,6 +125,7 @@ export const RoutesConfig = {
   '/partners/settings': Teams.PARTNERSHIP,
   '/partners/submerchants': Teams.PARTNERSHIP,
   '/partners/submerchants/all': Teams.PARTNERSHIP,
+  '/partners/submerchants/pos': Teams.PARTNERSHIP,
   '/partners/subventions': Teams.PARTNERSHIP,
   '/partners/subventions/daily': Teams.PARTNERSHIP,
   '/partners/subventions/transactional': Teams.PARTNERSHIP,

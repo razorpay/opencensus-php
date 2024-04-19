@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Text, Link, Box, Button, Theme, BladeProvider } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import styled from 'styled-components';
 
 import { FadeTransition } from 'common/components/Transition';
@@ -7,7 +8,6 @@ import { PARTNERSHIPS_WEBSITE_LINKS } from 'merchant/views/PartnerDashboard/cons
 
 import { STEPS } from './constants';
 import { hideFtux, isVisible } from './ftuxVisibility';
-import { bladeTheme } from '@razorpay/blade/tokens';
 const { ACCEPTED_INVITES, ALL_INVITES, HIDDEN } = STEPS;
 
 const StyledFtuxTooltip = styled.div(
@@ -41,7 +41,7 @@ const FtuxAction = styled(Button)(
   ({ theme }) => `
   border: ${theme.border.width.thin}px solid white;
   background-color: ${theme.colors.surface.background.primary.intense};
-  color: ${theme.colors.surface.text.gray.normal};
+  color: ${theme.colors.surface.text.gray.subtle};
   min-height: ${theme.spacing[6]}px;
   &:hover,&:focus {
     border: ${theme.border.width.thin}px solid white;
@@ -51,8 +51,8 @@ const FtuxAction = styled(Button)(
 );
 
 const tooltipPos = {
-  [ACCEPTED_INVITES]: [140, -35],
-  [ALL_INVITES]: [225, -35],
+  [ACCEPTED_INVITES]: [150, -35],
+  [ALL_INVITES]: [235, -35],
 };
 
 const FtuxTooltip = (): JSX.Element | null => {

@@ -1,6 +1,7 @@
 import React, { useReducer, useEffect } from 'react';
 import { Box, Spinner } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 
 import { useSplitzService } from 'common/splitz';
 import { User } from 'common/typings';
@@ -15,7 +16,7 @@ import {
   getCartFromLocalStorage,
   saveCartInBrowserStorage,
 } from './helpers';
-import { getProductPricingMap } from './services';
+import { getProductPricingMap, getSubmerchantProductPricingMap } from './services';
 import {
   PosDeviceStoreState,
   PosDeviceStoreActionType,
@@ -28,6 +29,7 @@ type PosDeviceStoreProviderProps = {
   children: React.ReactNode;
   init?: PosDeviceStoreState;
   user: User;
+  isRenderedFromPartnerRoute?: boolean;
 };
 
 const reducer = (
@@ -78,10 +80,13 @@ const reducer = (
   }
 };
 
+// Note: The prop isRenderedFromPartnerRoute is for rendering this component inside
+// Partner Dashboard to show Submerchant's POS Orders to their Partner and/or POS agents.
 export const PosDeviceStoreProvider = ({
   children,
   init,
   user,
+  isRenderedFromPartnerRoute = false,
 }: PosDeviceStoreProviderProps): JSX.Element => {
   const initialState = init ?? PosStoreInitialState;
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -108,9 +113,12 @@ export const PosDeviceStoreProvider = ({
       });
     }
   };
+  const location = useLocation();
   const { isLoading: isPricingPlanLoading } = useQuery({
     queryKey: ['pos-pricing-plan'],
-    queryFn: getProductPricingMap,
+    queryFn: isRenderedFromPartnerRoute
+      ? () => getSubmerchantProductPricingMap(location.pathname)
+      : getProductPricingMap,
     retry: 2,
     retryDelay: 800,
     cacheTime: 1000 * 60 * 1,
@@ -156,6 +164,7 @@ export const PosDeviceStoreProvider = ({
         state: {
           ...state,
           isPricingPlanLoading,
+          isRenderedFromPartnerRoute,
         },
         dispatch,
       }}

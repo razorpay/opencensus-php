@@ -1,6 +1,7 @@
 import React from 'react';
 import * as Yup from 'yup';
 
+import { PaginationParamsType } from 'common/typings';
 import FiltersSectionWrapper, {
   ListFiltersType,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper';
@@ -18,7 +19,7 @@ export interface AllInvitesFiltersType extends ListFiltersType {
   name: string;
   email: string;
   contact_no: string;
-  count: number;
+  count: PaginationParamsType['count'];
 }
 
 const { nameValidation, emailValidation, mobileValidation } = commonValidations;

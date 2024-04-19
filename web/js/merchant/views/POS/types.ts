@@ -149,6 +149,9 @@ export type PosDeviceStoreState = {
   deliveryAddresses: DeliveryAddress[];
   checkoutErrors: CheckoutValidationError[];
   isDeliveryAddressFormOpen: boolean;
+  // Note: We need isRenderedFromPartnerRoute to identify if the POS feature(such as OrderList) is
+  // rendered for Partners to view their submerchant's orders
+  isRenderedFromPartnerRoute: boolean;
 };
 
 export type RoutePattern = {

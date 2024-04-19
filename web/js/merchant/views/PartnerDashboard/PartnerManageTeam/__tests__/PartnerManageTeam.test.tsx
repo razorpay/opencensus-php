@@ -53,6 +53,13 @@ jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments'
   default: () => mockPartnerDashboardExperiments,
 }));
 
+jest.mock('common/ui/HeaderAction', () => ({
+  __esModule: true,
+  default: ({ children }) => {
+    return <div>{children}</div>;
+  },
+}));
+
 const renderApp = (
   { userExtra = {}, orgExtra = {} }: { userExtra?: any; orgExtra?: any } = {},
   experiments = {},

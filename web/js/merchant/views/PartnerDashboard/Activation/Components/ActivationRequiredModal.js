@@ -1,4 +1,6 @@
+import { Button } from '@razorpay/blade/components';
 import { NavLink } from 'react-router-dom';
+
 import ModalHeader from 'common/ui/ModalHeader';
 import { isMobileDevice } from 'merchant/components/Home/data';
 
@@ -14,7 +16,7 @@ export default ({ onCloseClick, partnerActivationStatus }) => {
       Please fill and submit the {activationName} Form to access live mode.
       <div class="Modal__actions text-right">
         <NavLink to={partnerKycURL} onClick={onCloseClick}>
-          <button class="btn btn-primary btn-block">Fill {activationName} Form</button>
+          <Button variant="primary"> Fill {activationName} Form</Button>
         </NavLink>
       </div>
     </div>
@@ -27,9 +29,9 @@ export default ({ onCloseClick, partnerActivationStatus }) => {
   ) {
     const modalAction = (
       <div class="Modal__actions text-right">
-        <button class="btn btn-primary btn-block" onClick={onCloseClick}>
+        <Button variant="primary" onClick={onCloseClick}>
           Okay!
-        </button>
+        </Button>
       </div>
     );
 
@@ -48,7 +50,9 @@ export default ({ onCloseClick, partnerActivationStatus }) => {
           Your KYC details require further clarifications. Update required details within 1 day,
           otherwise your settlements might get paused.
           <NavLink to={partnerKycURL} onClick={onCloseClick}>
-            <button class="btn btn-primary btn-block">Update Details</button>
+            <Button variant="primary" onClick={onCloseClick}>
+              Update Details
+            </Button>
           </NavLink>
         </div>
       );

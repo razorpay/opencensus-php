@@ -13,7 +13,7 @@ export type SubmerchantInviteItem = {
 };
 
 export type FetchInviteResponse = CommonApiResponse<{
-  count: number;
+  count: PaginationParamsType['count'];
   items: Array<SubmerchantInviteItem>;
 }>;
 export interface FetchInvitesParams

@@ -1,4 +1,6 @@
+import { PaginationParamsType } from 'common/typings';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { getSubmerchantIdFromPath } from 'merchant/views/PartnerDashboard/ClientAccounts/ClientDetails/ClientPOSOrderList/utils';
 
 import {
   CommsOrderItem,
@@ -10,7 +12,7 @@ import {
   PosActivationStatusTypes,
 } from './types';
 
-export const getOrderList = async (payload) => {
+export const getOrderList = async (payload: PaginationParamsType) => {
   const { data } = await merchantFetch({
     url: `merchant/device/order`,
     data: payload,
@@ -20,7 +22,18 @@ export const getOrderList = async (payload) => {
   return data;
 };
 
-export const getOrderDetails = async (orderId): Promise<OrderDetailsItem> => {
+export const getSubmerchantOrderList = async (payload: PaginationParamsType, pathname: string) => {
+  const submerchantId = getSubmerchantIdFromPath(pathname);
+  const { data } = await merchantFetch({
+    url: `submerchants/${submerchantId}/device/order`,
+    data: payload,
+    method: 'get',
+  });
+
+  return data;
+};
+
+export const getOrderDetails = async (orderId: string | undefined): Promise<OrderDetailsItem> => {
   const { data } = await merchantFetch({
     url: `merchant/device/${orderId}/order`,
     method: 'get',
@@ -29,10 +42,17 @@ export const getOrderDetails = async (orderId): Promise<OrderDetailsItem> => {
   return data;
 };
 
-export const getProductPricingMap = async (): Promise<
+export const getProductPricingMap = (): Promise<
   ApiResponse<Record<'configs', ProductPricingMap>>
-> => await merchantFetch(`merchant/device_config`);
+> => merchantFetch(`merchant/device_config`);
 
+export const getSubmerchantProductPricingMap = (
+  pathname: string,
+): Promise<ApiResponse<Record<'configs', ProductPricingMap>>> => {
+  const submerchantId = getSubmerchantIdFromPath(pathname);
+
+  return merchantFetch(`submerchants/${submerchantId}/device_config`);
+};
 export interface DashboardListApiResponse<T> {
   count: number;
   entity: string;
@@ -69,8 +89,8 @@ type GetPincodeResponse = {
 export const getPincodeInfo = (pincode: string | number): Promise<GetPincodeResponse> =>
   merchantFetch(`pincodes/${pincode}`);
 
-export const updateSalePoc = async ({ id, pocCode }) =>
-  await merchantFetch({
+export const updateSalePoc = ({ id, pocCode }) =>
+  merchantFetch({
     url: `merchant/device/${id}/order`,
     data: { sales_code: pocCode, device_order_id: id },
     method: 'patch',

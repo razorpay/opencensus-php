@@ -1,6 +1,7 @@
 import React from 'react';
 import * as Yup from 'yup';
 
+import { PaginationParamsType } from 'common/typings';
 import { POSAgents } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/POSClients/AllInvites/api';
 import FiltersSectionWrapper, {
   ListFiltersType,
@@ -20,7 +21,7 @@ export interface AllInvitesFiltersType extends ListFiltersType {
   name: string;
   email: string;
   contact_no: string;
-  count: number;
+  count: PaginationParamsType['count'];
   inviter_user_id: string;
 }
 

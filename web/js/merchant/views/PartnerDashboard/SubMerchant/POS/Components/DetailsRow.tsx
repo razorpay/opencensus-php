@@ -40,7 +40,7 @@ export const DetailsRow = ({
                     showDescriptionAsTooltip
                   />
                 ) : (
-                  <Text color="surface.text.gray.normal">{item && item !== '' ? item : 'N/A'}</Text>
+                  <Text color="surface.text.gray.subtle">{item && item !== '' ? item : 'N/A'}</Text>
                 )}
               </Box>
             )}

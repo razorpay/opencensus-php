@@ -9,7 +9,7 @@ export interface AcceptedInvitesFiltersType extends ListFiltersType {
   application_id?: string;
   contact_info?: string;
   contact_mobile?: string;
-  count: number;
+  count: PaginationParamsType['count'];
   email: string;
   id?: string;
   name: string;
@@ -54,7 +54,7 @@ export interface POSAcceptedInviteItem extends PGAcceptedInviteItem {
 }
 
 export type FetchInviteResponse = CommonApiResponse<{
-  count: number;
+  count: PaginationParamsType['count'];
   items: Array<PGAcceptedInviteItem> | Array<POSAcceptedInviteItem>;
 }>;
 export interface FetchSubmerchantsParams extends AcceptedInvitesFiltersType, PaginationParamsType {

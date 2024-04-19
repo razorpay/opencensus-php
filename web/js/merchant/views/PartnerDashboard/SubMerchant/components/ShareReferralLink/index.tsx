@@ -92,6 +92,7 @@ const ShareReferralLink = ({
               display="flex"
               flexDirection="column"
               justifyContent="center"
+              gap="spacing.4"
               backgroundColor="surface.background.gray.intense"
             >
               {productTypeVisibilityMap[PRODUCT_TYPE.POS] ? (
@@ -102,8 +103,9 @@ const ShareReferralLink = ({
                     gap="spacing.5"
                     justifyContent="center"
                     padding="spacing.6"
-                    backgroundColor="surface.background.gray.intense"
-                    borderColor="surface.border.gray.normal"
+                    backgroundColor="surface.background.gray.moderate"
+                    borderColor="surface.border.gray.subtle"
+                    borderRadius="small"
                     borderWidth="thin"
                   >
                     <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -155,8 +157,9 @@ const ShareReferralLink = ({
                     gap="spacing.5"
                     justifyContent="center"
                     padding="spacing.6"
-                    backgroundColor="surface.background.gray.intense"
-                    borderColor="surface.border.gray.normal"
+                    backgroundColor="surface.background.gray.moderate"
+                    borderColor="surface.border.gray.subtle"
+                    borderRadius="small"
                     borderWidth="thin"
                   >
                     <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -208,8 +211,9 @@ const ShareReferralLink = ({
                     gap="spacing.5"
                     justifyContent="center"
                     padding="spacing.6"
-                    backgroundColor="surface.background.gray.intense"
-                    borderColor="surface.border.gray.normal"
+                    backgroundColor="surface.background.gray.moderate"
+                    borderColor="surface.border.gray.subtle"
+                    borderRadius="small"
                     borderWidth="thin"
                   >
                     <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
@@ -251,8 +255,9 @@ const ShareReferralLink = ({
                     gap="spacing.5"
                     justifyContent="center"
                     padding="spacing.6"
-                    backgroundColor="surface.background.gray.intense"
-                    borderColor="surface.border.gray.normal"
+                    backgroundColor="surface.background.gray.moderate"
+                    borderColor="surface.border.gray.subtle"
+                    borderRadius="small"
                     borderWidth="thin"
                   >
                     <Box display="flex" gap="spacing.5" alignItems="center" flex="1">

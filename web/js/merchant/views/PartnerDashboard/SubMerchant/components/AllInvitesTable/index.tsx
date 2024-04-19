@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { User } from 'common/typings';
+import { PaginationParamsType, User } from 'common/typings';
 import { ShowNotificationType } from 'common/typings/Store/notifications';
 import DataTable from 'common/ui/Table/DataTable';
 import { getTime } from 'common/ui/item';
@@ -49,7 +49,7 @@ interface AllInvitesTableProps {
 }
 
 const AllInvitesTable = ({ user, showNotification }: AllInvitesTableProps): JSX.Element => {
-  const [paginationState, setPagination] = useState({
+  const [paginationState, setPagination] = useState<PaginationParamsType>({
     skip: 0,
     count: 25,
   });

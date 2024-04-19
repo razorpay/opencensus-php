@@ -116,7 +116,9 @@ const POSReferralGuide = ({
             <Heading size="small">Refer clients to {orgName} POS!</Heading>
           </Box>
           <ColoredLine />
-          <Text>Add your agents to assist clients with KYC link to manage agents flow</Text>
+          <Text color="surface.text.gray.muted">
+            Add your agents to assist clients with KYC link to manage agents flow
+          </Text>
         </Box>
         <Box />
       </Box>

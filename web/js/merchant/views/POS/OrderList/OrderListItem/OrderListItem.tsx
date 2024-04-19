@@ -19,9 +19,13 @@ import { OrderDetailsItem, ProductPlans } from 'merchant/views/POS/types';
 
 type OrderListItemProps = {
   orderListItem: OrderDetailsItem;
+  shouldDisableCTAs: boolean;
 };
 
-const OrderListItem = ({ orderListItem }: OrderListItemProps): JSX.Element | null => {
+const OrderListItem = ({
+  orderListItem,
+  shouldDisableCTAs,
+}: OrderListItemProps): JSX.Element | null => {
   const { isMobile } = useBladeBreakpoints();
   const navigate = useNavigate();
   const { items } = orderListItem;
@@ -29,12 +33,20 @@ const OrderListItem = ({ orderListItem }: OrderListItemProps): JSX.Element | nul
 
   const orderStatusMetaData = getOrderStatus(orderListItem);
 
-  const handleViewDetailsClick = ({ id }) => navigate(`/pos/orders/${id}`);
+  const handleViewDetailsClick = ({ id }): void => {
+    if (shouldDisableCTAs) return;
+    navigate(`/pos/orders/${id}`);
+  };
 
   if ((items ?? []).length === 0 || !orderListItem) return null;
 
   return (
-    <div onClick={() => isMobile && handleViewDetailsClick({ id: orderListItem.id })}>
+    <div
+      data-testid={`order-list-item-${id}`}
+      onClick={() =>
+        !shouldDisableCTAs && isMobile && handleViewDetailsClick({ id: orderListItem.id })
+      }
+    >
       <Box
         borderWidth="thin"
         borderColor="surface.border.gray.muted"
@@ -90,7 +102,11 @@ const OrderListItem = ({ orderListItem }: OrderListItemProps): JSX.Element | nul
             </Heading>
             {!isMobile ? (
               <Box>
-                <Button variant="secondary" onClick={() => handleViewDetailsClick({ id })}>
+                <Button
+                  isDisabled={shouldDisableCTAs}
+                  variant="secondary"
+                  onClick={() => handleViewDetailsClick({ id })}
+                >
                   View Order Details
                 </Button>
               </Box>

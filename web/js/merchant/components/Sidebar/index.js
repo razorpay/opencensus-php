@@ -73,15 +73,17 @@ export const BASE_ROUTES = {
 };
 
 // Note: cannot use Box because textOverflow is not supported.
-const StyledPartnerTitle = styled.div`
+const StyledPartnerTitle = styled.div(
+  ({ $isPartnerAgentRole }) => `
   position: absolute;
   max-width: 180px;
-  font-size: 14px;
+  ${$isPartnerAgentRole ? 'font-size: 14px;' : ''}
   display: inline-block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-`;
+`,
+);
 
 @withI18Service
 @connect(
@@ -398,7 +400,9 @@ class PartnerSidebarComponent extends Component {
     const partnerNavGroupTitle = (
       <>
         {isPartnershipFUX ? null : <i className="i i-partner text-primary" />}
-        <StyledPartnerTitle>{partnerNavTitle}</StyledPartnerTitle>
+        <StyledPartnerTitle $isPartnerAgentRole={user.isPartnerAgentRole}>
+          {partnerNavTitle}
+        </StyledPartnerTitle>
       </>
     );
     return (

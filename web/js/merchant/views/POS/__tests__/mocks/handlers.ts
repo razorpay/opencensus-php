@@ -72,6 +72,20 @@ export const getProductPricingHandler = (customProductPricing?: ProductPricingMa
   );
 };
 
+export const getSubmerchantProductPricingHandler = (customProductPricing?: ProductPricingMap) => {
+  const response = {
+    status_code: 200,
+    success: true,
+    data: {
+      rzp_key: 'rzp_test_mockKey',
+      configs: [...MOCK_PRODUCT_PRICING_RESPONSE, ...(customProductPricing || [])],
+    },
+  };
+  return rest.get('*/merchant/api/:mode/submerchants/:submerchantId/device_config', (_, res, ctx) =>
+    res(ctx.status(200), ctx.json(response), ctx.delay(50)),
+  );
+};
+
 export const getPartnerProductPricingHandler = (customProductPricing?: ProductPricingMap) => {
   const response = {
     status_code: 200,
@@ -183,6 +197,19 @@ export const getOrdersListHandler = (isEmptyList = false) => {
     },
   };
   return rest.get('*/merchant/api/*/merchant/device/order', (_, res, ctx) =>
+    res(ctx.status(200), ctx.json(response), ctx.delay(50)),
+  );
+};
+
+export const getSubmerchantOrdersListHandler = (isEmptyList = false) => {
+  const response = {
+    status_code: 200,
+    success: true,
+    data: {
+      order_list: isEmptyList ? [] : MOCK_ORDER_LIST,
+    },
+  };
+  return rest.get('*/merchant/api/*/submerchants/:submerchantId/device/order', (_, res, ctx) =>
     res(ctx.status(200), ctx.json(response), ctx.delay(50)),
   );
 };

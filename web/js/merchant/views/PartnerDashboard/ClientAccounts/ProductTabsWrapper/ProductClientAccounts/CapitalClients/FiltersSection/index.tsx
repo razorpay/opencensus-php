@@ -2,6 +2,7 @@ import React from 'react';
 import { Box } from '@razorpay/blade/components';
 import * as Yup from 'yup';
 
+import { PaginationParamsType } from 'common/typings';
 import FiltersSectionWrapper, {
   ListFiltersType,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper';
@@ -18,7 +19,7 @@ const productType = PRODUCT_TYPE.CAPITAL;
 const inviteView = INVITE_VIEW_TYPE.ACCEPTED;
 
 export interface AcceptedInvitesFiltersType extends ListFiltersType {
-  count: number;
+  count: PaginationParamsType['count'];
   email: string;
   id?: string;
   name: string;

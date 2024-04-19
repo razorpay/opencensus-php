@@ -1,5 +1,6 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 
 export { default as User } from './User';
@@ -12,7 +13,7 @@ export type CommonApiResponse<T, ErrorType = unknown> = {
   errors?: ErrorType;
 };
 
-export type PaginationParamsType = { skip: number; count: number };
+export type PaginationParamsType = { skip: number | string; count: number | string };
 
 export type UseFormikReturnType = ReturnType<typeof useFormik>;
 export type FormikHandleChange = (args: {

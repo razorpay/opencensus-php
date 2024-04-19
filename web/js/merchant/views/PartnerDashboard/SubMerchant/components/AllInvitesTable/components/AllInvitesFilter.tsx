@@ -16,7 +16,7 @@ export type AllInvitesFiltersType = {
   name: string;
   email: string;
   contact_no: string;
-  count: number;
+  count: PaginationParamsType['count'];
 };
 
 const validationSchema = Yup.object().shape({
@@ -36,7 +36,7 @@ const validationSchema = Yup.object().shape({
 });
 
 interface AllInvitesFilterProps {
-  count: number;
+  count: PaginationParamsType['count'];
   onSearch: () => void;
   setPagination: (val: PaginationParamsType) => void;
 }

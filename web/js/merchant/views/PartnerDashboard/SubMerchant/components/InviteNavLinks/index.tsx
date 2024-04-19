@@ -15,12 +15,12 @@ const StyledInviteNavLinks = styled.div(
     padding-right: ${theme.spacing[7]}px;
     color: ${theme.colors.surface.text.gray.muted};
     :hover{
-      color: ${theme.colors.surface.background.primary.intense};
+      color: ${theme.colors.surface.text.primary.normal};
     }
   }
   .active {
     font-weight: 600;
-    color: ${theme.colors.surface.background.primary.intense};
+    color: ${theme.colors.surface.text.primary.normal};
   }
 `,
 );

@@ -7,7 +7,6 @@ import {
   MOCK_REJECTED_ORDER_ITEM,
 } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import * as posCustomHooks from 'merchant/views/POS/hooks';
-
 import { render, screen, userEvent } from 'test-utils';
 
 jest.mock('merchant/views/POS/OrderSummary/OrderItems/OrderItem', () => ({
@@ -24,7 +23,7 @@ jest.mock('react-router-dom', () => ({
 
 describe('<OrderListItem/>', () => {
   test('should render paid order item with correct content on screen', async () => {
-    render(<OrderListItem orderListItem={MOCK_PAID_ORDER_ITEM} />);
+    render(<OrderListItem shouldDisableCTAs={false} orderListItem={MOCK_PAID_ORDER_ITEM} />);
     expect(screen.getByText('October 04, 2023')).toBeVisible();
     expect(screen.getByText('Order Placed')).toBeVisible();
     expect(screen.getByText('2,360')).toBeVisible();
@@ -37,7 +36,7 @@ describe('<OrderListItem/>', () => {
   });
 
   test('should render delivered order item with correct content on screen', () => {
-    render(<OrderListItem orderListItem={MOCK_DELIVERED_ORDER_ITEM} />);
+    render(<OrderListItem shouldDisableCTAs={false} orderListItem={MOCK_DELIVERED_ORDER_ITEM} />);
     expect(screen.getByText('October 04, 2023')).toBeVisible();
     expect(screen.getByText('Order Placed')).toBeVisible();
     expect(screen.getByText('2,360')).toBeVisible();
@@ -47,7 +46,7 @@ describe('<OrderListItem/>', () => {
   });
 
   test('should render rejected order item with correct content on screen', () => {
-    render(<OrderListItem orderListItem={MOCK_REJECTED_ORDER_ITEM} />);
+    render(<OrderListItem shouldDisableCTAs={false} orderListItem={MOCK_REJECTED_ORDER_ITEM} />);
     expect(screen.getByText('October 04, 2023')).toBeVisible();
     expect(screen.getByText('Order Placed')).toBeVisible();
     expect(screen.getByText('2,360')).toBeVisible();
@@ -65,7 +64,7 @@ describe('<OrderListItem/>', () => {
       isDesktop: false,
       isLargeScreen: false,
     });
-    render(<OrderListItem orderListItem={MOCK_REJECTED_ORDER_ITEM} />);
+    render(<OrderListItem shouldDisableCTAs={false} orderListItem={MOCK_REJECTED_ORDER_ITEM} />);
     await userEvent.click(screen.getByText('Order Placed'));
     expect(mockedUseNavigate).toHaveBeenCalledWith('/pos/orders/mock-order-id-third');
   });

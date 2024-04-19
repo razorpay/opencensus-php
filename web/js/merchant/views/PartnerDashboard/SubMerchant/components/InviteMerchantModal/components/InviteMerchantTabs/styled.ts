@@ -14,7 +14,7 @@ export const StyledMerchantTabs = styled.div(
       li {
         &.active {
           a {
-            border-bottom: 1.5px solid ${theme.colors.interactive.text.primary.normal};
+            border-bottom: 1.25px solid ${theme.colors.interactive.text.primary.normal};
           }
           p {
             color: ${theme.colors.interactive.text.primary.normal};
@@ -22,7 +22,7 @@ export const StyledMerchantTabs = styled.div(
         }
         a {
           border: none;
-          border-bottom: 1px solid ${theme.colors.surface.text.gray.muted};
+          border-bottom: 0.75px solid ${theme.colors.surface.text.gray.muted};
           p {
             color: ${theme.colors.surface.text.gray.muted};
           }

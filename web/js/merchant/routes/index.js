@@ -1,12 +1,14 @@
 import { isMobileResolution } from 'common/utils/rzp-utils';
 import store from 'merchant/store';
 import { getProvidedChannels } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
+import { isPartnershipsForPosEnabled } from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import {
   matchDetail as matchDetailx,
   matchModal as matchModalx,
   matchFullPageView as matchFullPageViewx,
 } from 'merchant_common/routes';
+
 import lazy from './LazyLoader';
 
 const InstantSettlementDetails = lazy(() =>
@@ -367,6 +369,12 @@ const PaymentTransferNew = lazy(() =>
 const PartnerPricingPlans = lazy(() =>
   import(
     /* webpackChunkName: "PartnerPricingPlans" */ 'merchant/views/PartnerDashboard/external/PartnerPricingPlans'
+  ),
+);
+
+const ClientPOSOrderList = lazy(() =>
+  import(
+    /* webpackChunkName: "ClientPOSOrderList" */ 'merchant/views/PartnerDashboard/ClientAccounts/ClientDetails/ClientPOSOrderList'
   ),
 );
 
@@ -774,6 +782,11 @@ const fullPageViewsMap = {
   '/partners/submerchants/onboarding/:submerchantId(acc_.+)/form': {
     component: ActivationForm,
     additionalCondition: (user) => user.isSubMerchantKycEnabled,
+  },
+  '/partners/submerchants/pos/:submerchantId/orders': {
+    component: ClientPOSOrderList,
+    additionalCondition: (user, extraConfig) =>
+      isPartnershipsForPosEnabled({ abExperiments: extraConfig?.splitz?.abExperiments, user }),
   },
   '/app-support': {
     component: AppSupport,
