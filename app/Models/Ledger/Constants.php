@@ -223,6 +223,7 @@ class Constants
     const MERCHANT_VAS_ACCOUNT       = 'merchant_vas_account';
 
     const MERCHANT_GMV               = 'merchant_gmv';
+    const MERCHANT_ONDEMAND_SETTLEMENT_LEDGER = 'merchant_ondemand_settlement';
     const REWARD                     = 'reward';
     const PAYABLE                    = 'payable';
     const BALANCE                    = 'balance';
@@ -310,6 +311,10 @@ class Constants
     const RZP_TRANSFER_FEE                             = 'rzp_transfer_fee';
 
     const RZP_GST                                      = 'rzp_gst';
+
+    const MERCHANT_ONDEMAND_GST                        = 'merchant_ondemand_settlement_gst';
+
+    const ONDEMAND_INCOME                              = 'merchant_ondemand_settlement_income';
 
     const RECEIVABLE                                   = 'receivable';
 

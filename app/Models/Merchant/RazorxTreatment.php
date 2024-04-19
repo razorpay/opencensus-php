@@ -975,6 +975,12 @@ final class RazorxTreatment
      */
     const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_PAYMENTS = 'early_dispatch_of_txns_for_settlements_using_journal_payments';
 
+    /**
+     * Experiment to dispatch transactions to settlements service using ledger journals in ledger reverse
+     * shadow mode for ODS transactions
+     */
+    const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ODS = 'early_dispatch_of_txns_for_settlements_using_journal_ods';
+
     const RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE = 'recon_unexpected_qr_payment_via_upi_route';
 
 

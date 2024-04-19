@@ -12,6 +12,7 @@ use DateTime;
 use Carbon\Carbon;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutReversal;
 use RZP\Jobs\SettlementOndemand\UpdateOndemandTriggerJob;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Settlement\Ondemand\Entity as OndemandEntity;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Services\Mock;
@@ -36,11 +37,13 @@ use RZP\Models\Admin\Permission\Name as AdminPermission;
 use RZP\Jobs\SettlementOndemand\PartialScheduledSettlementJob;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
+use RZP\Tests\Traits\MocksRazorx;
 
 class SettlementOndemandTest extends TestCase
 {
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use MocksRazorx;
 
     protected $reportUrl;
 
@@ -5626,6 +5629,44 @@ class SettlementOndemandTest extends TestCase
 
     }
 
+    public function testOndemandLedgerKafkaOutboxJobSuccessEarlyDispatchToSettlement(){
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ODS, 'on');
+
+        $this->createOndemandSettlement(false);
+
+        $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
+
+        $ondemandSettlementId = $payload["id"];
+
+        $journal = $this->getPaymentGatewayCapturedJournalResponsePayload($ondemandSettlementId, 'ondemand_settlement_processed');
+
+        $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $ondemandSettlementId.'-'.'ondemand_settlement_processed']);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $this->assertNotNull($txn);
+
+        $this->assertEquals($journal['id'], $txn->getId(), 'transaction id does not match with api_txn_id');
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+        $this->assertEquals($ondemandSettlementId, 'setlod_'.$txn['entity_id']);
+        $this->assertEquals($journal['id'], $txn->getId());
+        $this->assertEquals($journal['ledger_entry'][2]['amount'], $txn['fee']);
+        $this->assertEquals($journal['ledger_entry'][3]['amount'], $txn['tax']);
+        $this->assertEquals($journal['ledger_entry'][1]['amount'], $txn['amount']);
+        $this->assertEquals($journal['ledger_entry'][1]['amount'], $txn['amount']-$txn['fee']-$txn['tax']);
+
+        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+
+    }
+
+
     public function testOndemandReversalFailureWithNonRetryableError(){
 
         $this->ba->adminAuth();
@@ -5803,7 +5844,7 @@ class SettlementOndemandTest extends TestCase
                     "created_at"=> 1677609963,
                     "updated_at"=> 1677609963,
                     "merchant_id"=> "10000000000000",
-                    "journal_id"=> "LLy5PLL9cCZhnr",
+                    "journal_id"=> "LLy5PLL9cCZhns",
                     "account_id"=> "Jjpg2D3rgPjGWs",
                     "amount"=> "2000",
                     "base_amount"=> "2000",
@@ -5817,6 +5858,72 @@ class SettlementOndemandTest extends TestCase
                         ],
                         "fund_account_type"=> [
                             "merchant_ondemand_settlement"
+                        ]
+                    ]
+                ],
+                [
+                    "id"=> "LLJMDzXZr1H4OB",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLy5PLL9cCZhns",
+                    "account_id"=> "JjpZUD9PmJeNPk",
+                    "amount"=> "1000000",
+                    "base_amount"=> "1960",
+                    "type"=> "debit",
+                    "currency"=> "INR",
+                    "balance"=> "468259.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_balance"
+                        ]
+                    ]
+                ],
+                [
+                    "id"=> "LLJMDzXZr1H4OB",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLy5PLL9cCZhns",
+                    "account_id"=> "JjpZUD9PmJeNPk",
+                    "amount"=> "0",
+                    "base_amount"=> "1960",
+                    "type"=> "credit",
+                    "currency"=> "INR",
+                    "balance"=> "468259.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_ondemand_settlement_gst"
+                        ]
+                    ]
+                ],
+                [
+                    "id"=> "LLJMDzXZr1H4OB",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLy5PLL9cCZhns",
+                    "account_id"=> "JjpZUD9PmJeNPk",
+                    "amount"=> "0",
+                    "base_amount"=> "0",
+                    "type"=> "credit",
+                    "currency"=> "INR",
+                    "balance"=> "468259.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "cash"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_ondemand_settlement_income"
                         ]
                     ]
                 ]

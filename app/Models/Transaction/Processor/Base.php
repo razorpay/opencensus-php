@@ -6,9 +6,11 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Settlement\Ondemand\Core;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -232,7 +234,19 @@ abstract class Base extends BaseCore
         //
         if (in_array($this->txn->getType(), Constants::DO_NOT_DISPATCH_FOR_SETTLEMENT, true) === false)
         {
-            (new Transaction\Core)->dispatchForSettlementBucketing($this->txn);
+            if ($this->txn->getType() === Transaction\Type::SETTLEMENT_ONDEMAND) {
+
+                $isEarlyDispatchExpEnabled = (new Core())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForODS($this->txn->merchant);
+
+                if ($isEarlyDispatchExpEnabled === false) {
+                    (new Transaction\Core)->dispatchForSettlementBucketing($this->txn);
+                }
+
+            } else {
+                (new Transaction\Core)->dispatchForSettlementBucketing($this->txn);
+
+            }
+
         }
 
         return [$this->txn, $this->feesSplit];

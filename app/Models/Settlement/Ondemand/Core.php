@@ -11,6 +11,8 @@ use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Models\Pricing\Fee;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\User;
 use RZP\Models\Payout;
 use RZP\Models\Pricing;
@@ -33,6 +35,7 @@ use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Settlement\Ondemand\Bulk;
 use RZP\Models\Settlement\OndemandPayout;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Settlement\Ondemand\Service as Service;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
@@ -654,11 +657,12 @@ class Core extends Base\Core
     private function handleOndemandSettlementProcessedEventOnAcknowledgment($journal, string $transactorId, string $settlementOndemandId, string $merchantId, bool $accountAlreadyExistsForCapitalInNewLedger){
         $journalId = $journal['id'];
 
-        $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger) {
+        $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger,$journal) {
 
             $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandId, $merchantId);
             if($settlementOndemand->getStatus() === 'created') {
 
+                $this->dispatchToSettlementFromJournalIfApplicable($journal,$settlementOndemand->merchant);
 
                 $settlementOndemandPayouts = (new OndemandPayout\Repository)
                     ->fetchByOndemandIdAndMerchantId($settlementOndemand->getId(),
@@ -688,9 +692,11 @@ class Core extends Base\Core
     private function handleOndemandSettlementReversedEventOnAcknowledgment($journal, string $transactorId, string $reversalId, string $merchantId): Transaction\Entity {
         $journalId = $journal['id'];
 
-        return $this->repo->transaction(function () use ($reversalId, $merchantId, $journalId) {
+        return $this->repo->transaction(function () use ($reversalId, $merchantId, $journalId,$journal) {
 
             $reversal = $this->repo->reversal->findById($reversalId);
+
+            $this->dispatchToSettlementFromJournalIfApplicable($journal,$reversal->merchant);
 
             $resource = $this->getTransactionMutexresource($reversal);
 
@@ -747,4 +753,86 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($settlementOndemandPayout);
     }
+
+    private function dispatchToSettlementFromJournalIfApplicable($journal,$merchant)
+    {
+        $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
+
+        $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForODS($merchant);
+
+        $bucketCore = new Bucket\Core;
+
+        if ($isExpEnabled === true)
+        {
+            if (($transactorEvent === LedgerConstants::LEDGER_ONDEMAND_SETTLEMENT_PROCESSED))
+            {
+                $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntity($journal);
+
+                $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
+
+                if ($status === true)
+                {
+                    $bucketCore->publishForSettlement($virtualPaymentTransaction);
+                }
+            }else if(($transactorEvent === LedgerConstants::LEDGER_ONDEMAND_SETTLEMENT_REVERSED)) {
+
+                $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntityForReversal($journal);
+
+                $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
+
+                if ($status === true)
+                {
+                    $bucketCore->publishForSettlement($virtualPaymentTransaction);
+                }
+            }
+        }
+    }
+
+    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForODS($merchant): bool
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ODS,
+            $this->mode ?? Mode::LIVE
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
+            [
+                'merchant'               => $merchant->getId(),
+                'isExperimentEnabled'    => $isExperimentEnabled,
+            ]);
+
+        return $isExperimentEnabled;
+    }
+
+    public function transformJournalResponseToTransactionEntity($journalResponse)
+    {
+
+        $reverseShadowCapital = new ReverseShadowCapitalCore();
+
+        $baseTransactionEntity = $reverseShadowCapital->transformJournalResponseToTransactionEntityBaseForODSForProcessed($journalResponse);
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $baseTransactionEntity->setSettledAt($settledAt);
+
+        return $baseTransactionEntity;
+    }
+
+    public function transformJournalResponseToTransactionEntityForReversal($journalResponse)
+    {
+
+        $reverseShadowCapital = new ReverseShadowCapitalCore();
+
+        $baseTransactionEntity = $reverseShadowCapital->transformJournalResponseToTransactionEntityBaseForReversal($journalResponse);
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $baseTransactionEntity->setSettledAt($settledAt);
+
+        return $baseTransactionEntity;
+    }
+
 }

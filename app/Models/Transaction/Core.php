@@ -1157,7 +1157,11 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, false);
 
-        $this->dispatchForSettlementBucketing($txn);
+        $isEarlyDispatchExpEnabled = (new \RZP\Models\Settlement\Ondemand\Core())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForODS($reversal->merchant);
+
+        if ($isEarlyDispatchExpEnabled === false) {
+            $this->dispatchForSettlementBucketing($txn);
+        }
 
         return $txn;
     }
