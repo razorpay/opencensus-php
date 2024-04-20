@@ -85,7 +85,7 @@ class DisputesClient
             return $response;
         }
 
-        $responseArray = json_decode($headers, true);
+        $responseArray = json_decode($response->getBody(), true);
 
         $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_RESPONSE, [
             'response'  => $responseArray,
