@@ -14,6 +14,7 @@ import {
   fetchPaymentPagePayments,
   isFetchViaNCA,
 } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { onPaginate } from 'merchant/views/Transactions/v2/common/utils';
 
 const PaymentsTable = (props) => {
   const paymentColumns = [
@@ -126,7 +127,7 @@ class PaymentsList extends ListContainer {
           <PaymentsTable
             count={this.state.count}
             skip={this.state.skip}
-            paginate={this.paginate}
+            paginate={onPaginate(this.paginate)}
             paymentPageId={entity.id}
             {...restProps}
             {...entityData}

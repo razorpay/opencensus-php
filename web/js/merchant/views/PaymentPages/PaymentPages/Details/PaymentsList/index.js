@@ -14,6 +14,7 @@ import {
   fetchPaymentPagePayments,
   isFetchViaNCA,
 } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { onPaginate } from 'merchant/views/Transactions/v2/common/utils';
 
 // wrapper to trigger analytics event on click
 const _paymentId = () => {
@@ -79,7 +80,7 @@ class PaymentsList extends ListContainer {
         <PaymentsTable
           count={this.state.count}
           skip={this.state.skip}
-          paginate={this.paginate}
+          paginate={onPaginate(this.paginate)}
           {...restProps}
           {...tableData}
         />

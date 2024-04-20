@@ -10,6 +10,7 @@ import {
   fetchPaymentPagePayments as fetchPaymentHandlePayments,
   isFetchViaNCA,
 } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { onPaginate } from 'merchant/views/Transactions/v2/common/utils';
 
 const _paymentId = {
   title: paymentId.title,
@@ -52,7 +53,7 @@ class PaymentsList extends ListContainer {
         <PaymentsTable
           count={this.state.count}
           skip={this.state.skip}
-          paginate={this.paginate}
+          paginate={onPaginate(this.paginate)}
           {...restProps}
           {...entityData}
         />
