@@ -5768,12 +5768,12 @@ trait Authorize
                 }
             }
 
-            if((($payment->getMethod() === PaymentConstants::UPI) or
-                    (($payment->getMethod() === PaymentConstants::CARD) and
-                        (($payment->isRecurringTypeInitial() === true) or
-                            ($payment->isRecurringTypeCardChange() === true))) or
-                                ($payment->getMethod() === PaymentConstants::EMANDATE))
-                and ($this->subscription !== null))
+            if ((($payment->getMethod() === PaymentConstants::UPI) or
+                 (($payment->getMethod() === PaymentConstants::CARD) and
+                  (($payment->isRecurringTypeInitial() === true) or
+                   ($payment->isRecurringTypeCardChange() === true))) or
+                 ($payment->getMethod() === PaymentConstants::EMANDATE) or
+                 ($payment->getMethod() === Method::WALLET)) and ($this->subscription !== null))
             {
                 $this->createUpiMandateForSubscriptionIfApplicable($localCustomer, $input, $payment);
 
@@ -7096,6 +7096,10 @@ trait Authorize
         {
             $token = $this->savePaymentMethod($payment, $customer, null, $input);
         }
+        else if ($payment->isWalletRecurring() === true)
+        {
+            $token = $this->savePaymentMethod($payment, $customer, null, $input);
+        }
 
         if ($token !== null)
         {
@@ -7213,6 +7217,7 @@ trait Authorize
             TraceCode::PAYMENT_SAVE_METHOD,
             [
                 'method'            => $payment->getMethod(),
+                'wallet'            => $payment->getWallet(),
                 'payment_id'        => $payment->getId(),
                 'merchant_id'       => $payment->merchant->getId(),
                 'customer_id'       => $customerId,
