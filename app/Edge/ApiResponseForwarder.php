@@ -2,6 +2,7 @@
 
 namespace App\Edge;
 
+use App\Constants\Constants;
 use GuzzleHttp\Cookie\SetCookie as CookieParser;
 use App\Trace\TraceCode;
 /**
@@ -101,8 +102,10 @@ class ApiResponseForwarder
                 $setCookie->getName(),
                 $setCookie->getValue(),
                 $maxAgeInMinutes,
-                $setCookie->getPath(),
-                $setCookie->getDomain(),
+                // we are explicitly setting the cookie domain as null and path as '/'
+                // similar to how it's being set for rzp_usr_session.
+                Constants::ROOT_PATH,
+                null,
                 $setCookie->getSecure(),
                 $setCookie->getHttpOnly()
             );

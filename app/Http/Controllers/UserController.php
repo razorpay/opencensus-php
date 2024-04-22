@@ -32,6 +32,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 
 const EVENT_TRIGGER_COUNT = 1;
+
 class UserController extends Controller
 {
 
@@ -1580,6 +1581,8 @@ class UserController extends Controller
         Session::forget('show_tnc_popup');
 
         Session::forget('is_merchant_login');
+
+        Cookie::expire(AppConstants::RZP_ACCESS_TOKEN, AppConstants::ROOT_PATH);
 
         return AppResponse::jsonResponse([]);
     }

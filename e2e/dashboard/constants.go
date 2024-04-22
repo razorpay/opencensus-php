@@ -8,8 +8,10 @@ const (
 	VALID_REQUEST             = "ValidRequest"
 	COOKIE_XSRF_TOKEN         = "XSRF-TOKEN"
 	COOKIE_RZP_USR_SESSION    = "rzp_usr_session"
+	COOKIE_RZP_ACCESS_TOKEN   = "rzp_access_token"
 	RZP_USER_SESSION          = "rzp_usr_session"
 	COOKIE                    = "Cookie"
+	ORIGIN                    = "origin"
 	EMAIL                     = "email"
 	DEVSTACK_TEST_EMAIL       = "piyush.verma+35015@razorpay.com"
 	DEVSTACK_LA_TEST_EMAIL    = "praveen.patlola+editaccount@razorpay.com"
@@ -23,6 +25,8 @@ const (
 	PATH_APP_DASHBOARD        = "/app/dashboard"
 	PATH_ORG                  = "/org"
 	PATH_USER_SIGNIN          = "/user/signin"
+	PATH_USER_LOGOUT          = "/user/logout"
+	DASHBOARD_ORIGIN          = "https://dashboard.dev.razorpay.in"
 )
 
 var dashboardTestCreds = map[string]string{
@@ -34,6 +38,12 @@ var dashboardTestCreds = map[string]string{
 var dashboardLATestCreds = map[string]string{
 	EMAIL:    DEVSTACK_LA_TEST_EMAIL,
 	PASSWORD: DEVSTACK_LA_TEST_PASSWORD,
+	CAPTCHA:  DEVSTACK_TEST_CAPTCHA,
+}
+
+var AccessTokenCreds = map[string]string{
+	EMAIL:    DEVSTACK_TEST_EMAIL,
+	PASSWORD: DEVSTACK_TEST_PASSWORD,
 	CAPTCHA:  DEVSTACK_TEST_CAPTCHA,
 }
 

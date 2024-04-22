@@ -87,6 +87,7 @@ class ApiResponseForwarderTest extends BaseTestCase
         $this->assertCount(1, $cookies);
         $this->assertEquals('rzp_access_token', $cookies[0]->getName());
         $this->assertEquals('token_value', $cookies[0]->getValue());
+        $this->assertEquals(null, $cookies[0]->getDomain());
 
     }
 

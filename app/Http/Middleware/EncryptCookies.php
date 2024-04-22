@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Constants\Constants;
 use App\Trace\TraceCode;
 use Illuminate\Cookie\Middleware\EncryptCookies as BaseEncrypter;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +26,7 @@ class EncryptCookies extends BaseEncrypter
         'rzp_user_id',
         'rzp_ab_uuid',
         'rzp_usr_session',
-        'rzp_access_token', // received from Edge
+        Constants::RZP_ACCESS_TOKEN, // received from Edge
     ];
 
 
