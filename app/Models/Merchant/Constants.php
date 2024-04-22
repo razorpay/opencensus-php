@@ -296,6 +296,7 @@ final class Constants
     const PAYMENT_BUTTON                             = 'payment_button';
     const TAP_AND_PAY                                = 'tap_and_pay';
     const PAYMENT_PAGES                              = 'payment_pages';
+    const ASSISTED_FINANCING                         = 'assisted_financing';
     const PAYMENT_LINK                               = 'payment_link';
     const PAYMENT_GATEWAY                            = 'payment_gateway';
     const POS                                        = 'pos';
@@ -1285,6 +1286,12 @@ final class Constants
             self::TITLE          => 'Payment Pages',
             self::DESCRIPTION    => 'Create your custom branded page',
             self::IS_NEW_PRODUCT => false
+        ],
+        self::ASSISTED_FINANCING =>[
+            self::TYPE           => 'assisted_financing',
+            self::TITLE          => 'Assisted financing',
+            self::DESCRIPTION    => 'Check Your eligibility',
+            self::IS_NEW_PRODUCT => true
         ],
 
         self::QR_CODE => [

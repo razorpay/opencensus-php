@@ -1388,7 +1388,6 @@ class Core extends Base\Core
         $isExpEnabled = (new Partner\Core())->isPOSEnabled();
         return $isExpEnabled;
     }
-
     private function isPaymentPagesEnabled()
     {
         /*
@@ -1396,7 +1395,12 @@ class Core extends Base\Core
          * */
         return true;
     }
-
+    private function isAssistedFinancingEnabled(){
+        /*
+        * Currently the feature is true to all product conditions
+        * */
+        return true;
+    }
     private function isQrCodeEnabled()
     {
         $enabledFeatures = $this->merchant->getEnabledFeatures();
@@ -1477,7 +1481,9 @@ class Core extends Base\Core
         {
             $currentProducts[] = Constants::PAYMENT_PAGES;
         }
-
+        if ($this->isAssistedFinancingEnabled()===true){
+            $currentProducts[] = Constants::ASSISTED_FINANCING;
+        }
         if ($this->isQrCodeEnabled() === true)
         {
             $currentProducts[] = Constants::QR_CODE;

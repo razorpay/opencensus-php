@@ -444,7 +444,7 @@ class Validator extends Base\Validator
 
     // app scalability validation
     protected static $appScalabilityChangeFtuxRules = [
-        constants::PRODUCT       => 'required|string|in:payment_link,payment_gateway,payment_pages,qr_code,subscriptions,payment_button',
+        constants::PRODUCT       => 'required|string|in:payment_link,payment_gateway,payment_pages,assisted_financing,qr_code,subscriptions,payment_button',
         constants::FTUX_COMPLETE => 'required|bool',
         constants::INTRODUCING   => 'sometimes|bool',
     ];
