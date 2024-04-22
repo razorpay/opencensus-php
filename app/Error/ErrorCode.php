@@ -3092,6 +3092,10 @@ class ErrorCode
 
     const BAD_REQUEST_BATCH_FILE_DUPLICATE_MERCHANT_ID                              = 'BAD_REQUEST_BATCH_FILE_DUPLICATE_MERCHANT_ID';
 
+    // Smart Routing Rules
+    const SMART_ROUTING_RULES_NO_VIABLE_CHANNELS_AVAILABLE                          = 'SMART_ROUTING_RULES_NO_VIABLE_CHANNELS_AVAILABLE';
+    const SMART_ROUTING_RULES_FETCH_FAILED_FTS                                      = 'SMART_ROUTING_RULES_FETCH_FAILED_FTS';
+    const SMART_ROUTING_RULES_MODIFY_FAILED_FTS                                     = 'SMART_ROUTING_RULES_MODIFY_FAILED_FTS';
 
     static function getConstants()
     {

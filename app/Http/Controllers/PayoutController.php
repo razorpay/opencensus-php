@@ -1148,4 +1148,21 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchSmartRoutingRulesForMerchant()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchSmartRoutingRulesForMerchant($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function modifySmartRoutingRulesForMerchant()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->modifySmartRoutingRulesForMerchant($input);
+
+        return ApiResponse::json($data);
+    }
 }

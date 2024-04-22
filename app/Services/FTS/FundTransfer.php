@@ -1945,4 +1945,25 @@ class FundTransfer extends Base
         return $response['body'];
     }
 
+    /**
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchSmartRoutingRulesThroughFts(array $input)
+    {
+        $response = $this->createAndSendRequest(parent::FTS_MAR_ROUTE, 'GET', $input);
+
+        return $response['body'];
+    }
+
+    /**
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function modifySmartRoutingRulesThroughFts(array $input)
+    {
+        $response = $this->createAndSendRequest(parent::FTS_MAR_ROUTE, 'POST', $input);
+
+        return $response['body'];
+    }
 }

@@ -2125,6 +2125,10 @@ class Route
         //Merchant Smart Routing Summary Routes
         'payouts_merchant_smart_routing_summary'   => ['get',       'payouts/smart_routing_summary',                 'PayoutController@getSmartRoutingSummary'                   ],
 
+        //Merchant Smart Routing Rules
+        'payouts_merchant_smart_routing_rules_fetch'   => ['get',      'payouts/smart_routing_rules',                     'PayoutController@fetchSmartRoutingRulesForMerchant'                 ],
+        'payouts_merchant_smart_routing_rules_modify'  => ['post',     'payouts/smart_routing_rules',                     'PayoutController@modifySmartRoutingRulesForMerchant'                ],
+
         // Routes for merchant's direct account payout mode config
         'fetch_merchant_da_payout_mode_config'     => ['get',       'payouts/da_payout_mode_config',                 'PayoutsConfigurationsController@fetchDirectAccountPayoutModeConfig'                        ],
         'create_merchant_da_payout_mode_config'    => ['post',      'payouts/da_payout_mode_config',                 'PayoutsConfigurationsController@createDirectAccountPayoutModeConfig'                       ],
@@ -5123,6 +5127,8 @@ class Route
     public static $private = [
         'collect_info_merchant_details_patch',
         'payouts_merchant_smart_routing_summary',
+        'payouts_merchant_smart_routing_rules_fetch',
+        'payouts_merchant_smart_routing_rules_modify',
         'mock_bvs_validation_event',
         'bulk_migrate_aggregator_to_reseller',
         'bulk_migrate_reseller_to_aggregator',
@@ -6745,6 +6751,8 @@ class Route
     public static $proxy = [
         'merchant_fetch_customer_eligibility',
         'payouts_merchant_smart_routing_summary',
+        'payouts_merchant_smart_routing_rules_fetch',
+        'payouts_merchant_smart_routing_rules_modify',
         'merchant_vkyc_submit',
         'merchant_edd_details_fetch',
         'fetch_payment_notes_keys_columns',
@@ -9402,6 +9410,8 @@ class Route
         'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
         'merchant_website_section_page_load_v2'           => Permission::VIEW_MERCHANT,
         'payouts_merchant_smart_routing_summary'          => Permission::VIEW_PAYOUT,
+        'payouts_merchant_smart_routing_rules_fetch'      => Permission::FETCH_SMART_ROUTING_RULES,
+        'payouts_merchant_smart_routing_rules_modify'     => Permission::MODIFY_SMART_ROUTING_RULES,
         //'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
@@ -11109,6 +11119,8 @@ class Route
         'payout_fetch_multiple'                        => Permission::VIEW_PAYOUT,
         'payout_status_to_reason_mapping'              => Permission::VIEW_PAYOUT,
         'payouts_merchant_smart_routing_summary'       => Permission::VIEW_PAYOUT,
+        'payouts_merchant_smart_routing_rules_fetch'   => Permission::FETCH_SMART_ROUTING_RULES,
+        'payouts_merchant_smart_routing_rules_modify'  => Permission::MODIFY_SMART_ROUTING_RULES,
         'payout_cancel'                                => Permission::CANCEL_PAYOUT,
         'payout_update_status'                         => Permission::UPDATE_PAYOUT,
         'payout_purpose_get'                           => Permission::VIEW_PAYOUT_PURPOSE,
@@ -12868,6 +12880,8 @@ class Route
             'payout_cancel',
             'payout_create',
             'payouts_merchant_smart_routing_summary',
+            'payouts_merchant_smart_routing_rules_fetch',
+            'payouts_merchant_smart_routing_rules_modify',
             'payout_validate',
             'payout_create_with_otp',
             'composite_payout_create_with_otp',
@@ -15062,6 +15076,8 @@ class Route
             'payout_cancel',
             'payout_create',
             'payouts_merchant_smart_routing_summary',
+            'payouts_merchant_smart_routing_rules_fetch',
+            'payouts_merchant_smart_routing_rules_modify',
             'payout_validate',
             'payout_create_with_otp',
             'payout_create_2FA',
@@ -18310,6 +18326,8 @@ class Route
         'payout_create',
         'payout_create_with_otp',
         'payouts_merchant_smart_routing_summary',
+        'payouts_merchant_smart_routing_rules_fetch',
+        'payouts_merchant_smart_routing_rules_modify',
         'composite_payout_create_with_otp',
         'payout_create_2FA',
         'fund_account_validate',

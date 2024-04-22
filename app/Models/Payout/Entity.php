@@ -457,6 +457,20 @@ class Entity extends Base\PublicEntity
 
     const TOTAL_PROCESSED_SECONDARY_PAYOUTS_AMOUNT             = 'total_payouts_processed_amount_from_secondary_channel';
 
+    const PAYOUTS_SMART_ROUTING_RULES_ALLOWED_MODES = [
+        PayoutMode::IMPS,
+        PayoutMode::UPI,
+        PayoutMode::NEFT,
+        PayoutMode::RTGS
+    ];
+
+    const PAYOUTS_SMART_ROUTING_RULES_ALLOWED_CHANNELS = [
+        Channel::RBL,
+        Channel::YESBANK,
+        Channel::ICICI,
+        Channel::AXIS,
+        'shared'
+    ];
 
     protected $queueFlag = false;
 

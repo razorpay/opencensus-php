@@ -152,6 +152,8 @@ class Validator extends Base\Validator
 
     const SMART_ROUTING_PAYOUTS_SUMMARY_FTS_RESPONSE = 'smart_routing_payouts_summary_fts_response';
 
+    const SMART_ROUTING_RULES = 'smart_routing_rules';
+
     const OWNER_BULK_REJECT_PAYOUTS = 'owner_bulk_reject_payouts';
 
     const FETCH_PENDING_PAYOUTS_SUMMARY = 'fetch_pending_payouts_summary';
@@ -1571,6 +1573,29 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateChannelForDirectUPIPayouts(string $merchantId = null,
+                                                       string $channel = null) : bool {
+            switch ($channel)
+            {
+                case Settlement\Channel::RBL :
+                    if ($this->isUpiModeEnabledOnRblDirectAccountForMerchantId($merchantId) === false)
+                    {
+                        return false;
+                    }
+                    break;
+
+                case Settlement\Channel::AXIS :
+                case Settlement\Channel::ICICI :
+                case Settlement\Channel::YESBANK :
+                    if ((new PayoutModeConfig\Service())->checkIfUpiDirectAccountChannelEnabledForMerchant($merchantId, $channel) === false)
+                    {
+                        return false;
+                    }
+                    break;
+            }
+            return true;
+    }
+
     public function validateChannelAndModeForPayouts(string $merchantId,
                                                      string $channel = null,
                                                      string $destinationType = null,
@@ -1978,7 +2003,6 @@ class Validator extends Base\Validator
 
     }
 
-
     public function isUpiModeEnabledOnRblDirectAccountForMerchantId(string $merchantId)
     {
         $featureList = (new FeatureRepo())->findMerchantWithFeatures($merchantId, [Features::RBL_CA_UPI]);
@@ -2079,6 +2103,38 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid File Extension'
             );
+        }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateSmartRoutingRules($payload): void
+    {
+        foreach ($payload as $transferMode => $channels)
+        {
+            if (!in_array(strtoupper($transferMode), Entity::PAYOUTS_SMART_ROUTING_RULES_ALLOWED_MODES)) {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid mode received.",
+                    null,
+                    [
+                        'mode' => $transferMode
+                    ]
+                );
+            }
+
+            foreach ($channels as $channel)
+            {
+                if (!in_array(strtolower($channel), Entity::PAYOUTS_SMART_ROUTING_RULES_ALLOWED_CHANNELS)) {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "Invalid channel received.",
+                        null,
+                        [
+                            'channel' => $channel
+                        ]
+                    );
+                }
+            }
         }
     }
 }

@@ -150,6 +150,8 @@ class Base
 
     const FTS_PRIORITY_ROUTE = '/routing/priority_route';
 
+    const FTS_MAR_ROUTE = '/routing/rules';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

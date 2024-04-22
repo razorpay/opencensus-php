@@ -6174,4 +6174,99 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * @throws BadRequestException
+     */
+    public function fetchSmartRoutingRulesForMerchant($input): array
+    {
+        $response = [];
+        try
+        {
+            // Sample response: ["IMPS" => ["RBL", "ICICI", "SHARED"], "NEFT" => ["YESBANK", "SHARED", "RBL"], "UPI" => ["RBL"]]
+            $response = $this->core->fetchSmartRoutingRulesForMerchant($input);
+        }
+        catch (Throwable $exception)
+        {
+            $this->trace->traceException($exception,
+                 Trace::ERROR,
+                 TraceCode::SMART_ROUTING_RULES_FETCH_FAILED,
+                 $input
+            );
+        }
+        finally
+        {
+            // if no priorities received for ANY of the modes, then throw bad request exception
+            $validResponse = false;
+
+            if(!(empty($response) === true)) {
+                $validResponse = true;
+
+                $priorityChannelsForIMPS = $response['IMPS'];
+                $priorityChannelsForUPI = $response['UPI'];
+
+                if(count($priorityChannelsForIMPS) === 0 && count($priorityChannelsForUPI) === 0) {
+                    $validResponse = false;
+                }
+            }
+
+            if(!$validResponse)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null
+                );
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function modifySmartRoutingRulesForMerchant($input): array
+    {
+        $response = [];
+        try
+        {
+            (new Validator)->validateSmartRoutingRules($input);
+
+            // Sample response: ["IMPS" => ["RBL", "ICICI", "SHARED"], "NEFT" => ["YESBANK", "SHARED", "RBL"], "UPI" => ["RBL"]]
+            $response = $this->core->modifySmartRoutingRulesForMerchant($input);
+        }
+        catch (Throwable $exception)
+        {
+            $this->trace->traceException($exception, Trace::ERROR,
+                 TraceCode::SMART_ROUTING_RULES_MODIFY_FAILED,
+                 $input);
+        }
+        finally
+        {
+            // if no priorities received for ANY of the modes, then throw bad request exception
+            $validResponse = false;
+
+            if(!(empty($response) === true)) {
+                $validResponse = true;
+
+                $priorityChannelsForIMPS = $response['IMPS'];
+                $priorityChannelsForUPI = $response['UPI'];
+
+                if(count($priorityChannelsForIMPS) === 0 && count($priorityChannelsForUPI) === 0) {
+                    $validResponse = false;
+                }
+            }
+
+            if(!$validResponse)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null
+                );
+            }
+        }
+
+        return $response;
+    }
 }

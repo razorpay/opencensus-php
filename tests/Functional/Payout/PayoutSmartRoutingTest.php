@@ -2476,4 +2476,242 @@ class PayoutSmartRoutingTest extends TestCase
             PayoutEntity::BACKEND => PayoutEntity::PINOT_BACKEND
         ];
     }
+
+    public function mockDcsConfigFetchAllowedUPIChannel(
+        $dcsCallCounter = 1,
+        $channel = ""){
+        $dcsConfigServiceMock = $this->getMockBuilder( DcsConfigService::class)
+                                     ->setConstructorArgs([$this->app])
+                                     ->getMock();
+        $dcsConfigServiceMock
+            ->method('fetchConfiguration')
+            ->willReturnCallback(function() use (&$dcsCallCounter, $channel) {
+                if ($dcsCallCounter === 0)
+                {
+                    $dcsCallCounter++;
+
+                    throw new ServerErrorException(
+                        'error',
+                        ErrorCode::SERVER_ERROR_DCS_SERVICE_PAYOUT_MODE_CONFIG_FETCH_FAILURE
+                    );
+                }
+                else
+                {
+                    $allowedUPIChannels[PayoutModeConfig\Constants::ALLOWED_UPI_CHANNELS] = [$channel];
+
+                    return $allowedUPIChannels;
+                }
+            });
+
+        $this->app->instance('dcs_config_service', $dcsConfigServiceMock);
+    }
+
+    public function mockFtsSmartRoutingRules(
+        $ftsMock,
+        $action,
+        &$ftsSmartRoutingRulesSuccess,
+        $times = 1,
+        $mockedSmartRoutingRulesResponse = [],
+        $throwError = false,
+        $customResponse = false,
+        $customResponseArray = [])
+    {
+        $requestMethod = '';
+
+        if ($action == 'fetch') {
+            $requestMethod = 'GET';
+        } else if ($action == 'modify') {
+            $requestMethod = 'POST';
+        }
+
+        if(!$customResponse)
+        {
+            //for number of $times fill $customResponseArray with success and error based on $throwError
+            for($i = 0; $i < $times; $i++)
+            {
+                if($throwError)
+                {
+                    $customResponseArray[] = 'error';
+                }
+                else
+                {
+                    $customResponseArray[] = 'success';
+                }
+            }
+        }
+
+
+        foreach ($customResponseArray as $responseType)
+        {
+            if ($responseType === 'success')
+            {
+                $ftsMock->shouldReceive('createAndSendRequest')
+                        ->andReturnUsing(function(string $endpoint, string $method, array $input) use ($requestMethod, $mockedSmartRoutingRulesResponse, &$ftsSmartRoutingRulesSuccess) {
+
+                            self::assertEquals('/routing/rules', $endpoint);
+                            self::assertEquals($requestMethod, $method);
+
+                            // TODO: Separate assertions for fetch & modify methods to be added
+
+                            $ftsSmartRoutingRulesSuccess = true;
+
+                            return [
+                                'body' => $mockedSmartRoutingRulesResponse,
+                                'code' => 200,
+                            ];
+                        })->times(1);
+            }
+            else
+            {
+                $ftsMock->shouldReceive('createAndSendRequest')
+                    ->andThrowExceptions([new \Exception("Server Error")])->times(1);
+            }
+        }
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        return $ftsMock;
+    }
+
+    public function testSmartRoutingRules_FetchRulesForMerchant_UPIEnabled_Success()
+    {
+        $this->liveSetUp();
+
+        $this->setupLiteAndDirectAccountsForMerchants(1, 2);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Features::RBL_CA_UPI]);
+
+        $this->mockDcsConfigFetchAllowedUPIChannel(1, Channel::ICICI);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsFetchSmartRoutingRulesSuccess = true;
+
+        $ftsSmartRoutingRulesMockedResponse = [
+            'IMPS' => [
+                'RBL',
+                'ICICI',
+                'SHARED'
+            ],
+            'NEFT' => [
+                'ICICI',
+                'RBL',
+                'SHARED'
+            ],
+            'UPI' => [
+                'RBL',
+                'ICICI'
+            ]
+        ];
+
+        $this->mockFtsSmartRoutingRules($this->ftsMock, 'fetch', $ftsFetchSmartRoutingRulesSuccess, 1, $ftsSmartRoutingRulesMockedResponse);
+
+        $this->startTest();
+
+        $this->assertTrue($ftsFetchSmartRoutingRulesSuccess);
+    }
+
+    public function testSmartRoutingRules_FetchRulesForMerchant_UPINotEnabled_Success()
+    {
+        $this->liveSetUp();
+
+        $this->setupLiteAndDirectAccountsForMerchants(1, 2);
+
+        $this->ba->privateAuth();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsFetchSmartRoutingRulesSuccess = true;
+
+        $ftsSmartRoutingRulesMockedResponse = [
+            'IMPS' => [
+                'RBL',
+                'ICICI',
+                'SHARED'
+            ],
+            'NEFT' => [
+                'ICICI',
+                'RBL',
+                'SHARED'
+            ]
+        ];
+
+        $this->mockFtsSmartRoutingRules($this->ftsMock, 'fetch', $ftsFetchSmartRoutingRulesSuccess, 1, $ftsSmartRoutingRulesMockedResponse);
+
+        $this->startTest();
+
+        $this->assertTrue($ftsFetchSmartRoutingRulesSuccess);
+    }
+
+    public function testSmartRoutingRules_FetchRulesForMerchant_FTSNoRulesFoundForMerchant()
+    {
+        $this->liveSetUp();
+
+        $this->setupLiteAndDirectAccountsForMerchants(1, 2);
+
+        $this->ba->privateAuth();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsFetchSmartRoutingRulesSuccess = false;
+
+        $ftsSmartRoutingRulesMockedResponse = [];
+
+        $this->mockFtsSmartRoutingRules($this->ftsMock, 'fetch', $ftsFetchSmartRoutingRulesSuccess, 1, $ftsSmartRoutingRulesMockedResponse, true);
+
+        $this->startTest();
+
+        $this->assertFalse($ftsFetchSmartRoutingRulesSuccess);
+    }
+
+    public function testSmartRoutingRules_FetchRulesForMerchant_NoActiveDirectAccountsFoundForMerchant()
+    {
+        $this->liveSetUp();
+
+        $this->ba->privateAuth();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $basFetchSuccess = false;
+
+        $this->mockBasFetch($basFetchSuccess, true, 0);
+
+        $this->startTest();
+
+        $this->assertFalse($basFetchSuccess);
+    }
+
+    public function testSmartRoutingRules_ModifyRulesForMerchant_Success()
+    {
+        $this->liveSetUp();
+
+        $this->setupLiteAndDirectAccountsForMerchants(1, 2);
+
+        $this->ba->privateAuth();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsModifySmartRoutingRulesSuccess = true;
+
+        $ftsSmartRoutingRulesMockedResponse = [
+            'IMPS' => [
+                'RBL',
+                'ICICI',
+                'SHARED'
+            ],
+            'NEFT' => [
+                'ICICI',
+                'RBL',
+                'SHARED'
+            ]
+        ];
+
+        $this->mockFtsSmartRoutingRules($this->ftsMock, 'modify', $ftsModifySmartRoutingRulesSuccess, 1, $ftsSmartRoutingRulesMockedResponse);
+
+        $this->startTest();
+
+        $this->assertTrue($ftsModifySmartRoutingRulesSuccess);
+    }
 }

@@ -11249,4 +11249,271 @@ class Core extends Base\Core
 
         return $harvesterPayload;
     }
+
+    public function initializeFtsRequestForFetchSmartRoutingRules(array $modeWiseActiveChannelsWithFundAccountIDs = null) : array
+    {
+        $merchantID = $this->merchant->getId();
+        $ftsRequest = [];
+
+        $modeWiseActiveChannels = [];
+
+        /* $modeWiseActiveChannelsWithFundAccountIDs = ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
+                                                'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
+                                                'UPI' => ['RBL' => 123456]] */
+        foreach ($modeWiseActiveChannelsWithFundAccountIDs as $transferMode => $channelsWithFundAccountIDs)
+        {
+            foreach ($channelsWithFundAccountIDs as $channel => $ftsFundAccountId)
+            {
+                $modeWiseActiveChannels[$transferMode][] = $channel;
+            }
+        }
+
+        // 'XYZ' => ['IMPS' => ['RBL', 'ICICI'], 'NEFT' => ['ICICI', 'RBL'], 'UPI' => ['RBL']]
+        $ftsRequest[$merchantID] = $modeWiseActiveChannels;
+
+        $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_FTS_REQUEST, [
+            Entity::MERCHANT_ID => $merchantID,
+            TraceCode::FTS_REQUEST => $ftsRequest,
+        ]);
+
+        return $ftsRequest;
+    }
+
+    public function initializeFtsRequestForModifySmartRoutingRules(array $modeWiseActiveChannelsWithFundAccountIDs = null,
+                                                             array $merchantCustomizedPriorityRules = null) : array
+    {
+        $merchantID = $this->merchant->getId();
+        $merchantCustomizedPriorityRulesWithFundAccountIDs = [];
+        $ftsRequest = [];
+
+        /* $modeWiseActiveChannelsWithFundAccountIDs = ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
+        'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
+        'UPI' => ['RBL' => 123456]]
+
+        $merchantCustomizedPriorityRules = ['IMPS' => ['RBL', 'ICICI', 'SHARED'], 'NEFT' => ['ICICI', 'RBL', 'SHARED', ], 'UPI' => ['RBL']]*/
+
+        // Send active channels to FTS as per the order set by merchant
+        foreach ($merchantCustomizedPriorityRules as $transferMode => $channels)
+        {
+            foreach ($channels as $channel)
+            {
+                // Adding fund account ID as per order in the priority list provided by merchant
+                $merchantCustomizedPriorityRulesWithFundAccountIDs[$transferMode][$channel] = $modeWiseActiveChannelsWithFundAccountIDs[$transferMode];
+            }
+        }
+
+        // 'XYZ' => ['IMPS' => ['RBL', 'ICICI'], 'NEFT' => ['ICICI', 'RBL'], 'UPI' => ['RBL']]
+        $ftsRequest[$merchantID] = $merchantCustomizedPriorityRulesWithFundAccountIDs;
+
+        $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_FTS_REQUEST, [
+            Entity::MERCHANT_ID => $merchantID,
+            TraceCode::FTS_REQUEST => $ftsRequest,
+        ]);
+
+        return $ftsRequest;
+    }
+
+    public function getActiveDirectChannelsWithFundAccountsForSmartRoutingRules($merchant) : array {
+        $merchantID = $merchant->getId();
+
+        // Fetch Active BasDetails
+        $activeBasDetails = $this->repo->banking_account_statement_details->getActiveDirectAccountsForMerchantId($merchantID);
+
+        $activeDirectChannelsWithFundAccountsMap = [
+            Mode::IMPS => [],
+            Mode::NEFT => [],
+            Mode::UPI => []
+        ];
+
+        foreach ($activeBasDetails as $activeBasDetail)
+        {
+            $channel = $activeBasDetail->getChannel();
+
+            // To maintain channel case uniformity
+            $channelInUpperCase = strtoupper($channel);
+
+            $bankingAccount = $activeBasDetail->balance->bankingAccount;
+
+            // Fetch fund account ID for the MID, corresponding to every channel the MID is active on
+            $ftsFundAccountId = optional($bankingAccount)->getFtsFundAccountId();
+
+            if ((empty($ftsFundAccountId) === true) and
+                (in_array($channel, BankingAccount\Core::$directChannelsForConnectBanking) === true))
+            {
+                $accountNumber = $activeBasDetail->getAccountNumber();
+
+                try
+                {
+                    $ftsFundAccountId = app('banking_account_service')->fetchFtsFundAccountIdFromBas(
+                        $merchant->getId(), $channel, $accountNumber);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        null,
+                        TraceCode::SMART_ROUTING_RULES_BAS_FETCH_FAILED,
+                        [
+                            'merchant_id'    => $merchant->getId(),
+                            'bas_details_id' => $activeBasDetail->getId(),
+                            'balance_id'     => $activeBasDetail->getBalanceId(),
+                        ]);
+
+                    $this->trace->count(Metric::SMART_ROUTING_BAS_FETCH_FAILURES_COUNT);
+
+                    throw $ex;
+                }
+            }
+
+            foreach ($activeDirectChannelsWithFundAccountsMap as $transferMode => $channels)
+            {
+                if($transferMode == Mode::UPI) {
+                    // Check if the channel is active for UPI mode or not
+                    $isChannelActiveForDirectUPIPayouts = (new Validator())->validateChannelForDirectUPIPayouts($merchantID, $channel);
+                    if ($isChannelActiveForDirectUPIPayouts === true)
+                    {
+                        $activeDirectChannelsWithFundAccountsMap[$transferMode][$channelInUpperCase] = $ftsFundAccountId;
+                    }
+                } else {
+                    // If a direct account exists for the MID on a certain channel, then channel is active for all non-UPI modes
+                    $activeDirectChannelsWithFundAccountsMap[$transferMode][$channelInUpperCase] = $ftsFundAccountId;
+                }
+            }
+        }
+
+        return $activeDirectChannelsWithFundAccountsMap;
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws LogicException
+     * @throws BadRequestValidationFailureException
+     * @throws InvalidArgumentException
+     */
+    public function fetchSmartRoutingRulesForMerchant($input): array
+    {
+        $merchantID = $this->merchant->getId();
+
+        $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_API_REQUEST, [
+            Entity::MERCHANT_ID => $merchantID,
+            Entity::INPUT       => $input
+        ]);
+
+        // Fetch Direct Routing Channels with fund account ID's
+        /* ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
+            'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
+            'UPI' => ['RBL' => 123456]] */
+        $activeDirectChannelsWithFundAccounts = $this->getActiveDirectChannelsWithFundAccountsForSmartRoutingRules($this->merchant);
+
+        $activeDirectChannelsNonUPICount = count($activeDirectChannelsWithFundAccounts[Mode::IMPS]);
+        $activeDirectChannelsUPICount = count($activeDirectChannelsWithFundAccounts[Mode::UPI]);
+
+        if($activeDirectChannelsNonUPICount === 0 && $activeDirectChannelsUPICount === 0)
+        {
+            throw new LogicException('Merchant doesn\'t have any viable channels for smart routing.',
+                  ErrorCode::SMART_ROUTING_RULES_NO_VIABLE_CHANNELS_AVAILABLE,
+                  [Entity::MERCHANT_ID  => $merchantID]);
+        }
+
+        $ftsRequest = $this->initializeFtsRequestForFetchSmartRoutingRules($activeDirectChannelsWithFundAccounts);
+
+        /** @var \RZP\Services\FTS\FundTransfer $ftsService */
+
+        $ftsService = App::getFacadeRoot()['fts_fund_transfer'];
+        $ftsService->setRequestTimeout(1);
+
+        try {
+            // Call to FTS to get merchant's smart routing rules
+            // Sample response: ["IMPS" => ["RBL", "ICICI", "SHARED"], "NEFT" => ["YESBANK", "RBL", "SHARED"], "UPI" => ["RBL"]]
+            $ftsResponse = $ftsService->fetchSmartRoutingRulesThroughFts($ftsRequest);
+
+            (new Validator())->validateSmartRoutingRules($ftsResponse);
+        } catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex, Logger::ERROR, TraceCode::FETCH_SMART_ROUTING_RULES_FTS_REQUEST_FAILED,
+                [
+                    Entity::MERCHANT_ID => $merchantID,
+                    TraceCode::FTS_REQUEST => $ftsRequest
+                ]);
+
+            throw new RuntimeException(ErrorCode::SMART_ROUTING_RULES_FETCH_FAILED_FTS, [
+                Entity::MERCHANT_ID => $merchantID,
+                TraceCode::FTS_REQUEST => $ftsRequest
+            ], null, $ex);
+        }
+
+        $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_FTS_RESPONSE, [
+            Entity::MERCHANT_ID => $merchantID,
+            TraceCode::FTS_RESPONSE => $ftsResponse
+        ]);
+
+        return $ftsResponse;
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws LogicException
+     * @throws BadRequestValidationFailureException
+     * @throws InvalidArgumentException
+     */
+    public function modifySmartRoutingRulesForMerchant($input): array
+    {
+        $merchantID = $this->merchant->getId();
+
+        $this->trace->info(TraceCode::MODIFY_SMART_ROUTING_RULES_API_REQUEST, [
+            Entity::MERCHANT_ID => $merchantID,
+            Entity::INPUT       => $input
+        ]);
+
+        // Fetch Direct Routing Channels with fund account ID's
+        /* ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
+            'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
+            'UPI' => ['RBL' => 123456]] */
+        $activeDirectChannelsWithFundAccounts = $this->getActiveDirectChannelsWithFundAccountsForSmartRoutingRules($this->merchant);
+
+        $activeDirectChannelsNonUPICount = count($activeDirectChannelsWithFundAccounts[Mode::IMPS]);
+        $activeDirectChannelsUPICount = count($activeDirectChannelsWithFundAccounts[Mode::UPI]);
+
+        if($activeDirectChannelsNonUPICount === 0 && $activeDirectChannelsUPICount === 0)
+        {
+            throw new LogicException('Merchant doesn\'t have any viable channels for smart routing.',
+                  ErrorCode::SMART_ROUTING_RULES_NO_VIABLE_CHANNELS_AVAILABLE,
+                  [Entity::MERCHANT_ID  => $merchantID
+            ]);
+        }
+
+        $ftsRequest = $this->initializeFtsRequestForModifySmartRoutingRules($activeDirectChannelsWithFundAccounts, $input);
+
+        /** @var \RZP\Services\FTS\FundTransfer $ftsService */
+
+        $ftsService = App::getFacadeRoot()['fts_fund_transfer'];
+        $ftsService->setRequestTimeout(1);
+
+        try {
+            // Call to FTS to modify merchant's smart routing rules
+            // Sample response: ["IMPS" => ["RBL", "ICICI", "SHARED"], "NEFT" => ["ICICI", "RBL", "SHARED"], "UPI" => ["RBL"]]
+            $ftsResponse = $ftsService->modifySmartRoutingRulesThroughFts($ftsRequest);
+
+            (new Validator())->validateSmartRoutingRules($ftsResponse);
+        } catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex, Logger::ERROR, TraceCode::MODIFY_SMART_ROUTING_RULES_FTS_REQUEST_FAILED,
+                [
+                    Entity::MERCHANT_ID => $merchantID,
+                    TraceCode::FTS_REQUEST => $ftsRequest
+                ]);
+
+            throw new RuntimeException(ErrorCode::SMART_ROUTING_RULES_MODIFY_FAILED_FTS, [
+                Entity::MERCHANT_ID => $merchantID,
+                TraceCode::FTS_REQUEST => $ftsRequest
+            ], null, $ex);
+        }
+
+        $this->trace->info(TraceCode::MODIFY_SMART_ROUTING_RULES_FTS_RESPONSE, [
+            Entity::MERCHANT_ID => $merchantID,
+            TraceCode::FTS_RESPONSE => $ftsResponse
+        ]);
+
+        return $ftsResponse;
+    }
 }

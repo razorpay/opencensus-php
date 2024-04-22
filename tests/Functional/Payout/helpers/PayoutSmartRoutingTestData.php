@@ -1083,4 +1083,129 @@ return [
             ],
         ],
     ],
+
+    'testSmartRoutingRules_FetchRulesForMerchant_UPIEnabled_Success' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_rules',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                    'SHARED'
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                    'SHARED'
+                ],
+                'UPI' => [
+                    'RBL',
+                    'ICICI'
+                ]
+            ],
+        ],
+    ],
+
+    'testSmartRoutingRules_FetchRulesForMerchant_UPINotEnabled_Success' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_rules',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                    'SHARED'
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                    'SHARED'
+                ]
+            ],
+        ],
+    ],
+
+    'testSmartRoutingRules_FetchRulesForMerchant_FTSNoRulesFoundForMerchant' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_rules',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \Exception::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testSmartRoutingRules_FetchRulesForMerchant_NoActiveDirectAccountsFoundForMerchant' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_rules',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \Exception::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testSmartRoutingRules_ModifyRulesForMerchant_Success' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/smart_routing_rules',
+            'content' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                    'SHARED'
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                    'SHARED'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                    'SHARED'
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                    'SHARED'
+                ]
+            ],
+        ],
+    ],
 ];
