@@ -5185,21 +5185,16 @@
     uuid "8.3.2"
     yup "0.28.5"
 
-"@razorpay/frontend-care@0.8.2":
-  version "0.8.2"
-  resolved "https://npm.pkg.github.com/download/@razorpay/frontend-care/0.8.2/20101785cc60a067ccd33cdd12a7dabfaff526e4#20101785cc60a067ccd33cdd12a7dabfaff526e4"
-  integrity sha512-ml9wWzJtJJtvml4d457U/d7e5Y+Cy/8dEepPll1HY6izG/1yi7RVGSwwRP4ZrKSXdl0MTBZNWIJedHvNGYgqaQ==
+"@razorpay/frontend-care@0.8.3":
+  version "0.8.3"
+  resolved "https://npm.pkg.github.com/download/@razorpay/frontend-care/0.8.3/9d2115594e558135a08e23f659ca4536b3c643db#9d2115594e558135a08e23f659ca4536b3c643db"
+  integrity sha512-nbVtFilGU+rJKViCkFBvlyV85AiY6qvUZPOoVEBcUnJCEl5gWYcS9qu3aydRtUbccBi1Oo4cGqCCGx51i8lDpg==
   dependencies:
     "@razorpay/blade" "10.23.5"
     botframework-directlinejs "^0.15.5"
     chart.js "^4.4.1"
     react-chartjs-2 "^5.2.0"
     typed.js "^2.1.0"
-
-"@razorpay/i18nify-js@1.4.4":
-  version "1.4.4"
-  resolved "https://npm.pkg.github.com/download/@razorpay/i18nify-js/1.4.4/799f766bd3c87fc014e0f64c9462042e5a10c760#799f766bd3c87fc014e0f64c9462042e5a10c760"
-  integrity sha512-s0XzUuNxPO9LzcJgExWeDIGCbtPwgVmJju6vTuEaXrCvvAIQIrlRb4eatLPtS95iQDatNXLvy0gf1tBejwEnAg==
 
 "@razorpay/i18nify-js@^1.4.0":
   version "1.4.0"
