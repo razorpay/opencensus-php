@@ -7,6 +7,7 @@ class Type {
     const SHIPPING_INFO_URL                = 'shipping_info_url';
     const FETCH_COUPONS_URL                = 'fetch_coupons_url';
     const APPLY_COUPON_URL                 = 'apply_coupon_url';
+    const SHOP_PLAN_NAME                   = 'shop_plan_name';
     const PLATFORM                         = 'platform';
     const COD_INTELLIGENCE                 = 'cod_intelligence';
     const ONE_CLICK_CHECKOUT               = 'one_click_checkout';

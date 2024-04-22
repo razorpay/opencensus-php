@@ -66,6 +66,8 @@ class Constants
     // for merchants in merchant dashboard.
     const APPS_INSTALLED = 'apps_installed';
 
+    const SOPC_METAFIELDS = 'sopc_metafields';
+    const SHOP_PLAN_NAME =  'shop_plan_name';
     // It holds the value either magic_checkout or razorpay_cod and
     // will be updated by FE depending on merchant toggles across apps
     // in merchant dashboard and the same app UI for merchant dashboard
@@ -248,6 +250,8 @@ class Constants
         self::ONE_CC_BUY_NOW_BUTTON,
         self::COD_ENGINE,
         self::ONE_CC_SHIPPING_USING_CHECKOUT,
+        self::SHOP_PLAN_NAME,
+        self::SOPC_METAFIELDS,
     ];
 
     const COMMON_CONFIGS = [

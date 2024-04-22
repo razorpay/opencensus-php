@@ -4866,6 +4866,7 @@ class Route
         '1cc_coupon_engine_sync_platform_coupons'            => ['post', '1cc/dashboard/ce/coupons/sync', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_coupon_engine_get_sync_platform_coupons_status' => ['get', '1cc/dashboard/ce/coupons/sync', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_search_product_collections'                     => ['get', '1cc/magic/platform/products/collections/search', 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_shopify_configs_update'                         => ['post', '1cc/magic/merchant/configs/shopify', 'OneClickCheckoutController@handleMerchantDashboardReq'],
 
         '1cc_magic_konnect_get_sso_jwt'                      => ['get', '1cc/konnect/sso/jwt', 'OneClickCheckoutController@handleMerchantDashboardReq'],
 
@@ -7802,6 +7803,7 @@ class Route
         '1cc_coupon_engine_sync_platform_coupons',
         '1cc_coupon_engine_get_sync_platform_coupons_status',
         '1cc_search_product_collections',
+        '1cc_shopify_configs_update',
 
         '1cc_magic_konnect_get_sso_jwt',
 
@@ -13477,6 +13479,7 @@ class Route
             '1cc_coupon_engine_sync_platform_coupons',
             '1cc_coupon_engine_get_sync_platform_coupons_status',
             '1cc_search_product_collections',
+            '1cc_shopify_configs_update',
 
             '1cc_magic_konnect_get_sso_jwt',
 
@@ -16104,6 +16107,7 @@ class Route
             '1cc_coupon_engine_sync_platform_coupons',
             '1cc_coupon_engine_get_sync_platform_coupons_status',
             '1cc_search_product_collections',
+            '1cc_shopify_configs_update',
 
             '1cc_magic_konnect_get_sso_jwt',
             '1cc_shopify_fetch_liquid_files',
@@ -17654,6 +17658,7 @@ class Route
         ],
         'magic_checkout_service' => [
             'internal_1cc_prepay_cod_configs_get',
+            'fetch_trusted_badge_status',
             'internal_1cc_configs_get',
             'internal_1cc_configs_update',
             'update_shopify_1cc_credentials',

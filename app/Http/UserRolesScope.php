@@ -1384,6 +1384,7 @@ class UserRolesScope
             '1cc_coupon_engine_sync_platform_coupons'             => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_coupon_engine_get_sync_platform_coupons_status'  => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_search_product_collections'                      => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
+            '1cc_shopify_configs_update'                          => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
 
             '1cc_magic_konnect_get_sso_jwt'                       => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
 

@@ -356,6 +356,24 @@ class Service extends Base\Service
                             $input[Constants::APPS_INSTALLED]
                         );
                     }
+
+                    if (isset($input[Constants::SOPC_METAFIELDS]))
+                    {
+                        (new Core)->upsertMerchant1ccConfig(
+                            Constants::SOPC_METAFIELDS,
+                            true,
+                            $input[Constants::SOPC_METAFIELDS]
+                        );
+                    }
+
+                    $shopPlanValue = $input[Constants::SHOP_PLAN_NAME];
+                    if (isset($input[Constants::SHOP_PLAN_NAME]))
+                    {
+                        (new Core)->upsertMerchant1ccConfig(
+                            Constants::SHOP_PLAN_NAME,
+                            $shopPlanValue,
+                        );
+                    }
                 }
 
                 if (isset($input[Constants::COD_ENGINE_TYPE]) && ($updatePlatform === Constants::SHOPIFY || $updatePlatform === Constants::WOOCOMMERCE)) {
@@ -674,7 +692,13 @@ class Service extends Base\Service
             }, $shopifyAppsInstalledOriginal);
             // -- end
 
+            $sopcMetafieldsConfig = $this->merchant->get1ccConfig(Constants::SOPC_METAFIELDS);
+            $sopcMetafieldsConfigValue = $sopcMetafieldsConfig !== null ? $sopcMetafieldsConfig['value_json'] : [];
+
             $dashboardViewConfig = $this->merchant->get1ccConfig(Constants::DASHBOARD_VIEW);
+
+            $shopPlanNameConfig = $this->merchant->get1ccConfig(Constants::SHOP_PLAN_NAME);
+
 
             // Need to refactor once sopc merchant dashboard changes are live
             // -- start --
@@ -713,10 +737,25 @@ class Service extends Base\Service
                 ]);
             }
 
+
             if (strlen($dashboardView) > 0)
             {
                 $response = array_merge($response, [
                     Constants::DASHBOARD_VIEW =>$dashboardView
+                ]);
+            }
+
+            if (sizeof($sopcMetafieldsConfigValue) > 0)
+            {
+                $response = array_merge($response, [
+                    Constants::SOPC_METAFIELDS => $sopcMetafieldsConfigValue
+                ]);
+            }
+
+            if ($shopPlanNameConfig!==null)
+            {
+                $response = array_merge($response, [
+                    Constants::SHOP_PLAN_NAME =>$shopPlanNameConfig->getValue()
                 ]);
             }
 
@@ -1128,6 +1167,9 @@ class Service extends Base\Service
          */
         foreach (Constants::SHOPIFY_SPECIFIC_CONFIGS as $flag)
         {
+            if ($flag=== Constants::SHOP_PLAN_NAME || $flag===Constants::SOPC_METAFIELDS){
+                continue;
+            }
             $response[$flag] = false;
             if (in_array($flag, Constants::CONFIG_CUM_FEATURE_FLAGS) === true) {
                 $response[$flag] = $merchant->isFeatureEnabled($flag);
