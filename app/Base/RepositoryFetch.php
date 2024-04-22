@@ -2029,7 +2029,7 @@ trait RepositoryFetch
         return $id;
     }
 
-    public function isTestModeOrderExperimentEnabled(): bool
+    public function isTestModeOrderExperimentEnabled(): string
     {
         $app = $this->app;
         $variant = 'control';
