@@ -5,13 +5,16 @@ namespace RZP\Tests\Functional\Dispute;
 use DB;
 use Mail;
 use Cache;
+use Mockery;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Adjustment\Status;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
 use Functional\Dispute\DisputeTrait;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -20,6 +23,7 @@ class DisputeLedgerTest extends TestCase
     use DisputeTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
+    use MocksRazorx;
 
     protected $druidMock;
 
@@ -1303,6 +1307,205 @@ class DisputeLedgerTest extends TestCase
                 ]
             ]
         ];
+    }
+
+    public function testDisputeDeductAtOnsetCreateSuccessWithEarlyDispatch()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $testData = $this->updateCreateTestData();
+
+        $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow', 'new_settlement_service']);
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ADJUSTMENTS, 'on');
+
+        $this->ba->adminAuth();
+
+        $expectedJournalPayload = [
+            "merchant_id"           => "10000000000000",
+            "currency"              => "INR",
+            "transaction_date"      => "", // any
+            "transactor_id"         => "", // any
+            "transactor_event"      => "razorpay_dispute_deduct",
+            "money_params"          => [
+                "merchant_balance_amount"       => "1000",
+                "base_amount"                   => "1000",
+                "gateway_dispute_payable_amount"=> "1000",
+                "merchant_balance_limit"        => "0",
+            ]
+        ];
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload) {
+
+                $this->assertArrayHasKey('transaction_date',$journalPayload);
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['money_params'], $journalPayload['money_params']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn([
+                'code' => 200,
+                'body' => [
+                    "id"=> "LO8XsENYT8eoLp",
+                    "created_at"=> "1678083477",
+                    "updated_at"=> "1678083477",
+                    "amount"=> "1000",
+                    "base_amount"=> "1000",
+                    "currency"=> "INR",
+                    "tenant"=> "PG",
+                    "transactor_id"=> "disp_LO8XoBzYDF42Qf",
+                    "transactor_event"=> "razorpay_dispute_deduct",
+                    "transaction_date"=> "1678083475",
+                    "ledger_entry"=> [
+                        [
+                            "id"=> "LO8XsEY2FgCgvg",
+                            "created_at"=> "1678083477",
+                            "updated_at"=> "1678083477",
+                            "merchant_id"=> "10000000000000",
+                            "journal_id"=> "LO8XsENYT8eoLp",
+                            "account_id"=> "JjpZUD9PmJeNPk",
+                            "amount"=> "1000",
+                            "base_amount"=> "1000",
+                            "type"=> "debit",
+                            "currency"=> "INR",
+                            "balance"=> "540189.000000",
+                            "balance_updated"=> true,
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_balance"
+                                ]
+                            ]
+                        ],
+                        [
+                            "id"=> "LO8XsEY3C4sdPg",
+                            "created_at"=> "1678083477",
+                            "updated_at"=> "1678083477",
+                            "merchant_id"=> "10000000000000",
+                            "journal_id"=> "LO8XsENYT8eoLp",
+                            "account_id"=> "LO89uSsPrzZHUe",
+                            "amount"=> "1000",
+                            "base_amount"=> "1000",
+                            "type"=> "credit",
+                            "currency"=> "INR",
+                            "balance"=> "",
+                            "balance_updated"=> false,
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "gateway_dispute"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ]);
+
+        $creditTxnPayload =  [
+            'id' =>  'LO8XsENYT8eoLp',
+            'merchant_id' =>  '10000000000000',
+            'source_id' =>  'LN5BW4fDCb1Sn7',
+            'source_type' =>  'adjustment',
+            'balance_type' => 'PRIMARY',
+            'currency' => 'INR',
+            'credit' =>  0,
+            'debit' =>  1000,
+            'fee' =>  0,
+            'tax' =>  0,
+            'settled_by' => 'Razorpay',
+            'on_hold' => null,
+            'on_hold_reason' => '',
+            'meta' => null,
+        ];
+
+        $this->mockSns($creditTxnPayload);
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotNull($response, 'response should not be null');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'   => 1000,
+            'internal_status'   => 'open',
+        ], $dispute);
+
+        $this->assertEqualsWithDelta($dispute['created_at'] + self::SECONDS_IN_DAY * 10, $dispute['internal_respond_by'], 5);
+
+        $adjustment = $this->getLastEntity('adjustment', true);
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+        $this->assertEquals('10000000000000', $adjustment['merchant_id']);
+        $this->assertEquals(-1000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
+        $this->assertNull($adjustment['transaction_id'], 'transaction should be null');
+        $this->assertEquals($adjustment['entity_type'], 'dispute','entity_type should be dispute');
+        $this->assertNotNull($adjustment['entity_id'], 'entity_id should not be null');
+
+        $txn = $this->getDbEntity('transaction', ['type'=>'adjustment']);
+        // transaction is not created yet
+        $this->assertNull($txn, 'transaction should be null');
+    }
+
+    protected function mockSns($creditTxnPayload)
+    {
+        $sns = Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->times(1)
+            ->with(Mockery::type('string'), Mockery::type('string'))
+            ->andReturnUsing(function ($input) use ($creditTxnPayload)
+            {
+                $json_decoded_input = json_decode($input, true);
+
+                if ($json_decoded_input['id'] === $creditTxnPayload['id'])
+                {
+                    $this->assertEquals($creditTxnPayload['merchant_id'], $json_decoded_input['merchant_id']);
+                    $this->assertEquals($creditTxnPayload['source_type'], $json_decoded_input['source_type']);
+                    $this->assertEquals($creditTxnPayload['balance_type'], $json_decoded_input['balance_type']);
+                    $this->assertEquals($creditTxnPayload['currency'], $json_decoded_input['currency']);
+                    $this->assertEquals($creditTxnPayload['credit'], $json_decoded_input['credit']);
+                    $this->assertEquals($creditTxnPayload['debit'], $json_decoded_input['debit']);
+                    $this->assertEquals($creditTxnPayload['fee'], $json_decoded_input['fee']);
+                    $this->assertEquals($creditTxnPayload['tax'], $json_decoded_input['tax']);
+                    $this->assertEquals($creditTxnPayload['settled_by'], $json_decoded_input['settled_by']);
+                    $this->assertEquals($creditTxnPayload['on_hold'], $json_decoded_input['on_hold']);
+                    $this->assertEquals($creditTxnPayload['on_hold_reason'], $json_decoded_input['on_hold_reason']);
+                    $this->assertEquals($creditTxnPayload['meta']['method'], $json_decoded_input['meta']['method']);
+                    $this->assertEquals($creditTxnPayload['meta']['international'], $json_decoded_input['meta']['international']);
+                    $this->assertEquals($creditTxnPayload['meta']['origin_method'], $json_decoded_input['meta']['origin_method']);
+                }
+
+                return $input;
+            });
+
+        $this->app->instance('sns', $sns);
     }
 
 }

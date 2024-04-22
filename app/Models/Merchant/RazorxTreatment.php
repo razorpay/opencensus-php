@@ -979,6 +979,12 @@ final class RazorxTreatment
 
     /**
      * Experiment to dispatch transactions to settlements service using ledger journals in ledger reverse
+     * shadow mode for adjustment and dispute transactions
+     */
+    const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ADJUSTMENTS = 'early_dispatch_of_txns_for_settlements_using_journal_adjustments';
+
+    /**
+     * Experiment to dispatch transactions to settlements service using ledger journals in ledger reverse
      * shadow mode for ODS transactions
      */
     const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ODS = 'early_dispatch_of_txns_for_settlements_using_journal_ods';

@@ -2354,7 +2354,6 @@ class Core extends Base\Core
      */
     public function dispatchForSettlementBucketing(Entity $txn)
     {
-
         // in case the transaction is eligible for settlement then
         // settled_at will have some number else it will be null
         $this->trace->debug(TraceCode::SETTLEMENT_TXN_BUCKET_LOG, [

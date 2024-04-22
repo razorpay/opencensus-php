@@ -5,6 +5,7 @@ namespace RZP\Models\Ledger\ReverseShadow;
 use App;
 use Carbon\Carbon;
 use Exception;
+use RZP\Constants\Entity as E;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Error\Error;
@@ -695,9 +696,9 @@ trait ReverseShadowTrait
     {
         $transactorPublicId = $journalResponse[Constants::TRANSACTOR_ID];
 
-        $ledgerOutboxCore = new LedgerOutboxCore();
+        $currency = $journalResponse[Constants::CURRENCY];
 
-        $transactorInfo = $ledgerOutboxCore->determineTransactionType($transactorPublicId);
+        $transactorInfo = $this->determineTransactionTypeFromTransactorId($transactorPublicId);
 
         $transactionType = $transactorInfo[Constants::TYPE];
 
@@ -733,13 +734,18 @@ trait ReverseShadowTrait
             $merchant = $this->repo->merchant->findOrFail($merchantId);
         }
 
-        $credit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_CREDIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
+        $credit = 0; $debit = 0;
 
-        $debit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_DEBIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
+        if (isset($merchantBalanceLedgerEntry) === true)
+        {
+            $credit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_CREDIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
 
-        $fees = $commissionLedgerEntry[Constants::AMOUNT] + $taxBalanceLedgerEntry[Constants::AMOUNT];
+            $debit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_DEBIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
+        }
 
-        $tax =  $taxBalanceLedgerEntry[Constants::AMOUNT];
+        $tax =  $taxBalanceLedgerEntry !== null ? $taxBalanceLedgerEntry[Constants::AMOUNT] : 0;
+
+        $fees = $commissionLedgerEntry !== null ? ($commissionLedgerEntry[Constants::AMOUNT] + $tax) : 0;
 
         $feeCredits =  $merchantFeeCreditsLedgerEntry !== null ?  $merchantFeeCreditsLedgerEntry[Constants::AMOUNT] : 0;
 
@@ -760,9 +766,9 @@ trait ReverseShadowTrait
             TransactionEntity::ID               => $journalResponse[Constants::ID],
             TransactionEntity::ENTITY_ID        => $transactorId,
             TransactionEntity::TYPE             => $transactionType,
-            TransactionEntity::MERCHANT_ID      => $merchantBalanceLedgerEntry[Constants::MERCHANT_ID],
+            TransactionEntity::MERCHANT_ID      => $merchantId,
             TransactionEntity::AMOUNT           => (int) $transactionAmount,
-            TransactionEntity::CURRENCY         => $merchantBalanceLedgerEntry[Constants::CURRENCY],
+            TransactionEntity::CURRENCY         => $currency,
             TransactionEntity::CREDIT           => (int) $credit,
             TransactionEntity::DEBIT            => (int) $debit,
             TransactionEntity::BALANCE          => (int) $merchantBalanceLedgerEntry[Constants::BALANCE],
@@ -774,7 +780,7 @@ trait ReverseShadowTrait
             TransactionEntity::BALANCE_ID       => null,
             TransactionEntity::CREATED_AT       => $journalResponse[Constants::CREATED_AT],
             TransactionEntity::UPDATED_AT       => $journalResponse[Constants::UPDATED_AT],
-            TransactionEntity::BALANCE_UPDATED  => $merchantBalanceLedgerEntry[Constants::BALANCE_UPDATED],
+            TransactionEntity::BALANCE_UPDATED  => true,
             TransactionEntity::FEE_BEARER       => Merchant\FeeBearer::NA,
             TransactionEntity::FEE_MODEL        => $feeModel,
             TransactionEntity::API_FEE          => 0,
@@ -815,6 +821,45 @@ trait ReverseShadowTrait
         return null;
     }
 
+    public function determineTransactionTypeFromTransactorId($transactorId) :array
+    {
+        $ledgerOutboxCore = new LedgerOutboxCore();
+
+        $transactorIdArr = $ledgerOutboxCore->getTransactorIDArray($transactorId);
+
+        $publicIdPrefix = $transactorIdArr[0];
+
+        $res = [
+            Constants::TRANSACTOR_ID => $transactorId,
+            Constants::ID            => $transactorIdArr[1]
+        ];
+
+        switch ($publicIdPrefix)
+        {
+            case "pay":
+                $res[Constants::TYPE] = LedgerOutboxConstants::PAYMENT;
+                return $res;
+            case "rfnd":
+                $res[Constants::TYPE] = LedgerOutboxConstants::REFUND;
+                return $res;
+            case "rvrsl":
+                $res[Constants::TYPE] = LedgerOutboxConstants::REVERSAL;
+                return $res;
+            case "adj":
+                $res[Constants::TYPE] = LedgerOutboxConstants::ADJUSTMENT;
+                return $res;
+            case "disp":
+                $res[Constants::TYPE] = LedgerOutboxConstants::DISPUTE;
+                return $res;
+            case "trf":
+                $res[Constants::TYPE] = LedgerOutboxConstants::TRANSFER;
+                return $res;
+            default:
+                $res[Constants::TYPE] = "";
+                return $res;
+        }
+    }
+
 
     public function transformJournalResponseToTransactionEntityForPayments($journalResponse)
     {
@@ -843,6 +888,54 @@ trait ReverseShadowTrait
 
         return $baseTransactionEntity;
     }
+
+    public function transformJournalResponseToTransactionEntityForAdjustment($journalResponse)
+    {
+        $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
+
+        $baseTransactionEntity->setAttribute(TransactionEntity::BALANCE_UPDATED, null);
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $baseTransactionEntity->setSettledAt($settledAt);
+
+        return $baseTransactionEntity;
+    }
+
+
+    public function transformJournalResponseToTransactionEntityForDispute($journalResponse)
+    {
+        $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
+
+        $adjustmentId = $this->getDisputeAdjustmentAsEntityIdFromDisputeId($baseTransactionEntity->getEntityId(), $baseTransactionEntity->getMerchantId());
+
+        $baseTransactionEntity->setType(LedgerOutboxConstants::ADJUSTMENT);
+
+        $baseTransactionEntity->setEntityId($adjustmentId);
+
+        $baseTransactionEntity->setAttribute(TransactionEntity::BALANCE_UPDATED, null);
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $baseTransactionEntity->setSettledAt($settledAt);
+
+        return $baseTransactionEntity;
+    }
+
+    public function getDisputeAdjustmentAsEntityIdFromDisputeId($disputeId, $merchantId)
+    {
+        $adjustments = $this->repo->adjustment->findAdjustmentByEntityIdAndEntityType($disputeId, E::DISPUTE, $merchantId);
+
+        if ($adjustments !== null && $adjustments->count() >0)
+        {
+            $adjustment = $adjustments[0];
+
+            return $adjustment->getId();
+        }
+
+        return null;
+    }
+
 
     private function getCommissionLedgerEntryForTransactionTypeFromJournal($journalResponse, $transactorType)
     {
@@ -918,6 +1011,7 @@ trait ReverseShadowTrait
             [
                 'merchant'               => $merchant->getId(),
                 'isExperimentEnabled'    => $isExperimentEnabled,
+                'type'                   => "transfer"
             ]);
 
         return $isExperimentEnabled;
@@ -937,6 +1031,27 @@ trait ReverseShadowTrait
             [
                 'merchant'               => $merchant->getId(),
                 'isExperimentEnabled'    => $isExperimentEnabled,
+                'type'                   => "payment"
+            ]);
+
+        return $isExperimentEnabled;
+    }
+
+    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForAdjustments($merchant): bool
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ADJUSTMENTS,
+            $this->mode ?? Mode::LIVE
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
+            [
+                'merchant'               => $merchant->getId(),
+                'isExperimentEnabled'    => $isExperimentEnabled,
+                'type'                   => "adjustment"
             ]);
 
         return $isExperimentEnabled;

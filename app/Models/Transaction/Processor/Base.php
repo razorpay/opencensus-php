@@ -234,19 +234,30 @@ abstract class Base extends BaseCore
         //
         if (in_array($this->txn->getType(), Constants::DO_NOT_DISPATCH_FOR_SETTLEMENT, true) === false)
         {
-            if ($this->txn->getType() === Transaction\Type::SETTLEMENT_ONDEMAND) {
+            $shouldDispatchSettlementBucket = true;
 
+            if ($this->txn->getType() === Transaction\Type::ADJUSTMENT)
+            {
+                $isEarlyDispatchExpEnabled = (new LedgerOutboxCore())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForAdjustments($this->txn->merchant);
+
+                if ($isEarlyDispatchExpEnabled === true)
+                {
+                    $shouldDispatchSettlementBucket = false;
+                }
+            }
+            if ($this->txn->getType() === Transaction\Type::SETTLEMENT_ONDEMAND)
+            {
                 $isEarlyDispatchExpEnabled = (new Core())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForODS($this->txn->merchant);
 
-                if ($isEarlyDispatchExpEnabled === false) {
-                    (new Transaction\Core)->dispatchForSettlementBucketing($this->txn);
+                if ($isEarlyDispatchExpEnabled === true)
+                {
+                    $shouldDispatchSettlementBucket = false;
                 }
-
-            } else {
-                (new Transaction\Core)->dispatchForSettlementBucketing($this->txn);
-
             }
-
+            if  ($shouldDispatchSettlementBucket === true)
+            {
+                (new Transaction\Core)->dispatchForSettlementBucketing($this->txn);
+            }
         }
 
         return [$this->txn, $this->feesSplit];

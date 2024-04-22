@@ -36,6 +36,8 @@ class Constants
 
     const CREDIT_LOADING                                = "credit_loading";
     const RESERVE_BALANCE_LOADING                       = "reserve_balance_loading";
+    const ADJUSTMENT                                    = "adjustment";
+    const DISPUTE                                       = "dispute";
     const TRANSFER                                      = "transfer";
     const DEBIT                                         = "debit";
     const CREDIT                                        = "credit";

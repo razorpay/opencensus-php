@@ -5,6 +5,7 @@ namespace RZP\Models\Ledger\ReverseShadow\Adjustments;
 use App;
 use RZP\Models\Base;
 use Ramsey\Uuid\Uuid;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 use RZP\Models\Transaction;
@@ -12,6 +13,7 @@ use RZP\Services\KafkaProducer;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Adjustment\Entity;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 
 class Core extends Base\Core
@@ -54,6 +56,8 @@ class Core extends Base\Core
 
         $journal = $this->createJournalInLedger($journalPayload);
 
+        $this->dispatchToSettlementFromJournalIfApplicable($journal, $adjustment);
+
         $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
 
         return $journal;
@@ -85,6 +89,8 @@ class Core extends Base\Core
         $journalPayload = array_merge($transactionMessage, $disputeReversalData);
 
         $journal = $this->createJournalInLedger($journalPayload);
+
+        $this->dispatchToSettlementFromJournalIfApplicable($journal, $adjustment);
 
         $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
     }
@@ -120,6 +126,8 @@ class Core extends Base\Core
         $journalPayload = array_merge($transactionMessage, $manualAdjData);
 
         $journal = $this->createJournalInLedger($journalPayload);
+
+        $this->dispatchToSettlementFromJournalIfApplicable($journal, $adjustment);
 
         $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
     }
@@ -238,5 +246,35 @@ class Core extends Base\Core
 
         return $balanceConfigCore->getMaxNegativeAmountManualForBalanceId($balance->getId());
 
+    }
+
+    private function dispatchToSettlementFromJournalIfApplicable($journal, $adjustment)
+    {
+        $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
+
+        $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForAdjustments($adjustment->merchant);
+
+        if ($isExpEnabled === false)
+        {
+            return;
+        }
+
+        if (($transactorEvent === LedgerConstants::RAZORPAY_DISPUTE_DEDUCT) OR ($transactorEvent === LedgerConstants::RAZORPAY_DISPUTE_REVERSAL))
+        {
+            $virtualAdjustmentTransaction = $this->transformJournalResponseToTransactionEntityForDispute($journal);
+        }
+        else if (($transactorEvent === LedgerConstants::POSITIVE_ADJUSTMENT) OR ($transactorEvent === LedgerConstants::NEGATIVE_ADJUSTMENT))
+        {
+            $virtualAdjustmentTransaction = $this->transformJournalResponseToTransactionEntityForAdjustment($journal);
+        }
+
+        $bucketCore = new Bucket\Core;
+
+        $status = $bucketCore->shouldProcessViaNewService($virtualAdjustmentTransaction->getMerchantId());
+
+        if ($status === true)
+        {
+            $bucketCore->publishForSettlement($virtualAdjustmentTransaction);
+        }
     }
 }

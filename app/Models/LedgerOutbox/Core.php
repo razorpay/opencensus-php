@@ -391,7 +391,7 @@ class Core extends Base\Core
         return $transactorIdArr[1];
     }
 
-    private function getTransactorIDArray(string $transactorId): array
+    public function getTransactorIDArray(string $transactorId): array
     {
         $transactorIdArr = explode('_', $transactorId);
 
