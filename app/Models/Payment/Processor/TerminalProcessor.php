@@ -89,20 +89,14 @@ class TerminalProcessor extends Base\Core
             return;
         }
 
-        $removeApiTerminalsTraffic = $this->app['config']->get('applications.terminals_service.remove_api.'.$payment->getMethod());
-
-        if($removeApiTerminalsTraffic)
+        if (count($terminalsSelected) > 0)
         {
 
-            if (count($terminalsSelected) > 0)
+            $firstTerminal = head($terminalsSelected);
+
+            if ($firstTerminal != null)
             {
-
-                $firstTerminal = head($terminalsSelected);
-
-                if ($firstTerminal != null)
-                {
-                    $firstTerminal->populateTerminalSecrets();
-                }
+                $firstTerminal->populateTerminalSecrets();
             }
         }
     }
