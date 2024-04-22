@@ -131,9 +131,7 @@ class Repository extends Base\Repository
 
     public function getByMerchantId($merchantId)
     {
-        return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->first();
+        return $this->find($merchantId);
     }
 
     public function __findOrFailPublic($id)
