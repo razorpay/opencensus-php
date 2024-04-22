@@ -11883,6 +11883,12 @@ class Processor
             return false;
         }
 
+        // if merchant does not have save vpa feature enabled then we can route payments to rearch
+        if ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::SAVE_VPA) === false)
+        {
+            return true;
+        }
+
         $feature = self::ALLOW_UPI_TOKEN_SAVE_ON_REARCH_UPS ;
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
