@@ -85,6 +85,7 @@ use RZP\Models\Merchant\M2MReferral\Entity as M2MReferralEntity;
 use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 use RZP\Tests\Functional\Helpers\BankingAccount\BankingAccountTrait;
 use function GuzzleHttp\json_decode;
+use RZP\Models\Feature\Constants as FeatureConstant;
 
 class UserTest extends TestCase
 {
@@ -7222,6 +7223,57 @@ class UserTest extends TestCase
 
             $this->assertEquals('emails.user.password_reset', $mail->view);
 
+            return true;
+        });
+    }
+
+    public function testPasswordResetMailWithoutCustomOnboading()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('user', ['email' => 'resetpass@razorpay.com']);
+        $this->ba->dashboardGuestAppAuth();
+        $this->startTest();
+
+        Mail::assertSent(PasswordReset::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('email', $viewData);
+            $this->assertArrayHasKey('showAxisSupportUrl', $viewData['org']);
+            $this->assertArrayHasKey('isCustomOnboardingEmail', $viewData['org']);
+            $this->assertEquals($viewData['org']['isCustomOnboardingEmail'], false);
+
+            $this->assertEquals('emails.user.password_reset', $mail->view);
+            return true;
+        });
+    }
+
+    public function testPasswordResetMailWithCustomOnboading()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('user', ['email' => 'resetpass@razorpay.com']);
+        $this->ba->dashboardGuestAppAuth();
+        $this->fixtures->org->addFeatures([FeatureConstant::CUSTOM_ONBOARDING_EMAILS],"100000razorpay");
+
+        $this->startTest();
+
+        Mail::assertSent(PasswordReset::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('email', $viewData);
+            $this->assertArrayHasKey('showAxisSupportUrl', $viewData['org']);
+            $this->assertArrayHasKey('isCustomOnboardingEmail', $viewData['org']);
+            $this->assertEquals($viewData['org']['isCustomOnboardingEmail'], true);
+
+            $this->assertEquals('emails.user.password_reset', $mail->view);
+            s($viewData);
             return true;
         });
     }

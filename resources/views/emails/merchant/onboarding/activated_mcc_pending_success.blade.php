@@ -13,8 +13,13 @@
 <div class="email-wrapper">
     <div class="head-banner" style="width: 100%;height:120px;background:#1C3EA6">
         <div class="head-brand" style="width: 100px; margin-top: 20px; margin:0 auto;">
+        @if($isCustomOnboardingEmail === true)
+            <img src="{{$org['login_logo_url']}}" alt="Logo"
+                 style="width: 100%; margin-top: 17px">
+        @else
             <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Logo"
                  style="width: 100%; margin-top: 17px">
+        @endif
         </div>
     </div>
     <div class="email-info-card"
@@ -36,8 +41,13 @@
 
         <div class="cta"
              style="padding:10px 18px;text-align: center;background: #528FF0;display: inline-block; border-radius:2px">
-            <a href="https://dashboard.razorpay.com/" style="color: #FFF; text-decoration:none">Start accepting
-                payments</a>
+             @if($isCustomOnboardingEmail === true)
+                <a href="{{'https://' . $merchant['org']['hostname']}}" style="color: #FFF; text-decoration:none">Start accepting
+                    payments</a>
+            @else
+                <a href="https://dashboard.razorpay.com/" style="color: #FFF; text-decoration:none">Start accepting
+                    payments</a>
+            @endif
         </div>
     </div>
     @isset($merchant['business_website'])

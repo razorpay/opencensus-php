@@ -21,6 +21,11 @@ class Rejection extends Mailable
         $this->org  = $org;
     }
 
+    public function getData()
+    {
+        return $this->data;
+    }
+
     protected function addRecipients()
     {
         $this->to($this->data['email'], $this->data['name']);

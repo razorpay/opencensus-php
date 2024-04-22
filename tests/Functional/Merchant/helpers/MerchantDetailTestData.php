@@ -1663,6 +1663,20 @@ return [
         ],
     ],
 
+    'testMerchantActivationStatusWithCustomOnboarding' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+        ],
+    ],
+
     'testGetNCAdditionalDocuments' => [
     'request'  => [
         'url'    => '/merchant/activation/document_types',

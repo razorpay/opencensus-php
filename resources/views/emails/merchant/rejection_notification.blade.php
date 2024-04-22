@@ -20,11 +20,13 @@
     <div>
         We request you to kindly look for any other alternative and wish you all the best.
     </div>
-    <div>
-        For any further queries or clarifications, feel free to reach out to us by visiting- <a
-            rel="noopener noreferrer" href="https://razorpay.com/support"
-            target="_blank">https://razorpay.com/support</a>
-    </div>
+    @if($isCustomOnboardingEmail !== true)
+        <div>
+            For any further queries or clarifications, feel free to reach out to us by visiting- <a
+                rel="noopener noreferrer" href="https://razorpay.com/support"
+                target="_blank">https://razorpay.com/support</a>
+        </div>
+    @endif
     <br />
     <br />
     <div>

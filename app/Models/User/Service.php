@@ -2354,6 +2354,7 @@ class Service extends Base\Service
                 $org = $this->repo->org->findByPublicId($orgId);
 
                 $showAxisSupportUrl = $org->isFeatureEnabled(FeatureConstant::SHOW_SUPPORT_URL);
+                $isCustomOnboardingEmail = $org->isFeatureEnabled(FeatureConstant::CUSTOM_ONBOARDING_EMAILS);
 
                 //get Org and send it to mailer, deal with other orgs as well.
                 $org = $org->toArrayPublic();
@@ -2376,6 +2377,7 @@ class Service extends Base\Service
 
                 $org['hostname'] = $this->auth->getOrgHostName();
                 $org['showAxisSupportUrl'] = $showAxisSupportUrl;
+                $org['isCustomOnboardingEmail'] = $isCustomOnboardingEmail;
 
                 $requestOriginProduct = $this->auth->getRequestOriginProduct();
 

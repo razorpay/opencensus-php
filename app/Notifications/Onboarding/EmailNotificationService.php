@@ -15,6 +15,7 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DEEntity;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Mail\Merchant\PartnerSubmerchantOnboardingEmail;
+use RZP\Models\Feature\Constants as FeatureConstant;
 
 class EmailNotificationService extends BaseNotificationService
 {
@@ -192,6 +193,8 @@ class EmailNotificationService extends BaseNotificationService
 
         $business_website=empty($merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE))?null:$merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE);
 
+        $isCustomOnboardingEmail = $org->isFeatureEnabled(FeatureConstant::CUSTOM_ONBOARDING_EMAILS);
+
         $data = [
             DEConstants::MERCHANT => [
                 MerchantEntity::NAME          => $merchant->getName(),
@@ -201,7 +204,9 @@ class EmailNotificationService extends BaseNotificationService
                     DEConstants::HOSTNAME => $hostname,
                 ],
                 DEEntity::BUSINESS_WEBSITE    => $business_website
-            ]
+            ],
+            DEConstants::ORG => $org->toArray(),
+            'isCustomOnboardingEmail' =>  $isCustomOnboardingEmail
         ];
 
         Handler::updateNCUrlIfApplicable($merchant->getId(), $this->event, $this->args);

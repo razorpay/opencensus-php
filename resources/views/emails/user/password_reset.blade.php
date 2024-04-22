@@ -42,7 +42,7 @@
     <p>
         --<br/>
         {{$org['display_name']}} <br/>
-        @if ($org['showAxisSupportUrl'] !== true)
+        @if (($org['showAxisSupportUrl'] !== true) && ($org['isCustomOnboardingEmail'] !== true))
              For queries, contact us <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a>
         @endif
     </p>

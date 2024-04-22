@@ -15,6 +15,13 @@
         We have received your KYC details but there are some clarifications we need regarding your submission. Please visit your dashboard and make the necessary changes.
       </div>
 
+      @if ($isCustomOnboardingEmail === true)
+        <br />
+        <div>
+          Login to the <a href="{{ 'https://' . $merchant['org']['hostname'] }}">Merchant Dashboard</a> > Submit KYC > Needs Clarification > Enter the details > Submit Clarification
+        </div>
+      @endif
+
       <br />
 
       <div>
@@ -83,8 +90,9 @@
         Team Razorpay
       </div>
     </div>
-
+    @if ($isCustomOnboardingEmail !== true)
     <footer style="text-align:center; margin-top: 10px; font-size: 12px;">For more information <a href="{{ 'https://' . $merchant['org']['hostname'] . '/knowledgebase' }}">click here</a>.
         If you still have queries you can raise a support ticket <a href="{{ 'https://' . $merchant['org']['hostname'] . '/support/#request' }}">here</a>.</footer>
+    @endif
 </body>
 </html>

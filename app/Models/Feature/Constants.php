@@ -582,6 +582,17 @@ class Constants
     const NEW_BANKING_ERROR             = 'new_banking_error';
 
     /**
+     * Feature flag to control customizations in merchant onboarding emails
+     * https://razorpay.atlassian.net/browse/BP-2547
+     */
+    const CUSTOM_ONBOARDING_EMAILS= 'custom_onboarding_emails';
+
+    /**
+     * Custom Paypal credentials for org
+     */
+    const ORG_SPECIFIC_CREDENTIALS = 'org_specific_credentials';
+
+    /**
      * Aggregator Partner + OAuth Client access
      */
     const AGGREGATOR_OAUTH_CLIENT       = 'aggregator_oauth_client';
@@ -2053,7 +2064,9 @@ class Constants
 
     // Feature flag changes sinch_sms_email
     //Sinch Integration for SMS and Emails - for Payment Links
-    const SINCH_EMAIL_SMS= 'sinch_email_sms';
+    const SINCH_EMAIL_SMS= 'sinch_sms_email';
+    
+    const DISABLE_SINCH_SMS_EMAIL = 'disable_sinch_sms_email';
 
     /**
      * Feature flags to enable/disable Account Statement in X Dashboard

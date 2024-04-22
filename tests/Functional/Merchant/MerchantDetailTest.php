@@ -2644,6 +2644,75 @@ class MerchantDetailTest extends OAuthTestCase
 
         Mail::assertQueued(Rejection::class, function ($mail)
         {
+            $data = $mail->getData();
+            $this->assertArrayHasKey('isCustomOnboardingEmail', $data);
+            $this->assertEquals($data['isCustomOnboardingEmail'], false);
+            $this->assertEquals('emails.merchant.rejection_notification', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testMerchantActivationStatusWithCustomOnboarding()
+    {
+        Mail::fake();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->org->addFeatures([FeatureConstants::CUSTOM_ONBOARDING_EMAILS],"100000razorpay");
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['abc.com']]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website, 'issue_fields' => 'business_website']);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest();
+
+        // under_review to needs_clarification
+        $this->changeActivationStatusFromUnderReviewToNeedsClarification(
+            $testData['request']['content'],
+            $testData['response']['content']);
+
+        $this->startTest();
+
+        // needs_clarification to under_review
+        $this->changeActivationStatusFromNeedsClarificationToUnderReview(
+            $testData['request']['content'],
+            $testData['response']['content']);
+
+        $this->startTest();
+
+        // under_review to rejected
+        $this->changeActivationStatusFromUnderReviewToRejected(
+            $testData['request']['content'],
+            $testData['response']['content']);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->isActivated());
+
+        $this->assertFalse($merchant->isLive());
+
+        $this->assertTrue($merchant->getHoldFunds());
+
+        Mail::assertQueued(Rejection::class, function ($mail)
+        {
+            $data = $mail->getData();
+            $this->assertArrayHasKey('isCustomOnboardingEmail', $data);
+            $this->assertEquals($data['isCustomOnboardingEmail'], true);
             $this->assertEquals('emails.merchant.rejection_notification', $mail->view);
 
             return true;

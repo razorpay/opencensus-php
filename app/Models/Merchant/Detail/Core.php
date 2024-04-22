@@ -7570,6 +7570,7 @@ class Core extends Base\Core
         }
 
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+        $isCustomOnboardingEmail = $org->isFeatureEnabled(FeatureConstants::CUSTOM_ONBOARDING_EMAILS);
 
         $data = [
             'name'   => $merchant->getName(),
@@ -7578,6 +7579,7 @@ class Core extends Base\Core
             'org_id' => $org->getId(),
         ];
 
+        $data['isCustomOnboardingEmail'] = $isCustomOnboardingEmail;
         $data['email_logo'] = $org->getEmailLogo();
         // For marketplace accounts, send this email to the parent merchant
         if ($merchant->isLinkedAccount() === true)

@@ -10,8 +10,13 @@
 <div class="email-wrapper">
     <div class="head-banner" style="width: 100%;height:120px;background:#1C3EA6">
         <div class="head-brand" style="width: 100px; margin-top: 20px; margin:0 auto;">
+        @if($isCustomOnboardingEmail === true)
+            <img src="{{$org['login_logo_url']}}" alt="Logo"
+                 style="width: 100%; margin-top: 17px">
+        @else
             <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Logo"
                  style="width: 100%; margin-top: 17px">
+        @endif
         </div>
     </div>
     @isset($merchant['business_website'])
