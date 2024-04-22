@@ -324,18 +324,34 @@ class Repository extends Base\Repository
         if ($this->isExperimentEnabledForId(self::SETTLEMENT_TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
             $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $index = "transactions_settlement_id_foreign";
+
+            $query = $this->newQueryWithConnection($connectionType);
+
+            $txns = $query
+                ->from(\DB::raw("`transactions` USE INDEX ($index)"))
+                ->merchantId($merchantId)
+                ->whereIn(Entity::SETTLEMENT_ID, $setlIds)
+                ->take($count)
+                ->skip($skip)
+                ->latest()
+                ->orderBy(Common::ID, 'desc')
+                ->get();
+
+        } else {
+
+            $query = $this->newQueryWithConnection($connectionType);
+
+            $txns = $query
+                ->merchantId($merchantId)
+                ->whereIn(Entity::SETTLEMENT_ID, $setlIds)
+                ->take($count)
+                ->skip($skip)
+                ->latest()
+                ->orderBy(Common::ID, 'desc')
+                ->get();
         }
-
-        $query = $this->newQueryWithConnection($connectionType);
-
-        $txns = $query
-                      ->merchantId($merchantId)
-                      ->whereIn(Entity::SETTLEMENT_ID, $setlIds)
-                      ->take($count)
-                      ->skip($skip)
-                      ->latest()
-                      ->orderBy(Common::ID, 'desc')
-                      ->get();
 
         $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
 
