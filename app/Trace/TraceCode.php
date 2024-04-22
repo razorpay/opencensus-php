@@ -2939,6 +2939,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ART_RECON_SQS_RAW_VARIANT                             = 'ART_RECON_SQS_RAW_VARIANT';
 
+    const FETCH_FEE_BEARER_FOR_PLAN_ID_IN_TXN                   = 'FETCH_FEE_BEARER_FOR_PLAN_ID_IN_TXN';
+
     const RECOVERABLE_EXCEPTION                                 = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                                       = 'ERROR_EXCEPTION';
     const ERROR_INVALID_ARGUMENT                                = 'ERROR_INVALID_ARGUMENT';

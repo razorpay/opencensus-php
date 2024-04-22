@@ -485,20 +485,33 @@ class Repository extends Base\Repository
 
     public function fetchFeeBearersForPlanId($planId)
     {
-        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__))
         {
             if ($this->isTransactionActive())
             {
-                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+                // reference for this change is here:
+                // https://razorpay.slack.com/archives/C01DL027FH8/p1713435506888309
+                $this->trace->info(TraceCode::FETCH_FEE_BEARER_FOR_PLAN_ID_IN_TXN, [
+                    "route_or_worker" => $this->asvRouter->getRouteOrJobName(),
+                    "plan_id" => $planId,
+                ]);
+
+                $query = $this->newQueryWithConnection(
+                    $this->getMasterReplicaConnection()
+                );
             }
             else
             {
-                return (new AsvSdkMerchantQuery())->fetchFeeBearersForPlanId($planId);
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
+                );
             }
         }
         else
         {
-            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+            $query = $this->newQueryWithConnection(
+                $this->getMasterReplicaConnection()
+            );
         }
 
         return $query->where(Entity::PRICING_PLAN_ID, '=', $planId)
