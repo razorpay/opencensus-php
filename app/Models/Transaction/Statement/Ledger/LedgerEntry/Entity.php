@@ -4,6 +4,7 @@ namespace RZP\Models\Transaction\Statement\Ledger\LedgerEntry;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Payment;
 use RZP\Exception\LogicException;
 
@@ -16,6 +17,8 @@ use RZP\Exception\LogicException;
  */
 class Entity extends \RZP\Models\Transaction\Statement\Ledger\Journal\Entity
 {
+    use AsvGetAttribute;
+
     protected $entity   = 'ledger_entry';
 
     const MERCHANT_ID       = 'merchant_id';

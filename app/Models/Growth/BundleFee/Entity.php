@@ -3,9 +3,12 @@
 namespace RZP\Models\Growth\BundleFee;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     protected static $sign = 'bundfee';
 
     protected $entity = 'bundle_fee';

@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\Entity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const ADMIN_ID          = 'admin_id';
     const ORG_ID            = 'org_id';

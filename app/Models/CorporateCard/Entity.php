@@ -4,6 +4,7 @@ namespace RZP\Models\CorporateCard;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * Class Entity
@@ -15,6 +16,7 @@ use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
     // Attributes
     const LAST4         = 'last4';
     const NAME          = 'name';

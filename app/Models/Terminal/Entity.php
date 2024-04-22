@@ -8,6 +8,7 @@ use RZP\Constants\Environment;
 use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -37,7 +38,7 @@ use Illuminate\Support\Arr;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
-    use Cacheable;
+    use Cacheable, AsvGetAttribute;
 
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';

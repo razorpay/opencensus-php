@@ -3,9 +3,11 @@
 namespace RZP\Models\ChargeCollections\ProductCharge;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
     protected static $sign = 'chrg';
     protected $entity = 'product_charge';
 

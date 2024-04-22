@@ -8,11 +8,12 @@ use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Plan\Subscription;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const SUBSCRIPTION_ID  = 'subscription_id';
     const MERCHANT_ID      = 'merchant_id';

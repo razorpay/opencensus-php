@@ -3,9 +3,12 @@
 namespace RZP\Models\Merchant\Product\TncMap\Acceptance;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                        = 'id';
     const TNC_MAP_ID                = 'tnc_map_id';
     const MERCHANT_ID               = 'merchant_id';

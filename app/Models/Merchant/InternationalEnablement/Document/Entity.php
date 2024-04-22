@@ -5,10 +5,11 @@ namespace RZP\Models\Merchant\InternationalEnablement\Document;
 use RZP\Models\Base;
 use RZP\Models\GenericDocument;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const MERCHANT_ID  = 'merchant_id';
     const DOCUMENT_ID  = 'document_id';
@@ -16,7 +17,7 @@ class Entity extends Base\PublicEntity
     const CUSTOM_TYPE  = 'custom_type';
     const DISPLAY_NAME = 'display_name';
 
-    const INTERNATIONAL_ENABLEMENT_DETAIL_ID  = 'international_enablement_detail_id';       
+    const INTERNATIONAL_ENABLEMENT_DETAIL_ID  = 'international_enablement_detail_id';
 
     const TYPE_FIELD_MAX_LENGTH   = 50;
     const DISPLAY_NAME_MAX_LENGTH = 100;

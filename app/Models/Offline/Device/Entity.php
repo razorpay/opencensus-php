@@ -4,9 +4,12 @@ namespace RZP\Models\Offline\Device;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID               = 'id';
     const MERCHANT_ID      = 'merchant_id';
     const SERIAL_NUMBER    = 'serial_number';
