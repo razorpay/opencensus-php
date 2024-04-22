@@ -3,6 +3,7 @@
 namespace RZP\Gateway\P2p\Upi\AxisOlive;
 
 use RZP\Constants\Entity;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\P2p\Upi;
 use RZP\Gateway\P2p\Upi\AxisOlive\ErrorMap;
@@ -10,6 +11,7 @@ use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Gateway\P2p\Upi\AxisOlive\S2sDirect;
 use RZP\Exception\P2p\GatewayErrorException;
+use RZP\Gateway\P2p\Upi\AxisOlive\Actions\ClientAction;
 
 /**
  * Class Gateway
@@ -23,6 +25,7 @@ class Gateway extends Upi\Gateway
     protected $gateway                      = Entity::P2M_UPI_AXIS_OLIVE;
 
     protected $mozart_gateway_resource      = Entity::UPI_AXISOLIVE;
+    protected $mozart_gateway_resource_for_rewards = Entity::UPI_CRED;
 
     protected function getTimeStamp()
     {
@@ -78,20 +81,31 @@ class Gateway extends Upi\Gateway
 
     /**
      * This is the method to get mozart resource URL
-     * @param $input
+     * @param $mozartRootresource
      * @param $mozartResourceUrl
      *
      * @return string
      */
-    protected function getResourceUrl($input ,$mozartResourceUrl)
+    protected function getResourceUrl($action,  $mozartRootresource, $mozartResourceUrl)
     {
-        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+        $this->mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
         $baseUrl = $this->app['config']->get($urlConfig);
 
-        $version = $this->getVersionForAction($input, $this->action);
+        $version = $this->getVersionForAction($mozartRootresource, $this->action);
 
-        return $baseUrl . 'upiPayments/' . $this->mozart_gateway_resource . '/' . $version . '/' . snake_case($mozartResourceUrl);
+        $mozart_resource = $this->mozart_gateway_resource;
+
+        switch ($action)
+        {
+            case ($action===ClientAction::GET_CUSTOMER_REWARD_ELIGIBILITY):
+                $mozart_resource = $this->mozart_gateway_resource_for_rewards;
+                break;
+            case ($action===ClientAction::ALLOT_CUSTOMER_REWARD):
+                $mozart_resource = $this->mozart_gateway_resource_for_rewards;
+        }
+        return $baseUrl . $mozartRootresource. '/' . $mozart_resource . '/' . $version . '/' . snake_case($mozartResourceUrl);
     }
 
     /**
@@ -168,8 +182,9 @@ class Gateway extends Upi\Gateway
 
         switch ($map[Actions\Action::SOURCE])
         {
+
             case Actions\Action::MOZART:
-                $request = new S2sMozart($accessor, $this->getResourceUrl($action , $map[Actions\Action::MOZART][Actions\Action::RESOURCE]));
+                $request = new S2sMozart($accessor, $this->getResourceUrl($action , $map[Actions\Action::MOZART][Actions\Action::ROOT_RESOURCE],$map[Actions\Action::MOZART][Actions\Action::RESOURCE]));
                 break;
         }
 

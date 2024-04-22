@@ -106,6 +106,12 @@ class TurboUpiTest extends TestCase
         $this->testTurboUpiCustomerConsentSpecificExceptionHandling($all_requests["errorFromBankDisplayName"]['request'], "The metadata.prefetch_bank.1.display_name must be a string.");
     }
 
+    public function testTurboUpiCustomerRewardEligibilityForCred()
+    {
+        $this->ba->publicAuth();
+        $this->startTest();
+    }
+
     protected function setErrorMappingConfigInRedis()
     {
         $errorMapping = [

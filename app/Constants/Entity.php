@@ -361,6 +361,7 @@ class Entity
     const BAJAJFINSERV           = 'bajajfinserv';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_AXISOLIVE          = 'upi_axisolive';
+    const UPI_CRED               = 'upi_cred';
     const WALLET_MPESA           = 'wallet_mpesa';
     const WALLET_PAYPAL          = 'wallet_paypal';
     const ESIGNER_DIGIO          = 'esigner_digio';

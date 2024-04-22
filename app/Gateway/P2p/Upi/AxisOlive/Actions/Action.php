@@ -19,4 +19,6 @@ class Action
     const MOZART        = 'mozart';
 
     const RESOURCE      = 'resource';
+
+    const ROOT_RESOURCE = 'root_resource';
 }

@@ -68,4 +68,34 @@ class Service extends Base\Service
             "success" => true
         ];
     }
+
+    public function fetchCustomerRewardEligibility($input): array
+    {
+        $traceCode = TraceCode::TURBO_UPI_CUSTOMER_REWARD_ELIGIBILITY_REQUEST_RECEIVED;
+
+        $this->redactContactForlogger($traceCode, $input);
+
+        return (new RewardProcessor\Base)->process($input, RewardProcessor\Base::FLOW_ELIGIBILITY);
+    }
+
+    public function allotCustomerReward($input): array
+    {
+        $traceCode  =  TraceCode::TURBO_UPI_CUSTOMER_REWARD_ALLOT_REQUEST_RECEIVED;
+
+        $this->redactContactForlogger($traceCode, $input);
+
+        return (new RewardProcessor\Base)->process($input, RewardProcessor\Base::FLOW_ALLOT);
+    }
+
+    public function redactContactForlogger($traceCode, $input): void
+    {
+        if (isset($input['contact'])) {
+            $input['contact'] = hash('sha256', $input['contact']);
+        }
+
+        $this->trace->info($traceCode,
+                        [
+                            'input' => $input
+                        ]);
+    }
 }

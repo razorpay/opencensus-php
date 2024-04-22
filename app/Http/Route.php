@@ -4872,7 +4872,8 @@ class Route
         'fetch_turbo_upi_error_mapping'                      => ['get', 'upi/turbo/error_mapping', 'UpiTurboController@fetchErrorMappings'],
         'build_turbo_upi_error_mapping'                      => ['put', 'admin/upi/turbo/error_mapping', 'UpiTurboController@setErrorMappingsAdmin'],
         'record_turbo_upi_customer_consent'                  => ['post', 'upi/turbo/customer/consent', 'UpiTurboController@recordCustomerConsent'],
-
+        'turbo_upi_customer_reward_eligibility'              => ['post', 'upi/turbo/reward/eligibility', 'UpiTurboController@fetchCustomerRewardEligibility'],
+        'turbo_upi_customer_reward_allocate'                 => ['post', 'upi/turbo/reward/allocate', 'UpiTurboController@allotCustomerReward'],
 
         // Edge Routes
         'third_party_authenticate'                            => ['post', 'edge/internal/authenticate', 'EdgeController@authenticate'],
@@ -5046,7 +5047,9 @@ class Route
         'offers_fetch_for_order',
         'fetch_public_customer_eligibility',
         'fetch_turbo_upi_error_mapping',
-        'record_turbo_upi_customer_consent'
+        'record_turbo_upi_customer_consent',
+        'turbo_upi_customer_reward_eligibility',
+        'turbo_upi_customer_reward_allocate'
     ];
 
     public static $device = [

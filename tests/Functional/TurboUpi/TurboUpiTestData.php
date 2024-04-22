@@ -278,4 +278,25 @@ return [
                 'http_status_code' => 400
             ]],
     ],
+    'testTurboUpiCustomerRewardEligibilityForCred' => [
+        'request' => [
+            'content' => [
+                'action' => 'onboarding',
+                'contact' => '9090909090'
+            ],
+            'url' => '/upi/turbo/reward_eligibility',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'eligible' => true,
+                'reward_partner_name' => 'CRED',
+                'reward_partner_logo_url' => 'https://cdn.razorpay.com/cred.gif',
+                'pre_allot_text' => 'some_pre_action',
+                'post_allot_text' => 'some_post_action',
+                'coupon_code' => 'CRED_100',
+                'terms_and_conditions' => []
+            ]
+        ]
+    ]
 ];

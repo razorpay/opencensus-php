@@ -37,4 +37,22 @@ class UpiTurboController extends Controller
 
         return ApiResponse::json($response, 201);
     }
+
+    public function fetchCustomerRewardEligibility()
+    {
+        $input = Request::all();
+
+        $response = $this->service->fetchCustomerRewardEligibility($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function allotCustomerReward()
+    {
+        $input = Request::all();
+
+        $response = $this->service->allotCustomerReward($input);
+
+        return ApiResponse::json($response);
+    }
 }

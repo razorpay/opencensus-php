@@ -16,6 +16,7 @@ class S2s
 {
     const METHOD = 'method';
 
+    const ROOT_RESOURCE = 'root_resource';
     protected $action;
 
     protected $actionMap;
