@@ -1126,18 +1126,12 @@ class Core extends Base\Core
                             ($transactorEvent === LedgerConstants::MERCHANT_CAPTURED) and
                             ($txn->getId() !== $journalId))
                         {
-                            throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
+                            $journalId = $txn->getId();
+                            $this->trace->count(Metric::PG_LEDGER_API_TRANSACTION_JOURNAL_ID_MISMATCH, [
+                                LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
+                            ]);
                         }
 
-                        if ((isset($txn) === true) and
-                            ($transactorEvent === LedgerConstants::GATEWAY_CAPTURED))
-                        {
-                            $apiTransactionId = $this->getAPITransactionId($payment->getPublicId(), $payment);
-                            if($txn->getId() !== $apiTransactionId)
-                            {
-                                throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
-                            }
-                        }
 
                         list($txn, $merchantBalance) = $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);
 

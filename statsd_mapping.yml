@@ -293,3 +293,14 @@ mappings:
   timer_type: histogram
   buckets: [5, 10, 30, 45, 60, 120, 180, 240, 300, 360, 480, 600, 700, 800, 900, 1000, 1250, 1500, 1800, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12000, 15000, 20000, 30000, 40000, 50000, 60000, 120000]
   name: "api_virtual_account_create_latency"
+
+- match: api_pg_ledger_kafka_acknowledgement_received_from_pg.*
+  timer_type: histogram
+  buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 40000, 60000, 75000, 90000, 105000, 120000]
+  # in milliseconds
+  name: "api_pg_ledger_kafka_acknowledgement_received_from_pg"
+
+- match: api_pg_ledger_kafka_acknowledgement_received_from_ledger.*
+  timer_type: histogram
+  buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 40000, 60000, 75000, 90000, 105000, 120000]
+  name: "api_pg_ledger_kafka_acknowledgement_received_from_ledger"
