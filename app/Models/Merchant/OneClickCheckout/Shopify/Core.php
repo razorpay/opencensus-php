@@ -51,7 +51,7 @@ class Core extends Base\Core
         '7E6oragoxHFlvV',  //Go Noise
     ];
 
-    const borosilPropertyOrder = ['placement', 'name', 'font', 'customise-charge', 'image'];
+    const borosilPropertyOrder = ['placement', 'name', 'font', 'customise-charge', 'product-type', 'image'];
 
     const MAX_LENGTH = 8;
 
