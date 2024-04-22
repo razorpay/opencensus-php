@@ -34,7 +34,7 @@ export type ChartDataType = {
 };
 
 type Value = number;
-type ValueType = 'percentage' | 'number' | 'currency';
+type ValueType = 'percentage' | 'number' | 'amount';
 
 export type Change = number;
 export type ChangeType = 'percentage' | 'number';

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Amount, AmountProps, Box, Text } from '@razorpay/blade/components';
+import { convertToMajorUnit } from '@razorpay/i18nify-js/currency';
 
 import { useMobile } from 'common/hooks/useMobile';
 import { Change } from 'merchant/widgets/common/Change';
@@ -12,12 +13,14 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
   const title = tabData.title ?? '';
   const change = tabData.data.change ?? 0;
   const changeType = tabData.data.change_type;
-  const value = parseInt(`${tabData.data.value}`, 10) ?? 0;
   const currency = tabData.data.currency ?? 'INR';
+  const value = parseInt(`${tabData.data.value}`, 10) ?? 0;
+  const formattedValue = convertToMajorUnit(value, { currency: currency as any });
   const trendText = `${change}%`;
   const trendSubText = tabData.data.sub_text ?? '';
   const isInverseMetric = Boolean(tabData.data.change_behavior_inverted);
   const tooltipText = tabData.tooltip_text ?? '';
+  const hasValue = value > 0;
 
   return (
     <Box
@@ -52,9 +55,9 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
         {tooltipText && <TooltipWidget tooltip_text={tooltipText} />}
       </Box>
       <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.3">
-        {value > 0 || cardPosition === 0 ? (
+        {hasValue || cardPosition === 0 ? (
           <Amount
-            value={value}
+            value={formattedValue}
             currency={currency as AmountProps['currency']}
             type="heading"
             size="large"
@@ -63,7 +66,7 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
         ) : (
           <Text weight="semibold">--</Text>
         )}
-        {value > 0 ? (
+        {hasValue ? (
           <Change
             text={trendText}
             variant={change > 0 ? 'increase' : 'decrease'}
@@ -72,7 +75,7 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
           />
         ) : null}
       </Box>
-      {!isMobile && value > 0 ? (
+      {!isMobile && hasValue ? (
         <Text
           size="medium"
           weight="semibold"

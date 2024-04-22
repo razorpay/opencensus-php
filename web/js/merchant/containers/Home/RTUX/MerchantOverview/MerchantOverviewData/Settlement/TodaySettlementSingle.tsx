@@ -28,10 +28,14 @@ const TodaySettlementSingle: React.FC<
       flexDirection={{ base: 'column', l: 'row' }}
     >
       <Status status={status} />
-      <Dot />
-      <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
-        {subheading}
-      </Text>
+      {subheading ? (
+        <>
+          <Dot />
+          <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
+            {subheading}
+          </Text>
+        </>
+      ) : null}
       {!!action ? (
         <>
           <Dot />

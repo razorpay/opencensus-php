@@ -31,18 +31,16 @@ const UpcommingSettlement: React.FC<IUpcommingSettlement & IAnalyticsProperties>
 
   return (
     <Box display="flex" justifyContent="space-between">
-      <Box minHeight={{ base: 'auto', m: '100px' }}>
-        <TimelineItem icon={TimelineItemIconKeys.in_progress}>
-          <TimelineCardWithAmount
-            amount={settlement_amount || 0}
-            currency={settlement_currency}
-            status={status}
-            heading="Upcoming settlement"
-            subheading={subheading}
-            action={action}
-          />
-        </TimelineItem>
-      </Box>
+      <TimelineItem icon={TimelineItemIconKeys.in_progress}>
+        <TimelineCardWithAmount
+          amount={settlement_amount || 0}
+          currency={settlement_currency}
+          status={status}
+          heading="Upcoming settlement"
+          subheading={subheading}
+          action={action}
+        />
+      </TimelineItem>
       <StatusImage status={status} />
     </Box>
   );

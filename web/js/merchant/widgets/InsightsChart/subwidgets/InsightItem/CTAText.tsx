@@ -8,12 +8,12 @@ export const CTAText = ({ value, value_type, currency }: CTATextProps) => {
   const formattedValue =
     value_type === 'percentage'
       ? `${value}%`
-      : value_type === 'currency'
+      : value_type === 'amount'
       ? i18CurrencyConversionFromMinorUnitToCommonUnit(value, currency)
       : value;
   return (
     <Box display="inline-flex">
-      {value_type === 'currency' ? (
+      {value_type === 'amount' ? (
         <Amount
           value={formattedValue as number}
           currency={currency as any}

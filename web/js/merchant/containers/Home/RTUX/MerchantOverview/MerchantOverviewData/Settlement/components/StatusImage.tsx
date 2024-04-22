@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { getSettlementStatusImage } from '../utils';
 import { useIsSettlementHovered } from '../../store';
+import { Box } from '@razorpay/blade/components';
 
 const Image = styled.img<{ styles }>(({ styles }) => styles);
 
@@ -44,7 +45,7 @@ export const StatusImage = ({ status }: { status: string }) => {
   }, [isAnimating, image?.duration]);
 
   if (image === null) {
-    return null;
+    return <Box width="108px" height="108px" />;
   }
 
   return <Image src={imageSource} styles={image.styles} />;
