@@ -3373,11 +3373,11 @@ trait Authorize
             ($payment->isRecurringTypeInitial() === true) and
             (($token !== null) and ($token->getExpiredAt() !=null)))
         {
-            $validationTime = Carbon::now()->addYears(30)->addMinutes(1)->timestamp;
+            $validationTime = Carbon::now()->addYears(40)->addMinutes(1)->timestamp;
             if ($token->getExpiredAt() > $validationTime)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'expire_at cannot be more than 30 years'
+                    'expire_at cannot be more than 40 years'
                 );
             }
         }
@@ -6252,7 +6252,7 @@ trait Authorize
 
     protected function getEmandateTokenExpiry(array $input, $subscriptionRegEntityExpiry)
     {
-        $validationTime = Carbon::now()->addYears(30)->timestamp; // Max expiry can be 30 years for emandate tokens
+        $validationTime = Carbon::now()->addYears(40)->timestamp; // Max expiry can be 40 years for emandate tokens
         try
         {
             if ((empty($subscriptionRegEntityExpiry) === false) and ($subscriptionRegEntityExpiry < $validationTime))

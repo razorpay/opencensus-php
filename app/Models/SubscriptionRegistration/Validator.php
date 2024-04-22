@@ -754,14 +754,14 @@ class Validator extends Base\Validator
             // is applicable after 1st nov, 2023. This check will be removed in upcoming Prs.
             $authType = $input['auth_type'] ?? null;
             if ((($input[Entity::METHOD] === Method::EMANDATE) or
-                (($input[Entity::METHOD] === Method::NACH) and (Carbon::now()->timestamp >= 1698777000))) and
+                (($input[Entity::METHOD] === Method::NACH))) and
                 ($authType !== 'migrated'))
             {
-                $validationTime = Carbon::now()->addYears(30)->addMinutes(1)->timestamp;
+                $validationTime = Carbon::now()->addYears(40)->addMinutes(1)->timestamp;
                 if ($input[Entity::EXPIRE_AT] > $validationTime)
                 {
                     throw new BadRequestValidationFailureException(
-                        'expire_at cannot be more than 30 years for emandate & paper nach'
+                        'expire_at cannot be more than 40 years for emandate & paper nach'
                     );
                 }
             }

@@ -80,11 +80,11 @@ class Core extends Base\Core
 
         if ((empty($input[Entity::EXPIRE_AT]) === true) and
             (($input[Entity::METHOD] === Method::EMANDATE) or
-            (($input[Entity::METHOD] === Method::NACH) and (Carbon::now()->timestamp >= 1698777000))))
+            (($input[Entity::METHOD] === Method::NACH))))
         {
             // default token expiry is 30 years for emandate/nach. Incase of nach extra date check is added as compliance
             // is applicable after 1st nov, 2023. This check will be removed in upcoming Prs.
-            $subscriptionRegistration->setExpireAt(Carbon::now()->addYears(30)->timestamp);
+            $subscriptionRegistration->setExpireAt(Carbon::now()->addYears(40)->timestamp);
         }
 
         $subscriptionRegistration->merchant()->associate($merchant);
@@ -437,7 +437,7 @@ class Core extends Base\Core
 
             // if expired_at is received null in request, it would be set 30 years as default while creating subscription registration entity.
             //Incase of nach extra date check is added as compliance is applicable after 1st nov, 2023. This check will be removed in upcoming Prs.
-            if ((empty($paperMandateInput[PaperMandate\Entity::END_AT]) === true) and (Carbon::now()->timestamp >= 1698777000))
+            if ((empty($paperMandateInput[PaperMandate\Entity::END_AT]) === true))
             {
                 $paperMandateInput[PaperMandate\Entity::END_AT] = $subscriptionRegistration->getExpireAt();
             }

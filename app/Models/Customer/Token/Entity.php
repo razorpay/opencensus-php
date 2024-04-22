@@ -1006,9 +1006,9 @@ class Entity extends Base\PublicEntity
         // is applicable after 1st nov, 2023. This check will be removed in upcoming Prs.
         if ((empty($expiredAt) === true) and
             (($this->getMethod() === Payment\Method::EMANDATE) or
-                (($this->getMethod() === Payment\Method::NACH) and (Carbon::now()->timestamp >= 1698777000))))
+                (($this->getMethod() === Payment\Method::NACH))))
         {
-            $this->attributes[self::EXPIRED_AT] = Carbon::now()->addYears(30)->timestamp;
+            $this->attributes[self::EXPIRED_AT] = Carbon::now()->addYears(40)->timestamp;
         }
     }
 
