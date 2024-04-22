@@ -7,10 +7,11 @@ use RZP\Models\Merchant;
 use RZP\Models\Base\Traits\HardDeletes;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
+use RZP\Models\Merchant\Acs\Traits\AsvReload;
 
 class Entity extends Base\PublicEntity
 {
-    use HardDeletes, AsvGetAttribute;
+    use HardDeletes, AsvGetAttribute, AsvReload;
     use TransactionalModelEvents\TransactionalAwareEvents;
 
     const TYPE     = 'type';

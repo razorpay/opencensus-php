@@ -83,4 +83,6 @@ final class SplitzConstant
     const ASV_SPLITZ_EXPERIMENT_TIDB_COMPARISON = 'asv_splitz_experiment_tidb_comparison';
 
     const SPLITZ_SEND_TRANSACTION_FLOW_TO_ASV = 'splitz_send_transaction_flow_to_asv';
+
+    const SPLITZ_SEND_RELOAD_TO_ASV = 'splitz_send_reload_to_asv';
 }

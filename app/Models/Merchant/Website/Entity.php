@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Website;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvReload;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\BusinessType;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
@@ -20,6 +21,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvMerchantDetailGetAttribute;
 class Entity extends Base\PublicEntity
 {
     use TransactionalModelEvents\TransactionalAwareEvents, AsvMerchantDetailGetAttribute;
+    use AsvReload;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';

@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Document;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
+use RZP\Models\Merchant\Acs\Traits\AsvReload;
 use RZP\Models\Merchant\BvsValidation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
@@ -11,7 +12,7 @@ use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes, AsvGetAttribute;
+    use SoftDeletes, AsvGetAttribute, AsvReload;
     use TransactionalModelEvents\TransactionalAwareEvents;
 
     const FILE_STORE_ID      = 'file_store_id';

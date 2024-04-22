@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Stakeholder;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvReload;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -21,7 +22,7 @@ use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
-    use SoftDeletes;
+    use SoftDeletes, AsvReload;
     use TransactionalModelEvents\TransactionalAwareEvents;
 
     protected $entity = 'stakeholder';

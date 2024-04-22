@@ -448,6 +448,40 @@ class AsvRouter
         }
     }
 
+    public function shouldRouteReloadToAsv(string $callingIdentifier): bool
+    {
+        try {
+
+            $isExclusionFlow = $this->isExclusionFlowOrFailure();
+
+            if ($isExclusionFlow === true) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::READ_EXCLUSION_FLOW,
+                ]);
+                return false;
+            }
+
+            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForReloadMigration();
+            $resp = $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
+            if ($resp === false) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::SPLITZ_REJECTED,
+                ]);
+            }
+
+            return $resp;
+        } catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::GOT_EXCEPTION,
+            ]);
+            return false;
+        }
+    }
+
     public function isTransactionActive($repoClass): bool {
 
         $repoClass = (new $repoClass());

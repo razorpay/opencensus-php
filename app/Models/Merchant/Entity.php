@@ -52,6 +52,7 @@ use RZP\Models\Terminal;
 use RZP\Models\User;
 use RZP\Models\Workflow\Action;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Acs\Traits\AsvReload;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Merchant\Methods\Core as MethodCore;
 use RZP\Models\Payment\Config as PaymentConfig;
@@ -85,6 +86,13 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
     use Cacheable;
     use TransactionalModelEvents\TransactionalAwareEvents;
+    use AsvReload {
+        AsvReload::reload as AsvReload;
+        AsvReload::refresh as AsvRefresh;
+    }
+
+
+
 
     const ID_LENGTH = 14;
 
@@ -766,7 +774,7 @@ class Entity extends Base\PublicEntity
 
     public function refresh()
     {
-        $instance = parent::refresh();
+        $instance = $this->AsvRefresh();
 
         // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
         $instance->loadedFeatures = null;
@@ -776,7 +784,7 @@ class Entity extends Base\PublicEntity
 
     public function reload()
     {
-        $instance = parent::reload();
+        $instance = $this->AsvReload();
 
         // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
         $instance->loadedFeatures = null;

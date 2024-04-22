@@ -17,6 +17,7 @@ use RZP\Constants\Country;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\ClarificationDetail;
 use RZP\Exception\InvalidPermissionException;
+use RZP\Models\Merchant\Acs\Traits\AsvReload;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
@@ -37,7 +38,7 @@ use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
  */
 class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 {
-    use Cacheable;
+    use Cacheable, AsvReload;
     use TransactionalModelEvents\TransactionalAwareEvents;
 
     const MERCHANT_ID                        = 'merchant_id';

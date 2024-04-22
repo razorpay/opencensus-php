@@ -1763,6 +1763,7 @@ return [
         'splitz_experiment_address_find' => env('ASV_SPLITZ_EXPERIMENT_ADDRESS_FIND', ''),
         'splitz_experiment_stakeholder_find' => env('ASV_SPLITZ_EXPERIMENT_STAKEHOLDER_FIND', ''),
         "splitz_experiment_merchant_detail_find" => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_DETAIL_FIND', ''),
+        "splitz_send_reload_to_asv" => env('ASV_SPLITZ_SEND_RELOAD_TO_ASV', ''),
     ],
 
     'recon'         => [
