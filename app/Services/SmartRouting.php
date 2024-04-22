@@ -2,11 +2,13 @@
 
 namespace RZP\Services;
 
+use Request;
 
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RepositoryManager;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use RZP\Models\Gateway\Downtime;
 class SmartRouting
@@ -200,6 +202,11 @@ class SmartRouting
             $headers['Accept'] = 'application/json';
 
             $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
+            $devLabel = Request::header(RequestHeader::DEV_SERVE_USER);
+            if (empty($devLabel) === false)
+            {
+                $headers[RequestHeader::DEV_SERVE_USER] = $devLabel;
+            }
 
             $headers[self::X_RAZORPAY_MODE] = $this->mode;
 
