@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         Entity::APP_NAME                => 'sometimes|nullable|string',
         Entity::PAYMENT_METHOD          => 'required_unless:feature,refund,optimizer,payment,affordability_widget,sms|nullable|string',
         Entity::PAYMENT_METHOD_TYPE     => 'sometimes|nullable',
-        Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,upi,fund_transfer|nullable',
+        Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,upi,fund_transfer,emi|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
         Entity::PAYMENT_ISSUER          => 'sometimes|nullable|max:255',
         Entity::EMI_DURATION            => 'sometimes_if:payment_method,emi|nullable|integer|in:2,3,6,9,12,18,24',

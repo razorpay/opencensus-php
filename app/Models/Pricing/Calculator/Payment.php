@@ -788,9 +788,19 @@ class Payment extends Base
 
         $issuer = $emiPlan->getIssuer();
 
+        $subtype = $payment->card->getSubtype();
+
+        $orgId    = $this->entity->merchant->org->getId();
+
+        if($subtype === 'business' && $orgId === Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return $this->getRelevantPricingRuleForCorporateCardPayment($rules);
+        }
+
         //Emi duration and issuer filter is for merchant subvented model
         //in normal emi it will be null where feature is payment
         $filters1 = array(
+            [Pricing\Entity::PAYMENT_METHOD_SUBTYPE,    $subtype,       true,   null    ],
             [Pricing\Entity::PAYMENT_NETWORK,        $network,     true, null ],
             [Pricing\Entity::PAYMENT_ISSUER,         $issuer,      true, null ],
             [Pricing\Entity::PAYMENT_METHOD_TYPE,    $cardType,    true, null ],
