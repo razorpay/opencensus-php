@@ -1145,32 +1145,22 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_RECTANGLE
                 );
             }
-            if ($height < 60)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_RECTANGULAR_LOGO_TOO_SMALL
-                );
-            }
         }
-        else
+
+        else if ($width !== $height)
         {
-            if ($width !== $height)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE
-                );
-            }
-            // The minimum dimensions should be 256*256
-            if ($height < 256)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL
-                );
-            }
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE
+            );
         }
 
-
-
+        // The minimum dimensions should be 256*256
+        if ($height < 60)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL
+            );
+        }
     }
 
     public function validateImage($mimeType, $extension)

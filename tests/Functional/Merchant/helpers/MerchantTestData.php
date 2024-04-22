@@ -2577,23 +2577,7 @@ return [
             'status_code' => 400,
         ],
     ],
-    'testDeleteRectangularLogo' => [
-        'request' => [
-            'content' => [
-                'isRectangularLogo' => true,
-            ],
-            'url' => '/account/config/logo',
-            'method' => 'delete',
-            'files' => [
 
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'id' => '10000000000000',
-            ]
-        ]
-    ],
     'testDeleteLogoUrl' => [
         'request' => [
             'content' => [],
