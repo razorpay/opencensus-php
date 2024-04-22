@@ -34,22 +34,24 @@ class EdgeResponseHandler {
 
         try {
 
-            app('edgeMismatchRecorder')->recordMismatches($request, "login");
+            $mismatches = app('edgeMismatchRecorder')->recordMismatches($request, "login");
 
-            $responseCookies = app('edgeResponseForwarder')->getCookies();
+            if (!$mismatches) {
+                $responseCookies = app('edgeResponseForwarder')->getCookies();
 
-            if ($response instanceof StreamedResponse) {
+                if ($response instanceof StreamedResponse) {
 
-                foreach ($responseCookies as $cookie) {
-                    $response->headers->setCookie($cookie);
+                    foreach ($responseCookies as $cookie) {
+                        $response->headers->setCookie($cookie);
+                    }
+
+                    return $response;
+
                 }
 
-                return $response;
-
-            }
-
-            foreach ($responseCookies as $cookie) {
-                $response->withCookie($cookie);
+                foreach ($responseCookies as $cookie) {
+                    $response->withCookie($cookie);
+                }
             }
 
         }

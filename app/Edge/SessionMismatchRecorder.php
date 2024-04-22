@@ -245,7 +245,7 @@ class SessionMismatchRecorder
      * @param \Illuminate\Http\Request $request
      * @return void
      */
-    public function recordMismatches($request, string $flow) : void {
+    public function recordMismatches($request, string $flow) : bool {
 
         $dimensions = $this->getMetricDimensions($request);
 
@@ -257,7 +257,7 @@ class SessionMismatchRecorder
                 "new_data" => $this->edgeData,
                 "dimensions" => $dimensions,
             ]);
-            return;
+            return true;
         }
 
         if ($flow === self::POST_LOGIN && $this->hasPostLoginMismatches()) {
@@ -268,6 +268,9 @@ class SessionMismatchRecorder
                 "edge_verified" => $this->edgeVerified,
                 "dimensions" => $dimensions,
             ]);
+            return true;
         }
+
+        return false;
     }
 }

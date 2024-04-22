@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\Request;
 use PHPUnit\Framework\MockObject\MockObject;
 
+
 class SessionMismatchRecorderTest extends BaseTestCase
 {
 
@@ -300,7 +301,8 @@ class SessionMismatchRecorderTest extends BaseTestCase
         $trace->shouldReceive('error')->times(0);
         $trace->shouldReceive('warning')->times(0);
         $trace->shouldReceive('info')->times(0);
-        $edgeMismatchRecorder->recordMismatches($request, "login");
+        $mismatches = $edgeMismatchRecorder->recordMismatches($request, "login");
+        self::assertFalse($mismatches);
     }
 
     /**
@@ -318,7 +320,8 @@ class SessionMismatchRecorderTest extends BaseTestCase
         $trace->shouldReceive('error')->times(0);
         $trace->shouldReceive('warning')->times(0);
         $trace->shouldReceive('info')->times(0);
-        $edgeMismatchRecorder->recordMismatches($request, "login");
+        $mismatches = $edgeMismatchRecorder->recordMismatches($request, "login");
+        self::assertFalse($mismatches);
     }
 
     /**
@@ -339,7 +342,8 @@ class SessionMismatchRecorderTest extends BaseTestCase
         $trace->shouldReceive('error')->times(0);
         $trace->shouldReceive('warning')->times(0);
         $trace->shouldReceive('info')->times(1);
-        $edgeMismatchRecorder->recordMismatches($request, "login");
+        $mismatches = $edgeMismatchRecorder->recordMismatches($request, "login");
+        self::assertTrue($mismatches);
     }
 
     /**
@@ -356,7 +360,8 @@ class SessionMismatchRecorderTest extends BaseTestCase
         $trace->shouldReceive('error')->times(0);
         $trace->shouldReceive('warning')->times(0);
         $trace->shouldReceive('info')->times(0);
-        $edgeMismatchRecorder->recordMismatches($request, "login");
+        $mismatches = $edgeMismatchRecorder->recordMismatches($request, "login");
+        self::assertFalse($mismatches);
     }
 
     /**
