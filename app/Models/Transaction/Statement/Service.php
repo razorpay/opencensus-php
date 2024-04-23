@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Metric;
 use RZP\Models\Transaction;
 use RZP\Base\ConnectionType;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Transaction\Metric as TxnMetric;
@@ -163,10 +164,7 @@ class Service extends Transaction\Service
     // Temporary route for forcing the index for X Dashboard Requests for Account statement
     public function fetchMultipleForBanking($input)
     {
-        /** @var Merchant\Validator $merchantValidator */
-        $merchantValidator = $this->merchant->getValidator();
-
-        $balance = $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
+        $balance = $this->deduceMerchantBalanceFromInput($input);
 
         $dimension = $this->getDimensions();
 
@@ -320,5 +318,32 @@ class Service extends Transaction\Service
                                                            ?? Metric::LABEL_NONE_VALUE;
 
         return $dimensions;
+    }
+
+    /**
+     * @param array $input
+     *
+     */
+    private function deduceMerchantBalanceFromInput(array &$input)
+    {
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $this->merchant->getValidator();
+
+        /** @var Balance\Entity $balance */
+        $balance = null;
+
+        $balanceId = $input[Balance\Entity::BALANCE_ID];
+
+        if ($balanceId != null)
+        {
+            $balance = $this->repo->balance->findOrFailById($balanceId);
+            array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
+        }
+        else
+        {
+            $balance = $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
+        }
+
+        return $balance;
     }
 }

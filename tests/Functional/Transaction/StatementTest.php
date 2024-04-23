@@ -1075,4 +1075,19 @@ class StatementTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testFetchMultipleStatementsForBankingWithBalanceId()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['business_banking' => true]);
+
+        $this->createPayout();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions_banking?balance_id=' . $this->bankingBalance->getId();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
 }

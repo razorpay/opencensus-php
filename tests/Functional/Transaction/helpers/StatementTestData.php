@@ -937,4 +937,30 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
+
+    'testFetchMultipleStatementsForBankingWithBalanceId' => [
+        'request' => [
+            'url'    => '/transactions_banking',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1590,
+                        'currency'       => 'INR',
+                        'credit'         => 0,
+                        'debit'          => 1590,
+                        'source'         => [
+                            'entity'         => 'payout',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

@@ -61,6 +61,14 @@ class FaVpaValidation extends Job
         {
             parent::handle();
 
+            $startTime = microtime(true);
+
+            $this->trace->info(
+                TraceCode::FA_VPA_VALIDATION_WORKER_REQUEST,
+                [
+                    'worker_start_time' => $startTime,
+                ]);
+
             if (empty($this->vpaInput) === false)
             {
                 $vpaInput = [
@@ -215,6 +223,14 @@ class FaVpaValidation extends Job
         {
             $this->handleFavException($e, TraceCode::FUND_ACCOUNT_VALIDATION_VPA_FAILED);
         }
+
+        $this->trace->info(
+            TraceCode::FA_VPA_VALIDATION_WORKER_RESPONSE,
+            [
+                'worker_start_time' => $startTime,
+                'worker_end_time'    => microtime(true),
+                'worker_total_time'  => (microtime(true) - $startTime) * 1000
+            ]);
 
         $this->delete();
     }

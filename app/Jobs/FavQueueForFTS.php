@@ -49,6 +49,8 @@ class FavQueueForFTS extends Job
     {
         $favCore = new FAVCore();
 
+        $startTime = microtime(true);
+
         try
         {
             parent::handle();
@@ -95,6 +97,7 @@ class FavQueueForFTS extends Job
                 [
                     'fav_id'   => $this->favId,
                     'response' => $response,
+                    'worker_total_time' => (microtime(true) - $startTime) * 1000
                 ]
             );
 
@@ -110,6 +113,7 @@ class FavQueueForFTS extends Job
                 [
                     'fav_id'  => $this->favId,
                     'message' => $exception->getMessage(),
+                    'worker_total_time' => (microtime(true) - $startTime) * 1000
                 ]);
 
             $this->trace->count(FAVMetric::FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED);
