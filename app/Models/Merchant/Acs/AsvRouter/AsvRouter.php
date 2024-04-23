@@ -478,6 +478,37 @@ class AsvRouter
                 'routeOrWorkerName' => $this->getRouteOrJobName(),
                 'reason' => self::GOT_EXCEPTION,
             ]);
+        }
+    }
+
+    public function shouldEnableQueryLogs($id, $routeName): bool {
+        try {
+
+            if (AsvFlows::isEnabledQueryLogs($routeName) === false) {
+                return false;
+            }
+
+            $resp =  $this->splitzHelper->isSplitzOnForEnablingForQueryLogs(
+                $id,
+                $routeName
+            );
+
+            $this->trace->info(TraceCode::ACS_ENABLE_QUERY_LOGS_SPLITZ_RESULT, [
+                'isEnabledQueryLogs' => $resp,
+                'route' => $routeName
+            ]);
+
+            return $resp;
+        } catch (\Throwable $e) {
+            $this->trace->traceException
+            (
+                $e,
+                Trace::WARNING,
+                TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION,
+                [
+                    'flow' => 'should enable query logs'
+                ]
+            );
             return false;
         }
     }

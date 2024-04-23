@@ -42,6 +42,9 @@ final class SplitzConstant
 
     const SPLITZ_IMPLICIT_JOIN_ENTITY = 'splitz_experiment_implicit_join_entity';
 
+    const SPLITZ_ENABLED_QUERY_LOGS_ROUTE_WISE = 'splitz_experiment_enabled_query_logs_route_wise';
+    const SPLITZ_ENABLED_QUERY_LOGS = 'splitz_experiment_enabled_query_logs';
+
     const SPLITZ_IMPLICIT_JOIN_WEBSITE_BY_MERCHANTID = 'splitz_experiment_implicit_join_website_by_merchant_id';
 
     const SPLITZ_IMPLICIT_JOIN_BUSINESS_DETAIL_BY_MERCHANTID = 'splitz_experiment_implicit_join_business_detail_by_merchant_id';

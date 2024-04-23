@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Consumer\Service as Consumer;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\AsvFlows;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Constants;
 use RZP\Trace\TraceCode;
@@ -478,6 +479,43 @@ class SyncEventManager
 
         if (config('app.acs.verbose_log') === true) {
             app('trace')->info(TraceCode::ACS_ENTITY_FETCH, $logData);
+        }
+
+        $this->EnableQueryLogs();
+    }
+
+    public function EnableQueryLogs(): void
+    {
+        try {
+            $asvRouter             = new AsvRouter();
+            $route                 = $asvRouter->getRouteOrJobName();
+
+            $shouldEnableQueryLogs = ($asvRouter)->shouldEnableQueryLogs(uniqid(), $route);
+            if ($shouldEnableQueryLogs === true) {
+                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+                $traceInfo = [];
+
+                foreach ($backtrace as $trace) {
+                    if (isset($trace['file']) && !str_contains($trace['file'], 'vendor/')) {
+                        $traceInfo[] = [
+                            'line' => $trace['line'],
+                            'function' => $trace['function'] ?? 'N/A',
+                            'class' => $trace['class'] ?? 'N/A',
+                        ];
+                    }
+                }
+
+                app('trace')->info(TraceCode::ACS_ROUTE_QUERY_LOGS, [
+                    "trace" => $traceInfo,
+                    "route" => $route
+                ]);
+
+            }
+        } catch (\Exception $e) {
+            app('trace')->traceException($e,
+                null,
+                TraceCode::ACS_ROUTE_QUERY_LOGS_EXCEPTION
+            );
         }
     }
 

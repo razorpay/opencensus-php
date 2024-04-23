@@ -198,6 +198,34 @@ class SplitzHelper
         }
     }
 
+    function isSplitzOnForEnablingForQueryLogs(
+        $id, $routeName,
+        array $metadata = []): bool {
+        try {
+            $experimentIdForEntity = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[SplitzConstant::SPLITZ_ENABLED_QUERY_LOGS];
+            $experimentIdForCallingRoute = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[SplitzConstant::SPLITZ_ENABLED_QUERY_LOGS_ROUTE_WISE];
+
+            return $this->isSplitzOnBulk(
+                [
+                    [
+                        "experiment_id" => $experimentIdForEntity, "id" => $id,
+                    ],
+                    [
+                        "experiment_id" => $experimentIdForCallingRoute, "id" => $routeName,
+                    ]
+                ],
+                $metadata
+            );
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::ACCOUNT_SERVICE_SPLITZ_EXCEPTION, [
+                "splitz_call_exception" => $e->getMessage(),
+                "route" => $routeName,
+                "id" => $id,
+            ]);
+            return false;
+        }
+    }
+
     function checkSplitzVariantForAsvTiDBMigration(string $functionName) : bool {
         try
         {
