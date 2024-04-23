@@ -10,6 +10,7 @@ use Queue;
 use Config;
 use Carbon\Carbon;
 use App\User\Constants;
+use RZP\Models\User\Role;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Models\Batch;
@@ -3376,6 +3377,100 @@ class PartnerTest extends OAuthTestCase
         $testData['request']['url'] = '/merchant/' . PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID. '/associated_accounts';
 
         $this->ba->reportingAppAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testGetTransfersForPartnerRole()
+    {
+        $this->ba->proxyAuth();
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::PARTNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $testData = [
+            'request' => [
+                'url' => '/transfers',
+                'method'  => 'get',
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count' => 0,
+                    'has_more' => false,
+                    'items' => []
+                ],
+                'status_code' => 200,
+            ],
+        ];
+
+        $this->startTest($testData);
+    }
+
+    public function testPaymentTransferFetchForPartnerRole()
+    {
+        $this->ba->proxyAuth();
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::PARTNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $payment = $this->fixtures->create('payment');
+
+        $testData = [
+            'request' => [
+                'url' => '/payments/pay_' . $payment['id'] . '/transfers',
+                'method'  => 'get',
+            ],
+            'response' => [
+                'content' => [],
+                'status_code' => 200,
+            ],
+        ];
+
+        $this->startTest($testData);
+    }
+
+    public function testPaymentTransferFetchAndReversalsForPartnerRole()
+    {
+        $this->ba->proxyAuth();
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::PARTNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $order = $this->fixtures->create('order', ['status' => 'paid']);
+
+        $payment = $this->fixtures->create('payment:captured', ['order_id' => $order['id']]);
+
+        $dummyTransferData = [
+            'id'                 => 'AnyRandomID123',
+            'source_id'          => $order['id'],
+            'source_type'        => 'order',
+            'status'             => 'pending',
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000000,
+            'to_type'            => 'merchant',
+            'amount'             => 50000,
+            'currency'           => 'INR',
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $testData = [
+            'request' => [
+                'url' => '/transfers/trf_' . $dummyTransferData['id'],
+                'method'  => 'get',
+            ],
+            'response' => [
+                'content' => [],
+                'status_code' => 200,
+            ],
+        ];
 
         $this->startTest($testData);
     }

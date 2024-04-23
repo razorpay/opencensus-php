@@ -219,7 +219,7 @@ class UserRolesScope
             'item_fetch_multiple' => array_merge(Role::allExceptPaymentLinkRoles(), [ROLE::RBL_SUPERVISOR, Role::SELLERAPP_PLUS, Role::SELLERAPP, Role::PARTNER]),
 
             // marketplace
-            'transfer_fetch_multiple'      => array_merge(Role::READER_ROLES, [Role::SUPPORT]),
+            'transfer_fetch_multiple'      => array_merge(Role::READER_ROLES, [Role::SUPPORT, Role::PARTNER]),
             'merchant_dashboard_access_la' => [Role::OWNER, Role::ADMIN, Role::MANAGER],
 
             // TODO change the role to LA dashboard admin and owner after launch.
@@ -544,7 +544,7 @@ class UserRolesScope
             'partner_referral_create'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::PARTNER_AGENT],
             'payment_bank_transfer_fetch'                   => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::SUPPORT, Role::OPERATIONS, Role::MANAGER,],
             'payment_fetch_card_details'                    => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
-            'payment_fetch_transfers'                       => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::SUPPORT, Role::FINANCE,],
+            'payment_fetch_transfers'                       => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::SUPPORT, Role::FINANCE, Role::PARTNER],
             'payment_links_cancel'                          => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP, Role::SELLERAPP_PLUS,],
             'payment_links_create'                          => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP_PLUS, Role::PARTNER,],
             'payment_links_subscription_activate'           => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER],
@@ -602,8 +602,8 @@ class UserRolesScope
             'tax_get_meta_states'                           => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT, Role::SELLERAPP, Role::PARTNER],
             'tax_list'                                      => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER,],
             'terminals_proxy_gateway_terminal_status'       => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
-            'transfer_fetch'                                => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::SUPPORT, Role::FINANCE],
-            'transfer_fetch_reversals'                      => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::SUPPORT, Role::MANAGER, Role::FINANCE],
+            'transfer_fetch'                                => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::SUPPORT, Role::FINANCE, Role::PARTNER],
+            'transfer_fetch_reversals'                      => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::SUPPORT, Role::MANAGER, Role::FINANCE, Role::PARTNER],
             'ufh_get_file_signed_url'                       => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::OPERATIONS, Role::MANAGER, Role::SUPPORT, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_ADMIN, Role::LINKED_ACCOUNT_OWNER, Role::PARTNER,],
             'user_device_detail_save'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,Role::FINANCE, Role::SELLERAPP, Role::SUPPORT],
             'user_fetch_for_merchant'                       => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::FINANCE, Role::AGENT, Role::PARTNER,],
