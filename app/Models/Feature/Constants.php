@@ -76,7 +76,8 @@ class Constants
     const FSS_RISK_UDF                    = 'fss_risk_udf';
     const RULE_FILTER                     = 'rule_filter';
     const TPV                             = 'tpv';
-    const ENABLE_LINE_ITEMS               = 'enable_line_items';
+
+    const ENABLE_AMAZON_GC_VALIDATIONS    = 'enable_amazon_gc_validations';
     const IRCTC_REPORT                    = 'irctc_report';
     const DISABLE_MAESTRO                 = 'disable_maestro';
     const DISABLE_RUPAY                   = 'disable_rupay';
@@ -2939,7 +2940,7 @@ class Constants
         self::RewardPoints                           => true,
         self::SHOW_INTL_RISK_ANALYTICS_DASHBOARD          => true,
         self::EXTERNAL_PA_VAS                        =>  true,
-        self::ENABLE_LINE_ITEMS                      => true,
+        self::ENABLE_AMAZON_GC_VALIDATIONS           => true,
     ];
 
     // Entity type constants
