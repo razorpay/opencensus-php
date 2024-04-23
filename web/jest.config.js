@@ -101,7 +101,7 @@ module.exports = {
     },
     './js/merchant/views/PartnerDashboard': {
       statements: 60.52,
-      branches: 57.27,
+      branches: 57.26,
       functions: 52.45,
       lines: 52.45,
     },

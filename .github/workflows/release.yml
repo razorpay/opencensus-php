@@ -1,0 +1,76 @@
+name: Release
+on:
+  push:
+    branches:
+      - master
+
+env:
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+  HOME: /actions-runner/_work
+  NODE_VERSION: 18.16.0
+  CI: true
+
+jobs:
+  version:
+    name: Release Packages
+    runs-on: self-hosted
+    timeout-minutes: 30
+    if: ${{ github.event.head_commit.author.name != 'rzpcibot'}}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Setup Node v${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install Yarn
+        run: npm install -g yarn
+      - name: Install Dependencies
+        run: |
+          yarn config set unsafe-perm true
+          HUSKY=0 yarn --frozen-lockfile
+        shell: bash
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Create Version Update Pull Request
+        id: changesets
+        uses: changesets/action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+        with:
+          version: yarn version-update
+          commit: "Nx build: update version"
+          title: "Nx build: update version"
+
+  create-release:
+    name: Create Release
+    runs-on: self-hosted
+    timeout-minutes: 30
+    if: "${{ contains(github.event.head_commit.message, 'Nx build: update version') && github.event.head_commit.author.name == 'rzpcibot' }}"
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Setup Node v${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install Yarn
+        run: npm install -g yarn
+      - name: Install Dependencies
+        run: |
+          yarn config set unsafe-perm true
+          HUSKY=0 yarn --frozen-lockfile # Automatically installs modules in web too
+        shell: bash
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Run release script
+        run: yarn universe release --with-changesets
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

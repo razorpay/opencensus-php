@@ -88,3 +88,6 @@ yarn-error.log
 dist/
 coverage/
 eslint_report.json
+
+#nx graph
+scripts/nx-releases/output.json
