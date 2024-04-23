@@ -11,6 +11,11 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-shadow': 'off',
+    // TODO: check with universe team
+    'import/no-unresolved': [
+      'error',
+      { ignore: ['shell/*', '@dashboard/*', 'apps/*', 'common/*', 'merchant/*'] },
+    ],
     '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
     '@typescript-eslint/ban-types': [
       'error',

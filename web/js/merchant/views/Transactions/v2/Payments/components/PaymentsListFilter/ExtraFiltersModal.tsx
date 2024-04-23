@@ -4,8 +4,6 @@ import {
   ActionListItem,
   Box,
   Button,
-  Chip,
-  ChipGroup,
   Dropdown,
   DropdownOverlay,
   Modal,
@@ -19,9 +17,9 @@ import { connect } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { bindActionCreators, compose } from 'redux';
 
-import { ChipProps, Option } from 'common/components/Dropdown/types';
-import { withRouter } from 'common/deprecated/withRouter';
+import { Option } from 'common/components/Dropdown/types';
 import { useMobile } from 'common/hooks/useMobile';
+import { withRouter } from 'common/deprecated/withRouter';
 import { ALL_VALUE } from 'merchant/views/Transactions/v2/common/constants';
 import { trackMethodFilter } from 'merchant/views/Transactions/v2/common/tracking';
 import { closeModal } from 'merchant_common/reducers/modals';
@@ -53,7 +51,7 @@ const ExtraFiltersModal = ({ handleSearch, closeModal }: ExtraFiltersModalProps)
     });
   };
 
-  const onChannelSelect = ({ values }: ChipProps): void => {
+  const onChannelSelect = ({ values }): void => {
     const stringifiedChipValue = String(values);
     const channel = stringifiedChipValue === ALL_VALUE ? '' : stringifiedChipValue;
     setChannel(channel);
@@ -95,23 +93,26 @@ const ExtraFiltersModal = ({ handleSearch, closeModal }: ExtraFiltersModalProps)
             </DropdownOverlay>
           </Dropdown>
         </Box>
-        <Box marginTop="spacing.6">
+        <Box width="100%" marginTop="spacing.6">
           <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
             Channel
           </Text>
-          <ChipGroup
-            marginTop="spacing.3"
-            size="xsmall"
-            accessibilityLabel="Choose the payment channel from the options below"
-            onChange={onChannelSelect}
-            defaultValue={channel}
-          >
-            {(paymentChannelOptions as Option[]).map(({ title, value }) => (
-              <Chip key={value} value={value}>
-                {title}
-              </Chip>
-            ))}
-          </ChipGroup>
+          <Dropdown marginTop="spacing.3" selectionType="single">
+            <SelectInput
+              label=""
+              name="method"
+              placeholder="Select Source Channel"
+              defaultValue={channel}
+              onChange={onChannelSelect}
+            />
+            <DropdownOverlay>
+              <ActionList>
+                {(paymentChannelOptions as Option[]).map(({ title, value }) => (
+                  <ActionListItem key={value} title={title} value={value} />
+                ))}
+              </ActionList>
+            </DropdownOverlay>
+          </Dropdown>
         </Box>
       </ModalBody>
       <ModalFooter>

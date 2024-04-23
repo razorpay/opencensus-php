@@ -1,6 +1,11 @@
 import qs from 'query-string';
 
 import {
+  getDefaultDateAndOption,
+  getDefaultSearchByValueAndOption,
+  getDefaultSingleSelectValueAndOption,
+} from 'apps/self-serve/src/App/Transactions/v2/common/utils';
+import {
   statusOptions,
   statusSectionOptions,
   searchByOptions,
@@ -9,18 +14,16 @@ import {
   refundsDurationSectionOptions,
   refundsDurationOptionsMap,
   refundsDurationOptions,
+  paymentChannelOptions,
+  paymentChannelSectionOptions,
 } from './constants';
 import {
   AllOptions,
+  DefaultChannelAndOption,
   DefaultDateAndOption,
   DefaultStatusAndOption,
   DefaultValuesAndOptions,
 } from './types';
-import {
-  getDefaultDateAndOption,
-  getDefaultSearchByValueAndOption,
-  getDefaultSingleSelectValueAndOption,
-} from 'apps/self-serve/src/App/Transactions/v2/common/utils';
 
 const getDefaultStatusAndOption = (): DefaultStatusAndOption => {
   const { public_status } = qs.parse(location.search);
@@ -40,12 +43,22 @@ export const _getDefaultDateAndOption = (): DefaultDateAndOption => {
   return { defaultDate, defaultDuration };
 };
 
+export const getDefaultChannelAndOption = (): DefaultChannelAndOption => {
+  const { source_channel } = qs.parse(location.search);
+  const { defaultValue, defaultOption } = getDefaultSingleSelectValueAndOption({
+    searchValue: source_channel as string,
+    options: paymentChannelSectionOptions,
+  });
+  return { defaultChannelValue: defaultValue, defaultChannelOption: defaultOption };
+};
+
 export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
   const { defaultDate, defaultDuration: defaultRefundsDuration } = _getDefaultDateAndOption();
   const { defaultStatusValue, defaultStatusOption } = getDefaultStatusAndOption();
   const { defaultSearchByOption, defaultSearchByValue } = getDefaultSearchByValueAndOption({
     searchByOptionsMap,
   });
+  const { defaultChannelValue, defaultChannelOption } = getDefaultChannelAndOption();
 
   return {
     defaultRefundsDuration,
@@ -54,6 +67,8 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
     defaultStatusValue,
     defaultSearchByOption,
     defaultSearchByValue,
+    defaultChannelValue,
+    defaultChannelOption,
   };
 };
 
@@ -63,11 +78,13 @@ export const getOptions = (isMobile: boolean): AllOptions => {
       refundsDurationOptions: refundsDurationSectionOptions,
       statusOptions: statusSectionOptions,
       searchByOptions: searchBySectionOptions,
+      paymentChannelOptions: paymentChannelSectionOptions,
     };
   }
   return {
     refundsDurationOptions,
     statusOptions,
     searchByOptions,
+    paymentChannelOptions,
   };
 };

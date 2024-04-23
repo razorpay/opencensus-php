@@ -92,8 +92,3 @@ export type PaymentMethodOption = {
   title: string;
   value: string;
 };
-
-export type ChipProps = {
-  name: string;
-  values: string[];
-};

@@ -15,9 +15,12 @@ import {
   refundsDurationSectionOptions,
   refundsDurationOptionsMap,
   refundsDurationOptions,
+  paymentChannelOptions,
+  paymentChannelSectionOptions,
 } from './constants';
 import {
   AllOptions,
+  DefaultChannelAndOption,
   DefaultDateAndOption,
   DefaultStatusAndOption,
   DefaultValuesAndOptions,
@@ -40,6 +43,14 @@ export const _getDefaultDateAndOption = (): DefaultDateAndOption => {
 
   return { defaultDate, defaultDuration };
 };
+export const getDefaultChannelAndOption = (): DefaultChannelAndOption => {
+  const { source_channel } = qs.parse(location.search);
+  const { defaultValue, defaultOption } = getDefaultSingleSelectValueAndOption({
+    searchValue: source_channel as string,
+    options: paymentChannelSectionOptions,
+  });
+  return { defaultChannelValue: defaultValue, defaultChannelOption: defaultOption };
+};
 
 export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
   const { defaultDate, defaultDuration: defaultRefundsDuration } = _getDefaultDateAndOption();
@@ -47,6 +58,7 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
   const { defaultSearchByOption, defaultSearchByValue } = getDefaultSearchByValueAndOption({
     searchByOptionsMap,
   });
+  const { defaultChannelValue, defaultChannelOption } = getDefaultChannelAndOption();
 
   return {
     defaultRefundsDuration,
@@ -55,6 +67,8 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
     defaultStatusValue,
     defaultSearchByOption,
     defaultSearchByValue,
+    defaultChannelValue,
+    defaultChannelOption,
   };
 };
 
@@ -64,11 +78,13 @@ export const getOptions = (isMobile: boolean): AllOptions => {
       refundsDurationOptions: refundsDurationSectionOptions,
       statusOptions: statusSectionOptions,
       searchByOptions: searchBySectionOptions,
+      paymentChannelOptions: paymentChannelSectionOptions,
     };
   }
   return {
     refundsDurationOptions,
     statusOptions,
     searchByOptions,
+    paymentChannelOptions,
   };
 };

@@ -31,7 +31,7 @@ describe('PaymentsTable', () => {
       const items = mockFetchPaymentItems();
       renderApp({
         items,
-        shouldDisplaySourceChannel: true,
+        isOmniView: true,
       });
       expect(screen.queryAllByTestId('source-channel').length).toBeGreaterThan(0);
     });
@@ -40,7 +40,7 @@ describe('PaymentsTable', () => {
       const items = mockFetchPaymentItems();
       renderApp({
         items,
-        shouldDisplaySourceChannel: false,
+        isOmniView: false,
       });
       expect(screen.queryAllByTestId('source-channel').length).toBe(0);
     });

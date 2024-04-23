@@ -26,7 +26,8 @@ describe('ExtraFiltersModal', () => {
   test('should update Payment Method option to "Card" when selected', async () => {
     renderExtraFiltersModal();
 
-    const dropdownTrigger = screen.getByRole('combobox');
+    const dropdownTrigger = screen.getByPlaceholderText('Select Payment Method');
+
     expect(dropdownTrigger).toBeInTheDocument();
     await userEvent.click(dropdownTrigger);
 
@@ -34,22 +35,31 @@ describe('ExtraFiltersModal', () => {
     expect(cardOption).toBeInTheDocument();
     await userEvent.click(cardOption);
 
-    const selectedOption = screen.getByRole('combobox');
+    const selectedOption = screen.getByPlaceholderText('Select Payment Method');
     expect(selectedOption).toHaveValue('Card');
 
     expect(selectedOption).toHaveTextContent('Card');
   });
 
-  test('should render all channel options', () => {
+  test('should update Source Channel option to "In Person" when Selected', async () => {
     renderExtraFiltersModal();
-    expect(screen.getByRole('radio', { name: 'In Person' })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'Online' })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'All' })).toBeInTheDocument();
+    const paymentSourceChannel = screen.getByPlaceholderText('Select Source Channel');
+    expect(paymentSourceChannel).toBeInTheDocument();
+    await userEvent.click(paymentSourceChannel);
+
+    const inPersonOption = screen.getByRole('option', { name: 'In Person' });
+    expect(inPersonOption).toBeInTheDocument();
+    await userEvent.click(inPersonOption);
+
+    const selectedOption = screen.getByPlaceholderText('Select Source Channel');
+    expect(selectedOption).toHaveValue('In Person');
+
+    expect(selectedOption).toHaveTextContent('In Person');
   });
 
   test('should do a search query for transactions with applied filters upon clicking Apply', async () => {
     renderExtraFiltersModal();
-    const dropdownTrigger = screen.getByRole('combobox');
+    const dropdownTrigger = screen.getByPlaceholderText('Select Payment Method');
     expect(dropdownTrigger).toBeInTheDocument();
     await userEvent.click(dropdownTrigger);
 
@@ -57,9 +67,12 @@ describe('ExtraFiltersModal', () => {
     expect(cardOption).toBeInTheDocument();
     await userEvent.click(cardOption);
 
-    const inPersonSourceChannel = screen.getByRole('radio', { name: 'In Person' });
-    expect(inPersonSourceChannel).toBeInTheDocument();
-    await userEvent.click(inPersonSourceChannel);
+    const paymentSourceChannel = screen.getByPlaceholderText('Select Source Channel');
+    await userEvent.click(paymentSourceChannel);
+
+    const inPersonOption = screen.getByRole('option', { name: 'In Person' });
+    expect(inPersonOption).toBeInTheDocument();
+    await userEvent.click(inPersonOption);
 
     const applyButton = screen.getByRole('button', { name: 'Apply' });
     expect(applyButton).toBeInTheDocument();

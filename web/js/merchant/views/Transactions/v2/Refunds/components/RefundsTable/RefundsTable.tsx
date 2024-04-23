@@ -6,12 +6,14 @@ import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constant
 import { StyledTable } from 'merchant/views/Transactions/v2/common/styled';
 
 import EmptyComponent from './EmptyComponent';
-import { desktopColumns, mobileColumns } from './columns';
+import { getDesktopColumns, mobileColumns } from './columns';
 import { RefundsTableProps } from './types';
+
 const RefundsTable = (props: RefundsTableProps): JSX.Element => {
-  const { loading: isLoading } = props;
+  const { loading: isLoading, isOmniView } = props;
   const isMobile = useMobile(mobileBreakoints);
-  const columns = isMobile ? mobileColumns : desktopColumns;
+  const columns = isMobile ? mobileColumns : getDesktopColumns(isOmniView);
+
   return (
     <StyledTable loading={isLoading}>
       <EntityTable

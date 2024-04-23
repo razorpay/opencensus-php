@@ -28,8 +28,11 @@ class RefundsList {
       history,
       navigate,
       location: { pathname },
+      user: { isOmniChannelMerchant, pos_activation_status, isOmniEnabledMerchant },
     } = this.props;
     const { count, skip } = this.state;
+    const isOmniView = isOmniEnabledMerchant || (!!pos_activation_status && isOmniChannelMerchant);
+
     return (
       <>
         <RefundsListFilter count={count} onSubmit={onSearch(history)} loading={loading} />
@@ -37,6 +40,7 @@ class RefundsList {
           count={count}
           skip={skip}
           paginate={onPaginate(this.paginate)}
+          isOmniView={isOmniView}
           onRowClick={(id) =>
             handleDetailsClick({
               navigate,
@@ -57,6 +61,7 @@ export default withRouter(
   connect(
     (state) => ({
       ...state.refunds,
+      user: state.session.user,
     }),
     // { fetchAll },
   )(RefundsListWrapper),

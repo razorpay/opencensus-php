@@ -13,6 +13,7 @@ export interface Item {
   acquirer_data: AcquirerData;
   created_at: number;
   status: Status;
+  source_channel: 'online' | 'in_person' | null;
 }
 
 export interface AcquirerData {

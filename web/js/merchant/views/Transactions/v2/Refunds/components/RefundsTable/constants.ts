@@ -13,3 +13,8 @@ export const refundsStatusVariantMap = {
     content: 'Due to customer(s) account error or bank-related issues',
   },
 } as const;
+
+export const sourceChannelMap = {
+  online: 'Online',
+  in_person: 'In Person',
+};

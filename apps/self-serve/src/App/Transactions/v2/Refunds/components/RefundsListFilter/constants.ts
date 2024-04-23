@@ -1,4 +1,8 @@
-import { durationOptionsMap } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
+import {
+  durationOptionsMap,
+  ALL_LABEL,
+  ALL_VALUE,
+} from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { generateOptions } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
 
 export const refundsDurationOptionsMap = { ...durationOptionsMap };
@@ -41,6 +45,22 @@ export const searchByOptions = [
     section: {
       name: searchBySectionName,
       options: searchBySectionOptions,
+    },
+  },
+];
+
+export const paymentChannelOptionsMap = {
+  [ALL_VALUE]: ALL_LABEL,
+  in_person: 'In Person',
+  online: 'Online',
+};
+export const channelSectionName = 'Channel';
+export const paymentChannelSectionOptions = generateOptions(paymentChannelOptionsMap);
+export const paymentChannelOptions = [
+  {
+    section: {
+      name: channelSectionName,
+      options: paymentChannelSectionOptions,
     },
   },
 ];

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import {
+  BladeProvider,
   Box,
   Button,
   Divider,
@@ -9,6 +10,7 @@ import {
   Text,
   TextInput,
 } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { useStore } from 'shell/commonStore';
 import moment from 'moment';
 import { withRouter } from 'shell/deprecated/withRouter';
@@ -217,7 +219,9 @@ const PaymentsListFilter = ({
       isNew: true,
       component: (
         <SuspenseWithLoader>
-          <ExtraFiltersModal {...props} />
+          <BladeProvider themeTokens={bladeTheme}>
+            <ExtraFiltersModal {...props} />
+          </BladeProvider>
         </SuspenseWithLoader>
       ),
     });

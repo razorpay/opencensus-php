@@ -204,8 +204,8 @@ export const desktopColumns = [
   actions,
 ];
 
-export const getDesktopColumns = (shouldDisplaySourceChannel: boolean) => {
-  if (shouldDisplaySourceChannel) {
+export const getDesktopColumns = (isOmniView: boolean) => {
+  if (isOmniView) {
     return [omniPaymentId, ...desktopColumns.slice(1, desktopColumns.length)];
   }
   return desktopColumns;

@@ -16,8 +16,9 @@ import {
   TransactionsPagesMap,
 } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { getCreatedOnTime } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
-import Amount from 'common/ui/Amount';
+import { Amount } from '@dashboard/shared-ui/components';
 import { refundsStatusVariantMap } from './constants';
+import { getSourceChannelType } from './utils';
 
 const { REFUNDS } = TransactionsEntityRoute;
 
@@ -27,6 +28,29 @@ const refundId = {
     <Text size="medium" weight="semibold" color="surface.text.gray.normal">
       Refund ID
     </Text>
+  ),
+};
+
+const omniRefundId = {
+  ...paymentId,
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Refund ID
+    </Text>
+  ),
+  value: ({
+    id,
+    source_channel,
+  }: {
+    id: Item['id'];
+    source_channel: Item['source_channel'];
+  }): JSX.Element => (
+    <Box display="block" columnGap="spacing.2" testID="source-channel">
+      {paymentId.value({ id })}
+      <Text size="small" color="surface.text.gray.muted">
+        {getSourceChannelType(source_channel)}
+      </Text>
+    </Box>
   ),
 };
 
@@ -112,3 +136,9 @@ const actions = {
 
 export const mobileColumns = [mobileAmount, status, actions];
 export const desktopColumns = [refundId, _paymentId, createdOn, amount, status, actions];
+export const getDesktopColumns = (isOmniView?: boolean) => {
+  if (isOmniView) {
+    return [omniRefundId, ...desktopColumns.slice(1, desktopColumns.length)];
+  }
+  return desktopColumns;
+};

@@ -10,10 +10,10 @@ import { mobileColumns, getDesktopColumns } from './columns';
 import { PaymentsTableProps } from './types';
 
 const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
-  const { loading: isLoading, shouldDisplaySourceChannel } = props;
+  const { loading: isLoading, isOmniView } = props;
   const isMobile = useMobile(mobileBreakoints);
 
-  const columns = isMobile ? mobileColumns : getDesktopColumns(shouldDisplaySourceChannel);
+  const columns = isMobile ? mobileColumns : getDesktopColumns(isOmniView);
 
   return (
     <StyledTable loading={isLoading}>

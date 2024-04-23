@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'shell/deprecated/withRouter';
 import { AnyAction, Dispatch, bindActionCreators, compose } from 'redux';
 
-import Amount from 'common/ui/Amount';
+import { Amount } from '@dashboard/shared-ui/components';
 import { titleCase } from '@dashboard/shared-utils/rzp-utils';
 import {
   fetchSchedule,

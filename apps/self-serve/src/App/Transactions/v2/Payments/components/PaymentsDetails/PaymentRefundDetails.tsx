@@ -13,8 +13,8 @@ import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v
 import { Currency } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import RefundMiniTimeline from 'apps/self-serve/src/App/Transactions/v2/Refunds/components/RefundMiniTimeline';
 import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
-import Amount from 'common/ui/Amount';
-import * as PaymentActions from 'merchant/reducers/payments/details';
+import { Amount } from '@dashboard/shared-ui/components';
+import * as PaymentActions from 'apps/self-serve/src/bootstrap/Store/reducers/paymentsReducer';
 import React from 'react';
 import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators, compose } from 'redux';

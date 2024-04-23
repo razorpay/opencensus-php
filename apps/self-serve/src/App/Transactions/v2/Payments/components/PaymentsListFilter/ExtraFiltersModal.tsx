@@ -4,8 +4,6 @@ import {
   ActionListItem,
   Box,
   Button,
-  Chip,
-  ChipGroup,
   Dropdown,
   DropdownOverlay,
   Modal,
@@ -17,12 +15,12 @@ import {
 } from '@razorpay/blade/components';
 import { useLocation } from 'react-router-dom';
 import { useStore } from 'shell/commonStore';
-
+import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
 import { withRouter } from 'shell/deprecated/withRouter';
 import { useMobile } from '@dashboard/shared-ui/hooks';
 import { ALL_VALUE } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { trackMethodFilter } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
-import { ExtraFiltersModalProps, ChipProps, PaymentMethodOption } from './types';
+import { ExtraFiltersModalProps, PaymentMethodOption } from './types';
 import { getDefaultValuesAndOptions, getOptions } from './utils';
 
 const ExtraFiltersModal = ({ handleSearch }: ExtraFiltersModalProps): JSX.Element => {
@@ -50,7 +48,7 @@ const ExtraFiltersModal = ({ handleSearch }: ExtraFiltersModalProps): JSX.Elemen
     });
   };
 
-  const onChannelSelect = ({ values }: ChipProps): void => {
+  const onChannelSelect = ({ values }): void => {
     const stringifiedChipValue = String(values);
     const channel = stringifiedChipValue === ALL_VALUE ? '' : stringifiedChipValue;
     setChannel(channel);
@@ -92,23 +90,26 @@ const ExtraFiltersModal = ({ handleSearch }: ExtraFiltersModalProps): JSX.Elemen
             </DropdownOverlay>
           </Dropdown>
         </Box>
-        <Box marginTop="spacing.6">
+        <Box width="100%" marginTop="spacing.6">
           <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
             Channel
           </Text>
-          <ChipGroup
-            marginTop="spacing.3"
-            size="xsmall"
-            accessibilityLabel="Choose the payment channel from the options below"
-            onChange={onChannelSelect}
-            defaultValue={channel}
-          >
-            {(paymentChannelOptions as PaymentMethodOption[]).map(({ title, value }) => (
-              <Chip key={value} value={value}>
-                {title}
-              </Chip>
-            ))}
-          </ChipGroup>
+          <Dropdown marginTop="spacing.3" selectionType="single">
+            <SelectInput
+              label=""
+              name="method"
+              placeholder="Select Source Channel"
+              defaultValue={channel}
+              onChange={onChannelSelect}
+            />
+            <DropdownOverlay>
+              <ActionList>
+                {(paymentChannelOptions as Option[]).map(({ title, value }) => (
+                  <ActionListItem key={value} title={title} value={value} />
+                ))}
+              </ActionList>
+            </DropdownOverlay>
+          </Dropdown>
         </Box>
       </ModalBody>
       <ModalFooter>

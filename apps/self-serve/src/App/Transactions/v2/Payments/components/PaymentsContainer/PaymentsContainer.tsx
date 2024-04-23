@@ -3,8 +3,8 @@ import { useLocation } from 'react-router-dom';
 
 import { merchantFetch } from '@dashboard/shared-utils/ajax';
 import { useStore } from 'shell/commonStore';
-import Content from './Content';
 import { View } from 'apps/self-serve/src/App/Transactions/v2/common/types';
+import Content from './Content';
 
 const { LOADING, FTUX, FAILED_FTUX, LIST } = View;
 

@@ -11,14 +11,6 @@ import { useMobile } from '@dashboard/shared-ui/hooks';
 import { SuspenseWithLoader } from '@dashboard/shared-ui/components';
 import lazy from '@dashboard/shared-utils/routes/LazyLoader';
 import {
-  refundsDurationSectionName,
-  statusSectionName,
-  searchBySectionName,
-  searchByOptionsMap,
-} from './constants';
-import { Duration, RefundsListFilterProps } from './types';
-import { getDefaultValuesAndOptions, getOptions } from './utils';
-import {
   CUSTOM,
   DESKTOP_CALENDAR_NUMBER_OF_MONTHS,
   LAST_7_DAYS,
@@ -43,43 +35,65 @@ import {
   getFromTime,
   getValue,
 } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
+import { getDefaultValuesAndOptions, getOptions } from './utils';
+import { Duration, RefundsListFilterProps } from './types';
+import {
+  refundsDurationSectionName,
+  statusSectionName,
+  searchBySectionName,
+  searchByOptionsMap,
+  channelSectionName,
+} from './constants';
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const DateRangePicker = lazy(
+  // eslint-disable-next-line import/no-unresolved
   () => import(/* webpackChunkName: 'DateRangePicker' */ 'common/ui/Forms/DateRangePickerField'),
 );
 
 const RefundsListFilter = ({
   onSubmit,
   loading,
+  user,
   location: { pathname },
 }: RefundsListFilterProps): JSX.Element => {
   const {
     defaultRefundsDuration,
     defaultDate,
-    defaultStatusValue,
+    defaultStatusValue: status,
     defaultStatusOption,
     defaultSearchByOption,
     defaultSearchByValue,
+    defaultChannelOption,
+    defaultChannelValue: channel,
   } = getDefaultValuesAndOptions();
   const [date, setDate] = useState<Duration>(defaultDate);
   const [shouldShowDateRangePicker, setShowDateRangePicker] = useState(
     defaultRefundsDuration.value === CUSTOM,
   );
-  const [status, setStatus] = useState<string>(defaultStatusValue);
+
   const [searchBy, setSearchBy] = useState(defaultSearchByOption.value);
   const [searchByValue, setSearchByValue] = useState(defaultSearchByValue);
   const isMobile = useMobile();
   const isMediumDesktopAndMobile = useMobile(mobileBreakoints);
   const defaultFocusedInput = useRef<'startDate' | null>(null);
-  const { refundsDurationOptions, statusOptions, searchByOptions } = getOptions(isMobile);
+  const { paymentChannelOptions, refundsDurationOptions, statusOptions, searchByOptions } =
+    getOptions(isMobile);
+
   const numberOfMonths = isMediumDesktopAndMobile
     ? MOBILE_CALENDAR_NUMBER_OF_MONTHS
     : DESKTOP_CALENDAR_NUMBER_OF_MONTHS;
+
+  const isOmniChannelMerchant =
+    user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant);
 
   const handleSearch = (newSearchParams = {}) => {
     const searchParams = {
       ...date,
       public_status: status,
+      source_channel: channel,
       [searchBy]: searchByValue,
       ...newSearchParams,
     };
@@ -117,12 +131,16 @@ const RefundsListFilter = ({
 
   const onStatusChange = (selectedStatuses: Option[]) => {
     const status = getValue(selectedStatuses);
-    setStatus(status);
     handleSearch({ public_status: status });
     trackStatusFilter({
       status: selectedStatuses[0].title,
       pathname,
     });
+  };
+
+  const onChannelChange = (selectedChannel: Option[]): void => {
+    const channel = getValue(selectedChannel);
+    handleSearch({ source_channel: channel });
   };
 
   const onSearchByOptionChange = ([{ title, value }]: Option[]) => {
@@ -183,6 +201,16 @@ const RefundsListFilter = ({
           isDisabled={loading}
           bottomSheetTitle={statusSectionName}
         />
+        {isOmniChannelMerchant ? (
+          <Dropdown
+            onChange={onChannelChange}
+            options={paymentChannelOptions}
+            defaultOptions={[defaultChannelOption]}
+            prefixTitle="Channel: "
+            isDisabled={loading}
+            bottomSheetTitle={channelSectionName}
+          />
+        ) : null}
       </StyledSubListFilter>
       <StyledSearchByFilter>
         <Box display="flex" columnGap="spacing.1" marginLeft="auto">
@@ -209,5 +237,7 @@ const RefundsListFilter = ({
     </StyledListFilter>
   );
 };
-
-export default withRouter(RefundsListFilter);
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+export default withRouter<any>(compose(connect(mapStateToProps, null)(RefundsListFilter)));

@@ -9,6 +9,7 @@ import { screen, userEvent } from 'test-utils';
 
 import { renderApp, defaultProps, useMobileSpy } from './mocks/fixtures/RefundsListFilter';
 import 'jest-location-mock';
+import store from 'merchant/store';
 
 describe('RefundsListFilter', () => {
   beforeEach(() => {
@@ -88,6 +89,21 @@ describe('RefundsListFilter', () => {
       await userEvent.click(dropdownTrigger);
       await userEvent.click(screen.getByRole('menuitem', { name: 'Processed' }));
       const selectedOption = screen.getByRole('button', { name: 'Status: Processed' });
+      expect(selectedOption).toBeInTheDocument();
+    });
+  });
+
+  describe('Channel filter', () => {
+    test('should allow to change payment channel option', async () => {
+      const globalState = store.getState();
+      const user = globalState.session.user;
+      jest.spyOn(user, 'isOmniEnabledMerchant', 'get').mockReturnValue(true);
+      renderApp();
+      const dropdownTrigger = screen.getByRole('button', { name: 'Channel: All' });
+      expect(dropdownTrigger).toBeInTheDocument();
+      await userEvent.click(dropdownTrigger);
+      await userEvent.click(screen.getByRole('menuitem', { name: 'In Person' }));
+      const selectedOption = screen.getByRole('button', { name: 'Channel: In Person' });
       expect(selectedOption).toBeInTheDocument();
     });
   });

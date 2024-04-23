@@ -33,8 +33,7 @@ class PaymentsList extends ListContainer {
       },
     } = store;
 
-    const shouldDisplaySourceChannel =
-      isOmniEnabledMerchant || (!!pos_activation_status && isOmniChannelMerchant);
+    const isOmniView = isOmniEnabledMerchant || (!!pos_activation_status && isOmniChannelMerchant);
 
     return (
       <>
@@ -44,7 +43,7 @@ class PaymentsList extends ListContainer {
           skip={skip}
           paginate={onPaginate(this.paginate)}
           isDisabled={({ status }) => !paymentStatusVariantMap[status]}
-          shouldDisplaySourceChannel={shouldDisplaySourceChannel}
+          isOmniView={isOmniView}
           onRowClick={(id) =>
             handleDetailsClick({
               navigate,

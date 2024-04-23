@@ -1,5 +1,4 @@
 const universeEsLintConfig = require.resolve('@razorpay/universe-cli/eslintrc.typescript');
-const path = require('path');
 
 module.exports = {
   extends: [universeEsLintConfig],
@@ -14,6 +13,8 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
     'no-empty-function': 'off',
+    // TODO: check with universe team
+    'import/no-unresolved': ['error', { ignore: ['shell/*', '@dashboard/*', 'apps/*'] }],
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/ban-types': [
       'error',
@@ -26,15 +27,6 @@ module.exports = {
     ],
   },
   overrides: [
-    {
-      files: ['*.js', '*.jsx'],
-      parser: '@babel/eslint-parser',
-      parserOptions: {
-        babelOptions: {
-          configFile: path.resolve(__dirname, './.babelrc.js'),
-        },
-      },
-    },
     {
       files: ['**/__tests__/**/*.tsx', '*.test.tsx'],
       settings: {

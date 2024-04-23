@@ -4,18 +4,18 @@ import { useMobile } from '@dashboard/shared-ui/hooks';
 import { EntityTable } from '@dashboard/shared-ui/components';
 import { useStore } from 'shell/commonStore';
 
+import { StyledTable } from 'apps/self-serve/src/App/Transactions/v2/common/styled';
+import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import EmptyComponent from './EmptyComponent';
 import { getDesktopColumns, mobileColumns } from './columns';
 import { PaymentsTableProps } from './types';
-import { StyledTable } from 'apps/self-serve/src/App/Transactions/v2/common/styled';
-import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 
 const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
-  const { loading: isLoading, shouldDisplaySourceChannel } = props;
+  const { loading: isLoading, isOmniView } = props;
   const isMobile = useMobile(mobileBreakoints);
   const { user, app } = useStore((state) => ({ user: state.session.user, app: state.app }));
 
-  const columns = isMobile ? mobileColumns : getDesktopColumns(shouldDisplaySourceChannel);
+  const columns = isMobile ? mobileColumns : getDesktopColumns(isOmniView);
 
   return (
     <StyledTable loading={isLoading}>
