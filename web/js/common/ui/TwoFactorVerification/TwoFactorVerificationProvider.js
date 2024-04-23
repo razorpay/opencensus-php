@@ -99,6 +99,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     onBankAccountUpdateReq = false,
     onWrongOtpCallback = () => {},
     isNewAccountAndSettingsPage = false,
+    enforceVerifyOtp = false,
   }) => {
     this.onCloseCallback = onFlowTermination;
     this.onUserTwoFaVerifiedCallback = (...args) => {
@@ -162,7 +163,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
         return this.completeTwoFactorVerificationSetup({
           onClickSetup: () => this.initiateVerifyOrUpdateMobile(isNewAccountAndSettingsPage),
         });
-      } else if (!twoFactorVerified || onBankAccountUpdateReq) {
+      } else if (!twoFactorVerified || onBankAccountUpdateReq || enforceVerifyOtp) {
         this.verifyUserViaTwoFactorOtp({
           onSuccess: this.onUserTwoFaVerifiedCallback,
           onWrongOtpCallback,

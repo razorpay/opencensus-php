@@ -72,6 +72,7 @@ class User2FASettings extends React.PureComponent {
         });
         return callback(false);
       },
+      enforceVerifyOtp: true,
     });
   };
 
