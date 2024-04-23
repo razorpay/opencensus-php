@@ -8876,14 +8876,38 @@ class Core extends Base\Core
             return  (new Merchant1ccConfig\Core())->createAndSaveConfig($this->merchant, $input);
         }
 
-        if ($config->getValue() !== $value || sizeof(array_merge(array_diff($config['value_json'], $value_json), array_diff($value_json, $config['value_json'])))>0)
-        {
+        // Convert JSON string to array if needed
+        $configValueJson = is_array($config['value_json']) ? $config['value_json'] : json_decode($config['value_json'], true);
+
+        // Check for differences
+        if ($config->getValue() !== $value || !$this->arraysAreEqual($configValueJson, $value_json)) {
             $config->setValue($value);
             $config['value_json'] = $value_json;
             $config->update();
         }
 
+
         return $config;
+    }
+
+    private function arraysAreEqual($array1, $array2) {
+        if (count($array1) !== count($array2)) {
+            return false;
+        }
+
+        foreach ($array1 as $key => $value) {
+            if (!array_key_exists($key, $array2) || $array2[$key] !== $value) {
+                return false;
+            }
+
+            if (is_array($value)) {
+                if (!$this->arraysAreEqual($value, $array2[$key])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public function associateMerchant1ccIntelligenceConfig(string $type, string $value, array $value_json = [])
