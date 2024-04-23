@@ -1193,10 +1193,13 @@ class OffersEngine extends Base\Core
             ];
         }
 
-        if ($this->isDummyPayment === true)
-        {
+        if ($this->isDummyPayment === true) {
+            $card_number = Constants::DUMMY_PAYMENT_CARD_NUMBER;
+            if ($this->payment->isMethodCardOrEmi() === true) {
+               $card_number = $this->getCardParValue();
+            }
             $fact[Constants::CUSTOMER_FACT] = [
-                Constants::CARD_NUMBER => Constants::DUMMY_PAYMENT_CARD_NUMBER,
+                Constants::CARD_NUMBER => $card_number,
                 Constants::MOBILE_NUMBER => $this->payment->getContact(),
                 Constants::EMAIL => $this->payment->getEmail(),
             ];

@@ -114,6 +114,9 @@ final class Constants
     const STAGE_AVAIL = 'STAGE_AVAIL';
 
     const DISCOUNT = 'discount';
+    const CASHBACK = 'cashback';
+    const NO_COST_EMI = 'no_cost_emi';
+    const LOW_COST_EMI = 'low_cost_emi';
     const PERCENTAGE_DISCOUNT = 'percent_discount';
     const FLAT_DISCOUNT = 'flat_discount';
     const MAX_DISCOUNT = 'max_discount';
