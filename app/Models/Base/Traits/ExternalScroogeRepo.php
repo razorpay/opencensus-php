@@ -4,6 +4,7 @@ namespace RZP\Models\Base\Traits;
 
 use RZP\Constants\Entity;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\PublicCollection;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
@@ -941,6 +942,104 @@ trait ExternalScroogeRepo
 
         throw new BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    public function fetch(array $params,
+                          string $merchantId = null,
+                          string $connectionType = null): PublicCollection
+    {
+
+        $mode = $this->app['rzp.mode'] ?? 'live';
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            'refund_reads_for_admin_multiple_from_scrooge',
+            $mode);
+
+        if ($result !== 'on')
+        {
+            return parent::fetch($params, $merchantId, $connectionType);
+        }
+
+        $class = Entity::getExternalRepoSingleton(Entity::REFUND);
+
+        $scroogeInput = [];
+        $count = 20;
+        $skip = 0;
+
+        if (key_exists('payment_id', $params) && empty($params['payment_id']) === false)
+        {
+            $scroogeInput['payment_id'] = $params['payment_id'];
+        }
+
+        if (key_exists('merchant_id', $params) && empty($params['merchant_id']) === false)
+        {
+            $scroogeInput['merchant_id'] = $params['merchant_id'];
+        }
+
+        if (key_exists('status', $params) && empty($params['status']) === false)
+        {
+            if ($params['status'] === 'created')
+            {
+                $scroogeInput['status'] = ['file_init', 'init', 'on_hold', 'fta_pending', 'debit_validation_pending', 'file_sent'];
+            }
+            else
+            {
+                $scroogeInput['status'] = $params['status'];
+            }
+        }
+
+        if (key_exists('from', $params) && empty($params['from']) === false)
+        {
+            $scroogeInput['created_at']['gte'] = $params['from'];
+        }
+
+        if (key_exists('to', $params) && empty($params['to']) === false)
+        {
+            $scroogeInput['created_at']['lte'] = $params['to'];
+        }
+
+        if (key_exists('count', $params) && empty($params['count']) === false)
+        {
+            $count = $params['count'];
+        }
+
+        if (key_exists('skip', $params) && empty($params['skip']) === false)
+        {
+            $skip = $params['skip'];
+        }
+
+        $scrooge_fetch_query = [
+            'count' => $count,
+            'skip' => $skip
+        ];
+
+        if (empty($scroogeInput) === false)
+        {
+            $scrooge_fetch_query['query'] = [
+                'refunds' => $scroogeInput
+            ];
+        }
+        try
+        {
+            $entity = $class->fetchRefunds($scrooge_fetch_query);
+
+            if (empty($entity) === false)
+            {
+                return $entity;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data'        => $ex->getMessage(),
+                ]);
+        }
+
+        return new PublicCollection();
     }
 
     private function fetchRefundForPaymentIdAndAmount($paymentId, $amount, $input = [])

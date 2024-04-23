@@ -769,6 +769,7 @@ class HitachiGatewayTest extends TestCase
 
     public function testPaymentRefund()
     {
+        $this->setMockRazorxTreatment(['refund_reads_for_admin_multiple_from_scrooge' => 'control']);
         $this->doAuthAndCapturePayment($this->payment);
 
         $txn = $this->getLastTransaction(true);
@@ -805,6 +806,7 @@ class HitachiGatewayTest extends TestCase
 
     public function testPartialRefund()
     {
+        $this->setMockRazorxTreatment(['refund_reads_for_admin_multiple_from_scrooge' => 'control']);
         $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -820,6 +822,8 @@ class HitachiGatewayTest extends TestCase
 
     public function testRefundFailure()
     {
+
+        $this->setMockRazorxTreatment(['refund_reads_for_admin_multiple_from_scrooge' => 'control']);
         $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -835,6 +839,7 @@ class HitachiGatewayTest extends TestCase
 
     public function testRefundTimeoutFailure()
     {
+        $this->setMockRazorxTreatment(['refund_reads_for_admin_multiple_from_scrooge' => 'control']);
         $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -857,6 +862,7 @@ class HitachiGatewayTest extends TestCase
 
     public function testPaymentReverse()
     {
+        $this->setMockRazorxTreatment(['refund_reads_for_admin_multiple_from_scrooge' => 'control']);
         $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -868,6 +874,7 @@ class HitachiGatewayTest extends TestCase
 
     public function testReverseFailureDuetoFormatError()
     {
+        $this->setMockRazorxTreatment(['refund_reads_for_admin_multiple_from_scrooge' => 'control']);
         //All card payments are gateway captured for Razorpay Org ID, so using a different org
         $this->fixtures->org->createHdfcOrg();
 
@@ -890,6 +897,7 @@ class HitachiGatewayTest extends TestCase
 
     public function testReverseFailure()
     {
+        $this->setMockRazorxTreatment(['refund_reads_for_admin_multiple_from_scrooge' => 'control']);
         $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
