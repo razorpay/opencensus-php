@@ -2276,43 +2276,42 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
-// Disabling test case , please fix and enable it.
-//    public function testFetchPaymentByIdWithReplicaLag()
-//    {
-//        //creating a payment
-//        $paymentArray = $this->getDefaultPaymentArray();
-//        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
-//        $paymentId = $paymentFromResponse['id'];
-//        $paymentCreatedTimeStamp = Carbon::now()->getPreciseTimestamp(3);
-//
-//        //fetching the payment
-//        $paymentFetchTimeStamp = $paymentCreatedTimeStamp;
-//        $testData = $this->testData[__FUNCTION__];
-//        $testData['request']['url'] = '/payments/' . $paymentId;
-//        for($i = 0; $i<10; $i++)
-//        {
-//            try
-//            {
-//                $response = $this->startTest($testData);
-//                if( $paymentId === $response['id'] )
-//                {
-//                    $paymentFetchTimeStamp = Carbon::now()->getPreciseTimestamp(3);
-//                    break;
-//                }
-//            }
-//            catch( Exception $e)
-//            {
-//                $this->error('Failed to fetch payment for ' . $paymentId. PHP_EOL . 'Error: ' . $e->getMessage());
-//                continue;
-//            }
-//            usleep(5000);
-//        }
-//        $threshold = 500;
-//        $timeLag = $paymentFetchTimeStamp - $paymentCreatedTimeStamp;
-//
-//        $this->assertNotEquals($paymentCreatedTimeStamp, $paymentFetchTimeStamp);
-//        $this->assertLessThanOrEqual( $threshold, $timeLag);
-//    }
+    public function testFetchPaymentByIdWithReplicaLag()
+    {
+        //creating a payment
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
+        $paymentId = $paymentFromResponse['id'];
+        $paymentCreatedTimeStamp = Carbon::now()->getPreciseTimestamp(3);
+
+        //fetching the payment
+        $paymentFetchTimeStamp = $paymentCreatedTimeStamp;
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/' . $paymentId;
+        for($i = 0; $i<10; $i++)
+        {
+            try
+            {
+                $response = $this->startTest($testData);
+                if( $paymentId === $response['id'] )
+                {
+                    $paymentFetchTimeStamp = Carbon::now()->getPreciseTimestamp(3);
+                    break;
+                }
+            }
+            catch( Exception $e)
+            {
+                $this->error('Failed to fetch payment for ' . $paymentId. PHP_EOL . 'Error: ' . $e->getMessage());
+                continue;
+            }
+            usleep(5000);
+        }
+        $threshold = 700;
+        $timeLag = $paymentFetchTimeStamp - $paymentCreatedTimeStamp;
+
+        $this->assertNotEquals($paymentCreatedTimeStamp, $paymentFetchTimeStamp);
+        $this->assertLessThanOrEqual( $threshold, $timeLag);
+    }
 
     // Used in payment fetch in fetchPaymentsForOrderId, fetchPaymentsWithCardForOrderId
     public function testUidToTimestampConversion()

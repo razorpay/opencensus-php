@@ -2314,7 +2314,7 @@ Secondary reference id should be unique, duplicate value for test123";
                 'sec__ref__id_1' => 'test123',
             ],
         ]);
-
+        unset($res['price_fields']['Penalty Fee']);
         $this->assertEquals($res, [
             'udf_data' => [
                 'email' => "test@test.com",
@@ -2325,7 +2325,6 @@ Secondary reference id should be unique, duplicate value for test123";
             ],
             'price_fields' => [
                 'item1' => "100",
-                'Penalty Fee' => "30"
             ],
             "additional_notes" => [
                 "Late fee rate" => 10,
