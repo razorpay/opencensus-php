@@ -20,7 +20,8 @@ import moment from 'moment';
 
 import TableBody from 'common/ui/TableBody';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { Loader } from 'merchant/views/Reconciliations/commonComponents';
+import { FILE_WORKFLOW_KEY } from 'merchant/views/Reconciliations/Dashboard/constants';
+import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
 
 const cols = ['Run ID', 'Process Name', 'Last Update', 'Run Completion', ''];
 
@@ -29,37 +30,46 @@ export default function Runs({ openDetail }) {
   const [paginationData, setPaginationData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [error, setError] = useState(false);
 
   const fetchRuns = async (props = {}) => {
-    const raw = {
-      filter: {
-        product_id: [],
-        type: [],
-        status: [],
-      },
-      sort_key: '',
-      page: 0,
-      offset: 0,
-      page_size: 20,
-      ...props,
-    };
-    setIsLoading(true);
-    const res = await merchantFetch({
-      url: `recon-saas/recon_run`,
-      mode: 'live',
-      method: 'POST',
-      data: raw,
-    });
-    if (res?.status_code === 200) {
-      const { items, ...pageData } = res.data;
-      setRunsList(items);
-      setPaginationData(pageData);
-      setIsLoading(false);
-      if (props?.first_id) {
-        setCurrentPage(currentPage - 1);
-      } else if (props?.last_id) {
-        setCurrentPage(currentPage + 1);
+    setError(false);
+    try {
+      const raw = {
+        filter: {
+          product_id: [],
+          type: [],
+          status: [],
+        },
+        sort_key: '',
+        page: 0,
+        offset: 0,
+        page_size: 20,
+        ...props,
+      };
+      setIsLoading(true);
+      const res = await merchantFetch({
+        url: `recon-saas/recon_run`,
+        mode: 'live',
+        method: 'POST',
+        data: raw,
+      });
+      if (res?.status_code === 200) {
+        const { items, ...pageData } = res.data;
+        setRunsList(items);
+        setPaginationData(pageData);
+        if (props?.first_id) {
+          setCurrentPage(currentPage - 1);
+        } else if (props?.last_id) {
+          setCurrentPage(currentPage + 1);
+        }
+      } else {
+        setError(true);
       }
+    } catch (error) {
+      setError(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -81,7 +91,7 @@ export default function Runs({ openDetail }) {
 
   const downloadReport = async (id) => {
     const res = await merchantFetch({
-      url: `recon-saas/file_detail/report/signed_url?file_detail_workflow_id=${id}`,
+      url: `recon-saas/file_detail/report/signed_url?${FILE_WORKFLOW_KEY}=${id}`,
       mode: 'live',
       method: 'GET',
     });
@@ -117,9 +127,7 @@ export default function Runs({ openDetail }) {
           </Dropdown>
         </Box>
       </Box>
-      {isLoading ? (
-        <Loader />
-      ) : (
+      <RenderErrorLoadingOrChild isError={error} isLoading={isLoading}>
         <div className="table-responsive">
           <table className="table table-hover">
             <thead>
@@ -165,7 +173,7 @@ export default function Runs({ openDetail }) {
             </TableBody>
           </table>
         </div>
-      )}
+      </RenderErrorLoadingOrChild>
       <Box display="flex" justifyContent="flex-end" alignItems="center" marginTop="spacing.4">
         <Text marginRight="spacing.4">Showing Page: {currentPage + 1}</Text>
         <Button

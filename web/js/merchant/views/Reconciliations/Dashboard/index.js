@@ -23,6 +23,7 @@ const ReconDashboard = () => {
           closeDetail={() => setIsOpen(false)}
           fileWorkflowId={openWorkflowId}
           openDetail={openRunDetailModal}
+          activeProcess={activeProcess}
         />
       ) : !activeProcess?.id ? (
         <Card margin="spacing.6">

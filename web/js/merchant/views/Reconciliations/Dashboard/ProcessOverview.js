@@ -9,9 +9,9 @@ import { compose } from 'redux';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import { formatAmount } from 'common/utils/rzp-utils';
 import { dateRangePresets } from 'merchant/views/Reconciliations/Dashboard/constants';
-import { Loader } from 'merchant/views/Reconciliations/commonComponents';
+import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
 
-const ProcessDetail = ({ activeProcess, stats, currency, setDates, dateRange }) => {
+const ProcessDetail = ({ activeProcess, stats, currency, setDates, dateRange, error }) => {
   const end = dateRange.endDate.format('ll');
   const start = dateRange.startDate.format('ll');
 
@@ -30,23 +30,24 @@ const ProcessDetail = ({ activeProcess, stats, currency, setDates, dateRange }) 
               endDate={dateRange.endDate}
               onDatesChange={handleDateChange}
               presets={dateRangePresets}
+              allowSingleDaySelect
             />
           </div>
         </Box>
       </Box>
-      {stats.stats ? (
+      <RenderErrorLoadingOrChild isError={error} isLoading={!stats?.stats}>
         <Box display="flex" justifyContent="space-between" paddingX="spacing.6" width="60%">
           <StatBox
             currency={currency}
             icon={ReconciledIcon}
-            stats={stats.stats.reconciled}
+            stats={stats?.stats?.reconciled}
             title="Reconciled"
           />
           <Divider orientation="vertical" />
           <StatBox
             currency={currency}
             icon={UnreconciledIcon}
-            stats={stats.stats.unreconciled}
+            stats={stats?.stats?.unreconciled}
             title="Unreconciled"
           />
           <Divider orientation="vertical" />
@@ -58,13 +59,11 @@ const ProcessDetail = ({ activeProcess, stats, currency, setDates, dateRange }) 
               {start} to {end}
             </Text>
             <Text variant="caption" color="surface.text.gray.muted">
-              Last Run on: {moment(activeProcess?.last_run * 1000).format('ll')}
+              Last Run on: {moment(activeProcess?.last_run * 1000).format('lll')}
             </Text>
           </Box>
         </Box>
-      ) : (
-        <Loader />
-      )}
+      </RenderErrorLoadingOrChild>
     </Box>
   );
 };

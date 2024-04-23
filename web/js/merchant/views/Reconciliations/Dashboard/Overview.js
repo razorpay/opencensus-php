@@ -14,8 +14,6 @@ import {
   Link,
   UploadIcon,
   InfoIcon,
-  CheckIcon,
-  Badge,
 } from '@razorpay/blade/components';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
@@ -26,14 +24,16 @@ import ProcessCharts from './ProcessCharts';
 import ProcessOverview from './ProcessOverview';
 import ProcessRunsDetail from './ProcessRunsDetail';
 import ProcessTransactions from './ProcessTransactions';
+import { ProcessTabs } from './constants';
 
 const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(ProcessTabs.OVERVIEW);
   const [stats, setStats] = useState({});
   const [startEndDates, setStartEndDates] = useState({
     startDate: moment().subtract(7, 'days').startOf('day'),
     endDate: moment().endOf('day'),
   });
+  const [error, setError] = useState(false);
 
   const navigate = useNavigate();
   const triggerRun = () => {
@@ -46,16 +46,31 @@ const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
   };
 
   const fetchStats = async () => {
-    const from = startEndDates.startDate.unix();
-    const to = startEndDates.endDate.unix();
-    const res = await merchantFetch({
-      url: `recon-saas/recon_process/stats/${activeProcess?.id}?from_date=${from}&to_date=${to}`,
-      mode: 'live',
-      method: 'get',
-    });
-    if (res?.status_code === 200) {
-      setStats(res.data);
+    try {
+      setError(false);
+      const from = startEndDates.startDate.unix();
+      const to = startEndDates.endDate.unix();
+      const res = await merchantFetch({
+        url: `recon-saas/recon_process/stats/${activeProcess?.id}?from_date=${from}&to_date=${to}`,
+        mode: 'live',
+        method: 'get',
+      });
+      if (res?.status_code === 200) {
+        setStats(res.data);
+      } else {
+        setError(true);
+      }
+    } catch (error) {
+      setError(true);
     }
+  };
+
+  const changeTab = (tab) => {
+    if (tab === ProcessTabs.OVERVIEW && activeTab !== ProcessTabs.OVERVIEW) {
+      setStats({});
+      fetchStats();
+    }
+    setActiveTab(tab);
   };
 
   useEffect(() => {
@@ -77,13 +92,8 @@ const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
           >
             <Box>
               <Box display="flex" alignItems="center">
-                <Heading marginRight="spacing.4" size="large">
-                  {activeProcess?.name}
-                </Heading>
+                <Heading size="large">{activeProcess?.name}</Heading>
                 <InfoIcon marginX="spacing.3" />
-                <Badge size="large" color="positive" icon={CheckIcon}>
-                  Completed
-                </Badge>
               </Box>
               <Text size="small" color="surface.text.gray.muted">
                 <Box display="flex" alignItems="center">
@@ -110,33 +120,34 @@ const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
             variant="bordered"
             orientation="horizontal"
             value={activeTab}
-            onChange={setActiveTab}
+            onChange={changeTab}
             isLazy
           >
             <TabList>
-              <TabItem value="overview">Overview</TabItem>
-              <TabItem value="runs">Runs</TabItem>
-              <TabItem value="transactions">Transactions</TabItem>
+              <TabItem value={ProcessTabs.OVERVIEW}>Overview</TabItem>
+              <TabItem value={ProcessTabs.RUNS}>Runs</TabItem>
+              <TabItem value={ProcessTabs.TRANSACTIONS}>Transactions</TabItem>
             </TabList>
 
-            <TabPanel value="overview">
+            <TabPanel value={ProcessTabs.OVERVIEW}>
               <ProcessOverview
                 dateRange={startEndDates}
                 setDates={setStartEndDates}
                 activeProcess={activeProcess}
                 stats={stats}
+                error={error}
               />
             </TabPanel>
-            <TabPanel value="runs">
+            <TabPanel value={ProcessTabs.RUNS}>
               <ProcessRunsDetail activeProcess={activeProcess} openRunDetail={openRunDetail} />
             </TabPanel>
-            <TabPanel value="transactions">
+            <TabPanel value={ProcessTabs.TRANSACTIONS}>
               <ProcessTransactions activeProcess={activeProcess} />
             </TabPanel>
           </Tabs>
         </CardBody>
       </Card>
-      {activeTab === 'overview' ? <ProcessCharts stats={stats} /> : null}
+      {activeTab === ProcessTabs.OVERVIEW ? <ProcessCharts error={error} stats={stats} /> : null}
     </Box>
   );
 };

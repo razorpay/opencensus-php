@@ -16,20 +16,20 @@ import {
   DownloadIcon,
 } from '@razorpay/blade/components';
 import moment from 'moment';
-import styled from 'styled-components';
 
 import DateRangePicker from 'common/ui/DateRangePicker';
 import TableBody from 'common/ui/TableBody';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { dateRangePresets } from 'merchant/views/Reconciliations/Dashboard/constants';
-import { Loader } from 'merchant/views/Reconciliations/commonComponents';
+import {
+  dateRangePresets,
+  FILE_WORKFLOW_KEY,
+} from 'merchant/views/Reconciliations/Dashboard/constants';
+import {
+  BladeDropdownWrapper,
+  RenderErrorLoadingOrChild,
+} from 'merchant/views/Reconciliations/commonComponents';
 
 import ExportReportModal from './ExportReportModal';
-
-const RunDropdownContainer = styled.div`
-  margin-top: -10px;
-  min-width: 150px;
-`;
 
 export default function ProcessTransactions({ activeProcess }) {
   const [detailsList, setDetailsList] = useState([]);
@@ -43,7 +43,8 @@ export default function ProcessTransactions({ activeProcess }) {
   const [runsList, setRunsList] = useState([]);
   const [activeRun, setActiveRun] = useState('all');
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const fetchRuns = async () => {
     const raw = {
@@ -67,96 +68,112 @@ export default function ProcessTransactions({ activeProcess }) {
   };
 
   const fetchDetails = async (props = {}) => {
-    setLoading(true);
-    const body = {
-      merchant_process_id: activeProcess?.id,
-      filters: [],
-      page_size: 10,
-      from_date: startEndDates.startDate,
-      to_date: startEndDates.endDate,
-      ...props,
-    };
-    if (filter) {
-      body.filters.push({ key: 'recon_status', value: filter });
-    }
-    const res = await merchantFetch({
-      url: `recon-saas/recon_process/records`,
-      mode: 'live',
-      method: 'POST',
-      data: body,
-    });
-    if (res?.status_code === 200) {
-      const { items, ...pageData } = res.data;
-      if (Array.isArray(items)) {
-        setDetailsList(items);
+    try {
+      setError(false);
+      setLoading(true);
+      const body = {
+        merchant_process_id: activeProcess?.id,
+        filters: [],
+        page_size: 10,
+        from_date: startEndDates.startDate,
+        to_date: startEndDates.endDate,
+        ...props,
+      };
+      if (filter) {
+        body.filters.push({ key: 'recon_status', value: filter });
       }
-      setPaginationData(pageData);
-      if (props?.first_id) {
-        setCurrentPage(currentPage - 1);
-      } else if (props?.last_id) {
-        setCurrentPage(currentPage + 1);
+      const res = await merchantFetch({
+        url: `recon-saas/recon_process/records`,
+        mode: 'live',
+        method: 'POST',
+        data: body,
+      });
+      if (res?.status_code === 200) {
+        const { items, ...pageData } = res.data;
+        if (Array.isArray(items)) {
+          setDetailsList(items);
+        }
+        setPaginationData(pageData);
+        if (props?.first_id) {
+          setCurrentPage(currentPage - 1);
+        } else if (props?.last_id) {
+          setCurrentPage(currentPage + 1);
+        }
+      } else {
+        setError(true);
       }
+    } catch (error) {
+      setError(true);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchRunSpecificDetails = async (props = {}) => {
     if (activeRun === 'all') {
       return;
     }
-    setLoading(true);
-    const runId = activeRun;
-    const body = {
-      filters: [
-        {
-          key: 'file_detail_workflow_id',
-          value: runId,
-        },
-      ],
-      page_size: 10,
-      from_date: startEndDates?.startDate,
-      to_date: startEndDates?.endDate,
-      ...props,
-    };
-    if (filter) {
-      const from = startEndDates?.startDate;
-      const to = startEndDates?.endDate;
-      const res = await merchantFetch({
-        url: `recon-saas/recon_output/stats/${activeRun}?from_date=${from}&to_date=${to}`,
-        mode: 'live',
-        method: 'get',
-      });
-      if (res?.status_code === 200) {
-        const stats = res.data;
-        let ruleIds = [];
-        if (filter === 'Reconciled') {
-          ruleIds = stats?.Reconciled?.rules;
-        } else if (filter === 'Unreconciled') {
-          ruleIds = stats?.Unreconciled?.rules;
+    try {
+      setError(false);
+      setLoading(true);
+      const runId = activeRun;
+      const body = {
+        filters: [
+          {
+            key: FILE_WORKFLOW_KEY,
+            value: runId,
+          },
+        ],
+        page_size: 10,
+        from_date: startEndDates?.startDate,
+        to_date: startEndDates?.endDate,
+        ...props,
+      };
+      if (filter) {
+        const from = startEndDates?.startDate;
+        const to = startEndDates?.endDate;
+        const res = await merchantFetch({
+          url: `recon-saas/recon_output/stats/${activeRun}?from_date=${from}&to_date=${to}`,
+          mode: 'live',
+          method: 'get',
+        });
+        if (res?.status_code === 200) {
+          const stats = res.data;
+          let ruleIds = [];
+          if (filter === 'Reconciled') {
+            ruleIds = stats?.Reconciled?.rules;
+          } else if (filter === 'Unreconciled') {
+            ruleIds = stats?.Unreconciled?.rules;
+          }
+          body.filters.push({ key: 'rule_id', value: ruleIds });
         }
-        body.filters.push({ key: 'rule_id', value: ruleIds });
       }
-    }
-    const res = await merchantFetch({
-      url: `recon-saas/recon_output/list`,
-      mode: 'live',
-      method: 'POST',
-      data: body,
-    });
+      const res = await merchantFetch({
+        url: `recon-saas/recon_output/list`,
+        mode: 'live',
+        method: 'POST',
+        data: body,
+      });
 
-    if (res?.status_code === 200) {
-      const { items, ...pageData } = res.data;
-      if (Array.isArray(items)) {
-        setDetailsList(items);
+      if (res?.status_code === 200) {
+        const { items, ...pageData } = res.data;
+        if (Array.isArray(items)) {
+          setDetailsList(items);
+        }
+        setPaginationData(pageData);
+        if (props?.first_id) {
+          setCurrentPage(currentPage - 1);
+        } else if (props?.last_id) {
+          setCurrentPage(currentPage + 1);
+        }
+      } else {
+        setError(true);
       }
-      setPaginationData(pageData);
-      if (props?.first_id) {
-        setCurrentPage(currentPage - 1);
-      } else if (props?.last_id) {
-        setCurrentPage(currentPage + 1);
-      }
+    } catch (error) {
+      setError(true);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const callRespectiveFetchApi = (props) => {
@@ -211,7 +228,7 @@ export default function ProcessTransactions({ activeProcess }) {
         justifyContent="space-between"
       >
         <Box display="flex" alignItems="center">
-          <RunDropdownContainer>
+          <BladeDropdownWrapper>
             <Dropdown marginRight="spacing.4">
               <SelectInput value={activeRun} prefix="Run: " onChange={handleRunChange} />
               <DropdownOverlay>
@@ -223,9 +240,13 @@ export default function ProcessTransactions({ activeProcess }) {
                 </ActionList>
               </DropdownOverlay>
             </Dropdown>
-          </RunDropdownContainer>
+          </BladeDropdownWrapper>
           <div className="date-range-container">
-            <DateRangePicker onDatesChange={handleDateChange} presets={dateRangePresets} />
+            <DateRangePicker
+              onDatesChange={handleDateChange}
+              presets={dateRangePresets}
+              allowSingleDaySelect
+            />
           </div>
         </Box>
         <Button icon={DownloadIcon} iconPosition="left" onClick={() => setIsOpen(true)}>
@@ -233,7 +254,12 @@ export default function ProcessTransactions({ activeProcess }) {
         </Button>
       </Box>
       <Box display="flex" marginBottom="spacing.4" alignItems="center">
-        <RadioGroup name="list-record-type" onChange={handleFilterChange} defaultValue="">
+        <RadioGroup
+          name="list-record-type"
+          onChange={handleFilterChange}
+          defaultValue=""
+          isDisabled={loading}
+        >
           <Box display="flex">
             <RadioSelect value="" title="All Records" />
             <RadioSelect value="Reconciled" title="Matched" />
@@ -241,7 +267,10 @@ export default function ProcessTransactions({ activeProcess }) {
           </Box>
         </RadioGroup>
       </Box>
-      {!loading && paginationData?.cols && detailsList?.length >= 0 ? (
+      <RenderErrorLoadingOrChild
+        isError={error}
+        isLoading={loading || !paginationData?.cols || !(detailsList?.length >= 0)}
+      >
         <div className="table-responsive">
           <table className="table table-hover">
             <thead>
@@ -258,7 +287,7 @@ export default function ProcessTransactions({ activeProcess }) {
             <TableBody colSpan={4} rows={detailsList}>
               {detailsList?.map((item, index) => (
                 <tr key={index}>
-                  {paginationData.cols.map((key) => (
+                  {paginationData?.cols.map((key) => (
                     <td key={key}>{item[key]}</td>
                   ))}
                 </tr>
@@ -266,9 +295,7 @@ export default function ProcessTransactions({ activeProcess }) {
             </TableBody>
           </table>
         </div>
-      ) : (
-        <Loader />
-      )}
+      </RenderErrorLoadingOrChild>
       <Box display="flex" justifyContent="flex-end" alignItems="center" marginTop="spacing.4">
         <Text marginRight="spacing.4">Showing Page: {currentPage + 1}</Text>
         <Button

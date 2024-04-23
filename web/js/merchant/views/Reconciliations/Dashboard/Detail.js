@@ -22,10 +22,16 @@ import moment from 'moment';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import TableBody from 'common/ui/TableBody';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { dateRangePresets } from 'merchant/views/Reconciliations/Dashboard/constants';
-import { Loader } from 'merchant/views/Reconciliations/commonComponents';
+import {
+  dateRangePresets,
+  FILE_WORKFLOW_KEY,
+} from 'merchant/views/Reconciliations/Dashboard/constants';
+import {
+  BladeDropdownWrapper,
+  RenderErrorLoadingOrChild,
+} from 'merchant/views/Reconciliations/commonComponents';
 
-export default function Detail({ fileWorkflowId, closeDetail, openDetail }) {
+export default function Detail({ fileWorkflowId, closeDetail, openDetail, activeProcess }) {
   const [detailsList, setDetailsList] = useState([]);
   const [stats, setStats] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
@@ -37,9 +43,10 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail }) {
     startDate: moment().subtract(7, 'days').startOf('day').unix(),
     endDate: moment().endOf('day').unix(),
   });
+  const [error, setError] = useState(false);
 
   const fetchRuns = async (props = {}) => {
-    const raw = {
+    const fetchRunsPayload = {
       filter: {
         product_id: [],
         type: [],
@@ -51,18 +58,18 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail }) {
       page_size: 50,
       ...props,
     };
-    setIsLoading(true);
+    if (activeProcess?.id) {
+      fetchRunsPayload.filter.merchant_process_id = [activeProcess.id];
+    }
     const res = await merchantFetch({
       url: `recon-saas/recon_run`,
       mode: 'live',
       method: 'POST',
-      data: raw,
+      data: fetchRunsPayload,
     });
     if (res?.status_code === 200) {
-      const { items, ...pageData } = res.data;
+      const { items } = res.data;
       setRunsList(items);
-      setPaginationData(pageData);
-      setIsLoading(false);
       if (props?.first_id) {
         setCurrentPage(currentPage - 1);
       } else if (props?.last_id) {
@@ -72,45 +79,53 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail }) {
   };
 
   const fetchDetails = async (props = {}) => {
-    setIsLoading(true);
-    const body = {
-      filters: [
-        {
-          key: 'file_detail_workflow_id',
-          value: fileWorkflowId,
-        },
-      ],
-      page_size: 10,
-      from_date: startEndDates.startDate,
-      to_date: startEndDates.endDate,
-      ...props,
-    };
-    if (filter) {
-      const filters = filter.split(',');
-      if (filters.length > 0) {
-        body.filters.push({ key: 'rule_id', value: filters });
+    try {
+      setError(false);
+      setIsLoading(true);
+      const body = {
+        filters: [
+          {
+            key: FILE_WORKFLOW_KEY,
+            value: fileWorkflowId,
+          },
+        ],
+        page_size: 10,
+        from_date: startEndDates.startDate,
+        to_date: startEndDates.endDate,
+        ...props,
+      };
+      if (filter) {
+        const filters = filter.split(',');
+        if (filters.length > 0) {
+          body.filters.push({ key: 'rule_id', value: filters });
+        }
       }
-    }
-    const res = await merchantFetch({
-      url: `recon-saas/recon_output/list`,
-      mode: 'live',
-      method: 'POST',
-      data: body,
-    });
+      const res = await merchantFetch({
+        url: `recon-saas/recon_output/list`,
+        mode: 'live',
+        method: 'POST',
+        data: body,
+      });
 
-    if (res?.status_code === 200) {
-      const { items, ...pageData } = res.data;
-      if (Array.isArray(items)) {
-        setDetailsList(items);
+      if (res?.status_code === 200) {
+        const { items, ...pageData } = res.data;
+        if (Array.isArray(items)) {
+          setDetailsList(items);
+        }
+        setPaginationData(pageData);
+        if (props?.first_id) {
+          setCurrentPage(currentPage - 1);
+        } else if (props?.last_id) {
+          setCurrentPage(currentPage + 1);
+        }
+      } else {
+        setError(true);
       }
-      setPaginationData(pageData);
-      if (props?.first_id) {
-        setCurrentPage(currentPage - 1);
-      } else if (props?.last_id) {
-        setCurrentPage(currentPage + 1);
-      }
+    } catch (error) {
+      setError(true);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const fetchStats = async () => {
@@ -127,7 +142,6 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail }) {
   };
 
   useEffect(() => {
-    fetchStats();
     fetchRuns();
   }, []);
 
@@ -167,6 +181,13 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail }) {
     setFilter(value);
   };
 
+  const goBack = () => {
+    setCurrentPage(0);
+    setPaginationData(null);
+    setRunsList([]);
+    closeDetail();
+  };
+
   return (
     <>
       <Box
@@ -177,27 +198,30 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail }) {
         justifyContent="space-between"
       >
         <Box display="flex" alignItems="center">
-          <Link icon={ArrowLeftIcon} iconPosition="left" onClick={closeDetail}>
+          <Link icon={ArrowLeftIcon} iconPosition="left" onClick={goBack}>
             Go Back
           </Link>
           <Divider orientation="vertical" marginX="spacing.6" />
-          <Dropdown value={fileWorkflowId} marginRight="spacing.4">
-            <SelectInput value={fileWorkflowId} prefix="Run: " onChange={handleRunChange} />
-            <DropdownOverlay>
-              <ActionList>
-                {Array.isArray(runsList) &&
-                  runsList.map((run) => (
-                    <ActionListItem key={run.id} title={run.id} value={run.id} />
-                  ))}
-              </ActionList>
-            </DropdownOverlay>
-          </Dropdown>
+          <BladeDropdownWrapper>
+            <Dropdown value={fileWorkflowId} marginRight="spacing.4">
+              <SelectInput value={fileWorkflowId} prefix="Run: " onChange={handleRunChange} />
+              <DropdownOverlay>
+                <ActionList>
+                  {Array.isArray(runsList) &&
+                    runsList.map((run) => (
+                      <ActionListItem key={run.id} title={run.id} value={run.id} />
+                    ))}
+                </ActionList>
+              </DropdownOverlay>
+            </Dropdown>
+          </BladeDropdownWrapper>
           <div className="date-range-container">
             <DateRangePicker
               onDatesChange={(startDate, endDate) => {
                 setStartEndDates({ startDate: startDate.unix(), endDate: endDate.unix() });
               }}
               presets={dateRangePresets}
+              allowSingleDaySelect
             />
           </div>
         </Box>
@@ -217,35 +241,40 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail }) {
                     <RadioSelect
                       value={stats?.Reconciled?.rules?.join(',')}
                       title="Matched"
-                      subTitle={`${stats?.Reconciled?.count} records`}
+                      subTitle={`${stats?.Reconciled?.count || 0} records`}
                     />
                     <RadioSelect
                       value={stats?.Unreconciled?.rules?.join(',')}
                       title="Unmatched"
-                      subTitle={`${stats?.Unreconciled?.count} records`}
+                      subTitle={`${stats?.Unreconciled?.count || 0} records`}
                     />
                   </Box>
                 </RadioGroup>
               ) : null}
             </Box>
-            {!isLoading && paginationData?.cols && detailsList?.length >= 0 ? (
+            <RenderErrorLoadingOrChild
+              isError={error}
+              isLoading={isLoading || !paginationData?.cols}
+            >
               <div className="table-responsive">
                 <table className="table table-hover">
                   <thead>
                     <tr>
-                      {paginationData?.cols.map((column) => {
-                        return (
-                          <th key={column} style={{ background: '#324664', color: '#fff' }}>
-                            {column}
-                          </th>
-                        );
-                      })}
+                      {Array.isArray(paginationData?.cols)
+                        ? paginationData?.cols.map((column) => {
+                            return (
+                              <th key={column} style={{ background: '#324664', color: '#fff' }}>
+                                {column}
+                              </th>
+                            );
+                          })
+                        : null}
                     </tr>
                   </thead>
                   <TableBody colSpan={4} rows={detailsList}>
                     {detailsList?.map((item, index) => (
                       <tr key={index}>
-                        {paginationData.cols.map((key) => (
+                        {paginationData?.cols.map((key) => (
                           <td key={key}>{item[key]}</td>
                         ))}
                       </tr>
@@ -253,9 +282,7 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail }) {
                   </TableBody>
                 </table>
               </div>
-            ) : (
-              <Loader />
-            )}
+            </RenderErrorLoadingOrChild>
             <Box display="flex" justifyContent="flex-end" alignItems="center" marginTop="spacing.4">
               <Text marginRight="spacing.4">Showing Page: {currentPage + 1}</Text>
               <Button

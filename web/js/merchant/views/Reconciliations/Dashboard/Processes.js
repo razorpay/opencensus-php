@@ -15,25 +15,36 @@ import { useNavigate } from 'react-router-dom';
 
 import TableBody from 'common/ui/TableBody';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { Loader } from 'merchant/views/Reconciliations/commonComponents';
+import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
 
 const cols = ['Name', 'Product', 'Type', 'Last Run', ''];
 
 const Processes = ({ openDetail }) => {
   const [processList, setProcessList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   const navigate = useNavigate();
   const fetchProcesses = async () => {
-    setIsLoading(true);
-    const res = await merchantFetch({
-      url: `recon-saas/recon_process`,
-      mode: 'live',
-      method: 'get',
-    });
-    const { items } = res.data;
-    setProcessList(items);
-    setIsLoading(false);
+    try {
+      setError(false);
+      setIsLoading(true);
+      const res = await merchantFetch({
+        url: `recon-saas/recon_process`,
+        mode: 'live',
+        method: 'get',
+      });
+      if (res?.status_code === 200) {
+        const { items } = res.data;
+        setProcessList(items);
+      } else {
+        setError(true);
+      }
+    } catch {
+      setError(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const createConfig = () => {
@@ -73,9 +84,7 @@ const Processes = ({ openDetail }) => {
           New Configuration
         </Button>
       </Box>
-      {isLoading ? (
-        <Loader />
-      ) : (
+      <RenderErrorLoadingOrChild isError={error} isLoading={isLoading}>
         <div className="table-responsive">
           <table className="table table-hover">
             <thead>
@@ -96,7 +105,7 @@ const Processes = ({ openDetail }) => {
                   <td>{item?.product_name || item?.product_id}</td>
                   <td>{item?.type}</td>
                   <td>
-                    {item?.last_run === 0 ? 'N.A' : moment(item?.last_run * 1000).format('ll')}
+                    {item?.last_run === 0 ? 'N.A' : moment(item?.last_run * 1000).format('lll')}
                   </td>
                   <td>
                     <Link onClick={() => openDetail(item)}>Details</Link>
@@ -106,7 +115,7 @@ const Processes = ({ openDetail }) => {
             </TableBody>
           </table>
         </div>
-      )}
+      </RenderErrorLoadingOrChild>
     </Box>
   );
 };
