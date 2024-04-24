@@ -616,6 +616,46 @@ trait ExternalTokensRepo
         return $apiTokens;
     }
 
+    public function findOrFailByPublicIdWithParams($id, array $params, string $connectionType = null): PublicEntity
+    {
+        $this->entityName = $this->entity;
+
+        try
+        {
+            return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+        }
+        catch (\Throwable $e)
+        {
+            try
+            {
+                if ($this->validateExternalFetchEnabledForTokens() and
+                    (EntityConstants::validateExternalRepoEntity($this->entityName) === true))
+                {
+                    $this->trace->info(TraceCode::TOKENS_FIND_OR_FAIL_BY_PUBLIC_ID_WITH_PARAMS, [
+                        'function_name' => __FUNCTION__,
+                        'params' => $params
+                    ]);
+                    $params['id'] = $id;
+
+                    return  $this->fetchExternalToken($params);
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::TOKENS_ENTITY_FETCH_FAILURE,
+                    [
+                        'exception_message' => $ex->getMessage(),
+                        'function_name'     => __FUNCTION__
+                    ]);
+            }
+        }
+
+        return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+    }
+
     public function fetchExternalTokens($params, $input=[])
     {
         $class = Entity::getExternalRepoSingleton($this->entity);

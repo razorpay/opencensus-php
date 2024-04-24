@@ -257,11 +257,12 @@ class Tokens
 
             $token = (new TokenEntity());
 
-            $token->generate($response);
-
             $token->forceFill($response);
 
             $token->setExternal(true);
+
+            $token->generate($response);
+
 
             return $token;
         }

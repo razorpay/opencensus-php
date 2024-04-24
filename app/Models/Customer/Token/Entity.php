@@ -1156,6 +1156,11 @@ class Entity extends Base\PublicEntity
 
     public function generateToken($input)
     {
+        if ($this->isExternal() === true)
+        {
+            return;
+        }
+
         $rand = '';
 
         for ($i = 0; $i < 3; $i++)

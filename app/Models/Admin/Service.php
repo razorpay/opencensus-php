@@ -276,7 +276,7 @@ class Service extends Base\Service
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, $this->repo->payment->getPaymentFetchReplicaConnection());
         }
-        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER )
+        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER OR $entity === Entity::TOKEN)
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
