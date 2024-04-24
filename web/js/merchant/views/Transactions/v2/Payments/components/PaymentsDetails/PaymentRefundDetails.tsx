@@ -63,7 +63,6 @@ interface PaymentRefundContentType {
   enableBorderBottomRadius?: boolean;
   showFooter: boolean;
   refund: IPaymentIdRefundDetail;
-  acquirerData: IPaymentDetails['acquirer_data'];
   currency: Currency;
   transactionIDActual: string;
 }
@@ -80,7 +79,7 @@ function PaymentRefundDetails({
     params: { id: transactionIDActual },
   },
 }: IPaymentRefundDetails): React.ReactElement {
-  const { currency, acquirer_data = {}, refund_status } = paymentDetails!;
+  const { currency, refund_status } = paymentDetails!;
   const hasFooter = refund_status !== null;
   const subsequentRefunds = paymentIdRefundDetails.slice(1);
 
@@ -160,7 +159,6 @@ function PaymentRefundDetails({
               showFooter={hasFooter}
               refund={paymentIdRefundDetails[0]}
               currency={currency}
-              acquirerData={acquirer_data}
               transactionIDActual={transactionIDActual}
             />
           ) : (
@@ -192,7 +190,6 @@ function PaymentRefundDetails({
                 showFooter={hasFooter}
                 refund={subRefund}
                 currency={currency}
-                acquirerData={acquirer_data}
                 transactionIDActual={transactionIDActual}
               />
             </BoxContainer>
@@ -213,11 +210,10 @@ function PaymentRefundContent({
   enableBorderBottomRadius,
   showFooter,
   refund,
-  acquirerData,
   currency,
   transactionIDActual,
 }: PaymentRefundContentType): JSX.Element {
-  const bankCode = acquirerData.rrn || acquirerData.arn;
+  const bankCode = refund.acquirer_data?.rrn || refund.acquirer_data?.arn;
 
   const { theme } = useTheme();
   const { matchedBreakpoint } = useBreakpoint({

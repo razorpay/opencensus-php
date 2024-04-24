@@ -156,6 +156,7 @@ export interface IPaymentDetails {
 export interface IPaymentIdRefundDetail {
   acquirer_data: {
     arn: string;
+    rrn: string;
   };
   amount: number;
   batch_id: null;

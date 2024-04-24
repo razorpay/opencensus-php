@@ -69,7 +69,6 @@ interface PaymentRefundContentType {
   enableBorderBottomRadius?: boolean;
   showFooter: boolean;
   refund: IPaymentIdRefundDetail;
-  acquirerData: IPaymentDetails['acquirer_data'];
   currency: Currency;
   transactionIDActual: string;
 }
@@ -79,11 +78,10 @@ const PaymentRefundContent = ({
   enableBorderBottomRadius,
   showFooter,
   refund,
-  acquirerData,
   currency,
   transactionIDActual,
 }: PaymentRefundContentType): JSX.Element => {
-  const bankCode = acquirerData.rrn || acquirerData.arn;
+  const bankCode = refund.acquirer_data?.rrn || refund.acquirer_data?.arn;
 
   const { theme } = useTheme();
   const { matchedBreakpoint } = useBreakpoint({
@@ -259,7 +257,7 @@ function PaymentRefundDetails({
   },
 }: IPaymentRefundDetails): React.ReactElement {
   const openModal = useStore((state) => state.openModal);
-  const { currency, acquirer_data = {}, refund_status } = paymentDetails!;
+  const { currency, refund_status } = paymentDetails!;
   const hasFooter = refund_status !== null;
   const subsequentRefunds = paymentIdRefundDetails.slice(1);
 
@@ -339,7 +337,6 @@ function PaymentRefundDetails({
               showFooter={hasFooter}
               refund={paymentIdRefundDetails[0]}
               currency={currency}
-              acquirerData={acquirer_data}
               transactionIDActual={transactionIDActual}
             />
           ) : (
@@ -371,7 +368,6 @@ function PaymentRefundDetails({
                 showFooter={hasFooter}
                 refund={subRefund}
                 currency={currency}
-                acquirerData={acquirer_data}
                 transactionIDActual={transactionIDActual}
               />
             </BoxContainer>
