@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\app\Edge;
 
+use App\Providers\GenericUser;
+use Illuminate\Support\Collection;
 use Mockery;
 use App\Edge\EdgeClient;
 use GuzzleHttp\Client;
@@ -31,21 +33,42 @@ class EdgeClientTest extends BaseTestCase
         return $app;
     }
 
-    public function testSuccess()
+    public function getUser()
+    {
+        $merchantData = [
+            'id' => 'rzptestmid1234',
+            'role' => 'owner',
+            'name' => 'John Doe',
+            'banking_role' => 'owner',
+            'logo_url' => null
+        ];
+
+        $userData =  [
+            'id'     => 1,
+            'name'   => 'John Doe',
+            'email' => 'test@gmail.com',
+            'contact_mobile_verified' => true,
+            'confirmed' => true,
+            'merchants' => new Collection([
+                (object) $merchantData
+            ])
+        ];
+
+        return new GenericUser($userData);
+    }
+
+    public function testRevokeTokenSuccess()
     {
         $requestMock = $this->getMockBuilder(Request::class)
             ->setConstructorArgs([[], [], [], [], [], [], null])
             ->setMethods(['header'])
             ->getMock();
 
-        // Sets returns for metric dimensions
         $requestMock->expects($this->any())->method('header')->willReturn('4b554240-c3ea-42bd-b418-d54c11571c27');
-
-        // Finally set the mocked request object as app instance
         $this->app->instance('request', $requestMock);
 
         $headers = ['Content-Type' => 'application/json'];
-        $responseData = ['result' => 'on'];
+        $responseData = [];
         $body = Utils::streamFor(json_encode($responseData));
 
         $guzzleMock = Mockery::mock(Client::class);
@@ -61,17 +84,14 @@ class EdgeClientTest extends BaseTestCase
         $this->addToAssertionCount(1);
     }
 
-    public function testRazorxFalse()
+    public function testRevokeTokenOnRazorxFalse()
     {
         $requestMock = $this->getMockBuilder(Request::class)
             ->setConstructorArgs([[], [], [], [], [], [], null])
             ->setMethods(['header'])
             ->getMock();
 
-        // Sets returns for metric dimensions
         $requestMock->expects($this->any())->method('header')->willReturn('4b554240-c3ea-42bd-b418-d54c11571c27');
-
-        // Finally set the mocked request object as app instance
         $this->app->instance('request', $requestMock);
 
         $guzzleMock = Mockery::mock(Client::class);
@@ -84,17 +104,14 @@ class EdgeClientTest extends BaseTestCase
         $this->addToAssertionCount(1);
     }
 
-    public function testEdgeException()
+    public function testRevokeTokenOnEdgeException()
     {
         $requestMock = $this->getMockBuilder(Request::class)
             ->setConstructorArgs([[], [], [], [], [], [], null])
             ->setMethods(['header'])
             ->getMock();
 
-        // Sets returns for metric dimensions
         $requestMock->expects($this->any())->method('header')->willReturn('4b554240-c3ea-42bd-b418-d54c11571c27');
-
-        // Finally set the mocked request object as app instance
         $this->app->instance('request', $requestMock);
 
         $guzzleMock = Mockery::mock(Client::class);
@@ -110,20 +127,24 @@ class EdgeClientTest extends BaseTestCase
         $this->addToAssertionCount(1);
     }
 
-    public function testNoParams()
+    public function testRevokeTokenWithNoParams()
     {
         $requestMock = $this->getMockBuilder(Request::class)
             ->setConstructorArgs([[], [], [], [], [], [], null])
             ->setMethods(['header'])
             ->getMock();
 
-        // Sets returns for metric dimensions
         $requestMock->expects($this->any())->method('header')->willReturn(null);
-
-        // Finally set the mocked request object as app instance
         $this->app->instance('request', $requestMock);
 
+        $headers = ['Content-Type' => 'application/json'];
+        $responseData = [];
+        $body = Utils::streamFor(json_encode($responseData));
+
         $guzzleMock = Mockery::mock(Client::class);
+        $guzzleMock->shouldReceive('PATCH')
+            ->with(['form_params' => []])
+            ->andReturn(new Response(400, $headers, $body));
 
         $mock = Mockery::mock(EdgeClient::class, [$guzzleMock])->makePartial();
         $mock->shouldReceive('getRazorxExperimentResult')
@@ -133,21 +154,18 @@ class EdgeClientTest extends BaseTestCase
         $this->addToAssertionCount(1);
     }
 
-    public function testSuccessUserId()
+    public function testRevokeTokenSuccessWithUserIdsAndExcludeJti()
     {
         $requestMock = $this->getMockBuilder(Request::class)
             ->setConstructorArgs([[], [], [], [], [], [], null])
             ->setMethods(['header'])
             ->getMock();
 
-        // Sets returns for metric dimensions
         $requestMock->expects($this->any())->method('header')->willReturn(null);
-
-        // Finally set the mocked request object as app instance
         $this->app->instance('request', $requestMock);
 
         $headers = ['Content-Type' => 'application/json'];
-        $responseData = ['result' => 'on'];
+        $responseData = [];
         $body = Utils::streamFor(json_encode($responseData));
 
         $guzzleMock = Mockery::mock(Client::class);
@@ -163,4 +181,130 @@ class EdgeClientTest extends BaseTestCase
         $this->addToAssertionCount(1);
     }
 
+    public function testReissueTokenSuccess()
+    {
+        $requestMock = $this->getMockBuilder(Request::class)
+            ->setConstructorArgs([[], [], [], [], [], [], null])
+            ->setMethods(['cookie'])
+            ->getMock();
+
+        $requestMock->expects($this->any())->method('cookie')->willReturn('qwerty');
+        $this->app->instance('request', $requestMock);
+
+        $headers = ['Content-Type' => 'application/json'];
+        $responseData = ['token' => 'abcdefgh'];
+        $body = Utils::streamFor(json_encode($responseData));
+
+        $guzzleMock = Mockery::mock(Client::class);
+        $guzzleMock->shouldReceive('POST')
+            ->with(['form_params' => [
+                'merchant_id' => 'rzptestmid1234',
+                'token' => 'qwerty',
+                'role' => 'owner',
+                'is_verified' => true
+            ]])
+            ->andReturn(new Response(200, $headers, $body));
+
+        $mock = Mockery::mock(EdgeClient::class, [$guzzleMock])->makePartial();
+        $mock->shouldReceive('getRazorxExperimentResult')
+            ->andReturn(true);
+
+        $mock->reissueToken("rzptestmid1234", $this->getUser());
+        $this->addToAssertionCount(1);
+    }
+
+    public function testReissueTokenOnRazorxFalse()
+    {
+        $requestMock = $this->getMockBuilder(Request::class)
+            ->setConstructorArgs([[], [], [], [], [], [], null])
+            ->setMethods(['cookie'])
+            ->getMock();
+
+        $requestMock->expects($this->any())->method('cookie')->willReturn('qwerty');
+        $this->app->instance('request', $requestMock);
+
+        $guzzleMock = Mockery::mock(Client::class);
+
+        $mock = Mockery::mock(EdgeClient::class, [$guzzleMock])->makePartial();
+        $mock->shouldReceive('getRazorxExperimentResult')
+            ->andReturn(false);
+
+        $mock->reissueToken("rzptestmid1234", $this->getUser());
+        $this->addToAssertionCount(1);
+    }
+
+    public function testReissueTokenOnEdgeException()
+    {
+        $requestMock = $this->getMockBuilder(Request::class)
+            ->setConstructorArgs([[], [], [], [], [], [], null])
+            ->setMethods(['cookie'])
+            ->getMock();
+
+        $requestMock->expects($this->any())->method('cookie')->willReturn('qwerty');
+        $this->app->instance('request', $requestMock);
+
+        $guzzleMock = Mockery::mock(Client::class);
+        $guzzleMock->shouldReceive('PATCH')
+            ->withAnyArgs()
+            ->andThrow(new \Exception());
+
+        $mock = Mockery::mock(EdgeClient::class, [$guzzleMock])->makePartial();
+        $mock->shouldReceive('getRazorxExperimentResult')
+            ->andReturn(true);
+
+        $mock->reissueToken("rzptestmid1234", $this->getUser());
+        $this->addToAssertionCount(1);
+    }
+
+    public function testReissueTokenWithNoToken()
+    {
+        $requestMock = $this->getMockBuilder(Request::class)
+            ->setConstructorArgs([[], [], [], [], [], [], null])
+            ->setMethods(['cookie'])
+            ->getMock();
+
+        $this->app->instance('request', $requestMock);
+
+        $guzzleMock = Mockery::mock(Client::class);
+
+        $mock = Mockery::mock(EdgeClient::class, [$guzzleMock])->makePartial();
+        $mock->shouldReceive('getRazorxExperimentResult')
+            ->andReturn(true);
+
+        $mock->reissueToken("", $this->getUser());
+        $this->addToAssertionCount(1);
+    }
+
+    public function testReissueTokenFailed()
+    {
+        $requestMock = $this->getMockBuilder(Request::class)
+            ->setConstructorArgs([[], [], [], [], [], [], null])
+            ->setMethods(['cookie'])
+            ->getMock();
+
+        $requestMock->expects($this->any())->method('cookie')->willReturn('qwerty');
+        $this->app->instance('request', $requestMock);
+
+        $headers = ['Content-Type' => 'application/json'];
+        $responseData = ['message' => 'unknown error'];
+        $body = Utils::streamFor(json_encode($responseData));
+
+        $guzzleMock = Mockery::mock(Client::class);
+        $guzzleMock->shouldReceive('POST')
+            ->with(['form_params' => [
+                'merchant_id' => 'rzptestmid1234',
+                'token' => 'qwerty',
+                'role' => 'owner',
+                'is_verified' => true
+            ]])
+            ->andReturn(new Response(500, $headers, $body));
+
+        $mock = Mockery::mock(EdgeClient::class, [$guzzleMock])->makePartial();
+        $mock->shouldReceive('getRazorxExperimentResult')
+            ->andReturn(true);
+        $mock->shouldReceive('setEdgeCookies')->times(0);
+
+        $mock->reissueToken("rzptestmid1234", $this->getUser());
+        $this->addToAssertionCount(1);
+    }
 }

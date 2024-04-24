@@ -17,6 +17,7 @@ use App\Razorx;
 use App\Lib\Util;
 use App\Http\ApiUrl;
 use App\Http\Headers;
+use App\Edge\EdgeClient;
 use Lcobucci\JWT\Token;
 use App\MerchantDetails;
 use App\Trace\TraceCode;
@@ -87,6 +88,8 @@ class Service extends Base\Service
     const CONFIG_PROMISE = 'configs';
     const SALES_FORCE_LEADS_PROMISE = 'create_lead_sales_force';
 
+    const RZP_ACCESS_TOKEN = 'rzp_access_token';
+
     const PROMISES_PARALLEL_API_CALL = [
         self::EXPERIMENT_PROMISE,
         self::SPLITZ_EXPERIMENT_PROMISE,
@@ -111,6 +114,11 @@ class Service extends Base\Service
      */
     private ?Guzzle $httpClient;
 
+    /**
+     * @var \GuzzleHttp\Client|null
+     */
+    private $edgeClient;
+
     public function __construct(array $options = [])
     {
         $app = \App::getFacadeRoot();
@@ -124,6 +132,8 @@ class Service extends Base\Service
         $this->metrics = $app['metrics'];
 
         $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
+
+        $this->edgeClient = new EdgeClient();
     }
 
     /**
@@ -382,8 +392,8 @@ class Service extends Base\Service
     public function oauthSignIn($input): array
     {
         list($error, $genericUser, $httpCode) = $this->oauthLoginOnApiOnRoute($input,
-                                                                   Constants::OAUTH_LOGIN_ROUTE,
-                                                                   Constants::POST_METHOD);
+            Constants::OAUTH_LOGIN_ROUTE,
+            Constants::POST_METHOD);
 
         return $this->handleOauthLoginResponse($error, $genericUser, "email", $httpCode);
     }
@@ -575,7 +585,7 @@ class Service extends Base\Service
     {
         // This API works properly only in live mode, in live mode we used to send the otp request.
         $request = new \App\Admin\ApiRequestAny([
-          'mode'      => 'live',
+            'mode'      => 'live',
         ]);
 
         return $request->send('users/2fa', 'POST');
@@ -850,7 +860,7 @@ class Service extends Base\Service
         // Below conditions are false when a PG user logs into X for the first time or vice versa.
         if ((empty($user->currentMerchant()) === false)  and
             ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
-            (($isBankingRequest === false) and ($user->currentMerchant()->role !== null))))
+                (($isBankingRequest === false) and ($user->currentMerchant()->role !== null))))
         {
             $res['currentMerchantId'] = $currentMerchantId;
             $res['otp_auth_token'] = $genericUser->otp_auth_token ?? null;
@@ -883,7 +893,7 @@ class Service extends Base\Service
                 'message' => $e->getMessage() ?? "unknown_message"
             ]);
         }
-        
+
         return [$error, $this->addAccessTokenAndMidToResponse($res, $genericUser), $httpCode];
     }
 
@@ -951,7 +961,7 @@ class Service extends Base\Service
         // Below conditions are false when a PG user logs into X for the first time or vice versa.
         if ((empty($user->currentMerchant()) === false)  and
             ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
-            (($isBankingRequest === false) and ($user->currentMerchant()->role !== null))))
+                (($isBankingRequest === false) and ($user->currentMerchant()->role !== null))))
         {
             $res['currentMerchantId'] = $currentMerchantId;
         }
@@ -1040,6 +1050,30 @@ class Service extends Base\Service
     }
 
     /**
+     * reissue user token on edge
+     * @param string $merchantId
+     * @param GenericUser $user
+     * @return ?array Edge response on success
+     */
+    public function reissueTokenOnEdge(string $merchantId, GenericUser $user) {
+        try {
+            return $this->edgeClient->reissueToken($merchantId, $user);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::EDGE_TOKEN_REISSUE_FAILED, [
+                "message"   => "Failed to reissue user session token at edge for switch merchant: " . $e->getMessage(),
+            ]);
+
+            // TODO: throw exception when we move out of shadow mode
+            // return if user token can not be reissued at edge
+            // we will not alter the sessions at redis unless edge tokens are reissued successfully
+//            throw new ServerErrorException(
+//                "Failed to switch merchant: " . $e->getMessage(),
+//                \Razorpay\Api\Errors\ErrorCode::SERVER_ERROR,
+//                500);
+        }
+    }
+
+    /**
      * Switch the merchant the user is currently viewing.
      *
      * @param  string  $merchantId
@@ -1051,6 +1085,18 @@ class Service extends Base\Service
 
         if (empty($error) === true)
         {
+            // revoke user token on edge using jti
+            $data = $this->reissueTokenOnEdge($merchantId, $user);
+
+            if (! empty($data)) {
+                // laravel cookies allows ttl only in minutes
+                $ttl = $data['ttl']/60;
+
+                // set the reissued token to cookie
+                // we are explicitly setting the cookie domain as null and path as '/'
+                // similar to how it's being set for rzp_usr_session.
+                Cookie::queue(self::RZP_ACCESS_TOKEN, $data['token'], $ttl, "/", null, true, true);
+            }
 
             Session::put('current_merchant_id', $merchantId);
 
@@ -1274,7 +1320,7 @@ class Service extends Base\Service
     public function getFirstChunkUserDetails(array $params = [])
     {
         $data = [
-          'current'   =>  null
+            'current'   =>  null
         ];
 
         $errors = (new Validator())->validateInput('user_fetch', $params)->messages();
@@ -1447,11 +1493,11 @@ class Service extends Base\Service
     private function getGuzzleClient(): Guzzle
     {
         $guzzleClient = new Guzzle([
-                                        'base_uri' => ApiUrl::getApiBaseUrl(),
-                                        'defaults' => [
-                                            'timeout' => Config::get('api.request_timeout'),
-                                        ]
-                                    ]);
+            'base_uri' => ApiUrl::getApiBaseUrl(),
+            'defaults' => [
+                'timeout' => Config::get('api.request_timeout'),
+            ]
+        ]);
 
         return $guzzleClient;
     }
@@ -1479,7 +1525,7 @@ class Service extends Base\Service
 
         // API 1.1
         if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-            ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
+                ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
             ($experiments === "1") and empty($data[Constants::EXPERIMENTS]))
         {
             $start = self::millitime();
@@ -1494,7 +1540,7 @@ class Service extends Base\Service
 
         // API 1.2
         if ((($this->isPgRenderCall($currentRouteName, $serverName) === false)  or
-            ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
+                ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
             ($splitzExperiments === "1") and empty($data[Constants::SPLITZ_EXPERIMENTS]))
         {
             $start = self::millitime();
@@ -1639,21 +1685,21 @@ class Service extends Base\Service
                     $data['current'] = $currentMerchantId;
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-                        ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
                         ($tags === "1"))
                     {
                         $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-                        ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
                         ($features === "1"))
                     {
                         $data['features'] = $merchantService->getMerchantFeatures();
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-                        ($this->isFieldExcluededInPgRendering(Constants::CAMPAIGNS) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::CAMPAIGNS) === false)) and
                         ($isBankingRequest === false))
                     {
                         // adding this only for PG, if moving campaigns to X, an extra parameter merchant=x is being sent
@@ -1719,8 +1765,8 @@ class Service extends Base\Service
             if ($data['experiments']['rx_ca_self_serve_flow_neo'] === ['result' => 'on'])
             {
                 $payload = [
-                  'merchant_id' => $currentMerchantId,
-                  'x_onboarding_category'   => 'self_serve'
+                    'merchant_id' => $currentMerchantId,
+                    'x_onboarding_category'   => 'self_serve'
                 ];
 
                 $this->createLeadToSalesforce($payload, $currentMerchantId);
@@ -1846,7 +1892,7 @@ class Service extends Base\Service
                 if ($merchant['id'] === $currentMerchantId)
                 {
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-                        ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
                         ($experiments === "1"))
                     {
                         $this->trace->info(
@@ -1886,21 +1932,21 @@ class Service extends Base\Service
                     $data['current'] = $currentMerchantId;
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-                        ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
                         ($tags === "1"))
                     {
                         $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-                        ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
                         ($features === "1"))
                     {
                         $data['features'] = $merchantService->getMerchantFeatures();
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false)  or
-                        ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
                         ($splitzExperiments === "1"))
                     {
                         $data[Constants::SPLITZ_EXPERIMENTS] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId, $params[Constants::SPLITZ_API_CACHING_ENABLED]);
@@ -2121,7 +2167,7 @@ class Service extends Base\Service
                 if ($merchant['id'] === $currentMerchantId)
                 {
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-                        ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
                         ($experiments === "1"))
                     {
                         $this->trace->info(
@@ -2161,21 +2207,21 @@ class Service extends Base\Service
                     $data['current'] = $currentMerchantId;
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-                        ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
                         ($tags === "1"))
                     {
                         $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-                        ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
                         ($features === "1"))
                     {
                         $data['features'] = $merchantService->getMerchantFeatures();
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false)  or
-                        ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
+                            ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
                         ($splitzExperiments === "1"))
                     {
                         $data[Constants::SPLITZ_EXPERIMENTS] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId);
@@ -2248,8 +2294,8 @@ class Service extends Base\Service
             if ($data['experiments']['rx_ca_self_serve_flow_neo'] === ['result' => 'on'])
             {
                 $payload = [
-                  'merchant_id' => $currentMerchantId,
-                  'x_onboarding_category'   => 'self_serve'
+                    'merchant_id' => $currentMerchantId,
+                    'x_onboarding_category'   => 'self_serve'
                 ];
 
                 $this->createLeadToSalesforce($payload, $currentMerchantId);
@@ -2522,11 +2568,11 @@ class Service extends Base\Service
         if(isset($input['email']) === true
             and (in_array($input['email'], Constants::BLOCKED_EMAILS_FOR_LOGIN, true) === true))
         {
-             return [
-                 [
-                     "No db records found."
-                 ], null, 400
-             ];
+            return [
+                [
+                    "No db records found."
+                ], null, 400
+            ];
         }
 
         $headers = [
@@ -2577,8 +2623,8 @@ class Service extends Base\Service
                     if($input['contact_mobile'] === $phoneNumber)
                     {
                         return [null, [
-                                "token" => "LybyQbDV9CjBFb"
-                            ], 200
+                            "token" => "LybyQbDV9CjBFb"
+                        ], 200
                         ];
                     }
                 }
@@ -2872,16 +2918,16 @@ class Service extends Base\Service
         $tokenExpiry_ttl = 'PT' . $tokenExpiry . 'S';
 
         $token = $tokenBuilder->issuedBy($issuer)
-                              ->permittedFor(self::EXTENSION)
-                              ->issuedAt($sysClock->now())
-                              ->expiresAt($sysClock->now()->add(new \DateInterval($tokenExpiry_ttl)))
-                              ->withClaim(self::MERCHANT_ID, $currentMerchantId)
-                              ->withClaim(self::USER_ID, $user->id)
-                              ->withClaim(self::MERCHANT_ACTIVATED, $merchantActivated)
-                              ->withClaim('merchant_international', $merchantInternational)
-                              ->withClaim(self::MERCHANT_LOGO, $merchantLogo)
-                              ->withClaim(self::MERCHANT_NAME, $merchantName)
-                              ->getToken($config->signer(), $config->signingKey());
+            ->permittedFor(self::EXTENSION)
+            ->issuedAt($sysClock->now())
+            ->expiresAt($sysClock->now()->add(new \DateInterval($tokenExpiry_ttl)))
+            ->withClaim(self::MERCHANT_ID, $currentMerchantId)
+            ->withClaim(self::USER_ID, $user->id)
+            ->withClaim(self::MERCHANT_ACTIVATED, $merchantActivated)
+            ->withClaim('merchant_international', $merchantInternational)
+            ->withClaim(self::MERCHANT_LOGO, $merchantLogo)
+            ->withClaim(self::MERCHANT_NAME, $merchantName)
+            ->getToken($config->signer(), $config->signingKey());
 
         return [[], ["token" => $token->toString()]];
     }
@@ -3084,7 +3130,7 @@ class Service extends Base\Service
         else
         {
             if($data['experiments']['rx_ca_self_serve_flow'] !== ['result' => 'on']
-               and $merchant['business_banking_signup_at'] < strtotime('- 60 days'))
+                and $merchant['business_banking_signup_at'] < strtotime('- 60 days'))
             {
                 $data['experiments']['rx_non_self_serve_ca_flow'] =
                     $merchantService->getTreatment('rx_non_self_serve_ca_flow');
@@ -3395,7 +3441,7 @@ class Service extends Base\Service
      * 3) Admin_as_merchant is false
      * 4) Merchant has not already accepted the T&C conditions
      * if all the above conditions are satisfied then shouldShowPopUp will be true, in case of errors while calling this api we will return as false
-    */
+     */
     public function shouldShowPopUp(): bool
     {
         try {

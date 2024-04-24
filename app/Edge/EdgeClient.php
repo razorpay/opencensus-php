@@ -3,9 +3,11 @@
 namespace App\Edge;
 
 use Config;
+use Cookie;
 
 use App\Trace\TraceCode;
 use App\Admin\ApiRequestAny;
+use App\Providers\GenericUser;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\ErrorCode;
@@ -16,10 +18,14 @@ use Razorpay\Api\Errors\ErrorCode;
  */
 class EdgeClient
 {
-    const X_EDGE_USER_JTI = 'X-Edge-User-Jti';
-    const FEATURE_FLAG    = 'edge_logout_flow_enabled';
+    const X_EDGE_USER_JTI  = 'X-Edge-User-Jti';
+    const RZP_ACCESS_TOKEN = 'rzp_access_token';
+
+    const REVOKE_TOKEN_FEATURE_FLAG    = 'edge_logout_flow_enabled';
+    const REISSUE_TOKEN_FEATURE_FLAG   = 'edge_switch_merchant_enabled';
 
     private $revokeApi  = 'user-tokens/revoke';
+    private $reissueApi = 'user-tokens/reissue';
 
     /**
      * @var \GuzzleHttp\Client|null
@@ -57,7 +63,7 @@ class EdgeClient
      */
     public function revokeToken($userIds = [], $exclude_current_session = false) {
         // delete token at edge only if experiment is enabled
-        if (! $this->getRazorxExperimentResult()) {
+        if (! $this->getRazorxExperimentResult(self::REVOKE_TOKEN_FEATURE_FLAG)) {
             return;
         }
 
@@ -107,17 +113,83 @@ class EdgeClient
     }
 
     /**
+     * reissues user token at edge
+     * @param string $merchant_id
+     * @param GenericUser $user
+     * @return void
+     */
+    public function reissueToken(string $merchant_id, GenericUser $user) {
+        // delete token at edge only if experiment is enabled
+        if (! $this->getRazorxExperimentResult(self::REISSUE_TOKEN_FEATURE_FLAG)) {
+            return;
+        }
+
+
+        // skip token reissue if rzp_access_token cookie is not set in the request
+        $token = Cookie::get(self::RZP_ACCESS_TOKEN);
+        if (!$token) {
+            // TODO: throw exceptions when we move out of shadow mode
+//            throw new ServerErrorException(
+//                "Failed to reissue user token at edge, cookie not found",
+//                \Razorpay\Api\Errors\ErrorCode::SERVER_ERROR,
+//                500);
+            return;
+        }
+
+        $params = [
+            'merchant_id' => $merchant_id,
+            'token' => $token,
+            'role' => $this->getMerchantRoleById($user, $merchant_id),
+            'is_verified' => $user->contact_mobile_verified or $user->confirmed
+        ];
+
+        try {
+            $response = $this->client->post($this->reissueApi, [
+                'form_params' => $params,
+            ]);
+            $body = json_decode($response->getBody(), true);
+            if (! is_null($body)) {
+                $this->trace->info(TraceCode::EDGE_TOKEN_REISSUE_SUCCESS, [
+                    "merchant_id" => $merchant_id,
+                    "role" => $params['role']
+                ]);
+
+                return $body;
+            } else {
+                $this->trace->error(TraceCode::EDGE_TOKEN_REISSUE_FAILED, [
+                    "message"   => 'Failed to decode reissued token and set to cookie',
+                    "params"    => $params
+                ]);
+            }
+        } catch (\Throwable $e) {  // Guzzle will raise exceptions for any 4xx/5xx errors hence catch and log
+            $this->trace->error(TraceCode::EDGE_TOKEN_REISSUE_FAILED, [
+                "message"   => $e->getMessage() ?? 'unknown_message',
+                "params"    => $params
+            ]);
+
+            // TODO: throw exceptions when we move out of shadow mode
+//            throw new ServerErrorException(
+//                "Failed to reissue user token on edge: " . $e->getMessage(),
+//                \Razorpay\Api\Errors\ErrorCode::SERVER_ERROR,
+//                500);
+        }
+
+        return null;
+    }
+
+    /**
      * gets razorx experiment result
      *
+     * @param string $feature_flag
      * @return bool
      * @throws BadRequestError
      */
-    public function getRazorxExperimentResult()
+    public function getRazorxExperimentResult(string $feature_flag = '')
     {
         try {
             $request = new ApiRequestAny(['client_type' => 'merchant']);
 
-            list($error, $data) = $request->send("razorx/evaluate/" . self::FEATURE_FLAG, 'GET');
+            list($error, $data) = $request->send("razorx/evaluate/" . $feature_flag, 'GET');
 
             if (empty($error) === false)
             {
@@ -131,5 +203,16 @@ class EdgeClient
             ]);
             return false;
         }
+    }
+
+    /**
+     * gets role for given merchant id
+     * @param GenericUser $user
+     * @param string $merchant_id
+     * @return string
+     */
+    private function getMerchantRoleById(GenericUser $user, string $merchant_id) {
+        $merchant = $user->merchants->where('id', $merchant_id)->first();
+        return $merchant->role;
     }
 }

@@ -91,7 +91,7 @@ class ApiResponseForwarder
      * @param array $allHeaders
      * @return void
      */
-    private function setCookies(string $cookieString): void
+    public function setCookies(string $cookieString): void
     {
         try {
             $setCookie = CookieParser::fromString($cookieString);
