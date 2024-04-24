@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use Request;
 
 use GuzzleHttp\Client;
 use Razorpay\Trace\Logger as Trace;
@@ -20,6 +21,7 @@ use RZP\Models\Terminal\Core as terminalcore;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Http\RequestHeader;
 use  RZP\Models\Base\Service;
 use RZP\Http\Request\Requests;
 use RZP\Constants\Environment;
@@ -1183,6 +1185,12 @@ class TerminalsService
             if (empty($testCaseId) === false)
             {
                 $defaultHeaders[self::X_RZP_TESTCASE_ID] = $testCaseId;
+            }
+
+            $devLabel = Request::header(RequestHeader::DEV_SERVE_USER);
+            if (empty($devLabel) === false)
+            {
+                $defaultHeaders[RequestHeader::DEV_SERVE_USER] = $devLabel;
             }
         }
 
