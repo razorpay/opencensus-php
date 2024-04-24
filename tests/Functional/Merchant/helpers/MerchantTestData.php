@@ -6314,7 +6314,23 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE,
         ],
     ],
+    'testDeleteRectangularLogo' => [
+        'request' => [
+            'content' => [
+                'isRectangularLogo' => true,
+            ],
+            'url' => '/account/config/logo',
+            'method' => 'delete',
+            'files' => [
 
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+            ]
+        ]
+    ],
     'testValidateLogoImageSmall' => [
         'response' => [
             'content' => [

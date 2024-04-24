@@ -151,7 +151,7 @@ class Logo extends Base\Core
         \imagedestroy($tmp);
     }
 
-    protected function createImageObject($imageDetails)
+    public function createImageObject($imageDetails)
     {
         $extension = $imageDetails['extension'];
         $baseFilePath = $imageDetails['file_path'];

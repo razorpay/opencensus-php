@@ -1139,6 +1139,12 @@ class Validator extends Base\Validator
 
         if ($isRectangularLogo === true)
         {
+            if ($height < 60)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_RECTANGULAR_LOGO_TOO_SMALL
+                );
+            }
             if ($width === $height)
             {
                 throw new Exception\BadRequestException(
@@ -1146,20 +1152,20 @@ class Validator extends Base\Validator
                 );
             }
         }
-
-        else if ($width !== $height)
+        else
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE
-            );
-        }
-
-        // The minimum dimensions should be 256*256
-        if ($height < 60)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL
-            );
+            if ($height < 256)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL
+                );
+            }
+            if($height!=$width)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE
+                );
+            }
         }
     }
 

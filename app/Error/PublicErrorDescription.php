@@ -734,6 +734,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                  = 'The height and width of the logo are not the same. Upload a square image.';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE                                   = 'The image type is not jpg, jpeg or png.';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                   = 'The dimensions of the image are too small. Minimum dimensions should be 256x256';
+    const BAD_REQUEST_MERCHANT_RECTANGULAR_LOGO_TOO_SMALL                       = 'The dimensions of the image are too small. Minimum height should be 60';
     const BAD_REQUEST_ACCOUNT_RECOVERY_PAN_DID_NOT_MATCH                        = 'PAN did not match with owner accounts found';
 
     const BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED                          = 'Shared terminal cannot be copied';
@@ -1817,7 +1818,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST                     = 'Something went wrong. Please try again after some time. If the issue repeats, please reach out to our support.';
     const BAD_REQUEST_IEC_CODE_REQUIRED_FOR_SELECTED_PURPOSE_CODE                   = 'IEC Code is required for your category of business.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_CREATION_FAILED                               = 'Something went wrong. Please try again after some time. If the issue repeats, please reach out to our support.';
-    
+
     const BAD_REQUEST_CIN_MISMATCH            = 'The given CIN does not belong to your selected business type. Please provide a different CIN';
     const BAD_REQUEST_PAN_MISMATCH            = 'The given PAN does not belong to your selected business type. Please provide a different PAN';
     const BAD_REQUEST_OWNER_GSTIN_MISMATCH    = 'The given GSTIN does not belong to the Owner PAN provided. Please provide a different GSTIN';
