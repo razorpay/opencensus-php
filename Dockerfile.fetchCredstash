@@ -1,0 +1,32 @@
+ARG API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
+ARG CURL_CLI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:curl-7.82
+
+FROM ${CURL_CLI_IMAGE} as curl-cli
+FROM ${API_BASE_IMAGE}
+
+WORKDIR /app
+
+COPY --from=curl-cli /usr/bin/curl /usr/bin/
+
+RUN case `uname -m` in \
+        x86_64) ARCH=amd64; ;; \
+        aarch64) ARCH=arm64; ;; \
+        *) echo "Unsupported architecture, exiting..."; exit 1; ;; \
+    esac \
+# Download and install kubectl
+    && curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/${ARCH}/kubectl \
+    && chmod +x ./kubectl \
+    && mv ./kubectl /usr/local/bin
+
+# Copy vault.j2 into the container
+COPY environment/.env.vault.j2 /app/
+
+# Copy entrypoint-cred.sh script into the container
+COPY dockerconf/entrypoint.fetchCredstash.sh /app/
+
+# Make entrypoint-cred.sh executable
+RUN chmod +x /app/entrypoint.fetchCredstash.sh
+
+# Set entrypoint to entrypoint-cred.sh
+ENTRYPOINT ["/app/entrypoint.fetchCredstash.sh"]
+

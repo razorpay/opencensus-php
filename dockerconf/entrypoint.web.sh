@@ -55,8 +55,23 @@ configure(){
     alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
      # log the output into stdout as php monolog has a bug in logging
     tail -F storage/logs/$HOSTNAME-trace-$(date +%Y-%m-%d).log &
- else
-    alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
+  else
+    if [[ -n "${FETCH_CREDSTASH}" && "${FETCH_CREDSTASH}" == "false" ]] ; then
+        echo "credstash-"$APP_MODE"-api not called"
+        alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
+        total=$(cat vault/count )
+        count=0
+        for secret in vault/secret_*; do
+            cat "$secret" >> environment/.env.vault
+            count=$((count + 1))
+            if [ $count -eq $total ]; then
+                break
+            fi
+        done
+    else
+        echo "credstash-"$APP_MODE"-api called"
+        alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
+    fi
   fi
 
   echo "copying apache config"
