@@ -468,6 +468,32 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
+    public function getEntityAttribute()
+    {
+        if ($this->relationLoaded('entity') === true)
+        {
+            return $this->getRelation('entity');
+        }
+
+        if ($this->getEntityType() === E::REFUND)
+        {
+            $refund = (new Refund\Repository())->findOrFailPublic($this->getEntityId());
+
+            $this->entity()->associate($refund);
+
+            return $refund;
+        }
+
+        $entity = $this->entity()->first();
+
+        if (empty($entity) === false)
+        {
+            return $entity;
+        }
+
+        return null;
+    }
+
     // -------------------- End Accessors ------------------------------
 
     public function setIgnoreRelationsForPayoutServiceReversals()
