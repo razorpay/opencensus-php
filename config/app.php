@@ -710,7 +710,7 @@ return array(
     'add_delay_timestamp_for_kafka_event' => env('ADD_DELAY_TIMESTAMP_FOR_KAFKA_EVENT'),
 
     'enable_compliance_checks_on_admin_activation_workflows' => env('ENABLE_COMPLIANCE_CHECKS_ON_ADMIN_ACTIVATION_WORKFLOWS'),
-  
+
     'enable_compliance_checks_on_auto_kyc_rules' => env('ENABLE_COMPLIANCE_CHECKS_ON_AUTO_KYC_RULES'),
 
     'remove_ngo_business_type' => env('REMOVE_NGO_BUSINESS_TYPE'),
@@ -753,6 +753,8 @@ return array(
     'hdfc_dcemi_whitelisted_mid_experiment_id'  => env('HDFC_DCEMI_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
 
     'icici_dcemi_whitelisted_mid_experiment_id'  => env('ICICI_DCEMI_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
+
+    'skip_last4_for_amex_emi_payments' => env('SKIP_LAST4_FOR_AMEX_EMI_EXP_ID'),
 
     '1cc_be_abandoned_cart' => env('1CC_BE_ABANDONED_CART'),
 

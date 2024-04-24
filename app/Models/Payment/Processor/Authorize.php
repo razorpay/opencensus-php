@@ -10773,6 +10773,49 @@ trait Authorize
         }
     }
 
+    protected function shouldSkipLast4ValidationForAmexEmi(Payment\Entity $payment)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $payment->merchant->getId(),
+                'experiment_id' =>  $this->app['config']->get('app.skip_last4_for_amex_emi_payments'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $payment->merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variables = $response['response']['variant']['variables'];
+
+            foreach ($variables as $variable) {
+
+                if ($variable['key'] == "result" && $variable['value'] == "on") {
+
+                    $networkCode = $payment->card->getNetworkCode();
+                    $issuer = $payment->card->getIssuer();
+
+                    if($issuer === null and $networkCode === Card\Network::AMEX)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::AMEX_LAST4_WHITELISTED_MERCHANTS_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
     protected function validateLast4ForS2STokenisedEmiPayments(Payment\Entity $payment, array $input)
     {
         if ($payment->isMethodCardOrEmi() === false){
@@ -10783,6 +10826,12 @@ trait Authorize
 
         if ( ($payment->getMethod() === Method::EMI) and  ($this->app['api.route']->isS2SPaymentRoute() === true) and isset($input['card'])=== true and  empty($input['card']['tokenised']) === false and empty($last4) === true)
         {
+
+            if($this->shouldSkipLast4ValidationForAmexEmi($payment) === true)
+            {
+                return;
+            }
+
 
             $this->trace->info(
                 TraceCode::S2S_TOKENISED_EMI_LAST4_VALIDATION,
