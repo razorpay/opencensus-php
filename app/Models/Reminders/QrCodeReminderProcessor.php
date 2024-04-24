@@ -26,7 +26,10 @@ class QrCodeReminderProcessor extends ReminderProcessor
         {
             $qrCode = $this->repo->qr_code->findByPublicId($id);
 
-            (new Core)->close($qrCode, CloseReason::EXPIRED);
+            if ($qrCode->isClosed() === false)
+            {
+                (new Core)->close($qrCode, CloseReason::EXPIRED);
+            }
         }
         catch (\Exception $ex)
         {
