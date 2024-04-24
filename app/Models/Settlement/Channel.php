@@ -61,12 +61,12 @@ class Channel
             self::AXIS3,
             self::RZPX,
             self::MCS,
-            self::RHB,
             self::IDFC,
             self::HDFC_POS
         ],
         Constants\Country::MY => [
-            self::OCBC
+            self::OCBC,
+            self::RHB
         ]
     ];
 
