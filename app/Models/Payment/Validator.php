@@ -1402,7 +1402,14 @@ class Validator extends Base\Validator
     {
         // @todo: Add validation for UPI method as well for tpv
         if (($input['method'] !== Payment\Method::NETBANKING) and
-            ($input['method'] !== Payment\Method::EMANDATE))
+                ($input['method'] !== Payment\Method::EMANDATE))
+        {
+            return;
+        }
+
+        // Adding below check to ignore debits/Auto payments for emandate
+        // As Bank code validation is not required for debit payments
+        if ($input['method'] === Payment\Method::EMANDATE and isset($input['token']) === true)
         {
             return;
         }
