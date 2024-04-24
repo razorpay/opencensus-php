@@ -1144,6 +1144,14 @@ class Entity extends Base\PublicEntity
         {
             return true;
         }
+
+        // product_charge transactions are created by subscription pricing service on recurring basis
+        // from merchants and this needs to be collected even if it takes balance -ve
+        if ($this->isTypeProductCharge() === true)
+        {
+            return true;
+        }
+
         return false;
     }
 }
