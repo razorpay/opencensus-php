@@ -560,38 +560,42 @@ class Entity extends Base\PublicEntity
     {
         $stringDisc = strval($apiDiscount);
 
-        if (isset($oeBenefits[Constants::DISCOUNT]) && !empty($oeBenefits[Constants::DISCOUNT])) {
-            if ($oeBenefits[Constants::DISCOUNT][0][Constants::DISCOUNT] !== $stringDisc) {
+        // offer response is empty but api discount is not 0
+        if (empty($oeBenefits) && $stringDisc !== '0')
+        {
+            return true;
+        }
+
+        // API calculates discount for only instant discounts,
+        // i.e. instant discount offers, nc/lc emi offers
+        // so perform parity check for only these offers
+        if (!empty($oeBenefits[Constants::DISCOUNT]))
+        {
+            if (strval($oeBenefits[Constants::DISCOUNT][0][Constants::DISCOUNT]) !== $stringDisc)
+            {
                 return true;
             }
         }
 
-        if (isset($oeBenefits[Constants::CASHBACK]) && !empty($oeBenefits[Constants::CASHBACK])) {
-            if ($oeBenefits[Constants::CASHBACK][0][Constants::CASHBACK] !== $stringDisc) {
+        if (!empty($oeBenefits[Constants::NO_COST_EMI]))
+        {
+            if (strval($oeBenefits[Constants::NO_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT]) !== $stringDisc)
+            {
                 return true;
             }
         }
 
-        if (isset($oeBenefits[Constants::ALREADY_DISCOUNTED]) && !empty($oeBenefits[Constants::ALREADY_DISCOUNTED])) {
-            if ($oeBenefits[Constants::ALREADY_DISCOUNTED][0][Constants::ALREADY_DISCOUNTED] !== $stringDisc) {
-                return true;
-            }
-        }
-
-        if (isset($oeBenefits[Constants::NO_COST_EMI]) && !empty($oeBenefits[Constants::NO_COST_EMI])) {
-            if ($oeBenefits[Constants::NO_COST_EMI][0][Constants::NO_COST_EMI] !== $stringDisc) {
-                return true;
-            }
-        }
-
-        if (isset($oeBenefits[Constants::LOW_COST_EMI]) && !empty($oeBenefits[Constants::LOW_COST_EMI])) {
-            if ($oeBenefits[Constants::LOW_COST_EMI][0][Constants::LOW_COST_EMI] !== $stringDisc) {
+        if (!empty($oeBenefits[Constants::LOW_COST_EMI]))
+        {
+            if (strval($oeBenefits[Constants::LOW_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT]) !== $stringDisc)
+            {
                 return true;
             }
         }
 
         // Check if apiDiscount is not 0 for all cases
-        if ($stringDisc !== '0') {
+        if ($stringDisc !== '0')
+        {
             return true;
         }
 

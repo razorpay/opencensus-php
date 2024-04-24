@@ -192,4 +192,6 @@ final class Constants
     const VALIDATE_OFFER_CALLED = 'OE_VALIDATE_OFFER_CALLED';
 
     const VALIDATE_OFFER_RESPONSE = 'VALIDATE_OFFER_RESPONSE';
+
+    const CALCULATED_DISCOUNT = 'calculated_discount';
 }
