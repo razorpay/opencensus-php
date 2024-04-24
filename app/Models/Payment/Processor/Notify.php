@@ -667,7 +667,7 @@ class Notify
             $gatewayCurrency = $paymentMeta->getGatewayCurrency();
 
             $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent());
-            $data['payment']['exchange_rate'] = $paymentMeta->getGatewayAmount() / $this->payment->getAmount();
+            $data['payment']['exchange_rate'] = round($paymentMeta->getGatewayAmount() / $this->payment->getAmount(), 5);
             if($this->merchant->isDCCMarkupVisible()) {
                 $reducedDccMarkupPercent = ceil($paymentMeta->getDccMarkUpPercent() - ($paymentMeta->getDccMarkUpPercent() * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT/100)));
                 $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $reducedDccMarkupPercent);
