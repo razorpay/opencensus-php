@@ -35,6 +35,9 @@ class Account
     const FUND_LOADING_DOWNTIME_DETECTION_SOURCE_ACCOUNT_MID = 'JX04vtuLFZyc8P';
     const FUND_LOADING_DOWNTIME_DETECTION_DESTINATION_ACCOUNT_MID = 'JXR5VxmNDmWy1z';
 
+    const AXIO_DEMO_ACCOUNT          = '100AxioAccount';
+    const PB_DEMO_ACCOUNT            = '100PoBaAccount';
+
     protected static $nodalAccounts = [
         self::NODAL_ACCOUNT,
         self::ATOM_ACCOUNT

@@ -1744,6 +1744,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADJUSTMENT_ALREADY_EXISTS                             = 'ADJUSTMENT_ALREADY_EXISTS';
     const VPA_PAYOUT_GATEWAY_RESPONSE                           = 'VPA_PAYOUT_GATEWAY_RESPONSE';
     const VPA_VALIDATION_GATEWAY_RESPONSE                       = 'VPA_VALIDATION_GATEWAY_RESPONSE';
+    const ADJUSTMENT_MAIL_REQUEST                               = 'ADJUSTMENT_MAIL_REQUEST';
+    const ADJUSTMENT_MAIL_REQUEST_FAILURE                       = 'ADJUSTMENT_MAIL_REQUEST_FAILURE';
+    const ADJUSTMENT_MAIL_PROCESS_FAILURE                       = 'ADJUSTMENT_MAIL_PROCESS_FAILURE';
 
     const VERIFY_LOCKED_PAYMENTS                                = 'VERIFY_LOCKED_PAYMENTS';
     const VERIFY_ACTION                                         = 'VERIFY_ACTION';

@@ -72,6 +72,8 @@ class Constants
     const CROSS_BORDER_TECH             = 'cross_border_tech';
     const PARTNER_COMMISSIONS           = 'partner_commissions';
     const CROSS_BORDER                  = 'cross_border';
+    const PG_SETTLEMENT                 = 'pg_settlement';
+    const AXIO_SETTLEMENT               = 'axio_settlement';
 
     const PARTNER_ON_BOARDING_REPLY = 'partner_on_boarding_reply';
 
@@ -140,6 +142,8 @@ class Constants
         self::FINOPS                    => 'finances.recon@razorpay.com',
         self::DEVOPS_BEAM               => 'devops+beam@razorpay.com',
         self::CROSS_BORDER              => 'cross-border@razorpay.com',
+        self::PG_SETTLEMENT             => 'pg-settlements@razorpay.com',
+        self::AXIO_SETTLEMENT           => 'badger=capitalfloat.com@holistics.ioo',
     ];
 
     const CURLEC_MAIL_ADDRESSES = [
@@ -198,6 +202,8 @@ class Constants
         self::PARTNER_SUBMERCHANT_INVITE => 'Razorpay Partner Program',
         self::SECURITY_ALERTS         => 'Team Razorpay',
         self::PARTNER_COMMISSIONS     => 'Razorpay Partnerships',
+        self::PG_SETTLEMENT           => 'Razorpay Settlements',
+        self::AXIO_SETTLEMENT         => 'Axio Settlement',
     ];
 
     const CURLEC_HEADERS = [

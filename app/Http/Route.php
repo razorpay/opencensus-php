@@ -1146,6 +1146,7 @@ class Route
         'transfer_transaction_create'              => ['post',     'transfers/transaction/create',                   'TransferController@createTransactionForTransfer'],
         // adj_custom_create_cron is used to create adjustments for offer amount. Currently used for adjusting offers created for NC-EMI
         'adj_custom_create_cron'                   => ['post',     'adjustments/create/cron',                        'AdjustmentController@createCustomAdjustments'                      ],
+        'cardless_emi_insurance_nce_adjustments_file'=> ['post',   'cardless_emi/insurance_nce_adjustments/file',    'CardlessEmiNceAdjustmentController@processAdjustment'],
         'mock_hdfc_enroll'                         => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                        => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                  => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
@@ -6605,6 +6606,7 @@ class Route
         '1cc_internal_fetch_global_addresses',
 
         'adj_custom_create_cron',
+        'cardless_emi_insurance_nce_adjustments_file',
 
         // Edge
         'third_party_authenticate',
@@ -16880,7 +16882,8 @@ class Route
             'bank_transfer_process_file_rbl',
             'bank_transfer_process_file_axis',
             'bank_transfer_process_file_yesbank',
-            'vendor_payment_email_integration_webhook'
+            'vendor_payment_email_integration_webhook',
+            'cardless_emi_insurance_nce_adjustments_file'
         ],
 
         'raven' => [
