@@ -59,6 +59,9 @@ class ProviderPsp
     Const BOB_WORLD_UPI      = 'bob_world_upi';
     Const SIB_MIRROR_PLUS    = 'sib_mirror_plus';
     Const FAMPAY             = 'fampay';
+    Const BHIM_CRGB_PAY      = 'bhim_crgb_pay';
+    Const FAVE_MONEY         = 'fave_money';
+    Const FREO               = 'freo';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

@@ -1593,6 +1593,12 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['fampay_yesfam_allow']           = ['razorpay@yesfam', $throwables['whitelisted']];
         $cases['bobworldupi_barodampay_allow']  = ['razorpay@barodampay', $throwables['whitelisted']];
         $cases['sibmirrorplus_sib_allow']       = ['razorpay@sib', $throwables['whitelisted']];
+        $cases['paytm_pthdfc_allow']            = ['razorpay@pthdfc', $throwables['whitelisted']];
+        $cases['paytm_ptsbi_allow']             = ['razorpay@ptsbi', $throwables['whitelisted']];
+        $cases['paytm_ptaxis_allow']            = ['razorpay@ptaxis', $throwables['whitelisted']];
+        $cases['paytm_ptyes_allow']             = ['razorpay@ptyes', $throwables['whitelisted']];
+        $cases['freo_freoicici_allow']          = ['razorpay@freoicici', $throwables['whitelisted']];
+        $cases['bhimcrgbpay_crgb_allow']       = ['razorpay@crgb', $throwables['whitelisted']];
 
         $cases['gpay_okbizaxis_reject']         = ['razorpay@okbizaxis', $throwables['not_whitelisted']];
 

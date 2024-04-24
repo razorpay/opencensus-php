@@ -207,6 +207,12 @@ class ProviderCode
     const PAYU               = 'payu';
     const FIFEDERAL          = 'fifederal';
     const YESFAM             = 'yesfam';
+    CONST CRGB               = 'crgb';
+    Const PTYES              = 'ptyes';
+    Const PTAXIS             = 'ptaxis';
+    Const PTSBI              = 'ptsbi';
+    Const PTHDFC             = 'pthdfc';
+    Const FREOICICI          = 'freoicici';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -405,7 +411,12 @@ class ProviderCode
         self::PAYU               => 'NPCI',
         self::YESFAM             => 'NPCI',
         self::SIB                => 'NPCI',
-        self::BARODAMPAY         => 'NPCI',
+        self::CRGB               => 'NPCI',
+        self::PTHDFC             => 'NPCI',
+        self::PTAXIS             => 'NPCI',
+        self::PTSBI              => 'NPCI',
+        self::PTYES              => 'NPCI',
+        self::FREOICICI          => 'NPCI',
     ];
 
     /**
@@ -528,6 +539,9 @@ class ProviderCode
         ProviderPsp::FAMPAY,
         ProviderPsp::SIB_MIRROR_PLUS,
         ProviderPsp::BOB_WORLD_UPI,
+        ProviderPsp::FAVE_MONEY,
+        ProviderPsp::BHIM_CRGB_PAY,
+        ProviderPsp::FREO,
     ];
 
     /**
@@ -597,6 +611,12 @@ class ProviderCode
         self::FIFEDERAL    => ProviderPsp::FI,
         self::PAYU         => ProviderPsp::CITRUS,
         self::TIMECOSMOS   => ProviderPsp::TIMEPAY,
+        self::PTHDFC       => ProviderPsp::PAYTM,
+        self::PTYES        => ProviderPsp::PAYTM,
+        self::PTAXIS       => ProviderPsp::PAYTM,
+        self::PTSBI        => ProviderPsp::PAYTM,
+        self::FREOICICI    => ProviderPsp::FREO,
+        self::CRGB         => ProviderPsp::BHIM_CRGB_PAY,
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
     ];
