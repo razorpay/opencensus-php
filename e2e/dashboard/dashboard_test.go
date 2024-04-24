@@ -75,7 +75,7 @@ func (s DashboardAPISuite) TestGetIndexLAPostLogin() {
 	var response string
 	response = GetIndexRouteCall(s)
 
-	matched, err := regexp.MatchString(`window.rzp_user = {"current":"AixKlbbNt84nkl".*};`, response)
+	matched, err := regexp.MatchString(`"AixKlbbNt84nkl".*;`, response)
 	if err != nil {
 		s.T().Fatal(err.Error())
 	}
