@@ -38,6 +38,10 @@ class Constants
     const POLICY_URL            = 'policy_url';
     const POLICY_TEMPLATE_ID    = 'policy_template_id';
 
+    const PRICING_POLICY_TEMPLATE_ID = 'pricing_policy_template_id';
+
+    const IS_VALID_PRICING_POLICY_TEMPLATE = 'is_valid_pricing_policy_template';
+
     const attributes = [
         self::MAX_PAYMENT_AMOUNT,
         self::GMV_LIMIT
@@ -86,7 +90,9 @@ class Constants
         self::TEXT_COLOR,
         self::LOGO_URL,
         self::POLICY_URL,
-        self::POLICY_TEMPLATE_ID
+        self::POLICY_TEMPLATE_ID,
+        self::PRICING_POLICY_TEMPLATE_ID,
+        self::IS_VALID_PRICING_POLICY_TEMPLATE
     ];
 
     const PARTNER_METADATA_DEFAULT_VALUES = [

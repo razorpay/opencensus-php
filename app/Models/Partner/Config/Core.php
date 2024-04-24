@@ -13,6 +13,7 @@ use RZP\Models\Pricing\Plan;
 use Razorpay\OAuth\Application;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Merchant\MerchantApplications;
+use RZP\Models\Partner\Metric as PartnerMetric;
 
 class Core extends Base\Core
 {
@@ -236,11 +237,15 @@ class Core extends Base\Core
 
         $validator->validatePolicyDetailsInPartnerMetaData($config, $partner, $input[Entity::PARTNER_METADATA]);
 
+        $validator->validatePricingPolicyDetailsInPartnerMetaData($config, $partner, $input[Entity::PARTNER_METADATA]);
+
         $validator->validateSettleToPartner($partner, $input, $submerchant);
 
         $validator->validatePaymentMethodsForPartnerType($partner, $input);
 
         $this->repo->saveOrFail($config);
+
+        $this->traceIfPartnerPricingTemplateInvalidated($config, $partner);
 
         if($config->isPlatformPartnerDefaultConfig() || $config->isPlatformPartnerDefaultOverridenConfig())
         {
@@ -700,12 +705,48 @@ class Core extends Base\Core
      */
     protected function buildPartnerMetadata(Entity $partnerConfig, array & $input): void
     {
+        $existingMetadata = $partnerConfig->getPartnerMetadata();
+
         if (empty($input[Entity::PARTNER_METADATA]) === true)
         {
-            return;
+            // Even if partner_metadata is empty within $input, we have to invalidate template Id in case if its a partner's config and if template Id is set.
+            if(empty($input[Entity::DEFAULT_PLAN_ID]) === true || isset($existingMetadata[Constants::PRICING_POLICY_TEMPLATE_ID]) === false)
+            {
+                return;
+            }
+            $input[Entity::PARTNER_METADATA] = [];
         }
 
-        $existingMetadata = $partnerConfig->getPartnerMetadata();
+        $this->trace->info(TraceCode::BUILD_PARTNER_METADATA_LOG,
+            [
+                'partner_metadata_input'             => $input[Entity::PARTNER_METADATA],
+                'existing_metadata'                  => $existingMetadata,
+                'is_platform_partner_default_config' => $partnerConfig->isPlatformPartnerDefaultConfig(),
+            ]
+        );
+
+        // The 'is_valid_pricing_policy_template' key describes the validity of template Id stored in 'pricing_policy_template_id'.
+        // Setting 'is_valid_pricing_policy_template' as true if 'pricing_policy_template_id' is passed.
+        // Else if 'default_plan_id' is getting updated, the template data needs to be updated before being consumed for consent doc generation.
+        // Hence, if 'default_plan_id' is set in $input & 'pricing_policy_template_id' is set in existing partner_config's partner_metadata,
+        // then marking 'is_valid_pricing_policy_template' as false.
+        // The pricing template Id need to be set for configs of a partner only.
+        if($partnerConfig->isPlatformPartnerDefaultConfig() === true)
+        {
+            if (isset($input[Entity::PARTNER_METADATA][Constants::PRICING_POLICY_TEMPLATE_ID]) === true)
+            {
+                $input[Entity::PARTNER_METADATA] = array_merge($input[Entity::PARTNER_METADATA], [Constants::IS_VALID_PRICING_POLICY_TEMPLATE => true]);
+            }
+            else if (isset($input[Entity::DEFAULT_PLAN_ID]) === true && isset($existingMetadata[Constants::PRICING_POLICY_TEMPLATE_ID]) === true)
+            {
+                $input[Entity::PARTNER_METADATA] = array_merge($input[Entity::PARTNER_METADATA], [Constants::IS_VALID_PRICING_POLICY_TEMPLATE => false]);
+            }
+        }
+        else if (isset($input[Entity::PARTNER_METADATA][Constants::PRICING_POLICY_TEMPLATE_ID]) === true)
+        {
+            unset($input[Entity::PARTNER_METADATA][Constants::PRICING_POLICY_TEMPLATE_ID]);
+            unset($input[Entity::PARTNER_METADATA][Constants::IS_VALID_PRICING_POLICY_TEMPLATE]);
+        }
 
         if (empty($existingMetadata) === false)
         {
@@ -755,6 +796,34 @@ class Core extends Base\Core
             {
                 $this->edit($config->getId(), $input);
             }
+        }
+    }
+
+    /**
+     * If partner's default pricing plan is updated, the pricing consent template Id is invalidated.
+     * This function traces such a case, so that partnerships team can acknowledge and update the template details immediately.
+     *
+     * @param Entity $config
+     * @param Merchant\Entity $partner
+     * @return void
+     */
+    private function traceIfPartnerPricingTemplateInvalidated(Entity $config, Merchant\Entity $partner): void
+    {
+        $partnerMetaData = $config->getPartnerMetadata();
+
+        // If 'is_valid_pricing_policy_template' within $partnerMetaData is set to false, alert partnerships team to update the template.
+        if(isset($partnerMetaData[Constants::IS_VALID_PRICING_POLICY_TEMPLATE]) === true
+            and $partnerMetaData[Constants::IS_VALID_PRICING_POLICY_TEMPLATE] === false)
+        {
+            $this->trace->info(
+                TraceCode::UPDATE_PARTNER_PRICING_TEMPLATE,
+                [
+                    'config_id'    => $config->getId(),
+                    'partner_id'   => $partner->getId(),
+                    'template_id'  => $partnerMetaData[Constants::PRICING_POLICY_TEMPLATE_ID] ?? null
+                ]);
+
+            $this->trace->count(PartnerMetric::UPDATE_PARTNER_PRICING_TEMPLATE);
         }
     }
 }

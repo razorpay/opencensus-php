@@ -259,6 +259,13 @@ class Service extends Base\Service
         return $configData ?? [];
     }
 
+    public function fetchDefaultPlanDetailsFromPartnerConfig(string $merchantId)
+    {
+        $defaultPartnerConfig = $this->fetchDefaultPartnerConfig(['partner_id'=> $merchantId, 'expand'=> 'default_plan_id']);
+
+        return (empty($defaultPartnerConfig) === false ? $defaultPartnerConfig['default_plan_id_details'] : null);
+    }
+
     public function checkDefaultPartnerConfigExist(array $input): array
     {
         $data = $this->fetchDefaultPartnerConfig($input);

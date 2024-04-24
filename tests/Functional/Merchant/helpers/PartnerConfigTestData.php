@@ -955,6 +955,79 @@ return [
         ],
     ],
 
+    'testSetPartnerPricingPolicyTemplateByAdmin' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'pricing_policy_template_id'    => '1hDYlICobzOCZt'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => true,
+                'partner_metadata'      =>  [
+                    'pricing_policy_template_id'    => '1hDYlICobzOCZt',
+                    'is_valid_pricing_policy_template' => true
+                ]
+            ],
+        ],
+    ],
+
+    'testUpdatePartnerPricingPolicyTemplateByNonAdmin' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'pricing_policy_template_id'    => '1hDYlICobzOCZt',
+                    'is_valid_pricing_policy_template' => true
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid partner action'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testUpdatePartnerPricingPolicyTemplateForNonPartnerConfigByAdmin' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata'      =>  [
+                    'pricing_policy_template_id'    => '1hDYlICobzOCZt'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_PLATFORM_APP_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => true
+            ],
+        ],
+    ],
+
     'testGettingConfigsByPartner' => [
         'request'  => [
             'method'  => 'GET',

@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use ApiResponse;
 use App;
+use View;
 use Carbon\Carbon;
 use Config;
 use RZP\Models\Card\IIN\Country;
@@ -10741,6 +10742,34 @@ class Core extends Base\Core
                 DEConstants::TYPE => 'RazorpayX App Policy_' . Constants::TERMS,
                 DEConstants::URL  => Constants::RAZORPAY_PARTNERSHIP_OAUTH_TERMS,
             ];
+        }
+
+        $defaultPricingPlan =  (new PartnerConfig\Service)->fetchDefaultPlanDetailsFromPartnerConfig($partner->getId());
+
+        $isDefaultPricingExists = (empty($defaultPricingPlan) === false);
+
+        if($isDefaultPricingExists)
+        {
+            //fetch pricing_policy_template_id from partner_config's partner_metadata.
+            $partnerConfig = $this->repo->partner_config->getPlatformPartnerDefaultConfig($partner->getId());
+
+            $isPricingPolicyTemplateValid = $partnerConfig->isValidPricingPolicyTemplate();
+            $pricingPolicyTemplateId = ($isPricingPolicyTemplateValid === true) ? $partnerConfig->getPricingPolicyTemplateId() : null;
+
+            $htmlContent = View::make('merchant.commission_invoice.pp_partner_oauth_terms')->with('data', $defaultPricingPlan)->toHtml();
+
+            $documentDetail = [
+                DEConstants::TYPE     => 'Partner Pricing Policy' . '_' . Constants::TERMS,
+                DEConstants::CONTENT  => $htmlContent,
+                DEConstants::URL      => 'https://dashboard.razorpay.com/app/partner-pricing-plans?partner_id=' . $partner->getId()
+            ];
+
+            if($pricingPolicyTemplateId !== null)
+            {
+                $documentDetail[ConsentConstant::TEMPLATE_ID] = $pricingPolicyTemplateId;
+            }
+
+            $input[DEConstants::DOCUMENTS_DETAIL][] = $documentDetail;
         }
 
         $this->trace->info(

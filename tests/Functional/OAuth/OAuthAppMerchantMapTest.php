@@ -3,21 +3,22 @@
 namespace RZP\Tests\Functional\OAuth;
 
 use DB;
+use Config;
 use Carbon\Carbon;
 use RZP\Constants;
-use RZP\Models\Merchant\Referral\Core;
-use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
+use RZP\Models\Partner\Config\Entity;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Traits\MocksPartnershipsService;
 use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
-use function PHPUnit\Framework\assertNull;
+use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
 
 class OAuthAppMerchantMapTest extends OAuthTestCase
 {
     use OAuthTrait;
+    use PartnerTrait;
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -233,7 +234,7 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
 
         $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
 
-        $this->mockBvsService();
+        Config::set('services.bvs.mock', true);
 
         $testData = $this->testData['testOAuthAppMerchantMap'];
 
@@ -248,7 +249,7 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
 
         $this->runRequestResponseFlow($testData);
 
-        $merchantConsent1 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_App Policies_Terms & Conditions']);
+        $merchantConsent1 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_App Policy_Terms & Conditions']);
         $termsDetail1 = (new MerchantConsentDetailsRepo())->getById($merchantConsent1->getDetailsId());
 
         $this->assertEquals('10000000000000', $merchantConsent1->getMerchantId());
@@ -256,7 +257,7 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $expectedTerms = 'https://razorpay.com/s/terms/partners/payments-oauth/read-and-write/';
         $this->assertEquals($expectedTerms, $termsDetail1->getURL());
 
-        $merchantConsent2 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_RazorpayX Policies_Terms & Conditions']);
+        $merchantConsent2 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_RazorpayX App Policy_Terms & Conditions']);
         $termsDetail2 = (new MerchantConsentDetailsRepo())->getById($merchantConsent2->getDetailsId());
 
         $this->assertEquals('10000000000000', $merchantConsent2->getMerchantId());
@@ -267,17 +268,27 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
 
     public function testCreateLegalDocsConsentForOAuthAuthorizeWithCustomPolicy()
     {
-        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
 
         $this->fixtures->create('merchant_detail:sane', ['merchant_id'       => '10000000000000']);
 
         $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
 
-        $this->mockBvsService();
+        $partnerMeteData = [
+            'brand_color'   => '0000FF',
+            'text_color'    => '000FFF',
+            'brand_name'    => 'google',
+            'policy_url'    => 'https://www.razorpay.com/xyz/terms',
+            'policy_template_id'    => '1hDYlICobzOCZt'
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        Config::set('services.bvs.mock', true);
 
         $testData = $this->testData['testOAuthAppMerchantMap'];
 
-        $testData['request']['content']['application_id'] = $application->getId();
+        $testData['request']['content']['application_id'] = $app->getId();
         $testData['request']['content']['env']            = "prod";
         $testData['request']['content']['ip']             = "120.121.35";
         $testData['request']['content']['scope_policies'] = [
@@ -285,11 +296,11 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
             'Custom Policy' => 'https://www.razorpay.com/xyz/terms'
         ];
 
-        $testData['response']['content']['entity_id']     = $application->getId();
+        $testData['response']['content']['entity_id']     = $app->getId();
 
         $this->runRequestResponseFlow($testData);
 
-        $merchantConsent1 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_App Policies_Terms & Conditions']);
+        $merchantConsent1 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_App Policy_Terms & Conditions']);
         $termsDetail1 = (new MerchantConsentDetailsRepo())->getById($merchantConsent1->getDetailsId());
 
         $this->assertEquals('10000000000000', $merchantConsent1->getMerchantId());
@@ -297,13 +308,85 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $expectedTerms = 'https://razorpay.com/s/terms/partners/payments-oauth/read-and-write/';
         $this->assertEquals($expectedTerms, $termsDetail1->getURL());
 
-        $merchantConsent2 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_Custom Policy_Terms & Conditions']);
+        $merchantConsent2 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_Platform Partnerships Policy_Terms & Conditions']);
         $termsDetail2 = (new MerchantConsentDetailsRepo())->getById($merchantConsent2->getDetailsId());
 
         $this->assertEquals('10000000000000', $merchantConsent2->getMerchantId());
         $this->assertEquals('initiated', $merchantConsent2->getStatus());
         $expectedTerms = 'https://www.razorpay.com/xyz/terms';
         $this->assertEquals($expectedTerms, $termsDetail2->getURL());
+    }
+
+    public function testCreateLegalDocsConsentForOAuthAuthorizeWithCustomAndPricingPolicy()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id'       => '10000000000000']);
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
+
+        $partnerMeteData = [
+            'brand_color'   => '0000FF',
+            'text_color'    => '000FFF',
+            'brand_name'    => 'google',
+            'policy_url'    => 'https://www.razorpay.com/xyz/terms',
+            'policy_template_id'    => '1hDYlICobzOCZt'
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $this->fixtures->pricing->createPricingPlanWithoutMethods('1hDYlICobzOCct',['bank_transfer', 'card']);
+
+        $partnerMeteData = [
+            'pricing_policy_template_id'        => '1hDYlICobzOCZt',
+            'is_valid_pricing_policy_template'  => true
+        ];
+
+        $this->createConfigForPlatformPartner($partner->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData, Entity::DEFAULT_PLAN_ID => '1hDYlICobzOCct']);
+
+        Config::set('services.bvs.mock', true);
+
+        $testData = $this->testData['testOAuthAppMerchantMap'];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+        $testData['request']['content']['partner_id']     = $partner->getId();
+        $testData['request']['content']['env']            = "prod";
+        $testData['request']['content']['ip']             = "120.121.35";
+        $testData['request']['content']['scope_policies'] = [
+            'App Policies'  => 'https://razorpay.com/s/terms/partners/payments-oauth/read-and-write/',
+            'Custom Policy' => 'https://www.razorpay.com/xyz/terms'
+        ];
+
+        $testData['response']['content']['entity_id'] = $app->getId();
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantConsent1 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_App Policy_Terms & Conditions']);
+        $termsDetail1 = (new MerchantConsentDetailsRepo())->getById($merchantConsent1->getDetailsId());
+
+        $this->assertEquals('10000000000000', $merchantConsent1->getMerchantId());
+        $this->assertEquals('initiated', $merchantConsent1->getStatus());
+        $expectedTerms = 'https://razorpay.com/s/terms/partners/payments-oauth/read-and-write/';
+        $this->assertEquals($expectedTerms, $termsDetail1->getURL());
+
+        $merchantConsent2 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_Platform Partnerships Policy_Terms & Conditions']);
+        $termsDetail2 = (new MerchantConsentDetailsRepo())->getById($merchantConsent2->getDetailsId());
+
+        $this->assertEquals('10000000000000', $merchantConsent2->getMerchantId());
+        $this->assertEquals('initiated', $merchantConsent2->getStatus());
+        $expectedTerms = 'https://www.razorpay.com/xyz/terms';
+        $this->assertEquals($expectedTerms, $termsDetail2->getURL());
+
+        $merchantConsent3 = $this->getDbEntity('merchant_consents', ['consent_for' => 'Oauth_Partner Pricing Policy_Terms & Conditions']);
+        $termsDetail3 = (new MerchantConsentDetailsRepo())->getById($merchantConsent3->getDetailsId());
+
+        $this->assertEquals('10000000000000', $merchantConsent3->getMerchantId());
+        $this->assertEquals('initiated', $merchantConsent3->getStatus());
+        $expectedTerms = 'https://dashboard.razorpay.com/app/partner-pricing-plans?partner_id=' . $partner->getId();
+        $this->assertEquals($expectedTerms, $termsDetail3->getURL());
+
+        //Assert whether template id stored in partner config is stored in consent metadata for Pricing policy consent entry
+        $this->assertContains('1hDYlICobzOCZt', $merchantConsent3->metadata);
     }
 
     protected function mockBvsService()

@@ -466,13 +466,8 @@ class Core extends Base\Core
         ];
     }
 
-    public function isPartnerConsentV2ExperimentEnabled($partnerId, $mileStone, $orgId, $isDefaultPlan = false): bool
+    public function isPartnerConsentV2ExperimentEnabled($partnerId, $mileStone, $orgId): bool
     {
-        if($mileStone === MerchantConstants::OAUTH and $isDefaultPlan === true)
-        {
-            return false;
-        }
-
         $properties = [
             'id'            => $partnerId,
             'experiment_id' => $this->app['config']->get('app.partnership_consent_v2_experiment'),

@@ -251,6 +251,20 @@ class Entity extends PublicEntity
         return $partnerMetaData[Constants::POLICY_TEMPLATE_ID] ?? null;
     }
 
+    public function getPricingPolicyTemplateId(): ?string
+    {
+        $partnerMetaData = $this->getPartnerMetadata();
+
+        return $partnerMetaData[Constants::PRICING_POLICY_TEMPLATE_ID] ?? null;
+    }
+
+    public function isValidPricingPolicyTemplate()
+    {
+        $partnerMetaData = $this->getPartnerMetadata();
+
+        return $partnerMetaData[Constants::IS_VALID_PRICING_POLICY_TEMPLATE] ?? false;
+    }
+
     // --------------------- SETTERS ---------------------
     public function setEntityType($entityType)
     {

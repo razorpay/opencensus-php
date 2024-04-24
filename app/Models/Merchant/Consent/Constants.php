@@ -76,7 +76,8 @@ class Constants
         'Oauth_Custom Policy_Terms & Conditions',
         'Oauth_App Policy_Terms & Conditions',
         'Oauth_RazorpayX App Policy_Terms & Conditions',
-        'Oauth_Platform Partnerships Policy_Terms & Conditions'
+        'Oauth_Platform Partnerships Policy_Terms & Conditions',
+        'Oauth_Partner Pricing Policy_Terms & Conditions'
     ];
 
     const PARTNERSHIP_MILESTONES_WITH_APP_POLICIES = [
@@ -123,6 +124,7 @@ class Constants
                                  'Oauth_App Policy' . '_' . MeConstants::TERMS . ',' .
                                  'Oauth_RazorpayX App Policy' . '_' . MeConstants::TERMS . ',' .
                                  'Oauth_Platform Partnerships Policy' . '_' . MeConstants::TERMS . ',' .
+                                 'Oauth_Partner Pricing Policy' . '_' . MeConstants::TERMS . ',' .
                                  self::PARTNER_AUTH_TERMS;
 
     const VALID_LEGAL_DOC = [
@@ -229,6 +231,11 @@ class Constants
         ],
         'Oauth_Platform Partnerships Policy' . '_' . MeConstants::TERMS   => [
             self::DOC_NAME  => 'Platform Partnerships Policy',
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'Oauth_Partner Pricing Policy' . '_' . MeConstants::TERMS   => [
+            self::DOC_NAME  => 'Partner Pricing Policy',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],

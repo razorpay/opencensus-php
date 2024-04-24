@@ -110,4 +110,6 @@ final class Metric
 
     const MASK_PII_FIELDS_FAILED_TOTAL  = 'mask_pii_fields_failed_total';
     const MASK_PII_FIELDS_SUCCESS_TOTAL = 'mask_pii_fields_success_total';
+
+    const UPDATE_PARTNER_PRICING_TEMPLATE = 'update_partner_pricing_template';
 }

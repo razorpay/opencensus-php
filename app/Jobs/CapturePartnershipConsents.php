@@ -133,33 +133,16 @@ class CapturePartnershipConsents extends Job
 
             $detailService->storeConsents($merchantId, $input, $input[DEConstants::USER_ID]);
 
-            $defaultPricingPlan = null;
-
-            if($milestone === Constants::OAUTH)
-            {
-                $defaultPricingPlan =  $this->fetchDefaultPlanDetailsFromPartnerConfig($input[ConsentConstant::PARTNER_ID]);
-            }
-
-            $isDefaultPricingExists = (empty($defaultPricingPlan) === false);
-
-            $isExpEnabled = $consentCore->isPartnerConsentV2ExperimentEnabled($merchant->getId(), $milestone, $merchant->getOrgId(), $isDefaultPricingExists);
+            $isExpEnabled = $consentCore->isPartnerConsentV2ExperimentEnabled($merchant->getId(), $milestone, $merchant->getOrgId());
 
             $legalDocumentsInput = [];
 
             $data = $detailService->getDocumentsDetails($input, $merchant, $isExpEnabled);
 
-            if($isDefaultPricingExists)
-            {
-                $htmlContent = View::make('merchant.commission_invoice.pp_partner_oauth_terms')->with('data', $defaultPricingPlan)->toHtml();
-
-                $data[0]['content_type'] = 'html';
-                $data[0]['content']      =  $htmlContent;
-            }
-
             if ($isExpEnabled)
             {
                 //Fetch the notification details from merchant domain
-                $notificationDetails                                    = $detailService->getNotificationDetailsForMerchant(null, $input[DEConstants::USER_ID]);
+                $notificationDetails = $detailService->getNotificationDetailsForMerchant(null, $input[DEConstants::USER_ID]);
 
                 //Override the notification details as required for partner domain milestones
                 $notificationDetails = $this->overrideNotificationDetails($notificationDetails, $milestone, $input);
@@ -257,14 +240,6 @@ class CapturePartnershipConsents extends Job
 
         return $detailService->checkIfConsentsPresent($merchantId, $validDocTypes);
     }
-
-    protected function fetchDefaultPlanDetailsFromPartnerConfig(string $merchantId)
-    {
-        $defaultPartnerConfig = (new ConfigService())->fetchDefaultPartnerConfig(['partner_id'=> $merchantId, 'expand'=> 'default_plan_id']);
-
-        return (empty($defaultPartnerConfig) === false ? $defaultPartnerConfig['default_plan_id_details'] : null);
-    }
-
 
     protected function checkRetry(\Throwable $e)
     {

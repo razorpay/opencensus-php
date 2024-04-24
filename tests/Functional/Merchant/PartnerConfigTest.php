@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Models\Merchant;
 use RZP\Http\RequestHeader;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Feature as Feature;
 use RZP\Models\Partner\Config\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -11,6 +12,7 @@ use RZP\Tests\Functional\Partner\Constants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -21,6 +23,7 @@ use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class PartnerConfigTest extends OAuthTestCase
 {
+    use TestsMetrics;
     use PartnerTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -892,6 +895,174 @@ class PartnerConfigTest extends OAuthTestCase
         $this->ba->adminAuth();
 
         $this->startTest($testData);
+    }
+
+    public function testSetPartnerPricingPolicyTemplateByAdmin()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::PURE_PLATFORM]);
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'           => 'merchant',
+                'entity_id'             => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePartnerPricingPolicyTemplateByAdmin()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::PURE_PLATFORM]);
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'           => 'merchant',
+                'entity_id'             => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1,
+                'partner_metadata'      =>  [
+                    'pricing_policy_template_id'    => '1qDYlICovvOCZa',
+                    'is_valid_pricing_policy_template' => false
+                ]
+            ]
+        );
+
+        $testData = $this->testData['testSetPartnerPricingPolicyTemplateByAdmin'];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePartnerPricingPolicyTemplateByNonAdmin()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::PURE_PLATFORM]);
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'           => 'merchant',
+                'entity_id'             => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1,
+                'partner_metadata'      =>  [
+                    'pricing_policy_template_id'    => '1qDYlICovvOCZa',
+                    'is_valid_pricing_policy_template' => false
+                ]
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_config/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePartnerDefaultPricingAndCheckConsentTemplateIsInvalidated()
+    {
+        $metricsMock = $this->createMetricsMock();
+
+        $metricCaptured = false;
+
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::PURE_PLATFORM]);
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'           => 'merchant',
+                'entity_id'             => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'default_plan_id'       => '10ZeroPricingP',
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1,
+                'partner_metadata'      =>  [
+                    'pricing_policy_template_id'    => '1hDYlICobzOCZt',
+                    'is_valid_pricing_policy_template' => true
+                ]
+            ]
+        );
+
+        $testData = $this->testData['testSetPartnerPricingPolicyTemplateByAdmin'];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+        $testData['request']['content'] = [
+            'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID
+        ];
+        $testData['response']['content']['partner_metadata']['is_valid_pricing_policy_template'] = false;
+
+        $this->mockAndCaptureCountMetric(PartnerMetric::UPDATE_PARTNER_PRICING_TEMPLATE, $metricsMock, $metricCaptured, []);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePartnerPricingPolicyTemplateForNonPartnerConfigByAdmin()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => Merchant\Constants::PURE_PLATFORM]);
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                    => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'             => Constants::DEFAULT_PLATFORM_APP_ID,
+                'default_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'   => true,
+                'implicit_plan_id'      => '10ZeroPricingP',
+                'explicit_plan_id'      => '10ZeroPricingP',
+                'explicit_refund_fees'  => 1
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest($testData);
+
+        $this->assertNull($response['partner_metadata']['pricing_policy_template_id']);
     }
 
     public function testUpdatePartnerPolicyByAdminWithFeatureEnabledForOAuthApp()

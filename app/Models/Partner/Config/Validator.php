@@ -63,7 +63,9 @@ class Validator extends Base\Validator
         Constants::TEXT_COLOR              => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Constants::LOGO_URL                => 'sometimes|max:2000',
         Constants::POLICY_URL              => 'required_with:' . Constants::POLICY_TEMPLATE_ID . '|url|max:255',
-        Constants::POLICY_TEMPLATE_ID      => 'required_with:' . Constants::POLICY_URL . '|string|size:14'
+        Constants::POLICY_TEMPLATE_ID      => 'required_with:' . Constants::POLICY_URL . '|string|size:14',
+        Constants::PRICING_POLICY_TEMPLATE_ID       => 'required_with:' . Constants::IS_VALID_PRICING_POLICY_TEMPLATE . '|string|size:14',
+        Constants::IS_VALID_PRICING_POLICY_TEMPLATE => 'required_with:' . Constants::PRICING_POLICY_TEMPLATE_ID . '|boolean'
     ];
 
     protected static $createValidators = [
@@ -269,6 +271,32 @@ class Validator extends Base\Validator
         }
 
         (new Partner\Validator())->validateIfRoutePartnershipsFeatureEnabled($partner, $config->getEntityId());
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validatePricingPolicyDetailsInPartnerMetaData(Entity $config, Merchant\Entity $partner, ?array $partnerMetaData): void
+    {
+        if (isset($partnerMetaData[Constants::PRICING_POLICY_TEMPLATE_ID]) !== true)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        if ($app['basicauth']->isAdminAuth() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION);
+        }
+
+        (new Merchant\Validator())->validateIsPurePlatformPartner($partner);
+
+        // Pricing policy template Id shall only be added or updated at partner level.
+        if($config->isPlatformPartnerDefaultConfig() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARTNER_CONFIG_ENTITY_TYPE);
+        }
     }
 
     /**
