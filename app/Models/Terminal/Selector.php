@@ -123,9 +123,22 @@ class Selector extends Base\Core
         {
             $reference = $payment->getReferenceForGatewayToken();
 
+            if ((new Terminal\Service())->removeAPITerminalReads(__FUNCTION__)) {
+
+                (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, true);
+
+                $this->input['gateway_tokens'] = $this->repo
+                    ->gateway_token
+                    ->findByTokenAndReference($token, $reference);
+            } else {
+
+                (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, false);
+
             $this->input['gateway_tokens'] = $this->repo
                                                   ->gateway_token
                                                   ->findByTokenAndReference($token, $reference, [Constants::TERMINAL]);
+            }
+
         }
     }
 
