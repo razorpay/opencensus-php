@@ -47,11 +47,6 @@ trait AsvFind
 
         $this->setOldConnection($model, $oldConnection);
 
-        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
-            'source' => Constants::ASV_SERVICE,
-            'route' => (new AsvRouter())->getRouteOrJobName(),
-        ]);
-
         return $model;
     }
 

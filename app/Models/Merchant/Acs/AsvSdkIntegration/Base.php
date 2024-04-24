@@ -18,6 +18,7 @@ use RZP\Models\Base\Audit\Constants;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use Illuminate\Database\Eloquent\Collection;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant;
 USE RZP\Models\Merchant;
 use RZP\Exception;
@@ -83,6 +84,10 @@ class Base
     }
 
     function getDefaultRequestMetaData(): RequestMetadata {
+        $this->trace->count(Metric::ASV_READ_REQUEST_ROUTING_RESULT, [
+            'source' => Merchant\Constants::ASV_SERVICE,
+            'route' => (new AsvRouter())->getRouteOrJobName(),
+        ]);
         $requestMetadata = new RequestMetadata();
         $requestMetadata->setSourceDatabase(DbSource::ApiMaster);
         $requestMetadata->setTimeoutInMicroSeconds($this->asvConfig[ASVV2Constant::GRPC_TIMEOUT]);
