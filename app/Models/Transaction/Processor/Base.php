@@ -240,7 +240,7 @@ abstract class Base extends BaseCore
             {
                 $isEarlyDispatchExpEnabled = (new LedgerOutboxCore())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForAdjustments($this->txn->merchant);
 
-                if ($isEarlyDispatchExpEnabled === true)
+                if (($isEarlyDispatchExpEnabled === true) and ($this->txn->accountBalance->getType() === Balance\Type::PRIMARY))
                 {
                     $shouldDispatchSettlementBucket = false;
                 }
