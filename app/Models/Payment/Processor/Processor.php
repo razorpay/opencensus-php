@@ -11884,7 +11884,7 @@ class Processor
         }
 
         // if merchant does not have save vpa feature enabled then we can route payments to rearch
-        if ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::SAVE_VPA) === false)
+        if ($this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::SAVE_VPA) === false)
         {
             return true;
         }
