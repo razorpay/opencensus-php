@@ -233,7 +233,7 @@ class Validator extends Base\Validator
         Entity::COMPANY_CIN                              => 'sometimes|companyCin',
         Entity::COMPANY_PAN                              => 'sometimes|companyPan',
         Entity::COMPANY_PAN_NAME                         => 'sometimes|max:255',
-        Entity::BUSINESS_CATEGORY                        => 'filled|max:255|custom',
+        Entity::BUSINESS_CATEGORY                        => 'sometimes|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY                     => 'sometimes|max:255|custom',
         Entity::TRANSACTION_VOLUME                       => 'sometimes|numeric|digits_between:1,4',
         Entity::TRANSACTION_VALUE                        => 'filled|numeric|min:0|max:10000000',

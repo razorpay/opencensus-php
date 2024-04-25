@@ -4094,7 +4094,7 @@ return [
             'content' => [
                 'error' => [
                     'code'             => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'      => 'The business category field is required.',
+                    'description'      => 'Invalid business category',
                 ],
             ],
             'status_code' => 400,
@@ -4119,7 +4119,7 @@ return [
             'content' => [
                 'error' => [
                     'code'             => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'      => 'The business category field is required.',
+                    'description'      => 'Invalid business category',
                 ],
             ],
             'status_code' => 400,
