@@ -178,7 +178,8 @@ class FreePayout
 
         $merchantId = $balance->getMerchantId();
 
-        $merchantCreatedAt = (new Merchant\Repository)->getCreatedAtForTheMerchant($merchantId);
+        $merchant = (new Merchant\Repository)->find($merchantId);
+        $merchantCreatedAt = $merchant?->getCreatedAt();
 
         $freePayoutSlab2RolloutTimestamp = Carbon::create(
             self::FREE_PAYOUT_SLAB2_ROLLOUT_TIMESTAMP['year'],
