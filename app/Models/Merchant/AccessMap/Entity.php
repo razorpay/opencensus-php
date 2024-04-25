@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
@@ -99,6 +100,11 @@ class Entity extends Base\PublicEntity
     public function entityOwner()
     {
         return $this->belongsTo(Merchant\Entity::class, self::ENTITY_OWNER_ID);
+    }
+
+    public function getEntityOwnerAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'entityOwner', 'getEntityOwnerId');
     }
 
     public function getEntityOwnerId()
