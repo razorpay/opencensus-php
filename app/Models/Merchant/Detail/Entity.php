@@ -11,6 +11,7 @@ use RZP\Models\Feature;
 use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Merchant\Acs\Traits\AsvLoad;
 use RZP\Models\Merchant\Store;
 use RZP\Constants\IndianStates;
 use RZP\Constants\Country;
@@ -38,7 +39,7 @@ use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
  */
 class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 {
-    use Cacheable, AsvReload;
+    use Cacheable, AsvReload, AsvLoad;
     use TransactionalModelEvents\TransactionalAwareEvents;
 
     const MERCHANT_ID                        = 'merchant_id';
@@ -568,6 +569,13 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES = [
         self::BUSINESS_CATEGORY,
         self::BUSINESS_SUBCATEGORY,
+    ];
+
+    const ASV_RELATIONS = [
+        'merchant',
+        'stakeholder',
+        'merchantWebsite',
+        'businessDetail'
     ];
 
     public function merchant()

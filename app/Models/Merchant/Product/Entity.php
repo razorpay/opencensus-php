@@ -5,10 +5,11 @@ namespace RZP\Models\Merchant\Product;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvLoad;
 
 class Entity extends Base\PublicEntity
 {
-    use AsvGetAttribute;
+    use AsvGetAttribute, AsvLoad;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
@@ -41,6 +42,10 @@ class Entity extends Base\PublicEntity
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
+    ];
+
+    const ASV_RELATIONS = [
+        'merchant'
     ];
 
     public function merchant()

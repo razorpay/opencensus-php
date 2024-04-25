@@ -7043,7 +7043,7 @@ class Core extends Base\Core
                     else
                     {
                         $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
-                        
+
                         $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
                             [
                                 'id'            =>  $merchantDetails->getMerchantId(),
@@ -7051,14 +7051,14 @@ class Core extends Base\Core
                             ],
                             'variables'
                         );
-                        
-                        
+
+
                         if ($isExpEnabled === false or $this->mcore->isMerchantEligibleForComplianceCheck($merchantDetails->merchant) === false)
                         {
                             $this->app['trace']->info(TraceCode::MERCHANT_COMPLIANCE_CHECK_SKIP, [
                                 'merchant_id' => $merchantDetails->getMerchantId(),
                             ]);
-                            
+
                             if (isset($conditions) === true and isset($conditions[Operator::AND]) === true and isset($conditions[Operator::AND][Operator::AND]) === true)
                             {
                                 // Check if the element exists
@@ -7073,7 +7073,7 @@ class Core extends Base\Core
                                 }
                             }
                         }
-                        
+
                     }
                 }
             }
@@ -7101,8 +7101,8 @@ class Core extends Base\Core
                     return $this->verifyBusinessVerificationCondition($merchantDetails, $key, $in, $condition);
             }
         });
-        
-        
+
+
         $this->trace->info(TraceCode::AUTO_KYC_DONE_AFTER_PARSER, [
             'merchant_id'       => $merchantDetails->getId(),
             'is_auto_kyc_done'  => $autoKycDone,

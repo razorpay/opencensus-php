@@ -53,6 +53,7 @@ use RZP\Models\Terminal;
 use RZP\Models\User;
 use RZP\Models\Workflow\Action;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Acs\Traits\AsvLoad;
 use RZP\Models\Merchant\Acs\Traits\AsvReload;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Merchant\Methods\Core as MethodCore;
@@ -85,7 +86,7 @@ class Entity extends Base\PublicEntity
 {
     use Taggable;
     use NotesTrait;
-    use Cacheable;
+    use Cacheable, AsvLoad;
     use TransactionalModelEvents\TransactionalAwareEvents;
     use AsvReload {
         AsvReload::reload as AsvReload;
@@ -346,6 +347,10 @@ class Entity extends Base\PublicEntity
         self::INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE  =>  self::DEFAULT_INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE,
         self::INTL_BANK_TRANSFER_SEPA_MCC_MARKDOWN_PERCENTAGE   =>  self::DEFAULT_INTL_BANK_TRANSFER_SEPA_MCC_MARKDOWN_PERCENTAGE,
         self::INTL_BANK_TRANSFER_FPS_MCC_MARKDOWN_PERCENTAGE    =>  self::DEFAULT_INTL_BANK_TRANSFER_FPS_MCC_MARKDOWN_PERCENTAGE,
+    ];
+
+    const ASV_RELATIONS = [
+        'merchantDetail'
     ];
 
     const ALLOW_USER_CREATION       = 'allow_user_creation';
