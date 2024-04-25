@@ -77,7 +77,7 @@ class Constants
     const RULE_FILTER                     = 'rule_filter';
     const TPV                             = 'tpv';
 
-    const ENABLE_AMAZON_GC_VALIDATIONS    = 'enable_amazon_gc_validations';
+    const AMAZON_GC_VALIDATIONS           = 'amazon_gc_validations';
     const IRCTC_REPORT                    = 'irctc_report';
     const DISABLE_MAESTRO                 = 'disable_maestro';
     const DISABLE_RUPAY                   = 'disable_rupay';
@@ -2940,7 +2940,7 @@ class Constants
         self::RewardPoints                           => true,
         self::SHOW_INTL_RISK_ANALYTICS_DASHBOARD          => true,
         self::EXTERNAL_PA_VAS                        =>  true,
-        self::ENABLE_AMAZON_GC_VALIDATIONS           => true,
+        self::AMAZON_GC_VALIDATIONS                  => true,
     ];
 
     // Entity type constants
