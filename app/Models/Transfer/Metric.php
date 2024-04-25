@@ -48,6 +48,7 @@ class Metric extends Base\Core
     const TRANSFER_WEBHOOK_DISPATCH_FAILURE             = 'transfer_webhook_dispatch_failure';
     const TRANSFER_TRANSACTION_CREATE_FAILED            = 'transfer_transaction_create_failed';
     const LEDGER_OUTBOX_RETRY_CRON_FOR_TRANSFER_FAILED  = 'ledger_outbox_retry_cron_for_transfer_failed';
+    const PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH   = 'pg_ledger_transfer_merchants_onboarding_mismatch';
 
     public function pushCreateSuccessMetrics(array $input = [])
     {
@@ -257,5 +258,15 @@ class Metric extends Base\Core
     public function pushLedgerOutboxRetryCronFailureMetrics(\Throwable $e)
     {
         $this->pushExceptionMetrics($e, self::LEDGER_OUTBOX_RETRY_CRON_FOR_TRANSFER_FAILED, $this->getCreateDefaultDimensions());
+    }
+
+    public function pushTransferMerchantsOnboardingMismatchMetrics($reverseShadowEnabledForParent,$reverseShadowEnabledForLinkedAccount)
+    {
+        $dimensions = $this->getCreateDefaultDimensions();
+
+        $dimensions['reverse_shadow_enabled_for_parent_mid']         = $reverseShadowEnabledForParent;
+        $dimensions['reverse_shadow_enabled_for_linked_account_mid'] = $reverseShadowEnabledForLinkedAccount;
+
+        $this->trace->count(self::PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH, $dimensions);
     }
 }
