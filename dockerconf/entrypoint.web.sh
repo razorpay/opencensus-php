@@ -56,7 +56,7 @@ configure(){
      # log the output into stdout as php monolog has a bug in logging
     tail -F storage/logs/$HOSTNAME-trace-$(date +%Y-%m-%d).log &
   else
-    if [[ -n "${FETCH_CREDSTASH}" && "${FETCH_CREDSTASH}" == "false" ]] ; then
+    if [ -n "${FETCH_CREDSTASH:-}" ] && [ "${FETCH_CREDSTASH}" = "false" ]; then
         echo "credstash-"$APP_MODE"-api not called"
         alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
         total=$(cat vault/count )

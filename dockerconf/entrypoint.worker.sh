@@ -34,7 +34,7 @@ configure(){
    chown 0775 /var/log/apache/
    alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
   else
-    if [[ -n "${FETCH_CREDSTASH}" && "${FETCH_CREDSTASH}" == "false" ]] ; then
+    if [ -n "${FETCH_CREDSTASH:-}" ] && [ "${FETCH_CREDSTASH}" = "false" ]; then
         echo "credstash-"$APP_MODE"-api not called"
         alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/env.php.j2"
         total=$(cat vault/count )
