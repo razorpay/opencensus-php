@@ -1403,6 +1403,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EXTERNAL_SERVICE_PROXY_REQUEST                        = 'EXTERNAL_SERVICE_PROXY_REQUEST';
     const EXTERNAL_SERVICE_PROXY_RESPONSE                       = 'EXTERNAL_SERVICE_PROXY_RESPONSE';
 
+    const LINE_ITEM_VALIDATOR_VARIANT                           = 'LINE_ITEM_VALIDATOR_VARIANT';
+
     const MERCHANTS_RISK_PROXY_REQUEST                          = 'MERCHANTS_RISK_PROXY_REQUEST';
     const MERCHANTS_RISK_PROXY_RESPONSE                         = 'MERCHANTS_RISK_PROXY_RESPONSE';
 

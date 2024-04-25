@@ -81,7 +81,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $minAmountCheckRules = [
-        Entity::AMOUNT => 'required_without:item_id|integer|min_amount'
+        Entity::AMOUNT   => 'required_without:item_id|integer|min_amount',
+        Entity::CURRENCY => 'sometimes|string',
     ];
 
     protected static $createValidators = [

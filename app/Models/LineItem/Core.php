@@ -9,6 +9,9 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    // Razorx feature : Invoice line item currency validation
+    const LINE_ITEM_CURRENCY_VALIDATOR = 'line_item_currency_validator';
+
     public function create(
         array $input,
         Merchant\Entity $merchant,
@@ -49,7 +52,23 @@ class Core extends Base\Core
 
         if ($skipMinAmountValidation === false)
         {
-            (new Validator)->validateInput('min_amount_check', [Entity::AMOUNT => $input[Entity::AMOUNT]]);
+            $mode = $this->app['rzp.mode'] ?? 'live';
+
+            $variantFlag = $this->app['razorx']->getTreatment($merchant->getId(), self::LINE_ITEM_CURRENCY_VALIDATOR, $mode);
+
+            $this->trace->info(TraceCode::LINE_ITEM_VALIDATOR_VARIANT, ['variant' => $variantFlag]);
+
+            if ($variantFlag === 'on')
+            {
+                (new Validator)->validateInput('min_amount_check', [
+                    Entity::AMOUNT => $input[Entity::AMOUNT],
+                    Entity::CURRENCY => $input[Entity::CURRENCY],
+                ]);
+            }
+            else
+            {
+                (new Validator)->validateInput('min_amount_check', [Entity::AMOUNT => $input[Entity::AMOUNT]]);
+            }
         }
 
         $lineItem->build($input);
