@@ -138,6 +138,12 @@ class Entity extends Base\PublicEntity
 
     protected $cardMetadata = [];
 
+    protected $ignoredRelations = [
+        // IIN is ignored as it's an external entity that comes from BIN Service
+        // and isn't present in API DB
+        "iinRelation",
+    ];
+
     protected $fillable = [
         self::ID,
         self::NAME,
