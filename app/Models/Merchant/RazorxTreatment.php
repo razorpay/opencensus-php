@@ -628,6 +628,9 @@ final class RazorxTreatment
     // Experiment to control Emandate Nach payments processing for async balance merchants through worker queues
     const EMANDATE_ASYNC_PAYMENT_WITH_ASYNC_BAL_ENABLED = 'emandate_async_payment_with_async_balance';
 
+    // Experiment to generate or extract new nach form with hyperverge's new api endpoints
+    const GENERATE_OR_EXTRACT_NEW_NACH_FORM = 'generate_or_extract_new_nach_form';
+
     // Experiment to cache terminals for bank Transfer
     const SMART_COLLECT_TERMINAL_CACHING = 'smart_collect_terminal_caching';
 

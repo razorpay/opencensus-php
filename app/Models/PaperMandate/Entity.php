@@ -49,6 +49,7 @@ class Entity extends Base\PublicEntity
     const GENERATED_FORM_URL_EXPIRE   = 'generated_form_url_expire';
     const UPLOADED_FILE_ID            = 'uploaded_file_id';
     const FORM_CHECKSUM               = 'form_checksum';
+    const MERCHANT_ID                 = 'merchant_id';
 
     const BANK_ACCOUNT                = 'bank_account';
 
@@ -318,6 +319,11 @@ class Entity extends Base\PublicEntity
     public function getCreatedAt()
     {
         return $this->getAttribute(self::CREATED_AT);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function isFormUploadedSuccessfully(): bool
