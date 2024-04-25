@@ -231,4 +231,35 @@ class Validator extends \Razorpay\Spine\Validation\Validator
             }
         }
     }
+
+    public function validateSafeString($attribute, $value)
+    {
+        if (is_string($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'The ' . $attribute . ' is not a string.'
+            );
+        }
+
+        $maliciousPatterns = [
+            '/<script.*?>.*?<\/script>/is',        // Basic XSS attempts with <script>
+            '/<.*?(javascript|vbscript|expression|onload|onmouseover|onfocus|onerror).*?\=.*?>/i', // Event handlers and JavaScript URIs
+            '/<.*?(form|input|iframe|frame|embed|object|link|style).*?>/i', // Potentially dangerous tags
+            '/<.*?style.*?expression.*?\=.*?>/i',  // CSS expressions
+            '/<.*?meta.*?>/i',                     // Meta tags
+            '/<\/?[a-z][a-z0-9]*[^<>]*>/i',        // Tags that could be used in phishing
+            '/<!--.*?-->/s',                       // HTML comments that could hide code
+            '/[\'"]\s*?javascript\s*?\:.*?[\'"]/i' // JavaScript URIs
+        ];
+
+        foreach ($maliciousPatterns as $pattern)
+        {
+            if (preg_match($pattern, $value))
+            {
+                throw new BadRequestValidationFailureException(
+                    'The ' . $attribute . ' is not a valid string.'
+                );
+            }
+        }
+    }
 }

@@ -173,6 +173,398 @@ return [
         ],
     ],
 
+    'testCreateAccountV2WithInvalidBusinessName' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email'           => 'testcreateaccountaa@razorpay.com',
+                'phone'           => '9999999999',
+                'contact_name'    =>  'contactname',
+                'legal_business_name' => "<script>alert('Hacked!');</script>",
+                'customer_facing_business_name'   => 'Acme',
+                'business_type'       => 'individual',
+                'profile' => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => 'FFFFFF',
+                ],
+                'contact_info' => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'apps' => [
+                    'websites' => [
+                        'https://www.example.com/'
+                    ],
+                    'android'  => [
+                        [
+                            'url'  => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                            'name' => 'razorpay'
+                        ]
+                    ],
+                    'ios'      => [
+                        [
+                            'url'  => 'https://apps.apple.com/in/app/twitter/id333903271',
+                            'name' => 'twitter'
+                        ]
+                    ]
+                ],
+                'notes'           => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'The legal_business_name is not a valid string.',
+                ],
+            ],
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateAccountV2WithInvalidCustomerFacingBusinessName' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email'           => 'testcreateaccountaa@razorpay.com',
+                'phone'           => '9999999999',
+                'contact_name'    =>  'contactname',
+                'legal_business_name' => 'Acme',
+                'customer_facing_business_name'   => "<img src='x' onerror='javascript:alert('Hacked!');' />",
+                'business_type'       => 'individual',
+                'profile' => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => 'FFFFFF',
+                ],
+                'contact_info' => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'apps' => [
+                    'websites' => [
+                        'https://www.example.com/'
+                    ],
+                    'android'  => [
+                        [
+                            'url'  => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                            'name' => 'razorpay'
+                        ]
+                    ],
+                    'ios'      => [
+                        [
+                            'url'  => 'https://apps.apple.com/in/app/twitter/id333903271',
+                            'name' => 'twitter'
+                        ]
+                    ]
+                ],
+                'notes'           => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'The customer_facing_business_name is not a valid string.',
+                ],
+            ],
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateAccountV2WithInvalidStreet1' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email'           => 'testcreateaccountaa@razorpay.com',
+                'phone'           => '9999999999',
+                'contact_name'    =>  'contactname',
+                'legal_business_name' => 'Acme',
+                'customer_facing_business_name'   => 'Acme',
+                'business_type'       => 'individual',
+                'profile' => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => "<iframe src='http://malicious.site'></iframe><input type='text' name='input' value='malicious' onclick='alert('XSS')'>",
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => 'FFFFFF',
+                ],
+                'contact_info' => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'apps' => [
+                    'websites' => [
+                        'https://www.example.com/'
+                    ],
+                    'android'  => [
+                        [
+                            'url'  => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                            'name' => 'razorpay'
+                        ]
+                    ],
+                    'ios'      => [
+                        [
+                            'url'  => 'https://apps.apple.com/in/app/twitter/id333903271',
+                            'name' => 'twitter'
+                        ]
+                    ]
+                ],
+                'notes'           => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'The street1 is not a valid string.',
+                ],
+            ],
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateAccountV2WithInvalidStreet2' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email'           => 'testcreateaccountaa@razorpay.com',
+                'phone'           => '9999999999',
+                'contact_name'    =>  'contactname',
+                'legal_business_name' => 'Acme',
+                'customer_facing_business_name'   => 'Acme',
+                'business_type'       => 'individual',
+                'profile' => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'None',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => "<meta http-equiv='refresh' content='0;url=http://malicious-site.com' />",
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => 'FFFFFF',
+                ],
+                'contact_info' => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'apps' => [
+                    'websites' => [
+                        'https://www.example.com/'
+                    ],
+                    'android'  => [
+                        [
+                            'url'  => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                            'name' => 'razorpay'
+                        ]
+                    ],
+                    'ios'      => [
+                        [
+                            'url'  => 'https://apps.apple.com/in/app/twitter/id333903271',
+                            'name' => 'twitter'
+                        ]
+                    ]
+                ],
+                'notes'           => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'The street2 is not a valid string.',
+                ],
+            ],
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateAccountV2WithInvalidDataRequest' => [
         'request'  => [
             'url'     => '/v2/accounts',

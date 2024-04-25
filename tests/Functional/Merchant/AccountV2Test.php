@@ -153,6 +153,42 @@ class AccountV2Test extends TestCase
         $this->assertTrue($metricCaptured);
     }
 
+    public function testCreateAccountV2WithInvalidBusinessName()
+    {
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID);
+
+        $this->setUpPartnerWithKycHandled();
+
+        $this->startTest();
+    }
+
+    public function testCreateAccountV2WithInvalidCustomerFacingBusinessName()
+    {
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID);
+
+        $this->setUpPartnerWithKycHandled();
+
+        $this->startTest();
+    }
+
+    public function testCreateAccountV2WithInvalidStreet1()
+    {
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID);
+
+        $this->setUpPartnerWithKycHandled();
+
+        $this->startTest();
+    }
+
+    public function testCreateAccountV2WithInvalidStreet2()
+    {
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID);
+
+        $this->setUpPartnerWithKycHandled();
+
+        $this->startTest();
+    }
+
     public function testCreateAccountV2WithInvalidDataRequest()
     {
         Mail::fake();

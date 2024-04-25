@@ -26,8 +26,8 @@ class Validator extends Merchant\Validator
         Constants::EMAIL                           => 'required|email',
         Constants::PHONE                           => 'required|regex:/^\+?[1-9]{1}[0-9]{7,14}$/u',
         Constants::CONTACT_NAME                    =>  array ('sometimes','max:255','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
-        Constants::LEGAL_BUSINESS_NAME             => 'required|string',
-        Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'filled|string',
+        Constants::LEGAL_BUSINESS_NAME             => 'required|custom:safe_string',
+        Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'filled|custom:safe_string',
         Constants::BUSINESS_TYPE                   => 'required|string',
         Constants::PROFILE                         => 'required|array',
         Constants::LEGAL_INFO                      => 'sometimes|array',
@@ -45,8 +45,8 @@ class Validator extends Merchant\Validator
         Constants::EMAIL                           => 'sometimes|email',
         Constants::PHONE                           => 'required|regex:/^\+?[1-9]{1}[0-9]{7,14}$/u|custom',
         Constants::CONTACT_NAME                    =>  array ('sometimes','max:255','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
-        Constants::LEGAL_BUSINESS_NAME             => 'sometimes|string',
-        Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'filled|string',
+        Constants::LEGAL_BUSINESS_NAME             => 'sometimes|custom:safe_string',
+        Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'filled|custom:safe_string',
         Constants::BUSINESS_TYPE                   => 'sometimes|string',
         Constants::PROFILE                         => 'sometimes|array',
         Constants::LEGAL_INFO                      => 'sometimes|array',
@@ -60,8 +60,8 @@ class Validator extends Merchant\Validator
     protected static $editAccountRules = [
         Constants::PHONE                           => 'filled|regex:/^\+?[1-9]{1}[0-9]{7,14}$/u',
         Constants::CONTACT_NAME                    =>  array ('sometimes','max:255','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
-        Constants::LEGAL_BUSINESS_NAME             => 'sometimes|string',
-        Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'filled|string',
+        Constants::LEGAL_BUSINESS_NAME             => 'sometimes|custom:safe_string',
+        Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'filled|custom:safe_string',
         Constants::PROFILE                         => 'sometimes|array',
         Constants::LEGAL_INFO                      => 'sometimes|array',
         Constants::CONTACT_INFO                    => 'sometimes|array',
@@ -73,8 +73,8 @@ class Validator extends Merchant\Validator
 
     protected static $editAccountPrefillRules   = [
         Constants::CONTACT_NAME                  => array('sometimes', 'max:255', 'regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
-        Constants::LEGAL_BUSINESS_NAME           => 'sometimes|string',
-        Constants::CUSTOMER_FACING_BUSINESS_NAME => 'filled|string',
+        Constants::LEGAL_BUSINESS_NAME           => 'sometimes|custom:safe_string',
+        Constants::CUSTOMER_FACING_BUSINESS_NAME => 'filled|custom:safe_string',
         Constants::PROFILE                       => 'sometimes|array',
         Constants::LEGAL_INFO                    => 'sometimes|array',
         Constants::CONTACT_INFO                  => 'sometimes|array',
@@ -89,8 +89,8 @@ class Validator extends Merchant\Validator
         Constants::EMAIL                           => 'required|email',
         Constants::PHONE                           => 'required|regex:/^\+?[1-9]{1}[0-9]{7,14}$/u',
         Constants::CONTACT_NAME                    =>  array ('required','max:255','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
-        Constants::LEGAL_BUSINESS_NAME             => 'required|string',
-        Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'filled|string',
+        Constants::LEGAL_BUSINESS_NAME             => 'required|custom:safe_string',
+        Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'filled|custom:safe_string',
         Constants::BUSINESS_TYPE                   => 'sometimes|string',
         Constants::PROFILE                         => 'sometimes|array',
         Constants::LEGAL_INFO                      => 'sometimes|array',
@@ -119,8 +119,8 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $accountAddressRules = [
-        Constants::STREET1     => 'required|string|max:100',
-        Constants::STREET2     => 'required|string|max:100',
+        Constants::STREET1     => 'required|custom:safe_string|max:100',
+        Constants::STREET2     => 'required|custom:safe_string|max:100',
         Constants::CITY        => 'required|string',
         Constants::STATE       => 'required|string|custom',
         Constants::POSTAL_CODE => 'required|integer',
@@ -128,8 +128,8 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $editAccountAddressRules = [
-        Constants::STREET1     => 'filled|string|max:100',
-        Constants::STREET2     => 'filled|string|max:100',
+        Constants::STREET1     => 'filled|custom:safe_string|max:100',
+        Constants::STREET2     => 'filled|custom:safe_string|max:100',
         Constants::CITY        => 'filled|string',
         Constants::STATE       => 'filled|string|custom',
         Constants::POSTAL_CODE => 'filled|integer',
