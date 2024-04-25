@@ -1497,6 +1497,11 @@ class Entity extends Base\PublicEntity
         return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantDetailAttributeById($this, self::MERCHANT);
     }
 
+    public function getMerchantBusinessDetailAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getBusinessDetailAttributeByMerchantId($this, self::MERCHANT);
+    }
+
 
     public function suspend()
     {
