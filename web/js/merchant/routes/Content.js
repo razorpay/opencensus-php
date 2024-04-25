@@ -518,6 +518,10 @@ const GCMSResellerDetails = lazy(() =>
   import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Resellers/ResellerDetails'),
 );
 
+const GCMSReports = lazy(() =>
+  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Reports'),
+);
+
 const GCMSOrderCreate = lazy(() =>
   import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Orders/OrderCreate'),
 );
@@ -2151,6 +2155,18 @@ class Content extends Component {
                 }
               />
             </Route>
+            <Route
+              path=":reports/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                  }
+                >
+                  <GCMSReports />
+                </RouteGuard>
+              }
+            />
 
             <Route path="programs/*">
               <Route

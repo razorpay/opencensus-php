@@ -78,6 +78,7 @@ const routes = {
   GCMS_ORDERS: '/app/gcms/orders',
   GCMS_ORDERS_CREATE: '/app/gcms/orders/create',
   GCMS_RESELLERS: '/app/gcms/resellers',
+  GCMS_REPORTS: '/app/gcms/reports',
   APP_STORE: '/app/app-store',
   RIZE_MARKETPLACE: '/app/rize-marketplace',
   SUBSCRIPTIONS: '/app/subscriptions',
