@@ -11285,6 +11285,7 @@ class Core extends Base\Core
         $merchantID = $this->merchant->getId();
         $merchantCustomizedPriorityRulesWithFundAccountIDs = [];
         $ftsRequest = [];
+        $channelShared = strtoupper(Balance\AccountType::SHARED);
 
         /* $modeWiseActiveChannelsWithFundAccountIDs = ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
         'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
@@ -11297,12 +11298,16 @@ class Core extends Base\Core
         {
             foreach ($channels as $channel)
             {
-                // Adding fund account ID as per order in the priority list provided by merchant
-                $merchantCustomizedPriorityRulesWithFundAccountIDs[$transferMode][$channel] = $modeWiseActiveChannelsWithFundAccountIDs[$transferMode];
+                // Adding channel & fund account ID as per order of channel in the priority list provided by merchant
+                if ($channel === $channelShared) {
+                    $merchantCustomizedPriorityRulesWithFundAccountIDs[$transferMode][$channel] = "";
+                } else {
+                    $merchantCustomizedPriorityRulesWithFundAccountIDs[$transferMode][$channel] = $modeWiseActiveChannelsWithFundAccountIDs[$transferMode][$channel];
+                }
             }
         }
 
-        // 'XYZ' => ['IMPS' => ['RBL', 'ICICI'], 'NEFT' => ['ICICI', 'RBL'], 'UPI' => ['RBL']]
+        // 'XYZ' => ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907, 'SHARED' => ''], 'NEFT' => ['ICICI' => 78907, 'RBL' => 123456, 'SHARED' => ''], 'UPI' => ['RBL']]
         $ftsRequest[$merchantID] = $merchantCustomizedPriorityRulesWithFundAccountIDs;
 
         $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_FTS_REQUEST, [
