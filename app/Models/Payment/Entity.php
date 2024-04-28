@@ -6456,7 +6456,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             and $this->getCurrency()!== Currency\Currency::INR
             and $this->isFeeBearerCustomer())
         {
-            $data[self::FEE] = $this->transaction->getFee();
+            if ($this->merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) === true ) {
+                $data[self::FEE] = $this->getFee();
+            } else {
+                $data[self::FEE] = $this->transaction->getFee();
+            }
         }
 
         $this->maskSensitiveFieldsIfApplicable($data);

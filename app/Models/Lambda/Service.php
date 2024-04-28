@@ -122,6 +122,7 @@ class Service extends Base\Service
         'Payment Mode',
         'Activate Date',
         'Current Status',
+        'Deactivation Date',
         'Business Website',
         'Purpose Code',
         'Purpose Code Description',
