@@ -1818,6 +1818,8 @@ return [
         'timeout'  => env('CHECKOUT_SERVICE_TIMEOUT'),
         // secret used by checkout service to call API monolith
         'secret'   => env('CHECKOUT_SERVICE_API_MONOLITH_SECRET'),
+        // secret key for creating HMAC with checkoutId, amount
+        'amount_signature_secret' => env('CHECKOUT_SERVICE_AMOUNT_SIGNATURE_SECRET')
     ],
 
     'wallet_service' => [

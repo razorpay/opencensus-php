@@ -162,6 +162,8 @@ class Metadata
         self::SHIELD_V2  => 4,
     ];
 
+    const STANDARD_CHECKOUT_LIBRARIES = [self::CHECKOUTJS, self::HOSTED];
+
     const ADDRESS_UNSUPPORTED_LIBRARIES = [
         self::PUSH,
         self::LEGACYJS,
@@ -215,6 +217,10 @@ class Metadata
         self::RAZORPAYJS,
         self::EMBEDDED,
     ];
+
+    public static function isStandardCheckoutLibrary(string $library): bool {
+        return in_array($library, self::STANDARD_CHECKOUT_LIBRARIES, true);
+    }
 
     public static function getStringForValue($value, array $map)
     {

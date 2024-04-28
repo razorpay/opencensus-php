@@ -595,6 +595,8 @@ return array(
 
     'checkout_enable_otp_auto_read_and_auto_submit_splitz_experiment_id' => env('CHECKOUT_ENABLE_OTP_AUTO_READ_AND_AUTO_SUBMIT_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_order_signature_experiment_id' => env('CHECKOUT_ORDER_SIGNATURE_EXPERIMENT_ID'),
+
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\CheckoutOrder;
 
 use Carbon\Carbon;
+use Mockery;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
@@ -53,6 +54,16 @@ class CheckoutOrdersTest extends TestCase
 
     public function testCreateCheckoutOrder(): void
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $response = $this->createCheckoutOrder();
 
         $expectedResponse = $this->testData[__FUNCTION__];
@@ -170,7 +181,25 @@ class CheckoutOrdersTest extends TestCase
         $this->expectExceptionMessage('The id provided does not exist');
 
         $this->createCheckoutOrder(['order_id' => 'abcdefi1234567']);
-}
+    }
+
+    public function testCreateCheckoutOrderShouldFailForIncorrectAmount(): void
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('BAD_REQUEST_AMOUNT_MISMATCH');
+
+        $this->createCheckoutOrder(['amount' => 100]);
+    }
 
     public function testCreateCheckoutOrderShouldFailForTpvMerchantWithoutOrder(): void
     {
@@ -1591,6 +1620,8 @@ class CheckoutOrdersTest extends TestCase
                     "fhash" => "069a7598fa5cf4d27b9aea85b73b0a46148415e4",
                     "tz" => 330
                 ],
+                "checkout_signature" => "b39aefb12b1d00440cefdc27aeca929cb48afb16a3614fd6e58f09fa755dfdc12ed86af2a0c8a9f373eaf3437c1a792ef643006b998f68ced2d35b79007bda00",
+                "checkout_version" => "v1",
             ],
         ];
     }
@@ -1641,5 +1672,16 @@ class CheckoutOrdersTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCheckoutOrderMetadata, $checkoutOrder['meta_data']);
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 }
