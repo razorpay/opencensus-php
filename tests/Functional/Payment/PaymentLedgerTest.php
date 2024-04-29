@@ -3926,6 +3926,8 @@ class PaymentLedgerTest extends TestCase
 
         $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
         $this->assertEquals($paymentFromResponse['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
     }
 
     public function testMerchantCapturePaymentWithRefundCreditLoadingUsecase()
@@ -4062,6 +4064,8 @@ class PaymentLedgerTest extends TestCase
 
         $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
         $this->assertEquals($paymentFromResponse['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
     }
 
     public function testMerchantCapturePaymentWithReserveBalanceLoadingUsecase()
@@ -4198,6 +4202,8 @@ class PaymentLedgerTest extends TestCase
 
         $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
         $this->assertEquals($paymentFromResponse['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
     }
 
     public function getPaymentArrayForFeeCreditLoading()

@@ -417,10 +417,6 @@ class Core extends Base\Core
 
         if (count($additionalParams) > 0)
         {
-            if ($enableFeeSplitInLedger === true)
-            {
-                $additionalParams[Constants::FEE_BREAKUP] = Constants::TRUE;
-            }
             return $additionalParams;
         }
 
