@@ -20,7 +20,7 @@ test.describe.parallel(
       await searchBox.type('kyc');
       await page.locator('button[role="button"]:has-text("Search")').click();
 
-      await page.waitForSelector('text=Found 4 results', { timeout: 5000 });
+      await page.waitForSelector('text=Found 4 results');
     });
   },
 );

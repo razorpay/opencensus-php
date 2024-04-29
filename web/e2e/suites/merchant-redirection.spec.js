@@ -32,7 +32,7 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
   test('should redirect the user to easy dashboard on clicking signup', async ({ page }) => {
     await page.goto(routes.SIGN_IN_PATH);
     const signUpButton = page.getByRole('button', { name: 'Sign Up' });
-    await signUpButton.waitFor({ state: 'visible', timeout: 10000 });
+    await signUpButton.waitFor({ state: 'visible' });
     await signUpButton.click();
 
     const promises = [
@@ -56,7 +56,7 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
     page,
   }) => {
     await page.goto(routes.SIGN_IN_PATH);
-    const redirectionRequest = page.waitForResponse('/app/dashboard', { timeout: 25000 });
+    const redirectionRequest = page.waitForResponse('/app/dashboard');
     await loginByEmail({ page, cred: constants.EASY_ONBOARDING });
     const signInResponse = await redirectionRequest;
     const setCookieHeaderValue = await signInResponse.headerValue('set-cookie');
@@ -65,7 +65,7 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
       `rzp_merchant_id=${constants.EASY_ONBOARDING.merchantId}`,
     );
     expect(setCookieHeaderValue).toContain(`rzp_user_id=${constants.EASY_ONBOARDING.rzpUserId}`);
-    await page.waitForURL(EASY_ONBOARDING_WEBSITE, { waitUntil: 'load', timeout: 25000 });
+    await page.waitForURL(EASY_ONBOARDING_WEBSITE, { waitUntil: 'load' });
     await expect(page).toHaveURL(EASY_ONBOARDING_WEBSITE);
   });
 
@@ -76,7 +76,7 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
 
     await loginByEmail({ page, cred: constants.EASY_ONBOARDING_FTUX });
     await expect(page).toHaveURL(constants.FTUX_REDIRECTION_URL);
-    await page.waitForURL(constants.FTUX_REDIRECTION_URL, { waitUntil: 'load', timeout: 25000 });
+    await page.waitForURL(constants.FTUX_REDIRECTION_URL, { waitUntil: 'load' });
   });
 
   test("should redirect the P2PM onboarding user to easy dashboard's P2PM experience on logging in", async ({
@@ -86,6 +86,6 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
 
     await loginByEmail({ page, cred: constants.EASY_ONBOARDING_P2PM });
     await expect(page).toHaveURL(constants.P2PM_REDIRECTION_URL);
-    await page.waitForURL(constants.P2PM_REDIRECTION_URL, { waitUntil: 'load', timeout: 25000 });
+    await page.waitForURL(constants.P2PM_REDIRECTION_URL, { waitUntil: 'load' });
   });
 });

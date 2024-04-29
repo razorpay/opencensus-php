@@ -1,4 +1,4 @@
-import { PAGE_LOAD_TIMEOUT, CTA_SELECTORS } from 'partnerDashboard/common/constants';
+import { CTA_SELECTORS } from 'partnerDashboard/common/constants';
 import { routes } from 'testConstants';
 import { pageConsoleLog, waitForSelectorToBeVisible } from 'utils/common';
 
@@ -22,10 +22,7 @@ export const loadPartnerDashboardHomePage = async (page, partnerRoleType, homePa
 
   await page.goto(routes.PARTNER_DASHBOARD);
   // Waits for all js-bundles to load
-  await waitForSelectorToBeVisible(
-    { page, selector: homePageSelector },
-    { timeout: PAGE_LOAD_TIMEOUT },
-  );
+  await waitForSelectorToBeVisible({ page, selector: homePageSelector });
 };
 
 export const navigateToClientAccounts = async (
@@ -57,9 +54,6 @@ export const loadClientAccountsDirectly = async (
   await pageConsoleLog(page, `Loading affiliates section directly for ${partnerRoleType}...`);
   await page.goto(routes.CLIENT_ACCOUNTS);
   // Waits for all js-bundles to load
-  await waitForSelectorToBeVisible(
-    { page, selector: clientAcccountsPageSelector },
-    { timeout: PAGE_LOAD_TIMEOUT },
-  );
+  await waitForSelectorToBeVisible({ page, selector: clientAcccountsPageSelector });
   await pageConsoleLog(page, `Affiliates page loaded for ${partnerRoleType}`);
 };

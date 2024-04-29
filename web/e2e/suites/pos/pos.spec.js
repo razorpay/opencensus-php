@@ -2,12 +2,7 @@ const { test, expect } = require('@playwright/test');
 const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
 const { navigateTo } = require('utils/common');
 
-const {
-  MAIN_BANNER_TEXT_CONTENT,
-  PDP_CONTENT,
-  DEVICE_CODES,
-  POS_SELECTOR_TIMEOUT,
-} = require('./constants');
+const { MAIN_BANNER_TEXT_CONTENT, PDP_CONTENT, DEVICE_CODES } = require('./constants');
 const { waitForPosCatalogToLoad } = require('./utils');
 
 test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=payments', () => {
@@ -131,9 +126,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       ).toBeVisible();
       await page.getByPlaceholder('Enter PIN Code').fill('560034');
       await page.getByRole('button', { name: 'Check', exact: true }).click();
-      await page.waitForSelector(`text=Delivery in 2-3 business days post KYC approval.`, {
-        timeout: POS_SELECTOR_TIMEOUT,
-      });
+      await page.waitForSelector(`text=Delivery in 2-3 business days post KYC approval.`);
       const pdpactions = page.getByTestId('pdp-actions');
       await pdpactions.getByText('Add to cart').click();
       await expect(pdpactions.getByTestId('quantity-value')).toHaveText('1');
@@ -237,9 +230,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await deliveryAddressContainer.getByTestId('Karnataka-option').click();
       await deliveryAddressContainer.getByPlaceholder('Enter Address').fill('Test Address');
       await deliveryAddressContainer.getByText('Save Address').click();
-      await page.waitForSelector('text=Test Name, Test Address, Bengaluru', {
-        timeout: POS_SELECTOR_TIMEOUT,
-      });
+      await page.waitForSelector('text=Test Name, Test Address, Bengaluru');
       await page.getByText('Confirm Address & Pay').isEnabled();
     });
 
@@ -265,9 +256,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await deliveryAddressContainer.getByText('Save Address').click();
 
       await page.reload();
-      await page.waitForSelector('text=Test Name, Test Address, Bengaluru', {
-        timeout: POS_SELECTOR_TIMEOUT,
-      });
+      await page.waitForSelector('text=Test Name, Test Address, Bengaluru');
       await expect(
         page.getByTestId(`${DEVICE_CODES.androidSmartPos}-monthly-order-item`),
       ).toBeVisible();
@@ -299,7 +288,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       page,
     }) => {
       await navigateTo(page, routes.POS);
-      await page.waitForSelector('text=Orders', { timeout: POS_SELECTOR_TIMEOUT });
+      await page.waitForSelector('text=Orders');
       await page.getByText('Orders').click();
       await expect(page.getByText('No Order History')).toBeVisible();
       await page.getByText('Shop now').click();
@@ -325,11 +314,11 @@ test.describe.parallel(
       await navigateTo(page, routes.POS);
       await waitForPosCatalogToLoad({ page });
       await page.getByText('Orders').click();
-      await page.waitForSelector('text=Your Orders', { timeout: POS_SELECTOR_TIMEOUT });
+      await page.waitForSelector('text=Your Orders');
       await expect(page.getByText('Arriving by')).toBeVisible();
       await expect(page.getByText('ORDER RECEIVED')).toBeVisible();
       await page.getByText('View Order Details').click();
-      await page.waitForSelector('text=Arriving by', { timeout: POS_SELECTOR_TIMEOUT });
+      await page.waitForSelector('text=Arriving by');
       const orderStatustimeline = page.getByTestId('order-status-timeline-container');
       await expect(orderStatustimeline.getByText('Order Received')).toBeVisible();
       await expect(orderStatustimeline.getByText('Order Confirmed')).toBeVisible();
@@ -349,15 +338,13 @@ test.describe.parallel(
       await navigateTo(page, routes.POS);
       await waitForPosCatalogToLoad({ page });
       await page.getByText('Orders').click();
-      await page.waitForSelector('text=Your Orders', { timeout: POS_SELECTOR_TIMEOUT });
+      await page.waitForSelector('text=Your Orders');
       await navigateTo(page, `/app/pos/order-status/NBrJW3mPg4xfGY`);
-      await page.waitForSelector('text=Your order is successfully placed!', {
-        timeout: POS_SELECTOR_TIMEOUT,
-      });
+      await page.waitForSelector('text=Your order is successfully placed!');
       await expect(page.getByText('NBrJW3mPg4xfGY')).toBeVisible();
       await expect(page.getByText('has successfully been placed with us')).toBeVisible();
       await page.getByText('View Orders').click();
-      await page.waitForSelector('text=Your Orders', { timeout: POS_SELECTOR_TIMEOUT });
+      await page.waitForSelector('text=Your Orders');
     });
   },
 );

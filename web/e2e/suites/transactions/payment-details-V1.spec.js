@@ -17,7 +17,7 @@ const searchPaymentId = async (page, paymentId) => {
 const openPaymentDialog = async (page, paymentId) => {
   try {
     // Use a CSS selector to select the <td> with the specified text
-    const tdElement = await page.waitForSelector(`td:has-text("${paymentId}")`, { timeout: 5000 });
+    const tdElement = await page.waitForSelector(`td:has-text("${paymentId}")`);
 
     if (!tdElement) {
       throw new Error(`Could not find <td> with the specified text.`);

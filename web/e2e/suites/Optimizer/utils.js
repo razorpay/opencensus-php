@@ -185,7 +185,7 @@ export const selectGatewayBySearch = async ({ page, searchTerm, provider }) => {
   const searchGatewayInput = page.getByPlaceholder('Search for a gateway');
   expect(searchGatewayInput).toBeVisible();
   await searchGatewayInput.fill(searchTerm);
-  await page.waitForSelector(`[data-testid="${provider}"]`, { timeout: 3000 });
+  await page.waitForSelector(`[data-testid="${provider}"]`);
   const providerElement = await page.$(`[data-testid="${provider}"]`);
   if (providerElement) {
     await providerElement.click();

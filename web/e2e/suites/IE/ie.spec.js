@@ -23,23 +23,17 @@ test.describe.parallel('Test International enablement @flow=ie @project=payments
     await page.goto(CONSTANTS.IE_TAB_URL);
 
     // assert presence of IE Request CTA
-    await page.waitForSelector(CONSTANTS.REQUEST_CTA, {
-      timeout: 120000,
-    });
+    await page.waitForSelector(CONSTANTS.REQUEST_CTA);
     const requestCTA = page.locator(CONSTANTS.REQUEST_CTA);
     // wait for new customers button to be visible and click it
     await expect(requestCTA).toBeVisible();
 
     // click on request CTA to open IE modal
     await requestCTA.click();
-    await page.isVisible('text=International activation form', {
-      timeout: 5000,
-    });
+    await page.isVisible('text=International activation form');
 
     // check for Business Details section
-    await page.waitForSelector('text="BUSINESS DETAILS"', {
-      timeout: 5000,
-    });
+    await page.waitForSelector('text="BUSINESS DETAILS"');
 
     await page
       .locator('label')
@@ -59,9 +53,7 @@ test.describe.parallel('Test International enablement @flow=ie @project=payments
     await nextCTA.click();
 
     // check for Supporting details and best practices section
-    await page.waitForSelector('text="SUPPORTING DETAILS"', {
-      timeout: 5000,
-    });
+    await page.waitForSelector('text="SUPPORTING DETAILS"');
     const riskCheckList = page.locator(CONSTANTS.SELECT_RADIO);
     await riskCheckList.click();
 
@@ -77,15 +69,11 @@ test.describe.parallel('Test International enablement @flow=ie @project=payments
     await page.goto(CONSTANTS.IE_TAB_URL);
 
     // assert presence of IE NC Banner
-    await page.waitForSelector(CONSTANTS.NC_BANNER, {
-      timeout: 20000,
-    });
+    await page.waitForSelector(CONSTANTS.NC_BANNER);
     await expect(page.locator(CONSTANTS.NC_BANNER)).toBeVisible();
 
     // click on IE NC CTA
-    await page.isVisible('button:text("Submit details now")', {
-      timeout: 5000,
-    });
+    await page.isVisible('button:text("Submit details now")');
     await page
       .locator('button', {
         hasText: 'Submit details now',
@@ -93,16 +81,12 @@ test.describe.parallel('Test International enablement @flow=ie @project=payments
       .click();
 
     // check presence of NC Modal
-    await page.isVisible('text=Update details as per the instructions below', {
-      timeout: 5000,
-    });
+    await page.isVisible('text=Update details as per the instructions below');
 
     const submitCTA = page.locator(CONSTANTS.SUBMIT_CTA);
 
     // expect submit button to be disabled initially
-    await expect(submitCTA).toBeDisabled({
-      timeout: 5000,
-    });
+    await expect(submitCTA).toBeDisabled();
 
     const addNoteTextArea = page.locator("textarea[name='note']");
     await addNoteTextArea.type(generateRandomText(100));
@@ -114,8 +98,6 @@ test.describe.parallel('Test International enablement @flow=ie @project=payments
     });
 
     // assert submit button to be enabled
-    await expect(submitCTA).toBeEnabled({
-      timeout: 5000,
-    });
+    await expect(submitCTA).toBeEnabled();
   });
 });

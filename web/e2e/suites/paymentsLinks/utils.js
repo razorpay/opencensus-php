@@ -255,9 +255,7 @@ export const searchAndVerifyByPLReferenceId = async ({ container, referenceId })
 export const clickSkipAndStartBtn = async ({ page }) => {
   let skipAndStartedButton;
   try {
-    skipAndStartedButton = await page.waitForSelector('button:has-text("Skip And Get Started")', {
-      timeout: 5000,
-    });
+    skipAndStartedButton = await page.waitForSelector('button:has-text("Skip And Get Started")');
   } catch (error) {
     // Element not found within the specified timeout
     // Handle the error or perform alternative actions

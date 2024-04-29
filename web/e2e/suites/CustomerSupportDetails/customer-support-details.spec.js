@@ -34,7 +34,7 @@ test.describe.parallel(
 
       // opening support details popup to edit website url
       await page.locator('[data-testid="website"]').click();
-      await page.waitForSelector('input[name="url"]', { timeout: 5000 });
+      await page.waitForSelector('input[name="url"]');
       await page.click('input[name="url"]');
 
       // generating random website url
@@ -54,7 +54,7 @@ test.describe.parallel(
 
       // opening support details popup to edit website url
       await page.locator('[data-testid="email"]').click();
-      await page.waitForSelector('input[name="email"]', { timeout: 5000 });
+      await page.waitForSelector('input[name="email"]');
       await page.click('input[name="email"]');
 
       // generating random support email

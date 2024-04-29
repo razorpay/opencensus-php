@@ -1,4 +1,3 @@
-export const PAGE_LOAD_TIMEOUT = 20 * 1000;
 export const CONTENT_SELECTORS = {
   CLIENTS_LIST: {
     INVITE_ACCEPTED_ON: 'text=Invite Accepted On',

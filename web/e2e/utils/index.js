@@ -104,9 +104,7 @@ export const switchToTestMode = async ({ page }) => {
   //   // continue if error was encountered
   // }
   try {
-    modeSwitchToggle = await page.waitForSelector('a.switch-modes-toggle', {
-      timeout: 5000,
-    });
+    modeSwitchToggle = await page.waitForSelector('a.switch-modes-toggle');
   } catch (error) {
     // Element not found within the specified timeout
   }
@@ -133,9 +131,7 @@ export const hideSearchFTUXBannerByLocalStorage = async ({ page }) => {
 const hideSearchFTUXBannerByClick = async ({ page }) => {
   let gotItElement;
   try {
-    gotItElement = await page.waitForSelector('[data-testid="search-ftux-gotit"]', {
-      timeout: 5000,
-    });
+    gotItElement = await page.waitForSelector('[data-testid="search-ftux-gotit"]');
   } catch (error) {
     // Element not found within the specified timeout
   }

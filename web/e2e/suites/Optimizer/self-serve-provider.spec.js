@@ -124,7 +124,7 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
       await expect(addProviderButton).toBeVisible();
       await addProviderButton.click();
       await expect(page.getByText('Add Provider')).toBeVisible();
-      await page.waitForSelector('text=Select Gateway', { timeout: 1500 });
+      await page.waitForSelector('text=Select Gateway');
 
       try {
         const checkoutGateway = page.locator('h3', { hasText: 'Checkout.com' });

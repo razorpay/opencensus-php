@@ -21,9 +21,6 @@ export const waitAndProceedVerificationPopup = async ({ page }) => {
     // Check for 2 step verification modal using modal selector
     verificationPopup = await page.waitForSelector(
       ELEMENT_CONSTANTS.VERIFICATION_OTP_MODAL_SELECTOR,
-      {
-        timeout: 5000,
-      },
     );
   } catch (err) {
     // if no verificationPopup then proceed to next step
@@ -44,9 +41,6 @@ export const waitAndProceedVerificationPopup = async ({ page }) => {
     // fetching submit button cta
     const submitVerification = await page.waitForSelector(
       ELEMENT_CONSTANTS.SUBMIT_VERIFICATION_MODAL,
-      {
-        timeout: 5000,
-      },
     );
 
     // applying for verification

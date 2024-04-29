@@ -6,9 +6,7 @@ import { SELECTORS, BATCH_PP_SELECTORS } from './selectors';
 
 export const createPaymentPage = async ({ page, productData, type }) => {
   try {
-    const createButton = await page.waitForSelector('span:has-text("Create Payment Page")', {
-      timeout: 7000,
-    });
+    const createButton = await page.waitForSelector('span:has-text("Create Payment Page")');
     if (createButton) {
       await createButton.click();
     }
@@ -75,7 +73,7 @@ export const createProduct = async ({ page, product }) => {
 export const validateBatchPaymentPageDetails = async ({ page, productData }) => {
   try {
     const id = productData.detailsPage.paymentLinkId;
-    const tdElement = await page.waitForSelector(`td:has-text("${id}")`, { timeout: 7000 });
+    const tdElement = await page.waitForSelector(`td:has-text("${id}")`);
     if (tdElement) {
       await tdElement.click();
       await expect(page).toHaveURL(
@@ -95,7 +93,7 @@ export const validateBatchPaymentPageDetails = async ({ page, productData }) => 
 export const validateDownloadSampleFile = async ({ page, productData }) => {
   try {
     const id = productData.detailsPage.paymentLinkId;
-    const tdElement = await page.waitForSelector(`td:has-text("${id}")`, { timeout: 7000 });
+    const tdElement = await page.waitForSelector(`td:has-text("${id}")`);
     if (tdElement) {
       await page.getByRole('button', { name: 'Batch Details' }).first().click();
       await expect(page).toHaveURL(
@@ -142,17 +140,12 @@ export const clickSkipAndStartBtn = async ({ page }) => {
   try {
     const skipAndStartedButton = await page.waitForSelector(
       'button:has-text("Skip And Get Started")',
-      {
-        timeout: 7000,
-      },
     );
 
     await skipAndStartedButton.click();
     await page.waitForTimeout(1000);
     await expect(page.getByText('Select page of your choice')).toBeVisible();
-    const choiceCloseButton = await page.waitForSelector('span.close-icon', {
-      timeout: 3000,
-    });
+    const choiceCloseButton = await page.waitForSelector('span.close-icon');
     await choiceCloseButton.click();
     await page.waitForTimeout(1000);
   } catch (e) {

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { BASE_PATH } from '../../constants';
 import { getStorageStatePath } from '@dashboard/shared-utils/e2e/constants/paths';
+import { BASE_PATH } from '../../constants';
 
 import { navigateToTransactions } from '../../utils';
 
@@ -10,7 +10,7 @@ const navigateToRefunds = async (page, refundId) => {
     await page.getByRole('link', { name: 'Refunds', exact: true }).click();
 
     // Select the input element by its name attribute
-    const refundIdInput = await page.waitForSelector('input[name="id"]', { timeout: 5000 });
+    const refundIdInput = await page.waitForSelector('input[name="id"]');
     // Fill data into the input field
     await refundIdInput.fill(refundId);
     await page.getByRole('button', { name: 'Search' }).click();
@@ -22,7 +22,7 @@ const navigateToRefunds = async (page, refundId) => {
 const openRefundDialog = async (page, refundId) => {
   try {
     // Use a CSS selector to select the <td> with the specified text
-    const tdElement = await page.waitForSelector(`td:has-text("${refundId}")`, { timeout: 5000 });
+    const tdElement = await page.waitForSelector(`td:has-text("${refundId}")`);
 
     if (!tdElement) {
       throw new Error(`Could not find <td> with the specified text.`);

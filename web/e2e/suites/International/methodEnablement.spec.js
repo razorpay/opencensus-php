@@ -22,8 +22,6 @@ const CONSTANTS = {
     'div[data-blade-component="checkbox"] >> text="I hereby confirm that all above documents have been self-attested/digitally signed by issuing authority"',
 };
 
-const TIMEOUT = 120 * 1000;
-
 test.describe.parallel(
   'Test international method enablement flow @flow=ie-method-enablement @project=payments',
   () => {
@@ -38,10 +36,7 @@ test.describe.parallel(
       await navigateTo(page, CONSTANTS.IE_TAB_URL);
 
       //wait for request more cta to be visible
-      await waitForSelectorToBeVisible(
-        { page, selector: CONSTANTS.REQUEST_MORE_CTA },
-        { timeout: TIMEOUT },
-      );
+      await waitForSelectorToBeVisible({ page, selector: CONSTANTS.REQUEST_MORE_CTA });
 
       //request button should be visible
       const button = await page.locator(CONSTANTS.REQUEST_CTA);
@@ -56,10 +51,7 @@ test.describe.parallel(
       await navigateTo(page, CONSTANTS.IE_TAB_URL);
 
       //wait for request more cta to be visible
-      await waitForSelectorToBeVisible(
-        { page, selector: CONSTANTS.REQUEST_MORE_CTA },
-        { timeout: TIMEOUT },
-      );
+      await waitForSelectorToBeVisible({ page, selector: CONSTANTS.REQUEST_MORE_CTA });
 
       //request more methods button click
       await page.locator(CONSTANTS.REQUEST_MORE_CTA).click();
@@ -87,10 +79,7 @@ test.describe.parallel(
       await navigateTo(page, CONSTANTS.IE_TAB_URL);
 
       //wait for request more cta to be visible
-      await waitForSelectorToBeVisible(
-        { page, selector: CONSTANTS.REQUEST_MORE_CTA },
-        { timeout: TIMEOUT },
-      );
+      await waitForSelectorToBeVisible({ page, selector: CONSTANTS.REQUEST_MORE_CTA });
 
       //request more methods button click
       await page.locator(CONSTANTS.REQUEST_MORE_CTA).click();

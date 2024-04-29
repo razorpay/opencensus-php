@@ -33,15 +33,11 @@ test.describe('Test Regenerate API Keys @flow=account-settings @project=payments
     await waitAndProceedVerificationPopup({ page });
 
     // wait for generate deactivate old key button to be visible and click it
-    const deactivateOldCTA = await page.waitForSelector('text=Deactivate old key immediately', {
-      timeout: 5000,
-    });
+    const deactivateOldCTA = await page.waitForSelector('text=Deactivate old key immediately');
     await deactivateOldCTA.click();
 
     // wait for generate confirm button to be visible and click it
-    const confirmCTA = await page.waitForSelector('button:text("Confirm and deactivate")', {
-      timeout: 5000,
-    });
+    const confirmCTA = await page.waitForSelector('button:text("Confirm and deactivate")');
     await confirmCTA.click();
 
     await expectSuccessNotification({

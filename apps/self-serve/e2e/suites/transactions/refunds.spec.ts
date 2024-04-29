@@ -11,7 +11,6 @@ import {
   assertIssueRefundButton,
 } from '../../utils';
 
-const DEFAULT_TIME_OUT = 30000;
 test.describe
   .parallel('Refunds transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
@@ -22,9 +21,7 @@ test.describe
     test('should allow filters & search operations', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
-      await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible({
-        timeout: DEFAULT_TIME_OUT,
-      });
+      await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const refundsList = page.getByTestId('refunds-list');
       await expect(
         refundsList.getByRole('button', { name: 'Last 7 days', exact: true }),
@@ -56,9 +53,7 @@ test.describe
     test('should show all fields & allow to click on Details link', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
-      await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible({
-        timeout: DEFAULT_TIME_OUT,
-      });
+      await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const refundsList = page.getByTestId('refunds-list');
       const columns = ['Refund ID', 'Payment ID', 'Created on', 'Amount', 'Status', 'Actions'];
       for await (const column of columns) {
@@ -79,9 +74,7 @@ test.describe
     test('should show "full refund processed" details', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
-      await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible({
-        timeout: DEFAULT_TIME_OUT,
-      });
+      await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const id = refunds.refundId.fullRefund.processed;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
       await expect(page.getByText('Details', { exact: true })).toBeVisible();
@@ -98,9 +91,7 @@ test.describe
     test('should show "partial refund processed" details', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
-      await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible({
-        timeout: DEFAULT_TIME_OUT,
-      });
+      await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const id = refunds.refundId.partialRefund.processed;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
       // await expect(page.getByText('Gross amount₹ 100.00₹ - Indian Rupee (INR)')).toBeVisible();
@@ -121,9 +112,7 @@ test.describe
     test('should show "multi-partial refund processed" details', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
-      await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible({
-        timeout: DEFAULT_TIME_OUT,
-      });
+      await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const id = refunds.refundId.partialRefund.multiPartialRefundProcessed;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
       // await expect(page.getByText('Gross amount₹ 100.00₹ - Indian Rupee (INR)')).toBeVisible();

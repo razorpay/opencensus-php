@@ -18,7 +18,7 @@ test.describe.parallel(
       await page.goto(routes.ACCOUNT_SETTINGS);
 
       // FIRS CTA click
-      await page.locator(ELEMENT_CONFIG.FIRS_TEXT, { timeout: 5000 }).click();
+      await page.locator(ELEMENT_CONFIG.FIRS_TEXT).click();
 
       //button click should redirect to correct page
       await expect(page).toHaveURL(routes.FIRS);

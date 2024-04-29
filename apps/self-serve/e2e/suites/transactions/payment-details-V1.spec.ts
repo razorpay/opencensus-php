@@ -6,7 +6,7 @@ import { BASE_PATH } from '../../constants';
 const searchPaymentId = async (page, paymentId) => {
   try {
     // Select the input element by its name attribute
-    const paymentIdInput = await page.waitForSelector('input[name="id"]', { timeout: 30000 });
+    const paymentIdInput = await page.waitForSelector('input[name="id"]');
     // Fill data into the input field
     await paymentIdInput.fill(paymentId);
     await page.getByRole('button', { name: 'Search' }).click();
@@ -18,7 +18,7 @@ const searchPaymentId = async (page, paymentId) => {
 const openPaymentDialog = async (page, paymentId) => {
   try {
     // Use a CSS selector to select the <td> with the specified text
-    const tdElement = await page.waitForSelector(`td:has-text("${paymentId}")`, { timeout: 5000 });
+    const tdElement = await page.waitForSelector(`td:has-text("${paymentId}")`);
 
     if (!tdElement) {
       throw new Error(`Could not find <td> with the specified text.`);
