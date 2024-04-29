@@ -112,6 +112,7 @@ class ApiRequestAny
         'payments_cross_border',
         'terminals/proxy/qc',
         'magic/analytics/reports',
+        'vendor_experience',
     ];
 
     /**
