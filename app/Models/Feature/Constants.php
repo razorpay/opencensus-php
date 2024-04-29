@@ -2941,6 +2941,7 @@ class Constants
         self::SHOW_INTL_RISK_ANALYTICS_DASHBOARD          => true,
         self::EXTERNAL_PA_VAS                        =>  true,
         self::AMAZON_GC_VALIDATIONS                  => true,
+        self::CUSTOM_ONBOARDING_EMAILS               => true,
     ];
 
     // Entity type constants
