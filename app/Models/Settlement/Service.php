@@ -62,6 +62,17 @@ class Service extends Base\Service
     const SETTLEMENT_OFFSET_MID_CACHE_KEY                              = 'settlement_migration_offset_mid';
     const SETTLEMENT_BLOCKED_TXN_OFFSET_MID_CACHE_KEY                  = 'settlement_blocked_txn_offset_mid';
 
+    const DS_SETTLEMENT_DETAILS                                         = 'ds_settlement_details';
+
+
+    public function includeDsSettlementTransactions()
+    {
+        $razorxResult = $this->app->razorx->getTreatment($this->merchant->getId(), self::DS_SETTLEMENT_DETAILS, $this->mode);
+
+        $featureResult = $this->merchant->org->isFeatureEnabled(Features::DISPLAY_DS_SETT_AMT);
+
+        return ($razorxResult === 'on') and ($featureResult === true);
+    }
 
     public function createSettlementEntry($input)
     {
@@ -112,9 +123,17 @@ class Service extends Base\Service
                     'balance_type' => strtoupper($balanceType),
                 ];
 
+
                 try
                 {
-                    $res = app('settlements_merchant_dashboard')->getNextSettlementAmount($requestParams, $this->mode);
+                    if ($this->includeDsSettlementTransactions() === true)
+                    {
+                        $res = app('settlements_merchant_dashboard')->getNextSettlementAmountDS($requestParams, $this->mode);
+                    }
+                    else
+                    {
+                        $res = app('settlements_merchant_dashboard')->getNextSettlementAmount($requestParams, $this->mode);
+                    }
 
                     if(isset($res['no_settlement']) == true)
                     {
@@ -211,6 +230,17 @@ class Service extends Base\Service
         $data = (new Settlement\Processor)->process($input, $channel, $balanceType);
 
         return $data;
+    }
+
+    public function fetchDSBalance()
+    {
+        $requestParams = [
+            'merchant_id' => $this->merchant->getId(),
+        ];
+
+        $res = app('settlements_merchant_dashboard')->getMerchantBalanceDS($requestParams, $this->mode);
+
+        return $res['amount'];
     }
 
     public function processFailedSettlements($input)
@@ -395,6 +425,31 @@ class Service extends Base\Service
                     [
                         '$input' => $input,
                         'request'=> 'fetchMultiple',
+                    ]);
+            }
+        }
+
+        if ($this->includeDsSettlementTransactions() === true)
+        {
+            try
+            {
+                $fetchInput = $this->createFetchDsMultipleInput($input);
+
+                $settlements = app('settlements_merchant_dashboard')->fetchDsMultiple($fetchInput, $this->mode);;
+
+                $settlements = $this->convertToDsCollection($settlements);
+
+                return $settlements->toArrayPublic();
+
+            } catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::WARNING,
+                    TraceCode::GET_SETTLEMENTS_FOR_CN_MERCHANT_DASHBOARD_FAILED,
+                    [
+                        '$input' => $input,
+                        'request'=> 'fetchDsMultiple',
                     ]);
             }
         }
@@ -2407,6 +2462,35 @@ class Service extends Base\Service
         return $fetchInput;
     }
 
+    public function createFetchDsMultipleInput($input)
+    {
+        $fetchInput = [
+            'entity_name' => 'settlement',
+            'filter' => [
+                'merchant_id' => $this->merchant->getId(),
+            ],
+        ];
+
+
+        $fetchInput['pagination']['limit'] = (($input['count'] === null) || ($input['count'] > 100)) ? 25 : $input['count'];
+
+        $fetchInput['pagination']['skip'] = $input['skip'] ?? 0;
+
+        $fetchInput['time_range']['to'] = Carbon::now(Timezone::IST)->endOfDay()->getTimestamp();
+
+        $fetchInput['time_range']['from'] = Carbon::now(Timezone::IST)->subDays(30)->startOfDay()->getTimestamp();
+
+        foreach ($input as $key => $val)
+        {
+            if ($key == 'count' || $key == 'skip' || $key == 'to' || $key == 'from') {
+                continue;
+            }
+            $fetchInput['filter'][$key] = $val;
+        }
+
+        return $fetchInput;
+    }
+
     public function convertToCollection($settlements)
     {
         $collectionEntity = [];
@@ -2416,6 +2500,24 @@ class Service extends Base\Service
             $setl = new Settlement\Entity($settlementsEntity);
 
             $setl->setPublicAttributeForOptimiser($settlementsEntity);
+
+            array_push($collectionEntity, $setl);
+        }
+
+        $collection = collect($collectionEntity);
+
+        return new PublicCollection($collection);
+    }
+
+    public function convertToDsCollection($settlements)
+    {
+        $collectionEntity = [];
+
+        foreach($settlements['entities']['settlements'] as $settlementsEntity)
+        {
+            $setl = new Settlement\Entity($settlementsEntity);
+
+            $setl->setPublicAttributeForDs($settlementsEntity);
 
             array_push($collectionEntity, $setl);
         }

@@ -28,6 +28,10 @@ class Base
     const ORG_BANK_ACCOUNT_UPDATE           = '/twirp/rzp.settlements.org_bank_account.v1.OrgBankAccountService/Update';
     const PROCESS_CUSTOM_SETTLEMENTS_FILE   = '/twirp/rzp.settlements.org_settlements.v1.OrgSettlementsService/UpdateSettlementStatus';
     const GET_ORG_SETTLEMENT                = '/twirp/rzp.settlements.org_settlements.v1.OrgSettlementsService/Get';
+    const GET_DS_SETTLEMENT_DETAILS         = '/twirp/rzp.settlements.ds_settlements.v1.DsSettlementsService/GetDsSettlementDetails';
+    const FETCH_DS_MULTIPLE_SETTLEMENT      = '/twirp/rzp.settlements.ds_settlements.v1.DsSettlementsService/FetchDsMultiple';
+    const GET_NEXT_SETTLEMENT_AMOUNT_DS     = '/twirp/rzp.settlements.ds_settlements.v1.DsSettlementsService/GetNextSettlementAmount';
+    const GET_MERCHANT_BALANCE_DS           = '/twirp/rzp.settlements.ds_settlements.v1.DsSettlementsService/GetMerchantBalance';
 
     const LEDGER_RECON_ACTIVE_MTU_CHECK     = '/twirp/rzp.settlements.ledger_recon_mtu.v1.LedgerReconMtuService/CheckActiveMtu';
     const LEDGER_RECON_ACTIVE_MTU_ADD       = '/twirp/rzp.settlements.ledger_recon_mtu.v1.LedgerReconMtuService/Create';

@@ -463,4 +463,36 @@ class Entity extends Base\PublicEntity
             }
         }
     }
+
+    public function setPublicAttributeForDs($settlement)
+    {
+        if (isset($settlement['id']))
+        {
+            $this->setId($settlement['id']);
+        }
+
+        if (isset($settlement['utr']))
+        {
+            $this->setUtr($settlement['utr']);
+        }
+
+        if (isset($settlement['fee']))
+        {
+            $this->setFees($settlement['fee']);
+        }
+
+        if (isset($settlement['tax']))
+        {
+            $this->setTax($settlement['tax']);
+        }
+
+        if (isset($settlement['created_at']))
+        {
+            $this->setCreatedAt($settlement['created_at']);
+        }
+
+        if (isset($settlement['settled_by'])) {
+            $this->setSettledBy($settlement['settled_by']);
+        }
+    }
 }

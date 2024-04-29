@@ -12,6 +12,7 @@ use RZP\Constants\Entity as E;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Constants\Entity;
+use RZP\Models\Settlement;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Key;
@@ -784,6 +785,13 @@ class MerchantController extends Controller
 
             $data[Balance\Entity::BALANCE] = $reverseShadowCapital->fetchMerchantBalanceOnly($merchant);
         }
+
+
+        if ((new Settlement\Service)->includeDsSettlementTransactions() === true)
+        {
+            $data[Balance\Entity::BALANCE] = (new Settlement\Service)->fetchDSBalance();
+        }
+
 
         $repo = App::getFacadeRoot()['repo'];
 

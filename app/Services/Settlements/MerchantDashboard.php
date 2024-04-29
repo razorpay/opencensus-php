@@ -38,6 +38,27 @@ class MerchantDashboard extends Base
         return $this->makeRequest(self::GET_NEXT_SETTLEMENT_AMOUNT, $input, self::SERVICE_MERCHANT_DASHBOARD);
     }
 
+
+    public function getDsSettlementDetails($fetchDetailsInput, $mode = null)
+    {
+        return $this->makeRequest(self::GET_DS_SETTLEMENT_DETAILS, $fetchDetailsInput, self::SERVICE_MERCHANT_DASHBOARD, $mode);
+    }
+
+    public function fetchDsMultiple(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::FETCH_DS_MULTIPLE_SETTLEMENT, $input, self::SERVICE_MERCHANT_DASHBOARD, $mode);
+    }
+
+    public function getNextSettlementAmountDS(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::GET_NEXT_SETTLEMENT_AMOUNT_DS, $input, self::SERVICE_MERCHANT_DASHBOARD, $mode);
+    }
+
+    public function getMerchantBalanceDS(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::GET_MERCHANT_BALANCE_DS, $input, self::SERVICE_MERCHANT_DASHBOARD, $mode);
+    }
+
     /**
      * Settlement Timeline Modal
      * @param array  $input
