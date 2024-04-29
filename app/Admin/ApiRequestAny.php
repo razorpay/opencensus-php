@@ -806,11 +806,13 @@ class ApiRequestAny
 
             try
             {
+
                 $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
 
                 $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
 
                 $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $time_taken, $dimensions);
+
             }
             catch (\Throwable $t)
             {
@@ -841,11 +843,13 @@ class ApiRequestAny
 
             try
             {
+
                 $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
 
                 $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
 
                 $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $time_taken, $dimensions);
+
             }
             catch (\Throwable $t)
             {
@@ -912,6 +916,7 @@ class ApiRequestAny
 
             try
             {
+
                 $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
 
                 $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
@@ -992,6 +997,7 @@ class ApiRequestAny
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_PRODUCT           => ApiUrl::isPrimaryOriginRequest() ? Constants::PRIMARY : Constants::BANKING ,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_DASHBOARD_METHOD  => $method,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_ROUTE_NAME    => $apiPathName,
+            Constants::LABEL_API_BASE_URL                                   => ApiUrl::getApiHost(),
         ];
 
         $app = \App::getFacadeRoot();
@@ -1168,6 +1174,7 @@ class ApiRequestAny
             fn($prefix) => str_starts_with($path, $prefix)
         );
     }
+
 }
 
 

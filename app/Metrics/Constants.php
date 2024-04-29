@@ -165,4 +165,6 @@ class Constants
   const REQUEST_RESULT              = 'result';
   const REQUEST_FAILURE             = 'failure';
   const REQUEST_SUCCESS             = 'success';
+
+  const LABEL_API_BASE_URL          = 'API_BASE_URL';
 }

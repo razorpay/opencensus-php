@@ -38,11 +38,20 @@ class ApiUrl
             'https://api-merchant-proxy.razorpay.com./v1/',  // for testing
         ],
     ];
+    public static function getApiHost()
+    {
+        $url = Config::get('api.url');
+        $hostCookie = $_COOKIE[self::API_HOST_COOKIE_KEY] ?? null;
 
+        if (self::isValidApiHostCookie($hostCookie) === true)
+        {
+            $url = $hostCookie;
+        }
+        return parse_url($url,PHP_URL_HOST);
+    }
     public static function getApiBaseUrl()
     {
         $url = Config::get('api.url');
-
         $hostCookie = $_COOKIE[self::API_HOST_COOKIE_KEY] ?? null;
 
         if (self::isValidApiHostCookie($hostCookie) === true)

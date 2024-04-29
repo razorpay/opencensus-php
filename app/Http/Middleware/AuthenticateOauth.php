@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\User\Constants;
 use Route;
 use Closure;
 use Request;
@@ -67,12 +68,15 @@ class AuthenticateOauth
             }
             else
             {
-                app('metrics')->count(MetricConstants::PASSPORT_MISSING_FOR_OAUTH_ROUTE,
-                1,
-                [
-                    MetricConstants::LABEL_HTTP_REQUESTS_ROUTE => $routeName,
-                    MetricConstants::PRODUCT => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
-                ]);
+
+               app('metrics')->count(MetricConstants::PASSPORT_MISSING_FOR_OAUTH_ROUTE,
+                   1,
+                   [
+                       MetricConstants::LABEL_HTTP_REQUESTS_ROUTE       => $routeName,
+                       MetricConstants::PRODUCT                         => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
+                       MetricConstants::LABEL_API_BASE_URL              => ApiUrl::getApiHost(),
+                   ]);
+
 
                 app('trace')->error(TraceCode::EDGE_PRE_AUTHENTICATE_ERROR_PASSPORT_MISSING,
                                     ['routeName' => $routeName, 'passport_header' => $passportHeader]);
@@ -95,12 +99,15 @@ class AuthenticateOauth
             // which doesn't have mid and user_id even for guest routes
             if (in_array($routeName, self::MOBILE_OAUTH_WHITELIST_ROUTE_NAMES) === true)
             {
+
                 app('metrics')->count(MetricConstants::INVALID_PASSPORT_FOR_MOBILE_OAUTH_ROUTE,
-                1,
-                [
-                    MetricConstants::LABEL_HTTP_REQUESTS_ROUTE => $routeName,
-                    MetricConstants::PRODUCT => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
-                ]);
+                    1,
+                    [
+                        MetricConstants::LABEL_HTTP_REQUESTS_ROUTE      => $routeName,
+                        MetricConstants::PRODUCT                        => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
+                        MetricConstants::LABEL_API_BASE_URL             => ApiUrl::getApiHost(),
+                    ]);
+
 
                 app('trace')->error(TraceCode::EDGE_PRE_AUTHENTICATE_INVALID_OAUTH_PASSPORT,
                                 [
@@ -111,12 +118,15 @@ class AuthenticateOauth
                 return $next($request);
             }
 
-            app('metrics')->count(MetricConstants::INVALID_PASSPORT_FOR_OAUTH_ROUTE,
-                1,
-                [
-                    MetricConstants::LABEL_HTTP_REQUESTS_ROUTE => $routeName,
-                    MetricConstants::PRODUCT => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
-                ]);
+
+           app('metrics')->count(MetricConstants::INVALID_PASSPORT_FOR_OAUTH_ROUTE,
+               1,
+               [
+                   MetricConstants::LABEL_HTTP_REQUESTS_ROUTE    => $routeName,
+                   MetricConstants::PRODUCT                      => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
+                   MetricConstants::LABEL_API_BASE_URL           => ApiUrl::getApiHost(),
+               ]);
+
 
             app('trace')->error(TraceCode::EDGE_PRE_AUTHENTICATE_ERROR_INVALID_PASSPORT,
                                 [

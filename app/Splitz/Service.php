@@ -3,6 +3,7 @@
 namespace App\Splitz;
 
 use App\Base;
+use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\User\Constants;
 use App\Metrics\Constants as MetricsConstants;
@@ -97,7 +98,7 @@ class Service extends Base\Service
         }
     }
 
-    public function clearSplitzCacheMerchantLevel($merchantIds) 
+    public function clearSplitzCacheMerchantLevel($merchantIds)
     {
         $keysToClear = [];
 
@@ -117,9 +118,9 @@ class Service extends Base\Service
     public function clearAllSplitzCache()
     {
         $keysToClear = $this->getKeysByPattern('splitz_cache_*');
-        
+
         $this->forgotCacheKeys($keysToClear);
-        
+
         return [
             'success' => true
         ];
@@ -129,23 +130,23 @@ class Service extends Base\Service
     {
         if(isset($input['merchants']) && count($input['merchants']) > 0){
             return $this->clearSplitzCacheMerchantLevel($input['merchants']);
-        } 
+        }
         return [
             'success'=> false,
             'message'=> "No merchant id's found in payload"
         ];
     }
 
-    public function clearSplitzCache($input) 
+    public function clearSplitzCache($input)
     {
         if($input['type'] === 'merchant') {
             return $this->handleClearCachingForMerchants($input);
-        } 
-        
+        }
+
         if($input['type'] === 'all') {
             return $this->clearAllSplitzCache();
-        } 
-        
+        }
+
         return [
             'success'=> false,
             'message'=> 'Invalid cache input type'
@@ -166,25 +167,25 @@ class Service extends Base\Service
         $this->cache->put($cacheKey, $responseData, $this->cacheTimeout);
     }
 
-    public function getCacheByIdAsyncPromise($merchantId) 
+    public function getCacheByIdAsyncPromise($merchantId)
     {
         $input = $this->getSplitzApiPayload($merchantId, config('splitz.experiments'), []);
 
         $cacheKey = $this->generateCacheKey($merchantId, $input);
 
         $cachedResponse = $this->getCacheByKey($cacheKey);
-        // If cached response exists, return it 
+        // If cached response exists, return it
         if($cachedResponse){
             $this->pushMetrics(Constants::HITS, $cacheKey);
 
             return $cachedResponse;
         }
         $this->pushMetrics(Constants::MISS, $cacheKey);
-        
+
         return false;
     }
 
-    public function setCacheByIdAsyncPromise($merchantId, $responseData) 
+    public function setCacheByIdAsyncPromise($merchantId, $responseData)
     {
         $input = $this->getSplitzApiPayload($merchantId, config('splitz.experiments'), []);
 
@@ -246,30 +247,30 @@ class Service extends Base\Service
     public function processVariantBulkAsyncPromiseResponse($apiSplitzPromise)
     {
         list($error, $data) = $apiSplitzPromise->processAsyncPromiseResponse();
-        
+
         if (empty($error) === false)
         {
             $this->trace->info(TraceCode::SPLITZ_BULK_EVALUATE_FAILED, ["error" => $error]);
-        
+
             return [];
         }
-        
+
         $responseData = [];
-        
+
         foreach ($data as $output)
         {
             if (isset($output['experiment']['id']) === true)
             {
                 $experimentFeatureFlag = $output['experiment']['id'];
                 $responseData[$experimentFeatureFlag] = [];
-            
+
                 if (isset($output['variant']) === true)
                 {
                     $responseData[$experimentFeatureFlag] = $this->transformVariablesFromVariantIfExist($output['variant']);
                 }
             }
         }
-        
+
         return $responseData;
     }
 
@@ -296,16 +297,16 @@ class Service extends Base\Service
         // Define a cache key based on input data and merchantId
         $cacheKey = $this->generateCacheKey($merchantId, $input);
 
-        if ($isSplitzCachingEnabled) 
+        if ($isSplitzCachingEnabled)
         {
             $cachedResponse = $this->getCacheByKey($cacheKey);
-            // If cached response exists, return it 
+            // If cached response exists, return it
             if($cachedResponse)
             {
                 $this->pushMetrics(Constants::HITS, $cacheKey, $url);
-                
+
                 return $cachedResponse;
-            }            
+            }
             $this->pushMetrics(Constants::MISS, $cacheKey, $url);
         }
 
@@ -428,10 +429,11 @@ class Service extends Base\Service
     }
 
     public function pushMetrics($cacheType, $cacheKey, $route = 'splitz/bulkEvaluateProxy'){
-        
+
         $dimensions = [
-            Constants::CACHE_KEY => $cacheKey,
-            Constants::ROUTE_NAME     => $route
+            Constants::CACHE_KEY                                    =>        $cacheKey,
+            Constants::ROUTE_NAME                                   =>        $route,
+            MetricsConstants::LABEL_API_BASE_URL              =>        ApiUrl::getApiHost(),
         ];
 
         $metricsName = MetricsConstants::SPLITZ_EXPERIMENT_DASHBOARD_CACHE_MISS;
@@ -444,7 +446,7 @@ class Service extends Base\Service
 
             $this->metrics->count($metricsName, MetricsConstants::EVENT_COUNT_ONE, $dimensions);
 
-        }  
+        }
         catch (\Throwable $t)
         {
             $this->trace->warning(TraceCode::PUSH_METRICS_FAILED, [

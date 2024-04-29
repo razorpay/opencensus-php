@@ -690,7 +690,13 @@ class Service extends Base\Service
                     "exception" => $error
                 ]
             );
-            $this->app['metrics']->count(Constants::FETCH_PARTNER_ACTIVATION_FAILED, 1, [ "exception" => $error[0] ]);
+
+            $this->app['metrics']->count(Constants::FETCH_PARTNER_ACTIVATION_FAILED, 1,
+                [
+                    "exception"                               => $error[0] ,
+                   \App\Metrics\Constants::LABEL_API_BASE_URL => ApiUrl::getApiHost(),
+                ]);
+
         }
 
         $endTime  = microtime(true) * 1000;
@@ -1140,7 +1146,7 @@ class Service extends Base\Service
     {
         $response = [];
 
-        $razorxService = (new Razorx\Service());
+            $razorxService = (new Razorx\Service());
 
         $response = $razorxService->updateExperiments($response, $razorxCachingEnabled, $merchantId);
 
@@ -1194,7 +1200,13 @@ class Service extends Base\Service
                     "exception" => $error
                 ]
             );
-            $this->app['metrics']->count(Constants::FETCH_PARTNER_ACTIVATION_FAILED, 1, [ "exception" => $error[0] ]);
+
+            $this->app['metrics']->count(Constants::FETCH_PARTNER_ACTIVATION_FAILED, 1,
+                [
+                    "exception"                                 => $error[0],
+                    \App\Metrics\Constants::LABEL_API_BASE_URL  => ApiUrl::getApiHost(),
+                ]);
+
         }
 
         return ($data && $data['partner_activation']) ? $data ['partner_activation']['activation_status'] : '';

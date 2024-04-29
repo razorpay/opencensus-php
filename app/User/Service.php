@@ -243,13 +243,14 @@ class Service extends Base\Service
             }
 
             $traceInfo =  [
-                $medium                        => $mediumValue,
-                'medium'                       => $medium,
-                'product'                      => $product,
-                'signup_source'                => $signupSource,
-                'request_source'               => $requestSource,
-                $methodLabel                   => $method,
-                $mediumLabel                   => $medium,
+                $medium                                              => $mediumValue,
+                'medium'                                             => $medium,
+                'product'                                            => $product,
+                'signup_source'                                      => $signupSource,
+                'request_source'                                     => $requestSource,
+                $methodLabel                                         => $method,
+                $mediumLabel                                         => $medium,
+                MetricConstants::LABEL_API_BASE_URL                  => ApiUrl::getApiHost(),
             ];
 
             $this->trace->info($traceCode, $traceInfo);
@@ -320,7 +321,8 @@ class Service extends Base\Service
             $this->metrics->count($metricConstant ,
                 EVENT_TRIGGER_COUNT,
                 [
-                    MetricConstants::PRODUCT => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
+                    MetricConstants::PRODUCT                    => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
+                    MetricConstants::LABEL_API_BASE_URL         => ApiUrl::getApiBaseUrl(),
                 ]);
 
             throw new \Razorpay\Api\Errors\BadRequestError(

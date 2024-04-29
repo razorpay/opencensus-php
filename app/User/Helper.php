@@ -289,6 +289,7 @@ class Helper
                 MetricConstants::REQUEST_SUCCESS => $traceDetails[Constants::SUCCESS],
                 MetricConstants::SIGNUP_SOURCE   => $input[Constants::SIGNUP_SOURCE] ?? "NA",
                 MetricConstants::REQUEST_SOURCE  => $input[Constants::REQUEST_SOURCE] ?? "NA",
+                MetricConstants::LABEL_API_BASE_URL         => ApiUrl::getApiHost(),
             ];
 
             if($traceDetails[Constants::SUCCESS] === false)
@@ -306,8 +307,8 @@ class Helper
                 $traceDetails[Constants::METRIC_DURATION_CONSTANT],
                 $traceDetails[Constants::DURATION],
                 [
-                    $mediumLabel                => $medium,
-                    MetricConstants::PRODUCT    => $product,
+                    $mediumLabel                                => $medium,
+                    MetricConstants::PRODUCT                    => $product,
                 ]
             );
 

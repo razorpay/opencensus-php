@@ -59,6 +59,7 @@ class MerchantDetail extends Entity
             $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
 
             $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $timeTaken, $dimensions);
+
         }
         catch (\Throwable $e)
         {

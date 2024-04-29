@@ -3,6 +3,7 @@
 
 namespace App\Razorx;
 
+use App\Http\ApiUrl;
 use Auth;
 use App\Base;
 use App\Trace\TraceCode;
@@ -40,7 +41,7 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
 
         // redis cache timeout for 1 day (1440 minutes)
-        $this->cacheTimeout = 2 * 12 * 60; 
+        $this->cacheTimeout = 2 * 12 * 60;
     }
 
     public function getKeysByPattern($pattern) {
@@ -93,7 +94,7 @@ class Service extends Base\Service
     }
 
 
-    public function clearRazorxCacheMerchantLevel($merchantIds) 
+    public function clearRazorxCacheMerchantLevel($merchantIds)
     {
         $keysToClear = [];
 
@@ -114,7 +115,7 @@ class Service extends Base\Service
     {
         if(isset($input['merchants']) && count($input['merchants']) > 0){
             return $this->clearRazorxCacheMerchantLevel($input['merchants']);
-        } 
+        }
         return [
             'success'=> false,
             'message'=> "No merchant id's found in payload"
@@ -122,15 +123,15 @@ class Service extends Base\Service
     }
 
     // service to invalidate razorx cache
-    public function clearRazorxCache($input) 
+    public function clearRazorxCache($input)
     {
         if($input['type'] === 'merchant') {
             return $this->handleClearCachingForMerchants($input);
-        } 
+        }
 
         if($input['type'] === 'all') {
             return $this->clearAllRazorxCache();
-        } 
+        }
 
         return [
             'success'=> false,
@@ -169,7 +170,7 @@ class Service extends Base\Service
         $cacheKey = $this->generateCacheKey($currentMerchantId, Constants::FEATURE_FLAGS);
 
         $cachedResponse = $this->getCacheByKey($cacheKey);
-        // If cached response exists, return it 
+        // If cached response exists, return it
         if($cachedResponse){
             $this->pushMetrics(UserConstants::HITS, $cacheKey);
 
@@ -203,21 +204,21 @@ class Service extends Base\Service
     public function processBulkTreatmentPromiseResponse($apiExperimentPromise): array
     {
         list($error, $data)  = $apiExperimentPromise->processAsyncPromiseResponse();
-        
+
         if (empty($error) === false)
         {
             $data = [];
-        
+
             $this->trace->info(TraceCode::BULK_RAZORX_CALL_FAILED, [
                 "error" => $error
             ]);
-        
+
             foreach (Constants::FEATURE_FLAGS as $feature)
             {
                 $data[$feature] = ['result' => 'control'];
             }
         }
-        
+
         return $data;
     }
 
@@ -235,13 +236,13 @@ class Service extends Base\Service
 
         if($razorxCachingEnabled && empty($merchantId) === false){
             $cachedResponse = $this->getCacheByKey($cacheKey);
-            // If cached response exists, return it 
+            // If cached response exists, return it
             if($cachedResponse)
             {
                 $this->pushMetrics(UserConstants::HITS, $cacheKey);
 
                 return $cachedResponse;
-            }            
+            }
 
             $this->pushMetrics(UserConstants::MISS, $cacheKey);
         }
@@ -287,8 +288,9 @@ class Service extends Base\Service
     public function pushMetrics($cacheType, $cacheKey, $route = 'razorx/bulkevaluate'){
 
         $dimensions = [
-            UserConstants::CACHE_KEY      => $cacheKey,
-            UserConstants::ROUTE_NAME     => $route
+            UserConstants::CACHE_KEY                    => $cacheKey,
+            UserConstants::ROUTE_NAME                   => $route,
+            MetricsConstants::LABEL_API_BASE_URL  => ApiUrl::getApiHost(),
         ];
 
         $metricsName = MetricsConstants::RAZORX_EXPERIMENT_DASHBOARD_CACHE_MISS;
@@ -301,7 +303,7 @@ class Service extends Base\Service
 
             $this->metrics->count($metricsName, MetricsConstants::EVENT_COUNT_ONE, $dimensions);
 
-        }  
+        }
         catch (\Throwable $t)
         {
             $this->trace->warning(TraceCode::PUSH_METRICS_FAILED, [

@@ -2,13 +2,14 @@
 
 namespace App\Admin;
 
+use App\Http\ApiUrl;
+use App\Metrics\Constants as MetricsConstants;
 use Config;
 use App\Trace\TraceCode;
 use App\Metrics\Constants;
 use App\Http\RouteTeamMap;
 use Symfony\Component\Routing\Route;
 use Ackintosh\Ganesha as CircuitBreaker;
-use App\Metrics\Constants as MetricsConstants;
 
 class ApiRouteCircuitBreaker
 {
@@ -140,12 +141,15 @@ class ApiRouteCircuitBreaker
             $breakCircuit = true;
         }
 
-        $this->app['metrics']->count(
-            MetricsConstants::API_CIRCUIT_BREAKER_STATE_COUNT,
-            MetricsConstants::EVENT_COUNT_ONE, [
-                MetricsConstants::CIRCUIT_STATE             => $this->circuitState,
-                MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
-            ] + $this->getTeamLabels());
+
+       $this->app['metrics']->count(
+           MetricsConstants::API_CIRCUIT_BREAKER_STATE_COUNT,
+           MetricsConstants::EVENT_COUNT_ONE, [
+               MetricsConstants::CIRCUIT_STATE             => $this->circuitState,
+               MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
+               Constants::LABEL_API_BASE_URL                        => ApiUrl::getApiHost(),
+           ] + $this->getTeamLabels());
+
 
         $this->app['trace']->info(TraceCode::API_CIRCUIT_BREAKER_DECISION, [
             self::BREAK_CIRCUIT => $breakCircuit,
@@ -195,13 +199,16 @@ class ApiRouteCircuitBreaker
             ]);
         }
 
-        $this->app['metrics']->count(
-            MetricsConstants::API_CIRCUIT_BREAKER_REQUEST_RESULT_COUNT,
-            MetricsConstants::EVENT_COUNT_ONE, [
-                MetricsConstants::CIRCUIT_STATE              => $this->circuitState,
-                MetricsConstants::REQUEST_RESULT             => MetricsConstants::REQUEST_SUCCESS,
-                MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE  => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
-            ] + $this->getTeamLabels());
+
+       $this->app['metrics']->count(
+           MetricsConstants::API_CIRCUIT_BREAKER_REQUEST_RESULT_COUNT,
+           MetricsConstants::EVENT_COUNT_ONE, [
+               MetricsConstants::CIRCUIT_STATE              => $this->circuitState,
+               MetricsConstants::REQUEST_RESULT             => MetricsConstants::REQUEST_SUCCESS,
+               MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE  => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
+               Constants::LABEL_API_BASE_URL                => ApiUrl::getApiHost(),
+           ] + $this->getTeamLabels());
+
     }
 
     public function failure($traceData = [])
@@ -232,7 +239,9 @@ class ApiRouteCircuitBreaker
                 MetricsConstants::CIRCUIT_STATE              => $this->circuitState,
                 MetricsConstants::REQUEST_RESULT             => MetricsConstants::REQUEST_FAILURE,
                 MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE  => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
+                Constants::LABEL_API_BASE_URL                => ApiUrl::getApiHost(),
             ] + $this->getTeamLabels());
+
     }
 
     public function saveApiRouteDetails($apiRouteName, $apiPathPattern)

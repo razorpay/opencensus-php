@@ -474,6 +474,7 @@ class UserController extends Controller
             MetricConstants::LABEL_DASHBOARD_CBS                      => $cbsFlow,
             MetricConstants::LABEL_DASHBOARD_CONCURRENT_API_CALL      => $concurrentApICall,
             MetricConstants::LABEL_DASHBOARD_RAZORX_CACHING_API_CALL  => $this->isRazorxCachingEnabled(),
+            MetricConstants::LABEL_API_BASE_URL                       => ApiUrl::getApiHost(),
         ];
 
         $this->trace->info(TraceCode::USER_RENDER_DATA, $dimensions + ['time_taken' => $timeTaken]);
@@ -848,7 +849,8 @@ class UserController extends Controller
             $this->metrics->count(MetricConstants::USER_REGISTER_REQUEST_WITHOUT_CAPTCHA_COUNT ,
                 EVENT_TRIGGER_COUNT,
                 [
-                    MetricConstants::PRODUCT => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
+                    MetricConstants::PRODUCT                => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
+                    MetricConstants::LABEL_API_BASE_URL     => ApiUrl::getApiHost(),
                 ]);
 
             throw new \Razorpay\Api\Errors\BadRequestError(
@@ -1028,7 +1030,8 @@ class UserController extends Controller
                     $this->metrics->count(MetricConstants::USER_SIGNUP_COUNT,
                         EVENT_TRIGGER_COUNT,
                         [
-                            MetricConstants::TWO_FA_DURING_SIGNUP   => $twoFaDuringSignup,
+                            MetricConstants::TWO_FA_DURING_SIGNUP         => $twoFaDuringSignup,
+                            MetricConstants::LABEL_API_BASE_URL           => ApiUrl::getApiHost(),
                         ]);
                 }
 
@@ -1254,8 +1257,9 @@ class UserController extends Controller
             $this->metrics->count(MetricConstants::LOGIN_OTP_FAILED,
                 EVENT_TRIGGER_COUNT,
                 [
-                    MetricConstants::LOGIN_MEDIUM => $login_medium,
-                    MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+                    MetricConstants::LOGIN_MEDIUM                => $login_medium,
+                    MetricConstants::LOGIN_METHOD                => MetricConstants::OTP,
+                    MetricConstants::LABEL_API_BASE_URL          => ApiUrl::getApiHost(),
                 ]);
         }
 
@@ -1335,9 +1339,10 @@ class UserController extends Controller
         list($error, $data) = (new User\Service)->verifyVerificationOtp($input);
 
         $dimensions = [
-            MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
-            MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
-            MetricConstants::LOGIN_ACTION => MetricConstants::OTP_LOGIN,
+            MetricConstants::LOGIN_METHOD       => MetricConstants::OTP,
+            MetricConstants::LOGIN_MEDIUM       => MetricConstants::EMAIL,
+            MetricConstants::LOGIN_ACTION       => MetricConstants::OTP_LOGIN,
+            MetricConstants::LABEL_API_BASE_URL =>ApiUrl::getApiHost(),
         ];
 
         if (empty($error) === true)
@@ -1553,11 +1558,14 @@ class UserController extends Controller
 
         $this->trace->info(TraceCode::USER_LOGOUT, $traceData);
 
-        $this->metrics->count(MetricConstants::USER_LOGOUT_COUNT,
-            EVENT_TRIGGER_COUNT,
-            [
-                MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
-            ]);
+
+       $this->metrics->count(MetricConstants::USER_LOGOUT_COUNT,
+           EVENT_TRIGGER_COUNT,
+           [
+               MetricConstants::LOGIN_METHOD                => $this->getLoginMethodFromSession(),
+               MetricConstants::LABEL_API_BASE_URL          => ApiUrl::getApiHost(),
+           ]);
+
 
         // revoke user token on edge using jti
         $this->revokeTokenOnEdge();

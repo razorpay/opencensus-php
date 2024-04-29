@@ -74,6 +74,7 @@ class Metrics
             Constants::LABEL_HTTP_REQUESTS_CONTROLLER     => $request->route() !== null ? $request->route()->getAction()['controller']  : 'unknown_controller',
             Constants::LABEL_RZP_TEAM                     => $teamByRoute,
             Constants::LABEL_RZP_TEAM_TAG                 => $tagByTeam,
+            Constants::LABEL_API_BASE_URL                 => ApiUrl::getApiHost(),
         ];
     }
 

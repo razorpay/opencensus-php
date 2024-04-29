@@ -99,6 +99,7 @@ class AppResponse
             Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_IS_SUCCESS  => $response['success']                                     ?? 'unknown_success',
             Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_ROUTE       => $request->route() !== null ? $request->route()->getName() :  'unknown_route',
             Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_CONTROLLER  => $request->route() !== null ? $request->route()->getAction()['controller']  :  'unknown_controller',
+            Constants::LABEL_API_BASE_URL                         => ApiUrl::getApiBaseUrl(),
         ];
     }
 

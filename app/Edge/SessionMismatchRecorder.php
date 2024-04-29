@@ -84,6 +84,7 @@ class SessionMismatchRecorder
             Constants::LABEL_HTTP_REQUESTS_GRAPHQL_CLIENT => $apolloClientName ?? 'unknown_graphql_client',
             Constants::LABEL_HTTP_REQUESTS_PRODUCT        => ApiUrl::isBankingOriginRequest() ? Constants::BANKING : Constants::PRIMARY,
             Constants::LABEL_HTTP_REQUESTS_ROUTE          => $routeName,
+            Constants::LABEL_API_BASE_URL                 => ApiUrl::getApiHost(),
         ];
     }
 
