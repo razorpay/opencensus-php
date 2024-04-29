@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BankingConfig;
 
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Exception;
@@ -92,9 +91,7 @@ class Core extends Base\Core
 
         $fieldValue = $input[Constants::FIELD_VALUE];
 
-        $dcsConfigService->editConfiguration($key, $entityId, [$fieldName => $fieldValue], Mode::TEST);
-
-        return $dcsConfigService->editConfiguration($key, $entityId, [$fieldName => $fieldValue],Mode::LIVE);
+        return $dcsConfigService->editConfiguration($key, $entityId, [$fieldName => $fieldValue]);
     }
 
     // returns the orgid of entity

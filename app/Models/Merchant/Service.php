@@ -8,9 +8,6 @@ use App;
 use DB;
 use Rzp\Models\Key;
 use EmailValidator\Validator as EmailValidator;
-use RZP\Services\Mock\UfhService as MockUfhService;
-use RZP\Models\QrCode\NonVirtualAccountQrCode;
-use RZP\Services\UfhService;
 use Lib\PhoneBook;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request as HttpRequest;
@@ -1841,7 +1838,7 @@ class Service extends Base\Service
         }
 
         // Adds uploaded logo's url to the input.
-        $logoUrl = $this->uploadLogoIfFound($input, $isRectangularLogo);
+        $this->uploadLogoIfFound($input, $isRectangularLogo);
 
         //remove the email field from payload
         if($this->merchant->org->isFeatureEnabled(Feature\Constants::ORG_EMAIL_UPDATE_2FA_ENABLED) === true)
@@ -1853,15 +1850,10 @@ class Service extends Base\Service
 
         $response =  $this->merchant->toArrayConfig();
 
-        $key = $isRectangularLogo === true ? Merchant\Entity::RECT_LOGO_URL : Merchant\Entity::LOGO_URL;
-
-        $response[$key] = $this->merchant->getFullUrlFromRelativeUrl($logoUrl);
-
-        $previewImageLocalPath = (new NonVirtualAccountQrCode\Generator())->getPreviewImage($response[$key]);
-
-        $signedUrl = $this->getUrlFromLocalFile($previewImageLocalPath, 'image/jpeg');
-
-        $response['preview_image_url'] = $signedUrl;
+        if($isRectangularLogo === true)
+        {
+            $response['rect_logo_url'] = $this->merchant->getFullUrlFromRelativeUrl($input['rect_logo_url']);
+        }
 
         return $response;
     }
@@ -1922,40 +1914,11 @@ class Service extends Base\Service
 
     public function deleteMerchantLogo(): array
     {
-        $requestData = Request::all();
+        $this->merchant->setLogoUrl(null);
 
-        if((isset($requestData['isRectangularLogo']) === true) && !empty($requestData['isRectangularLogo']))
-        {
-            $field_name = Configurations\Constants::RectangularLogoUrl;
+        $this->repo->saveOrFail($this->merchant);
 
-            $bankingConfigInput = [
-                BankingConfig\Constants::FIELD_NAME => $field_name,
-                BankingConfig\Constants::FIELD_VALUE => 'null',
-                BankingConfig\Constants::ENTITY_ID => $this->merchant->getId(),
-                BankingConfig\Constants::KEY => Configurations\Constants::$configurationsToDCSKeyMapping[$field_name],
-                BankingConfig\Constants::SHORT_KEY => $field_name
-            ];
-
-            (new BankingConfig\Core())->upsertBankingConfigs($bankingConfigInput, '', true);
-        }
-        else
-        {
-            $this->merchant->setLogoUrl(null);
-
-            $this->repo->saveOrFail($this->merchant);
-        }
-
-        $response =  $this->merchant->toArrayConfig();
-
-        $response['rect_logo_url'] = $this->merchant->getRectangularLogoUrl();
-
-        $previewImageLocalPath = (new NonVirtualAccountQrCode\Generator())->getPreviewImage();
-
-        $signedUrl = $this->getUrlFromLocalFile($previewImageLocalPath, 'image/jpeg');
-
-        $response['preview_image_url'] = $signedUrl;
-
-        return $response;
+        return $this->merchant->toArrayConfig();
     }
 
     public function sendLoginOtpEmailForEnterpriseDashboard($input)
@@ -2006,22 +1969,6 @@ class Service extends Base\Service
             }
             unset($input['logo']);
         }
-        return $logoUrl;
-    }
-
-    public function getUrlFromLocalFile(string $previewImageLocalPath, $mimeType)
-    {
-        $fileName = basename($previewImageLocalPath);
-
-        $uploadedFile = new UploadedFile($previewImageLocalPath, $fileName, $mimeType, null, true);
-
-        $ufhService = $this->app->runningUnitTests() === true ? new MockUfhService($this->app) :  new UfhService($this->app);
-
-        $fileDetails = $ufhService->uploadFileAndGetUrl($uploadedFile, $fileName, 'qr_code_image', null);
-
-        $signedUrl = $ufhService->getSignedUrl($fileDetails['file_id']);
-
-        return $signedUrl;
     }
 
     // This is on internal auth
@@ -2057,13 +2004,20 @@ class Service extends Base\Service
 
         $response['logo_large_size_url'] = $this->merchant->getFullLogoUrlWithSize(Logo::LARGE_SIZE);
 
-        $response['rect_logo_url'] = $this->merchant->getRectangularLogoUrl();
+        if($this->merchant->isCustomMerchantUpiQrEnabled() === true)
+        {
+            $field_name = Configurations\Constants::RectangularLogoUrl;
 
-        $previewImageLocalPath = (new NonVirtualAccountQrCode\Generator())->getPreviewImage();
+            $bankingConfigInput =
+                [
+                    BankingConfig\Constants::FIELDS => [$field_name],
+                    BankingConfig\Constants::ENTITY_ID => $this->merchant->getId(),
+                    BankingConfig\Constants::KEY => Configurations\Constants::$configurationsToDCSKeyMapping[$field_name],
+                    BankingConfig\Constants::SHORT_KEY => $field_name
+                ];
 
-        $signedUrl = $this->getUrlFromLocalFile($previewImageLocalPath, 'image/jpeg');
-
-        $response['preview_image_url'] = $signedUrl;
+            $response['rect_logo_url'] = $this->merchant->getRectangularLogoUrlWithFeatureFlagEnabled($bankingConfigInput);
+        }
 
         $response[Refund\Constants::REFUND_STATUS_FILTER] =
             (new Refund\Service)->getRefundStatusFilterFlagForMerchantDashboard($merchantId);

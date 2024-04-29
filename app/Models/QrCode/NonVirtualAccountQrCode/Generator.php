@@ -27,7 +27,6 @@ use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Services\Dcs\Configurations;
 use RZP\Exception\BadRequestException;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -522,22 +521,15 @@ class Generator extends QrCode\Generator
      * Retrieve and return the appropriate logo image based on the feature flag status
      * and the application environment (unit test or production).
      */
-    protected function getLogoForFeatureFlag($rectangularLogoUrl = null)
+    protected function getLogoForFeatureFlag()
     {
         $logoUrl = null;
-
-        if ($rectangularLogoUrl === null)
-        {
-            $rectangularLogoUrl =  $this->merchant->getRectangularLogoUrl();
-        }
-
-        $rectangularLogoImage = $rectangularLogoUrl === null ? false : imagecreatefrompng($rectangularLogoUrl);
 
         if ($this->merchant->isCustomMerchantUpiQrEnabled() === true)
         {
             $logoUrl = $this->app->runningUnitTests() ?
-                public_path() . $this->merchant->getLogoUrl()
-               :  ($rectangularLogoImage === false ? $this->merchant->getFullLogoUrlWithSize() : $rectangularLogoUrl);
+                public_path() . $this->merchant->getLogoUrl() :
+                $this->merchant->getFullLogoUrlWithSize();
         }
         else
         {
@@ -546,15 +538,7 @@ class Generator extends QrCode\Generator
                 $this->merchant->org->getMainLogo();
         }
 
-        if ($logoUrl === null)
-        {
-            return false;
-        }
-
-        $imageDetails['extension'] = pathinfo($logoUrl, PATHINFO_EXTENSION);
-        $imageDetails['file_path'] = $logoUrl;
-
-        return (new Merchant\Logo())->createImageObject($imageDetails);
+        return imagecreatefrompng($logoUrl);
     }
 
 
@@ -651,12 +635,7 @@ class Generator extends QrCode\Generator
 
         if ($logo === false)
         {
-            try {
-                $path = $this->getImagePathFromOrg($this->merchant->org);
-            }
-            catch(\Exception $ex)  {
-                $path = '/img/new_upi_qr.png';
-            }
+            $path = $this->getImagePathFromOrg($this->merchant->org);
         }
 
         $logoImage = imagecreatefrompng(public_path(). $path);
@@ -749,56 +728,6 @@ class Generator extends QrCode\Generator
         imagedestroy($logoImage);
 
         imagedestroy($qrCodeImage);
-
-        return $localFilePath;
-    }
-
-    public function getPreviewImage($rectangularLogoUrl = null)
-    {
-        $localFilePath = $this->getLocalSaveDir() . '/' . 'preview_' . time() . '.' . Constants::QR_CODE_EXTENSION;
-
-        $path = $this->getBaseImagePath();
-
-        $logo = $this->getLogoForFeatureFlag($rectangularLogoUrl);
-
-        if ($logo === false)
-        {
-            try {
-                $path = $this->getImagePathFromOrg($this->merchant->org);
-            }
-            catch(\Exception $ex)  {
-                $path = '/img/new_upi_qr.png';
-            }
-        }
-
-        $logoImage = imagecreatefrompng(public_path(). $path);
-
-        imageAlphaBlending($logoImage, true);
-
-        imageSaveAlpha($logoImage, true);
-
-        list($baseImageWidth, $baseImageHeight) = $this->getImageDimensions($logoImage);
-
-        if($logo !== false and  $this->isHdfcOrg($this->merchant->org) === false)
-        {
-            $this->setLogoOnQrBaseImage($logo, $logoImage, $baseImageWidth, $baseImageHeight);
-        }
-
-        $vpa = "<merchant upi handle>";
-
-        $color = imagecolorallocate($logoImage, 4, 9, 63);
-
-        $yposUpi = $baseImageHeight / 1.5;
-
-        $yposPreviewText = $baseImageHeight/2;
-
-        $this->alignCentre($logoImage, "UPI ID: $vpa", $color, Constants::QR_VPA_FONT, $yposUpi, 15, 40);
-
-        $this->alignCentre($logoImage, "QR CODE WILL BE DISPLAYED HERE", $color, Constants::QR_VPA_FONT, $yposPreviewText, 16, 45);
-
-        imagepng($logoImage, $localFilePath);
-
-        imagedestroy($logoImage);
 
         return $localFilePath;
     }
