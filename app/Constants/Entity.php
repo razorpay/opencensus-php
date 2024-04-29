@@ -245,6 +245,7 @@ class Entity
     const ORG                   = 'org';
     const ROLE                  = 'role';
     const ADMIN                 = 'admin';
+    const ADMINS_META           = 'admins_meta';
     const GROUP                 = 'group';
     const PERMISSION            = 'permission';
     const ADMIN_LEAD            = 'admin_lead';
@@ -1361,6 +1362,7 @@ class Entity
         self::ORG                          => \RZP\Models\Admin\Org::class,
         self::ROLE                         => \RZP\Models\Admin\Role::class,
         self::ADMIN                        => \RZP\Models\Admin\Admin::class,
+        self::ADMINS_META                  => \RZP\Models\Admin\AdminsMeta::class,
         self::GROUP                        => \RZP\Models\Admin\Group::class,
         self::ADMIN_REPORT                 => \RZP\Models\Admin\Report::class,
         self::ADMIN_LEAD                   => \RZP\Models\Admin\AdminLead::class,

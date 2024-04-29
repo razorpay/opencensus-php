@@ -110,6 +110,7 @@ class Entity extends Base\Entity
         self::ALLOW_ALL_MERCHANTS,
         self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
         self::WRONG_2FA_ATTEMPTS,
+        self::EXPIRED_AT,
     ];
 
     protected $visible = [
@@ -167,7 +168,8 @@ class Entity extends Base\Entity
         self::GROUPS,
         self::MERCHANTS,
         self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
-        self::NEXT_PASSWORD_EXPIRY_DATE
+        self::NEXT_PASSWORD_EXPIRY_DATE,
+        self::EXPIRED_AT
     ];
 
     protected $hidden = [

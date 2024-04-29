@@ -229,6 +229,7 @@ class Table
     const ORG_FIELD_MAP         = 'org_field_map';
     const PERMISSION_MAP        = 'permission_map';
     const LOGIN_ATTEMPT         = 'login_attempts';
+    const ADMINS_META           = 'admins_meta';
 
     // Mapping auditors to entities for a generic use case
     const ADMIN_AUDIT_MAP       = 'admin_audit_map';
