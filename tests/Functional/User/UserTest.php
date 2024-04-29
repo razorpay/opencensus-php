@@ -2539,6 +2539,42 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testVerifyEmailOTPToUserWithNoPasswordWithCorrectOTPWithPGOSCall()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'hello123s@gmail.com', 'confirm_token' => '732575']);
+        $user->setPasswordNull();
+        $user->save();
+        $merchant = $user->getMerchantEntity();
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchant->getId(),
+            'user_id' => $user->getId(),
+            'metadata' => [
+                'service' => 'pgos'
+            ],
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+
+        $content = [
+            'email' => 'hello123s@gmail.com',
+            'otp' => '000007',
+            'token' => 'NJnJp0YefqNv4y'
+        ];
+
+        $testData['request']['content'] = $content;
+        $testData['response']['content'] = [
+            'user_id' => $user->getId()
+        ];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testVerifyEmailOTPToUserWithNoPasswordWithIncorrectOTP()
     {
         $user = $this->fixtures->create('user', ['email' => 'hello123s@gmail.com', 'confirm_token' => '732575']);

@@ -1200,6 +1200,18 @@ return [
         ],
     ],
 
+    'testVerifyEmailOTPToUserWithNoPasswordWithCorrectOTPWithPGOSCall' => [
+        'request' => [
+            'url'     => '/users/email/verify_otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testVerifyEmailOTPToUserWithNoPasswordWithIncorrectOTP' => [
         'request' => [
             'url'     => '/users/email/verify_otp',

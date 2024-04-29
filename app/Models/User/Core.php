@@ -79,6 +79,7 @@ use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 
 class Core extends Base\Core
 {
@@ -540,7 +541,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $action =  'verify_email';
+        $action = 'verify_email';
 
         LoginSignupRateLimit::validateKeyLimitExceeded(
             $user->getId(),
@@ -553,7 +554,48 @@ class Core extends Base\Core
 
         LoginSignupRateLimit::resetKey($user->getId(), Constants::VERIFY_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
 
-        return [ "user_id" => $user->getId() ];
+        try {
+            $pgosProxyController = new MerchantOnboardingProxyController();
+
+            // send request to PGOS to save email
+            $merchant = $user->getMerchantEntity();
+            if (is_null($merchant)) {
+                $this->trace->info(TraceCode::VERIFY_EMAIL_OTP_NO_MERCHANT_FOUND, [
+                    'user_id' => $user->getId(),
+                ]);
+
+                return ["user_id" => $user->getId()];
+            }
+            $merchantId = $merchant->getId();
+            $pgosResponse = $pgosProxyController->handlePGOSProxyRequests($pgosProxyController::MERCHANT_ACTIVATION_SAVE, [
+                'merchant_id' => $merchantId,
+                'email' => $email,
+            ], $merchant);
+
+            if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+            }
+
+            $this->trace->info(TraceCode::PGOS_MERCHANT_ACTIVATION_SAVE, [
+                'merchant_id' => $merchantId,
+                'pgos_response' => $pgosResponse,
+            ]);
+
+            return ["user_id" => $user->getId()];
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id'   => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+
+            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                'error description' => 'submitted data could not be processed'
+            ]);
+
+        }
     }
 
     public function verifySalesforceOtp(array $input) : bool
