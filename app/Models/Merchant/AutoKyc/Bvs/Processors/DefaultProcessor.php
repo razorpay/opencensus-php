@@ -22,6 +22,7 @@ use \RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponseV2;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationDetailsResponse;
+use RZP\Models\Merchant\Detail;
 
 class DefaultProcessor implements Processor
 {
@@ -291,6 +292,12 @@ class DefaultProcessor implements Processor
     protected function requestMode()
     {
         if ($this->app['config']['services.bvs.sync.flow'] == true)
+        {
+            return Constant::SYNC;
+        }
+
+        //For VAS merchant onboarding flows, need to use sync apis
+        if (!empty($this->merchant) and (new Detail\Core())->performKycVerificationsForVas($this->merchant) === true)
         {
             return Constant::SYNC;
         }

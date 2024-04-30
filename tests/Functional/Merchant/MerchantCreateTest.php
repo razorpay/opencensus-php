@@ -11,9 +11,12 @@ use Mockery;
 use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\User\Role;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use WpOrg\Requests\Response;
 use RZP\Models\Card\Network;
 use RZP\Models\Batch\Header;
@@ -43,7 +46,6 @@ use RZP\Jobs\SubmerchantFirstTransactionEvent;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Models\User\Repository as UserRepository;
-use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Services\Mock\LOSService as MockLOSService;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -65,6 +67,8 @@ use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantA
 use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantPartner as CreateSubMerchantPartnerForLOC;
 use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForLOC;
 use RZP\Tests\Traits\MocksSplitz;
+use RZP\Models\Merchant\Detail;
+use Config;
 
 class MerchantCreateTest extends TestCase
 {
@@ -1611,6 +1615,7 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
 
         $submerchantDetail = $this->getLastEntity('merchant_detail', true);
+
         $this->assertEquals($submerchantDetail[MerchantDetail::ACTIVATION_STATUS], MerchantDetailStatus::ACTIVATED);
     }
 
@@ -3872,5 +3877,131 @@ class MerchantCreateTest extends TestCase
 
             $this->assertEquals(count($linkedAccountsBefore), count($linkedAccountsAfter));
         }
+    }
+
+    public function testCreateSubmerchantByAdminWithKycSuccess()
+    {
+        Mail::fake();
+
+        $testData = $this->testData['testCreateSubMerchantByAdminForAggregatorBatch'];
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->batchAppAuth();
+
+        $res = $this->startTest($testData);
+        $submerchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::KYC_VERIFICATION_FOR_VAS,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->mockRazorxTreatment();
+
+        $mid = $submerchantDetail['merchant_id'];
+        $merchantDetailsData['merchant_id'] = $mid;
+
+        (new MerchantTest)->mockRazorX('testCreateBvsValidationPoi',
+            'bvs_auto_kyc',
+            'on',
+            $mid);
+
+        $bvsMockResponse = $this->triggerMockBvsVerification('testCreateBvsValidationPoi', $merchantDetailsData);
+        $bvsResponse = (new Detail\Core)->getBVSResponseforKYCValidations($mid);
+        $res['Error Code'] = $bvsResponse[0];
+        $res['Error Description'] = $bvsResponse[1];
+
+        $this->assertEmpty($bvsResponse[0]);
+        $this->assertEquals('', $res[Header::ERROR_CODE]);
+        $this->assertEquals('', $res[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateSubmerchantByAdminWithKycFailure()
+    {
+        Mail::fake();
+
+        $testData = $this->testData['testCreateSubMerchantByAdminForAggregatorBatch'];
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->batchAppAuth();
+
+        $res = $this->startTest($testData);
+        $submerchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::KYC_VERIFICATION_FOR_VAS,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->mockRazorxTreatment();
+
+        $mid = $submerchantDetail['merchant_id'];
+        $merchantDetailsData['merchant_id'] = $mid;
+
+        (new MerchantTest)->mockRazorX('testCreateBvsValidationPoi',
+            'bvs_auto_kyc',
+            'on',
+            $mid);
+
+        $bvsMockResponse = $this->triggerMockBvsVerification('testCreateBvsValidationPoi', $merchantDetailsData, true, 'failed');
+        $bvsResponse = (new Detail\Core)->getBVSResponseforKYCValidations($mid);
+        $res['Error Code'] = $bvsResponse[0];
+        $res['Error Description'] = $bvsResponse[1];
+
+        $this->assertEquals(',personal_pan:NO_PROVIDER_ERROR', $res[Header::ERROR_CODE]);
+        $this->assertEquals(',personal_pan:Karza gateway timed out', $res[Header::ERROR_DESCRIPTION]);
+    }
+
+    protected function triggerMockBvsVerification(string $test,
+                                                  array $merchantDetailsData,
+                                                  bool $bvsMock = true,
+                                                  string $responseSuccess = 'success')
+    {
+        $mid = $merchantDetailsData['merchant_id'];
+        if ($responseSuccess === 'success') {
+            $bvsFixture = $this->fixtures->create('bvs_validation',
+                [
+                    'owner_id'      => $mid,
+                    'artefact_type' => Constant::PERSONAL_PAN,
+                    'owner_type'    => 'merchant',
+                    'platform'      => 'pg',
+                    'validation_status' => $responseSuccess,
+                ]);
+        } else {
+            $bvsFixture = $this->fixtures->create('bvs_validation',
+                [
+                    'owner_id'      => $mid,
+                    'artefact_type' => Constant::PERSONAL_PAN,
+                    'owner_type'    => 'merchant',
+                    'platform'      => 'pg',
+                    'validation_status' => $responseSuccess,
+                    'error_code' => 'NO_PROVIDER_ERROR',
+                    'error_description' => 'Karza gateway timed out',
+                ]);
+        }
+
+        $this->ba->proxyAuth();
+
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', $bvsMock);
+        Config::set('services.bvs.response', $responseSuccess);
+
+        return $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
     }
 }

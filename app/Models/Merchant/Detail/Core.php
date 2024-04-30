@@ -6251,6 +6251,65 @@ class Core extends Base\Core
         return false;
     }
 
+    public function performKycVerificationsForVas(Merchant\Entity $merchant): bool
+    {
+        try
+        {
+            $orgId = $merchant->getOrgId();
+
+            if (empty($orgId) === true)
+            {
+                return false;
+            }
+
+            $israzorxExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($orgId,
+                RazorxTreatment::PERFORM_KYC_VALIDATIONS_VASMERCHANTS);
+
+            if($merchant->org->isFeatureEnabled(Feature\Constants::KYC_VERIFICATION_FOR_VAS) && $israzorxExperimentEnabled)
+            {
+                return true;
+            }
+        }
+        catch (\Exception)
+        {
+            return false;
+        }
+        return false;
+    }
+
+    public function getBVSResponseforKYCValidations($merchantId): array
+    {
+        $bvsValidationResponse = (new BvsValidation\Core)->getArtefactsValidationStatus($merchantId);
+        $filteredBvsResponse = [];
+        foreach ($bvsValidationResponse as $item) {
+            // Check if the artefact type already exists in the filtered array, this is for storing only latest artefact result from query
+            if (!isset($filteredBvsResponse[$item[BvsValidation\Entity::ARTEFACT_TYPE]])) {
+                // If not, add it to the filtered array
+                $filteredBvsResponse[$item[BvsValidation\Entity::ARTEFACT_TYPE]] = $item;
+            }
+        }
+        $combinedErrorCodes = '';
+        $combinedErrorDescription = '';
+        foreach ($filteredBvsResponse as $validation)
+        {
+            $validationStatus = $validation[BvsValidation\Entity::VALIDATION_STATUS];
+            $artefactType = $validation[BvsValidation\Entity::ARTEFACT_TYPE];
+            if ($validationStatus == BvsValidation\Constants::FAILED)
+            {
+                $currentArtefactErrorCode = $artefactType . ':' . $validation[BvsValidation\Entity::ERROR_CODE];
+                $currentArtefactErrorDescription = $artefactType . ':' . $validation[BvsValidation\Entity::ERROR_DESCRIPTION];
+            }
+            else {
+                $currentArtefactErrorCode = $artefactType . ':' . 'Manual verification needed';
+                $currentArtefactErrorDescription = $artefactType . ':' . 'KYC details verification failed. Please verify manually';
+            }
+            $combinedErrorCodes = $combinedErrorCodes . ',' . $currentArtefactErrorCode;
+            $combinedErrorDescription = $combinedErrorDescription . ',' . $currentArtefactErrorDescription;
+        }
+
+        return [$combinedErrorCodes, $combinedErrorDescription];
+    }
+
     /**
      * SubMerchant batch upload flow allows skipping bank account registration as the partner
      * is there liable for the risk and the submerchants must be activated directly.

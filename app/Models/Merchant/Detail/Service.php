@@ -129,10 +129,10 @@ class Service extends Base\Service
     use NotifyTrait;
 
     const PAYMENT_DATA_NOT_FOUND_ON_DRUID = 'payment data not found on druid';
-    
+
     const BAD_REQUEST_MSG_CIN_MISMATCH = 'bad_request: The given CIN does not belong to your selected business type. Please provide a different CIN';
     const BAD_REQUEST_MSG_PAN_MISMATCH = 'bad_request: The given PAN does not belong to your selected business type. Please provide a different PAN';
-    
+
     const BAD_REQUEST_MSG_OWNER_GSTIN_MISMATCH = 'bad_request: The given GSTIN does not belong to the Owner PAN provided. Please provide a different GSTIN';
     const BAD_REQUEST_MSG_BUSINESS_GSTIN_MISMATCH = 'bad_request: The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
     const SHARED_MERCHANT_ID = '100000Razorpay';

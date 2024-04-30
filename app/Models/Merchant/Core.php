@@ -7630,6 +7630,10 @@ class Core extends Base\Core
 
     public function isAutoKycEnabled(Detail\Entity $merchantDetails, Entity $merchant): bool
     {
+        if((new Detail\Core())->performKycVerificationsForVas($merchant) === true)
+        {
+            return true;
+        }
         $isRazorpayOrgId = $merchant->isRazorpayOrgId();
 
         // if merchant belongs to some different org then don't to auto kyc

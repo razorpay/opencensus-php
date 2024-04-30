@@ -35,6 +35,8 @@ use RZP\Jobs\SubMerchantBatchUploadValidationStatusUpdater;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\BvsValidation;
+use RZP\Models\Merchant\Detail;
 
 class SubMerchantBatchUtility extends Base\Core
 {
@@ -431,6 +433,13 @@ class SubMerchantBatchUtility extends Base\Core
                 MerchantDetail::SUBMIT => '1'
             ];
             $response   = $this->merchantDetailCore->saveMerchantDetails($submitData, $subMerchant);
+
+            if ((new Detail\Core())->performKycVerificationsForVas($subMerchant) === true) {
+                //storing errors from KYC verification calls
+                $bvsResponse = $this->merchantDetailCore->getBVSResponseforKYCValidations($subMerchant->getId());
+                $entry[Header::ERROR_CODE] = $bvsResponse[0];
+                $entry[Header::ERROR_DESCRIPTION] = $bvsResponse[1];
+            }
 
             if ($response[MerchantDetail::SUBMITTED] === false)
             {

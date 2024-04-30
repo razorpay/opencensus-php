@@ -141,6 +141,13 @@ class Core extends Base\Core
         );
     }
 
+    public function getArtefactsValidationStatus(string $merchantId)
+    {
+        return $this->repo->bvs_validation->getArtefactsValidationStatusByMerchantId(
+            $merchantId, [Constants::CAPTURED, Constants::FAILED, null]
+        );
+    }
+
     /**
      * @param array                         $input
      *

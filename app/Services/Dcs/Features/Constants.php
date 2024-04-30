@@ -206,6 +206,7 @@ class Constants
     const WalletAutoDebitEnabled                      = 'wallet_auto_debit_enabled';
     const EnableApprovalViaOAuth                      = 'enable_approval_via_oauth';
     const SkipKycVerification                         = 'skip_kyc_verification';
+    const KycVerificationForVas                       = 'kyc_verification_for_vas';
     const PersonalisationV3Disabled                   = 'personalisation_v3_disabled';
     const PassCustomUdfFss                            = 'pass_custom_udf_fss';
 
@@ -497,6 +498,7 @@ class Constants
         self::WalletPaytmAutoDebit                        => 'rzp/pg/merchant/wallet/paytm/AutoDebit',
         self::EnableApprovalViaOAuth                      => 'rzp/x/merchant/payouts/Workflows',
         self::SkipKycVerification                         => 'rzp/pg/org/onboarding/banking_program/Config',
+        self::KycVerificationForVas                       => 'rzp/pg/org/onboarding/banking_program/Config',
         self::SettlementsServiceOnboarding                => 'rzp/pg/merchant/settlements/Onboarding',
         self::SettlementsServiceStopSMS                   => 'rzp/pg/merchant/settlements/Communication',
         self::SettlementReconReportWithNotes              => 'rzp/platform/merchant/reporting/CustomReports',
@@ -748,6 +750,7 @@ class Constants
         APIFeaturesConstants::WALLET_PAYTM_AUTO_DEBIT                      => self::WalletPaytmAutoDebit,
         APIFeaturesConstants::ENABLE_APPROVAL_VIA_OAUTH                    => self::EnableApprovalViaOAuth,
         APIFeaturesConstants::SKIP_KYC_VERIFICATION                        => self::SkipKycVerification,
+        APIFeaturesConstants::KYC_VERIFICATION_FOR_VAS                     => self::KycVerificationForVas,
         APIFeaturesConstants::NEW_SETTLEMENT_SERVICE                       => self::SettlementsServiceOnboarding,
         APIFeaturesConstants::SETTLEMENTS_SMS_STOP                         => self::SettlementsServiceStopSMS,
         APIFeaturesConstants::REPORTING_GENRERIC_NOTES                     => self::SettlementReconReportWithNotes,
@@ -864,6 +867,7 @@ class Constants
         self::ShowCustomDccDisclosures       => 'direct',
         self::AdminPasswordResetEnabled      => 'direct',
         self::SkipKycVerification            => 'direct',
+        self::KycVerificationForVas          => 'direct',
         self::OrgFreshdeskCreateTicket       => 'client',
         self::EnableAutomateIIR              => 'direct'
     ];

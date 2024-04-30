@@ -178,6 +178,30 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function getArtefactsValidationStatusByMerchantId(string $merchantId, array $status) {
+        $ownerIdColumn        = $this->repo->bvs_validation->dbColumn(Entity::OWNER_ID);
+        $artefactTypeColumn   = $this->repo->bvs_validation->dbColumn(Entity::ARTEFACT_TYPE);
+        $errorCode            = $this->repo->bvs_validation->dbColumn(Entity::ERROR_CODE);
+        $errorDescription     = $this->repo->bvs_validation->dbColumn(Entity::ERROR_DESCRIPTION);
+        $validationStatus     = $this->repo->bvs_validation->dbColumn(Entity::VALIDATION_STATUS);
+        $validationIdColumn     = $this->dbColumn(Entity::VALIDATION_ID);
+
+        return $this->newQuery()
+            ->select(
+                $ownerIdColumn,
+                $validationIdColumn,
+                $artefactTypeColumn,
+                $validationStatus,
+                $errorCode,
+                $errorDescription)
+            ->Where($ownerIdColumn, $merchantId)
+            ->WhereIn(Entity::VALIDATION_STATUS, $status)
+            ->Where(Entity::PLATFORM, "=", "pg")
+            ->Where(Entity::OWNER_TYPE, "=", "merchant")
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->get();
+    }
+
     public function getArtefactTypeFromValidationId(string $validationId)
     {
         $artefactTypeColumn   = $this->repo->bvs_validation->dbColumn(Entity::ARTEFACT_TYPE);

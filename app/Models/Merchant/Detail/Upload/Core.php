@@ -25,6 +25,7 @@ use RZP\Models\Merchant\Website\Core as MWebsiteCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Upload\Processors\Factory;
 use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
+use RZP\Models\Merchant\BvsValidation;
 
 class Core extends Base\Core
 {
@@ -187,6 +188,11 @@ class Core extends Base\Core
                     $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
 
                     $entry[Header::ERROR_DESCRIPTION] = 'Failed to submit activation details';
+                } else {
+                    //storing errors from KYC verification calls
+                    $bvsResponse = $this->merchantDetailCore->getBVSResponseforKYCValidations($merchant->getId());
+                    $entry[Header::ERROR_CODE] = $bvsResponse[0];
+                    $entry[Header::ERROR_DESCRIPTION] = $bvsResponse[1];
                 }
 
                 return $merchant;

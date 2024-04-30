@@ -235,6 +235,12 @@ class Constants
     const SKIP_KYC_VERIFICATION = "skip_kyc_verification";
 
     /**
+     * this feature flag is used to enable the call to BVS api's for kyc validations of certain artefacts
+     * in VAS merchant onboarding flows
+     */
+    const KYC_VERIFICATION_FOR_VAS = "kyc_verification_for_vas";
+
+    /**
      * The feature flag is used to enable MOTO payments via token in the batch upload flow.
      */
     const DIRECT_DEBIT_VIA_TOKEN_BATCH = "direct_debit_token_batch";
@@ -2895,6 +2901,7 @@ class Constants
         self::ENABLE_APPROVAL_VIA_OAUTH                    => true,
         self::ENABLE_SMART_ROUTING                         => true,
         self::SKIP_KYC_VERIFICATION                        => true,
+        self::KYC_VERIFICATION_FOR_VAS                     => true,
         self::ORG_AUTOMATE_IIR                             => true,
         self::DISABLE_AUTOMATE_IIR                         => true,
         self::PERSONALISATION_V3_DISABLED                  => true,

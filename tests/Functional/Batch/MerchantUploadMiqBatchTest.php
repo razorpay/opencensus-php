@@ -2,10 +2,16 @@
 
 namespace RZP\Tests\Functional\Batch;
 
+use Config;
 use RZP\Models\Batch\Header;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as PName;
+use RZP\Models\Merchant\Detail;
+use RZP\Tests\Functional\Merchant;
 
 class MerchantUploadMiqBatchTest extends TestCase
 {
@@ -159,7 +165,7 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->ba->appAuth();
 
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
-        $this->testData[__FUNCTION__]['response']['content'] =  
+        $this->testData[__FUNCTION__]['response']['content'] =
             [
                 Header::STATUS                          => 'failure',
                 Header::ERROR_CODE                      => 'SERVER_ERROR',
@@ -373,7 +379,7 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CITY] = 'NA';
 
         $response = $this->startTest();
-        
+
         $this->assertEquals('failure', $response[Header::STATUS]);
         $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
     }
@@ -1385,4 +1391,145 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertEquals('failure', $response[Header::STATUS]);
         $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
     }
+
+    public function testCreateMerchantUploadMIQBvsKYCValidationsSuccess()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::KYC_VERIFICATION_FOR_VAS,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->mockRazorxTreatment();
+
+        $input = $this->testData['defaultSuccess']['request']['content'];
+        $response = (new Detail\Upload\Core)->processMerchantEntry($input);
+        $mid = $response['Merchant_id'];
+        $merchantDetailsData['merchant_id'] = $mid;
+
+        (new Merchant\MerchantTest)->mockRazorX('testCreateBvsValidationPoi',
+            'bvs_auto_kyc',
+            'on',
+            $mid);
+
+        $bvsMockResponse = $this->triggerMockBvsVerification('testCreateBvsValidationPoi', $merchantDetailsData);
+        $bvsResponse = (new Detail\Core)->getBVSResponseforKYCValidations($mid);
+        $response['Error Code'] = $bvsResponse[0];
+        $response['Error Description'] = $bvsResponse[1];
+
+        $this->assertEmpty($bvsResponse[0]);
+        $this->assertEquals('', $response[Header::ERROR_CODE]);
+        $this->assertEquals('', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantUploadMIQBvsKYCValidationsFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::KYC_VERIFICATION_FOR_VAS,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->mockRazorxTreatment();
+
+        $input = $this->testData['defaultSuccess']['request']['content'];
+        $response = (new Detail\Upload\Core)->processMerchantEntry($input);
+        $mid = $response['Merchant_id'];
+        $merchantDetailsData['merchant_id'] = $mid;
+
+        (new Merchant\MerchantTest)->mockRazorX('testCreateBvsValidationPoi',
+            'bvs_auto_kyc',
+            'on',
+            $mid);
+
+        $bvsMockResponse = $this->triggerMockBvsVerification('testCreateBvsValidationPoi', $merchantDetailsData, true, 'failed');
+        $bvsResponse = (new Detail\Core)->getBVSResponseforKYCValidations($mid);
+        $response['Error Code'] = $bvsResponse[0];
+        $response['Error Description'] = $bvsResponse[1];
+
+
+        $this->assertEquals(',personal_pan:NO_PROVIDER_ERROR', $response[Header::ERROR_CODE]);
+        $this->assertEquals(',personal_pan:Karza gateway timed out', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    protected function triggerMockBvsVerification(string $test,
+                                               array $merchantDetailsData,
+                                               bool $bvsMock = true,
+                                               string $responseSuccess = 'success')
+    {
+        $mid = $merchantDetailsData['merchant_id'];
+        if ($responseSuccess === 'success') {
+            $bvsFixture = $this->fixtures->create('bvs_validation',
+                [
+                    'owner_id'      => $mid,
+                    'artefact_type' => Constant::PERSONAL_PAN,
+                    'owner_type'    => 'merchant',
+                    'platform'      => 'pg',
+                    'validation_status' => $responseSuccess,
+                ]);
+        } else {
+            $bvsFixture = $this->fixtures->create('bvs_validation',
+                [
+                    'owner_id'      => $mid,
+                    'artefact_type' => Constant::PERSONAL_PAN,
+                    'owner_type'    => 'merchant',
+                    'platform'      => 'pg',
+                    'validation_status' => $responseSuccess,
+                    'error_code' => 'NO_PROVIDER_ERROR',
+                    'error_description' => 'Karza gateway timed out',
+                ]);
+        }
+
+        $this->ba->proxyAuth();
+
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', $bvsMock);
+        Config::set('services.bvs.response', $responseSuccess);
+
+        $testData = &$this->testData[$test];
+
+        $this->startTest($testData);
+
+        return $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'On')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === RazorxTreatment::PERFORM_KYC_VALIDATIONS_VASMERCHANTS)
+                    {
+                        return 'on';
+                    }
+                    return "default";
+                })
+            );
+    }
 }
+

@@ -172,6 +172,16 @@ class Factory
                     new BankAccount($merchant, $merchantDetails),
                 ];
             }
+            else if ((new Detail\Core())->performKycVerificationsForVas($merchant) === true)
+            {
+                return [
+                    new CinAuth($merchant, $merchantDetails),
+                    new GstinAuth($merchant, $merchantDetails),
+                    new BankAccount($merchant, $merchantDetails),
+                    new CompanyPan($merchant, $merchantDetails),
+                    new PersonalPan($merchant, $merchantDetails)
+                ];
+            }
             else
             {
                 return [];
