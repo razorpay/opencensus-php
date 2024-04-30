@@ -95,7 +95,6 @@ const partnerCustomerId = {
 
 export const Accounts = ({ location, history }: RouteComponentProps): JSX.Element => {
   const [isDetailView, setDetailView] = useState(false);
-  const [shouldShowListView, setShouldShowListView] = useState(false);
   const { mode } = useContext<WalletSession>(SessionContext);
   const [paginationState, setPagination] = useState({
     skip: 0,
@@ -121,11 +120,10 @@ export const Accounts = ({ location, history }: RouteComponentProps): JSX.Elemen
       setDetailView(true);
     } else {
       setDetailView(false);
-      setShouldShowListView(true);
     }
   }, [location.pathname]);
 
-  return shouldShowListView ? (
+  return (
     <div className="content-wrapper">
       <Filters onSubmit={setFilters} />
       <DataTable
@@ -166,8 +164,6 @@ export const Accounts = ({ location, history }: RouteComponentProps): JSX.Elemen
         </Modal>
       )}
     </div>
-  ) : (
-    <AccountDetail />
   );
 };
 

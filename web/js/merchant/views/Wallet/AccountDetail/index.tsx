@@ -28,6 +28,7 @@ export const AccountDetail = ({ match }: AccountDetailProps): JSX.Element => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['wallet:accounts', mode, accountId],
     queryFn: (): Promise<Account> => fetchAccountById({ id: accountId, mode }),
+    enabled: Boolean(accountId),
   });
 
   return (
