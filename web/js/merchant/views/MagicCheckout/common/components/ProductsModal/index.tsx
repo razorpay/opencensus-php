@@ -41,6 +41,7 @@ interface ProductModalProps {
   platform: string;
   updateSettings: (payload: Record<string, any>, isLoading: boolean) => any;
   openModal: (arg: Record<string, any>) => any;
+  appType?: string;
 }
 
 const ProductsModal = ({
@@ -58,6 +59,7 @@ const ProductsModal = ({
   platform,
   updateSettings,
   openModal,
+  appType,
 }: ProductModalProps) => {
   const selectedCategory = category;
   const isEditMode = mode === MODAL_MODES.EDIT;
@@ -190,13 +192,14 @@ const ProductsModal = ({
     >
       {isCategoryFetching ? (
         <div className="page-spinner-container">
-          <Spinner />
+          <Spinner center />
         </div>
       ) : (
         <InfiniteLoader<Product>
           isCursorBased
           pageSize={100}
           url={productsUrl}
+          appType={appType}
           setHasErrorInFetchingProducts={setHasErrorInFetchingProducts}
           rowRenderer={(item) => (
             <ProductItem

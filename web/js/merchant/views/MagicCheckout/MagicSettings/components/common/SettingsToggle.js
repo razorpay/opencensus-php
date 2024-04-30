@@ -3,7 +3,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import isEmpty from 'lodash/isEmpty';
 
 const SettingsToggle = ({ setting, onToggle }) =>
-  !isEmpty(setting) && (
+  !isEmpty(setting) ? (
     <div className="display-flex checkout-settings-toggle">
       {setting.label && (
         <div className="setting-label">
@@ -34,6 +34,6 @@ const SettingsToggle = ({ setting, onToggle }) =>
         )}
       </div>
     </div>
-  );
+  ) : null;
 
 export default SettingsToggle;

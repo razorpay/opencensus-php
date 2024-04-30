@@ -300,4 +300,7 @@ export const INITIAL_STATE = {
       name: 'All Other Products',
     },
   },
+  magicCheckout: {
+    rcod: true,
+  },
 };

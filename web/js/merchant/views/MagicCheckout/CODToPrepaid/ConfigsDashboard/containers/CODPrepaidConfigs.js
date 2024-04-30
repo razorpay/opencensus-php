@@ -367,7 +367,11 @@ const CODPrepaidConfigs = (props) => {
               setDurationVal={setDurationVal}
             />
             <hr />
-            <ConversionPlatform convertOn={convertOn} setConvertOn={setConvertOn} />
+            <ConversionPlatform
+              convertOn={convertOn}
+              setConvertOn={setConvertOn}
+              platform={platform}
+            />
           </>
         )}
       </div>

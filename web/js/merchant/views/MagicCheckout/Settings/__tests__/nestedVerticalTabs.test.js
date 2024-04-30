@@ -115,7 +115,7 @@ describe('Nested vertical tabs component', () => {
     await waitFor(() => expect(screen.queryByText('Store Settings')).not.toBeInTheDocument());
   });
 
-  test('should display COD and RTO settings if rcod is enabled', async () => {
+  test('should display COD, RTO and shipping settings if rcod is enabled', async () => {
     const customState = {
       magicCheckout: {
         rcod: true,
@@ -126,5 +126,6 @@ describe('Nested vertical tabs component', () => {
     });
     await waitFor(() => expect(screen.queryByText('COD Settings')).toBeInTheDocument());
     await waitFor(() => expect(screen.queryByText('RTO Settings')).toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText('Shipping Settings')).toBeInTheDocument());
   });
 });

@@ -5,9 +5,13 @@ import {
   POPOVER_INFO_TEXT,
   CONVERT_ON_OPTIONS,
 } from 'merchant/views/MagicCheckout/CODToPrepaid/ConfigsDashboard/constants';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/Settings/constants';
 
 const ConversionPlatform = (props) => {
-  const { convertOn, setConvertOn } = props;
+  const { convertOn, setConvertOn, platform } = props;
+
+  const CONVERSION_OPTIONS =
+    platform === PLATFORMS.WOOCOMMERCE ? [CONVERT_ON_OPTIONS[0]] : CONVERT_ON_OPTIONS;
 
   return (
     <div className="config-box">
@@ -28,7 +32,7 @@ const ConversionPlatform = (props) => {
         <Input.Select
           id="conversionOn"
           name="conversionOn"
-          options={CONVERT_ON_OPTIONS}
+          options={CONVERSION_OPTIONS}
           value={convertOn}
           onChange={(e) => setConvertOn(e.target.value)}
           className="conversion-input"

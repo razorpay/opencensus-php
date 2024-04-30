@@ -17,6 +17,7 @@ const InfiniteScroll = <T extends Record<string, unknown>>({
   rowRenderer,
   spinner,
   setHasErrorInFetchingProducts,
+  appType,
 }: InfiniteLoaderProps<T>): JSX.Element => {
   const [data, setData] = useState<T[]>([]);
   const [hasNext, setHasNext] = useState(true);
@@ -31,6 +32,10 @@ const InfiniteScroll = <T extends Record<string, unknown>>({
     };
     if (searchText) params.search_text = searchText;
     if (next) params.cursor = overrideParams?.cursor || next;
+
+    if (appType) {
+      params.app_type = appType;
+    }
 
     return merchantFetch({
       url,

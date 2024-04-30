@@ -9,10 +9,12 @@ export interface InfiniteLoaderProps<ItemType> {
   itemsKey: string;
   searchText?: string;
   setHasErrorInFetchingProducts?: (arg: boolean) => void;
+  appType?: string;
 }
 
 export type QueryParams = {
   search_text?: string;
   cursor?: string | null;
   count?: number;
+  app_type?: string;
 };

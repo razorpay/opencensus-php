@@ -16,6 +16,9 @@ import {
   SWITCH_TEXTS,
   SHIPPING_SETTINGS_INFO,
   MAGIC_SHIPPING_DESCRIPTION,
+  RCOD_SHIPPING_DESCRIPTION,
+  RCOD_SHIPPING_NOTE,
+  RCOD_SHIPPING_SETTINGS_INFO,
 } from 'merchant/views/MagicCheckout/Settings/constants';
 import { MODAL_TEXTS } from 'merchant/views/MagicCheckout/ShippingSettings/constants';
 import ConfirmationModal, {
@@ -27,6 +30,8 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { ShippingSettingsWrapper, ShippingToggle } from './styles';
 import { verifyIfProfilesAreConfigured } from './helpers';
+
+import { StyledRCODShippingNoteWrapper } from 'merchant/views/MagicCheckout/Settings/containers/styledComponents';
 
 const ShippingSettings = lazy(
   () =>
@@ -43,6 +48,7 @@ const ShippingSettingsTab = ({
   closeModal,
   showNotification,
   fetchSummary,
+  isRCOD,
 }) => {
   const { shipping_engine, platform, shop_id } = settings;
   const [shippingSettings, setShippingSettings] = useState(shipping_engine || false);
@@ -123,25 +129,32 @@ const ShippingSettingsTab = ({
     <ShippingSettingsWrapper>
       <Heading size="medium">Shipping Settings </Heading>
       <Text size="medium" marginTop="spacing.4" color="surface.text.gray.muted">
-        {SHIPPING_SETTINGS_INFO}
+        {!isRCOD ? SHIPPING_SETTINGS_INFO : RCOD_SHIPPING_SETTINGS_INFO}
       </Text>
-      <ShippingToggle>
-        <SettingsToggle
-          setting={{ label: 'Magic Shipping ', value: shippingSettings }}
-          onToggle={handleToggleClick}
-        />
-      </ShippingToggle>
+      {!isRCOD ? (
+        <ShippingToggle>
+          <SettingsToggle
+            setting={{ label: 'Magic Shipping ', value: shippingSettings }}
+            onToggle={handleToggleClick}
+          />
+        </ShippingToggle>
+      ) : null}
       <Box marginTop="spacing.2">
         <Text size="small" color="surface.text.gray.muted">
-          {MAGIC_SHIPPING_DESCRIPTION}
+          {!isRCOD ? MAGIC_SHIPPING_DESCRIPTION : RCOD_SHIPPING_DESCRIPTION}
         </Text>
       </Box>
+      {isRCOD ? (
+        <Box padding="spacing.6" paddingLeft="spacing.0" paddingRight="spacing.0">
+          <StyledRCODShippingNoteWrapper>{RCOD_SHIPPING_NOTE}</StyledRCODShippingNoteWrapper>
+        </Box>
+      ) : null}
       <Box marginY="spacing.6">
         <ErrorBoundary team={Teams?.MAGIC_CHECKOUT} rank={Ranks.P0} resetOnProps>
           <SuspenseWithLoader type="center">
             {isLoading.summary ? (
               <div className="page-spinner-container">
-                <Spinner />
+                <Spinner center />
               </div>
             ) : (
               <ShippingSettings />
@@ -157,6 +170,7 @@ const mapStateToProps = (state) => ({
   settings: state.magic_settings,
   shippingEngine: state.magicShippingEngine,
   merchantId: state.config?.config?.id,
+  isRCOD: state.magicCheckout.rcod,
 });
 
 const mapDispatchToProps = (dispatch) =>

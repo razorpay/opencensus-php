@@ -32,4 +32,16 @@ describe('Shipping Settings Tab', () => {
       expect(sliders).toHaveLength(2);
     });
   });
+
+  test('should not show Magic shipping toggle in case of MagicX', () => {
+    renderShippingSettingsTab();
+    expect(screen.queryByText(/Shipping Settings/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^Magic shipping?/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Choose where to ship your orders./i)).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        /Note: Update these settings as well whenever you change something in Shopify Shipping./i,
+      ),
+    ).toBeInTheDocument();
+  });
 });

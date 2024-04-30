@@ -12,6 +12,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import ProductsModal from 'merchant/views/MagicCheckout/common/components/ProductsModal';
 import { ItemsCategory } from 'merchant/views/MagicCheckout/common/components/ProductsModal/types';
 import { MODAL_MODES } from 'merchant/views/MagicCheckout/common/components/SettingsModal/constants';
+import { MAGIC_APP_NAME, SOPC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 
 interface ModalProps {
   shippingEngine: ShippingEngineStore;
@@ -20,6 +21,7 @@ interface ModalProps {
   closeModal: () => void;
   createCategory: (zone: ItemsCategory) => Promise<void>;
   updateCategory: (zone: ItemsCategory) => Promise<void>;
+  isRCOD: string;
 }
 
 const Modal = ({
@@ -29,7 +31,10 @@ const Modal = ({
   closeModal,
   createCategory,
   updateCategory,
+  isRCOD,
 }: ModalProps) => {
+  const appType = isRCOD ? SOPC_APP_NAME : MAGIC_APP_NAME;
+
   const queryKey = Boolean(categoryId)
     ? [`magic.shipping-category.${categoryId}`]
     : [`magic.shipping-category`]; //queryKey should have only known properties, hence this check else it will throw ts error
@@ -56,12 +61,14 @@ const Modal = ({
       entityType="shipping"
       loading={shippingEngine.isLoading.item_categories}
       isCategoryFetching={isFetching}
+      appType={appType}
     />
   );
 };
 
 const mapStateToProps = (state) => ({
   shippingEngine: state.magicShippingEngine,
+  isRCOD: state.magicCheckout.rcod,
 });
 
 const mapDispatchToProps = (dispatch) =>

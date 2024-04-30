@@ -65,6 +65,7 @@ export const TABS = {
       exact: false,
       condition: (_user, abExperiments) =>
         abExperiments?.magic_shopify_shipping_engine?.variables?.result === 'on',
+      onRCOD: true,
     },
     {
       className: 'intelligence-settings',
@@ -261,6 +262,11 @@ Shopify/WooC store.`;
 
 export const MAGIC_SHIPPING_DESCRIPTION = `Enabling Magic Shipping will bypass all shipping configurations from any plugins on your E-commerce platform and follow configurations added below.`;
 export const SHIPPING_SETTINGS_INFO = `Choose where you ship and how much you charge for shipping at checkout.`;
+export const RCOD_SHIPPING_SETTINGS_INFO = 'Choose where to ship your orders.';
+export const RCOD_SHIPPING_DESCRIPTION =
+  'These settings will override any configurations from 3rd party Shopify shipping apps.';
+export const RCOD_SHIPPING_NOTE =
+  'Note: Update these settings as well whenever you change something in Shopify Shipping.';
 
 export const RCOD_SETTINGS_INFO =
   'Use this setting to enable COD on your store and configure the COD fees.';

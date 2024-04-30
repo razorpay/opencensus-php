@@ -27,4 +27,23 @@ describe('testing conversion platform component', () => {
 
     expect(setState).toHaveBeenCalledWith('whatsapp');
   });
+
+  test('should have whatsapp as the only value when platform is woocommerce', () => {
+    const setState = jest.fn();
+    renderApp({ convertOn: 'whatsapp', setConvertOn: setState, platform: 'woocommerce' });
+    const fieldElement = screen.getByRole('combobox');
+
+    expect(fieldElement).not.toHaveTextContent('Order status page');
+    expect(fieldElement).toHaveTextContent('WhatsApp message');
+  });
+
+  test('should have more than one option for shopify platform', () => {
+    const setState = jest.fn();
+    renderApp({ convertOn: 'whatsapp', setConvertOn: setState, platform: 'shopify' });
+    const fieldElement = screen.getByRole('combobox');
+
+    expect(fieldElement).toHaveTextContent('Order status page');
+    expect(fieldElement).toHaveTextContent('WhatsApp message');
+    expect(fieldElement).toHaveTextContent('Both WhatsApp message & Order status page');
+  });
 });

@@ -28,3 +28,12 @@ export const StyledTabsWrapper = styled.div`
     }
   }
 `;
+
+export const StyledRCODShippingNoteWrapper = styled.div`
+  padding: 8px;
+  border: 1px solid #bd7a03;
+  border-left: 3px solid #bd7a03;
+  border-radius: 4px;
+  background: #fff;
+  color: #435775;
+`;
