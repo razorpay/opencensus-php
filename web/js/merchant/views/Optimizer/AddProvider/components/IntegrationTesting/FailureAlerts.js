@@ -1,6 +1,11 @@
 import React from 'react';
 import { Alert, Text } from '@razorpay/blade/components';
 
+import {
+  getRefundDocLink,
+  getRefundFailureText,
+} from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/constants';
+
 export const PaymentWebhookFailureAlert = ({ gateway }) => {
   return (
     <Alert
@@ -33,6 +38,27 @@ export const PaymentFailureAlert = ({ paymentError }) => {
       description={<Text size="small">{paymentError}</Text>}
       isDismissible={false}
       color="negative"
+      marginTop="spacing.4"
+    />
+  );
+};
+
+export const RefundFailureAlert = ({ gateway, integrationType }) => {
+  const refundFailureText = getRefundFailureText(gateway);
+  return (
+    <Alert
+      title={<Text weight="semibold">Refund Failed</Text>}
+      description={<Text size="small">{refundFailureText}</Text>}
+      isDismissible={false}
+      color="negative"
+      actions={{
+        primary: {
+          onClick: () => {
+            window.open(getRefundDocLink(gateway, integrationType), '_blank');
+          },
+          text: gateway === 'paytm' ? 'Know more' : 'Get help',
+        },
+      }}
       marginTop="spacing.4"
     />
   );

@@ -30,3 +30,32 @@ export const INTEGRATION_TESTING_STEPS: IntegrationStep[] = [
     failed: false,
   },
 ];
+
+export const getRefundDocLink = (gateway: string, integrationType: string): string => {
+  const DEFAULT_URL = 'https://razorpay.com/docs/payments/optimizer';
+  switch (`${gateway}_${integrationType}`) {
+    case 'payu_instant':
+      return `${DEFAULT_URL}/payu-instant/`;
+    case 'payu_s2s':
+      return `${DEFAULT_URL}/payu/`;
+    case 'cashfree_instant':
+      return `${DEFAULT_URL}/cashfree-instant/`;
+    case 'cashfree_s2s':
+      return `${DEFAULT_URL}/cashfree/`;
+    case 'paytm_instant':
+      return `${DEFAULT_URL}/paytm-instant/`;
+    case 'paytm_s2s':
+      return `${DEFAULT_URL}/paytm-s2s/`;
+    default:
+      return DEFAULT_URL;
+  }
+};
+
+export const getRefundFailureText = (gateway: string): string => {
+  let refundFailureText = `We were unable to initiate a refund at this time. You can choose to take your integration live and process refunds from your ${gateway} dashboard.`;
+  if (gateway === 'paytm') {
+    refundFailureText =
+      'Refunds are currently disabled on your Paytm account. Please reach out to the Paytm support team to enable refunds via API for your Paytm account.';
+  }
+  return refundFailureText;
+};
