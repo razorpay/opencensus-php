@@ -531,6 +531,11 @@ class AsvRouter
     public function shouldRouteBeMigratedToTiDB(string $functionName) : bool {
         $result = $this->splitzHelper->checkSplitzVariantForAsvTiDBMigration($functionName);
 
+        $this->trace->count(Metric::TIDB_FILTER_ROUTING_RESULT, [
+            "functionName" => $functionName,
+            "shouldRouteBeMigratedToTiDB" => $result,
+        ]);
+
         $this->trace->info(TraceCode::ASV_TIDB_MIGRATION_DEBUG, [
             'shouldRouteBeMigratedToTiDB' => $result,
         ]);

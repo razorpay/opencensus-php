@@ -495,17 +495,11 @@ class Repository extends Base\Repository
                     "route_or_worker" => $this->asvRouter->getRouteOrJobName(),
                     "plan_id" => $planId,
                 ]);
+            }
 
-                $query = $this->newQueryWithConnection(
-                    $this->getMasterReplicaConnection()
-                );
-            }
-            else
-            {
-                $query = $this->newQueryWithConnection(
-                    $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
-                );
-            }
+            $query = $this->newQueryWithConnection(
+                $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
+            );
         }
         else
         {

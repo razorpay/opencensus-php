@@ -51,7 +51,7 @@ class Metric
     const ASV_WRITE_MERCHANT_AND_MERCHANT_DETAIL_ROUTER_RESULT    = 'asv_write_merchant_and_merchant_detail_request_router_result';
 
     const ASV_FILTER_ROUTING_RESULT    = 'asv_filter_routing_result';
-
+    const TIDB_FILTER_ROUTING_RESULT    = 'tidb_filter_routing_result';
     const DB_REQUESTS_BEFORE_MIGRATION          = 'db_requests_before_migration';
     const ASV_SYNC_ACCOUNT_DEVIATION_FAILED     = 'asv_sync_account_deviation_failed';
 
