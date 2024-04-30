@@ -16,7 +16,7 @@ class BankingAccountRblMisReport extends Job
     const RETRY_INTERVAL = 300;
 
     // increasing code level timeout
-    public $timeout = 600;
+    public $timeout = 1200;
 
     protected $metricsEnabled = true;
 
@@ -82,7 +82,7 @@ class BankingAccountRblMisReport extends Job
                 'download_report_url' => $signedUrlResponse['signed_url'],
             ];
 
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_S3_SUCCESS, array_merge($tracePayload, 
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_S3_SUCCESS, array_merge($tracePayload,
             [
                 'attempts'              => $this->attempts(),
                 'filePath'              => $filePath,
@@ -93,7 +93,7 @@ class BankingAccountRblMisReport extends Job
 
             Mail::send($leadMisReportMail);
 
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_SUCCESS, array_merge($tracePayload, 
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_SUCCESS, array_merge($tracePayload,
             [
                 'attempts'            => $this->attempts(),
                 'filePath'            => $filePath,
@@ -113,7 +113,7 @@ class BankingAccountRblMisReport extends Job
                 $e,
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_ERROR,
-                array_merge($tracePayload, 
+                array_merge($tracePayload,
                     [
                         'attempts'          => $this->attempts(),
                     ])
