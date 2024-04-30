@@ -910,6 +910,7 @@ return [
     'netbanking_dbs' => [
         'recon_key'              => env('NETBANKING_DBS_RECON_DECRYPTION_KEY'),
         'files_encryption_key'   => env('NETBANKING_DBS_RECON_ENCRYPTION_KEY'),
+        'recon_passphrase'       => env('NETBANKING_DBS_RECON_DECRYPTION_PASSPHRASE'),
     ],
 
     'netbanking_csb' => [

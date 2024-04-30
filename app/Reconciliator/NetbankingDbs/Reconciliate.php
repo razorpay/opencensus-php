@@ -57,7 +57,8 @@ class Reconciliate extends Base\Reconciliate
         $config = $this->config['gateway.netbanking_dbs'];
 
         $pgpConfig = [
-            PGPEncryption::PRIVATE_KEY  => trim(str_replace('\n', "\n", $config['recon_key']))
+            PGPEncryption::PRIVATE_KEY  => trim(str_replace('\n', "\n", $config['recon_key'])),
+            PGPEncryption::PASSPHRASE   => $config['recon_passphrase'],
         ];
 
         $encryptedText = file_get_contents($filePath);
