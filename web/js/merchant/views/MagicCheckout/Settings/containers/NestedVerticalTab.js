@@ -41,7 +41,7 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
       <StyledTabsWrapper>
         <div className="magic-settings-tabs display-flex">
           <div className="tabs-container display-flex flex--column">
-            {TABS[platform].map((item) => {
+            {TABS[platform].map((item, index) => {
               if (item.condition && !item.condition(user, abExperiments)) return null;
               if (
                 item.label === 'COD Review Workflow' &&
@@ -49,7 +49,8 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
               )
                 return null;
 
-              if (isRCOD && !item.onRCOD) return null;
+              if (isRCOD && !(item.onRCOD || item.onRCODOnly)) return null;
+              if (!isRCOD && item.onRCODOnly) return null;
 
               if (!redirectPath) {
                 redirectPath = item.path;
@@ -59,7 +60,7 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
                   end
                   to={item.path}
                   className="tabs-items pointer padding-16 font-bold"
-                  key={item.label}
+                  key={`${item.label}_${index}`}
                 >
                   {item.label}
                 </NavLink>
@@ -70,7 +71,8 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
             {TABS[platform].map((item) => {
               if (item.condition && !item.condition(user, abExperiments)) return null;
               if (item.label === 'COD Review Workflow' && !isCODOrderControlEnabled) return null;
-              if (isRCOD && !item.onRCOD) return null;
+              if (isRCOD && !(item.onRCOD || item.onRCODOnly)) return null;
+              if (!isRCOD && item.onRCODOnly) return null;
               const isIndex = item.path === '/magic/settings';
               return (
                 <Route

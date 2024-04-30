@@ -1,0 +1,212 @@
+import React, { useEffect, useReducer, useState } from 'react';
+import { Box, Divider, Button } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import Input from 'common/new-ui/Input';
+import SwitchField from 'common/ui/Forms/SwitchField';
+import { updateSopcMetafields } from 'merchant/reducers/magicCheckout/magicSettings/actions';
+import magicXReducer, { INITIAL_STATE } from 'merchant/reducers/magicCheckout/magicXStoreSettings';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { postMagicXStoreSettings } from './api';
+import { transformFormtoServerData, transformServerDataToForm, validateForm } from './helpers';
+import { ColorPickerWrapper } from './styled';
+
+const Form = ({ settings, showNotification, updateSopcMetafields }) => {
+  const [formState, dispatch] = useReducer(magicXReducer, INITIAL_STATE);
+  const [isSaving, setIsSaving] = useState(false);
+  const isPlusPlan = settings.shop_plan_name === 'shopify_plus';
+
+  useEffect(() => {
+    const tranformedData = transformServerDataToForm(settings);
+    dispatch({
+      type: 'INITIALISE_DATA',
+      payload: tranformedData,
+    });
+  }, []);
+
+  const handleInputChange = (e) => {
+    if (e.target) {
+      dispatch({
+        type: 'UPDATE_FIELD',
+        payload: {
+          [e.target.name]: e.target.value,
+        },
+      });
+    }
+  };
+
+  const handleSwitchChange = (name: keyof typeof INITIAL_STATE) => {
+    dispatch({
+      type: 'UPDATE_FIELD',
+      payload: {
+        [name]: !formState[name],
+      },
+    });
+  };
+
+  const handleSubmit = () => {
+    const errorMessage = validateForm(formState);
+    if (errorMessage) {
+      showNotification({ type: 'error', message: errorMessage });
+
+      return;
+    }
+
+    const transformedData = transformFormtoServerData(formState);
+
+    setIsSaving(true);
+    postMagicXStoreSettings(transformedData)
+      .then(() => {
+        updateSopcMetafields(transformedData);
+        showNotification({ type: 'success', message: 'Settings saved successfully' });
+      })
+      .catch(() => {
+        showNotification({ type: 'error', message: 'Failed to save settings' });
+      })
+      .finally(() => {
+        setIsSaving(false);
+      });
+  };
+
+  return (
+    <Box>
+      <Box
+        display="flex"
+        maxWidth="500px"
+        paddingY="spacing.7"
+        gap="spacing.7"
+        flexDirection="column"
+      >
+        <Box width="100%" display="flex" paddingY="spacing.4">
+          <Box width="50%">Enable MagicX</Box>
+          <Box>
+            <SwitchField
+              onChange={() => handleSwitchChange('status')}
+              checked={formState.status}
+              type="prime"
+              name="appEnabled"
+            />
+          </Box>
+        </Box>
+      </Box>
+      <Divider />
+      <Box
+        display="flex"
+        maxWidth="500px"
+        paddingY="spacing.7"
+        gap="spacing.7"
+        flexDirection="column"
+      >
+        {isPlusPlan && (
+          <Box width="100%" display="flex" alignItems="center">
+            <Box width="50%">Checkout Type</Box>
+            <Box width="50%">
+              <Input.Select
+                name="flowType"
+                options={[
+                  {
+                    label: 'Checkout Prefill',
+                    name: 'cart_permalinks',
+                  },
+                  {
+                    label: 'Checkout Widgets',
+                    name: 'checkout_ui_extensions',
+                  },
+                ]}
+                value={formState.flowType}
+                class="InputGroup--vTop"
+                onChange={handleInputChange}
+              />
+            </Box>
+          </Box>
+        )}
+        <Box width="100%" display="flex" alignItems="center">
+          <Box width="50%">Email Field</Box>
+          <Box width="50%">
+            <Input.Select
+              name="emailField"
+              value={formState.emailField}
+              options={[
+                {
+                  label: 'Hidden',
+                  name: 'hidden',
+                },
+                {
+                  label: 'Mandatory',
+                  name: 'mandatory',
+                },
+                {
+                  label: 'Optional',
+                  name: 'optional',
+                },
+              ]}
+              onChange={handleInputChange}
+            />
+          </Box>
+        </Box>
+        <Box width="100%" display="flex" alignItems="center">
+          <Box width="50%">Theme Color</Box>
+          <Box width="50%">
+            <ColorPickerWrapper>
+              <div className="color-picker">
+                <input
+                  name="themeColor"
+                  type="color"
+                  onChange={handleInputChange}
+                  value={formState.themeColor}
+                />
+              </div>
+              <Input
+                class="Input--vTop"
+                value={formState.themeColor}
+                onChange={handleInputChange}
+                name="themeColor"
+                maxLength={7}
+                pattern="^#[0-9A-Fa-f]{6}$"
+              />
+            </ColorPickerWrapper>
+          </Box>
+        </Box>
+        <Box width="100%" display="flex" paddingY="spacing.4">
+          <Box width="50%">Mandatory OTP</Box>
+          <Box>
+            <SwitchField
+              onChange={() => handleSwitchChange('isLoginMandatory')}
+              checked={formState.isLoginMandatory}
+              type="prime"
+              name="isLoginMandatory"
+            />
+          </Box>
+        </Box>
+      </Box>
+      <Divider />
+      <Box display="flex" justifyContent="flex-end">
+        <Button
+          onClick={handleSubmit}
+          marginRight="none"
+          isLoading={isSaving}
+          marginTop="spacing.7"
+        >
+          Save Settings
+        </Button>
+      </Box>
+    </Box>
+  );
+};
+
+const mapStateToProps = (state) => ({
+  settings: state.magic_settings,
+});
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      showNotification,
+      updateSopcMetafields,
+    },
+    dispatch,
+  );
+
+export default connect(mapStateToProps, mapDispatchToProps)(Form);

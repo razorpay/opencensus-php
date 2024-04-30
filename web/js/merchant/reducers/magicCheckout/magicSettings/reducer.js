@@ -112,6 +112,8 @@ export default function magicSettingsReducer(state = initialState, action) {
       return merge(state, { nested_view_type: action.payload.view });
     case ACTIONS.UPDATE_DOMAIN_DETAIL:
       return merge(state, { domain: action.payload.domain });
+    case ACTIONS.UPDATE_SOPC_METAFIELDS:
+      return merge(state, { sopc_metafields: action.metafields });
     default:
       return state;
   }

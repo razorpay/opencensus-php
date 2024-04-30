@@ -24,6 +24,8 @@ export const ACTIONS = {
   UPDATE_DOMAIN_DETAIL: `${REDUCER_NAMESPACE}_UPDATE::DOMAIN`,
 
   UPDATE_COD_SLABS_SET: `${REDUCER_NAMESPACE}_UPDATE_COD_SLABS_SET`,
+
+  UPDATE_SOPC_METAFIELDS: `${REDUCER_NAMESPACE}_UPDATE_SOPC_METAFIELDS`,
 };
 
 export const updatePageView = (newView) => {
@@ -84,5 +86,12 @@ export const codSlabsSet = (codSlabsSetFlag) => {
   return {
     type: ACTIONS.UPDATE_COD_SLABS_SET,
     payload: { codSlabsSetFlag },
+  };
+};
+
+export const updateSopcMetafields = (metafields) => {
+  return {
+    type: ACTIONS.UPDATE_SOPC_METAFIELDS,
+    metafields,
   };
 };

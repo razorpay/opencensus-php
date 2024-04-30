@@ -823,6 +823,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
+          uniqueHashKey: 'magic_x_store_settings',
+          experimentId: {
+            beta: 'O1zHNwfSZIdefj',
+            production: 'O1zKFheAyROmHX',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'magic_multi_coupons_enabled',
           experimentId: {
             beta: 'NrkxHs8EKw6kL9',

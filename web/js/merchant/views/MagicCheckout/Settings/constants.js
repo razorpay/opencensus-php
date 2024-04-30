@@ -14,6 +14,7 @@ import NativeShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/co
 import CODOrderAutomation from 'merchant/views/MagicCheckout/CODOrderAutomation';
 
 import ConfigDashboard from 'merchant/views/MagicCheckout/CODToPrepaid/ConfigsDashboard';
+import MagicXStoreSettings from 'merchant/views/MagicCheckout/MagicXStoreSettings';
 
 const AnalyticsSettings = lazy(() =>
   import(
@@ -104,6 +105,16 @@ export const TABS = {
       Component: CouponEngineSettingsTab,
       condition: (_, abExperiments) =>
         abExperiments?.magic_coupon_engine?.variables?.result === 'on',
+    },
+    {
+      className: 'magic-checkout-settings',
+      path: '/magic/settings/magicx-store-settings',
+      label: 'Store Settings',
+      Component: MagicXStoreSettings,
+      condition: (_user, abExperiments) =>
+        ACCESS_ROLES.includes(_user.role) &&
+        abExperiments?.magic_x_store_settings?.variables?.result === 'on',
+      onRCODOnly: true,
     },
   ],
   [PLATFORMS.WOOCOMMERCE]: [
