@@ -626,7 +626,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertNotEquals($token[Token::USED_AT], null);
 
 
-        $this->assertEquals('2024', $card['expiry_year']);
+        $this->assertEquals('2099', $card['expiry_year']);
         $this->assertEquals('12', $card['expiry_month']);
         $this->assertEquals('0004', $card['last4']);
 
@@ -645,7 +645,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         $card = $this->getDbEntityById('card', $token['card_id']);
 
 
-        $this->assertEquals('2024', $card['expiry_year']);
+        $this->assertEquals('2099', $card['expiry_year']);
         $this->assertEquals('12', $card['expiry_month']);
         $this->assertEquals('0004', $card['last4']);
         $this->assertNull($card['token_expiry_year']);

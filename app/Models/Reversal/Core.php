@@ -928,7 +928,15 @@ class Core extends Base\Core
 
             $reversal->transaction()->associate($txn);
 
+            $this->stripRefundRelationIfApplicable($reversal);
             $this->repo->saveOrFail($reversal);
+
+            if ($reversal->getEntityType() === E::REFUND)
+            {
+                $refundId = $reversal->toArray()['entity_id'];
+                $refund = $this->repo->refund->findRefundById($refundId, null);
+                $this->associateRefundIfApplicable($reversal, $refund);
+            }
 
             return $txn;
         });

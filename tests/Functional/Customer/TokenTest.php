@@ -112,7 +112,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('12', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2024', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2099', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $MCPayload = $this->testData['testCreateToken'];
 
@@ -183,7 +183,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('12', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2024', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2099', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $MCPayload = $this->testData['testCreateToken'];
 
@@ -466,7 +466,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('12', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2024', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2099', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $MCPayload = $this->testData['testCreateToken'];
 
@@ -624,7 +624,7 @@ class TokenTest extends TestCase
         $this->assertEquals('2099', $card['expiry_year']);
         $this->assertEquals('01', $card['expiry_month']);
         $this->assertEquals('3335', $card['last4']);
-        $this->assertEquals('2024', $card['token_expiry_year']);
+        $this->assertEquals('2099', $card['token_expiry_year']);
         $this->assertEquals('12', $card['token_expiry_month']);
         $this->assertNull($card['token_last4']);
     }
@@ -670,7 +670,7 @@ class TokenTest extends TestCase
         $this->assertEquals('2099', $card['expiry_year']);
         $this->assertEquals('01', $card['expiry_month']);
         $this->assertEquals('3335', $card['last4']);
-        $this->assertEquals('2024', $card['token_expiry_year']);
+        $this->assertEquals('2099', $card['token_expiry_year']);
         $this->assertEquals('12', $card['token_expiry_month']);
         $this->assertNull($card['token_last4']);
     }

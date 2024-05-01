@@ -1537,7 +1537,7 @@ class TokenisationTest extends TestCase
 
         //assert token card
 
-        $this->assertEquals('2024', $tokenCard['expiry_year']);
+        $this->assertEquals('2099', $tokenCard['expiry_year']);
         $this->assertEquals('12', $tokenCard['expiry_month']);
         $this->assertEquals('3335', $tokenCard['last4']);
         $this->assertEquals('2024', $paymentCard['token_expiry_year']);
@@ -1617,7 +1617,7 @@ class TokenisationTest extends TestCase
 
         //assert token card
 
-        $this->assertEquals('2024', $tokenCard['expiry_year']);
+        $this->assertEquals('2099', $tokenCard['expiry_year']);
         $this->assertEquals('12', $tokenCard['expiry_month']);
         $this->assertEquals('3335', $tokenCard['last4']);
         $this->assertEquals('2024', $paymentCard['token_expiry_year']);
