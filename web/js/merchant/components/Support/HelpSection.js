@@ -60,6 +60,12 @@ const HelpSection = ({
       _fetchTickets(isFetchTicketsApiMigrationActive);
     }
 
+    CreateTicketEmitter.on('toggle-help-section', () => {
+      fireCustomEvent({
+        event: 'toggle-help-section',
+      });
+    });
+
     CreateTicketEmitter.on('create-ticket', (id, pcb, lcb) => {
       fireCustomEvent({
         event: 'create-ticket',

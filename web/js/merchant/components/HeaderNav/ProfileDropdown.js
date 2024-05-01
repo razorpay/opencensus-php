@@ -3,7 +3,7 @@ import LazyLoad from 'react-lazyload';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-
+import { HeadphonesIcon, Box } from '@razorpay/blade/components';
 import BusinessImage from 'assets/business.svg';
 import RTBUserIconBg from 'assets/trustedbadge/rtb_user_icon_bg.svg';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -28,6 +28,7 @@ import PaymentHandleSlug from 'merchant/views/PaymentHandle/components/DropDownS
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { withI18Service } from 'common/i18';
 import ProfileDropdownV2 from './ProfileDropdownV2';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 
 const trustedBadgeTooltipInfo =
   'You are a trusted business and the Razorpay trusted business badge is now being displayed on checkout for customers to see';
@@ -425,6 +426,25 @@ class ProfileDropdown extends Component {
                 )}
               </>
             )}
+            <div
+              className="media media-action"
+              onClick={() => {
+                CreateTicketEmitter.emit('toggle-help-section');
+              }}
+            >
+              <div className="media-left">
+                <div className="media-object">
+                  <Box display="flex" alignItems="center" justifyContent="center">
+                    <HeadphonesIcon
+                      size="large"
+                      color="surface.icon.gray.subtle"
+                      marginLeft="spacing.2"
+                    />
+                  </Box>
+                </div>
+              </div>
+              <div className="media-body">Help & Support</div>
+            </div>
             <div className="media loggedin-as">
               <div className="media-body">
                 <div>Logged in as</div>

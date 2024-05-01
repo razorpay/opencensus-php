@@ -15,6 +15,7 @@ import {
   Theme,
   Tooltip,
   UserIcon,
+  HeadphonesIcon,
 } from '@razorpay/blade/components';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
@@ -31,6 +32,7 @@ import LiveModeIcon from 'assets/rtux/live-mode.svg';
 import TestModeIcon from 'assets/rtux/test-mode.svg';
 import SwitchMerchantIcon from 'assets/rtux/switch-merchant.svg';
 import { analyticsTrack } from 'common/utils/analytics';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 
 const TrustedBadgeIcon = styled.div(
   ({ theme }: { theme: Theme }) => `
@@ -121,6 +123,10 @@ const ProfileDropdownV2: React.FC<{
   const handleSwitchMerchantClick = () => {
     openSwitchMerchantModal();
     track('Account Dropdown Switch Merchant');
+  };
+
+  const handleHelpSupport = () => {
+    CreateTicketEmitter.emit('toggle-help-section');
   };
 
   return (
@@ -214,6 +220,12 @@ const ProfileDropdownV2: React.FC<{
               href="https://x.razorpay.com"
             />
           )}
+          <ActionListItem
+            leading={<ActionListItemIcon icon={HeadphonesIcon} />}
+            title="Help & Support"
+            value="Help & Support"
+            onClick={handleHelpSupport}
+          />
           <ActionListItem
             leading={<ActionListItemIcon icon={LogOutIcon} />}
             title="Log out"
