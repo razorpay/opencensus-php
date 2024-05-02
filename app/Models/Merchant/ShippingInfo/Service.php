@@ -225,7 +225,7 @@ class Service extends Base\Service
             if ($platform === Merchant1ccConfig\Type::SHOPIFY) {
                 $checkoutId = $order->toArrayPublic()['notes']['storefront_id'];
                 $cachedShippingResponseWithCheckoutId = (new ShopifyShippingProvider())->getCachedShippingInfo($checkoutId, $address, $order->getAmount());
-               
+
                 if ($cachedShippingResponseWithCheckoutId !== null)
                 {
                     return $cachedShippingResponseWithCheckoutId;
@@ -292,7 +292,7 @@ class Service extends Base\Service
 
                 if (empty($decodedResponse['tax_details']) === false && $isTaxExpEnabled === true) {
                     $taxDetails = $decodedResponse['tax_details'];
-                    $taxDetails = $this->getTaxDetailsFromDraftOrder($order, $orderMeta, $address, $taxDetails);
+                    $taxDetails = $this->getTaxDetailsFromDraftOrder($order, $orderMeta, $address, $taxDetails, $decodedResponse);
                     unset($decodedResponse['tax_details']);
                 }
 
@@ -1345,7 +1345,7 @@ class Service extends Base\Service
             $evaluationResult['experiment_enabled'] === true);
     }
 
-    public function getTaxDetailsFromDraftOrder($order, $orderMeta, $address, $taxDetails)
+    public function getTaxDetailsFromDraftOrder($order, $orderMeta, $address, $taxDetails, array $shopifyShippingResponse)
     {
         $promotions = $orderMeta->getValue()['promotions'] ?? [];
         $promoPrefix = "offer_";
@@ -1365,7 +1365,7 @@ class Service extends Base\Service
         }
 
         try {
-            $orderMeta = $this->addCustomerDetailsToOrder($orderMeta, $address);
+            $orderMeta = $this->addCustomerDetailsToOrder($orderMeta, $address, $shopifyShippingResponse);
 
             $orderMeta = $orderMeta->getValue();
 
@@ -1388,10 +1388,10 @@ class Service extends Base\Service
         }
     }
 
-    protected function addCustomerDetailsToOrder($orderMeta, $address)
+    protected function addCustomerDetailsToOrder($orderMeta, $address, array $shopifyShippingResponse)
     {
-        $shippingFee = $address[Fields::SHIPPING_FEE] ?? 0;
-        $codFee = $address[Fields::COD_FEE] ?? 0;
+        $shippingFee = $shopifyShippingResponse[Fields::SHIPPING_FEE] ?? 0;
+        $codFee = $shopifyShippingResponse[Fields::COD_FEE] ?? 0;
         $value = $orderMeta->getValue();
         $defaultValue = 'default';
 
