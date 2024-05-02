@@ -5633,6 +5633,9 @@ class SettlementOndemandTest extends TestCase
 
         $this->mockRazorxTreatmentV2(RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ODS, 'on');
 
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'new_settlement_service']);
+
         $this->createOndemandSettlement(false);
 
         $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
@@ -5641,7 +5644,26 @@ class SettlementOndemandTest extends TestCase
 
         $journal = $this->getPaymentGatewayCapturedJournalResponsePayload($ondemandSettlementId, 'ondemand_settlement_processed');
 
+        $journalId = $journal['id'];
+
         $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow($journal);
+
+        $creditTxnPayload = [
+            "id"=> $journalId,
+            "merchant_id"=> "10000000000000",
+            "source_id"=>  str_replace("setlod_","",$ondemandSettlementId),
+            "source_type"=> "settlement.ondemand",
+            "balance_type"=> "PRIMARY",
+            "currency"=> "INR",
+            "credit"=> 0,
+            "debit"=> 1000000,
+            "tax"=> 0,
+            "settled_by"=> "Razorpay",
+            "on_hold"=> null,
+            "on_hold_reason"=> ""
+        ];
+
+        $this->mockSns($creditTxnPayload);
 
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
 
@@ -5665,6 +5687,39 @@ class SettlementOndemandTest extends TestCase
         $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
 
     }
+
+    protected function mockSns($creditTxnPayload)
+    {
+        $sns = Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->times(1)
+            ->with(Mockery::type('string'), Mockery::type('string'))
+            ->andReturnUsing(function ($input) use ($creditTxnPayload)
+            {
+                $json_decoded_input = json_decode($input, true);
+
+                if ($json_decoded_input['id'] === $creditTxnPayload['id'])
+                {
+                    $this->assertEquals($creditTxnPayload['merchant_id'], $json_decoded_input['merchant_id']);
+                    $this->assertEquals($creditTxnPayload['source_id'], $json_decoded_input['source_id']);
+                    $this->assertEquals($creditTxnPayload['source_type'], $json_decoded_input['source_type']);
+                    $this->assertEquals($creditTxnPayload['balance_type'], $json_decoded_input['balance_type']);
+                    $this->assertEquals($creditTxnPayload['currency'], $json_decoded_input['currency']);
+                    $this->assertEquals($creditTxnPayload['credit'], $json_decoded_input['credit']);
+                    $this->assertEquals($creditTxnPayload['debit'], $json_decoded_input['debit']);
+                    $this->assertEquals($creditTxnPayload['tax'], $json_decoded_input['tax']);
+                    $this->assertEquals($creditTxnPayload['settled_by'], $json_decoded_input['settled_by']);
+                }
+
+                return $input;
+            });
+
+        $this->app->instance('sns', $sns);
+    }
+
 
 
     public function testOndemandReversalFailureWithNonRetryableError(){

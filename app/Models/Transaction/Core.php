@@ -1157,9 +1157,16 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, false);
 
+        $shouldDispatchSettlementBucket = true;
+
         $isEarlyDispatchExpEnabled = (new \RZP\Models\Settlement\Ondemand\Core())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForODS($reversal->merchant);
 
-        if ($isEarlyDispatchExpEnabled === false) {
+        if (($isEarlyDispatchExpEnabled === true) and  ($reversal->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+        {
+            $shouldDispatchSettlementBucket = false;
+        }
+
+        if ($shouldDispatchSettlementBucket === true) {
             $this->dispatchForSettlementBucketing($txn);
         }
 

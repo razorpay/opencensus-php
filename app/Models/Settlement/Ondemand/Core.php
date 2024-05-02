@@ -798,7 +798,7 @@ class Core extends Base\Core
 
         $isExperimentEnabled = ($variant === 'on');
 
-        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
+        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK_FOR_ODS,
             [
                 'merchant'               => $merchant->getId(),
                 'isExperimentEnabled'    => $isExperimentEnabled,
