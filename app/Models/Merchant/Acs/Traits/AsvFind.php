@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Merchant\Acs\Traits;
 
+use App;
 use Cache;
 use Database\Connection;
+use RZP\Constants\Environment;
 use RZP\Constants\Metric;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
@@ -210,7 +212,14 @@ trait AsvFind
 
     public function findForImplicitJoin($id, string $entityName, $columns = array('*'), string $connectionType = null)
     {
-        $shouldCallAsv = $this->asvRouter->shouldRouteFindForImplicitJoinToAccountService($id, $entityName, $columns, $connectionType, get_class($this), FunctionConstant::FIND_FOR_IMPLICIT_JOIN);
+        $app = App::getFacadeRoot();
+
+        if ($entityName == "terminal" && $app->environment(Environment::PRODUCTION)) {
+            $shouldCallAsv = true;
+        } else {
+            $shouldCallAsv = $this->asvRouter->shouldRouteFindForImplicitJoinToAccountService($id, $entityName, $columns, $connectionType, get_class($this), FunctionConstant::FIND_FOR_IMPLICIT_JOIN);
+        }
+
         if ($shouldCallAsv === true) {
             $shouldCacheResults = in_array($this->entity, ["merchant", "merchant_detail"]);
             if ($shouldCacheResults === true) {
