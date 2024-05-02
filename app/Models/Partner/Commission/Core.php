@@ -30,6 +30,7 @@ use RZP\Jobs\CommissionRefundJob;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\CommissionTdsSettlement;
+use RZP\Exception\BadRequestException;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Calculator as FeeCalculator;
@@ -246,7 +247,7 @@ class Core extends Base\Core
      * @param array           $input
      *
      * @return Base\PublicCollection
-     * @throws \RZP\Exception\BadRequestException
+     * @throws BadRequestException
      */
     public function list(Merchant\Entity $merchant, array $input) : Base\PublicCollection
     {
@@ -353,7 +354,7 @@ class Core extends Base\Core
      * @param Payment\Entity $payment
      *
      * @return array $response
-     * @throws LogicException | Exception\BadRequestException
+     * @throws LogicException | BadRequestException
      */
     public function fetchCommissionConfigsForPayment(Payment\Entity $payment): array
     {
@@ -594,16 +595,16 @@ class Core extends Base\Core
      * @param Merchant\Entity $partner
      *
      * @return bool
-     * @throws \RZP\Exception\BadRequestException
-     * @throws LogicException
+     * @throws BadRequestException
+     * @throws LogicException|Exception\BaseException
      */
     public function shouldShowAggregateCommissionReportForPartner(Merchant\Entity $partner): bool
     {
         if ($partner->isResellerPartner() === true && $partner->getCountry()!=='MY')
         {
-            $activatedSubMerchants = (new Merchant\Core)->fetchActivatedSubMerchantsForPartner($partner);
+            $activatedSubMerchantIds = (new Merchant\Core)->fetchActivatedSubMerchantIdsForPartner($partner);
 
-            if ($activatedSubMerchants->count() < Constants::RESELLER_SUBMERCHANT_LIMIT)
+            if (sizeof($activatedSubMerchantIds) < Constants::RESELLER_SUBMERCHANT_LIMIT)
             {
                 return false;
             }

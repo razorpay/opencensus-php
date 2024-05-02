@@ -252,7 +252,14 @@ class Core extends Base\Core
 
                 $appIds = (new Merchant\Core())->getPartnerApplicationIds($partner);
 
-                $subMerchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds);
+                if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv('FeatureCoreCreate_fetchSubmerchantsFromAppIds'))
+                {
+                    $subMerchants = $this->repo->merchant_access_map->fetchSubmerchantsFromAppIds($appIds);
+                }
+                else
+                {
+                    $subMerchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds);
+                }
 
                 $subMerchantEmails = $subMerchants->pluck(Merchant\Entity::EMAIL)->toArray();
 

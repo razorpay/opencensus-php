@@ -8184,20 +8184,6 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchSubMerchantIds(Entity $merchant): array
-    {
-        $associatedAccounts = [];
-
-        if ($merchant->isPartner() === true)
-        {
-            // submerchant accounts
-            $submerchants = ($this->core()->listSubmerchants($merchant, []))[0];
-
-            $associatedAccounts = $submerchants->getIds();
-        }
-        return $associatedAccounts;
-    }
-
     /**
      * Fetches submerchant / linked / referred accounts for parent account.
      * @throws \Exception
@@ -8229,31 +8215,14 @@ class Service extends Base\Service
         {
             $optimizeFetchSubmerchants = $this->isOptimizedFetchSubmerchantsFlowEnabled($merchant->getId());
 
-            if($optimizeFetchSubmerchants)
-            {
-                $associatedAccounts = $this->core()->listSubmerchantIds($merchant);
+            $associatedAccounts = $this->core()->listSubmerchantIds($merchant);
 
-                $this->trace->info(TraceCode::ASSOCIATED_MERCHANT_DATA_FOR_PARTNER_MERCHANTS,
-                    [
-                        'partner_id'                => $merchantId,
-                        'associated_accounts_count' => count($associatedAccounts)
-                    ]
-                );
-            }
-            else
-            {
-                // submerchant accounts
-                $submerchants = ($this->core()->listSubmerchants($merchant, []))[0];
-
-                $associatedAccounts = $submerchants->getIds();
-
-                $this->trace->info(TraceCode::ASSOCIATED_MERCHANT_DATA_FOR_PARTNER_MERCHANTS,
-                    [
-                        'partner_id'            => $merchantId,
-                        'associated_accounts'   => $associatedAccounts
-                    ]
-                );
-            }
+            $this->trace->info(TraceCode::ASSOCIATED_MERCHANT_DATA_FOR_PARTNER_MERCHANTS,
+                               [
+                                   'partner_id'                => $merchantId,
+                                   'associated_accounts_count' => count($associatedAccounts)
+                               ]
+            );
         }
         else if ($merchant->hasAggregatorFeature() === true)
         {

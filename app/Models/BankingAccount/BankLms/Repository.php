@@ -6,11 +6,12 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankingAccount;
-use RZP\Models\BankingAccount\BankLms\Fetch;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Models\BankingAccount\BankLms\Fetch;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Repository extends BankingAccount\Repository
@@ -85,6 +86,13 @@ class Repository extends BankingAccount\Repository
      */
     public function fetchSubMerchantIdsForPartnerBank(Merchant\Entity $partnerBank): array
     {
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            $appIds = (new Merchant\Core())->getPartnerApplicationIds($partnerBank);
+
+            return $this->repo->merchant_access_map->fetchSubmerchantIdsFromAppIds($appIds);
+        }
+
         $subMerchants = $this->fetchSubMerchantForPartnerBank($partnerBank);
 
         return $subMerchants->pluck(Merchant\Entity::ID)->toArray();
@@ -93,8 +101,19 @@ class Repository extends BankingAccount\Repository
     /**
      * @throws BadRequestException
      */
-    public function fetchSubMerchantForPartnerAndSubMerchantId(Merchant\Entity $partnerBank, Merchant\Entity $subMerchant): PublicCollection
+    public function fetchSubMerchantForPartnerAndSubMerchantId(Merchant\Entity $partnerBank, Merchant\Entity $subMerchant): array
     {
-        return $this->fetchSubMerchantForPartnerBank($partnerBank, [PublicEntity::MERCHANT_ID => [$subMerchant->getId()]]);
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            $appIds = (new Merchant\Core())->getPartnerApplicationIds($partnerBank);
+            return $this->repo->merchant_access_map->filterSubMerchantsIdsMappedToAppId($appIds, [$subMerchant->getId()]);
+        }
+
+        $merchants = $this->fetchSubMerchantForPartnerBank(
+            $partnerBank,
+            [PublicEntity::MERCHANT_ID => [$subMerchant->getId()]]
+        );
+
+        return $merchants->pluck(Merchant\Entity::ID)->toArray();
     }
 }

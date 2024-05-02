@@ -12,6 +12,7 @@ use RZP\Constants\Product;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
@@ -377,6 +378,90 @@ class Repository extends Base\Repository
             ->withTrashed()
             ->get();
     }
+
+    /**
+     * @param array $appIds
+     * @param array $merchantIds
+     *
+     * @return array
+     */
+    public function filterSubMerchantsIdsMappedToAppId(array $appIds, array $merchantIds): array
+    {
+        if (empty($appIds) === true OR empty($merchantIds) === true)
+        {
+            return [];
+        }
+
+        $query = $this->newQuery()
+                      ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
+                      ->whereIn(Entity::ENTITY_ID, $appIds)
+                      ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                      ->whereNull(Entity::DELETED_AT);
+
+        return $query->get()->pluck(Entity::MERCHANT_ID)->toArray();
+    }
+
+    /**
+     * @param array $applicationIds
+     *
+     * @return array
+     */
+    public function fetchSubmerchantIdsFromAppIds(array $applicationIds): array
+    {
+        if (empty($applicationIds) === true)
+        {
+            return [];
+        }
+
+        return $this->getSubMerchantsIdsMappedToAppId($applicationIds);
+    }
+
+    /**
+     * @param array $appIds
+     *
+     * @return array
+     */
+    public function getSubMerchantsIdsMappedToAppId(array $appIds): array
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
+                      ->whereIn(Entity::ENTITY_ID, $appIds)
+                      ->whereNull(Entity::DELETED_AT);
+
+        return $query->get()->pluck(Entity::MERCHANT_ID)->toArray();
+
+    }
+
+
+    /**
+     * Fetches all sub-merchants which are mapped to a list of partner application IDs
+     *
+     * @param array $applicationIds
+     *
+     * @return PublicCollection
+     */
+    public function fetchSubmerchantsFromAppIds(array $applicationIds): Base\PublicCollection
+    {
+        if (empty($applicationIds) === true)
+        {
+            return new Base\PublicCollection;
+        }
+
+        $merchantIds = $this->getSubMerchantsIdsMappedToAppId($applicationIds);
+
+        $merchants = new PublicCollection();
+        foreach (array_chunk($merchantIds, AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT) as $chunk) {
+            $merchants->push(...(new AsvSdkIntegration\Merchant())->fetchMerchantsByIds($chunk));
+        }
+
+        return $merchants->sortByDesc(
+            [
+                fn (Merchant\Entity $a, Merchant\Entity $b) => $a->getCreatedAt() <=> $b->getCreatedAt(),
+                fn (Merchant\Entity $a, Merchant\Entity $b) => $a->getId() <=> $b->getId(),
+            ]
+        );
+    }
+
 
     public function getSubMerchantCount(string $partnerId)
     {

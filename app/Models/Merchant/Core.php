@@ -8,6 +8,7 @@ use View;
 use Carbon\Carbon;
 use Config;
 use RZP\Models\Card\IIN\Country;
+use RZP\Exception\BaseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
@@ -29,6 +30,8 @@ use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\LogicException;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
@@ -5588,158 +5591,6 @@ class Core extends Base\Core
         );
     }
 
-    /**
-     * @param Entity $partner
-     * @param array $params
-     * @param bool $paginate
-     *
-     * @return mixed
-     * @throws BadRequestException
-     */
-    public function listSubmerchants(Entity $partner, array $params)
-    {
-
-        $offset = $params['skip'] ?? 0;
-
-        $appIds = $this->getPartnerApplicationIds($partner);
-
-        $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
-
-        if ($this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId()) === true)
-        {
-            if ($product === Product::CAPITAL)
-            {
-                $product                 = Product::BANKING;
-                $params[ENTITY::PRODUCT] = Product::BANKING;
-                $params[Constants::TAGS] = [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
-            }
-            else
-            {
-                $params[Constants::WITHOUT_TAGS] = [
-                    Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
-                    Constants::CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
-                ];
-            }
-        }
-
-        $this->trace->info(
-            TraceCode::PARTNER_FETCH_SUBMERCHANTS,
-            [
-                'partner_id' => $partner->getId(),
-                'app_ids'    => $appIds,
-                'params'     => $params,
-                'product'    => $product,
-            ]
-        );
-
-        if ((empty($params[MerchantApplications\Entity::TYPE]) === false) and (empty($appIds) === false))
-        {
-            $appIds = (new MerchantApplications\Core)->getMerchantAppIds($partner->getId(), [$params[MerchantApplications\Entity::TYPE]]);
-
-            unset($params[MerchantApplications\Entity::TYPE]);
-        }
-
-        if (empty($params[Constants::APPLICATION_ID]) === false)
-        {
-            $inputAppId = $params[Constants::APPLICATION_ID];
-
-            (new Validator)->validatePartnerApplicationId($inputAppId, $appIds);
-
-            // Filter with only the input app id
-            $appIds = [$inputAppId];
-
-            // Filters will be applied based on $params. Since app id is already handled above, unsetting it here.
-            unset($params[Constants::APPLICATION_ID]);
-        }
-
-        $applyProductFilter = array_key_exists(ENTITY::PRODUCT, $params);
-
-        $checkingProductUsage = array_key_exists(Constants::IS_USED, $params);
-
-        $isExpEnabled = $this->isRazorxExperimentEnable($partner->getId(), RazorxTreatment::SUBMERCHANTS_FETCH_API_LATENCY_IMPROVE);
-
-        $reqStartAt = millitime();
-
-        if ($applyProductFilter === true and ($isExpEnabled !== true or $checkingProductUsage === true))
-        {
-            list($offset, $merchants) = Tracer::inspan(['name' => HyperTrace::FILTER_SUBMERCHANTS_ON_PRODUCT], function() use ($params, $appIds, $partner) {
-
-                return $this->filterSubmerchantsOnProduct($params, $appIds, $partner->getId());
-            });
-        }
-        else
-        {
-            unset($params[Constants::IS_USED]);
-
-            $merchants = Tracer::inspan(['name' => HyperTrace::FETCH_SUBMERCHANTS_ON_APP_IDS], function() use ($params, $appIds, $partner) {
-
-                return $this->repo->merchant->fetchSubmerchantsByAppIds($appIds, $params);
-            });
-        }
-
-        $this->trace->info(
-            TraceCode::PARTNER_FETCH_SUBMERCHANTS_LIST,
-            [
-                'partner_id'           => $partner->getId(),
-                'merchants'            => $merchants->getIds(),
-                'apply_product_filter' => $applyProductFilter,
-                'product_usage'        => $checkingProductUsage
-            ]
-        );
-
-        $fetchSubMerchantsLatency = millitime() - $reqStartAt;
-
-        $this->trace->info(
-            TraceCode::PARTNER_FETCH_SUBMERCHANTS_LATENCY,
-            [
-                'partner_id'  => $partner->getId(),
-                'app_ids'     => $appIds,
-                'product'     => $product,
-                'latency'     => $fetchSubMerchantsLatency,
-                'exp_enabled' => $isExpEnabled
-            ]
-        );
-
-        $partnerUser = $partner->primaryOwner();
-
-        // if fetching sub-merchants based on product usage status, no need to fetch additional
-        // details such as dashboard access, kyc access, banking account status etc.
-        if ($checkingProductUsage === false)
-        {
-            $reqStartAt = millitime();
-
-            $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product, $partner, $isExpEnabled) {
-                return Tracer::inspan(['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function() use ($submerchant, $partner, $partnerUser, $product, $isExpEnabled) {
-                    return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product, null, $isExpEnabled);
-                });
-            });
-
-            $fetchSubMerchantsDataLatency = millitime() - $reqStartAt;
-
-            $this->trace->info(
-                TraceCode::PARTNER_FETCH_SUBMERCHANTS_DATA_LATENCY,
-                [
-                    'partner_id'      => $partner->getId(),
-                    'product'         => $product,
-                    'latency'         => $fetchSubMerchantsDataLatency,
-                    'overall_latency' => $fetchSubMerchantsLatency + $fetchSubMerchantsDataLatency,
-                    'exp_enabled'     => $isExpEnabled
-                ]
-            );
-        }
-
-        $this->trace->info(
-            TraceCode::PARTNER_FETCH_SUBMERCHANTS_DATA,
-            [
-                'partner_id' => $partner->getId(),
-                'product'    => $product,
-                'merchants'  => $merchants->getIds()
-            ]
-        );
-
-        return $applyProductFilter ? [$merchants, 'offset' => $offset] : [$merchants];
-    }
-
     public function listSubmerchantIds(Entity $partner)
     {
         $params = [];
@@ -5770,19 +5621,39 @@ class Core extends Base\Core
     /**
      * @param Entity $partner
      *
-     * @return PublicCollection
+     * @return array
      * @throws BadRequestException
+     * @throws BaseException
      */
-    public function fetchActivatedSubMerchantsForPartner(Entity $partner): Base\PublicCollection
+    public function fetchActivatedSubMerchantIdsForPartner(Entity $partner): array
     {
         $appIds = $this->getPartnerApplicationIds($partner);
 
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            $merchantIds = $this->repo->merchant_access_map->fetchSubmerchantIdsFromAppIds($appIds);
+
+            $results = new PublicCollection();
+
+            foreach (array_chunk($merchantIds, AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT) as $chunk) {
+                $results->push(...(new AsvSdkIntegration\MerchantDetail())->filterMerchantsByActivationStatus(
+                    $chunk, Entity::ACTIVATED
+                ));
+            }
+
+            return $results->pluck(Detail\Entity::MERCHANT_ID)->toArray();
+        }
+
         return $this->repo
             ->merchant
-            ->fetchSubmerchantsByAppIds($appIds,
-                                        [
-                                            Detail\Entity::ACTIVATION_STATUS => Entity::ACTIVATED,
-                                        ]);
+            ->fetchSubmerchantsByAppIds(
+                $appIds,
+                [
+                    Detail\Entity::ACTIVATION_STATUS => Entity::ACTIVATED,
+                ]
+            )
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 
     /**
@@ -8345,87 +8216,6 @@ class Core extends Base\Core
         }
 
         return $productUsedByMerchants;
-    }
-
-    /**
-     * This method fetches sub-merchants for a partner and applies
-     * product filter on the fetched result set.
-     * Why two separate call? To avoid a direct join on the two result sets,
-     * in future we may want to move one/both of repository calls to api.
-     *
-     * @param array $params
-     * @param array $appIds
-     * @param string $partnerId
-     *
-     * @return array
-     */
-    public function filterSubmerchantsOnProduct(array $params, array $appIds, string $partnerId): array
-    {
-        $skip = $params['skip'] ?? 0;
-
-        $count = $params['count'] ?? 25;
-
-        $product = $params[ENTITY::PRODUCT];
-
-        $isUsed = boolval($params[Constants::IS_USED] ?? 1);
-
-        unset($params[ENTITY::PRODUCT]);
-
-        unset($params[Constants::IS_USED]);
-
-        $recordsToTake = $count;
-
-        $result = new PublicCollection();
-
-        // fetch sub-merchants from the app ids and further filter them on product
-        // Do this until the desired number of records are fetched or
-        // no further records are available to fetch
-        do {
-            $merchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds, $params);
-
-            if (count($merchants) == 0 || $recordsToTake == 0)
-            {
-                break;
-            }
-
-            $merchantIds = $merchants->getIds();
-
-            $filteredMerchantIds = $this->fetchProductForMerchants($merchantIds, $product, $isUsed);
-
-            $recordsRead = 0;
-
-            foreach ($merchants as $merchant)
-            {
-                if ($recordsToTake == 0)
-                {
-                    break;
-                }
-
-                if ((in_array($merchant->getId(), $filteredMerchantIds) === true) && $recordsToTake > 0)
-                {
-                    $result->push($merchant);
-
-                    $recordsToTake--;
-                }
-                $recordsRead++;
-            }
-
-            $skip += $recordsRead;
-
-            $params['skip'] = $skip;
-
-            $this->trace->debug(TraceCode::PARTNER_FETCH_SUBMERCHANTS_FILTER, [
-                'partnerId'                 => $partnerId,
-                'params'                    => $params,
-                'product'                   => $product,
-                'recordsFromApplicationIds' => $merchants->count(),
-                'recordsAfterProductFilter' => count($filteredMerchantIds),
-                'recordsTakenSoFar'         => count($result),
-            ]);
-
-        } while (count($result) < $count);
-
-        return array($skip, $result);
     }
 
     /**

@@ -43,6 +43,8 @@ class Merchant extends Base
         = 'get_linked_accounts_from_multiple_parent_ids';
     const FETCH_LINKED_ACCOUNT_IDS_FROM_PARENT_ID_WITH_ACTIVATED
         = 'fetch_linked_account_ids_from_parent_id_with_activated';
+    const FIND_MERCHANTS_FROM_EXTERNAL_ID
+        = 'find_merchants_from_external_id';
     const FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP
         = 'fetch_activated_merchants_before_timestamp';
     const FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS
@@ -101,6 +103,24 @@ class Merchant extends Base
         $filterRequest = new FilterRequest();
         $filterRequest->setQueryIdentifier(self::FETCH_LINKED_ACCOUNT_IDS_FROM_PARENT_ID_WITH_ACTIVATED);
         $filterRequest->setBindings(json_encode([$parentId, 1, $lastMerchantId]));
+
+        $response = $this->getFilterResponseFromAsv($filterRequest);
+
+        return $this->getMerchantCollectionFromResponse($response);
+    }
+
+    /**
+     * @param string $externalId
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function findMerchantIdsByExternalIds(string $externalId): Collection|PublicCollection
+    {
+        $filterRequest = new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::FIND_MERCHANTS_FROM_EXTERNAL_ID);
+        $filterRequest->setBindings(json_encode([$externalId]));
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
 

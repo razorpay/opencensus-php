@@ -741,6 +741,40 @@ class Repository extends Base\Repository
     }
 
     /**
+     * @param string $externalId
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function findMerchantIdsByExternalIds(string $externalId): array
+    {
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                $results = (new Acs\AsvSdkIntegration\Merchant())->findMerchantIdsByExternalIds($externalId);
+                return $results->pluck(Entity::ID)->toArray();
+            }
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query->where(Entity::EXTERNAL_ID, $externalId)
+                     ->get()
+                     ->pluck(Entity::ID)
+                     ->toArray();
+    }
+
+    /**
      * @param $skip
      * @param $limit
      *

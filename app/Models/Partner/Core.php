@@ -204,7 +204,15 @@ class Core extends Detail\Core
         return $fullyManagedSubMerchant;
     }
 
-    public function validateExternalIdForPartnerSubmerchant(Merchant\Entity $partner, string $externalId)
+    /**
+     * @param Merchant\Entity $partner
+     * @param string          $externalId
+     *
+     * @return void
+     * @throws BadRequestException
+     * @throws Exception\BaseException
+     */
+    public function validateExternalIdForPartnerSubmerchant(Merchant\Entity $partner, string $externalId): void
     {
         $merchantCore = new Merchant\Core;
 
@@ -216,6 +224,25 @@ class Core extends Detail\Core
                                'app_ids'     => $appIds,
                                'external_id' => $externalId,
                            ]);
+
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            $merchantIdsForExternalId = $this->repo->merchant->findMerchantIdsByExternalIds($externalId);
+            $subMerchantIds = $this->repo->merchant_access_map->filterSubMerchantsIdsMappedToAppId($appIds, $merchantIdsForExternalId);
+
+            if (empty($subMerchantIds) === false)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_DUPLICATE_EXTERNAL_ID,
+                    Merchant\Entity::EXTERNAL_ID,
+                    [
+                        'partner_id' => $partner->getId(),
+                        'merchants'  => $subMerchantIds,
+                    ]);
+            }
+
+            return;
+        }
 
         $params = [
             Merchant\Entity::EXTERNAL_ID => $externalId,
