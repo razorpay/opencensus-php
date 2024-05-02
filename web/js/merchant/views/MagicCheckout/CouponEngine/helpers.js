@@ -119,5 +119,9 @@ export const getMinReqWidgetOptions = (couponName) => {
     return MINIMUM_PURCHASE_REQUIREMENTS.filter((item) => item.name !== 'no_min_qty');
   }
 
+  if (couponName === COUPON_NAMES.BULK_ORDER) {
+    return MINIMUM_PURCHASE_REQUIREMENTS.filter((item) => item.name === 'min_qty');
+  }
+
   return MINIMUM_PURCHASE_REQUIREMENTS;
 };
