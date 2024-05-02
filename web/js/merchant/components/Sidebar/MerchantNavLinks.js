@@ -5,6 +5,7 @@ import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLi
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isMobileResolution } from 'common/utils/rzp-utils';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import {
   getIsBankingEnabled,
   getIsPayrollWidgetEnabled,
@@ -77,6 +78,18 @@ function MerchantNavLinks(props) {
         end
         type="general"
         additionalCondition={(currentUser) => currentUser.isAllowedView('home')}
+      />
+      <MainNavLink
+        label="Assisted Financing"
+        type="general"
+        icon="i i-at-sign"
+        to="/assisted-financing"
+        additionalCondition={(currentUser) =>
+          isExperimentEnabled(abExperiments?.assisted_financing) &&
+          currentUser.isAllowedView('payment_links') &&
+          !isConfigTagEnabled('payment_links.payment_link') &&
+          currentUser.isOrgRZP
+        }
       />
       <MainNavLink
         label="Transactions"

@@ -48,11 +48,7 @@ const TableCell = ({ value, isMobile }) => {
       borderBottomWidth="thick"
       borderBottomColor="surface.border.gray.muted"
     >
-      <Text
-        color="surface.text.gray.muted"
-        size={isMobile ? 'small' : 'medium'}
-        truncateAfterLines={1}
-      >
+      <Text size={isMobile ? 'small' : 'medium'} truncateAfterLines={1}>
         {value}
       </Text>
     </Box>

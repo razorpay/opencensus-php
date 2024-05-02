@@ -61,9 +61,9 @@ export const sendPaymentLinkRequest = async (reqData, paymentLinkData) => {
                 instruments: [
                   {
                     method: paymentLinkData?.method,
-                    [paymentLinkData?.method === 'emi' ? 'issuers' : 'providers']: [
-                      paymentLinkData?.provider,
-                    ],
+                    ...(paymentLinkData?.method === 'emi'
+                      ? { issuers: [paymentLinkData?.provider?.toUpperCase()] }
+                      : { providers: [paymentLinkData?.provider] }),
                   },
                 ],
               },
@@ -77,6 +77,5 @@ export const sendPaymentLinkRequest = async (reqData, paymentLinkData) => {
       },
     },
   });
-
   return response;
 };
