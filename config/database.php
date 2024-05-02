@@ -788,7 +788,6 @@ return array(
                 [
                     'host'               => env('ENTITY_ORIGIN_CACHE_REDIS_HOST'),
                     'port'               => env('ENTITY_ORIGIN_CACHE_REDIS_PORT'),
-                    'password'           => env('ENTITY_ORIGIN_CACHE_REDIS_PASSWORD'),
                     'timeout'            => 1,
                     'read_write_timeout' => 1,
                     'persistent'         => true,
