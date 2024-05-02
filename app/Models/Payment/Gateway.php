@@ -632,6 +632,7 @@ class Gateway
         self::BILLDESK_OPTIMIZER,
         self::INDUSIND_DEBIT_EMI,
         self::PINELABS,
+        self::EASEBUZZ_OPTIMIZER,
     ];
 
     const OPTIMIZER_CARD_GATEWAYS = [
