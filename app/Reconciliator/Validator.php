@@ -205,9 +205,28 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_UCO           => 1,
     ];
 
-    const AUTOMATIC_FETCHING_ENABLED_GATEWAYS = [RequestProcessor\Base::NETBANKING_SBI, RequestProcessor\Base::WALLET_BAJAJ, RequestProcessor\Base::UPI_HDFC, RequestProcessor\Base::ISG];
+    const AUTOMATIC_FETCHING_ENABLED_GATEWAYS = [
+        RequestProcessor\Base::NETBANKING_SBI, 
+        RequestProcessor\Base::WALLET_BAJAJ, 
+        RequestProcessor\Base::UPI_HDFC, 
+        RequestProcessor\Base::ISG,
+        RequestProcessor\Base::NETBANKING_SCB,
+        RequestProcessor\Base::NETBANKING_KVB,
+        RequestProcessor\Base::NETBANKING_IOB,
+        RequestProcessor\Base::NETBANKING_RBL,
+        RequestProcessor\Base::NETBANKING_JKB,
+        RequestProcessor\Base::NETBANKING_UCO,
+        RequestProcessor\Base::NETBANKING_DLB,
+        RequestProcessor\Base::NETBANKING_CANARA,
+        RequestProcessor\Base::NETBANKING_SVC,
+        RequestProcessor\Base::NETBANKING_DCB,
+        RequestProcessor\Base::NETBANKING_CBI,
+        RequestProcessor\Base::NETBANKING_JSB,
+        RequestProcessor\Base::NETBANKING_FSB,
+        RequestProcessor\Base::NETBANKING_PNB
+    ];
 
-    const WHITELISTED_EMAIL_FOR_ART = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com"];
+    const WHITELISTED_EMAIL_FOR_ART = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com", "reconciliate@mg.razorpay.com"];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
     const SUPPORTED_ZIP_EXTENSIONS = ['zip', '7z'];

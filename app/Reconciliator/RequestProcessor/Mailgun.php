@@ -137,6 +137,132 @@ class Mailgun extends Base
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
         ],
+        self::NETBANKING_SCB => [
+            [
+                "from" => "no-reply@northakross.in",
+                "subject_pattern" => "/^Scb Reconciliation File/",
+                "filename_pattern" => "/^(?i)scb_reconciliation_[0-9]{18}/",
+                "destination" => "recon/input/netbanking_scb/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_KVB => [
+            [
+                "from" => ["atmcashtally@kvbmail.com", "lakshmim@kvbmail.com"],
+                "subject_pattern" => "/(?i)RECONFILE DT (0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.20[0-9]{2}/",
+                "filename_pattern" => "/^(?i)kvb_ib_razorpaytpv_(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}/",
+                "destination" => "recon/input/netbanking_kvb/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_IOB => [
+            [
+                "from" => ["finances.recon@razorpay.com", "ibalerts@iob.in"],
+                "subject_pattern" => "/(?i)^IOB RazorPay Recon File -20[0-9]{6}/",
+                "filename_pattern" => "/(?i)razorpay_(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])[0-9]{2}iob/",
+                "destination" => "recon/input/netbanking_iob/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_RBL => [
+            [
+                "from" => "internetbanking@rblbank.com",
+                "subject_pattern" => "/(?i)^RBL (Razorpay|CIB) PG Recon File/",
+                "filename_pattern" => "/(?i)(pg|cib_pg)_recon_file_razorpay_(0[1-9]|(1|2)[0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}/",
+                "destination" => "recon/input/netbanking_rbl/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_JKB => [
+            [
+                "from" => "netbanking@jkbmail.com",
+                "subject_pattern" => "/Recon File of Razorpay Dated: [0-9]{2}-[0-9]{2}-20[0-9]{2}/",
+                "filename_pattern" => "/reconfile_[0-9]{2}-[0-9]{2}-20[0-9]{2}/",
+                "destination" => "recon/input/netbanking_jkb/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_UCO => [
+            [
+                "from" => "hoe_banking.calcutta@ucobank.co.in",
+                "subject_pattern" => "/(?i)Online Razorpay Report Data for the transaction date : [0-9]{2}-[0-9]{2}-20[0-9]{2}/",
+                "filename_pattern" => "/(?i)razorpay_report_[0-9]{2}[0-9]{2}20[0-9]{2}/",
+                "destination" => "recon/input/netbanking_uco/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_DLB => [
+            [
+                "from" => "alerts@dhanbank.co.in",
+                "subject_pattern" => "/(?i)RazorPay - Dhanalaxmi Bank PG Recon File New/",
+                "filename_pattern" => "/^(?i)razorpay_report_[0-9]{2}[0-9]{2}20[0-9]{2}/",
+                "destination" => "recon/input/netbanking_dlb/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_CANARA => [
+            [
+                "from" => "canarabank@canarabank.com",
+                "subject_pattern" => "/^(?i)RAZORPAY recon file for/",
+                "filename_pattern" => "/^(?i)razorpay[0-9]{2}[0-9]{2}20[0-9]{2}/",
+                "destination" => "recon/input/netbanking_canara/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_SVC => [
+            [
+                "from" => "chaudharyam@svcbank.com",
+                "subject_pattern" => "/^(?i)Recon file for the dated [0-9]{2}.[0-9]{2}.20[0-9]{2} to [0-9]{2}.[0-9]{2}.20[0-9]{2}/",
+                "filename_pattern" => "/^(?i)svcbibdataipgrz/",
+                "destination" => "recon/input/netbanking_svc/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_DCB => [
+            [
+                "from" => "dcm@dcbbank.com",
+                "subject_pattern" => "/^(?i)RAZORPAY RECON file dt./",
+                "filename_pattern" => "/^(?i)reportrazorpay_[0-9]{2}-[0-9]{2}-20[0-9]{2}/",
+                "destination" => "recon/input/netbanking_dcb/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_CBI => [
+            [
+                "from" => ["bmvb4982@centralbank.co.in", "inbsite@centralbank.co.in"],
+                "subject_pattern" => "/(?i)Razor Pay TPV MIS Report for IB00102/",
+                "filename_pattern" => "/(?i)IB00102_[0-9]{2}[0-9]{2}20[0-9]{2}/",
+                "destination" => "recon/input/netbanking_cbi/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_JSB => [
+            [
+                "from" => ["mohamed.m05@janabank.com", "kishan.holihosur@janabank.com"],
+                "subject_pattern" => "/(?i)Payu Recon File dated [0-9]{2}-[0-9]{2}-20[0-9]{2}/",
+                "filename_pattern" => "/(?i)razorpay-20[0-9]{2}[0-9]{2}[0-9]{2}/",
+                "destination" => "recon/input/netbanking_jsb/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_FSB => [
+            [
+                "from" => "reconfile-billdesk@fincarebank.com",
+                "subject_pattern" => "/^(?i)Recon file for transaction dated/",
+                "filename_pattern" => "/^(?i)razorpay_recon_file_20[0-9]{2}-[0-9]{2}-[0-9]{2}/",
+                "destination" => "recon/input/netbanking_fsb/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_PNB => [
+            [
+                "from" => "dbdaggregator@pnb.co.in",
+                "subject_pattern" => "/^(?i)Netbanking_PNB | MIS dated/",
+                "filename_pattern" => "/^(?i)aggregator_razorpay/",
+                "destination" => "recon/input/netbanking_pnb/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ]
     ];
 
     protected $inputDetails;

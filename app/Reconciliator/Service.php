@@ -79,7 +79,25 @@ class Service extends Base\Service
     const NAME = 'name';
 
     const BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com"];
-    const BLACKLISTED_GATEWAY_FOR_API_AUTO_RECON_VIA_MAILGUN = [RequestProcessor\Base::UPI_HDFC,RequestProcessor\Base::ISG];
+    const BLACKLISTED_GATEWAY_FOR_API_AUTO_RECON_VIA_MAILGUN = [
+        RequestProcessor\Base::UPI_HDFC,
+        RequestProcessor\Base::ISG,
+        // RequestProcessor\Base::NETBANKING_FEDERAL,
+        // RequestProcessor\Base::NETBANKING_SCB,
+        // RequestProcessor\Base::NETBANKING_KVB,
+        // RequestProcessor\Base::NETBANKING_IOB,
+        // RequestProcessor\Base::NETBANKING_RBL,
+        // RequestProcessor\Base::NETBANKING_SIB,
+        // RequestProcessor\Base::NETBANKING_JKB,
+        // RequestProcessor\Base::NETBANKING_UCO,
+        // RequestProcessor\Base::NETBANKING_DLB,
+        // RequestProcessor\Base::NETBANKING_CANARA
+        // RequestProcessor\Base::NETBANKING_SVC,
+        // RequestProcessor\Base::NETBANKING_DCB,
+        // RequestProcessor\Base::NETBANKING_CBI,
+        // RequestProcessor\Base::NETBANKING_JSB,
+        // RequestProcessor\Base::NETBANKING_FSB
+    ];
 
     protected $core;
 
