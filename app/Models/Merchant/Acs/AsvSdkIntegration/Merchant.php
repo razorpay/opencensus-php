@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use Razorpay\Asv\RequestMetadata;
 use RZP\Models\Base\PublicCollection;
@@ -42,6 +43,14 @@ class Merchant extends Base
         = 'get_linked_accounts_from_multiple_parent_ids';
     const FETCH_LINKED_ACCOUNT_IDS_FROM_PARENT_ID_WITH_ACTIVATED
         = 'fetch_linked_account_ids_from_parent_id_with_activated';
+    const FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP
+        = 'fetch_activated_merchants_before_timestamp';
+    const FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS
+        = 'fetch_activated_merchants_before_timestamp_with_merchant_ids';
+    const FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS_EXCLUDED
+        = 'fetch_activated_merchants_before_timestamp_with_merchant_ids_excluded';
+    const FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS_AND_EXCLUDED
+        = 'fetch_activated_merchants_before_timestamp_with_merchant_ids_and_excluded';
 
     public function __construct()
     {
@@ -168,17 +177,58 @@ class Merchant extends Base
         int   $limit,
         int   $skip,
         int   $end,
+        array $parentIdsExcluded,
         array $merchantIds = [],
         array $merchantIdsExcluded = []
     ): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
-        $filterRequest->setQueryIdentifier('merchant_03');
-        $filterRequest->setBindings(
-            json_encode([
-                1, $end, $merchantIdsExcluded, $merchantIds, $merchantIdsExcluded, strval($limit), strval($skip)
-            ])
-        );
+
+        if (empty($merchantIds) and empty($merchantIdsExcluded))
+        {
+            $filterRequest->setQueryIdentifier(
+                self::FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP
+            );
+            $filterRequest->setBindings(
+                json_encode([1, $end, $parentIdsExcluded, $limit, $skip])
+            );
+        }
+        else if (!empty($merchantIds) and !empty($merchantIdsExcluded))
+        {
+            $filterRequest->setQueryIdentifier(
+                self::FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS_AND_EXCLUDED
+            );
+            $filterRequest->setBindings(
+                json_encode([1, $end, $parentIdsExcluded, $merchantIds, $merchantIdsExcluded, $limit, $skip])
+            );
+        }
+        else if (!empty($merchantIds))
+        {
+            $filterRequest->setQueryIdentifier(
+                self::FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS
+            );
+            $filterRequest->setBindings(
+                json_encode([1, $end, $parentIdsExcluded, $merchantIds, $limit, $skip])
+            );
+        }
+        else if (!empty($merchantIdsExcluded))
+        {
+            $filterRequest->setQueryIdentifier(
+                self::FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS_EXCLUDED
+            );
+            $filterRequest->setBindings(
+                json_encode([1, $end, $parentIdsExcluded, $merchantIdsExcluded, $limit, $skip])
+            );
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ARGUMENT,
+                null,
+                null,
+                "invalid arguments for fetchActivatedMerchantsBeforeTimestamp",
+            );
+        }
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
 

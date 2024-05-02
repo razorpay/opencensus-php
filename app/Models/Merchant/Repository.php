@@ -270,6 +270,10 @@ class Repository extends Base\Repository
         return $results;
     }
 
+    /**
+     * @throws BaseException
+     * @throws BadRequestException
+     */
     public function fetchActivatedMerchantsBeforeTimestamp(
       int $limit,
       int $skip,
@@ -286,7 +290,7 @@ class Repository extends Base\Repository
             else
             {
                 $results = (new AsvSdkMerchantQuery())->fetchActivatedMerchantsBeforeTimestamp(
-                    $limit, $skip, $end, $merchantIds, $merchantIdsExcluded
+                    $limit, $skip, $end, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS, $merchantIds, $merchantIdsExcluded
                 );
 
                 return $results->pluck(Entity::ID)->toArray();
