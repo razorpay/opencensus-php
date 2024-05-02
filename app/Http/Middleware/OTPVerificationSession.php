@@ -2,16 +2,22 @@
 
 namespace App\Http\Middleware;
 
+use App\Splitz\Service as SplitzService;
+use App\Trace\TraceCode;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Razorpay\Api\Errors\ErrorCode;
 use Illuminate\Support\Facades\Session;
 use Razorpay\Api\Errors\BadRequestError;
+use Auth;
+
 
 class OTPVerificationSession
 {
     const OTPVerificationSessionKey = "OTP_VERIFICATION_SESSION";
 
+    const twoFADisabled="SESSION_DISABLED_2FA";
     /**
      * @var array $setUrls will hold the http method prefixed urls for which a session key needs to be set.
      *                     This is a map of http method prefixed url and a map of key value.
@@ -20,8 +26,9 @@ class OTPVerificationSession
      *                     The keys in this map can be url patterns as well
      */
     public static array $setUrls = [
-        "user/verify_contact"   => ["http_method" => "POST", "key" => "success", "value" => true],
-        "user/otp/verify"       => ["http_method" => "POST", "key" => "success", "value" => true],
+        "user/verify_contact"                               => ["http_method" => "POST", "key" => "success", "value" => true],
+        "user/otp/verify"                                   => ["http_method" => "POST", "key" => "success", "value" => true],
+        "merchant/api/*/users/verify/update/new/mobile"     => ["http_method" => "POST", "key" => "success", "value" => true],
     ];
 
     public static array $setRouteNames = [
@@ -56,9 +63,7 @@ class OTPVerificationSession
         $this->verifyOtpSessionIfApplicable($request);
 
         $res = $next($request);
-
         $this->setOtpSessionIfApplicable($request, $res);
-
         return $res;
     }
 
@@ -84,12 +89,10 @@ class OTPVerificationSession
                 }
             }
         }
-
         if (!$shouldCheck) {
             // check for url patterns for which we need to verify the session
             foreach (self::$checkUrls as $patternUri => $data) {
                 $httpMethod = array_get($data, "http_method");
-
                 // check for http method
                 if ($httpMethod !== $method) {
                     continue;
@@ -102,12 +105,13 @@ class OTPVerificationSession
                 }
             }
         }
-
         // if we need to check and the session key exists, only then we will do the validation
         if ($shouldCheck
-            && Session::exists(self::OTPVerificationSessionKey)
-                && Session::get(self::OTPVerificationSessionKey) != '1') {
+                && Session::get(self::OTPVerificationSessionKey) != '1' ) {
             throw new BadRequestError('OTP verification required', ErrorCode::BAD_REQUEST_ERROR, 400);
+        }
+        if($shouldCheck && Session::get(self::OTPVerificationSessionKey) == '1' &&  $this->isExptEnabled()){
+           Session::forget(self::OTPVerificationSessionKey);
         }
     }
 
@@ -140,7 +144,6 @@ class OTPVerificationSession
                 }
             }
         }
-
         // check for url patterns for which we need to set the session
         foreach (self::$setUrls as $patternUri => $data) {
             $httpMethod = array_get($data, "http_method");
@@ -149,7 +152,6 @@ class OTPVerificationSession
             if ($httpMethod !== $method) {
                 continue;
             }
-
             // check for uri pattern
             if ($request->is($patternUri)) {
                 $this->setOtpSession($this->getOtpSessionValue($content, $data));
@@ -166,5 +168,40 @@ class OTPVerificationSession
     private function setOtpSession(string $value): void
     {
         Session::put(self::OTPVerificationSessionKey, $value);
+    }
+
+    private function isExptEnabled():bool{
+       try{
+           $experimentId = config('splitz.experiments')[self::twoFADisabled];
+           if (empty($experimentId)) {
+               return true;
+           }
+           $currentMerchant=Session::get('current_merchant_id');
+           if (is_null($currentMerchant))
+           {
+               return false;
+           }
+           $user = Auth::user();
+           if($user == null){
+               return false;
+           }
+           $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+
+           if($currentMerchantId == null){
+               return false;
+           }
+           $concurrentApiCallExperimentId = config('splitz.experiments')[self::twoFADisabled];
+           $experimentIds = [$concurrentApiCallExperimentId];
+           $data = (new SplitzService())->getVariantBulk($currentMerchantId, $experimentIds,isSplitzCachingEnabled: true);
+           if (!array_key_exists($experimentId, $data))
+           {
+               return false;
+           }
+           return ($data[$experimentId]['variables']['result'] ?? null) === 'on';
+       }
+       catch (\Throwable $e){
+           return false;
+       }
+        return false;
     }
 }

@@ -219,7 +219,12 @@ return [
         'RAZORX_CACHING_ENABLED' => env('RAZORX_CACHING_ENABLED', ''),
 
         // unified signup
-        'CURLEC_REDIRECTION_ENABLED' => env('CURLEC_REDIRECTION_ENABLED', '')
+        'CURLEC_REDIRECTION_ENABLED' => env('CURLEC_REDIRECTION_ENABLED', ''),
+
+        // 2fa  Session disabling
+        'SESSION_DISABLED_2FA' => env('SESSION_DISABLED_2FA', ''),
+
+
 
     ]
 ];
