@@ -63,4 +63,10 @@ class Entity extends Base\Entity
         return $this;
     }
 
+    public function getInputFields()
+    {
+        return $this->fillable;
+    }
+
+
 }

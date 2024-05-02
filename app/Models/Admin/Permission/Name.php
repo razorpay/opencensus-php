@@ -1195,6 +1195,9 @@ class Name
 
     const INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT = 'international_products_pa_cb_enablement';
 
+    // IDAM Admin permissions
+    const BANKING_IDAM_ADMIN                      = 'banking_idam_admin';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

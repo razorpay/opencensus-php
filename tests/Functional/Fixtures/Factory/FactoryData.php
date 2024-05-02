@@ -2392,5 +2392,12 @@ final class FactoryData
         $factory(Models\Transfer\Payment\Entity::class, [
             'id' => $faker->uniqueId,
         ]);
+
+        $factory(Models\Admin\AdminsMeta\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'admin_id'          => $faker->uniqueid,
+            'unique_identifier' => $faker->uniqueid,
+            'auth_mode'         => 'adfs'
+        ]);
     }
 }

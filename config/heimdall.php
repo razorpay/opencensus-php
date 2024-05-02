@@ -1138,6 +1138,10 @@ return [
             Permission::VIEW_ADMIN_REPORTS => [
                 'description' => 'View Admin Reports',
                 'assignable'  => true,
+            ],
+            Permission::BANKING_IDAM_ADMIN => [
+                'description' => 'Banking IDAM Admin',
+                'assignable'  => true,
             ]
         ],
 

@@ -607,4 +607,22 @@ class OrganizationController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    // --------------------- CRUD for Org Admins  -----------------------------------------
+    public function createOrgAdmin()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::ADMINS_META)->createOrgAdmin($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getOrgAdmin(string $id)
+    {
+        $response = $this->service(E::ADMINS_META)->getOrgAdmin($id);
+
+        return ApiResponse::json($response);
+    }
+    // --------------------- END CRUD for Org Admins ---------------------------------------
 }

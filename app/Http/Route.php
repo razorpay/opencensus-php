@@ -1875,6 +1875,10 @@ class Route
 
         'merchant_invitation_verify'               => ['get',      'merchant-invitation/verify/{token}',             'OrganizationController@verifyAdminLead'                            ],
 
+        // Axis ORG Admin routes
+        'org_admin_create'                         => ['post',     'org/admins',                                     'OrganizationController@createOrgAdmin'                             ],
+        'org_admin_get'                            => ['get',      'org/admins/{id}',                                'OrganizationController@getOrgAdmin'                                ],
+
         // To-Do : This route should be deprecated in favour of merchant_invitation_verify route . Keeping this route temporarily to decouple FE and BE deployments and avoid any production issue due to removal of route. The older route admin_lead_verify was re-routing request to admin portal due to presence of admin in url. Hence added the new url pattern without using admin in route name.
         'admin_lead_verify'                        => ['get',      'admin-lead/verify/{token}',                      'OrganizationController@verifyAdminLead'                            ],
         'admin_lead_put'                           => ['put',      'admin-lead/{id}',                                'OrganizationController@putAdminLead'                               ],
@@ -7928,6 +7932,9 @@ class Route
         'pos_fetch_all_device_orders',
         'pos_fetch_latest_order',
         'setl_fetch_multiple_proxy',
+
+        'org_admin_create',
+        'org_admin_get',
     ];
 
     // These will run on internal auth with the assurance
@@ -10989,6 +10996,10 @@ class Route
         'pos_fetch_latest_order'                        => Permission::VIEW_MERCHANT,
         'get_mozart_audit_logs'                    => Permission::VIEW_ALL_ENTITY,
         'get_mozart_audit_logs_by_params'          => Permission::VIEW_ALL_ENTITY,
+
+        // Axis IDAM Route Config
+        'org_admin_create'                         => Permission::BANKING_IDAM_ADMIN,
+        'org_admin_get'                            => Permission::BANKING_IDAM_ADMIN,
     ];
 
     public static $bankLmsRoutePermissions = [
@@ -16312,6 +16323,9 @@ class Route
             'internal_payment_authorize_refund',
             'payment_refund_pos_internal',
             'payment_capture_pos',
+            'org_admin_create',
+            'org_admin_get',
+            'admin_authentication'
         ],
 
         'cron' => [

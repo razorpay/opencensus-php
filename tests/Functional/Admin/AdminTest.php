@@ -9,6 +9,7 @@ use Cache;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Diag\EventCode;
 use RZP\Models\Admin\Role;
 use RZP\Models\Base\EsDao;
@@ -2571,5 +2572,258 @@ class AdminTest extends TestCase
 
         // Assert that ID not found error is thrown when tenant:banking role is assigned to the admin
         $this->startTest($testData);
+    }
+
+    public function testCreateOrgAdmin()
+    {
+        $org = $this->createOrg();
+
+        // create IDAM admin who can only access this routes
+        $idamAdminToken = $this->createIDAMAdminAndGetAdminToken($org->getId());
+
+        $adminField = [
+            'name', 'username', 'email', 'allow_all_merchants',
+            'oauth_provider_id', 'oauth_access_token', 'disabled',
+            'roles', 'groups', 'locked', 'password', 'password_confirmation', 'expired_at'
+        ];
+        $this->createFieldMapsForOrg($org->getId(), 'admin', $adminField);
+
+        $adminsMeta = [
+            'auth_mode', 'unique_identifier', 'expired_at'
+        ];
+        $this->createFieldMapsForOrg($org->getId(), 'admins_meta', $adminsMeta);
+
+        $role = $this->fixtures->create('role', ['org_id' => $org->getId()]);
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $org->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $idamAdminToken;
+        $testData['request']['content']['user_roles']    = array($role['id']);
+        $expireAt                                        = $this->timestampWithOffset(5);
+        $testData['request']['content']['expire_at']     = $expireAt;
+
+        $testData['response']['content']['user_roles']   = array("role_" .$role['id']);
+        $testData['response']['content']['expire_at']    = $expireAt;
+
+        $result = $this->startTest($testData);
+
+        $this->assertEquals($expireAt, $result['expire_at']);
+        $this->assertEquals('enable', $result['account_status']);
+        $this->assertEquals(array("role_" .$role['id']), $result['user_roles']);
+        $this->assertEquals('john.doe@axis.com', $result['email']);
+        $this->assertEquals('John Doe', $result['full_name']);
+        $this->assertNull($result['user_disabled_at']);
+        $this->assertNull($result['last_login_at']);
+    }
+
+    public function testCreateOrgAdminWithWrongOrgIdInHeader()
+    {
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['expire_at'] = $this->timestampWithOffset(1);
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateOrgAdminWithWrongEmailHostname()
+    {
+
+        $org = $this->createOrg();
+
+        // create IDAM admin who can only access this routes
+        $idamAdminToken = $this->createIDAMAdminAndGetAdminToken($org->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['expire_at']     = $this->timestampWithOffset(1);
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $org->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $idamAdminToken;
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateOrgAdminWithInvalidExpireAtField()
+    {
+
+        $org = $this->createOrg();
+
+        // create IDAM admin who can only access this routes
+        $idamAdminToken = $this->createIDAMAdminAndGetAdminToken($org->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $org->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $idamAdminToken;
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateOrgAdminWhenAuthModeIsNotAdfs()
+    {
+
+        $org = $this->createOrg();
+
+        // create IDAM admin who can only access this routes
+        $idamAdminToken = $this->createIDAMAdminAndGetAdminToken($org->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $org->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $idamAdminToken;
+        $testData['request']['content']['expire_at'] = $this->timestampWithOffset(1);
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $this->startTest($testData);
+    }
+
+    public function testGetOrgAdmin()
+    {
+        $org = $this->createOrg();
+
+        // create IDAM admin who can only access this routes
+        $idamAdminToken = $this->createIDAMAdminAndGetAdminToken($org->getId());
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createAdmin($org->getId(), $expireAt);
+
+        $role = $this->fixtures->create('role', ['org_id' => $org->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $testData['request']['url'] . '/' . $adminsMeta['unique_identifier'];
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $org->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $idamAdminToken;
+
+        $testData['response']['content']['user_roles'] = array("role_" .$role['id']);
+        $testData['response']['content']['expire_at'] = $expireAt;
+
+        $this->startTest($testData);
+    }
+
+    public function testGetOrgAdminWhenNotFound()
+    {
+        $org = $this->createOrg();
+
+        // create IDAM admin who can only access this routes
+        $idamAdminToken = $this->createIDAMAdminAndGetAdminToken($org->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $testData['request']['url'] . '/' .'nbjbfubr8';
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $org->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $idamAdminToken;
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $this->startTest($testData);
+    }
+
+    private function createOrg()
+    {
+        return $this->fixtures->create('org', [
+            'email' => 'random@axis.com',
+            'email_domains' => 'axis.com',
+            'auth_type' => 'password',
+        ]);
+    }
+
+    private function createFieldMapsForOrg(string $orgId, string $entityName, array $fields)
+    {
+        return $this->fixtures->create(
+            'org_field_map',
+            [
+                'org_id' => $orgId,
+                'entity_name' => $entityName,
+                'fields' => $fields,
+            ]);
+    }
+
+    private function createIDAMAdminAndGetAdminToken(string $orgId): string
+    {
+
+        $expireAt = $this->timestampWithOffset(5);
+
+        $admin = $this->createAdmin(
+            $orgId,
+            $expireAt,
+            'admin@axis.com',
+            'IDAM Admin',
+            'admin',
+            true
+        );
+
+        $role = $this->fixtures->create('role', [
+            'org_id' => $orgId,
+            'name'   => 'IDAM Admin Role',
+        ]);
+
+        $permission = $this->fixtures->create('permission', [
+            'name' => Permission::BANKING_IDAM_ADMIN
+        ]);
+
+        $role->permissions()->attach($permission->getId());
+
+        $admin->roles()->attach($role);
+
+        $token = 'ThisIsATokenForTest';
+
+        $adminToken = $this->fixtures->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'created_at' => $this->timestampWithOffset(),
+            'token'      => Hash::make($token),
+            'expires_at' => $expireAt,
+        ]);
+
+        return $token . $adminToken->getId();
+    }
+
+    private function createAdmin(
+        string $orgId,
+        int    $expireAt,
+        string $email = 'testadmin@axis.com',
+        string $name = 'Test User',
+        string $username = 'testadmin',
+        bool   $allowAllMerchants = false
+    )
+    {
+        return $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID                => $orgId,
+            Admin\Entity::EMAIL                 => $email,
+            Admin\Entity::NAME                  => $name,
+            Admin\Entity::EXPIRED_AT            => $expireAt,
+            Admin\Entity::USERNAME              => $username,
+            Admin\Entity::ALLOW_ALL_MERCHANTS   => $allowAllMerchants,
+        ]);
+    }
+
+    private function createAdminsMeta(string $adminId)
+    {
+        return $this->fixtures->create('admins_meta', [
+            'admin_id'          => $adminId,
+            'unique_identifier' => 'xv6vxwe7',
+            'auth_mode'         => 'adfs'
+        ]);
+    }
+
+    private function timestampWithOffset(int $days = null): int
+    {
+        $now = Carbon::now(Timezone::IST);
+
+        if ($days != null) {
+            $now->addDays($days);
+        }
+
+        return $now->getTimestamp();
     }
 }

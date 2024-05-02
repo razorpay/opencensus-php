@@ -1817,7 +1817,10 @@ class PublicErrorDescription
     const BAD_REQUEST_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST                     = 'Something went wrong. Please try again after some time. If the issue repeats, please reach out to our support.';
     const BAD_REQUEST_IEC_CODE_REQUIRED_FOR_SELECTED_PURPOSE_CODE                   = 'IEC Code is required for your category of business.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_CREATION_FAILED                               = 'Something went wrong. Please try again after some time. If the issue repeats, please reach out to our support.';
-    
+    // Axis IDAM Error Description
+    const BAD_REQUEST_ADMIN_NOT_FOUND                                               = 'Admin not found with provided Id.';
+    const BAD_REQUEST_IDAM_ORG_NOT_FOUND                                            = 'IDAM Org not found.';
+
     const BAD_REQUEST_CIN_MISMATCH            = 'The given CIN does not belong to your selected business type. Please provide a different CIN';
     const BAD_REQUEST_PAN_MISMATCH            = 'The given PAN does not belong to your selected business type. Please provide a different PAN';
     const BAD_REQUEST_OWNER_GSTIN_MISMATCH    = 'The given GSTIN does not belong to the Owner PAN provided. Please provide a different GSTIN';

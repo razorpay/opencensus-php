@@ -3089,6 +3089,9 @@ class ErrorCode
     const BAD_REQUEST_METHOD_NOT_ALLOWED_FOR_COUNTRY_ORG                            = 'BAD_REQUEST_METHOD_NOT_ALLOWED_FOR_COUNTRY_ORG';
     const BAD_REQUEST_INVALID_UPI_DMO_EDIT_UPDATE_COMBINATION                       = 'BAD_REQUEST_INVALID_UPI_DMO_EDIT_UPDATE_COMBINATION';
 
+    // IDAM Error Codes
+    const BAD_REQUEST_ADMIN_NOT_FOUND                                               = 'BAD_REQUEST_ADMIN_NOT_FOUND';
+    const BAD_REQUEST_IDAM_ORG_NOT_FOUND                                            = 'BAD_REQUEST_IDAM_ORG_NOT_FOUND';
     const BAD_REQUEST_BATCH_FILE_DUPLICATE_MERCHANT_ID                              = 'BAD_REQUEST_BATCH_FILE_DUPLICATE_MERCHANT_ID';
 
     // Smart Routing Rules

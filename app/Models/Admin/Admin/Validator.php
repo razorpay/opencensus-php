@@ -40,6 +40,7 @@ class Validator extends Base\Validator
         Entity::GROUPS                => 'sometimes|array',
         Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
         Entity::DISABLED              => 'sometimes|in:0,1',
+        Entity::EXPIRED_AT            => 'sometimes|epoch',
     ];
 
     protected static $editRules = [

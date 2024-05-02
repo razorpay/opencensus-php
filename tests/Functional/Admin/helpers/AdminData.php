@@ -2061,4 +2061,229 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
+
+    'testCreateOrgAdmin' => [
+        'request' => [
+            'method'    => 'POST',
+            'headers'   => [
+                'X-Org-Id'      => 'org_100000razorpay',
+                'X-Admin-Token' => 'dummy-token'
+            ],
+            'url' => '/org/admins',
+            'content' => [
+                'auth_mode'         => 'adfs',
+                'unique_identifier' => 'xv6vxwe7',
+                'full_name'         => 'John Doe',
+                'email'             => 'John.doe@axis.com',
+                'username'          => 'username',
+                'user_roles'        => [
+                    'NcigjG1NJtRmtG'
+                ],
+                'expire_at'         => '1708625257'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'unique_identifier' => 'xv6vxwe7',
+                'full_name'         => 'John Doe',
+                'email'             => 'john.doe@axis.com',
+                'user_roles'        => [
+                    'role_NcigjG1NJtRmtG'
+                ],
+                'expire_at'         => 1709188200,
+                'account_status'    => 'enable',
+                'user_disabled_at'  => null,
+                'last_login_at'     => null,
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testCreateOrgAdminWithWrongOrgIdInHeader' => [
+        'request' => [
+            'method'    => 'POST',
+            'url' => '/org/admins',
+            'content' => [
+                'auth_mode'         => 'adfs',
+                'unique_identifier' => 'xv6vxwe7',
+                'full_name'         => 'John Doe',
+                'email'             => 'John.doe@axis.com',
+                'username'          => 'username',
+                'user_roles'        => [
+                    'NcigjG1NJtRmtG'
+                ],
+                'expire_at'         => '1708625257'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_IDAM_ORG_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_IDAM_ORG_NOT_FOUND,
+        ],
+    ],
+
+    'testCreateOrgAdminWithWrongEmailHostname' => [
+        'request' => [
+            'method'    => 'POST',
+            'headers'   => [
+                'X-Org-Id'      => 'org_100000razorpay',
+                'X-Admin-Token' => 'dummy-token'
+            ],
+            'url' => '/org/admins',
+            'content' => [
+                'auth_mode'         => 'adfs',
+                'unique_identifier' => 'xv6vxwe7',
+                'full_name'         => 'John Doe',
+                'email'             => 'John.doe@test.com',
+                'username'          => 'username',
+                'user_roles'        => [
+                    'NcigjG1NJtRmtG'
+                ],
+                'expire_at'         => '1708625257'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME,
+        ],
+    ],
+
+    'testCreateOrgAdminWithInvalidExpireAtField' => [
+        'request' => [
+            'method'    => 'POST',
+            'headers'   => [
+                'X-Org-Id'      => 'org_100000razorpay',
+                'X-Admin-Token' => 'dummy-token'
+            ],
+            'url' => '/org/admins',
+            'content' => [
+                'auth_mode'         => 'adfs',
+                'unique_identifier' => 'xv6vxwe7',
+                'full_name'         => 'John Doe',
+                'email'             => 'John.doe@test.com',
+                'username'          => 'username',
+                'user_roles'        => [
+                    'NcigjG1NJtRmtG'
+                ],
+                'expire_at'         => '1708625257'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_at should be in future',
+                    'field'       => 'expire_at'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOrgAdminWhenAuthModeIsNotAdfs' => [
+        'request' => [
+            'method'    => 'POST',
+            'headers'   => [
+                'X-Org-Id'      => 'org_100000razorpay',
+                'X-Admin-Token' => 'dummy-token'
+            ],
+            'url' => '/org/admins',
+            'content' => [
+                'auth_mode'         => 'test',
+                'unique_identifier' => 'xv6vxwe7',
+                'full_name'         => 'John Doe',
+                'email'             => 'John.doe@test.com',
+                'username'          => 'username',
+                'user_roles'        => [
+                    'NcigjG1NJtRmtG'
+                ],
+                'expire_at'         => '1708625257'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected auth mode is invalid.',
+                    'field'       => 'auth_mode'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetOrgAdmin' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/org/admins',
+            'headers'   => [
+                'X-Org-Id'      => 'org_100000razorpay',
+                'X-Admin-Token' => 'dummy-token'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'unique_identifier' => 'xv6vxwe7',
+                'full_name'         => 'Test User',
+                'email'             => 'testadmin@axis.com',
+                'user_roles'        => [
+                    'role_NcigjG1NJtRmtG'
+                ],
+                'expire_at'         => 1709188200,
+                'account_status'    => 'enable',
+                'user_disabled_at'  => null,
+                'last_login_at'     => null,
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testGetOrgAdminWhenNotFound' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/org/admins',
+            'headers'   => [
+                'X-Org-Id'      => 'org_100000razorpay',
+                'X-Admin-Token' => 'dummy-token'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ADMIN_NOT_FOUND
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ADMIN_NOT_FOUND,
+        ],
+    ],
 ];
