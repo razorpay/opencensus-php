@@ -294,8 +294,8 @@ return array(
 
         'data-warehouse-admin-test' => [
             'read'  => [
-                'host'      => env('DB_WAREHOUSE_ADMIN_HOST'),
-                'port'      => env('DB_WAREHOUSE_ADMIN_PORT'),
+                'host'      => env('DB_WAREHOUSE_HOST'),
+                'port'      => env('DB_WAREHOUSE_PORT'),
                 'database'  => env('DB_WAREHOUSE_DATABASE_TEST'),
                 'username'  => env('DB_WAREHOUSE_USERNAME'),
                 'password'  => env('DB_WAREHOUSE_PASSWORD'),
