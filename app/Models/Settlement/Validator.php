@@ -210,9 +210,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $adminGenerateGifuFileRules = [
-        'merchant_ids'      =>  'required|array',
-        'from_timestamp'    =>  'required|integer',
-        'to_timestamp'      =>  'required|integer'
+        'merchant_ids'      =>  'sometimes|array',
+        'from_timestamp'    =>  'sometimes|integer',
+        'to_timestamp'      =>  'sometimes|integer',
+        'manual_gifu_time_range' => 'sometimes|array',
+        'send_file_to_beam' => 'sometimes|bool',
     ];
 
     protected function validateBalanceType($attribute, $value)

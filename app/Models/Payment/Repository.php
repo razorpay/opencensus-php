@@ -306,7 +306,10 @@ EOT;
             )
             ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
             ->where(Payment\Entity::SETTLED_BY, '!=', 'Razorpay')
-            ->where(Payment\Entity::RECEIVER_TYPE, '!=', 'pos')
+            ->where(function ($query) {
+                $query->whereNull(Payment\Entity::RECEIVER_TYPE)
+                    ->orWhere(Payment\Entity::RECEIVER_TYPE, '!=', 'pos');
+            })
             ->whereIn(Payment\Entity::METHOD, $method)
             ->whereIn(Payment\Entity::MERCHANT_ID, $midList)
             ->groupBy(Payment\Entity::MERCHANT_ID)
@@ -321,7 +324,10 @@ EOT;
             )
             ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
             ->where(Payment\Entity::SETTLED_BY, '!=', 'Razorpay')
-            ->where(Payment\Entity::RECEIVER_TYPE, '!=', 'pos')
+            ->where(function ($query) {
+                $query->whereNull(Payment\Entity::RECEIVER_TYPE)
+                    ->orWhere(Payment\Entity::RECEIVER_TYPE, '!=', 'pos');
+            })
             ->whereIn(Payment\Entity::METHOD, $method)
             ->whereIn(Payment\Entity::MERCHANT_ID, $midList)
             ->get();

@@ -493,7 +493,7 @@ class Service extends Base\Service
 
             (new Validator)->validateInput('admin_generate_gifu_file', $input);
             (new Validator)->validateMerchantIdsBelongToOrg($orgId , $input['merchant_ids']);
-            $merchantIds = $input['merchant_ids'];
+            $merchantIds = $input['merchant_ids'] ?? $this->repo->merchant->fetchMerchantIdsByOrgId($orgId);
             $from = $input['from_timestamp'];
             $to = $input['to_timestamp'];
             $manualGifuTimeRange = $input['manual_gifu_time_range'] ?? null;

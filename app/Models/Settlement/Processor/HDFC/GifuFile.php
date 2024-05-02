@@ -118,6 +118,16 @@ class GifuFile extends Base\BaseGifuFile
 
         $to = $toTimestamp ?? Carbon::now(Timezone::IST)->getTimestamp();
 
+        $this->trace->info(TraceCode::GIFU_FILE_DS_PAYMENT_MATRIX,
+            [
+                'payload fromTimestamp'=>$fromTimestamp,
+                'payload toTimestamp'=> $toTimestamp,
+                'payload manualGifuTimeRange' => $manualGifuTimeRange,
+                'start for settlement' => $from,
+                'end for settlement' => $to,
+            ]
+        );
+
         $dataFetch = $this->repo->settlement->getSettlementsBetweenTimePeriodForMerchantIds($input,$from,$to);
 
         $this->groupSettlementsByMid($dataFetch,$modData);

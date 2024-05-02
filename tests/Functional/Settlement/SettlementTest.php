@@ -2755,7 +2755,7 @@ class SettlementTest extends TestCase
 
         $this->app['config']->set('applications.ufh.mock', true);
 
-        $merchants = $this->fixtures->times(2)->create('merchant');
+        $merchants = $this->fixtures->times(3)->create('merchant');
 
         $org = $this->fixtures->create('org', [
             'id' => 'IUXvshap3Hbzos',
@@ -2836,81 +2836,123 @@ class SettlementTest extends TestCase
                     'type' => 'org_settlement'
                 ]);
 
-            if ($cnt == 1) {
-                $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
-                $capturedAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 10;
+            $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
+            $capturedAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 10;
 
-                $this->fixtures->create(
-                    'payment:captured',
-                    [
-                        'captured_at' => $capturedAt,
-                        'method' => 'card',
-                        'merchant_id' => $merchantId,
-                        'amount' => 200000,
-                        'fee' => 100,
-                        'created_at' => $createdAt,
-                        'updated_at' => $createdAt + 10,
-                        'settled_by' => 'bank',
-                        'receiver_type' => 'bank_account'
-                    ]
-                );
+            $this->fixtures->create(
+                'payment:captured',
+                [
+                    'captured_at' => $capturedAt,
+                    'method' => 'card',
+                    'merchant_id' => $merchantId,
+                    'gateway' => 'upi_mindgate',
+                    'amount' => 1000,
+                    'fee' => 0,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt + 10,
+                    'settled_by' => 'bank',
+                    'receiver_type' => 'bank_account'
+                ]
+            );
 
-                $this->fixtures->create(
-                    'payment:captured',
-                    [
-                        'captured_at' => $capturedAt,
-                        'method' => 'card',
-                        'merchant_id' => $merchantId,
-                        'amount' => 100000,
-                        'fee' => 100,
-                        'created_at' => $createdAt,
-                        'updated_at' => $createdAt + 10,
-                        'settled_by' => 'bank',
-                        'receiver_type' => 'pos'
-                    ]
-                );
+            $this->fixtures->create(
+                'payment:captured',
+                [
+                    'captured_at' => $capturedAt,
+                    'method' => 'card',
+                    'merchant_id' => $merchantId,
+                    'amount' => 10000,
+                    'fee' => 0,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt + 10,
+                    'settled_by' => 'bank',
+                    'receiver_type' => 'bank_account'
+                ]
+            );
 
-            } else {
-                $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
-                $capturedAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 10;
+            $this->fixtures->create(
+                'payment:captured',
+                [
+                    'captured_at' => $capturedAt,
+                    'method' => 'card',
+                    'gateway' => 'upi_mindgate',
+                    'merchant_id' => $merchantId,
+                    'amount' => 100000,
+                    'fee' => 0,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt + 10,
+                    'settled_by' => 'bank',
+                ]
+            );
 
-                $this->fixtures->create(
-                    'payment',
-                    [
-                        'captured_at' => $capturedAt,
-                        'method' => 'card',
-                        'merchant_id' => $merchantId,
-                        'amount' => 200000,
-                        'mdr' => 400,
-                        'fee' => 100,
-                        'created_at' => $createdAt,
-                        'updated_at' => $createdAt + 10,
-                        'settled_by' => 'bank',
-                        'receiver_type' => 'bank_account'
-                    ]
+            $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
+            $capturedAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 10;
 
-                );
-                $this->fixtures->create(
-                    'payment',
-                    [
-                        'captured_at' => $capturedAt,
-                        'method' => 'upi',
-                        'merchant_id' => $merchantId,
-                        'amount' => 100000,
-                        'mdr' => 0,
-                        'fee' => 100,
-                        'created_at' => $createdAt,
-                        'updated_at' => $createdAt + 10,
-                        'settled_by' => 'bank',
-                        'receiver_type' => 'pos'
-                    ]
+            $this->fixtures->create(
+                'payment',
+                [
+                    'captured_at' => $capturedAt,
+                    'method' => 'upi',
+                    'merchant_id' => $merchantId,
+                    'gateway' => 'hdfc_ezetap',
+                    'amount' => 1000000,
+                    'mdr' => 0,
+                    'fee' => 0,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt + 10,
+                    'settled_by' => 'bank',
+                    'receiver_type' => 'pos'
+                ]
 
-                );
-            }
+            );
+            $this->fixtures->create(
+                'payment',
+                [
+                    'captured_at' => $capturedAt,
+                    'method' => 'upi',
+                    'merchant_id' => $merchantId,
+                    'gateway' => 'hdfc_ezetap',
+                    'amount' => 10000000,
+                    'mdr' => 0,
+                    'fee' => 0,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt + 10,
+                    'settled_by' => 'bank',
+                ]
 
-            $cnt = $cnt + 1;
+            );
+            $this->fixtures->create(
+                'payment',
+                [
+                    'captured_at' => $capturedAt,
+                    'method' => 'upi',
+                    'merchant_id' => $merchantId,
+                    'amount' => 100000000,
+                    'mdr' => 0,
+                    'fee' => 0,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt + 10,
+                    'settled_by' => 'bank',
+                    'receiver_type' => 'pos'
+                ]
+            );
 
+            $this->fixtures->create(
+                'payment',
+                [
+                    'captured_at' => $capturedAt,
+                    'method' => 'upi',
+                    'merchant_id' => $merchantId,
+                    'amount' => 1000000000,
+                    'mdr' => 0,
+                    'fee' => 0,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt + 10,
+                    'settled_by' => 'bank',
+                ]
+            );
         }
+
 
         $this->initiateSettlements(Channel::AXIS);
 
