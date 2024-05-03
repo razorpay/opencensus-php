@@ -22,7 +22,7 @@ const ModalHeader = ({
       >
         <Box paddingRight="spacing.5" flex="1 1 auto">
           {modalTitle ? (
-            <Text display="inline-block" size="large">
+            <Text weight="semibold" display="inline-block" size="large">
               {modalTitle}
             </Text>
           ) : null}

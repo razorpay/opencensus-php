@@ -31,7 +31,7 @@ const activationStatusToIcon = {
   activated: CheckIcon,
   rejected: AlertOctagonIcon,
   needs_clarification: AlertTriangleIcon,
-  [NA_ACTIVATION_STATUS]: AlertTriangleIcon,
+  [NA_ACTIVATION_STATUS]: InfoIcon,
   under_review: ClockIcon,
   kyc_qualified_unactivated: ClockIcon,
   instantly_activated: CheckIcon,
@@ -100,14 +100,14 @@ const SubMerchantKycStatusLabel = ({
   }
 
   const getLabelColor = () => {
-    if (activation_status === null) {
+    if ([null, ''].includes(activation_status)) {
       return 'notice';
     }
     return statusMap[activation_status.toLowerCase()] || statusMap.needs_clarification;
   };
 
   const getLabelIcon = () => {
-    if (activation_status === null) {
+    if ([null, ''].includes(activation_status)) {
       return InfoIcon;
     }
     return (
@@ -120,12 +120,10 @@ const SubMerchantKycStatusLabel = ({
     if (activation_status === 'activated_mcc_pending') {
       return 'Activated';
     }
-    if (activation_status === null) {
+    if ([null, '', NA_ACTIVATION_STATUS].includes(activation_status)) {
       return 'Pending Completion';
     }
-    if (activation_status === NA_ACTIVATION_STATUS) {
-      return 'Not Available';
-    }
+
     return titleCase(activation_status) || 'Not Available';
   };
 

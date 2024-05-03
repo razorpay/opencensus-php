@@ -250,15 +250,6 @@ export const partnerProducts = {
     logo: 'msmex.jpg',
     brandColor: '#039F62',
   },
-  uengage: {
-    slug: 'uengage',
-    title: 'Uengage',
-    url: 'https://www.uengage.in/',
-    category: 'SAAS for Restaurants',
-    description: 'Food Delivery Apps for New Age Restaurants',
-    logo: 'uengage.png',
-    brandColor: '#93C45A',
-  },
   kylas: {
     slug: 'kylas',
     title: 'Kylas',

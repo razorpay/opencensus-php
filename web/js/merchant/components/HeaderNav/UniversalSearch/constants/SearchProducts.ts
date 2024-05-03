@@ -327,7 +327,6 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'dukaan' },
       { value: 'shiprocket' },
       { value: 'msmex' },
-      { value: 'uengage' },
       { value: 'kylas' },
     ],
     icon: app_store.icon,

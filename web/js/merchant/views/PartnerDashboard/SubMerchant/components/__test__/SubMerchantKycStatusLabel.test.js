@@ -148,4 +148,36 @@ describe('<SubMerchantKycStatusLabel />', () => {
 
     expect(screen.getByText('Request approved by Merchant')).toBeInTheDocument();
   });
+
+  test('SubM with empty string activation_status', () => {
+    let notExpiredTime = new Date().getTime() + 100000;
+    notExpiredTime = moment(notExpiredTime).unix();
+    const props = {
+      activation_status: '',
+      kyc_access: {
+        state: 'pending_approval',
+        rejection_count: 1,
+        token_expiry: notExpiredTime,
+      },
+    };
+    render(<SubMerchantKycStatusLabel {...props} />);
+    expect(screen.getByText('Pending Completion')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for Merchant approval')).toBeInTheDocument();
+  });
+
+  test('SubM with n/a activation_status', () => {
+    let notExpiredTime = new Date().getTime() + 100000;
+    notExpiredTime = moment(notExpiredTime).unix();
+    const props = {
+      activation_status: 'n/a',
+      kyc_access: {
+        state: 'pending_approval',
+        rejection_count: 1,
+        token_expiry: notExpiredTime,
+      },
+    };
+    render(<SubMerchantKycStatusLabel {...props} />);
+    expect(screen.getByText('Pending Completion')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for Merchant approval')).toBeInTheDocument();
+  });
 });
