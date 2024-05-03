@@ -642,6 +642,9 @@ class Entity
     const VENDOR_PAYMENTS_DIRECT_TAX_PAYMENTS     = 'vendor_payments.direct_tax_payments';
     const VENDOR_PAYMENTS_PG_PAYMENTS             = 'vendor_payments.pg_payments';
 
+    // Service: Emandate service
+    const EMANDATE_SERVICE_PAYMENTS = 'emandate_service.payments';
+
     // Service: Payments UPi
     const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
     const PAYMENTS_UPI_BANK_ACCOUNT     = 'payments_upi_bank_account';
@@ -1738,6 +1741,8 @@ class Entity
         self::PAYMENTS_NBPLUS_PAYLATER_GATEWAY      => \RZP\Services\NbPlus\Paylater::class,
         self::PAYMENTS_NBPLUS_WALLET_TRANSACTION          => \RZP\Services\NbPlus\Wallet::class,
         self::PAYMENTS_NBPLUS_WALLET_AUTHORIZATION        => \RZP\Services\NbPlus\Wallet::class,
+
+        self::EMANDATE_SERVICE_PAYMENTS     => \RZP\Services\EmandateService::class,
 
         self::PAYOUT_LINK                   => \RZP\Models\PayoutLink\Service::class,
         self::SETTINGS                      => \RZP\Models\Settings\Service::class,

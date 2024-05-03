@@ -1627,6 +1627,11 @@ class ErrorCode
     const BAD_REQUEST_EMANDATE_SETTLEMENT_FAILED                                    = 'BAD_REQUEST_EMANDATE_SETTLEMENT_FAILED';
     const BAD_REQUEST_EMANDATE_DEBIT_TIME_BREACHED                                  = 'BAD_REQUEST_EMANDATE_DEBIT_TIME_BREACHED';
 
+    // Emandate service
+    const SERVER_ERROR_EMANDATE_SERVICE_TIMEOUT                                     = 'SERVER_ERROR_EMANDATE_SERVICE_TIMEOUT';
+    const SERVER_ERROR_EMANDATE_SERVICE_FAILURE                                     = 'SERVER_ERROR_EMANDATE_SERVICE_FAILURE';
+
+
     const BAD_REQUEST_RECONCILIATION                                                = 'BAD_REQUEST_RECONCILIATION';
     const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                          = 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE';
 

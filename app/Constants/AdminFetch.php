@@ -790,6 +790,10 @@ class AdminFetch
 
             Entity::NBPLUS_EMANDATE_DEBIT => [],
 
+            Entity::EMANDATE_SERVICE_PAYMENTS => [
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+            ],
+
             Entity::CAPITAL_COLLECTIONS_PLAN => [
                 'merchant_id'   => Fetch::FIELD_MERCHANT_ID,
                 'credit_id'     => [

@@ -1519,6 +1519,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_SERVICE_CALLBACK_PAYLOAD                     = 'EMANDATE_SERVICE_CALLBACK_PAYLOAD';
     const EMANDATE_SERVICE_REARCH_ERROR                         = 'EMANDATE_SERVICE_REARCH_ERROR';
     const EMANDATE_SERVICE_CALLBACK_ERROR                       = 'EMANDATE_SERVICE_CALLBACK_ERROR';
+    const EMANDATE_SERVICE_REQUEST                              = 'EMANDATE_SERVICE_REQUEST';
+    const EMANDATE_SERVICE_RESPONSE                             = 'EMANDATE_SERVICE_RESPONSE';
+    const EMANDATE_SERVICE_ERROR                                = 'EMANDATE_SERVICE_ERROR';
 
 
     const EMANDATE_CONFIG_CREATE_REQUEST                        = 'EMANDATE_CONFIG_CREATE_REQUEST';

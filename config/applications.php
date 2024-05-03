@@ -1206,6 +1206,7 @@ return [
         'username'  => env('EMANDATE_SERVICE_KEY'),
         'secret'    => env('EMANDATE_SERVICE_SECRET'),
         'password'  => env('EMANDATE_SERVICE_SECRET'),
+        'url'       => env('EMANDATE_SERVICE_URL'),
     ],
 
     'bill-me' => [
