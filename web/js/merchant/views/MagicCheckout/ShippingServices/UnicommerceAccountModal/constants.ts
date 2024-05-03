@@ -43,3 +43,5 @@ export const FORM_FIELDS = [
     helpText: 'Unicommerce account code which comes in URL after login into Unicommerce',
   },
 ];
+
+export const USERNAME_INVALID_REGEX = /^[^.]*$/;

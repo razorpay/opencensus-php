@@ -69,4 +69,26 @@ describe('testing Unicommerce component', () => {
       expect(showNotificationSpy).toHaveBeenCalled();
     });
   });
+
+  test('should show error, if the username validation fails', async () => {
+    render(<UnicommerceForm />);
+
+    const usernameInput = screen.getByPlaceholderText(new RegExp('Enter username', 'i'));
+
+    const passwordInput = screen.getByPlaceholderText(new RegExp('Enter password', 'i'));
+
+    const tenantInput = screen.getByPlaceholderText(new RegExp('Enter tenant', 'i'));
+
+    await userEvent.type(usernameInput, 'test_user.com');
+    await userEvent.type(passwordInput, 'test_password');
+    await userEvent.type(tenantInput, 'test_tenant');
+
+    expect(screen.queryByText(/Please enter valid username/i)).toBeInTheDocument();
+
+    const linkAccountCta = screen.getByRole('button', {
+      name: 'Connect to Unicommerce',
+    });
+
+    expect(linkAccountCta).toBeDisabled();
+  });
 });

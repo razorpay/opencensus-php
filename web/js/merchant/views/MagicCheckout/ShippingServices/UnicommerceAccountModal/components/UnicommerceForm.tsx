@@ -14,7 +14,10 @@ import {
   UnicommerceFormGlobalStateType,
 } from 'merchant/views/MagicCheckout/ShippingServices/UnicommerceAccountModal/types';
 
-import { FORM_FIELDS } from 'merchant/views/MagicCheckout/ShippingServices/UnicommerceAccountModal/constants';
+import {
+  FORM_FIELDS,
+  USERNAME_INVALID_REGEX,
+} from 'merchant/views/MagicCheckout/ShippingServices/UnicommerceAccountModal/constants';
 import { SHIPPING_PARTNERS } from 'merchant/views/MagicCheckout/ShippingServices/constants';
 
 import {
@@ -33,6 +36,7 @@ const UnicommerceForm = (props: UnicommerceFormPropType) => {
   });
 
   const [isCtaEnabled, setIsCtaEnabled] = useState<boolean>(false);
+  const [isUsernameValid, setIsUsernameValid] = useState<boolean>(true);
 
   const checkCtaEnabled = (formData: UnicommerceFormDataType) => {
     const { username, password, tenant } = formData;
@@ -83,6 +87,21 @@ const UnicommerceForm = (props: UnicommerceFormPropType) => {
     checkCtaEnabled(formData);
   }, [formData]);
 
+  const handleUsernameValidation = (fieldName: string) => {
+    if (fieldName !== FORM_FIELDS[0].name) {
+      return;
+    }
+
+    const { username } = formData;
+    if (username !== '') {
+      setIsUsernameValid(USERNAME_INVALID_REGEX.test(username));
+    }
+  };
+
+  const getValidationState = (fieldName: string) => {
+    return !isUsernameValid && fieldName === FORM_FIELDS[0].name ? 'error' : 'none';
+  };
+
   return (
     <FormWrapper>
       {FORM_FIELDS.map((field) => (
@@ -96,6 +115,9 @@ const UnicommerceForm = (props: UnicommerceFormPropType) => {
             necessityIndicator="required"
             value={formData[field.name]}
             helpText={field.helpText}
+            onBlur={() => handleUsernameValidation(field.name)}
+            validationState={getValidationState(field.name)}
+            errorText="Please enter valid username"
           />
         </Box>
       ))}
@@ -122,7 +144,7 @@ const UnicommerceForm = (props: UnicommerceFormPropType) => {
           onClick={handleUnicommerceConnect}
           icon={ArrowRightIcon}
           iconPosition="right"
-          isDisabled={!isCtaEnabled}
+          isDisabled={!isCtaEnabled || !isUsernameValid}
         >
           Connect to Unicommerce
         </Button>
