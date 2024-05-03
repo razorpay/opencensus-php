@@ -1113,6 +1113,7 @@ class ApiRequestAny
             ],
             'production' => [
                 'https://api-dark.razorpay.com/v1/',
+                'https://api-dark-concierge.razorpay.com/v1/',
             ],
         ];
 
