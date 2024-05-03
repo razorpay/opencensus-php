@@ -39,8 +39,11 @@ describe('GCMS: Orders', () => {
   it('should show empty screen when no orders are present for a reseller name', async () => {
     renderOrders();
 
-    await userEvent.type(screen.getByTestId('reseller_name'), 'abc');
-    await userEvent.click(screen.getByText('Search'));
+    const search = screen.getByRole('textbox', {
+      name: 'Reseller Name',
+    });
+    await userEvent.type(search, 'abc');
+    userEvent.click(screen.getByText('Search'));
 
     await waitFor(() => {
       expect(screen.getByText('There are no orders yet!!')).toBeInTheDocument();
@@ -50,8 +53,11 @@ describe('GCMS: Orders', () => {
   it('should show empty screen when no orders are present for a Order Id', async () => {
     renderOrders();
 
-    await userEvent.type(screen.getByTestId('order_id'), 'abc');
-    await userEvent.click(screen.getByText('Search'));
+    const search = screen.getByRole('textbox', {
+      name: 'Order ID',
+    });
+    await userEvent.type(search, 'abc');
+    userEvent.click(screen.getByText('Search'));
 
     await waitFor(() => {
       expect(screen.getByText('There are no orders yet!!')).toBeInTheDocument();
@@ -60,7 +66,8 @@ describe('GCMS: Orders', () => {
 
   it('should show empty screen when no orders are present for a status', async () => {
     renderOrders();
-    await userEvent.selectOptions(screen.getByTestId('status'), 'cancelled');
+    await userEvent.click(screen.getByTestId('status'));
+    await userEvent.click(screen.getByText('Cancelled'));
     await userEvent.click(screen.getByText('Search'));
 
     await waitFor(() => {
@@ -72,7 +79,8 @@ describe('GCMS: Orders', () => {
     renderOrders();
 
     await userEvent.type(screen.getByTestId('reseller_name'), 'abc');
-    await userEvent.selectOptions(screen.getByTestId('status'), 'cancelled');
+    await userEvent.click(screen.getByTestId('status'));
+    await userEvent.click(screen.getByText('Cancelled'));
     await userEvent.click(screen.getByText('Search'));
 
     await waitFor(() => {

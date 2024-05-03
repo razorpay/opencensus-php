@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box } from '@razorpay/blade/components';
+import { Box, Button, TextInput, Text } from '@razorpay/blade/components';
 import qs from 'query-string';
 
-import DateRangePickerV2, { generatePresets } from 'common/ui/DateRangePickerV2';
 import { DATE_RANGE_PRESETS } from 'merchant/views/GCMS/Funds/constants';
 import { trackBrandFilterCleared, trackBrandFilterClicked } from 'merchant/views/GCMS/Funds/events';
 
 import { StyledFilterDiv } from './StyledDiv';
+import DateRangePickerV2, { generatePresets } from '../../shared/DateRangePickerV2';
 
 interface BrandAccountFiltersProps {
   onSearch: ({ date, referenceId }) => void;
@@ -82,19 +82,29 @@ const BrandAccountFilters = ({ onSearch }: BrandAccountFiltersProps) => {
       <div className={`gcms-funds-filter-group ${isAllTimeFilter && 'all-time-filter-selected'}`}>
         <Box paddingY="spacing.4" display="flex">
           <div className="form-group gcms-list-filter-item">
-            <label>Reference Id</label>
-            <input
+            <TextInput
+              label="Reference Id"
+              labelPosition="top"
               name="reference_id"
-              className="form-control input-sm"
-              data-testid="reference_id"
-              value={referenceId}
               onChange={(e) => {
-                handleReferenceIdChange(e.target.value);
+                handleReferenceIdChange(e.value);
               }}
+              showClearButton
+              type="url"
+              validationState="none"
+              testID="reference_id"
+              value={referenceId}
             />
           </div>
           <div className="form-group datepicker-group">
-            <label>Duration</label>
+            <Text
+              size="small"
+              weight="semibold"
+              color="surface.text.gray.subtle"
+              marginBottom="spacing.3"
+            >
+              Order Date
+            </Text>
             <DateRangePickerV2
               presets={presetsToShow}
               setSelectedPreset={onSelectPreset}
@@ -104,12 +114,25 @@ const BrandAccountFilters = ({ onSearch }: BrandAccountFiltersProps) => {
           </div>
 
           <div className="list-filter-item btn-toolbar">
-            <button className="btn btn-primary btn-sm" onClick={handleSearch}>
+            <Button
+              color="primary"
+              onClick={handleSearch}
+              size="medium"
+              type="button"
+              variant="primary"
+            >
               Search
-            </button>
-            <button className="btn btn-sm btn-text" onClick={onClear}>
+            </Button>
+            <Button
+              color="primary"
+              onClick={onClear}
+              size="medium"
+              type="button"
+              variant="tertiary"
+              marginLeft="spacing.3"
+            >
               Clear
-            </button>
+            </Button>
           </div>
         </Box>
       </div>

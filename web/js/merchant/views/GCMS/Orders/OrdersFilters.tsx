@@ -1,12 +1,22 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box } from '@razorpay/blade/components';
+import {
+  Box,
+  Button,
+  TextInput,
+  Dropdown,
+  DropdownOverlay,
+  ActionList,
+  ActionListItem,
+  SelectInput,
+  Text,
+} from '@razorpay/blade/components';
 import qs from 'query-string';
 
-import DateRangePickerV2, { generatePresets } from 'common/ui/DateRangePickerV2';
 import { DATE_RANGE_PRESETS, ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 
 import { StyledFilterDiv } from './StyledDiv';
 import { trackOrdersFiltersCleared, trackOrdersFiltersClicked } from './events';
+import DateRangePickerV2, { generatePresets } from '../shared/DateRangePickerV2';
 
 interface OrdersFilterProps {
   onSearch: ({ date, status, resellerName, orderId }) => void;
@@ -97,32 +107,44 @@ const OrdersFilter = ({ onSearch, isResellerOrderFilter = false }: OrdersFilterP
       <div className={`gcms-orders-filter-group ${isAllTimeFilter && 'all-time-filter-selected'}`}>
         <Box paddingY="spacing.4" marginLeft="-13px" display="flex">
           <div className="form-group list-filter-item">
-            <label>Order ID</label>
-            <input
+            <TextInput
+              label="Order ID"
+              labelPosition="top"
               name="order_id"
-              className="form-control input-sm"
-              data-testid="order_id"
-              value={orderId}
               onChange={(e) => {
-                handleOrderIdChange(e.target.value);
+                handleOrderIdChange(e.value);
               }}
+              showClearButton
+              type="url"
+              validationState="none"
+              testID="order_id"
             />
           </div>
           {!isResellerOrderFilter ? (
             <div className="form-group list-filter-item">
-              <label>Reseller Name</label>
-              <input
+              <TextInput
+                label="Reseller Name"
+                labelPosition="top"
                 name="reseller_name"
-                className="form-control input-sm"
-                data-testid="reseller_name"
                 onChange={(e) => {
-                  handleResellerNameChange(e.target.value);
+                  handleResellerNameChange(e.value);
                 }}
+                type="url"
+                validationState="none"
+                showClearButton
+                testID="reseller_name"
               />
             </div>
           ) : null}
           <div className="form-group datepicker-group">
-            <label>Order Date</label>
+            <Text
+              size="small"
+              weight="semibold"
+              color="surface.text.gray.subtle"
+              marginBottom="spacing.3"
+            >
+              Order Date
+            </Text>
             <DateRangePickerV2
               presets={presetsToShow}
               setSelectedPreset={onSelectPreset}
@@ -131,34 +153,52 @@ const OrdersFilter = ({ onSearch, isResellerOrderFilter = false }: OrdersFilterP
             />
           </div>
           <div className="form-group list-filter-item">
-            <label>Status</label>
-            <select
-              name="status"
-              className="form-control input-sm"
-              onChange={(e) => handleStatusChange(e.target.value)}
-              id="status-dropdown"
-              defaultValue={status}
-              data-testid="status"
-            >
-              {Object.values(ORDERS_STATUS).map((status) => (
-                <option
-                  key={status.value}
-                  value={status.value}
-                  data-testid={`option-${status.value}`}
-                >
-                  {status.label}
-                </option>
-              ))}
-            </select>
+            <Dropdown>
+              <SelectInput
+                label="Status"
+                labelPosition="top"
+                name="status"
+                onChange={(e) => handleStatusChange(e.values?.[0])}
+                placeholder="Select Option"
+                validationState="none"
+                isRequired={true}
+                testID="status"
+                defaultValue={status}
+              />
+              <DropdownOverlay>
+                <ActionList>
+                  {Object.values(ORDERS_STATUS).map((status) => (
+                    <ActionListItem
+                      key={status.value}
+                      title={status.label}
+                      value={status.value}
+                      testID={`option-${status.value}`}
+                    />
+                  ))}
+                </ActionList>
+              </DropdownOverlay>
+            </Dropdown>
           </div>
-
           <div className="list-filter-item btn-toolbar">
-            <button className="btn btn-primary btn-sm" onClick={handleSearch}>
+            <Button
+              color="primary"
+              onClick={handleSearch}
+              size="medium"
+              type="button"
+              variant="primary"
+            >
               Search
-            </button>
-            <button className="btn btn-sm btn-text" onClick={onClear}>
+            </Button>
+            <Button
+              color="primary"
+              onClick={onClear}
+              size="medium"
+              type="button"
+              variant="tertiary"
+              marginLeft="spacing.3"
+            >
               Clear
-            </button>
+            </Button>
           </div>
         </Box>
       </div>

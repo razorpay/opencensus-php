@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { Box } from '@razorpay/blade/components';
+import {
+  Box,
+  TextInput,
+  Button,
+  SelectInput,
+  Dropdown,
+  DropdownOverlay,
+  ActionListItem,
+  ActionList,
+} from '@razorpay/blade/components';
 
 import { StyledFilterDiv } from 'merchant/views/GCMS/shared/StyledDiv';
 import { RESELLERS_STATUS } from 'merchant/views/GCMS/shared/constants';
@@ -40,45 +49,67 @@ const ResellersFilter = ({ onSearch }: ResellersFilterProps) => {
       <div className={`gcms-filter-group ${'all-time-filter-selected'}`}>
         <Box paddingY="spacing.4" display="flex">
           <div className="form-group gcms-list-filter-item">
-            <label>Reseller Name</label>
-            <input
+            <TextInput
+              label="Reseller Name"
+              labelPosition="top"
               name="merchant_name"
-              className="form-control input-sm"
-              data-testid="merchant_name"
               onChange={(e) => {
-                handleResellerNameChange(e.target.value);
+                handleResellerNameChange(e.value);
               }}
+              showClearButton
+              type="url"
+              validationState="none"
+              testID="merchant_name"
             />
           </div>
           <div className="form-group list-filter-item">
-            <label>Status</label>
-            <select
-              name="status"
-              className="form-control input-sm"
-              onChange={(e) => handleStatusChange(e.target.value)}
-              id="status-dropdown"
-              defaultValue={status}
-              data-testid="status"
-            >
-              {Object.values(RESELLERS_STATUS).map((status) => (
-                <option
-                  key={status.value}
-                  value={status.value}
-                  data-testid={`option-${status.value}`}
-                >
-                  {status.label}
-                </option>
-              ))}
-            </select>
+            <Dropdown>
+              <SelectInput
+                label="Status"
+                labelPosition="top"
+                name="status"
+                onChange={(e) => handleStatusChange(e.values?.[0])}
+                placeholder="Select Option"
+                validationState="none"
+                isRequired={true}
+                testID="status"
+                defaultValue={status}
+              />
+              <DropdownOverlay>
+                <ActionList>
+                  {Object.values(RESELLERS_STATUS).map((status) => (
+                    <ActionListItem
+                      key={status.value}
+                      title={status.label}
+                      value={status.value}
+                      testID={`option-${status.value}`}
+                    />
+                  ))}
+                </ActionList>
+              </DropdownOverlay>
+            </Dropdown>
           </div>
 
           <div className="form-group list-filter-item btn-toolbar">
-            <button className="btn btn-primary btn-sm" onClick={handleSearch}>
+            <Button
+              color="primary"
+              onClick={handleSearch}
+              size="medium"
+              type="button"
+              variant="primary"
+            >
               Search
-            </button>
-            <button className="btn btn-sm btn-text" onClick={onClear}>
+            </Button>
+            <Button
+              color="primary"
+              onClick={onClear}
+              size="medium"
+              type="button"
+              variant="tertiary"
+              marginLeft="spacing.3"
+            >
               Clear
-            </button>
+            </Button>
           </div>
         </Box>
       </div>

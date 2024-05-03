@@ -35,7 +35,8 @@ describe('GCMS: Reseller Orders', () => {
 
   it('should show empty screen when no reseller orders are present for a status', async () => {
     renderOrders();
-    await userEvent.selectOptions(screen.getByTestId('status'), 'cancelled');
+    await userEvent.click(screen.getByTestId('status'));
+    await userEvent.click(screen.getByText('Cancelled'));
     await userEvent.click(screen.getByText('Search'));
 
     await waitFor(() => {

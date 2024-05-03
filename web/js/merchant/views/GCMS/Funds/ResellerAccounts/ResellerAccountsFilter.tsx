@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box } from '@razorpay/blade/components';
+import { Box, Button, TextInput } from '@razorpay/blade/components';
 import qs from 'query-string';
 import { useSearchParams } from 'react-router-dom';
 
@@ -21,7 +21,7 @@ const ResellerAccountsFilter = ({ onSearch }: ResellerAccountsFilterProps): JSX.
   const [, setSearchParams] = useSearchParams();
 
   const handleResellerNameSearchInputOnChange = (e) => {
-    setResellerNameQuery(e.target.value);
+    setResellerNameQuery(e.value);
   };
 
   useEffect(() => {
@@ -50,24 +50,41 @@ const ResellerAccountsFilter = ({ onSearch }: ResellerAccountsFilterProps): JSX.
       <div className="gcms-resellers-filter-group">
         <Box paddingY="spacing.4" display="flex" backgroundColor="surface.background.gray.intense">
           <div className="form-group gcms-list-filter-item">
-            <label>Reseller Name</label>
-            <input
+            <TextInput
+              label="Reseller Name"
+              labelPosition="top"
               name="resellerName"
+              onChange={(e) => {
+                handleResellerNameSearchInputOnChange(e);
+              }}
+              type="url"
+              validationState="none"
+              testID="reseller_name_search_input"
               placeholder="Search reseller name"
-              className="form-control input-sm"
-              data-testid="reseller_name_search_input"
               value={resellerNameQuery}
-              onChange={handleResellerNameSearchInputOnChange}
             />
           </div>
 
           <div className="list-filter-item btn-toolbar">
-            <button className="btn btn-primary btn-sm" onClick={handleSearchOnClick}>
+            <Button
+              color="primary"
+              onClick={handleSearchOnClick}
+              size="medium"
+              type="button"
+              variant="primary"
+            >
               Search
-            </button>
-            <button className="btn btn-sm btn-text" onClick={handleClearOnClick}>
+            </Button>
+            <Button
+              color="primary"
+              onClick={handleClearOnClick}
+              size="medium"
+              type="button"
+              variant="tertiary"
+              marginLeft="spacing.3"
+            >
               Clear
-            </button>
+            </Button>
           </div>
         </Box>
       </div>

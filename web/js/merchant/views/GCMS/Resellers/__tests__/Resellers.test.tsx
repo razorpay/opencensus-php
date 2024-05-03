@@ -38,8 +38,11 @@ describe('GCMS: Resellers', () => {
   it('should show empty screen when no resellers are present for a reseller name', async () => {
     renderResellers();
 
-    await userEvent.type(screen.getByTestId('merchant_name'), 'abc');
-    await userEvent.click(screen.getByText('Search'));
+    const search = screen.getByRole('textbox', {
+      name: 'Reseller Name',
+    });
+    await userEvent.type(search, 'abc');
+    userEvent.click(screen.getByText('Search'));
 
     await waitFor(() => {
       expect(screen.getByText('There are no resellers yet!!')).toBeInTheDocument();
@@ -48,8 +51,8 @@ describe('GCMS: Resellers', () => {
 
   it('should show empty screen when no resellers are present for a status', async () => {
     renderResellers();
-
-    await userEvent.selectOptions(screen.getByTestId('status'), 'approval_pending');
+    await userEvent.click(screen.getByTestId('status'));
+    await userEvent.click(screen.getByText('Approval Pending'));
     await userEvent.click(screen.getByText('Search'));
 
     await waitFor(() => {
@@ -61,7 +64,8 @@ describe('GCMS: Resellers', () => {
     renderResellers();
 
     await userEvent.type(screen.getByTestId('merchant_name'), 'abc');
-    await userEvent.selectOptions(screen.getByTestId('status'), 'approval_pending');
+    await userEvent.click(screen.getByTestId('status'));
+    await userEvent.click(screen.getByText('Approval Pending'));
     await userEvent.click(screen.getByText('Search'));
 
     await waitFor(() => {

@@ -27,8 +27,12 @@ test.describe('GCMS resellers @flow=resellers @project=payments', () => {
   test('should show empty message when no reseller is there for a specific status', async ({
     page,
   }) => {
-    await page.getByTestId('merchant_name').fill('abc reseller');
-    await page.getByRole('button', { name: 'Search' }).click();
+    await page
+      .getByRole('textbox', {
+        name: 'Reseller Name',
+      })
+      .fill('abc reseller');
+    await page.getByText('Search').click();
     await expect(await page.getByText('There are no resellers yet!!').first()).toBeVisible();
   });
 
@@ -48,7 +52,7 @@ test.describe('GCMS resellers @flow=resellers @project=payments', () => {
     await expect(await page.getByText('Account Balance')).toBeVisible();
     await page.getByRole('link', { name: 'Orders', exact: true }).click();
     await expect(page).toHaveURL(`${routes.GCMS_RESELLERS}/N91osUDdN9WdO9/orders`); //Reseller id of first reseller
-    await expect(await page.getByText('Order ID')).toBeVisible();
+    await expect(await page.getByText('Total Quantity')).toBeVisible();
   });
 
   test('should navigate to reseller account page', async ({ page }) => {

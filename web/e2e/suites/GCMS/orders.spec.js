@@ -24,8 +24,12 @@ test.describe('GCMS orders @flow=orders @project=payments', () => {
   test('should show empty message when no orders is there for a specific status', async ({
     page,
   }) => {
-    await page.getByTestId('reseller_name').fill('abc reseller');
-    await page.getByRole('button', { name: 'Search' }).click();
+    await page
+      .getByRole('textbox', {
+        name: 'Order ID',
+      })
+      .fill('abc reseller');
+    await page.getByText('Search').click();
     await expect(await page.getByText('There are no orders yet!!').first()).toBeVisible();
   });
 
