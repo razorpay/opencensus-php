@@ -1,14 +1,27 @@
 import { Component } from 'react';
+import { FolderIcon, Button as BladeButton, Text, Box } from '@razorpay/blade/components';
+import EmailHiddenPreviewImage from 'assets/checkout/preview-checkout-form-email-hidden.png';
+import EmailOptionalPreviewImage from 'assets/checkout/preview-checkout-form-email-optional.png';
+import EmailRequiredPreviewImage from 'assets/checkout/preview-checkout-form.png';
 import PropTypes from 'prop-types';
+import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { Field, reduxForm } from 'redux-form';
-import AsyncButton from 'react-async-button';
+
 import { withI18Service } from 'common/i18';
+import Button from 'common/new-ui/Button';
+import { getCurrencySymbol } from 'common/ui/Amount';
+import CovidKnowMore from 'common/ui/CovidKnowMore';
+import FileUploadButton from 'common/ui/FileUpload/Button';
+import SwitchField from 'common/ui/Forms/SwitchField';
+import IntoView from 'common/ui/IntoView';
+import LoaderDots from 'common/ui/LoaderDots';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, camelize } from 'common/utils/rzp-utils';
-import FileUploadButton from 'common/ui/FileUpload/Button';
-import { getCurrencySymbol } from 'common/ui/Amount';
+import { getCustomURL } from 'merchant/components/DocsLink';
+import EasterEgg from 'merchant/components/EasterEgg';
+import FileUpload from 'merchant/components/File/Upload';
 import {
   uploadLogo,
   fetchLocale,
@@ -21,23 +34,23 @@ import {
   EmailLessCheckoutConfigOptions,
   CHECKOUT_EMAIL_FEATURE_FLAG,
 } from 'merchant/reducers/config';
+import ImageCropperModal from 'merchant/views/Settings/Configuration/ImageCropperModal';
+import {
+  THUMBNAIL_SIZE_LIMIT,
+  FILE_TYPES,
+  UPLOAD_IMAGE_HERE,
+  LOGO_REMOVED_SUCCESSFULLY,
+  SUCCESS,
+  ERROR,
+} from 'merchant/views/Settings/Configuration/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getIcon } from './components/paymentMethodIcons';
-import SwitchField from 'common/ui/Forms/SwitchField';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import CovidKnowMore from 'common/ui/CovidKnowMore';
-import LoaderDots from 'common/ui/LoaderDots';
-import IntoView from 'common/ui/IntoView';
+
 import { ACCOUNT_SETTINGS, CHECKOUT_LANG, CHECKOUT_EMAIL_SETTINGS } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import Button from 'common/new-ui/Button';
-import { getCustomURL } from 'merchant/components/DocsLink';
-import EasterEgg from 'merchant/components/EasterEgg';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import EmailRequiredPreviewImage from 'assets/checkout/preview-checkout-form.png';
-import EmailOptionalPreviewImage from 'assets/checkout/preview-checkout-form-email-optional.png';
-import EmailHiddenPreviewImage from 'assets/checkout/preview-checkout-form-email-hidden.png';
 import { BrandName } from 'merchant/views/Account/Profile/components/BrandName';
 
 const languageOptions = [
@@ -67,7 +80,11 @@ const checkoutEmailConfigOptions = [
 
 // eslint-disable-next-line react/no-unsafe
 class CheckoutTheme extends Component {
-  state = { brandColor: this.props.config.brand_color };
+  state = {
+    brandColor: this.props.config.brand_color,
+    rectangularImageFile: null,
+    isLoading: false,
+  };
 
   static contextTypes = {
     confirm: PropTypes.func,
@@ -458,12 +475,72 @@ class CheckoutTheme extends Component {
     });
   };
 
+  onBiggerFileSize = (_) => {
+    const { showNotification } = this.props;
+    showNotification({
+      type: 'error',
+      message: `Image too large. Max limit ${THUMBNAIL_SIZE_LIMIT / (1024 * 1024)}MB`,
+    });
+  };
+
+  addFile = (file) => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.setState({
+          rectangularImageFile: {
+            name: file.name,
+            file: e.target.result,
+          },
+        });
+      };
+
+      reader.readAsDataURL(file);
+    }
+  };
+
+  removeRectangularImage = () => {
+    this.setState({
+      rectangularImageFile: null,
+    });
+  };
+
+  closeImageCropperModal = () => {
+    this.setState({
+      rectangularImageFile: null,
+    });
+  };
+
+  removeRectangularLogo = () => {
+    const { showNotification, config, removeLogo } = this.props;
+    const payLoad = { ...config, isRectangularLogo: true };
+    this.setState({ isLoading: true });
+    return removeLogo(payLoad)
+      .then(() => {
+        showNotification({
+          type: SUCCESS,
+          message: LOGO_REMOVED_SUCCESSFULLY,
+        });
+      })
+      .catch(({ errors }) => {
+        showNotification({
+          type: ERROR,
+          message: errors,
+        });
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
+      });
+  };
+
   render() {
-    const { textClr, colorVariations } = this.state;
+    const { textClr, colorVariations, isLoading, rectangularImageFile } = this.state;
     const {
       user,
       i18: { isConfigTagEnabled },
+      config,
     } = this.props;
+    const { rect_logo_url } = config;
     const isEnabled = user.isFeatureEnabled('covid_19_relief');
     return (
       <div className="panel panel-default panel-theme">
@@ -605,6 +682,74 @@ class CheckoutTheme extends Component {
                   </div>
                 </div>
               </div>
+              {user.isCustomMerchantUPIQR && (
+                <Box marginY="20px">
+                  <Box marginBottom="10px">
+                    <Text weight="semibold" size="large">
+                      Rectangular Logo
+                    </Text>
+                  </Box>
+                  <Box
+                    display="flex"
+                    flexDirection={{
+                      base: 'column',
+                      m: 'row',
+                    }}
+                    marginBottom="10px"
+                  >
+                    <Box flex="1">
+                      <Box>
+                        <FileUpload
+                          accept={FILE_TYPES}
+                          size="large"
+                          uploadedFileName={UPLOAD_IMAGE_HERE}
+                          maxSize={THUMBNAIL_SIZE_LIMIT}
+                          onBiggerFileSize={this.onBiggerFileSize}
+                          onFileChange={this.addFile}
+                          onCloseClick={this.removeRectangularImage}
+                          defaultValue={rect_logo_url}
+                          files={[]}
+                          imgFilePreviewUrl={rect_logo_url}
+                          showFileSize={true}
+                          name="rect-logo-file-upload"
+                        >
+                          <Box className="Dropzone-80g-details">
+                            <BladeButton variant="primary" icon={FolderIcon}>
+                              Choose File
+                            </BladeButton>{' '}
+                          </Box>
+                        </FileUpload>
+                      </Box>
+                    </Box>
+                    <Box flex="1" marginLeft="20px" marginTop="5px">
+                      {rect_logo_url && (
+                        <BladeButton
+                          isLoading={isLoading}
+                          variant="primary"
+                          onClick={this.removeRectangularLogo}
+                        >
+                          Remove
+                        </BladeButton>
+                      )}
+                    </Box>
+                  </Box>
+
+                  <Box marginBottom="10px">
+                    <Text marginBottom="5px">
+                      Choose a rectangular image of minimum height 60px.
+                    </Text>
+                    <Text>Upload .png, .jpg or .jpeg file | 1 MB Max</Text>
+                  </Box>
+
+                  {rectangularImageFile && (
+                    <ImageCropperModal
+                      rectangularImageFile={rectangularImageFile}
+                      closeModal={this.closeImageCropperModal}
+                    />
+                  )}
+                </Box>
+              )}
+
               <IntoView hashedWith={CHECKOUT_LANG}>
                 {this.props.locale && (
                   <div className="form-group">
@@ -754,6 +899,19 @@ class CheckoutTheme extends Component {
               </div>
             </div>
           </div>
+
+          {user.isCustomMerchantUPIQR && config?.preview_image_url?.signed_url && (
+            <Box id="preview-qr">
+              <Box>
+                <img
+                  alt="QR Preview"
+                  className="base-qr-template"
+                  src={config?.preview_image_url?.signed_url}
+                />
+              </Box>
+            </Box>
+          )}
+
           <EasterEgg extraClass="ftx-settings-page" page="Settings" />
         </div>
       </div>

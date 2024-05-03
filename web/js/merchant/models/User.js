@@ -2017,6 +2017,10 @@ export default class User {
     return this.isFeatureEnabled('custom_txn_tab_view');
   }
 
+  get isCustomMerchantUPIQR() {
+    return this.isFeatureEnabled('custom_merchant_upi_qr');
+  }
+
   get isOmniChannelMerchant() {
     const variant = getSplitzExperimentVariant('omni_channel_merchants');
     return variant?.name === 'show-ezetap-txn';

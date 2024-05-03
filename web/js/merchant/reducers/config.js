@@ -363,6 +363,21 @@ export const getRefundPricing = (gateway) => {
   };
 };
 
+export const uploadRectLogo = (file, fieldName) => {
+  const formData = new FormData();
+  formData.append(fieldName, file);
+  formData.append('isRectangularLogo', true);
+  return {
+    type: MERCHANT_LOGO_UPLOADED,
+    payload: merchantFetch({
+      url: 'account/config/logo',
+      method: 'post',
+      file,
+      data: formData,
+    }),
+  };
+};
+
 export const uploadLogo = (file, fieldName) => {
   const formData = new FormData();
   formData.append(fieldName, file);

@@ -1,0 +1,12 @@
+export const THUMBNAIL_SIZE_LIMIT = 1024 * 1024;
+export const VIEWPORT = { width: 380, height: 60 };
+export const BOUNDARY = { width: '100%', height: 200 };
+export const SUCCESS = 'success';
+export const ERROR = 'error';
+export const UPLOADING_IMAGE = 'Uploading image...';
+export const CLOSE_TIMEOUT = 2500;
+export const FILE_UPLOADED_SUCCESSFULLY = 'File Uploaded Successfully';
+export const LOGO = 'logo';
+export const FILE_TYPES = ['png', 'jpg', 'jpeg'];
+export const UPLOAD_IMAGE_HERE = 'Upload Image here';
+export const LOGO_REMOVED_SUCCESSFULLY = 'Logo Removed Successfully';
