@@ -373,6 +373,7 @@ class Core extends Base\Core
         {
             // setting easy type for easy redirection for on-boarding
             $productConfig[Product::PRIMARY]["params"][self::EASY_ONBOARDING_TYPE_PARAM] = "1";
+            $productConfig[Product::POS]["params"][self::EASY_ONBOARDING_TYPE_PARAM] = "1";
         }
 
     }
