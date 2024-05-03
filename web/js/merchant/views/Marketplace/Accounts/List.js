@@ -1,39 +1,34 @@
-import { connect } from 'react-redux';
+import { Box } from '@razorpay/blade/components';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'merchant/helpers/data';
-
-import Pager from 'common/ui/Pager';
+import { withRouter } from 'common/deprecated/withRouter';
 import Alert from 'common/ui/Forms/Alert';
-
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
+import Pager from 'common/ui/Pager';
+import ProductWrapper from 'common/ui/ProductWrapper';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import CustomerFeeBearerPopover from 'merchant/components/CustomerFeeBearerPopover';
+import DocsLink from 'merchant/components/DocsLink';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
+import TestModeBanner from 'merchant/components/TestModeBanner';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
+import ListContainer from 'merchant/containers/ListContainer';
+import { RZPFeatures } from 'merchant/helpers/data';
+import { isOrgFeatureExist } from 'merchant/models/User';
 import { luminateRow } from 'merchant/reducers/app';
 import * as AccountActions from 'merchant/reducers/marketplace/accounts';
-
-import DocsLink from 'merchant/components/DocsLink';
-import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import AccountDetails from 'merchant/views/Marketplace/Accounts/Details';
+import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
 import AccountsList from 'merchant/views/Marketplace/Accounts/components/AccountsList';
 import AccountsListFilter from 'merchant/views/Marketplace/Accounts/components/AccountsListFilter';
-
-import ListContainer from 'merchant/containers/ListContainer';
-import { withRouter } from 'common/deprecated/withRouter';
-import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
-import AccountDetails from 'merchant/views/Marketplace/Accounts/Details';
-import { isOrgFeatureExist } from 'merchant/models/User';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import TestModeBanner from 'merchant/components/TestModeBanner';
-import ProductWrapper from 'common/ui/ProductWrapper';
-import { navItems } from 'merchant/views/Marketplace/NavItems';
-import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
-import { Box } from '@razorpay/blade/components';
-import CustomerFeeBearerPopover from 'merchant/components/CustomerFeeBearerPopover';
 import {
   linkedAccountTabOpenedAnalytics,
   linkedAccountDashboardAccessGrantedAnalytics,
 } from 'merchant/views/Marketplace/MarketplaceAnalytics';
+import { navItems } from 'merchant/views/Marketplace/NavItems';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 @connect(
   (state) => {
@@ -277,7 +272,7 @@ class AccountsListContainer extends ListContainer {
     const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled || isCustomerFeeBearer;
     return (
       <ProductWrapper
-        tabsData={navItems(isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
+        tabsData={navItems(user, isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
         extra={
           <>
             <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>

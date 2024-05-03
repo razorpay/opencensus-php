@@ -1,8 +1,10 @@
 import React from 'react';
+
 import { render, screen, waitFor } from 'common/services/test/test-utils';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 import Marketplace from 'merchant/views/Marketplace/Index';
 import { getInitialReduxState } from 'merchant/views/mocks/fixtures';
-import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 
 global.rzpQ = {
   productOnboarding: () => ({
@@ -61,5 +63,43 @@ describe('marketplace', () => {
       'href',
       '/app/payments-and-refunds-settings/capture-refund-settings',
     );
+  });
+
+  test('should render all product tabs inside Route', () => {
+    const reduxState = getInitialReduxState({
+      userRole: rolesList.OWNER,
+      merchant: {
+        dial_code: '+91',
+        country_code: 'IN',
+        fee_bearer: FEE_BEARER_TYPES.PLATFORM,
+      },
+    });
+    render(<Marketplace />, {
+      initialState: reduxState,
+      initialEntries: ['/route/payments'],
+      path: '/route',
+    });
+    expect(screen.getByText('Payments')).toBeInTheDocument();
+    expect(screen.getByText('Transfers')).toBeInTheDocument();
+    expect(screen.getByText('Reversals')).toBeInTheDocument();
+    expect(screen.getByText('Accounts')).toBeInTheDocument();
+    expect(screen.getByText('Batch Upload')).toBeInTheDocument();
+  });
+
+  test('should render only the Transfers tab for userRole == PARTNER', () => {
+    const reduxState = getInitialReduxState({
+      isPartnerRole: true,
+      userRole: rolesList.PARTNER,
+    });
+    render(<Marketplace />, {
+      initialState: reduxState,
+      initialEntries: ['/route/transfers'],
+      path: '/route',
+    });
+    expect(screen.getByText('Transfers')).toBeInTheDocument();
+    expect(screen.queryByText('Payments')).toBeNull();
+    expect(screen.queryByText('Reversals')).toBeNull();
+    expect(screen.queryByText('Accounts')).toBeNull();
+    expect(screen.queryByText('Batch Upload')).toBeNull();
   });
 });

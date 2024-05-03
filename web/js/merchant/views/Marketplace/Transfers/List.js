@@ -1,23 +1,22 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
-import { transferId, recipient, amount, createdAt } from 'common/ui/item/pair';
-import { RZPFeatures } from 'merchant/helpers/data';
-
+import { withRouter } from 'common/deprecated/withRouter';
+import ProductWrapper from 'common/ui/ProductWrapper';
 import DataTable from 'common/ui/Table/DataTable';
-import TestModeBanner from 'merchant/components/TestModeBanner';
-import { fetchTransfers as fetchAll } from 'merchant/reducers/collection';
-
+import { transferId, recipient, amount, createdAt } from 'common/ui/item/pair';
 import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import TransfersListFilter from 'merchant/views/Marketplace/Transfers/components/TransfersListFilter';
-import ListContainer from 'merchant/containers/ListContainer';
-import { withRouter } from 'common/deprecated/withRouter';
-import TransferSource from './components/TransferSource';
 import { RouteTransfersStatusLabel } from 'merchant/components/StatusLabel';
-import SettlementStatus from './components/SettlementStatus';
-import ProductWrapper from 'common/ui/ProductWrapper';
+import TestModeBanner from 'merchant/components/TestModeBanner';
+import ListContainer from 'merchant/containers/ListContainer';
+import { RZPFeatures } from 'merchant/helpers/data';
+import { fetchTransfers as fetchAll } from 'merchant/reducers/collection';
 import { navItems } from 'merchant/views/Marketplace/NavItems';
+import TransfersListFilter from 'merchant/views/Marketplace/Transfers/components/TransfersListFilter';
+
+import SettlementStatus from './components/SettlementStatus';
+import TransferSource from './components/TransferSource';
 
 const source = {
   title: 'Source Id',
@@ -46,7 +45,7 @@ class TransfersListContainer extends ListContainer {
     const { isPlatformFeeTabEnabled, user, isPartnerPlatformFeeEnabled } = this.props;
     return (
       <ProductWrapper
-        tabsData={navItems(isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
+        tabsData={navItems(user, isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
         extra={
           <>
             <TakeATourButton feature={RZPFeatures.ROUTE} />

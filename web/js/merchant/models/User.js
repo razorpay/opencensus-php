@@ -1377,6 +1377,10 @@ export default class User {
     return this.userRole === rolesList.PARTNER_AGENT;
   }
 
+  get isPartnerRole() {
+    return this.userRole === rolesList.PARTNER;
+  }
+
   get isRouteCodeSupportEnabled() {
     return this.isFeatureEnabled('route_code_support');
   }

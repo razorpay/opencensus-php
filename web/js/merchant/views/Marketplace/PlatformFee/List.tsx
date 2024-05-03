@@ -148,7 +148,7 @@ const PlatformFee = ({
 
   return (
     <ProductWrapper
-      tabsData={navItems(isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
+      tabsData={navItems(user, isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
       extra={
         <>
           <TakeATourButton feature={RZPFeatures.ROUTE} />

@@ -1,20 +1,17 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'merchant/helpers/data';
-import { reversalId, transferId, amount, createdAt } from 'common/ui/item/pair';
-
-import DataTable from 'common/ui/Table/DataTable';
-import DocsLink from 'merchant/components/DocsLink';
-import { fetchReversals as fetchAll } from 'merchant/reducers/collection';
-
-import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import ReversalsListFilter from 'merchant/views/Marketplace/Reversals/components/ReversalsListFilter';
-
-import ListContainer from 'merchant/containers/ListContainer';
 import { withRouter } from 'common/deprecated/withRouter';
-import TestModeBanner from 'merchant/components/TestModeBanner';
 import ProductWrapper from 'common/ui/ProductWrapper';
+import DataTable from 'common/ui/Table/DataTable';
+import { reversalId, transferId, amount, createdAt } from 'common/ui/item/pair';
+import DocsLink from 'merchant/components/DocsLink';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import TestModeBanner from 'merchant/components/TestModeBanner';
+import ListContainer from 'merchant/containers/ListContainer';
+import { RZPFeatures } from 'merchant/helpers/data';
+import { fetchReversals as fetchAll } from 'merchant/reducers/collection';
 import { navItems } from 'merchant/views/Marketplace/NavItems';
+import ReversalsListFilter from 'merchant/views/Marketplace/Reversals/components/ReversalsListFilter';
 @connect(
   (state) => ({
     ...state.reversals,
@@ -24,10 +21,10 @@ import { navItems } from 'merchant/views/Marketplace/NavItems';
 )
 class ReversalsListContainer extends ListContainer {
   render() {
-    const { isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled } = this.props;
+    const { isPlatformFeeTabEnabled, user, isPartnerPlatformFeeEnabled } = this.props;
     return (
       <ProductWrapper
-        tabsData={navItems(isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
+        tabsData={navItems(user, isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
         extra={
           <>
             <TakeATourButton feature={RZPFeatures.ROUTE} />

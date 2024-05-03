@@ -2,14 +2,13 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 
-import BatchList from 'merchant/containers/BatchNew/ListV2';
-import CreateBatch from './CreateBatch';
-
-import setGaTrack from 'merchant/containers/BatchNew/ga';
-
-import { fetchAllRouteBatches as fetchAll } from 'merchant/reducers/batches';
 import { titleCase } from 'common/utils/rzp-utils';
+import BatchList from 'merchant/containers/BatchNew/ListV2';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
+import { fetchAllRouteBatches as fetchAll } from 'merchant/reducers/batches';
 import { navItems } from 'merchant/views/Marketplace/NavItems';
+
+import CreateBatch from './CreateBatch';
 
 const typesLabelMap = {
   payment_transfer: 'Transfers',
@@ -46,7 +45,7 @@ const BatchTypeFilterField = () => (
 })
 export default class BatchListContainer extends Component {
   render() {
-    const { isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled } = this.props;
+    const { isPlatformFeeTabEnabled, user, isPartnerPlatformFeeEnabled } = this.props;
     return (
       <BatchList
         form="batchListFilter"
@@ -57,7 +56,7 @@ export default class BatchListContainer extends Component {
         extraColumns={[typeColumn]}
         multiBatch
         emptyResultsDescription={emptyResultsDescription}
-        propsTabData={navItems(isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
+        propsTabData={navItems(user, isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
         {...this.props}
       />
     );

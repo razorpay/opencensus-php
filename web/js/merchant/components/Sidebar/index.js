@@ -51,6 +51,7 @@ export const BASE_ROUTES = {
   settings: '/config',
   invoices: '/invoices',
   marketplace: '/route/payments',
+  transfers: '/route/transfers',
   paymentlinks: '/paymentlinks',
   paymentpages: '/paymentpages',
   apiKeys: '/api-keys',

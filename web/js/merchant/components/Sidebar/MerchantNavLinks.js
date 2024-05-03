@@ -247,7 +247,7 @@ function MerchantNavLinks(props) {
       <MainNavLink
         label="Route"
         type="product"
-        to={routes.marketplace}
+        to={user.isPartnerRole ? routes.transfers : routes.marketplace}
         icon="i i-route text-success"
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('marketplace') && !isConfigTagEnabled('route.marketplace')

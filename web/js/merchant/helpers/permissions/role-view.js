@@ -106,7 +106,7 @@ export default {
   payment_buttons: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SELLERAPP, PARTNER],
   subscription_buttons: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SELLERAPP, PARTNER],
   accounts: [OWNER, ADMIN, MANAGER],
-  marketplace: [OWNER, ADMIN, MANAGER, OPERATIONS],
+  marketplace: [OWNER, ADMIN, MANAGER, OPERATIONS, PARTNER],
   subscriptions: [
     OWNER,
     ADMIN,

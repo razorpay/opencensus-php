@@ -71,6 +71,7 @@ type Getters = {
   isHidePIDetails: boolean;
   isSubMerchantKycEnabled: boolean;
   isPartnerAgentRole: boolean;
+  isPartnerRole: boolean;
   isRiskAndFraudEnabled: boolean;
   isOmniChannelMerchant: boolean;
   isOmniEnabledMerchant: boolean;
