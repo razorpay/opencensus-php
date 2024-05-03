@@ -53,6 +53,10 @@ class UserController extends Controller
     const DASHBOARD_USER_CONCURRENT_API_CALL = 'DASHBOARD_USER_CONCURRENT_API_CALL';
 
     const ONBOARDING_FTUX = 'ONBOARDING_FTUX';
+
+    const ONBOARDING_FTUX_AFTER_L2 = 'ONBOARDING_FTUX_AFTER_L2';
+    
+    const ELIGIBLE_FOR_POS = 'ELIGIBLE_FOR_POS';
     /**
      * @var \App\Admin\Service|null
      */
@@ -121,11 +125,13 @@ class UserController extends Controller
         $currentMerchantId = $currentMerchant->id;
 
         $concurrentApiCallExperimentId = config('splitz.experiments')[self::DASHBOARD_USER_CONCURRENT_API_CALL];
-        $onboardingFluxExperiment =  config('splitz.experiments')[self::ONBOARDING_FTUX];
+        $onboardingFtuxExperiment = config('splitz.experiments')[self::ONBOARDING_FTUX];
+        $onboardingFtuxAfterL2Experiment = config('splitz.experiments')[self::ONBOARDING_FTUX_AFTER_L2];
         $splitzCachingEnabled = config('splitz.experiments')[Constants::SPLITZ_API_CACHING_ENABLED];
         $razorxCachingEnabled = config('splitz.experiments')[Constants::RAZORX_CACHING_ENABLED];
+        $eligibleForPosExperiment = config('splitz.experiments')[self::ELIGIBLE_FOR_POS];
 
-        $experimentIds = [$onboardingFluxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled, $razorxCachingEnabled];
+        $experimentIds = [$onboardingFtuxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxAfterL2Experiment, $eligibleForPosExperiment];
 
         $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariantBulk(
             $currentMerchantId,
@@ -199,7 +205,11 @@ class UserController extends Controller
                 ]);
             }
 
-            if ($this->isRedirectionApplicableForFtux($details) === true)
+            $orgCode = $org[MerchantConstants::CUSTOM_CODE] ?? '';
+            $isOrgRZP = $orgCode === MerchantConstants::RZP;
+            $isApplicableForFtuxRedirection = $this->isRedirectionApplicableForFtux($details) === true and $isOrgRZP === true;
+
+            if ($isApplicableForFtuxRedirection)
             {
                 $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
                     'redirection_url' => env('EASY_DASHBOARD_URL') . '/onboarding/overview',
@@ -1885,6 +1895,14 @@ class UserController extends Controller
     {
         try
         {
+            $isSubMerchant = $details[MetricConstants::IS_SUB_MERCHANT] ?? false;
+            $partnerType = $details[MetricConstants::PARTNER_TYPE] ?? null;
+
+            if($isSubMerchant === true || empty($partnerType) === false || $this->isEligibleForPos($details) === true)
+            {
+                return false;
+            }
+
             $signupCampaign = $details['user']['signup_campaign'] ?? null;
 
             if ($signupCampaign !== 'easy_onboarding')
@@ -1898,6 +1916,11 @@ class UserController extends Controller
             }
 
             if(empty($_COOKIE['ftuxSession']) === false)
+            {
+                return false;
+            }
+
+            if($this->isFtuxAfterL2ExperimentEnabled($details) === true and $details[MerchantConstants::ACTIVATION_STATUS] === null)
             {
                 return false;
             }
@@ -1949,13 +1972,43 @@ class UserController extends Controller
 
     private function isFtuxExperimentEnabled()
     {
-        $experimentId = config('splitz.experiments')['ONBOARDING_FTUX'];
+        $experimentId = config('splitz.experiments')[self::ONBOARDING_FTUX];
 
         if (!array_key_exists($experimentId, $this->splitzExprimentData))
         {
             return false;
         }
-        return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
+        return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
+    }
+    
+    private function isFtuxAfterL2ExperimentEnabled()
+    {
+
+        $experimentId = config('splitz.experiments')[self::ONBOARDING_FTUX_AFTER_L2];
+
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+        return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
+    }
+
+    private function isEligibleForPos($details)
+    {
+
+        $physicalStore = $details[MerchantConstants::MERCHANT_BUSINESS_DETAIL][MerchantConstants::WEBSITE_DETAILS][MerchantConstants::PHYSICAL_STORE] ?? false;
+
+        if($physicalStore !== true) {
+            return false;
+        }
+
+        $experimentId = config('splitz.experiments')[self::ELIGIBLE_FOR_POS];
+
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+        return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
     }
 
     private function getHttpClient(string $baseUrl, $timeOut): Guzzle

@@ -8,9 +8,9 @@ import { analyticsTrack } from 'common/utils/analytics';
  */
 export const checkEligibilityForFeeBasedGating = (user) => {
   return (
-    Boolean(user.fee_based_gating?.is_eligible) &&
-    user.activation_status === null &&
-    user.activation_form_milestone === 'L2'
+    Boolean(user?.fee_based_gating?.is_eligible) &&
+    user?.activation_status === null &&
+    user?.activation_form_milestone === 'L2'
   );
 };
 

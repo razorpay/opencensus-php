@@ -107,6 +107,8 @@ class Constants
     ];
 
     const SPLITZ_API_CACHING_ENABLED = 'SPLITZ_API_CACHING_ENABLED';
+    const VARIABLES = 'variables';
+    const RESULT = 'result';
 
     // browser details of the user logging in
     const BROWSER_DETAILS = 'browser_details';

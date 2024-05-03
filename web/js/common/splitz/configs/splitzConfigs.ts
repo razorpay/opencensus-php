@@ -110,6 +110,45 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'omniChannelGtm',
+        experimentId: {
+          beta: 'N4hyDcUWYc1G8p',
+          production: 'N6L7VhWOgGd1Jd',
+        },
+        requestData: (): Record<string, string> => ({
+          customData: 'getAllowedCities',
+        }),
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+            {
+              key: 'cities',
+              value: '',
+            },
+          ],
+        },
+      },
+      {
+        uniqueHashKey: 'ftuxAfterL2',
+        experimentId: {
+          beta: 'NziszawWZ4GCni',
+          production: 'Nzitvn5ZfZdesK',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'partnerships_for_pos',
         experimentId: {
           beta: 'N3FXsNXuhB2qSf',
@@ -1142,34 +1181,6 @@ export const splitzConfig: SplitzInitConfig = {
               {
                 key: 'result',
                 value: 'off',
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
-      routesToMatch: [/^\/pos.*/i],
-      abExperiments: [
-        {
-          uniqueHashKey: 'omniChannelGtm',
-          experimentId: {
-            beta: 'N4hyDcUWYc1G8p',
-            production: 'N6L7VhWOgGd1Jd',
-          },
-          requestData: (): Record<string, string> => ({
-            customData: 'getAllowedCities',
-          }),
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-              {
-                key: 'cities',
-                value: '',
               },
             ],
           },

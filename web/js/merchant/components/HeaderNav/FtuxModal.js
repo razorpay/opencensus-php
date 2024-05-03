@@ -1,10 +1,19 @@
 import React from 'react';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
+import {
+  checkEligibilityForFeeBasedGating,
+  handleFeeBasedGatingNavigation,
+} from 'merchant/utils/feeBasedGatingUtils';
 
-export const FtuxModal = ({ closeModal, handleModalVisibilty }) => {
+export const FtuxModal = ({ closeModal, handleModalVisibilty, user }) => {
+  const isEligibleForFeeBasedGating = checkEligibilityForFeeBasedGating(user);
   const handleAccountSetup = () => {
     handleModalVisibilty();
-    window.open(`${window.EASY_ONBOARDING_URL}/overview`, '_self', 'noopener');
+    if (isEligibleForFeeBasedGating) {
+      handleFeeBasedGatingNavigation({ ctaLocation: 'FtuxModal' });
+    } else {
+      window.open(`${window.EASY_ONBOARDING_URL}/overview`, '_self', 'noopener');
+    }
   };
   const handleCloseModal = () => {
     handleModalVisibilty();

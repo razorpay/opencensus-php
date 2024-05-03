@@ -12,6 +12,7 @@ import {
 } from './Constants';
 import { convertUnixToDate } from 'common/utils/rzp-utils';
 import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const PRIVATE_LIMITED = 4,
   PUBLIC_LIMITED = 5,
@@ -798,6 +799,27 @@ const redirectToEasyAfter1sec = () => {
   }, 1000);
 };
 
+const isEligibleForFtux = ({ user = {}, abExperiments = {} } = {}) => {
+  const { physical_store } = user?.merchant_business_detail?.website_details ?? {};
+
+  const isPOSMerchant = isExperimentEnabled(abExperiments?.omniChannelGtm) && !!physical_store;
+
+  const isFtuxExpEnabledAfterL2 = isExperimentEnabled(abExperiments?.ftuxAfterL2);
+
+  let isFtuxEnabled =
+    user.isOrgRZP &&
+    user.isFtuxEnabled &&
+    !user.isSubMerchant &&
+    !user.isPartner() &&
+    !isPOSMerchant;
+
+  if (isFtuxEnabled && isFtuxExpEnabledAfterL2) {
+    isFtuxEnabled = user?.activation_form_milestone === 'L2' && user?.activation_status !== null;
+  }
+
+  return isFtuxEnabled;
+};
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -854,4 +876,5 @@ export {
   getNcExpiryDate,
   isNewNcActivationStatus,
   redirectToEasyAfter1sec,
+  isEligibleForFtux,
 };

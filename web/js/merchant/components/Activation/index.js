@@ -86,7 +86,7 @@ import {
   isSourceRX,
   getBankTabHeader,
   isVerificationFailed,
-  showSubcategory,
+  isEligibleForFtux,
 } from './ActivationUtils';
 
 import { fireL1FormSuccessEvents } from 'merchant/containers/Activation/ActivationFormMarketingEvents';
@@ -107,6 +107,7 @@ import { capitalize } from 'common/utils/rzp-utils';
 
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { withSplitzService } from 'common/splitz';
 
 /*
  *             Main-form        LA-form
@@ -1537,7 +1538,7 @@ class ActivationWizard extends React.Component {
     needsClarificationFields.forEach((item) => {
       if (WEBSITE_COMPLIANCE_URLS.includes(item.name)) isWebsiteCompliance = true;
     });
-    const { user, websiteSectionDetailsData } = this.props;
+    const { user, websiteSectionDetailsData, splitz } = this.props;
     if (
       isWebsiteCompliance &&
       user.isWebsiteComplianceFlowEnabled &&
@@ -1601,6 +1602,10 @@ class ActivationWizard extends React.Component {
       this.setState({ callingAPI: true });
       const response = await this.props.save(reqData);
 
+      const { abExperiments } = splitz ?? {};
+
+      const isFtuxEnabled = isEligibleForFtux({ user, abExperiments });
+
       if (response.data.activation_status === 'needs_clarification') {
         const poi_verification_status = response.data.poi_verification_status;
         const company_pan_verification_status = response.data.company_pan_verification_status;
@@ -1626,7 +1631,7 @@ class ActivationWizard extends React.Component {
           dirty: newStateDirty,
         });
       } else if (response.success) {
-        if (this.props.user.isFtuxEnabled && this.props.user.isUnderReview) {
+        if (isFtuxEnabled && this.props.user.isUnderReview) {
           const ftuxUrl = `${window.EASY_ONBOARDING_URL}/onboarding/overview`;
           window.open(ftuxUrl, '_self', 'noopener');
         } else {
@@ -3409,4 +3414,4 @@ function matcher({ option, searchTerm = '', searchIndices }) {
   return true;
 }
 
-export default withRouter(ActivationWizard);
+export default withSplitzService(withRouter(ActivationWizard));

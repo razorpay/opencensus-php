@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
+import { withSplitzService } from 'common/splitz';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import OffersForYou from 'common/ui/OffersForYou';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -14,6 +15,7 @@ import { fetchExclusiveOffer as fetchExclusiveOfferProp } from 'merchant/reducer
 import { FtuxModal } from './FtuxModal';
 import SwitchMerchant from './SwitchMerchant';
 import ModesDropdown from './SwitchMode';
+import { isEligibleForFtux } from '../Activation/ActivationUtils';
 
 class NavFragment extends Component {
   constructor(props) {
@@ -60,7 +62,13 @@ class NavFragment extends Component {
         showFtuxModal: false,
       });
     }
-    if (!this.props.user.isFtuxEnabled || this.props.user.isTransacted) {
+
+    const { splitz, user } = this.props;
+    const { abExperiments } = splitz ?? {};
+
+    const isFtuxEnabled = isEligibleForFtux({ user, abExperiments });
+
+    if (!isFtuxEnabled || user.isTransacted) {
       this.setState({
         showFtuxModal: false,
       });
@@ -75,17 +83,26 @@ class NavFragment extends Component {
   }
 
   componentDidMount() {
-    const { fetchExclusiveOffer } = this.props;
-    if (this.props.user?.current) {
+    const { fetchExclusiveOffer, splitz, user } = this.props;
+    if (user?.current) {
       fetchExclusiveOffer({ fromWhere: 'gsExclusiveOffer' });
     }
-    if (this.props.user.isFtuxEnabled) {
+
+    const { abExperiments } = splitz ?? {};
+
+    const isFtuxEnabled = isEligibleForFtux({ user, abExperiments });
+    if (isFtuxEnabled) {
       this.shouldShowFtuxModal();
     }
   }
 
   componentDidUpdate() {
-    if (this.props.user.isFtuxEnabled && !this.props.user.isTransacted) {
+    const { user, splitz } = this.props;
+    const { abExperiments } = splitz ?? {};
+
+    const isFtuxEnabled = isEligibleForFtux({ user, abExperiments });
+
+    if (isFtuxEnabled && !user.isTransacted) {
       this.shouldShowFtuxModal();
     }
   }
@@ -168,22 +185,28 @@ class NavFragment extends Component {
           </li>
         ) : null}
         {showFtuxModal ? (
-          <FtuxModal closeModal={closeModal} handleModalVisibilty={this.handleModalVisibilty} />
+          <FtuxModal
+            closeModal={closeModal}
+            user={user}
+            handleModalVisibilty={this.handleModalVisibilty}
+          />
         ) : null}
       </React.Fragment>
     );
   }
 }
 
-export default compose(
-  connect(
-    (state) => {
-      return {
-        ...state?.growthService?.exclusive_offers,
-      };
-    },
-    {
-      fetchExclusiveOffer: fetchExclusiveOfferProp,
-    },
-  ),
-)(withRouter(NavFragment));
+export default withSplitzService(
+  compose(
+    connect(
+      (state) => {
+        return {
+          ...state?.growthService?.exclusive_offers,
+        };
+      },
+      {
+        fetchExclusiveOffer: fetchExclusiveOfferProp,
+      },
+    ),
+  )(withRouter(NavFragment)),
+);

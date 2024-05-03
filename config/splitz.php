@@ -160,6 +160,12 @@ return [
 
         // FTUX for Onboarding
         'ONBOARDING_FTUX' => env('ONBOARDING_FTUX', ''),
+        
+        // FTUX After L2 submit for Onboarding
+        'ONBOARDING_FTUX_AFTER_L2' => env('ONBOARDING_FTUX_AFTER_L2', ''),
+        
+        // eligible for pos
+        'ELIGIBLE_FOR_POS' => env('ELIGIBLE_FOR_POS', ''),
 
          // MSME for Proprietership
          'COLLECT_MSME_CERTIFICATE_PROPRIETORSHIP' => env('COLLECT_MSME_CERTIFICATE_PROPRIETORSHIP', ''),

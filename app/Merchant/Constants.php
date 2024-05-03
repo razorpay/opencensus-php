@@ -299,4 +299,14 @@ class Constants
     ];
 
     const MERCHANT_DETAIL_ADMIN_PAGE = 'https://admin-dashboard.razorpay.com/admin/merchants/%s/detail';
+
+    const MERCHANT_BUSINESS_DETAIL = 'merchant_business_detail';
+    const WEBSITE_DETAILS = 'website_details';
+    const PHYSICAL_STORE = 'physical_store';
+    const CUSTOM_CODE = 'custom_code';
+    const RZP = 'rzp';
+    const IS_SUB_MERCHANT = 'isSubMerchant';
+    const PARTNER_TYPE = 'partner_type';
+    const ACTIVATION_STATUS = 'activation_status';
+    
 }

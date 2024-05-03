@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+
+import { useSplitzService } from 'common/splitz';
 import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
+
+import { isEligibleForFtux } from '../Activation/ActivationUtils';
 
 const EasyOnboardingWrapper = (props) => {
   const { user, children } = props;
@@ -18,12 +22,16 @@ const EasyOnboardingWrapper = (props) => {
   const queryParams = Object.fromEntries(urlSearchParams.entries());
   const isSourceRX = !!(queryParams?.merchant === SOURCE_RAZORPAY_X);
 
+  const { abExperiments } = useSplitzService();
+
+  const isFtuxEnabled = isEligibleForFtux({ user, abExperiments });
+
   const getShouldRouteToEasy = async () => {
     if (isSourceRX) {
       return false;
     }
 
-    if (user.isFtuxEnabled && isEasyMerchant) {
+    if (isFtuxEnabled && isEasyMerchant) {
       const { isTransacted, activation_status } = user;
       if (isEasyL2InComplete) {
         return true;
@@ -48,7 +56,7 @@ const EasyOnboardingWrapper = (props) => {
   const routeToEasyOnboarding = async () => {
     const shouldRouteToEasy = await getShouldRouteToEasy();
     if (shouldRouteToEasy) {
-      if (user.isFtuxEnabled) {
+      if (isFtuxEnabled) {
         window.open(`${window.EASY_ONBOARDING_URL}/onboarding/overview`, '_self', 'noopener');
       } else {
         window.open(`${window.EASY_ONBOARDING_URL}/onboarding`, '_self', 'noopener');
