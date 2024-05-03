@@ -108,7 +108,10 @@ const Amount = ({
           className="rzp-currency"
           dangerouslySetInnerHTML={{ __html: sanitizer(currencySymbol) }}
         />{' '}
-        <span className="rzp-whole">{amount?.integer}</span>
+        <span className="rzp-whole">
+          {amount?.minusSign ? '-' : null}
+          {amount?.integer}
+        </span>
         {!hidePaisa && amount?.decimal && amount?.fraction && (
           <span className="rzp-paise">
             {amount.decimal}
