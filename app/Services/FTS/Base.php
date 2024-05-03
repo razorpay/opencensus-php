@@ -150,7 +150,7 @@ class Base
 
     const FTS_PRIORITY_ROUTE = '/routing/priority_route';
 
-    const FTS_MAR_ROUTE = '/routing/rules';
+    const FTS_MAR_ROUTE = '/routing/multi_account_routing_rules';
 
     // Headers
     const ACCEPT        = 'Accept';

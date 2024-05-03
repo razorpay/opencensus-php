@@ -230,6 +230,10 @@ class Core extends Base\Core
 
     const SCHEDULE_PAYOUT_POST_APPROVAL_VALUE_IN_MINUTES = 15;
 
+    const MODE_WISE_ACTIVE_CHANNELS = "mode_wise_active_channels";
+
+    const MERCHANT_CUSTOMIZED_PRIORITY_RULES = "merchant_customized_priority_rules";
+
     /**
      * @var Mutex
      */
@@ -11253,24 +11257,23 @@ class Core extends Base\Core
     public function initializeFtsRequestForFetchSmartRoutingRules(array $modeWiseActiveChannelsWithFundAccountIDs = null) : array
     {
         $merchantID = $this->merchant->getId();
+
         $ftsRequest = [];
 
-        $modeWiseActiveChannels = [];
-
-        /* $modeWiseActiveChannelsWithFundAccountIDs = ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
-                                                'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
-                                                'UPI' => ['RBL' => 123456]] */
-        foreach ($modeWiseActiveChannelsWithFundAccountIDs as $transferMode => $channelsWithFundAccountIDs)
-        {
-            foreach ($channelsWithFundAccountIDs as $channel => $ftsFundAccountId)
-            {
-                $modeWiseActiveChannels[$transferMode][] = $channel;
+        foreach ($modeWiseActiveChannelsWithFundAccountIDs as $mode => $activeChannelsWithFundAccountIDs) {
+            // Remove mode from list if no active channels available for it
+            if(empty($activeChannelsWithFundAccountIDs)) {
+                unset($modeWiseActiveChannelsWithFundAccountIDs[$mode]);
             }
         }
 
-        // 'XYZ' => ['IMPS' => ['RBL', 'ICICI'], 'NEFT' => ['ICICI', 'RBL'], 'UPI' => ['RBL']]
-        $ftsRequest[$merchantID] = $modeWiseActiveChannels;
+        $ftsRequest[Entity::MERCHANT_ID] = $merchantID;
+        $ftsRequest[self::MODE_WISE_ACTIVE_CHANNELS] = $modeWiseActiveChannelsWithFundAccountIDs;
 
+        /* {
+             'merchant_id' => 'XYZ,
+             'mode_wise_active_channels' => ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907], 'NEFT' => ['ICICI' => 78907, 'RBL' => 123456], 'UPI' => ['RBL' => 123456]]
+           } */
         $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_FTS_REQUEST, [
             Entity::MERCHANT_ID => $merchantID,
             TraceCode::FTS_REQUEST => $ftsRequest,
@@ -11283,9 +11286,10 @@ class Core extends Base\Core
                                                              array $merchantCustomizedPriorityRules = null) : array
     {
         $merchantID = $this->merchant->getId();
+        $channelShared = strtoupper(Balance\AccountType::SHARED);
+
         $merchantCustomizedPriorityRulesWithFundAccountIDs = [];
         $ftsRequest = [];
-        $channelShared = strtoupper(Balance\AccountType::SHARED);
 
         /* $modeWiseActiveChannelsWithFundAccountIDs = ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
         'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
@@ -11307,9 +11311,13 @@ class Core extends Base\Core
             }
         }
 
-        // 'XYZ' => ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907, 'SHARED' => ''], 'NEFT' => ['ICICI' => 78907, 'RBL' => 123456, 'SHARED' => ''], 'UPI' => ['RBL']]
-        $ftsRequest[$merchantID] = $merchantCustomizedPriorityRulesWithFundAccountIDs;
+        $ftsRequest[Entity::MERCHANT_ID] = $merchantID;
+        $ftsRequest[self::MERCHANT_CUSTOMIZED_PRIORITY_RULES] = $merchantCustomizedPriorityRulesWithFundAccountIDs;
 
+        /* {
+             'merchant_id' => 'XYZ,
+             'merchant_customized_priority_rules' => ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907], 'NEFT' => ['ICICI' => 78907, 'RBL' => 123456], 'UPI' => ['RBL' => 123456]]
+           } */
         $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_FTS_REQUEST, [
             Entity::MERCHANT_ID => $merchantID,
             TraceCode::FTS_REQUEST => $ftsRequest,
@@ -11318,18 +11326,27 @@ class Core extends Base\Core
         return $ftsRequest;
     }
 
-    public function getActiveDirectChannelsWithFundAccountsForSmartRoutingRules($merchant) : array {
+    public function getActiveChannelsWithFundAccountsForSmartRoutingRules($merchant) : array {
         $merchantID = $merchant->getId();
+
+        $channelShared = strtoupper(Balance\AccountType::SHARED);
+
+        // Fetching lite balances
+        $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
+            $merchantID, Balance\Type::BANKING, AccountType::SHARED, $this->mode);
+        $validLiteAccounts = count($liteBalances);
 
         // Fetch Active BasDetails
         $activeBasDetails = $this->repo->banking_account_statement_details->getActiveDirectAccountsForMerchantId($merchantID);
 
-        $activeDirectChannelsWithFundAccountsMap = [
+        // For storing Active Direct Channels
+        $activeChannelsWithFundAccountsMap = [
             Mode::IMPS => [],
             Mode::NEFT => [],
             Mode::UPI => []
         ];
 
+        // Fetching Active Direct Channels
         foreach ($activeBasDetails as $activeBasDetail)
         {
             $channel = $activeBasDetail->getChannel();
@@ -11370,23 +11387,31 @@ class Core extends Base\Core
                 }
             }
 
-            foreach ($activeDirectChannelsWithFundAccountsMap as $transferMode => $channels)
+            foreach ($activeChannelsWithFundAccountsMap as $transferMode => $channels)
             {
-                if($transferMode == Mode::UPI) {
+                // If a lite account exists for the MID, it would be available for all modes
+                if ($validLiteAccounts > 0) {
+                    $activeChannelsWithFundAccountsMap[$transferMode][$channelShared] = "";
+                }
+
+                if ($transferMode == Mode::UPI)
+                {
                     // Check if the channel is active for UPI mode or not
                     $isChannelActiveForDirectUPIPayouts = (new Validator())->validateChannelForDirectUPIPayouts($merchantID, $channel);
                     if ($isChannelActiveForDirectUPIPayouts === true)
                     {
-                        $activeDirectChannelsWithFundAccountsMap[$transferMode][$channelInUpperCase] = $ftsFundAccountId;
+                        $activeChannelsWithFundAccountsMap[$transferMode][$channelInUpperCase] = $ftsFundAccountId;
                     }
-                } else {
+                }
+                else
+                {
                     // If a direct account exists for the MID on a certain channel, then channel is active for all non-UPI modes
-                    $activeDirectChannelsWithFundAccountsMap[$transferMode][$channelInUpperCase] = $ftsFundAccountId;
+                    $activeChannelsWithFundAccountsMap[$transferMode][$channelInUpperCase] = $ftsFundAccountId;
                 }
             }
         }
 
-        return $activeDirectChannelsWithFundAccountsMap;
+        return $activeChannelsWithFundAccountsMap;
     }
 
     /**
@@ -11405,22 +11430,38 @@ class Core extends Base\Core
         ]);
 
         // Fetch Direct Routing Channels with fund account ID's
-        /* ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
-            'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
-            'UPI' => ['RBL' => 123456]] */
-        $activeDirectChannelsWithFundAccounts = $this->getActiveDirectChannelsWithFundAccountsForSmartRoutingRules($this->merchant);
+        /* ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907, 'SHARED' => ''],
+            'NEFT' => ['RBL' => 123456, 'ICICI' => 78907, 'SHARED' => ''],
+            'UPI' => ['RBL' => 123456, 'SHARED' => '']] */
+        $activeChannelsWithFundAccounts = $this->getActiveChannelsWithFundAccountsForSmartRoutingRules($this->merchant);
 
-        $activeDirectChannelsNonUPICount = count($activeDirectChannelsWithFundAccounts[Mode::IMPS]);
-        $activeDirectChannelsUPICount = count($activeDirectChannelsWithFundAccounts[Mode::UPI]);
+        $activeChannelsNonUPICount = count($activeChannelsWithFundAccounts[Mode::IMPS]);
+        $activeChannelsUPICount = count($activeChannelsWithFundAccounts[Mode::UPI]);
 
-        if($activeDirectChannelsNonUPICount === 0 && $activeDirectChannelsUPICount === 0)
+        // If no. of active channels is < 2, routing is not possible
+        if($activeChannelsNonUPICount < 2 && $activeChannelsUPICount < 2)
         {
             throw new LogicException('Merchant doesn\'t have any viable channels for smart routing.',
                   ErrorCode::SMART_ROUTING_RULES_NO_VIABLE_CHANNELS_AVAILABLE,
                   [Entity::MERCHANT_ID  => $merchantID]);
         }
 
-        $ftsRequest = $this->initializeFtsRequestForFetchSmartRoutingRules($activeDirectChannelsWithFundAccounts);
+        // {
+        //    "merchant_id": "10000000000000",
+        //    "mode_wise_active_channels": {
+        //        "IMPS": {
+        //            "RBL": "10001",
+        //            "ICICI": "12345678",
+        //            "SHARED": ""
+        //        },
+        //        "NEFT": {
+        //            "ICICI": "12345678",
+        //            "RBL": "10001",
+        //            "SHARED": ""
+        //        }
+        //    }
+        // }
+        $ftsRequest = $this->initializeFtsRequestForFetchSmartRoutingRules($activeChannelsWithFundAccounts);
 
         /** @var \RZP\Services\FTS\FundTransfer $ftsService */
 
@@ -11474,20 +11515,35 @@ class Core extends Base\Core
         /* ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
             'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
             'UPI' => ['RBL' => 123456]] */
-        $activeDirectChannelsWithFundAccounts = $this->getActiveDirectChannelsWithFundAccountsForSmartRoutingRules($this->merchant);
+        $activeChannelsWithFundAccounts = $this->getActiveChannelsWithFundAccountsForSmartRoutingRules($this->merchant);
 
-        $activeDirectChannelsNonUPICount = count($activeDirectChannelsWithFundAccounts[Mode::IMPS]);
-        $activeDirectChannelsUPICount = count($activeDirectChannelsWithFundAccounts[Mode::UPI]);
+        $activeChannelsNonUPICount = count($activeChannelsWithFundAccounts[Mode::IMPS]);
+        $activeChannelsUPICount = count($activeChannelsWithFundAccounts[Mode::UPI]);
 
-        if($activeDirectChannelsNonUPICount === 0 && $activeDirectChannelsUPICount === 0)
+        // If no. of active channels is < 2, routing is not possible
+        if($activeChannelsNonUPICount < 2 && $activeChannelsUPICount < 2)
         {
             throw new LogicException('Merchant doesn\'t have any viable channels for smart routing.',
-                  ErrorCode::SMART_ROUTING_RULES_NO_VIABLE_CHANNELS_AVAILABLE,
-                  [Entity::MERCHANT_ID  => $merchantID
-            ]);
+                                     ErrorCode::SMART_ROUTING_RULES_NO_VIABLE_CHANNELS_AVAILABLE,
+                                     [Entity::MERCHANT_ID  => $merchantID]);
         }
 
-        $ftsRequest = $this->initializeFtsRequestForModifySmartRoutingRules($activeDirectChannelsWithFundAccounts, $input);
+        // {
+        //    "merchant_id": "10000000000000",
+        //    "merchant_customized_priority_rules": {
+        //        "IMPS": {
+        //            "RBL": "10001",
+        //            "ICICI": "12345678",
+        //            "SHARED": ""
+        //        },
+        //        "NEFT": {
+        //            "ICICI": "12345678",
+        //            "RBL": "10001",
+        //            "SHARED": ""
+        //        }
+        //    }
+        //}
+        $ftsRequest = $this->initializeFtsRequestForModifySmartRoutingRules($activeChannelsWithFundAccounts, $input);
 
         /** @var \RZP\Services\FTS\FundTransfer $ftsService */
 

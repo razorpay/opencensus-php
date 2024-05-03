@@ -2494,10 +2494,13 @@ class PayoutSmartRoutingTest extends TestCase
                         'error',
                         ErrorCode::SERVER_ERROR_DCS_SERVICE_PAYOUT_MODE_CONFIG_FETCH_FAILURE
                     );
-                }
-                else
+                } else if ($dcsCallCounter === 1)
                 {
                     $allowedUPIChannels[PayoutModeConfig\Constants::ALLOWED_UPI_CHANNELS] = [$channel];
+
+                    return $allowedUPIChannels;
+                } else {
+                    $allowedUPIChannels[PayoutModeConfig\Constants::ALLOWED_UPI_CHANNELS] = [];
 
                     return $allowedUPIChannels;
                 }
@@ -2548,7 +2551,7 @@ class PayoutSmartRoutingTest extends TestCase
                 $ftsMock->shouldReceive('createAndSendRequest')
                         ->andReturnUsing(function(string $endpoint, string $method, array $input) use ($requestMethod, $mockedSmartRoutingRulesResponse, &$ftsSmartRoutingRulesSuccess) {
 
-                            self::assertEquals('/routing/rules', $endpoint);
+                            self::assertEquals('/routing/multi_account_routing_rules', $endpoint);
                             self::assertEquals($requestMethod, $method);
 
                             // TODO: Separate assertions for fetch & modify methods to be added
@@ -2621,6 +2624,8 @@ class PayoutSmartRoutingTest extends TestCase
 
         $this->ba->privateAuth();
 
+        $this->mockDcsConfigFetchAllowedUPIChannel(2);
+
         $this->app['config']->set('applications.banking_account_service.mock', true);
 
         $ftsFetchSmartRoutingRulesSuccess = true;
@@ -2645,6 +2650,38 @@ class PayoutSmartRoutingTest extends TestCase
         $this->assertTrue($ftsFetchSmartRoutingRulesSuccess);
     }
 
+    public function testSmartRoutingRules_FetchRulesForMerchant_NoActiveSharedAccountsFoundForMerchant()
+    {
+        $this->liveSetUp();
+
+        $this->setupLiteAndDirectAccountsForMerchants(0, 2);
+
+        $this->ba->privateAuth();
+
+        $this->mockDcsConfigFetchAllowedUPIChannel(2);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsFetchSmartRoutingRulesSuccess = true;
+
+        $ftsSmartRoutingRulesMockedResponse = [
+            'IMPS' => [
+                'RBL',
+                'ICICI',
+            ],
+            'NEFT' => [
+                'ICICI',
+                'RBL',
+            ]
+        ];
+
+        $this->mockFtsSmartRoutingRules($this->ftsMock, 'fetch', $ftsFetchSmartRoutingRulesSuccess, 1, $ftsSmartRoutingRulesMockedResponse);
+
+        $this->startTest();
+
+        $this->assertTrue($ftsFetchSmartRoutingRulesSuccess);
+    }
+
     public function testSmartRoutingRules_FetchRulesForMerchant_FTSNoRulesFoundForMerchant()
     {
         $this->liveSetUp();
@@ -2652,6 +2689,8 @@ class PayoutSmartRoutingTest extends TestCase
         $this->setupLiteAndDirectAccountsForMerchants(1, 2);
 
         $this->ba->privateAuth();
+
+        $this->mockDcsConfigFetchAllowedUPIChannel(2);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
 
@@ -2672,6 +2711,8 @@ class PayoutSmartRoutingTest extends TestCase
 
         $this->ba->privateAuth();
 
+        $this->mockDcsConfigFetchAllowedUPIChannel(2);
+
         $this->app['config']->set('applications.banking_account_service.mock', true);
 
         $basFetchSuccess = false;
@@ -2690,6 +2731,8 @@ class PayoutSmartRoutingTest extends TestCase
         $this->setupLiteAndDirectAccountsForMerchants(1, 2);
 
         $this->ba->privateAuth();
+
+        $this->mockDcsConfigFetchAllowedUPIChannel(2);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
 

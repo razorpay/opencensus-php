@@ -1134,6 +1134,27 @@ return [
         ],
     ],
 
+    'testSmartRoutingRules_FetchRulesForMerchant_NoActiveSharedAccountsFoundForMerchant' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_rules',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                ]
+            ],
+        ],
+    ],
+
     'testSmartRoutingRules_FetchRulesForMerchant_FTSNoRulesFoundForMerchant' => [
         'request'  => [
             'method'  => 'GET',
