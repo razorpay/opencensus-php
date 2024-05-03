@@ -59,3 +59,34 @@ export const getRefundFailureText = (gateway: string): string => {
   }
   return refundFailureText;
 };
+
+export const WALLETS_MAP = {
+  paytm: 'Paytm',
+  payzapp: 'PayZapp',
+  mobikwik: 'MobiKwik',
+  payumoney: 'PayUMoney',
+  olamoney: 'OlaMoney',
+  airtelmoney: 'AirtelMoney',
+  amazonpay: 'Amazon Pay',
+  freecharge: 'Freecharge',
+  jiomoney: 'JioMoney',
+  sbibuddy: 'SBI Buddy',
+  openwallet: 'OPEN',
+  mpesa: 'M PESA',
+  phonepe: 'PhonePe',
+  paypal: 'Paypal',
+};
+
+export const CARD_TYPES = {
+  debit_type: 'Debit Card',
+  credit_type: 'Credit Card',
+};
+
+export const CARD_NETWORKS = {
+  VISA: 'Visa Cards',
+  MC: 'Mastercard',
+  RUPAY: 'Rupay Cards',
+  MAES: 'Maestro Cards',
+  AMEX: 'American Express Cards',
+  DICL: 'Diners Club Cards',
+};
