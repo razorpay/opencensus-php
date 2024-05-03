@@ -16,15 +16,34 @@ export const isGatewaySupportIntegrationAudit = (gateway: string): boolean => {
 
 export const areMandatoryMethodsCovered = (
   mandatoryMethods: string[],
-  coverage: GatewayCoverage,
+  coverage: GatewayCoverage[],
 ): boolean => {
-  return mandatoryMethods.every((method) => coverage[method]?.supported);
+  let checked = 0;
+  let isMethodCovered = true;
+  for (const item of coverage) {
+    if (checked === mandatoryMethods.length) {
+      break;
+    }
+    if (mandatoryMethods.includes(item.method)) {
+      isMethodCovered = isMethodCovered && !!item.enabled;
+      if (!isMethodCovered) {
+        break;
+      }
+      checked++;
+    }
+  }
+  return isMethodCovered;
 };
 
-export const getMethodCoverage = (methods: string[], data: GatewayCoverage): Coverage => {
+/**
+ * Transform coverage data to a map of method and its coverage status
+ * @param data coverage data of gateway methods
+ * @returns methods with coverage status
+ */
+export const getMethodCoverage = (data: GatewayCoverage[]): Coverage => {
   const coverage: Coverage = {};
-  methods.forEach((method) => {
-    coverage[method] = data[method]?.supported || false;
+  data.forEach((item) => {
+    coverage[item.method] = item.enabled || false;
   });
   return coverage;
 };

@@ -1,9 +1,8 @@
 export interface GatewayCoverage {
-  [key: string]: {
-    supported: boolean;
-    types?: {
-      [key: string]: boolean;
-    };
+  method: string;
+  enabled: boolean;
+  MethodType?: {
+    [key: string]: object | boolean;
   };
 }
 

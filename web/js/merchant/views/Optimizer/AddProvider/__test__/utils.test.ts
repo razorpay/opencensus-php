@@ -1,11 +1,12 @@
+import { useSplitzService } from 'common/splitz';
+import { SpiltzContextState } from 'common/splitz/types';
+
 import {
   isIntegrationAuditEnabled,
   isGatewaySupportIntegrationAudit,
   areMandatoryMethodsCovered,
   getMethodCoverage,
 } from '../utils';
-import { useSplitzService } from 'common/splitz';
-import { SpiltzContextState } from 'common/splitz/types';
 
 const variantOn = { variables: { result: 'on' } };
 const variantOff = { variables: { result: 'off' } };
@@ -51,35 +52,50 @@ describe('isGatewaySupportIntegrationAudit', () => {
 describe('areMandatoryMethodsCovered', () => {
   test('should return true if mandatory methods are covered', () => {
     const mandatoryMethods = ['upi'];
-    const coverage = {
-      card: { supported: true },
-      upi: { supported: true },
-    };
+    const coverage = [
+      {
+        method: 'upi',
+        enabled: true,
+      },
+      {
+        method: 'card',
+        enabled: true,
+      },
+    ];
     expect(areMandatoryMethodsCovered(mandatoryMethods, coverage)).toBe(true);
   });
 
   test('should return false if mandatory methods are not covered', () => {
     const mandatoryMethods = ['upi'];
-    const coverage = {
-      card: { supported: true },
-      upi: { supported: false },
-    };
+    const coverage = [
+      {
+        method: 'upi',
+        enabled: false,
+      },
+      {
+        method: 'card',
+        enabled: true,
+      },
+    ];
     expect(areMandatoryMethodsCovered(mandatoryMethods, coverage)).toBe(false);
   });
 });
 
 describe('getMethodCoverage', () => {
   test('should return method coverage', () => {
-    const methods = ['card', 'upi', 'netbanking'];
-    const data = {
-      card: { supported: true },
-      upi: { supported: false },
-      netbanking: { supported: true },
-    };
-    expect(getMethodCoverage(methods, data)).toEqual({
+    const data = [
+      {
+        method: 'upi',
+        enabled: false,
+      },
+      {
+        method: 'card',
+        enabled: true,
+      },
+    ];
+    expect(getMethodCoverage(data)).toEqual({
       card: true,
       upi: false,
-      netbanking: true,
     });
   });
 });

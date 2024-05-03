@@ -3,38 +3,44 @@ import { BladeProvider } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import { render, screen } from '@testing-library/react';
 
-import { PaymentMethodCoverage } from '../PaymentMethodCoverage';
+import { PaymentMethodCoverage } from 'merchant/views/Optimizer/AddProvider/components/PaymentMethodCoverage';
 
 describe('Add Provider > PaymentMethodCoverage', () => {
   const mockProps = {
-    methods: ['card', 'upi', 'netbanking'],
-    isEdit: false,
     isFormEdit: false,
     selectedProvider: 'payu',
-    mandatoryMethods: ['upi'],
-    gatewayCoverage: {
-      card: {
-        supported: true,
+    methods: ['card', 'upi', 'netbanking'],
+    gatewayCoverage: [
+      {
+        method: 'card',
+        enabled: true,
       },
-      upi: {
-        supported: false,
+      {
+        method: 'upi',
+        enabled: false,
       },
-      netbanking: {
-        supported: true,
+      {
+        method: 'netbanking',
+        enabled: true,
       },
-    },
-    razorpayCoverage: {
-      card: {
-        supported: true,
+    ],
+    razorpayCoverage: [
+      {
+        method: 'card',
+        enabled: true,
       },
-      upi: {
-        supported: false,
+      {
+        method: 'upi',
+        enabled: true,
       },
-      netbanking: {
-        supported: true,
+      {
+        method: 'netbanking',
+        enabled: true,
       },
-    },
+    ],
     businessName: 'Razorpay',
+    isGatewayCoverageMissing: true,
+    isRazorpayCoverageMissing: false,
   };
 
   const App = (props) => {
@@ -57,7 +63,40 @@ describe('Add Provider > PaymentMethodCoverage', () => {
   });
 
   it('should render the error message when mandatory methods are not covered for razorpay', () => {
-    render(<App {...mockProps} />);
+    const props = {
+      ...mockProps,
+      gatewayCoverage: [
+        {
+          method: 'card',
+          enabled: true,
+        },
+        {
+          method: 'upi',
+          enabled: true,
+        },
+        {
+          method: 'netbanking',
+          enabled: true,
+        },
+      ],
+      razorpayCoverage: [
+        {
+          method: 'card',
+          enabled: true,
+        },
+        {
+          method: 'upi',
+          enabled: false,
+        },
+        {
+          method: 'netbanking',
+          enabled: true,
+        },
+      ],
+      isGatewayCoverageMissing: false,
+      isRazorpayCoverageMissing: true,
+    };
+    render(<App {...props} />);
     expect(
       screen.getByText(
         'One or more payment methods are not supported. Please ensure that all necessary methods are enabled on your Razorpay account.',
