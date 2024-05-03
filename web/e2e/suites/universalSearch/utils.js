@@ -26,3 +26,14 @@ export const assertSearchResults = async ({
     expect(searchResultEl).toBeDefined();
   }
 };
+
+export const findInSearchResultsEl = async ({ searchResults, entity }) => {
+  // tag isn't clickable. Need to click another DOM node inside one of the parents
+  const foundResult = await searchResults
+    .getByText(`in: ${entity}`)
+    .locator('..')
+    .locator('..')
+    .locator('div')
+    .first();
+  return foundResult;
+};

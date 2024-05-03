@@ -9,7 +9,7 @@ import {
   ENTITY_SEARCH_KEYS,
   getEntitySearchResultsRoutes,
 } from './constants';
-import { assertSearchResults, getSearchResultsEl } from './utils';
+import { assertSearchResults, findInSearchResultsEl, getSearchResultsEl } from './utils';
 
 test.describe.parallel('Test universal search @flow=universal-search @project=payments', () => {
   test.use({
@@ -157,7 +157,8 @@ test.describe.parallel(
       await expect(searchResults.getByText('in: Refunds')).toBeVisible();
       await expect(searchResults.getByText('in: Disputes')).toBeVisible();
 
-      await searchResults.getByText('in: Refunds').click();
+      const refundsResult = await findInSearchResultsEl({ searchResults, entity: 'Refunds' });
+      await refundsResult.click();
       await expect(page).toHaveURL(
         getEntitySearchResultsRoutes(searchQuery, ENTITY_SEARCH_KEYS.REFUND_PAYMENT_ID),
       );
@@ -184,7 +185,9 @@ test.describe.parallel(
         await expect(searchResults.getByText(`in: ${entity}`)).toBeVisible();
       });
 
-      await searchResults.getByText('in: Payments').click();
+      const paymentsResults = await findInSearchResultsEl({ searchResults, entity: 'Payments' });
+
+      await paymentsResults.click();
       await expect(page).toHaveURL(
         getEntitySearchResultsRoutes(searchQuery, ENTITY_SEARCH_KEYS.PAYMENT_PH_NUMBER),
       );
@@ -218,7 +221,9 @@ test.describe.parallel(
       });
       // await expect(searchResults.getByText('in: Payments')).toBeVisible();
 
-      await searchResults.getByText('in: Payments').click();
+      const paymentsResult = await findInSearchResultsEl({ searchResults, entity: 'Payments' });
+
+      await paymentsResult.click();
       await expect(page).toHaveURL(
         getEntitySearchResultsRoutes(searchQuery, ENTITY_SEARCH_KEYS.PAYMENT_EMAIL),
       );
@@ -314,7 +319,11 @@ test.describe.parallel(
       });
 
       await expect(searchResults).toBeVisible();
-      const paymentLinkSearchResult = searchResults.getByText('in: PaymentLinks');
+      const paymentLinkSearchResult = await findInSearchResultsEl({
+        searchResults,
+        entity: 'PaymentLinks',
+      });
+
       await expect(paymentLinkSearchResult).toBeVisible();
 
       await paymentLinkSearchResult.click();

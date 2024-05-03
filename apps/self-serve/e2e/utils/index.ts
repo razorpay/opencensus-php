@@ -1,11 +1,11 @@
-import { expect } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 
 import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
 import { routes } from '@dashboard/shared-utils/e2e/constants/paths';
 import { switchToTestMode } from '@dashboard/shared-utils/e2e/utils';
 // import { formatPhoneNumber } from '@razorpay/i18nify-js';
 
-export const navigateToTransactions = async (page, mode?: string) => {
+export const navigateToTransactions = async (page: Page, mode?: string) => {
   await navigateTo(page, routes.DASHBOARD);
   if (mode !== 'live') {
     await switchToTestMode({ page });

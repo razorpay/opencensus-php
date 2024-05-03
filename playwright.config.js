@@ -14,6 +14,7 @@ module.exports = {
   timeout: 6 * 60 * 1000,
   workers: isCI ? 2 : 4,
   reporter: getReporter(),
+  fullyParallel: true,
   expect: {
     timeout: 30 * 1000,
   },
@@ -23,6 +24,7 @@ module.exports = {
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
     video: 'on-first-retry',
+    actionTimeout: 30 * 1000,
   },
   projects: getProjects({ projectType: 'Login' }),
 };

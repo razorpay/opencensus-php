@@ -13,9 +13,7 @@ const ELEMENT_CONFIG = {
 
 async function waitAndClickViewSettlements({ page }) {
   try {
-    const viewSettlementsBtn = await page.waitForSelector(ELEMENT_CONFIG.SETTLEMENT_BANNER, {
-      timeout: 5000,
-    });
+    const viewSettlementsBtn = await page.waitForSelector(ELEMENT_CONFIG.SETTLEMENT_BANNER);
     if (viewSettlementsBtn) await viewSettlementsBtn.click();
   } catch (error) {
     // Element not found within the specified timeout
