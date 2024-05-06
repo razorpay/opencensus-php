@@ -1,4 +1,4 @@
-const universePrettierConfig = require('@razorpay/universe-doctor/prettierrc');
+const universePrettierConfig = require('@razorpay/universe-cli/prettierrc');
 
 module.exports = {
   ...universePrettierConfig,

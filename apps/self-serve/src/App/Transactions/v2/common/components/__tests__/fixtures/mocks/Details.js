@@ -1,5 +1,5 @@
 import React from 'react';
-import Details from 'self-serve/src/App/Transactions/v2/common/components/Details';
+import Details from 'apps/self-serve/src/App/Transactions/v2/common/components/Details';
 import { render } from 'apps/self-serve/src/services/test/test-utils';
 
 import 'jest-location-mock';

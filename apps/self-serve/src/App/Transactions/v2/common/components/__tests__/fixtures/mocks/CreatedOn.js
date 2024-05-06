@@ -1,5 +1,5 @@
 import React from 'react';
-import CreatedOn from 'self-serve/src/App/Transactions/v2/common/components/CreatedOn';
+import CreatedOn from 'apps/self-serve/src/App/Transactions/v2/common/components/CreatedOn';
 import { render } from 'apps/self-serve/src/services/test/test-utils';
 
 jest.mock('@dashboard/shared-ui/hooks', () => ({

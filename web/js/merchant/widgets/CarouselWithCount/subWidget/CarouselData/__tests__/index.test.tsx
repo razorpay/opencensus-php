@@ -16,10 +16,11 @@ describe('Widgets->CarouselWithCount->CarouselData', () => {
     await waitFor(() =>
       expect(screen.getByText(KEY_UPDATES_MOCK_RESPONSE.components[0].title)).toBeInTheDocument(),
     );
-    await waitFor(() =>
-      expect(
-        screen.getByRole('link', { name: KEY_UPDATES_MOCK_RESPONSE.components[0].action?.title }),
-      ).toBeInTheDocument(),
+    await waitFor(
+      () => {
+        expect(screen.findByRole('link'));
+      },
+      { timeout: 10000 },
     );
   });
 

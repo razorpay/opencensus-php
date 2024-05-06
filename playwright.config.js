@@ -1,5 +1,5 @@
 const path = require('path');
-const universePlaywrightConfig = require('@razorpay/universe-test/src/configs/e2e.web/playwright.config');
+const universePlaywrightConfig = require('@razorpay/universe-cli/e2e.web');
 
 const { getBaseUrl, getProjects, getReporter } = require('./playwright/utils/config');
 

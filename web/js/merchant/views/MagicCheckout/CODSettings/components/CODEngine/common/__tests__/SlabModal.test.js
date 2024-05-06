@@ -1,4 +1,4 @@
-import { screen, render, userEvent } from 'test-utils';
+import { screen, render, userEvent, waitFor } from 'test-utils';
 import '@testing-library/jest-dom/extend-expect';
 import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
@@ -116,7 +116,9 @@ describe('Slab Modal', () => {
     const saveBtn = screen.getByTestId('save-slab');
     expect(saveBtn).toBeInTheDocument();
     await userEvent.click(saveBtn);
-    expect(showNotificationSpy).toHaveBeenCalled();
-    expect(closeModalSpy).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(showNotificationSpy).toHaveBeenCalled();
+      expect(closeModalSpy).toHaveBeenCalled();
+    });
   });
 });

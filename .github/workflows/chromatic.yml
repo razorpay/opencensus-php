@@ -21,19 +21,21 @@ jobs:
         with:
           node-version: 18.12.1
 
-      - name: Setup yarn
-        run: npm install -g yarn
+      - name: Setup pnpm and yarn
+        run: |
+          npm install -g pnpm@^9
+          npm install -g yarn
 
       - name: Install Dependencies
         run: |
-          yarn --frozen-lockfile
+          pnpm i --frozen-lockfile
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
       - name: Push Build To Chromatic
         # Storybook builds inside web folder, Chromatic references that
         run: |
           cd web
-          CHROMATIC_TOKEN=$CHROMATIC_TOKEN yarn chromatic
+          CHROMATIC_TOKEN=$CHROMATIC_TOKEN pnpm chromatic
         env:
           CHROMATIC_TOKEN: ${{secrets.CHROMATIC_PROJECT_TOKEN}}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

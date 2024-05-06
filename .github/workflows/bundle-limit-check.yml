@@ -32,14 +32,24 @@ jobs:
       - name: Install libraries for webp conversion
         run: |
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
-      - run: npm install -g yarn
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
-        with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+      - run: |
+          npm install -g pnpm@^9
+          npm install -g yarn
+
+      - name: Install dependencies
+        run: |
+          pnpm config set unsafe-perm true
+          HUSKY=0 pnpm i --ignore-scripts
+        env:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      # - name: Install dependencies with caching
+      #   uses: ./.github/actions/package-installer
+      #   with:
+      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build All
-        run: npx lerna run --scope=web test:build:merchant
+        run: pnpm nx run web:test:build:merchant
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           VERSION: ${{ github.sha }}

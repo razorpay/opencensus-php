@@ -65,7 +65,7 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
                 </Box>
                 <Box display="flex" justifyContent="center" marginTop="spacing.3">
                   <OverviewSubtextWrapper isMobile={isMobile}>
-                    <Text color="surface.text.gray.normal" css={{ display: 'flex' }}>
+                    <Text color="surface.text.gray.normal" display="flex">
                       Created on {createdDay},
                       <Text color="surface.text.gray.muted">{createdTime}</Text>
                     </Text>
@@ -101,7 +101,7 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
                   </Box>
                 </Box>
                 <OverviewSubtextWrapper isMobile={isMobile}>
-                  <Text color="surface.text.gray.normal" css={{ display: 'flex' }}>
+                  <Text color="surface.text.gray.normal" display="flex">
                     Created on {createdDay},
                     <Text color="surface.text.gray.muted">{createdTime}</Text>
                   </Text>

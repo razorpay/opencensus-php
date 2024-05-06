@@ -7,6 +7,7 @@ const packageJsonPathsToUpdate = ['', 'web', 'apps/self-serve'];
 const WhiteListedPackages = [
   '@razorpay/universe-utils',
   '@razorpay/universe-cli',
+  '@razorpay/universe-test',
   '@razorpay/i18nify-js',
   'moment',
   'nx',

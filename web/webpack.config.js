@@ -93,13 +93,8 @@ module.exports = {
 
     // *** config.resolve *** //
     // TODO: do we need to add './node_modules', '../node_modules'?
-    config.resolve.modules.push(path.resolve(__dirname, 'js'));
-    // config.resolve.modules = [
-    //   path.resolve(__dirname, 'src'),
-    //   path.resolve(__dirname, 'static'),
-    //   './node_modules',
-    //   '../node_modules',
-    // ];
+    config.resolve.symlinks = true;
+    config.resolve.modules = [path.resolve(__dirname, 'js'), __dirname, 'node_modules'];
 
     config.resolve.alias = {
       v2: path.resolve(__dirname, './v2'),
@@ -164,9 +159,13 @@ module.exports = {
     };
 
     // *** config.module *** //
+    // config.module.rules[0].exclude = new RegExp(
+    //   '/node_modules/(?!(@commander|@razorpay|@universe)/).*/',
+    // );
     config.module.rules[0].exclude = new RegExp(
-      '/node_modules/(?!(@commander|@razorpay|@universe)/).*/',
+      '/node_modules/(?!(?:.pnpm/)?(@commander|@razorpay|@universe|@sentry)).*/',
     );
+
     // from native config of dashboard
     config.module.rules.push(
       {
@@ -471,6 +470,7 @@ module.exports = {
     config.plugins = config.plugins.filter((plugin) => {
       return PLUGINS_TO_BE_REMOVED.indexOf(plugin?.constructor?.name) === -1;
     });
+
     config.optimization.minimizer = config.optimization.minimizer.filter(
       (minimizer) => minimizer.constructor.name !== 'ImageMinimizerPlugin',
     );

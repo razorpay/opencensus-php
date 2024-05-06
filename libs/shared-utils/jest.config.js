@@ -6,7 +6,7 @@ module.exports = {
   transform: {
     '\\.(js|ts|jsx|tsx)?$': '../jest-transformer.js',
   },
-  transformIgnorePatterns: ['/node_modules/(?!(@razorpay/blade)|uuid|@table-library/)'],
+  transformIgnorePatterns: ['/node_modules/(?!(?:.pnpm/)?(@razorpay|uuid|@table-library)).*/'],
   moduleNameMapper: {
     // Since jest doesn't know how to resolve these static assets, we mock them
     '\\.(css)$': `${nodeModulesRootDir}/../jest-styleMock.js`,

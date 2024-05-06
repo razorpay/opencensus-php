@@ -7,10 +7,10 @@ on: push
 
 env:
   HOME: /actions-runner/_work
-  AWS_STAGE_BETA_CDN_BUCKET: 'rzp-1018-nonprod-betacdn'
-  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: 'rzp-1018-nonprod-dashboard-assets'
-  AWS_STAGE_COMMON_CACHE_BUCKET: 'rzp-1018-nonprod-actions-cache'
-  AWS_PROD_COMMON_CACHE_BUCKET: 'rzp-actions-cache'
+  AWS_STAGE_BETA_CDN_BUCKET: "rzp-1018-nonprod-betacdn"
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
+  AWS_STAGE_COMMON_CACHE_BUCKET: "rzp-1018-nonprod-actions-cache"
+  AWS_PROD_COMMON_CACHE_BUCKET: "rzp-actions-cache"
   NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
   BUILD_PATH: build/browser
@@ -35,17 +35,26 @@ jobs:
         run: |
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
 
-      - name: Setup yarn
-        run: npm install -g yarn
+      - name: Setup pnpm and yarn
+        run: |
+          npm install -g pnpm@^9
+          npm install -g yarn
 
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
-        with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Install dependencies
+        run: |
+          pnpm config set unsafe-perm true
+          HUSKY=0 pnpm i --ignore-scripts
+        env:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      # - name: Install dependencies with caching
+      #   uses: ./.github/actions/package-installer
+      #   with:
+      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build All
         #Runs in parellel
-        run: npx nx run web:production:build
+        run: pnpm nx run web:production:build
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           VERSION: ${{ github.sha }}
@@ -132,7 +141,7 @@ jobs:
 
       - name: Build micro apps
         run: |
-          yarn nx run-many --target devstack:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
+          pnpm nx run-many --target devstack:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
 
       - name: Remove files
         run: rm -rf .git
@@ -186,7 +195,7 @@ jobs:
 
       - name: Build micro apps
         run: |
-          yarn nx run-many --target automation:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
+          pnpm nx run-many --target automation:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
 
       - name: Remove files
         run: rm -rf .git
@@ -202,7 +211,7 @@ jobs:
           AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
 
-      # Run based on output of affected 
+      # Run based on output of affected
       - name: Micro Apps - Push Artifacts for Automation
         run: |-
           aws s3 cp \
@@ -241,7 +250,7 @@ jobs:
 
       - name: Build micro apps
         run: |
-          yarn nx run-many --target production:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
+          pnpm nx run-many --target production:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
 
       - name: Remove files
         run: rm -rf .git

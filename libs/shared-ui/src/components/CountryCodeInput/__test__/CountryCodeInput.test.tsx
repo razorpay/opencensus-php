@@ -16,6 +16,7 @@ describe('CountryCodeInput component', () => {
     render(<App />, {});
     const dialCodeValue = screen.getByTestId('dialCodeValue');
     expect(dialCodeValue.innerHTML).toBe('+44');
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const contactInput = screen.getByTestId('contactInput') as HTMLInputElement;
     expect(contactInput.value).toBe(phoneNumber);
   });

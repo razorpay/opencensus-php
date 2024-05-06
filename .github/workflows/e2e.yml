@@ -94,14 +94,23 @@ jobs:
         run: |
           git fetch origin master
 
-      - name: Setup yarn
-        run: npm install -g yarn
+      - name: Setup pnpm and yarn
+        run: |
+          npm install -g pnpm@^9
+          npm install -g yarn
+
+      - name: Install dependencies
+        run: |
+          pnpm config set unsafe-perm true
+          HUSKY=0 pnpm i --ignore-scripts
+        env:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       # TODO: optimize the below step to install depecndencies which are required for nx
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
-        with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+      # - name: Install dependencies with caching
+      #   uses: ./.github/actions/package-installer
+      #   with:
+      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Extract current branch name
         shell: bash
@@ -125,7 +134,7 @@ jobs:
         run: |
           # Get Base commit
           base_commit=$(git merge-base origin/master origin/${{ steps.extract_branch.outputs.branch }})
-        
+
           # Get a list of changed files
           changed_files=$(git diff --name-only $base_commit origin/${{ steps.extract_branch.outputs.branch }})
 
@@ -141,7 +150,7 @@ jobs:
 
       - name: Set Affected Projects Output
         id: set-affected-output
-        run: | 
+        run: |
           if [ "${{ steps.check_changes.outputs.changes }}" == "true" ]; then
             echo "::set-output name=affected::${{ env.AFFECTED }},web"
           else
@@ -152,9 +161,9 @@ jobs:
         run: |
           echo "Affected projects: ${{ steps.set-affected-output.outputs.affected }}"
 
-      - name: Update package dependencies for docker build
-        id: update-config
-        run: yarn run updateE2EDependencies
+      # - name: Update package dependencies for docker build
+      #   id: update-config
+      #   run: pnpm run updateE2EDependencies
 
       - name: Build Docker Image
         uses: docker/build-push-action@v3
@@ -185,12 +194,14 @@ jobs:
         with:
           node-version: 18.12.1
 
-      - name: Setup yarn
-        run: npm install -g yarn
-      
+      - name: Setup pnpm and yarn
+        run: |
+          npm install -g pnpm@^9
+          npm install -g yarn
+
       - name: Echo Commit ID
         run: echo "Commit ID is ${{ needs.build-fe-e2e.outputs.commit_id }}"
-      
+
       - name: Echo Affected Projects
         run: echo "Affected projects => ${{ needs.build-fe-e2e.outputs.affected }}"
 

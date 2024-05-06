@@ -39,7 +39,7 @@ Open a terminal in your root directory and run this command -
 
 ```bash
 # this runs lint on all .styl files in web/css/merchant
-yarn lint:css —- web/css/merchant/**/*.styl web/css/merchant/*.styl
+pnpm lint:css —- web/css/merchant/**/*.styl web/css/merchant/*.styl
 ```
 
 #### 3.2. Stylelint CLI
@@ -74,10 +74,10 @@ What to do when you see Stylelint errors on GitHub PR files?
 
    ![](./assets/stylelint-job.png)
 
-4. Run yarn fix CSS – changed file list (this fixes auto-fixable errors)
+4. Run pnpm fix CSS – changed file list (this fixes auto-fixable errors)
 
    ```bash
-   yarn fix:css —- web/css/merchant/80gdetails.styl web/css/merchant/activation.styl
+   pnpm fix:css —- web/css/merchant/80gdetails.styl web/css/merchant/activation.styl
    ```
 
 ### 6. Why not auto-fix errors on pre-commit?

@@ -2,8 +2,6 @@
 import React, { ReactElement } from 'react';
 import { render, waitForElementToBeRemoved, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BladeProvider } from '@razorpay/blade/components';
-import { bladeTheme } from '@razorpay/blade/tokens';
 
 import { UTIL_WRAPPER_TESTID } from './constants';
 
@@ -11,11 +9,7 @@ const createWrapper = () => {
   const AllTheProviders: React.FC<{
     children: ReactElement<any, any> | null;
   }> = ({ children }) => {
-    return (
-      <BladeProvider themeTokens={bladeTheme}>
-        <div data-testid={UTIL_WRAPPER_TESTID}>{children}</div>
-      </BladeProvider>
-    );
+    return <div data-testid={UTIL_WRAPPER_TESTID}>{children}</div>;
   };
   return AllTheProviders;
 };

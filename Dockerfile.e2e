@@ -10,34 +10,26 @@ ENV AFFFECTED_PROJECTS=$AFFFECTED_PROJECTS
 
 WORKDIR /app
 
-RUN mkdir web
-
-# Copy dependencies files so we can have better caching as these don't change often
-COPY --chown=node:node .npmrc package.json yarn.lock ./
-COPY --chown=node:node ./plugins ./plugins
-
-# Copy dependencies files so we can have better caching as these don't change often
-COPY --chown=node:node ./web/.npmrc ./web/package.json ./web
+COPY . .
 
 RUN --mount=type=secret,id=github_access_token set -eux && \
   echo "$(cat /run/secrets/github_access_token)" >> ~/.GITHUB_ACCESS_TOKEN
 
-# TODO: optimize the below step to install depecndencies which are required for nx
+RUN npm install -g pnpm@^9
+
 RUN export GITHUB_ACCESS_TOKEN="$(cat ~/.GITHUB_ACCESS_TOKEN)" && \
-  yarn config set unsafe-perm true && \
-  HUSKY=0 yarn --frozen-lockfile
+  pnpm config set unsafe-perm true && \
+  pnpm install --frozen-lockfile --ignore-scripts
 
 RUN rm -f ~/.GITHUB_ACCESS_TOKEN
 
 RUN npx playwright install --with-deps
 
-COPY . .
-
 RUN rm -f .npmrc && \
-  rm -f ./web/.npmrc && \
-  rm -f ./apps/self-serve/.npmrc
+    rm -f ./web/.npmrc && \
+    rm -f ./apps/self-serve/.npmrc
 
-CMD yarn test:e2e:auth && \
-  INCLUDE_GROUPS=$INCLUDE_GROUPS \
-  EXCLUDE_GROUPS=$EXCLUDE_GROUPS \
-  npx nx run-many --target=test:e2e --projects=$AFFFECTED_PROJECTS
+CMD pnpm test:e2e:auth && \
+    INCLUDE_GROUPS=$INCLUDE_GROUPS \
+    EXCLUDE_GROUPS=$EXCLUDE_GROUPS \
+    npx nx run-many --target=test:e2e --projects=$AFFFECTED_PROJECTS

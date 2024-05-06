@@ -177,7 +177,9 @@ describe('NeedsClarificationFlow', () => {
           },
         });
         await applyForm(response);
-        expect(fetchWorkflowSpy).toHaveBeenCalledTimes(2);
+        await waitFor(() => {
+          expect(fetchWorkflowSpy).toHaveBeenCalledTimes(2);
+        });
       },
     );
 

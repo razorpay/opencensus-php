@@ -1,5 +1,4 @@
 // test-utils.js
-// @ts-nocheck
 import React, { ReactElement } from 'react';
 import { render, waitForElementToBeRemoved, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter, Router as DefaultRouter, Route, Routes } from 'react-router-dom';
@@ -19,6 +18,8 @@ import {
   QueryClient,
   QueryClientProvider as ReactQueryClientProvider,
 } from '@tanstack/react-query';
+import { BladeProvider } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { server } from '../mocks/setup';
 import { COMPONENT_WRAPPER_TESTID } from './constants';
 import Wrapper from 'apps/self-serve/src/bootstrap/Wrapper/Wrapper';
@@ -59,22 +60,26 @@ const createWrapper = ({
     return (
       <Wrapper>
         <ReactQueryClientProvider client={queryClient}>
-          <ThemeProvider theme={theme}>
-            <Provider store={reduxStore}>
-              <Router navigator={history} location={history.location}>
-                <>
-                  {showModal ? <ModalDialog /> : null}
-                  <Notifications />
-                  <Routes>
-                    <Route
-                      path={`${path as string}/*`}
-                      element={<div data-testid={COMPONENT_WRAPPER_TESTID}>{renderChildren()}</div>}
-                    />
-                  </Routes>
-                </>
-              </Router>
-            </Provider>
-          </ThemeProvider>
+          <BladeProvider themeTokens={bladeTheme}>
+            <ThemeProvider theme={theme}>
+              <Provider store={reduxStore}>
+                <Router navigator={history} location={history.location}>
+                  <>
+                    {showModal ? <ModalDialog /> : null}
+                    <Notifications />
+                    <Routes>
+                      <Route
+                        path={`${path as string}/*`}
+                        element={
+                          <div data-testid={COMPONENT_WRAPPER_TESTID}>{renderChildren()}</div>
+                        }
+                      />
+                    </Routes>
+                  </>
+                </Router>
+              </Provider>
+            </ThemeProvider>
+          </BladeProvider>
         </ReactQueryClientProvider>
       </Wrapper>
     );

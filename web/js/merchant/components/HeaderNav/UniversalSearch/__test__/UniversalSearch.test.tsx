@@ -24,7 +24,7 @@ describe('Universal Search', () => {
   const renderApp = ({ props = {}, initialState }) => {
     render(
       <div>
-        {/* @ts-ignore */}
+        {/* @ts-expect-error expect error */}
         <UniversalSearch {...props} />
         <div data-testid="outside-div" />
       </div>,

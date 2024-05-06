@@ -17,15 +17,15 @@ runs:
       id: cache
       with:
         path: |
-          ~/.yarn
           ./node_modules
           ./web/node_modules
-        key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ runner.os }}-node-${{ hashFiles('**/pnpm-lock.yaml') }}
+
     - name: Install Dependencies
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
-        yarn config set unsafe-perm true
-        HUSKY=0 yarn --frozen-lockfile # Automatically installs modules in all packages too
+        pnpm config set unsafe-perm true
+        HUSKY=0 pnpm i --ignore-scripts --frozen-lockfile # Automatically installs modules in all packages too
       shell: bash
       env:
         GITHUB_ACCESS_TOKEN: ${{ inputs.github_access_token }}

@@ -1,11 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { useMobile } from '@dashboard/shared-ui/hooks';
 import {
   Dropdown as BladeDropdown,
   ChevronDownIcon,
   ChevronUpIcon,
   VisuallyHidden,
 } from '@razorpay/blade/components';
+import { useMobile } from '@dashboard/shared-ui/hooks';
 import { ClickProps, DropdownCommonProps, DropdownProps, Option } from './types';
 import { getAllOptions, getDropdownContent, getDropdownTarget } from './utils';
 

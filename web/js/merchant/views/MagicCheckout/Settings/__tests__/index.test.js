@@ -1,6 +1,5 @@
 import MagicSettings from '..';
-import { screen, render } from 'test-utils';
-import { waitFor } from '@testing-library/dom';
+import { screen, render, waitFor } from 'test-utils';
 
 describe('magic settings', () => {
   test('render magic settings', async () => {

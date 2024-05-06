@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Status from 'self-serve/src/App/Transactions/v2/common/components/Status';
+import Status from 'apps/self-serve/src/App/Transactions/v2/common/components/Status';
 import { screen, render } from 'apps/self-serve/src/services/test/test-utils';
 
 describe('Status', () => {

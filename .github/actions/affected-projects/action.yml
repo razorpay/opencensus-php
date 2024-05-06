@@ -19,21 +19,30 @@ runs:
       run: |
         git fetch origin master
 
-    - name: Setup yarn
+    - name: Setup pnpm and yarn
       shell: bash
-      run: npm install -g yarn
+      run: |
+        npm install -g pnpm@^9
+        npm install -g yarn
 
-    - name: Install dependencies with caching
-      uses: ./.github/actions/package-installer
-      with:
-        npm_razorpay_token: ${{ inputs.NPM_RAZORPAY_TOKEN }}
-        github_access_token: ${{ inputs.GITHUB_ACCESS_TOKEN }}
+    - name: Install dependencies
+      run: |
+        pnpm config set unsafe-perm true
+        HUSKY=0 pnpm i --ignore-scripts
+      shell: bash
+      env:
+        GITHUB_ACCESS_TOKEN: ${{ inputs.GITHUB_ACCESS_TOKEN }}
+    # - name: Install dependencies with caching
+    #   uses: ./.github/actions/package-installer
+    #   with:
+    #     npm_razorpay_token: ${{ inputs.NPM_RAZORPAY_TOKEN }}
+    #     github_access_token: ${{ inputs.GITHUB_ACCESS_TOKEN }}
 
     - name: Extract current branch name
       shell: bash
       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
       id: extract_branch
-    
+
     # - name: Update Ts Config to identify nx affected projects
     #   id: update-config
     #   env:
@@ -54,12 +63,12 @@ runs:
       run: |
         echo "AFFECTED=$(npx nx show projects --affected --json --base=origin/master --head=origin/${{ steps.extract_branch.outputs.branch }} | jq -r 'join(",")')" >> $GITHUB_ENV
 
-    # - name: Resetting Ts Config 
+    # - name: Resetting Ts Config
     #   id: reset-config
     #   env:
     #     EXCLUDE: false
     #   run: ./scripts/nx-releases/prebuild.sh
-   
+
     # TODO: For changes in PHP backend code
     # Check based on ${{ inputs.BACKEND_CHANGES }}
     # Check changes files from current commit to master

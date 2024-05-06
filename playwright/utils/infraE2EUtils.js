@@ -29,9 +29,9 @@ async function triggerJob(payload) {
     if (!res.ok) {
       throw new Error(data.message);
     }
-    console.log('[universe-test]: job succeeded', data);
+    console.log('[universe-cli]: job succeeded', data);
   } catch (error) {
-    console.log('[universe-test]: job failed', error);
+    console.log('[universe-cli]: job failed', error);
   }
 }
 

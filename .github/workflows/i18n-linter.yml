@@ -40,13 +40,21 @@ jobs:
         with:
           node-version: 18.12.1
 
-      - name: Setup yarn
-        run: npm install -g yarn
+      - name: Setup pnpm and yarn
+        run: |
+          npm install -g pnpm@^9
+          npm install -g yarn
 
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
-        with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Install dependencies
+        run: |
+          pnpm config set unsafe-perm true
+          HUSKY=0 pnpm i --ignore-scripts
+        env:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+      # - name: Install dependencies with caching
+      #   uses: ./.github/actions/package-installer
+      #   with:
+      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: I18n Rules Check
         run: |

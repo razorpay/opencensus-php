@@ -1,4 +1,5 @@
 // Polyfill "window.fetch" used in the React component.
+
 import '@testing-library/jest-dom/extend-expect';
 import 'regenerator-runtime/runtime';
 

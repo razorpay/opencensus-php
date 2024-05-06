@@ -1,7 +1,6 @@
-/* eslint-disable import/order */
-import { screen, userEvent, waitFor } from 'apps/self-serve/src/services/test/test-utils';
-import { props, renderApp } from './mocks/fixtures/PaymentMethodSplit';
 import * as devices from '@dashboard/shared-utils/home-utils';
+import { props, renderApp } from './mocks/fixtures/PaymentMethodSplit';
+import { screen, userEvent, waitFor } from 'apps/self-serve/src/services/test/test-utils';
 
 describe('PaymentMethodSplit', () => {
   test('should show doughnut chart and payment methods', async () => {

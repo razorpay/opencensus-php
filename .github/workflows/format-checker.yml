@@ -13,7 +13,7 @@ env:
 
 jobs:
   validate:
-    runs-on: [self-hosted]
+    runs-on: [non-api, linux-amd64]
     continue-on-error: false
     name: Format Checker
     steps:
@@ -27,13 +27,21 @@ jobs:
         with:
           node-version: 18.12.1
 
-      - name: Setup yarn
-        run: npm install -g yarn
+      - name: Setup pnpm and yarn
+        run: |
+          npm install -g pnpm@^9
+          npm install -g yarn
 
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
-        with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Install dependencies
+        run: |
+          pnpm config set unsafe-perm true
+          HUSKY=0 pnpm i --ignore-scripts
+        env:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+      # - name: Install dependencies with caching
+      #   uses: ./.github/actions/package-installer
+      #   with:
+      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Get changed files
         id: changed-files
@@ -55,7 +63,7 @@ jobs:
           )
         run: |
           echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
-          # base=$base yarn validate-lint
+          # base=$base pnpm validate-lint
           npx eslint \
           --output-file eslint_report.json \
           --no-error-on-unmatched-pattern \

@@ -11,6 +11,7 @@
     "esModuleInterop": true,
     "typeRoots": ["./typings", "node_modules/@types"],
     "strict": true,
+    "preserveSymlinks": true,
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
@@ -41,5 +42,5 @@
     "js/merchant_common/"
   ],
   "exclude": ["node_modules"],
-  "types": ["resize-observer-browser"]
+  "types": ["resize-observer-browser", "jest", "jest-dom"]
 }

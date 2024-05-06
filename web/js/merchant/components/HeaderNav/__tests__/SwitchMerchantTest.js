@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/extend-expect';
 import SwitchMerchant from 'merchant/components/HeaderNav/SwitchMerchant';
 import { noop } from 'lodash';
 

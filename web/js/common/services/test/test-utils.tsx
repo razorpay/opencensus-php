@@ -26,6 +26,8 @@ import { storeWithInitialState } from 'merchant/store';
 
 import { errorHandlers } from '../../../../mocks/errorHandlers';
 import { server } from '../../../../mocks/node';
+import { BladeProvider } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 const createWrapper = ({
   context,
@@ -50,20 +52,22 @@ const createWrapper = ({
     return (
       <Wrapper context={context}>
         <Provider store={reduxStore}>
-          <ConfirmModalProvider>
-            <Router navigator={history} location={history.location}>
-              <>
-                {showModal && <ModalDialog />}
-                <Notifications />
-                <Routes>
-                  <Route
-                    path={`${path as string}/*`}
-                    element={<div data-testid={COMPONENT_WRAPPER_TESTID}>{renderChildren()}</div>}
-                  />
-                </Routes>
-              </>
-            </Router>
-          </ConfirmModalProvider>
+          <BladeProvider themeTokens={bladeTheme}>
+            <ConfirmModalProvider>
+              <Router navigator={history} location={history.location}>
+                <>
+                  {showModal && <ModalDialog />}
+                  <Notifications />
+                  <Routes>
+                    <Route
+                      path={`${path as string}/*`}
+                      element={<div data-testid={COMPONENT_WRAPPER_TESTID}>{renderChildren()}</div>}
+                    />
+                  </Routes>
+                </>
+              </Router>
+            </ConfirmModalProvider>
+          </BladeProvider>
         </Provider>
       </Wrapper>
     );

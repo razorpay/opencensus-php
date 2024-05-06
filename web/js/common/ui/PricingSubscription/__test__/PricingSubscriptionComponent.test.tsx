@@ -256,14 +256,15 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
           screen.getByText(pricing_bundle.featureIdToFeatureCopyMap[featureId]),
         ).toBeInTheDocument(),
       );
-      pricing_bundle.pricingPlans.forEach((pricingPlan) => {
-        expect(screen.getByText(pricingPlan.title)).toBeInTheDocument();
 
-        expect(screen.getAllByText(pricingPlan.button.label)).not.toHaveLength(0);
-        expect(
+      pricing_bundle.pricingPlans.forEach(async (pricingPlan) => {
+        await waitFor(() => expect(screen.getByText(pricingPlan.title)).toBeInTheDocument());
+
+        await expect(screen.getAllByText(pricingPlan.button.label)).not.toHaveLength(0);
+        await expect(
           screen.getByText(`${pricingPlan.monthlyPrice.toLocaleString()}/Month`),
         ).toBeInTheDocument();
-        expect(
+        await expect(
           screen.getByText(
             `₹${Math.floor(pricingPlan.annualPrice / 12).toLocaleString()}/Month with Annual Plan`,
           ),

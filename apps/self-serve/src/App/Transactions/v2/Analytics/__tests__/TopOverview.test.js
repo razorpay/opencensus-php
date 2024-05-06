@@ -1,5 +1,5 @@
-import { screen, waitFor, userEvent } from 'apps/self-serve/src/services/test/test-utils';
 import { mockOpenModal, props, renderApp } from './mocks/fixtures/TopOverview';
+import { screen, waitFor, userEvent } from 'apps/self-serve/src/services/test/test-utils';
 
 describe('TopOverviewContainer', () => {
   test('should render the captured payment card and payment method split', async () => {

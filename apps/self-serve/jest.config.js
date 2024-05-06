@@ -7,7 +7,9 @@ module.exports = {
   transform: {
     '\\.(js|ts|jsx|tsx)?$': '../jest-transformer.js',
   },
-  transformIgnorePatterns: ['/node_modules/(?!(@razorpay/blade)|uuid|@table-library/)'],
+  transformIgnorePatterns: [
+    '/node_modules/(?!(?:.pnpm/)?(@commander|@razorpay|copy-anything|is-what|@table-library)).*/',
+  ],
   moduleNameMapper: {
     // Since jest doesn't know how to resolve these static assets, we mock them
     '\\.(css|styl)$': `${nodeModulesRootDir}/../jest-styleMock.js`,
@@ -22,13 +24,12 @@ module.exports = {
     '^shell/SpiltzServiceContext': `${nodeModulesRootDir}/../web/js/common/splitz/context/SplitzContextProvider`,
     '^shell/I18Context': `${nodeModulesRootDir}/../web/js/common/i18/I18ServiceProvider`,
     '^apps/self-serve/src(/.*)$': '<rootDir>/$1',
-    '^@dashboard/shared-utils(/.*)?$': `${nodeModulesRootDir}/../libs/shared-utils/src$1`,
-    '^@dashboard/shared-ui(/.*)?$': `${nodeModulesRootDir}/../libs/shared-ui/src$1`,
+    '^@dashboard/shared-utils/(.*)': `${nodeModulesRootDir}/../libs/shared-utils/src/$1`,
+    '^@dashboard/shared-utils$': `${nodeModulesRootDir}/../libs/shared-utils/src/index`,
+    '^@dashboard/shared-ui(.*)$': `${nodeModulesRootDir}/../libs/shared-ui/src$1`,
     '^merchant(/.*)?$': `${nodeModulesRootDir}/../web/js/merchant$1`,
     '^merchant_common(/.*)?$': `${nodeModulesRootDir}/../web/js/merchant_common$1`,
     '^common(/.*)?$': `${nodeModulesRootDir}/../web/js/common$1`,
-    '^react$': `${nodeModulesRootDir}/../node_modules/react`,
-    '^react-router-dom$': `${nodeModulesRootDir}/../node_modules/react-router-dom`,
   },
   collectCoverage: true,
   collectCoverageFrom: [
@@ -53,7 +54,6 @@ module.exports = {
   testPathIgnorePatterns: ['/Refunds/', '/PaymentsDetails/'],
   moduleDirectories: [
     'node_modules',
-    '../../../node_modules',
     'src/services/test', // a utility folder
     __dirname, // the root directory
     'src',

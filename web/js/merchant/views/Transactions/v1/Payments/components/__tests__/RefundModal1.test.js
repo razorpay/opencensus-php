@@ -9,7 +9,7 @@ import {
   session,
   showWhenUtilSpy,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/RefundModal';
-import { screen, userEvent, delay, waitFor } from 'test-utils';
+import { screen, userEvent, delay, waitFor, fireEvent } from 'test-utils';
 
 describe('RefundModal', () => {
   beforeEach(() => {
@@ -302,7 +302,7 @@ describe('RefundModal', () => {
         },
       });
       const refundInput = screen.getByPlaceholderText('Enter the refund amount');
-      await userEvent.type(refundInput, '-100');
+      await fireEvent.change(refundInput, { target: { value: '100' } });
       const issueRefund = await screen.findByRole('button', {
         name: /Issue Partial refund/,
       });
@@ -342,7 +342,7 @@ describe('RefundModal', () => {
         },
       });
       const refundInput = screen.getByPlaceholderText('Enter the refund amount');
-      await userEvent.type(refundInput, '-100');
+      await fireEvent.change(refundInput, { target: { value: '100' } });
       const reverseAll = screen.getAllByRole('checkbox')[0];
       await userEvent.click(reverseAll);
       const issueRefund = screen.getByRole('button', {

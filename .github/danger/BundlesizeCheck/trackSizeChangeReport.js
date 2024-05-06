@@ -1,4 +1,4 @@
-const universeUsage = require('@razorpay/universe-utils/universeUsage').default;
+const universeUsage = require('@razorpay/universe-cli/universeUsage').default;
 const { BUNDLE_SIZE_CHECKS } = require('../constants');
 
 const trackReport = ({ reportData, stage }) => {

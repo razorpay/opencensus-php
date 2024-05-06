@@ -2,7 +2,7 @@ import { Provider } from 'react-redux';
 import { render, screen, fireEvent } from 'test-utils';
 
 import { storeWithInitialState } from 'merchant/store';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/extend-expect';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 
 const props = {

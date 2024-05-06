@@ -186,16 +186,19 @@ There are different setups for frontend and backend, you can follow either of th
 
 ### 4. For Frontend
 
+- If you are currently using yarn as package manager, please refer to this migration guide to setup PNPM
+  [yarn to pnpm Migration Guide](https://docs.google.com/document/d/1j1Ct-n8fvDAKMvKNrnvJ9Wf2M4svCMIvu6B07l9FqLQ/edit?usp=sharing)
+
 **4.1. Install nodejs**
 
 - Visit <https://nodejs.org/en/> to download and install node.
 
-**4.2. Install yarn**
+**4.2. Install pnpm**
 
 - Run this in your terminal (this will be required for installing commit hooks) -
 
   ```sh
-  sudo npm i -g yarn
+  sudo npm i -g pnpm
   ```
 
 **4.3. Install dependencies**
@@ -205,17 +208,15 @@ There are different setups for frontend and backend, you can follow either of th
 - Run this in your dashboard root directory -
 
   ```sh
-  yarn || yarn install --frozen-lockfile
+  pnpm || pnpm install --frozen-lockfile
   ```
-
-  > **Note -** In case you're facing issues with npm install, Try running `yarn --legacy-peer-deps` inside web folder
 
 **4.4. Start bundling the FE source**
 
 - This builds the static folder, generates the code and keeps it in public/dist. Run this in your dashboard root directory -
 
   ```
-  yarn start
+  pnpm start
   ```
 
   **Phew!!**

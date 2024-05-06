@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/extensions
-const universeDangerJs = require('@razorpay/universe-doctor/src/configs/danger.web');
+const universeDangerJs = require('@razorpay/universe-cli/danger.web');
 const prReviewGuidelinesCheck = require('./.github/danger/PrReviewGuidelinesCheck');
 
 // sensitive files pertaining to Frontend

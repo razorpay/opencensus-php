@@ -1,6 +1,6 @@
 import React from 'react';
 
-import App from 'self-serve/src/App/Transactions/v2/common/components/GoBack';
+import App from 'apps/self-serve/src/App/Transactions/v2/common/components/GoBack';
 import { render, screen, userEvent } from 'apps/self-serve/src/services/test/test-utils';
 
 jest.setTimeout(35000);

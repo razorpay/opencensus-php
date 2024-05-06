@@ -98,6 +98,7 @@ module.exports = {
           configFile: path.resolve(__dirname, './.babelrc.js'),
         },
       },
+      rules: { 'babel/no-invalid-this': 'off' },
     },
     {
       files: ['**/*.ts?(x)'],
@@ -174,7 +175,6 @@ module.exports = {
       extends: [
         'plugin:@typescript-eslint/recommended',
         'plugin:@typescript-eslint/eslint-recommended',
-        'prettier/@typescript-eslint',
       ],
     },
     {

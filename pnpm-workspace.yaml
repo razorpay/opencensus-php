@@ -1,0 +1,6 @@
+prefer-workspace-packages: true
+packages:
+  - web
+  - apps/self-serve
+  - libs/shared-ui
+  - libs/shared-utils

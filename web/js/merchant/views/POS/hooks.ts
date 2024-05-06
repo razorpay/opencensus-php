@@ -39,14 +39,13 @@ export const useExecuteAfterDelay = ({ callback, delay }: UseExecuteAfterDelay):
   useEffect(() => {
     const timer = setTimeout(() => {
       callback();
-    }, [delay]);
+    }, delay);
 
     return () => {
       clearTimeout(timer);
     };
   }, [delay, callback]);
 };
-
 type UseIsVisibleProps = {
   ref: RefObject<HTMLElement>;
   initialValue: boolean;

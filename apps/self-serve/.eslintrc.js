@@ -1,4 +1,5 @@
 const universeEsLintConfig = require.resolve('@razorpay/universe-cli/eslintrc.typescript');
+const path = require('path');
 
 module.exports = {
   extends: [universeEsLintConfig],
@@ -66,6 +67,14 @@ module.exports = {
       },
       typescript: {
         alwaysTryTypes: true,
+      },
+      alias: {
+        map: [
+          ['@dashboard/shared-ui', path.resolve(__dirname, '../../libs/shared-ui/src')],
+          ['@dashboard/shared-utils', path.resolve(__dirname, '../../libs/shared-utils/src')],
+          ['apps/self-serve', path.resolve(__dirname)],
+        ],
+        extensions: ['.js', '.jsx', '.tsx', '.ts'],
       },
     },
   },

@@ -1,4 +1,4 @@
-import { renderApp } from 'self-serve/src/App/Transactions/v2/common/components/__tests__/fixtures/mocks/Ftux';
+import { renderApp } from 'apps/self-serve/src/App/Transactions/v2/common/components/__tests__/fixtures/mocks/Ftux';
 import { screen } from 'apps/self-serve/src/services/test/test-utils';
 
 describe('Ftux', () => {

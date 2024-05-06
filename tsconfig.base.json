@@ -14,12 +14,14 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
+    "typeRoots": ["node_modules/@types"],
     "paths": {
       // Index path needs to be specified separately: https://github.com/microsoft/TypeScript/issues/26859#issuecomment-606585175
-      "@dashboard/shared-ui": ["./libs/shared-ui/src/index"],
+      "@dashboard/shared-ui": ["./libs/shared-ui/src/index.ts"],
       "@dashboard/shared-ui/*": ["./libs/shared-ui/src/*"],
-      "@dashboard/shared-utils": ["./libs/shared-utils/src/index"],
+      "@dashboard/shared-utils": ["./libs/shared-utils/src/index.ts"],
       "@dashboard/shared-utils/*": ["./libs/shared-utils/src/*"],
+      "common/ui/*": ["./web/js/common/ui/*"],
       "shell/commonStore": ["./web/js/merchant/commonStore/index"],
       "shell/models/User": ["./web/js/merchant/models/User"],
       "shell/components/ShowWhen": ["./web/js/merchant_common/components/SharedShowWhen"],

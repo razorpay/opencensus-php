@@ -40,18 +40,19 @@ module.exports = {
   },
 
   // A map from regular expressions to paths to transformers
+  // transform: {
+  //   '\\.(js|ts|jsx|tsx)?$': '../jestTransform.js',
+  // },
   transform: {
     '^.+\\.stories\\.[jt]sx?$': '@storybook/addon-storyshots/injectFileName',
     '^.+\\.[jt]sx?$': '../jestTransform.js',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       '../tools/fileTransformer.js',
   },
-
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: [
-    '/node_modules/(?!(@commander|@razorpay|copy-anything|is-what|@table-library)/).*',
+    '/node_modules/(?!(?:.pnpm/)?(@commander|@razorpay|copy-anything|is-what|@table-library)).*/',
   ],
-
   // The root directory that Jest should scan for tests and modules within
   rootDir: 'js',
 
@@ -199,6 +200,7 @@ module.exports = {
 
   // The test environment that will be used for testing
   // testEnvironment: "jest-environment-jsdom",
+  // testEnvironment: 'jsdom',
 
   // Adds a location field to test results
   // testLocationInResults: false,

@@ -32,13 +32,22 @@ jobs:
         with:
           node-version: 18.12.1
 
-      - name: Setup yarn
-        run: npm install -g yarn
+      - name: Setup pnpm and yarn
+        run: |
+          npm install -g pnpm@^9
+          npm install -g yarn
 
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
-        with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Install dependencies
+        run: |
+          pnpm config set unsafe-perm true
+          HUSKY=0 pnpm i --ignore-scripts
+        env:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      # - name: Install dependencies with caching
+      #   uses: ./.github/actions/package-installer
+      #   with:
+      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Fetch base branch
         run: |
@@ -52,7 +61,7 @@ jobs:
       - name: Test Codebase
         # Automatically installs npm ci in web too
         run: |
-          yarn nx affected -t test:jest --silent --base=origin/master --head=${{ steps.extract_branch.outputs.branch }}
+          pnpm nx affected -t test:jest --silent --base=origin/master --head=${{ steps.extract_branch.outputs.branch }}
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}

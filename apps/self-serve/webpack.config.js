@@ -25,17 +25,21 @@ module.exports = {
       );
     }
 
-    // config.resolve.modules = [
-    // path.resolve(__dirname, 'src'),
-    // path.resolve(__dirname, 'static'),
-    //   './node_modules',
-    //   '../node_modules',
-    // ];
-
     // TODO: Need to make sure the correct js/jsx/tsx loader first
-    config.module.rules[0].exclude =
-      /node_modules\/(?!react-intl|intl-messageformat|@formatjs\/icu-messageformat-parser)/;
-
+    config.module.rules[0].exclude = new RegExp(
+      '/node_modules/(?!' +
+        '(?:.pnpm/)?' + // Match the .pnpm/ prefix if it exists
+        '(' +
+        'react-intl|' +
+        'intl-messageformat|' +
+        '@formatjs/icu-messageformat-parser|' +
+        '@commander|' +
+        '@razorpay|' +
+        '@universe|' +
+        '@sentry' +
+        ')/' +
+        ').*/',
+    );
     // This is required for importing files from @dashboard/shared-utils
     // @see https://stackoverflow.com/a/70941647/7435656
     config.module.rules[0].resolve = { fullySpecified: false };

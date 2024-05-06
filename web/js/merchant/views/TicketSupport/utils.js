@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { statuses, TICKET_STATUS_LABELS } from './components/data';
 import { getAttachmentExpiryTime } from 'common/utils/rzp-utils';
-import * as EventEmitter from 'eventemitter3';
+import EventEmitter from 'eventemitter3';
 import { TICKET_BASE_URL } from 'merchant/reducers/config';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { getDeviceSource } from 'merchant/components/Support/getCommonSupportProperties';

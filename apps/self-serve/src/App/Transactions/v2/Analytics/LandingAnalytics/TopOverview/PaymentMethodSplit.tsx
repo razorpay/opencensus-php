@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { Box, Card, CardBody, Text } from '@razorpay/blade/components';
-import { Doughnut } from 'react-chartjs-2';
 import { isMobileDevice } from '@dashboard/shared-utils/home-utils';
 import { getPercentage } from '@dashboard/shared-utils/rzp-utils';
+import { Doughnut } from 'react-chartjs-2';
 import {
   doughnutChartColors,
   getPaymentMethodData,
@@ -113,6 +113,7 @@ const PaymentMethodSplit = ({
             gap="spacing.5"
           >
             <Box height="135px" width="135px">
+              {/* @ts-expect-error expect error */}
               <Doughnut ref={chartRef} options={chartOptions} data={data} />
             </Box>
             <Box

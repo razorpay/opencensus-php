@@ -66,14 +66,13 @@ export const CollapsibleContainer = styled.div`
   cursor: pointer;
 `;
 
-export const SectionHeader = styled.div(
-  ({
-    theme,
-    enableBorderBottomRadius = false,
-  }: {
-    theme: Theme;
-    enableBorderBottomRadius?: boolean;
-  }) => `
+type SectionHeaderProps = {
+  theme: Theme;
+  enableBorderBottomRadius?: boolean;
+};
+
+export const SectionHeader = styled.div<SectionHeaderProps>(
+  ({ theme, enableBorderBottomRadius = false }) => `
   background-color: ${theme.colors.surface.background.gray.moderate};
   padding: ${theme.spacing[5]}px ${theme.spacing[6]}px;
   display: flex;
@@ -84,23 +83,16 @@ export const SectionHeader = styled.div(
   border-top: 1px solid ${theme.colors.surface.border.gray.muted};
   border-left: 1px solid ${theme.colors.surface.border.gray.muted};
   border-right: 1px solid ${theme.colors.surface.border.gray.muted};
+  border-bottom: 1px solid ${theme.colors.surface.border.gray.muted};
 
-  border-bottom: ${
-    !enableBorderBottomRadius ? `${theme.border.radius.none}px` : `${theme.border.radius.medium}px`
+  border-bottom-right-radius: ${
+    enableBorderBottomRadius ? `${theme.border.radius.medium}px` : `${theme.border.radius.none}px`
   };
-    border-bottom-right-radius: ${
-      !enableBorderBottomRadius
-        ? `${theme.border.radius.none}px`
-        : `${theme.border.radius.medium}px`
-    };
-    border-bottom-left-radius: ${
-      !enableBorderBottomRadius
-        ? `${theme.border.radius.none}px`
-        : `${theme.border.radius.medium}px`
-    };
+  border-bottom-left-radius: ${
+    enableBorderBottomRadius ? `${theme.border.radius.medium}px` : `${theme.border.radius.none}px`
+  };
 `,
 );
-
 export const RowWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
   display: flex;
@@ -146,7 +138,7 @@ export const CardWrapper = styled.div<{
   > div {
     > div {
       border-radius: 0;
-      ${({ enableBorderTopRadius, theme }: { enableBorderTopRadius: boolean; theme: Theme }) =>
+      ${({ enableBorderTopRadius, theme }: { enableBorderTopRadius?: boolean; theme: Theme }) =>
         enableBorderTopRadius &&
         `
         border-top-left-radius:  ${theme.spacing[2]}px;
@@ -156,7 +148,7 @@ export const CardWrapper = styled.div<{
         enableBorderBottomRadius,
         theme,
       }: {
-        enableBorderBottomRadius: boolean;
+        enableBorderBottomRadius?: boolean;
         theme: Theme;
       }) =>
         enableBorderBottomRadius &&

@@ -1,7 +1,7 @@
 import {
   renderApp,
   useMobileMock,
-} from 'self-serve/src/App/Transactions/v2/common/components/__tests__/fixtures/mocks/CreatedOn';
+} from 'apps/self-serve/src/App/Transactions/v2/common/components/__tests__/fixtures/mocks/CreatedOn';
 import { screen } from 'apps/self-serve/src/services/test/test-utils';
 
 describe('CreatedOn', () => {

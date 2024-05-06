@@ -54,13 +54,13 @@ We have already set up the test runner using Jest.
 - To run and watch all tests, run this in the root directory -
 
   ```bash
-  yarn test:jest-watch
+  pnpm test:jest-watch
   ```
 
 - To run individual tests, run -
 
   ```bash
-  yarn test:jest -t filename
+  pnpm test:jest -t filename
   ```
 
 For more CLI options, see [here](https://jestjs.io/docs/cli)
@@ -318,13 +318,13 @@ We can mock such modules in two ways:
 
 ```javascript
 __tests__ /
-component1.test.js /
-component2.test.js /
-mocks /
-handlers.js / // or /handlers (can be a file or folder) - For common APIs
-component1.js /
-component2.js /
-fixtures.js / // or /fixtures (can be a file or folder) - For common fixtures
+  component1.test.js /
+  component2.test.js /
+  mocks /
+  handlers.js / // or /handlers (can be a file or folder) - For common APIs
+  component1.js /
+  component2.js /
+  fixtures.js / // or /fixtures (can be a file or folder) - For common fixtures
   component1.js /
   component2.js;
 ```
@@ -449,11 +449,11 @@ fixtures.js / // or /fixtures (can be a file or folder) - For common fixtures
 
 20) How to run UTs through the command line?
 
-- `yarn test` - runs all the unit tests.
-- `yarn test:jest-watch-changed` - runs all the unit tests initially and thereon runs only changed files with silent mode.
-- `yarn test:jest-watch` - runs all the unit tests on any changes without silent mode.
+- `pnpm test` - runs all the unit tests.
+- `pnpm test:jest-watch-changed` - runs all the unit tests initially and thereon runs only changed files with silent mode.
+- `pnpm test:jest-watch` - runs all the unit tests on any changes without silent mode.
 
-> **Note -** To run specific test file(s) use the file name regex with the test commands. For e.g. `yarn test:jest-watch <payments> | <relative path your test file>`
+> **Note -** To run specific test file(s) use the file name regex with the test commands. For e.g. `pnpm test:jest-watch <payments> | <relative path your test file>`
 
 21. How to query Screen/DOM elements?
 
@@ -474,13 +474,13 @@ fixtures.js / // or /fixtures (can be a file or folder) - For common fixtures
 
 23. How to debug your tests?
 
-  - Click on the Run and Debug section in your VS Code's right panel.
-  - Ensure the Debug Jest Tests is selected in the configuration dropdown menu.
-  - We're going to run the file in .vscode/launch.json. Please specify the folder/file of your interest in this file.
-  - Click on the play button
-  - Now you use the inbuilt VS code debugger to view the contents of your file
-  - To learn more, refer this [video](https://www.youtube.com/watch?v=96MXwMiNhrk)
-  - It's recommended to use this debugger only when required, as using this will make your tests slower to run.
+- Click on the Run and Debug section in your VS Code's right panel.
+- Ensure the Debug Jest Tests is selected in the configuration dropdown menu.
+- We're going to run the file in .vscode/launch.json. Please specify the folder/file of your interest in this file.
+- Click on the play button
+- Now you use the inbuilt VS code debugger to view the contents of your file
+- To learn more, refer this [video](https://www.youtube.com/watch?v=96MXwMiNhrk)
+- It's recommended to use this debugger only when required, as using this will make your tests slower to run.
 
 ### 11. Action Items
 
