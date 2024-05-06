@@ -589,6 +589,31 @@ export const parameters = [
     type: 'string',
   },
   {
+    name: 'Card tokenised',
+    value: '$payment.optimizer_card_tokenised',
+    description: 'Tokenised card payment',
+    id: 17,
+    values: [
+      {
+        value: 'true',
+      },
+      {
+        value: 'false',
+      },
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'boolean',
+  },
+  {
     name: 'Card Issuer',
     value: '$payment.navigator_card_issuer',
     description: 'SBIN,HDFC,ICIC,UTIB,KKBK',
