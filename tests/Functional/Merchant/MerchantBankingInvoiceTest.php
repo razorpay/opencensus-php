@@ -2542,6 +2542,98 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testBankingInvoiceDownloadFromMerchantDashboardForCARblAfterMarch2024()
+    {
+        $oldDateTime = Carbon::create(2024, 4, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaAndVANonZero();
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->proxyAuth();
+
+        $this->mockPdfGeneratorAndUfhService([
+            'rows' => [
+                'INV' => [
+                    'seller_entity' => 'RZPL',
+                ],
+                'CRN' => [
+                    'seller_entity' => 'RZPL',
+                ]
+            ]
+        ]);
+
+        $request = [
+            'url'     => '/reports/invoice/banking',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year, 'seller' => 'RSPL'],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $data = $this->testData[__FUNCTION__];
+        $expectedResponse = $data['response']['content'];
+        $this->assertEquals($expectedResponse['file_id'], $content['file_id']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testBankingInvoiceDownloadFromMerchantDashboardForCARblBeforeApril2024()
+    {
+        $oldDateTime = Carbon::create(2024, 3, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaAndVANonZero();
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->proxyAuth();
+
+        $this->mockPdfGeneratorAndUfhService([
+            'rows' => [
+                'INV' => [
+                    'seller_entity' => 'RSPL',
+                ],
+                'CRN' => [
+                    'seller_entity' => 'RSPL',
+                ]
+            ]
+        ]);
+
+        $request = [
+            'url'     => '/reports/invoice/banking',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year, 'seller' => 'RSPL'],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $data = $this->testData[__FUNCTION__];
+        $expectedResponse = $data['response']['content'];
+        $this->assertEquals($expectedResponse['file_id'], $content['file_id']);
+
+        Carbon::setTestNow();
+    }
+
     public function testBankingInvoiceDownloadBySeller()
     {
         // 1. override time

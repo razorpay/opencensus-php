@@ -380,6 +380,11 @@ class Core extends Base\Core
                     if($attributes[BankingInvoiceReport::ACCOUNT_TYPE] === Balance\AccountType::DIRECT
                         and $attributes[BankingInvoiceReport::CHANNEL] === Balance\Channel::RBL)
                     {
+                        if(($input['month'] >= 4 and $input['year'] >= 2024) or ($input['year'] >= 2025))
+                        {
+                            $input[Entity::SELLER] = 'RZPL';
+                        }
+
                         if($attributes[BankingInvoiceReport::AMOUNT] > $rblAccountInvoiceAmount)
                         {
                             $rblAccountInvoiceAmount = $attributes[Entity::AMOUNT];
@@ -404,6 +409,11 @@ class Core extends Base\Core
                 {
                     if($virtualAccountInvoiceAmount === 0){
                         $data[BankingInvoiceReport::ROWS][$type][BankingInvoiceReport::SELLER_ENTITY] = 'RSPL';
+
+                        if(($input['month'] >= 4 and $input['year'] >= 2024) or ($input['year'] >= 2025))
+                        {
+                            $input[Entity::SELLER] = 'RZPL';
+                        }
                     }
                     else{
                         return [

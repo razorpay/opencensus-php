@@ -726,12 +726,12 @@ return [
         ],
     ],
 
-    'testBankingInvoiceDownloadFromMerchantDashboardForCARblAfterFeb2024' => [
+    'testBankingInvoiceDownloadFromMerchantDashboardForCARblAfterMarch2024' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/reports/invoice/banking',
             'content' => [
-                "month"          => 3,
+                "month"          => 4,
                 "year"           => 2024,
             ],
         ],
@@ -742,12 +742,12 @@ return [
         ],
     ],
 
-    'testBankingInvoiceDownloadFromMerchantDashboardForCARblBeforeMarch2024' => [
+    'testBankingInvoiceDownloadFromMerchantDashboardForCARblBeforeApril2024' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/reports/invoice/banking',
             'content' => [
-                "month"          => 2,
+                "month"          => 3,
                 "year"           => 2024,
             ],
         ],
