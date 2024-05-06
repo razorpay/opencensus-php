@@ -888,6 +888,9 @@ class Core extends Base\Core
 
         $to = $this->repo->account->findByPublicIdAndMerchant($accountId, $parentMerchant);
 
+        // extracts linked account notes and validates.
+        $this->getLinkedAccountNotes($input);
+
         $originPayment = null;
 
         if (($source instanceof Payment\Entity) === true)

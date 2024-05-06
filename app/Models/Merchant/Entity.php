@@ -1432,6 +1432,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATED, true);
         $this->liveEnable();
         $this->setAttribute(self::ACTIVATED_AT, time());
+
+        if ($this->isLinkedAccount() === true)
+        {
+            app('trace')->info(
+                TraceCode::LINKED_ACCOUNT_ACTIVATED,
+                [
+                    'activated'         => $this->isActivated(),
+                    'activated_at'      => $this->getactivatedAt(),
+                    'live'              => $this->isLive(),
+                    'activation_status' => optional($this->merchantDetail)->getActivationStatus(),
+                    'activation_flow'   => optional($this->merchantDetail)->getActivationFlow(),
+                ]);
+        }
     }
 
     public function deactivate()
@@ -1458,6 +1471,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATED, false);
         $this->liveDisable();
         $this->holdFunds();
+
+        if ($this->isLinkedAccount() === true)
+        {
+            app('trace')->info(
+                TraceCode::LINKED_ACCOUNT_DEACTIVATED,
+                [
+                    'activated'         => $this->isActivated(),
+                    'live'              => $this->isLive(),
+                    'activation_status' => optional($this->merchantDetail)->getActivationStatus(),
+                    'activation_flow'   => optional($this->merchantDetail)->getActivationFlow(),
+                ]);
+        }
     }
 
     /**

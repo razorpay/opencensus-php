@@ -488,6 +488,18 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
             Constants::MERCHANT_MUTEX_RETRY_COUNT);
 
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $merchant->reload();
+
+            $this->trace->info(TraceCode::LINKED_ACCOUNT_DEBUG_LOG_3, [
+                "input"                   => $input,
+                "linked_account_id"       => $merchant->getId(),
+                "activation_status"       => $merchant->isActivated(),
+                "is_live"                 => $merchant->isLive(),
+            ]);
+        }
+
         /*
         Though if the merchant is eligible for fee based gating, the activation status at this point
          will be null only hence case will not be created.

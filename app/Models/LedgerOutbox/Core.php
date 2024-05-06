@@ -987,9 +987,11 @@ class Core extends Base\Core
                     {
                         $this->repo->transaction(function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source, $journal)
                         {
+                            // Reload transfer entity after mutex acquire to fetch the latest status of the transfer
+                            $transfer->reload();
+
                             if($transfer->getStatus() === Transfer\Status::PENDING)
                             {
-                                // set transfer as processed
                                 $transferPayment = $transferProcessor->createTransferredEntity($transfer, $sourcePayment);
 
                                 $transfer->setProcessed();
@@ -1022,7 +1024,7 @@ class Core extends Base\Core
 
                                 $this->repo->saveOrFail($transfer);
 
-                                $transferMetric->pushTransferProcessSuccessMetrics();
+                                $transferMetric->pushTransferProcessSuccessMetrics(true);
 
                                 $transferProcessor->fireTransferProcessedWebhookIfApplicable($transfer);
 
@@ -1078,7 +1080,7 @@ class Core extends Base\Core
             }
             catch (\Exception $ex)
             {
-                $transferMetric->pushTransferProcessFailedMetrics($ex);
+                $transferMetric->pushTransferProcessFailedMetrics($ex, true);
 
                 throw  $ex;
             }
@@ -1865,7 +1867,7 @@ class Core extends Base\Core
                 'error_message'      => $errorMessage,
             ]);
 
-        (new Transfer\Metric())->pushTransferProcessFailedMetrics((new BadRequestException($errorCode)));
+        (new Transfer\Metric())->pushTransferProcessFailedMetrics((new BadRequestException($errorCode)), true);
 
         (new Transfer\Core())->eventTransferFailed($transfer);
     }

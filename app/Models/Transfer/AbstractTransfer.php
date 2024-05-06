@@ -365,16 +365,16 @@ abstract class AbstractTransfer
         }
         catch (\Exception $ex)
         {
-            (new Metric())->pushTransferProcessFailedMetrics($ex);
+            (new Metric())->pushTransferProcessFailedMetrics($ex, $processViaReverseShadow);
 
             throw  $ex;
         }
 
-        if ($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false )
+        if ($processViaReverseShadow === false)
         {
             $metric = new Metric();
 
-            $metric->pushTransferProcessSuccessMetrics();
+            $metric->pushTransferProcessSuccessMetrics(false);
 
             try
             {

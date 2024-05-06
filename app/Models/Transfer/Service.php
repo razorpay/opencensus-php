@@ -1673,7 +1673,7 @@ class Service extends Base\Service
                 // To fix the amount_transferred in payment entity or transfer_payment entity
                 // Data should be array of payment IDs
                 // Sample payload:
-                // {"option": "create_txns", "data": ["pay_NPBxWRRn778Om9", "pay_X2xpdmU6d29hM1"]}
+                // {"option": "fix_amount_transferred", "data": ["pay_NPBxWRRn778Om9", "pay_X2xpdmU6d29hM1"]}
 
                 $this->trace->info(
                     TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
@@ -1845,6 +1845,37 @@ class Service extends Base\Service
                 break;
             }
 
+            case 'activate_la':
+            {
+                // To activate linked account. This should be used only when the linked account is created
+                // via batch upload or beta account create API
+                // Data should be array of linked account IDs
+                // Sample payload:
+                // {"option": "activate_la", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'activate_la',
+                        'input'  => $input,
+                    ]
+                );
+
+                $linkedAccountIds = $input['data'];
+
+                foreach ($linkedAccountIds as $linkedAccountId)
+                {
+                    $this->repo->transaction(function () use ($linkedAccountId) {
+                        $linkedAccount = $this->repo->merchant->findOrFail($linkedAccountId);
+
+                        $merchantDetailCore = new Merchant\Detail\Core();
+
+                        $merchantDetailCore->autoActivateMerchantIfApplicable($linkedAccount);
+                    });
+                }
+
+                break;
+            }
 
             default:
             {

@@ -2527,7 +2527,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LINKED_ACCOUNT_BUILD_ENTITY                           = 'LINKED_ACCOUNT_BUILD_ENTITY';
     const LINKED_ACCOUNT_DEBUG_LOG_1                            = 'LINKED_ACCOUNT_DEBUG_LOG_1';
     const LINKED_ACCOUNT_DEBUG_LOG_2                            = 'LINKED_ACCOUNT_DEBUG_LOG_2';
+    const LINKED_ACCOUNT_DEBUG_LOG_3                            = 'LINKED_ACCOUNT_DEBUG_LOG_3';
     const LINKED_ACCOUNT_SAVE_ENTITY                            = 'LINKED_ACCOUNT_SAVE_ENTITY';
+    const LINKED_ACCOUNT_DEACTIVATED                            = 'LINKED_ACCOUNT_DEACTIVATED';
+    const LINKED_ACCOUNT_ACTIVATED                              = 'LINKED_ACCOUNT_ACTIVATED';
     const CREATE_SUB_MERCHANT_SAVE_OR_FAIL_METHOD_CALL          = 'CREATE_SUB_MERCHANT_SAVE_OR_FAIL_METHOD_CALL';
     const LINKED_ACCOUNT_CREATE_FAILURE                         = 'LINKED_ACCOUNT_CREATE_FAILURE';
     const PARTNERSHIP_SUBMERCHANT_SIGNUP                        = 'PARTNERSHIP_SUBMERCHANT_SIGNUP';

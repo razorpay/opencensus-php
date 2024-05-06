@@ -47,8 +47,10 @@ class Metric extends Base\Core
     const PENDING_ORDER_TRANSFERS_COUNT                 = 'pending_order_transfers_count';
     const TRANSFER_WEBHOOK_DISPATCH_FAILURE             = 'transfer_webhook_dispatch_failure';
     const TRANSFER_TRANSACTION_CREATE_FAILED            = 'transfer_transaction_create_failed';
+    const TRANSFER_PROCESS_REVERSE_SHADOW               = 'transfer_process_reverse_shadow';
     const LEDGER_OUTBOX_RETRY_CRON_FOR_TRANSFER_FAILED  = 'ledger_outbox_retry_cron_for_transfer_failed';
     const PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH   = 'pg_ledger_transfer_merchants_onboarding_mismatch';
+
 
     public function pushCreateSuccessMetrics(array $input = [])
     {
@@ -78,9 +80,14 @@ class Metric extends Base\Core
         $this->pushExceptionMetrics($e, self::TRANSFER_REVERSAL_FAILED, $dimensions);
     }
 
-    public function pushTransferProcessSuccessMetrics()
+    public function pushTransferProcessSuccessMetrics(bool $isReverseShadow = false)
     {
-        $this->trace->count(self::TRANSFER_PROCESS_SUCCESS, $this->getCreateDefaultDimensions());
+        $dimensions = [
+            self::TRANSFER_ROUTE                    => $this->getRouteName(),
+            self::TRANSFER_PROCESS_REVERSE_SHADOW   => $isReverseShadow,
+        ];
+
+        $this->trace->count(self::TRANSFER_PROCESS_SUCCESS, $dimensions);
     }
 
     public function pushCustomerTransferSuccessMetrics(): void
@@ -88,8 +95,13 @@ class Metric extends Base\Core
         $this->trace->count(self::CUSTOMER_TRANSFER_SUCCESS, $this->getCreateDefaultDimensions());
     }
 
-    public function pushTransferProcessFailedMetrics(\Throwable $e)
+    public function pushTransferProcessFailedMetrics(\Throwable $e, bool $isReverseShadow = false)
     {
+        $dimensions = [
+            self::TRANSFER_ROUTE                    => $this->getRouteName(),
+            self::TRANSFER_PROCESS_REVERSE_SHADOW   => $isReverseShadow,
+        ];
+
         $this->pushExceptionMetrics($e, self::TRANSFER_PROCESS_FAILED, $this->getCreateDefaultDimensions());
     }
 
