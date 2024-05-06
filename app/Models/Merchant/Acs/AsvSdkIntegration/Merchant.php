@@ -131,16 +131,19 @@ class Merchant extends Base
      * @param string $parentId
      * @param int    $limit
      * @param int    $offset
+     * @param string $lastMerchantId
      *
      * @return Collection|PublicCollection
      * @throws BadRequestException
      * @throws BaseException
      */
-    public function fetchLinkedAccountsFromParentIdWithLimitOffset(string $parentId, int $limit, int $offset): Collection|PublicCollection
+    public function fetchLinkedAccountsFromParentIdWithLimitOffset(
+        string $parentId, string $lastMerchantId, int $limit, int $offset
+    ): Collection|PublicCollection
     {
         $filterRequest = (new FilterRequest())
             ->setQueryIdentifier(self::GET_LINKED_ACCOUNTS_FROM_PARENT_ID_WITH_LIMIT_OFFSET)
-            ->setBindings(json_encode([$parentId, $limit, $offset]));
+            ->setBindings(json_encode([$parentId, $lastMerchantId, $limit, $offset]));
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
 

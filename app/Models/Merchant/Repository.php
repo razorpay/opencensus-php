@@ -1153,8 +1153,8 @@ class Repository extends Base\Repository
      * Fetch entities for a CSV report of all linked accounts under a marketplace merchant
      *
      * @param       $merchantId
-     * @param       $from       (unused)
-     * @param       $to         (unused)
+     * @param       $from
+     * @param       $to
      * @param       $count
      * @param       $skip
      * @param array $relations
@@ -1163,7 +1163,6 @@ class Repository extends Base\Repository
      * @throws BadRequestException
      * @throws BaseException
      * @todo: Move this to Merchant/Account/Repository when account onboarding is merged.
-     *
      */
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = []): Base\PublicCollection
     {
@@ -1177,9 +1176,28 @@ class Repository extends Base\Repository
             }
             else
             {
-                $merchants = (new AsvSdkMerchantQuery())->fetchLinkedAccountsFromParentIdWithLimitOffset(
-                    $merchantId, $count, $skip
-                );
+                $merchants          = new PublicCollection();
+                $lastMerchantId     = '';
+
+                while ($count > 0)
+                {
+                    $limit = min($count, Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
+
+                    $count = $count - $limit;
+
+                    $subset = (new AsvSdkMerchantQuery())->fetchLinkedAccountsFromParentIdWithLimitOffset(
+                        $merchantId, $lastMerchantId, $limit, $skip
+                    );
+
+                    $merchants->push(...$subset);
+
+                    if ($subset->count() < $limit)
+                    {
+                        break;
+                    }
+
+                    $lastMerchantId = $subset->pluck(Entity::ID)->last();
+                }
 
                 $this->resetConnectionOnModels($merchants);
 
