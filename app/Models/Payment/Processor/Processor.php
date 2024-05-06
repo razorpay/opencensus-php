@@ -3848,8 +3848,7 @@ class Processor
                 {
                     $input['dcc_currency'] = $paymentMeta->getGatewayCurrency();
 
-                    $library = (new Payment\Service)->getLibraryFromPayment($payment);
-                    $dccInfo = (new Payment\Service)->getDCCInfo($payment->merchant->getId(), $payment->getAmount(), $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage(), null, $library);
+                    $dccInfo = (new Payment\Service)->getDCCInfo($payment->merchant->getId(), $payment->getAmount(), $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage(), null);
 
                     $input['currency_request_id'] = $dccInfo['currency_request_id'];
                 }

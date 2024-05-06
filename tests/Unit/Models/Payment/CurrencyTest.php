@@ -56,7 +56,7 @@ class CurrencyTest extends TestCase
             ->getMock();
         $this->app->instance('dcs_config_service', $dcsConfigService);
         $this->app['dcs_config_service']->method('fetchConfiguration')->
-        willReturn(['disabled_card_currencies' => array('BHD','KWD')]);
+        willReturn(['disabled_currencies' => array('BHD','KWD')]);
     }
 
 }

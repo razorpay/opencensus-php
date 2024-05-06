@@ -267,7 +267,7 @@ class Core extends Base\Core
 
     /**
      * Function to get all rzp supported_currency
-     * minus disabled card currencies if any
+     * minus disabled currencies if any
      * @return array|null
      */
     public function getSupportedCurrencies($orgId = Org\Constants::RZP)
@@ -285,7 +285,7 @@ class Core extends Base\Core
             $supportedCurrencies = array_diff($this->getAllCurrencies(), $disabledCurrenciesList);
         } catch (\Throwable $e) {
             // trace the error and let supported currencies as default array
-            $this->trace->traceException($e, Logger::ERROR, TraceCode::GET_DCS_DISABLED_CARD_CURRENCIES_ERROR);
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::GET_DCS_DISABLED_CURRENCIES_ERROR);
             $supportedCurrencies = $this->getAllCurrencies();
         }
         return array_values($supportedCurrencies);
@@ -408,7 +408,7 @@ class Core extends Base\Core
      * amount, code, symbol and exponent
      * @return array|null
      */
-    public function getSupportedCurrenciesDetails($isZeroExponentCurrencySupported=false)
+    public function getSupportedCurrenciesDetails($isZeroExponentCurrencySupported=true)
     {
         $details = Currency::getDetails();
 

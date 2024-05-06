@@ -5051,7 +5051,7 @@ trait Authorize
         // Passing Method as Null Here, as we don't want to use Card Method's Currency Level Markup
 
         $dccInfo = (new Payment\Service)->getDCCInfo($payment->merchant->getId(), $payment->getAmount(),
-            $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage(), null, Analytics\Metadata::DIRECT);
+            $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage(), null);
 
         $requestedCurrencyData = $dccInfo['all_currencies'][$dccCurrency];
 
@@ -7830,7 +7830,9 @@ trait Authorize
 
         $data['gateway'] = $this->getEncryptedGatewayText($payment->getGateway());
 
-        if($app['api.route']->getCurrentRouteName() === 'payment_redirect_to_authenticate_post' && $paymentMeta !== null)
+        if($paymentMeta !== null &&
+            ($app['api.route']->getCurrentRouteName() === 'payment_redirect_to_authenticate_post'
+            || $app['api.route']->getCurrentRouteName() === 'payment_update_and_redirect'))
         {
             $gatewayAmount = $paymentMeta->getGatewayAmount();
             $gatewayCurrency = $paymentMeta->getGatewayCurrency();
@@ -13286,13 +13288,7 @@ trait Authorize
         {
             return;
         }
-        // check if the library supports zero exponent currencies
-        if(in_array((new Payment\Service)->getLibraryFromPayment($payment),
-                Analytics\Metadata::SUPPORTED_LIBRARIES_FOR_ZERO_EXPONENT_CURRENCIES, true) === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED, 'currency');
-        }
+
         // check the experiment
         $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
             RazorxTreatment::ZERO_EXPONENT_CURRENCY_SUPPORT, $this->mode);

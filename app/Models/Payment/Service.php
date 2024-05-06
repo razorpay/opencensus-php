@@ -2749,10 +2749,9 @@ class Service extends Base\Service
             $payment['provider'] = $payment->getWallet();
         }
 
-        $library = $this->getLibraryFromPayment($payment);
-        $this->updateDccDataIfApplicable($payment, $iin, $merchant, $library, $dccInfo);
+        $this->updateDccDataIfApplicable($payment, $iin, $merchant, $dccInfo);
 
-        $this->updateCurrencyWrapperForAppsIfApplicable($payment,$merchant, $library, $dccInfo);
+        $this->updateCurrencyWrapperForAppsIfApplicable($payment,$merchant, $dccInfo);
 
         $route = $this->app['api.route'];
 
@@ -2783,6 +2782,7 @@ class Service extends Base\Service
 
 
         //Check if Address is required for DCC transaction
+        $library = $this->getLibraryFromPayment($payment);
         $data['avs_required'] = $this->isAddressRequired($library, $iin, $merchant);
 
         $data['address_name_required'] = $this->isAddressWithNameRequired($library,$payment,$merchant);
@@ -2892,17 +2892,17 @@ class Service extends Base\Service
             $library = $input['source'];
         }
 
-        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant, $library, $data);
+        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
 
         $data['avs_required'] = $this->isAddressRequired($library, $iinEntity, $merchant);
 
         $data['address_name_required'] = $this->isAddressWithNameRequired($library,$input, $merchant);
 
-        $this->updateCurrencyWrapperIfApplicable($input, $merchant, $library, $data);
+        $this->updateCurrencyWrapperIfApplicable($input, $merchant,$data);
 
-        $this->updateCurrencyWrapperForAppsIfApplicable($input, $merchant, $library, $data);
+        $this->updateCurrencyWrapperForAppsIfApplicable($input, $merchant, $data);
 
-        $this->updateCurrencyWrapperForIntlBankTransfer($input, $merchant, $library, $data);
+        $this->updateCurrencyWrapperForIntlBankTransfer($input, $merchant, $data);
 
         if (isset($input['order_id']) === true)
         {
@@ -2921,7 +2921,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function updateDccDataIfApplicable($input, $iinEntity, $merchant, $library, & $data)
+    public function updateDccDataIfApplicable($input, $iinEntity, $merchant, & $data)
     {
         // get dcc options for customer if dcc is enabled for merchant
         if (($merchant->isDCCEnabledInternationalMerchant() === false) or
@@ -2945,7 +2945,7 @@ class Service extends Base\Service
             if (($this->isDccEnabledIIN($iinEntity, $merchant) === true)
                 and ($currency !== $iinEntity->getIinCurrency()))
             {
-                $dccInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, $merchant->getDccMarkupPercentage(), Payment\Method::CARD, $library);
+                $dccInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, $merchant->getDccMarkupPercentage(), Payment\Method::CARD);
 
                 if(isset($dccInfo) === false)
                 {
@@ -2961,7 +2961,7 @@ class Service extends Base\Service
         }
     }
 
-    public function updateCurrencyWrapperIfApplicable($input, $merchant, $library, & $data)
+    public function updateCurrencyWrapperIfApplicable($input, $merchant, & $data)
     {
         $methods = $merchant->getMethods();
 
@@ -3001,7 +3001,7 @@ class Service extends Base\Service
             $currency = $input['currency'];
 
                 // markup of 5 is hardcoded at org-level
-                $currencyInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, Merchant\Entity::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL, Payment\Method::WALLET, $library);
+                $currencyInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, Merchant\Entity::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL, Payment\Method::WALLET);
 
                 if(isset($currencyInfo) === false)
                 {
@@ -3018,7 +3018,7 @@ class Service extends Base\Service
         }
     }
 
-    public function updateCurrencyWrapperForAppsIfApplicable($input, $merchant, $library, & $data)
+    public function updateCurrencyWrapperForAppsIfApplicable($input, $merchant, & $data)
     {
         if ((isset($input['provider']) !== true) or
             (Gateway::isDCCRequiredApp($input['provider']) !== true) or
@@ -3043,7 +3043,7 @@ class Service extends Base\Service
             $this->merchant = $merchant;
 
             // For Method APP Default DCC Markup is set as 6
-            $currencyInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, $merchant->getDccMarkupPercentageForApps(), Payment\Method::APP, $library);
+            $currencyInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, $merchant->getDccMarkupPercentageForApps(), Payment\Method::APP);
 
             if(isset($currencyInfo) === false)
             {
@@ -3062,7 +3062,7 @@ class Service extends Base\Service
     }
 
 
-    public function updateCurrencyWrapperForIntlBankTransfer($input, $merchant, $library, & $data)
+    public function updateCurrencyWrapperForIntlBankTransfer($input, $merchant, & $data)
     {
         $mode = Gateway::CURRENCY_TO_MODE_MAPPING_FOR_INTL_BANK_TRANSFER[strtoupper($input['provider'])];
 
@@ -3083,7 +3083,7 @@ class Service extends Base\Service
             $currency = $input['currency'];
 
             // For Method Intl Bank Transfer Default DCC Markup is set as 3
-            $currencyInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, $merchant->getDccMarkupPercentageForIntlBankTransfer(), Payment\Method::INTL_BANK_TRANSFER, $library);
+            $currencyInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, $merchant->getDccMarkupPercentageForIntlBankTransfer(), Payment\Method::INTL_BANK_TRANSFER);
 
             // First Currency in Currency Map is set as default currency for an app.
             $currencyInfo['provider_currency'] = in_array($input['currency'], $enabledCurrencyList, true) ? $input['currency'] : $enabledCurrencyList[0];
@@ -3148,11 +3148,11 @@ class Service extends Base\Service
         return false;
     }
 
-    public function getDCCInfo($merchantID, $baseAmount, $baseCurrency, $markupPercent, $method, $library)
+    public function getDCCInfo($merchantID, $baseAmount, $baseCurrency, $markupPercent, $method)
     {
         $dccInfo = [];
 
-        $isZeroExponentCurrencySupported = $this->isZeroExponentCurrencySupported($merchantID, $library);
+        $isZeroExponentCurrencySupported = $this->isZeroExponentCurrencySupported($merchantID);
         if($this->canFetchRatesThroughRearch() === true)
         {
             (new Currency\DCC\Service)->getConvertedCurrenciesFromRearch($merchantID, $baseCurrency, $baseAmount, $markupPercent, $method, $isZeroExponentCurrencySupported, $dccInfo);
@@ -3169,14 +3169,9 @@ class Service extends Base\Service
         return $dccInfo;
     }
 
-    protected function isZeroExponentCurrencySupported($merchantID, $library)
+    protected function isZeroExponentCurrencySupported($merchantID)
     {
         $mode = $this->mode ?? Mode::LIVE;
-        // check if the library supports zero exponent currencies
-        if(in_array($library, Analytics\Metadata::SUPPORTED_LIBRARIES_FOR_ZERO_EXPONENT_CURRENCIES, true) === false)
-        {
-            return false;
-        }
         try {
             // check the experiment
             $variant = $this->app['razorx']->getTreatment($merchantID,

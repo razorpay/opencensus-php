@@ -11439,7 +11439,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UNICOMMERC_CUSTOMER_ADDRESS_API_ERROR                = 'UNICOMMERC_CUSTOMER_ADDRESS_API_ERROR';
 
-    const GET_DCS_DISABLED_CARD_CURRENCIES_ERROR               = 'GET_DCS_DISABLED_CARD_CURRENCIES_ERROR';
+    const GET_DCS_DISABLED_CURRENCIES_ERROR                    = 'GET_DCS_DISABLED_CURRENCIES_ERROR';
 
     // Smart Routing Rules Trace Codes
     const ROUTING_RULES                                         = 'ROUTING_RULES';

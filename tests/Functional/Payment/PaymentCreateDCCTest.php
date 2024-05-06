@@ -459,17 +459,16 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['amount'] = 5000;
         $payment['currency'] = 'JPY';
-
         $payment['_']['library'] = Metadata::CHECKOUTJS;
-        try
-        {
-            $this->doAuthPaymentViaAjaxRoute($payment);
-        }
-        catch (\Exception $e)
-        {
-            $this->assertExceptionClass($e, BadRequestException::class);
-            $this->assertEquals("Currency is not supported", $e->getMessage());
-        }
+
+        $this->mockRazorxTreatmentV2('zero_exponent_currency_support', 'on');
+
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+
+        $this->assertEquals('JPY', $paymentEntity['currency']);
+        $this->assertEquals('authorized', $paymentEntity['status']);
     }
 
     public function testPaymentCreateWithDCC()
