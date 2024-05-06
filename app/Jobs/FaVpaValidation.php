@@ -145,6 +145,10 @@ class FaVpaValidation extends Job
 
                 $data = $this->getVpaValidateResponse($vpaInput);
 
+                $errorCode = array_key_exists('error_code', $data) ? $data['error_code'] : null;
+
+                $faValidation->setInternalErrorCode($errorCode);
+
                 if ((array_key_exists('fav_status', $data)) && ($data['fav_status'] === Status::COMPLETED)) {
                     $faValidation->setRegisteredName($data['name']);
 
@@ -278,6 +282,8 @@ class FaVpaValidation extends Job
 
             $data['fav_status'] = Status::COMPLETED;
 
+            $data['error_code'] = $response['success'] === true ? null : 'BAD_REQUEST_PAYMENT_UPI_INVALID_VPA';
+
         }
         catch (GatewayErrorException $e)
         {
@@ -294,6 +300,8 @@ class FaVpaValidation extends Job
             );
 
             $data['fav_status'] = Status::FAILED;
+
+            $data['error_code'] = $e->getCode();
 
         }
         catch (BadRequestException $e)
@@ -318,6 +326,7 @@ class FaVpaValidation extends Job
 
             $data['fav_status'] = Status::COMPLETED;
 
+            $data['error_code'] = $e->getCode();
         }
 
         return $data;
@@ -438,6 +447,8 @@ class FaVpaValidation extends Job
                 ->findOrFail($this->favId);
 
             $fundAccount = $faValidation->fundAccount;
+
+            $faValidation->setErrorCode($e->getCode());
 
             $isPenniless = $faValidation->merchant->isFeatureEnabled(Constants::PENNILESS_VALIDATION);
 

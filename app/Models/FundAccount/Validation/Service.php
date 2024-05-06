@@ -6,6 +6,7 @@ namespace RZP\Models\FundAccount\Validation;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\Error;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -65,6 +66,8 @@ class Service extends Base\Service
         if (empty($fav) === true)
         {
             $fav = $this->repo->fund_account_validation->findByPublicIdAndMerchant($id, $this->merchant);
+
+            $fav = $this->core->setAdditionalFieldsForCompositeResponse($fav);
 
             return $fav->toArrayPublic();
         }

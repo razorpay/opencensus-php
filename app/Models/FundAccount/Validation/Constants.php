@@ -15,6 +15,25 @@ class Constants
 
     const PENNILESS                      = 'Penniless';
 
+    const TYPE_OPTIMIZED                      = "optimized";
+
+    const TYPE_PENNYDROP                     = "pennydrop";
+
+    const TYPE_PENNILESS                    = "penniless";
+
+    const REASON_COMPLETED                  = "validation_completed";
+
+    const SOURCE_COMPLETED                  = "beneficiary_bank";
+
+    const DESC_COMPLETED                    = "validation request is completed";
+
+    const REASON_CEATED                     = "validation_request_created";
+
+    const SOURCE_CREATED                    = "internal";
+
+    const DESC_CREATED                    = "validation request is created";
+
+
     protected $slackSettings;
 
     public static function slackSettings()

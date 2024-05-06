@@ -81,9 +81,11 @@ abstract class Base extends Core
         throw new Exception\LogicException('Not supported for source type: ' . json_encode($this->validation->getFundAccountType()));
     }
 
-    public function markValidationAsCompleted(string $accountStatus, string $utr = null, string $errDesc = null)
+    public function markValidationAsCompleted(string $accountStatus, string $utr = null, string $errDesc = null, string $errorCode = null)
     {
         $this->validation->setStatus(Status::COMPLETED);
+
+        $this->validation->setErrorCode($errorCode);
 
         $this->validation->setAccountStatus($accountStatus);
 
@@ -109,9 +111,11 @@ abstract class Base extends Core
         $this->pushFAVStatusChangeEvent($this->validation);
     }
 
-    public function markValidationAsFailed()
+    public function markValidationAsFailed(string $errorCode = null)
     {
         $this->validation->setStatus(Status::FAILED);
+
+        $this->validation->setErrorCode($errorCode);
 
         $this->repo->saveOrFail($this->validation);
 

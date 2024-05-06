@@ -37,6 +37,7 @@ use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Partner\Core as PartnerCore;
+use RZP\Models\FundAccount\Validation\Core as FavCore;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
@@ -1712,6 +1713,8 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getFundAccountValidationPayload(FundAccount\Validation\Entity $fundAccountValidation)
     {
+        (new FavCore())->setAdditionalFieldsForCompositeResponse($fundAccountValidation);
+
         $partialPayload['fund_account.validation'] = [
             'entity' => $fundAccountValidation->toArrayPublic()
         ];

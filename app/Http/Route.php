@@ -3616,7 +3616,7 @@ class Route
         // Fund Account Validation
 
         'fund_account_validate'                       => ['post',     'fund_accounts/validations',                                                 'FundAccountValidationController@create'                            ],
-        'fund_account_validate_fetch'                 => ['get',      'fund_accounts/validations',                                                 'FundAccountValidationController@list'                              ],
+        'fund_account_validate_fetch'                 => ['get',      'fund_accounts/validations',                                                 'FundAccountValidationController@getFundAccountValidations'         ],
         'fund_account_validate_fetch_by_id'           => ['get',      'fund_accounts/validations/{id}',                                            'FundAccountValidationController@getFundAccountValidation'          ],
         'fund_account_validate_bulk_patch_status'     => ['patch',    'fund_accounts/validations/bulk/fail',                                       'FundAccountValidationController@bulkPatchFavAsFailed'              ],
         'fund_account_validate_vpa_internal'          => ['post',     'fund_accounts/validations_internal/vpa',                                    'FundAccountValidationController@validateVpaInternal'               ],

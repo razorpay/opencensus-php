@@ -122,7 +122,6 @@ class BankAccount extends Base
                 ($isDifferentBankIfsc === false)) and
                 ($result->getAccountStatus() === AccountStatus::ACTIVE))
             {
-
                 $beneficiaryName = $result->getRegisteredName() ?? '';
 
                 // if beneficiary Name exist then only copy details
@@ -467,7 +466,7 @@ class BankAccount extends Base
             ($input['bank_status_code'] != null) and
             ($this->isStatusCodeInCompletedStateMap($input['bank_status_code'])))
         {
-            $this->markValidationAsCompleted(AccountStatus::INVALID, $input[Validation::UTR]);
+            $this->markValidationAsCompleted(AccountStatus::INVALID, $input[Validation::UTR],null, $input['bank_status_code']);
 
             return;
         }
@@ -479,7 +478,7 @@ class BankAccount extends Base
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR, $traceArray);
 
-        $this->markValidationAsFailed();
+        $this->markValidationAsFailed($input['bank_status_code']);
 
         (new Reversal\Core)->reverseForFundAccountValidation($this->validation);
 
@@ -495,8 +494,8 @@ class BankAccount extends Base
         {
             return true;
         }
-        return false;
 
+        return false;
     }
 
     public function createTransactionForLedger(array $ledgerResponse)

@@ -30,5 +30,21 @@ class ErrorCodesMapping
         "INVALID_BENEFICIARY_DETAILS",
         "MERCHANT_INVALID_TXN_DETAILS"
     ];
+
+    const BANK_STATUS_CODE_MAP_FOR_COMPLETED_STATE_WITH_DESC = [
+        "INVALID_VPA"                  => "VPA provided is invalid.",
+        "NRE_ACCOUNT"                  => "The beneficiary account is a NRE account.",
+        "INVALID_IFSC"                 => "The beneficiary account is dormant.",
+        "FROZEN_ACCOUNT"               => "The beneficiary account is frozen.",
+        "CLOSED_ACCOUNT"               => "The beneficiary account is closed.",
+        "DORMANT_ACCOUNT"              => "The beneficiary account is dormant.",
+        "IMPS_NOT_ENABLED"             => "IMPS is not enabled on the beneficiary account.",
+        "INVALID_ACCOUNT_NUMBER"       => "Invalid account number",
+        "BENEFICIARY_NAME_MISMATCH"    => "Beneficiary name mismatch.",
+        "MERCHANT_VALIDATION_ERROR"    => "Merchant validation error.",
+        "INVALID_BENEFICIARY_ACCOUNT"  => "Invalid Beneficiary account.",
+        "INVALID_BENEFICIARY_DETAILS"  => "Invalid Beneficairy details",
+        "MERCHANT_INVALID_TXN_DETAILS" => "Merchant invalid transaction details"
+    ];
 }
 

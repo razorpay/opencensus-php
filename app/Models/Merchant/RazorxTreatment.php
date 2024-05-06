@@ -81,6 +81,9 @@ final class RazorxTreatment
     // Razorx treatment constant, for onboarding the order update via order outbox.
     const ORDER_OUTBOX_ONBOARDING = 'order_outbox_onboarding';
 
+    //It is used to maintain backward compatibility for fav composite api response.
+    const FAV_COMPOSITE_API_HANDLING = 'fav_composite_api_handling';
+
     // Decide whom to use k8s batch upload job instead of queue worker
     const K8S_BATCH_TREATMENT   = 'k8s-batch-upload';
 

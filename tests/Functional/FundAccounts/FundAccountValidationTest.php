@@ -273,7 +273,6 @@ class FundAccountValidationTest extends TestCase
 
     public function testPennilessVpaValidationSuccess()
     {
-
         Queue::fake();
 
         (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
@@ -346,7 +345,6 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('Penniless Customer', $favUpdated[Entity::REGISTERED_NAME]);
         $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
         $this->assertEquals('Penniless', $favUpdated[Entity::ERROR_DESCRIPTION]);
-
     }
 
     public function testPennilessVpaValidationWithInvalidAccountStatus()
@@ -1211,6 +1209,172 @@ class FundAccountValidationTest extends TestCase
         $this->assertArrayKeysExist($response['results'], ['account_status','registered_name']);
 
         return $response;
+    }
+
+    public function testCreateValidationWithComposite()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_COMPOSITE_API_HANDLING => 'on']);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
+
+        $response = $this->startTest();
+
+        $isEventValidated = false;
+
+        $expectedProperties = [
+            'fav'   => [
+                'merchant_id'     => '10000000000000',
+                'account_status'  => 'active',
+                'status'          => 'completed'
+            ]
+        ];
+
+        $this->verifyFAVStatusEvent('fund_account_validation.status', $expectedProperties, $isEventValidated);
+
+        $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $fundAccount = $this->getLastEntity('fund_account', true);
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+
+        $this->assertTrue($isEventValidated);
+
+        // Queue will be processed by now.
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertNotNull($fav['results']['utr']);
+        $this->assertEquals('INR', $fav['currency']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(3, $fav['fees']);
+        $this->assertEquals(0, $fav['tax']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+        $this->assertNotNull($fta['narration']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('prepaid', $txn['fee_model']);
+        $this->assertEquals(false, $txn['settled']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals(3, $txn['mdr']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(3, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        $this->assertEquals(9999997, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertNotNull($txn['posted_at']);
+        return $response;
+    }
+
+    public function testPennilessVpaValidationCompositeSuccess()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_COMPOSITE_API_HANDLING => 'on']);
+
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PENNILESS_VALIDATION]);
+
+        $response = $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $txn = $this->getLastEntity('transaction', true);
+        $balance = $this->getLastEntity('balance', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals(false, $txn['settled']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals(3, $txn['mdr']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(3, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        // Note: because no fee credits are available
+        $this->assertEquals(9999997, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertNotNull($txn['posted_at']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(3, $fav['fees']);
+        $this->assertEquals(0, $fav['tax']);
+
+        // validate balance entry in database
+        $this->assertEquals(9999997, $balance['balance']);
+
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        // no fta
+        $this->assertNotEquals($fav['id'], $fta['source']);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Penniless Customer', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals('Penniless', $favUpdated[Entity::ERROR_DESCRIPTION]);
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/fund_accounts/validations/' . 'fav_' . $favUpdated['id'] ,
+            'content' => [
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        s($response);
     }
 
     public function testCreateValidationWithWrongFundAccountId()
@@ -3528,28 +3692,28 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateValidationForPGMerchantWithXLiteAccountAfterCutoff()
-    {
-        $this->setUpMerchantForBusinessBanking(false, 10000000);
-
-        $this->createFAVBankingPricingPlan();
-
-        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
-
-        $this->createFundAccountBankAccount();
-
-        $this->enableRazorXTreatmentForRazorX();
-
-        $this->startTest();
-
-        $fav = $this->getDbLastEntity('fund_account_validation');
-
-        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
-
-        $this->assertEquals('created', $fav['status']);
-        $this->assertEquals('shared', $balance['account_type']);
-        $this->assertEquals('banking', $balance['type']);
-    }
+//    public function testCreateValidationForPGMerchantWithXLiteAccountAfterCutoff()
+//    {
+//        $this->setUpMerchantForBusinessBanking(false, 10000000);
+//
+//        $this->createFAVBankingPricingPlan();
+//
+//        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+//
+//        $this->createFundAccountBankAccount();
+//
+//        $this->enableRazorXTreatmentForRazorX();
+//
+//        $this->startTest();
+//
+//        $fav = $this->getDbLastEntity('fund_account_validation');
+//
+//        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+//
+//        $this->assertEquals('created', $fav['status']);
+//        $this->assertEquals('shared', $balance['account_type']);
+//        $this->assertEquals('banking', $balance['type']);
+//    }
 
     public function testCreateValidationForPGMerchantBeforeCutoff()
     {

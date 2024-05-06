@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount\Validation;
 
+use FuzzyWuzzy\Fuzz;
 use RZP\Constants\Mode;
 use RZP\Error\Error;
 use RZP\Exception;
@@ -98,9 +99,47 @@ class Core extends Base\Core
 
         $isCompositeFavRequest = false;
 
+        $validationRequestType = Constants::TYPE_OPTIMIZED;
+
         if ((isset($input[Entity::FUND_ACCOUNT][Entity::ID]) === false))
         {
             $isCompositeFavRequest = true;
+        }
+
+        $newCompositeResponseApplicable = $this->app->razorx->getTreatment($merchant->getId(),
+            RazorxTreatment::FAV_COMPOSITE_API_HANDLING,
+            $this->mode);
+
+        if (($isCompositeFavRequest === true) && ($newCompositeResponseApplicable === RazorxTreatment::RAZORX_VARIANT_ON))
+        {
+            $validator = new Validator();
+
+            $validator->setStrictFalse();
+
+            $validator->validateInput('composite_create', $input);
+
+            $fundAccountData = $this->createFundAccountForCompositeFav($input, $merchant);
+
+            unset($input[Entity::FUND_ACCOUNT]);
+
+            unset($input[Entity::CONTACT]);
+
+            $input[Entity::FUND_ACCOUNT][Entity::ID] = $fundAccountData['id'];
+
+            $validationRequestType = $input[Entity::VALIDATION_TYPE];
+
+            if ($validationRequestType !== Constants::TYPE_PENNILESS && $validationRequestType !==Constants::TYPE_PENNYDROP)
+            {
+                $validationRequestType = Constants::TYPE_OPTIMIZED;
+            }
+
+            unset($input[Entity::VALIDATION_TYPE]);
+
+            unset($input[Entity::SOURCE_ACCOUNT_NUMBER]);
+
+            $input[Entity::AMOUNT] = 100;
+
+            $input[Entity::CURRENCY] = "INR";
         }
 
         $isFavServiceEnabled = $merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED);
@@ -161,6 +200,8 @@ class Core extends Base\Core
         {
             $fundAccountValidation = $this->createValidationEntity($input, $merchant);
 
+            $this->setAdditionalFieldsForCompositeResponse($fundAccountValidation, $newCompositeResponseApplicable);
+
             // Skip fts calls for validation in case of ledger failure
             // This will be picked up from async job when ledger status is checked
             if ($fundAccountValidation->getLedgerResponseAwaitedFlag() === false)
@@ -175,7 +216,8 @@ class Core extends Base\Core
                         'isUtrExposed' => $isUtrExposed
                     ]);
 
-                if (($isPenniless === true) && ($isUtrExposed === false)
+                if ((($validationRequestType === Constants::TYPE_OPTIMIZED) or ($validationRequestType === Constants::TYPE_PENNILESS)) &&
+                    ($isPenniless === true) && ($isUtrExposed === false)
                     && ($fundAccountValidation->getFundAccountType() === FundAccount\Type::BANK_ACCOUNT))
                 {
                     $ifsc = $fundAccountValidation->fundAccount->account->getIfscCode();
@@ -223,6 +265,107 @@ class Core extends Base\Core
         return $fundAccountValidation;
     }
 
+    public function setAdditionalFieldsForCompositeResponse(Entity $fav, string $variant = null)
+    {
+        if ($variant === null)
+        {
+            $variant = $this->app->razorx->getTreatment($fav->merchant->getId(),
+                RazorxTreatment::FAV_COMPOSITE_API_HANDLING,
+                $this->mode);
+        }
+
+        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $fav->setIsCompositeResponse(true);
+
+            $fav->setContact($fav->fundAccount->contact);
+
+            if ($fav->getStatus() === Status::COMPLETED) {
+                if ($fav->getAccountStatus() === AccountStatus::ACTIVE) {
+                    $fav->setDetails("The beneficiary account is valid");
+
+                    $fav->setNameMatchScore($this->getNameScoreForValidation($fav->getRegisteredName(), $fav->fundAccount->contact->getName()));
+                } else {
+                    $details = ErrorCodesMapping::BANK_STATUS_CODE_MAP_FOR_COMPLETED_STATE_WITH_DESC[$fav->getErrorCode()];
+
+                    $fav->setDetails($details);
+                }
+
+                $fav->setReason(Constants::REASON_COMPLETED);
+
+                $fav->setDescription(Constants::DESC_COMPLETED);
+
+                $fav->setSource(Constants::SOURCE_COMPLETED);
+            }
+
+            if ($fav->getStatus() == "failed") {
+                $errorDetail = $this->getErrorDetails($fav->getId(), $fav->getErrorCode());
+
+                $fav->setReason($errorDetail['reason']);
+
+                $fav->setDescription($errorDetail['description']);
+
+                $fav->setSource($errorDetail['source']);
+            }
+
+            if ($fav->getStatus() == "created") {
+                $fav->setReason(Constants::REASON_CEATED);
+
+                $fav->setDescription(Constants::DESC_CREATED);
+
+                $fav->setSource(Constants::SOURCE_CREATED);
+            }
+        }
+
+        return $fav;
+    }
+
+    public function getErrorDetails(string $favId, string $statusCode = null)
+    {
+        $errorDetails = null;
+
+        if($statusCode != null) {
+            $favErrorCodeMapping = Error::readMappingFromJsonFile(Error::BANKING_ERROR_CODE_FILE_PATH, 'fav');
+
+            $errorDetails = $favErrorCodeMapping["internal_account_validation_error"][$statusCode] ?? null;
+
+            if ((is_null($errorDetails) === true) and
+                (isset($favErrorCodeMapping[$statusCode]) === true)) {
+                $statusCodeErrorDetail = $favErrorCodeMapping[$statusCode];
+
+                $errorDetails = $statusCodeErrorDetail["failed"] ?? null;
+            }
+        }
+
+        if (is_null($errorDetails) === true)
+        {
+            $errorDetails = $favErrorCodeMapping["DEFAULT"] ?? null;
+
+            $this->trace->error(TraceCode::FAV_STATUS_CODE_MAPPING_REQUIRED,
+                [
+                    'fav_id'            => $favId,
+                    'bank_status_code'  => $statusCode,
+                    'fav_status'        => "failed",
+                ]);
+        }
+
+        return $errorDetails;
+    }
+
+    public function getNameScoreForValidation(string $name1, string $name2)
+    {
+        $first = strtolower(preg_replace('/\s+/', ' ', $name1));
+
+        $second = strtolower(preg_replace('/\s+/', ' ', $name2));
+
+        $fuzz = new Fuzz();
+
+        $percentageFromRatio = $fuzz->ratio($first, $second);
+
+        $percentageFromTokenSet = $fuzz->tokenSetRatio($first, $second);
+
+        return max($percentageFromRatio, $percentageFromTokenSet);
+    }
 
     public function validateVpa(array $vpaInput)
     {
@@ -1518,7 +1661,20 @@ class Core extends Base\Core
                 Attempt\Entity::SOURCE_ACCOUNT_ID => $input[Attempt\Entity::SOURCE_ACCOUNT_ID] ?? null,
             ] + $extraInfo;
 
-            $this->updateFav($mapping);
+            $fav = $this->repo->fund_account_validation->findOrFail($mapping[Entity::ID]);
+
+            if ($fav === null)
+            {
+                $this->updateFavInFAVService($input);
+            }
+            elseif (($fav != null) and ($fav->merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED)))
+            {
+                $this->updateFavInFAVService($input);
+            }
+            else
+            {
+                $this->updateFav($mapping, $fav);
+            }
 
             $this->trace->info(
                 TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_SUCCESSFUL,
@@ -1597,12 +1753,12 @@ class Core extends Base\Core
         }
     }
 
-    protected function updateFavInFAVService(array $mapping)
+    protected function updateFavInFAVService(array $input)
     {
         try
         {
             //update call to ps for fav
-            $this->updateFavInMicroservice($mapping[Entity::ID], $mapping, FundAccountEntity::BANK_ACCOUNT);
+            $this->updateFavInMicroservice($input[FtsConstants::SOURCE_ID], $input, FundAccountEntity::BANK_ACCOUNT);
         }
         catch (\Throwable $exception)
         {
@@ -1611,14 +1767,14 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::FAV_UPDATE_IN_SERVICE_FROM_FTS_WEBHOOK_FAILED,
                 [
-                    'fav_id' => $mapping[Entity::ID]
+                    'fav_id' => $input[FtsConstants::SOURCE_ID]
                 ]);
 
             throw $exception;
         }
     }
 
-    protected function updateFav(array $mapping)
+    protected function updateFav(array $mapping, Base\Entity $fav)
     {
         $this->trace->info(
             TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_FAV,
@@ -1626,22 +1782,11 @@ class Core extends Base\Core
                 'input'     => (new Redaction())->redactData($mapping),
             ]);
 
-        $fav = $this->repo->fund_account_validation->findOrFail($mapping[Entity::ID]);
-
-        $isFavServiceEnabled = $fav->merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED);
-
-        if($isFavServiceEnabled === true)
-        {
-            $this->updateFavInFAVService($mapping);
-        }
-        else
-        {
             $fav->setFTSTransferId($mapping[Entity::FTS_TRANSFER_ID]);
 
             $this->updateWithDetailsBeforeFtaRecon($fav, $mapping);
 
             $this->updateStatusAfterFtaRecon($fav, $mapping);
-        }
     }
 
     public function updateTransactionEntity($source, $reset = false, $reconciledType = ReconciledType::MIS)

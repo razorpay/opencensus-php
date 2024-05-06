@@ -4,6 +4,8 @@ namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Contact;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Reversal;
 use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Entity as Merchant;
@@ -11,7 +13,6 @@ use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\Transaction\Entity as Transaction;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Feature\Constants as MerchantFeature;
-use RZP\Models\FundAccount\Entity as FundAccountEntity;
 
 
 /**
@@ -24,6 +25,8 @@ class Entity extends Base\PublicEntity
 {
     use Traits\NotesTrait, AsvGetAttribute;
     use Traits\HasBalance;
+
+    protected $isCompositeResponse = false;
 
     const ID                     = 'id';
     const RECEIPT                = 'receipt';
@@ -53,6 +56,10 @@ class Entity extends Base\PublicEntity
 
     // Key for the response
     const FUND_ACCOUNT          = 'fund_account';
+    const VALIDATION_RESULTS    = 'validation_results';
+    const DETAILS               = 'details';
+    const STATUS_DETAILS        = 'status_details';
+
 
     const CONTACT               = 'contact';
 
@@ -71,7 +78,12 @@ class Entity extends Base\PublicEntity
 
     const IS_COMPOSITE           = 'isComposite';
 
-    const PRICING_RULE_ID                       = 'pricing_rule_id';
+    const PRICING_RULE_ID        = 'pricing_rule_id';
+
+    const NAME_MATCH_SCORE       = 'name_match_score';
+    const DESCRIPTION            = 'description';
+    const SOURCE                 = 'source';
+    const REASON                 = 'reason';
 
 //    TODO: add it in fillable and visible
     const IS_CREATED_USING_FAV_SERVICE = 'IS_CREATED_USING_FAV_SERVICE';
@@ -133,6 +145,9 @@ class Entity extends Base\PublicEntity
         self::RESULTS,
         self::CREATED_AT,
         self::UTR,
+        self::VALIDATION_RESULTS,
+        self::STATUS_DETAILS,
+        self::CONTACT
     ];
 
     protected $publicSetters = [
@@ -140,6 +155,12 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::RESULTS,
         self::FUND_ACCOUNT,
+        self::VALIDATION_RESULTS,
+        self::STATUS_DETAILS,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::UTR,
+        self::CONTACT
     ];
 
     protected $defaults = [
@@ -200,6 +221,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    public function setContact(Contact\Entity $contact = null)
+    {
+        $this->setAttribute(self::CONTACT, $contact);
+    }
+
     public function setledgerResponseAwaitedFlag(bool $flag)
     {
         $this->ledgerResponseAwaitedFlag = $flag;
@@ -209,6 +235,41 @@ class Entity extends Base\PublicEntity
     public function setCurrency(string $currency = null)
     {
         $this->setAttribute(self::CURRENCY, $currency);
+    }
+
+    public function setNameMatchScore(string $nameMatchScore = null)
+    {
+        $this->setAttribute(self::NAME_MATCH_SCORE, $nameMatchScore);
+    }
+
+    public function setSource(string $source = null)
+    {
+        $this->setAttribute(self::SOURCE, $source);
+    }
+
+    public function setDescription(string $desc = null)
+    {
+        $this->setAttribute(self::DESCRIPTION, $desc);
+    }
+
+    public function setErrorCode(string $errorCode = null)
+    {
+        $this->setAttribute(self::ERROR_CODE, $errorCode);
+    }
+
+    public function setInternalErrorCode(string $errorCode = null)
+    {
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $errorCode);
+    }
+
+    public function setReason(string $reason = null)
+    {
+        $this->setAttribute(self::REASON, $reason);
+    }
+
+    public function setDetails(string $details = null)
+    {
+        $this->setAttribute(self::DETAILS, $details);
     }
 
     public function setTax(int $tax)
@@ -283,6 +344,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
     }
 
+    public function setIsCompositeResponse($flag)
+    {
+        $this->isCompositeResponse = $flag;
+    }
+
     // -------------- Public Setters --------------
 
     public function setPublicEntityAttribute(array & $array)
@@ -290,19 +356,93 @@ class Entity extends Base\PublicEntity
         $array[self::ENTITY] = self::PUBLIC_ENTITY_NAME;
     }
 
+    public function setPublicContactAttribute(array & $array)
+    {
+        if($this->isCompositeNewResponseRequired() === true) {
+            $array[self::FUND_ACCOUNT][self::CONTACT] = $this->getContact()->toArrayPublic();
+        } else {
+            unset($array[self::CONTACT]);
+        }
+    }
+
     public function setPublicResultsAttribute(array & $array)
     {
-        $array[self::RESULTS] = [
-            self::ACCOUNT_STATUS  => $this->getAccountStatus(),
-            self::REGISTERED_NAME => $this->getRegisteredName(),
-        ];
-
-        $merchant = $this->merchant;
-
-        if ( ($merchant !== null) and
-            ($merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR) === true))
+        if($this->isCompositeNewResponseRequired() === true)
         {
-            $array[self::RESULTS][self::UTR] = $this->getUtr();
+            unset($array[self::RESULTS]);
+        }
+
+        else
+        {
+            $array[self::RESULTS] = [
+                self::ACCOUNT_STATUS  => $this->getAccountStatus(),
+                self::REGISTERED_NAME => $this->getRegisteredName(),
+            ];
+
+            $merchant = $this->merchant;
+
+            if ( ($merchant !== null) and
+                ($merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR) === true))
+            {
+                $array[self::RESULTS][self::UTR] = $this->getUtr();
+            }
+        }
+    }
+
+    public function setPublicUtrAttribute(array & $array)
+    {
+        if($this->isCompositeNewResponseRequired() === true)
+        {
+            unset($array[self::UTR]);
+        }
+    }
+
+    public function setPublicAmountAttribute(array & $array)
+    {
+        if($this->isCompositeNewResponseRequired() === true)
+        {
+            unset($array[self::AMOUNT]);
+        }
+    }
+
+    public function setPublicCurrencyAttribute(array & $array)
+    {
+        if($this->isCompositeNewResponseRequired() === true)
+        {
+            unset($array[self::CURRENCY]);
+        }
+    }
+
+    public function setPublicValidationResultsAttribute(array & $array)
+    {
+        if($this->isCompositeNewResponseRequired() === true)
+        {
+            $array[self::VALIDATION_RESULTS] = [
+                self::ACCOUNT_STATUS   => $this->getAccountStatus(),
+                self::REGISTERED_NAME  => $this->getRegisteredName(),
+                self::NAME_MATCH_SCORE => $this->getNameMatchScore(),
+                self::DETAILS          => $this->getDetails()
+            ];
+        }
+        else
+        {
+            unset($array[self::VALIDATION_RESULTS]);
+        }
+    }
+
+    public function setPublicStatusDetailsAttribute(array & $array)
+    {
+        if($this->isCompositeNewResponseRequired() === true)
+        {
+            $array[self::STATUS_DETAILS] = [
+                'description'  => $this->getDescription(),
+                'source'       => $this->getSource(),
+                'reason'       => $this->getReason(),
+            ];
+        }
+        else
+        {
+            unset($array[self::STATUS_DETAILS]);
         }
     }
 
@@ -311,17 +451,22 @@ class Entity extends Base\PublicEntity
         $bankAccount    = FundAccountEntity::BANK_ACCOUNT;
         $vpa            = FundAccountEntity::VPA;
         $details        = FundAccountEntity::DETAILS;
+        $contactID        = FundAccountEntity::CONTACT_ID;
 
-        if (isset($favEntity[self::FUND_ACCOUNT][$bankAccount]) === true)
+        if ((isset($favEntity[self::FUND_ACCOUNT][$bankAccount]) === true) and
+            ($this->isCompositeNewResponseRequired() === false))
         {
             $favEntity[self::FUND_ACCOUNT][$details] = $favEntity[self::FUND_ACCOUNT][$bankAccount];
         }
 
-        if (isset($favEntity[self::FUND_ACCOUNT][$vpa]) === true)
+        if (isset($favEntity[self::FUND_ACCOUNT][$vpa]) === true  and
+            ($this->isCompositeNewResponseRequired() === false))
         {
             $favEntity[self::FUND_ACCOUNT][$details] = $favEntity[self::FUND_ACCOUNT][$vpa];
         }
     }
+
+
 
     // -------------- Getters --------------
 
@@ -380,9 +525,44 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_STATUS);
     }
 
+    public function getContact()
+    {
+        return $this->getAttribute(self::CONTACT);
+    }
+
     public function getRegisteredName()
     {
         return $this->getAttribute(self::REGISTERED_NAME);
+    }
+
+    public function getNameMatchScore()
+    {
+        return $this->getAttribute(self::NAME_MATCH_SCORE);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getSource()
+    {
+        return $this->getAttribute(self::SOURCE);
+    }
+
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
+    public function getReason()
+    {
+        return $this->getAttribute(self::REASON);
+    }
+
+    public function getDetails()
+    {
+        return $this->getAttribute(self::DETAILS);
     }
 
     public function getBatchFundTransferId()
@@ -458,4 +638,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Reversal\Entity::class, self::ID, Reversal\Entity::ENTITY_ID);
     }
+
+    public function isCompositeNewResponseRequired(): bool
+    {
+        return ($this->isCompositeResponse === true);
+    }
+
 }

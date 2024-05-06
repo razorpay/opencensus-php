@@ -71,8 +71,6 @@ class FavFtaDeprecationTest extends TestCase
 
     public function testFAVCreditforBankingBalance()
     {
-        $this->enableRazorXTreatmentForRazorX();
-
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);

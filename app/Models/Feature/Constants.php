@@ -2937,6 +2937,7 @@ class Constants
         self::STMT_ICICI_FTP_ENABLED                 => true,
         self::STMT_RBL_FTP_ENABLED                   => true,
         self::PENNILESS_VALIDATION                   => true,
+        self::FAV_SERVICE_ENABLED                    => true,
         self::EXCLUDE_FROM_CA_BILLING                => true,
         self::AUTO_DISABLE_PAYOUTS                   => true,
         self::PAYOUT_LOW_BALANCE                     => true,
