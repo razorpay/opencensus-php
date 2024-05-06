@@ -484,7 +484,7 @@ class AsvRouter
     public function shouldEnableQueryLogs($id, $routeName): bool {
         try {
 
-            if (AsvFlows::isEnabledQueryLogs($routeName) === false) {
+            if(empty($routeName) || $routeName === "none") {
                 return false;
             }
 
