@@ -11009,7 +11009,7 @@ class Core extends Base\Core
                     ]
                 );
 
-                $this->repo->transactionOnLiveAndTest(function () use ($linkedAccountMids) {
+                $this->repo->transactionOnLiveAndTestAndAsv(function () use ($linkedAccountMids) {
                     $this->repo->merchant->updateLinkedAccountsAsLiveEnabledOrLiveDisabledInBulk($linkedAccountMids, true);
                 });
 
@@ -11076,7 +11076,7 @@ class Core extends Base\Core
                     ]
                 );
 
-                $this->repo->transactionOnLiveAndTest(function() use ($linkedAccountMids) {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($linkedAccountMids) {
                     $this->repo->merchant->updateLinkedAccountsAsLiveEnabledOrLiveDisabledInBulk($linkedAccountMids, false);
                 });
 

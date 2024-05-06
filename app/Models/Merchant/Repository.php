@@ -3385,10 +3385,7 @@ class Repository extends Base\Repository
             ];
         }
 
-        $connectionArray = [Mode::LIVE, Mode::TEST];
-        if ($this->asvRouter->shouldWriteToASVDB(get_class($this), __FUNCTION__, $linkedAccountMids[0])) {
-            $connectionArray = [Mode::LIVE, Mode::TEST, Connection::ASV_WRITER];
-        }
+        $connectionArray = [Mode::LIVE, Mode::TEST, Connection::ASV_WRITER];
 
         foreach ($connectionArray as $mode)
         {
@@ -3434,7 +3431,7 @@ class Repository extends Base\Repository
             ];
         }
 
-        $connectionArray = [Mode::LIVE, Mode::TEST];
+        $connectionArray = [Mode::LIVE, Mode::TEST, Connection::ASV_WRITER];
 
         foreach ($connectionArray as $mode)
         {
