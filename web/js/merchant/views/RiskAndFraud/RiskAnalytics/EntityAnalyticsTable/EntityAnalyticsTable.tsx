@@ -12,10 +12,11 @@ import {
   DropdownOverlay,
   Text,
 } from '@razorpay/blade/components';
-import { convertToMajorUnit } from '@razorpay/i18nify-js/currency';
+import { convertToMajorUnit, formatNumber } from '@razorpay/i18nify-js/currency';
 import { useQuery } from '@tanstack/react-query';
 
 import RadioButtonGroup from 'common/components/RadioButtonGroup';
+import { getCountryName } from 'merchant/views/Transactions/v1/B2bPayments/utils';
 
 import SkeletonTable from './SkeletonTable';
 import { ANALYTICS_TABLE_COLUMNS, ANALYTICS_TABLE_HEADER, TABLE_METRIC_OPTIONS } from './constants';
@@ -33,7 +34,7 @@ import {
 import { fetchTableData } from '../services';
 import { AnalyticsEntity, DateRange } from '../types';
 
-const ROWS_PER_PAGE = 8;
+const ROWS_PER_PAGE = 6;
 
 export interface EntityAnalyticsTableProps {
   entity: AnalyticsEntity;
@@ -61,7 +62,9 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
     enabled: startDate !== null && endDate !== null,
   });
 
-  const tableHeaders = ANALYTICS_TABLE_COLUMNS[entity];
+  const tableColumns = ANALYTICS_TABLE_COLUMNS[entity][tableMetric];
+  const tableHeader = ANALYTICS_TABLE_HEADER[entity][tableMetric];
+
   const dataLength = queryData ? queryData.length : 0; // Length of data or 0 if queryData is undefined
   // Calculate total number of pages
   const totalPages = Math.ceil(dataLength / ROWS_PER_PAGE);
@@ -119,7 +122,7 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
               </DropdownOverlay>
             </Dropdown>
             <Text weight="semibold" size="large">
-              {ANALYTICS_TABLE_HEADER[entity]}
+              {tableHeader}
             </Text>
           </Box>
           <RadioButtonGroup
@@ -133,9 +136,13 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableHeaderCell>{groupBy === 'cards_iin' ? 'Card BIN' : 'Coutries'}</TableHeaderCell>
-              {tableHeaders.map((heading) => (
-                <TableHeaderCell key={heading}>{heading}</TableHeaderCell>
+              <TableHeaderCell>
+                {groupBy === 'cards_iin' ? 'Card BIN' : 'Countries'}
+              </TableHeaderCell>
+              {tableColumns.map((heading) => (
+                <TableHeaderCell key={heading} align="right">
+                  {heading}
+                </TableHeaderCell>
               ))}
             </TableRow>
           </TableHead>
@@ -147,33 +154,48 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
                 {visibleRows?.length > 0 &&
                   visibleRows.map((dataItem, index) => {
                     const { card_iin, card_country, entity_data, payment } = dataItem ?? {};
-                    const entityGroup = groupBy === 'cards_iin' ? card_iin : card_country;
+                    const countryName = getCountryName(card_country);
+                    const entityGroup = groupBy === 'cards_iin' ? card_iin : countryName;
 
                     // Extracting values and ensuring they are numeric, defaulting to 0 if they are falsy
-                    const paymentAmount =
-                      convertToMajorUnit(Number(payment.amount), { currency: 'INR' }) || 0;
-                    const entityAmount =
-                      convertToMajorUnit(Number(entity_data.amount), { currency: 'INR' }) || 0;
-                    const paymentCount = Number(payment?.count || 0) || 1;
-                    const entityCount = Number(entity_data?.count || 0) || 0;
+                    const paymentAmount = convertToMajorUnit(Number(payment?.amount) || 0, {
+                      currency: 'INR',
+                    });
+                    const entityAmount = convertToMajorUnit(Number(entity_data?.amount) || 0, {
+                      currency: 'INR',
+                    });
+                    const paymentCount = Number(payment?.count || 0);
+                    const entityCount = Number(entity_data?.count || 0);
 
                     // Calculating ratios
-                    const numberOfTxns = tableMetric === 'amount' ? paymentAmount : paymentCount;
-                    const numberOfEntity = tableMetric === 'amount' ? entityAmount : entityCount;
-                    const entityRatio = ((numberOfEntity / numberOfTxns) * 100).toFixed(2);
+                    const numberOfTxns =
+                      tableMetric === 'amount' ? Math.floor(paymentAmount) : paymentCount;
+                    const numberOfEntity =
+                      tableMetric === 'amount' ? Math.floor(entityAmount) : entityCount;
+                    const entityRatio = ((numberOfEntity / (numberOfTxns || 1)) * 100 || 0).toFixed(
+                      2,
+                    );
 
                     return (
                       <TableRow key={index}>
                         <TableCell>{entityGroup}</TableCell>
-                        <TableCell>{numberOfTxns}</TableCell>
-                        <TableCell>{numberOfEntity}</TableCell>
-                        <TableCell>{entityRatio}</TableCell>
+                        <TableCell align="right">
+                          {tableMetric === 'amount'
+                            ? formatNumber(numberOfTxns, { currency: 'INR' })
+                            : numberOfTxns}
+                        </TableCell>
+                        <TableCell align="right">
+                          {tableMetric === 'amount'
+                            ? formatNumber(numberOfEntity, { currency: 'INR' })
+                            : numberOfEntity}
+                        </TableCell>
+                        <TableCell align="right">{entityRatio}%</TableCell>
                       </TableRow>
                     );
                   })}
                 {emptyRowsCount > 0 || isError ? (
                   <TableRow data-testid="empty-row" height={emptyRowsCount * 45}>
-                    <TableCell colSpan={4} center>
+                    <TableCell colSpan={4} align="center">
                       {visibleRows.length === 0
                         ? isError
                           ? 'Fetching failed! Try later'
@@ -187,7 +209,7 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
           </TableBody>
         </Table>
         {queryData?.length > 0 && (
-          <Box display="flex" marginTop="spacing.3">
+          <Box display="flex" marginTop="spacing.4">
             <Box display="flex" alignItems="center" marginLeft="auto">
               <Text color="surface.text.gray.muted">
                 {startIndex}-{endIndex} of {dataLength}

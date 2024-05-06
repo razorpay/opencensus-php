@@ -37,6 +37,7 @@ const EntityFilters = (props) => {
     dateRange,
     metric,
     graphOptions,
+    isLoading,
     handleDurationChange,
     handleMetricChange,
     handleGraphOptions,
@@ -78,11 +79,14 @@ const EntityFilters = (props) => {
   };
 
   const onDatesChange = ({ from, to }) => {
-    if (from === dateRange.startDate && to === dateRange.endDate) return;
+    const { startDate, endDate, preset } = dateRange;
+    if (from === startDate && to === endDate) return;
+    const startUnix = moment.unix(from).startOf('day').unix();
+    const endUnix = moment.unix(to).startOf('day').unix();
     handleDurationChange({
-      startDate: from,
-      endDate: to,
-      preset: dateRange.preset,
+      startDate: startUnix,
+      endDate: endUnix,
+      preset,
     });
   };
 
@@ -101,7 +105,7 @@ const EntityFilters = (props) => {
   const isOutsideRange = (day) => {
     const currentDate = moment().subtract(1, 'day');
     const twoYearsAgo = moment(currentDate).subtract(2, 'years').startOf('day');
-    return day.isBefore(twoYearsAgo);
+    return day.isBefore(twoYearsAgo) || day.isAfter(currentDate);
   };
 
   const { startDate, endDate, preset } = dateRange;
@@ -143,7 +147,7 @@ const EntityFilters = (props) => {
                   onDatesChange={onDatesChange}
                   startDate={moment.unix(startDate)}
                   endDate={moment.unix(endDate)}
-                  // disabled={loading}
+                  disabled={isLoading}
                   numberOfMonths={numberOfMonths}
                   withPortal={isMobile}
                   defaultFocusedInput={defaultFocusedInput.current}

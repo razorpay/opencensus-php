@@ -10,7 +10,7 @@ interface TableRowProps {
 }
 
 interface TableCellProps {
-  center?: boolean;
+  align?: 'center' | 'left' | 'right';
 }
 
 interface GridItemProps {
@@ -58,6 +58,7 @@ export const SectionWrapper = styled.div<FlattenSimpleInterpolation>`
 
 export const StyledButtonText = styled.button`
   color: ${({ theme }) => theme.colors.surface.background.primary.intense};
+  padding: ${({ theme }) => theme.spacing[2]}px;
   background: transparent;
   border: none;
   outline: none;
@@ -65,14 +66,17 @@ export const StyledButtonText = styled.button`
 `;
 
 export const TooltipWrapper = styled.span`
+  z-index: 2;
+
   & > div {
     vertical-align: middle;
     cursor: pointer;
   }
 `;
 
-export const StyledTabButton = styled.button(
+export const StyledTabCard = styled.div(
   ({ theme, isActive }: { theme: Theme; isActive: boolean }) => `
+    position: relative;
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -85,24 +89,18 @@ export const StyledTabButton = styled.button(
         ? theme.colors.surface.background.gray.intense
         : theme.colors.surface.background.gray.moderate
     };
-    border-color: ${theme.colors.surface.border.gray.subtle};
-    border-width: 0px;
-    border-right-width: ${theme.border.width.thick}px;
+    border-color: ${
+      isActive ? theme.colors.surface.border.primary.normal : theme.colors.surface.border.gray.muted
+    };
+    border-width: ${theme.border.width.thick}px;
     border-style: solid;
     cursor: pointer;
     pointer-events: all;
+    border-radius: ${theme.border.radius.medium}px;
+    transition: border-color 0.2s ease, transform 0.3s ease;
     &:hover {
       background-color: ${theme.colors.surface.background.gray.intense};
-    }
-    &:first-child {
-      border-top-left-radius: ${theme.border.radius.medium}px;
-      border-bottom-left-radius: ${theme.border.radius.medium}px;
-    }
-
-    &:last-child {
-      border-top-right-radius: ${theme.border.radius.medium}px;
-      border-bottom-right-radius: ${theme.border.radius.medium}px;
-      border-right-width: 0px
+      transform: scale(1.02);
     }
   `,
 );
@@ -142,7 +140,7 @@ export const StyledChartLoader = styled.div(
     &::after {
       content: 'Loading...';
       font-size: ${theme.typography.fonts.size[200]}px;
-      font-weight: ${theme.typography.fonts.weight.bold};
+      font-weight: ${theme.typography.fonts.weight.medium};
       color: ${theme.colors.surface.text.gray.normal};
     }
   `,
@@ -155,7 +153,7 @@ export const StyledChartError = styled.div(
     &::after {
       content: 'Fetching failed! Try later';
       font-size: ${theme.typography.fonts.size[200]}px;
-      font-weight: ${theme.typography.fonts.weight.bold};
+      font-weight: ${theme.typography.fonts.weight.medium};
       color: ${theme.colors.surface.text.gray.normal};
     }
   `,
@@ -243,7 +241,6 @@ export const TableRow = styled.tr<TableRowProps>`
 const TableCellBase = css`
   padding: ${({ theme }) => `${theme.spacing[4]}px ${theme.spacing[3]}px`};
   color: #262d3a;
-  text-align: left;
 
   &:first-child {
     padding-left: 0; /* No left padding for the first child */
@@ -253,10 +250,45 @@ const TableCellBase = css`
 export const TableHeaderCell = styled.th`
   ${TableCellBase}
   font-weight: ${({ theme }) => theme.typography.fonts.weight.regular};
+  text-align: ${({ align = 'left' }) => align};
 `;
 
 export const TableCell = styled.td<TableCellProps>`
   ${TableCellBase}
-  font-weight: ${({ theme }) => theme.typography.fonts.weight.bold};
-  text-align: ${({ center }) => (center ? 'center' : 'left')};
+  font-weight: ${({ theme }) => theme.typography.fonts.weight.medium};
+  text-align: ${({ align = 'left' }) => align};
+`;
+
+export const StyledButtonIcon = styled.button`
+  display: flex;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 2;
+`;
+
+export const InvisibleButton = styled.button`
+  all: unset;
+  cursor: pointer;
+  appearance: none;
+  position: static;
+  border-width: 0;
+  padding: 0;
+  border-style: initial;
+  border-color: initial;
+  border-image: initial;
+
+  &::before {
+    content: '';
+    cursor: inherit;
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+  }
 `;

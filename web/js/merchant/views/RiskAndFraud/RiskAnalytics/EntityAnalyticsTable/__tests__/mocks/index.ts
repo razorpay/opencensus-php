@@ -11,7 +11,7 @@ export const mock_data = [
       amount: '10000',
     },
     entity: 'fraud',
-    card_iin: '5399 1000 ****',
+    card_iin: '5399 10** ****',
     card_country: 'US',
   },
   {
@@ -26,7 +26,7 @@ export const mock_data = [
       amount: '20000',
     },
     entity: 'fraud',
-    card_iin: '5399 1000 ****',
+    card_iin: '5399 10** ****',
     card_country: 'IN',
   },
   {
@@ -41,28 +41,28 @@ export const mock_data = [
       amount: '0',
     },
     entity: 'fraud',
-    card_iin: '5399 1000 ****',
+    card_iin: '5399 10** ****',
     card_country: 'GBP',
   },
 ];
 
-export const expectedAmountData = [
+export const expectedData = [
   {
-    card_iin: '5399 1000 ****',
-    txns: '391267.83',
-    frauds: '100',
-    fraudRate: '0.03',
+    card_iin: '5399 10** ****',
+    txns: '₹391,267.00',
+    frauds: '₹100.00',
+    fraudRate: '0.03%',
   },
   {
-    card_iin: '5399 1000 ****',
-    txns: '1032777.77',
-    frauds: '200',
-    fraudRate: '0.02',
+    card_iin: '5399 10** ****',
+    txns: '₹1,032,777.00',
+    frauds: '₹200.00',
+    fraudRate: '0.02%',
   },
   {
-    card_iin: '5399 1000 ****',
-    txns: '743908.6',
-    frauds: '0',
-    fraudRate: '0.00',
+    card_iin: '5399 10** ****',
+    txns: '₹743,908.00',
+    frauds: '₹0.00',
+    fraudRate: '0.00%',
   },
 ];

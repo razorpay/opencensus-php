@@ -36,7 +36,7 @@ import type {
   IntervalValue,
 } from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
 
-const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => {
+const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity, sectionRef }) => {
   const queryClient = useQueryClient();
   const initialState = getInitialState(entity);
   const [state, dispatch] = useReducer<AnalyticsReducer>(riskAnalyticsReducer, initialState);
@@ -114,6 +114,7 @@ const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => 
       marginTop="spacing.5"
       padding={['spacing.5', 'spacing.7', 'spacing.5', 'spacing.7']}
       backgroundColor="surface.background.gray.intense"
+      ref={sectionRef}
     >
       <EntityHeader entity={entity} />
       <EntityFilters
@@ -121,6 +122,7 @@ const EntityAnalytics: React.FC<EntityAnalyticsProps> = ({ ratios, entity }) => 
         dateRange={dateRange}
         metric={metric}
         graphOptions={graphOptions}
+        isLoading={isLoading}
         handleDurationChange={handleDurationChange}
         handleMetricChange={handleMetricChange}
         handleGraphOptions={handleGraphOptions}

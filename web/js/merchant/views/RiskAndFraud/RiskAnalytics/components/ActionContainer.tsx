@@ -7,7 +7,6 @@ import { ActionContainerProps } from '../types';
 const ActionContainer = ({
   heading,
   description,
-  note,
   buttonText,
   showDownloadIcon = false,
   onButtonClick,
@@ -32,14 +31,6 @@ const ActionContainer = ({
             {heading}
           </Text>
           <Text>{description}</Text>
-          {note && (
-            <Text>
-              <Text as="span" weight="semibold">
-                Note:{' '}
-              </Text>
-              {note}
-            </Text>
-          )}
         </Box>
         <Box>
           <Button

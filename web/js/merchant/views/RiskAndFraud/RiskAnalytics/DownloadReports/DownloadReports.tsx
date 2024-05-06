@@ -16,7 +16,7 @@ import { RISK_DECLINED } from '../constants';
 
 const DownloadReports: React.FC<DownloadReportsProps> = (props) => {
   const { entity, availableEmails, generatedBy, openModal, closeModal, showNotification } = props;
-  const { heading, description, note } = DOWNLOAD_REPORTS[entity];
+  const { heading, description } = DOWNLOAD_REPORTS[entity];
 
   const handleDownload = () => {
     trackEvent({
@@ -40,7 +40,6 @@ const DownloadReports: React.FC<DownloadReportsProps> = (props) => {
     <ActionContainer
       heading={heading}
       description={description}
-      note={note}
       buttonText="Download list"
       showDownloadIcon={entity === RISK_DECLINED}
       onButtonClick={handleDownload}

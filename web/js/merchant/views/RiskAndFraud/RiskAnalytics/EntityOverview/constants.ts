@@ -7,7 +7,7 @@ import {
 import { OverviewTab, RatioDuration } from './types';
 
 export const OVERVIEW_HEADER = 'For International card payments ';
-export const DEFAULT_OVERVIEW_TAB = 'fraud_to_sales_ratio';
+export const DEFAULT_OVERVIEW_TAB = FRAUD;
 
 export const OVERVIEW_TABS: OverviewTab = {
   [FRAUD]: {
@@ -18,7 +18,7 @@ export const OVERVIEW_TABS: OverviewTab = {
       'Fraud transactions reported by card networks as a % of total captured transactions in a given time period',
   },
   [DISPUTES]: {
-    title: 'Disputes-to-sales ratio',
+    title: 'Dispute-to-sales ratio',
     valueKey: 'disputes_to_sales_ratio',
     comparisionKey: 'industry_disputes_to_sales_ratio',
     popoverContent:

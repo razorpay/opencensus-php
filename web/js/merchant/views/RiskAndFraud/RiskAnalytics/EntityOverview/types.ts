@@ -31,3 +31,9 @@ export interface RatioPayload {
   startDate: number;
   endDate: number;
 }
+
+export interface PopoverContentProps {
+  valueKey: string;
+  actualValue: number;
+  comparedValue: number;
+}

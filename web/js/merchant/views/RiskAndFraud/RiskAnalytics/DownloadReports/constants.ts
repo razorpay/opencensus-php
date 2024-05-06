@@ -4,14 +4,12 @@ const FRAUD_DOWNLOAD_REPORTS: DownloadReport = {
   heading: 'Download list of fraudulent transactions',
   description:
     'Need more data around the highest frauds on other parameters such as IP address, email and phone number? Just download the entire list of transactions with frauds to help you do analysis.',
-  note: 'In case selected duration exceeds 90 days, a list for the latest 90 days in that is considered for generating the list.',
 };
 
 const DISPUTES_DOWNLOAD_REPORTS: DownloadReport = {
   heading: 'Download list of disputes',
   description:
     'Need more data around the highest disputes on other parameters such as IP address, email and phone number? Just download the entire list of transactions with disputes to analyse.',
-  note: 'In case selected duration exceeds 90 days, a list for the latest 90 days in that is considered for generating the list.',
 };
 const RISK_DECLINED_DOWNLOAD_REPORTS: DownloadReport = {
   heading: 'Download list of transactions declined due to risk',

@@ -74,12 +74,13 @@ export const generateChartData = ({
       );
     }
 
-    const ratio =
-      parseFloat(
-        ((parseFloat(item.entity_data[metric]) / parseFloat(item.payment[metric])) * 100).toFixed(
-          2,
-        ),
-      ) || 0;
+    const ratio = parseFloat(
+      (
+        (parseFloat(item.entity_data[metric]) / (parseFloat(item.payment[metric]) || 1)) *
+        100
+      ).toFixed(2),
+    );
+
     entityRatio.push(ratio);
   });
 
@@ -169,8 +170,8 @@ export function calculateStats(data: QueryResponseItem[], metric = METRIC_VALUE)
   // Calculate ratios
   const entityPaymentRatio =
     metric === METRIC_VALUE
-      ? ((entityPaymentAmount / totalPaymentAmount) * 100).toFixed(2)
-      : ((totalEntityCount / totalPaymentCount) * 100).toFixed(2);
+      ? ((entityPaymentAmount / (totalPaymentAmount || 1)) * 100).toFixed(2)
+      : ((totalEntityCount / (totalPaymentCount || 1)) * 100).toFixed(2);
 
   /**
    * Format the result

@@ -17,6 +17,7 @@ import type {
 export interface EntityAnalyticsProps {
   entity: AnalyticsEntity;
   ratios: Ratios;
+  sectionRef: (ref: HTMLElement) => void;
 }
 
 export type EntityAnalyticsState = {

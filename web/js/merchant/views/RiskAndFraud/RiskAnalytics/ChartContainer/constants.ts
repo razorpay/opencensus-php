@@ -37,13 +37,13 @@ const FRAUD_COUNT_OPTIONS = [
 const DISPUTES_VALUE_OPTIONS = [
   'Total sales value',
   'Value of reported disputes',
-  'Disputes-to-sales ratio',
+  'Dispute-to-sales ratio',
 ];
 
 const DISPUTES_COUNT_OPTIONS = [
   'Number of transactions',
   'Number of reported disputes',
-  'Disputes-to-sales ratio',
+  'Dispute-to-sales ratio',
 ];
 
 const RISK_DECLINED_OPTIONS = ['Risk decline rate'];
@@ -93,37 +93,37 @@ export const LEGEND_COLORS_MAPPING = {
 export const FRAUD_CHART_LABEL = {
   [METRIC_COUNT]: {
     x: 'fraud_ratio_analytics',
-    y1: 'Number of transactions / reported frauds',
-    y2: 'Fraud-to-sales ratio (in %)',
+    y1: 'Number of transactions or reported frauds',
+    y2: 'Fraud-to-sales ratio',
   },
   [METRIC_VALUE]: {
     x: 'fraud_ratio_analytics',
-    y1: 'Volume of total sales / frauds (in ₹)',
-    y2: 'Fraud-to-sales ratio (in %)',
+    y1: 'Volume of total sales or frauds (in ₹)',
+    y2: 'Fraud-to-sales ratio',
   },
 };
 
 export const DISPUTES_CHART_LABEL = {
   [METRIC_COUNT]: {
     x: 'disputes_ratio_analytics',
-    y1: 'Number of transactions / reported disputes',
-    y2: 'Fraud-to-sales ratio (in %)',
+    y1: 'Number of transactions or reported disputes',
+    y2: 'Dispute-to-sales ratio',
   },
   [METRIC_VALUE]: {
     x: 'disputes_ratio_analytics',
-    y1: 'Volume of total sales / disputes (in ₹)',
-    y2: 'Fraud-to-sales ratio (in %)',
+    y1: 'Volume of total sales or disputes (in ₹)',
+    y2: 'Dispute-to-sales ratio',
   },
 };
 
 export const RISK_DECLINED_CHART_LABEL = {
   [METRIC_COUNT]: {
     x: 'risk_declined_ratio_analytics',
-    y1: 'Dispute-to-sales ratio (in %)',
+    y1: 'Risk decline rate',
   },
   [METRIC_VALUE]: {
     x: 'risk_declined_ratio_analytics',
-    y1: 'Dispute-to-sales ratio (in %)',
+    y1: 'Risk decline rate',
   },
 };
 

@@ -153,3 +153,7 @@ export type ActionContainerProps = {
   showDownloadIcon?: boolean;
   onButtonClick: () => void;
 };
+
+export type SectionRef = {
+  [key: string]: HTMLElement | null;
+};

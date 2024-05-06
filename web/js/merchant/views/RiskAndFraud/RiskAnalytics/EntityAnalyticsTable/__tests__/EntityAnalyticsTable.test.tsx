@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import EntityAnalyticsTable from 'merchant/views/RiskAndFraud/RiskAnalytics/EntityAnalyticsTable';
 import { render, screen, waitFor } from 'test-utils';
 
-import { expectedAmountData, mock_data } from './mocks';
+import { expectedData, mock_data } from './mocks';
 import { FRAUD } from '../../constants';
 import { EntityAnalyticsTableProps } from '../EntityAnalyticsTable';
 
@@ -57,7 +57,7 @@ describe('EntityAnalyticsTable - Risk Visibility', () => {
   test('renders table headers', () => {
     renderComponent();
     // Assuming FRAUD entity is used for this test
-    const expectedColumnHeaders = ['Card BIN', 'No. of txns', 'No. of frauds', 'Fraud rate'];
+    const expectedColumnHeaders = ['Card BIN', 'Payment volume', 'Fraud volume', 'Fraud rate'];
 
     // Assert that each column header exists within the TableHead component
     expectedColumnHeaders.forEach((header) => {
@@ -91,7 +91,7 @@ describe('EntityAnalyticsTable - Risk Visibility', () => {
 
     renderComponent();
     const tableCells = screen.getAllByRole('cell');
-    expectedAmountData.forEach((rowData, rowIndex) => {
+    expectedData.forEach((rowData, rowIndex) => {
       const startIndex = rowIndex * 4;
       const rowValues = tableCells
         .slice(startIndex, startIndex + 4)
@@ -103,6 +103,6 @@ describe('EntityAnalyticsTable - Risk Visibility', () => {
     expect(emptyRow).toBeInTheDocument();
     const emptyRowStyle = window.getComputedStyle(emptyRow);
     const emptyRowHeight = parseInt(emptyRowStyle.height, 10);
-    expect(emptyRowHeight).toEqual(225);
+    expect(emptyRowHeight).toEqual(135);
   });
 });

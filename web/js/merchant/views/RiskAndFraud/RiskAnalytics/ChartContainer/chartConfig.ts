@@ -1,3 +1,4 @@
+import { formatNumber } from '@razorpay/i18nify-js/currency';
 import moment from 'moment';
 
 import {
@@ -199,7 +200,7 @@ export const getChartAreaConfig = ({
           if (option === ENTITY_RATIO) {
             return `${labelText}: ${yLabel}%`;
           } else if (metric === METRIC_VALUE) {
-            return `${labelText}: ${yLabel} (in ₹)`;
+            return `${labelText}: ${formatNumber(yLabel, { currency: 'INR' })}`;
           } else {
             return `${labelText}: ${yLabel}`;
           }

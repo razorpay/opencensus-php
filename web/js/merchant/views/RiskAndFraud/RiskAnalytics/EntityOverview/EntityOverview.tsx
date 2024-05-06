@@ -8,18 +8,23 @@ import {
   OVERVIEW_TABS,
 } from 'merchant/views/RiskAndFraud/RiskAnalytics/EntityOverview/constants';
 import { fetchRatios } from 'merchant/views/RiskAndFraud/RiskAnalytics/services';
-import { AnalyticsEntity, Ratios } from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
+import {
+  AnalyticsEntity,
+  Ratios,
+  SectionRef,
+} from 'merchant/views/RiskAndFraud/RiskAnalytics/types';
+import { trackEvent } from 'merchant/views/RiskAndFraud/common/trackEvents';
 
 import OverviewCard from './OverviewCard';
 import { getRatioPayload } from './utils';
-import { trackEvent } from '../../common/trackEvents';
 
 interface EntityOverviewProps {
   setRatio: Dispatch<SetStateAction<Ratios>>;
+  sectionRef: { current: SectionRef };
 }
 
-const EntityOverview: React.FC<EntityOverviewProps> = ({ setRatio }) => {
-  const [selectedTab, setSelectedTab] = useState(DEFAULT_OVERVIEW_TAB);
+const EntityOverview: React.FC<EntityOverviewProps> = ({ setRatio, sectionRef }) => {
+  const [selectedTab, setSelectedTab] = useState<AnalyticsEntity>(DEFAULT_OVERVIEW_TAB);
   const { startDate, endDate } = getRatioPayload();
   const tabs = Object.keys(OVERVIEW_TABS);
 
@@ -34,9 +39,20 @@ const EntityOverview: React.FC<EntityOverviewProps> = ({ setRatio }) => {
   });
 
   const handleTabChange = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const targetId =
-      (event.target as HTMLButtonElement).id || (event.currentTarget as HTMLButtonElement).id;
-    setSelectedTab(targetId);
+    const targetId = (event.target as HTMLButtonElement).id;
+    const section = sectionRef?.current?.[targetId];
+    if (section) {
+      // Get the top position of the target section relative to the viewport
+      const offset = section.getBoundingClientRect().top;
+
+      // Scroll position calculation (scrollTop):
+      //  - window.scrollY: Current vertical scroll position of the window
+      //  - offset: Vertical distance of the target section from the top of the viewport (can be negative)
+      //  - 76: Adjust the scroll position to account for the height of the header and margin space
+      const scrollTop = window.scrollY + offset - 76;
+      window.scrollTo({ top: scrollTop, behavior: 'smooth' });
+    }
+    setSelectedTab(targetId as AnalyticsEntity);
     trackEvent({
       objectName: 'Top Level metrics',
       properties: { tabName: targetId },
@@ -58,14 +74,9 @@ const EntityOverview: React.FC<EntityOverviewProps> = ({ setRatio }) => {
         marginBottom="spacing.7"
       >
         <Heading size="small">{OVERVIEW_HEADER}</Heading>
-        <Text variant="caption">Last 6 months</Text>
+        <Text>For the last 6 months</Text>
       </Box>
-      <Box
-        display="flex"
-        flexDirection="row"
-        borderColor="surface.border.gray.subtle"
-        borderRadius="medium"
-      >
+      <Box display="flex" flexDirection="row" gap="spacing.3" borderRadius="medium">
         {tabs.map((entity) => {
           return (
             <OverviewCard

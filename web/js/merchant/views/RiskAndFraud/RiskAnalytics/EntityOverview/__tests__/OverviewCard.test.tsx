@@ -66,7 +66,7 @@ describe('Tests for Overview card', () => {
 
   test('Should call handleTabChange on tab click', async () => {
     renderApp();
-    const tabButton = screen.getByRole('button');
+    const tabButton = screen.getByRole('button', { name: `${FRAUD}-button` });
     await userEvent.click(tabButton);
     expect(handleTabChange).toHaveBeenCalled();
   });

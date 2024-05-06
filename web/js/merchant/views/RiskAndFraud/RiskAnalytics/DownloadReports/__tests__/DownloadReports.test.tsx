@@ -40,19 +40,6 @@ describe('RiskAnalytics - DownloadReports', () => {
     },
   );
 
-  test.each([AnalyticsEntity.FRAUD, AnalyticsEntity.DISPUTES])(
-    'should render DownloadReports "Note" for %s entity',
-    async (entity) => {
-      renderComponent({ entity });
-      await waitFor(() => expect(screen.getByText(/Note:/i)).toBeInTheDocument());
-    },
-  );
-
-  test('should not render DownloadReports "Note" for Risk declined entity', () => {
-    renderComponent({ entity: AnalyticsEntity.RISK_DECLINED });
-    expect(screen.queryByText(/Note:/i)).toBeNull();
-  });
-
   test('should assert "Download List" button click', async () => {
     renderComponent();
     expect(openModalSpy).toHaveBeenCalledTimes(0);

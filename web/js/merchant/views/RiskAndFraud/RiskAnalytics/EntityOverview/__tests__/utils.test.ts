@@ -4,6 +4,8 @@ import { RATIO_DURATION } from 'merchant/views/RiskAndFraud/RiskAnalytics/Entity
 import {
   getRatioPayload,
   getLabelComparision,
+  calculatePercentageChange,
+  getComparisonData,
 } from 'merchant/views/RiskAndFraud/RiskAnalytics/EntityOverview/utils';
 
 const MOCK_DATE = '2024-03-08';
@@ -45,4 +47,34 @@ test('getLabelComparision returns correct results', () => {
     textColor: 'surface.text.gray.muted',
     label: 'At par with industry average',
   });
+});
+
+describe('calculatePercentageChange', () => {
+  test.each([
+    [50, 70, 40],
+    [50, 30, -40],
+    [50, 50, 0],
+    [0, 10, 100],
+    [0, 0, 0],
+  ])(
+    'should calculate percentage change correctly when industry average is %s and entity value is %s',
+    (industryAverage, entityValue, expectedOutput) => {
+      const result = calculatePercentageChange(industryAverage, entityValue);
+      expect(result).toEqual(expectedOutput);
+    },
+  );
+});
+
+describe('getComparisonData', () => {
+  test.each([
+    [50, 70, 'higher than industry average'],
+    [50, 30, 'lower than industry average'],
+    [50, 50, 'at par with industry average'],
+  ])(
+    'should calculate percentage change correctly when industry average is %s and entity value is %s',
+    (industryAverage, entityValue, expectedOutput) => {
+      const result = getComparisonData(industryAverage, entityValue);
+      expect(result).toEqual(expectedOutput);
+    },
+  );
 });

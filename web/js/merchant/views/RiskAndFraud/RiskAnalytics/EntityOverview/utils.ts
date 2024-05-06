@@ -35,3 +35,31 @@ export const getLabelComparision = (
     };
   }
 };
+
+export const calculatePercentageChange = (industryAverage: number, entityValue: number) => {
+  if (industryAverage === 0 && entityValue === 0) {
+    return 0;
+  }
+
+  if (industryAverage === 0) {
+    return 100;
+  }
+
+  const decimalIndustryAverage = industryAverage / 100;
+  const decimalEntityValue = entityValue / 100;
+  const percentageChange =
+    ((decimalEntityValue - decimalIndustryAverage) / Math.abs(decimalIndustryAverage)) * 100;
+
+  return Number(percentageChange.toFixed(2));
+};
+
+export const getComparisonData = (industryAverage: number, entityValue: number): string => {
+  const percentageDifference = calculatePercentageChange(industryAverage, entityValue);
+  if (percentageDifference > 0) {
+    return `higher than industry average`;
+  }
+  if (percentageDifference < 0) {
+    return `lower than industry average`;
+  }
+  return 'at par with industry average';
+};
