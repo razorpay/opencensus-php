@@ -1,16 +1,17 @@
-import { CommonPoints } from './CommonPoints';
-import { PayuPoints } from './PayuPoints';
-import { CcavenuePoints } from './CcavenuePoints';
-import { CashfreePoints } from './CashfreePoints';
-import { PaytmPoints } from './PaytmPoints';
 import { AtomPoints } from './AtomPoints';
-import { PineLabsPoints } from './PineLabsPoints';
-import { IngenicoPoints } from './IngenicoPoints';
-import { BillDeskPoints } from './BillDeskPoints';
-import { UpiAxisPoints } from './UpiAxisPoints';
 import { AxisMigsPoints } from './AxisMigsPoints';
-import { HdfcPoints } from './HdfcPoints';
+import { BillDeskPoints } from './BillDeskPoints';
+import { CashfreePoints } from './CashfreePoints';
+import { CcavenuePoints } from './CcavenuePoints';
+import { CommonPoints } from './CommonPoints';
 import { CybersourcePoints } from './CybersourcePoints';
+import { HdfcPoints } from './HdfcPoints';
+import { IngenicoPoints } from './IngenicoPoints';
+import { PayZappPoints } from './PayZappPoints';
+import { PaytmPoints } from './PaytmPoints';
+import { PayuPoints } from './PayuPoints';
+import { PineLabsPoints } from './PineLabsPoints';
+import { UpiAxisPoints } from './UpiAxisPoints';
 import { UpiIciciPoints } from './UpiIciciPoints';
 
 export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
@@ -43,6 +44,8 @@ export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
       return <CybersourcePoints />;
     case 'upi_icici':
       return <UpiIciciPoints />;
+    case 'wallet_payzapp':
+      return <PayZappPoints />;
     default:
       return (
         <ol>

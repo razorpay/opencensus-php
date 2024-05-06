@@ -1339,6 +1339,7 @@ export const gatewayLogos = {
   netbanking_axis: getLogoPath('axis'),
   checkout_dot_com_optimizer: require('assets/optimizer/cko.png'),
   easebuzz_optimizer: require('assets/optimizer/easebuzz_optimizer.png'),
+  wallet_payzapp: require('assets/optimizer/payzapp.png'),
 };
 
 export const mapRulesObjectToArray = (e) => {
@@ -1526,6 +1527,11 @@ export const gatewayDetailsMapping = {
     dashboardImg: require('assets/optimizer/razorpay-dashboard.png'),
     dashboardUrl: null,
     dashboardUrlLabel: null,
+  },
+  wallet_payzapp: {
+    dashboardImg: null,
+    dashboardUrl: 'https://www.hdfcbank.com/sme/pay/payments-and-collections/payzapp-for-business',
+    dashboardUrlLabel: 'payzapp-for-business',
   },
 };
 
