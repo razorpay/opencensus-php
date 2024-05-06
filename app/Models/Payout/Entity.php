@@ -461,7 +461,6 @@ class Entity extends Base\PublicEntity
         PayoutMode::IMPS,
         PayoutMode::UPI,
         PayoutMode::NEFT,
-        PayoutMode::RTGS
     ];
 
     const PAYOUTS_SMART_ROUTING_RULES_ALLOWED_CHANNELS = [

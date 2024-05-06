@@ -234,6 +234,8 @@ class Core extends Base\Core
 
     const MERCHANT_CUSTOMIZED_PRIORITY_RULES = "merchant_customized_priority_rules";
 
+    const MERCHANT_ROUTING_PRIORITIES = 'priorities';
+
     /**
      * @var Mutex
      */
@@ -11282,50 +11284,6 @@ class Core extends Base\Core
         return $ftsRequest;
     }
 
-    public function initializeFtsRequestForModifySmartRoutingRules(array $modeWiseActiveChannelsWithFundAccountIDs = null,
-                                                             array $merchantCustomizedPriorityRules = null) : array
-    {
-        $merchantID = $this->merchant->getId();
-        $channelShared = strtoupper(Balance\AccountType::SHARED);
-
-        $merchantCustomizedPriorityRulesWithFundAccountIDs = [];
-        $ftsRequest = [];
-
-        /* $modeWiseActiveChannelsWithFundAccountIDs = ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
-        'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
-        'UPI' => ['RBL' => 123456]]
-
-        $merchantCustomizedPriorityRules = ['IMPS' => ['RBL', 'ICICI', 'SHARED'], 'NEFT' => ['ICICI', 'RBL', 'SHARED', ], 'UPI' => ['RBL']]*/
-
-        // Send active channels to FTS as per the order set by merchant
-        foreach ($merchantCustomizedPriorityRules as $transferMode => $channels)
-        {
-            foreach ($channels as $channel)
-            {
-                // Adding channel & fund account ID as per order of channel in the priority list provided by merchant
-                if ($channel === $channelShared) {
-                    $merchantCustomizedPriorityRulesWithFundAccountIDs[$transferMode][$channel] = "";
-                } else {
-                    $merchantCustomizedPriorityRulesWithFundAccountIDs[$transferMode][$channel] = $modeWiseActiveChannelsWithFundAccountIDs[$transferMode][$channel];
-                }
-            }
-        }
-
-        $ftsRequest[Entity::MERCHANT_ID] = $merchantID;
-        $ftsRequest[self::MERCHANT_CUSTOMIZED_PRIORITY_RULES] = $merchantCustomizedPriorityRulesWithFundAccountIDs;
-
-        /* {
-             'merchant_id' => 'XYZ,
-             'merchant_customized_priority_rules' => ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907], 'NEFT' => ['ICICI' => 78907, 'RBL' => 123456], 'UPI' => ['RBL' => 123456]]
-           } */
-        $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_FTS_REQUEST, [
-            Entity::MERCHANT_ID => $merchantID,
-            TraceCode::FTS_REQUEST => $ftsRequest,
-        ]);
-
-        return $ftsRequest;
-    }
-
     public function getActiveChannelsWithFundAccountsForSmartRoutingRules($merchant) : array {
         $merchantID = $merchant->getId();
 
@@ -11446,21 +11404,27 @@ class Core extends Base\Core
                   [Entity::MERCHANT_ID  => $merchantID]);
         }
 
-        // {
-        //    "merchant_id": "10000000000000",
-        //    "mode_wise_active_channels": {
-        //        "IMPS": {
-        //            "RBL": "10001",
-        //            "ICICI": "12345678",
-        //            "SHARED": ""
-        //        },
-        //        "NEFT": {
-        //            "ICICI": "12345678",
-        //            "RBL": "10001",
-        //            "SHARED": ""
-        //        }
-        //    }
-        // }
+        /* {
+            "merchant_id": "10000000000000",
+            "mode_wise_active_channels": {
+                "IMPS": {
+                    "SHARED": "",
+                    "RBL": "10001",
+                    "ICICI": "12345678"
+                },
+                "NEFT": {
+                    "SHARED": "",
+                    "RBL": "10001",
+                    "ICICI": "12345678"
+                },
+                "UPI": {
+                    "SHARED": "",
+                    "RBL": "10001",
+                    "ICICI": "12345678"
+                }
+            }
+        } */
+
         $ftsRequest = $this->initializeFtsRequestForFetchSmartRoutingRules($activeChannelsWithFundAccounts);
 
         /** @var \RZP\Services\FTS\FundTransfer $ftsService */
@@ -11473,7 +11437,9 @@ class Core extends Base\Core
             // Sample response: ["IMPS" => ["RBL", "ICICI", "SHARED"], "NEFT" => ["YESBANK", "RBL", "SHARED"], "UPI" => ["RBL"]]
             $ftsResponse = $ftsService->fetchSmartRoutingRulesThroughFts($ftsRequest);
 
-            (new Validator())->validateSmartRoutingRules($ftsResponse);
+            $modeWiseChannelPriorities = $ftsResponse[self::MERCHANT_ROUTING_PRIORITIES];
+
+            (new Validator())->validateSmartRoutingRules($modeWiseChannelPriorities);
         } catch (\Throwable $ex) {
             $this->trace->traceException(
                 $ex, Logger::ERROR, TraceCode::FETCH_SMART_ROUTING_RULES_FTS_REQUEST_FAILED,
@@ -11493,7 +11459,7 @@ class Core extends Base\Core
             TraceCode::FTS_RESPONSE => $ftsResponse
         ]);
 
-        return $ftsResponse;
+        return $modeWiseChannelPriorities;
     }
 
     /**
@@ -11528,22 +11494,39 @@ class Core extends Base\Core
                                      [Entity::MERCHANT_ID  => $merchantID]);
         }
 
-        // {
-        //    "merchant_id": "10000000000000",
-        //    "merchant_customized_priority_rules": {
-        //        "IMPS": {
-        //            "RBL": "10001",
-        //            "ICICI": "12345678",
-        //            "SHARED": ""
-        //        },
-        //        "NEFT": {
-        //            "ICICI": "12345678",
-        //            "RBL": "10001",
-        //            "SHARED": ""
-        //        }
-        //    }
-        //}
-        $ftsRequest = $this->initializeFtsRequestForModifySmartRoutingRules($activeChannelsWithFundAccounts, $input);
+    /* {
+        "merchant_id": "10000000000000",
+        "mode_wise_active_channels": {
+            "IMPS": {
+                "SHARED": "",
+                "RBL": "10001",
+                "ICICI": "12345678"
+            },
+            "NEFT": {
+                "SHARED": "",
+                "RBL": "10001",
+                "ICICI": "12345678"
+            },
+            "UPI": {
+                "SHARED": ""
+            }
+        },
+        "merchant_customized_priority_rules": {
+            "IMPS": [
+                "RBL",
+                "ICICI",
+                "SHARED"
+            ],
+            "NEFT": [
+                "ICICI",
+                "RBL",
+                "SHARED"
+            ]
+        }
+    } */
+
+        $ftsRequest = $this->initializeFtsRequestForFetchSmartRoutingRules($activeChannelsWithFundAccounts);
+        $ftsRequest[self::MERCHANT_CUSTOMIZED_PRIORITY_RULES] = $input;
 
         /** @var \RZP\Services\FTS\FundTransfer $ftsService */
 
@@ -11555,7 +11538,9 @@ class Core extends Base\Core
             // Sample response: ["IMPS" => ["RBL", "ICICI", "SHARED"], "NEFT" => ["ICICI", "RBL", "SHARED"], "UPI" => ["RBL"]]
             $ftsResponse = $ftsService->modifySmartRoutingRulesThroughFts($ftsRequest);
 
-            (new Validator())->validateSmartRoutingRules($ftsResponse);
+            $modeWiseChannelPriorities = $ftsResponse[self::MERCHANT_ROUTING_PRIORITIES];
+
+            (new Validator())->validateSmartRoutingRules($modeWiseChannelPriorities);
         } catch (\Throwable $ex) {
             $this->trace->traceException(
                 $ex, Logger::ERROR, TraceCode::MODIFY_SMART_ROUTING_RULES_FTS_REQUEST_FAILED,
@@ -11575,6 +11560,6 @@ class Core extends Base\Core
             TraceCode::FTS_RESPONSE => $ftsResponse
         ]);
 
-        return $ftsResponse;
+        return $modeWiseChannelPriorities;
     }
 }

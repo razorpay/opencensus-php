@@ -2593,19 +2593,21 @@ class PayoutSmartRoutingTest extends TestCase
         $ftsFetchSmartRoutingRulesSuccess = true;
 
         $ftsSmartRoutingRulesMockedResponse = [
-            'IMPS' => [
-                'RBL',
-                'ICICI',
-                'SHARED'
-            ],
-            'NEFT' => [
-                'ICICI',
-                'RBL',
-                'SHARED'
-            ],
-            'UPI' => [
-                'RBL',
-                'ICICI'
+            'priorities' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                    'SHARED'
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                    'SHARED'
+                ],
+                'UPI' => [
+                    'RBL',
+                    'ICICI'
+                ]
             ]
         ];
 
@@ -2631,15 +2633,17 @@ class PayoutSmartRoutingTest extends TestCase
         $ftsFetchSmartRoutingRulesSuccess = true;
 
         $ftsSmartRoutingRulesMockedResponse = [
-            'IMPS' => [
-                'RBL',
-                'ICICI',
-                'SHARED'
-            ],
-            'NEFT' => [
-                'ICICI',
-                'RBL',
-                'SHARED'
+            'priorities' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                    'SHARED'
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                    'SHARED'
+                ]
             ]
         ];
 
@@ -2665,13 +2669,15 @@ class PayoutSmartRoutingTest extends TestCase
         $ftsFetchSmartRoutingRulesSuccess = true;
 
         $ftsSmartRoutingRulesMockedResponse = [
-            'IMPS' => [
-                'RBL',
-                'ICICI',
-            ],
-            'NEFT' => [
-                'ICICI',
-                'RBL',
+            'priorities' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                ]
             ]
         ];
 
@@ -2739,15 +2745,17 @@ class PayoutSmartRoutingTest extends TestCase
         $ftsModifySmartRoutingRulesSuccess = true;
 
         $ftsSmartRoutingRulesMockedResponse = [
-            'IMPS' => [
-                'RBL',
-                'ICICI',
-                'SHARED'
-            ],
-            'NEFT' => [
-                'ICICI',
-                'RBL',
-                'SHARED'
+            'priorities' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                    'SHARED'
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                    'SHARED'
+                ]
             ]
         ];
 
