@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Checkout\Order;
 
+use RZP\Error\PublicErrorDescription;
 use Carbon\Carbon;
 use RZP\Constants\HashAlgo;
 use RZP\Error\ErrorCode;
@@ -219,8 +220,8 @@ class Core extends BaseCore
             ]);
 
             throw new BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_AMOUNT_MISMATCH,
-                Entity::AMOUNT
+                PublicErrorDescription::BAD_REQUEST_AMOUNT_MISMATCH,
+                Entity::AMOUNT,
             );
         }
     }
