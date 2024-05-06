@@ -281,24 +281,25 @@ class Repository extends Base\Repository
       array $merchantIds = [],
       array $merchantIdsExcluded = []): array
     {
-        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__))
         {
             if ($this->isTransactionActive())
             {
-                $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER));
             }
             else
             {
-                $results = (new AsvSdkMerchantQuery())->fetchActivatedMerchantsBeforeTimestamp(
-                    $limit, $skip, $end, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS, $merchantIds, $merchantIdsExcluded
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
                 );
-
-                return $results->pluck(Entity::ID)->toArray();
             }
         }
         else
         {
-            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+            $query = $this->newQueryWithConnection(
+                $this->getSlaveConnection()
+            );
         }
 
         $query = $query->select(Entity::ID)

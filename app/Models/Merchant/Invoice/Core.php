@@ -548,7 +548,7 @@ class Core extends Base\Core
         $endTimestamp =  $this->getPatchedLastDay($month, $year)
                                 ->getTimestamp();
 
-        $batch = AsvSdkBase::FETCH_SERVICE_FILTER_LIMIT;
+        $batch = 10000;
 
         $skip = 0;
 

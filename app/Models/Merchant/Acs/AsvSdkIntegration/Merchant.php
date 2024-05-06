@@ -45,14 +45,6 @@ class Merchant extends Base
         = 'fetch_linked_account_ids_from_parent_id_with_activated';
     const FIND_MERCHANTS_FROM_EXTERNAL_ID
         = 'find_merchants_from_external_id';
-    const FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP
-        = 'fetch_activated_merchants_before_timestamp';
-    const FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS
-        = 'fetch_activated_merchants_before_timestamp_with_merchant_ids';
-    const FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS_EXCLUDED
-        = 'fetch_activated_merchants_before_timestamp_with_merchant_ids_excluded';
-    const FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS_AND_EXCLUDED
-        = 'fetch_activated_merchants_before_timestamp_with_merchant_ids_and_excluded';
 
     public function __construct()
     {
@@ -190,72 +182,6 @@ class Merchant extends Base
         $joins          = $response->getJoins();
 
         return json_decode($joins[0]->serializeToJsonString(), true)["linked_account_count"];
-    }
-
-    /**
-     * @throws BadRequestException
-     * @throws BaseException
-     */
-    public function fetchActivatedMerchantsBeforeTimestamp(
-        int   $limit,
-        int   $skip,
-        int   $end,
-        array $parentIdsExcluded,
-        array $merchantIds = [],
-        array $merchantIdsExcluded = []
-    ): Collection|PublicCollection
-    {
-        $filterRequest =  new FilterRequest();
-
-        if (empty($merchantIds) and empty($merchantIdsExcluded))
-        {
-            $filterRequest->setQueryIdentifier(
-                self::FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP
-            );
-            $filterRequest->setBindings(
-                json_encode([1, $end, $parentIdsExcluded, $limit, $skip])
-            );
-        }
-        else if (!empty($merchantIds) and !empty($merchantIdsExcluded))
-        {
-            $filterRequest->setQueryIdentifier(
-                self::FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS_AND_EXCLUDED
-            );
-            $filterRequest->setBindings(
-                json_encode([1, $end, $parentIdsExcluded, $merchantIds, $merchantIdsExcluded, $limit, $skip])
-            );
-        }
-        else if (!empty($merchantIds))
-        {
-            $filterRequest->setQueryIdentifier(
-                self::FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS
-            );
-            $filterRequest->setBindings(
-                json_encode([1, $end, $parentIdsExcluded, $merchantIds, $limit, $skip])
-            );
-        }
-        else if (!empty($merchantIdsExcluded))
-        {
-            $filterRequest->setQueryIdentifier(
-                self::FETCH_ACTIVATED_MERCHANTS_BEFORE_TIMESTAMP_WITH_MERCHANT_IDS_EXCLUDED
-            );
-            $filterRequest->setBindings(
-                json_encode([1, $end, $parentIdsExcluded, $merchantIdsExcluded, $limit, $skip])
-            );
-        }
-        else
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_ARGUMENT,
-                null,
-                null,
-                "invalid arguments for fetchActivatedMerchantsBeforeTimestamp",
-            );
-        }
-
-        $response = $this->getFilterResponseFromAsv($filterRequest);
-
-        return $this->getMerchantCollectionFromResponse($response);
     }
 
     /**
