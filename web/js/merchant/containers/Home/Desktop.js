@@ -577,7 +577,7 @@ class AnalyticsDesktop extends Component {
 
     return (
       <div className="home-analytics-desktop">
-        <PaymentsRecapBanner bannerVariant="desktop" />
+        <PaymentsRecapBanner bannerVariant="desktop" user={user} />
         <PricingSubscriptionWrapper />
         <ShowWhen additionalCondition={() => !isConfigTagEnabled('onboarding.getting_started')}>
           {/* Announcement Banner Start */}

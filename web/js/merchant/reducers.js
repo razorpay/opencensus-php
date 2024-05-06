@@ -157,7 +157,6 @@ import paymentMetricsReducer from 'merchant/reducers/paymentMetrics';
 import genericFeatureReducer from 'merchant/reducers/genericFeature';
 import videoKYCBannerReducer from 'merchant/reducers/videoKYCBanner';
 import { unlockIntlPaymentMethodsReducer } from 'merchant/reducers/unlockIntlPaymentMethods/reducer';
-import paymentsRecapReducer from 'merchant/reducers/paymentsRecap';
 
 export default combineReducers({
   // modal: modalReducer,
@@ -310,5 +309,4 @@ export default combineReducers({
   genericFeature: genericFeatureReducer,
   videoKYCBanner: videoKYCBannerReducer,
   unlockIntlPaymentMethods: unlockIntlPaymentMethodsReducer,
-  paymentsRecap: paymentsRecapReducer,
 });

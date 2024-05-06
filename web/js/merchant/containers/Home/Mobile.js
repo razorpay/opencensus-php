@@ -287,7 +287,7 @@ class AnalyticsMobile extends Component {
             Google Chrome, Edge, Safari, Firefox.
           </AnnouncementBanner>
         )}
-        <PaymentsRecapBanner bannerVariant="mobile" />
+        <PaymentsRecapBanner bannerVariant="mobile" user={user} />
         <DashboardBanner />
         <div
           ref={(node) => onExtraContentMount(node)}

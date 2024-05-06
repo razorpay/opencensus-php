@@ -17,7 +17,7 @@ import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCredi
 import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
 import NotificationIcon from 'common/ui/WhatsNew/Icon';
 import { getItem, setItem } from 'common/utils/localStorage';
-import { classList, isExperimentActive } from 'common/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
 import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -42,10 +42,6 @@ import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
-);
-
-const PaymentsRecap = lazyLoader(() =>
-  import(/* webpackChunkName: 'payments-recap' */ 'merchant/components/HeaderNav/PaymentsRecap'),
 );
 
 // number of times to show MTU offer
@@ -101,16 +97,6 @@ class HeaderNav extends Component {
     const { user } = this.props;
     return isRTUXHomepageEnabled({ user, abExperiments });
   }
-
-  shouldShowRazorpayRewind = () => {
-    const { user, splitz } = this.props;
-    const { abExperiments: { payments_recap, payments_recap_enhancements } = {} } = splitz;
-    return (
-      user.isOrgRZP &&
-      (user.isActivated || isExperimentActive(payments_recap_enhancements)) &&
-      isExperimentActive(payments_recap)
-    );
-  };
 
   componentDidMount() {
     const hash = this.props.history.location.hash;
@@ -414,7 +400,6 @@ class HeaderNav extends Component {
             }}
           />
         )}
-        {this.shouldShowRazorpayRewind() ? <PaymentsRecap user={user} /> : null}
       </div>
     );
   }

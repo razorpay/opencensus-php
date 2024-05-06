@@ -1,80 +1,81 @@
-import React from 'react';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
+import React, { useEffect } from 'react';
 import { Box } from '@razorpay/blade/components';
 
-import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
-import { togglePaymentsRecapModal as togglePaymentsRecapModalFn } from 'merchant/reducers/paymentsRecap';
-import RzpRewindBannerDesktop from 'assets/razorpay-rewind/razorpay-rewind-banner-desktop.png';
-import RzpMobileBanner from 'assets/razorpay-rewind/razorpay-rewind-banner-mobile.png';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import { User } from 'common/typings';
+
+import RzpRewindReportBannerDesktop from 'assets/razorpay-rewind/desktop.png';
+import RzpRewindReportBannerMobile from 'assets/razorpay-rewind/mobile.png';
 
 import { BannerBtn } from './styled';
-import { trackPaymentsRecapEvent } from './utils';
 
-const FallbackComponent = () => {
-  return null;
+const trackPaymentsRecapEvent = ({
+  objectName,
+  actionName,
+  properties = {},
+}: {
+  objectName: string;
+  actionName: string;
+  properties?: Record<string, any>;
+}): void => {
+  analyticsTrackWithUserInfo({
+    objectName,
+    actionName,
+    screen: 'home page',
+    properties,
+    addUserProperties: true,
+  });
 };
 
 const PaymentsRecapBanner: React.FC<{
+  user: User;
   bannerVariant: 'desktop' | 'mobile';
-  togglePaymentsRecapModal: (flag) => void;
-  paymentsRecap: any;
-}> = ({ bannerVariant, togglePaymentsRecapModal, paymentsRecap }) => {
+}> = ({ user, bannerVariant }) => {
   const isMobileBanner = bannerVariant === 'mobile';
-  const showBanner = paymentsRecap?.showBanner;
+  const splitz = useSplitzService();
+  const shouldShowBanner =
+    isExperimentEnabled(splitz?.abExperiments?.payments_recap) && user?.isOrgRZP;
 
-  if (!showBanner) return null;
+  useEffect(() => {
+    trackPaymentsRecapEvent({
+      objectName: 'Rzp rewind flipbook banner',
+      actionName: 'displayed',
+    });
+  }, []);
 
-  return (
-    <ErrorBoundary
-      resetOnProps
-      rank={Ranks.P1}
-      team={Teams.PG_DASHBOARD}
-      FallbackComponent={FallbackComponent}
+  return shouldShowBanner ? (
+    <Box
+      height="100px"
+      borderRadius="medium"
+      position="relative"
+      marginX="spacing.6"
+      paddingTop="20px"
+      elevation="highRaised"
     >
-      <Box
-        height="100px"
-        borderRadius="medium"
-        position="relative"
-        marginX="spacing.6"
-        paddingTop="20px"
-        elevation="highRaised"
-      >
-        <Box overflow="hidden" height="100%" width="100%" left="0px" position="relative">
-          <img
-            src={isMobileBanner ? RzpMobileBanner : RzpRewindBannerDesktop}
-            width="100%"
-            height="100%"
-            style={{ objectFit: 'cover' }}
-          />
-          <BannerBtn
-            onClick={() => {
-              togglePaymentsRecapModal(true);
-              trackPaymentsRecapEvent({
-                objectName: 'RZP Rewind Banner',
-                actionName: 'Clicked',
-              });
-            }}
-            isMobileBanner={isMobileBanner}
-          >
-            Check it out now!
-          </BannerBtn>
-        </Box>
+      <Box overflow="hidden" height="100%" width="100%" left="0px" position="relative">
+        <img
+          src={isMobileBanner ? RzpRewindReportBannerMobile : RzpRewindReportBannerDesktop}
+          width="100%"
+          height="100%"
+          style={{ objectFit: 'cover' }}
+        />
+        <BannerBtn
+          onClick={() => {
+            trackPaymentsRecapEvent({
+              objectName: 'Rzp rewind flipbook banner',
+              actionName: 'clicked',
+            });
+            window.open('https://online.fliphtml5.com/tatrf/nvye/#p=1', '_blank');
+          }}
+          isMobileBanner={isMobileBanner}
+        >
+          View full report
+        </BannerBtn>
       </Box>
-    </ErrorBoundary>
-  );
+    </Box>
+  ) : null;
 };
 
-const mapStateToProps = (state) => ({
-  paymentsRecap: state.paymentsRecap,
-});
-
-const mapDispatchToProps = (dispatch) =>
-  bindActionCreators(
-    {
-      togglePaymentsRecapModal: togglePaymentsRecapModalFn,
-    },
-    dispatch,
-  );
-
-export default connect(mapStateToProps, mapDispatchToProps)(PaymentsRecapBanner);
+export default PaymentsRecapBanner;
