@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { gatewayLogos, rzpGateways } from './util';
+
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
+
+import { gatewayLogos, rzpGateways } from './util';
 
 export default class ProviderNewView extends React.Component {
   viewItem = (provider) => {
@@ -25,9 +27,13 @@ export default class ProviderNewView extends React.Component {
             )}
           </h3>
           <div className="gateway-provider-block--details--methods">
-            <p title={provider.Gateway_details['Payment Methods'].join(', ')}>
-              {provider.Gateway_details['Payment Methods'].join(', ')}
-            </p>
+            {provider.Gateway_details['Payment Methods']?.length > 0 ? (
+              <p title={provider.Gateway_details['Payment Methods'].join(', ')}>
+                {provider.Gateway_details['Payment Methods'].join(', ')}
+              </p>
+            ) : (
+              <p>pending</p>
+            )}
           </div>
         </div>
       </div>

@@ -1,5 +1,9 @@
 import React, { createRef } from 'react';
 import { Box, Link, ChevronLeftIcon, Spinner } from '@razorpay/blade/components';
+import {
+  addProviderV3,
+  fetchRazorpayMethodCoverage,
+} from 'merchant/views/Optimizer/AddProvider/service.ts';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
@@ -35,8 +39,13 @@ import {
   IntegrationType,
   ProviderDetails,
   ProviderConfiguration,
+  PaymentMethodCoverage,
 } from './components';
-
+import {
+  isIntegrationAuditEnabled,
+  isGatewaySupportIntegrationAudit,
+  areMandatoryMethodsCovered,
+} from './utils';
 class AddProvider extends React.Component {
   step2Ref = createRef();
   step3Ref = createRef();
@@ -62,6 +71,10 @@ class AddProvider extends React.Component {
         edit: false,
         show: false,
       },
+      5: {
+        edit: false,
+        show: false,
+      },
     },
     provider: deepClone(INIT_PROVIDER_STATE),
     terminalId: this.props?.match?.params?.id,
@@ -74,6 +87,11 @@ class AddProvider extends React.Component {
     allDetailsValid: false,
     validationErrors: {},
     isSaving: false,
+    showMethodCoverage: false,
+    gatewayCoverage: {},
+    razorpayCoverage: {},
+    isGatewayCoverageMissing: false,
+    isRazorpayCoverageMissing: false,
   };
 
   componentDidMount() {
@@ -447,16 +465,22 @@ class AddProvider extends React.Component {
     const { provider, providers } = this.state;
 
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
-    const { user } = this.props;
+    const { user, splitz } = this.props;
     let paytmAutoDebitEnabled = false;
     if (user?.isPaytmAutoDebitEnabled && selectedProviderWithAcquirer === 'paytm') {
       paytmAutoDebitEnabled = provider?.Gateway_details?.[WALLET_AUTO_DEBIT_KEY];
     }
 
+    // Do paymnet method value check only if gateway does not support integration audit
+    const doPaymentMethodsValidation = !(
+      isIntegrationAuditEnabled(splitz) &&
+      isGatewaySupportIntegrationAudit(selectedProviderWithAcquirer)
+    );
+
     for (const key of Object.keys(providers[selectedProviderWithAcquirer])) {
       const value = provider?.Gateway_details?.[key];
 
-      if (key === 'Payment Methods') {
+      if (key === 'Payment Methods' && doPaymentMethodsValidation) {
         if (value?.length === 0) {
           return false;
         }
@@ -633,9 +657,36 @@ class AddProvider extends React.Component {
     });
   };
 
+  findCoverage = (result) => {
+    const { providers } = this.state;
+    const mandatoryMethods =
+      providers?.[this.getSelectedProviderWithAcquirer()]?.[PROVIDER_KEYS.MANDATORY_METHODS]
+        ?.data_value;
+
+    const gatewayCoverage = result[0].data?.gateway_methods?.methods;
+    const razorpayCoverage = result[1].data;
+    const isGatewayCoverageMissing = !areMandatoryMethodsCovered(mandatoryMethods, gatewayCoverage);
+    const isRazorpayCoverageMissing = !areMandatoryMethodsCovered(
+      mandatoryMethods,
+      razorpayCoverage,
+    );
+    const showMethodCoverage = isGatewayCoverageMissing || isRazorpayCoverageMissing;
+
+    if (showMethodCoverage) {
+      this.goNext();
+    }
+    this.setState({
+      showMethodCoverage,
+      gatewayCoverage,
+      razorpayCoverage,
+      isGatewayCoverageMissing,
+      isRazorpayCoverageMissing,
+    });
+  };
+
   onSubmit = async () => {
     const { provider, isEdit, selectedProvider } = this.state;
-    const { history, showNotification } = this.props;
+    const { history, showNotification, splitz } = this.props;
 
     const Gateway_details = { ...provider?.Gateway_details };
     const paymentMethods = Gateway_details?.['Payment Methods'] ?? [];
@@ -680,6 +731,8 @@ class AddProvider extends React.Component {
     this.setState({ isSaving: true });
 
     let res = null;
+    const integrationAuditFlow =
+      isIntegrationAuditEnabled(splitz) && isGatewaySupportIntegrationAudit(payload?.Gateway);
 
     try {
       if (isEdit) {
@@ -687,6 +740,17 @@ class AddProvider extends React.Component {
         delete payload.Gateway_acquirer;
 
         res = await editProvider({ payload });
+        // Later update with patch request for integration audit flow
+      } else if (integrationAuditFlow) {
+        // V3 API for provider addition which will create provider in pending state initially
+        const result = await Promise.all([
+          addProviderV3({ payload }),
+          fetchRazorpayMethodCoverage(),
+        ]);
+        res = result[0].data;
+        this.setState({ isSaving: false });
+        this.findCoverage(result);
+        return;
       } else {
         res = await addProvider({ payload });
       }
@@ -753,7 +817,7 @@ class AddProvider extends React.Component {
   };
 
   render() {
-    const { user, splitz } = this.props;
+    const { user, splitz, org } = this.props;
 
     const {
       isEdit,
@@ -767,12 +831,20 @@ class AddProvider extends React.Component {
       allDetailsValid,
       validationErrors,
       isSaving,
+      showMethodCoverage,
+      gatewayCoverage,
+      razorpayCoverage,
+      isGatewayCoverageMissing,
+      isRazorpayCoverageMissing,
     } = this.state;
 
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
     const hasAccountTypeOption =
       selectedProviderWithAcquirer === RAZORPAY_GATEWAY_KEY &&
       providers?.[selectedProviderWithAcquirer]?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
+
+    const allAvailableMethods =
+      providers?.[selectedProviderWithAcquirer]?.['Payment Methods']?.data_value;
 
     return (
       <Box
@@ -869,6 +941,21 @@ class AddProvider extends React.Component {
                 />
               </Box>
             )}
+            {showMethodCoverage && (
+              <Box ref={this.step5Ref}>
+                <PaymentMethodCoverage
+                  isEdit={isEdit}
+                  isFormEdit={false}
+                  selectedProvider={selectedProviderWithAcquirer}
+                  methods={allAvailableMethods}
+                  gatewayCoverage={gatewayCoverage}
+                  razorpayCoverage={razorpayCoverage}
+                  businessName={org.business_name}
+                  isGatewayCoverageMissing={isGatewayCoverageMissing}
+                  isRazorpayCoverageMissing={isRazorpayCoverageMissing}
+                />
+              </Box>
+            )}
           </Box>
         )}
       </Box>
@@ -880,6 +967,7 @@ const mapStateToProps = (state) => {
   const { session, navigator } = state;
   return {
     user: session?.user,
+    org: session?.org,
     activeProviders: navigator?.terminalProviders,
   };
 };

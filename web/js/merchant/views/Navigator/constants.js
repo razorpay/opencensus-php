@@ -26,7 +26,7 @@ export const GATEWAY_CATEGORIES = {
 export const RAZORPAY_GATEWAY_KEY = 'optimizer_razorpay';
 export const RECOMMENDED_GATEWAYS = ['payu'];
 
-export const INTEGRATION_AUDIT_COVERED_GATEWAY = ['payu', 'paytm', 'cashfree'];
+export const INTEGRATION_AUDIT_COVERED_GATEWAY = ['payu'];
 
 export const METHODS = {
   CARD: 'card',
@@ -83,6 +83,7 @@ export const PROVIDER_KEYS = {
   SEAMLESS_KEY: 'optimizer_seamless_disabled',
   SODEXO: 'Sodexo',
   RECURRING: 'Recurring',
+  MANDATORY_METHODS: 'Mandatory Methods',
 };
 
 export const SKIP_INPUT_FOR_PROVIDER_KEYS = [
@@ -90,6 +91,7 @@ export const SKIP_INPUT_FOR_PROVIDER_KEYS = [
   PROVIDER_KEYS.GATEWAY_ACQUIRER,
   PROVIDER_KEYS.SODEXO,
   PROVIDER_KEYS.SEAMLESS_KEY,
+  PROVIDER_KEYS.MANDATORY_METHODS,
 ];
 
 export const WALLET_AUTO_DEBIT_KEY = 'ENABLE_AUTO_DEBIT';
@@ -101,6 +103,7 @@ export const SKIP_VALIDATION_KEYS = [
   PROVIDER_KEYS.SODEXO,
   WALLET_AUTO_DEBIT_KEY,
   PROVIDER_KEYS.RECURRING,
+  PROVIDER_KEYS.MANDATORY_METHODS,
 ];
 
 export const SKIP_PAYTM_AUTO_DEBIT_VALIDATION_KEYS = ['CLIENT_KEY', 'CLIENT_SECRET']; // These fields are only required if the wallet auto debit is enabled on paytm
