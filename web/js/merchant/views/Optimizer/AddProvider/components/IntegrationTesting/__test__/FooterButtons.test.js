@@ -13,8 +13,11 @@ describe('Optimizer IntegrationTesting FooterButtons', () => {
     isPaymentDone: true,
     testPayment: jest.fn(),
     raiseTicket: jest.fn(),
+    isRefundDone: false,
     testAnotherPayment: jest.fn(),
     changeIntegrationTestingStep: jest.fn(),
+    takeProviderLive: jest.fn(),
+    isUpdatingProvider: false,
   };
 
   const App = (props) => {
@@ -48,7 +51,7 @@ describe('Optimizer IntegrationTesting FooterButtons', () => {
     expect(mockProps.testAnotherPayment).toHaveBeenCalled();
     expect(screen.getByText('Continue')).toBeInTheDocument();
     await userEvent.click(screen.getByText('Continue'));
-    expect(mockProps.changeIntegrationTestingStep).toHaveBeenCalledWith('refund_testing');
+    expect(mockProps.changeIntegrationTestingStep).toHaveBeenCalledWith({ name: 'refund_testing' });
   });
 
   it('should render the correct buttons for failed payment', async () => {
@@ -63,5 +66,78 @@ describe('Optimizer IntegrationTesting FooterButtons', () => {
     expect(screen.getByText('Raise a ticket')).toBeInTheDocument();
     await userEvent.click(screen.getByText('Raise a ticket'));
     expect(props.raiseTicket).toHaveBeenCalled();
+  });
+
+  it('should render the correct buttons for refund testing not done', async () => {
+    const props = {
+      ...mockProps,
+      currentStep: 'refund_testing',
+      isPaymentDone: true,
+      isRefundDone: false,
+    };
+    render(<App {...props} />);
+    expect(screen.getByText('Previous')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Previous'));
+    expect(props.changeIntegrationTestingStep).toHaveBeenCalledWith({ name: 'payment_testing' });
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+  });
+
+  it('should render the corect buttons for refund testing done', async () => {
+    const props = {
+      ...mockProps,
+      currentStep: 'refund_testing',
+      isPaymentDone: true,
+      isRefundDone: true,
+    };
+    render(<App {...props} />);
+    expect(screen.getByText('Previous')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Previous'));
+    expect(props.changeIntegrationTestingStep).toHaveBeenCalledWith({ name: 'payment_testing' });
+    expect(screen.getByText('Continue')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Continue'));
+    expect(props.changeIntegrationTestingStep).toHaveBeenCalledWith({
+      name: 'integration_audit_summary',
+    });
+  });
+
+  it('should render the correct buttons for integration audit summary', async () => {
+    const props = {
+      ...mockProps,
+      currentStep: 'integration_audit_summary',
+    };
+    render(<App {...props} />);
+    expect(screen.getByText('Previous')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Previous'));
+    expect(props.changeIntegrationTestingStep).toHaveBeenCalledWith({ name: 'refund_testing' });
+    expect(screen.getByText('Continue')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Continue'));
+    expect(props.changeIntegrationTestingStep).toHaveBeenCalledWith({ name: 'provider_settings' });
+  });
+
+  it('should render the correct buttons for provider settings', async () => {
+    const props = {
+      ...mockProps,
+      currentStep: 'provider_settings',
+    };
+    render(<App {...props} />);
+    expect(screen.getByText('Previous')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Previous'));
+    expect(props.changeIntegrationTestingStep).toHaveBeenCalledWith({
+      name: 'integration_audit_summary',
+    });
+    expect(screen.getByText('Go live')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Go live'));
+    expect(props.takeProviderLive).toHaveBeenCalled();
+  });
+
+  it('should render the disabled button for provider settings on updating provider', () => {
+    const props = {
+      ...mockProps,
+      currentStep: 'provider_settings',
+      isUpdatingProvider: true,
+    };
+    render(<App {...props} />);
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Go live' })).toBeDisabled();
   });
 });
