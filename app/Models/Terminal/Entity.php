@@ -6,6 +6,7 @@ use App;
 use Crypt;
 use RZP\Constants\Environment;
 use RZP\Http\Route;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
@@ -441,6 +442,40 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::MPAN,
+    ];
+
+    protected static $defaultEnabledBanksForGateway = [
+        Gateway::ATOM => [
+            IFSC::MAHB,
+            IFSC::DEUT,
+            IFSC::IBKL,
+            IFSC::KARB,
+            IFSC::PSIB,
+            IFSC::BKID,
+        ],
+        Gateway::BILLDESK => [
+            IFSC::BDBL,
+            IFSC::BBKM,
+            IFSC::COSB,
+            IFSC::DBSS,
+            IFSC::ESAF,
+            IFSC::MSNU,
+            IFSC::NKGS,
+            IFSC::NESF,
+            IFSC::TNSC,
+            IFSC::TJSB,
+            IFSC::SURY,
+            IFSC::VARA,
+            IFSC::ZCBL,
+            IFSC::KCCB,
+            IFSC::KJSB,
+            IFSC::BACB,
+            IFSC::HSBC,
+            IFSC::JSBP,
+            IFSC::TBSB,
+            Netbanking::LAVB_R,
+            IFSC::DEUT,
+        ]
     ];
 
 
@@ -1527,6 +1562,11 @@ class Entity extends Base\PublicEntity
             $disabledBanks = Netbanking::getDefaultDisabledBanksForGateway($gateway, $corporate, $tpv);
 
             $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+
+            if ($gateway === Gateway::ATOM || $gateway == Gateway::BILLDESK)
+            {
+                $enabledBanks = self::$defaultEnabledBanksForGateway[$gateway];
+            }
 
             $enabledBanks = array_values($enabledBanks);
         }
