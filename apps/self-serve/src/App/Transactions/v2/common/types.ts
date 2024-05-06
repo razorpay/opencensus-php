@@ -23,6 +23,8 @@ export interface ListContainerProps<T> {
   loading: boolean;
   items: T[];
   isOmniView: boolean;
+  shouldShowCustomTransactionTabView: boolean;
+  selectedColumnsList: string[];
 }
 
 export interface Collection<T> {

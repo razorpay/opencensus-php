@@ -1,8 +1,12 @@
 import { generateDynamicComponent, email, contact } from 'common/ui/item/pair';
 
 import { COLUMNS } from './constants';
+import {
+  customerDetail,
+  generateDynamicComponentV2,
+} from './v2/Payments/components/PaymentsTable/columns';
 
-export const createCustomColumnView = (cols, selectedColumnsList) => {
+export const createCustomColumnView = (cols, selectedColumnsList, isTransactionsV2View) => {
   const fixedColumnComponents = cols.filter(
     (item) =>
       item.title !== COLUMNS.EMAIL &&
@@ -16,12 +20,18 @@ export const createCustomColumnView = (cols, selectedColumnsList) => {
           return email;
         case COLUMNS.CONTACT:
           return contact;
+        case COLUMNS.CUSTOMER_DETAIL:
+          return customerDetail;
         default:
-          return generateDynamicComponent(columnName);
+          return isTransactionsV2View
+            ? generateDynamicComponentV2(columnName)
+            : generateDynamicComponent(columnName);
       }
     })();
 
-    return columnName === COLUMNS.EMAIL || columnName === COLUMNS.CONTACT
+    return columnName === COLUMNS.EMAIL ||
+      columnName === COLUMNS.CONTACT ||
+      columnName === COLUMNS.CUSTOMER_DETAIL
       ? [componentToAdd, ...components]
       : [...components, componentToAdd];
   }, []);

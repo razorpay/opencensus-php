@@ -259,7 +259,7 @@ class PaymentsListContainer extends ListContainer {
     }
 
     if (user.isCustomTransactionTabView)
-      cols = createCustomColumnView(cols, this.state.selectedColumnsList);
+      cols = createCustomColumnView(cols, this.state.selectedColumnsList, false);
 
     return cols;
   };

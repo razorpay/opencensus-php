@@ -22,6 +22,8 @@ export interface ListContainerProps<T> {
   paginate: Paginate;
   loading: boolean;
   items: T[];
+  shouldShowCustomTransactionTabView: boolean;
+  selectedColumnsList: string[];
   isOmniView: boolean;
 }
 

@@ -11,11 +11,18 @@ import { getDesktopColumns, mobileColumns } from './columns';
 import { PaymentsTableProps } from './types';
 
 const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
-  const { loading: isLoading, isOmniView } = props;
+  const {
+    loading: isLoading,
+    isOmniView,
+    shouldShowCustomTransactionTabView,
+    selectedColumnsList,
+  } = props;
   const isMobile = useMobile(mobileBreakoints);
   const { user, app } = useStore((state) => ({ user: state.session.user, app: state.app }));
 
-  const columns = isMobile ? mobileColumns : getDesktopColumns(isOmniView);
+  const columns = isMobile
+    ? mobileColumns
+    : getDesktopColumns(isOmniView, shouldShowCustomTransactionTabView, selectedColumnsList);
 
   return (
     <StyledTable loading={isLoading}>

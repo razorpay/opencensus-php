@@ -16,6 +16,7 @@ import {
   TransactionsPagesMap,
 } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { getCreatedOnTime } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
+import { createCustomColumnView } from '../PaymentsList/utils';
 import { getPaymentMethod, getSourceChannelType } from './utils';
 import { paymentStatusVariantMap } from './constants';
 
@@ -193,6 +194,17 @@ export const actions = {
   },
 };
 
+export const generateDynamicComponent = (columnName: string) => ({
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      {columnName}
+    </Text>
+  ),
+  value: (item: Item): JSX.Element => {
+    return <Text>{item.notes?.[columnName] || '--'}</Text>;
+  },
+});
+
 export const mobileColumns = [mobileAmount, status, actions];
 export const desktopColumns = [
   paymentId,
@@ -204,9 +216,19 @@ export const desktopColumns = [
   actions,
 ];
 
-export const getDesktopColumns = (isOmniView: boolean) => {
+export const getDesktopColumns = (
+  isOmniView: boolean,
+  shouldShowCustomTransactionTabView: boolean,
+  selectedColumnsList: string[],
+) => {
+  let updatedDesktopColumns = desktopColumns;
   if (isOmniView) {
-    return [omniPaymentId, ...desktopColumns.slice(1, desktopColumns.length)];
+    updatedDesktopColumns = [omniPaymentId, ...desktopColumns.slice(1, desktopColumns.length)];
   }
-  return desktopColumns;
+
+  if (shouldShowCustomTransactionTabView) {
+    updatedDesktopColumns = createCustomColumnView(updatedDesktopColumns, selectedColumnsList);
+  }
+
+  return updatedDesktopColumns;
 };

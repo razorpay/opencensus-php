@@ -8,10 +8,19 @@ import {
   ModalFooter,
   Checkbox,
 } from '@razorpay/blade/components';
+import { useStore } from 'shell/commonStore';
+import { ERROR_MESSAGES, modalZindex } from './constants';
+import { saveMerchantColumnPreferences } from './model';
 
-import { modalZindex } from 'common/ui/PricingSubscription/constants';
-import { ERROR_MESSAGES } from 'merchant/views/Transactions/constants';
-import { saveMerchantColumnPreferences } from 'merchant/views/Transactions/model';
+interface PaymentsEditColumnsModalProps {
+  isOpen: boolean;
+  columnsList: string[];
+  selectedColumnsList: string[];
+  fixedColumns: string[];
+  optionalColumns: string[];
+  onClose: () => void;
+  onSubmit: (selectedColumns: string[]) => void;
+}
 
 export const PaymentsEditColumnsModal = ({
   isOpen,
@@ -21,10 +30,10 @@ export const PaymentsEditColumnsModal = ({
   optionalColumns,
   onClose,
   onSubmit,
-  showNotification,
-}) => {
+}: PaymentsEditColumnsModalProps) => {
   const [selectedColumns, setSelectedColumns] = useState(selectedColumnsList);
   const [isSavePreferencesChecked, setIsSavePreferencesChecked] = useState(false);
+  const showNotification = useStore((state) => state.showNotification);
 
   useEffect(() => {
     setSelectedColumns(selectedColumnsList);

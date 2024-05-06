@@ -1,8 +1,9 @@
-import { Box, CopyIcon, Text, VisuallyHidden } from '@razorpay/blade/components';
 import React from 'react';
+import { Box, CopyIcon, Text, VisuallyHidden } from '@razorpay/blade/components';
 
 import Amount from 'common/ui/Amount';
 import MaskedContact from 'merchant/components/Mask/Contact';
+import { createCustomColumnView } from 'merchant/views/Transactions/utils';
 import { Item } from 'merchant/views/Transactions/v2/Payments/types';
 import CreatedOn from 'merchant/views/Transactions/v2/common/components/CreatedOn';
 import Details from 'merchant/views/Transactions/v2/common/components/Details';
@@ -193,6 +194,17 @@ export const actions = {
   },
 };
 
+export const generateDynamicComponentV2 = (columnName: string) => ({
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      {columnName}
+    </Text>
+  ),
+  value: (item: Item): JSX.Element => {
+    return <Text>{item.notes?.[columnName] || '--'}</Text>;
+  },
+});
+
 export const mobileColumns = [mobileAmount, status, actions];
 export const desktopColumns = [
   paymentId,
@@ -204,9 +216,23 @@ export const desktopColumns = [
   actions,
 ];
 
-export const getDesktopColumns = (isOmniView: boolean) => {
+export const getDesktopColumns = (
+  isOmniView: boolean,
+  shouldShowCustomTransactionTabView: boolean,
+  selectedColumnsList: string[],
+) => {
+  let updatedDesktopColumns = desktopColumns;
   if (isOmniView) {
-    return [omniPaymentId, ...desktopColumns.slice(1, desktopColumns.length)];
+    updatedDesktopColumns = [omniPaymentId, ...desktopColumns.slice(1, desktopColumns.length)];
   }
-  return desktopColumns;
+
+  if (shouldShowCustomTransactionTabView) {
+    updatedDesktopColumns = createCustomColumnView(
+      updatedDesktopColumns,
+      selectedColumnsList,
+      true,
+    );
+  }
+
+  return updatedDesktopColumns;
 };

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Spinner, Box } from '@razorpay/blade/components';
 
-import { ContentProps } from './types';
 import PaymentsList from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsList';
 import Ftux from 'apps/self-serve/src/App/Transactions/v2/common/components/Ftux';
 import { Page, View } from 'apps/self-serve/src/App/Transactions/v2/common/types';
+import { ContentProps } from './types';
 
 const { LOADING, FTUX, FAILED_FTUX, LIST } = View;
 const { FAILED_PAYMENTS, PAYMENTS } = Page;
