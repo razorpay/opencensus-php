@@ -91,7 +91,7 @@ class Client
                     ErrorCode::SERVER_ERROR);
             }
 
-            $parsedResponse = $this->parseAndReturnResponse($response);
+            $parsedResponse = $this->parseAndReturnResponse($response->body);
 
             if ($response->status_code >= 400)
             {
@@ -139,9 +139,9 @@ class Client
         return Requests::request($url, $headers, $content, $method, $options);
     }
 
-    protected function parseAndReturnResponse($response)
+    protected function parseAndReturnResponse($responseBody)
     {
-        $responseArray = json_decode($response->body, true);
+        $responseArray = json_decode($responseBody, true);
 
         if ($responseArray === null)
         {
@@ -224,19 +224,52 @@ class Client
                     'http_errors' => false,
                 ]
             );
+
             if ($response->getStatusCode() != 200)
             {
                 $this->app['trace']->info(TraceCode::MAGIC_CHECKOUT_SERVICE_RESPONSE,
                     [
                         'status_code' => $response->getStatusCode(),
-                        'response' => $response->getBody()->getContents()
+                        'response' => $response->getBody()
                     ]);
-                throw new IntegrationException('magic-checkout-service request failed with status code: ' . $response->status_code,
+            }
+
+            if ($response->getStatusCode() === 503)
+            {
+                throw new ServerErrorException(
+                    "magic checkout request failed with 503",
+                    ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                );
+            }
+
+            if ($response->getStatusCode() >= 500)
+            {
+                throw new IntegrationException('magic-checkout-service request failed with status code: ' . $response->getStatusCode(),
                     ErrorCode::SERVER_ERROR);
             }
 
-            return json_decode($response->getBody(), true);;
+            $parsedResponse = $this->parseAndReturnResponse($response->getBody());
 
+            if ($response->getStatusCode() >= 400)
+            {
+                $description = $parsedResponse['description'] ?? '';
+
+                if (isset($parsedResponse['metadata']) &&
+                    isset($parsedResponse['metadata']['description']) &&
+                    $parsedResponse['metadata']['description'] === 'overlapping_location' &&
+                    isset($parsedResponse['metadata']['file_url'])
+                )
+                {
+                    $description = $parsedResponse['code'] . ":overlapping_location:" . $parsedResponse['metadata']['file_url'];
+                }
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    $parsedResponse,
+                    $description);
+            }
+
+            return $parsedResponse;
         }
         catch (GuzzleException $e)
         {
