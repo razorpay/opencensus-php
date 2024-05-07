@@ -13,8 +13,9 @@ import {
   Spinner,
   Button,
   ArrowRightIcon,
+  ArrowLeftIcon,
 } from '@razorpay/blade/components';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 
@@ -27,6 +28,7 @@ const allowedExtensions = ['csv', 'xls', 'xlsx', 'zip', 'txt'];
 
 export default function NewReconciliationRun() {
   const location = useLocation();
+  const navigate = useNavigate();
   const inputRef = useRef([]);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -234,7 +236,20 @@ export default function NewReconciliationRun() {
                 setActivePassFile={setActivePassFile}
                 handleSubmit={handlePassConfirm}
               />
-              <Box textAlign="right" marginTop="spacing.6">
+              <Box
+                display="flex"
+                justifyContent="flex-end"
+                alignItems="center"
+                marginTop="spacing.6"
+              >
+                <Button
+                  marginRight="spacing.4"
+                  variant="secondary"
+                  icon={ArrowLeftIcon}
+                  onClick={() => navigate(-1)}
+                >
+                  Back
+                </Button>
                 <Button
                   isDisabled={!filesStatus.some((status) => status?.isUploaded)}
                   onClick={startReconRun}

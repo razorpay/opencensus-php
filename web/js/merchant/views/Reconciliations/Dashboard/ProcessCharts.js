@@ -129,11 +129,7 @@ const ProcessCharts = ({ stats, currency, error }) => {
         label: (tooltipItem) => {
           const index = tooltipItem.index;
           const item = statsData?.unreconciled_split[index];
-          return `Records Count: ${item?.count}, Sum: ${formatAmount(
-            item?.sum / 100,
-            true,
-            currency,
-          )}`;
+          return `Records Count: ${item?.count}, Sum: ${formatAmount(item?.sum, true, currency)}`;
         },
       },
     },
@@ -234,7 +230,7 @@ const ProcessCharts = ({ stats, currency, error }) => {
                               {item?.count} records
                             </Text>
                             <Text size="medium" color="surface.text.gray.subtle">
-                              {formatAmount(item?.sum / 100, true, currency)}
+                              {formatAmount(item?.sum, true, currency)}
                             </Text>
                           </Box>
                         </Box>

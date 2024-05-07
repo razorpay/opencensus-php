@@ -4,7 +4,7 @@ import { render, screen } from 'test-utils';
 import { PRODUCT, MERCHANT_META } from './../constants';
 
 const renderSelectProduct = (props = {}) => {
-  render(<SelectProduct {...props} />);
+  return render(<SelectProduct {...props} />);
 };
 
 describe('Tests for Onboarding component onboardingView - Recon Saas', () => {
@@ -16,5 +16,10 @@ describe('Tests for Onboarding component onboardingView - Recon Saas', () => {
     renderSelectProduct({ merchantMeta: MERCHANT_META });
     expect(screen.getByText(PRODUCT.header)).toBeInTheDocument();
     expect(screen.getByText(PRODUCT.description)).toBeInTheDocument();
+  });
+
+  test('Should render back button', () => {
+    const { getByText } = renderSelectProduct({ merchantMeta: MERCHANT_META });
+    expect(getByText('Back')).toBeInTheDocument();
   });
 });

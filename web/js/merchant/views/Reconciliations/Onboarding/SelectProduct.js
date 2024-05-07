@@ -1,7 +1,8 @@
 import React from 'react';
-import { Box, Text, ChevronRightIcon } from '@razorpay/blade/components';
+import { Box, Text, ChevronRightIcon, Button, ArrowLeftIcon } from '@razorpay/blade/components';
 import OptimizerIcon from 'assets/reconciliations/payment-optimizer-icon.svg';
 import POSIcon from 'assets/reconciliations/pos-icon.svg';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import OnboardingView from './OnboardingView';
@@ -13,6 +14,7 @@ const ProcuctCard = styled.div`
 
 export default function SelectProduct({ selectProduct, merchantMeta }) {
   const products = Object.keys(merchantMeta.products);
+  const navigate = useNavigate();
 
   const getIcon = (name) => {
     return name.toLowerCase().includes('optimizer') ? OptimizerIcon : POSIcon;
@@ -53,6 +55,17 @@ export default function SelectProduct({ selectProduct, merchantMeta }) {
           </ProcuctCard>
         );
       })}
+      <Box
+        width="480px"
+        display="flex"
+        justifyContent="flex-end"
+        alignItems="center"
+        marginTop="spacing.6"
+      >
+        <Button variant="secondary" icon={ArrowLeftIcon} onClick={() => navigate(-1)}>
+          Back
+        </Button>
+      </Box>
     </OnboardingView>
   );
 }

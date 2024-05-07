@@ -84,7 +84,7 @@ const StatBox = ({ icon, stats, title, currency }) => {
         <Text size="small" weight="semibold">
           {stats.count} records
         </Text>
-        <Text color="surface.text.gray.muted">{formatAmount(stats.sum / 100, true, currency)}</Text>
+        <Text color="surface.text.gray.muted">{formatAmount(stats.sum, true, currency)}</Text>
       </Box>
     </Box>
   );

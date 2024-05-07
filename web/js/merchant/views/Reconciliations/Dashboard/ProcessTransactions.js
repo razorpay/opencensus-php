@@ -14,11 +14,17 @@ import {
   ActionList,
   ActionListItem,
   DownloadIcon,
+  Table,
+  TableHeader,
+  TableHeaderRow,
+  TableHeaderCell,
+  TableRow,
+  TableCell,
+  TableBody,
 } from '@razorpay/blade/components';
 import moment from 'moment';
 
 import DateRangePicker from 'common/ui/DateRangePicker';
-import TableBody from 'common/ui/TableBody';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
   dateRangePresets,
@@ -271,30 +277,31 @@ export default function ProcessTransactions({ activeProcess }) {
         isError={error}
         isLoading={loading || !paginationData?.cols || !(detailsList?.length >= 0)}
       >
-        <div className="table-responsive">
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                {paginationData?.cols.map((column) => {
-                  return (
-                    <th key={column} style={{ background: '#324664', color: '#fff' }}>
-                      {column}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <TableBody colSpan={4} rows={detailsList}>
-              {detailsList?.map((item, index) => (
-                <tr key={index}>
-                  {paginationData?.cols.map((key) => (
-                    <td key={key}>{item[key]}</td>
+        <Table
+          data={{ nodes: detailsList }}
+          gridTemplateColumns={`repeat(${paginationData?.cols?.length},minmax(auto, 1fr))`}
+        >
+          {(tableData) => (
+            <>
+              <TableHeader>
+                <TableHeaderRow>
+                  {paginationData?.cols.map((column) => (
+                    <TableHeaderCell key={column}>{column}</TableHeaderCell>
                   ))}
-                </tr>
-              ))}
-            </TableBody>
-          </table>
-        </div>
+                </TableHeaderRow>
+              </TableHeader>
+              <TableBody>
+                {tableData.map((tableItem, index) => (
+                  <TableRow key={index} item={tableItem}>
+                    {paginationData.cols.map((key) => (
+                      <TableCell key={key}>{tableItem[key]}</TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </>
+          )}
+        </Table>
       </RenderErrorLoadingOrChild>
       <Box display="flex" justifyContent="flex-end" alignItems="center" marginTop="spacing.4">
         <Text marginRight="spacing.4">Showing Page: {currentPage + 1}</Text>

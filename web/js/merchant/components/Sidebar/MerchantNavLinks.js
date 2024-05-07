@@ -111,7 +111,7 @@ function MerchantNavLinks(props) {
         }
       />
       <MainNavLink
-        label="Reconciliations"
+        label="Reconciliation"
         icon="i i-check-circle-outline text-primary"
         type="general"
         to="/reconciliations/dashboard"

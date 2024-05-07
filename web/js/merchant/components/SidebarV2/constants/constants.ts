@@ -70,6 +70,6 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   gcms_funds: 'Funds',
   gcms_reports: 'Reports',
   riskAndFraud: 'Risk and Fraud',
-  reconciliations: 'Reconciliations',
+  reconciliations: 'Reconciliation',
   assisted_financing: 'Assisted Financing',
 };

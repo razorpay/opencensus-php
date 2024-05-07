@@ -6,24 +6,11 @@ import {
   DropdownOverlay,
   ActionList,
   ActionListItem,
-  Button,
-  Link,
-  LoaderIcon,
-  CheckIcon,
-  Badge,
-  Text,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  DownloadIcon,
 } from '@razorpay/blade/components';
-import moment from 'moment';
 
-import TableBody from 'common/ui/TableBody';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { FILE_WORKFLOW_KEY } from 'merchant/views/Reconciliations/Dashboard/constants';
+import RunsListTable from 'merchant/views/Reconciliations/Dashboard/RunsListTable';
 import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
-
-const cols = ['Run ID', 'Process Name', 'Last Update', 'Run Completion', ''];
 
 export default function Runs({ openDetail }) {
   const [runsList, setRunsList] = useState([]);
@@ -42,9 +29,9 @@ export default function Runs({ openDetail }) {
           status: [],
         },
         sort_key: '',
-        page: 0,
+        page: 1,
         offset: 0,
-        page_size: 20,
+        page_size: 10,
         ...props,
       };
       setIsLoading(true);
@@ -89,17 +76,6 @@ export default function Runs({ openDetail }) {
     fetchRuns();
   }, []);
 
-  const downloadReport = async (id) => {
-    const res = await merchantFetch({
-      url: `recon-saas/file_detail/report/signed_url?${FILE_WORKFLOW_KEY}=${id}`,
-      mode: 'live',
-      method: 'GET',
-    });
-    if (res?.status_code === 200) {
-      window.open(res?.data?.report_url, '_blank');
-    }
-  };
-
   return (
     <Box testID="recon-runs-listing">
       <Box
@@ -128,70 +104,14 @@ export default function Runs({ openDetail }) {
         </Box>
       </Box>
       <RenderErrorLoadingOrChild isError={error} isLoading={isLoading}>
-        <div className="table-responsive">
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                {cols.map((column, idx) => {
-                  return (
-                    <th key={idx} style={{ background: '#324664', color: '#fff' }}>
-                      {column}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <TableBody colSpan={4} rows={runsList}>
-              {runsList.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.id}</td>
-                  <td>{item.process_name}</td>
-                  <td>{moment(item.updated_at * 1000).format('lll')}</td>
-                  <td>
-                    <Badge
-                      size="large"
-                      color={item.status.toLowerCase() === 'completed' ? 'positive' : 'primary'}
-                      icon={item.status.toLowerCase() === 'completed' ? CheckIcon : LoaderIcon}
-                    >
-                      {item.status}
-                    </Badge>
-                  </td>
-                  <td>
-                    {item?.status.toLowerCase() === 'completed' ? (
-                      <Link onClick={() => downloadReport(item?.id)} marginRight="spacing.4">
-                        <DownloadIcon
-                          color="interactive.icon.primary.normal"
-                          marginRight="spacing.2"
-                        />
-                        Download Report
-                      </Link>
-                    ) : null}
-                    <Link onClick={() => openDetail(item.id)}>Details</Link>
-                  </td>
-                </tr>
-              ))}
-            </TableBody>
-          </table>
-        </div>
+        <RunsListTable
+          nodes={runsList}
+          ctaAction={openDetail}
+          currentPage={currentPage}
+          handlePagination={handlePagination}
+          paginationData={paginationData}
+        />
       </RenderErrorLoadingOrChild>
-      <Box display="flex" justifyContent="flex-end" alignItems="center" marginTop="spacing.4">
-        <Text marginRight="spacing.4">Showing Page: {currentPage + 1}</Text>
-        <Button
-          icon={ArrowLeftIcon}
-          marginRight="spacing.4"
-          isDisabled={currentPage === 0}
-          onClick={() => handlePagination('prev')}
-        >
-          Previous
-        </Button>
-        <Button
-          icon={ArrowRightIcon}
-          isDisabled={!paginationData?.has_more || runsList.length === 0}
-          onClick={() => handlePagination('next')}
-        >
-          Next
-        </Button>
-      </Box>
     </Box>
   );
 }

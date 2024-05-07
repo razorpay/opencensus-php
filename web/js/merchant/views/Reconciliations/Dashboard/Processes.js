@@ -9,11 +9,17 @@ import {
   PlusIcon,
   Button,
   Link,
+  Table,
+  TableHeader,
+  TableHeaderRow,
+  TableHeaderCell,
+  TableRow,
+  TableCell,
+  TableBody,
 } from '@razorpay/blade/components';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 
-import TableBody from 'common/ui/TableBody';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
 
@@ -85,36 +91,34 @@ const Processes = ({ openDetail }) => {
         </Button>
       </Box>
       <RenderErrorLoadingOrChild isError={error} isLoading={isLoading}>
-        <div className="table-responsive">
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                {cols.map((column, idx) => {
-                  return (
-                    <th key={idx} style={{ background: '#324664', color: '#fff' }}>
-                      {column}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <TableBody colSpan={4} rows={processList}>
-              {processList.map((item, index) => (
-                <tr key={index}>
-                  <td>{item?.name}</td>
-                  <td>{item?.product_name || item?.product_id}</td>
-                  <td>{item?.type}</td>
-                  <td>
-                    {item?.last_run === 0 ? 'N.A' : moment(item?.last_run * 1000).format('lll')}
-                  </td>
-                  <td>
-                    <Link onClick={() => openDetail(item)}>Details</Link>
-                  </td>
-                </tr>
-              ))}
-            </TableBody>
-          </table>
-        </div>
+        <Table data={{ nodes: processList }}>
+          {(tableData) => (
+            <>
+              <TableHeader>
+                <TableHeaderRow>
+                  {cols.map((column) => (
+                    <TableHeaderCell key={column}>{column}</TableHeaderCell>
+                  ))}
+                </TableHeaderRow>
+              </TableHeader>
+              <TableBody>
+                {tableData.map((item, index) => (
+                  <TableRow key={index} item={item}>
+                    <TableCell>{item?.name}</TableCell>
+                    <TableCell>{item?.product_name || item?.product_id}</TableCell>
+                    <TableCell>{item?.type}</TableCell>
+                    <TableCell>
+                      {item?.last_run === 0 ? 'N.A' : moment(item?.last_run * 1000).format('lll')}
+                    </TableCell>
+                    <TableCell>
+                      <Link onClick={() => openDetail(item)}>Details</Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </>
+          )}
+        </Table>
       </RenderErrorLoadingOrChild>
     </Box>
   );
