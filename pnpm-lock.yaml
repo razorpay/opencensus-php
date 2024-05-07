@@ -142,6 +142,9 @@ importers:
       nodemon:
         specifier: ^2.0.7
         version: 2.0.22
+      npm-run-all:
+        specifier: 4.1.5
+        version: 4.1.5
       nx:
         specifier: 17.0.3
         version: 17.0.3
@@ -37603,7 +37606,7 @@ snapshots:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 3.0.4
+      minimatch: 3.1.2
       once: 1.4.0
       path-is-absolute: 1.0.1
 
@@ -37612,7 +37615,7 @@ snapshots:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 3.0.5
+      minimatch: 3.1.2
       once: 1.4.0
       path-is-absolute: 1.0.1
 
