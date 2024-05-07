@@ -23,6 +23,8 @@ export const searchTransactionById = async ({ page, id }) => {
 
 export const gotoTransactionDetailsPageById = async ({ page, id, listSelector }) => {
   const listPage = page.getByTestId(listSelector);
+  await page.waitForSelector('.PlaceholderLoader', { state: 'visible', strict: false });
+  await page.waitForSelector('.PlaceholderLoader', { state: 'hidden', strict: false });
   await searchTransactionById({ page: listPage, id });
   await listPage
     .getByTestId(`entity-item-row-${id}`)
