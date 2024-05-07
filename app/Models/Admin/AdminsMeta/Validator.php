@@ -27,6 +27,18 @@ class Validator extends Base\Validator
         Entity::ADMIN_ID                          => 'required|string'
     ];
 
+    protected static array $getMultipleAdminsRules = [
+        Constant::START_DATE => 'required|epoch',
+        Constant::END_DATE   => 'required|epoch'
+    ];
+
+    protected static array $getUpdateAdminsRules = [
+        Constant::FULL_NAME  => 'sometimes||alpha_space|between:3,100',
+        Constant::EXPIRE_AT  => 'sometimes|epoch|custom',
+        Constant::USER_ROLES => 'sometimes|array',
+        Constant::ACCOUNT_STATUS => 'sometimes'
+    ];
+
     public $isOrgSpecificValidationSupported = true;
 
     /**

@@ -79,4 +79,12 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function adminsUpdateByAdminID(string $orgId, string $adminId, array $updatedFields)
+    {
+        return $this->newQuery()
+            ->orgId($orgId)
+            ->where(Entity::ID, '=', $adminId)
+            ->update($updatedFields);
+    }
+
 }

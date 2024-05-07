@@ -2826,4 +2826,107 @@ class AdminTest extends TestCase
 
         return $now->getTimestamp();
     }
+
+    public function testMultipleOrgAdmin()
+    {
+        $org = $this->createOrg();
+
+        // create IDAM admin who can only access this routes
+        $idamAdminToken = $this->createIDAMAdminAndGetAdminToken($org->getId());
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createAdmin($org->getId(), $expireAt);
+
+        $role = $this->fixtures->create('role', ['org_id' => $org->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+        //$testData['request']['url'] = $testData['request']['url'] . '/' . $adminsMeta['unique_identifier'];
+        //$testData['request']['headers']['x-org-id']      = "org_" . $org->getId();
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $org->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $idamAdminToken;
+
+        $testData['response']['content'][0]['user_roles'] = array("role_" .$role['id']);
+        $testData['response']['content'][0]['expire_at'] = $expireAt;
+
+        $this->startTest($testData);
+        //s($startTest);
+    }
+
+    public function testUpdateOrgAdmin()
+    {
+        $org = $this->createOrg();
+
+        // create IDAM admin who can only access this routes
+        $idamAdminToken = $this->createIDAMAdminAndGetAdminToken($org->getId());
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createAdmin($org->getId(), $expireAt);
+
+        $role1 = $this->fixtures->create('role', ['org_id' => $org->getId()]);
+
+        $role2 = $this->fixtures->create('role',
+            [
+                'org_id' => $org->getId(),
+                'name' => 'Super Admin',
+                'description' => 'Super Admins of Roles'
+            ]);
+
+        $admin->roles()->attach($role1);
+        $admin->roles()->attach($role2);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $updatedExpireAt = $this->timestampWithOffset(2);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $url = sprintf($url, $adminsMeta['unique_identifier']);
+        $testData['request']['url'] = $url;
+        $testData['request']['headers']['X-Org-Id'] = "org_" . $org->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $idamAdminToken;
+        $testData['request']['content']['user_roles'] = array_merge(array("role_" . $role1['id']), array("role_" . $role2['id']));
+        $testData['request']['content']['expire_at'] = $updatedExpireAt;
+
+        $testData['response']['content']['user_roles'] = array_merge(array("role_" . $role1['id']), array("role_" . $role2['id']));
+        $testData['response']['content']['expire_at'] = $updatedExpireAt;
+
+        $this->startTest($testData);
+    }
+
+    public function testGetOrgAdminInValidDate()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+       $this->startTest($testData);
+    }
+    public function testUpdateOrgAdminInValidExpireAt()
+    {
+
+        $org = $this->createOrg();
+
+        // create IDAM admin who can only access this routes
+        $idamAdminToken = $this->createIDAMAdminAndGetAdminToken($org->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $org->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $idamAdminToken;
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $this->startTest($testData);
+    }
+
 }

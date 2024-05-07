@@ -617,12 +617,28 @@ class OrganizationController extends Controller
 
         return ApiResponse::json($response);
     }
+    public function updateOrgAdmin(string $u_id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ADMINS_META)->updateOrgAdmin($u_id, $input);
+
+        return ApiResponse::json($data);
+    }
 
     public function getOrgAdmin(string $id)
     {
         $response = $this->service(E::ADMINS_META)->getOrgAdmin($id);
 
         return ApiResponse::json($response);
+    }
+    public function getMultipleOrgAdmins()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ADMINS_META)->getMultipleOrgAdmins($input);
+
+        return ApiResponse::json($data);
     }
     // --------------------- END CRUD for Org Admins ---------------------------------------
 }

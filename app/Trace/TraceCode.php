@@ -11430,17 +11430,19 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FETCH_SUBMERCHANT_DETAILS_ONBOARDING_PREFILL         = 'FETCH_SUBMERCHANT_DETAILS_ONBOARDING_PREFILL';
 
-    const UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST     = 'UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST';
-    const UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED   = 'UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED';
-  
+    const UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST            = 'UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST';
+    const UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED          = 'UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED';
+
     const ONBOARDING_API_BMC_SAVED                             = 'ONBOARDING_API_BMC_SAVED';
-  
+
     // --------------------------- Axis IDAM trace codes -----------------------------------------------
     const ORG_ADMIN_CREATE_REQUEST                               = 'ORG_ADMIN_CREATE_REQUEST';
     const ORG_ADMIN_CREATE_SUCCESS                               = 'ORG_ADMIN_CREATE_SUCCESS';
     const ORG_ADMIN_FETCH_REQUEST                                = 'ORG_ADMIN_FETCH_REQUEST';
     const ORG_ADMIN_FETCH_SUCCESS                                = 'ORG_ADMIN_FETCH_SUCCESS';
     const ORG_ADMIN_NOT_FOUND                                    = 'ORG_ADMIN_NOT_FOUND';
+    const ORG_ADMIN_UPDATE_SERVICE_MODEL                         = 'ORG_ADMIN_UPDATE_SERVICE_MODEL';
+    const BANKING_ADMIN_UPDATE_REQUEST_ORG_ID                    = 'BANKING_ADMIN_UPDATE_REQUEST_ORG_ID';
 
     const ONBOARDING_API_CATEGORY_ACTIVATION_STATUS            = 'ONBOARDING_API_CATEGORY_ACTIVATION_STATUS';
     const PAYMENT_NOTES_WITH_OPTIMIZER_PROVIDER_NAME_UPDATE_FAILED = 'PAYMENT_NOTES_WITH_OPTIMIZER_PROVIDER_NAME_UPDATE_FAILED';
@@ -11675,6 +11677,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::ORG_ADMIN_FETCH_REQUEST                                        => 'Request for fetching org admin',
         self::ORG_ADMIN_FETCH_SUCCESS                                        => 'Org admin fetched successfully',
         self::ORG_ADMIN_NOT_FOUND                                            => 'Org admin not found',
+        self::BANKING_ADMIN_UPDATE_REQUEST_ORG_ID                            => 'Trace log after admin update',
     ];
 
     public static $fileBasedReconTraceCodes = [

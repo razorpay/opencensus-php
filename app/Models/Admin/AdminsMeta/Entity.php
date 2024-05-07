@@ -68,5 +68,4 @@ class Entity extends Base\Entity
         return $this->fillable;
     }
 
-
 }

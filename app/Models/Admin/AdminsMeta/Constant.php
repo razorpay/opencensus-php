@@ -21,5 +21,7 @@ class Constant
     const ID                            = 'id';
     const DISABLE                       = 'disable';
     const ENABLE                        = 'enable';
+    const START_DATE                    = 'start_date';
+    const END_DATE                      = 'end_date';
 
 }

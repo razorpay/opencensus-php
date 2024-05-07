@@ -3,6 +3,8 @@
 namespace RZP\Models\Admin\AdminsMeta;
 
 use Throwable;
+use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -84,6 +86,72 @@ class Service extends Base\Service
     }
 
     /**
+     * @throws BadRequestException
+     */
+    public function updateOrgAdmin(string $uniqueIdentifier, array $input)
+    {
+        (new Validator())->validateInput('get_update_admins', $input);
+
+        try {
+
+            $adminsMeta = $this->repo->admins_meta->fetchByUniqueIdentifierOrFail($uniqueIdentifier);
+
+            $adminDetails = $this->repo->admin->findByIdAndOrgIdWithRelations(
+                $adminsMeta->admin_id, $this->adminOrgId, [Entity::ROLES, Entity::GROUPS]);
+
+            if($adminDetails === null){
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ADMIN_NOT_FOUND);
+            }
+
+            $adminId = $adminDetails->getId();
+            $adminName = $adminDetails[Entity::NAME];
+
+            // Roles Map Update
+            if ($input[Constant::USER_ROLES] !== null && count($input[Constant::USER_ROLES]) > 0) {
+                $this->rolesMapUpdate($input[Constant::USER_ROLES], $adminId);
+            }
+
+            // Expire Date Update
+            if ($input[Constant::EXPIRE_AT] !== null) {
+                $this->expireDateUpdate($input[Constant::EXPIRE_AT], $adminId);
+            }
+
+            // Admins Table Update
+            $dataArr = array();
+            if ($input[Constant::ACCOUNT_STATUS] === true) {
+                if ($input[Constant::ACCOUNT_STATUS] == Constant::DISABLE) {
+                    $dataArr[Entity::DISABLED] = '1';
+                    $this->repo->admins_meta->updateUserDisabledAtField($uniqueIdentifier);
+                } else if ($input[Constant::ACCOUNT_STATUS] == Constant::ENABLE) {
+                    $dataArr[Entity::DISABLED] = '0';
+                }
+            }
+
+            $dataArr[Entity::NAME] = ($input[Constant::FULL_NAME] !== null) ? $input[Constant::FULL_NAME] : $adminName;
+
+            $this->repo->admin->adminsUpdateByAdminID($this->adminOrgId, $adminId, $dataArr);
+
+            return $this->core()->getOrgAdminDataRespByUID($uniqueIdentifier, $this->adminOrgId);
+
+        } catch (Throwable $e) {
+            $this->trace->error(TraceCode::ORG_ADMIN_NOT_FOUND, [
+                'unique_identifier' => $uniqueIdentifier,
+                'method_name'       => __FUNCTION__,
+                'route_name'        => $this->app['api.route']->getCurrentRouteName(),
+                'error_message'     => $e->getMessage()
+            ]);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ADMIN_NOT_FOUND,
+                null,
+                [
+                    'unique_identifier' => $uniqueIdentifier,
+                    'error_message' => $e->getMessage()
+                ]
+            );
+        }
+    }
+
+    /**
      * method to fetch org admin by unique identifier
      *
      * @param string $id
@@ -136,6 +204,53 @@ class Service extends Base\Service
                 ]
             );
         }
+    }
+    public function getMultipleOrgAdmins(array $input)
+    {
+        (new Validator())->validateInput('get_multiple_admins', $input);
+
+        $startDay = $input[Constant::START_DATE];
+        $endDay   = $input[Constant::END_DATE];
+
+        try {
+            $fetchData = $this->repo->admins_meta->getMultipleDataByOrgIDAndTimestamp($startDay,$endDay,$this->adminOrgId);
+
+            if(count($fetchData) === 0){
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_DATE_RANGE);
+            }
+
+            foreach ($fetchData as $key=>$val){
+                $rolesFetch = $this->repo->admins_meta->rolesFetchByOrgID($val->org_admin_id);
+                if(count($rolesFetch)>0){
+                    foreach ($rolesFetch as $value){
+                        $fetchData[$key]->user_roles[] =  "role_".$value->role_id;
+                    }
+                }
+                $fetchData[$key]->account_status =  ($val->account_status === 1) ? Constant::DISABLE : Constant::ENABLE;
+                unset($fetchData[$key]->org_admin_id);
+            }
+
+            return $fetchData;
+
+        } catch (\Throwable $e){
+            $this->trace->error(TraceCode::ORG_ADMIN_FETCH_REQUEST, [
+                'start_date'    => $startDay,
+                'end_date'      => $endDay,
+                'method_name'   => __FUNCTION__,
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                'error_message' => $e->getMessage()
+            ]);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_DATE_RANGE,
+                null,
+                [
+                    'error_message'     => $e->getMessage()
+                ]
+            );
+
+        }
+
+
     }
     // --------------------- END CRUD for Org Admins --------------------------------------
 
@@ -215,6 +330,39 @@ class Service extends Base\Service
             Constant::LAST_LOGIN_AT       => $admin[Entity::LAST_LOGIN_AT] ?? null,
             Constant::UPDATED_AT          => $adminsMeta[Constant::UPDATED_AT] ?? null,
         ];
+    }
+    private function rolesMapUpdate(array $userRoles, string $adminId):bool
+    {
+        // Roles Map Update
+        $arr = [];
+        $dbArr = $this->repo->admins_meta->rolesFetchByOrgID($adminId);
+        foreach ($dbArr as $val){
+            $arr[] = "role_".$val->role_id;
+        }
+        $collection = collect($arr);
+        $diff = $collection->diff($userRoles);
+        $getArrIndex = array_map(function($val) { return substr($val, 5); }, array_values($diff->all()));
+        if(count($getArrIndex) > 0){
+            $this->repo->admins_meta->deleteRoleMap($getArrIndex);
+        }
+
+        foreach ($userRoles as $value) {
+            $roleId = substr($value,5);
+            //update query on roles_map against entity_id(admin table id)
+            $this->core()->insertOrUpdateRoleMap($adminId,$roleId);
+        }
+        return true;
+    }
+    public function expireDateUpdate(int $expireAt, string $adminId):bool
+    {
+        // Expire Date Update
+        $date = Carbon::parse($expireAt);
+        if ($date->isFuture() === true) {
+            $this->repo->admins_meta->getAdminExpUpdateByAdminID($adminId,$expireAt);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

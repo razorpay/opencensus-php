@@ -2286,4 +2286,127 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ADMIN_NOT_FOUND,
         ],
     ],
+
+    'testUpdateOrgAdmin' => [
+        'request' => [
+            'method'    => 'PUT',
+            'headers'   => [
+                'X-Org-Id'      => 'org_100000razorpay',
+                'X-Admin-Token' => 'dummy-token'
+            ],
+            'url' => '/org/admins/%s',
+            'content' =>  [
+                "account_status" => "enable",
+                "expire_at"      => '1713943621',
+                "user_roles"     => [
+                    "role_NnjOftbCqef4aK",
+                    "role_NfvKQQrxbs6yrY"
+                ],
+                "full_name"           => "Test User"
+            ]
+        ],
+        'response' => [
+            'content' =>  [
+                'unique_identifier' => 'xv6vxwe7',
+                'full_name' => 'Test User',
+                'email' => 'testadmin@axis.com',
+                'account_status' => 'enable',
+                'expire_at' => 1713943621,
+                'last_login_at' => null,
+                'user_disabled_at' => null,
+                'user_roles' => [
+                    'role_NfvJe1dbHXASc5',
+                    'role_NfvKQQrxbs6yrY',
+                ],
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testMultipleOrgAdmin' => [
+        'request' => [
+            'url' => '/org/admins',
+            'method' => 'get',
+            'headers'   => [
+                'X-Org-Id'      => 'org_100000razorpay',
+                'X-Admin-Token' => 'dummy-token'
+            ],
+            'content' => [
+                'start_date'     => '1714553881',
+                'end_date'       => '1717145881'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'unique_identifier' => 'xv6vxwe7',
+                    'full_name' => 'Test User',
+                    'email' => 'testadmin@axis.com',
+                    'account_status' => 'enable',
+                    'expire_at' => 1709288680,
+                    'last_login_at' => null,
+                    'user_disabled_at' => null,
+                    'user_roles' => [
+                        'role_NfrfjfhjkyB73r'
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetOrgAdminInValidDate' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/org/admins',
+            'headers'   => [
+                'x-org-id'    => 'org_100000razorpay',
+            ],
+            'content' => [
+                'start_date'     => '1709291734',
+                'end_date'       => '1711883734'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_DATE_RANGE,
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_DATE_RANGE,
+        ],
+    ],
+
+    'testUpdateOrgAdminInValidExpireAt' => [
+        'request' => [
+            'method'    => 'PUT',
+            'headers'   => [
+                'X-Org-Id'      => 'org_100000razorpay',
+                'X-Admin-Token' => 'dummy-token'
+            ],
+            'url' => '/org/admins/%s',
+            'content' =>  [
+                "expire_at"      => '1713696112'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_at should be in future',
+                    'field'       => 'expire_at'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
