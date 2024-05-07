@@ -9,6 +9,7 @@ const (
 	COOKIE_XSRF_TOKEN         = "XSRF-TOKEN"
 	COOKIE_RZP_USR_SESSION    = "rzp_usr_session"
 	COOKIE_RZP_ACCESS_TOKEN   = "rzp_access_token"
+	COOKIE_RZP_REFRESH_TOKEN  = "rzp_refresh_token"
 	RZP_USER_SESSION          = "rzp_usr_session"
 	COOKIE                    = "Cookie"
 	ORIGIN                    = "origin"

@@ -72,7 +72,9 @@ class UserControllerTest extends BaseTestCase {
 
         $accessTokenCookie =  cookie(Constants::RZP_ACCESS_TOKEN);
 
-        assertEquals($accessTokenCookie->getMaxAge(), 0);
+        $refreshTokenCookie = cookie(Constants::RZP_REFRESH_TOKEN);
 
+        assertEquals($accessTokenCookie->getMaxAge(), 0);
+        assertEquals($refreshTokenCookie->getMaxAge(), 0);
     }
 }

@@ -152,11 +152,8 @@ func (s DashboardAPISuite) TestAccessTokenCookieOnLogin() {
 		if cookie.Name == COOKIE_RZP_ACCESS_TOKEN {
 			accessTokenCookie, _ = url.QueryUnescape(cookie.Value)
 		}
-
 	}
-
 	assert.NotEmpty(s.T(), accessTokenCookie)
-
 }
 
 func (s DashboardAPISuite) TestClearAccessTokenCookieOnLogout() {
@@ -218,7 +215,6 @@ func (s DashboardAPISuite) TestClearAccessTokenCookieOnLogout() {
 		if cookie.Name == COOKIE_RZP_ACCESS_TOKEN {
 			accessTokenCookie, _ = url.QueryUnescape(cookie.Value)
 		}
-
 	}
 
 	assert.NotEmpty(s.T(), accessTokenCookie)
@@ -254,20 +250,25 @@ func (s DashboardAPISuite) TestClearAccessTokenCookieOnLogout() {
 	}
 
 	var accessTokenCookieMaxAge int
-	var expireCookieSet bool
-
+	var expireAccessTokenCookieSet bool
+	var refreshTokenCookieMaxAge int
+	var expireRefreshTokenCookieSet bool
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == COOKIE_RZP_ACCESS_TOKEN {
-			expireCookieSet = true
+			expireAccessTokenCookieSet = true
 			accessTokenCookieMaxAge = cookie.MaxAge
 		}
-
+		if cookie.Name == COOKIE_RZP_REFRESH_TOKEN {
+			expireRefreshTokenCookieSet = true
+			refreshTokenCookieMaxAge = cookie.MaxAge
+		}
 	}
 
-	assert.True(s.T(), expireCookieSet)
+	assert.True(s.T(), expireAccessTokenCookieSet)
 	// MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'
 	assert.Equal(s.T(), accessTokenCookieMaxAge, -1)
-
+	assert.True(s.T(), expireRefreshTokenCookieSet)
+	assert.Equal(s.T(), refreshTokenCookieMaxAge, -1)
 }
 
 func GetIndexRouteCall(s DashboardAPISuite) string {
