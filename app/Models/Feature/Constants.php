@@ -2132,6 +2132,17 @@ class Constants
     */
     const DISPLAY_DS_SETT_AMT ='display_ds_sett_amt';
 
+    /*
+    * Feature flags to control the terminal selection flows for in person card payments
+    */
+    const IN_PERSON_CARDS_ENABLE_TERMINAL_SELECTION = 'ipc_en_terminal_selection';
+
+    const IN_PERSON_CARDS_ENABLE_DYNAMIC_DEVICE_MAPPING = 'ipc_en_dyn_device_mapping';
+
+    const IN_PERSON_CARDS_ENABLE_LABEL_MAPPING = 'ipc_en_label_mapping';
+
+    const IN_PERSON_CARDS_ENABLE_TERMINAL_ROUTING = 'ipc_en_terminal_routing';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2952,6 +2963,10 @@ class Constants
         self::CUSTOM_ONBOARDING_EMAILS               => true,
         self::ORG_SPECIFIC_CREDENTIALS              => true,
         self::DISABLE_SINCH_SMS_EMAIL               => true,
+        self::IN_PERSON_CARDS_ENABLE_TERMINAL_SELECTION => true,
+        self::IN_PERSON_CARDS_ENABLE_DYNAMIC_DEVICE_MAPPING => true,
+        self::IN_PERSON_CARDS_ENABLE_LABEL_MAPPING   => true,
+        self::IN_PERSON_CARDS_ENABLE_TERMINAL_ROUTING   => true,
     ];
 
     // Entity type constants
@@ -4231,6 +4246,26 @@ class Constants
             'feature'       => self::OMNI_ENABLED,
             'display_name'  => 'Omni Enabled',
             'documentation' => 'Omni Enabled Merchant',
+        ],
+        self::IN_PERSON_CARDS_ENABLE_TERMINAL_SELECTION => [
+            'feature'       => self::IN_PERSON_CARDS_ENABLE_TERMINAL_SELECTION,
+            'display_name'  => 'Enable In Person Cards Payments Terminal Selection',
+            'documentation' => 'Enable Terminal Selection for In Person Cards Payments for Merchant. Needs to be enabled for all terminal selection flows.',
+        ],
+        self::IN_PERSON_CARDS_ENABLE_DYNAMIC_DEVICE_MAPPING => [
+             'feature'       => self::IN_PERSON_CARDS_ENABLE_DYNAMIC_DEVICE_MAPPING,
+             'display_name'  => 'Enable Dynamic Device Mapping flow for In Person Cards Payments Terminal Selection',
+             'documentation' => 'Enable dynamic mapping of terminals to devices during first txn for in person cards payments',
+        ],
+        self::IN_PERSON_CARDS_ENABLE_LABEL_MAPPING => [
+             'feature'       => self::IN_PERSON_CARDS_ENABLE_LABEL_MAPPING,
+             'display_name'  => 'Enable Label Mapping flow for In Person Cards Payments Terminal Selection',
+             'documentation' => 'Enable terminal selection using labels for in person cards payments',
+        ],
+        self::IN_PERSON_CARDS_ENABLE_TERMINAL_ROUTING => [
+             'feature'       => self::IN_PERSON_CARDS_ENABLE_TERMINAL_ROUTING,
+             'display_name'  => 'Enable Rule Based Routing In Person Cards Payments Terminal Selection',
+             'documentation' => 'Enable terminal selection using rules on router for multi acquirer merchants using in person cards payments',
         ],
     ];
 
