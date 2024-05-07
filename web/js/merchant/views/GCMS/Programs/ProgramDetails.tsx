@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import Spinner from 'common/ui/Spinner';
-import { capitalize, getFormattedAmountNew } from 'common/utils/rzp-utils';
+import { capitalize } from 'common/utils/rzp-utils';
 import EmptyList from 'merchant/components/EmptyList';
 import {
   getProgramContentSections,
@@ -15,6 +15,7 @@ import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSectio
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
 
 import { trackProgramsDetailsPageLoadSuccess } from './events';
+import { getFormattedAmountNewDenom } from '../shared/utils';
 
 const ProgramDetails: React.FC = () => {
   const location = useLocation();
@@ -164,7 +165,7 @@ const ProgramDetails: React.FC = () => {
                                     borderColor="surface.border.gray.muted"
                                   >
                                     <Text color="surface.text.gray.subtle" weight="semibold">
-                                      {getFormattedAmountNew(denomination, true)}
+                                      {getFormattedAmountNewDenom(denomination, true)}
                                     </Text>
                                   </Box>
                                 ))

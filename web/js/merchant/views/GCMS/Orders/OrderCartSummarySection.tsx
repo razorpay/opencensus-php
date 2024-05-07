@@ -13,6 +13,7 @@ import { ListApiResponse } from 'merchant/views/GCMS/shared/types';
 import { GCMSOrderSession, OrderSessionContext } from './context';
 import { fetchOrderDetails, fetchOrderItems } from './queries';
 import { Order, OrderItem } from './types';
+import { getFormattedAmountNewDenom } from '../shared/utils';
 
 const OrderCartSummarySection = () => {
   const { mode, merchantId } = useContext<GCMSSession>(SessionContext);
@@ -109,7 +110,7 @@ const OrderCartSummarySection = () => {
                                       </Box>
                                       <Box width="100px" paddingTop="spacing.2">
                                         <Text>
-                                          {getFormattedAmountNew(item.denomination, true)}
+                                          {getFormattedAmountNewDenom(item.denomination, true)}
                                         </Text>
                                       </Box>
                                     </Box>
@@ -126,7 +127,7 @@ const OrderCartSummarySection = () => {
                                   </Box>
                                   <Box padding={['spacing.2', 'spacing.0']}>
                                     <Text>
-                                      {getFormattedAmountNew(
+                                      {getFormattedAmountNewDenom(
                                         item.denomination * item.quantity,
                                         true,
                                       )}

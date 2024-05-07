@@ -27,6 +27,7 @@ import OrderStatus from './OrderStatus';
 import TransactionDetailsSection from './TransactionDetailsSection';
 import { trackOrdersDetailsPageLoadSuccess } from './events';
 import { fetchOrderDetails, fetchOrderItems } from './queries';
+import { getFormattedAmountNewDenom } from '../shared/utils';
 
 export const OrderCardItemContainer = styled.div(
   ({ theme }) => `
@@ -262,7 +263,7 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                                   </Box>
                                   <Box display="flex" flex={1} minWidth="110px">
                                     <Text size="medium" weight="semibold">
-                                      {getFormattedAmountNew(item.denomination, true)}
+                                      {getFormattedAmountNewDenom(item.denomination, true)}
                                     </Text>
                                   </Box>
                                   <Box display="flex" flex={1} minWidth="110px">

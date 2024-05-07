@@ -7,13 +7,13 @@ import { queryClient } from 'common/components/Bootstrap/Wrapper';
 import { Error } from 'common/new-ui/Input';
 import Spinner from 'common/ui/Spinner';
 import debounce from 'common/utils/debounce';
-import { getFormattedAmountNew, groupBy } from 'common/utils/rzp-utils';
+import { groupBy } from 'common/utils/rzp-utils';
 import EmptyList from 'merchant/components/EmptyList';
 import { fetchProgramsByResellerId } from 'merchant/views/GCMS/Programs/queries';
 import { SKU } from 'merchant/views/GCMS/Programs/types';
 import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import { GCMSSession, SessionContext } from 'merchant/views/GCMS/shared/context';
-import { isPositiveInteger } from 'merchant/views/GCMS/shared/utils';
+import { getFormattedAmountNewDenom, isPositiveInteger } from 'merchant/views/GCMS/shared/utils';
 import { ListApiResponse } from 'merchant/views/Wallet/types';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -186,7 +186,7 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
                               >
                                 <Box width="200px">
                                   <Text color="surface.text.gray.muted" size="large">
-                                    {getFormattedAmountNew(item.denomination, true)}
+                                    {getFormattedAmountNewDenom(item.denomination, true)}
                                   </Text>
                                 </Box>
                                 <Box width="200px">

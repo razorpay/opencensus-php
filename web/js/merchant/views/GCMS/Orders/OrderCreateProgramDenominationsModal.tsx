@@ -15,12 +15,12 @@ import { useMutation } from '@tanstack/react-query';
 
 import { queryClient } from 'common/components/Bootstrap/Wrapper';
 import { Error } from 'common/new-ui/Input';
-import { getFixedINRAmount, getFormattedAmountNew } from 'common/utils/rzp-utils';
+import { getFixedINRAmount } from 'common/utils/rzp-utils';
 import { OrderItemDenomination, ModalTypeEnum } from 'merchant/views/GCMS/Orders/types';
 import { SKU } from 'merchant/views/GCMS/Programs/types';
 import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import { GCMSSession, SessionContext } from 'merchant/views/GCMS/shared/context';
-import { isPositiveInteger } from 'merchant/views/GCMS/shared/utils';
+import { getFormattedAmountNewDenom, isPositiveInteger } from 'merchant/views/GCMS/shared/utils';
 import { ErrorText } from 'merchant/views/Marketplace/PlatformFee/components/styles';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -313,7 +313,7 @@ const OrderCreateProgramDenominationsModal = ({
                 >
                   <Box minWidth="185px" paddingRight="spacing.4">
                     <Text color="surface.text.gray.muted" size="large">
-                      {denomination ? getFormattedAmountNew(denomination, true) : 0}
+                      {denomination ? getFormattedAmountNewDenom(denomination, true) : 0}
                     </Text>
                   </Box>
                   <Box minWidth="185px" paddingRight="spacing.4">
