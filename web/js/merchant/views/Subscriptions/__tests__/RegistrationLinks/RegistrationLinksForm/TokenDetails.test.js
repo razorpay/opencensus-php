@@ -97,7 +97,7 @@ describe('RL - Token Details Form', () => {
     expect(screen.getAllByText(/expiry of token/i)[0]).toBeInTheDocument();
     expect(screen.getByTestId('mandateExpireAt-date-input')).toBeInTheDocument();
     expect(
-      screen.getAllByText(/Token expires in 30 years, unless otherwise specified./i)[0],
+      screen.getAllByText(/Token expires in 40 years, unless otherwise specified./i)[0],
     ).toBeInTheDocument();
   });
 
@@ -123,7 +123,7 @@ describe('RL - Token Details Form', () => {
     expect(screen.getAllByText(/expiry of token/i)[0]).toBeInTheDocument();
     expect(screen.getByTestId('mandateExpireAt-date-input')).toBeInTheDocument();
     expect(
-      screen.getAllByText(/Token expires in 30 years, unless otherwise specified./i)[0],
+      screen.getAllByText(/Token expires in 40 years, unless otherwise specified./i)[0],
     ).toBeInTheDocument();
   });
 

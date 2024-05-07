@@ -15,7 +15,7 @@ import {
 } from 'merchant/views/Subscriptions/constants';
 import {
   getDebitPatternDesc,
-  disablePastAndPostThirtyYear,
+  disablePastAndPostFortyYear,
 } from 'merchant/views/Subscriptions/utils';
 import {
   getBillingFrequencies,
@@ -66,14 +66,14 @@ export default function TokenDetailsForm({
             placement="topLeft"
             size="half_big"
             addonAfter={<i class="i i-date-range" />}
-            description="Token expires in 30 years, unless otherwise specified."
+            description="Token expires in 40 years, unless otherwise specified."
             onChange={handleDateChange('mandateExpireAt')}
             data-name="token_expiry_date"
             onBlur={onBlurElement}
             defaultValue={
-              mandateExpireAt ? moment(mandateExpireAt, 'X') : moment(moment().add(30, 'y'), 'X')
+              mandateExpireAt ? moment(mandateExpireAt, 'X') : moment(moment().add(40, 'y'), 'X')
             }
-            disabledDate={disablePastAndPostThirtyYear}
+            disabledDate={disablePastAndPostFortyYear}
           />
         </Input.Group>
       );

@@ -530,7 +530,7 @@ class NewRegistrationLink extends React.Component {
 
       payload.subscription_registration.max_amount = maxAmount;
       payload.subscription_registration.expire_at =
-        mandateExpireAt || moment(moment().add(30, 'y'), 'X').unix();
+        mandateExpireAt || moment(moment().add(40, 'y'), 'X').unix();
     }
 
     if (this.isUPIPayment) {
