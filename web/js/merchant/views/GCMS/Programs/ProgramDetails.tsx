@@ -60,7 +60,7 @@ const ProgramDetails: React.FC = () => {
           </Box>
         )}
 
-        <Box paddingTop="spacing.8" display="flex" flex={1} flexDirection="column">
+        <Box paddingTop="spacing.7" display="flex" flex={1} flexDirection="column">
           <div className="content">
             {isLoading ? (
               <div className="page-spinner-container">
@@ -75,24 +75,24 @@ const ProgramDetails: React.FC = () => {
                   s: '100%',
                 }}
               >
-                <Box>
-                  <Text weight="semibold" size="large">
-                    Program Details
-                  </Text>
-                </Box>
-                <Box paddingTop="spacing.4" display="flex" flexDirection="row">
-                  <Box width="342px" height="216px">
-                    <img
-                      src={program.policies?.image_link}
-                      width="100%"
-                      height="100%"
-                      alt={program.name}
-                    />
-                  </Box>
-                  <Box paddingLeft="spacing.8">
+                <Box
+                  paddingTop="spacing.4"
+                  display="flex"
+                  flexDirection="row"
+                  flexWrap="wrap-reverse"
+                >
+                  <Box
+                    maxWidth={{
+                      l: '656px',
+                      m: '100%',
+                      s: '100%',
+                    }}
+                    minWidth="464px"
+                    flex="1"
+                  >
                     <Box>
                       <Text weight="semibold" size="large">
-                        Basic Details
+                        Program Details
                       </Text>
                     </Box>
                     <Box paddingTop="spacing.4">
@@ -114,62 +114,75 @@ const ProgramDetails: React.FC = () => {
                         </Box>
                       ))}
                     </Box>
-                    <Box padding={['spacing.8', 'spacing.0']}>
-                      <Divider />
+                  </Box>
+                  <Box>
+                    <Box padding={['spacing.9', 'spacing.5', 'spacing.5', 'spacing.0']}>
+                      <Box width="312px" height="182px" elevation="highRaised">
+                        <img
+                          src={program.policies?.image_link}
+                          width="100%"
+                          height="100%"
+                          alt={program.name}
+                        />
+                      </Box>
                     </Box>
-                    <Box padding={['spacing.0', 'spacing.0', 'spacing.8']}>
-                      <Box>
-                        <Text weight="semibold" size="large">
-                          Denomination
-                        </Text>
-                      </Box>
-                      <Box paddingTop="spacing.4">
-                        {denominationSections.map((section) => (
-                          <Box
-                            key={section.name}
-                            display="flex"
-                            flexDirection="row"
-                            paddingTop="spacing.4"
-                          >
-                            <Box minWidth="180px">
-                              <Text color="surface.text.gray.subtle">{section.name}</Text>
+                  </Box>
+                </Box>
+                <Box>
+                  <Box padding={['spacing.8', 'spacing.8', 'spacing.8', 'spacing.0']}>
+                    <Divider />
+                  </Box>
+                  <Box>
+                    <Box>
+                      <Text weight="semibold" size="large">
+                        Denomination
+                      </Text>
+                    </Box>
+                    <Box paddingTop="spacing.4">
+                      {denominationSections?.map((section) => (
+                        <Box
+                          key={section.name}
+                          display="flex"
+                          flexDirection="row"
+                          paddingTop="spacing.4"
+                        >
+                          {section.name === '' ? (
+                            <Box
+                              display="flex"
+                              flexDirection="row"
+                              alignItems="center"
+                              flexWrap="wrap"
+                            >
+                              {section.value ? (
+                                (section.value as number[]).map((denomination) => (
+                                  <Box
+                                    key={denomination}
+                                    margin={['spacing.0', 'spacing.4', 'spacing.4', 'spacing.0']}
+                                    padding={['spacing.3', 'spacing.6']}
+                                    borderRadius="small"
+                                    borderWidth="thinner"
+                                    borderColor="surface.border.gray.muted"
+                                  >
+                                    <Text color="surface.text.gray.subtle" weight="semibold">
+                                      {getFormattedAmountNew(denomination, true)}
+                                    </Text>
+                                  </Box>
+                                ))
+                              ) : (
+                                <Text color="surface.text.gray.subtle" weight="semibold">
+                                  -
+                                </Text>
+                              )}
                             </Box>
-                            {section.name === 'Denomination' ? (
-                              <Box
-                                display="flex"
-                                flexDirection="row"
-                                alignItems="center"
-                                flexWrap="wrap"
-                              >
-                                {section.value ? (
-                                  (section.value as number[]).map((denomination) => (
-                                    <Box
-                                      key={denomination}
-                                      margin={['spacing.0', 'spacing.4', 'spacing.4', 'spacing.0']}
-                                      padding={['spacing.3', 'spacing.6']}
-                                      borderRadius="small"
-                                      borderWidth="thinner"
-                                      borderColor="surface.border.gray.muted"
-                                    >
-                                      <Text color="surface.text.gray.subtle" weight="semibold">
-                                        {getFormattedAmountNew(denomination, true)}
-                                      </Text>
-                                    </Box>
-                                  ))
-                                ) : (
-                                  <Text color="surface.text.gray.subtle" weight="semibold">
-                                    -
-                                  </Text>
-                                )}
-                              </Box>
-                            ) : (
-                              <Box>
-                                <Text weight="semibold">{capitalize(section.value as string)}</Text>
-                              </Box>
-                            )}
-                          </Box>
-                        ))}
-                      </Box>
+                          ) : (
+                            <Box>
+                              <Text weight="semibold">
+                                {capitalize(section.value as unknown as string)}
+                              </Text>
+                            </Box>
+                          )}
+                        </Box>
+                      ))}
                     </Box>
                   </Box>
                 </Box>

@@ -88,6 +88,16 @@ const VirtualAccountDetails = ({
                 />
               </CustomClipboard>
             </Box>
+            <Box marginTop="spacing.5">
+              <CustomClipboard value={beneficiaryName}>
+                <IconButton
+                  size="large"
+                  accessibilityLabel="filter"
+                  icon={CopyIcon}
+                  onClick={() => {}}
+                />
+              </CustomClipboard>
+            </Box>
           </Box>
         </Box>
 

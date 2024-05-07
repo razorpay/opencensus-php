@@ -61,7 +61,7 @@ const ResellerDetailsHeader = ({
               >
                 <Skeleton width="100px" height="20px" />
                 <Box display="flex">
-                  <Text color="surface.text.gray.muted">ID: </Text>
+                  <Text color="surface.text.gray.muted">Reseller ID: </Text>
                   <Skeleton width="100px" height="20px" marginLeft="spacing.2" />
                 </Box>
               </Box>
@@ -84,7 +84,7 @@ const ResellerDetailsHeader = ({
               >
                 <Text size="large">{resellerBalance?.merchant_name}</Text>
                 <Box display="flex">
-                  <Text color="surface.text.gray.muted">ID: </Text>
+                  <Text color="surface.text.gray.muted">Reseller ID: </Text>
                   <Text weight="semibold" color="surface.text.gray.muted">
                     {resellerBalance?.merchant_id}
                   </Text>

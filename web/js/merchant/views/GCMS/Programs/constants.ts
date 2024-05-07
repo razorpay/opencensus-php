@@ -71,11 +71,7 @@ export const getProgramDenominationSections = (program: Program) => {
     : [];
   return [
     {
-      name: 'Type',
-      value: program.type || '-',
-    },
-    {
-      name: 'Denomination',
+      name: '',
       value: sortedDenominations.length > 0 ? sortedDenominations : undefined,
     },
   ];

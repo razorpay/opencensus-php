@@ -60,7 +60,7 @@ const ProgramHeaderSection: React.FC<Props> = ({
                 {...sectionItemProps}
               >
                 <Text color="surface.text.gray.muted">{section.name}:&nbsp;&nbsp;</Text>
-                <Text color="surface.text.gray.muted" weight="semibold">
+                <Text color="surface.text.gray.normal" weight="semibold">
                   {capitalize(section.value)}
                 </Text>
               </Box>
