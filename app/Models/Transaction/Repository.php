@@ -1006,7 +1006,8 @@ class Repository extends Base\Repository
             $result = $result->where(Transaction\Entity::ENTITY_ID, '=', $sourceId);
         }
 
-        return $result->take($limit)
+        return $result->orderBy(Entity::CREATED_AT, 'desc')
+            ->take($limit)
             ->skip($skip)
             ->get();
     }
