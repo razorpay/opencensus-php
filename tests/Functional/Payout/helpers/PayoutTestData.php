@@ -22334,6 +22334,22 @@ return [
         ]
     ],
 
+    'testPayoutUpdatePostBasRecon' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/banking_account_statement/payout_update',
+            'content' => [
+                'payout_id' => 'randomid111111',
+                'timestamp' => 946684801
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
+
     'testODBalanceCheckForPayouts' => [
         'request'  => [
             'method'  => 'POST',

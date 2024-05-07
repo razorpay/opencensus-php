@@ -4460,6 +4460,8 @@ class Route
         'delete_card_meta_data_and_vault_token'   => ['delete',   'payouts_service/delete_card_metadata',                   'PayoutController@payoutServiceDeleteCardMetaData'             ],
         'rename_attachments_for_payouts'          => ['post',     'payouts_service/renameAttachments/{id}',                 'PayoutController@payoutServiceRenameAttachments'              ],
 
+        'bas_recon_payout_update'                 => ['post',     'banking_account_statement/payout_update',                    'PayoutController@payoutUpdateByBASRecon'                      ],
+
         // Data Consistency Checker Routes
         'initiate_payouts_consistency_check'      => ['post',     'consistency_checker',                                    'PayoutController@initiatePayoutsConsistencyCheck'             ],
         'dcc_payouts_details_fetch'               => ['post',     'consistency_checker/fetch',                              'PayoutController@fetchPayoutsDetailsForDcc'                   ],
@@ -6305,6 +6307,7 @@ class Route
         // payout service
         'create_payout_entry',
         'payouts_service_dual_write',
+        'bas_recon_payout_update',
         'delete_card_meta_data_and_vault_token',
         'create_reversal_entry',
         'banking_account_fetch_by_account_number',
@@ -17504,6 +17507,7 @@ class Route
         'payouts_service' => [
             'create_payout_entry',
             'payouts_service_dual_write',
+            'bas_recon_payout_update',
             'credit_transfer_create',
             'delete_card_meta_data_and_vault_token',
             'fund_account_get_internal',

@@ -316,6 +316,9 @@ class Core extends Base\Core
     /** @var PayoutService\ProcessStuckPayouts */
     protected $payoutServiceProcessStuckPayouts;
 
+    /** @var PayoutService\BankingAccountStatement */
+    protected $payoutServiceBankingAccountStatementClient;
+
     /** @var TdsProcessor\Processor*/
     protected $tdsProcessor;
 
@@ -358,6 +361,8 @@ class Core extends Base\Core
 
         $this->payoutServiceProcessStuckPayouts =
             $this->app[PayoutService\ProcessStuckPayouts::PAYOUT_SERVICE_PROCESS_STUCK_PAYOUTS];
+
+        $this->payoutServiceBankingAccountStatementClient = $this->app[PayoutService\BankingAccountStatement::PAYOUT_SERVICE_BANKING_ACCOUNT_STATEMENT];
 
         $this->workflowService = new Workflow\Service\Client;
 
@@ -5230,7 +5235,8 @@ class Core extends Base\Core
                                   string $reverseReason = null,
                                   $ftaBankStatusCode = null,
                                   $credit_bas = null,
-                                  Reversal\Entity &$reversal = null)
+                                  Reversal\Entity &$reversal = null,
+                                  $basReconUpdate = false)
     {
         $payout->setReversalStatusUpdateIntentForMetrics(true);
 
@@ -5246,7 +5252,7 @@ class Core extends Base\Core
         // saved in the database.
         list($bankAccStmtForReversal, $bankAccStmtForPayout) = $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
-            function () use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas, &$reversal)
+            function () use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas, &$reversal, $basReconUpdate)
             {
                 // reloading the payout here to ensure if any other process
                 // gets a mutex on payout resource, it gets a fresh copy
@@ -5266,7 +5272,7 @@ class Core extends Base\Core
                 }
 
                 list($reversal, $bankAccStmtForReversal, $bankAccStmtForPayout) = $this->repo->transaction(
-                    function() use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas) {
+                    function() use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas, $basReconUpdate) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
                         if ($reverseReason !== null)
@@ -5278,7 +5284,8 @@ class Core extends Base\Core
 
                         $bankAccStmtForReversal = null;
                         $bankAccStmtForPayout = null;
-                        if ($payout->isBalanceAccountTypeDirect() === true)
+                        if (($payout->isBalanceAccountTypeDirect() === true) and
+                            !$basReconUpdate)
                         {
                             list($bankAccStmtForReversal, $bankAccStmtForPayout) = $this->handleReversalTransactionForDirectBanking($reversal, $credit_bas);
                         }
@@ -8709,6 +8716,113 @@ class Core extends Base\Core
         );
 
         return ['status' => 'success'] ;
+    }
+
+    public function payoutUpdateByBASRecon($input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_UPDATE_BY_BAS_RECON,
+            $input
+        );
+
+        (new Validator)->validateInput(Validator::PAYOUT_UPDATE_BY_BAS_RECON, $input);
+
+        $basId = $input['bas_id'];
+        $payoutId = $input[BankingAccountStatement\Entity::ENTITY_ID];
+        $type = $input[BankingAccountStatement\Entity::ENTITY_TYPE];
+
+        $merchantId = $input[Entity::MERCHANT_ID];
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        try
+        {
+            /** @var Entity $payout */
+            $payout = $this->repo->payout->findOrFail($payoutId);
+
+            if (is_null($payout) or $payout->getIsPayoutService())
+            {
+                return $this->payoutServiceBankingAccountStatementClient->updatePayoutAfterBASRecon($input);
+            }
+
+            if ($type == 'payout')
+            {
+                $payout->setTransactionId($basId);
+
+                $payout->saveOrFail();
+
+                $this->sendLedgerEventPostBasLinking($merchant, $payout, $input);
+            }
+            else
+            {
+                /** @var Reversal\Entity $reversal */
+                $reversal = null;
+
+                if ($payout->getStatus() == Status::FAILED)
+                {
+                    $reverseReason = $payout->getFailureReason() ?? 'REVERSAL';
+
+                    $this->reversePayout(
+                        $payout,
+                        $reverseReason,
+                        'FAILURE',
+                        null,
+                        $reversal,
+                        true);
+                }
+                else
+                {
+                    $reversal = $payout->reversal;
+                }
+
+                if (!is_null($reversal))
+                {
+                    $reversal->setTransactionId($basId);
+                    $reversal->saveOrFail();
+
+                    $this->sendLedgerEventPostBasLinking($merchant, $reversal, $input, $payout);
+                }
+            }
+        }
+        catch (\throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::PAYOUT_UPDATE_BY_BAS_RECON_FAILURE,
+                ['input' => $input]
+            );
+
+            throw $exception;
+        }
+
+        return ['success'];
+    }
+
+    public function sendLedgerEventPostBasLinking($merchant, $sourceEntity, $input, $payout = null)
+    {
+        $basId = $input['bas_id'];
+        $transactionDate = $input[BankingAccountStatement\Entity::TRANSACTION_DATE];
+        $isConvertedFromExternal = $input[BankingAccountStatement\Entity::CONVERTED_FROM_EXTERNAL];
+
+        $bas = new BankingAccountStatement\Entity;
+        $bas->setId($basId);
+        $bas->setTransactionDate($transactionDate);
+
+        if ($isConvertedFromExternal)
+        {
+            if ($sourceEntity->getEntityName() === Constants\Entity::PAYOUT)
+            {
+                $this->sendExtToPayoutEventToLedger($sourceEntity, $bas);
+            }
+            else if ($sourceEntity->getEntityName() === Constants\Entity::REVERSAL)
+            {
+                $this->sendExtToReversalEventToLedger($payout, $bas, $sourceEntity);
+            }
+
+            return;
+        }
+
+        (new BankingAccountStatement\Core)->sendToLedgerPostSourceEntityProcessing($merchant, $sourceEntity, $bas);
     }
 
     public function payoutServiceDeleteCardMetaData($input)

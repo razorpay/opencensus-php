@@ -1048,6 +1048,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function payoutUpdateByBASRecon()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->payoutUpdateByBASRecon($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function payoutServiceDeleteCardMetaData()
     {
         $input = Request::all();

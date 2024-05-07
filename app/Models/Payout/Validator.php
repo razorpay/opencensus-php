@@ -117,6 +117,8 @@ class Validator extends Base\Validator
 
     const PAYOUT_SERVICE_DATA_MIGRATION_INPUT = 'payout_service_data_migration_input';
     const PAYOUT_SERVICE_MAIL_AND_SMS_INPUT   = 'payout_service_mail_and_sms_input';
+
+    const PAYOUT_UPDATE_BY_BAS_RECON   = 'payout_update_by_bas_recon';
     const PAYOUT_SERVICE_TXN_MAIL_DATA        = 'payout_service_txn_mail_data';
 
     const PAYOUT_SERVICE_DUAL_WRITE_INPUT = 'payout_service_dual_write_input';
@@ -251,6 +253,14 @@ class Validator extends Base\Validator
         Entity::TYPE   => 'required',
         'entity_id'    => 'required|size:14',
         'metadata'     => 'array',
+    ];
+
+    protected static $payoutUpdateByBasReconRules = [
+        'bas_id'           => 'required',
+        'entity_id'        => 'required',
+        'entity_type'      => 'required|in:payout,payout_reversal',
+        'merchant_id'      => 'required',
+        'transaction_date' => 'required'
     ];
 
     protected static $payoutServiceTxnMailDataRules = [

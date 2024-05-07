@@ -5891,6 +5891,11 @@ class Service extends Base\Service
         return $this->core->payoutServiceDualWrite($input);
     }
 
+    public function payoutUpdateByBASRecon($input)
+    {
+        return $this->core->payoutUpdateByBASRecon($input);
+    }
+
     public function payoutServiceDeleteCardMetaData($input)
     {
         (new Validator())->validateInput(Validator::DELETE_CARD_META_DATA_FOR_PAYOUT_SERVICE, $input);

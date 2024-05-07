@@ -2084,6 +2084,125 @@ class PayoutTest extends OAuthTestCase
 
     }
 
+    public function testPayoutUpdatePostBasRecon()
+    {
+        $this->createPayout();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->ba->payoutInternalAppAuth();
+
+        $request = [
+            'url'     => '/banking_account_statement/payout_update',
+            'method'  => 'POST',
+            'content' => [
+                'bas_id'           => '12345678901234',
+                'entity_id'        => $payout->getId(),
+                'entity_type'      => 'payout',
+                'merchant_id'      => $payout->getMerchantId(),
+                'transaction_date' => 12345
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('12345678901234', $payout->getTransactionId());
+    }
+
+    public function testPayoutUpdatePostBasReconForFailedPayout()
+    {
+        $this->testCreateRblPayoutSuccessfully();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), [
+            PayoutEntity::STATUS => Status::FAILED
+        ]);
+
+        $payout->saveOrFail();
+
+        $this->ba->payoutInternalAppAuth();
+
+        $request = [
+            'url'     => '/banking_account_statement/payout_update',
+            'method'  => 'POST',
+            'content' => [
+                'bas_id'           => '12345678901234',
+                'entity_id'        => $payout->getId(),
+                'entity_type'      => 'payout_reversal',
+                'merchant_id'      => $payout->getMerchantId(),
+                'transaction_date' => 12345
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNull($payout->getTransactionId());
+        $this->assertEquals('12345678901234', $payout->reversal->getTransactionId());
+        $this->assertEquals(Status::REVERSED, $payout->getStatus());
+    }
+
+    public function testPayoutUpdatePostBasReconForReversedPayout()
+    {
+        $this->testCreateRblPayoutSuccessfully();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $payout->fundTransferAttempts[0]->toArray();
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::REVERSED, '933815383814');
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotNull($payout->reversal);
+        $this->assertNull($payout->reversal->getTransactionId());
+
+        $this->ba->payoutInternalAppAuth();
+
+        $request = [
+            'url'     => '/banking_account_statement/payout_update',
+            'method'  => 'POST',
+            'content' => [
+                'bas_id'           => '12345678901234',
+                'entity_id'        => $payout->getId(),
+                'entity_type'      => 'payout_reversal',
+                'merchant_id'      => $payout->getMerchantId(),
+                'transaction_date' => 12345
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNull($payout->getTransactionId());
+        $this->assertEquals('12345678901234', $payout->reversal->getTransactionId());
+    }
+
     // Test data migration to PS side payouts, payout_logs, payout_sources and reversals tables.
     // State transition: null -> created -> initiated -> reversed
     public function testDataMigrationCreatedToReversed()

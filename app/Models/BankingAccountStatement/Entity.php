@@ -58,6 +58,8 @@ class Entity extends Base\PublicEntity
     // Relation names/attributes
     const SOURCE                = 'source';
 
+    const CONVERTED_FROM_EXTERNAL = 'converted_from_external';
+
     const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-)(.*?)(\/|-)/';
 
     // sample IMPS - 010617021414-QCREDIT 234412

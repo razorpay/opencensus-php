@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 class BankingAccountStatement extends Base
 {
     const BANKING_ACCOUNT_STATEMENT_PROCESS_POST_RECON_URI = '/banking_account_statement/process/batch';
+    const BANKING_ACCOUNT_STATEMENT_PAYOUT_UPDATE = '/banking_account_statement/payout_update';
 
     const PAYOUT_SERVICE_BANKING_ACCOUNT_STATEMENT = 'payout_service_banking_account_statement';
 
@@ -25,5 +26,23 @@ class BankingAccountStatement extends Base
             [
                 'response' => $response,
             ]);
+    }
+
+    public function updatePayoutAfterBASRecon($input)
+    {
+        $response = $this->makeRequestAndGetContent(
+            $input,
+            self::BANKING_ACCOUNT_STATEMENT_PAYOUT_UPDATE,
+            Requests::POST
+        );
+
+        $this->trace->info(
+            TraceCode::PAYOUTS_SERVICE_PAYOUT_UPDATE_POST_BAS_RECON_RESPONSE,
+            [
+                'response' => $response,
+            ]
+        );
+
+        return $response;
     }
 }
