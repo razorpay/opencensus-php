@@ -816,6 +816,7 @@ class FundAccountValidationTest extends TestCase
             'name' => "Razorpay Customer",
             'success' => true,
             'fav_status' => "completed",
+            'error_code' => null,
         ];
 
         $mock->shouldReceive('updateFavInMicroservice')
@@ -1373,8 +1374,6 @@ class FundAccountValidationTest extends TestCase
         ];
 
         $response = $this->makeRequestAndGetContent($request);
-
-        s($response);
     }
 
     public function testCreateValidationWithWrongFundAccountId()
@@ -3682,7 +3681,7 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationForPGMerchantWithNoXLiteAccountAfterCutoff()
     {
-        $this->enableRazorXTreatmentForRazorX();
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $this->createFundAccountBankAccount();
 

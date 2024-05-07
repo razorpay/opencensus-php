@@ -85,6 +85,22 @@ class Core extends Base\Core
         $this->favGetServiceClient = $this->app[FavServiceFetch::FAV_SERVICE_FETCH];
     }
 
+    public function isFavServiceForwardingApplicable(Merchant\Entity $merchant){
+
+        $newCompositeApplicable = $this->app->razorx->getTreatment($merchant->getId(),
+            RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING,
+            $this->mode);
+
+        $isFavServiceEnabled = $merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED);
+
+        if(($newCompositeApplicable === RazorxTreatment::RAZORX_VARIANT_ON) or ($isFavServiceEnabled === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * @param array $input
      * @param Merchant\Entity $merchant
@@ -142,7 +158,7 @@ class Core extends Base\Core
             $input[Entity::CURRENCY] = "INR";
         }
 
-        $isFavServiceEnabled = $merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED);
+        $isFavServiceEnabled = $this->isFavServiceForwardingApplicable($merchant);
 
         $this->trace->info(TraceCode::FAV_MERCHANT_FLAGS_STATUS, [
             'merchant_id'           => $merchant->getId(),
@@ -747,7 +763,7 @@ class Core extends Base\Core
 //            return false;
 //        }
 
-        return $merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED);
+        return $this->isFavServiceForwardingApplicable($merchant);
     }
 
     public function processFavAfterLedgerStatusCheck($validation, $ledgerResponse, $feesSplit = null)
@@ -1667,7 +1683,7 @@ class Core extends Base\Core
             {
                 $this->updateFavInFAVService($input);
             }
-            elseif (($fav != null) and ($fav->merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED)))
+            elseif (($fav != null) and ($this->isFavServiceForwardingApplicable($fav->merchant)))
             {
                 $this->updateFavInFAVService($input);
             }
