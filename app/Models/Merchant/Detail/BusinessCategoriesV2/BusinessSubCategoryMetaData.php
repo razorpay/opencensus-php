@@ -575,7 +575,7 @@ class BusinessSubCategoryMetaData
             self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COACHING                                           => [
-            Merchant::CATEGORY                                => '8299',
+            Merchant::CATEGORY                                => '8241',
             self::DESCRIPTION                                 => Sub::DESCRIPTIONS[Sub::COACHING],
             Merchant::CATEGORY2                               => Category::PVT_EDUCATION,
             Entity::ACTIVATION_FLOW                           => ActivationFlow::WHITELIST,

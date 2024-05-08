@@ -172,7 +172,7 @@ return [
                             'international_activation' => 'whitelist',
                         ],
                         'coaching'             => [
-                            'category'                 => '8299',
+                            'category'                 => '8241',
                             'description'              => 'Coaching Institute',
                             'category2'                => 'pvt_education',
                             'activation_flow'          => 'whitelist',

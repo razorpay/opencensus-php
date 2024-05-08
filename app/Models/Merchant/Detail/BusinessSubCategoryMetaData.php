@@ -237,7 +237,7 @@ class BusinessSubCategoryMetaData
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
         ],
         Sub::COACHING                      => [
-            Merchant::CATEGORY                      => '8299',
+            Merchant::CATEGORY                      => '8241',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::COACHING],
             Merchant::CATEGORY2                     => Category::PVT_EDUCATION,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
@@ -3352,7 +3352,7 @@ class BusinessSubCategoryMetaData
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
         ],
         Sub::BANDS_ORCHESTRAS_AND_MISCELLANEOUS_ENTERTAINERS    => [
-            Merchant::CATEGORY                      => '7929',
+            Merchant::CATEGORY                      => '7911',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BANDS_ORCHESTRAS_AND_MISCELLANEOUS_ENTERTAINERS],
             Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
