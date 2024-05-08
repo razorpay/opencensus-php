@@ -192,7 +192,10 @@ trait RepositoryUpdateTestAndLiveAndAsv
             case "merchant_detail" :
                 unset($liveEntity['edd_verification_status'],
                       $testEntity['edd_verification_status'],
-                      $asvEntity['edd_verification_status']);
+                      $asvEntity['edd_verification_status'],
+                      $liveEntity['details'],
+                      $testEntity['details'],
+                      $asvEntity['details']);
                 break;
             case "merchant_business_detail" :
                 unset($liveEntity['products'],

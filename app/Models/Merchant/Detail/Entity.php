@@ -237,6 +237,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     const EDD_VERIFICATION_STATUS = 'edd_verification_status';
 
+    const DETAILS = 'details';
+
     protected $entity     = 'merchant_detail';
 
     protected $primaryKey = self::MERCHANT_ID;
@@ -558,6 +560,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     protected $hidden = [
         self::EDD_VERIFICATION_STATUS,
+        self::DETAILS,
     ];
 
     /**
