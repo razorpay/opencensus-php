@@ -6917,8 +6917,10 @@ trait Authorize
         {
             $payment->localToken()->associate($token);
         }
-
-        //else @todo for wallets
+        else if ($payment->isWalletRecurring() === true)
+        {
+            $payment->localToken()->associate($token);
+        }
     }
 
     protected function setSelectedTerminalsIdsForAutoDebit(Payment\Entity $payment,
