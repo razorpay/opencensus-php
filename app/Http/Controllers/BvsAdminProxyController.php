@@ -10,19 +10,23 @@ class BvsAdminProxyController extends BaseProxyController
     const GET_VALIDATION_WITH_DETAILS = 'GetValidationWithDetails';
     const GET_CONSENT_DOCUMENTS_BY_OWNER_ID = 'GetConsentDocumentsByOwnerId';
     const LIST_KYC_DOCUMENTS = 'ListDocuments';
+    const GET_WEBSITE_POLICY_VERIFICATIONS_BY_ACCOUNT_ID = 'GetWebsitePolicyVerificationsByAccountID';
+
 
     const ROUTES_URL_MAP    = [
         self::LIST_VALIDATIONS_FOR_MERCHANT => "/twirp\/platform.bvs.ownerdetails.v1.VerificiationLifecycleAPI\/ListValidations/",
         self::GET_VALIDATION_WITH_DETAILS => "/twirp\/platform.bvs.validation.v2.ValidationAPI\/GetValidationWithDetails/",
         self::GET_CONSENT_DOCUMENTS_BY_OWNER_ID => "/twirp\/platform.bvs.consentdocumentmanager.v2.ConsentDocumentManagerAPI\/GetConsentDocumentsByOwnerId/",
-        self::LIST_KYC_DOCUMENTS => "/twirp\/platform.bvs.kycdocumentmanager.v1.KYCDocumentManagerAPI\/ListDocuments/"
+        self::LIST_KYC_DOCUMENTS => "/twirp\/platform.bvs.kycdocumentmanager.v1.KYCDocumentManagerAPI\/ListDocuments/",
+        self::GET_WEBSITE_POLICY_VERIFICATIONS_BY_ACCOUNT_ID => "/twirp\/platform.bvs.websiteverification.v1.WebsiteVerificationAPI\/GetWebsiteVerificationByAccountId"
     ];
 
     const ADMIN_ROUTES = [
         self::LIST_VALIDATIONS_FOR_MERCHANT,
         self::GET_VALIDATION_WITH_DETAILS,
         self::GET_CONSENT_DOCUMENTS_BY_OWNER_ID,
-        self::LIST_KYC_DOCUMENTS
+        self::LIST_KYC_DOCUMENTS,
+        self::GET_CONSENT_DOCUMENTS_BY_OWNER_ID
     ];
 
     const ADMIN_ROUTES_VS_PERMISSION   = [
@@ -30,6 +34,7 @@ class BvsAdminProxyController extends BaseProxyController
         self::GET_VALIDATION_WITH_DETAILS   => Name::VIEW_ACTIVATION_FORM,
         self::GET_CONSENT_DOCUMENTS_BY_OWNER_ID => Name::VIEW_ALL_ENTITY,
         self::LIST_KYC_DOCUMENTS => Name::VIEW_ALL_ENTITY,
+        self::GET_WEBSITE_POLICY_VERIFICATIONS_BY_ACCOUNT_ID => Name::VIEW_ALL_ENTITY
     ];
 
     public function __construct()
