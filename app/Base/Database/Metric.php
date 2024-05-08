@@ -14,6 +14,8 @@ final class Metric
     const DATAWAREHOUSE_REPLICATION_LAG = 'datawarehouse_replication_lag';
     const DATABASE_ERROR_CLASSIFICATION = 'database_error_classification';
 
+    const DATABASE_QUERY_BINDING        = 'database_query_binding';
+
     // ------------------------- dimensions ------------------------- //
 
     const CONNECTION         = 'connection';
