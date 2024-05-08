@@ -7045,9 +7045,41 @@ class Processor
         {
             if ($this->payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
             {
-                $response['status'] = 'pending';
+                $metadata = [
+                    'payment_id' => $this->payment->getPublicId(),
+                ];
 
-                $response['message'] = 'Payment is pending for authorization. Request for authorization from approver.';
+                if ($this->payment->hasOrder() === true) {
+
+                    $order = $this->payment->order;
+
+                    $metadata['order_id'] = $order->getPublicId();
+
+                }
+
+                try {
+                    // Your code that might throw the exception
+                    throw new Exception\BadRequestException(
+                        $this->payment->getInternalErrorCode(), null, $metadata);
+
+                } catch (Exception\BadRequestException $e) {
+                    // Catching the specific exception type
+                    $responseData = [
+                        'error' => [
+                            'code' => $e->getError()->getPublicErrorCode(),
+                            'description' => 'Payment is pending for authorization. Request for authorization from approver.',
+                            'source' => 'NA',
+                            'step' => 'NA',
+                            'reason'=>'NA',
+                            'metadata' => $e->getData(),
+                            'action' => 'PENDING'
+                        ]
+                    ];
+                }
+
+                $response['data'] = $responseData;
+
+                $response['status'] = 'pending';
             }
             else if ($this->payment->isCreated() === true)
             {
@@ -7055,8 +7087,20 @@ class Processor
             }
             else
             {
+                $metadata = [
+                    'payment_id' => $this->payment->getPublicId(),
+                ];
+
+                if ($this->payment->hasOrder() === true) {
+
+                    $order = $this->payment->order;
+
+                    $metadata['order_id'] = $order->getPublicId();
+
+                }
+
                 throw new Exception\BadRequestException(
-                    $this->payment->getInternalErrorCode());
+                    $this->payment->getInternalErrorCode(),null,$metadata);
             }
         }
 
