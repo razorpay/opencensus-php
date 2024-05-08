@@ -728,6 +728,29 @@ class Repository extends Base\Repository
             "function" => __FUNCTION__
         ];
 
+        if($this->isTestEnv())
+        {
+            $query =  $this->newQueryWithConnection($this->getSlaveConnection($mode))
+                ->where(Entity::GATEWAY, '=', $gateway);
+
+            foreach ($terminalData as $key => $value)
+            {
+                $query->where($key, $value);
+            }
+
+            if ($withTrashed === true)
+            {
+                $query->withTrashed();
+            }
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
+
+            $apiTerminals = $query->get();
+
+            return $apiTerminals->first();
+
+        }
+
         try
         {
             $data = [
@@ -740,8 +763,6 @@ class Repository extends Base\Repository
 
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_READS, $data);
-
                 $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $content = Terminal\Service::getTerminalServiceRequestFromParam($terminalData);
@@ -767,25 +788,6 @@ class Repository extends Base\Repository
 
             $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
         }
-
-        $query =  $this->newQueryWithConnection($this->getSlaveConnection($mode))
-            ->where(Entity::GATEWAY, '=', $gateway);
-
-        foreach ($terminalData as $key => $value)
-        {
-            $query->where($key, $value);
-        }
-
-        if ($withTrashed === true)
-        {
-            $query->withTrashed();
-        }
-
-        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
-
-        $apiTerminals = $query->get();
-
-        return $apiTerminals->first();
     }
 
     public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
