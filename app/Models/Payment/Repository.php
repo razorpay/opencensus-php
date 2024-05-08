@@ -48,7 +48,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Offer\EntityOffer;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Pricing\Calculator;
-
+use RZP\Models\Transfer\Payment as TransferPayment;
 use RZP\Models\Bank\IFSC;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
@@ -2771,9 +2771,18 @@ EOT;
             return;
         }
 
-        $amountTransferred = $this->dbColumn(Entity::AMOUNT_TRANSFERRED);
+        $transferPaymentTable = $this->repo->transfer_payment->getTableName();
 
-        $query->where($amountTransferred, '>', 0);
+        $transferPaymentTableAmountTransferredCol = $this->repo->transfer_payment->dbColumn(TransferPayment\Entity::AMOUNT_TRANSFERRED);
+
+        $transferPaymentTablePaymentIdCol = $this->repo->transfer_payment->dbColumn(TransferPayment\Entity::PAYMENT_ID);
+
+        $paymentTableId = $this->dbColumn(Entity::ID);
+
+        $query->join($transferPaymentTable, $paymentTableId, $transferPaymentTablePaymentIdCol);
+
+        $query->where($transferPaymentTableAmountTransferredCol, '>', 0);
+
     }
 
     protected function addWDAQueryParamTransferred($wdaQueryBuilder, $params)
