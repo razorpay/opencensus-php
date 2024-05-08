@@ -7,7 +7,7 @@
   "engines": {
     "node": "^18.0.0",
     "npm": ">=8.1.2",
-    "pnpm": "^9.0.0"
+    "pnpm": "~9.0.0"
   },
   "dependencies": {
     "@razorpay/universe-cli": "17.2.0",

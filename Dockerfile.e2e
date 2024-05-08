@@ -15,7 +15,7 @@ COPY . .
 RUN --mount=type=secret,id=github_access_token set -eux && \
   echo "$(cat /run/secrets/github_access_token)" >> ~/.GITHUB_ACCESS_TOKEN
 
-RUN npm install -g pnpm@^9
+RUN npm install -g pnpm@~9.0
 
 RUN export GITHUB_ACCESS_TOKEN="$(cat ~/.GITHUB_ACCESS_TOKEN)" && \
   pnpm config set unsafe-perm true && \

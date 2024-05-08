@@ -7,7 +7,7 @@
   "engines": {
     "node": "^18.0.0",
     "npm": ">=8.1.2",
-    "pnpm": "^9.0.0"
+    "pnpm": "~9.0.0"
   },
   "scripts": {
     "prepare:commitmessage": "if [ \"$CI\" = \"true\" ]; then echo 'Running in CI environment'; else exec < /dev/tty && git cz --hook || true; fi",

@@ -33,7 +33,7 @@ jobs:
         run: |
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
       - run: |
-          npm install -g pnpm@^9
+          npm install -g pnpm@~9.0
           npm install -g yarn
 
       - name: Install dependencies

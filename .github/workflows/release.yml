@@ -28,7 +28,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Setup pnpm and yarn
         run: |
-          npm install -g pnpm@^9
+          npm install -g pnpm@~9.0
           npm install -g yarn
 
       - name: Install Dependencies
@@ -65,7 +65,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Setup pnpm and yarn
         run: |
-          npm install -g pnpm@^9
+          npm install -g pnpm@~9.0
           npm install -g yarn
 
       - name: Install Dependencies

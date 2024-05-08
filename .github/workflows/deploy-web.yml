@@ -24,7 +24,7 @@ jobs:
           node-version: 18.12.1
 
       - name: Setup pnpm
-        run: npm install -g pnpm@^9
+        run: npm install -g pnpm@~9.0
 
       # Set AWS creds and download Artifacts
       - name: Configure AWS credentials - Actions Cache
