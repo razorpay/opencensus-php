@@ -810,6 +810,11 @@ class OffersEngine extends Base\Core
             $percentDiscount = $availCondition[Constants::THEN][0][$discountType][0][Constants::DISCOUNT][Constants::PERCENTAGE_DISCOUNT];
 
             $tenureDiscountMap[$emiDur] = $percentDiscount;
+
+            if ($offerType === Constants::BENEFIT_TYPE_LOW_COST_EMI)
+            {
+                $offer->setAttribute(Entity::PERCENT_RATE, $percentDiscount);
+            }
         }
         else
         {
