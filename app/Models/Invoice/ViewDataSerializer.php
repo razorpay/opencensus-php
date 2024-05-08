@@ -884,17 +884,7 @@ class ViewDataSerializer extends Base\Core
             return null;
         }
 
-        $payments = $order->payments;
-
-        foreach ($payments as $payment)
-        {
-            if ($payment->getStatus() === Payment\Status::CAPTURED)
-            {
-               return $payment;
-            }
-        }
-
-        return null;
+        return $this->repo->payment->getCapturedPaymentForOrder($order->getId());
     }
 
     protected function getOptions(): array
