@@ -141,6 +141,17 @@ class Constants
         self::PARTNER_COMMISSION => self::PARTNER_COMMISSION_FORMULA
     ];
 
+
+    const UPI_INAPP_COMMISSION                              = "upi_inapp_commission";
+    const OPTIMIZER_COMMISSION                              = "optimizer_commission";
+    const ESAUTOMATIC_COMMISSION                            = "esautomatic_commission";
+    const RECURRING_COMMISSION                              = "recurring_commission";
+    const MAGIC_CHECKOUT_COMMISSION                         = "magic_checkout_commission";
+    const PARTNER_COMMISSION_FUND_ACCOUNT                   = "partner_commission";
+
+    // Ledger Config Formulas for Tax Types
+    const PARTNER_TAX_FUND_ACCOUNT                          = "partner_tax";
+
     const TAX_TYPE_VS_FORMULAS = [
         self::PARTNER_TAX => self::PARTNER_TAX_FORMULA
     ];

@@ -4531,6 +4531,134 @@ class PaymentLedgerTest extends TestCase
         ];
     }
 
+
+    private function getPaymentMerchantCapturedJournalResponsePayloadWithFeeBreakup($transactorId, $journalId = "LLJMPzXXyjC93B")
+    {
+        return [
+            "id"=> $journalId,
+            "created_at"=> 1677466532,
+            "updated_at"=> 1677466532,
+            "amount"=> "2000",
+            "base_amount"=> "2000",
+            "currency"=> "INR",
+            "tenant"=> "PG",
+            "transactor_id"=> $transactorId,
+            "transactor_event"=> "payment_merchant_captured",
+            "transaction_date"=> 1677466530,
+            "ledger_entry"=> [
+                [
+                    "id"=> "LLJMDzXXyjC93B",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "Jk3pWyD5WaSSPP",
+                    "amount"=> "20",
+                    "base_amount"=> "20",
+                    "type"=> "credit",
+                    "currency"=> "INR",
+                    "balance"=> "8509.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "receivable"
+                        ],
+                        "fund_account_type"=> [
+                            "rzp_commission"
+                        ]
+                    ]
+                ],
+                [
+                    "id"=> "LLJMDzXXyjC93B",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "Jk3pWyD5WaSSPP",
+                    "amount"=> "20",
+                    "base_amount"=> "20",
+                    "type"=> "credit",
+                    "currency"=> "INR",
+                    "balance"=> "8509.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "receivable"
+                        ],
+                        "fund_account_type"=> [
+                            "optimizer_commission"
+                        ]
+                    ]
+                ],
+                [
+                    "id"=> "LLJMDzXYypsmcx",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "JjpZUAEYlvYbEG",
+                    "amount"=> "0",
+                    "base_amount"=> "0",
+                    "type"=> "credit",
+                    "currency"=> "INR",
+                    "balance"=> "1284.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "fund_account_type"=> [
+                            "rzp_gst"
+                        ]
+                    ]
+                ],
+                [
+                    "id"=> "LLJMDzXZQZynxG",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "Jjpg2D3rgPjGWs",
+                    "amount"=> "2000",
+                    "base_amount"=> "2000",
+                    "type"=> "debit",
+                    "currency"=> "INR",
+                    "balance"=> "23700.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_gmv"
+                        ]
+                    ]
+                ],
+                [
+                    "id"=> "LLJMDzXZr1H4OB",
+                    "created_at"=> 1677466532,
+                    "updated_at"=> 1677466532,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzRZGnZhGU",
+                    "account_id"=> "JjpZUD9PmJeNPk",
+                    "amount"=> "1960",
+                    "base_amount"=> "1960",
+                    "type"=> "credit",
+                    "currency"=> "INR",
+                    "balance"=> "468259.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_balance"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
     private function getPaymentMerchantCapturedJournalResponsePayloadWithFeeSplit($transactorId, $journalId = "LLJMPzXXyjC93B")
     {
         return [
@@ -6072,6 +6200,87 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
         $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
 
+    }
+
+    public function testKafkaSuccessForPaymentMerchantCaptureEventWithFeeSplitWithEarlySettlement()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow', 'new_settlement_service']);
+
+        $payment = $this->createPaymentInReverseShadow();
+
+        $paymentId = $payment['id'];
+
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayloadWithFeeBreakup($paymentId, $apiTxnId);
+
+        $journalId = $journal['id'];
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        $creditTxnPayload = [
+            "id"=> $journalId,
+            "merchant_id"=> "10000000000000",
+            "source_id"=> str_replace("pay_","",$paymentId),
+            "source_type"=> "payment",
+            "balance_type"=> "PRIMARY",
+            "currency"=> "INR",
+            "credit"=> 1960,
+            "debit"=> 0,
+            "fee"=> 40,
+            "tax"=> 0,
+            "settled_by"=> "Razorpay",
+            "on_hold"=> null,
+            "on_hold_reason"=> "",
+            "meta"=> [
+                "method"=> "card",
+                "international"=> false
+            ]
+        ];
+
+        $this->mockSns($creditTxnPayload);
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_PAYMENTS, 'on');
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        //s($txn);
+        $this->assertNotNull($txn);
+
+        $this->assertNotNull($txn['fee']);
+        $this->assertNotNull($txn['tax']);
+        $this->assertNotNull($txn['credit']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertTrue($txn->isBalanceUpdated());
+
+        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_", "", $paymentId)]);
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals($payment['fee'], $txn['fee']);
+        $this->assertEquals($payment['tax'], $txn['tax']);
+        $this->assertEquals($payment['amount']-$payment['fee'], $txn['credit']);
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
+
+        $this->assertEquals($paymentId, 'pay_'.$txn['entity_id']);
+        $this->assertEquals($journalId, $txn['id']);
+        $this->assertEquals($journal['ledger_entry'][0]['amount'] + $journal['ledger_entry'][1]['amount'], $txn['fee']);
+        $this->assertEquals($journal['ledger_entry'][2]['amount'], $txn['tax']);
+        $this->assertEquals($journal['ledger_entry'][3]['amount'], $txn['amount']);
+        $this->assertEquals($journal['ledger_entry'][4]['amount'], $txn['amount']-$txn['fee']-$txn['tax']);
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
     }
 
     protected function mockSns($creditTxnPayload)

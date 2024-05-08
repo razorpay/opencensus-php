@@ -865,9 +865,15 @@ trait ReverseShadowTrait
     {
         $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
 
+        [$aggregateFees, $aggregateTax] = $this->getFeeSplitAggregateFeeAndTax($journalResponse);
+
         $payment = $this->repo->payment->findOrFail($baseTransactionEntity->getEntityId());
 
         $primaryBalance = $this->repo->balance->getMerchantBalance($payment->merchant);
+
+        $baseTransactionEntity->setFee($aggregateFees + $aggregateTax);
+
+        $baseTransactionEntity->setTax($aggregateTax);
 
         $baseTransactionEntity->setFeeBearer(($payment->getFeeBearer()));
 
@@ -950,6 +956,53 @@ trait ReverseShadowTrait
 
         return $commissionLedgerEntry;
 
+    }
+
+    private function getFeeSplitAggregateFeeAndTax($journalResponse)
+    {
+        $aggregatedFees = 0; $aggregatedTax = 0;
+
+        $commissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::RZP_COMMISSION);
+
+        $upiInAppCommissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::RECEIVABLE, Constants::UPI_INAPP_COMMISSION);
+
+        $recurringCommissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::RECEIVABLE, Constants::RECURRING_COMMISSION);
+
+        $magicCheckoutCommissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::RECEIVABLE, Constants::MAGIC_CHECKOUT_COMMISSION);
+
+        $optimiserCommissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::RECEIVABLE, Constants::OPTIMIZER_COMMISSION);
+
+        $esAutomaticCommissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::RECEIVABLE, Constants::ESAUTOMATIC_COMMISSION);
+
+        $partnerCommissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::RECEIVABLE, Constants::PARTNER_COMMISSION_FUND_ACCOUNT);
+
+        $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::RZP_GST);
+
+        $partnerTaxLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::PAYABLE, Constants::PARTNER_TAX_FUND_ACCOUNT);
+
+        $generalPaymentFees = $commissionLedgerEntry !== null ? ($commissionLedgerEntry[Constants::AMOUNT]) : 0;
+
+        $upiInAppFees = $upiInAppCommissionLedgerEntry !== null ? ($upiInAppCommissionLedgerEntry[Constants::AMOUNT]) : 0;
+
+        $recurringFees = $recurringCommissionLedgerEntry !== null ? ($recurringCommissionLedgerEntry[Constants::AMOUNT]) : 0;
+
+        $magicCheckoutFees = $magicCheckoutCommissionLedgerEntry !== null ? ($magicCheckoutCommissionLedgerEntry[Constants::AMOUNT]) : 0;
+
+        $optimiserFees = $optimiserCommissionLedgerEntry !== null ? ($optimiserCommissionLedgerEntry[Constants::AMOUNT]) : 0;
+
+        $esAutomaticFees = $esAutomaticCommissionLedgerEntry !== null ? ($esAutomaticCommissionLedgerEntry[Constants::AMOUNT]) : 0;
+
+        $partnerFees = $partnerCommissionLedgerEntry !== null ? ($partnerCommissionLedgerEntry[Constants::AMOUNT]) : 0;
+
+        $tax =  $taxBalanceLedgerEntry !== null ? $taxBalanceLedgerEntry[Constants::AMOUNT] : 0;
+
+        $partnerTax = $partnerTaxLedgerEntry !== null ? ($partnerTaxLedgerEntry[Constants::AMOUNT]) : 0;
+
+        $aggregatedFees = $generalPaymentFees + $upiInAppFees + $recurringFees + $magicCheckoutFees + $optimiserFees + $esAutomaticFees + $partnerFees;
+
+        $aggregatedTax = $tax + $partnerTax;
+
+        return [$aggregatedFees, $aggregatedTax];
     }
 
     private function getTransactionAmountForTransactionTypeFromJournal($journalResponse, $transactorType)
