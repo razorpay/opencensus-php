@@ -1,14 +1,16 @@
 #!/bin/sh
 set -euo pipefail
 
+if [ -n "${INSTANCE_TYPE:-}" ]; then
+    echo "INSTANCE_TYPE - $INSTANCE_TYPE"
+fi
+
 alohomora cast --region ap-south-1 --env "$APP_MODE" --app api ".env.vault.j2"
 
 if [ $? -eq 0 ] ;then
 
-    echo "Casting of alohomora successful for credstash-$APP_MODE-api and INSTANCE_TYPE - $INSTANCE_TYPE"
-
+    echo "Casting of alohomora successful for credstash-$APP_MODE-api"
     mv ./.env.vault ./vault
-
     echo "File moved to vault"
 
     # Split the content into secrets of 50KB each
@@ -31,5 +33,5 @@ if [ $? -eq 0 ] ;then
     exit 0
 fi
 
-echo "Casting of alohomora failed for credstash-$APP_MODE-api and INSTANCE_TYPE $INSTANCE_TYPE"
+echo "Casting of alohomora failed for credstash-$APP_MODE-api"
 exit 1
