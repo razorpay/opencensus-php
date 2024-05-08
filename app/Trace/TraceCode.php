@@ -4318,6 +4318,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FA_VPA_VALIDATION_WORKER_RESPONSE                     = 'FA_VPA_VALIDATION_WORKER_RESPONSE';
 
     const FAV_STATUS_CODE_MAPPING_REQUIRED                      = 'FAV_STATUS_CODE_MAPPING_REQUIRED';
+    const FAV_SERVICE_UPDATE_FAILURE                            = 'FAV_SERVICE_UPDATE_FAILURE';
 
 
     const VALIDATE_VPA_UPS_GATEWAY_REQUEST_FAILED               = 'VALIDATE_VPA_UPS_GATEWAY_REQUEST_FAILED';

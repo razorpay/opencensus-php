@@ -358,9 +358,12 @@ class Entity extends Base\PublicEntity
 
     public function setPublicContactAttribute(array & $array)
     {
-        if($this->isCompositeNewResponseRequired() === true) {
+        if(($this->isCompositeNewResponseRequired() === true) and ($this->getContact() != null))
+        {
             $array[self::FUND_ACCOUNT][self::CONTACT] = $this->getContact()->toArrayPublic();
-        } else {
+        }
+        else
+        {
             unset($array[self::CONTACT]);
         }
     }

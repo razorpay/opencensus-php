@@ -19,6 +19,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY     => 'filled|string|in:INR',
         Entity::RECEIPT      => 'sometimes|string|min:1|max:40',
         Entity::BALANCE_ID   => 'sometimes|unsigned_id',
+        Entity::REFERENCE_ID => 'sometimes|string'
     ];
 
     protected static $compositeCreateRules = [
@@ -37,6 +38,7 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT                    => 'required|associative_array',
         Entity::RECEIPT                         => 'sometimes|string|min:1|max:40',
         Entity::FUND_ACCOUNT . '.' . Entity::ID => 'required|unsigned_id',
+        Entity::REFERENCE_ID                    => 'sometimes|string'
     ];
 
     // This is only used for banking vpa creation request
@@ -45,6 +47,7 @@ class Validator extends Base\Validator
         Entity::BALANCE_ID                      => 'required|custom',
         Entity::FUND_ACCOUNT                    => 'required|associative_array',
         Entity::FUND_ACCOUNT . '.' . Entity::ID => 'required|unsigned_id',
+        Entity::REFERENCE_ID                    => 'sometimes|string'
     ];
 
 //    TODO: -------------- add fetch pricing rules here ----------------

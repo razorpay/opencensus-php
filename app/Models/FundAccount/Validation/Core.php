@@ -153,21 +153,21 @@ class Core extends Base\Core
 
             unset($input[Entity::SOURCE_ACCOUNT_NUMBER]);
 
-            $input[Entity::AMOUNT] = 100;
+            if($fundAccountData[Entity::ACCOUNT_TYPE] === FtsConstants::BANK_ACCOUNT)
+            {
+                $input[Entity::AMOUNT] = 100;
 
-            $input[Entity::CURRENCY] = "INR";
+                $input[Entity::CURRENCY] = "INR";
+            }
         }
-
-        $isFavServiceEnabled = $this->isFavServiceForwardingApplicable($merchant);
-
-        $this->trace->info(TraceCode::FAV_MERCHANT_FLAGS_STATUS, [
-            'merchant_id'           => $merchant->getId(),
-            'fav_service_enabled'   => $isFavServiceEnabled,
-            'isCompositeFavRequest' => $isCompositeFavRequest
-        ]);
-
-        if (($isCompositeFavRequest === true) && ($isFavServiceEnabled === true))
+        else if (($isCompositeFavRequest === true) && ($this->isFavServiceForwardingApplicable($merchant) === true))
         {
+            $this->trace->info(TraceCode::FAV_MERCHANT_FLAGS_STATUS, [
+                'merchant_id'           => $merchant->getId(),
+                'fav_service_enabled'   => $this->isFavServiceForwardingApplicable($merchant) === true,
+                'isCompositeFavRequest' => $isCompositeFavRequest
+            ]);
+
             $validator = new Validator();
 
             $validator->setStrictFalse();
@@ -215,8 +215,6 @@ class Core extends Base\Core
         try
         {
             $fundAccountValidation = $this->createValidationEntity($input, $merchant);
-
-            $this->setAdditionalFieldsForCompositeResponse($fundAccountValidation, $newCompositeResponseApplicable);
 
             // Skip fts calls for validation in case of ledger failure
             // This will be picked up from async job when ledger status is checked
@@ -278,6 +276,8 @@ class Core extends Base\Core
         // Todo: check if pushing this metric is ok in case of ledger reverse shadow failure
         (new Metric)->pushCreatedMetrics($fundAccountValidation->getFundAccountType());
 
+        $this->setAdditionalFieldsForCompositeResponse($fundAccountValidation, $newCompositeResponseApplicable);
+
         return $fundAccountValidation;
     }
 
@@ -294,13 +294,19 @@ class Core extends Base\Core
         {
             $fav->setIsCompositeResponse(true);
 
-            $fav->setContact($fav->fundAccount->contact);
+            if ($fav->fundAccount->contact != null)
+            {
+                $fav->setContact($fav->fundAccount->contact);
+            }
 
             if ($fav->getStatus() === Status::COMPLETED) {
                 if ($fav->getAccountStatus() === AccountStatus::ACTIVE) {
+
                     $fav->setDetails("The beneficiary account is valid");
 
-                    $fav->setNameMatchScore($this->getNameScoreForValidation($fav->getRegisteredName(), $fav->fundAccount->contact->getName()));
+                    if ($fav->fundAccount->contact != null) {
+                        $fav->setNameMatchScore($this->getNameScoreForValidation($fav->getRegisteredName(), $fav->fundAccount->contact->getName()));
+                    }
                 } else {
                     $details = ErrorCodesMapping::BANK_STATUS_CODE_MAP_FOR_COMPLETED_STATE_WITH_DESC[$fav->getErrorCode()];
 
@@ -340,8 +346,9 @@ class Core extends Base\Core
     {
         $errorDetails = null;
 
+        $favErrorCodeMapping = Error::readMappingFromJsonFile(Error::BANKING_ERROR_CODE_FILE_PATH, 'fav');
+
         if($statusCode != null) {
-            $favErrorCodeMapping = Error::readMappingFromJsonFile(Error::BANKING_ERROR_CODE_FILE_PATH, 'fav');
 
             $errorDetails = $favErrorCodeMapping["internal_account_validation_error"][$statusCode] ?? null;
 
@@ -451,7 +458,19 @@ class Core extends Base\Core
 
     public function updateFavInMicroservice(string $favId, array $data, string $type)
     {
-        return $this->favUpdateServiceClient->updateFavInMicroservice($favId, $data, $type);
+        try
+        {
+            return $this->favUpdateServiceClient->updateFavInMicroservice($favId, $data, $type);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAV_SERVICE_UPDATE_FAILURE,
+                $data);
+        }
+        return null;
     }
 
     public function fetchPricingInfoForFavService(array $params): array

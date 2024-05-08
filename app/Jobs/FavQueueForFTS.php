@@ -79,12 +79,9 @@ class FavQueueForFTS extends Job
 
                 if (empty($this->favInput) === false)
                 {
-                    $data = [
-                        'fund_transfer_id' => $ftsTransferId
-                    ];
+                    $data = $response[FTS\Constants::BODY];
 
                     $favCore->updateFavInMicroservice($this->favId, $data, FundAccountEntity::BANK_ACCOUNT);
-
                 }
                 else
                 {
