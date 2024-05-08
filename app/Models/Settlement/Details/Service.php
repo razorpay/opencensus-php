@@ -68,7 +68,7 @@ class Service extends Base\Service
 
     public function getDsSettlementDetails(&$details)
     {
-        foreach ($details['items'] as $item)
+        foreach ($details['items'] as &$item)
         {
             if (!isset($item['fee'])) {
                 $item['fee'] = 0;
