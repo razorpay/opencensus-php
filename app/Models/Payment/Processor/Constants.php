@@ -145,4 +145,7 @@ class Constants
 
     const WITHOUT_AFA_AMOUNT_LIMIT_UPI   = 1500000;
 
+    const DEFAULT_FX_MARKUP_RATE_FOR_ICICI = 0.60;
+    const DEFAULT_FX_MARKUP_RATE_FOR_JPMC  = 0.60;
+
 }
