@@ -7868,6 +7868,19 @@ trait Authorize
             return;
         }
 
+        if(($payment->isUpiRecurring() === true) and ($this->isOrderPaidOrAuthorized($payment) === true))
+        {
+            $this->trace->info(
+                TraceCode::UPI_AUTOPAY_DUPLICATE_PAYMENT,
+                [
+                    'payment_id'      => $payment->getId(),
+                    'token_id'        => $payment->getTokenId(),
+                    'global_token_id' => $payment->getGlobalTokenId()
+                ]);
+
+            return;
+        }
+
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_TOKEN,
             [

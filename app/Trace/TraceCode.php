@@ -1702,6 +1702,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRACE_TOKEN_DISPATCH_LOG                              = 'TRACE_TOKEN_DISPATCH_LOG';
     const PAYMENT_APP_TOKEN_NOT_FOUND                           = 'PAYMENT_APP_TOKEN_NOT_FOUND';
     const PAYMENT_UPDATE_TOKEN                                  = 'PAYMENT_UPDATE_TOKEN';
+    const UPI_AUTOPAY_DUPLICATE_PAYMENT                         = 'UPI_AUTOPAY_DUPLICATE_PAYMENT';
     const SAVED_CARDS_UPDATED_WITH_IIN                          = 'SAVED_CARDS_UPDATED_WITH_IIN';
     const TOKENS_FETCHED_COUNT_FOR_MIGRATE                      = 'TOKENS_FETCHED_COUNT_FOR_MIGRATE';
     const TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED                 = 'TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED';

@@ -18,6 +18,7 @@ use RZP\Constants\Timezone;
 use RZP\Services\Reminders;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Notification;
+use RZP\Models\Order\Status;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
@@ -68,7 +69,7 @@ trait UpiRecurring
                 try
                 {
                     $response = $this->callGatewayFunction(Payment\Action::DEBIT, $input);
-                    
+
                     if(($payment->getIsPushedToKafka() === null) or ($payment->getIsPushedToKafka() === Constants::TIMEOUT_VIA_SCHEDULER))
                     {
                         // As we haven't set verify payment at the time of pre-debit, We will set it now for debit
@@ -962,9 +963,12 @@ trait UpiRecurring
             }
         }
 
+        $isOrderPaidOrAuthorized = $this->isOrderPaidOrAuthorized($payment);
+
         if(($upiMandate->getFrequency() !== UpiMandate\Frequency::AS_PRESENTED) and
             ($upiMandate->getFrequency() !== UpiMandate\Frequency::DAILY) and
-            ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED))
+            ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED) and
+            ($isOrderPaidOrAuthorized === false))
         {
             $upiMandateGatewayData = $upiMandate->getGatewayData();
 
@@ -1027,6 +1031,28 @@ trait UpiRecurring
 
         // Gateway is not marking the upi initial payment as authorized, thus we can not authorize the payment
         return true;
+    }
+
+    protected function isOrderPaidOrAuthorized(Entity $payment)
+    {
+        $isOrderPaidOrAuthorized = false;
+
+        if($payment->order !== null)
+        {
+            $isOrderPaid = ($payment->order->getStatus() === Status::PAID);
+
+            $isOrderAuthorized = (
+                ($payment->order->isAuthorized() === true) and
+                ($payment->order->isPartialPaymentAllowed() === false) and
+                ($payment->order->hasSplitPaymentMeta() === false)
+            );
+
+            if (($isOrderPaid === true) or ($isOrderAuthorized === true)) {
+                $isOrderPaidOrAuthorized = true;
+            }
+        }
+
+        return $isOrderPaidOrAuthorized;
     }
 
     protected function createQrPayment($qrCode, $payment, $upiMandate, $vpa)
@@ -1619,6 +1645,13 @@ trait UpiRecurring
 
     protected function updateRecurringEntitiesForUpiIfApplicable(Entity $payment, array $data, bool $wasFailed = false)
     {
+        $isOrderPaidOrAuthorized = $this->isOrderPaidOrAuthorized($payment);
+
+        if($isOrderPaidOrAuthorized === true)
+        {
+            return;
+        }
+
         if ($payment->isUpiRecurring() === false)
         {
             return;

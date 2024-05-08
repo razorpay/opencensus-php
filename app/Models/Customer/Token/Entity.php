@@ -1224,7 +1224,7 @@ class Entity extends Base\PublicEntity
 
         // For upi recurring tokens, we are not storing max amount, end time in token entity. These are being
         // stored in mandate entity. So, fetching these details from mandate entity.
-        if ($this->isUpiRecurringToken() === true)
+        if ($this->isUpiRecurringToken() === true and $this->getUpiMandate() !== null)
         {
             $publicArray[self::MAX_AMOUNT] = $this->getUpiMandate()->getMaxAmount();
 
