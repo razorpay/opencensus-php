@@ -304,7 +304,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const MCC_MARKDOWN_PERCENTAGE           = 1;
     const PAYMENT_TIMEOUT_EMANDATE_RECURRING = 604800;   // 7 Days
     const PAYMENT_UPI_COLLECT_MAX_EXPIRY_WINDOW = 345600; // 4 Days
-
+    const PAYMENT_TIMEOUT_NETBANKING_CORP      =  432000;  // 5 days
 
     // payment services
     const API                               = 0;
@@ -5869,6 +5869,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             {
                 // for direct netbanking 1 hour is good enough
                 $timeWindow = self::PAYMENT_TIMEOUT_WALLET;
+            }
+        }
+        
+        if ($this->isNetbanking() === true)
+        {
+            if ($this->getBank() === 'HDFC_C')
+            {
+                $timeWindow = self::PAYMENT_TIMEOUT_NETBANKING_CORP;
             }
         }
         //
