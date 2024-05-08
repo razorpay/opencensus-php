@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Merchant\Methods;
 
+use App;
 use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Methods;
 
 class Repository extends Base\Repository
 {
@@ -42,8 +44,26 @@ class Repository extends Base\Repository
         Entity::CITIBANKREWARDS        => 'sometimes|in:0,1',
     );
 
+    public function fetchRouteName()
+    {
+        $app = App::getFacadeRoot();
+
+        $ba = $app['basicauth'];
+
+        $routeName =  $app['request.ctx']->getRoute();
+
+        return $routeName;
+    }
+
     public function getMethodsForMerchant(Merchant\Entity $merchant)
     {
+
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+
+
         $methods = $this->find($merchant->getId());
 
         if ($methods !== null)
@@ -53,23 +73,35 @@ class Repository extends Base\Repository
             $merchant->setRelation('methods', $methods);
         }
 
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+
         return $methods;
     }
 
     public function isUpiEnabledForMerchant($merchantId)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
         $query = $this->newQuery()
                     ->select(Entity::UPI)
                     ->where(Entity::MERCHANT_ID, $merchantId);
 
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         return $query->pluck(Entity::UPI)
             ->first();
     }
 
     public function fetchMethodsToUpdateHdfcDebitEmiValue($count)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
         $debitEmiProvider = $this->dbColumn(Entity::DEBIT_EMI_PROVIDERS);
 
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         return $this->newQuery()
                     ->take($count)
                     ->whereNull($debitEmiProvider)
@@ -78,6 +110,11 @@ class Repository extends Base\Repository
 
     public function fetchMethodsBasedOnMerchantIds($merchantIds)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         return $this->newQuery()
             ->whereIn(Entity::MERCHANT_ID,$merchantIds)
             ->get();
@@ -85,10 +122,15 @@ class Repository extends Base\Repository
 
     public function fetchMethodsBasedOnMethodName($method,$from,$count)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
         if($method == 'credit_emi')
         {
             $emiColumn = $this->dbColumn('emi');
             $emi = 1;
+            $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
             return $this->newQuery()
                 ->take($count)
                 ->where(function ($query) use ($emiColumn,$emi)
@@ -104,6 +146,7 @@ class Repository extends Base\Repository
         {
             $emiColumn = $this->dbColumn('emi');
             $emi = 2;
+            $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
             return $this->newQuery()
                 ->take($count)
                 ->where(function ($query) use ($emiColumn,$emi)
@@ -117,6 +160,7 @@ class Repository extends Base\Repository
         }
         else if($method == 'paylater' or $method == 'cardless_emi')
         {
+            $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
             return $this->newQuery()
                 ->take($count)
                 ->where($method, '=', 1)
@@ -130,11 +174,16 @@ class Repository extends Base\Repository
 
     public function fetchBasedOnAffordabilityMethods($count,$paylater,$cardlessEmi,$emi,$from)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
 
         $paylaterColumn = $this->dbColumn('paylater');
         $cardlessEmiColumn = $this->dbColumn('cardless_emi');
         $emiColumn = $this->dbColumn('emi');
 
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         return $this->newQuery()
             ->take($count)
             ->where($paylaterColumn, '=', $paylater)
@@ -152,6 +201,11 @@ class Repository extends Base\Repository
     public function bulkUpdateAddonMethodsForMerchants($merchantIds,$updatedMethods)
     {
 
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_UPDATE_METRIC, $metricData);
         return $this->newQuery()
             ->whereIn(Entity::MERCHANT_ID, $merchantIds)
             ->update([
@@ -166,54 +220,100 @@ class Repository extends Base\Repository
 
     protected function addQueryParamItzcash($query,$params)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         $this->queryParamForAdditionalWallets($query,Entity::ITZCASH,$params[Entity::ITZCASH]);
     }
 
     protected function addQueryParamOxigen($query,$params)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         $this->queryParamForAdditionalWallets($query,Entity::OXIGEN,$params[Entity::OXIGEN]);
     }
 
     protected function addQueryParamAmexeasyclick($query,$params)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         $this->queryParamForAdditionalWallets($query,Entity::AMEXEASYCLICK,$params[Entity::AMEXEASYCLICK]);
     }
 
     protected function addQueryParamPaycash($query,$params)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         $this->queryParamForAdditionalWallets($query,Entity::PAYCASH,$params[Entity::PAYCASH]);
     }
 
     protected function addQueryParamCitibankrewards($query,$params)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         $this->queryParamForAdditionalWallets($query,Entity::CITIBANKREWARDS,$params[Entity::CITIBANKREWARDS]);
     }
 
     protected function queryParamForAdditionalWallets(&$query,$wallet,$value)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
         $additional_wallets = $this->dbColumn(Entity::ADDITIONAL_WALLETS);
         if((bool)$value)
         {
+            $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
             $query->where($additional_wallets,'like','%'.$wallet.'%');
         } else
         {
+            $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
             $query->where($additional_wallets,'not like','%'.$wallet.'%');
         }
     }
 
     protected function addQueryParamInApp($query, $params)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         $this->queryParamForAddonMethods($query, Entity::UPI.'->'.Entity::IN_APP, $params[Entity::IN_APP]);
     }
 
     protected function addQueryParamSodexo($query, $params)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         $this->queryParamForAddonMethods($query, Entity::CARD.'->'.Entity::SODEXO, $params[Entity::SODEXO]);
     }
 
     protected function queryParamForAddonMethods(&$query, $method, $value)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
         $addonMethods = $this->dbColumn(Entity::ADDON_METHODS);
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         $query->where($addonMethods . '->' . $method,'=', $value);
     }
 

@@ -1067,6 +1067,7 @@ class Entity
         Entity::TERMINAL,
         Entity::REFUND,
         Entity::NOTIFICATION,
+        Entity::METHODS,
     ];
 
     const ARCHIVED_ENTITIES = [
