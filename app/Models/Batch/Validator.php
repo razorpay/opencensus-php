@@ -124,7 +124,7 @@ class Validator extends Base\Validator
 
 
     protected static $validateFileNameRules = [
-        'filename'      => 'required|string',
+        'filename'      => 'required|string|utf8',
         'batch_type_id' => 'required|string|in:' . Constants::TALLY_PAYOUT_BATCH
     ];
 
