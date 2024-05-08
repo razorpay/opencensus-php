@@ -3407,7 +3407,6 @@ trait Authorize
                 ]);
         }
     }
-
     protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
         $offer = $this->offer;
@@ -3417,7 +3416,6 @@ trait Authorize
             (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment, $input);
         }
     }
-
     protected function isTpvPreProcessingApplicable($payment)
     {
         if($payment->merchant->isTPVRequired() === false)

@@ -1188,27 +1188,23 @@ class OffersEngine extends Base\Core
 
         $fact[Constants::PAYMENT_INSTRUMENT_FACT] = $instrumentFact;
 
+        $fact[Constants::CUSTOMER_FACT] = [
+            Constants::MOBILE_NUMBER => $this->payment->getContact(),
+            Constants::EMAIL => $this->payment->getEmail(),
+        ];
+
+        $card_number = Constants::DUMMY_PAYMENT_CARD_NUMBER;
+
         if ($validateWithCardPAR === true)
         {
-            $fact[Constants::CUSTOMER_FACT] = [
-                Constants::CARD_NUMBER => $this->getCardParValue(),
-                Constants::MOBILE_NUMBER => $this->payment->getContact(),
-                Constants::EMAIL => $this->payment->getEmail(),
-
-            ];
-        }
-
-        if ($this->isDummyPayment === true) {
-            $card_number = Constants::DUMMY_PAYMENT_CARD_NUMBER;
-            if ($this->payment->isMethodCardOrEmi() === true) {
-               $card_number = $this->getCardParValue();
+            if ($this->payment->isMethodCardOrEmi() === true)
+            {
+                    $card_number = $this->getCardParValue();
             }
-            $fact[Constants::CUSTOMER_FACT] = [
-                Constants::CARD_NUMBER => $card_number,
-                Constants::MOBILE_NUMBER => $this->payment->getContact(),
-                Constants::EMAIL => $this->payment->getEmail(),
-            ];
         }
+
+        $fact[Constants::CUSTOMER_FACT][Constants::CARD_NUMBER] = $card_number;
+
 
         // todo: subscription handling
 //        if ($this->payment->getSubscriptionId() !== null)

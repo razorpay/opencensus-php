@@ -250,6 +250,21 @@ class Core extends Base\Core
         return $defaultOffersBool;
 
     }
+    public function getOrderEntityForPlatformOffer(Entity $offer, Payment\Entity $payment)
+    {
+        $order = $payment->order;
+
+        if ($order === null and $offer->isPlatformOffer() === true)
+        {
+            $order = new Order\Entity();
+
+            $order->setAmount($payment->getAmount());
+
+            $order->setAttribute(Order\Entity::CURRENCY,$payment->getCurrency());
+        }
+
+        return $order;
+    }
 
     public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment, array $input)
     {
@@ -257,7 +272,14 @@ class Core extends Base\Core
 
         $checker = new Checker($offer, $verbose);
 
-        if ($checker->checkApplicabilityForPayment($payment, $payment->order) === false)
+        $order = $this->getOrderEntityForPlatformOffer($offer,$payment);
+
+        if ($order === null)
+        {
+            throw new Exception\BadRequestValidationFailureException("Invalid Offer ID");
+        }
+
+        if ($checker->checkApplicabilityForPayment($payment, $order) === false)
         {
             $this->trace->info(
                 TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT,

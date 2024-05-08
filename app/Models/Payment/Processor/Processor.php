@@ -5866,7 +5866,19 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            return;
+            if (empty($input[Payment\Entity::OFFER_ID]))
+            {
+                return;
+            }
+
+            $offer = $this->repo->offer->findByPublicId($input[Payment\Entity::OFFER_ID]);
+
+            if (!$offer->isPlatformOffer())
+            {
+                return;
+            }
+
+            $this->offer = $offer;
         }
 
         $this->setOfferForPaymentFromOrderOrInput($payment, $input);
@@ -5923,7 +5935,7 @@ class Processor
         // When offer is forced, we do not expect offer_id in the payment input.
         // Instead we retrieve the offer to be applied (we can figure
         // this out ourselves from the payment) and validate it.
-        if (($order->hasOffers() === true) and
+        if ($this->offer === null and ($order->hasOffers() === true) and
             ($order->isOfferForced() === true))
         {
             $offer =  $this->selectForcedOfferForPayment($order);
@@ -5942,14 +5954,34 @@ class Processor
 
         $this->offer = $offer;
 
+       $this->validateOffersViaOffersEngine($payment,$offer);
+
+        $payment->associateOffer($this->offer);
+
+        $this->trace->info(TraceCode::OFFER_SELECTED_FOR_PAYMENT, [
+            'offer_id'   => $offer->getPublicId(),
+            'payment_id' => $payment->getPublicId(),
+//            'order_id'   => $order->getPublicId(),
+        ]);
+    }
+
+    protected function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer)
+    {
         $core = New Offer\Core();
 
+        $order = $core->getOrderEntityForPlatformOffer($offer, $payment);
+
+        if ($order === null)
+        {
+            return;
+        }
+
         $resp = $core->validateOnOffersEngine(
-            $payment, $payment->order, $this->offer, false);
+            $payment, $order, $this->offer, false);
 
         if ($resp[Offer\Constants::VALIDATE_OFFER_CALLED] === true  &&
-                isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]) === true &&
-                isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']) === true)
+            isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]) === true &&
+            isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']) === true)
         {
             $payment->setAttribute(Payment\Entity::OFFER_BENEFITS,
                 $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']);
@@ -5957,14 +5989,6 @@ class Processor
             (new Offer\OffersEngine())->availOnOffersEngine($payment, $offer,
                 $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']);
         }
-
-        $payment->associateOffer($this->offer);
-
-        $this->trace->info(TraceCode::OFFER_SELECTED_FOR_PAYMENT, [
-            'offer_id'   => $offer->getPublicId(),
-            'payment_id' => $payment->getPublicId(),
-            'order_id'   => $order->getPublicId(),
-        ]);
     }
 
     /**
@@ -6142,6 +6166,11 @@ class Processor
         // skipping for now because there aren't any
         $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
 
+        // platform offer can be there without orders as well
+        if ($offer->isPlatformOffer() === true)
+        {
+            return $offer;
+        }
 
         // if its just a checkout display offer, just return null so that further validations
         // and associations don't happen.
@@ -6154,11 +6183,6 @@ class Processor
         // If offer is present in the payment request, we need to validate it against the order.
         if ($payment->order->offers->contains($offerId) === false)
         {
-            // platform offer can be there without orders as well
-            if ($offer->isPlatformOffer() === true)
-            {
-                return $offer;
-            }
 
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
             [

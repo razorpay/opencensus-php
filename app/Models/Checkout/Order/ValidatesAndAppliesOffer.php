@@ -29,6 +29,7 @@ trait ValidatesAndAppliesOffer
 
         $offer = $this->validateAndFetchOffer($checkoutOrder);
 
+
         if ($offer === null) {
             return;
         }
@@ -131,20 +132,36 @@ trait ValidatesAndAppliesOffer
 
         $offers = $checkoutOrder->order->offers;
 
+        $platformOffer = false;
+
+        $offer = new OfferEntity();
+
         // If offer is present in the request, we need to validate it against the order.
-        if ($offerId !== '' && $offers->contains($offerId) === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER,
-                null,
-                [
-                    'offer_id' => OfferEntity::getSignedId($offerId),
-                    'order_id' => $checkoutOrder->order->getPublicId(),
-                ]
-            );
+        if ($offerId !== '' && $offers->contains($offerId) === false) {
+
+            $offer = $this->repo->offer->findByPublicId(OfferEntity::getSignedId($offerId));
+
+            if ($offer->isPlatformOffer())
+            {
+                $platformOffer = true;
+            }
+            else
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER,
+                    null,
+                    [
+                        'offer_id' => OfferEntity::getSignedId($offerId),
+                        'order_id' => $checkoutOrder->order->getPublicId(),
+                    ]
+                );
+            }
         }
 
-        $offer = $this->fetchOfferFromOrder($checkoutOrder->order, $offerId);
+        if ($platformOffer === false)
+        {
+            $offer = $this->fetchOfferFromOrder($checkoutOrder->order, $offerId);
+        }
 
         if ($offer === null) {
             return null;

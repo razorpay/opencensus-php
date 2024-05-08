@@ -54,8 +54,7 @@ class Service extends Base\Service
 
         $merchantIds = $input['merchant_ids'];
 
-        if (sizeof($merchantIds) > 500)
-        {
+        if (sizeof($merchantIds) > 500) {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BULK_OFFER_MERCHANT_LIMIT_EXCEEDED);
         }
 
@@ -69,22 +68,16 @@ class Service extends Base\Service
 
                 $offers_array = $this->core->withMerchant($merchant)->create($input_offer);
 
-                foreach ($offers_array as $offer)
-                {
-                    if (isset($offer->id))
-                    {
+                foreach ($offers_array as $offer) {
+                    if (isset($offer->id)) {
                         $success += 1;
-                    }
-                    else
-                    {
+                    } else {
                         $this->trace->info(TraceCode::OFFER_CREATION_FAILED, [
-                            'OfferCreationResponse'=> $offer]);
+                            'OfferCreationResponse' => $offer]);
                         $failures[] = $merchantId;
                     }
                 }
-            }
-            catch(\Exception $e)
-            {
+            } catch (\Exception $e) {
                 $exception = $e;
 
                 $this->trace->traceException($e);
@@ -93,8 +86,7 @@ class Service extends Base\Service
             }
         }
 
-        if($success === 0)
-        {
+        if ($success === 0) {
             throw $exception;
         }
 
@@ -124,8 +116,7 @@ class Service extends Base\Service
     {
         $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        if ($offer->getProductType() === ProductType::SUBSCRIPTION)
-        {
+        if ($offer->getProductType() === ProductType::SUBSCRIPTION) {
             $offer = $this->repo->offer->fetchSubscriptionOfferById($offer->getId(), $this->merchant->getId(), false, true);
         }
 
@@ -197,11 +188,28 @@ class Service extends Base\Service
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 
+    public function validatePlatformOffer($input)
+    {
+        if (isset($input['offers']) === true and !isset($input['order_id'])) {
+            $offer = $this->repo->offer->findByPublicId($input['offers'][0]);
+            if ($offer->isPlatformOffer() === true) {
+                return [$input['offer_id']];
+            }
+        }
+        return [];
+    }
+
     public function validateCheckoutOffers($input)
     {
+
+        $applicableOffers = $this->validatePlatformOffer($input);
+
+        if (sizeof($applicableOffers) > 0) {
+            return $applicableOffers;
+        }
+
         (new Validator())->validateInput('validate_checkout_offers', $input);
 
-        $applicableOffers = [];
 
         $orderEntity = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
 
@@ -235,12 +243,10 @@ class Service extends Base\Service
         // fetches normal offers from OE and limited offers from API db
         $offers = $this->repo->offer->findManyFromOE($offerIds, $this->merchant->getId());
         // iterating over all offers
-        foreach ($offers as $offer)
-        {
+        foreach ($offers as $offer) {
             $checker = new Checker($offer, $verbose);
             //validating whether offer is applicable for payment or not
-            if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $orderEntity) === true)
-            {
+            if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $orderEntity) === true) {
                 //adding the offer public id to return list
                 $applicableOffers[] = $offer->getPublicId();
             }
