@@ -364,4 +364,49 @@ class Service extends Base\Service
             "success" => true
         ];
     }
+
+    public function handleBasAdminActions($input)
+    {
+        $action = $input['action'];
+
+        switch ($action)
+        {
+            case 'ps_bas_link':
+                $input['banking_account_statement_id'] = $input[Entity::ID];
+                unset($input[Entity::ID]);
+                unset($input[Entity::MERCHANT_ID]);
+                unset($input['balance_id']);
+                unset($input['action']);
+
+                $this->linkStatementInPayoutService($input);
+
+                break;
+
+        }
+
+        return ['success' => $input];
+    }
+
+    public function linkStatementInPayoutService($input)
+    {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_LINK_REQUEST, $input);
+
+        try
+        {
+            $this->payoutServiceBankingAccountStatementClient->devAdminTriggerLinkViaMicroService($input);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_LINK_FAILURE,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+
+            throw $exception;
+        }
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_LINK_RESPONSE, $input);
+    }
 }

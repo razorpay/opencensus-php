@@ -6315,7 +6315,22 @@ class Core extends Base\Core
             {
                 $request[EntityConstant::ACTION] = $action;
 
-                return (new BankingAccountStatement\Details\Core)->handleBasDetailsActions($request);
+                (new BankingAccountStatement\Details\Core)->handleBasDetailsActions($request);
+
+                $totalCount++;
+
+                continue;
+            }
+
+            if ($action == "ps_bas_link")
+            {
+                $request[EntityConstant::ACTION] = $action;
+
+                (new BankingAccountStatement\Service)->handleBasAdminActions($request);
+
+                $totalCount++;
+
+                continue;
             }
 
             try
