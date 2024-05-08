@@ -45,7 +45,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $globalCreateRules = [
-        Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
+        Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,MY,mobile,fixed_line',
         Entity::EMAIL           => 'sometimes|email',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
         'device_token'          => 'sometimes|string|max:14',
@@ -59,7 +59,7 @@ class Validator extends Base\Validator
     ];
 
     protected static array $globalCustomerCreateRules = [
-        Entity::CONTACT             => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
+        Entity::CONTACT             => 'required|contact_syntax|phone:AUTO,LENIENT,IN,MY,mobile,fixed_line',
         Entity::EMAIL               => 'sometimes|email',
         'address_consent'           => 'sometimes|array',
         'address_consent.device_id' => 'sometimes|string|max:65',
@@ -100,7 +100,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $contactRules = [
-        Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
+        Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,MY,mobile,fixed_line',
         'language_code'         => 'sometimes',
     ];
 

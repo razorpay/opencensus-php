@@ -406,6 +406,21 @@ class CustomerTest extends TestCase
         $this->assertEquals(true, $content['success']);
     }
 
+    public function testOtpFlowWithMalaysianContact()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        // send OTP
+        $response = $this->sendOtp('+60132758792');
+
+        // verify OTP
+        $content = $this->verifyOtp('+60132758792', 'abc@razorpay.com', '233323');
+
+        $this->assertEquals($content['success'], 1);
+    }
+
     protected function sendOtp($contact)
     {
         $request = array(
