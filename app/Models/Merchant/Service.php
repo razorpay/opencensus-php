@@ -17,6 +17,8 @@ use Cache;
 use Config;
 use Request;
 use RZP\Models\Customer\Token\Constants as TokenConstants;
+use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Merchant\MerchantCsvCreateTrait;
 use RZP\Models\Merchant\OneClickCheckout\Constants as ShopifyConstants;
 use Illuminate\Support\Str;
@@ -2312,6 +2314,28 @@ class Service extends Base\Service
         }
 
         $balance = $this->repo->balance->getMerchantBalance($merchant);
+
+        if ($merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $ledgerService = $this->app['ledger'];
+
+            $ledgerOutboxCore = new LedgerOutboxCore();
+
+            $accountBalanceMap = $ledgerOutboxCore->getMerchantAccountBalances($ledgerService, $merchantId);
+
+            if (isset($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]) === true)
+            {
+                $balance->setBalance($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]);
+            }
+            if (isset($accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS]) === true)
+            {
+                $balance->setFeeCredits($accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS]);
+            }
+            if (isset($accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS]) === true)
+            {
+                $balance->setAmountCredits($accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS]);
+            }
+        }
 
         return $balance->toArray();
     }

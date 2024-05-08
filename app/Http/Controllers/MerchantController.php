@@ -773,25 +773,14 @@ class MerchantController extends Controller
 
     public function getAccountBalance()
     {
-
         $data = $this->service()->fetchBalance();
 
         $merchant = $this->app['basicauth']->getMerchant();
-
-        if(($merchant !== null && $merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true))
-        {
-
-            $reverseShadowCapital = new ReverseShadowCapitalCore();
-
-            $data[Balance\Entity::BALANCE] = $reverseShadowCapital->fetchMerchantBalanceOnly($merchant);
-        }
-
 
         if ((new Settlement\Service)->includeDsSettlementTransactions() === true)
         {
             $data[Balance\Entity::BALANCE] = (new Settlement\Service)->fetchDSBalance();
         }
-
 
         $repo = App::getFacadeRoot()['repo'];
 
@@ -799,7 +788,8 @@ class MerchantController extends Controller
             isset($data[Balance\Entity::AMOUNT_CREDITS]) === true &&
             $data[Balance\Entity::TYPE] === Balance\Type::PRIMARY &&
             $merchant !== null &&
-            $merchant->isFeatureEnabled(Feature::OLD_CREDITS_FLOW) === false)
+            $merchant->isFeatureEnabled(Feature::OLD_CREDITS_FLOW) === false and
+            $merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === false)
         {
             $data[Balance\Entity::AMOUNT_CREDITS] = $repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::AMOUNT);
         }
