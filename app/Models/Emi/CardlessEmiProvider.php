@@ -49,8 +49,11 @@ class CardlessEmiProvider
         self::HCIN,
         self::FDRL,
         self::BARB,
-        self::ZESTMONEY,
         self::KRBE
+    ];
+
+    public static $experimentCheckRequiredCardlessEmiProviders = [
+        self::ZESTMONEY  => 'app.zestmoney_whitelisted_merchants_experiment_id'
     ];
 
     public static function checkProviderValidity($provider)

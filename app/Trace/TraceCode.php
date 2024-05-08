@@ -11477,6 +11477,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MODIFY_SMART_ROUTING_RULES_FTS_RESPONSE               = 'MODIFY_SMART_ROUTING_RULES_FTS_RESPONSE';
 
+    const ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_ERROR          = "ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_ERROR";
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

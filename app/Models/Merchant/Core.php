@@ -76,6 +76,7 @@ use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Comment\Entity as CommentEntity;
 use RZP\Models\Emi;
 use RZP\Models\Emi\DebitProvider;
+use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Feature;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Feature\Service as FeatureService;
@@ -9768,6 +9769,63 @@ class Core extends Base\Core
         }
 
         return $whitelistedBanks;
+    }
+
+    public function getWhitelistedCardlessEMIInstruments(Merchant\Entity $merchant): array
+    {
+
+        $whitelistedInstruments = [];
+
+        try {
+
+            foreach(CardlessEmiProvider::$experimentCheckRequiredCardlessEmiProviders as $bank => $experimentId)
+            {
+                $whitelistExperiments[ $this->app['config']->get($experimentId) ] = $bank;
+            }
+
+
+            foreach ($whitelistExperiments as $experimentId => $instrument)
+            {
+                $experimentsData[] = [
+                    "id" => $merchant->getId(),
+                    "experiment_id" => $experimentId,
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => $merchant->getId(),
+                        ]),
+                ];
+            }
+
+            $experimentResponses = $this->app['splitzService']->bulkCallsToSplitz($experimentsData);
+
+            foreach ($experimentResponses as $response)
+            {
+                $variables = $response['variant']['variables'];
+
+                foreach ($variables as $variable)
+                {
+                    if ($variable['key'] == "result" && $variable['value'] == "on") {
+
+                        $experimentId = $response['experiment']['id'];
+
+                        if(array_key_exists($experimentId, $whitelistExperiments))
+                        {
+                            $whitelistedInstruments[] = $whitelistExperiments[$experimentId];
+                        }
+                    }
+                }
+            }
+
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_ERROR
+
+            );
+        }
+
+        return $whitelistedInstruments;
     }
 
     public function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode = null): bool

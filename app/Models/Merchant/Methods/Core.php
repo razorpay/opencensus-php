@@ -1422,6 +1422,7 @@ class Core extends Base\Core
             $this->sortPaylaterProviders($providers);
         }
 
+
         if ($method === Payment\Method::CARDLESS_EMI)
         {
             $providers = [];
@@ -1445,6 +1446,8 @@ class Core extends Base\Core
 
             $cardlessEmiProviders = $methods->getEnabledCardlessEmiProviders();
 
+            $whitelistedInstruments = (new MerchantCore())->getWhitelistedCardlessEMIInstruments($merchant);
+
             foreach ($providers as $index => $instrument) {
 
                 $isDisabledInstrument = in_array($instrument, CardlessEmiProvider::$disabledInstruments, true);
@@ -1452,6 +1455,12 @@ class Core extends Base\Core
                 if ($isDisabledInstrument === true or isset($cardlessEmiProviders[$instrument]) == false or
                     $cardlessEmiProviders[$instrument] == 0)
                 {
+                    unset($providers[$index]);
+                }
+
+                $isExperimentCheckRequired = array_key_exists($instrument, CardlessEmiProvider::$experimentCheckRequiredCardlessEmiProviders);
+
+                if($isExperimentCheckRequired === true and !in_array($instrument,$whitelistedInstruments)){
                     unset($providers[$index]);
                 }
 
