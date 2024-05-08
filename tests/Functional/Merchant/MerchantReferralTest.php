@@ -75,6 +75,50 @@ class MerchantReferralTest extends OAuthTestCase
         $this->assertNotEmpty($posProductReferral->getReferralLink());
     }
 
+    public function testCreateMerchantReferralForNonPOS()
+    {
+        $this->fixtures->merchant->edit(Constants::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $merchantId = Constants::DEFAULT_MERCHANT_ID;
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $input = [
+            'id'                => $merchantId,
+            'experiment_id'     => 'N3FXsNXuhB2qSf',
+        ];
+
+        $output =  [
+            "response" => [
+                "variant" => []
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->ba->proxyAuth();
+
+        $testData['request']['url'] = "/merchant/referral";
+
+        $this->startTest();
+
+        $primaryProductReferral = $this->getDbEntity('referrals',
+            [
+                'merchant_id' => $merchantId, 'product' => 'primary'
+            ], 'live');
+
+        $this->assertNotEmpty($primaryProductReferral->getReferralLink());
+
+        $posProductReferral = $this->getDbEntity('referrals',
+            [
+                'merchant_id' => $merchantId, 'product' => 'pos'
+            ], 'live');
+
+        $this->assertEmpty($posProductReferral);
+    }
+
     public function testEasyKycAccessReferral()
     {
         $this->fixtures->merchant->edit(Constants::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);

@@ -17,6 +17,20 @@ return [
         ],
     ],
 
+    'testCreateMerchantReferralForNonPOS' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/referral',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+            ],
+        ],
+    ],
+
     'testFetchMerchantReferral' => [
         'request'  => [
             'url'    => '/merchant/referral',
