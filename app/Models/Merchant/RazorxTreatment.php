@@ -588,6 +588,10 @@ final class RazorxTreatment
     // Experiment to block pan details in html code
     const BLOCK_PAN_DETAIL_IN_AUTHLINK_HTML = 'block_pan_detail_in_authlink_html';
 
+    // Experiment to send charge collection events to payout service
+
+    const SEND_CHARGE_COLLECTION_EVENT_RX = 'send_charge_collection_event_rx';
+
     // Experiment to pass unused rejected tokens along with regular tokens in fetchTokens api call
     const PASS_REJECTED_UNUSED_TOKENS = 'pass_rejected_unused_tokens';
 

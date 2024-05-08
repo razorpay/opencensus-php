@@ -544,7 +544,6 @@ class Entity
 
     // FTS Fail Fast Healths
     const FTS_FAIL_FAST_STATUS_LOGS   = 'fts.fail_fast_status_logs';
-
     const UFH_FILES                      = 'ufh.files';
 
     // capital-collections

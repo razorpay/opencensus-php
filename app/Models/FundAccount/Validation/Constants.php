@@ -15,9 +15,15 @@ class Constants
 
     const PENNILESS                      = 'Penniless';
 
-    const TYPE_OPTIMIZED                      = "optimized";
+    const PENNYDROP                      = 'Pennydrop';
 
-    const TYPE_PENNYDROP                     = "pennydrop";
+    const VALIDATION                     = 'Validation';
+
+    const MODE_IMPS                         = 'imps';
+
+    const TYPE_OPTIMIZED                    = "optimized";
+
+    const TYPE_PENNYDROP                    = "pennydrop";
 
     const TYPE_PENNILESS                    = "penniless";
 

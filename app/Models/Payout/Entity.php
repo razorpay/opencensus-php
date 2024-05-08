@@ -37,11 +37,14 @@ use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Settlement\Channel;
 use Razorpay\IFSC\IFSC as BaseIFSC;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Jobs\PayoutUsageEventProcessing;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Payout\Batch as PayoutsBatch;
@@ -1874,6 +1877,9 @@ class Entity extends Base\PublicEntity
         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
         SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
+
+        // Push to PS queue for charge collection events
+        $this->pushChargeCollectionEvent($this, $currentStatus, $status);
     }
 
     public function setInitiatedAt()
@@ -3620,6 +3626,90 @@ class Entity extends Base\PublicEntity
                 'payout_status'  => $this->getStatus(),
                 'failure_reason' => $this->getFailureReason(),
             ]);
+    }
+
+    public function pushChargeCollectionEvent(Entity $payout, string $currentStatus = null, string $status = null)
+    {
+        $app = App::getFacadeRoot();
+
+        try {
+            // razorx call
+            $variant = $app['razorx']->getTreatment(
+                $payout->getMerchantId(),
+                RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX,
+                Mode::LIVE);
+
+            if ($variant !== RazorxTreatment::RAZORX_VARIANT_ON) {
+                return;
+            }
+
+            // don't push for free payout
+            if ($payout->getFeeType() === Entity::FREE_PAYOUT)
+            {
+                return;
+            }
+
+            if (($status === Status::PROCESSED) ||
+                ($currentStatus === Status::PROCESSED && $status === Status::REVERSED))
+            {
+                $app['trace']->info(
+                    TraceCode::CHARGE_COLLECTION_EVENT_PS_DISPATCH,
+                    [
+                        'entity_id'   => $this->getPublicId(),
+                        'entity_type' => Entity::PAYOUT,
+                    ]
+                );
+
+                $eventPayload = [
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_ID                    => $payout->getPublicId(),
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_MERCHANT_ID           => $payout->getMerchantId(),
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_CHANNEL               => strtolower($payout->getChannel()),
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_MODE                  => strtolower($payout->getMode()),
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_STATUS                => strtolower($status),
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_AMOUNT                => (float) $payout->getAmount(),
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_INTERFACE             => (empty($payout->getUserId()) === true) ? 'api' : 'dashboard',
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_AGGREGATION           => ($payout->hasBatch() === false) ? 'single' : 'batch',
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_EVENT_TYPE            => "payouts",
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_PAYLOAD_SOURCE        => $this->getPayloadSourceForChargeCollectionEvent($this),
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_FEATURE               => '', // Get feature used
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_SOURCE_ACCOUNT_NUMBER => ($this->balance->getAccountNumber() !== null) ? $this->balance->getAccountNumber(): '',
+                    Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_SOURCE_ACCOUNT_TYPE   => ($this->balance->getAccountType() === Balance\AccountType::SHARED) ? 'lite': 'ca',
+                ];
+
+                PayoutUsageEventProcessing::dispatch(
+                    $this->getPublicId(),
+                    Entity::PAYOUT,
+                    $eventPayload
+                );
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $app['trace']->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::CHARGE_COLLECTION_PS_EVENT_EXCEPTION,
+                [
+                    'payout_id' => $payout->getPublicId(),
+                ]
+            );
+        }
+    }
+
+    public function getPayloadSourceForChargeCollectionEvent(Entity $payout) : string
+    {
+        // If payout initiated by internal service
+        $sourceDetails = $payout->getSourceDetails();
+
+        foreach ($sourceDetails as $source) {
+            if (isset($source['source_type'])) {
+                return strtolower($source['source_type']);
+            }
+        }
+
+	    // To add further conditions basis on feature used.
+
+        return 'vanilla';
     }
 
     public function isVanillaPayout() :bool

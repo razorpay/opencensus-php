@@ -3,10 +3,10 @@
 namespace RZP\Tests\Functional\FundAccount;
 
 use App;
-use Queue;
 use Mockery;
 use \RZP\Constants;
 use RZP\Error\Error;
+use RZP\Jobs\PayoutUsageEventProcessing;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\Transactions;
@@ -20,6 +20,7 @@ use RZP\Services\FavService\Fetch;
 use RZP\Services\FavService\Update;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
+use Illuminate\Support\Facades\Queue;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\Channel;
@@ -70,7 +71,10 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control',
+            RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX => 'on',
+        ]);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -139,6 +143,88 @@ class FundAccountValidationTest extends TestCase
 
         // utr should be present in response['results'] array
         $this->assertArrayKeysExist($response['results'], ['utr','account_status','registered_name']);
+
+        return $response;
+    }
+
+    public function testCreateValidationWithChargeCollectionEventPush()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control',
+            RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX => 'on',
+        ]);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        Queue::fake();
+
+        $response = $this->startTest();
+
+        $isEventValidated = false;
+
+        $expectedProperties = [
+            'fav'   => [
+                'merchant_id'     => '10000000000000',
+                'account_status'  => 'active',
+                'status'          => 'completed'
+            ]
+        ];
+
+        $this->verifyFAVStatusEvent('fund_account_validation.status', $expectedProperties, $isEventValidated);
+
+        $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
+
+        $fundAccount = $this->getLastEntity('fund_account', true);
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+
+        $this->assertTrue($isEventValidated);
+
+        // Queue will be processed by now.
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertNotNull($fav['results']['utr']);
+        $this->assertEquals('10000000000000', $fav['balance_id']);
+        $this->assertEquals('INR', $fav['currency']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(354, $fav['fees']);
+        $this->assertEquals(54, $fav['tax']);
+
+        // utr should be present in response['results'] array
+        $this->assertArrayKeysExist($response['results'], ['utr','account_status','registered_name']);
+
+        Queue::assertPushed(PayoutUsageEventProcessing::class, function($job) use ($fav)
+        {
+            $this->assertEquals($fav['id'], $job->getEntityID());
+
+            $this->assertEquals('fund_account_validation', $job->getEntityType());
+
+            $expectedParams = [
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_ID                    => $fav['id'],
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_MERCHANT_ID           => $fav['merchant_id'],
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_MODE                  => 'imps',
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_STATUS                => 'completed',
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_AMOUNT                =>  1.0,
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_INTERFACE             => 'api',
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_AGGREGATION           => 'single',
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_EVENT_TYPE            => "bank_account_validation",
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_PAYLOAD_SOURCE        => "vanilla",
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_FEATURE               => 'pennydrop',
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_SOURCE_ACCOUNT_NUMBER => '',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedParams, $job->getParams());
+
+            return true;
+        });
 
         return $response;
     }

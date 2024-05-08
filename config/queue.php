@@ -94,6 +94,10 @@ return [
         'test'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_LIVE_QUEUE'),
         'live'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_LIVE_QUEUE'),
     ],
+    'payout_usage_event_processing' => [
+        'test'       => env('AWS_PAYOUT_USAGE_EVENT_PROCESSING_LIVE_QUEUE'),
+        'live'       => env('AWS_PAYOUT_USAGE_EVENT_PROCESSING_LIVE_QUEUE'),
+    ],
     'payout_service_data_migration' => [
         'test'       => env('AWS_PAYOUT_SERVICE_DATA_MIGRATION_LIVE_QUEUE'),
         'live'       => env('AWS_PAYOUT_SERVICE_DATA_MIGRATION_LIVE_QUEUE'),

@@ -2,25 +2,32 @@
 
 namespace RZP\Models\FundAccount\Validation\Processor;
 
+use App;
 use Slack;
 use Config;
 use Monolog\Logger;
 
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Trace\Tracer;
 use RZP\Diag\EventCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
 use RZP\Models\Transaction;
 use RZP\Constants\HyperTrace;
 use RZP\Models\FundAccount\Type;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Jobs\PayoutUsageEventProcessing;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\FundAccount\Validation\Metric;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\AccountStatus;
+use RZP\Models\FundAccount\Validation\Constants as FavConstants;
 
 abstract class Base extends Core
 {
@@ -83,6 +90,8 @@ abstract class Base extends Core
 
     public function markValidationAsCompleted(string $accountStatus, string $utr = null, string $errDesc = null, string $errorCode = null)
     {
+        $previousStatus = $this->validation->getStatus();
+
         $this->validation->setStatus(Status::COMPLETED);
 
         $this->validation->setErrorCode($errorCode);
@@ -109,6 +118,8 @@ abstract class Base extends Core
         $this->triggerValidationCompletedWebhook();
 
         $this->pushFAVStatusChangeEvent($this->validation);
+
+        $this->pushChargeCollectionEvent($this->validation, $previousStatus, $errDesc);
     }
 
     public function markValidationAsFailed(string $errorCode = null)
@@ -133,6 +144,83 @@ abstract class Base extends Core
         $this->app['diag']->trackFundAccountValidationStatusEvent(
             $eventCode,
             $fav);
+    }
+
+    public function pushChargeCollectionEvent(Entity $fav, string $previousStatus = null, string $errDesc = null)
+    {
+        $app = App::getFacadeRoot();
+
+        try {
+            // razorx call
+            $variant = $app['razorx']->getTreatment(
+                $fav->getMerchantId(),
+                RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX,
+                Constants\Mode::LIVE);
+
+            if ($variant !== RazorxTreatment::RAZORX_VARIANT_ON) {
+                return;
+            }
+
+            if ($previousStatus === $fav->getStatus())
+            {
+                return;
+            }
+
+            $app['trace']->info(
+                TraceCode::CHARGE_COLLECTION_EVENT_PS_DISPATCH,
+                [
+                    'entity_id'   => $fav->getPublicId(),
+                    'entity_type' => Constants\Entity::FUND_ACCOUNT_VALIDATION,
+                ]
+            );
+
+            $isBankAccountValidation = ($this->validation->fundAccount->getAccountType() === Type::BANK_ACCOUNT);
+
+            $eventPayload = [
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_ID                    => $fav->getPublicId(),
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_MERCHANT_ID           => $fav->getMerchantId(),
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_MODE                  => $isBankAccountValidation ? FavConstants::MODE_IMPS : '',
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_STATUS                => strtolower($fav->getStatus()),
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_AMOUNT                => $isBankAccountValidation ? 1.0 : 0.0,
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_INTERFACE             => 'api',
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_AGGREGATION           => 'single',
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_EVENT_TYPE            => $isBankAccountValidation ? 'bank_account_validation' : 'vpa_validation',
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_PAYLOAD_SOURCE        => 'vanilla',
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_FEATURE               => $this->getFeatureForChargeCollectionEvent($fav, $errDesc),
+                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_SOURCE_ACCOUNT_NUMBER => '', // TO pass account number once we deduct FAV amount from CA.
+            ];
+
+            PayoutUsageEventProcessing::dispatch(
+                $fav->getPublicId(),
+                Constants\Entity::FUND_ACCOUNT_VALIDATION,
+                $eventPayload
+            );
+        }
+        catch (\Throwable $exception)
+        {
+            $app['trace']->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::CHARGE_COLLECTION_PS_EVENT_EXCEPTION,
+                [
+                    'fav_id' => $fav->getPublicId(),
+                ]
+            );
+        }
+    }
+
+    public function getFeatureForChargeCollectionEvent(Entity $fav, string $errDesc = null) : string
+    {
+        switch (strtolower($errDesc))
+        {
+            case strtolower(FavConstants::PENNILESS):
+                return strtolower(FavConstants::PENNILESS);
+
+            case strtolower(FavConstants::CACHE):
+                return strtolower(FavConstants::VALIDATION);
+        }
+
+        return strtolower(FavConstants::PENNYDROP);
     }
 
     /**
