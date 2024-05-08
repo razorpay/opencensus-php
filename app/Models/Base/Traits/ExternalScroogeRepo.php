@@ -966,14 +966,19 @@ trait ExternalScroogeRepo
         $count = 20;
         $skip = 0;
 
-        if (key_exists('payment_id', $params) && empty($params['payment_id']) === false)
+        $allowedParams = ['payment_id', 'gateway', 'merchant_id', 'notes'];
+
+        foreach($params as $key => $value)
         {
-            $scroogeInput['payment_id'] = $params['payment_id'];
+            if (in_array($key, $allowedParams) === true)
+            {
+                $scroogeInput[$key] = $value;
+            }
         }
 
-        if (key_exists('merchant_id', $params) && empty($params['merchant_id']) === false)
+        if (empty($merchantId) === false)
         {
-            $scroogeInput['merchant_id'] = $params['merchant_id'];
+            $scroogeInput['merchant_id'] = $merchantId;
         }
 
         if (key_exists('status', $params) && empty($params['status']) === false)
