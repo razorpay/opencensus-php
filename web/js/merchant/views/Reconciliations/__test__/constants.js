@@ -5,8 +5,8 @@ export const PRODUCT = {
     Bank_Recon: {
       header: 'Bank and Razorpay records',
       file_config: [
-        { source_name: 'POS_Txn', master_source_id: '', show_upload: true },
-        { source_name: 'POS_Refund', master_source_id: '', show_upload: true },
+        { source_name: 'POS_Txn', master_source_id: 'idx', show_upload: true },
+        { source_name: 'POS_Refund', master_source_id: 'idy', show_upload: true },
       ],
       master_process_id: '',
       description: 'Between your bank records and Razorpay records',

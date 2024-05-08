@@ -478,6 +478,9 @@ importers:
       '@typescript-eslint/eslint-plugin':
         specifier: 5.59.0
         version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint@8.27.0)(typescript@4.9.3)
+      '@zip.js/zip.js':
+        specifier: 2.7.41
+        version: 2.7.41
       axios:
         specifier: 0.21.1
         version: 0.21.1
@@ -941,6 +944,9 @@ importers:
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
+      web-streams-polyfill:
+        specifier: 4.0.0
+        version: 4.0.0
       webfonts-loader:
         specifier: 8.0.0
         version: 8.0.0
@@ -6039,6 +6045,10 @@ packages:
 
   '@zeit/schemas@2.29.0':
     resolution: {integrity: sha512-g5QiLIfbg3pLuYUJPlisNKY+epQJTcMDsOnVNkscrDP1oi7vmJnzOANYJI/1pZcVJ6umUkBv3aFtlg1UvUHGzA==}
+
+  '@zip.js/zip.js@2.7.41':
+    resolution: {integrity: sha512-EMxPWXlEqqvsK9jxPmNvEShrIXP2LYTdQnEfsBH6OQCnlZRVo/dJIgtzbKvtK9A8PBTDQdxwxulj+QKplmW2Xg==}
+    engines: {bun: '>=0.7.0', deno: '>=1.0.0', node: '>=16.5.0'}
 
   '@zkochan/js-yaml@0.0.6':
     resolution: {integrity: sha512-nzvgl3VfhcELQ8LyVrYOru+UtAy1nrygk2+AGbTm8a5YcO6o8lSjAT+pfg3vJWxIoZKOUhrK6UU7xW/+00kQrg==}
@@ -18698,6 +18708,10 @@ packages:
   web-namespaces@1.1.4:
     resolution: {integrity: sha512-wYxSGajtmoP4WxfejAPIr4l0fVh+jeMXZb08wNc0tMg6xsfZXj3cECqIK0G7ZAqUq0PP8WlMDtaOGVBTAWztNw==}
 
+  web-streams-polyfill@4.0.0:
+    resolution: {integrity: sha512-0zJXHRAYEjM2tUfZ2DiSOHAa2aw1tisnnhU3ufD57R8iefL+DcdJyRBRyJpG+NUimDgbTI/lH+gAE1PAvV3Cgw==}
+    engines: {node: '>= 8'}
+
   webdriver@5.23.0:
     resolution: {integrity: sha512-r7IrbZ2SuTIRyWV8mv4a4hZoFcT9Qt4MznOkdRWPE1sPpZ8lyLZsIEjKCEbHelOzPwURqk+biwGrm4z2OZRAiw==}
     engines: {node: '>= 8.11.0'}
@@ -30898,6 +30912,8 @@ snapshots:
       tslib: 2.6.2
 
   '@zeit/schemas@2.29.0': {}
+
+  '@zip.js/zip.js@2.7.41': {}
 
   '@zkochan/js-yaml@0.0.6':
     dependencies:
@@ -48711,6 +48727,8 @@ snapshots:
       defaults: 1.0.4
 
   web-namespaces@1.1.4: {}
+
+  web-streams-polyfill@4.0.0: {}
 
   webdriver@5.23.0:
     dependencies:

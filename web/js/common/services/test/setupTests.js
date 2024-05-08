@@ -13,6 +13,8 @@ const queryCache = new QueryCache();
 
 const RetryTimes = process.env.UT_RETRY_TIMES || 3;
 
+const TransformStream = require('web-streams-polyfill').TransformStream;
+
 // Global mocks
 
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
@@ -20,6 +22,7 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
+global.TransformStream = jest.fn().mockImplementation(() => TransformStream);
 
 jest.mock('merchant/utils/ajax');
 jest.mock('merchant/views/TicketSupport/utils.js', () => ({
