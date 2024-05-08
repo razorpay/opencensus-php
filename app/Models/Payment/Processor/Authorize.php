@@ -4136,7 +4136,6 @@ trait Authorize
             {
                 $this->trace->error(
                     TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT, [
-                        'payment_id' => $payment->getId(),
                         'message' => 'Length of invoice number is greater than expected'
                     ]
                 );
@@ -4241,6 +4240,18 @@ trait Authorize
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invoice number field is required within the notes.', 'notes.invoice_number');
+        }
+
+        // Validate length of invoice number
+        if (strlen($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]) > InvoiceConstants::INVOICE_NUMBER_LENGTH)
+        {
+            $this->trace->error(
+                TraceCode::INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW, [
+                    'message' => 'Length of invoice number is greater than expected'
+                ]
+            );
+            throw new Exception\BadRequestValidationFailureException(
+                'Invoice number should be less than or equal to ' . InvoiceConstants::INVOICE_NUMBER_LENGTH . ' characters.', 'notes');
         }
 
         //Defaults goods_description value in paymentNotes.
