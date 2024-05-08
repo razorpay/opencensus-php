@@ -1,3 +1,8 @@
+import { convertToMajorUnit, formatNumber } from '@razorpay/i18nify-js/currency';
+import moment from 'moment';
+
+import { ANALYTICS } from 'common/constant';
+import { analyticsTrackWithUserInfo, analyticsTrack } from 'common/utils/analytics';
 import { titleCase } from 'common/utils/rzp-utils';
 import { SETTLEMENT_INFO } from 'merchant/views/Settlements/v3/constants/info';
 import {
@@ -11,8 +16,6 @@ import {
   TimelineJourneyInterface,
 } from 'merchant/views/Settlements/v3/typings';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import moment from 'moment';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { getHumanReadableTimestamp } from 'merchant/views/Transactions/v2/Payments/components/Timeline/utils';
 
 const FailedBannerConfig = {
@@ -133,15 +136,33 @@ export const getTimelineJourneyDetailsRevamp = ({
   settlementConfig,
   user,
 }: any): any[] => {
-  const { created_at, status, amountInINR, utr } = settlement;
+  const { created_at, status, amount, utr } = settlement;
   const now = moment();
   const breachTime = moment.unix(created_at).add(7, 'hours');
 
   let failedType;
   const {
-    merchant: { hold_funds },
+    merchant: { hold_funds, currency: merchantCurrency },
   } = user;
   const { global_hold_config, hold } = settlementConfig?.data?.config?.features || {};
+
+  let netAmount;
+  try {
+    netAmount = formatNumber(convertToMajorUnit(amount, { currency: merchantCurrency }), {
+      currency: merchantCurrency,
+    });
+  } catch (error) {
+    netAmount = '--';
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `amount: ${amount}, currency: ${merchantCurrency}`,
+        error: `${error}`,
+      },
+    });
+  }
 
   if (status !== SettlementStatus.FAILED) {
     failedType = '';
@@ -174,7 +195,7 @@ export const getTimelineJourneyDetailsRevamp = ({
       {
         status,
         title: 'Money to be deposited in bank account',
-        subtitle: `Net amount: ₹${amountInINR}`,
+        subtitle: `Net amount: ${netAmount}`,
         secondarySubtitle: 'To be deposited latest by 11:00 pm, today',
         icon: SettlementStatusIcons.IN_PROGRESS,
       },
@@ -198,7 +219,7 @@ export const getTimelineJourneyDetailsRevamp = ({
         title: shouldHaveSettled
           ? 'Money deposited in bank account'
           : 'Money to be deposited in bank account',
-        subtitle: `Net amount: ₹${amountInINR ?? '-'}`,
+        subtitle: `Net amount: ${netAmount ?? '-'}`,
         secondarySubtitle: shouldHaveSettled
           ? `UTR number: ${utr ?? '-'}`
           : 'To be deposited latest by 11:00 pm, today',
