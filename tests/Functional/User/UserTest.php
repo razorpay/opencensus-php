@@ -10393,7 +10393,7 @@ class UserTest extends TestCase
         $this->startTest();
 
         $this->assertTrue($user->isOrgEnforcedSecondFactorAuth());
- }
+    }
 
     public function testResetPasswordUnlocksAccountForOwner()
     {
@@ -12500,6 +12500,164 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->assertEquals($merchant["signup_via_email"], 0);
+    }
+
+    public function testUserRegisterVerifySignupOtpSmsPhantomOnboardingAggregatorSplitzOn()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $this->createPartner('aggregator');
+
+        $testData = &$this->testData['testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOn'];
+
+        $testData['request']['content']['source_app_id']    = '8ckeirnw84ifke';
+        $testData['request']['content']['signup_campaign']  = 'phantom_onboarding';
+        $testData['request']['content']['source']           = 'phantom';
+
+        $testData['response']['content']['signup_campaign'] = 'phantom_onboarding';
+
+        Queue::fake();
+
+        $resp = $this->startTest($testData);
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $userDeviceDetail = $this->getLastEntity('user_device_detail', true);
+        $merchantAccessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => $resp['merchants'][0]['id']]);
+
+        $this->assertEquals("pgos", $userDeviceDetail["metadata"]["service"]);
+        $this->assertNull($merchantAccessMap);
+    }
+
+    public function testUserRegisterVerifySignupOtpSmsPhantomOnboardingAggregatorSplitzOff()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $this->createPartner('aggregator');
+
+        $testData = &$this->testData['testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOn'];
+
+        $testData['request']['content']['source_app_id']    = '8ckeirnw84ifke';
+        $testData['request']['content']['signup_campaign']  = 'phantom_onboarding';
+        $testData['request']['content']['source']           = 'phantom';
+
+        $testData['response']['content']['signup_campaign'] = 'phantom_onboarding';
+
+        Queue::fake();
+
+        $resp = $this->startTest($testData);
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $userDeviceDetail = $this->getLastEntity('user_device_detail', true);
+        $merchantAccessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => $resp['merchants'][0]['id']]);
+
+        $this->assertEquals("api", $userDeviceDetail["metadata"]["service"]);
+        $this->assertNull($merchantAccessMap);
+    }
+
+    public function testUserRegisterVerifySignupOtpSmsPhantomOnboardingPurePlatformSplitzOn()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $this->createPartner('pure_platform');
+
+        $testData = &$this->testData['testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOn'];
+
+        $testData['request']['content']['source_app_id']    = '8ckeirnw84ifke';
+        $testData['request']['content']['signup_campaign']  = 'phantom_onboarding';
+        $testData['request']['content']['oauth_referral']   = true;
+        $testData['request']['content']['source']           = 'phantom';
+
+        $testData['response']['content']['signup_campaign'] = 'phantom_onboarding';
+
+        Queue::fake();
+
+        $resp = $this->startTest($testData);
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $userDeviceDetail = $this->getLastEntity('user_device_detail', true);
+        $merchantAccessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => $resp['merchants'][0]['id']]);
+
+        $this->assertEquals("pgos", $userDeviceDetail["metadata"]["service"]);
+        $this->assertNotNull($merchantAccessMap);
+    }
+
+    public function testUserRegisterVerifySignupOtpSmsPhantomOnboardingPurePlatformSplitzOff()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $this->createPartner('pure_platform');
+
+        $testData = &$this->testData['testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOn'];
+
+        $testData['request']['content']['source_app_id']    = '8ckeirnw84ifke';
+        $testData['request']['content']['signup_campaign']  = 'phantom_onboarding';
+        $testData['request']['content']['oauth_referral']   = true;
+        $testData['request']['content']['source']           = 'phantom';
+
+        $testData['response']['content']['signup_campaign'] = 'phantom_onboarding';
+
+        Queue::fake();
+
+        $resp = $this->startTest($testData);
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $userDeviceDetail = $this->getLastEntity('user_device_detail', true);
+        $merchantAccessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => $resp['merchants'][0]['id']]);
+
+        $this->assertEquals("api", $userDeviceDetail["metadata"]["service"]);
+        $this->assertNotNull($merchantAccessMap);
     }
 
     public function testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOn()

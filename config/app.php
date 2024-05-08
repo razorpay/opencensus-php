@@ -451,6 +451,8 @@ return array(
 
     'easy_submerchant_pgos_live_mode_experiment_id' => env('EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID'),
 
+    'pgos_phantom_live_mode_experiment_id' => env('PGOS_PHANTOM_LIVE_MODE_EXPERIMENT_ID'),
+
     'others_m3_experiment_id' => env('OTHERS_M3_EXPERIMENT_ID'),
 
     'risk_tags_check_experiment_id' => env('RISK_TAGS_CHECK_EXPERIMENT_ID'),

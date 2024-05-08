@@ -850,8 +850,20 @@ class Service extends Base\Service
             }
         }
 
+        if ($signupCampaign === DeviceDetail\Constants::PHANTOM_ONBOARDING)
+        {
+            if ($merchantCore->isRegularSubmerchant($merchant))
+            {
+                $shouldOnboardViaPGOS = $this->pgosProxyController->isPGOSEnabledForPhantomSubmerchant($merchant);
 
-        // TODO Phantom Onboarding should also go to PGOS
+                $this->trace->info(TraceCode::PHANTOM_SUBMERCHANT_PGOS, [
+                    'merchant_id'       => $merchant->getId(),
+                    'signup_campaign'   => $signupCampaign,
+                    'onboard_via_pgos'  => $shouldOnboardViaPGOS,
+                ]);
+
+            }
+        }
 
         if ($signupCampaign === DeviceDetail\Constants::I18N_MY_SIGNUP)
         {

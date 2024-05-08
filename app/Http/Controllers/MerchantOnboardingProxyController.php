@@ -83,6 +83,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const PGOS_SHADOW_MODE_EXPERIMENT_ID                = 'app.pgos_shadow_mode_experiment_id';
     const PGOS_LIVE_MODE_EXPERIMENT_ID                  = 'app.pgos_live_mode_experiment_id';
     const EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID = 'app.easy_submerchant_pgos_live_mode_experiment_id';
+    const PHANTOM_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID = 'app.pgos_phantom_live_mode_experiment_id';
 
     const ENABLE                         = 'enable';
     const LIVE                           = 'live';
@@ -539,6 +540,16 @@ class MerchantOnboardingProxyController extends BaseProxyController
         $properties = [
             'id'            => $merchant->getId(),
             'experiment_id' => $this->app['config']->get(self::EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID),
+        ];
+
+        return (new Core())->isSplitzExperimentEnable($properties, self::ENABLE);
+    }
+
+    public function isPGOSEnabledForPhantomSubmerchant(Merchant\Entity $merchant): bool
+    {
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get(self::PHANTOM_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID),
         ];
 
         return (new Core())->isSplitzExperimentEnable($properties, self::ENABLE);
