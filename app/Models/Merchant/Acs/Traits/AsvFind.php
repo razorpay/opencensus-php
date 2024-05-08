@@ -222,7 +222,7 @@ trait AsvFind
 
         if ($shouldCallAsv === true) {
             $shouldCacheResults = in_array($this->entity, ["merchant", "merchant_detail"]);
-            if ($shouldCacheResults === true) {
+            if ($shouldCacheResults === true && $this->isTransactionActive() === false) {
                 return Cache::store('query_cache_live')
                     ->tags(strtolower($this->entity) . '_' . $id)
                     ->remember(

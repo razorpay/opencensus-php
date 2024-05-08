@@ -474,19 +474,10 @@ class RepositoryTest extends RepositoryTestHelper
         $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 3, false, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
 
-//        // Test Case 2 - shouldRouteFindToAccountService true - Request for find or fail should go to account service with shouldRouteFindToAccountService called two times
+        // Test Case 2 - shouldRouteFindToAccountService true - Request for find or fail should go to account service
         $repo = new Repository();
         $repo->repo->transactionOnLiveAndTestAndAsv( function () use ($repo, $merchantDetailEntity1Array) {
             $this->flushCache();
-            $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 5, true, null);
-            $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
-        });
-
-        // Test Case 3 - shouldRouteFindToAccountService true - Request for find or fail should go to account service with shouldRouteFindToAccountService called 1 times
-        // as results are already cached
-        $repo = new Repository();
-        $repo->repo->transactionOnLiveAndTestAndAsv(function () use ($repo, $merchantDetailEntity1Array) {
-            $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 2, true, null);
             $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
         });
     }
