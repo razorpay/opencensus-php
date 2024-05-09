@@ -118,7 +118,7 @@ class HyperVerge extends Base\Core
 
         $input[self::UTILITY_CODE] = $paperMandateDetails[Entity::UTILITY_CODE];
 
-        $input[self::BANK_NAME] = substr($bankAccount->getBankName(), 0, 45);
+        $input[self::BANK_NAME] = preg_replace('/[^a-zA-Z0-9\s]/', '', substr($bankAccount->getBankName(), 0, 45));
 
         $input[self::ACCOUNT_TYPE] = $this->getAccountType($paperMandate);
 
