@@ -4160,6 +4160,25 @@ trait Authorize
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment already exist with same invoice number.', 'notes');
             }
+
+            // validate if payment has order
+            if ($payment->hasOrder() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID, [
+                        'merchant_id' => $payment->merchant->getId(),
+                        'payment_id'  => $payment->getId(),
+                    ]
+                );
+            }
+
+            // validate payment order has customer
+            if ((empty($payment->order->getCustomerId()) === true) &&
+                (empty($payment->customer) === true))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payment does not have a customer_id.', 'customer_id');
+            }
         }
     }
 

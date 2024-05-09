@@ -299,9 +299,25 @@ class CBPaymentCreateTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
 
+        $order = $this->fixtures->create('order',
+            [
+                'amount' => 1000000,
+                'currency' => 'INR',
+                'customer_id' => '100000customer',
+            ]);
+
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValue(),
+                'type'     => 'cart_info',
+            ]);
+
         $payment = $this->getDefaultPaymentArray();
 
         $payment['amount'] = '1000000';
+        $payment['currency'] = 'INR';
+        $payment['order_id'] = $order->getPublicId();
         $payment['notes'] = [
             'invoice_number' => 'INV123',
         ];
