@@ -62,7 +62,8 @@ class Repository extends Base\Repository
     }
 
     public function fetchMultipleByParam($input){
-        $query = $this->newQuery()->where(Entity::IS_DELETED, false);
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->where(Entity::IS_DELETED, false);
 
         if ((isset($input['is_default']) === true) and (($input['is_default'] === 'true') or (strval($input['is_default']) === '1'))) {
             $query->where(Entity::IS_DEFAULT, true);
@@ -77,7 +78,8 @@ class Repository extends Base\Repository
     }
 
     public function fetchByIdAndNotDeleted($id){
-        $query = $this->newQuery()->where(Entity::IS_DELETED, false);
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->where(Entity::IS_DELETED, false);
 
         return $query->findOrFailPublic($id);
     }

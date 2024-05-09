@@ -5,6 +5,8 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
 class ConfigController extends Controller
 {
@@ -55,6 +57,7 @@ class ConfigController extends Controller
 
     public function internalFetchConfigById(string $id)
     {
+
         $configs = $this->service()->internalFetchById($id);
 
         return ApiResponse::json($configs);
@@ -63,6 +66,10 @@ class ConfigController extends Controller
     public function internalFetchConfigs()
     {
         $input = Request::all();
+
+        if(empty($input)){
+            return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_EMPTY_CONFIG_PARAM);
+        }
 
         $data = $this->service()->fetchMultiple($input);
 
