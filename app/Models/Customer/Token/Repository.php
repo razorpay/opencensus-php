@@ -667,9 +667,9 @@ class Repository extends Base\Repository
             ->whereIn($tsTerminalGatewayColumn, $gateways)
             ->where($tsTerminalAcquirerColumn, '=', $acquirer)
             ->whereNull(Terminal\Constants::TS_DELETED_AT)
-            ->withTrashed()
-            ->get();
+            ->withTrashed();
 
+        $result = $query->get();
         $endTime = round(microtime(true) * 1000);
 
         $this->trace->info(TraceCode::EMANDATE_TIDB_FETCH_TOKEN_DELETE_QUERY_COMPLETE,
@@ -684,7 +684,7 @@ class Repository extends Base\Repository
                 "time_taken_by_query"   => $endTime - $startTime,
         ]);
 
-        return $query;
+        return $result;
     }
 
     // TODO: need to optimize the query futher
