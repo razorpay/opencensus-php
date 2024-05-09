@@ -1696,7 +1696,7 @@ class Core extends Base\Core
                 Attempt\Entity::SOURCE_ACCOUNT_ID => $input[Attempt\Entity::SOURCE_ACCOUNT_ID] ?? null,
             ] + $extraInfo;
 
-            $fav = $this->repo->fund_account_validation->findOrFail($mapping[Entity::ID]);
+            $fav = $this->repo->fund_account_validation->find($mapping[Entity::ID]);
 
             if ($fav === null)
             {
