@@ -244,7 +244,7 @@ class OffersEngine
             }
             else
             {
-                throw new Exception\ServerErrorException('Offers Engine Response cannot be null',
+                throw new Exception\ServerErrorException("Offers Engine Response cannot be null. Mode: $this->mode",
                     ErrorCode::SERVER_ERROR_OFFERS_ENGINE_SERVICE_FAILURE);
             }
 
@@ -252,12 +252,14 @@ class OffersEngine
 
         if (in_array($response->status_code, [503], true) === true)
         {
-            throw new Exception\ServerErrorException('Offers Engine Service is unreachable',
+            throw new Exception\ServerErrorException("Offers Engine Service is unreachable. Mode: $this->mode",
                 ErrorCode::SERVER_ERROR_OFFERS_ENGINE_SERVICE_FAILURE);
         }
 
 
-        $formattedResponse = [];
+        $formattedResponse = [
+            'Mode' => $this->mode
+        ];
 
         if (isset($response['message']))
         {

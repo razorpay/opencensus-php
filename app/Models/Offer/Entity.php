@@ -567,36 +567,26 @@ class Entity extends Base\PublicEntity
         }
 
         // API calculates discount for only instant discounts,
-        // i.e. instant discount offers, nc/lc emi offers
+        // i.e. instant discount offers, lc emi offers (nc emi offers are excluded)
         // so perform parity check for only these offers
-        if (!empty($oeBenefits[Constants::DISCOUNT]))
-        {
-            if (strval($oeBenefits[Constants::DISCOUNT][0][Constants::DISCOUNT]) !== $stringDisc)
-            {
+        if (!empty($oeBenefits[Constants::DISCOUNT])) {
+            if(!empty($oeBenefits[Constants::DISCOUNT][0][Constants::DISCOUNT])) {
+                if ($oeBenefits[Constants::DISCOUNT][0][Constants::DISCOUNT]!== $stringDisc) {
+                    return true;
+                }
+            } else if ($stringDisc !== '0') {
                 return true;
             }
         }
 
-        if (!empty($oeBenefits[Constants::NO_COST_EMI]))
-        {
-            if (strval($oeBenefits[Constants::NO_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT]) !== $stringDisc)
-            {
+        if (!empty($oeBenefits[Constants::LOW_COST_EMI])) {
+            if(!empty($oeBenefits[Constants::LOW_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT])) {
+                if ($oeBenefits[Constants::LOW_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT]!== $stringDisc) {
+                    return true;
+                }
+            } else if ($stringDisc !== '0') {
                 return true;
             }
-        }
-
-        if (!empty($oeBenefits[Constants::LOW_COST_EMI]))
-        {
-            if (strval($oeBenefits[Constants::LOW_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT]) !== $stringDisc)
-            {
-                return true;
-            }
-        }
-
-        // Check if apiDiscount is not 0 for all cases
-        if ($stringDisc !== '0')
-        {
-            return true;
         }
 
         return false;
