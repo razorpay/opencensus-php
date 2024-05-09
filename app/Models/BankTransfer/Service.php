@@ -2245,6 +2245,9 @@ class Service extends Base\Service
 
         foreach ($payments as $payment)
         {
+            if($payment->getBaseAmount() < 85000) {
+                continue;
+            }
             try
             {
                 $this->triggerEmail($payment, $event);
