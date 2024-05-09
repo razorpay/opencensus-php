@@ -40,6 +40,7 @@ use RZP\Models\Admin;
 use RZP\Models\Batch;
 
 use RZP\Models\Payout;
+use RZP\Exception;
 use RZP\Models\Pricing;
 use RZP\Models\Feature;
 use RZP\Http\BasicAuth;
@@ -272,6 +273,298 @@ class PayoutTest extends OAuthTestCase
 
             $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
         }
+
+        return $payout;
+    }
+
+    public function testCreatePayoutAndBlockByShield(): array
+    {
+        $testData = $this->testData['testCreatePayout'];
+
+        $testData['response'] = [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Transaction blocked. Please reach out to support.',
+                ],
+            ],
+            'status_code' => 400,
+        ];
+
+        $testData['exception'] = [
+            'class' => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUSPICIOUS_TRANSACTION,
+        ];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->privateAuth();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::PAYOUT_SHIELD_EVALUATE_EXPERIMENT => 'on'], 'control');
+
+        $shieldMock = Mockery::mock('RZP\Services\PayoutService\Shield', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $fund_account = $this->getDbEntityById('fund_account', $testData['request']['content']['fund_account_id']);
+
+        $contact = $this->getDbEntityById('contact', $fund_account->toArrayPublic()['contact_id']);
+
+        $shieldMock->shouldReceive('makeRequestAndGetContent')
+            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) use($fund_account, $contact) {
+
+                $this->assertNotNull("10000000000000", $input['payout_id']);
+                $this->assertEquals(2000000, $input['amount']);
+                $this->assertEquals('INR',$input['currency']);
+                $this->assertNotNull($input['created_at']);
+                $this->assertEquals('Batman',$input['narration']);
+                $this->assertEquals('refund',$input['purpose']);
+                $this->assertNotNull($input['source_account_detail']);
+                $this->assertNotNull($input['merchant_detail']);
+                $this->assertNotNull($input['meta']);
+                $this->assertEquals($fund_account->account->getAccountNumber(), $input['fund_account']['bank_account']['account_number']);
+                $this->assertEquals($fund_account->account->getName(), $input['fund_account']['bank_account']['name']);
+                $this->assertEquals($fund_account->account->getIfscCode(), $input['fund_account']['bank_account']['ifsc']);
+                $this->assertEquals($fund_account->account->getBankName(), $input['fund_account']['bank_account']['bank_name']);
+                $this->assertEquals($contact->getName(), $input['fund_account']['contact']['name']);
+                $this->assertEquals($contact->getEmail(), $input['fund_account']['contact']['email']);
+                $this->assertEquals($contact->getContact(), $input['fund_account']['contact']['contact']);
+                $this->assertEquals($contact->getCreatedAt(), $input['fund_account']['contact']['created_at']);
+
+                $this->assertEquals('/payouts/shield/evaluate', $action);
+
+                $this->assertEquals('POST',$method);
+
+                return [
+                    'action' => 'block',
+                    'status_code' => 200
+                ];
+            })->times(1);
+
+        $this->app->instance('payout_service_shield_evaluate', $shieldMock);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('reversed', $payout['status']);
+        $this->assertEquals('Transaction blocked. Please reach out to support.', $payout['failure_reason']);
+        $this->assertEquals('BAD_REQUEST_SUSPICIOUS_TRANSACTION', $payout['status_code']);
+
+        $status_details = $this->getLastEntity('payouts_status_details', true);
+
+        $this->assertEquals('suspicious_transaction', $status_details['reason']);
+        $this->assertEquals('Transaction blocked. Please reach out to support.',$status_details['description']);
+
+        return $payout;
+    }
+
+    public function testCreatePayoutAndAllowByShield(): array
+    {
+        $testData = $this->testData['testCreatePayout'];
+
+        $testData['response'] = [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'status_code' => 200,
+        ];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->privateAuth();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::PAYOUT_SHIELD_EVALUATE_EXPERIMENT => 'on'], 'control');
+
+        $shieldMock = Mockery::mock('RZP\Services\PayoutService\Shield', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $fund_account = $this->getDbEntityById('fund_account', $testData['request']['content']['fund_account_id']);
+
+        $contact = $this->getDbEntityById('contact', $fund_account->toArrayPublic()['contact_id']);
+
+        $shieldMock->shouldReceive('makeRequestAndGetContent')
+            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) use($fund_account, $contact) {
+
+                $this->assertNotNull("10000000000000", $input['payout_id']);
+                $this->assertEquals(2000000, $input['amount']);
+                $this->assertEquals('INR',$input['currency']);
+                $this->assertNotNull($input['created_at']);
+                $this->assertEquals('Batman',$input['narration']);
+                $this->assertEquals('refund',$input['purpose']);
+                $this->assertNotNull($input['source_account_detail']);
+                $this->assertNotNull($input['merchant_detail']);
+                $this->assertNotNull($input['meta']);
+                $this->assertEquals($fund_account->account->getAccountNumber(), $input['fund_account']['bank_account']['account_number']);
+                $this->assertEquals($fund_account->account->getName(), $input['fund_account']['bank_account']['name']);
+                $this->assertEquals($fund_account->account->getIfscCode(), $input['fund_account']['bank_account']['ifsc']);
+                $this->assertEquals($fund_account->account->getBankName(), $input['fund_account']['bank_account']['bank_name']);
+                $this->assertEquals($contact->getName(), $input['fund_account']['contact']['name']);
+                $this->assertEquals($contact->getEmail(), $input['fund_account']['contact']['email']);
+                $this->assertEquals($contact->getContact(), $input['fund_account']['contact']['contact']);
+                $this->assertEquals($contact->getCreatedAt(), $input['fund_account']['contact']['created_at']);
+
+                $this->assertEquals('/payouts/shield/evaluate', $action);
+
+                $this->assertEquals('POST',$method);
+
+                return [
+                    'action' => 'allow',
+                    'status_code' => 200
+                ];
+            })->times(1);
+
+        $this->app->instance('payout_service_shield_evaluate', $shieldMock);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertEquals(null, $payout['failure_reason']);
+        $this->assertEquals(null, $payout['status_code']);
+        $this->assertNotNull($payout['id']);
+
+        return $payout;
+    }
+
+    public function testCreatePayoutAndReviewByShield(): array
+    {
+        $testData = $this->testData['testCreatePayout'];
+
+        $testData['response'] = [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'status_code' => 200,
+        ];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->privateAuth();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::PAYOUT_SHIELD_EVALUATE_EXPERIMENT => 'on'], 'control');
+
+        $shieldMock = Mockery::mock('RZP\Services\PayoutService\Shield', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $fund_account = $this->getDbEntityById('fund_account', $testData['request']['content']['fund_account_id']);
+
+        $contact = $this->getDbEntityById('contact', $fund_account->toArrayPublic()['contact_id']);
+
+        $shieldMock->shouldReceive('makeRequestAndGetContent')
+            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) use($fund_account, $contact) {
+
+                $this->assertNotNull("10000000000000", $input['payout_id']);
+                $this->assertEquals(2000000, $input['amount']);
+                $this->assertEquals('INR',$input['currency']);
+                $this->assertNotNull($input['created_at']);
+                $this->assertEquals('Batman',$input['narration']);
+                $this->assertEquals('refund',$input['purpose']);
+                $this->assertNotNull($input['source_account_detail']);
+                $this->assertNotNull($input['merchant_detail']);
+                $this->assertNotNull($input['meta']);
+                $this->assertEquals($fund_account->account->getAccountNumber(), $input['fund_account']['bank_account']['account_number']);
+                $this->assertEquals($fund_account->account->getName(), $input['fund_account']['bank_account']['name']);
+                $this->assertEquals($fund_account->account->getIfscCode(), $input['fund_account']['bank_account']['ifsc']);
+                $this->assertEquals($fund_account->account->getBankName(), $input['fund_account']['bank_account']['bank_name']);
+                $this->assertEquals($contact->getName(), $input['fund_account']['contact']['name']);
+                $this->assertEquals($contact->getEmail(), $input['fund_account']['contact']['email']);
+                $this->assertEquals($contact->getContact(), $input['fund_account']['contact']['contact']);
+                $this->assertEquals($contact->getCreatedAt(), $input['fund_account']['contact']['created_at']);
+
+                $this->assertEquals('/payouts/shield/evaluate', $action);
+
+                $this->assertEquals('POST',$method);
+
+                return [
+                    'action' => 'review',
+                    'status_code' => 200
+                ];
+            })->times(1);
+
+        $this->app->instance('payout_service_shield_evaluate', $shieldMock);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertEquals(null, $payout['failure_reason']);
+        $this->assertEquals(null, $payout['status_code']);
+        $this->assertNotNull($payout['id']);
+
+        return $payout;
+    }
+
+    public function testCreatePayoutAndAllowByShieldEvalForUpi(): array
+    {
+        $this->ba->privateAuth();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::PAYOUT_SHIELD_EVALUATE_EXPERIMENT => 'on'], 'control');
+
+        $shieldMock = Mockery::mock('RZP\Services\PayoutService\Shield', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $shieldMock->shouldReceive('makeRequestAndGetContent')
+            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) {
+
+                $this->assertNotNull("10000000000000", $input['payout_id']);
+                $this->assertEquals(2000000, $input['amount']);
+                $this->assertEquals('INR',$input['currency']);
+                $this->assertNotNull($input['created_at']);
+                $this->assertEquals('Batman',$input['narration']);
+                $this->assertEquals('refund',$input['purpose']);
+                $this->assertNotNull($input['source_account_detail']);
+                $this->assertNotNull($input['merchant_detail']);
+                $this->assertNotNull($input['meta']);
+                $this->assertNotNull($input['fund_account']['vpa']['address']);
+                $this->assertNotNull($input['fund_account']['contact']['name']);
+                $this->assertNotNull($input['fund_account']['contact']['email']);
+                $this->assertNotNull($input['fund_account']['contact']['contact']);
+                $this->assertNotNull($input['fund_account']['contact']['created_at']);
+
+                $this->assertEquals('/payouts/shield/evaluate', $action);
+
+                $this->assertEquals('POST',$method);
+
+                return [
+                    'action' => 'allow',
+                    'status_code' => 200
+                ];
+            })->times(1);
+
+        $this->app->instance('payout_service_shield_evaluate', $shieldMock);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertEquals(null, $payout['failure_reason']);
+        $this->assertEquals(null, $payout['status_code']);
+        $this->assertNotNull($payout['id']);
 
         return $payout;
     }

@@ -46,6 +46,50 @@ return [
             ],
         ],
     ],
+    'testCreatePayoutAndAllowByShieldEvalForUpi' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account' => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'test@ybl',
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'UPI',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
     'testCreatePayoutMY' => [
         'request'  => [
             'method'  => 'POST',

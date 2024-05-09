@@ -1828,4 +1828,5 @@ class PublicErrorDescription
     const BAD_REQUEST_PAN_MISMATCH            = 'The given PAN does not belong to your selected business type. Please provide a different PAN';
     const BAD_REQUEST_OWNER_GSTIN_MISMATCH    = 'The given GSTIN does not belong to the Owner PAN provided. Please provide a different GSTIN';
     const BAD_REQUEST_BUSINESS_GSTIN_MISMATCH = 'The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
+    const BAD_REQUEST_SUSPICIOUS_TRANSACTION  = 'Transaction blocked. Please reach out to support.';
 }

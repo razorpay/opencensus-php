@@ -1113,4 +1113,9 @@ final class RazorxTreatment
     const ZERO_EXPONENT_CURRENCY_SUPPORT = 'zero_exponent_currency_support';
 
     const SETTLEMENT_TRANSACTION_READ_MIGRATION = 'settlement_transaction_read_migration';
+
+    /**
+     * Razorx for shield payout evaluate
+     */
+    const PAYOUT_SHIELD_EVALUATE_EXPERIMENT = 'payout_shield_evaluate_experiment';
 }

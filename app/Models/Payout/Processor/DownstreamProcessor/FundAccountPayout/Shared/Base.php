@@ -328,7 +328,7 @@ class Base extends FundAccountPayout\Base
 
             if ($payout->toBeQueued() === false)
             {
-                $payout->setPayoutStatusAfterLedgerFailureAndDispatchEvent(
+                $payout->setPayoutStatusAsPerMerchantWebhookSubscription(
                     $errorCode,
                     'Insufficient balance to process payout'
                 );
@@ -363,7 +363,7 @@ class Base extends FundAccountPayout\Base
                 (new CounterHelper)->decreaseFreePayoutsConsumedInCaseOfTransactionFailure($payout->getBalanceId());
             }
 
-            $payout->setPayoutStatusAfterLedgerFailureAndDispatchEvent($errorCode);
+            $payout->setPayoutStatusAsPerMerchantWebhookSubscription($errorCode);
         }
 
         $this->repo->saveOrFail($payout);

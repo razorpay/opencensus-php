@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -148,6 +149,11 @@ final class Metric
         try
         {
             if (self::getIsTestPayout($payout) === true)
+            {
+                return;
+            }
+
+            if ($payout->getStatusCode() === ErrorCode::BAD_REQUEST_SUSPICIOUS_TRANSACTION)
             {
                 return;
             }

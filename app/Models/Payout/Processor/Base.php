@@ -5,12 +5,14 @@ namespace RZP\Models\Payout\Processor;
 use App;
 use Closure;
 use Razorpay\Api\VirtualAccount;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Constants\Mode;
 use RZP\Models\Workflow;
+use RZP\Models\Contact;
 use RZP\Constants\Timezone;
 use RZP\Models\SubVirtualAccount;
 use RZP\Exception\LogicException;
@@ -74,6 +76,7 @@ use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\PayoutsDetails\Utils as PayoutsDetailsUtils;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
+use RZP\Services\PayoutService\Shield as PayoutServiceShieldEvaluate;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
@@ -160,6 +163,11 @@ class Base extends BaseCore
     protected $isPayoutServiceEnabled = false;
 
     /**
+     * *@var bool
+     */
+    protected $isShieldPayoutBlocked = false;
+
+    /**
      * @var bool
      */
     protected $isWorkflowEnabled = false;
@@ -170,6 +178,11 @@ class Base extends BaseCore
      * @var PayoutServiceCreate
      */
     protected $payoutCreateServiceClient;
+
+    /**
+     * @var PayoutServiceShieldEvaluate
+     */
+    protected $payoutShieldEvaluateServiceClient;
 
     /**
      * @var int
@@ -192,6 +205,20 @@ class Base extends BaseCore
     // FTS timeout is set to 1 sec. This should be utilized on sync calls to FTS.
     const FTS_TRANSFER_TIMEOUT = 1;
 
+    //shield constants
+    const ACTION_KEY              = 'action';
+    const ACTION_ALLOW            = 'allow';
+    const ACTION_REVIEW           = 'review';
+    const ACTION_BLOCK            = 'block';
+    const TRIGGERED_RULES         = 'triggered_rules';
+    const STATUS_CODE             = 'status_code';
+    const SOURCE_ACCOUNT_NUMBER   = 'source_account_number';
+    const SOURCE_ACCOUNT_DETAIL   = 'source_account_detail';
+    const SOURCE_ACCOUNT_TYPE     = 'source_account_type';
+    const ONBOARDING_DATETIME     = 'onboarding_datetime';
+    const MCC                     = 'mcc';
+    const META                    = 'meta';
+    const SOURCE_IP               = 'source_ip';
 
     public function __construct()
     {
@@ -200,6 +227,8 @@ class Base extends BaseCore
         $this->mutex = $this->app['api.mutex'];
 
         $this->payoutCreateServiceClient = $this->app[PayoutServiceCreate::PAYOUT_SERVICE_CREATE];
+
+        $this->payoutShieldEvaluateServiceClient = $this->app[PayoutServiceShieldEvaluate::PAYOUT_SERVICE_SHIELD_EVALUATE];
     }
 
     /**
@@ -260,9 +289,25 @@ class Base extends BaseCore
         {
             $payout = $this->handleWorkflowsIfApplicable(function() use ($input)
             {
-                return $this->createPayoutEntity($input);
+                return $this->createPayoutEntityWithShieldEvaluation($input);
             }, $input);
 
+            if ($this->isShieldPayoutBlocked === true)
+            {
+
+                $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
+                $this->repo->saveOrFail($payout);
+
+                $payout->setPayoutStatusAsPerMerchantWebhookSubscription(
+                    ErrorCode::BAD_REQUEST_SUSPICIOUS_TRANSACTION,
+                    PublicErrorDescription::BAD_REQUEST_SUSPICIOUS_TRANSACTION
+                );
+
+                $this->repo->saveOrFail($payout);
+
+                return $payout;
+
+            }
             $sourceDetails = $payout->getInputSourceDetails();
 
             $this->isPayoutInitiatedByPartner($payout);
@@ -375,6 +420,16 @@ class Base extends BaseCore
 
             return $payout;
         });
+
+        if ($this->isShieldPayoutBlocked === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUSPICIOUS_TRANSACTION,
+                null,
+                null,
+                PublicErrorDescription::BAD_REQUEST_SUSPICIOUS_TRANSACTION
+            );
+        }
 
         $this->setQueuedFeeRecoveryPayoutsFlag($payout);
 
@@ -2100,9 +2155,19 @@ class Base extends BaseCore
      */
     protected function handleWorkflowsIfApplicable(callable $createPayoutCallback, array $input = [])
     {
+        // Call the create Payout callback that will return a base Payout entity,
+        // which we further work with.
+        /** @var Payout\Entity $payout */
+        $payout = $createPayoutCallback();
+
         if ($this->isWorkflowEnabled === false)
         {
-            return $createPayoutCallback();
+            return $payout;
+        }
+
+        if ($this->isShieldPayoutBlocked === true)
+        {
+            return $payout;
         }
 
         //
@@ -2111,13 +2176,6 @@ class Base extends BaseCore
         // this here explicitly to avoid bugs and missed flows. Not ideal, but not harmful either.
         //
         app('basicauth')->setOrgDetails($this->merchant->org);
-
-        //
-        // Call the create Payout callback that will return a base Payout entity,
-        // which we further work with.
-        //
-        /** @var Payout\Entity $payout */
-        $payout = $createPayoutCallback();
 
         if ($this->isWorkflowServiceEnabled() === true)
         {
@@ -2459,6 +2517,16 @@ class Base extends BaseCore
     public function validateFundAccountContact(FundAccount\Entity $fundAccount)
     {
         return;
+    }
+
+    protected function createPayoutEntityWithShieldEvaluation(array $input)
+    {
+        /** @var Payout\Entity $payout */
+        $payout = $this->createPayoutEntity($input);
+
+        $this->isShieldPayoutBlocked = $this->shieldEvaluatePayoutsRequest($payout);
+
+        return $payout;
     }
 
     /**
@@ -4544,5 +4612,117 @@ class Base extends BaseCore
         $accessor->upsert(Payout\Core::USER_COMMENT_KEY_IN_SETTINGS_FOR_ICICI_2FA, $userComment);
 
         $accessor->save();
+    }
+
+    protected function shieldEvaluatePayoutsRequest(Entity $payout): bool {
+
+        try{
+
+            $razorxResponse = $this->app['razorx']->getTreatment($this->merchant->getId(),
+                Merchant\RazorxTreatment::PAYOUT_SHIELD_EVALUATE_EXPERIMENT,
+                RZPConstants\Mode::LIVE);
+
+            if ($razorxResponse !== 'on')
+            {
+                return false;
+            }
+
+            $this->trace->info(
+                TraceCode::EVALUATE_PAYOUT_SHEILD_REQUEST_INIT,
+                [
+                    'payout_id' => $payout->getId(),
+                ]);
+
+            $requestBody = $this->prepareShieldPayoutEvaluateRequest($payout);
+
+            //make call to PS for shield Response
+            $psShieldResponse = $this->payoutShieldEvaluateServiceClient->evaluatePayoutShieldRulesViaMicroservice($requestBody);
+
+            if ($psShieldResponse[self::STATUS_CODE] === 200)
+            {
+                if ($psShieldResponse[self::ACTION_KEY] === self::ACTION_BLOCK)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        catch(\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::ERROR_SHIELD_EVALUATE_PAYOUTS_REQUEST,
+                [
+                    'payout_id' => $payout->getId()
+                ]);
+        }
+
+        return false;
+    }
+
+    protected function prepareShieldPayoutEvaluateRequest(Entity $payout): array
+    {
+        $requestBody = [
+            Payout\Entity::PAYOUT_ID        => $payout->getId(),
+            Payout\Entity::AMOUNT           => $payout->getAmount(),
+            Payout\Entity::CURRENCY         => $payout->getCurrency(),
+            Payout\Entity::CREATED_AT       => millitime(),
+            Payout\Entity::MODE             => $payout->getMode(),
+            Payout\Entity::NARRATION        => $payout->getNarration(),
+            Payout\Entity::PURPOSE          => $payout->getPurpose(),
+            Payout\Entity::PURPOSE_TYPE     => $payout->getPurposeType(),
+            Payout\Entity::USER_ID          => $payout->getUserId(),
+            self::SOURCE_ACCOUNT_DETAIL     => [
+                self::SOURCE_ACCOUNT_NUMBER => $this->balance->getAccountNumber(),
+                self::SOURCE_ACCOUNT_TYPE   => $this->balance->getAccountType(),
+            ],
+            Merchant\Entity::MERCHANT_DETAIL    => [
+                Merchant\Entity::ID             => $this->merchant->getId(),
+                self::ONBOARDING_DATETIME       => $this->merchant->getCreatedAt(),
+                self::MCC                       => $this->merchant->getCategory(),
+            ],
+            self::META                          => [
+                self::SOURCE_IP => $this->app['request']->ip(),
+            ]
+        ];
+
+        $fundAccountId = $payout->getFundAccountId();
+
+        $entity = (new FundAccount\Repository)->findByIdAndMerchant($fundAccountId, $this->merchant)->toArrayPublic();
+
+        $contact = (new Contact\Core)->fetch($entity['contact_id'], $this->merchant)->toArrayPublic();
+
+        if (empty($entity[FundAccount\Entity::BANK_ACCOUNT]) === false)
+        {
+            $requestBody[Payout\Entity::FUND_ACCOUNT][FundAccount\Entity::BANK_ACCOUNT] = [
+                BankAccount\Entity::NAME            => $entity[FundAccount\Entity::BANK_ACCOUNT][BankAccount\Entity::NAME],
+                BankAccount\Entity::IFSC            => $entity[FundAccount\Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC],
+                BankAccount\Entity::ACCOUNT_NUMBER  => $entity[FundAccount\Entity::BANK_ACCOUNT][BankAccount\Entity::ACCOUNT_NUMBER],
+                BankAccount\Entity::BANK_NAME       => $entity[FundAccount\Entity::BANK_ACCOUNT][BankAccount\Entity::BANK_NAME],
+            ];
+        }
+
+        if  (empty($entity[FundAccount\Entity::VPA]) === false)
+        {
+            $requestBody[Payout\Entity::FUND_ACCOUNT][FundAccount\Entity::VPA] = [
+                Vpa\Entity::ADDRESS   => $entity[FundAccount\Entity::VPA][Vpa\Entity::ADDRESS],
+            ];
+
+        }
+
+        if  (empty($contact) === false)
+        {
+            $requestBody[Payout\Entity::FUND_ACCOUNT][FundAccount\Entity::CONTACT] = [
+                Contact\Entity::NAME          => $contact[Contact\Entity::NAME],
+                Contact\Entity::CONTACT       => $contact[Contact\Entity::CONTACT],
+                Contact\Entity::EMAIL         => $contact[Contact\Entity::EMAIL],
+                Contact\Entity::CREATED_AT    => $contact[Contact\Entity::CREATED_AT],
+            ];
+        }
+
+        return $requestBody;
+
     }
 }

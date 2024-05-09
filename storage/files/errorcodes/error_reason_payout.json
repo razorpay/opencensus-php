@@ -547,6 +547,11 @@
     "description": "Payout failed. Contact support for help."
   },
   "internal_payout_error": {
+    "BAD_REQUEST_SUSPICIOUS_TRANSACTION": {
+      "description": "Transaction blocked. Please reach out to support.",
+      "source": "internal",
+      "reason": "suspicious_transaction"
+    },
     "BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR": {
       "description": "Payout failed. Contact support for help.",
       "source": "internal",

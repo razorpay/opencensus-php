@@ -795,6 +795,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceCreate();
 
+        $this->registerPayoutServiceShieldEvaluate();
+
         $this->registerPayoutServiceWorkflow();
 
         $this->registerPayoutServiceGet();
@@ -1923,6 +1925,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Create::PAYOUT_SERVICE_CREATE, function($app)
         {
             return new PayoutService\Create($app);
+        });
+    }
+
+    protected function registerPayoutServiceShieldEvaluate()
+    {
+        $this->app->singleton(PayoutService\Shield::PAYOUT_SERVICE_SHIELD_EVALUATE, function($app)
+        {
+            return new PayoutService\Shield($app);
         });
     }
 

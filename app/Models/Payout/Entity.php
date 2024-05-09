@@ -3569,7 +3569,7 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
-    public function setPayoutStatusAfterLedgerFailureAndDispatchEvent(string $errorCode = null, string $errorReason = null)
+    public function setPayoutStatusAsPerMerchantWebhookSubscription(string $errorCode = null, string $errorReason = null)
     {
         $app = App::getFacadeRoot();
 

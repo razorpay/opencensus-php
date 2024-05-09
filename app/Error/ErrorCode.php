@@ -3105,6 +3105,9 @@ class ErrorCode
     const SMART_ROUTING_RULES_FETCH_FAILED_FTS                                      = 'SMART_ROUTING_RULES_FETCH_FAILED_FTS';
     const SMART_ROUTING_RULES_MODIFY_FAILED_FTS                                     = 'SMART_ROUTING_RULES_MODIFY_FAILED_FTS';
 
+    //payouts shield error
+    const BAD_REQUEST_SUSPICIOUS_TRANSACTION                          = 'BAD_REQUEST_SUSPICIOUS_TRANSACTION';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

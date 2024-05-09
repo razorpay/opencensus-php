@@ -5012,6 +5012,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_FTS_SYNC_CALL_DURATION                                  = 'PAYOUT_FTS_SYNC_CALL_DURATION';
     const PAYOUT_LEDGER_PROCESS_CALL_DURATION                            = 'PAYOUT_LEDGER_PROCESS_CALL_DURATION';
     const PAYOUT_CREATE_REQUEST_ENQUEUE_DURATION                         = 'PAYOUT_CREATE_REQUEST_ENQUEUE_DURATION';
+    const EVALUATE_PAYOUT_SHEILD_REQUEST_INIT                            = 'EVALUATE_PAYOUT_SHEILD_REQUEST_INIT';
     const SET_QUEUED_FEE_RECOVERY_PAYOUT_FLAG                            = 'SET_QUEUED_FEE_RECOVERY_PAYOUT_FLAG';
 
     const SUBMERCHANT_CREATED_TRANSFER_FOR_PARTNER_INITIATED_PAYMENT    = 'SUBMERCHANT_CREATED_TRANSFER_FOR_PARTNER_INITIATED_PAYMENT';
@@ -11484,6 +11485,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_ERROR          = "ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_ERROR";
 
     const PAYMENT_ID_SET_FROM_HEADER                            = "PAYMENT_ID_SET_FROM_HEADER";
+
+    const ERROR_SHIELD_EVALUATE_PAYOUTS_REQUEST                 = 'ERROR_SHIELD_EVALUATE_PAYOUTS_REQUEST';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
