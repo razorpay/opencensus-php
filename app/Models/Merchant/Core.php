@@ -10728,10 +10728,13 @@ class Core extends Base\Core
             $merchant = $this->repo->merchant->find($merchantId);
 
             $merchantDetailCore = new Detail\Core;
+            $merchantDetailService = new Detail\Service;
 
             $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
             $response = $merchantDetailCore->createResponse($merchantDetails);
+
+            $merchantDetailService->getAdditionalMerchantDetailsData($merchantDetails, $response);
 
             $partnerActivation = (new Partner\Core())->getPartnerActivation($merchant);
 

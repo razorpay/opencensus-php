@@ -880,6 +880,8 @@ return array(
 
     'fee_breakup_in_ledger_experiment_id' => env('FEE_BREAKUP_IN_LEDGER_EXP_ID'),
 
+    'get_merchant_activation_response_from_pgos' => env('GET_MERCHANT_ACTIVATION_FROM_PGOS'),
+
     'onboarding_api_bmc_experiment_id'  => env('ONBOARDING_API_BMC_EXPERIMENT_ID'),
 
     'optimize_fetch_submerchants_experiment_id'  => env('OPTIMIZE_FETCH_SUBMERCHANTS_EXPERIMENT_ID'),

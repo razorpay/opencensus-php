@@ -217,11 +217,37 @@ class Service extends Base\Service
 
     public function fetchMerchantDetails()
     {
-        $merchantDetails = $this->core->getMerchantDetails($this->merchant);
+        $merchantId = $this->merchant->getId();
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $this->merchant->getCountry());
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.get_merchant_activation_response_from_pgos'),
+        ];
+        $isPGOSExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
 
-        $response = $this->core->createResponse($merchantDetails);
+        $response = [];
 
-        $this->getAdditionalMerchantDetailsData($merchantDetails, $response);
+        if ($shouldMerchantOnboardViaPGOS === true and $isPGOSExpEnabled === true)
+        {
+            $input['merchantId'] = $merchantId;
+
+            $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('get_merchant_activation_details', $input, $this->merchant, true);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'response' => $pgosResponse
+            ]);
+
+            $response = $pgosResponse['activation_response'];
+        }
+
+        else
+        {
+            $merchantDetails = $this->core->getMerchantDetails($this->merchant);
+
+            $response = $this->core->createResponse($merchantDetails);
+
+            $this->getAdditionalMerchantDetailsData($merchantDetails, $response);
+        }
 
         $partnerActivation = (new Partner\Core())->getPartnerActivation($this->merchant);
 
@@ -236,7 +262,7 @@ class Service extends Base\Service
     public function getAdditionalMerchantDetailsData(Entity $merchantDetails, array &$response)
     {
         $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
-            $this->merchant->getId(),
+            $merchantDetails->getId(),
             Constant::WEBSITE_POLICY,
             MVD\Constants::NUMBER
         );

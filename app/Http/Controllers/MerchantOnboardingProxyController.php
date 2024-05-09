@@ -25,6 +25,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     // route key
     const MERCHANT_ACTIVATION_SAVE       = 'merchant_activation_save';
+
+    const GET_MERCHANT_ACTIVATION_DETAILS = 'get_merchant_activation_details';
     const MERCHANT_SIGN_UP               = 'merchant_sign_up';
     const MERCHANT_DOCUMENT_UPLOAD       = 'merchant_document_upload';
     const MERCHANT_DOCUMENT_DELETE       = 'merchant_document_delete';
@@ -197,6 +199,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     const ROUTES_URL_MAP = [
         self::MERCHANT_ACTIVATION_SAVE         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantActivationSave',
+        self::GET_MERCHANT_ACTIVATION_DETAILS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantActivationDetails',
         self::MERCHANT_SIGN_UP                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/CreateWorkflow',
         self::MERCHANT_DOCUMENT_UPLOAD         => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentUpload',
         self::MERCHANT_DOCUMENT_DELETE         => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentDelete',
@@ -419,6 +422,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
             $route = $this->getRoute($twirpPath);
 
             $headers = $this->getHeadersForDashboardRequest($payload, $merchantId);
+
+            if ($routeKey === self::GET_MERCHANT_ACTIVATION_DETAILS)
+            {
+                $headers['Asv-Exp-Enabled'] = "true";
+            }
 
             $headers['X-Route-Name'] = $routeKey;
 
