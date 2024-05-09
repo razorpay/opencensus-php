@@ -1919,8 +1919,8 @@ class UserController extends Controller
     {
         try
         {
-            $isSubMerchant = $details[MetricConstants::IS_SUB_MERCHANT] ?? false;
-            $partnerType = $details[MetricConstants::PARTNER_TYPE] ?? null;
+            $isSubMerchant = $details[MerchantConstants::IS_SUB_MERCHANT] ?? false;
+            $partnerType = $details[MerchantConstants::PARTNER_TYPE] ?? null;
 
             if($isSubMerchant === true || empty($partnerType) === false || $this->isEligibleForPos($details) === true)
             {
