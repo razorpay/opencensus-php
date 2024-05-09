@@ -2394,6 +2394,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_ACQUIRER_FOR_COUNTRY                                  = 'BAD_REQUEST_INVALID_ACQUIRER_FOR_COUNTRY';
 
     //payment config
+    const BAD_REQUEST_INVALID_CONFIG_ID                                             = 'BAD_REQUEST_INVALID_CONFIG_ID';
     const BAD_REQUEST_EMPTY_CONFIG_PARAM                                            = 'BAD_REQUEST_EMPTY_CONFIG_PARAM';
     const BAD_REQUEST_CONFIG_NOT_FOUND                                              = 'BAD_REQUEST_CONFIG_NOT_FOUND';
     const BAD_REQUEST_DEFAULT_LATE_AUTH_CONFIG_PRESENT                              = 'BAD_REQUEST_DEFAULT_LATE_AUTH_CONFIG_PRESENT';
