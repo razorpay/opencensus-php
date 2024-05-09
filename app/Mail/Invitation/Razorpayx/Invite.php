@@ -8,6 +8,8 @@ use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Invitation\Constants as InvitationConstants;
 use RZP\Models\User\Role;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Invite extends Mailable
 {
@@ -27,9 +29,17 @@ class Invite extends Mailable
 
     const CA_PORTAL_INVITE_EXISTING_USER_TEMPLATE_PATH      = 'emails.invitation.razorpayx/ca-invitation-existing-user';
 
+    const CA_PORTAL_INVITE_STORK_TEMPLATE      = 'gai_ca_invitation';
+
+    const CA_PORTAL_INVITE_EXISTING_X_USER_STORK_TEMPLATE      = 'gai_ca_invitation_existing_x_user';
+
+    const CA_PORTAL_INVITE_EXISTING_USER_STORK_TEMPLATE      = 'gai_ca_invitation_existing_user';
+
     const INVITE_LINK_FORMAT = '%s/auth?invitation=%s';
 
     const INVITE_LINK_FORMAT_S2P = '%s/auth?invitation=%s&invDetails=%s';
+
+    const STORK_NAMESPACE = "razorpayx_apps";
 
     protected $invitation;
 
@@ -47,13 +57,18 @@ class Invite extends Mailable
 
     protected $invDetails;
 
+    protected $merchant;
+
+    protected $data;
+
     public function __construct($invitationId,
                                 $senderName,
                                 bool $invitedUserExists,
                                 bool $isAnExistingUserOnX,
                                 $role = null,
                                 bool $isIntegrationInvite = false,
-                                array $invDetails = null)
+                                array $invDetails = null,
+                                MerchantEntity $merchant)
     {
         parent::__construct();
 
@@ -74,6 +89,8 @@ class Invite extends Mailable
         $this->role = $role;
 
         $this->invDetails = $invDetails;
+
+        $this->merchant = $merchant;
     }
 
     protected function addSender()
@@ -129,15 +146,17 @@ class Invite extends Mailable
 
         $roleName = $this->getRoleName($invitation);
 
+        $this->data = [
+            'business_name' => $this->getBusinessName(),
+            'sender_name'   => $this->senderName,
+            'role'          => $this->getLabel($roleName != null ? $roleName : ''),
+            'invite_link'   => $inviteLink,
+            'support_url'   => self::SUPPORT_URL,
+            'integration_invite' => $this->isIntegrationInvite ? ' and integrate Zoho Books':'',
+        ];
+
         $this->with(
-            [
-                'business_name' => $this->getBusinessName(),
-                'sender_name'   => $this->senderName,
-                'role'          => $this->getLabel($roleName != null ? $roleName : ''),
-                'invite_link'   => $inviteLink,
-                'support_url'   => self::SUPPORT_URL,
-                'integration_invite' => $this->isIntegrationInvite ? ' and integrate Zoho Books':'',
-            ]
+            $this->data
         );
 
         return $this;
@@ -226,4 +245,46 @@ class Invite extends Mailable
         return $this;
     }
 
+    protected function shouldSendEmailViaStork(): bool
+    {
+        if (empty($this->role) === false && $this->role == Role::CHARTERED_ACCOUNTANT)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getParamsForStork(): array
+    {
+        $templateName = "";
+        if (empty($this->role) === false && $this->role == Role::CHARTERED_ACCOUNTANT)
+        {
+            if ($this->isAnExistingUserOnX)
+            {
+                $templateName = self::CA_PORTAL_INVITE_EXISTING_X_USER_STORK_TEMPLATE;
+            }
+            else
+            {
+                if ($this->invitedUserExists)
+                {
+                    $templateName = self::CA_PORTAL_INVITE_EXISTING_USER_STORK_TEMPLATE;
+                }
+                else
+                {
+                    $templateName = self::CA_PORTAL_INVITE_STORK_TEMPLATE;
+                }
+            }
+
+            return [
+                'template_namespace' => self::STORK_NAMESPACE,
+                'org_id'             => $this->merchant->getOrgId(),
+                'owner_id'           => $this->merchant->getId(),
+                'template_name'      => $templateName,
+                'params'             => $this->data,
+            ];
+        }
+
+        return [];
+    }
 }

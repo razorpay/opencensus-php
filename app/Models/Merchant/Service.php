@@ -6906,9 +6906,10 @@ class Service extends Base\Service
         }
 
         $data = [
-            'merchant'    => [
-                'name' => $merchant['name'],
-                'id'   => $merchant['id']
+            'merchant' => [
+                'name'   => $merchant['name'],
+                'id'     => $merchant['id'],
+                'org_id' => $merchant['org_id'],
             ],
             'application' => [
                 'name'     => $client->application['name'],

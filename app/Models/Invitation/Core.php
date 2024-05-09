@@ -530,7 +530,7 @@ class Core extends Base\Core
             if (empty($merchantIds) === false && $this->merchant->getId() === $merchantIds[0])
                 $inviteMailer = new BankLmsInvite($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole());
             else
-                $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole(), $isIntegrationInvite, $invDetails);
+                $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole(), $isIntegrationInvite, $invDetails, $this->merchant);
 
             Mail::queue($inviteMailer);
 
