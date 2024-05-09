@@ -11483,6 +11483,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_ERROR          = "ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_ERROR";
 
+    const PAYMENT_ID_SET_FROM_HEADER                            = "PAYMENT_ID_SET_FROM_HEADER";
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

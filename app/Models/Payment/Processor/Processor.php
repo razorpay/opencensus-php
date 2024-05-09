@@ -8728,7 +8728,16 @@ class Processor
 
         $payment = new Payment\Entity;
 
-        $payment->generateId();
+        // In case of optimizer merchants, if api bypass payment header is passed, avoid regenating payment ID
+        // ref: https://razorpay.slack.com/archives/CVBG8G5HP/p1713776445121129?thread_ts=1713333452.554889&cid=CVBG8G5HP
+        if ($this->merchant->isFeatureEnabled(Feature::RAAS) === true) {
+            $this->setPaymentIdForOptimizer($payment);
+        }
+
+        // fallback if payment_id empty
+        if (empty($payment->getId()) === true) {
+            $payment->generateId();
+        }
 
         $payment->merchant()->associate($this->merchant);
 
@@ -8739,6 +8748,41 @@ class Processor
         $this->payment = $payment;
 
         return $payment;
+    }
+
+
+    // In case of optimizer merchants, if api bypass payment header is passed, avoid regenating payment ID
+    // ref: https://razorpay.slack.com/archives/CVBG8G5HP/p1713776445121129?thread_ts=1713333452.554889&cid=CVBG8G5HP
+    protected function setPaymentIdForOptimizer(Payment\Entity $payment )
+    {
+        $apiBypassPaymentId = $this->app['request']->header(RequestHeader::X_API_BYPASS_PAYMENT_ID);
+
+        $requestHost = $this->app['request']->header('Host');
+
+        $allowed = false;
+
+        // Only allowed in lower envs.
+        // And in prod with correct host. This is to avoid hackers using this header to change payment ID
+
+        if(app()->isEnvironmentProduction() === false)
+        {
+            $allowed = true;
+        }
+        else if(app()->isEnvironmentProduction() === true &&
+            ($requestHost === "prod-api-int.razorpay.com" || $requestHost === "api-dark-int.razorpay.com"))
+        {
+            $allowed = true;
+        }
+
+        if (empty($apiBypassPaymentId) === false && $allowed === true)
+        {
+            $payment->setId($apiBypassPaymentId);
+            $this->trace->info(
+                TraceCode::PAYMENT_ID_SET_FROM_HEADER,
+                [
+                    'payment_id'     => $apiBypassPaymentId,
+                ]);
+        }
     }
 
     /**

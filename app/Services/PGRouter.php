@@ -1342,6 +1342,13 @@ class PGRouter
             }
         }
 
+        // Add X-Api-Bypass-Payment-Id header in case proxy request gets routed to PgRouter again
+        $apiBypassPayId = $this->request->header(RequestHeader::X_API_BYPASS_PAYMENT_ID);
+        if (empty($apiBypassPayId) === false)
+        {
+            $headers[RequestHeader::X_API_BYPASS_PAYMENT_ID] = $apiBypassPayId;
+        }
+
         return [
             'url'       => $url,
             'method'    => $method,

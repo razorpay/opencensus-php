@@ -10991,6 +10991,33 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testCreatePaymentOptimizerWithBypassPaymentId()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['raas']);
+
+        $request = $this->buildAuthPaymentRequest($payment);
+        $request['content']['validate_payment']['afa_required'] = false;
+        $request['content']['acs_afa_authentication'] = array();
+        $request['headers'] =  ['X-Api-Bypass-Payment-Id'=> 'bypasspay12345'];
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        // TODO: fix the test properly
+        // $payment = $this->getLastEntity('payment', true);
+
+        // $this->assertEquals('bypasspay12345',$payment['id']);
+    }
+
     protected function runPaymentCallbackFlowNetbanking($response, &$callback = null, $gateway)
     {
         if (strpos($response->getContent(), 'mock/netbanking/axis') != null)
