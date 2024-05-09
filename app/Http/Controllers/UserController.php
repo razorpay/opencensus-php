@@ -55,7 +55,7 @@ class UserController extends Controller
     const ONBOARDING_FTUX = 'ONBOARDING_FTUX';
 
     const ONBOARDING_FTUX_AFTER_L2 = 'ONBOARDING_FTUX_AFTER_L2';
-    
+
     const ELIGIBLE_FOR_POS = 'ELIGIBLE_FOR_POS';
     /**
      * @var \App\Admin\Service|null
@@ -161,6 +161,14 @@ class UserController extends Controller
         }
 
         return ($data["variables"][0]["value"] ?? null) === 'true';
+    }
+
+    public function appendAllQueryParams($queryParams, $redirectURL): string
+    {
+        foreach ($queryParams as $queryParamKey => $queryParamValue) {
+            $redirectURL = $redirectURL . '&' . $queryParamKey . '=' . $queryParamValue;
+        }
+        return $redirectURL;
     }
 
     public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCall = false)
@@ -270,14 +278,18 @@ class UserController extends Controller
         $data['rootPath']       = self::ROOT_PATH;
         $data['isAuthPath']     = false;
 
+        $queryParams = Request::all();
+
         if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin" || $currentRouteName === "resetpassword" || $currentRouteName === "emailupdate"))
         {
             $data['isAuthPath'] = true;
 
             // redirect guests to unified signup page based on experiment and current conditions
-            if ($currentRouteName === "signup" and $this->isRedirectionApplicableToUnifiedLogin($org)) {
+            if ($currentRouteName === "signup" and $this->isRedirectionApplicableToUnifiedLogin($org, $queryParams)) {
 
                 $redirectPath = \Config::get('app.unified_signup_redirect_path');
+
+                $redirectPath = $this->appendAllQueryParams($queryParams, $redirectPath);
 
                 $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
                     'redirection_url' => $redirectPath,
@@ -316,9 +328,11 @@ class UserController extends Controller
             }
 
             // redirect guests to unified signin page based on experiment on top of existing conditions
-            if ($currentRouteName === "signin" and $this->isRedirectionApplicableToUnifiedLogin($org)) {
+            if ($currentRouteName === "signin" and $this->isRedirectionApplicableToUnifiedLogin($org, $queryParams)) {
 
                 $redirectPath = \Config::get('app.unified_login_redirect_path');
+
+                $redirectPath = $this->appendAllQueryParams($queryParams, $redirectPath);
 
                 $this->trace->info(TraceCode::UNIFIED_LOGIN_REDIRECTION, [
                     'redirection_url' => $redirectPath,
@@ -670,10 +684,18 @@ class UserController extends Controller
         return true;
     }
 
-    private function isRedirectionApplicableToUnifiedLogin(array $org): bool
+    private function isRedirectionApplicableToUnifiedLogin(array $org, array $queryParams): bool
     {
 
         $existingRedirectionConditions = $this->redirectionApplicableForGuest($org);
+
+        if (empty($queryParams['referral_code']) === false)
+        {
+            $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+                'skip_for_partner_flow' => 'true',
+            ]);
+            return false;
+        }
 
         $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
             'existingRedirectionConditions' => $existingRedirectionConditions,
@@ -1982,7 +2004,7 @@ class UserController extends Controller
         }
         return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
     }
-    
+
     private function isFtuxAfterL2ExperimentEnabled()
     {
 
