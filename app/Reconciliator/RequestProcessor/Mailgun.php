@@ -150,7 +150,7 @@ class Mailgun extends Base
             [
                 "from" => ["atmcashtally@kvbmail.com", "lakshmim@kvbmail.com"],
                 "subject_pattern" => "/(?i)RECONFILE DT (0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.20[0-9]{2}/",
-                "filename_pattern" => "/^(?i)kvb_ib_razorpaytpv_(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}/",
+                "filename_pattern" => "/^(?i)kvb_ib_razorpay(tpv|)_(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}/",
                 "destination" => "recon/input/netbanking_kvb/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
@@ -175,9 +175,9 @@ class Mailgun extends Base
         ],
         self::NETBANKING_JKB => [
             [
-                "from" => "netbanking@jkbmail.com",
-                "subject_pattern" => "/Recon File of Razorpay Dated: [0-9]{2}-[0-9]{2}-20[0-9]{2}/",
-                "filename_pattern" => "/reconfile_[0-9]{2}-[0-9]{2}-20[0-9]{2}/",
+                "from" => "ebanking@jkbmail.com",
+                "subject_pattern" => "/Recon File of Razorpay Dated:[0-9]{2}-[0-9]{2}-20[0-9]{2}/",
+                "filename_pattern" => "/(?i)reconfile_/",
                 "destination" => "recon/input/netbanking_jkb/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
@@ -195,7 +195,7 @@ class Mailgun extends Base
             [
                 "from" => "alerts@dhanbank.co.in",
                 "subject_pattern" => "/(?i)RazorPay - Dhanalaxmi Bank PG Recon File New/",
-                "filename_pattern" => "/^(?i)razorpay_report_[0-9]{2}[0-9]{2}20[0-9]{2}/",
+                "filename_pattern" => "/^(?i)pg_razor_/",
                 "destination" => "recon/input/netbanking_dlb/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
@@ -212,7 +212,7 @@ class Mailgun extends Base
         self::NETBANKING_SVC => [
             [
                 "from" => "chaudharyam@svcbank.com",
-                "subject_pattern" => "/^(?i)Recon file for the dated [0-9]{2}.[0-9]{2}.20[0-9]{2} to [0-9]{2}.[0-9]{2}.20[0-9]{2}/",
+                "subject_pattern" => "/^(?i)Recon file for the dated/",
                 "filename_pattern" => "/^(?i)svcbibdataipgrz/",
                 "destination" => "recon/input/netbanking_svc/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
@@ -234,12 +234,19 @@ class Mailgun extends Base
                 "filename_pattern" => "/(?i)IB00102_[0-9]{2}[0-9]{2}20[0-9]{2}/",
                 "destination" => "recon/input/netbanking_cbi/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ],
+            [
+                "from" => ["bmvb4982@centralbank.co.in", "inbsite@centralbank.co.in"],
+                "subject_pattern" => "/(?i)RECON FILE/",
+                "filename_pattern" => "/(?i)IB00018Recon/",
+                "destination" => "recon/input/netbanking_cbi/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
         ],
         self::NETBANKING_JSB => [
             [
                 "from" => ["mohamed.m05@janabank.com", "kishan.holihosur@janabank.com"],
-                "subject_pattern" => "/(?i)Payu Recon File dated [0-9]{2}-[0-9]{2}-20[0-9]{2}/",
+                "subject_pattern" => "/(?i)Payu Recon File dated/",
                 "filename_pattern" => "/(?i)razorpay-20[0-9]{2}[0-9]{2}[0-9]{2}/",
                 "destination" => "recon/input/netbanking_jsb/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
@@ -262,7 +269,43 @@ class Mailgun extends Base
                 "destination" => "recon/input/netbanking_pnb/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
-        ]
+        ],
+        self::NETBANKING_EQUITAS => [
+            [
+                "from" => "faverraj@equitasbank.com",
+                "subject_pattern" => "/^(?i)Razorpay Transaction file/",
+                "filename_pattern" => "/^(?i)razorpay/",
+                "destination" => "recon/input/netbanking_equitas/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_CSB => [
+            [
+                "from" => "donotreply@csb.co.in",
+                "subject_pattern" => "/^(?i)RAZORPAY_Recon File/",
+                "filename_pattern" => "/^(?i)razorpay/",
+                "destination" => "recon/input/netbanking_csb/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_SARASWAT => [
+            [
+                "from" => "atmsupport@saraswatbank.com",
+                "subject_pattern" => "/(?i)AUTO MAIL \|\| RAZORPAY Report/",
+                "filename_pattern" => "/(?i)razorpay_[0-9]{2}[0-9]{2}20[0-9]{2}/",
+                "destination" => "recon/input/netbanking_saraswat/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::AIRTEL => [
+            [
+                "from" => "noreply@airtelbank.com",
+                "subject_pattern" => "/^(?i)ecom_merch_txn_report/",
+                "filename_pattern" => "/(?i)ecom_merch_txn_report/",
+                "destination" => "recon/input/netbanking_airtel/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ]                             
     ];
 
     protected $inputDetails;
@@ -475,7 +518,10 @@ class Mailgun extends Base
         // We haven't parsed the email for attachments yet at this point.
         // Hence, sending `true` as the second parameter (allowZeroAttachments).
         //
-        $this->validator->validateAttachments($input, true);
+        // skip for netbanking_csb as one logo is coming as attachment
+        if($inputDetails[self::FROM] !== "donotreply@csb.co.in"){
+            $this->validator->validateAttachments($input, true);
+        }
 
         $inputDetails[self::ATTACHMENT_COUNT] = $input[self::ATTACHMENT_HYPHEN_COUNT];
 
@@ -511,7 +557,7 @@ class Mailgun extends Base
             }
         }
 
-        if(in_array($this->inputDetails[self::TO], Service::BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN)){
+        if(in_array($this->inputDetails[self::TO], Service::BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN) || $this->gateway === self::NETBANKING_EQUITAS){
             return;
         }
 

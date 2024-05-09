@@ -84,7 +84,7 @@ class Validator extends Base\Core
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9][0-9]?,\s*"
                                                          ."20[0-9]{2}/"
                                                      ],
-        RequestProcessor\Base::AIRTEL             => ["/Ecom Merchant Transaction_Report for [0-9]+/"],
+        RequestProcessor\Base::AIRTEL             => ["/^(?i)ecom_merch_txn_report/"],
         RequestProcessor\Base::UPI_AXIS           => [  "/Razorpay Software Pvt Ltd UPI transactions - "
                                                         . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"],
         RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
@@ -95,25 +95,26 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_ALLAHABAD   => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY => ["/^Flexmoney Recon and Refund files/"],
         RequestProcessor\Base::PHONEPE            => [".*/Settlement Report/"],
-        RequestProcessor\Base::NETBANKING_KVB     => ["/Recon file [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
+        RequestProcessor\Base::NETBANKING_KVB     => ["/(?i)RECONFILE DT (0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.20[0-9]{2}/"],
         RequestProcessor\Base::BAJAJFINSERV       => ["/Payment MIS_Razorpay Software_ [0-9]{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) 20[0-9]{2}/"],
         RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::HDFC_DEBIT_EMI     => ["/^DCEMI Reconciliation & Payment Summary Report/"],
         RequestProcessor\Base::UPI_JUSPAY         => ["/BAJAJ TXN DETAILS/"],
-        RequestProcessor\Base::NETBANKING_SVC     => ['/Recon file for the date [0-9]{2}.[0-9]{2}.20[0-9]{2} to [0-9]{2}.[0-9]{2}.20[0-9]{2}/'],
-        RequestProcessor\Base::NETBANKING_JSB     => ["/Payment Gateway Reconcilation File from JFS/"],
-        RequestProcessor\Base::NETBANKING_FSB     => ["/Recon file for transaction dated [0-9]{2}-(January|February|March|April|May|June|July|August|September|October|November|December)-20[0-9]{2}/"],
+        RequestProcessor\Base::NETBANKING_SVC     => ['/Recon file for the dated/'],
+        RequestProcessor\Base::NETBANKING_JSB     => ["/(?i)PAYU RECON FILE Dated/"],
+        RequestProcessor\Base::NETBANKING_FSB     => ["/Recon file for transaction dated/"],
         RequestProcessor\Base::NETBANKING_IOB     => ["/IOB RazorPay Recon File -20[0-9]{6}/"],
         RequestProcessor\Base::NETBANKING_JKB     => ["/Recon File of Razorpay Dated:[0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
-        RequestProcessor\Base::NETBANKING_DCB     => ["/RAZORPAY RECON file dt. [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
+        RequestProcessor\Base::NETBANKING_DCB     => ["/RAZORPAY RECON file dt./"],
         RequestProcessor\Base::NETBANKING_DLB     => ["/RazorPay - Dhanalaxmi Bank PG Recon File New/"],
         RequestProcessor\Base::NETBANKING_RBL     => ["/RBL (Razorpay|CIB) PG Recon File/"],
         RequestProcessor\Base::CARDLESS_EMI_ZESTMONEY  => ["/Settlement_RazorpayPG_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_BDBL    => ["/Razorpay Reconciliation Dt. [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
-        RequestProcessor\Base::NETBANKING_SARASWAT    => ["/Saraswat Bank Recon File"],
-        RequestProcessor\Base::NETBANKING_UCO     => [""],
+        RequestProcessor\Base::NETBANKING_SARASWAT    => ["/(?i)AUTO MAIL \|\| RAZORPAY Report/"],
+        RequestProcessor\Base::NETBANKING_UCO     => ["/(?i)Online Razorpay Report Data for the transaction date/"],
         RequestProcessor\Base::EMERCHANTPAY       => ["/Settlement Razorpay Software Private Ltd (Trustly|Poli|Sofort|Giropay) (EUR|GBP|AUD) [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
-        RequestProcessor\Base::WALLET_BAJAJ       => ["/(?i)^RZP MID BFL0000001675590 Settlement Data(.+)?/"]
+        RequestProcessor\Base::WALLET_BAJAJ       => ["/(?i)^RZP MID BFL0000001675590 Settlement Data(.+)?/"],
+        RequestProcessor\Base::NETBANKING_EQUITAS => ["/^(?i)Razorpay Transaction file/"]
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -203,6 +204,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_BDBL          => 1,
         RequestProcessor\Base::NETBANKING_SARASWAT      => 1,
         RequestProcessor\Base::NETBANKING_UCO           => 1,
+        RequestProcessor\Base::NETBANKING_EQUITAS       => 1
     ];
 
     const AUTOMATIC_FETCHING_ENABLED_GATEWAYS = [
@@ -223,7 +225,11 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_CBI,
         RequestProcessor\Base::NETBANKING_JSB,
         RequestProcessor\Base::NETBANKING_FSB,
-        RequestProcessor\Base::NETBANKING_PNB
+        RequestProcessor\Base::NETBANKING_PNB,
+        RequestProcessor\Base::NETBANKING_EQUITAS,
+        RequestProcessor\Base::NETBANKING_CSB,
+        RequestProcessor\Base::NETBANKING_SARASWAT,
+        RequestProcessor\Base::AIRTEL
     ];
 
     const WHITELISTED_EMAIL_FOR_ART = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com", "reconciliate@mg.razorpay.com"];
@@ -412,15 +418,11 @@ class Validator extends Base\Core
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
             RequestProcessor\Base::AIRTEL);
 
-        $validBody = $this->validateEmailBody(
-            $emailDetails[RequestProcessor\Mailgun::BODY],
-            RequestProcessor\Base::AIRTEL);
-
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
             RequestProcessor\Base::AIRTEL);
 
-        return ($validSubject and $validAttachmentCount and $validBody);
+        return ($validSubject and $validAttachmentCount);
     }
 
     public function validateFreechargeEmail(array $emailDetails)
@@ -549,15 +551,11 @@ class Validator extends Base\Core
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
             RequestProcessor\Base::NETBANKING_JSB);
 
-        $validBody = $this->validateEmailBody(
-            $emailDetails[RequestProcessor\Mailgun::BODY],
-            RequestProcessor\Base::NETBANKING_JSB);
-
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
             RequestProcessor\Base::NETBANKING_JSB);
 
-        return ($validSubject and $validAttachmentCount and $validBody);
+        return ($validSubject and $validAttachmentCount);
     }
 
     public function validateNetbankingScbEmail(array $emailDetails)
@@ -605,11 +603,7 @@ class Validator extends Base\Core
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
             RequestProcessor\Base::NETBANKING_CSB);
 
-        $validBody = $this->validateEmailBody(
-            $emailDetails[RequestProcessor\Mailgun::BODY],
-            RequestProcessor\Base::NETBANKING_CSB);
-
-        return ($validSubject and $validBody);
+        return $validSubject;
     }
 
     public function validateNetbankingIciciEmail(array $emailDetails): bool
