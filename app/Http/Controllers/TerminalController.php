@@ -366,6 +366,8 @@ class TerminalController extends Controller
 
         $path = str_replace("v1/terminals/proxy","v2", $path);
 
+        $path = str_replace("v1/v3/terminals/proxy","v3", $path);
+
         $this->validateUniversalAdminCall($path);
 
         if($path === 'v2/collect_info/merchant/details'){
