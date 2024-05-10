@@ -2127,6 +2127,9 @@ class Constants
 
     const SHOW_INTL_RISK_ANALYTICS_DASHBOARD = 'show_intl_risk_dashboard';
 
+    /*feature flag forthe HDFC OTC new flow*/
+    const OTC_MERCHANT_CHALLAN = 'otc_merchant_challan';
+
    /**
     * Feature flag to enable show the collective settlement amount(DS and Non-DS) on the merchant dashboard.
     */
@@ -2963,6 +2966,7 @@ class Constants
         self::CREDIT_RISK_BAND_ENABLED               => true,
         self::RewardPoints                           => true,
         self::SHOW_INTL_RISK_ANALYTICS_DASHBOARD          => true,
+        self::OTC_MERCHANT_CHALLAN                   => true,
         self::EXTERNAL_PA_VAS                        =>  true,
         self::AMAZON_GC_VALIDATIONS                  => true,
         self::CUSTOM_ONBOARDING_EMAILS               => true,
