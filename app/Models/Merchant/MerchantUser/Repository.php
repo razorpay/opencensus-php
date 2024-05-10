@@ -488,4 +488,14 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function createMerchantUserMappingforUser(string $userId, string $merchantId, string $role, string $product)
+    {
+        return $this->create([
+            Entity::USER_ID => $userId,
+            Entity::MERCHANT_ID => $merchantId,
+            Entity::ROLE => $role,
+            Entity::PRODUCT => $product
+        ]);
+    }
+
 }

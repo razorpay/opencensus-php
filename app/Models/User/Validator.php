@@ -42,7 +42,8 @@ class Validator extends Base\Validator
     const MAX_ALLOWED_CAPTCHA_REQUEST_ATTEMPTS   =  3;
     const UPDATE_UNVERIFIED_MOBILE_NUMBER_OTP    = 'updateUnverifiedMobileNumberOtp';
     const EDIT_USER_INTERNAL                     = 'editUserInternal';
-
+    const GET_MULTIPLE_USERS                     = 'getMultipleUsers';
+    const CREATE_VENDOR_ENTITIES                 = 'createVendorEntities';
     const CREATE_COMMON_RULES = [
         Entity::ID                              => 'sometimes|max:14',
         Entity::NAME                            => 'sometimes|string|max:200|utf8',
@@ -522,6 +523,19 @@ class Validator extends Base\Validator
 
     protected static $updateUserNameRules = [
         'name' => 'required|string|min:4|max:200|utf8',
+    ];
+
+    protected static $createVendorEntitiesRules = [
+        'name'      => 'sometimes|nullable|string|min:4|max:200|utf8',
+        'email'     => 'required|string',
+        'phone'     => 'sometimes',
+    ];
+
+    protected static $getMultipleUsersRules = [
+        'user_ids' => 'sometimes|array|max:100',
+        'user_ids.*' => 'required|alpha_num|size:14',
+        'user_emails' => 'sometimes|array|max:20',
+        'user_emails.*' => 'required|email',
     ];
 
     protected static $teamManagementValidators = [

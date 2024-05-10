@@ -147,6 +147,8 @@ class Service extends Base\Service
 
         $signupSource = $input[DeviceDetail\Entity::SIGNUP_SOURCE] ?? null;
 
+        $source = array_pull($input, 'source') ?? null;
+
         unset($input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
 
         $heimdallTokenData = $this->handleHeimdallInvitation($input);
@@ -222,7 +224,7 @@ class Service extends Base\Service
          */
         if (empty($invitationToken) === false)
         {
-            $this->acceptInvite($user, $invitation);
+            $this->acceptInvite($user, $invitation, $source);
             $data = ['login'=>true];
         }
         else
@@ -532,7 +534,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function acceptInvite($user, array $invitation = null)
+    protected function acceptInvite($user, array $invitation = null, string $source = null)
     {
         $invitationAcceptInput = [
             Invitation\Entity::USER_ID => $user[Entity::ID],
@@ -540,7 +542,14 @@ class Service extends Base\Service
             Invitation\Entity::EMAIL   => $user[Entity::EMAIL],
         ];
 
-        (new Invitation\Service)->action($invitation[Invitation\Entity::ID], $invitationAcceptInput);
+        if ($source === Invitation\Constants::ACCEPT_INVITE_SROUCE_VENDOR_PORTAL_V2)
+        {
+            (new Invitation\Service)->handleVendorPortalV2Invitation($invitation[Invitation\Entity::ID], $invitationAcceptInput);
+        }
+        else
+        {
+            (new Invitation\Service)->action($invitation[Invitation\Entity::ID], $invitationAcceptInput);
+        }
 
         $this->confirm($user[Entity::ID]);
 
@@ -3757,5 +3766,108 @@ class Service extends Base\Service
 
         $res =  $this->app['dcs_config_service'] -> fetchConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, [DcsConstants::DisableCaptcha], $this->mode);
         return $res;
+    }
+
+    public function createVendorEntities(array $input)
+    {
+        $this->validator->validateInput(Validator::CREATE_VENDOR_ENTITIES, $input);
+
+        $user = null;
+        $vendorName = $input['name'];
+
+        $user = $this->repo->user->findByEmail($input['email']);
+
+        // check if dependent entities are already present
+        $bankingOwnerId = $this->repo->merchant_user->fetchMerchantIdForUserIdRoleAndProduct($user->getId(), Role::OWNER, Product::BANKING);
+
+        if (empty($bankingOwnerId) === false) // If the user is already a banking owner we will return that MID
+        {
+            $this->trace->info(TraceCode::USER_ALREADY_BANKING_OWNER,
+                [
+                    'user_id' => $user->getId(),
+                    'merchant_id' => $bankingOwnerId[0]
+                ]);
+            return [
+                'merchant_id' => $bankingOwnerId[0],
+            ];
+        }
+
+        $createMerchantUserMappingResponse = $this->checkAndCreateMerchantUserMappingForPrimaryOwner($user->getId());
+
+        if(empty($createMerchantUserMappingResponse) === false) // If the user is a primary owner but not banking owner,
+                                                    //  we will create merchant_user mapping for banking product and return that MID
+        {
+            return $createMerchantUserMappingResponse;
+        }
+
+        // If there are no MIDs associated with the user, we will create a new MID for the user with product banking.
+        $this->trace->info(TraceCode::CREATE_NEW_MERCHANT_AND_CORRESPONDING_ENTITIES_FOR_USER,
+            [
+                'user_id' => $user->getId(),
+                'name' => $input['name']
+            ]);
+
+        $this->auth->setRequestOriginProduct(ProductType::BANKING);
+
+        $input = [
+            DeviceDetail\Entity::SIGNUP_SOURCE => Product::BANKING,
+        ];
+
+        $data = $this->createMerchant($user->toArray(), '', $vendorName, 'IN', false, $input, [], false);
+
+        return [
+            'merchant_id' => $data['id'],
+        ];
+    }
+
+    public function checkAndCreateMerchantUserMappingForPrimaryOwner(string $userId)
+    {
+        $primaryOwnerId = $this->repo->merchant_user->fetchMerchantIdForUserIdRoleAndProduct($userId, Role::OWNER, Product::PRIMARY);
+
+        if (empty($primaryOwnerId) === false)   // If the user is a primary owner but not banking owner,
+                                                //  we will create merchant_user mapping for banking product and return that MID
+        {
+            $this->trace->info(TraceCode::CREATE_BANKING_MERCHANT_USER_MAPPING_FOR_PRIMARY_OWNER,
+                [
+                    'user_id' => $userId,
+                    'merchant_id' => $primaryOwnerId[0]
+                ]);
+
+            $this->repo->merchant_user->createMerchantUserMappingforUser($userId, $primaryOwnerId[0], Role::OWNER, Product::BANKING);
+
+            return [
+                'merchant_id' => $primaryOwnerId[0],
+            ];
+        }
+
+        // if the user is not a primary owner, we will return an empty array
+        return [];
+    }
+
+    public function getMultipleUsers(array $input)
+    {
+        $this->validator->validateInput(Validator::GET_MULTIPLE_USERS, $input);
+
+        $userMapping = [];
+
+        if (isset($input['user_ids']) === true and empty($input['user_ids']) === false)
+        {
+            $users = $this->repo->user->getMultipleUsersByIDs($input['user_ids']);
+
+            foreach ($users as $user) {
+                $userMapping[$user['id']] = $user;
+            }
+        }
+
+        if (isset($input['user_emails']) === true and empty($input['user_emails']) === false)
+        {
+            $users = $this->repo->user->getMultipleUsersByEmails($input['user_emails']);
+
+            foreach ($users as $user) {
+                $userMapping[$user['email']] = $user;
+            }
+        }
+
+        return $userMapping;
     }
 }

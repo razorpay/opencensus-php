@@ -622,6 +622,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerXperience();
 
+        $this->registerVendorExperience();
+
         $this->registerReminders();
 
         $this->registerNonBlockingHttp();
@@ -1023,6 +1025,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->bind('xperience', function($app)
         {
             return new Xperience($app);
+        });
+    }
+
+    protected function registerVendorExperience()
+    {
+        $this->app->bind('vendor_experience', function($app)
+        {
+            return new VendorExperience($app);
         });
     }
 

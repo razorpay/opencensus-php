@@ -14,10 +14,12 @@ use RZP\Models\Admin\Role;
 
 class Validator extends Base\Validator
 {
-    const CREATE_BANK_LMS_USER          = 'createBankLmsUser';
-    const CREATE_XPERIENCE_INVITATION   = 'createXperienceInvitation';
-    const CREATE_INVITATION_VERIFY_OTP  = 'createInvitationVerifyOtp';
-    const RESEND_XPERIENCE_USER_INVITE  = 'resendXperienceUserInvite';
+    const CREATE_BANK_LMS_USER                  = 'createBankLmsUser';
+    const CREATE_XPERIENCE_INVITATION           = 'createXperienceInvitation';
+    const CREATE_INVITATION_VERIFY_OTP          = 'createInvitationVerifyOtp';
+    const RESEND_XPERIENCE_USER_INVITE          = 'resendXperienceUserInvite';
+    const CREATE_INVITATION_VENDOR_PORTAL_V2    = 'createInvitationVendorPortalV2';
+    const HANDLE_INVITATION_VENDOR_PORTAL_V2    = 'handleInvitationVendorPortalV2';
 
     protected static $createRules = [
         Entity::ROLE               => 'required|string|custom',
@@ -43,6 +45,15 @@ class Validator extends Base\Validator
         'otp'    => 'required|filled|min:4',
         'token'  => 'required|unsigned_id',
         'action' => 'required|string',
+    ];
+
+    protected static $createInvitationVendorPortalV2Rules = [
+        Entity::EMAIL              => 'required|max:255|email',
+    ];
+
+    protected static $handleInvitationVendorPortalV2Rules = [
+        Entity::USER_ID     => 'required|string|max:14',
+        Entity::ACTION      => 'required|string|in:accept,reject',
     ];
 
     protected static $editRules = [

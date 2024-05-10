@@ -1753,6 +1753,9 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_MERCHANT_STATUS_NC                                    = 'Processing failed because merchant is not in Needs Clarification';
     const INVALID_STATUS_CHANGE_NC                                                  = 'Processing failed because no clarifications asked';
 
+    // Vendor Experience
+    const BAD_REQUEST_INVITATION_ACCEPT_INVALID_INVITATION                          = 'Invalid invitation for Vendor Portal';
+
     // 1cc Gift Card Error Description
     const SAME_GIFT_CARD_APPLIED                                                    = 'Same gift card cannot be applied again';
     const GIFT_CARD_INVALID                                                         = 'Gift Card is either expired or invalid';

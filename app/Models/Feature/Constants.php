@@ -2143,6 +2143,11 @@ class Constants
 
     const IN_PERSON_CARDS_ENABLE_TERMINAL_ROUTING = 'ipc_en_terminal_routing';
 
+    /**
+     * Feature flag to enable the merchant to use the new RazorpayX vendor-experience Service.
+     */
+    const VENDOR_ONBOARDING_ENABLED = 'vendor_onboarding_enabled';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2967,6 +2972,7 @@ class Constants
         self::IN_PERSON_CARDS_ENABLE_DYNAMIC_DEVICE_MAPPING => true,
         self::IN_PERSON_CARDS_ENABLE_LABEL_MAPPING   => true,
         self::IN_PERSON_CARDS_ENABLE_TERMINAL_ROUTING   => true,
+        self::VENDOR_ONBOARDING_ENABLED              => true,
     ];
 
     // Entity type constants
@@ -4266,6 +4272,11 @@ class Constants
              'feature'       => self::IN_PERSON_CARDS_ENABLE_TERMINAL_ROUTING,
              'display_name'  => 'Enable Rule Based Routing In Person Cards Payments Terminal Selection',
              'documentation' => 'Enable terminal selection using rules on router for multi acquirer merchants using in person cards payments',
+        ],
+        self::VENDOR_ONBOARDING_ENABLED => [
+            'feature'       => self::VENDOR_ONBOARDING_ENABLED,
+            'display_name'  => 'Vendor Onboarding Enabled',
+            'documentation' => 'Vendor Onboarding Enabled Merchant',
         ],
     ];
 

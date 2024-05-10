@@ -7095,6 +7095,47 @@ return [
         ],
     ],
 
+    'testUserRegisterFromVendorPortalInvitationV2'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'vendorportal@razorpay.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'invitation'            => 'set_from_test',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'source'                => 'vendor_portal_v2'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'login' => true,
+            ],
+        ],
+    ],
+
+    'testUserRegisterFromVendorPortalInvitationV2_InvalidInvitation'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'vendorportal@razorpay.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'invitation'            => 'set_from_test',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'source'                => 'vendor_portal_v2'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'login' => true,
+            ],
+        ],
+    ],
+
+
     'testUserRegisterFoBankPocRole'  => [
         'request'  => [
             'url'     => '/users/register',
@@ -7569,5 +7610,71 @@ return [
         'response'  => [
             'content'   => []
         ]
+    ],
+
+    'testCreateVendorEntitiesForPrimaryOwnerUser' => [
+        'request' => [
+            'url'       => '/vendor-experience/vendor/create-entities',
+            'method'    => 'POST',
+            'content'   => [
+                'name' => 'Test Vendor',
+            ]
+        ],
+        'response'  => [
+            'content'   => []
+        ]
+    ],
+
+    'testCreateVendorEntitiesForBankingOwnerUser' => [
+        'request' => [
+            'url'       => '/vendor-experience/vendor/create-entities',
+            'method'    => 'POST',
+            'content'   => [
+                'name' => 'Test Vendor',
+            ]
+        ],
+        'response'  => [
+            'content'   => []
+        ]
+    ],
+
+    'testCreateVendorEntitiesForUserNotExist' => [
+        'request' => [
+            'url'       => '/vendor-experience/vendor/create-entities',
+            'method'    => 'POST',
+            'content'   => [
+                'email' => 'temp-user@rzp.com',
+                'name'  => 'Test Vendor',
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ]
+    ],
+
+    'testFetchMultipleUsersByIDsAndEmails' => [
+        'request' => [
+            'url'       => '/users_internal',
+            'method'    => 'POST',
+            'content'   => [
+                'user_ids' => [
+                    '10000000000000',
+                    '10000000000001'
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'   => []
+        ],
     ],
 ];

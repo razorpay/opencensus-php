@@ -1083,6 +1083,12 @@ return [
         'timeout'                => env('XPERIENCE_URL_TIMEOUT_SECS', 25)
     ],
 
+    'vendor_experience' => [
+        'url'               => env('APP_VENDOR_EXPERIENCE_URL'),
+        'secret'            => env('APP_VENDOR_EXPERIENCE_SECRET'),
+        'timeout'           => env('VENDOR_EXPERIENCE_URL_TIMEOUT_SECS', 25)
+    ],
+
     'vajra' => [
         'secret'   => env('APP_VAJRA_SECRET'),
     ],
@@ -1390,6 +1396,18 @@ return [
                 'url'           => env('APP_BANKING_ACCOUNT_SERVICE_URL_WITHOUT_VERSION'),
                 'username'      => env('BANKING_ACCOUNT_SERVICE_USERNAME'),
                 'password'      => env('BANKING_ACCOUNT_SERVICE_PASSWORD'),
+            ],
+        ],
+        'vendor_experience' => [
+            'live'=>[
+                'url'           => env('APP_VENDOR_EXPERIENCE_URL'),
+                'username'      => env('APP_VENDOR_EXPERIENCE_USERNAME'),
+                'password'      => env('APP_VENDOR_EXPERIENCE_PASSWORD'),
+            ],
+            'test'=>[
+                'url'           => env('APP_VENDOR_EXPERIENCE_URL'),
+                'username'      => env('APP_VENDOR_EXPERIENCE_USERNAME'),
+                'password'      => env('APP_VENDOR_EXPERIENCE_PASSWORD'),
             ],
         ],
     ],

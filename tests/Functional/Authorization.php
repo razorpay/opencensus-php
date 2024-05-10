@@ -504,6 +504,11 @@ class Authorization
         $this->appAuth($user, \Config::get('applications.xperience')['secret']);
     }
 
+    public function vendorExperienceServiceAppAuth($user = 'rzp_test')
+    {
+        $this->appAuth($user, \Config::get('applications.vendor_experience')['secret']);
+    }
+
     public function addProxyAuthHeaders($user)
     {
         if ($user === null)

@@ -199,4 +199,20 @@ class Repository extends Base\Repository
         return array_keys($userEmailIds);
     }
 
+    public function getMultipleUsersByIDs($userIds): array
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $userIds)
+                    ->get()
+                    ->toArray();
+    }
+
+    public function getMultipleUsersByEmails($userEmails): array
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::EMAIL, $userEmails)
+                    ->get()
+                    ->toArray();
+    }
+
 }

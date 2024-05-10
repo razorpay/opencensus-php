@@ -759,4 +759,22 @@ class UserController extends Controller
 
         return APIResponse::json($data);
     }
+
+    public function getMultipleUsers()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getMultipleUsers($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createVendorEntities()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createVendorEntities($input);
+
+        return ApiResponse::json($response);
+    }
 }

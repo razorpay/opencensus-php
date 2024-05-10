@@ -7018,4 +7018,10 @@ class Core extends Base\Core
 
         $this->repo->user->saveOrFail($user);
     }
+
+    public function createVendorEntities(Entity $user): array
+    {
+        // create merchant, merchant_user, merchant_attribute,
+        $merchantData = $this->merchantService->create($merchantInputData, $merchantDetailInputData);
+    }
 }

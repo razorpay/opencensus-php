@@ -1688,6 +1688,39 @@ class InvitationTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateVendorPortalInvitationV2_NewUser()
+    {
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $this->ba->vendorExperienceServiceAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('token', $response);
+        $this->assertEquals(40, strlen($response['token']));
+    }
+
+    public function testCreateVendorPortalInvitationV2_ExistingUser()
+    {
+        $this->fixtures->create('user',[ 'id' => 'ExistingUserId', 'email' => 'vendorportal@razorpay.com' ]);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $this->ba->vendorExperienceServiceAppAuth();
+
+        $response = $this->startTest();
+        $this->assertArrayHasKey('token', $response);
+        $this->assertEquals(40, strlen($response['token']));
+    }
+
+    public function testRecreateVendorPortalInvitationV2()
+    {
+        $this->testCreateVendorPortalInvitationV2_NewUser();
+
+        $this->startTest();
+    }
+
+
     public function testPostSendXAccountingIntegrationInvitationToNewUserInX()
     {
         Mail::fake();

@@ -960,6 +960,61 @@ return [
         ],
     ],
 
+    'testCreateVendorPortalInvitationV2_NewUser' => [
+        'request' => [
+            'url'    => '/vendor-experience/vendor-invitation',
+            'method' => 'POST',
+            'content' => [
+                'email' => 'vendorportal@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1DummyMerchant',
+                'email'       => 'vendorportal@razorpay.com',
+                'role'        => 'vendor',
+                'product'     => 'banking',
+            ]
+        ]
+    ],
+
+    'testCreateVendorPortalInvitationV2_ExistingUser' => [
+        'request' => [
+            'url'    => '/vendor-experience/vendor-invitation',
+            'method' => 'POST',
+            'content' => [
+                'email' => 'vendorportal@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1DummyMerchant',
+                'email'       => 'vendorportal@razorpay.com',
+                'role'        => 'vendor',
+                'product'     => 'banking',
+                'user_id'     => 'ExistingUserId',
+            ]
+        ]
+    ],
+
+    'testRecreateVendorPortalInvitationV2' => [
+        'request' => [
+            'url'    => '/vendor-experience/vendor-invitation',
+            'method' => 'POST',
+            'content' => [
+                'email' => 'vendorportal@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1DummyMerchant',
+                'email'       => 'vendorportal@razorpay.com',
+                'role'        => 'vendor',
+                'product'     => 'banking',
+            ]
+        ]
+    ],
+
     'testSendVendorPortalInvitationToNewUser' => [
         'request' => [
             'url'    => '/vendor_portal_invitation',

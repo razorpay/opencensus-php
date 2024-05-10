@@ -12215,6 +12215,105 @@ class UserTest extends TestCase
         $this->assertEquals('vendor', $merchants->role);
     }
 
+    public function testUserRegisterFromVendorPortalInvitationV2()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $invitation = $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['invitation'] = $invitation['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        // Validate that invitation is accepted and deleted
+        $invite = \DB::table('invitations')
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
+        $this->assertNull($invite);
+
+        // User is created for given email
+        $user = \DB::table('users')
+            ->where('email', '=', 'vendorportal@razorpay.com')
+            ->first();
+        $this->assertNotNull($user);
+
+        // A Merchant is created
+        $merchant = DB::table('merchants')
+            ->where('email', 'vendorportal@razorpay.com')
+            ->first();
+        $this->assertNotNull($merchant);
+
+        // User is attached to a new merchant on given role
+        $merchantUsers = DB::table('merchant_users')
+            ->where('user_id', '=', $user->id)
+            ->where('merchant_id', $merchant->id)
+            ->first();
+        $this->assertNotNull($merchantUsers);
+
+        // User is not attached to given merchant on given role
+        $merchantUsers = DB::table('merchant_users')
+            ->where('user_id', '=', $user->id)
+            ->where('merchant_id', '1DummyMerchant')
+            ->first();
+        $this->assertNull($merchantUsers);
+    }
+
+
+    public function testUserRegisterFromVendorPortalInvitationV2_InvalidInvitation()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+        $this->fixtures->create('merchant',[ 'id' => '2DummyMerchant' ]);
+
+        $invitation = $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'merchant_id' => '2DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['invitation'] = $invitation['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $response = $this->startTest();
+        print_r($response);
+
+        // Validate that invitation is still present
+        $invite = \DB::table('invitations')
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
+
+        $this->assertNotNull($invite);
+
+        // User is still created for given email
+        $user = \DB::table('users')
+            ->where('email', '=', 'vendorportal@razorpay.com')
+            ->first();
+
+        $this->assertNotNull($user);
+    }
+
     public function testUserRegisterFoBankPocRole()
     {
         Mail::fake();
@@ -13970,5 +14069,153 @@ class UserTest extends TestCase
         $merchantUser = $merchantRepo->getMerchantUserMapping($merchant->getId(), $user->getId(), null, Product::BANKING);
 
         $this->assertNull($merchantUser);
+    }
+
+    public function testCreateVendorEntitiesForPrimaryOwnerUser()
+    {
+        $merchantRepo = (new \RZP\Models\Merchant\Repository());
+
+        $this->ba->vendorExperienceServiceAppAuth();
+
+        $user = $this->fixtures->create('user', [
+            Entity::NAME => 'testUser',
+        ]);
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $primaryMerchantUser = $merchantRepo->getMerchantUserMapping($merchant->getId(), $user->getId(), Role::OWNER, Product::PRIMARY);
+        $this->assertNotNull($primaryMerchantUser);
+
+        $bankingMerchantUser = $merchantRepo->getMerchantUserMapping($merchant->getId(), $user->getId(), Role::OWNER, Product::BANKING);
+        $this->assertNull($bankingMerchantUser);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['email'] = $user->getEmail();
+        $testData['request']['content']['name'] = $user->getName();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($merchant->getId(), $response['merchant_id']);
+        $bankingMerchantUser = $merchantRepo->getMerchantUserMapping($merchant->getId(), $user->getId(), Role::OWNER, Product::BANKING);
+        $this->assertNotNull($bankingMerchantUser);
+    }
+
+    public function testCreateVendorEntitiesForBankingOwnerUser()
+    {
+        $merchantRepo = (new \RZP\Models\Merchant\Repository());
+
+        $this->ba->vendorExperienceServiceAppAuth();
+
+        $user = $this->fixtures->create('user', [
+            Entity::NAME => 'testUser',
+        ]);
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $primaryMerchantUser = $merchantRepo->getMerchantUserMapping($merchant->getId(), $user->getId(), Role::OWNER, Product::PRIMARY);
+        $this->assertNotNull($primaryMerchantUser);
+
+        $bankingMerchantUser = $merchantRepo->getMerchantUserMapping($merchant->getId(), $user->getId(), Role::OWNER, Product::BANKING);
+        $this->assertNull($bankingMerchantUser);
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchant->getId(),
+            'user_id'       => $user->getId(),
+            'role'          => Role::OWNER,
+            'product'       => Product::BANKING,
+        ]);
+
+        $bankingMerchantUser = $merchantRepo->getMerchantUserMapping($merchant->getId(), $user->getId(), Role::OWNER, Product::BANKING);
+        $this->assertNotNull($bankingMerchantUser);
+
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['email'] = $user->getEmail();
+        $testData['request']['content']['name'] = $user->getName();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($merchant->getId(), $response['merchant_id']);
+    }
+
+    public function testCreateVendorEntitiesForUserNotExist()
+    {
+        $this->ba->vendorExperienceServiceAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchMultipleUsersByIDsAndEmails()
+    {
+        $this->ba->vendorExperienceServiceAppAuth();
+
+        $user1 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUser1',
+            Entity::EMAIL => 'abc-1@example.com',
+        ]);
+
+        $user2 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUser2',
+            Entity::EMAIL => 'abc-2@example.com',
+        ]);
+
+        $user3 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUser2',
+            Entity::EMAIL => 'abc-3@example.com',
+        ]);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['user_ids'][0] = $user1->getId();
+        $testData['request']['content']['user_ids'][1] = $user2->getId();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response[$user1->getId()]);
+        $this->assertNotEmpty($response[$user2->getId()]);
+        $this->assertEquals($response[$user1->getId()]['name'], $user1['name']);
+        $this->assertEquals($response[$user2->getId()]['name'], $user2['name']);
+
+        $requestWithEmails = [
+            'user_ids' => [
+                $user1->getId(),
+                $user2->getId(),
+            ],
+            'user_emails' => [
+                $user2->getEmail(),
+                $user3->getEmail(),
+            ]
+        ];
+
+        $request = [
+            'url'       => '/users_internal',
+            'method'    => 'POST',
+            'content'   => $requestWithEmails
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($user1->getName(), $response[$user1->getId()]['name']);
+        $this->assertEquals($user2->getName(), $response[$user2->getId()]['name']);
+
+        $this->assertEquals($user2->getName(), $response[$user2->getEmail()]['name']);
+        $this->assertEquals($user3->getName(), $response[$user3->getEmail()]['name']);
+
+        $requestWithOnlyEmails = [
+            'user_emails' => [
+                $user2->getEmail(),
+                $user3->getEmail(),
+            ]
+        ];
+
+        $request = [
+            'url'       => '/users_internal',
+            'method'    => 'POST',
+            'content'   => $requestWithOnlyEmails
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($user2->getName(), $response[$user2->getEmail()]['name']);
+        $this->assertEquals($user3->getName(), $response[$user3->getEmail()]['name']);
     }
 }

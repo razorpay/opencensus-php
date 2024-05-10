@@ -226,6 +226,51 @@ class Core extends Base\Core
         return $invitation;
     }
 
+    public function createVendorPortalInvitationV2(array $input): array
+    {
+        $input[Entity::TOKEN] = str_random(40);
+
+        $invitation = (new Entity);
+
+        // Keeping vendor portal merchant as the merchant for the invitation since it is a vendor portal invite
+        // and merchant id can't be empty
+        // While accepting the invite, we will not associate the user with this merchant
+        $vendorPortalMerchantId = $this->app['config']['applications.vendor_payments']['vendor_portal_merchant_id'];
+
+        $vendorPortalMerchant = $this->getDbMerchantById($vendorPortalMerchantId);
+
+        $invitation->merchant()->associate($vendorPortalMerchant);
+
+        $invitation->build($input);
+
+        $invitedUser = $this->repo->user->getUserFromEmail(strtolower($input[Entity::EMAIL]));
+
+        if (empty($invitedUser) === false)
+        {
+            // Associate user only if it exists
+            $invitation->user()->associate($invitedUser);
+        }
+
+        $this->repo->saveOrFail($invitation);
+
+        $invitationData = $invitation->toArrayPublic();
+        $invitationData[Entity::TOKEN] = $invitation->getToken();
+
+        return $invitationData;
+    }
+
+    public function handleVendorPortalInvitationV2(Entity $invitation, array $input): Entity
+    {
+        // $invitation->edit([
+        //     Entity::USER_ID => $input[Entity::USER_ID],
+        // ]);
+
+        // Delete the invitation after validating
+        $invitation->deleteOrFail();
+
+        return $invitation;
+    }
+
     public function resendVendorPortalInvitation(MerchantEntity $merchant, string $contactId): Entity
     {
         $params['contact_id'] = $contactId;

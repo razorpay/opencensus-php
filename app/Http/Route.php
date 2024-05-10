@@ -2008,6 +2008,9 @@ class Route
 
         'pending_entities_approval_email_cron'      => ['post',     'xperience/pending-approval-email',         'XperienceController@pendingEntitiesApprovalEmailCron'],
 
+        // Vendor Experience service routes
+        'create_new_vendor_entities'                => ['post',     'vendor-experience/vendor/create-entities', 'UserController@createVendorEntities'     ],
+        'invite_to_vendor_portal_v2'                => ['post',     'vendor-experience/vendor-invitation',      'InvitationController@createVendorPortalInvitationV2' ],
 
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
@@ -2613,6 +2616,7 @@ class Route
         // Fetch user via OAuth (Private Auth)
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         'user_fetch_internal'                      => ['get',      'users_internal/{id}',                            'UserController@getUser'                                            ],
+        'multiple_users_fetch_internal'            => ['post',     'users_internal',                                 'UserController@getMultipleUsers'                                   ],
         'user_fetch_entity'                        => ['get',      'users_entity/{id}',                              'UserController@getUserEntity'                                      ],
         'user_access'                              => ['get',      'users/access',                                   'UserController@checkUserAccess'                                    ],
         'switch_merchant_token'                    => ['post',     'users/switch_merchant_token',                    'UserController@switchMerchantWithToken'                            ],
@@ -6635,6 +6639,10 @@ class Route
         'fund_account_validate_pennydrop_internal',
         'fetch_fav_pricing_info_internal',
         'merchant_payment_invoice_upload',
+
+        'create_new_vendor_entities',
+        'multiple_users_fetch_internal',
+        'invite_to_vendor_portal_v2',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -11904,6 +11912,17 @@ class Route
             'xperience_invite_resend',
             'xperience_invite_delete',
             'settings_fetch_by_key_internal',
+        ],
+
+        'vendor_experience' => [
+            'internal_merchant_fetch',
+            'create_new_vendor_entities',
+            'multiple_users_fetch_internal',
+            'invite_to_vendor_portal_v2',
+            'merchant_fetch_internal_users',
+            'merchant_search_users_internal',
+            'contact_create_internal',
+            'fund_account_create_internal',
         ],
 
         'master_onboarding' => [

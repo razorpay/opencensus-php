@@ -45,6 +45,8 @@ class Constants
         "rzp/platform/org/reporting/CustomReports" => "reporting",
         "rzp/pg/merchant/router/CostBasedRouting"  => "smart_routing",
         "rzp/x/merchant/workflows/Workflows" => "workflows",
-        "rzp/x/merchant/onboarding/rbl/RblAccess" => "banking-accounts"
+        "rzp/x/merchant/onboarding/rbl/RblAccess" => "banking-accounts",
+        "rzp/x/merchant/onboarding/rbl/RblAccount" => "banking-accounts",
+        "rzp/x/merchant/vendor_experience/VendorExperience" => "vendor_experience",
     ];
 }
