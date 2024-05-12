@@ -115,7 +115,7 @@ trait ReverseShadowTrait
         return sprintf("%s-%s", $transactorId, $transactorEvent);
     }
 
-    public function getMerchantAccountBalances($ledgerService, $merchantId): array
+    protected function getMerchantAccountBalances($ledgerService, $merchantId): array
     {
         $accountPayload = $this->getAccountBalancePayload($merchantId);
 
