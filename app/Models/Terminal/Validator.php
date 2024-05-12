@@ -951,7 +951,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::MODE                       => 'sometimes|in:2',
-        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
+        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated,pending',
         Entity::UPI                        => 'sometimes|boolean|in:0,1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::VPA                        => 'sometimes|string',

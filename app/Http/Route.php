@@ -17297,6 +17297,7 @@ class Route
             'collect_info_merchant_details_internal',
             'methods_update_merchants_internal',
             'role_list_admins_internal',
+            'payment_fetch_multiple_internal',
         ],
 
         'pos_app' => [
