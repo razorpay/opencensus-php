@@ -187,7 +187,6 @@ class Notify
                     $mailable->setInvoiceDetails($invoiceData);
                 }
             }
-
             if ($this->isMerchantMailEnabled($mailable) === true)
             {
                 Mail::queue($mailable);
@@ -684,6 +683,7 @@ class Notify
             $data['payment']['gateway_currency'] = $gatewayCurrency;
             $data['payment']['currency_conversion_fee_without_symbol'] = $this->payment->getFormattedAmountWithoutSymbol($gatewayCurrency, $fee);
             $data['payment']['gateway_amount_without_symbol'] = $this->payment->getFormattedAmountWithoutSymbol($gatewayCurrency, $gatewayAmount);
+            $data['payment']['reduced_markup_percent'] = ceil($paymentMeta->getDccMarkUpPercent() - ($paymentMeta->getDccMarkUpPercent() * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT/100)));
         }
 
         if (($this->payment->isFailed() === false) and $this->fetchReward === true)

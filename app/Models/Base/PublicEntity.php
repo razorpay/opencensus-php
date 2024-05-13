@@ -470,7 +470,7 @@ class PublicEntity extends UniqueIdEntity
         foreach ($this->publicSetters as $attr)
         {
             $func = 'setPublic' . studly_case($attr) . 'Attribute';
-            
+
             $this->$func($array);
         }
     }
@@ -983,11 +983,14 @@ class PublicEntity extends UniqueIdEntity
         $currencySymbol = Currency\Currency::SYMBOL[$currency];
 
         $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
-
-        $amount = $this->getAmount() / $denominationFactor;
-
-        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
-
+        $amount = $this->getAmount();
+        if ((Currency\Currency::shouldRoundUpCurrencies($currency) === true))
+        {
+            $amount = (int) ceil($amount * 0.1)/0.1;
+        }
+        $amount = $amount / $denominationFactor;
+        $formatString = '%.' . Currency\Currency::getExponent($currency) . 'f';
+        $amount = sprintf($amount == intval($amount) ? '%d' : $formatString, $amount);
         return $currencySymbol . ' ' . $amount;
     }
 
@@ -1003,10 +1006,13 @@ class PublicEntity extends UniqueIdEntity
         {
             $amount = $this->getAmount();
         }
-
+        if ((Currency\Currency::shouldRoundUpCurrencies($currency) === true))
+        {
+            $amount = (int) ceil($amount * 0.1)/0.1;
+        }
         $amount = $amount / $denominationFactor;
-
-        return sprintf($amount === intval($amount) ? '%d' : '%.2f', $amount);
+        $formatString = '%.' . Currency\Currency::getExponent($currency) . 'f';
+        return sprintf($amount == intval($amount) ? '%d' : $formatString, $amount);
     }
 
     /**
@@ -1031,7 +1037,7 @@ class PublicEntity extends UniqueIdEntity
 
         $superUnitInAmount = money_format_IN((integer)($amount / $denominationFactor));
 
-        $subUnitInAmount = str_pad($amount % $denominationFactor, 2, 0, STR_PAD_LEFT);
+        $subUnitInAmount = str_pad($amount % $denominationFactor, Currency\Currency::getExponent($currency) , 0, STR_PAD_LEFT);
 
         return [$currencySymbol, $superUnitInAmount, $subUnitInAmount];
     }

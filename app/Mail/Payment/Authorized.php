@@ -109,6 +109,7 @@ class Authorized extends Base
                     'payment_amount_without_symbol' => $data['payment']['amount_without_symbol'],
                     'gateway_amount_without_symbol' => $data['payment']['gateway_amount_without_symbol'],
                     'currency_conversion_fee_without_symbol' => $data['payment']['currency_conversion_fee_without_symbol'],
+                    'reduced_markup_percent'        => $data['payment']['reduced_markup_percent'],
                 ],
 
                 'customer'  => [
