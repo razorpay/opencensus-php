@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Heading,
@@ -34,8 +34,10 @@ export const PaymentTesting = ({
   setPaymentError,
   gateway,
   businessName,
+  changeIntegrationTestingStep,
+  isPaymentDetailsFetched,
+  setIsPaymentDetailsFetched,
 }) => {
-  const [isPaymentDetailsFetched, setIsPaymentDetailsFetched] = useState(false);
   useEffect(() => {
     loadCheckoutScript();
     merchantFetch({
@@ -58,7 +60,14 @@ export const PaymentTesting = ({
           setIsPaymentSuccessfull(res.data?.status === 'captured');
           setIsWebhookFailure(res.data?.late_authorized);
           setPaymentError(res.data?.error_description);
+          const success = res.data?.status === 'captured' && !res.data?.late_authorized;
+          changeIntegrationTestingStep({
+            name: 'payment_testing',
+            successValue: success,
+            failedValue: !success,
+          });
         } else {
+          changeIntegrationTestingStep({ name: 'payment_testing', failedValue: true });
           setIsPaymentSuccessfull(false);
           setPaymentError(res?.errors?.[0]);
         }
@@ -99,7 +108,7 @@ export const PaymentTesting = ({
           <PaymentFailureAlert paymentError={paymentError} />
         </>
       ) : isPaymentDone && !isPaymentDetailsFetched ? (
-        <Box display="flex" alignItems="center" marginTop="spacing.10">
+        <Box display="flex" alignItems="center" marginTop="spacing.10" marginLeft="spacing.10">
           <Spinner />
         </Box>
       ) : (

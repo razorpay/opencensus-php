@@ -32,6 +32,9 @@ describe('Optimizer IntegrationTesting PaymentTesting', () => {
     setPaymentError: jest.fn(),
     gateway: 'payu',
     businessName: 'Razorpay',
+    changeIntegrationTestingStep: jest.fn(),
+    isPaymentDetailsFetched: false,
+    setIsPaymentDetailsFetched: jest.fn(),
   };
 
   const App = (props) => {
@@ -75,6 +78,7 @@ describe('Optimizer IntegrationTesting PaymentTesting', () => {
       ...mockProps,
       isPaymentDone: true,
       isPaymentSuccessfull: false,
+      isPaymentDetailsFetched: true,
     };
     await act(() => render(<App {...props} />));
     expect(screen.getByText('Payment of ₹1 via UPI intent has')).toBeInTheDocument();
