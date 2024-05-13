@@ -317,4 +317,20 @@ class EntityOriginTest extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testFetchEntityOriginWithEmtpy()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndGetPayment($payment);
+        $this->ba->partnershipServiceAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $testData['request']['content']['entity_id']  = $payment->getId();
+
+        $this->startTest($testData);
+    }
 }

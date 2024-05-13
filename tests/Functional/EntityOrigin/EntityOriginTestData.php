@@ -148,6 +148,20 @@ return [
         ],
     ],
 
+    'testFetchEntityOriginWithEmtpy' => [
+        'request'  => [
+            'url'     => '/internal/entity_origins',
+            'method'  => 'GET',
+            'content' => [
+                'entity_type' => 'payment',
+                'entity_id'   => 'randPaymentId1'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testCreateOriginInvalidIdByInternalApp' => [
         'request'  => [
             'url'     => '/entity_origins',

@@ -18,6 +18,6 @@ class Service extends Base\Service
         (new Validator())->validateInput('fetch', $input);
         $entityOrigin = (new Core)->fetchEntityOriginByEntityIdAndType($input[Entity::ENTITY_TYPE], $input[Entity::ENTITY_ID]);
 
-        return $entityOrigin->attributesToArray();
+        return empty($entityOrigin) === false ? $entityOrigin->attributesToArray(): [];
     }
 }
