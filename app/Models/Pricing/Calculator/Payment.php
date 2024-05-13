@@ -1119,7 +1119,7 @@ class Payment extends Base
     {
         $amount = $this->entity->getBaseAmount();
 
-        if ($this->isFeeBearerCustomerOrDynamic() === true)
+        if ($this->isFeeBearerCustomerOrDynamic() === true && $this->shouldAdjustPaymentFee() === true)
         {
             // 1. The first call will have the fee = 0,
             //    hence fees will be calculated on the original amount
@@ -1153,6 +1153,19 @@ class Payment extends Base
         $this->amount = $amount;
     }
 
+    // commission calculator call from partnership service is made after payment capture
+    // Since fee is already set during payment capture and if platform is selected as fee bearer
+    // fee should not be adjusted from base amount
+    protected function shouldAdjustPaymentFee()
+    {
+        $payment = $this->entity;
+        $currentRoute = app('request.ctx')->getRoute();
+        if ($currentRoute == 'calculate_commission' && $payment->getFeeBearerAttribute() === FeeBearer::PLATFORM)
+        {
+            return false;
+        }
+        return true;
+    }
     protected function setRewardAmount()
     {
         if (($this->entity->getEntity() === (Entity::PAYMENT)) and

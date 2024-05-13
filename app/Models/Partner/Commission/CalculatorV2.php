@@ -93,44 +93,7 @@ class CalculatorV2 extends Calculator
 
         $this->partnerConfig->setCommissionModel($partnerConfig['commission_model']);
     }
-
-    protected function setMerchantFees()
-    {
-        // see fee and tax from payment entity to avoid issue with pricing calculation
-        $pricingFee = new Pricing\Fee;
-        $payment = $this->getSource();
-
-        list($fee, $tax, $feeSplit) = $pricingFee->calculateMerchantRZPFees($this->getSource());
-        $merchantFee = $payment->getFee();
-        $merchantTax = $payment->getTax();
-
-        // modify amount value in fee split with name as payment
-        $feeSplit = $feeSplit->map(function($split) use ($merchantFee, $merchantTax) {
-            if ($split->getName() === $this->getSource()->getEntity())
-            {
-                $split->setAmount($merchantFee-$merchantTax);
-            }
-            else if ($split->getName() === FeeBreakupName::TAX)
-            {
-                $split->setAmount($merchantTax);
-            }
-            return $split;
-        });
-
-        $this->setMerchantFee($merchantFee);
-        $this->setMerchantTax($merchantTax);
-        $this->setMerchantFeeSplit($feeSplit);
-        $paymentFee = $feeSplit->filter(function($split) {
-            return ($split->getName() === $this->getSource()->getEntity());
-        })->first();
-
-        $this->merchantPricingComponents[Component\Entity::MERCHANT_PRICING_AMOUNT]       = $paymentFee->getAmount();
-        $this->merchantPricingComponents[Component\Entity::MERCHANT_PRICING_PLAN_RULE_ID] = $paymentFee->getPricingRule();
-        $merchantPricingRule                                                              = $this->repo->pricing->getPricingFromPricingId($paymentFee->getPricingRule());
-        $this->merchantPricingComponents[Component\Entity::MERCHANT_PRICING_PERCENTAGE ]  = $merchantPricingRule->getPercentRate();
-        $this->merchantPricingComponents[Component\Entity::MERCHANT_PRICING_FIXED]        = $merchantPricingRule->getFixedRate();
-    }
-
+    
     /**
      * Calculates all types of applicable commissions [implicit (fixed and variable), explicit (fixed)] and returns
      * them.
