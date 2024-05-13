@@ -1,17 +1,19 @@
 import React from 'react';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link, Navigate } from 'react-router-dom';
-import moment from 'moment';
+
+import Spinner from 'common/ui/Spinner';
 import DataTable from 'common/ui/Table/DataTable';
-import { getValue, getRuleStatus, removeMid, uniqueArray, findProviderName } from './util';
-import ProviderNewView from './ProviderNewView';
 import { idItem } from 'common/ui/item/id';
 import DocsLink from 'merchant/components/DocsLink';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
-import Spinner from 'common/ui/Spinner';
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
+
+import ProviderNewView from './ProviderNewView';
 import { ProviderShimmer } from './ProviderShimmer';
+import { getValue, getRuleStatus, removeMid, uniqueArray, findProviderName } from './util';
 
 @connect(
   (state) => {
@@ -255,7 +257,9 @@ export default class RuleList extends React.Component {
                               <div class="rule-table-overflow">
                                 {uniqueArray(
                                   OP.map(
-                                    (o) => getValue('parameter', o?.operands?.[0]?.value)?.name,
+                                    (o) =>
+                                      getValue('parameter', o?.operands?.[0]?.value)?.name ||
+                                      o?.operands?.[0]?.value.split('.')[1],
                                   ),
                                 ).join(', ')}
                               </div>

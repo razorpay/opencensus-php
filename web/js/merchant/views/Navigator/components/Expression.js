@@ -84,7 +84,7 @@ export default class Expression extends React.Component {
       : [];
     const RHS_TYPE =
       this.props.expression.operands[0].value && this.props.expression.value
-        ? PARAMETER.operators[this.props.expression.value]
+        ? PARAMETER?.operators?.[this.props.expression.value]
         : {};
     let VALUE_TYPE;
     if (PARAMETER) {
@@ -179,7 +179,7 @@ export default class Expression extends React.Component {
               {(() => {
                 let jsx = (
                   <Select
-                    multiple={RHS_TYPE.multiple}
+                    multiple={RHS_TYPE?.multiple}
                     placeholder="Select Comparing Value"
                     options={VALUES}
                     searchable
@@ -208,8 +208,8 @@ export default class Expression extends React.Component {
                   />
                 );
                 if (
-                  RHS_TYPE.type == 'input' &&
-                  !RHS_TYPE.multiple &&
+                  RHS_TYPE?.type == 'input' &&
+                  !RHS_TYPE?.multiple &&
                   PARAMETER.value !== '$payment.navigator_amount'
                 ) {
                   jsx = (
@@ -231,7 +231,7 @@ export default class Expression extends React.Component {
                               ],
                             });
                           }}
-                          type={`${RHS_TYPE.number ? 'number' : 'text'}`}
+                          type={`${RHS_TYPE?.number ? 'number' : 'text'}`}
                           placeholder="Enter Something"
                           name="enter_text"
                           class="form-control"
@@ -241,8 +241,8 @@ export default class Expression extends React.Component {
                   );
                 }
                 if (
-                  RHS_TYPE.type == 'input' &&
-                  !RHS_TYPE.multiple &&
+                  RHS_TYPE?.type == 'input' &&
+                  !RHS_TYPE?.multiple &&
                   PARAMETER.value === '$payment.navigator_amount'
                 ) {
                   jsx = this.getAmountComp(
@@ -253,9 +253,9 @@ export default class Expression extends React.Component {
                   );
                 }
                 if (
-                  RHS_TYPE.type == 'input' &&
-                  RHS_TYPE.number === false &&
-                  RHS_TYPE.multiple === true
+                  RHS_TYPE?.type == 'input' &&
+                  RHS_TYPE?.number === false &&
+                  RHS_TYPE?.multiple === true
                 ) {
                   jsx = (
                     <div className="row">
@@ -286,9 +286,9 @@ export default class Expression extends React.Component {
                   );
                 }
                 if (
-                  RHS_TYPE.type == 'input' &&
-                  RHS_TYPE.number === true &&
-                  RHS_TYPE.multiple === true
+                  RHS_TYPE?.type == 'input' &&
+                  RHS_TYPE?.number === true &&
+                  RHS_TYPE?.multiple === true
                 ) {
                   jsx = (
                     <div className="row">
@@ -359,7 +359,7 @@ export default class Expression extends React.Component {
                     </div>
                   );
                 }
-                if (RHS_TYPE.between) {
+                if (RHS_TYPE?.between) {
                   jsx = (
                     <div className="between-amount-div">
                       <div className="row">
