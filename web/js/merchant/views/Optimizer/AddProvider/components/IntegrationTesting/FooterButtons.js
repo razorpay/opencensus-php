@@ -3,6 +3,7 @@ import { Button } from '@razorpay/blade/components';
 
 export const FooterButtons = ({
   currentStep,
+  steps,
   isPaymentSuccessfull,
   isPaymentDone,
   testPayment,
@@ -13,6 +14,22 @@ export const FooterButtons = ({
   takeProviderLive,
   isUpdatingProvider,
 }) => {
+  let isPaymentTestingBlocked, isRefundTestingBlocked, isIntegrationAuditSummaryBlocked;
+  steps.forEach(({ value, blocked }) => {
+    switch (value) {
+      case 'payment_testing':
+        isPaymentTestingBlocked = blocked;
+        break;
+      case 'refund_testing':
+        isRefundTestingBlocked = blocked;
+        break;
+      case 'integration_audit_summary':
+        isIntegrationAuditSummaryBlocked = blocked;
+        break;
+      default:
+    }
+  });
+
   switch (currentStep) {
     case 'payment_testing':
       return (
@@ -31,6 +48,7 @@ export const FooterButtons = ({
               <Button
                 variant="primary"
                 onClick={() => changeIntegrationTestingStep({ name: 'refund_testing' })}
+                isDisabled={isRefundTestingBlocked}
               >
                 Continue
               </Button>
@@ -65,7 +83,12 @@ export const FooterButtons = ({
         <>
           <Button
             variant="secondary"
-            onClick={() => changeIntegrationTestingStep({ name: 'refund_testing' })}
+            isDisabled={isRefundTestingBlocked && isPaymentTestingBlocked}
+            onClick={() =>
+              changeIntegrationTestingStep({
+                name: isRefundTestingBlocked ? 'payment_testing' : 'refund_testing',
+              })
+            }
           >
             Previous
           </Button>
@@ -83,7 +106,7 @@ export const FooterButtons = ({
           <Button
             variant="secondary"
             onClick={() => changeIntegrationTestingStep({ name: 'integration_audit_summary' })}
-            isDisabled={isUpdatingProvider}
+            isDisabled={isUpdatingProvider || isIntegrationAuditSummaryBlocked}
           >
             Previous
           </Button>

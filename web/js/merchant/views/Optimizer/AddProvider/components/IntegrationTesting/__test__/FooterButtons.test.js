@@ -9,6 +9,24 @@ import { FooterButtons } from 'merchant/views/Optimizer/AddProvider/components/I
 describe('Optimizer IntegrationTesting FooterButtons', () => {
   const mockProps = {
     currentStep: 'payment_testing',
+    steps: [
+      {
+        value: 'payment_testing',
+        blocked: false,
+      },
+      {
+        value: 'refund_testing',
+        blocked: false,
+      },
+      {
+        value: 'integration_audit_summary',
+        blocked: false,
+      },
+      {
+        value: 'provider_settings',
+        blocked: false,
+      },
+    ],
     isPaymentSuccessfull: true,
     isPaymentDone: true,
     testPayment: jest.fn(),
@@ -139,5 +157,43 @@ describe('Optimizer IntegrationTesting FooterButtons', () => {
     render(<App {...props} />);
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Go live' })).toBeDisabled();
+  });
+
+  it('should render the disabled button for provider settings on blocked integration audit summary', () => {
+    const props = {
+      ...mockProps,
+      currentStep: 'provider_settings',
+      steps: [{ value: 'integration_audit_summary', blocked: true }],
+    };
+    render(<App {...props} />);
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Go live' })).not.toBeDisabled();
+  });
+
+  it('should go to payment testing for audit summary on blocked refund testing', async () => {
+    const props = {
+      ...mockProps,
+      currentStep: 'integration_audit_summary',
+      steps: [{ value: 'refund_testing', blocked: true }],
+    };
+    render(<App {...props} />);
+    const previousButton = screen.getByRole('button', { name: 'Previous' });
+    expect(previousButton).not.toBeDisabled();
+    await userEvent.click(previousButton);
+    expect(props.changeIntegrationTestingStep).toHaveBeenCalledWith({ name: 'payment_testing' });
+  });
+
+  it('should render the disabled button for audit summary on blocked refund and payment testing', () => {
+    const props = {
+      ...mockProps,
+      currentStep: 'integration_audit_summary',
+      steps: [
+        { value: 'refund_testing', blocked: true },
+        { value: 'payment_testing', blocked: true },
+      ],
+    };
+    render(<App {...props} />);
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Continue' })).not.toBeDisabled();
   });
 });
