@@ -15,6 +15,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
         active: true,
         success: false,
         failed: false,
+        blocked: false,
       },
       {
         title: 'Refund testing',
@@ -22,6 +23,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
         active: false,
         success: false,
         failed: false,
+        blocked: false,
       },
       {
         title: 'Integration audit summary',
@@ -29,6 +31,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
         active: false,
         success: false,
         failed: false,
+        blocked: false,
       },
       {
         title: 'Provider settings',
@@ -36,6 +39,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
         active: false,
         success: false,
         failed: false,
+        blocked: false,
       },
     ],
     changeIntegrationTestingStep: jest.fn(),
@@ -68,7 +72,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
     expect(screen.queryByTestId('integration-check-icon')).not.toBeInTheDocument();
     expect(screen.queryByTestId('integration-close-icon')).not.toBeInTheDocument();
     await userEvent.click(screen.getByText('Refund testing'));
-    expect(mockProps.changeIntegrationTestingStep).toHaveBeenCalledWith('refund_testing');
+    expect(mockProps.changeIntegrationTestingStep).toHaveBeenCalledWith({ name: 'refund_testing' });
   });
 
   it('should render steps with successful and active state', () => {
@@ -81,6 +85,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
           active: false,
           success: true,
           failed: false,
+          blocked: false,
         },
         {
           title: 'Refund testing',
@@ -88,6 +93,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
           active: true,
           success: false,
           failed: false,
+          blocked: false,
         },
         {
           title: 'Integration audit summary',
@@ -95,6 +101,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
           active: false,
           success: false,
           failed: false,
+          blocked: false,
         },
         {
           title: 'Provider settings',
@@ -102,6 +109,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
           active: false,
           success: false,
           failed: false,
+          blocked: false,
         },
       ],
     };
@@ -121,6 +129,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
           active: false,
           success: false,
           failed: true,
+          blocked: false,
         },
         {
           title: 'Refund testing',
@@ -128,6 +137,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
           active: true,
           success: false,
           failed: false,
+          blocked: false,
         },
         {
           title: 'Integration audit summary',
@@ -135,6 +145,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
           active: false,
           success: false,
           failed: false,
+          blocked: false,
         },
         {
           title: 'Provider settings',
@@ -142,6 +153,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
           active: false,
           success: false,
           failed: false,
+          blocked: false,
         },
       ],
     };
@@ -149,5 +161,47 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
     expect(screen.getByTestId('integration-right-icon')).toBeInTheDocument();
     expect(screen.queryByTestId('integration-check-icon')).not.toBeInTheDocument();
     expect(screen.getByTestId('integration-close-icon')).toBeInTheDocument();
+  });
+
+  it('should render steps with blocked state', () => {
+    const props = {
+      ...mockProps,
+      steps: [
+        {
+          title: 'Payment testing',
+          value: 'payment_testing',
+          active: false,
+          success: false,
+          failed: false,
+          blocked: true,
+        },
+        {
+          title: 'Refund testing',
+          value: 'refund_testing',
+          active: true,
+          success: false,
+          failed: false,
+          blocked: false,
+        },
+        {
+          title: 'Integration audit summary',
+          value: 'integration_audit_summary',
+          active: false,
+          success: false,
+          failed: false,
+          blocked: false,
+        },
+        {
+          title: 'Provider settings',
+          value: 'provider_settings',
+          active: false,
+          success: false,
+          failed: false,
+          blocked: false,
+        },
+      ],
+    };
+    render(<App {...props} />);
+    expect(screen.getByTestId('step-blocked-title')).toBeInTheDocument();
   });
 });

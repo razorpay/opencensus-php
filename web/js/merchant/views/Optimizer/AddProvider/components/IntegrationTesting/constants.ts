@@ -7,6 +7,7 @@ export const INTEGRATION_TESTING_STEPS: IntegrationStep[] = [
     active: true,
     success: false,
     failed: false,
+    blocked: false,
   },
   {
     title: 'Refund testing',
@@ -14,6 +15,7 @@ export const INTEGRATION_TESTING_STEPS: IntegrationStep[] = [
     active: false,
     success: false,
     failed: false,
+    blocked: false,
   },
   {
     title: 'Integration audit summary',
@@ -21,6 +23,7 @@ export const INTEGRATION_TESTING_STEPS: IntegrationStep[] = [
     active: false,
     success: false,
     failed: false,
+    blocked: false,
   },
   {
     title: 'Provider settings',
@@ -28,6 +31,7 @@ export const INTEGRATION_TESTING_STEPS: IntegrationStep[] = [
     active: false,
     success: false,
     failed: false,
+    blocked: false,
   },
 ];
 

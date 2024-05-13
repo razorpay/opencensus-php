@@ -16,4 +16,5 @@ export interface IntegrationStep {
   active: boolean;
   success: boolean;
   failed: boolean;
+  blocked: boolean;
 }

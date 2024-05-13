@@ -21,7 +21,13 @@ export const TestingSteps = ({ steps, changeIntegrationTestingStep }) => {
           <ActionListItem
             title=""
             leading={
-              step.success && !step.active ? (
+              step.blocked ? (
+                <ActionListItemText>
+                  <Text testID="step-blocked-title" color="surface.text.gray.disabled">
+                    {step.title}
+                  </Text>
+                </ActionListItemText>
+              ) : step.success && !step.active ? (
                 <ActionListItemText>
                   <Text color="feedback.text.positive.intense">{step.title}</Text>
                 </ActionListItemText>
@@ -36,6 +42,7 @@ export const TestingSteps = ({ steps, changeIntegrationTestingStep }) => {
               )
             }
             value={step.value}
+            isDisabled={step.blocked}
             trailing={
               <ActionListItemIcon
                 icon={() => {
@@ -68,7 +75,7 @@ export const TestingSteps = ({ steps, changeIntegrationTestingStep }) => {
                 }}
               />
             }
-            onClick={({ name }) => changeIntegrationTestingStep(name)}
+            onClick={({ name }) => changeIntegrationTestingStep({ name })}
           />
         </ActionList>
       </StepWrapper>
