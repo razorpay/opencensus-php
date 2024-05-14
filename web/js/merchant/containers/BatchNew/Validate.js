@@ -28,7 +28,16 @@ class BatchValidate extends Component {
   };
 
   getErrorMsg = (errorMsg, status) => {
-    return errorMsg ? `${errorMsg}. ${this.getMsg(status)}` : `${this.getMsg(status)}`;
+    if (!errorMsg) {
+      return this.getMsg(status);
+    }
+
+    const { generateCustomErrorMessage } = this.props;
+    let customErrorMsg = errorMsg;
+    if (generateCustomErrorMessage) {
+      customErrorMsg = generateCustomErrorMessage(errorMsg) || errorMsg;
+    }
+    return `${customErrorMsg}. ${this.getMsg(status)}`;
   };
 
   changeBatchState = (status = null, errorMsg = null, fileUrl = null) => {

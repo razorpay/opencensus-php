@@ -76,3 +76,5 @@ export const MODAL_TYPES: MODAL_TYPES = {
   FILE_UPLOAD: 'FILE_UPLOAD',
   MANUAL: 'MANUAL',
 };
+
+export const OVERLAPPING_PINCODE_ERROR = 'BAD_REQUEST_ERROR:overlapping_location:';

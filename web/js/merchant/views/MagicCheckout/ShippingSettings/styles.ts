@@ -47,3 +47,7 @@ export const SliderItem = styled.div(
 
 `,
 );
+
+export const StyledErrorDiv = styled.div`
+  margin-left: 24px;
+`;

@@ -112,6 +112,7 @@ class BatchUpload extends Component {
       isSampleFileLoading,
       shouldShowSampleDownloadBtn,
       onSampleFileDownload,
+      generateCustomErrorMessage,
     } = this.props;
 
     const { batchName, batch, currentStatus } = this.state;
@@ -155,6 +156,7 @@ class BatchUpload extends Component {
                   displayMsgs={displayMsgs}
                   isDragDropDisabled={isDragDropDisabled}
                   hideCloseBtn={hideCloseBtn}
+                  generateCustomErrorMessage={generateCustomErrorMessage}
                 />
               );
             case 'create':

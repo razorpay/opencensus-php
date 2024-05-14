@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, ModalBody } from '@razorpay/blade/components';
 
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
@@ -7,11 +7,14 @@ import ValidateModalInfo from 'merchant/views/MagicCheckout/ShippingSettings/Pro
 import {
   DISPLAY_MESSAGES,
   FILE_UPDATE_NOTIFICATION_MSG,
+  OVERLAPPING_PINCODE_ERROR,
   SAMPLE_FILE_URL,
 } from 'merchant/views/MagicCheckout/ShippingSettings/constants';
 import { MODAL_MODES } from 'merchant/views/MagicCheckout/common/components/SettingsModal/constants';
 
 import { ZonesUploadProps, ZonePayload, FileUploadResponse } from './types';
+
+import { StyledErrorDiv } from 'merchant/views/MagicCheckout/ShippingSettings/styles';
 
 const ZonesUpload = (props: ZonesUploadProps): JSX.Element => {
   const {
@@ -26,6 +29,8 @@ const ZonesUpload = (props: ZonesUploadProps): JSX.Element => {
     zone,
   } = props;
   const isEditMode: boolean = mode === MODAL_MODES.EDIT;
+  const [isCsvDownloadable, setIsCsvDownloadable] = useState(false);
+  const [errorCsvDownloadLink, setErrorCsvDownloadLink] = useState('');
 
   useEffect(() => {
     if (isEditMode) {
@@ -53,6 +58,25 @@ const ZonesUpload = (props: ZonesUploadProps): JSX.Element => {
     }
   };
 
+  const handleErrorNotification = (e) => {
+    if (e?.status_code === 400 && e?.errors?.[0]?.startsWith(OVERLAPPING_PINCODE_ERROR)) {
+      const overLappingPincodeCsvUrl = e.errors[0].slice(OVERLAPPING_PINCODE_ERROR.length);
+      setErrorCsvDownloadLink(overLappingPincodeCsvUrl);
+      setIsCsvDownloadable(true);
+      showNotification({
+        type: 'error',
+        message: 'Overlapping Zones Detected',
+        closeTimeout: 10000,
+      });
+    } else {
+      showNotification({
+        type: 'error',
+        message: e.errors ? e.errors[0] : 'Something went wrong.',
+        closeTimeout: 10000,
+      });
+    }
+  };
+
   const validate = (file: File, progressTracker: Record<string, any>) =>
     new Promise((resolve, reject) => {
       const zonePayload: ZonePayload = {
@@ -75,14 +99,18 @@ const ZonesUpload = (props: ZonesUploadProps): JSX.Element => {
           closeModal();
         })
         .catch((e) => {
-          showNotification({
-            type: 'error',
-            message: e.errors ? e.errors[0] : 'Something went wrong.',
-            closeTimeout: 10000,
-          });
+          handleErrorNotification(e);
           reject(e);
         });
     });
+
+  // shows custom message in case of error
+  const generateCustomErrorMessage = (errorMsg: string) => {
+    if (errorMsg.startsWith(OVERLAPPING_PINCODE_ERROR)) {
+      return 'Overlapping Zones Detected';
+    }
+    return '';
+  };
 
   return (
     <Modal isOpen={isOpen} onDismiss={closeModal} size="medium">
@@ -100,7 +128,16 @@ const ZonesUpload = (props: ZonesUploadProps): JSX.Element => {
             maxFileSize={52428800} // 50MB
             batchListClass="shipping-settings-zipcodes-upload"
             onCloseModal={closeModal}
+            generateCustomErrorMessage={generateCustomErrorMessage}
           />
+          {isCsvDownloadable && (
+            <StyledErrorDiv>
+              <p>
+                Overlapping Zones Detected : Please review the following pincodes in your CSV{' '}
+                <a href={errorCsvDownloadLink}>file</a>
+              </p>
+            </StyledErrorDiv>
+          )}
         </ErrorBoundary>
       </ModalBody>
     </Modal>
