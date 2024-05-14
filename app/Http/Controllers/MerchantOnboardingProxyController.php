@@ -472,7 +472,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         $this->trace->info(TraceCode::PGOS_DASHBOARD_PROXY_REQUEST, [
             'route'     => $route,
             'twirpPath' => $twirpPath,
-            'request'   => $request,
+            'body'      => $body,
         ]);
 
         try

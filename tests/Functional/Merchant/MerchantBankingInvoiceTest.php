@@ -661,7 +661,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $expectedContent = $this->testData[__FUNCTION__]['expectedContent'];
 
-        $this->setupEInvoiceClientResponse($expectedContent, 2);
+        $this->setupEInvoiceClientResponse($expectedContent, 1);
 
         $this->makeRequestAndGetContent($request);
 
