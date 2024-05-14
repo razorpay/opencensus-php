@@ -94,7 +94,6 @@ const Amount = ({
   }
 
   const amount = getFormattedAmountByParts(value, currency);
-
   // TODO: pointer-events: allow, but cursor be as per inherit
   return (
     <AmountTooltip currency={currency} parentQuerySelector={parentQuerySelector}>
@@ -106,12 +105,11 @@ const Amount = ({
       >
         <span
           className="rzp-currency"
-          dangerouslySetInnerHTML={{ __html: sanitizer(currencySymbol) }}
+          dangerouslySetInnerHTML={{
+            __html: `${amount?.minusSign || ''}${sanitizer(currencySymbol)}`,
+          }}
         />{' '}
-        <span className="rzp-whole">
-          {amount?.minusSign ? '-' : null}
-          {amount?.integer}
-        </span>
+        <span className="rzp-whole">{amount?.integer}</span>
         {!hidePaisa && amount?.decimal && amount?.fraction && (
           <span className="rzp-paise">
             {amount.decimal}

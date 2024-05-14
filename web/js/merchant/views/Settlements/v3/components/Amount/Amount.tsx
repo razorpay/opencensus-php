@@ -106,7 +106,9 @@ const Amount = ({
   return (
     <StyledAmountValue>
       <rupeeConfig.Component {...(color ? { ...rupeeConfig.props, color } : rupeeConfig.props)}>
-        {`${operator} \u00A0 ${currencySymbol} ${formattedAmount?.integer}`}
+        {`${operator} \u00A0 ${formattedAmount?.minusSign || ''} ${currencySymbol} ${
+          formattedAmount?.integer
+        }`}
       </rupeeConfig.Component>
       <paisaConfig.Component {...(color ? { ...paisaConfig.props, color } : paisaConfig.props)}>
         {`${formattedAmount?.decimal}${formattedAmount?.fraction}`}
