@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingConfig;
 
 use RZP\Error\ErrorCode;
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Feature\Constants as Feature;
@@ -55,7 +56,7 @@ class Core extends Base\Core
         return true;
     }
 
-    public function upsertBankingConfigs($input, $sessionOrgId, $skipSessionValidation = false)
+    public function upsertBankingConfigs($input, $sessionOrgId, $skipSessionValidation = false, $storeInBothModes = false)
     {
         (new Validator)->validateInput(
             'upsert',
@@ -91,7 +92,14 @@ class Core extends Base\Core
 
         $fieldValue = $input[Constants::FIELD_VALUE];
 
-        return $dcsConfigService->editConfiguration($key, $entityId, [$fieldName => $fieldValue]);
+        if($storeInBothModes === true)
+        {
+            $dcsConfigService->editConfiguration($key, $entityId, [$fieldName => $fieldValue], Mode::TEST);
+
+            return $dcsConfigService->editConfiguration($key, $entityId, [$fieldName => $fieldValue], Mode::LIVE);
+        }
+
+        return $dcsConfigService->editConfiguration($key, $entityId, [$fieldName => $fieldValue], $this->mode);
     }
 
     // returns the orgid of entity

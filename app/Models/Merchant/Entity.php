@@ -38,6 +38,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Detail;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Services\Dcs\Configurations;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
@@ -144,6 +145,7 @@ class Entity extends Base\PublicEntity
     const RISK_THRESHOLD                 = 'risk_threshold';
     const ICON_URL                       = 'icon_url';
     const LOGO_URL                       = 'logo_url';
+    const RECT_LOGO_URL                  = 'rect_logo_url';
     const INVOICE_LABEL_FIELD            = 'invoice_label_field';
     const AWS_LOGO_URL                   = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT             = 'max_payment_amount';
@@ -2634,7 +2636,7 @@ class Entity extends Base\PublicEntity
 
         // In DB, we are storing the base URL. The actual URL has the
         // respective size appended to it.
-        $logoUrl = $this->getLogoUrlBasedOnSize($relativeUrl, $size);
+        $logoUrl = $this->getLogoUrlBasedOnSize($baseLogoUrl, $size);
 
         return $logoUrl;
     }
@@ -2642,31 +2644,27 @@ class Entity extends Base\PublicEntity
     /**
      * Retrieves the full URL of the rectangular logo stored in DCS based on the 'custom_merchant_upi_qr' feature flag.
      *
-     * @param array  $input  Input array containing logo information.
-     * @param string $size   Size of the logo.
-     *
      * @return string        Full URL of the rectangular logo.
      */
-    public function getRectangularLogoUrlWithFeatureFlagEnabled(array $input, $size = self::ORIGINAL_SIZE)
+    public function getRectangularLogoUrl()
     {
-        $relativeLogoUrl =  (new BankingConfig\Service())->getBankingConfig($input)['rectangular_logo_url'];
+        $field_name = Configurations\Constants::RectangularLogoUrl;
 
-        if ($relativeLogoUrl === null)
+        $bankingConfigInput = [
+            BankingConfig\Constants::FIELDS => [$field_name],
+            BankingConfig\Constants::ENTITY_ID => $this->getId(),
+            BankingConfig\Constants::KEY => Configurations\Constants::$configurationsToDCSKeyMapping[$field_name],
+            BankingConfig\Constants::SHORT_KEY => $field_name
+        ];
+
+        $relativeLogoUrl =  (new BankingConfig\Service())->getBankingConfig($bankingConfigInput)[$field_name];
+
+        if ($relativeLogoUrl === null or $relativeLogoUrl === "" or $relativeLogoUrl === 'null')
         {
             return null;
         }
 
-        // Different cdn urls for different contexts.
-        $context = Config::get('app.context');
-        $cdnUrl = Config::get('url.cdn')[$context];
-
-        // Sample base URL : 'https://cdn.razorpay.com' + '/logos/a.png'
-        // Sample actual URL : 'https://cdn.razorpay.com' + 'logos/' + 'a_medium.png'
-        $baseLogoUrl = $cdnUrl . $relativeLogoUrl;
-
-        // In DB, we are storing the base URL. The actual URL has the
-        // respective size appended to it.
-        $logoUrl = $this->getLogoUrlBasedOnSize($baseLogoUrl, $size);
+        $logoUrl = $this->getFullUrlFromRelativeUrl($relativeLogoUrl);
 
         return $logoUrl;
     }
@@ -2680,17 +2678,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        // Different cdn urls for different contexts.
-        $context = Config::get('app.context');
-        $cdnUrl = Config::get('url.cdn')[$context];
-
-        // Sample base URL : 'https://cdn.razorpay.com' + '/logos/a.png'
-        // Sample actual URL : 'https://cdn.razorpay.com' + 'logos/' + 'a_medium.png'
-        $baseLogoUrl = $cdnUrl . $relativeLogoUrl;
-
-        // In DB, we are storing the base URL. The actual URL has the
-        // respective size appended to it.
-        $logoUrl = $this->getLogoUrlBasedOnSize($baseLogoUrl, $size);
+        $logoUrl = $this->getFullUrlFromRelativeUrl($relativeLogoUrl, $size);
 
         return $logoUrl;
     }
