@@ -4612,7 +4612,7 @@ class Service extends Base\Service
 
             {
                 // Replicates plan for this merchant if it was shared
-                if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
+                if ($this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($pricingPlanId))
                 {
                     $newPlan = (new Pricing\Service())->replicatePlanAndAssign($this->merchant,
                                 $this->repo->pricing->getPlanByIdOrFailPublic($pricingPlanId));
@@ -5237,7 +5237,7 @@ class Service extends Base\Service
             $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId);
 
             // Replicates plan for this merchant if it was shared
-            if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId) !== 1)
+            if ($this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($planId))
             {
                 // Replicate also takes care of assigning the plan to the merchant
                 $newPlan = (new Pricing\Service())->replicatePlanAndAssign($this->merchant, $plan);

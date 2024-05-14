@@ -521,7 +521,34 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchMerchantsCountWithPricingPlanId($planId): int
+    /**
+     * @param $planId
+     *
+     * @return bool
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function checkMerchantsCountWithPricingPlanIdNotEqualOne($planId): bool
+    {
+        $count = $this->fetchMerchantsCountWithPricingPlanId($planId);
+
+        return $count !== 1;
+    }
+
+    /**
+     * NOTE: when fetching from ASV, we fetch merchants for a pricing plan ID with LIMIT 2 and
+     * then do a count on it.
+     * This suffices for the use case of checkMerchantsCountWithPricingPlanIdNotEqualOne
+     *
+     * For fetching the total count of merchants for a pricing plan ID, define another method and use TiDB
+     *
+     * @param $planId
+     *
+     * @return int
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    private function fetchMerchantsCountWithPricingPlanId($planId): int
     {
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
@@ -533,7 +560,9 @@ class Repository extends Base\Repository
             }
             else
             {
-                return (new AsvSdkMerchantQuery())->fetchMerchantsCountWithPricingPlanId($planId);
+                $merchants = (new AsvSdkMerchantQuery())->fetchMerchantsWithPricingPlanIdLimit2($planId);
+
+                return $merchants->count();
             }
         }
         else

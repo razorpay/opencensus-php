@@ -265,7 +265,7 @@ class Service extends Base\Service
                     if ($existingRule === null)
                     {
                         // replicates pricing plan if more than one merchants are using it.
-                        if (($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId)) !== 1)
+                        if (($this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($planId)))
                         {
                             $plan = $this->replicatePlanAndAssign($merchant, $plan);
 
@@ -303,7 +303,7 @@ class Service extends Base\Service
                         // so that plans aren't replicated unnecessarily
                         if(empty(array_diff_assoc($rule, $existingRule->toArray())) === false)
                         {
-                            if (($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId)) !== 1)
+                            if (($this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($planId)))
                             {
                                 $plan = $this->replicatePlanAndAssign($merchant, $plan);
 

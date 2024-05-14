@@ -45,6 +45,8 @@ class Merchant extends Base
         = 'fetch_linked_account_ids_from_parent_id_with_activated';
     const FIND_MERCHANTS_FROM_EXTERNAL_ID
         = 'find_merchants_from_external_id';
+    const FETCH_MERCHANTS_WITH_PRICING_PLAN_ID_LIMIT_2
+        = 'fetch_merchants_with_pricing_plan_id_limit_2';
 
     public function __construct()
     {
@@ -391,26 +393,29 @@ class Merchant extends Base
     }
 
 
-    public function fetchMerchantsCountWithPricingPlanId(string $planId): int
+    /**
+     * @param string $planId
+     *
+     * @return Collection|PublicCollection
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchMerchantsWithPricingPlanIdLimit2(string $planId): Collection|PublicCollection
     {
         $filterRequest =  new FilterRequest();
-        $filterRequest->setQueryIdentifier('fetch_merchants_count_with_pricing_plan_id');
+        $filterRequest->setQueryIdentifier(
+            self::FETCH_MERCHANTS_WITH_PRICING_PLAN_ID_LIMIT_2
+        );
         $filterRequest->setBindings(
-            json_encode([
-                            $planId
-                        ])
+            json_encode([$planId])
         );
 
-        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+        $response = $this->getFilterResponseFromAsv(
+            $filterRequest,
+            self::FILTER_TIMEOUT_IN_MICRO_SECONDS,
+        );
 
-        $count = 0;
-
-        foreach ($response->getJoins() as $join) {
-            $count = json_decode($join->serializeToJsonString(), true)['aggregate'];
-            break;
-        }
-
-        return $count;
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
     /**

@@ -559,7 +559,7 @@ class Core extends Base\Core
             $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 
             // Replicates plan for this merchant if it was shared
-            if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
+            if ($this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($pricingPlanId))
             {
                 $newPlan = (new Pricing\Service())->replicatePlanAndAssign($merchant, $pricingPlan);
 
