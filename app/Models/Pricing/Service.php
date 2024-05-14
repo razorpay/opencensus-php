@@ -284,6 +284,10 @@ class Service extends Base\Service
                                             Entity::FEE_BEARER
                         ];
 
+                        if(isset($item[Entity::PERCENT_RATE_SCALE_FACTOR]) && is_numeric($item[Entity::PERCENT_RATE_SCALE_FACTOR])) {
+                            $editRulekeys[] = Entity::PERCENT_RATE_SCALE_FACTOR;
+                        }
+
                         $rule = array_filter($item, function ($k) use ($editRulekeys)
                                             {
                                                 if (in_array($k, $editRulekeys, true) === true)

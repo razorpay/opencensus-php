@@ -1065,6 +1065,7 @@ class Header
     const PRICING_RULE_INTERNATIONAL            = 'international';
     const PRICING_RULE_EMI_DURATION             = 'emi_duration';
     const PRICING_RULE_PERCENT_RATE             = 'percent_rate';
+    const PRICING_RULE_PERCENT_RATE_SCALE_FACTOR = 'percent_rate_scale_factor';
     const PRICING_RULE_AMOUNT_RANGE_ACTIVE      = 'amount_range_active';
     const PRICING_RULE_AMOUNT_RANGE_MIN         = 'amount_range_min';
     const PRICING_RULE_AMOUNT_RANGE_MAX         = 'amount_range_max';
@@ -4463,6 +4464,7 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_PERCENT_RATE_SCALE_FACTOR,
                 self::PRICING_RULE_FIXED_RATE,
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
@@ -4480,6 +4482,7 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_PERCENT_RATE_SCALE_FACTOR,
                 self::PRICING_RULE_FIXED_RATE,
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
