@@ -171,7 +171,9 @@ class Entity extends Base\PublicEntity
         self::BANK_NAME,
         self::NAME,
         self::NOTES,
-        self::ACCOUNT_NUMBER
+        self::ACCOUNT_NUMBER,
+        self::BANK_IDENTIFIER,
+        self::IDENTIFIER_TYPE
     ];
 
     protected $hosted = [
@@ -190,6 +192,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ACCOUNT_NUMBER,
+        self::BANK_IDENTIFIER,
+        self::IDENTIFIER_TYPE
     ];
 
     protected $appends = [
@@ -415,7 +419,11 @@ class Entity extends Base\PublicEntity
 
         if (isset($merchant) === true && in_array(strtolower($merchant->getCountry()), self::$IfscAllowedCountries) === false)
         {
-            $attributes[self::BANK_IDENTIFIER] = $this->getBankIdentifier();
+            unset($attributes[self::IFSC_CODE]);
+            unset($attributes[self::IFSC]);
+        }
+        else {
+            unset($attributes[self::BANK_IDENTIFIER]);
         }
     }
 
@@ -423,9 +431,9 @@ class Entity extends Base\PublicEntity
     {
         $merchant = $this->merchant;
 
-        if (isset($merchant) === true && in_array(strtolower($merchant->getCountry()), self::$IfscAllowedCountries) === false)
+        if (isset($merchant) === false || in_array(strtolower($merchant->getCountry()), self::$IfscAllowedCountries) === true)
         {
-            $attributes[self::IDENTIFIER_TYPE] = $this->getIdentifierType();
+            unset($attributes[self::IDENTIFIER_TYPE]);
         }
     }
 

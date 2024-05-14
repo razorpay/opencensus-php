@@ -599,17 +599,20 @@ class PayoutTest extends OAuthTestCase
         // fund account entity
         $this->assertEquals("10000000000000", $fundAccount['merchant_id']);
         $this->assertEquals("RAZRB000000", $fundAccount['account']['bank_identifier']);
+        $this->assertArrayHasKey('identifier_type', $fundAccount['account']);
+        $this->assertArrayHasKey('bank_identifier', $fundAccount['account']);
         $this->assertEquals("IN", $fundAccount['account']['beneficiary_country']);
         $this->assertEquals("1121431121541121", $fundAccount['bank_account']['account_number']);
 
 
         // bank account entity
         $this->assertEquals("RAZRB000000", $bankAccount['bank_identifier']);
+        $this->assertEquals("bic", $bankAccount['identifier_type']);
         $this->assertEquals("1121431121541121", $bankAccount['account_number']);
         $this->assertEquals("IN", $bankAccount['beneficiary_country']);
         $this->assertEquals("contact", $bankAccount['type']);
-        $this->assertEquals('SBIN0005943', $bankAccount['ifsc']);
-        $this->assertEquals('SBIN0005943', $bankAccount['ifsc_code']);
+        $this->assertEquals(null, $bankAccount['ifsc']);
+        $this->assertEquals(null, $bankAccount['ifsc_code']);
 
         // Verify attempt entity
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
@@ -795,13 +798,16 @@ class PayoutTest extends OAuthTestCase
 
         // fund account entity
         $this->assertEquals("10000000000000", $fundAccount['merchant_id']);
-        $this->assertEquals("SBIN0005943", $fundAccount['account']['bank_identifier']);
+        $this->assertEquals(null, $fundAccount['account']['bank_identifier']);
+        $this->assertEquals(null, $fundAccount['account']['identifier_type']);
+        $this->assertArrayNotHasKey('identifier_type', $fundAccount['account']);
+        $this->assertArrayNotHasKey('bank_identifier', $fundAccount['account']);
         $this->assertEquals("IN", $fundAccount['account']['beneficiary_country']);
         $this->assertEquals("1121431121541121", $fundAccount['bank_account']['account_number']);
 
 
         // bank account entity
-        $this->assertEquals("SBIN0005943", $bankAccount['bank_identifier']);
+        $this->assertEquals(null, $bankAccount['bank_identifier']);
         $this->assertEquals("1121431121541121", $bankAccount['account_number']);
         $this->assertEquals("IN", $bankAccount['beneficiary_country']);
         $this->assertEquals("contact", $bankAccount['type']);
