@@ -8778,13 +8778,6 @@ trait Authorize
             $this->addDiscountToLiquiloans($payment, $response);
         }
 
-        if ($payment->hasOrder() === false)
-        {
-            return;
-        }
-
-        $order = $payment->order;
-
         $this->offer = $payment->getOffer();
 
         if($payment->getOffer() === null)
@@ -8798,6 +8791,13 @@ trait Authorize
         {
             return;
         }
+
+        if ($payment->hasOrder() === false)
+        {
+            return;
+        }
+
+        $order = $payment->order;
 
         $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
 

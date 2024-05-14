@@ -49,6 +49,8 @@ class Metric extends Base\Core
 
     const LABEL_CRED_ELIGIBILITY                = 'is_eligible_for_cred';
 
+    const  LABEL_OFFER                          = 'payment_offer';
+
     const IS_VERIFY_NEW_FLOW                    = 'is_verify_new_flow';
     const IS_TIMEOUT_NEW_FLOW                   = 'is_timeout_new_flow';
     const LABEL_OPTIMIZER                       = 'optimizer';
@@ -368,6 +370,15 @@ class Metric extends Base\Core
             self::LABEL_ORG                      => $payment->merchant->getOrgId(),
             self::LABEL_MERCHANT_COUNTRY_CODE       => $payment->merchant->getCountry(),
         ];
+
+        $offer = $payment->getOffer();
+
+        if($offer !== null)
+        {
+            $dimensions += [
+                self::LABEL_OFFER           => true,
+                ];
+        }
 
         if ($payment->hasCard() === true)
         {

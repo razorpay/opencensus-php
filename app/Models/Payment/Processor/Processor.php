@@ -5871,7 +5871,7 @@ class Processor
                 return;
             }
 
-            $offer = $this->repo->offer->findByPublicId($input[Payment\Entity::OFFER_ID]);
+            $offer = $this->repo->offer->findByPublicIdAndMerchant($input[Payment\Entity::OFFER_ID], $payment->merchant);
 
             if (!$offer->isPlatformOffer())
             {

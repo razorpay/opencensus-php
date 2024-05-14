@@ -14,6 +14,7 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Admin;
 use RZP\Diag\EventCode;
+use RZP\Models\Discount\Entity;
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Order;
@@ -613,7 +614,10 @@ trait Capture
             return;
         }
 
-        $captureAmount = $discount->offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
+        $offer = $this->repo->offer->findByIdAndMerchant($discount->getAttribute(Entity::OFFER_ID), $payment->merchant);
+
+        $captureAmount = $offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
+
     }
 
     /**

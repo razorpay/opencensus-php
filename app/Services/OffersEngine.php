@@ -73,11 +73,6 @@ class OffersEngine
 
     const ValidateOffer = 'v1/offers/validate';
 
-    const PublisherRoleRoute = [
-        self::OffersEngineAvail,
-        self::OffersEngineFailed,
-        self::OffersEngineRedeem,
-    ];
     // Requests/responses will be logged by default or if value for path mentioned here is true.
     const REQUEST_LOGGER_MAP = [
         Requests::POST => true,
@@ -368,10 +363,6 @@ class OffersEngine
         ];
 
         $this->setHeaders();
-        if (in_array($endpoint,self::PublisherRoleRoute))
-        {
-             $this->headers['X-User-Type'] = 'publisher';
-        }
 
         $headers = $this->headers;
 
@@ -389,13 +380,14 @@ class OffersEngine
      */
     public function createOffer(array $input)
     {
+        $this->userType = 'advertiser';
         $this->merchantId = $input['offer']['metadata']['advertiser_id'];
-
         return $this->sendRequest(self::OffersEngineCreateOffer, Requests::POST, $input);
     }
 
     public function adminCreateOffer(array $input)
     {
+        $this->userType = 'advertiser';
         $this->merchantId = $input['offer']['metadata']['advertiser_id'];
         return $this->sendRequest(self::OffersEngineAdminCreateOffer, Requests::POST, $input);
     }
@@ -406,6 +398,7 @@ class OffersEngine
      */
     public function updateOffer($id, array $input)
     {
+        $this->userType = 'advertiser';
         $this->merchantId = $input['offer']['metadata']['advertiser_id'];
         $endpoint = sprintf(self::OffersEngineUpdateOffer, $id);
 
@@ -414,6 +407,7 @@ class OffersEngine
 
     public function adminUpdateOffer($id, array $input)
     {
+        $this->userType = 'advertiser';
         $this->merchantId = $input['offer']['metadata']['advertiser_id'];
         $endpoint = sprintf(self::OffersEngineAdminUpdateOffer, $id);
 
@@ -539,6 +533,8 @@ class OffersEngine
     }
     public function avail(string $merchantId, $input)
     {
+        $this->userType = 'publisher';
+
         $this->merchantId = 'rzp.merchant.' . $merchantId;
 
         return $this->sendRequest(self::OffersEngineAvail, Requests::POST, $input);
@@ -547,6 +543,8 @@ class OffersEngine
 
     public function redeem(string $merchantId, $input)
     {
+        $this->userType = 'publisher';
+
         $this->merchantId = 'rzp.merchant.' . $merchantId;
 
         return $this->sendRequest(self::OffersEngineRedeem, Requests::POST, $input);
@@ -554,6 +552,8 @@ class OffersEngine
 
     public function failPayment(string $merchantId, $input)
     {
+        $this->userType = 'publisher';
+
         $this->merchantId = 'rzp.merchant.' . $merchantId;
 
         return $this->sendRequest(self::OffersEngineFailed, Requests::POST, $input);
