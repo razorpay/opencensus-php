@@ -19,9 +19,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 // Keep this util here, will break web/js/merchant/views/Transactions/v2/common/__tests__/utils.test.js testcases
 export const isTransactionsV2Enabled = (splitz, user) => {
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
-
   if (!abExperiments?.Transactions_Revamp) return false;
-
   if (user.isOrgCurlec) {
     return false;
   }

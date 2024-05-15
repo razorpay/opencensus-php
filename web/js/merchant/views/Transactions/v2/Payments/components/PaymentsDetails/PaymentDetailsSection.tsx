@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { lazy, useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -6,13 +6,18 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   Divider,
+  DownloadIcon,
+  IconButton,
   Link,
   MailIcon,
   PhoneIcon,
   Text,
 } from '@razorpay/blade/components';
+import { bindActionCreators, compose } from 'redux';
+import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { User } from 'common/typings';
 
 import { useMobile } from 'common/hooks/useMobile';
 import copyToClipboard from 'common/utils/copyToClipboard';
@@ -29,13 +34,30 @@ import {
   SectionHeader,
 } from './styled';
 import { IPaymentDetails, ApplicationDetails } from './types';
-import { onCopy } from './utils';
+import { isChargeSlipForPosEnabled, onCopy } from './utils';
 import PaymentTransfers from './PaymentTransfers';
 import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { openModal } from 'merchant_common/reducers/modals';
+import { fetchEncodedPaymentReceipt } from 'merchant/views/Transactions/model';
+import { withSplitzService } from 'common/splitz';
+import { SpiltzContextState } from 'common/splitz/types';
+import { showNotification as showNotificationAction } from 'merchant_common/reducers/notifications';
+import fileDownload from 'common/utils/file-download';
+
+const PaymentReceipt = lazy(
+  () =>
+    import(
+      /* webpackChunkName: 'PaymentReceipt' */ 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentReceipt'
+    ),
+);
 
 interface IPaymentDetailsSection extends RouteComponentProps<{ id: string }> {
   paymentDetails: IPaymentDetails;
   applicationDetails: ApplicationDetails | null;
+  user: User;
+  splitz: SpiltzContextState;
+  showNotification: (payload: { type: 'error' | 'success'; message: string }) => void;
 }
 
 function PaymentDetailsSection({
@@ -46,8 +68,12 @@ function PaymentDetailsSection({
   match: {
     params: { id: transactionIDActual },
   },
+  user,
+  splitz,
+  showNotification,
 }: IPaymentDetailsSection): React.ReactElement {
   const [isOpen, setIsOpen] = useState<boolean>(true);
+
   const toggleAccordian = () => {
     setIsOpen((prevState) => !prevState);
   };
@@ -77,6 +103,38 @@ function PaymentDetailsSection({
     wallet,
     invoice_id,
   } = paymentDetails;
+
+  const isChargeSlipExperimentEnabled = isChargeSlipForPosEnabled(splitz);
+
+  const isOmniChannelMerchant =
+    isChargeSlipExperimentEnabled &&
+    (user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant));
+
+  const onDownloadClick = async (e) => {
+    e.stopPropagation();
+
+    try {
+      const response = await fetchEncodedPaymentReceipt(id);
+      fileDownload(response.receipt_encoded_image, `${id}.png`, 'image/png');
+    } catch (err) {
+      showNotification({
+        type: 'error',
+        message: 'No Charge Slip found.',
+      });
+    }
+  };
+
+  const openChargeSlip = () => {
+    openModal({
+      size: 'medium',
+      isNew: true,
+      component: (
+        <SuspenseWithLoader>
+          <PaymentReceipt id={id} />
+        </SuspenseWithLoader>
+      ),
+    });
+  };
   return (
     <Box testID="payment-details-section">
       <SectionHeader enableBorderBottomRadius={!isOpen}>
@@ -378,6 +436,52 @@ function PaymentDetailsSection({
                     {description || `--`}
                   </Text>
                 </RowWrapper>
+                {isOmniChannelMerchant ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <RowWrapper>
+                      <Text
+                        variant="body"
+                        size="medium"
+                        weight="regular"
+                        color="surface.text.gray.subtle"
+                      >
+                        Charge Slip
+                      </Text>
+                      <div
+                        onClick={openChargeSlip}
+                        onKeyDown={openChargeSlip}
+                        role="button"
+                        tabIndex={0}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <Box display="flex" flexDirection="row" alignItems="center">
+                          <Text
+                            variant="body"
+                            size="medium"
+                            weight="regular"
+                            color="surface.text.primary.normal"
+                          >
+                            {id}.png
+                          </Text>
+                          <IconButton
+                            icon={() => (
+                              <DownloadIcon
+                                marginLeft="spacing.3"
+                                size="medium"
+                                color="interactive.icon.primary.normal"
+                              />
+                            )}
+                            size="medium"
+                            accessibilityLabel="download"
+                            onClick={onDownloadClick}
+                          />
+                        </Box>
+                      </div>
+                    </RowWrapper>
+                  </>
+                ) : null}
+
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
                   <Text
@@ -423,4 +527,19 @@ function PaymentDetailsSection({
   );
 }
 
-export default withRouter(PaymentDetailsSection);
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators(
+    {
+      showNotification: showNotificationAction,
+    },
+    dispatch,
+  );
+}
+
+export default withSplitzService(
+  withRouter<any>(compose(connect(mapStateToProps, mapDispatchToProps)(PaymentDetailsSection))),
+);

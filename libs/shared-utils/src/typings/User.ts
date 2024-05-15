@@ -84,6 +84,7 @@ type UserProperties = {
   email: string;
   contact_email: string;
   transaction_report_email: string;
+  pos_activation_status?: string;
   name: string;
   role: string;
   user: {

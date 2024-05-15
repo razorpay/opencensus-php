@@ -23,3 +23,13 @@ export const fetchPaymentNotesKeys = (): Promise<any> => {
     url: `payments/transaction_tab/notes_keys`,
   });
 };
+
+export const fetchEncodedPaymentReceipt = async (payment_id) => {
+  const { data } = await merchantFetch({
+    absUrl: `/ezetap/receipt/${payment_id}`,
+    appendModeInURL: false,
+    method: 'get',
+  });
+
+  return data;
+};

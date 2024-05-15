@@ -1,14 +1,14 @@
 import React from 'react';
-import { Text } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
 
 import { titleCase } from '@dashboard/shared-utils/rzp-utils';
+import { IPaymentDetails } from './types';
 import CardIcon from 'apps/self-serve/src/assets/card.svg';
 import UpiIcon from 'apps/self-serve/src/assets/upi.svg';
 import TurboUpiIcon from 'apps/self-serve/src/assets/turbo-upi.svg';
 import EmiIcon from 'apps/self-serve/src/assets/emi.svg';
 import NetbankingIcon from 'apps/self-serve/src/assets/netbanking.svg';
 import WalletIcon from 'apps/self-serve/src/assets/wallet.svg';
-import { IPaymentDetails } from './types';
 
 interface IPaymentMethod {
   payment: any;
@@ -100,10 +100,26 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
 
     return <>{titleCase(method)}</>;
   };
+
+  const authCode = payment?.acquirer_data?.auth_code;
+
   return (
-    <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
-      {getPaymentMethod()}
-    </Text>
+    <Box display="flex" flexDirection="column">
+      <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
+        {getPaymentMethod()}
+      </Text>
+      {authCode ? (
+        <Text
+          marginTop="spacing.1"
+          variant="body"
+          size="medium"
+          weight="regular"
+          color="surface.text.gray.normal"
+        >
+          Auth Code: {authCode}
+        </Text>
+      ) : null}
+    </Box>
   );
 }
 

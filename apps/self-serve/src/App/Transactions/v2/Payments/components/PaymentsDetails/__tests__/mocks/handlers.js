@@ -567,3 +567,16 @@ export const mockPaymentTransfers = () => {
     }),
   );
 };
+
+export const mockFetchEncodedPaymentReceipt = (payment_id) => {
+  const response = {
+    status_code: 200,
+    success: true,
+    data: {
+      receipt_encoded_image: 'iVBORw0KGgoAAAANSUhEUgAAA..',
+    },
+  };
+  return rest.get(`*/ezetap/receipt/${payment_id}`, (_, res, ctx) =>
+    res(ctx.status(200), ctx.json(response), ctx.delay(50)),
+  );
+};

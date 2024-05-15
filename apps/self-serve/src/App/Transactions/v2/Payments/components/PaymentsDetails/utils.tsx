@@ -6,6 +6,13 @@ import { Theme, BadgeProps, Text, Link, ChevronRightIcon } from '@razorpay/blade
 import Lottie from 'react-lottie';
 import moment from 'moment';
 import {
+  IPaymentDetails,
+  PaymentStatus,
+  IPaymentIdRefundDetail,
+  IBankTransfer,
+  DisputeStatus,
+} from './types';
+import {
   trackDetailsCopy,
   trackDetailsClick,
 } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
@@ -15,13 +22,6 @@ import CapturedAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payme
 import CreatedAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payments/lottie/Created';
 import FailedAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payments/lottie/Failed';
 import RefundAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payments/lottie/Refund';
-import {
-  IPaymentDetails,
-  PaymentStatus,
-  IPaymentIdRefundDetail,
-  IBankTransfer,
-  DisputeStatus,
-} from './types';
 
 export const shouldHideCapturePaymentAction = (
   payment: IPaymentDetails,

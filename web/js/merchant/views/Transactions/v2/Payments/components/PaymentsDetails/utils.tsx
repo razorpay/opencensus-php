@@ -24,6 +24,8 @@ import FailedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/
 import RefundAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Refund';
 import moment from 'moment';
 import { SettlementStatus } from 'merchant/views/Settlements/v3/typings';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import { SpiltzContextState } from 'common/splitz/types';
 
 export const shouldHideCapturePaymentAction = (
   payment: IPaymentDetails,
@@ -498,4 +500,10 @@ export const getDisputesOverviewDetails = (paymentDetails, viewDisputeCallback) 
       </Text>
     );
   }
+};
+
+export const isChargeSlipForPosEnabled = (splitz: SpiltzContextState): boolean => {
+  const { abExperiments } = splitz || { abExperiments: { pos_chargeslip: undefined } };
+  if (!abExperiments?.pos_chargeslip) return false;
+  return isExperimentEnabled(abExperiments.pos_chargeslip);
 };

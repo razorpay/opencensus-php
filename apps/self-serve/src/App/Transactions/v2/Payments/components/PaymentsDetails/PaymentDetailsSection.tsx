@@ -12,11 +12,18 @@ import {
   MailIcon,
   PhoneIcon,
   Text,
+  DownloadIcon,
+  IconButton,
 } from '@razorpay/blade/components';
 import React, { useEffect, useState } from 'react';
 import { withRouter } from 'shell/deprecated/withRouter';
+import lazy from '@dashboard/shared-utils/routes/LazyLoader';
 
-import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
+import { User } from '@dashboard/shared-utils/typings';
+import { openModal } from '@dashboard/shared-utils/reducers/modals';
+import { SuspenseWithLoader } from '@dashboard/shared-ui/components';
+import { useStore } from 'shell/commonStore';
+import { fetchEncodedPaymentReceipt } from '../PaymentsList/model';
 import getNotes from './Notes';
 import PaymentMethod from './PaymentMethod';
 import PaymentTransfers from './PaymentTransfers';
@@ -31,10 +38,19 @@ import {
 import Tooltip from './Tooltip';
 import { ApplicationDetails, IPaymentDetails } from './types';
 import { onCopy } from './utils';
+import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
+
+const PaymentReceipt = lazy(
+  () =>
+    import(
+      /* webpackChunkName: 'PaymentReceipt' */ 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/PaymentReceipt'
+    ),
+);
 
 interface IPaymentDetailsSection extends RouteComponentProps<{ id: string }> {
   paymentDetails: IPaymentDetails;
   applicationDetails: ApplicationDetails | null;
+  user: User;
 }
 
 function PaymentDetailsSection({
@@ -45,6 +61,7 @@ function PaymentDetailsSection({
   match: {
     params: { id: transactionIDActual },
   },
+  user,
 }: IPaymentDetailsSection): React.ReactElement {
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const toggleAccordian = () => {
@@ -76,6 +93,39 @@ function PaymentDetailsSection({
     wallet,
     invoice_id,
   } = paymentDetails;
+  const showNotification = useStore((state) => state.showNotification);
+
+  const isOmniChannelMerchant =
+    user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant);
+
+  const onDownloadClick = async (e) => {
+    e.stopPropagation();
+
+    try {
+      const response = await fetchEncodedPaymentReceipt(id);
+      const link = document.createElement('a');
+      link.href = `data:image/png;base64,${response.receipt_encoded_image}`;
+      link.download = `${id}.png`;
+      link.click();
+    } catch (err) {
+      showNotification({
+        type: 'error',
+        message: 'No Charge Slip found.',
+      });
+    }
+  };
+
+  const openChargeSlip = () => {
+    openModal({
+      size: 'medium',
+      isNew: true,
+      component: (
+        <SuspenseWithLoader>
+          <PaymentReceipt id={id} />
+        </SuspenseWithLoader>
+      ),
+    });
+  };
   return (
     <Box testID="payment-details-section">
       <SectionHeader enableBorderBottomRadius={!isOpen}>
@@ -377,6 +427,51 @@ function PaymentDetailsSection({
                     {description || `--`}
                   </Text>
                 </RowWrapper>
+                {isOmniChannelMerchant ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <RowWrapper>
+                      <Text
+                        variant="body"
+                        size="medium"
+                        weight="regular"
+                        color="surface.text.gray.subtle"
+                      >
+                        Charge Slip
+                      </Text>
+                      <div
+                        onClick={openChargeSlip}
+                        onKeyDown={openChargeSlip}
+                        role="button"
+                        tabIndex={0}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <Box display="flex" flexDirection="row" alignItems="center">
+                          <Text
+                            variant="body"
+                            size="medium"
+                            weight="regular"
+                            color="surface.text.primary.normal"
+                          >
+                            {id}.png
+                          </Text>
+                          <IconButton
+                            icon={() => (
+                              <DownloadIcon
+                                marginLeft="spacing.3"
+                                size="medium"
+                                color="interactive.icon.primary.normal"
+                              />
+                            )}
+                            size="medium"
+                            accessibilityLabel="download"
+                            onClick={onDownloadClick}
+                          />
+                        </Box>
+                      </div>
+                    </RowWrapper>
+                  </>
+                ) : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <RowWrapper>
                   <Text

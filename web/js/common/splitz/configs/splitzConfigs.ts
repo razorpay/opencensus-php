@@ -1285,5 +1285,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: [/\/payments\/[a-zA-Z0-9_-]+/],
+      abExperiments: [
+        {
+          uniqueHashKey: 'pos_chargeslip',
+          experimentId: {
+            beta: 'O7dJCkcIy3JlsX',
+            production: 'O7dKubRkRw6pSc',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

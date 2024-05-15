@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
 
 import CardIcon from 'assets/transactions/card.svg';
 import UpiIcon from 'assets/transactions/upi.svg';
@@ -105,10 +105,25 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
 
     return <>{titleCase(method)}</>;
   };
+
+  const authCode = payment?.acquirer_data?.auth_code;
   return (
-    <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
-      {getPaymentMethod()}
-    </Text>
+    <Box display="flex" flexDirection="column">
+      <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
+        {getPaymentMethod()}
+      </Text>
+      {authCode ? (
+        <Text
+          marginTop="spacing.1"
+          variant="body"
+          size="medium"
+          weight="regular"
+          color="surface.text.gray.normal"
+        >
+          Auth Code: {authCode}
+        </Text>
+      ) : null}
+    </Box>
   );
 }
 
