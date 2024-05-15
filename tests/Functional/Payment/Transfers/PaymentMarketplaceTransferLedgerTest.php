@@ -298,6 +298,13 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
     }
 
+    public function testPaymentTransferReverseShadowSyncOutboxPush()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_LEDGER_OUTBOX_PUSH, 'on');
+
+        $this->testFullPaymentTransferReverseShadowOutboxPush();
+    }
+
     public function testPartialPaymentTransferReverseShadowOutboxPush()
     {
         $this->assertNotNull($this->payment);
@@ -3413,6 +3420,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertEquals($debitJID, $transferTxn['id'], 'transfer_txn_id does not match debit journalId');
         $this->assertNotNull($transferTxn['balance_id'], ' balance not updated in transfer_txn');
         $this->assertNotNull($transferTxn['debit'], 'amount not debited from transfer Txn');
+        $this->assertEquals($transfer['amount'], $transferTxn['amount'], 'amount not matching with transfer amount');
 
         $debitAMount = $transferTxn['debit'];
 

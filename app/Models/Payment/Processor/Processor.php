@@ -6514,15 +6514,7 @@ class Processor
 
     protected function checkIfPaymentTransferSyncProcessingAllowed(array $input, Payment\Entity $payment): array
     {
-        $transfersCount = count($input);
-
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API,
-            $this->mode
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
+        $isCustomerWalletTransfer = array_key_exists(TransferToType::CUSTOMER, $input);
 
         $transaction = $payment->transaction;
 
@@ -6533,7 +6525,41 @@ class Processor
             $txnAndBalanceUpdated = false;
         }
 
-        $isCustomerWalletTransfer = array_key_exists(TransferToType::CUSTOMER, $input);
+        if ($this->merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $variant = App::getFacadeRoot()->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::ENABLE_TRANSFER_SYNC_LEDGER_OUTBOX_PUSH,
+                $this->mode
+            );
+
+            $isExperimentEnabled = ($variant === 'on');
+
+            $this->trace->info(TraceCode::PAYMENT_TRANSFER_LEDGER_OUTBOX_PUSH_CHECK,
+                [
+                    'merchant'               => $this->merchant->getId(),
+                    'isExperimentEnabled'    => $isExperimentEnabled,
+                    'txnAndBalanceUpdated'   => $txnAndBalanceUpdated,
+                    'customerWalletTransfer' => $isCustomerWalletTransfer,
+                ]);
+
+            if (($isExperimentEnabled === true)
+                and ($isCustomerWalletTransfer === false)
+                and ($txnAndBalanceUpdated === true))
+            {
+                return [$isExperimentEnabled, true];
+            }
+        }
+
+        $transfersCount = count($input);
+
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API,
+            $this->mode
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
 
         $this->trace->info(TraceCode::PAYMENT_TRANSFER_SYNC_PROCESSING_CHECK,
             [
