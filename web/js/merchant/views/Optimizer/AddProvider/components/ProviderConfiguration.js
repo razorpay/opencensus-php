@@ -34,6 +34,7 @@ import WalletsMultiSelect from './WalletsMultiSelect';
 
 const ProviderConfiguration = (props) => {
   const {
+    isEdit,
     isFormEdit,
     selectedProvider,
     providers,
@@ -126,6 +127,8 @@ const ProviderConfiguration = (props) => {
     isIntegrationAuditEnabled(splitz) && isGatewaySupportIntegrationAudit(selectedProvider)
   );
 
+  const updateBlocked = isEdit ? !showMethods : false;
+
   return (
     <Box
       display="flex"
@@ -139,7 +142,7 @@ const ProviderConfiguration = (props) => {
           <Heading color="surface.text.gray.subtle" size="large">
             {selectedProviderDetails?.['Gateway Name']?.data_value || ''} Production API Details
           </Heading>
-          {isFormEdit && (
+          {isFormEdit && !updateBlocked && (
             <Box>
               <Text as="p" color="surface.text.gray.subtle">
                 Please make sure you{' '}
@@ -167,7 +170,7 @@ const ProviderConfiguration = (props) => {
         </Box>
 
         <Box display="flex" flexDirection="column" gap="spacing.3" alignItems="end">
-          {selectedProvider && !isFormEdit ? (
+          {selectedProvider && !isFormEdit && !updateBlocked ? (
             <Button
               icon={EditIcon}
               onClick={() => onEditClick(4)}
@@ -341,7 +344,7 @@ const ProviderConfiguration = (props) => {
                   <Text>{titleCase(label)}</Text>
                 </Box>
                 <Box minWidth="280px">
-                  {isFormEdit ? (
+                  {isFormEdit && !updateBlocked ? (
                     <TextInput
                       name={label}
                       placeholder={data_value}
@@ -382,7 +385,7 @@ const ProviderConfiguration = (props) => {
                     <Text>{titleCase(label)}</Text>
                   </Box>
                   <Box minWidth="280px">
-                    {isFormEdit ? (
+                    {isFormEdit && !updateBlocked ? (
                       <TextInput
                         name={label}
                         placeholder={data_value}
@@ -404,11 +407,11 @@ const ProviderConfiguration = (props) => {
             return null;
           })}
       </Box>
-      {isFormEdit && (
+      {(isFormEdit || (isEdit && updateBlocked)) && (
         <Box display="flex" justifyContent="end">
           <Box display="flex" alignItems="center" gap="spacing.7">
             <Button isLoading={isSubmitting} isDisabled={isSubmitDisabled} onClick={onSubmit}>
-              {!showMethods ? 'Test integration' : 'Submit'}
+              {!showMethods && !updateBlocked ? 'Test integration' : 'Submit'}
             </Button>
           </Box>
         </Box>

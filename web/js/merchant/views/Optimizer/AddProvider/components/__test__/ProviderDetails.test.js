@@ -18,6 +18,7 @@ describe('Add Provider > Provider Details', () => {
       },
       selectedProvider: null,
       validateStep: jest.fn(),
+      updateV3Flow: false,
     };
   });
 
@@ -51,5 +52,14 @@ describe('Add Provider > Provider Details', () => {
     expect(screen.getByText('mock provider')).toBeInTheDocument();
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('provider description')).toBeInTheDocument();
+  });
+
+  it('should not rendeer next button for integration audit udpate flow', () => {
+    const props = {
+      ...mockProps,
+      updateV3Flow: true,
+    };
+    render(<App {...props} />);
+    expect(screen.queryByText('Next')).not.toBeInTheDocument();
   });
 });

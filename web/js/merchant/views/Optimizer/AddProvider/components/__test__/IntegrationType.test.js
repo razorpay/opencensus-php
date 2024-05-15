@@ -19,6 +19,7 @@ describe('Add Provider > IntegrationType', () => {
       gatewayDetails: { optimizer_seamless_disabled: false },
       validateStep: jest.fn(),
       toggleIntegrationType: jest.fn(),
+      updateV3Flow: false,
     };
   });
 
@@ -121,5 +122,16 @@ describe('Add Provider > IntegrationType', () => {
     expect(screen.getByText('Banking VAS')).toBeInTheDocument();
     expect(screen.getByText('Bank', { exact: true })).toBeInTheDocument();
     expect(screen.getByText('Axis Bank')).toBeInTheDocument();
+  });
+
+  it('should hide edit button for integration audit flow gateway', () => {
+    const props = {
+      ...mockProps,
+      isEdit: true,
+      selectedProvider: 'payu',
+      updateV3Flow: true,
+    };
+    render(<App {...props} />);
+    expect(screen.queryByText('Edit Integration')).not.toBeInTheDocument();
   });
 });

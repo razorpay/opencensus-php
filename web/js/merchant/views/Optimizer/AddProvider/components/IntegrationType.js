@@ -40,6 +40,7 @@ const IntegrationType = (props) => {
     validateStep,
     onNextClick,
     onEditClick,
+    updateV3Flow,
   } = props;
 
   const [isBankingVasAccount, setIsBankingVasAccount] = useState(
@@ -232,14 +233,16 @@ const IntegrationType = (props) => {
           {isFormEdit || (isEdit && isAccountType) ? (
             <Text color="surface.text.gray.muted">STEP 2 OUT OF 4</Text>
           ) : (
-            <Button
-              icon={EditIcon}
-              onClick={() => onEditClick(2)}
-              variant="tertiary"
-              iconPosition="left"
-            >
-              {editButtonText}
-            </Button>
+            !updateV3Flow && (
+              <Button
+                icon={EditIcon}
+                onClick={() => onEditClick(2)}
+                variant="tertiary"
+                iconPosition="left"
+              >
+                {editButtonText}
+              </Button>
+            )
           )}
         </Box>
       </Box>

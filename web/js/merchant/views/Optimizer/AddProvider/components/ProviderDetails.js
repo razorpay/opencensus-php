@@ -19,6 +19,8 @@ const ProviderDetails = (props) => {
     validateStep,
     onNextClick,
     onEditClick,
+    updateV3Flow,
+    updateProviderDetails,
   } = props;
 
   return (
@@ -69,7 +71,7 @@ const ProviderDetails = (props) => {
                 value={provider.Provider_name}
                 validationState={isProviderNameValid ? 'none' : 'error'}
                 errorText="Name already exists. Please select a different name."
-                onChange={changeProviderDetails}
+                onChange={updateV3Flow ? updateProviderDetails : changeProviderDetails}
                 testID="provider-name"
               />
             ) : (
@@ -89,7 +91,7 @@ const ProviderDetails = (props) => {
                 placeholder="Details about the added provider"
                 value={provider.Description}
                 maxCharacters={150}
-                onChange={changeProviderDetails}
+                onChange={updateV3Flow ? updateProviderDetails : changeProviderDetails}
                 testID="provider-description"
               />
             ) : (
@@ -100,7 +102,7 @@ const ProviderDetails = (props) => {
           </Box>
         </Box>
       </Box>
-      {isFormEdit && (
+      {isFormEdit && !updateV3Flow && (
         <Box display="flex" justifyContent="end">
           <Box display="flex" alignItems="center" gap="spacing.7">
             <Button isDisabled={validateStep(3)} onClick={onNextClick}>

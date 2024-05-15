@@ -79,10 +79,33 @@ describe('Add Provider > ProviderConfiguration', () => {
             integration_audit: { variables: { result: 'on' } },
           },
         },
+        selectedProvider: 'payu',
+        provider: {
+          Provider_name: 'payu test 1',
+          Description: 'test',
+          Gateway: 'payu',
+          Gateway_details: {
+            'Payment Methods': null,
+          },
+        },
+      };
+      render(<App {...props} />);
+      expect(screen.queryByText('Payment Methods')).toBeNull();
+      expect(screen.getByText('Test integration')).toBeInTheDocument();
+    });
+
+    it('should not allow edit for integration audit update flow', () => {
+      const props = {
+        ...mockProps,
+        splitz: {
+          abExperiments: {
+            integration_audit: { variables: { result: 'on' } },
+          },
+        },
+        isEdit: true,
       };
       render(<App {...props} {...PAYU_PROVIDER} />);
-      expect(screen.queryByText('Payment Methods')).not.toBeInTheDocument();
-      expect(screen.getByText('Test integration')).toBeInTheDocument();
+      expect(screen.queryByText('Edit Details')).toBeNull();
     });
   });
 
