@@ -1157,20 +1157,20 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function fetchSmartRoutingRulesForMerchant()
+    public function fetchSmartRoutingRulesForMerchantViaAdmin()
     {
         $input = Request::all();
 
-        $data = $this->service()->fetchSmartRoutingRulesForMerchant($input);
+        $data = $this->service()->fetchSmartRoutingRulesForMerchantViaAdmin($input);
 
         return ApiResponse::json($data);
     }
 
-    public function modifySmartRoutingRulesForMerchant()
+    public function modifySmartRoutingRulesForMerchantViaAdmin()
     {
         $input = Request::all();
 
-        $data = $this->service()->modifySmartRoutingRulesForMerchant($input);
+        $data = $this->service()->modifySmartRoutingRulesForMerchantViaAdmin($input);
 
         return ApiResponse::json($data);
     }

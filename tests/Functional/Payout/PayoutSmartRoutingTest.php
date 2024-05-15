@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Card\Type;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Issuer;
@@ -2582,7 +2583,15 @@ class PayoutSmartRoutingTest extends TestCase
 
         $this->setupLiteAndDirectAccountsForMerchants(1, 2);
 
-        $this->ba->privateAuth();
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::FTS_ROUTING_RULES_UPDATE]);
+
+        $role->permissions()->attach($perm->getId());
 
         $this->fixtures->merchant->addFeatures([Features::RBL_CA_UPI]);
 
@@ -2624,7 +2633,15 @@ class PayoutSmartRoutingTest extends TestCase
 
         $this->setupLiteAndDirectAccountsForMerchants(1, 2);
 
-        $this->ba->privateAuth();
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::FTS_ROUTING_RULES_UPDATE]);
+
+        $role->permissions()->attach($perm->getId());
 
         $this->mockDcsConfigFetchAllowedUPIChannel(2);
 
@@ -2660,7 +2677,15 @@ class PayoutSmartRoutingTest extends TestCase
 
         $this->setupLiteAndDirectAccountsForMerchants(0, 2);
 
-        $this->ba->privateAuth();
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::FTS_ROUTING_RULES_UPDATE]);
+
+        $role->permissions()->attach($perm->getId());
 
         $this->mockDcsConfigFetchAllowedUPIChannel(2);
 
@@ -2694,7 +2719,15 @@ class PayoutSmartRoutingTest extends TestCase
 
         $this->setupLiteAndDirectAccountsForMerchants(1, 2);
 
-        $this->ba->privateAuth();
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::FTS_ROUTING_RULES_UPDATE]);
+
+        $role->permissions()->attach($perm->getId());
 
         $this->mockDcsConfigFetchAllowedUPIChannel(2);
 
@@ -2715,7 +2748,15 @@ class PayoutSmartRoutingTest extends TestCase
     {
         $this->liveSetUp();
 
-        $this->ba->privateAuth();
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::FTS_ROUTING_RULES_UPDATE]);
+
+        $role->permissions()->attach($perm->getId());
 
         $this->mockDcsConfigFetchAllowedUPIChannel(2);
 
@@ -2736,7 +2777,15 @@ class PayoutSmartRoutingTest extends TestCase
 
         $this->setupLiteAndDirectAccountsForMerchants(1, 2);
 
-        $this->ba->privateAuth();
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::FTS_ROUTING_RULES_UPDATE]);
+
+        $role->permissions()->attach($perm->getId());
 
         $this->mockDcsConfigFetchAllowedUPIChannel(2);
 

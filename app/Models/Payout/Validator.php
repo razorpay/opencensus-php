@@ -2119,9 +2119,50 @@ class Validator extends Base\Validator
     /**
      * @throws BadRequestValidationFailureException
      */
-    public function validateSmartRoutingRules($payload): void
+    public function validateSmartRoutingRulesFTSResponse($payload): void
     {
         foreach ($payload as $transferMode => $channels)
+        {
+            if (!in_array(strtoupper($transferMode), Entity::PAYOUTS_SMART_ROUTING_RULES_ALLOWED_MODES)) {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid mode received.",
+                    null,
+                    [
+                        'mode' => $transferMode
+                    ]
+                );
+            }
+
+            foreach ($channels as $channel)
+            {
+                if (!in_array(strtolower($channel), Entity::PAYOUTS_SMART_ROUTING_RULES_ALLOWED_CHANNELS)) {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "Invalid channel received.",
+                        null,
+                        [
+                            'channel' => $channel
+                        ]
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateSmartRoutingRulesPayoutsModifyRequest($payload): void
+    {
+        $merchantID = $payload[Entity::MERCHANT_ID];
+        $merchantCustomizedPriorities = $payload[Core::MERCHANT_CUSTOMIZED_PRIORITY_RULES];
+
+        if(!is_string($merchantID) || empty($merchantID)) {
+            throw new Exception\BadRequestValidationFailureException(
+                "merchantID should be a non-empty string"
+            );
+        }
+
+        foreach ($merchantCustomizedPriorities as $transferMode => $channels)
         {
             if (!in_array(strtoupper($transferMode), Entity::PAYOUTS_SMART_ROUTING_RULES_ALLOWED_MODES)) {
                 throw new Exception\BadRequestValidationFailureException(

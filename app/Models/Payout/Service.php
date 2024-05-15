@@ -6182,7 +6182,7 @@ class Service extends Base\Service
     /**
      * @throws BadRequestException
      */
-    public function fetchSmartRoutingRulesForMerchant($input): array
+    public function fetchSmartRoutingRulesForMerchantViaAdmin($input): array
     {
         $response = [];
         try
@@ -6230,12 +6230,12 @@ class Service extends Base\Service
     /**
      * @throws BadRequestException
      */
-    public function modifySmartRoutingRulesForMerchant($input): array
+    public function modifySmartRoutingRulesForMerchantViaAdmin($input): array
     {
         $response = [];
         try
         {
-            (new Validator)->validateSmartRoutingRules($input);
+            (new Validator)->validateSmartRoutingRulesPayoutsModifyRequest($input);
 
             // Sample response: ["IMPS" => ["RBL", "ICICI", "SHARED"], "NEFT" => ["YESBANK", "SHARED", "RBL"], "UPI" => ["RBL"]]
             $response = $this->core->modifySmartRoutingRulesForMerchant($input);

@@ -608,8 +608,6 @@ class Name
     const VIEW_PAYOUT                         = 'view_payout';
     const CANCEL_PAYOUT                       = 'cancel_payout';
     const UPDATE_PAYOUT                       = 'update_payout';
-    const FETCH_SMART_ROUTING_RULES           = 'fetch_smart_routing_rules';
-    const MODIFY_SMART_ROUTING_RULES          = 'modify_smart_routing_rules';
     const DOWNLOAD_PAYOUT_ATTACHMENTS         = 'download_payout_attachments';
     const UPDATE_PAYOUT_ATTACHMENT            = 'update_payout_attachment';
     const VIEW_PAYOUT_PURPOSE                 = 'view_payout_purpose';

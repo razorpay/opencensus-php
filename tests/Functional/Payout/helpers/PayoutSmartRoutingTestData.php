@@ -1089,6 +1089,7 @@ return [
             'method'  => 'GET',
             'url'     => '/payouts/smart_routing_rules',
             'content' => [
+                'merchant_id' => '10000000000000',
             ],
         ],
         'response' => [
@@ -1116,6 +1117,7 @@ return [
             'method'  => 'GET',
             'url'     => '/payouts/smart_routing_rules',
             'content' => [
+                'merchant_id' => '10000000000000',
             ],
         ],
         'response' => [
@@ -1139,6 +1141,7 @@ return [
             'method'  => 'GET',
             'url'     => '/payouts/smart_routing_rules',
             'content' => [
+                'merchant_id' => '10000000000000',
             ],
         ],
         'response' => [
@@ -1160,6 +1163,7 @@ return [
             'method'  => 'GET',
             'url'     => '/payouts/smart_routing_rules',
             'content' => [
+                'merchant_id' => '10000000000000',
             ],
         ],
         'response' => [
@@ -1181,6 +1185,7 @@ return [
             'method'  => 'GET',
             'url'     => '/payouts/smart_routing_rules',
             'content' => [
+                'merchant_id' => '10000000000000',
             ],
         ],
         'response' => [
@@ -1202,16 +1207,19 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts/smart_routing_rules',
             'content' => [
-                'IMPS' => [
-                    'RBL',
-                    'ICICI',
-                    'SHARED'
+                'merchant_id' => '10000000000000',
+                'merchant_customized_priority_rules' => [
+                    'IMPS' => [
+                        'RBL',
+                        'ICICI',
+                        'SHARED'
+                    ],
+                    'NEFT' => [
+                        'ICICI',
+                        'RBL',
+                        'SHARED'
+                    ],
                 ],
-                'NEFT' => [
-                    'ICICI',
-                    'RBL',
-                    'SHARED'
-                ]
             ],
         ],
         'response' => [

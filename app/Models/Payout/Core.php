@@ -11385,10 +11385,8 @@ class Core extends Base\Core
         return $harvesterPayload;
     }
 
-    public function initializeFtsRequestForFetchSmartRoutingRules(array $modeWiseActiveChannelsWithFundAccountIDs = null) : array
+    public function initializeFtsRequestForFetchSmartRoutingRules($merchantID, array $modeWiseActiveChannelsWithFundAccountIDs = null) : array
     {
-        $merchantID = $this->merchant->getId();
-
         $ftsRequest = [];
 
         foreach ($modeWiseActiveChannelsWithFundAccountIDs as $mode => $activeChannelsWithFundAccountIDs) {
@@ -11413,9 +11411,7 @@ class Core extends Base\Core
         return $ftsRequest;
     }
 
-    public function getActiveChannelsWithFundAccountsForSmartRoutingRules($merchant) : array {
-        $merchantID = $merchant->getId();
-
+    public function getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID) : array {
         $channelShared = strtoupper(Balance\AccountType::SHARED);
 
         // Fetching lite balances
@@ -11454,7 +11450,7 @@ class Core extends Base\Core
                 try
                 {
                     $ftsFundAccountId = app('banking_account_service')->fetchFtsFundAccountIdFromBas(
-                        $merchant->getId(), $channel, $accountNumber);
+                        $merchantID, $channel, $accountNumber);
                 }
                 catch (\Throwable $ex)
                 {
@@ -11463,7 +11459,7 @@ class Core extends Base\Core
                         null,
                         TraceCode::SMART_ROUTING_RULES_BAS_FETCH_FAILED,
                         [
-                            'merchant_id'    => $merchant->getId(),
+                            'merchant_id'    => $merchantID,
                             'bas_details_id' => $activeBasDetail->getId(),
                             'balance_id'     => $activeBasDetail->getBalanceId(),
                         ]);
@@ -11509,7 +11505,7 @@ class Core extends Base\Core
      */
     public function fetchSmartRoutingRulesForMerchant($input): array
     {
-        $merchantID = $this->merchant->getId();
+        $merchantID = $input[Entity::MERCHANT_ID];
 
         $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_API_REQUEST, [
             Entity::MERCHANT_ID => $merchantID,
@@ -11520,7 +11516,7 @@ class Core extends Base\Core
         /* ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907, 'SHARED' => ''],
             'NEFT' => ['RBL' => 123456, 'ICICI' => 78907, 'SHARED' => ''],
             'UPI' => ['RBL' => 123456, 'SHARED' => '']] */
-        $activeChannelsWithFundAccounts = $this->getActiveChannelsWithFundAccountsForSmartRoutingRules($this->merchant);
+        $activeChannelsWithFundAccounts = $this->getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID);
 
         $activeChannelsNonUPICount = count($activeChannelsWithFundAccounts[Mode::IMPS]);
         $activeChannelsUPICount = count($activeChannelsWithFundAccounts[Mode::UPI]);
@@ -11554,7 +11550,7 @@ class Core extends Base\Core
             }
         } */
 
-        $ftsRequest = $this->initializeFtsRequestForFetchSmartRoutingRules($activeChannelsWithFundAccounts);
+        $ftsRequest = $this->initializeFtsRequestForFetchSmartRoutingRules($merchantID, $activeChannelsWithFundAccounts);
 
         /** @var \RZP\Services\FTS\FundTransfer $ftsService */
 
@@ -11568,7 +11564,7 @@ class Core extends Base\Core
 
             $modeWiseChannelPriorities = $ftsResponse[self::MERCHANT_ROUTING_PRIORITIES];
 
-            (new Validator())->validateSmartRoutingRules($modeWiseChannelPriorities);
+            (new Validator())->validateSmartRoutingRulesFTSResponse($modeWiseChannelPriorities);
         } catch (\Throwable $ex) {
             $this->trace->traceException(
                 $ex, Logger::ERROR, TraceCode::FETCH_SMART_ROUTING_RULES_FTS_REQUEST_FAILED,
@@ -11599,7 +11595,8 @@ class Core extends Base\Core
      */
     public function modifySmartRoutingRulesForMerchant($input): array
     {
-        $merchantID = $this->merchant->getId();
+        $merchantID = $input[Entity::MERCHANT_ID];
+        $merchantCustomizedPriorities = $input[self::MERCHANT_CUSTOMIZED_PRIORITY_RULES];
 
         $this->trace->info(TraceCode::MODIFY_SMART_ROUTING_RULES_API_REQUEST, [
             Entity::MERCHANT_ID => $merchantID,
@@ -11610,7 +11607,7 @@ class Core extends Base\Core
         /* ['IMPS' => ['RBL' => 123456, 'ICICI' => 78907],
             'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
             'UPI' => ['RBL' => 123456]] */
-        $activeChannelsWithFundAccounts = $this->getActiveChannelsWithFundAccountsForSmartRoutingRules($this->merchant);
+        $activeChannelsWithFundAccounts = $this->getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID);
 
         $activeChannelsNonUPICount = count($activeChannelsWithFundAccounts[Mode::IMPS]);
         $activeChannelsUPICount = count($activeChannelsWithFundAccounts[Mode::UPI]);
@@ -11654,8 +11651,8 @@ class Core extends Base\Core
         }
     } */
 
-        $ftsRequest = $this->initializeFtsRequestForFetchSmartRoutingRules($activeChannelsWithFundAccounts);
-        $ftsRequest[self::MERCHANT_CUSTOMIZED_PRIORITY_RULES] = $input;
+        $ftsRequest = $this->initializeFtsRequestForFetchSmartRoutingRules($merchantID, $activeChannelsWithFundAccounts);
+        $ftsRequest[self::MERCHANT_CUSTOMIZED_PRIORITY_RULES] = $merchantCustomizedPriorities;
 
         /** @var \RZP\Services\FTS\FundTransfer $ftsService */
 
@@ -11669,7 +11666,7 @@ class Core extends Base\Core
 
             $modeWiseChannelPriorities = $ftsResponse[self::MERCHANT_ROUTING_PRIORITIES];
 
-            (new Validator())->validateSmartRoutingRules($modeWiseChannelPriorities);
+            (new Validator())->validateSmartRoutingRulesFTSResponse($modeWiseChannelPriorities);
         } catch (\Throwable $ex) {
             $this->trace->traceException(
                 $ex, Logger::ERROR, TraceCode::MODIFY_SMART_ROUTING_RULES_FTS_REQUEST_FAILED,
