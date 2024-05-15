@@ -94,6 +94,9 @@ importers:
       cz-conventional-changelog:
         specifier: ^3.2.0
         version: 3.3.0(@types/node@17.0.41)(typescript@4.9.3)
+      dotenv:
+        specifier: 8.2.0
+        version: 8.2.0
       eslint-import-resolver-jest:
         specifier: ^3.0.2
         version: 3.0.2(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.27.0))
@@ -707,6 +710,9 @@ importers:
       '@babel/core':
         specifier: 7.17.8
         version: 7.17.8
+      '@babel/plugin-proposal-class-properties':
+        specifier: 7.16.7
+        version: 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-decorators':
         specifier: 7.8.3
         version: 7.8.3(@babel/core@7.17.8)
@@ -1200,13 +1206,6 @@ packages:
 
   '@babel/plugin-proposal-class-properties@7.16.7':
     resolution: {integrity: sha512-IobU0Xme31ewjYOShSIqd/ZGM/r/cuOz2z0MDbNrhF5FW+ZVgi0f2lyeoj9KFPDOAqsYxmLWZte1WOwlvY9aww==}
-    engines: {node: '>=6.9.0'}
-    deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties instead.
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-
-  '@babel/plugin-proposal-class-properties@7.18.6':
-    resolution: {integrity: sha512-cumfXOF0+nzZrrN8Rf0t7M+tF6sZc7vhQwYQck9q1/5w2OExlD+b4v4RpMJFaV1Z7WcDRgO6FqvxqxGlwo+RHQ==}
     engines: {node: '>=6.9.0'}
     deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties instead.
     peerDependencies:
@@ -19976,19 +19975,13 @@ snapshots:
       '@babel/helper-remap-async-to-generator': 7.22.20(@babel/core@7.17.8)
       '@babel/plugin-syntax-async-generators': 7.8.4(@babel/core@7.17.8)
 
-  '@babel/plugin-proposal-class-properties@7.16.7(@babel/core@7.17.8)':
-    dependencies:
-      '@babel/core': 7.17.8
-      '@babel/helper-create-class-features-plugin': 7.24.4(@babel/core@7.17.8)
-      '@babel/helper-plugin-utils': 7.24.0
-
-  '@babel/plugin-proposal-class-properties@7.18.6(@babel/core@7.12.9)':
+  '@babel/plugin-proposal-class-properties@7.16.7(@babel/core@7.12.9)':
     dependencies:
       '@babel/core': 7.12.9
       '@babel/helper-create-class-features-plugin': 7.24.4(@babel/core@7.12.9)
       '@babel/helper-plugin-utils': 7.24.0
 
-  '@babel/plugin-proposal-class-properties@7.18.6(@babel/core@7.17.8)':
+  '@babel/plugin-proposal-class-properties@7.16.7(@babel/core@7.17.8)':
     dependencies:
       '@babel/core': 7.17.8
       '@babel/helper-create-class-features-plugin': 7.24.4(@babel/core@7.17.8)
@@ -21544,7 +21537,7 @@ snapshots:
       '@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-bugfix-v8-spread-parameters-in-optional-chaining': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-async-generator-functions': 7.20.7(@babel/core@7.17.8)
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.17.8)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-class-static-block': 7.21.0(@babel/core@7.17.8)
       '@babel/plugin-proposal-dynamic-import': 7.18.6(@babel/core@7.17.8)
       '@babel/plugin-proposal-export-namespace-from': 7.18.9(@babel/core@7.17.8)
@@ -27830,7 +27823,7 @@ snapshots:
   '@storybook/builder-webpack4@6.2.9(@types/react@17.0.39)(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(typescript@4.9.3)(vue-template-compiler@2.7.16)':
     dependencies:
       '@babel/core': 7.17.8
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.17.8)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-decorators': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-export-default-from': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.17.8)
@@ -27915,7 +27908,7 @@ snapshots:
   '@storybook/builder-webpack4@6.2.9(@types/react@17.0.39)(eslint@8.57.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(typescript@5.3.3)(vue-template-compiler@2.7.16)':
     dependencies:
       '@babel/core': 7.17.8
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.17.8)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-decorators': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-export-default-from': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.17.8)
@@ -28000,7 +27993,7 @@ snapshots:
   '@storybook/builder-webpack4@6.3.1(@types/react@17.0.39)(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(typescript@4.9.3)(vue-template-compiler@2.7.16)':
     dependencies:
       '@babel/core': 7.17.8
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.17.8)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-decorators': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-export-default-from': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.17.8)
@@ -28403,7 +28396,7 @@ snapshots:
   '@storybook/core-common@6.2.9(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(typescript@4.9.3)(vue-template-compiler@2.7.16)':
     dependencies:
       '@babel/core': 7.17.8
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.17.8)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-decorators': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-export-default-from': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.17.8)
@@ -28464,7 +28457,7 @@ snapshots:
   '@storybook/core-common@6.2.9(eslint@8.57.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(typescript@5.3.3)(vue-template-compiler@2.7.16)':
     dependencies:
       '@babel/core': 7.17.8
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.17.8)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-decorators': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-export-default-from': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.17.8)
@@ -28525,7 +28518,7 @@ snapshots:
   '@storybook/core-common@6.3.1(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(typescript@4.9.3)(vue-template-compiler@2.7.16)':
     dependencies:
       '@babel/core': 7.17.8
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.17.8)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-decorators': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-export-default-from': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.17.8)
@@ -32687,7 +32680,7 @@ snapshots:
   babel-preset-fbjs@3.4.0(@babel/core@7.17.8):
     dependencies:
       '@babel/core': 7.17.8
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.17.8)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-object-rest-spread': 7.20.7(@babel/core@7.17.8)
       '@babel/plugin-syntax-class-properties': 7.12.13(@babel/core@7.17.8)
       '@babel/plugin-syntax-flow': 7.24.1(@babel/core@7.17.8)
@@ -40586,7 +40579,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.17.8
       '@babel/parser': 7.24.4
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.17.8)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.17.8)
       '@babel/plugin-proposal-optional-chaining': 7.21.0(@babel/core@7.17.8)
       '@babel/plugin-transform-modules-commonjs': 7.24.1(@babel/core@7.17.8)
@@ -41731,7 +41724,7 @@ snapshots:
   metro-react-native-babel-preset@0.66.2(@babel/core@7.12.9):
     dependencies:
       '@babel/core': 7.12.9
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.12.9)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.12.9)
       '@babel/plugin-proposal-export-default-from': 7.24.1(@babel/core@7.12.9)
       '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.12.9)
       '@babel/plugin-proposal-object-rest-spread': 7.20.7(@babel/core@7.12.9)
@@ -41776,7 +41769,7 @@ snapshots:
   metro-react-native-babel-preset@0.66.2(@babel/core@7.17.8):
     dependencies:
       '@babel/core': 7.17.8
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.17.8)
+      '@babel/plugin-proposal-class-properties': 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-export-default-from': 7.24.1(@babel/core@7.17.8)
       '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.17.8)
       '@babel/plugin-proposal-object-rest-spread': 7.20.7(@babel/core@7.17.8)

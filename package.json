@@ -79,6 +79,7 @@
     "babel-jest": "29.2.0",
     "commitizen": "^4.2.4",
     "cz-conventional-changelog": "^3.2.0",
+    "dotenv": "8.2.0",
     "eslint-import-resolver-jest": "^3.0.2",
     "eslint-import-resolver-typescript": "3.6.1",
     "eslint-plugin-i18n-rules": "file:./plugins/i18n-rules",
