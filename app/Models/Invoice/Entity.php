@@ -1587,6 +1587,8 @@ class Entity extends Base\PublicEntity
 
     protected function getPaymentIdAttribute()
     {
+        $trace = App::getFacadeRoot()['trace'];
+
         $orderId = $this->getOrderId();
 
         //
@@ -1604,6 +1606,14 @@ class Entity extends Base\PublicEntity
 
         if ($payment !== null)
         {
+            $trace->info(TraceCode::INVOICE_PAYMENT_GET_PAYMENT_ID_ATTRIBUTE,
+                [
+                    'orderId'   => $orderId,
+                    'invoiceId' => $this->getId(),
+                    'paymentId' => $payment->getPublicId(),
+                    'cpsRoute'  => $payment->getCpsRoute(),
+                ]);
+
             return $payment->getPublicId();
         }
 

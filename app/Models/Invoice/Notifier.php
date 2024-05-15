@@ -227,6 +227,13 @@ class Notifier extends Base\Core
 
         $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
 
+        $this->trace->info(
+            TraceCode::INVOICE_EMAIL_ISSUED_REQUEST_VIEW_PAYLOAD,
+            [
+                'invoice_id'     => $this->invoice->getId(),
+                'payload'        => $viewPayload,
+            ]);
+
         if (($reminder === true) and (empty($newShortUrl) === false))
         {
             $viewPayload['reminder'] = true;

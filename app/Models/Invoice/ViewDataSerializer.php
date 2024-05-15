@@ -25,6 +25,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\PaymentLink\Template\UdfSchema;
+use RZP\Trace\TraceCode;
 
 /**
  * This class is common source of invoice and related data to be sent
@@ -781,9 +782,18 @@ class ViewDataSerializer extends Base\Core
 
             $viewType = $externalEntity->getAttribute(PaymentLink\Entity::VIEW_TYPE);
 
-            $order = $this->invoice->order;
+            $orderId = $this->invoice->getOrderId();
+            $merchantId = $this->invoice->getMerchantId();
 
-            $payment = $this->getCapturedPaymentForOrder($order);
+            $payment = $this->getCapturedPaymentForOrderId($orderId, $merchantId);
+
+            if($payment === null) {
+                $this->trace->info(TraceCode::INVOICE_PAYMENT_NULL_GET_CAPTURED_PAYMENT,
+                    [
+                        'orderId'   => $orderId,
+                        'invoiceId' => $this->invoice->getId(),
+                    ]);
+            }
 
             $paymentFormatted = [];
 
@@ -875,6 +885,42 @@ class ViewDataSerializer extends Base\Core
         }
 
         return $validPayments;
+    }
+
+    protected function getCapturedPaymentForOrderId($orderId, $merchantId)
+    {
+        try {
+            $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($orderId, $merchantId);
+
+            $rearchPayments = $this->app['pg_router']->fetchOrderPayments($orderId, $merchantId);
+
+            $payments = $apiPayments->merge($rearchPayments);
+
+            $this->trace->info(TraceCode::INVOICE_PAYMENTS_GET_CAPTURED_PAYMENT,
+                [
+                    'apiPayments'    => $apiPayments->toArrayPublic(),
+                    'rearchPayments' => $rearchPayments->toArrayPublic(),
+                ]);
+
+            foreach ($payments as $payment)
+            {
+                if ($payment->getStatus() === Payment\Status::CAPTURED)
+                {
+                    return $payment;
+                }
+            }
+
+        } catch(\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::INVOICE_CAPTURED_PAYMENTS_FETCH_ERROR
+            );
+
+            return $this->repo->payment->getCapturedPaymentForOrder($orderId);
+        }
+
+        return null;
     }
 
     protected function getCapturedPaymentForOrder(Order\Entity $order)
