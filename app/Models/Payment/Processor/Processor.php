@@ -1740,6 +1740,7 @@ class Processor
             Card\Entity::CVV                    => $input['card']['cvv'] ?? null,
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::REWARD                 => $input['card']['reward'],
+            Card\Entity::GLOBAL_FINGERPRINT     => $card->getGlobalFingerPrint() ?? "",
         ];
 
         if ( $card->getVault() === Card\Vault::HDFC)
