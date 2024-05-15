@@ -46,6 +46,7 @@ export const METHODS_MAP = {
   upi: 'UPI',
   wallet: 'Wallet',
   sodexo: 'Sodexo',
+  cod: 'Cash on Delivery (COD)',
 };
 
 export const INIT_PROVIDER_STATE = {
