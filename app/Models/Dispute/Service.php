@@ -554,14 +554,7 @@ class Service extends Base\Service
         // Fetching Reason ID from dispute_reasons table
         $reasons = (new Reason\Service())->getReasonFromAttributes($network, $networkCode, $reasonCode);
 
-        if (count($reasons) !== 1)
-        {
-            throw new Exception\RecoverableException(
-                'There are no entries/more than 1 entries in DB for the given combination of network_code and reason_code'
-            );
-        }
-
-        return $reasons[0];
+        return $reasons;
     }
 
     /**
