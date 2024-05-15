@@ -2,6 +2,7 @@
 
 namespace App\Edge;
 
+use App\Constants\Constants;
 use Config;
 use Cookie;
 
@@ -19,7 +20,6 @@ use Razorpay\Api\Errors\ErrorCode;
 class EdgeClient
 {
     const X_EDGE_USER_JTI  = 'X-Edge-User-Jti';
-    const RZP_ACCESS_TOKEN = 'rzp_access_token';
 
     const REVOKE_TOKEN_FEATURE_FLAG    = 'edge_logout_flow_enabled';
     const REISSUE_TOKEN_FEATURE_FLAG   = 'edge_switch_merchant_enabled';
@@ -126,8 +126,9 @@ class EdgeClient
 
 
         // skip token reissue if rzp_access_token cookie is not set in the request
-        $token = Cookie::get(self::RZP_ACCESS_TOKEN);
-        if (!$token) {
+        $access_token = Cookie::get(Constants::RZP_ACCESS_TOKEN);
+        $refresh_token = Cookie::get(Constants::RZP_REFRESH_TOKEN);
+        if (!$access_token || !$refresh_token) {
             // TODO: throw exceptions when we move out of shadow mode
 //            throw new ServerErrorException(
 //                "Failed to reissue user token at edge, cookie not found",
@@ -138,7 +139,8 @@ class EdgeClient
 
         $params = [
             'merchant_id' => $merchant_id,
-            'token' => $token,
+            'access_token' => $access_token,
+            'refresh_token' => $refresh_token,
             'role' => $this->getMerchantRoleById($user, $merchant_id),
             'is_verified' => $user->contact_mobile_verified or $user->confirmed
         ];

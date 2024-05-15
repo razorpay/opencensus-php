@@ -32,12 +32,10 @@ class ApiResponseForwarderTest extends BaseTestCase
         return $app;
     }
 
-    public function testRouteToResponseHeaders()
+    public function testResponseHeaders()
     {
-        foreach (ApiResponseForwarder::ROUTE_TO_RESPONSE_HEADERS as $apiRoute => $headers) {
-            $this->assertTrue(is_string($apiRoute));
-            $this->assertTrue(is_array($headers));
-            $this->assertFalse(isset($headers[0]));
+        foreach (ApiResponseForwarder::RESPONSE_HEADERS as $apiHeaders => $headers) {
+            $this->assertTrue(is_string($apiHeaders));
             $this->assertNotEmpty($headers);
         }
     }
@@ -66,7 +64,7 @@ class ApiResponseForwarderTest extends BaseTestCase
             'set-cookie' => ['value'],
             'other' => ['other_value']
         ]);
-        $this->assertEmpty($edgeResponseForwarder->getHeaders());
+        $this->assertSame([], $edgeResponseForwarder->getHeaders());
     }
 
     public function testSetHeadersNonWhitelistedRouteAndEmptyHeaders()

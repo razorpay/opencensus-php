@@ -11,22 +11,19 @@ use App\Trace\TraceCode;
  */
 class ApiResponseForwarder
 {
+    const COOKIE_HEADER = "set-cookie";
 
     /**
-     * Stores the list of headers to be forwarded
-     * from API response back to client against each dashboard route
+     * Stores the list of headers to be that needs to be present
+     * in API response, if yes then forward otherwise return. (Not dependent on Route)
      * true is a dummy value (even false will make the key whitelisted)
      * or more details please refer working of array_intersect_key here
      * https://www.php.net/manual/en/function.array-intersect-key.php
      * @var array
      */
-    const ROUTE_TO_RESPONSE_HEADERS = [
-        'POST users/login' => [
-            "set-cookie" => true,
-        ]
+    const RESPONSE_HEADERS = [
+        self::COOKIE_HEADER => true
     ];
-
-    const COOKIE_HEADER = "set-cookie";
 
     /**
      * Headers to be forwarded back to client from API
@@ -48,19 +45,17 @@ class ApiResponseForwarder
     public function setHeaders(string $path, string $method, array $allHeaders): void
     {
         try {
-                $apiRoute = strtoupper($method) . ' ' . $path;
-                if (!array_key_exists($apiRoute, self::ROUTE_TO_RESPONSE_HEADERS)) {
+                // array_intersect_key is being used as $allHeaders has both header key and values
+                $whitelistedHeaders = array_intersect_key($allHeaders,
+                    self::RESPONSE_HEADERS
+                );
+                // Return if the interesect doesn't have any value
+                if ( empty($whitelistedHeaders) ) {
                     return;
                 }
 
-                // array_intersect_key is being used as $allHeaders has both header key and values
-                $whitelistedHeaders = array_intersect_key($allHeaders,
-                    self::ROUTE_TO_RESPONSE_HEADERS[$apiRoute]
-                );
-
                 foreach ($whitelistedHeaders as $key => $value) {
                     if ($key === self::COOKIE_HEADER) {
-
                         if (is_array($value)) {
                             foreach ($value as $cookie) {
                                 $this->setCookies($cookie);

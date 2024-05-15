@@ -48,6 +48,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use hisorange\BrowserDetect\Parser as BrowserDetect;
 use App\Constants\Constants as AppConstants;
 use App\Admin\ApiPromiseAny as ApiPromiseAny;
+use function PHPUnit\Framework\at;
 
 const EVENT_TRIGGER_COUNT = 1;
 class Service extends Base\Service
@@ -89,6 +90,7 @@ class Service extends Base\Service
     const SALES_FORCE_LEADS_PROMISE = 'create_lead_sales_force';
 
     const RZP_ACCESS_TOKEN = 'rzp_access_token';
+    const RZP_REFRESH_TOKEN = 'rzp_refresh_token';
 
     const PROMISES_PARALLEL_API_CALL = [
         self::EXPERIMENT_PROMISE,
@@ -1092,12 +1094,14 @@ class Service extends Base\Service
 
             if (! empty($data)) {
                 // laravel cookies allows ttl only in minutes
-                $ttl = $data['ttl']/60;
+                $rt_ttl = $data['refresh_token_ttl']/60;
+                $at_ttl = $data['access_token_ttl']/60;
 
                 // set the reissued token to cookie
                 // we are explicitly setting the cookie domain as null and path as '/'
                 // similar to how it's being set for rzp_usr_session.
-                Cookie::queue(self::RZP_ACCESS_TOKEN, $data['token'], $ttl, "/", null, true, true);
+                Cookie::queue(self::RZP_ACCESS_TOKEN, $data['access_token'], $at_ttl, "/", null, true, true);
+                Cookie::queue(self::RZP_REFRESH_TOKEN, $data['refresh_token'], $rt_ttl, "/", null, true, true);
             }
 
             Session::put('current_merchant_id', $merchantId);
