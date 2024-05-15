@@ -12,6 +12,6 @@ export const FORM_INITIAL_VALUES = {
   file: null,
 };
 
-export const SUPPORT_TICKETS_URL = '/app/business-settings/ticket-support/tickets/merchant';
+export const SUPPORT_TICKETS_URL = '/business-settings/ticket-support/tickets/merchant';
 export const SAMPLE_XML_FILE =
   'https://cdn.razorpay.com/static/assets/international/block-rule-sample.xlsx';

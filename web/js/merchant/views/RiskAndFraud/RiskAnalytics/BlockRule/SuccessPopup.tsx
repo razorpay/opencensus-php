@@ -21,7 +21,7 @@ const SuccessPopup = ({ isOpen = false, ticketId, onDismiss }: SuccessPopupProps
   };
 
   return (
-    <Modal isOpen={isOpen} onDismiss={onDismiss} zIndex={1000}>
+    <Modal isOpen={isOpen} onDismiss={onDismiss} zIndex={10000}>
       <ModalHeader title="Request sent successfully" />
       <ModalBody>
         <Text>

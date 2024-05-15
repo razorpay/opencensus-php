@@ -11,7 +11,6 @@ describe('validateForm function', () => {
     const errors = validateForm(values);
 
     expect(errors.parameters).toBe('This field is required');
-    expect(errors.email).toBe('This field is required');
     expect(errors.file).toBe('This field is required');
   });
 

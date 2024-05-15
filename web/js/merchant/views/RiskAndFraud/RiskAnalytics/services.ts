@@ -98,8 +98,9 @@ export const createSupportTicketForBlockRule = async (
   );
   ticketData.set('subject', `[Merchant] Custom risk rule request`);
   ticketData.set('attachments[]', file);
+  ticketData.append('cc_emails[]', user.email as string);
   email.split(',').forEach((email) => {
-    ticketData.append('cc_emails[]', email);
+    if (email !== '') ticketData.append('cc_emails[]', email);
   });
 
   const customFieldData = {

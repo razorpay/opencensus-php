@@ -141,8 +141,6 @@ const RequestBlacklist = ({
             validationState={formError.email ? 'error' : 'none'}
             errorText={formError.email}
             onChange={onChange}
-            necessityIndicator="required"
-            isRequired
           />
           <UploadButon
             value={formValues.file}

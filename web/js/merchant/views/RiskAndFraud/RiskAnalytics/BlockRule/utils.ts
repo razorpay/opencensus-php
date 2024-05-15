@@ -3,7 +3,7 @@ import { isEmail } from 'common/utils/validators';
 import { FormError, FormValues } from './types';
 
 export const validateForm = (values: FormValues): FormError => {
-  const fieldValues = ['parameters', 'email', 'file'];
+  const fieldValues = ['parameters', 'file'];
   const errors: FormError = {};
   fieldValues.forEach((field) => {
     if (!values[field] || values[field] === '') {

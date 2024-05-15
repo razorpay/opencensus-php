@@ -27,9 +27,7 @@ describe('Tests for RequestBlacklist component (Risk Visibility)', () => {
 
     expect(screen.getByRole('combobox', { name: 'Parameter required *' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Comments' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('textbox', { name: 'Email updates to required *' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Email updates to' })).toBeInTheDocument();
     expect(screen.getByText(/Upload XLS or XLSV of list items/)).toBeInTheDocument();
   });
 
@@ -39,10 +37,10 @@ describe('Tests for RequestBlacklist component (Risk Visibility)', () => {
     const sendRequestButton = screen.getByRole('button', { name: 'Send request' });
     await userEvent.click(sendRequestButton);
 
-    await expect(screen.getAllByText('This field is required')).toHaveLength(3);
+    await expect(screen.getAllByText('This field is required')).toHaveLength(2);
   });
 
-  test('Should call api wit correct parameters if all required fields are filled', async () => {
+  test('Should call api with correct parameters if all required fields are filled', async () => {
     renderApp();
 
     //parameters
@@ -51,7 +49,7 @@ describe('Tests for RequestBlacklist component (Risk Visibility)', () => {
 
     //email
     await userEvent.type(
-      screen.getByRole('textbox', { name: 'Email updates to required *' }),
+      screen.getByRole('textbox', { name: 'Email updates to' }),
       'sanchit@gmail.com',
     );
 
