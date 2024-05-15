@@ -180,12 +180,36 @@ class CmmaEscalation
             // is not a sub-merchant of a partner
             $isSubMerchantOfPartner  = $this->repo->merchant_access_map->getByMerchantId($merchantId);
 
-            if (empty($isSubMerchantOfPartner) == true) {
+            if (empty($isSubMerchantOfPartner) == true ||
+                ($this->isSubMerchantExpEnabledForCaseCreation($merchantId, $isSubMerchantOfPartner->getEntityOwnerId()))) {
                 return false;
             }
 
         }
 
         return true;
+    }
+
+    protected function isSubMerchantExpEnabledForCaseCreation($merchantId, $partnerId)
+    {
+        try
+        {
+            $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+            $properties = [
+                'id'            => $partnerId,
+                'experiment_id' => $this->app['config']->get('app.cmma_subm_escalation_experiment_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            return ($variant === "enable");
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SUBM_CMMA_ESCALATION_EXP_ERROR, ['error' => $e->getMessage()]);
+        }
     }
 }

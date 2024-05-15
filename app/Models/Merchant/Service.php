@@ -12953,13 +12953,15 @@ class Service extends Base\Service
         // merchant is not a partner
         if ($merchant->isPartner() === false) {
 
-            $isSubMerchant = (new AccessMap\Core())->isSubMerchant($merchantId);
+            $subMerchantPartnerAccess = $this->repo->merchant_access_map->getByMerchantId($merchantId);
 
-            if ($isSubMerchant === false)
+            if (empty($subMerchantPartnerAccess))
             {
 
-                return ['is_partnership' => false];
+                return ['is_partnership' => false, 'is_submerchant' => false, 'partner_id' => null];
             }
+
+            return ['is_partnership' => true, 'is_submerchant' => true, 'partner_id' => $subMerchantPartnerAccess->getEntityOwnerId()];
         }
 
         $this->trace->info(
@@ -12969,7 +12971,7 @@ class Service extends Base\Service
                 'is_partnership' => "true",
             ]);
 
-        return ['is_partnership' => true];
+        return ['is_partnership' => true, 'is_submerchant' => false, 'partner_id' => $merchant->getId()];
     }
 
     public function internalGetMerchantDetails($merchantId)

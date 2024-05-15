@@ -123,6 +123,7 @@ class Constants
     const CMMA_AMP_EXPERIMENT_ID = 'app.cmma_amp_trigger_experiment_id';
     const CMMA_NEW_EXPERIMENT_ID_KEY = 'app.cmma_limit_breach_trigger_new_experiment_id';
     const CMMA_AUTO_KYC_FAILURE_EXPERIMENT_ID = 'app.cmma_auto_kyc_failure_trigger_experiment_id';
+    const CMMA_SUBMERCHANT_ESCALATION_EXPERIMENT_ID = 'app.cmma_subm_escalation_experiment_id';
 
     const TAG          = 'tag';
 

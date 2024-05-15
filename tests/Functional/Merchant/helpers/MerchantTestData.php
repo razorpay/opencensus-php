@@ -15322,4 +15322,17 @@ return [
             ],
         ],
     ],
+
+    'testGetInternalMerchantPartnershipDetailsForSubMerchant' => [
+        'request' => [
+            'url' => '/internal/merchant/10000000000000/partnership',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'is_partnership' => true,
+                'is_submerchant' => true,
+            ],
+        ],
+    ]
 ];

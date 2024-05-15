@@ -20689,4 +20689,59 @@ The same has been enabled for the account.
 
         $this->startTest([]);
     }
+
+    public function testGetInternalMerchantPartnershipDetailsForSubMerchant() : void
+    {
+        $partner = $this->fixtures->create('merchant', ['partner_type' => 'reseller']);
+
+        $appAttributes = [
+            'merchant_id' => $partner->getId(),
+            'partner_type'=> 'reseller',
+        ];
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp($appAttributes);
+
+        $subMerchantId = '10000000000000';
+
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $app->getId(),
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => $partner->getId(),
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $this->ba->cmmaAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($partner->getId(), $response['partner_id']);
+    }
+
+    public function testGetInternalMerchantPartnershipDetailsForPartner() : void
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'reseller']);
+
+        $this->ba->cmmaAppAuth();
+
+        $response = $this->runRequestResponseFlow($this->testData['testGetInternalMerchantPartnershipDetailsForSubMerchant']);
+
+        $this->assertTrue($response['is_partnership']);
+
+        $this->assertFalse($response['is_submerchant']);
+
+        $this->assertEquals('10000000000000', $response['partner_id']);
+    }
+
+    public function testGetInternalMerchantPartnershipDetailsForRegularMerchant() : void
+    {
+        $this->ba->cmmaAppAuth();
+
+        $response = $this->runRequestResponseFlow($this->testData['testGetInternalMerchantPartnershipDetailsForSubMerchant']);
+
+        $this->assertFalse($response['is_partnership']);
+
+        $this->assertFalse($response['is_submerchant']);
+    }
 }

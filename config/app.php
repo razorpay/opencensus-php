@@ -887,5 +887,8 @@ return array(
     'optimize_fetch_submerchants_experiment_id'  => env('OPTIMIZE_FETCH_SUBMERCHANTS_EXPERIMENT_ID'),
 
     'migrate_partner_increase_resources_exp_id'  => env('MIGRATE_PARTNER_INCREASE_RESOURCES_EXP_ID'),
+
+    'cmma_subm_escalation_experiment_id' => env('CMMA_SUBM_ESCALATION_EXPERIMENT_ID'),
+
     'zestmoney_whitelisted_merchants_experiment_id'  => env('ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
 );
