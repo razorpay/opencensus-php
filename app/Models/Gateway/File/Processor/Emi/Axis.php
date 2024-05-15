@@ -2,9 +2,18 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\GatewayErrorException;
+use RZP\Exception\GatewayFileException;
+use RZP\Mail\Base\Constants;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity as EmiPlanEntity;
+use RZP\Models\FileStore\Storage\Base\Bucket;
+use RZP\Models\Gateway\File\Status;
+use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Services\Beam\Service;
 use RZP\Trace\TraceCode;
 
 class Axis extends Base
@@ -14,6 +23,8 @@ class Axis extends Base
     const FILE_TYPE   = FileStore\Type::AXIS_EMI_FILE;
     const FILE_NAME   = 'Axis_Emi_File';
     const DATE_FORMAT = 'd-m-Y';
+    const BEAM_FILE_TYPE = 'emi';
+    const COMPRESSION_REQUIRED     = false;
 
     protected function formatDataForFile($data)
     {
@@ -52,5 +63,72 @@ class Axis extends Base
         }
 
         return $formattedData;
+    }
+
+    protected function sendEmiPassword($data)
+    {
+        return;
+    }
+
+    protected function getBucketConfig()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName(static::FILE_TYPE, $this->env);
+
+        $bucketConfig = $config[$bucketType];
+
+        return $bucketConfig;
+    }
+
+    protected function sendEmiFile($data)
+    {
+        $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
+
+        $fileInfo = [$fullFileName];
+
+        $bucketConfig = $this->getBucketConfig();
+
+        $data = [
+            Service::BEAM_PUSH_FILES          => $fileInfo,
+            Service::BEAM_PUSH_JOBNAME        => BeamConstants::AXIS_CC_EMI_FILE_JOB_NAME,
+            Service::BEAM_PUSH_BUCKET_NAME    => $bucketConfig['name'],
+            Service::BEAM_PUSH_BUCKET_REGION  => $bucketConfig['region'],
+        ];
+
+        // Retry in 15, 30 and 45 minutes
+        $timelines = [900, 1800, 2700];
+
+        $mailInfo = [
+            'fileInfo'  => $fileInfo,
+            'channel'   => 'settlements',
+            'filetype'  => self::BEAM_FILE_TYPE,
+            'subject'   => 'AXIS EMI - File Send failure',
+            'recipient' => [
+                Constants::MAIL_ADDRESSES[Constants::AFFORDABILITY],
+                Constants::MAIL_ADDRESSES[Constants::FINOPS],
+                Constants::MAIL_ADDRESSES[Constants::DEVOPS_BEAM],
+            ],
+        ];
+
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null))
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
+                [
+                    'beam_response' => $beamResponse,
+                    'filestore_id'  => $this->file->getId(),
+                    'gateway_file'  => $this->gatewayFile->getId(),
+                    'job_name'      => BeamConstants::AXIS_CC_EMI_FILE_JOB_NAME,
+                    'file_name'     => $fullFileName,
+                    'Bank'          => 'Axis',
+                ]
+            );
+        }
     }
 }

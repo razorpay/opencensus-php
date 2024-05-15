@@ -189,14 +189,13 @@ return [
                 'items' => [
                     [
                         'status'              => 'failed',
-                        'scheduled'           => true,
-                        'partially_processed' => false,
                         'attempts'            => 1,
                         'sender'              => 'emifiles@razorpay.com',
                         'type'                => 'emi',
                         'target'              => 'axis',
                         'error_code'          => 'error_sending_file',
                         'entity'              => 'gateway_file',
+                        'error_description'   => 'Error occurred while sending file',
                     ]
                 ]
             ]

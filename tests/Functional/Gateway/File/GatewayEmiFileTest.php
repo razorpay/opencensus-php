@@ -47,6 +47,7 @@ class GatewayEmiFileTest extends TestCase
     public function testGenerateEmiFile()
     {
         Mail::fake();
+        Queue::fake();
 
         $this->ba->publicAuth();
 
@@ -69,13 +70,13 @@ class GatewayEmiFileTest extends TestCase
             'type'        => 'axis_emi_file',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
-            'extension'   => 'zip',
+            'extension'   => 'csv',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertQueued(EmiMail\Password::class);
-        Mail::assertQueued(EmiMail\File::class);
+        //Mail::assertQueued(EmiMail\Password::class);
+        //Mail::assertQueued(EmiMail\File::class);
     }
 
     public function testGenerateEmiFileWithNoEmiPayments()
@@ -125,6 +126,17 @@ class GatewayEmiFileTest extends TestCase
         $this->makeEmiPaymentOnCard('4111460212312338', 3);
 
         $this->ba->adminAuth();
+
+        $this->mockBeamContentFunction(
+            function (&$content, $action = '')
+            {
+                $content = [
+                    'failed'   => [],
+                    'job_name' => 'axis_cc_emi_push',
+                    'success'  => null,
+                ];
+            }
+        );
 
         $content = $this->startTest();
 
