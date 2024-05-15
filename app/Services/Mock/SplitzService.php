@@ -90,7 +90,7 @@ class SplitzService extends BaseSplitz
         return $resp;
     }
 
-    public function bulkCallsToSplitz($input)
+    public function bulkCallsToSplitz($input, $isParallelReqEnabled = true)
     {
         return [
             [

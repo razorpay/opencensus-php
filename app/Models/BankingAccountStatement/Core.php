@@ -102,6 +102,10 @@ class Core extends Base\Core
 
     const MISSING_STATEMENTS_REDIS_KEY = "missing_statements_%s_%s";
 
+    const PAYOUT_SERVICE_TEMPORARY_METADATA_TABLE = 'payout_meta_temporary';
+    const PAYOUT_ID                               = 'payout_id';
+    const DUAL_WRITE_META_NAME                    = 'bas_dual_write';
+
     /**
      * Constant containing regex for identifying gateway ref number pattern in a statement's description for every bank.
      * Here, we maintain an array for every bank because regex can be different for different modes. In case of RBL and ICICI,
@@ -3010,6 +3014,11 @@ class Core extends Base\Core
         /** @var Entity $basEntity */
         foreach ($basEntities as $basEntity)
         {
+            if ($basEntity->getId() == $basEntity->getTransactionId())
+            {
+                continue;
+            }
+
             $basEntity->setConnection($this->mode);
 
             try
@@ -5762,5 +5771,94 @@ class Core extends Base\Core
         }
 
         return array($fetchUsingDefaultQuery, $basEntities);
+    }
+
+    public function processDualWrite(array $input)
+    {
+        (new Validator)->validateInput(Validator::BAS_DUAL_WRITE_INPUT, $input);
+
+        $basId = $input[Entity::ENTITY_ID];
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $metadata = $this->getMetaDataFromPayoutServiceForDualWrite($basId);
+
+        if (empty($metadata) == false)
+        {
+            $timestamp = get_object_vars(json_decode($metadata['meta_value']))['timestamp'];
+
+            if ($input['timestamp'] < $timestamp)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_DUAL_WRITE_NO_ACTION,
+                    $input
+                );
+
+                return;
+            }
+        }
+
+        (new DualWrite\Processor)->dualWriteDataForBasId($basId);
+
+        $this->upsertMetaDataInPayoutServiceForDualWrite($basId, $currentTime, $metadata);
+    }
+
+    public function getMetaDataFromPayoutServiceForDualWrite($payoutId)
+    {
+        $metadata = $this->repo->payout->getPayoutServicePayoutMetaDataForDualWrite($payoutId, self::DUAL_WRITE_META_NAME);
+
+        if (count($metadata) === 0)
+        {
+            return [];
+        }
+
+        $metadata = $metadata[0];
+
+        return get_object_vars($metadata);
+    }
+
+    public function upsertMetaDataInPayoutServiceForDualWrite(string $basId, $currentTime, $metadata)
+    {
+        $tableName = self::PAYOUT_SERVICE_TEMPORARY_METADATA_TABLE;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        if (empty($metadata) === true)
+        {
+            $data = [
+                Entity::ID         => Entity::generateUniqueId(),
+                self::PAYOUT_ID    => $basId,
+                'meta_name'        => self::DUAL_WRITE_META_NAME,
+                'meta_value'       => json_encode(['timestamp' => $currentTime]),
+                Entity::CREATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+                Entity::UPDATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_INSERT_METADATA,
+                $data
+            );
+
+            $this->repo->payout->insertIntoPayoutServiceDB($tableName, $data);
+        }
+        else
+        {
+            $id = $metadata[Entity::ID];
+
+            $data = [
+                'meta_value'       => json_encode(['timestamp' => $currentTime]),
+                Entity::UPDATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_UPDATE_METADATA,
+                $data
+            );
+
+            $this->repo->payout->updateInPayoutServiceDB($tableName, $id, $data);
+        }
     }
 }

@@ -52,7 +52,7 @@ class Core extends Base\Core
         return $this->repo->deleteOrFail($external);
     }
 
-    protected function createExternalEntity(BAS\Entity $basEntity): External\Entity
+    public function createExternalEntity(BAS\Entity $basEntity): External\Entity
     {
         $input = $this->createInputForExternalEntity($basEntity);
 

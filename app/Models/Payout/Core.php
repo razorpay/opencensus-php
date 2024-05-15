@@ -236,6 +236,8 @@ class Core extends Base\Core
 
     const MERCHANT_ROUTING_PRIORITIES = 'priorities';
 
+    const DUAL_WRITE_META_NAME = 'dual_write';
+
     /**
      * @var Mutex
      */
@@ -8742,7 +8744,7 @@ class Core extends Base\Core
 
         (new Validator)->validateInput(Validator::PAYOUT_UPDATE_BY_BAS_RECON, $input);
 
-        $basId = $input['bas_id'];
+        $basId = $input[BankingAccountStatement\Entity::BAS_ID];
         $payoutId = $input[BankingAccountStatement\Entity::ENTITY_ID];
         $type = $input[BankingAccountStatement\Entity::ENTITY_TYPE];
 
@@ -8810,7 +8812,12 @@ class Core extends Base\Core
             throw $exception;
         }
 
-        return ['success'];
+        $this->trace->info(
+            TraceCode::PAYOUT_UPDATE_BY_BAS_RECON_COMPLETE,
+            $input
+        );
+
+        return ['status' => 'success'];
     }
 
     public function sendLedgerEventPostBasLinking($merchant, $sourceEntity, $input, $payout = null)
@@ -9212,7 +9219,7 @@ class Core extends Base\Core
             $data = [
                 Entity::ID         => Entity::generateUniqueId(),
                 Entity::PAYOUT_ID  => $payoutId,
-                'meta_name'        => 'dual_write',
+                'meta_name'        => self::DUAL_WRITE_META_NAME,
                 'meta_value'       => json_encode(['timestamp' => $currentTime]),
                 Entity::CREATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
                 Entity::UPDATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),

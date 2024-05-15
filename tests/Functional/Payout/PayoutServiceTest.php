@@ -6272,8 +6272,6 @@ class PayoutServiceTest extends TestCase
 
         \DB::connection('test')->table('ps_banking_account_statement_details')->insert($basDetailsInput);
 
-        $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $this->bankingBalance->getId();
-
         $this->ba->adminAuth('live');
 
         $this->startTest();
@@ -6297,9 +6295,8 @@ class PayoutServiceTest extends TestCase
         ];
 
         $testData = $this->testData['testBasDetailsStatusUpdateInPSAdminAction'];
-        $testData['request']['content']['action'] = 'ps_basd_create';
-        $testData['request']['content']['ids'][0][Details\Entity::BALANCE_ID] = $this->bankingBalance->getId();
-        $testData['request']['content']['ids'][0]['data'] = $basDetailsInput;
+        $testData['request']['content']['data'][0]['action'] = 'ps_basd_create';
+        $testData['request']['content']['data'][0]['data'] = $basDetailsInput;
         $this->testData[__FUNCTION__] = $testData;
 
         $this->ba->adminAuth('live');

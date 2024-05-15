@@ -1287,4 +1287,21 @@ return [
             'content' => []
         ]
     ],
+
+    'testDualWriteForPayoutServiceBas' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts_service/dual_write',
+            'content' => [
+                'entity_id' => 'randomid111111',
+                'entity_type' => 'bas',
+                'timestamp' => 946684801
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
 ];

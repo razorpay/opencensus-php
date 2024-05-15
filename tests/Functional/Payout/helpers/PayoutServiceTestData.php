@@ -2608,10 +2608,10 @@ return [
             'url'     => '/admin/payouts/free_payout_migration',
             'method'  => 'post',
             'content' => [
-                EntityConstants::ACTION           => 'ps_basd_status',
-                'ids' => [
+                EntityConstants::ACTION           => 'basd',
+                'data' => [
                     [
-                        Entity::MERCHANT_ID => '10000000000000',
+                        EntityConstants::ACTION => 'ps_basd_status',
                         Entity::ID => 'xbas0000000002',
                         Entity::STATUS => 'inactive',
                     ]

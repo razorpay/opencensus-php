@@ -8,7 +8,9 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 use RZP\Models\Payout\Core;
+use RZP\Models\Payout\Entity;
 use RZP\Services\RazorXClient;
+use RZP\Models\BankingAccountStatement;
 
 class PayoutServiceDualWrite extends Job
 {
@@ -17,6 +19,9 @@ class PayoutServiceDualWrite extends Job
     const MAX_RETRY_DELAY = 10;
 
     const MAX_ATTEMPTS_FOR_DUAL_WRITE = 3;
+
+    const ENTITY_TYPE = 'entity_type';
+    const ENTITY_ID = 'entity_id';
 
     /**
      * @var string
@@ -46,7 +51,28 @@ class PayoutServiceDualWrite extends Job
                 $this->params
             );
 
-            (new Core)->processDualWrite($this->params);
+            if (array_key_exists(Entity::PAYOUT_ID, $this->params))
+            {
+                (new Core)->processDualWrite($this->params);
+            }
+            else
+            {
+                switch ($this->params[self::ENTITY_TYPE])
+                {
+                    case 'payout':
+                        $input = $this->params;
+                        $input[Entity::PAYOUT_ID] = $input[self::ENTITY_ID];
+                        unset($input[self::ENTITY_TYPE]);
+                        unset($input[self::ENTITY_ID]);
+
+                        (new Core)->processDualWrite($input);
+                        break;
+
+                    case 'bas':
+                        (new BankingAccountStatement\Core)->processDualWrite($this->params);
+                        break;
+                }
+            }
 
             $this->trace->info(
                 TraceCode::PAYOUT_SERVICE_DUAL_WRITE_COMPLETE,

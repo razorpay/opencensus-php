@@ -58,6 +58,9 @@ class Entity extends Base\PublicEntity
     // Relation names/attributes
     const SOURCE                = 'source';
 
+    const BAS_ID = 'bas_id';
+    const GATEWAY_REF_NUMBER = 'gateway_ref_number';
+    const BAS_DETAILS_ID = 'bas_details_id';
     const CONVERTED_FROM_EXTERNAL = 'converted_from_external';
 
     const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-)(.*?)(\/|-)/';
@@ -141,8 +144,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::CURRENCY          => Currency::INR,
-        self::BALANCE_CURRENCY  => Currency::INR,
+        self::CURRENCY           => Currency::INR,
+        self::BALANCE_CURRENCY   => Currency::INR,
+        self::BANK_INSTRUMENT_ID => null,
     ];
 
     protected static $generators = [
@@ -257,6 +261,16 @@ class Entity extends Base\PublicEntity
     public function setUtr($utr = null)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    public function setEntityId($entityId)
+    {
+        $this->setAttribute(self::ENTITY_ID, $entityId);
+    }
+
+    public function setEntityType($entityType)
+    {
+        $this->setAttribute(self::ENTITY_TYPE, $entityType);
     }
 
     // -------------------------- Getters ------------------------------------ //
@@ -462,5 +476,10 @@ class Entity extends Base\PublicEntity
             });
 
         return $query;
+    }
+
+    public function setIgnoreRelationsForServiceEntities()
+    {
+        $this->ignoredRelations = [self::SOURCE];
     }
 }

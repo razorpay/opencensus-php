@@ -6,6 +6,7 @@ use DB;
 use Carbon\Carbon;
 
 use RZP\Constants;
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Reversal;
@@ -648,5 +649,18 @@ class Repository extends Base\Repository
                     ->orderBy(Entity::ID)
                     ->limit($limit)
                     ->get();
+    }
+
+    public function getPayoutServiceBAS(string $id)
+    {
+        $tableName = Table::BANKING_ACCOUNT_STATEMENT;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+            ->select("select * from $tableName where id = '$id' limit 1");
     }
 }

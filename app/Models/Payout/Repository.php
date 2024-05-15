@@ -3141,7 +3141,7 @@ class Repository extends Base\Repository
                            "merchant_id = '$merchantId' and source_type = 'payout' order by id desc limit 1");
     }
 
-    public function getPayoutServicePayoutMetaDataForDualWrite(string $payoutId)
+    public function getPayoutServicePayoutMetaDataForDualWrite(string $payoutId, string $metaName = 'dual_write')
     {
         $tableName = 'payout_meta_temporary';
 
@@ -3151,7 +3151,7 @@ class Repository extends Base\Repository
         }
 
         return \DB::connection($this->getPayoutsServiceConnection())
-                  ->select("select * from $tableName where payout_id = '$payoutId' and meta_name = 'dual_write'");
+                  ->select("select * from $tableName where payout_id = '$payoutId' and meta_name = '$metaName'");
     }
 
     public function getPayoutServicePayoutLogs(string $payoutId)

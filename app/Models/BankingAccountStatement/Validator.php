@@ -23,6 +23,8 @@ class Validator extends Base\Validator
 
     const DETECT_MISSING_STATEMENTS = 'detect_missing_statements';
 
+    const BAS_DUAL_WRITE_INPUT = 'bas_dual_write_input';
+
     protected static $createRules = [
         Entity::CHANNEL             => 'required|string|custom',
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
@@ -104,6 +106,12 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER => 'required|string|max:40',
         Entity::FROM_DATE      => 'required|epoch',
         Entity::TO_DATE        => 'required|epoch',
+    ];
+
+    protected static $basDualWriteInputRules = [
+        Entity::ENTITY_ID   => 'required|string|size:14',
+        Entity::ENTITY_TYPE => 'required',
+        'timestamp'         => 'required|epoch',
     ];
 
     public function validateCreditBas($current_status, array $input)

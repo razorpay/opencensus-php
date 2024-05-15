@@ -256,11 +256,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $payoutUpdateByBasReconRules = [
-        'bas_id'           => 'required',
-        'entity_id'        => 'required',
-        'entity_type'      => 'required|in:payout,payout_reversal',
-        'merchant_id'      => 'required',
-        'transaction_date' => 'required'
+        'bas_id'                  => 'required',
+        'entity_id'               => 'required',
+        'entity_type'             => 'required|in:payout,payout_reversal',
+        'merchant_id'             => 'required',
+        'transaction_date'        => 'required',
+        'converted_from_external' => 'sometimes'
     ];
 
     protected static $payoutServiceTxnMailDataRules = [

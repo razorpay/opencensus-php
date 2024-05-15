@@ -8,6 +8,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
 
 use Monolog\Logger;
+use RZP\Constants\Entity as EntityConstant;
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Diag\EventCode;
@@ -4032,6 +4033,53 @@ class Service extends Base\Service
                            [
                                'input' => $input,
                            ]);
+
+        $action = $input['action'];
+
+        switch ($action)
+        {
+            case "basd":
+                $totalCount = 0;
+
+                foreach ($input['data'] as $data)
+                {
+                    (new BasDetails\Core)->handleBasDetailsActions($data);
+
+                    $totalCount++;
+                }
+
+                return [
+                    'total_count' => $totalCount,
+                ];
+
+            case 'bas':
+                $totalCount = 0;
+
+                foreach ($input['data'] as $data)
+                {
+                    (new \RZP\Models\BankingAccountStatement\Service)->handleBasAdminActions($data);
+
+                    $totalCount++;
+                }
+
+                return [
+                    'total_count' => $totalCount,
+                ];
+
+            case 'ps_dual_write':
+                $totalCount = 0;
+
+                foreach ($input['data'] as $data)
+                {
+                    $this->payoutServiceDualWrite($data);
+
+                    $totalCount++;
+                }
+
+                return [
+                    'total_count' => $totalCount,
+                ];
+        }
 
         try
         {

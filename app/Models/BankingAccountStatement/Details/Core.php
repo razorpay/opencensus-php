@@ -64,6 +64,8 @@ class Core extends Base\Core
                             $basDetailEntity->setBalanceLastFetchedAt(Carbon::now(Timezone::IST)->getTimestamp());
 
                             $this->repo->saveOrFail($basDetailEntity);
+
+                            $this->updateGatewayBalanceInPS($basDetailEntity);
                         }
 
                         // update statement closing balance will be performed only when new records are fetched from bank
@@ -163,7 +165,7 @@ class Core extends Base\Core
 
     public function handleBasDetailsActions($input)
     {
-        $action = $input['action'];
+        $action = array_pull($input, 'action');
 
         switch ($action)
         {
@@ -181,10 +183,9 @@ class Core extends Base\Core
                break;
 
             case 'ps_basd_status':
-                $id = $input[Entity::ID];
-                $status = $input[Entity::STATUS];
+                $id = array_pull($input, Entity::ID);
 
-                $this->updateBasDetailsInPayoutService($id, $status);
+                $this->updateBasDetailsInPayoutService($id, $input);
 
                 break;
 
@@ -196,21 +197,14 @@ class Core extends Base\Core
         return ['success' => $input];
     }
 
-    public function updateBasDetailsInPayoutService(string $basDetailsId, $status)
+    public function updateBasDetailsInPayoutService(string $basDetailsId, $data)
     {
-        Status::validate($status);
-
         $tableName = self::PAYOUT_SERVICE_BAS_DETAILS_TABLE;
 
         if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
         {
             $tableName = 'ps_' . $tableName;
         }
-
-        $data = [
-            Entity::STATUS       => $status,
-            Entity::UPDATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
-        ];
 
         $this->trace->info(
             TraceCode::PAYOUT_SERVICE_BAS_DETAILS_UPDATE,
@@ -235,5 +229,16 @@ class Core extends Base\Core
         );
 
         $this->repo->payout->insertIntoPayoutServiceDB($tableName, $data);
+    }
+
+    public function updateGatewayBalanceInPS(Entity $basDetails)
+    {
+        $data = [
+            Entity::GATEWAY_BALANCE => $basDetails->getGatewayBalance(),
+            Entity::GATEWAY_BALANCE_CHANGE_AT => $basDetails->getGatewayBalanceChangeAt(),
+            Entity::BALANCE_LAST_FETCHED_AT => $basDetails->getBalanceLastFetchedAt(),
+        ];
+
+        $this->updateBasDetailsInPayoutService($basDetails->getId(), $data);
     }
 }
