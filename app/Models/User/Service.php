@@ -2719,7 +2719,15 @@ class Service extends Base\Service
      */
     private function revokeTokenOnPasswordChange(Entity $user)
     {
-        $bankingMerchants = $user->bankingMerchants()->get();
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            $bankingMerchantIds = $user->getBankingMerchantIdsForRole();
+            $bankingMerchants = $this->repo->merchant->findMerchantsByIds($bankingMerchantIds);
+        }
+        else
+        {
+            $bankingMerchants = $user->bankingMerchants()->get();
+        }
 
         $oAuthTokenService = new OAuthToken\Service();
 

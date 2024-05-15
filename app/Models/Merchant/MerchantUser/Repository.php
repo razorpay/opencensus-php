@@ -13,6 +13,7 @@ use RZP\Base\ConnectionType;
 use RZP\Exception\LogicException;
 use RZP\Constants\Table;
 use RZP\Models\User\Entity as UserEntity;
+use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Balance\Type as ProductType;
@@ -75,7 +76,7 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function returnMerchantUsersForUserIdOrderByRole(string $userId, int $limit = 100)
+    public function returnMerchantUsersForUserIdOrderByRole(string $userId, int $limit = 100): Base\PublicCollection|Collection
     {
         $sql = "CASE WHEN role='owner' THEN 1
                      else 2 END";
@@ -86,8 +87,16 @@ class Repository extends Base\Repository
             ->where(Entity::USER_ID, $userId)
             ->limit($limit)
             ->orderByRaw($sql)
-            ->get()
-            ->toArray();
+            ->get();
+    }
+
+    public function returnMerchantUserForUserIdMerchantIdOrderByRole(string $userId, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->select(Entity::MERCHANT_ID, Entity::ROLE, Entity::PRODUCT, Entity::USER_ID)
+                    ->where(Entity::USER_ID, $userId)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->get();
     }
 
     public function findByRolesAndMerchantId(array $roles, string $merchantId): Base\PublicCollection
@@ -237,6 +246,21 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::ROLE, $roles)
                     ->whereIn(Entity::MERCHANT_ID, $submerchantIds)
                     ->get();
+    }
+
+    public function fetchMerchantUsersForUserRoleAndProduct(string $userId, array $roles = [], string $product = null): Base\PublicCollection
+    {
+        $query = $this->newQuery()->where(Entity::USER_ID, $userId);
+
+        if (count($roles) > 0) {
+            $query = $query->whereIn(Entity::ROLE, $roles);
+        }
+
+        if (!empty($product)) {
+            $query = $query->where(Entity::PRODUCT, $product);
+        }
+
+        return $query->get();
     }
 
     public function fetchMerchantIdForUserIdRoleAndProduct(string $userId, string $role, string $product) : array

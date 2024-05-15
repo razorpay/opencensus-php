@@ -19,6 +19,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Merchant\MerchantUser;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Constants as Features;
+use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
@@ -326,18 +327,16 @@ class Entity extends Base\PublicEntity
         return new Base\PublicCollection($merchantsWithPivot);;
     }
 
-    protected function addPivot($merchantUsers, $merchants) {
+    protected function addPivot(PublicCollection $merchantUsers, PublicCollection $merchants): array
+    {
         $merchantsWithPivot = [];
         foreach ($merchants as $merchant) {
-            $mergedMerchant = $merchant->getAttributes();
-            $mergedMerchant['pivot'] = [];
+            $merchant['pivot'] = [];
 
             foreach ($merchantUsers as $merchantUser) {
                 if ($merchantUser['merchant_id'] === $merchant['id']) {
-                    $mergedMerchant['pivot'] = (object) $merchantUser;
-                    $mE = new Merchant\Entity();
-                    $mE->setRawAttributes($mergedMerchant, true);
-                    $merchantsWithPivot[] = $mE;
+                    $merchant['pivot'] = (object) $merchantUser;
+                    $merchantsWithPivot[] = $merchant;
                 }
             }
         }
@@ -359,6 +358,21 @@ class Entity extends Base\PublicEntity
             ->orderByRaw($sql, [$this->getEmail()]);
     }
 
+    protected function fetchMerchantAndCombineWithMerchantUsers(PublicCollection $merchantUsers): PublicCollection
+    {
+        $merchantIds    = [];
+
+        foreach ($merchantUsers as $merchantUser) {
+            $merchantIds[] = $merchantUser[MerchantUser\Entity::MERCHANT_ID];
+        }
+
+        $uniqueMerchantIds = array_values(array_unique($merchantIds));
+
+        $merchants = (new Merchant\Repository)->findMerchantsByIds($uniqueMerchantIds);
+
+        return (new Merchant\Entity())->newCollection($this->addPivot($merchantUsers, $merchants));
+    }
+
     public function primaryMerchants()
     {
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
@@ -366,11 +380,40 @@ class Entity extends Base\PublicEntity
                     ->wherePivot(self::PRODUCT, 'primary');
     }
 
+    public function getPrimaryMerchantIDsForUser(): array
+    {
+        $merchantUsers  = (new MerchantUser\Repository)->fetchMerchantUsersForUserRoleAndProduct($this->getAttribute(self::ID), [], 'primary');
+        return $merchantUsers->pluck(MerchantUser\Entity::MERCHANT_ID)->toArray();
+    }
+
+    public function getPrimaryMerchants(): PublicCollection|Collection
+    {
+        $merchantUsers  = (new MerchantUser\Repository)->fetchMerchantUsersForUserRoleAndProduct($this->getAttribute(self::ID), [], 'primary');
+        return $this->fetchMerchantAndCombineWithMerchantUsers($merchantUsers);
+    }
+
     public function bankingMerchants()
     {
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
                     ->withPivot([self::ROLE, self::PRODUCT])
                     ->wherePivot(self::PRODUCT, 'banking');
+    }
+
+    public function getBankingMerchantIdsForRole(array $roles = []): array
+    {
+        $merchantUsers  = (new MerchantUser\Repository)->fetchMerchantUsersForUserRoleAndProduct(
+            $this->getId(),
+            $roles,
+            'banking',
+        );
+
+        return $merchantUsers->pluck(MerchantUser\Entity::MERCHANT_ID)->toArray();
+    }
+
+    public function getBankingMerchants(): PublicCollection|Collection
+    {
+        $merchantUsers  = (new MerchantUser\Repository)->fetchMerchantUsersForUserRoleAndProduct($this->getAttribute(self::ID), [], 'banking');
+        return $this->fetchMerchantAndCombineWithMerchantUsers($merchantUsers);
     }
 
     public function billingMerchants()
@@ -383,9 +426,15 @@ class Entity extends Base\PublicEntity
     public function merchantsByProductAndRole($product = ProductType::PRIMARY, $role = \RZP\Models\User\Role::OWNER)
     {
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
-            ->withPivot([self::ROLE, self::PRODUCT])
-            ->wherePivot(self::PRODUCT, $product)
-            ->wherePivot(self::ROLE, $role);
+                    ->withPivot([self::ROLE, self::PRODUCT])
+                    ->wherePivot(self::PRODUCT, $product)
+                    ->wherePivot(self::ROLE, $role);
+    }
+
+    public function getMerchantsByProductAndRole($product = ProductType::PRIMARY, $role = \RZP\Models\User\Role::OWNER): PublicCollection|Collection
+    {
+        $merchantUsers  = (new MerchantUser\Repository)->fetchMerchantUsersForUserRoleAndProduct($this->getAttribute(self::ID), [$role], $product);
+        return $this->fetchMerchantAndCombineWithMerchantUsers($merchantUsers);
     }
 
     public function invitations()
@@ -584,26 +633,26 @@ class Entity extends Base\PublicEntity
                 ($this->isContactMobileVerified() === true));
     }
 
-    protected function getMerchants()
+    public function getMerchants()
     {
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1000);
         return (new Merchant\Repository)->findMerchantsByIds($merchantIds);
     }
 
-    public function getMerchantsFromAsvWithPivot($limit = 100)
+    public function getSpecificMerchant($merchantId): PublicCollection|Collection
+    {
+        $merchantUser  = (new MerchantUser\Repository)->returnMerchantUserForUserIdMerchantIdOrderByRole($this->getAttribute(self::ID), $merchantId);
+
+        if (!empty($merchantUser)) {
+            return $this->fetchMerchantAndCombineWithMerchantUsers($merchantUser);
+        }
+        return (new Merchant\Entity)->newCollection([]);
+    }
+
+    public function getMerchantsFromAsvWithPivot($limit = 100): PublicCollection|Collection
     {
         $merchantUsers  = (new MerchantUser\Repository)->returnMerchantUsersForUserIdOrderByRole($this->getAttribute(self::ID), $limit);
-        $merchantIds    = [];
-
-        foreach ($merchantUsers as $merchantUser) {
-            $merchantIds[] = $merchantUser[MerchantUser\Entity::MERCHANT_ID];
-        }
-
-        $uniqueMerchantIds = array_values(array_unique($merchantIds));
-
-        $merchants = (new Merchant\Repository)->findMerchantsByIds($uniqueMerchantIds);
-
-        return $this->addPivot($merchantUsers, $merchants);
+        return $this->fetchMerchantAndCombineWithMerchantUsers($merchantUsers);
     }
 
     public function getUniqueMerchantIds()

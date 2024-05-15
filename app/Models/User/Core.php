@@ -2391,9 +2391,9 @@ class Core extends Base\Core
 
         $currentProduct = $this->app['basicauth']->getRequestOriginProduct();
 
-        $bankingOwnerMerchant = $user->merchantsByProductAndRole(ProductType::BANKING)->first();
+        $bankingOwnerMerchant = $user->getMerchantsByProductAndRole(ProductType::BANKING)->first();
 
-        $primaryOwnerMerchant = $user->merchantsByProductAndRole()->first();
+        $primaryOwnerMerchant = $user->getMerchantsByProductAndRole()->first();
 
         if ($currentProduct === Product::BANKING)
         {
@@ -2407,7 +2407,7 @@ class Core extends Base\Core
                 return $primaryOwnerMerchant;
             }
 
-            $bankingMerchant = $user->bankingMerchants()->first();
+            $bankingMerchant = $user->getBankingMerchants()->first();
 
             if (empty($bankingMerchant) === false)
             {
@@ -2427,7 +2427,7 @@ class Core extends Base\Core
                 return $bankingOwnerMerchant;
             }
 
-            $primaryMerchant = $user->primaryMerchants()->first();
+            $primaryMerchant = $user->getPrimaryMerchants()->first();
 
             if (empty($primaryMerchant) === false)
             {
@@ -5957,11 +5957,16 @@ class Core extends Base\Core
      */
     public function checkAccessForMerchant(Entity $user, $merchantId, $product)
     {
-        $merchants = $user->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
-                        ->withPivot([Entity::ROLE, Entity::PRODUCT])
-                        ->where(Merchant\Entity::ID,$merchantId)
-                        ->get()
-                        ->callOnEveryItem('toArrayUser');
+
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchants = $user->getSpecificMerchant($merchantId)->callOnEveryItem('toArrayUser');
+        } else {
+            $merchants = $user->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                              ->withPivot([Entity::ROLE, Entity::PRODUCT])
+                              ->where(Merchant\Entity::ID,$merchantId)
+                              ->get()
+                              ->callOnEveryItem('toArrayUser');
+        }
 
         // this is to verify if user has access to merchant
         // for the given product

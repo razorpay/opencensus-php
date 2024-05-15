@@ -8,6 +8,8 @@ use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Settings\Module;
 use RZP\Models\Invitation\Entity;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Settings\Service as SettingsService;
 
 
@@ -153,12 +155,36 @@ class VendorPortalInvite extends Mailable
         return $inviteLink;
     }
 
-    protected function isAnExistingUserOnVendorPortal()
+    protected function isAnExistingUserOnVendorPortal(): bool
     {
-        return $this->invitedUserExists && ($this->invitation->user->bankingMerchants()
+        if ($this->invitedUserExists === false)
+        {
+            return false;
+        }
+
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            $merchantIds = $this->invitation->user->getBankingMerchantIdsForRole(['vendor']);
+
+            if (count($merchantIds) > 0)
+            {
+                $app = App::getFacadeRoot();
+                $merchants = $app['repo']->merchant->findMerchantsByIds($merchantIds);
+            }
+            else
+            {
+                $merchants = new PublicCollection();
+            }
+        }
+        else
+        {
+            $merchants = $this->invitation->user
+                ->bankingMerchants()
                 ->where(Entity::ROLE, Role::VENDOR)
-                ->get()
-                ->isEmpty()) === false;
+                ->get();
+        }
+
+        return $merchants->isEmpty() === false;
     }
 }
 

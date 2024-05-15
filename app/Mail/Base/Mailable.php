@@ -564,9 +564,17 @@ class Mailable extends BaseMailable
 
         $user = $repo->user->findOrFailPublic($userId);
 
-        $totalMerchants = $user->primaryMerchants()->count();
-
-        $merchant = $totalMerchants === 1 ? $user->primaryMerchants()->first() : null;
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv('Mailable_getUserOrgData'))
+        {
+            $merchantIds    = $user->getPrimaryMerchantIDsForUser();
+            $totalMerchants = count($merchantIds);
+            $merchant       = $totalMerchants === 1 ? $repo->merchant->findOrFail($merchantIds[0]) : null;
+        }
+        else
+        {
+            $totalMerchants = $user->primaryMerchants()->count();
+            $merchant       = $totalMerchants === 1 ? $user->primaryMerchants()->first() : null;
+        }
 
         return OrgWiseConfig::getOrgDataForEmail($merchant);
     }

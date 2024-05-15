@@ -3490,7 +3490,12 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function findMerchantsByIds(array $ids)
+    /**
+     * @param array $ids
+     *
+     * @return EloquentCollection|PublicCollection
+     */
+    public function findMerchantsByIds(array $ids): EloquentCollection|PublicCollection
     {
         if (sizeof($ids) > 0)
         {
@@ -3513,7 +3518,11 @@ class Repository extends Base\Repository
                             "identifier" => __FUNCTION__
                         ]);
 
-                        $results = (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($ids);
+                        $results = new Base\PublicCollection();
+
+                        foreach (array_chunk($ids, Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT) as $chunk) {
+                            $results->push(...(new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($chunk));
+                        }
 
                         $this->resetConnectionOnModels($results);
 
@@ -3532,7 +3541,7 @@ class Repository extends Base\Repository
                 return $this->findMany($ids);
             }
         }
-        return [];
+        return new PublicCollection();
     }
 
     public function getNonSuspendedMerchantsFromIds(array $ids)

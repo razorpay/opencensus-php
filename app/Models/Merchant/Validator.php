@@ -1090,27 +1090,27 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateUserDoesNotBelongToMerchantsInMultipleOrgsForEmailUpdate($user)
-    {
-        $app = App::getFacadeRoot();
-
-        $merchantOrgIdsForUser = array_unique($user->merchants()->get()->pluck('org_id')->toArray());
-
-        $numberOfOrgIdsForUser = sizeof($merchantOrgIdsForUser);
-
-        $orgId = $app['basicauth']->getMerchant()->getOrgId();
-
-        // if user has no merchant or user has merchant[s] belongs to requested org
-        if (($numberOfOrgIdsForUser === 0) or
-            (($numberOfOrgIdsForUser === 1) and ($merchantOrgIdsForUser[0] === $orgId)))
-        {
-            return;
-        }
-
-        throw new Exception\BadRequestValidationFailureException(
-            'We are unable to change your email Id to ' . $user->getEmail() . '. Please reach out to our support team to perform this action');
-
-    }
+    //public function validateUserDoesNotBelongToMerchantsInMultipleOrgsForEmailUpdate($user)
+    //{
+    //    $app = App::getFacadeRoot();
+    //
+    //    $merchantOrgIdsForUser = array_unique($user->merchants()->get()->pluck('org_id')->toArray());
+    //
+    //    $numberOfOrgIdsForUser = sizeof($merchantOrgIdsForUser);
+    //
+    //    $orgId = $app['basicauth']->getMerchant()->getOrgId();
+    //
+    //    // if user has no merchant or user has merchant[s] belongs to requested org
+    //    if (($numberOfOrgIdsForUser === 0) or
+    //        (($numberOfOrgIdsForUser === 1) and ($merchantOrgIdsForUser[0] === $orgId)))
+    //    {
+    //        return;
+    //    }
+    //
+    //    throw new Exception\BadRequestValidationFailureException(
+    //        'We are unable to change your email Id to ' . $user->getEmail() . '. Please reach out to our support team to perform this action');
+    //
+    //}
 
     protected function validateHandle($attribute, $handle)
     {
