@@ -62,6 +62,7 @@ class ProviderPsp
     Const BHIM_CRGB_PAY      = 'bhim_crgb_pay';
     Const FAVE_MONEY         = 'fave_money';
     Const FREO               = 'freo';
+    Const POP                = 'pop';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';
