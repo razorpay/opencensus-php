@@ -179,7 +179,7 @@ class Processor extends Base\Core
                         $hsCodeDescription,$merchantId,$paymentIdMap,$refundIdPaymentIdMap, $addressMap, $adjustmentIdDisputeMap);
 
                     $fileName = 'Razorpay_settlement_'.$merchantId .'_' .$currentDate . '_'. $fileCount++;
-                    $this->generateFile($consolidatedData, $transactionalData, $fileName,$sendFile);
+                    $this->generateFile($consolidatedData, $transactionalData, $fileName,$sendFile, $merchantId);
                 }
             }
 
@@ -326,8 +326,9 @@ class Processor extends Base\Core
         return $transactionalData;
     }
 
-    private function generateFile($consolidatedData, $transactionalData, $fileName, $sendFile)
+    private function generateFile($consolidatedData, $transactionalData, $fileName, $sendFile, $merchantId)
     {
+        $merchant = $this->repo->merchant->find($merchantId);
 
         $sheets = [
             Constants::CONSOLIDATED_SHEET_FILE_NAME  => [
@@ -372,7 +373,7 @@ class Processor extends Base\Core
 
         $this->storageFileName =  $subFolder . '/' . $fileName .'.xls';
 
-        $response = (new UfhService($this->app))->uploadFileAndGetResponse($file, $this->storageFileName, FileStore\Type::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE, null);
+        $response = (new UfhService($this->app))->uploadFileAndGetResponse($file, $this->storageFileName, FileStore\Type::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE, $merchant);
 
         $this->trace->info(TraceCode::OPGSP_IMPORT_FILE_SENT, [
             'ufhResponse'      => $response,

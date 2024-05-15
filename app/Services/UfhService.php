@@ -366,7 +366,7 @@ class UfhService
         // RBL + ICICI + FirstData Detail + FirstData Summary Files
         if($type === 'firs_file' or $type === 'firs_icici_file' or
             $type === 'firs_firstdata_file' or $type === 'firs_firstdata_sum_file' or
-            $type === FileStore\Type::JPMC_DECRYPTED_FILES)
+            $type === FileStore\Type::JPMC_DECRYPTED_FILES or $type === FileStore\Type::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE)
         {
             $this->merchantId = $requestData[self::ENTITY_ID];
         }

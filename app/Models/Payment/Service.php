@@ -7853,6 +7853,7 @@ class Service extends Base\Service
                     'merchant_id'   => $merchant->getId(),
                     'action'        => CrossBorderCommonUseCases::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT,
                     'payment_id'    => $paymentDocument[InvoiceEntity::ENTITY_ID],
+                    'mode'          => $this->mode ?? Mode::LIVE,
                 ];
 
                 CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);

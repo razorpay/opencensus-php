@@ -620,6 +620,7 @@ class Service extends Base\Service
                     'send_file'   => $input['send_file'] ?? false,
                     'from'        => $input['from'] ?? null,
                     'to'          => $input['to'] ?? null,
+                    'mode'        => $this->mode ?? 'live',
                 ];
 
                 Jobs\CrossBorder\CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
