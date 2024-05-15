@@ -180,8 +180,12 @@ class Repository extends Base\Repository
                 // TODO: Can remove strtoupper() if collation for ifsc column is made case insensitive
                         ->where(function ($query)  use ($bankAccountIfscCodeColumn, $bankAccount, $bankAccountBankIdentifierCodeColumn){
                             $query->where($bankAccountIfscCodeColumn, '=', strtoupper($bankAccount[BankAccount\Entity::IFSC]))
-                                ->orWhere($bankAccountBankIdentifierCodeColumn, '=', $bankAccount[BankAccount\Entity::BANK_IDENTIFIER]);
+                                ->orWhere(function ($query)  use ($bankAccount, $bankAccountBankIdentifierCodeColumn){
+                                    $query->where($bankAccountBankIdentifierCodeColumn, '!=', null)
+                                        ->Where($bankAccountBankIdentifierCodeColumn, '=', $bankAccount[BankAccount\Entity::BANK_IDENTIFIER]);
+                                });
                         })
+//
                         ->where($bankAccountBeneficiaryName, '=', $bankAccount[BankAccount\Entity::NAME])
                         ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
                         ->orderBy($faActiveColumn, 'desc')

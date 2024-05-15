@@ -129,7 +129,6 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_PIN,
         self::BANK_IDENTIFIER,
         self::IDENTIFIER_TYPE
-
     ];
 
     protected $visible = [

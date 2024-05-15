@@ -9,6 +9,7 @@ use Mockery;
 use Razorpay\IFSC\IFSC;
 
 use RZP\Error\Error;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
 use RZP\Models\Card\Entity;
 use RZP\Models\FundAccount;
@@ -38,6 +39,44 @@ class FundAccountsTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use FundAccountValidationTrait;
+
+    public $dummyBankAccountCreateInput = [
+            'id' => 'O3EWXeFww8Q6dX',
+            'merchant_id' => 10000000000000,
+            'entity_id' => '1000000contact',
+            'type' => 'contact',
+            'beneficiary_code' => '',
+            'ifsc' => 'SBIN0007105',
+            'ifsc_code' => 'SBIN0007105',
+            'account_number' => '111000111',
+            'account_type' => '',
+            'beneficiary_name' => 'Amit M',
+            'beneficiary_address1' => '',
+            'beneficiary_address2' => '',
+            'beneficiary_address3' => '',
+            'beneficiary_address4' => '',
+            'beneficiary_city' => '',
+            'beneficiary_state' => '',
+            'beneficiary_country' => 'IN',
+            'beneficiary_pin' => '',
+            'beneficiary_email' => '',
+            'beneficiary_mobile' => '',
+            'notes' => array(),
+            'name' => 'Amit M',
+            'ifsc' => 'SBIN0007105',
+    ];
+
+    public $dummyFundAccountCreateInput = [
+        'id' => 'O3DxGyMXeVrEwn',
+        'merchant_id' => 10000000000000,
+        'source_type' => 'contact',
+        'source_id' => '1000000contact',
+        'account_type' => 'bank_account',
+        'batch_id' => '',
+        'idempotency_key' => '',
+        'active' => 1,
+        'unique_hash' => '1f859952180722bef27a4bc664cb66d9ceea5cfc58009091bd3034e99e54e133'
+    ];
 
     protected function setUp(): void
     {
@@ -183,6 +222,106 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
+    }
+
+    public function testCreateFundAccountBankAccountCheckDuplicateWithSameBankAccountDetails()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $bankAccountinput = $this->dummyBankAccountCreateInput;
+
+        $bankAccountinput[BankAccount\Entity::CREATED_AT] = strtotime('+2 days', time());
+
+        $bankAccount = $this->fixtures->create('bank_account', $bankAccountinput);
+
+        $this->assertNull($bankAccount[BankAccount\Entity::BANK_IDENTIFIER]);
+
+        $fundAccountInput = $this->dummyFundAccountCreateInput;
+
+        $fundAccountInput[FundAccount\Entity::ACCOUNT_ID] = $bankAccount[BankAccount\Entity::ID];
+
+        $fundAccountInput[FundAccount\Entity::CREATED_AT] = strtotime('+2 days', time());
+
+        $fundAccountInput[FundAccount\Entity::UPDATED_AT] = strtotime('+2 days', time());
+
+        $this->fixtures->create('fund_account', $fundAccountInput);
+
+        $testData = $this->testData["testCreateFundAccountBankAccount"];
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => 'SBIN0007105',
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|SBIN0007105|AmitM';
+
+        /*
+         * In this call we are getting 200, which means that resource is already created
+         * and already existing resource has been returned
+         */
+        $testData['response']['status_code'] = 200;
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest($testData);
+
+        $this->performFundAccountAssertions($expectedBankAccount, $expectedHashInput, $response);
+    }
+
+    public function testCreateFundAccountBankAccountCheckDuplicateWithDifferentBankAccountDetails()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $bankAccountinput = $this->dummyBankAccountCreateInput;
+
+        $bankAccountinput[BankAccount\Entity::CREATED_AT] = strtotime('+2 days', time());
+
+        $bankAccount = $this->fixtures->create('bank_account', $bankAccountinput);
+
+        $this->assertNull($bankAccount[BankAccount\Entity::BANK_IDENTIFIER]);
+
+        $fundAccountInput = $this->dummyFundAccountCreateInput;
+
+        $fundAccountInput[FundAccount\Entity::ACCOUNT_ID] = $bankAccount[BankAccount\Entity::ID];
+
+        $fundAccountInput[FundAccount\Entity::CREATED_AT] = strtotime('+2 days', time());
+
+        $fundAccountInput[FundAccount\Entity::UPDATED_AT] = strtotime('+2 days', time());
+
+        $fundAccount = $this->fixtures->create('fund_account', $fundAccountInput);
+
+        $testData = $this->testData["testCreateFundAccountBankAccount"];
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => 'SBIN0007103',
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|SBIN0007103|AmitM';
+
+        $testData['request']['content']['bank_account']['ifsc'] = "SBIN0007103";
+        $testData['response']['content']['bank_account']['ifsc'] = "SBIN0007103";
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotEquals($fundAccount[FundAccount\Entity::ID], $response[FundAccount\Entity::ID]);
+
+        $this->performFundAccountAssertions($expectedBankAccount, $expectedHashInput, $response);
+
     }
 
     public function testCreateFundAccountBankAccountWithOldIfsc()
@@ -4100,6 +4239,26 @@ class FundAccountsTest extends TestCase
         $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|' . $defaultIfscCode . '|AmitM';
 
         $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+    }
+
+    // helper Functions
+
+    public function performFundAccountAssertions($expectedBankAccountOutput, $expectedFundAccountHash, $response)
+    {
+        $fundAccount = $this->getEntityById('fund_account', $response['id'], true);
+        $bankAccount = $this->getEntityById('bank_account', $fundAccount['account_id'], true);
+
+        $this->assertArraySelectiveEquals($expectedBankAccountOutput, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHash = hash('sha3-256', $expectedFundAccountHash);
 
         $fundAccount = $this->getDbLastEntity('fund_account');
 
