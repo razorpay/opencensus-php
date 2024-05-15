@@ -42,6 +42,7 @@ return [
     'fetch_app_keys'            => ['owner', 'admin'],
     'ezetap_void_api'           => ['owner', 'admin'],
     'ezetap_refund_api'         => ['owner', 'admin'],
+    'ezetap_receipt_api'        => ['owner', 'admin'],
     'post_activation_save_step' => ['owner', 'manager', 'admin'],
     'post_capture'              => $writers,
     'post_config_logo'          => ['owner', 'manager', 'admin'],

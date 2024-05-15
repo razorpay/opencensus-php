@@ -203,6 +203,7 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::post('/ezetap/void', 'MerchantController@ezetapVoidApi')->name('ezetap_void_api');
         Route::post('/ezetap/refund', 'MerchantController@ezetapRefundApi')->name('ezetap_refund_api');
+        Route::get('/ezetap/receipt/{razorpayReferenceId}', 'MerchantController@ezetapReceiptApi')->name('ezetap_receipt_api');
 
         Route::get('/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
         Route::get('/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');

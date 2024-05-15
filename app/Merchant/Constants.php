@@ -293,7 +293,12 @@ class Constants
     const APP_KEY             = 'appKey';
     const USERNAME            = 'username';
     const EXTERNAL_REF_NUMBER = 'externalRefNumber';
-
+    const RAZORPAY_REFERENCE_ID = 'razorpayReferenceId';
+    const RAZORPAY_MERCHANT_ID = 'razorpayMerchantId';
+    const EZETAP_RECEIPT_ENCODED_IMAGE = 'encodedImageString';
+    const EZETAP_RECEIPT_ENDPOINT = '/api/2.0/receipt/image/fetch/omni';
+    const RAZORPAY_RECEIPT_ENCODED_IMAGE_RESPONSE = 'receipt_encoded_image';
+    const EZETAP_RECEIPT_ERROR = 'errorMessage';
     const HEADERS = [
         'Content-Type' => 'application/json'
     ];
@@ -308,5 +313,5 @@ class Constants
     const IS_SUB_MERCHANT = 'isSubMerchant';
     const PARTNER_TYPE = 'partner_type';
     const ACTIVATION_STATUS = 'activation_status';
-    
+
 }

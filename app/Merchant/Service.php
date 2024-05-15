@@ -295,6 +295,26 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
+    public function ezetapReceiptApi($ezetapReceiptApi)
+    {
+        $ezetapReceiptConfig = $this->getEzetapReceiptConfig();
+        $merchantId = $this->getCurrentMerchantId();
+
+        $this->trace->info(TraceCode::EZETAP_RECEIPT_CALL, [
+            Constants::RAZORPAY_REFERENCE_ID => $ezetapReceiptApi,
+        ]);
+
+        $base_url = $this->getRazorpayPosBaseUrl();
+
+        $inputBody = array(
+            Constants::USERNAME => $ezetapReceiptConfig[Constants::USERNAME],
+            Constants::APP_KEY  => $ezetapReceiptConfig[Constants::APP_KEY],
+            Constants::RAZORPAY_REFERENCE_ID => $ezetapReceiptApi,
+            Constants::RAZORPAY_MERCHANT_ID => $merchantId
+        );
+        return $this->requestRazorpayPosForReceipt($base_url . Constants::EZETAP_RECEIPT_ENDPOINT, $inputBody);
+    }
+
     public function fetchAppKeys($merchantId)
     {
         $CacheIdForFetchingKeys = 'ezetap_username_and_appkey_' . $merchantId;
@@ -1278,6 +1298,54 @@ class Service extends Base\Service
         return $this->app['config']->get('app.ezetap_base_url');
     }
 
+    protected function getEzetapReceiptConfig() {
+        return $this->app['config']->get('app.ezetap_receipt_config');
+    }
+
+    protected function requestRazorpayPosForReceipt($endPoint, $input): array {
+        try
+        {
+            $client = new Guzzle();
+
+            $response   = $client->post($endPoint, [
+                'headers' => Constants::HEADERS,
+                'json'    => $input,
+                'timeout' => 20,
+            ]);
+            $statusCode = $response->getStatusCode();
+
+            $body = json_decode($response->getBody(), true);
+
+            // Process the response based on the HTTP status code
+            if (($statusCode === 200)
+                and ($body[Constants::SUCCESS] === true))
+            {
+                // Successful response
+                return [null, [
+                    Constants::RAZORPAY_RECEIPT_ENCODED_IMAGE_RESPONSE   => $body[Constants::EZETAP_RECEIPT_ENCODED_IMAGE]
+                ]];
+            } else if (($statusCode === 200)
+                and ($body[Constants::SUCCESS] === false)) {
+                throw new BadRequestError(
+                    $body[Constants::EZETAP_RECEIPT_ERROR],
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    400
+                );
+            }
+
+
+            return [['Internal error occurred'], null];
+        }
+        catch (\Exception $e)
+        {
+            // Handle any exceptions that occurred during the request
+            return [[$e->getMessage()], null];
+        }
+        catch (GuzzleException $e)
+        {
+            return [[$e->getMessage()], null];
+        }
+    }
     /**
      * @param array $options
      * @param       $input

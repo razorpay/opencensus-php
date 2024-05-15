@@ -298,4 +298,8 @@ return array(
         'secret'    => env('RAZORASSIST_SECRET'),
         'timeout'   => 10,
     ],
+    'ezetap_receipt_config' => [
+        'username'  => env('EZETAP_RECEIPT_USERNAME'),
+        'appKey'   => env('EZETAP_RECEIPT_APP_KEY'),
+    ]
 );

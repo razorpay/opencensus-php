@@ -52,6 +52,14 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $keys);
     }
 
+    public function ezetapReceiptApi($razorpayReferenceId) {
+        $input = Input::all();
+
+        list($error, $keys) = (new Merchant\Service)->ezetapReceiptApi($razorpayReferenceId);
+
+        return AppResponse::jsonResponse($error, $keys);
+    }
+
     public function ezetapRefundApi()
     {
         $input = Input::all();

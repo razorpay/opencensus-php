@@ -20,6 +20,7 @@ class TraceCode
     const EZETAP_SET_APP_KEY                        = 'EZETAP_SET_APP_KEY';
     const EZETAP_API_RESPONSE                       = 'EZETAP_API_RESPONSE';
     const EZETAP_REFUND_ACTION                      = 'EZETAP_REFUND_ACTION';
+    const EZETAP_RECEIPT_CALL                       = 'EZETAP_RECEIPT_CALL';
     const EZETAP_FETCH_APP_KEY                      = 'EZETAP_FETCH_APP_KEY';
     const SLACK_QUERY_RESPONSE                      = 'SLACK_QUERY_RESPONSE';
     const USER_REGISTER_OAUTH_PROVIDER_ERROR        = 'USER_REGISTER_OAUTH_PROVIDER_ERROR';
