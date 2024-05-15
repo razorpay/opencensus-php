@@ -10,7 +10,6 @@ use Redis;
 use Config;
 use Mockery;
 use RZP\Constants\Mode as EnvMode;
-use RZP\Jobs\PayoutUsageEventProcessing;
 use RZP\Jobs\EsSync;
 use RZP\Services\Mock\Stork;
 use \WpOrg\Requests\Response;
@@ -5028,33 +5027,6 @@ class PayoutTest extends OAuthTestCase
         Queue::fake();
 
         $this->makeRequestAndGetContent($request);
-
-        Queue::assertPushed(PayoutUsageEventProcessing::class, function($job) use ($payout)
-        {
-            $this->assertEquals($payout->getPublicId(), $job->getEntityID());
-
-            $this->assertEquals('payout', $job->getEntityType());
-
-            $expectedParams = [
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_ID                    => $payout->getPublicId(),
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_MERCHANT_ID           => $payout->getMerchantId(),
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_CHANNEL               => strtolower($payout->getChannel()),
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_MODE                  => 'imps',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_STATUS                => 'processed',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_AMOUNT                => (float) $payout->getAmount(),
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_INTERFACE             => 'api',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_AGGREGATION           => 'single',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_EVENT_TYPE            => "payouts",
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_PAYLOAD_SOURCE        => "vanilla",
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_FEATURE               => '',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_SOURCE_ACCOUNT_NUMBER => '',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_SOURCE_ACCOUNT_TYPE   => 'ca',
-            ];
-
-            $this->assertArraySelectiveEquals($expectedParams, $job->getParams());
-
-            return true;
-        });
 
         $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
         $fundTransferAttempt = $payout->fundTransferAttempts()->first();

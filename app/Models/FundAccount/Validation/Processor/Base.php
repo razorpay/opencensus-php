@@ -190,11 +190,13 @@ abstract class Base extends Core
                 Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_SOURCE_ACCOUNT_NUMBER => '', // TO pass account number once we deduct FAV amount from CA.
             ];
 
-            PayoutUsageEventProcessing::dispatch(
-                $fav->getPublicId(),
-                Constants\Entity::FUND_ACCOUNT_VALIDATION,
-                $eventPayload
-            );
+            $queueName = $app['config']->get('queue.payout_usage_event_processing.' . Constants\Mode::LIVE);
+
+            $app['queue']->connection('sqs')->pushRaw(json_encode([
+                "entity_id" => $fav->getPublicId(),
+                "entity_type" => Constants\Entity::FUND_ACCOUNT_VALIDATION,
+                "payload" => $eventPayload,
+            ]), $queueName);
         }
         catch (\Throwable $exception)
         {

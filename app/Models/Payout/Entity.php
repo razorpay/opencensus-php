@@ -3676,11 +3676,13 @@ class Entity extends Base\PublicEntity
                     Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_SOURCE_ACCOUNT_TYPE   => ($this->balance->getAccountType() === Balance\AccountType::SHARED) ? 'lite': 'ca',
                 ];
 
-                PayoutUsageEventProcessing::dispatch(
-                    $this->getPublicId(),
-                    Entity::PAYOUT,
-                    $eventPayload
-                );
+                $queueName = $app['config']->get('queue.payout_usage_event_processing.' . Mode::LIVE);
+
+                $app['queue']->connection('sqs')->pushRaw(json_encode([
+                    "entity_id" => $this->getPublicId(),
+                    "entity_type" => Entity::PAYOUT,
+                    "payload" => $eventPayload,
+                ]), $queueName);
             }
         }
         catch (\Throwable $exception)

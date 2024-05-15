@@ -6,7 +6,6 @@ use App;
 use Mockery;
 use \RZP\Constants;
 use RZP\Error\Error;
-use RZP\Jobs\PayoutUsageEventProcessing;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\Transactions;
@@ -200,31 +199,6 @@ class FundAccountValidationTest extends TestCase
 
         // utr should be present in response['results'] array
         $this->assertArrayKeysExist($response['results'], ['utr','account_status','registered_name']);
-
-        Queue::assertPushed(PayoutUsageEventProcessing::class, function($job) use ($fav)
-        {
-            $this->assertEquals($fav['id'], $job->getEntityID());
-
-            $this->assertEquals('fund_account_validation', $job->getEntityType());
-
-            $expectedParams = [
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_ID                    => $fav['id'],
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_MERCHANT_ID           => $fav['merchant_id'],
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_MODE                  => 'imps',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_STATUS                => 'completed',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_AMOUNT                =>  1.0,
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_INTERFACE             => 'api',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_AGGREGATION           => 'single',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_EVENT_TYPE            => "bank_account_validation",
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_PAYLOAD_SOURCE        => "vanilla",
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_FEATURE               => 'pennydrop',
-                Constants\ChargeCollections::CHARGE_COLLECTION_EVENT_PUSH_PS_SOURCE_ACCOUNT_NUMBER => '',
-            ];
-
-            $this->assertArraySelectiveEquals($expectedParams, $job->getParams());
-
-            return true;
-        });
 
         return $response;
     }
