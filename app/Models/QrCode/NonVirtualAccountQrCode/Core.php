@@ -97,22 +97,6 @@ class Core extends QrCode\Core
         return $qrCode;
     }
 
-    public function fetchTerminalInfoFromQrCode($qrCode)
-    {
-        $vpa     = $qrCode->getQrVpa();
-        $gateway = $qrCode->getGatewayFromQrString();
-        switch ($gateway)
-        {
-            case Gateway::UPI_AIRTEL:
-                $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $vpa;
-
-                return $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
-            default:
-                return null;
-        }
-
-    }
-
     public function addStaticQRinQRCodeConfig($qrCode, $inputTerminal = null)
     {
 
@@ -140,14 +124,13 @@ class Core extends QrCode\Core
         {
             return null;
         }
-        $terminal = $inputTerminal === null ? $this->fetchTerminalInfoFromQrCode($qrCode) : $inputTerminal;
 
-        if ($terminal === null)
+        if ($inputTerminal === null)
         {
             return null;
         }
 
-        (new QrCodeConfigService())->createOrUpdateStaticQRCodeConfig($terminal, $qrCode);
+        (new QrCodeConfigService())->createOrUpdateStaticQRCodeConfig($inputTerminal, $qrCode);
 
     }
 
