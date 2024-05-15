@@ -198,6 +198,7 @@ class Constants
     const AllowRefundAgedPayments                     = 'allow_refund_aged_payments';
     const AllowVoidRefunds                            = 'allow_void_refunds';
     const AllowBankTransferRefundNonTpv               = 'allow_bank_transfer_refund_non_tpv';
+    const AllowVoidForOffline                         = 'allow_void_for_offline';
     const RefundArnWebhookVisibility                  = 'refund_arn_webhook_visibility';
     const RefundAttributesLateAuth                    = 'refund_attributes_late_auth';
     const CrossOrgLogin                               = 'cross_org_login';
@@ -489,6 +490,7 @@ class Constants
         self::AllowRefundAgedPayments                     => 'rzp/pg/merchant/refunds/RefundCreation',
         self::AllowVoidRefunds                            => 'rzp/pg/merchant/refunds/RefundCreation',
         self::AllowBankTransferRefundNonTpv               => 'rzp/pg/merchant/refunds/RefundCreation',
+        self::AllowVoidForOffline                         => 'rzp/pg/merchant/refunds/RefundCreation',
         self::RefundArnWebhookVisibility                  => 'rzp/pg/merchant/refunds/Webhook',
         self::RefundAttributesLateAuth                    => 'rzp/pg/org/refunds/Display',
         self::CrossOrgLogin                               => 'rzp/platform/merchant/login/CrossLoginFeatures',
@@ -743,6 +745,7 @@ class Constants
         APIFeaturesConstants::REFUND_AGED_PAYMENTS                         => self::AllowRefundAgedPayments,
         APIFeaturesConstants::VOID_REFUNDS                                 => self::AllowVoidRefunds,
         APIFeaturesConstants::NON_TPV_BT_REFUND                            => self::AllowBankTransferRefundNonTpv,
+        APIFeaturesConstants::ALLOW_VOID_FOR_OFFLINE                       => self::AllowVoidForOffline,
         APIFeaturesConstants::REFUND_ARN_WEBHOOK                           => self::RefundArnWebhookVisibility,
         APIFeaturesConstants::SHOW_REFND_LATEAUTH_PARAM                    => self::RefundAttributesLateAuth,
         self::CrossOrgLogin                                                => self::CrossOrgLogin,

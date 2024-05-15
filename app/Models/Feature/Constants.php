@@ -100,6 +100,10 @@ class Constants
     const EXPOSE_CARD_IIN                 = 'expose_card_iin';
     const S2S_OPTIONAL_DATA               = 's2s_optional_data';
     const VOID_REFUNDS                    = 'void_refunds';
+    /**
+     * If set, enables void refunds for offline payments
+     */
+    const ALLOW_VOID_FOR_OFFLINE          = 'allow_void_for_offline';
     const PARTNER                         = 'partner';
     const OTPELF                          = 'otpelf';
     const PAYMENT_NOBRANDING              = 'payment_nobranding';
@@ -2350,6 +2354,7 @@ class Constants
         self::EXPOSE_CARD_IIN                              => true,
         self::S2S_OPTIONAL_DATA                            => true,
         self::VOID_REFUNDS                                 => true,
+        self::ALLOW_VOID_FOR_OFFLINE                       => true,
         self::PARTNER                                      => true,
         self::PAYMENT_NOBRANDING                           => true,
         self::OTPELF                                       => true,
