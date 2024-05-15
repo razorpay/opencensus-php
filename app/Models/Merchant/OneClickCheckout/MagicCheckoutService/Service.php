@@ -25,6 +25,7 @@ class Service extends Base\Service
   const CHECK_SHOPIFY_COMPLETE_CHECKOUT_PATH = 'v1/checkouts/order_status';
   const TAX_DETAILS_AND_SHIPPING_OPTIONS_PATH = 'v1/internal/shipping/options';
   const GET_CUSTOMER_ADDRESS_PATH             = 'v1/magic/customer/address';
+  const SHOPIFY_PUBLIC_APP_POST_INSTALLATION_COD_WORKFLOW_PATH = 'v1/integrations/shopify/cod/workflow';
 
   public function __construct()
   {
@@ -151,5 +152,10 @@ class Service extends Base\Service
 
       return $this->app['magic_checkout_service_client']->sendRequest(self::GET_CUSTOMER_ADDRESS_PATH, $input, Requests::GET);
   }
+
+    public function postPublicAppInstallationWorkflow(array $input)
+    {
+        return $this->app['magic_checkout_service_client']->sendRequest(self::SHOPIFY_PUBLIC_APP_POST_INSTALLATION_COD_WORKFLOW_PATH, $input, Requests::POST);
+    }
 
 }

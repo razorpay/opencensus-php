@@ -130,6 +130,7 @@ final class Metric
     const MAGIC_ORDER_FETCH_OFFER_ERROR_COUNT           = 'magic_order_fetch_offer_error_count';
 
     const PRE_MAGIC_ORDER_JOB_CREATE_ERROR_COUNT = 'pre_magic_order_job_create_error_count';
+    const SHOPIFY_PUBLIC_APP_POST_INSTALLATION_WORKFLOW_ERROR_COUNT = "shopify_public_app_post_installation_workflow_error_count";
 
     const WOOCOMMERCE_UPDATE_ORDER_STATUS_SUCCESS_COUNT     = 'woocommerce_update_order_status_success_count';
     const WOOCOMMERCE_UPDATE_ORDER_STATUS_ERROR_COUNT       = 'woocommerce_update_order_status_error_count';

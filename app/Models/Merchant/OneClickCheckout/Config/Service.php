@@ -26,6 +26,7 @@ use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethods\Service as ShippingService;
 use RZP\Models\Key;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Service as MagicCheckoutService;
 
 class Service extends Base\Service
 {
@@ -472,6 +473,36 @@ class Service extends Base\Service
             $valueJSON = array_merge($valueJSON, [Constants::COD_ENGINE => $codEngine]);
 
             $config = $this->merchant->get1ccConfig(Constants::SOPC_APP);
+
+            $shopId = $this->merchant->get1ccConfig(Constants::SHOP_ID);
+
+            if ($codEngine === true){
+                // mcs service to trigger post installation workflow
+                // creation of carrier service and payment customization
+                try
+                {
+                    (new MagicCheckoutService())->postPublicAppInstallationWorkflow([
+                        'shop_id' => $shopId,
+                        'app_type'  => 'sopc',
+                        'merchant_id'   => $this->merchant->getMerchantId()
+                    ]);
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->error(TraceCode::SHOPIFY_PUBLIC_APP_POST_INSTALLATION_WORKFLOW_FAILED,
+                        [
+                            'error' => $e->getMessage(),
+                            'merchant_id' => $this->merchant->getId(),
+                            'shop_id' => $shopId
+                        ]
+                    );
+
+                    $this->trace->count(
+                        Metric::SHOPIFY_PUBLIC_APP_POST_INSTALLATION_WORKFLOW_ERROR_COUNT,
+                        ['code' => $e->getCode()]
+                    );
+                }
+            }
 
             if ($config === null)
             {
