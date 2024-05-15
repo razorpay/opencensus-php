@@ -101,7 +101,9 @@ class Service extends Base\Service
         RequestProcessor\Base::NETBANKING_EQUITAS,
         RequestProcessor\Base::NETBANKING_CSB,
         RequestProcessor\Base::NETBANKING_SARASWAT,
-        RequestProcessor\Base::AIRTEL
+        RequestProcessor\Base::AIRTEL,
+        RequestProcessor\Base::NETBANKING_BOB,
+        RequestProcessor\Base::NETBANKING_KOTAK_V2
     ];
 
     protected $core;

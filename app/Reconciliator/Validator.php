@@ -47,10 +47,7 @@ class Validator extends Base\Core
                                                         "/^MIS file for (0[1-9]|[12][0-9]|3[01])[\/-](0[1-9]|1[0-2])[\/-]20[0-9]{2}, "
                                                         . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
                                                      ],
-        RequestProcessor\Base::NETBANKING_BOB     => [  "/^(RE: )?Razorpay_Scroll_ of /",
-                                                        "/^Bank of Baroda RazorPay Internet Banking payment recon file for date "
-                                                        . "\(20[0-9]{2}-[0-9]{2}-[0-9]{2}\)/"
-                                                     ],
+        RequestProcessor\Base::NETBANKING_BOB     => ["/(?i)Bank of Baroda RazorPay Internet Banking payment recon file for date/"],
         RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
         RequestProcessor\Base::NETBANKING_SBI     => ["/(?i)^RAZORPAY Recon File/"],
         RequestProcessor\Base::NETBANKING_ICICI   => ["/Consumer Durable Loan booking Razorpay Reports for [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
@@ -95,7 +92,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_ALLAHABAD   => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY => ["/^Flexmoney Recon and Refund files/"],
         RequestProcessor\Base::PHONEPE            => [".*/Settlement Report/"],
-        RequestProcessor\Base::NETBANKING_KVB     => ["/(?i)RECONFILE DT (0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.20[0-9]{2}/"],
+        RequestProcessor\Base::NETBANKING_KVB     => ["/(?i)Enclosedreconfiles/"],
         RequestProcessor\Base::BAJAJFINSERV       => ["/Payment MIS_Razorpay Software_ [0-9]{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) 20[0-9]{2}/"],
         RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::HDFC_DEBIT_EMI     => ["/^DCEMI Reconciliation & Payment Summary Report/"],
@@ -114,7 +111,8 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_UCO     => ["/(?i)Online Razorpay Report Data for the transaction date/"],
         RequestProcessor\Base::EMERCHANTPAY       => ["/Settlement Razorpay Software Private Ltd (Trustly|Poli|Sofort|Giropay) (EUR|GBP|AUD) [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         RequestProcessor\Base::WALLET_BAJAJ       => ["/(?i)^RZP MID BFL0000001675590 Settlement Data(.+)?/"],
-        RequestProcessor\Base::NETBANKING_EQUITAS => ["/^(?i)Razorpay Transaction file/"]
+        RequestProcessor\Base::NETBANKING_EQUITAS => ["/^(?i)Razorpay Transaction file/"],
+        RequestProcessor\Base::NETBANKING_KOTAK_V2 => ["/(?i)PG Transaction File-OTRAZORPAY/", "/(?i)PG Transaction File-OSRAZORPAY/", "/(?i)RAZORPAY Recon report/", "/(?i)PG Online Refund File-OTRAZORPAY/", "/(?i)PG Online Refund File-OSRAZORPAY/"]
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -229,7 +227,9 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_EQUITAS,
         RequestProcessor\Base::NETBANKING_CSB,
         RequestProcessor\Base::NETBANKING_SARASWAT,
-        RequestProcessor\Base::AIRTEL
+        RequestProcessor\Base::AIRTEL,
+        RequestProcessor\Base::NETBANKING_BOB,
+        RequestProcessor\Base::NETBANKING_KOTAK_V2
     ];
 
     const WHITELISTED_EMAIL_FOR_ART = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com", "reconciliate@mg.razorpay.com"];

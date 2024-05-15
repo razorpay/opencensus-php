@@ -149,7 +149,7 @@ class Mailgun extends Base
         self::NETBANKING_KVB => [
             [
                 "from" => ["atmcashtally@kvbmail.com", "lakshmim@kvbmail.com"],
-                "subject_pattern" => "/(?i)RECONFILE DT (0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.20[0-9]{2}/",
+                "subject_pattern" => "/(?i)Enclosedreconfiles/",
                 "filename_pattern" => "/^(?i)kvb_ib_razorpay(tpv|)_(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}/",
                 "destination" => "recon/input/netbanking_kvb/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
@@ -239,7 +239,7 @@ class Mailgun extends Base
                 "from" => ["bmvb4982@centralbank.co.in", "inbsite@centralbank.co.in"],
                 "subject_pattern" => "/(?i)RECON FILE/",
                 "filename_pattern" => "/(?i)IB00018Recon/",
-                "destination" => "recon/input/netbanking_cbi/bank_payment_report/",
+                "destination" => "recon/input/netbanking_cbi/bank_payment_report_Non_TPV/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
         ],
@@ -305,7 +305,53 @@ class Mailgun extends Base
                 "destination" => "recon/input/netbanking_airtel/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
-        ]                             
+        ],
+        self::NETBANKING_BOB => [
+            [
+                "from" => "billpay@bankofbaroda.com",
+                "subject_pattern" => "/(?i)Bank of Baroda RazorPay Internet Banking payment recon file for date/",
+                "filename_pattern" => "/(?i)RazorPay_Scroll/",
+                "destination" => "recon/input/netbanking_bob/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_KOTAK_V2 => [
+            [
+                "from" => "kotakpgrecon@kotak.com",
+                "subject_pattern" => "/(?i)PG Transaction File-OTRAZORPAY/",
+                "filename_pattern" => "/(?i)OTRAZORPAY/",
+                "destination" => "recon/input/netbanking_kotak/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ],
+            [
+                "from" => "kotakpgrecon@kotak.com",
+                "subject_pattern" => "/(?i)PG Transaction File-OSRAZORPAY/",
+                "filename_pattern" => "/(?i)OSRAZORPAY/",
+                "destination" => "recon/input/netbanking_kotak/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ],
+            [
+                "from" => "bankalerts@kotak.com",
+                "subject_pattern" => "/(?i)RAZORPAY Recon report/",
+                "filename_pattern" => "/(?i)RECONCILIATION_REPORT_RAZORPAY/",
+                "destination" => "recon/input/netbanking_kotak/bank_payment_corp_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ],
+            [
+                "from" => "kotakpgrecon@kotak.com",
+                "subject_pattern" => "/(?i)PG Online Refund File-OTRAZORPAY/",
+                "filename_pattern" => "/(?i)OTRAZORPAY/",
+                "destination" => "recon/input/netbanking_kotak/bank_refund_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ],
+            [
+                "from" => "kotakpgrecon@kotak.com",
+                "subject_pattern" => "/(?i)PG Online Refund File-OSRAZORPAY/",
+                "filename_pattern" => "/(?i)OSRAZORPAY/",
+                "destination" => "recon/input/netbanking_kotak/bank_refund_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ]
     ];
 
     protected $inputDetails;
