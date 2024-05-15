@@ -244,6 +244,7 @@ class Upi
     const YESB = 'YESB';
     const YLNX = 'YLNX';
     const ZRNB = 'ZRNB';
+    const TDCB = 'TDCB';
 
     protected static $supportedUpiBanks = [
         self::ABHY,
@@ -476,6 +477,7 @@ class Upi
         self::YESB,
         self::YLNX,
         self::ZRNB,
+        self::TDCB,
     ];
 
     public static function exists($bank)
