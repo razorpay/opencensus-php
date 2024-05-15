@@ -1160,7 +1160,7 @@ class Payment extends Base
     {
         $payment = $this->entity;
         $currentRoute = app('request.ctx')->getRoute();
-        if ($currentRoute == 'calculate_commission' && $payment->getFeeBearerAttribute() === FeeBearer::PLATFORM)
+        if ($currentRoute == 'calculate_commission' && $payment->getFeeBearer(true) === FeeBearer::PLATFORM)
         {
             return false;
         }
