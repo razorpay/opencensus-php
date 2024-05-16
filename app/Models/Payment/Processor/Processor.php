@@ -2889,9 +2889,16 @@ class Processor
                 return false;
             }
 
+            // Route recurring payments via non re arch flow. Both subscriptions and CAW
+            if ((empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) or
+                ((isset($input[Payment\Entity::RECURRING]) === true) and
+                (($input[Payment\Entity::RECURRING] === '1') or ($input[Payment\Entity::RECURRING] === 1))))
+            {
+                return false;
+            }
+
             if ((isset($input[Payment\Entity::WALLET]) === true) &&
-                (in_array($input[Payment\Entity::WALLET], Wallet::$supportedWalletsForRearch)) &&
-                (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true))
+                (in_array($input[Payment\Entity::WALLET], Wallet::$supportedWalletsForRearch)))
             {
                 return true;
             }

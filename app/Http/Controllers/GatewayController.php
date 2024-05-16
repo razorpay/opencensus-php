@@ -46,9 +46,11 @@ use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Gateway\Utility as GatewayUtility;
 use RZP\Gateway\Netbanking\Base\Repository;
+use RZP\Models\Customer\Token\RecurringStatus;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\P2p\Preferences as P2pPreferences;
 use RZP\Models\Gateway\Priority as GatewayPriority;
+use RZP\Models\Customer\Token\Entity as TokenEntity;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Models\Customer\Token\Constants as TokenConstants;
@@ -2635,27 +2637,29 @@ class GatewayController extends Controller
 
                     $tokenFunction = $input['request']['head']['function'];
 
-                    $tokenStatus = TokenConstants::INITIATED;
-
-                    if($tokenFunction=== 'alipayplus.oauth.accesstoken.apply.notify')
-                    {
-                        $tokenStatus = TokenConstants::ACTIVE;
-
-                    }
-                    else if($tokenFunction=== 'alipayplus.oauth.accesstoken.revoke.notify')
-                    {
-                        $tokenStatus = TokenConstants::DEACTIVATED;
-                    }
-
                     $tokenData = [
-                        'payment_id' => $paymentId,
-                        Payment\Entity::METHOD  => Payment\Method::WALLET,
-                        "gateway_token" =>  $accessToken,
-                        "status" => $tokenStatus,
-                        "recurring" => true,
-                        // default expiry of tng token is 15 years
-                        "expired_at" =>  Carbon::now()->addYears(15)->timestamp,
+                        TokenEntity::METHOD           => Payment\Method::WALLET,
+                        TokenEntity::WALLET           => Payment\Processor\Wallet::TOUCHNGO,
+                        TokenEntity::GATEWAY_TOKEN    => $accessToken,
+                        TokenEntity::RECURRING        => true,
+                        TokenEntity::STATUS           => TokenConstants::INITIATED,
+                        TokenEntity::RECURRING_STATUS => RecurringStatus::INITIATED,
                     ];
+
+                    if ($tokenFunction === 'alipayplus.oauth.accesstoken.apply.notify')
+                    {
+                        $tokenData[TokenEntity::STATUS]           = TokenConstants::ACTIVE;
+                        $tokenData[TokenEntity::RECURRING_STATUS] = RecurringStatus::CONFIRMED;
+                        $tokenData[TokenEntity::CONFIRMED_AT]     = Carbon::now()->getTimestamp();
+                        // default expiry of tng token is 15 years
+                        $tokenData[TokenEntity::EXPIRED_AT]       = Carbon::now()->addYears(15)->timestamp;
+                    }
+                    else if ($tokenFunction === 'alipayplus.oauth.accesstoken.revoke.notify')
+                    {
+                        $tokenData[TokenEntity::STATUS]           = TokenConstants::DEACTIVATED;
+                        $tokenData[TokenEntity::RECURRING_STATUS] = RecurringStatus::CANCELLED;
+                        $tokenData[TokenEntity::EXPIRED_AT]       = Carbon::now()->getTimestamp();
+                    }
 
                     $token = (new Payment\Processor\Processor($merchant))->updateToken($payment, $tokenData);
 
@@ -2663,13 +2667,13 @@ class GatewayController extends Controller
 
                     $this->trace->info(TraceCode::TOKEN_CREATE,[ "token_data" => $token['id']]);
 
-                    if($tokenStatus === TokenConstants::ACTIVE)
+                    if ($token->getStatus() === TokenConstants::ACTIVE)
                     {
                         (new Customer\Token\Core())->notifyAppsTokenStatus($token, Customer\Token\RecurringStatus::CONFIRMED);
                     }
-                    else if($tokenStatus === TokenConstants::DEACTIVATED)
+                    else if ($token->getStatus() === TokenConstants::DEACTIVATED)
                     {
-                        (new Customer\Token\Core()) -> notifyAppsTokenStatus($token, Customer\Token\RecurringStatus::CANCELLED);
+                        (new Customer\Token\Core())->notifyAppsTokenStatus($token, Customer\Token\RecurringStatus::CANCELLED);
                     }
 
                     return $response['data']['callback_response'];
