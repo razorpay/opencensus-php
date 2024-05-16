@@ -386,6 +386,8 @@ class Processor
 
     const SAVED_CARD_ISSUER_AND_DUAL_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_issuer_and_dual_token_payments_via_pg_router';
 
+    const FETCH_CRYPTOGRAM_VIA_CPS = 'fetch_cryptogram_via_cps';
+
     /**
      * Razorx flag to indicate if a payment with save option should go via PG Router and CPS or just via API service
      */
@@ -1404,13 +1406,25 @@ class Processor
                                         'network'   => $card->getNetworkCode(),
                                         'type'      => $card->getType(),
                                     ],
-                                ]);
-                                $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant, 'null', $card);
-                                $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input, $token);
-                                //modify input for cards
-                                $input[Payment\Entity::CARD] = $cardInput;
-                                $input[Payment\Entity::TOKEN] = $token->getId();
-                                return true;
+                                ] );
+                                $cpsCryptogramFetchResult = $this->app->razorx->getTreatment($merchant->getId(), self::FETCH_CRYPTOGRAM_VIA_CPS, $this->mode);
+                                if ($cpsCryptogramFetchResult === 'on' && $card->getVault() !== Card\Vault::HDFC && $this->merchant->isFeatureEnabled(Feature::RAAS) === false)
+                                {
+                                    $cardInput = $this->getCardInputWithoutCryptogramForRearch($card, $input);
+                                    //modify input for cards
+                                    $input[Payment\Entity::CARD] = $cardInput;
+                                    $input[Payment\Entity::TOKEN] = $token->getId();
+                                    $input["cryptogram_source"] = "cps";
+                                    return true;
+                                }
+                                else {
+                                    $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant, 'null', $card);
+                                    $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input, $token);
+                                    //modify input for cards
+                                    $input[Payment\Entity::CARD] = $cardInput;
+                                    $input[Payment\Entity::TOKEN] = $token->getId();
+                                    return true;
+                                }
                             }
                         } else {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
@@ -1724,6 +1738,22 @@ class Processor
         }
 
         return false;
+    }
+
+    protected function getCardInputWithoutCryptogramForRearch($card, $input)
+    {
+        $input = [
+            Card\Entity::NAME => $card->getName(),
+            Card\Entity::LAST4 => $card->getLast4(),
+            Card\Entity::TOKENISED => true,
+            Card\Entity::VAULT => "rzpvault",
+            Card\Entity::CVV => $input['card']['cvv'] ?? null,
+            Card\Entity::TOKEN_PROVIDER => 'Razorpay',
+            Card\Entity::REWARD => $input['card']['reward'],
+            Card\Entity::VAULT_TOKEN => $card->getVaultToken(),
+        ];
+
+        return $input;
     }
 
     protected function getCardInputForRearch($cryptogram, $card, $input,$token)
