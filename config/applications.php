@@ -300,7 +300,7 @@ return [
 
     'axis_va' => [
         'org_token'   => env('AXIS_VA_SECRET'),
-        'x_corp_code' => env('AXIS_X_CORP_CODE', "RZPX"),
+        'x_corp_code' => env('AXIS_X_CORP_CODE', "9845"),
     ],
 
     'rbl' => [

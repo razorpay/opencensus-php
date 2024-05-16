@@ -247,10 +247,14 @@ class BankTransferController extends Controller
         $this->trace->info(TraceCode::AXIS_VA_CALLBACK,
             $this->service()->removeSenderSensitiveInfoFromLogging($input, Provider::AXIS));
 
+        $this->traceXFundLoadingMetrics($input);
+
         $errorResp = $this->validateAxisRequestToken($validateReqToken);
 
         if ($errorResp !== null)
         {
+            $this->traceXFundLoadingMetrics($input, '003');
+
             return $errorResp;
         }
 
@@ -277,6 +281,8 @@ class BankTransferController extends Controller
         }
         catch (BadRequestValidationFailureException $e)
         {
+            $this->traceXFundLoadingMetrics($input, '002');
+
             $this->trace->traceException($e);
 
             return ApiResponse::json([
@@ -287,6 +293,8 @@ class BankTransferController extends Controller
         }
         catch (\Throwable $e)
         {
+            $this->traceXFundLoadingMetrics($input, '001');
+
             $this->trace->traceException($e);
 
             return ApiResponse::json([
@@ -301,6 +309,21 @@ class BankTransferController extends Controller
             'Err_cd'   =>  '000',
             'message'  =>  'Success',
         ]);
+    }
+
+    protected function traceXFundLoadingMetrics($input = [], $errorCode = '')
+    {
+        if ($this->doesRequestBelongToX($input))
+        {
+            $metric = empty($errorCode) ? TraceCode::AXIS_VA_CALLBACK: TraceCode::AXIS_VA_INVALID_CALLBACK_DATA;
+
+            $this->trace->count(
+                $metric,
+                [
+                    'error_code' => $errorCode,
+                    'route_name' => $this->app['api.route']->getCurrentRouteName()
+                ]);
+        }
     }
 
     public function processIciciBankTransferCallback()
@@ -640,11 +663,18 @@ class BankTransferController extends Controller
         }
         catch (\Throwable $e)
         {
-            $this->trace->warning(TraceCode::AXIS_VA_INVALID_CALLBACK_DATA, [
-                'time'  => $input['Req_dt_time'] ?: null,
-            ]);
+            try
+            {
+                $time = Carbon::createFromFormat('d-m-Y H:i:s', $input['Req_dt_time'], Timezone::IST)->getTimestamp();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->warning(TraceCode::AXIS_VA_INVALID_CALLBACK_DATA, [
+                    'time'  => $input['Req_dt_time'] ?: null,
+                ]);
 
-            $time = Carbon::now(Timezone::IST)->getTimestamp();
+                $time = Carbon::now(Timezone::IST)->getTimestamp();
+            }
         }
 
         $provider  = Provider::AXIS;
@@ -662,13 +692,16 @@ class BankTransferController extends Controller
 
         $payerName = isset($input['Sndr_nm'])?$input['Sndr_nm']:'';
 
-        $xCorpCode = $this->config['applications.axis_va.x_corp_code'];
-        $corpCode = $input['Corp_code'] ?? '';
-
-        if ($corpCode === $xCorpCode)
+        if ($this->doesRequestBelongToX($input))
         {
             $payeeIfsc = Provider::getIFSC(true)[Provider::AXIS];
-            $utr = strtoupper($utr);
+
+            // Check if the request is > 2 days old, reject the request if true
+            $diff = Carbon::now(Timezone::IST)->diff(Carbon::createFromTimestamp($time, Timezone::IST));
+            if($diff->days >= 2)
+            {
+                throw new BadRequestValidationFailureException('transaction older than 2 days', null, $input);
+            }
         }
         else
         {
@@ -699,6 +732,21 @@ class BankTransferController extends Controller
             'gateway_provider' => [
                 'provider'       => $provider,
             ]);
+    }
+
+    protected function doesRequestBelongToX($input = []): bool
+    {
+        $xCorpCode = $this->config['applications.axis_va.x_corp_code'];
+        $corpCode = $input['Corp_code'] ?? '';
+        $payerIfsc = $input['payee_ifsc'] ?? '';
+
+        if (($corpCode === $xCorpCode) or
+            ($payerIfsc === Provider::getIFSC(true)[Provider::AXIS]))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function modifyIciciDataToEntity($input)
