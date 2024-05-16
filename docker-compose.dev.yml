@@ -71,6 +71,7 @@ services:
       ACCOUNT_SERVICE_USERNAME: root
       ACCOUNT_SERVICE_PASSWORD: 123
       ACCOUNT_SERVICE_DATABASE: account_service
+      ASV_WRITER_MYSQL_ATTR_USE_BUFFERED_QUERY: "false"
       DB_UPI_PAYMENTS_MOCKED: "false"
       REDIS_HOST: api_cache
       QUERY_CACHE_REDIS_HOST: api-redis-cluster

@@ -580,6 +580,9 @@ return array(
             'strict' => true,
             'wait_timeout' => env('DB_WAIT_TIMEOUT'),
             'transaction_wait_timeout' => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+            'options' => [
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => env('ASV_WRITER_MYSQL_ATTR_USE_BUFFERED_QUERY'),
+            ],
         ],
 
         'rx_whatsapp_live' => [
