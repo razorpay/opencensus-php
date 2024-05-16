@@ -3602,6 +3602,8 @@ EOT;
 
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
 
+        $paymentCreatedAt = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 
         $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
@@ -3612,21 +3614,15 @@ EOT;
 
         $selectCols = $this->repo->payment->dbColumn('*');
 
-        $globalTokenQuery = $this->newQueryOnPaymentFetchReplica(600000, $to)
-            ->select($selectCols)
-            ->join(Table::TOKEN, Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn)
-            ->join(Table::ENACH, $paymentIdColumn, '=', $enachPaymentIdColumn)
-            ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
-            ->where($paymentRecurringColumn, '=', 1)
-            ->where($paymentMethodColumn, '=', Method::EMANDATE)
-            ->where(Entity::GATEWAY, '=', Payment\Gateway::ENACH_RBL)
-            ->whereBetween($enachRegistrationDateColumn, [$from, $to])
-            ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
-            ->where($tokenRecurringColumn, '!=', 1)
-            ->whereNotNull(Entity::AUTHORIZED_AT)
-            ->with(['localToken', 'globalToken', 'customer', 'enach']);
+        $last15Days = Carbon::now()->subDays(15)->getTimestamp();
 
-        $localTokenQuery = $this->newQueryOnPaymentFetchReplica(600000, $to)
+        $this->trace->info(TraceCode::EMANDATE_REGISTRATION_RBL_QUERY, [
+            "ENACH_RBL_QUERY_LOG" => "QUERY_STARTED",
+            "from" => $from,
+            "to" => $to
+        ]);
+
+        $query = $this->newQueryOnPaymentFetchReplica(600000, $to)
             ->select($selectCols)
             ->join(Table::TOKEN, Entity::TOKEN_ID, '=', $tokenIdColumn)
             ->join(Table::ENACH, $paymentIdColumn, '=', $enachPaymentIdColumn)
@@ -3635,12 +3631,18 @@ EOT;
             ->where($paymentMethodColumn, '=', Method::EMANDATE)
             ->where(Entity::GATEWAY, '=', Payment\Gateway::ENACH_RBL)
             ->whereBetween($enachRegistrationDateColumn, [$from, $to])
+            ->where($paymentCreatedAt, '>=', $last15Days)
             ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
             ->where($tokenRecurringColumn, '!=', 1)
-            ->whereNotNull(Entity::AUTHORIZED_AT)
-            ->with(['localToken', 'globalToken', 'customer', 'enach']);
+            ->whereNotNull(Entity::AUTHORIZED_AT);
 
-        return $localTokenQuery->union($globalTokenQuery)->get();
+        $this->trace->info(TraceCode::EMANDATE_REGISTRATION_RBL_QUERY, [
+            "ENACH_RBL_QUERY_LOG"    => "QUERY_FORMED",
+            "last_15_days_timestamp" => $last15Days,
+            "query"                  => $query->toSql()
+        ]);
+
+        return $query->get();
     }
 
     /**
@@ -3651,43 +3653,58 @@ EOT;
      */
     public function fetchPendingEmandateRegistrationForEnach(int $from, int $to)
     {
-        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $this->trace->info(TraceCode::EMANDATE_REGISTRATION_RBL_QUERY, [
+            "ENACH_RBL_QUERY_LOG" => "QUERY_STARTED",
+            "from" => $from,
+            "to" => $to
+        ]);
 
-        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+        $last15Days = Carbon::now()->subDays(15)->getTimestamp();
 
-        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+        $query = sprintf("SELECT payments.* FROM payments INNER JOIN tokens ON token_id = tokens.id
+            INNER JOIN enach ON payments.id = enach.payment_id
+            WHERE recurring_type = 'initial'
+            AND payments.recurring = 1
+            AND payments.method = 'emandate'
+            AND payments.created_at >= %s
+            AND gateway = 'enach_rbl'
+            AND enach.registration_date BETWEEN %s AND %s
+            AND recurring_status = 'initiated'
+            AND tokens.recurring != 1
+            AND authorized_at IS NOT NULL", $last15Days, $from, $to);
 
-        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+        $this->trace->info(TraceCode::EMANDATE_REGISTRATION_RBL_QUERY, [
+            "ENACH_RBL_QUERY_LOG"    => "QUERY_FORMED",
+            "query"                  => $query,
+            "last_15_days_timestamp" => $last15Days
+        ]);
 
-        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
+        $result = \DB::connection($this->getPaymentFetchReplicaConnection())->select($query);
 
-        $enachPaymentIdColumn = $this->repo->enach->dbColumn(Enach\Base\Entity::PAYMENT_ID);
+        $this->trace->info(TraceCode::EMANDATE_REGISTRATION_RBL_QUERY, [
+            "ENACH_RBL_QUERY_LOG" => "QUERY_EXECUTED",
+        ]);
 
-        $enachRegistrationDateColumn = $this->repo->enach->dbColumn(Enach\Base\Entity::REGISTRATION_DATE);
+        $collection = new Base\PublicCollection();
 
-        $selectCols = $this->repo->payment->dbColumn('*');
+        foreach ($result as $entity)
+        {
+            $paymentEntity = new Entity();
 
-        return $this->newQueryOnPaymentFetchReplica(600000, $to)
-                    ->select($selectCols)
-                    ->join(
-                        Table::TOKEN,
-                        function ($join)
-                        use($tokenIdColumn)
-                        {
-                            $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
-                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
-                        })
-                    ->join(Table::ENACH, $paymentIdColumn, '=', $enachPaymentIdColumn)
-                    ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
-                    ->where($paymentRecurringColumn, '=', 1)
-                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
-                    ->where(Entity::GATEWAY, '=', Payment\Gateway::ENACH_RBL)
-                    ->whereBetween($enachRegistrationDateColumn, [$from, $to])
-                    ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
-                    ->where($tokenRecurringColumn, '!=', 1)
-                    ->whereNotNull(Entity::AUTHORIZED_AT)
-                    ->with(['localToken', 'globalToken', 'customer', 'enach'])
-                    ->get();
+            unset($entity->notes);
+
+            $paymentArray = json_decode(json_encode($entity), true);
+
+            $paymentEntity->forceFill($paymentArray);
+
+            $collection->push($paymentEntity);
+        }
+
+        $this->trace->info(TraceCode::EMANDATE_REGISTRATION_RBL_QUERY, [
+            "ENACH_RBL_QUERY_LOG" => "QUERY_PROCESSED",
+        ]);
+
+        return $collection;
     }
 
     public function fetchPendingEmandateDebit(string $gateway, $from, $to)

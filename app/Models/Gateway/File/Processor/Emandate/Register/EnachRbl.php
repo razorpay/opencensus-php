@@ -99,6 +99,10 @@ class EnachRbl extends Base
                 ]);
         }
 
+        $this->trace->info(TraceCode::EMANDATE_REGISTRATION_RBL_QUERY, [
+            "ENACH_RBL_QUERY_LOG" => "QUERY_RETURNED",
+        ]);
+
         $paymentIds = $payments->pluck(Payment\Entity::ID)->toArray();
         
         $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
