@@ -83,7 +83,7 @@ describe('<AndroidMiniPos/> with offer', () => {
     );
 
     expect(screen.getByTestId('setup-pricing-text')).toHaveTextContent('₹200 ₹2,000 setup fee');
-    expect(screen.getByText('Limited Time Offer till 30th April')).toBeVisible();
+    expect(screen.getByText('Limited Time Offer till 31st May')).toBeVisible();
   });
 
   test('should render partner offer strip with other content', async () => {
@@ -96,7 +96,7 @@ describe('<AndroidMiniPos/> with offer', () => {
     server.use(getProductPricingHandler(MOCK_PARTNER_PRODUCT_PRICING));
     renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
-    expect(screen.getByText('Partner Exclusive Time Offer till 30th April')).toBeVisible();
+    expect(screen.getByText('Partner Exclusive Time Offer till 31st May')).toBeVisible();
   });
 });
 
@@ -118,6 +118,6 @@ describe('<AndroidMiniPos/> with offer', () => {
     );
 
     expect(screen.getByTestId('setup-pricing-text')).toHaveTextContent('₹200 ₹2,000 setup fee');
-    expect(screen.getByText('Limited Time Offer till 30th April')).toBeVisible();
+    expect(screen.getByText('Limited Time Offer till 31st May')).toBeVisible();
   });
 });

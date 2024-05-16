@@ -35,7 +35,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await expect(
         page
           .getByTestId('android-mini-pos-product-card')
-          .getByText('Limited Time Offer till 30th April'),
+          .getByText('Limited Time Offer till 31st May'),
       ).toBeVisible();
 
       await expect(page.getByText('Feature packed and portable')).toBeVisible();
@@ -93,7 +93,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await expect(page.getByTestId('pdp-title')).toHaveText(
         PDP_CONTENT[DEVICE_CODES.androidSmartPos].title,
       );
-      await expect(page.getByText('Limited Time Offer till 30th April')).toBeVisible();
+      await expect(page.getByText('Limited Time Offer till 31st May')).toBeVisible();
 
       await page.getByText('Catalog').click();
 

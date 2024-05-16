@@ -6,7 +6,7 @@ import { withI18Service } from 'common/i18';
 import Amount from 'common/ui/Amount';
 import Banner from 'common/ui/Banner';
 import Alert from 'common/ui/Forms/Alert';
-import SwitchField from 'common/ui/Forms/SwitchField';
+// import SwitchField from 'common/ui/Forms/SwitchField';
 // eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import Spinner from 'common/ui/Spinner';
@@ -27,6 +27,7 @@ import {
   DEFAULT_TOUCH_N_GO_MAX_LIMIT,
 } from 'merchant/views/Subscriptions/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { Alert as BladeAlert, Link } from '@razorpay/blade/components';
 
 const PAYMENT_METHODS = {
   UPI: 'upi',
@@ -86,7 +87,13 @@ const cardNote = {
 
 @connect(
   (state) => ({
-    settings: state.subscriptions.settings,
+    // Updated Temporarily : https://razorpay.slack.com/archives/C3S9FFBJ7/p1715251218577649
+    settings: {
+      loading: false,
+      items: [],
+      error: null,
+    },
+    // settings: state.subscriptions.settings,
     user: state.session.user,
     org: state.session.org,
   }),
@@ -96,7 +103,8 @@ class SubscriptionsSettings extends React.Component {
   state = {};
 
   componentDidMount() {
-    this.props.fetchSettings();
+    // Disabled Temporarily : https://razorpay.slack.com/archives/C3S9FFBJ7/p1715251218577649
+    // this.props.fetchSettings();
   }
 
   onToggleChange = (methodName) => (isChecked, cb) => {
@@ -380,18 +388,26 @@ class SubscriptionsSettings extends React.Component {
   }
 }
 
-const ToggleCard = ({ title, checked, info = null, description, onToggleChange, note }) => {
+const ToggleCard = ({
+  title,
+  // checked,
+  info = null,
+  description,
+  // onToggleChange,
+  note,
+}) => {
   return (
     <div class="panel panel-default ToggleCard">
       <div class="panel-heading">
         <span class="title">{title}</span>
 
-        <span class="pull-right toggler-btn">
+        {/* Disabled Temporarily : https://razorpay.slack.com/archives/C3S9FFBJ7/p1715251218577649 */}
+        {/* <span class="pull-right toggler-btn">
           <SwitchField checked={checked} onChange={onToggleChange} type="prime" />
           <strong class={classList('m-l', checked ? 'text-primary' : 'text-faded')}>
             {checked ? 'Enabled' : 'Disabled'}
           </strong>
-        </span>
+        </span> */}
       </div>
 
       <div class="panel-body">
@@ -408,6 +424,22 @@ const ToggleCard = ({ title, checked, info = null, description, onToggleChange, 
         )}
         {note && <div>{typeof note === 'function' ? note() : note}</div>}
       </div>
+
+      {/* Added Temporarily : https://razorpay.slack.com/archives/C3S9FFBJ7/p1715251218577649 */}
+      <BladeAlert
+        isDismissible={false}
+        marginX="spacing.3"
+        marginY="spacing.5"
+        color="information"
+        description={
+          <>
+            To enable this subscription, write an email to us at{' '}
+            <Link size="small" href="mailto:subscription@razorpay.com">
+              subscription@razorpay.com
+            </Link>
+          </>
+        }
+      />
     </div>
   );
 };

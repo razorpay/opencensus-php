@@ -9,7 +9,7 @@ export const MAIN_BANNER_TEXT_CONTENT = [
   'Uninterrupted connectivity over wifi / sim',
   'Instant audio confirmations',
   'In-built printer for printing charges slips',
-  'Limited Time Offer till 30th April',
+  'Limited Time Offer till 31st May',
 ];
 
 export const DEVICE_CODES = {
