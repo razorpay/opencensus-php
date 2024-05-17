@@ -1,7 +1,7 @@
-const { test, expect } = require('@playwright/test');
 const { resolve } = require('path');
 const { BASE_PATH, getStorageStatePath } = require('testConstants');
 const { generateRandomText } = require('utils');
+const { test, expect } = require('utils/base');
 
 const CONSTANTS = {
   IE_TAB_URL: '/app/payment-methods/international-payments',

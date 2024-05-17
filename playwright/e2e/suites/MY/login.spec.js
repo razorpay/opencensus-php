@@ -1,5 +1,5 @@
 import { routes } from '../../../constants/constants';
-import { loginByEmail } from '../../utils';
+import { loginByEmail, saveTestEnvironment } from '../../utils';
 
 const { test } = require('@playwright/test');
 const { getCredentials } = require('../../../utils/config');
@@ -18,6 +18,9 @@ test.describe.parallel('Dashboard login flow @flow=MY-auth @country=MY', () => {
         page,
         cred,
       });
+
+      // saving test environment in browser context
+      await saveTestEnvironment({ page });
 
       // storing login state in context to re-use at other logins
       await page.context().storageState({

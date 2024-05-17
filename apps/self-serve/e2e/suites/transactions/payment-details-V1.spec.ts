@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
 import { getStorageStatePath, routes } from '@dashboard/shared-utils/e2e/constants/paths';
 import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
+import { expect, test } from '../../utils/base';
 import { BASE_PATH } from '../../constants';
 
 const searchPaymentId = async (page, paymentId) => {

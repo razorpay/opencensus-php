@@ -1,8 +1,7 @@
-import { expect } from '@playwright/test';
-
 import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
 import { routes } from '@dashboard/shared-utils/e2e/constants/paths';
 import { switchToTestMode } from '@dashboard/shared-utils/e2e/utils';
+import { expect } from './base';
 // import { formatPhoneNumber } from '@razorpay/i18nify-js';
 
 export const navigateToTransactions = async (page, mode?: string) => {

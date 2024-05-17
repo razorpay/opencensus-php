@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect } from 'utils/base';
 import { routes } from 'testConstants';
 import { navigateTo } from 'utils/common';
 

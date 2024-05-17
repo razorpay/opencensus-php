@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { test, expect } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
 import { upiLinksData } from './constants';

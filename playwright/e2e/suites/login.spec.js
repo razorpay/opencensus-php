@@ -5,6 +5,7 @@ import {
   loginByEmail,
   loginByMobile,
   showStreakRewardTileInAccountPage,
+  saveTestEnvironment,
 } from '../utils';
 
 import { routes } from '../../constants/constants';
@@ -40,6 +41,9 @@ test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => 
       // show streak reward tiles in account page for e2e based in localStorage instead of experiment evaluation
       await showStreakRewardTileInAccountPage({ page });
 
+      // saving test environment in browser context
+      await saveTestEnvironment({ page });
+
       // storing login state in context to re-use at other logins
       await page.context().storageState({
         path: cred.storagePath,
@@ -65,6 +69,9 @@ test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => 
 
       // validating landing page url after login
       await expect(page).toHaveURL(routes.DASHBOARD);
+
+      // saving test environment in browser context
+      await saveTestEnvironment({ page });
 
       // storing login state in context to re-use at other logins
       await page.context().storageState({
@@ -97,6 +104,9 @@ test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => 
       // show streak reward tiles in account page for e2e based in localStorage instead of experiment evaluation
       await showStreakRewardTileInAccountPage({ page });
 
+      // saving test environment in browser context
+      await saveTestEnvironment({ page });
+
       // storing login state in context to re-use at other logins
       await page.context().storageState({
         path: cred.storagePath,
@@ -128,6 +138,9 @@ test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => 
       // show streak reward tiles in account page for e2e based in localStorage instead of experiment evaluation
       await showStreakRewardTileInAccountPage({ page });
 
+      // saving test environment in browser context
+      await saveTestEnvironment({ page });
+
       // storing login state in context to re-use at other logins
       await page.context().storageState({
         path: cred.storagePath,
@@ -154,6 +167,9 @@ test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => 
 
       // hiding custom banner popups by udating local storage
       await hideCustomBannersFromState({ page });
+
+      // saving test environment in browser context
+      await saveTestEnvironment({ page });
 
       // storing login state in context to re-use at other logins
       await page.context().storageState({

@@ -1,5 +1,5 @@
-const { test, expect } = require('@playwright/test');
 const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
+const { test, expect } = require('utils/base');
 const { mouseClickToggleSwitch, wait } = require('utils/common');
 const { COMMON_SELECTORS } = require('utils/selectors');
 

@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect } from 'utils/base';
 import { CTA_SELECTORS, CONTENT_SELECTORS } from 'partnerDashboard/common/constants';
 import { routes } from 'testConstants';
 import { waitForSelectorToBeVisible } from 'utils/common';

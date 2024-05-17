@@ -1,5 +1,5 @@
-const { test, expect } = require('@playwright/test');
 const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
+const { test, expect } = require('utils/base');
 
 const ELEMENT_CONFIG = {
   FIRS_TEXT: 'button[role="button"]:has-text("Foreign Inward Remittance Statement")',

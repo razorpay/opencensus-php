@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from 'utils/base';
 import moment from 'moment';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 

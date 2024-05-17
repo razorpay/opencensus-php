@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from 'utils/base';
 import { getStorageStatePath, BASE_PATH } from 'testConstants';
 
 import { uploadInvoices } from './constants';

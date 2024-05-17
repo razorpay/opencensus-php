@@ -4,8 +4,8 @@ import {
   getI18FormattedPhoneNumber,
 } from 'utils';
 
-const { test, expect } = require('@playwright/test');
 const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
+const { test, expect } = require('utils/base');
 
 test.describe.serial(
   'Test Create and Edit Customer @flow=customer @project=payments @project=payments-roast',

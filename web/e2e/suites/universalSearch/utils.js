@@ -1,4 +1,4 @@
-const { expect } = require('@playwright/test');
+const { expect } = require('utils/base');
 
 export const getSearchResultsEl = async ({ page, searchBox, searchTerm }) => {
   await searchBox.clear();

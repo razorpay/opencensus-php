@@ -1,6 +1,6 @@
 import { BASE_PATH, getStorageStatePath } from 'testConstants';
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 const { expectSuccessNotification } = require('utils');
 const { waitAndProceedVerificationPopup } = require('utils/verification');
 

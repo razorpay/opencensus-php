@@ -10,7 +10,7 @@ import {
 } from 'partnerDashboard/common/utils';
 import { getStorageStatePath, BASE_PATH } from 'testConstants';
 
-const { test } = require('@playwright/test');
+const { test } = require('utils/base');
 
 // Reseller Partner Tests
 test.describe.parallel(

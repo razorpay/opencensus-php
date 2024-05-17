@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from 'utils/base';
 import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
 
 test.describe.parallel('GST update @flow=account-settings @project=payments', () => {

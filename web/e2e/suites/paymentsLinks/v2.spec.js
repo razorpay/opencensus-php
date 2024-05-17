@@ -1,6 +1,6 @@
-import { test } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { switchToTestMode } from 'utils';
+import { test } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
 import { paymentLinksUIData } from './constants';

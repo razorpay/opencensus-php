@@ -1,6 +1,6 @@
 import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 
 test.describe.parallel(
   'Test International Activation flow when merchant is eligible for international @flow=international-activation',

@@ -1,7 +1,7 @@
 import { FORM_API_URL, DOCS } from './constants';
 
-const { expect } = require('@playwright/test');
 const { resolve } = require('path');
+const { expect } = require('utils/base');
 
 const unStageFile = async (page, fileName) => {
   const closeButton = await page.locator(

@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { expect, test } from 'utils/base';
 
 test.describe.parallel(
   'Rize Marketplace App Store banner @flow=rize-marketplace @project=payments',

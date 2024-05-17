@@ -1,6 +1,6 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 
 const SELECTORS = {
   METHOD_PAYOUT_FUND_TRANSFER: 'text=Method: Payout: Fund Transfer',

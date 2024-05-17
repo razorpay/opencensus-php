@@ -1,5 +1,5 @@
-import { test } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { test } from 'utils/base';
 
 import { batchPaymentPageData } from './constants';
 import {

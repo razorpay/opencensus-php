@@ -12,7 +12,7 @@
   "scripts": {
     "prepare:commitmessage": "if [ \"$CI\" = \"true\" ]; then echo 'Running in CI environment'; else exec < /dev/tty && git cz --hook || true; fi",
     "postinstall": "pnpm exec husky install",
-    "start": "REDIRECTOR=true pnpm nx run web:dev:build-merchant",
+    "start": "pnpm nx run web:dev:build-merchant",
     "start-self-serve": "pnpm nx run self-serve:start",
     "start-newAuth": "pnpm nx run web:dev:build-newAuth",
     "start-pokedex": "pnpm nx run web:dev:build-pokedex",

@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
 import moment from 'moment';
 import { routes, getStorageStatePath } from '@dashboard/shared-utils/e2e/constants/paths';
+import { expect, test } from '../../utils/base';
 import { BASE_PATH } from '../../constants';
 
 import { navigateToTransactions } from '../../utils';

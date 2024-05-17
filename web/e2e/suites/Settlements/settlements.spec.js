@@ -1,6 +1,6 @@
-const { test, expect } = require('@playwright/test');
 const { default: getEnv } = require('playwright/utils/env');
 const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
+const { test, expect } = require('utils/base');
 
 const ELEMENT_CONFIG = {
   SETTLEMENT_BANNER: 'button[data-blade-component="link"] >> text="View settlements"',

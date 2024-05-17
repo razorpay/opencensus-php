@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
 import { getStorageStatePath } from '@dashboard/shared-utils/e2e/constants/paths';
+import { expect, test } from '../../utils/base';
 import { uploadInvoices, BASE_PATH } from '../../constants';
 
 import {

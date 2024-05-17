@@ -1,12 +1,12 @@
-import { expect, test } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { expect, test } from 'utils/base';
 
 const COUPON_PRODUCT_ROUTE = '/app/rize-marketplace/small-frozen-car-momm6';
 const LINK_PRODUCT_ROUTE = '/app/rize-marketplace/sleek-steel-computer-momun';
 const INVALID_PRODUCT_ROUTE = '/app/rize-marketplace/iwejoifwjfie';
 
 /**
- * @param {import('@playwright/test').Page} page
+ * @param {import('utils/base').Page} page
  * @param {string} url
  */
 const gotoURL = async (page, url) => {

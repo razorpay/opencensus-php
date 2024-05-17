@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { expect, test } from 'utils/base';
 
 test.describe.parallel(
   'Rize Marketplace landing page @flow=rize-marketplace @project=payments',
@@ -69,7 +69,7 @@ test.describe.parallel(
 
     test('should open Rize Marketplace Product Page on clicking product card', async ({ page }) => {
       /**
-       * @param {import('@playwright/test').Locator} productCard
+       * @param {import('utils/base').Locator} productCard
        */
       const testProductCard = async (productCard) => {
         const productUrl = await productCard.getAttribute('href');

@@ -1,5 +1,5 @@
-import { expect } from '@playwright/test';
 import { expectSuccessNotification, fillExpiry, generateRandomText } from 'utils';
+import { expect } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
 const SELECTORS = {

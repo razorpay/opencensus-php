@@ -1,6 +1,6 @@
 import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 
 const WEBHOOK_DATA = {
   EMAIL: 'https://www.youtube.com/71',

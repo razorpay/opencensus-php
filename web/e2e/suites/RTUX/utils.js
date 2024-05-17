@@ -1,5 +1,5 @@
 import { routes } from 'testConstants';
-import { expect } from '@playwright/test';
+import { expect } from 'utils/base';
 
 const UCS_DATA_API_URL = '**/ucs/**/GetComponentData';
 

@@ -14,7 +14,7 @@ import {
 import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
 import { waitForSelectorToBeVisible } from 'utils/common';
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 
 // Reseller Partner POS Tests
 test.describe.parallel(

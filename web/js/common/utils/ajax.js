@@ -3,8 +3,10 @@
 /* eslint-disable no-lonely-if */
 /* eslint-disable max-depth */
 /* eslint-disable no-shadow */
-import { getCookie } from './cookies';
 import axios from 'axios';
+
+import { getCookie } from './cookies';
+import { capturePlaywrightAnalytics } from './playwrightAnalytics';
 // import { captureXhrResponseMetrics } from './perf';
 
 // axios.interceptors.response.use(function(response) {
@@ -34,6 +36,7 @@ export default function ajax(params = {}) {
         const { data } = resp;
         // Error code is verified to handle api resolution to HTML doc / raw text.
         // Eg: For downloading csv file for api key-secret comes as raw text.
+        capturePlaywrightAnalytics({ response: resp, params });
         if (!data.hasOwnProperty('success') || data.success == true) {
           resolve(data);
         } else {
@@ -44,6 +47,7 @@ export default function ajax(params = {}) {
         }
       },
       (err) => {
+        capturePlaywrightAnalytics({ error: err, params });
         document.body.dispatchEvent(
           new CustomEvent('REQUEST_ERROR', {
             bubbles: true,

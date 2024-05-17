@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
 import { getStorageStatePath, BASE_PATH } from 'testConstants';
+import { expect, test } from 'utils/base';
 
 import { navigateToTransactions } from './utils';
 

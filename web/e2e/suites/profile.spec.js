@@ -1,5 +1,5 @@
-const { test, expect } = require('@playwright/test');
 const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
+const { test, expect } = require('utils/base');
 
 test.describe(
   'Account & settings > Profile Test @flow=account-settings @project=payments @project=payments-roast',

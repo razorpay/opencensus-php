@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { generateRandomText } from 'utils';
+import { expect, test } from 'utils/base';
 
 import {
   COPY_TEXTS,

@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
 
 test.describe('GCMS brand transactions @flow=brandTransactions @project=payments', () => {

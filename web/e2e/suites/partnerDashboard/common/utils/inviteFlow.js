@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect } from 'utils/base';
 import {
   CTA_SELECTORS,
   CONTENT_SELECTORS,

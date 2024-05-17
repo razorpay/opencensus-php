@@ -1,6 +1,6 @@
 import { BASE_PATH, getStorageStatePath } from 'testConstants';
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 
 const ELEMENT_CONSTANTS = {
   WEBHOOK_SETTINGS_URL: '/app/website-app-settings/webhooks',

@@ -1,6 +1,6 @@
-const { test, expect } = require('@playwright/test');
 const { resolve } = require('path');
 const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
+const { test, expect } = require('utils/base');
 
 // Reseller Partner capital Tests
 test.describe.parallel(

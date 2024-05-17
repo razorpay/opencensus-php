@@ -7,7 +7,7 @@ import { loadPartnerDashboardHomePage } from 'partnerDashboard/common/utils';
 import { getStorageStatePath, BASE_PATH } from 'testConstants';
 import { pageConsoleLog, waitForSelectorToBeVisible } from 'utils/common';
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 
 // Reseller Partner POS Tests
 test.describe.parallel(

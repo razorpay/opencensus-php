@@ -1,6 +1,6 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 
 test.describe.parallel('Payment Metrics @flow=payments-metrics @project=payments', () => {
   test.use({

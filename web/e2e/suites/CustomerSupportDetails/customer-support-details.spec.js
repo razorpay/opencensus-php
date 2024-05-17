@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
 import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
 import { generateRandomWebsiteUrl, generateRandomEmail } from 'utils';
+import { expect, test } from 'utils/base';
 
 test.describe.parallel(
   'Test customer support details @flow=customer-support @project=payments',

@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { expect, test } from 'utils/base';
 import { navigateTo } from 'utils/common';
 
 const searchPaymentId = async (page, paymentId) => {

@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
 import getEnv from 'playwright/utils/env';
 import { routes } from 'testConstants';
+import { expect, test } from 'utils/base';
 import { loginByEmail } from 'utils/common';
 
 const EASY_ONBOARDING_WEBSITE = 'https://sme-dashboard.dev.razorpay.in/';

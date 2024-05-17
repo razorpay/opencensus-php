@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
 const { navigateTo } = require('utils/common');
 const { waitForPosNcModalToLoad } = require('./utils');

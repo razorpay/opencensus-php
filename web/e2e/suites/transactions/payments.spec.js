@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { getI18FormattedPhoneNumber } from 'utils';
+import { expect, test } from 'utils/base';
 
 import { payments } from './constants';
 import {

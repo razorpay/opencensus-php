@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
-import { expect, test } from '@playwright/test';
 import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
+import { expect, test } from 'utils/base';
 
 import { assertAPICallForDataRefresh, getRTUXResponse, getWidgetResponse } from './utils';
 

@@ -1,5 +1,5 @@
-const { test, expect } = require('@playwright/test');
 const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
+const { test, expect } = require('utils/base');
 
 test.describe('Magic Checkout Settings Tab @project=magic-checkout', () => {
   test.use({

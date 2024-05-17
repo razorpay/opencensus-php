@@ -3,7 +3,7 @@ import { loadPartnerDashboardHomePage } from 'partnerDashboard/common/utils';
 import { getStorageStatePath, BASE_PATH } from 'testConstants';
 import { waitForSelectorToBeVisible } from 'utils/common';
 
-const { test } = require('@playwright/test');
+const { test } = require('utils/base');
 
 // Reseller Partner Tests
 test.describe.parallel(

@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { expectSuccessNotification, switchToTestMode } from 'utils';
+import { test, expect } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
 import { paymentLinksUIData } from './constants';

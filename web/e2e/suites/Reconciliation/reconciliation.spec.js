@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('utils/base');
 const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
 
 test.describe.parallel('@flow=recon-saas @suite=recon-saas @project=recon-saas', () => {

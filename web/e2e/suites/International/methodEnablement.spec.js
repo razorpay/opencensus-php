@@ -1,6 +1,6 @@
-const { test, expect } = require('@playwright/test');
 const { BASE_PATH, getStorageStatePath } = require('testConstants');
 const { uploadDoc, unStageFiles, assertButton } = require('utils');
+const { test, expect } = require('utils/base');
 const { waitForSelectorToBeVisible, navigateTo } = require('utils/common');
 
 const { DOCS } = require('./constants');

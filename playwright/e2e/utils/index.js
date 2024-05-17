@@ -65,3 +65,22 @@ export const hideSearchFTUXBannerByLocalStorage = async ({ page }) => {
     );
   });
 };
+
+export const saveTestEnvironment = async ({ page, cookieItems = [], localStorageItems = {} }) => {
+  const combinedLocalStorageItems = {
+    ...localStorageItems,
+    regressionEnv: 'playwright',
+    itfLabel: process.env.DEVSTACK_LABEL,
+    baseUrl: process.env.E2E_BASE_URL,
+  };
+
+  const combinedCookieItems = [...cookieItems];
+
+  await page.evaluate((storageItems) => {
+    Object.keys(storageItems).forEach((key) => {
+      localStorage.setItem(key, storageItems[key]);
+    });
+  }, combinedLocalStorageItems);
+
+  await page.context().addCookies(combinedCookieItems);
+};
