@@ -4210,44 +4210,53 @@ class Service extends Base\Service
 
     /**
      * Fetch and update on_hold flag for all payment
-     * and source transfer with on_hold_until less than today's
+     * and source transfer with on_hold_until less than today's timestamp
      *
-     * @param array $input
      * @return array
      */
     public function updateOnHold(array $input): array
     {
         $timestamp = Carbon::today(Timezone::IST)->getTimestamp();
 
-        $paymentsToUpdate = $this->repo->payment->getPaymentsOnHoldBeforeTimestamp($timestamp);
+        $paymentIdsToUpdate = $this->repo->payment->getPaymentsOnHoldBeforeTimestamp($timestamp)->pluck(Entity::ID)->toArray();
 
+        $cronSummary = $this->updateOnHoldForPayments($paymentIdsToUpdate, $timestamp);
+
+        return [
+            'success'   => true,
+            'summary'   => $cronSummary
+        ];
+    }
+
+    private function updateOnHoldForPayments(?array $paymentIds, int $timestamp, bool $checkTransfer = true): array
+    {
         $this->trace->debug(
             TraceCode::PAYMENT_UPDATE_HOLD_CRON,
             [
                 'step'          => 'fetch_payments',
-                'ids_fetched'   => $paymentsToUpdate->getIds(),
+                'ids_fetched'   => $paymentIds,
                 'timestamp'     => Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d-m-Y H:i:s')
             ]
         );
 
         $cronSummary = [
-            'total_count' => $paymentsToUpdate->count(),
+            'total_count' => sizeof($paymentIds),
             'failed_ids'  => []
         ];
 
         $mapForSettlementService = [];
 
-        foreach ($paymentsToUpdate as $payment)
+        foreach ($paymentIds as $paymentId)
         {
             try
             {
                 // Re fetch by payment id to reload entity fetched from warm storage
-                $payment = $this->repo->payment->findOrFail($payment->getId());
+                $payment = $this->repo->payment->findOrFail($paymentId);
 
                 $txn = $this->repo->transaction(
-                    function() use ($payment)
+                    function() use ($payment, $checkTransfer)
                     {
-                       return $this->setHoldFalse($payment);
+                        return $this->setHoldFalse($payment, $checkTransfer);
                     });
 
                 $mid = $txn->getMerchantId();
@@ -4277,7 +4286,7 @@ class Service extends Base\Service
             }
             catch (\Throwable $e)
             {
-                $cronSummary['failed_ids'][] = $payment->getId();
+                $cronSummary['failed_ids'][] = $paymentId;
 
                 $this->trace->traceException(
                     $e,
@@ -4293,10 +4302,32 @@ class Service extends Base\Service
 
         $this->trace->debug(TraceCode::PAYMENT_UPDATE_HOLD_CRON, ['step' => 'summary', 'summary' => $cronSummary]);
 
-        return [
-            'success'   => true,
-            'summary'   => $cronSummary
-        ];
+        return $cronSummary;
+    }
+
+    /**
+     * Fetch the on-hold payments of all sub-merchants of partners having feature "subm_manual_settlement" enabled
+     * @param int $timestamp
+     * @return mixed
+     */
+    public function fetchSubmManualSettlementPaymentsBeforeTimestamp(int $timestamp): ?array
+    {
+        $partnerIds = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::SUBM_MANUAL_SETTLEMENT]);
+
+        $subMerchantIds = $this->repo->merchant_access_map->getSubmIdsFromEntityOwnerIds($partnerIds);
+
+        $paymentIds = $this->repo->transaction->fetchOnHoldPaymentIdsForMerchantsBeforeTimestamp($subMerchantIds, $timestamp);
+
+        $this->trace->debug(
+            TraceCode::MANAUL_SETTLEMENT_PAYMENT_UPDATE_ON_HOLD_CRON,
+            [
+                'partner_ids'       => $partnerIds,
+                'submerchant_ids'   => $subMerchantIds,
+                'payment_ids'       => $paymentIds
+            ]
+        );
+
+        return $paymentIds;
     }
 
     public function updateOnHoldBulkUpdate(array $input)
@@ -4493,7 +4524,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    protected function setHoldFalse(Payment\Entity $payment)
+    protected function setHoldFalse(Payment\Entity $payment, bool $checkTransfer)
     {
         $this->repo->payment->lockForUpdateAndReload($payment);
 
@@ -4526,8 +4557,8 @@ class Service extends Base\Service
             $this->repo->saveOrFail($transfer);
         }
         // Temp: Payments can't have hold enabled right now without a linked transfer
-        // Fail if no associated transfer. @todo - Remove this when payment hold is added\
-        else
+        // Fail if no associated transfer and transfer check is enabled. @todo - Remove this when payment hold is added\
+        else if ($checkTransfer === true)
         {
             throw new Exception\LogicException(
                 'Hold update attempted for payment with no transfer',
@@ -8315,6 +8346,27 @@ class Service extends Base\Service
         );
 
         return $payment;
+    }
+
+    public function releaseSubmerchantPaymentsCron(): array
+    {
+        $last30DaysTimestamp = Carbon::now(Timezone::IST)->subDays(30)->getTimestamp();
+
+        $this->trace->info(
+            TraceCode::SUBMERCHANT_PAYMENTS_RELEASE_REQUEST_CRON,
+            [
+                'timestamp' => Carbon::createFromTimestamp($last30DaysTimestamp, Timezone::IST)->format('d-m-Y H:i:s')
+            ]
+        );
+
+        $manualSettlementPaymentIdsToUpdate = $this->fetchSubmManualSettlementPaymentsBeforeTimestamp($last30DaysTimestamp);
+
+        $cronSummary = $this->updateOnHoldForPayments($manualSettlementPaymentIdsToUpdate, $last30DaysTimestamp, false);
+
+        return [
+            'success' => true,
+            'summary' => $cronSummary
+        ];
     }
 
     /**

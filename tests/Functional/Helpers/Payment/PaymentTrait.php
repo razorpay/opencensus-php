@@ -4,16 +4,17 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 
 use App;
 use Mockery;
-use Razorpay\IFSC\Bank;
 use Requests;
 use Carbon\Carbon;
+use Razorpay\IFSC\Bank;
 use RZP\Models\Pricing\Entity;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\FeeBearer;
-use RZP\Constants\Shield as ShieldConstants;
-use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
+use RZP\Models\Merchant\RazorxTreatment;
 use Symfony\Component\DomCrawler\Crawler;
+use RZP\Tests\Functional\Partner\Constants;
+use RZP\Constants\Shield as ShieldConstants;
+use RZP\Constants\Entity as EntityConstants;
 
 use RZP\Exception;
 use RZP\Models\Risk;
@@ -22,6 +23,7 @@ use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Models\Feature\Entity as FeatureEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -4458,5 +4460,52 @@ trait PaymentTrait
                 'status'          => $inputFields['status'] ?? 'active',
             ]
         );
+    }
+
+    public function makeSubmerchantPaymentsWithOauth(
+        string $mode,
+        bool $enableManualSettlement,
+        bool $enableExp = true,
+        int $paymentCount = 1): mixed
+    {
+        $accessToken = $this->setPurePlatformContext($mode);
+
+        if ($enableManualSettlement === true)
+        {
+            $featureParams = [
+                FeatureEntity::ENTITY_ID   => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                FeatureEntity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                FeatureEntity::NAME        => \RZP\Models\Feature\Constants::SUBM_MANUAL_SETTLEMENT,
+            ];
+
+            $this->fixtures->create('feature', $featureParams);
+        }
+
+        if ($enableExp === true)
+        {
+            $this->mockAllSplitzTreatment();
+        }
+        else
+        {
+            // disable all experiments
+            $splitzResponse = [
+                "response" => [
+                    "variant" => null
+                ]
+            ];
+
+            $this->mockAllSplitzTreatment($splitzResponse);
+        }
+
+        while ($paymentCount--)
+        {
+            $payment = $this->getDefaultPaymentArray();
+
+            $response = $this->doAuthPaymentOAuth($payment);
+
+            $this->capturePaymentByOAuth($response['razorpay_payment_id'], $payment['amount'], $accessToken);
+        }
+
+        return $response;
     }
 }

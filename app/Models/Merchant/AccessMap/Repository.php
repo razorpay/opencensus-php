@@ -568,17 +568,21 @@ class Repository extends Base\Repository
         return $query->get()->pluck(Entity::MERCHANT_ID);
     }
 
-    public function getMappingsFromEntityOwnerId(string $entityOwnerId, $limit = null)
+    public function getSubmIdsFromEntityOwnerIds(array $entityOwnerIds, $limit = null)
     {
         $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
-                      ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId);
+                      ->select(Base\PublicEntity::MERCHANT_ID)
+                      ->whereIn(Entity::ENTITY_OWNER_ID, $entityOwnerIds)
+                      ->distinct();
 
         if (empty($limit) === false)
         {
             $query->take($limit);
         }
 
-        return $query->get();
+        return $query->get()
+                     ->pluck(Base\PublicEntity::MERCHANT_ID)
+                     ->toArray();
     }
 
     public function getSubMerchantsFromEntityOwnerId(string $entityOwnerId, $limit = null, $lastProcessedId = null)

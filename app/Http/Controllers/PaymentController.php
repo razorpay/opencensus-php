@@ -967,6 +967,13 @@ class PaymentController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function releaseSubmerchantPaymentsCron()
+    {
+        $response = $this->service()->releaseSubmerchantPaymentsCron();
+
+        return ApiResponse::json($response);
+    }
+
     protected function pushForBarricade($data, $id): void
     {
         $sqsPush = $this->app->razorx->getTreatment($id, self::BARRICADE_MERCHANT_INTEGRATION_FETCH_ID_FLOW, $this->app['rzp.mode']);

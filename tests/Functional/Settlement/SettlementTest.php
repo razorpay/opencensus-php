@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Mail;
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -3651,5 +3652,21 @@ class SettlementTest extends TestCase
         $this->assertEquals($settlementTransfer['source_merchant_id'], '10000000000000');
         $this->assertEquals($settlementTransfer['settlement_transaction_id'], $aggregateSettlementJournalId);
 
+    }
+
+    public function testReleaseSubmerchantPaymentsViaCron()
+    {
+        $response = $this->makeSubmerchantPaymentsWithOauth(Mode::TEST, true, true, 2);
+
+        $submTrxns = $this->getDbEntities('transaction', ['merchant_id' => Partner\Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $timestamp = Carbon::today('Asia/Kolkata')->subDays(35)->getTimestamp();;
+
+        foreach ($submTrxns as $trxn)
+        {
+            $this->fixtures->on('test')->edit('transaction', $trxn->getId(), ['created_at' => $timestamp]);
+        }
+
+        $response = $this->runSubmerchantPaymentOnHoldUpdateCron();
     }
 }

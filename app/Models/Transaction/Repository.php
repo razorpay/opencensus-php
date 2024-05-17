@@ -3029,4 +3029,25 @@ class Repository extends Base\Repository
                 $transactions,'source', $txnToRelationFetchMap[$source]);
     }
 
+    public function fetchOnHoldPaymentIdsForMerchantsBeforeTimestamp(?array $merchantIds, int $timestamp)
+    {
+        if (empty($merchantIds) === true)
+        {
+            return null;
+        }
+
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+        return $this->newQueryWithConnection($connectionType)
+                    ->select(Entity::ENTITY_ID)
+                    ->where(Entity::TYPE, ConstantEntity::PAYMENT)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Entity::ON_HOLD, true)
+                    ->where(Entity::SETTLED, false)
+                    ->where(Entity::CREATED_AT, '<', $timestamp)
+                    ->limit(500)
+                    ->get()
+                    ->pluck(Entity::ENTITY_ID)
+                    ->toArray();
+    }
 }

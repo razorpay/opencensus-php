@@ -50,16 +50,17 @@ add_cron() {
     echo $line >> $TMP_CRONTAB
 }
 
-#        Expression        CronName (25 chars)         Verb Route                                        Payload                         Auth
+#        Expression        CronName (25 chars)                Verb  Route                                           Payload                         Auth
 
-add_cron "6 2 * * *"       "payment_auth_notify_prod"  GET  "$BASE_URL/payments/auth/notify"             ""                              $LIVE_AUTH
-add_cron "5 0 * * *"       "mrchnt_daily_report_prod"  POST "$BASE_URL/merchants/report"                 ""                              $LIVE_AUTH
-add_cron "0 14 * * *"      "authorized_reminder_live"  GET  "$BASE_URL/payments/all/reminder"            ""                              $LIVE_AUTH
-add_cron "0 3 * * *"       "emi_excel_generate"        POST "$BASE_URL/emi/generate/excel"               ""                              $LIVE_AUTH
-add_cron "5 0 * * *"       "scorecard_prod"            POST "$BASE_URL/scorecard"                        ""                              $LIVE_AUTH
-add_cron "5 0 * * *"       "banking_scorecard_prod"    POST "$BASE_URL/banking_scorecard"                ""                              $LIVE_AUTH
-add_cron "0 * * * *"       "prod_international_curren" POST "$BASE_URL/international/USD/rates"          ""                              $LIVE_AUTH
-add_cron "22 */2 * * *"    "payment_update_on_hold"    POST "$BASE_URL/payments/on_hold/update"          ""                              $LIVE_AUTH
+add_cron "6 2 * * *"       "payment_auth_notify_prod"         GET  "$BASE_URL/payments/auth/notify"                 ""                              $LIVE_AUTH
+add_cron "5 0 * * *"       "mrchnt_daily_report_prod"         POST "$BASE_URL/merchants/report"                     ""                              $LIVE_AUTH
+add_cron "0 14 * * *"      "authorized_reminder_live"         GET  "$BASE_URL/payments/all/reminder"                ""                              $LIVE_AUTH
+add_cron "0 3 * * *"       "emi_excel_generate"               POST "$BASE_URL/emi/generate/excel"                   ""                              $LIVE_AUTH
+add_cron "5 0 * * *"       "scorecard_prod"                   POST "$BASE_URL/scorecard"                            ""                              $LIVE_AUTH
+add_cron "5 0 * * *"       "banking_scorecard_prod"           POST "$BASE_URL/banking_scorecard"                    ""                              $LIVE_AUTH
+add_cron "0 * * * *"       "prod_international_curren"        POST "$BASE_URL/international/USD/rates"              ""                              $LIVE_AUTH
+add_cron "22 */2 * * *"    "payment_update_on_hold"           POST "$BASE_URL/payments/on_hold/update"              ""                              $LIVE_AUTH
+add_cron "*/2 1-6 * * *"   "release_submerchant_payment_cron" POST "$BASE_URL/submerchants/payments/on_hold/update" ""                              $LIVE_AUTH
 
 # Settlements/Payouts
 add_cron "1 7-18 * * 1-6"  "settlement_prod_live"      POST "$BASE_URL/settlements/initiate/kotak"       ""                              $LIVE_AUTH

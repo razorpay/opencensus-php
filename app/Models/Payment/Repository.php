@@ -5,22 +5,22 @@ namespace RZP\Models\Payment;
 use DB;
 use App;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Builder;
-use RZP\Constants\Es;
-use RZP\Base\Common;
 use Database\Connection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
-use RZP\Base\ConnectionType;
-use RZP\Constants\Environment;
-use RZP\Exception\LogicException;
-use RZP\Exception\InvalidArgumentException;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Base\UniqueIdEntity;
+use Rzp\Wda_php\SortOrder;
+use Rzp\Wda_php\Symbol;
+use Rzp\Wda_php\WDAQueryBuilder;
+use Razorpay\Trace\Logger as Trace;
+
+use RZP\Base\Common;
+use RZP\Constants\Es;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Gateway\Enach;
@@ -29,9 +29,6 @@ use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
-use RZP\Models\Emi;
-use RZP\Models\Payment\Refund\Service;
-use RZP\Services\WDAService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
@@ -42,27 +39,28 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
+use RZP\Services\WDAService;
 use RZP\Models\Customer\Token;
+use RZP\Base\ConnectionType;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Verify;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Offer\EntityOffer;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Pricing\Calculator;
-use RZP\Models\Transfer\Payment as TransferPayment;
-use RZP\Models\Bank\IFSC;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Base\PublicCollection;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\Traits\ExternalCore;
 use RZP\Models\Base\Traits\ArchivedCore;
 use RZP\Constants\Entity as EntityName;
 use RZP\Models\Base\Traits\ExternalRepo;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Gateway\Downtime\DowntimeDetection;
+use RZP\Models\Transfer\Payment as TransferPayment;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
-use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
-use RZP\Models\Merchant\Detail as MerchantDetail;
-use Rzp\Wda_php\SortOrder;
-use Rzp\Wda_php\Symbol;
-use Rzp\Wda_php\WDAQueryBuilder;
 
 class Repository extends Base\Repository
 {
@@ -2587,19 +2585,15 @@ EOT;
      */
     public function getPaymentsOnHoldBeforeTimestamp(int $timestamp) : Base\PublicCollection
     {
-        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+        $connectionType = $this->getDataWarehouseSourceAPIConnection();
 
-        $query = $this->newQueryWithConnection($connectionType);
-
-        $data = $query
-                     ->where(Payment\Entity::ON_HOLD, true)
-                     ->where(Payment\Entity::ON_HOLD_UNTIL, '<', $timestamp)
-                     ->where(Payment\Entity::TRANSACTION_ID, '!=', null)
-                     ->with('transfer')
-                     ->limit(500)
-                     ->get();
-
-        return $data;
+        return $this->newQueryWithConnection($connectionType)
+                    ->where(Payment\Entity::ON_HOLD, true)
+                    ->where(Payment\Entity::ON_HOLD_UNTIL, '<', $timestamp)
+                    ->where(Payment\Entity::TRANSACTION_ID, '!=', null)
+                    ->with('transfer')
+                    ->limit(500)
+                    ->get();
     }
 
     protected function addQueryParamBank($query, $params)

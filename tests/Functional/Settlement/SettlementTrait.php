@@ -110,9 +110,20 @@ trait SettlementTrait
 
         $this->ba->cronAuth();
 
-        $content = $this->makeRequestAndGetContent($request);
+        return $this->makeRequestAndGetContent($request);
+    }
 
-        return $content;
+    protected function runSubmerchantPaymentOnHoldUpdateCron()
+    {
+        $request = [
+            'url' => '/submerchants/payments/on_hold/update',
+            'method' => 'POST',
+            'content' => []
+        ];
+
+        $this->ba->cronAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function initiateSettlements($channel, $testTimeStamp = null, $useQueue = false, $merchantIds = [])
