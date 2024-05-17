@@ -55,6 +55,8 @@ use Throwable;
 
 class Core extends Base\Core
 {
+    public $parent;
+
     protected $mutex;
 
     protected $razorx;
@@ -279,6 +281,8 @@ class Core extends Base\Core
 
             // Add trace log here if sync transfer flow is enabled in future.
 
+            $input[Entity::PLATFORM_TRANSFER] = $this->isValidPlatformTransfer();
+
             (new Metric)->pushCreateSuccessMetrics(current($input));
         }
 
@@ -418,6 +422,7 @@ class Core extends Base\Core
 
         if (empty($partner) === true or
             in_array($partner->getPartnerType(), [Merchant\Constants::AGGREGATOR, Merchant\Constants::PURE_PLATFORM]) === false or
+            (empty($this->parent) === false and ($this->parent->getId() === $this->merchant->getId())) or
             (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::ROUTE_PARTNERSHIPS, $partner, $this->oauthApplicationId) === false)
         {
             return false;
@@ -435,10 +440,15 @@ class Core extends Base\Core
 
         if ((new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::ROUTE_PARTNERSHIPS, $this->partner, $this->oauthApplicationId) === true)
         {
-            return $this->fetchAccountParentMerchantForMarketplaceTransfer($merchant);
+            $this->parent = $this->fetchAccountParentMerchantForMarketplaceTransfer($merchant);
         }
 
-        return $merchant ?? $this->merchant;
+        if (isset($this->parent) === false)
+        {
+            $this->parent = $merchant ?? $this->merchant;
+        }
+
+        return $this->parent;
     }
 
     /**
@@ -913,6 +923,10 @@ class Core extends Base\Core
 
             if($this->isValidPlatformTransfer() === true)
             {
+                $input[Entity::PLATFORM_TRANSFER] = true;
+
+                (new Metric)->pushCreateSuccessMetrics($input);
+
                 (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
             }
 

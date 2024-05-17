@@ -90,13 +90,21 @@ class PostCreateHook extends Hook
 
         try
         {
-            $transfers = $this->repo->transaction(function() use ($order, $input)
+            [$transfers, $isPlatformTransfer] = $this->repo->transaction(function() use ($order, $input)
             {
                 return Tracer::inSpan(['name' => 'order.transfer.create'], function() use ($order, $input)
                 {
-                    return (new Transfer\Core())->createForOrder($order, $input);
+                    $transferCore = (new Transfer\Core());
+
+                    $transfers = $transferCore->createForOrder($order, $input);
+
+                    $isPlatformTransfer = $transferCore->isValidPlatformTransfer();
+
+                    return [$transfers, $isPlatformTransfer];
                 });
             });
+
+            $input[Transfer\Entity::PLATFORM_TRANSFER] = $isPlatformTransfer;
 
             (new Transfer\Metric())->pushCreateSuccessMetrics($input);
 
@@ -108,7 +116,7 @@ class PostCreateHook extends Hook
         }
         catch (\Exception $e)
         {
-            (new Transfer\Metric())->pushCreateFailedMetrics($e);
+            (new Transfer\Metric())->pushCreateFailedMetrics($e, $input);
 
             throw $e;
         }
