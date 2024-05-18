@@ -598,6 +598,12 @@ class Constants
      */
     const CUSTOM_ONBOARDING_EMAILS= 'custom_onboarding_emails';
 
+     /**
+     * Feature flag to link wallets (like PayPal) from merchant dashboard
+     * https://razorpay.atlassian.net/browse/BP-2683
+     */
+    const VAS_LINK_WALLETS= 'vas_link_wallets';
+
     /**
      * Custom Paypal credentials for org
      */
@@ -2975,6 +2981,7 @@ class Constants
         self::EXTERNAL_PA_VAS                        =>  true,
         self::AMAZON_GC_VALIDATIONS                  => true,
         self::CUSTOM_ONBOARDING_EMAILS               => true,
+        self::VAS_LINK_WALLETS                       => true,
         self::ORG_SPECIFIC_CREDENTIALS              => true,
         self::DISABLE_SINCH_SMS_EMAIL               => true,
         self::IN_PERSON_CARDS_ENABLE_TERMINAL_SELECTION => true,
@@ -4286,6 +4293,11 @@ class Constants
             'feature'       => self::VENDOR_ONBOARDING_ENABLED,
             'display_name'  => 'Vendor Onboarding Enabled',
             'documentation' => 'Vendor Onboarding Enabled Merchant',
+        ],
+        self::VAS_LINK_WALLETS => [
+            'feature' => self::VAS_LINK_WALLETS,
+            'display_name' => "Feature flag to link wallets from merchant dashboard",
+            'documentation' => "",
         ],
     ];
 
