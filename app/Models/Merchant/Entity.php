@@ -87,6 +87,7 @@ class Entity extends Base\PublicEntity
     use Taggable;
     use NotesTrait;
     use Cacheable, AsvLoad;
+    use Base\Traits\LazyLoadingRelationFetch;
     use TransactionalModelEvents\TransactionalAwareEvents;
     use AsvReload {
         AsvReload::reload as AsvReload;

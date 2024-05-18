@@ -4,12 +4,14 @@ namespace RZP\Models\Admin\Org\Hostname;
 
 use RZP\Models\Admin\Base;
 use RZP\Models\Base\Traits\HardDeletes;
+use RZP\Models\Base\Traits\LazyLoadingRelationFetch;
 use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\Entity
 {
     use HardDeletes;
     use RevisionableTrait;
+    use LazyLoadingRelationFetch;
 
     const ORG_ID        = 'org_id';
     const HOSTNAME      = 'hostname';

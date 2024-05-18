@@ -6,6 +6,7 @@ use App;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Models\Base\Traits\LazyLoadingRelationFetch;
 use RZP\Models\User;
 use RZP\Constants\Table;
 use RZP\Constants\Product;
@@ -18,6 +19,7 @@ class Entity extends Base\Entity
 {
     use SoftDeletes;
     use RevisionableTrait;
+    use LazyLoadingRelationFetch;
 
     const NAME              = 'name';
     const DESCRIPTION       = 'description';

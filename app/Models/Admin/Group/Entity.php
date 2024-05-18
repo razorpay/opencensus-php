@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Group;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App;
+use RZP\Models\Base\Traits\LazyLoadingRelationFetch;
 use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Base;
@@ -18,6 +19,7 @@ class Entity extends Base\Entity
 {
     use SoftDeletes;
     use RevisionableTrait;
+    use LazyLoadingRelationFetch;
 
     const NAME             = 'name';
     const DESCRIPTION      = 'description';

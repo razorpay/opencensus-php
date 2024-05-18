@@ -40,6 +40,7 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
     use Cacheable, AsvGetAttribute;
+    use Base\Traits\LazyLoadingRelationFetch;
 
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';

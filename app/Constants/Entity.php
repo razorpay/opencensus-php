@@ -1670,6 +1670,10 @@ class Entity
         self::PAYMENT                     => self::PAYMENT,
     ];
 
+    protected static array $lazyLoadEntityFromSlaveMapping = [
+        self::ORG                        => self::ORG,
+    ];
+
     protected static array $customEagerLoadEntityKeys = [
         self::CARD                        => 'card_id',
         self::PAYMENT                     => 'payment_id',
@@ -2074,6 +2078,11 @@ class Entity
     public static function getCustomEagerLoadRelationEntity(string $entity) : string
     {
         return self::$customEagerLoadEntityMapping[$entity];
+    }
+
+    public static function getLazyLoadRelationEntitiesFromSlave() : array
+    {
+        return array_keys(self::$lazyLoadEntityFromSlaveMapping);
     }
 
     public static function getCustomEagerLoadEntityKey(string $relation) : string

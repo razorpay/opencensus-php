@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Constants\Table;
+use RZP\Models\Base\Traits\LazyLoadingRelationFetch;
 use RZP\Models\Merchant;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\PayoutAmountRules;
@@ -13,6 +14,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 class Entity extends Base\Entity
 {
     use SoftDeletes, AsvGetAttribute;
+    use LazyLoadingRelationFetch;
 
     const ID          = 'id';
     const NAME        = 'name';

@@ -6,11 +6,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Base\Traits\LazyLoadingRelationFetch;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\Entity
 {
     use SoftDeletes, AsvGetAttribute;
+    use LazyLoadingRelationFetch;
 
     const ADMIN_ID          = 'admin_id';
     const ORG_ID            = 'org_id';
