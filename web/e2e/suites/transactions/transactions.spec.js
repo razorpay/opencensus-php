@@ -29,7 +29,7 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
 
   test('should show orders list and details in Orders', async ({ page }) => {
     await navigateToTransactions(page);
-    await page.getByRole('link', { name: 'Orders' }).click();
+    await page.getByRole('link', { name: 'Orders', exact: true }).click();
     const columns = ['Order Id', 'Amount', 'Attempts', 'Receipt', 'Created At', 'Status'];
     for await (const column of columns) {
       await expect(page.getByRole('cell', { name: column })).toBeVisible();
