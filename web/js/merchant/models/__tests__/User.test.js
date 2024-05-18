@@ -249,6 +249,24 @@ describe('User model', () => {
     expect(isInstrumentRequestHidden).toBe(false);
   });
 
+  test('should return true when org feature flag vas_link_wallets is set', () => {
+    const user = getDefaultUserObj();
+
+    jest.spyOn(user, 'isLinkAccountEnabled', 'get').mockReturnValue(true);
+
+    const isLinkAccountEnabled = user.isLinkAccountEnabled;
+    expect(isLinkAccountEnabled).toBe(true);
+  });
+
+  test('should return false when org feature flag vas_link_wallets is not set', () => {
+    const user = getDefaultUserObj();
+
+    jest.spyOn(user, 'isLinkAccountEnabled', 'get').mockReturnValue(false);
+
+    const isLinkAccountEnabled = user.isLinkAccountEnabled;
+    expect(isLinkAccountEnabled).toBe(false);
+  });
+
   test('get isIssuingBulkUploadEnabled: exp disabled', () => {
     const user = getDefaultUserObj();
 

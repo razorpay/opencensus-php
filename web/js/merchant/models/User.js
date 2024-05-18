@@ -1624,6 +1624,10 @@ export default class User {
     return isOrgFeatureExist('hide_instrument_request');
   }
 
+  get isLinkAccountEnabled() {
+    return isOrgFeatureExist('vas_link_wallets');
+  }
+
   // Bank account auto update or old workflow with the approval from admin
   bankAccountAutoUpdateOrWorkflow() {
     return true;

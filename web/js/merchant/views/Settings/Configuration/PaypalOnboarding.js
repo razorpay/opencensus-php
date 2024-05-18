@@ -133,7 +133,8 @@ class PaypalOnboardingButton extends Component {
     const showStatusMessage = ['pending', 'created', 'requested', 'permission_missing'].includes(
       status,
     );
-    const isLinkButtonNotHidden = !user.isInstrumentRequestHidden && showLinkButtonOnly;
+    const isLinkButtonNotHidden =
+      (!user.isInstrumentRequestHidden && showLinkButtonOnly) || user.isLinkAccountEnabled;
 
     const changeAccountModalClick = () =>
       openModal({
