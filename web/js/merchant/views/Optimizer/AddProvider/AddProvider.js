@@ -1,9 +1,5 @@
 import React, { createRef } from 'react';
 import { Box, Link, ChevronLeftIcon, Spinner } from '@razorpay/blade/components';
-import {
-  addProviderV3,
-  fetchRazorpayMethodCoverage,
-} from 'merchant/views/Optimizer/AddProvider/service.ts';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
@@ -31,6 +27,11 @@ import {
 } from 'merchant/views/Navigator/constants';
 import { addProvider, editProvider } from 'merchant/views/Navigator/service';
 import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
+import {
+  addProviderV3,
+  fetchRazorpayMethodCoverage,
+  updateProvider,
+} from 'merchant/views/Optimizer/AddProvider/service';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -40,12 +41,15 @@ import {
   ProviderDetails,
   ProviderConfiguration,
   PaymentMethodCoverage,
+  TestingConfirmation,
 } from './components';
+import IntegrationTesting from './components/IntegrationTesting';
 import {
   isIntegrationAuditEnabled,
   isGatewaySupportIntegrationAudit,
   areMandatoryMethodsCovered,
 } from './utils';
+
 class AddProvider extends React.Component {
   step2Ref = createRef();
   step3Ref = createRef();
@@ -88,10 +92,14 @@ class AddProvider extends React.Component {
     validationErrors: {},
     isSaving: false,
     showMethodCoverage: false,
-    gatewayCoverage: {},
-    razorpayCoverage: {},
+    gatewayCoverage: [],
+    razorpayCoverage: [],
     isGatewayCoverageMissing: false,
     isRazorpayCoverageMissing: false,
+    isTestingConfirmationModalOpen: false,
+    isStartIntegrationTesting: false,
+    providerId: null,
+    updateProviderData: {},
   };
 
   componentDidMount() {
@@ -101,7 +109,6 @@ class AddProvider extends React.Component {
       url: 'terminals/proxy/optimizer/supported_gateways',
       method: 'get',
     };
-
     merchantFetch(params)
       .then((res) => {
         if (res?.success) {
@@ -123,7 +130,7 @@ class AddProvider extends React.Component {
   }
 
   setInitialProvider = () => {
-    const { activeProviders } = this.props;
+    const { activeProviders, splitz } = this.props;
     const { terminalId } = this.state;
 
     if (terminalId && activeProviders?.length > 0) {
@@ -131,6 +138,8 @@ class AddProvider extends React.Component {
 
       if (provider) {
         const { Gateway, Gateway_details } = provider;
+        const updateBlocked =
+          isIntegrationAuditEnabled(splitz) && isGatewaySupportIntegrationAudit(Gateway);
         // check if gateway has seamless option enabled
         const hasSeamlessOption =
           SEAMLESS_PROVIDERS?.includes(Gateway) &&
@@ -151,31 +160,70 @@ class AddProvider extends React.Component {
           provider.Gateway_details.TPV = 0;
         }
 
-        this.setState({
-          isEdit: true,
-          currentStep: hasSeamlessOption ? 2 : 3,
-          steps: {
+        const { search, state } = this.props.location;
+        const locationParams = new Proxy(new URLSearchParams(search), {
+          get: (searchParams, prop) => searchParams.get(prop),
+        });
+        let showMethodCoverage = false;
+        let gatewayCoverage = [];
+        let razorpayCoverage = [];
+        let newSteps = {
+          1: {
+            edit: false,
+            show: true,
+          },
+          2: {
+            edit: hasSeamlessOption && !updateBlocked,
+            show: hasSeamlessOption || hasAccountTypeOption,
+          },
+          3: {
+            edit: !hasSeamlessOption || updateBlocked,
+            show: true,
+          },
+          4: {
+            edit: false,
+            show: true,
+          },
+        };
+        if (locationParams.for === 'coverage') {
+          showMethodCoverage = true;
+          gatewayCoverage = state?.gatewayCoverage;
+          razorpayCoverage = state?.razorpayCoverage;
+          newSteps = {
             1: {
               edit: false,
               show: true,
             },
             2: {
-              edit: hasSeamlessOption,
+              edit: false,
               show: hasSeamlessOption || hasAccountTypeOption,
             },
             3: {
-              edit: !hasSeamlessOption,
+              edit: false,
               show: true,
             },
             4: {
               edit: false,
               show: true,
             },
-          },
+            5: {
+              edit: false,
+              show: true,
+            },
+          };
+        }
+
+        this.setState({
+          isEdit: true,
+          currentStep: hasSeamlessOption ? 2 : 3,
+          steps: newSteps,
           selectedProvider: Gateway || '',
           provider,
           hasSeamlessOption,
           allDetailsValid: true,
+          showMethodCoverage,
+          gatewayCoverage,
+          razorpayCoverage,
         });
       }
     }
@@ -477,6 +525,10 @@ class AddProvider extends React.Component {
       isGatewaySupportIntegrationAudit(selectedProviderWithAcquirer)
     );
 
+    if (!doPaymentMethodsValidation) {
+      return true;
+    }
+
     for (const key of Object.keys(providers[selectedProviderWithAcquirer])) {
       const value = provider?.Gateway_details?.[key];
 
@@ -657,6 +709,12 @@ class AddProvider extends React.Component {
     });
   };
 
+  /**
+   * Check if mandatory methods are covered by gateway and razorpay
+   * If mandatory methods are not covered in any gateway or razorpay show the method coverage step
+   * If mandatory methods are covered on both gateway and razorpay open the testing confirmation modal
+   * @param {result} result data from gateway and razorpay method coverage
+   */
   findCoverage = (result) => {
     const { providers } = this.state;
     const mandatoryMethods =
@@ -672,13 +730,17 @@ class AddProvider extends React.Component {
     );
     const showMethodCoverage = isGatewayCoverageMissing || isRazorpayCoverageMissing;
 
+    let isTestingConfirmationModalOpen = false;
     if (showMethodCoverage) {
       this.goNext();
+    } else {
+      isTestingConfirmationModalOpen = true;
     }
     this.setState({
       showMethodCoverage,
       gatewayCoverage,
       razorpayCoverage,
+      isTestingConfirmationModalOpen,
       isGatewayCoverageMissing,
       isRazorpayCoverageMissing,
     });
@@ -739,7 +801,15 @@ class AddProvider extends React.Component {
         delete payload.Currency;
         delete payload.Gateway_acquirer;
 
-        res = await editProvider({ payload });
+        if (integrationAuditFlow) {
+          const { updateProviderData } = this.state;
+          res = await updateProvider({
+            providerId: payload?.Terminal_id,
+            payload: updateProviderData,
+          });
+        } else {
+          res = await editProvider({ payload });
+        }
         // Later update with patch request for integration audit flow
       } else if (integrationAuditFlow) {
         // V3 API for provider addition which will create provider in pending state initially
@@ -748,7 +818,7 @@ class AddProvider extends React.Component {
           fetchRazorpayMethodCoverage(),
         ]);
         res = result[0].data;
-        this.setState({ isSaving: false });
+        this.setState({ providerId: res?.Terminal_id, isSaving: false });
         this.findCoverage(result);
         return;
       } else {
@@ -816,6 +886,45 @@ class AddProvider extends React.Component {
     history.push('/optimizer/rules');
   };
 
+  closeTestingConfirmationModal = () => {
+    this.setState({ isTestingConfirmationModalOpen: false });
+  };
+
+  startIntegrationTesting = () => {
+    this.setState({ isTestingConfirmationModalOpen: false, isStartIntegrationTesting: true });
+  };
+
+  closeIntegrationTestingModal = () => {
+    this.setState({ isStartIntegrationTesting: false });
+  };
+
+  raiseTicket = () => {
+    this.closeTestingConfirmationModal();
+    this.closeIntegrationTestingModal();
+    document.dispatchEvent(new CustomEvent('create-ticket', { detail: { id: 'tickets' } }));
+  };
+
+  updateProviderDetails = (data) => {
+    this.changeProviderDetails(data);
+    const { name, value } = data;
+    this.setState((prevState) => {
+      const { updateProviderData } = prevState;
+
+      return { updateProviderData: { ...updateProviderData, [name]: value } };
+    });
+  };
+
+  checkUpdateV3FlowValidDetails = () => {
+    const { updateProviderData } = this.state;
+    let valid = true;
+    Object.values(updateProviderData).forEach((value) => {
+      if (!value) {
+        valid = false;
+      }
+    });
+    return valid;
+  };
+
   render() {
     const { user, splitz, org } = this.props;
 
@@ -836,6 +945,9 @@ class AddProvider extends React.Component {
       razorpayCoverage,
       isGatewayCoverageMissing,
       isRazorpayCoverageMissing,
+      isTestingConfirmationModalOpen,
+      isStartIntegrationTesting,
+      providerId,
     } = this.state;
 
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
@@ -845,6 +957,11 @@ class AddProvider extends React.Component {
 
     const allAvailableMethods =
       providers?.[selectedProviderWithAcquirer]?.['Payment Methods']?.data_value;
+
+    const updateV3Flow =
+      isEdit &&
+      isIntegrationAuditEnabled(splitz) &&
+      isGatewaySupportIntegrationAudit(selectedProviderWithAcquirer);
 
     return (
       <Box
@@ -861,6 +978,32 @@ class AddProvider extends React.Component {
         >
           Go back
         </Link>
+
+        {isStartIntegrationTesting && (
+          <IntegrationTesting
+            isModalOpen={isStartIntegrationTesting}
+            closeIntegrationTestingModal={this.closeIntegrationTestingModal}
+            raiseTicket={this.raiseTicket}
+            gateway={selectedProviderWithAcquirer}
+            providerId={providerId}
+            integrationType={
+              provider?.Gateway_details?.optimizer_seamless_disabled ? 'instant' : 's2s'
+            }
+            providerName={provider?.Provider_name}
+            gatewayMetaData={providers?.[selectedProviderWithAcquirer]}
+            gatewayCoverage={gatewayCoverage}
+            razorpayCoverage={razorpayCoverage}
+          />
+        )}
+
+        {isTestingConfirmationModalOpen && (
+          <TestingConfirmation
+            isModalOpen={isTestingConfirmationModalOpen}
+            closeTestingConfirmationModal={this.closeTestingConfirmationModal}
+            startIntegrationTesting={this.startIntegrationTesting}
+            raiseTicket={this.raiseTicket}
+          />
+        )}
 
         {loadingProviders ? (
           <Box display="flex" alignItems="center" justifyContent="center">
@@ -898,6 +1041,7 @@ class AddProvider extends React.Component {
                   validateStep={this.disableStep}
                   onNextClick={this.goNext}
                   onEditClick={this.onEditClick}
+                  updateV3Flow={updateV3Flow}
                 />
               </Box>
             )}
@@ -915,6 +1059,8 @@ class AddProvider extends React.Component {
                   validateStep={this.disableStep}
                   onNextClick={this.goNext}
                   onEditClick={this.onEditClick}
+                  updateV3Flow={updateV3Flow}
+                  updateProviderDetails={this.updateProviderDetails}
                 />
               </Box>
             )}
@@ -935,7 +1081,11 @@ class AddProvider extends React.Component {
                   changeEnableAutoDebitSwitch={this.changeEnableAutoDebitSwitch}
                   onLinkClick={this.howtoGetDetails}
                   onEditClick={this.onEditClick}
-                  isSubmitDisabled={!(this.checkAllValuesExist() && allDetailsValid)}
+                  isSubmitDisabled={
+                    updateV3Flow
+                      ? !(this.checkUpdateV3FlowValidDetails() && isProviderNameValid)
+                      : !(this.checkAllValuesExist() && allDetailsValid)
+                  }
                   onSubmit={this.onSubmit}
                   splitz={splitz}
                 />
@@ -973,7 +1123,14 @@ const mapStateToProps = (state) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ openModal, closeModal, showNotification }, dispatch);
+  return bindActionCreators(
+    {
+      openModal,
+      closeModal,
+      showNotification,
+    },
+    dispatch,
+  );
 };
 
 export default compose(
