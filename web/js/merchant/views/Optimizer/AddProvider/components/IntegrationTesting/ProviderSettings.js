@@ -7,8 +7,12 @@ import {
   Divider,
   CheckboxGroup,
   Checkbox,
+  Tooltip,
+  TooltipInteractiveWrapper,
+  InfoIcon,
 } from '@razorpay/blade/components';
 
+import { titleCase } from 'common/utils/rzp-utils';
 import { METHODS_MAP } from 'merchant/views/Navigator/constants';
 
 export const ProviderSettings = ({
@@ -18,7 +22,7 @@ export const ProviderSettings = ({
   setMethods,
   integrationType,
 }) => {
-  const methodsList = gatewayMetaData?.['Payment Methods']?.data_value || [];
+  const methodsList = [...gatewayMetaData?.['Payment Methods']?.data_value] || [];
   // Move wallet method at the end
   if (methodsList.includes('wallet')) {
     methodsList.splice(methodsList.indexOf('wallet'), 1);
@@ -28,6 +32,11 @@ export const ProviderSettings = ({
   if (gatewayMetaData?.Sodexo && !methodsList.includes('sodexo') && integrationType === 's2s') {
     methodsList.splice(methodsList.indexOf('card') + 1, 0, 'sodexo');
   }
+
+  if (gatewayMetaData?.Recurring && !methodsList.includes('recurring')) {
+    methodsList.splice(methodsList.indexOf('wallet'), 0, 'recurring');
+  }
+
   const wallets = gatewayMetaData?.['Payment Methods']?.meta_data?.wallet_metadata?.wallets || [];
   const wallets1List = wallets?.slice(
     0,
@@ -82,6 +91,10 @@ export const ProviderSettings = ({
     });
   };
 
+  const sodexoTooltip =
+    'To activate the Sodexo feature, please make sure to enable the "card" method.';
+  const recurringTooltip = 'Available for Card and UPI, coming soon for Netbanking.';
+
   return (
     <Box display="flex" flexDirection="column" padding="spacing.8">
       <Heading size="medium">Provider Settings</Heading>
@@ -104,17 +117,34 @@ export const ProviderSettings = ({
             <>
               <Box display="flex" gap="spacing.4">
                 <Box display="flex" gap="spacing.2" alignItems="center" width="200px">
-                  <Text color="surface.text.gray.subtle">{METHODS_MAP[method]}</Text>
+                  <Text color="surface.text.gray.subtle">
+                    {METHODS_MAP[method] || titleCase(method)}
+                  </Text>
+                  {['sodexo', 'recurring'].includes(method) && (
+                    <Tooltip
+                      content={method === 'sodexo' ? sodexoTooltip : recurringTooltip}
+                      onOpenChange={function noRefCheck() {}}
+                      placement="right"
+                      zIndex={99999}
+                    >
+                      <TooltipInteractiveWrapper>
+                        <InfoIcon marginTop="spacing.2" size="medium" />
+                      </TooltipInteractiveWrapper>
+                    </Tooltip>
+                  )}
                 </Box>
                 <Box display="flex" gap="spacing.2">
                   <Switch
-                    accessibilityLabel={METHODS_MAP[method]}
+                    accessibilityLabel={METHODS_MAP[method] || titleCase(method)}
                     size="medium"
                     name={method}
                     value={method}
                     isChecked={methods[method]}
                     onChange={changeMethods}
-                    isDisabled={method === 'sodexo' && !methods.card}
+                    isDisabled={
+                      (method === 'sodexo' && !methods.card) ||
+                      (method === 'recurring' && !methods.card && !methods.upi)
+                    }
                   />
                 </Box>
               </Box>

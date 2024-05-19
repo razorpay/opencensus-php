@@ -92,8 +92,11 @@ describe('Optimizer IntegrationTesting ProviderSettings', () => {
         'You can take a final decision about which methods to enable and disable for payu test',
       ),
     ).toBeInTheDocument();
-    ['Card', 'UPI', 'Netbanking', 'EMI', 'E-Mandate', 'Wallet'].forEach((method) => {
+    ['Card', 'UPI', 'Netbanking', 'EMI', 'E-Mandate', 'Recurring', 'Wallet'].forEach((method) => {
       expect(screen.getByRole('switch', { name: method })).toBeInTheDocument();
+      if (method === 'Recurring') {
+        expect(screen.getByRole('switch', { name: method })).toBeDisabled();
+      }
     });
   });
 
@@ -215,5 +218,18 @@ describe('Optimizer IntegrationTesting ProviderSettings', () => {
     expect(sodexoSwitch).toBeInTheDocument();
     expect(sodexoSwitch).not.toBeDisabled();
     expect(sodexoSwitch).not.toBeChecked();
+  });
+
+  it('should render recurring switch enabled when card or upi is selected', () => {
+    const props = {
+      ...mockProps,
+      methods: {
+        card: true,
+      },
+    };
+    render(<App {...props} />);
+    const recurringSwitch = screen.getByRole('switch', { name: 'Recurring' });
+    expect(recurringSwitch).toBeInTheDocument();
+    expect(recurringSwitch).toBeEnabled();
   });
 });
