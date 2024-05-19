@@ -149,6 +149,10 @@ const CODPrepaidConfigs = (props) => {
   }, [prepayCODConfigs]);
 
   useEffect(() => {
+    if (!methods.length) {
+      return;
+    }
+
     if (methods.length === 2) {
       setConvertOn('both');
     } else {
