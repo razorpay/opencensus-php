@@ -88,6 +88,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Models\Order\ProductType;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\UpiMetadata;
+use RZP\Models\Card\IIN\MandateHub;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\CardPaymentService;
 use RZP\Models\Customer\Token\Metric;
@@ -6944,9 +6945,17 @@ trait Authorize
                                                            ?Token\Entity $token,
                                                            & $gatewayInput)
     {
+        $cardMandateHub = null;
+
+        if (isset($token->cardMandate))
+        {
+            $cardMandateHub = $token->cardMandate->getMandateHub();
+        }
+
         if((($payment->isUpiAutoRecurring() === true) or
             ($payment->isNachAutoRecurring() === true) or
-            (($payment->isCardAutoRecurring() === true) and ($payment->card->isRuPay() === true)) or
+                (($payment->isCardAutoRecurring() === true) and
+                    (($cardMandateHub === MandateHub::BILLDESK_SIHUB) or ($cardMandateHub === MandateHub::RUPAY_SIHUB))) or
             ($payment->isWalletAutoRecurring() === true)) and
                 ($token !== null))
         {
