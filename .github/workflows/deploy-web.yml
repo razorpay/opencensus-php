@@ -87,7 +87,7 @@ jobs:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
         run: |
           # Requirements for running s3sync.js
-          pnpm install multi-glob aws-sdk
+          pnpm install -w multi-glob aws-sdk
           # Show what all will get synced
           ls -laR public/dist/
           ./s3sync.js
@@ -106,7 +106,7 @@ jobs:
           CDN_PATH: ${{ github.event.deployment.payload.CDN_PATH }}
         run: |
           # Requirements for running s3sync.js
-          pnpm install multi-glob aws-sdk
+          pnpm install -w multi-glob aws-sdk
           # Show what all will get synced
           ls -laR public/dist/
           ./s3sync.js
