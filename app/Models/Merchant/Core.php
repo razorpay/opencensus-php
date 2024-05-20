@@ -10846,6 +10846,13 @@ class Core extends Base\Core
                     }
                 }
 
+                $orgId = $merchant['org_id'];
+
+                $org = $this->repo->org->findOrFailPublic($orgId);
+
+                $planId = $org->getDefaultPricingPlanId();
+
+                $merchantInfo['merchant']['default_pricing_plan_id'] = $planId;
 
                 $merchantInfo['merchant_business_detail']['website_details'] = count(optional($merchant->merchantBusinessDetail)->getWebsiteDetails() ?? []) > 0 ?
                     optional($merchant->merchantBusinessDetail)->getWebsiteDetails() : (new \stdClass());

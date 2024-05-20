@@ -350,6 +350,7 @@ class MerchantCoreTest extends OAuthTestCase
         $this->assertNotEmpty($result);
         $this->assertArrayKeysExist($result, ['merchant_info', 'count', 'error']);
         $this->assertArrayKeysExist($result['merchant_info'][0], ['merchant','merchant_detail','merchant_business_detail','merchant_website','merchant_verification_detail','bvs_validation','merchant_document','user_device_details']);
+        $this->assertArrayHasKey('default_pricing_plan_id', $result['merchant_info'][0]['merchant']);
         $this->assertEquals(1, $result['count']);
         $this->assertEquals("", $result['error']['code']);
         $this->assertEquals("", $result['error']['description']);
@@ -362,6 +363,7 @@ class MerchantCoreTest extends OAuthTestCase
         $this->assertNotEmpty($result);
         $this->assertArrayKeysExist($result, ['merchant_info', 'count', 'error']);
         $this->assertArrayKeysExist($result['merchant_info'][0], ['merchant','merchant_detail','merchant_business_detail','merchant_website','merchant_verification_detail','bvs_validation','merchant_document','user_device_details']);
+        $this->assertArrayHasKey('default_pricing_plan_id', $result['merchant_info'][0]['merchant']);
         $this->assertEquals(1, $result['count']);
         $this->assertEquals("", $result['error']['code']);
         $this->assertEquals("", $result['error']['description']);
