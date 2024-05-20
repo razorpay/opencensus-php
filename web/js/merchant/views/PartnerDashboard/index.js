@@ -15,6 +15,7 @@ import Applications from './Applications';
 import ClientAccounts from './ClientAccounts';
 import Earnings from './Earnings';
 import Home from './Home';
+import AccountsAndSettings from './PartnerAccountsSettings';
 import Settings from './Settings';
 import Configuration from './Settings/configuration';
 import SubMerchantList from './SubMerchant/List';
@@ -164,6 +165,22 @@ export default function PartnerDashboard() {
             >
               <RouteGuard additionalCondition={(user) => user.isAllowedTeamManagement}>
                 <PartnerManageTeam />
+              </RouteGuard>
+            </Suspense>
+          }
+        />
+        <Route
+          path="accounts-settings/*"
+          element={
+            <Suspense
+              fallback={
+                <Box minHeight="800px" display="flex" justifyContent="center" alignItems="center">
+                  <Spinner accessibilityLabel="spinner" size="xlarge" />
+                </Box>
+              }
+            >
+              <RouteGuard>
+                <AccountsAndSettings />
               </RouteGuard>
             </Suspense>
           }

@@ -32,6 +32,8 @@ const HandleIndex = ({ user }: HandleIndexProps) => {
       navigate(newRoute);
     } else if (user.isPartnerAgentRole) {
       navigate('/partners/submerchants/pos');
+    } else if (user.isPartner()) {
+      navigate('/partners');
     } else {
       navigate('/dashboard');
     }

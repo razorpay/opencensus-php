@@ -1,16 +1,19 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new-ui/ErrorBoundary';
 import errorService from '@razorpay/universe-utils/errorService';
-import { analyticsTrack } from 'common/utils/analytics';
-import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
-import { fetchTicketsRaisedByAgents } from 'merchant/reducers/config';
-import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import { fireCustomEvent, getPosActivationStatus } from './utils';
-import { TicketSystemEmitter } from 'merchant/care/init';
+
 import { Modal, ModalBody } from 'common/components/Modal';
-import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
+import { withRouter } from 'common/deprecated/withRouter';
+import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new-ui/ErrorBoundary';
 import { useSplitzService } from 'common/splitz';
+import { analyticsTrack } from 'common/utils/analytics';
+import { removeCookie, getCookie } from 'common/utils/cookies';
+import { TicketSystemEmitter } from 'merchant/care/init';
+import { fetchTicketsRaisedByAgents } from 'merchant/reducers/config';
+import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+
+import { fireCustomEvent, getPosActivationStatus } from './utils';
 
 const Support = lazy(() =>
   import(/* webpackChunkName: 'frontend-care' */ '@razorpay/frontend-care'),
@@ -132,7 +135,10 @@ const HelpSection = ({
     }
   };
 
-  const shouldOpenRaiseAQueryOnMount = history?.location?.pathname?.includes('/app-support');
+  const isPartnerDashboard = history.location.pathname.includes('/partners');
+  const isPartnerSupport = getCookie('isPartnerSupport') && isPartnerDashboard;
+  const shouldOpenRaiseAQueryOnMount =
+    history?.location?.pathname?.includes('/app-support') || isPartnerSupport;
 
   const isDev = process.env.PUBLIC_ENV !== 'production';
 
@@ -140,7 +146,9 @@ const HelpSection = ({
     ? 'https://beta-api.stage.razorpay.in/v1'
     : 'https://api.razorpay.com/v1';
 
-  const isPartnerDashboard = history.location.pathname.includes('/partners');
+  const handleSupportClose = () => {
+    removeCookie('isPartnerSupport');
+  };
 
   return (
     <ErrorBoundary
@@ -178,6 +186,7 @@ const HelpSection = ({
           isPartnerDashboard={isPartnerDashboard}
           hideSupportIcon={!isHelpWidgetVisible || openedCareWidget === 'RAY'}
           hideTicketCreationCTA={checkEligibilityForFeeBasedGating(user) || !user.activation_status}
+          handleClose={handleSupportClose}
         />
       </Suspense>
     </ErrorBoundary>

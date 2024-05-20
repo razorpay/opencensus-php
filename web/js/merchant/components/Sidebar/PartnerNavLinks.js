@@ -34,6 +34,13 @@ export default function PartnerNavLinks() {
       />
 
       <MainNavLink
+        label="Partner Accounts & Settings"
+        icon="i i-settings text-warning"
+        to="/partners/accounts-settings"
+        end
+      />
+
+      <MainNavLink
         label="Partner Playbook"
         icon="i i-partner-playbook text-notice"
         to="/partners/playbook"
