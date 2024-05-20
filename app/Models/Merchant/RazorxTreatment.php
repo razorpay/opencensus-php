@@ -740,6 +740,9 @@ final class RazorxTreatment
     // This is for czrd recurring subsequent payment capture setting
     public const DEFAULT_CAPTURE_SETTING_CONFIG_CARD_RECURRING = "default_capture_setting_config_card_recurring";
 
+    // This is for emandate subsequent payment if capture setting time is less then 120 hours
+    public const DEFAULT_CAPTURE_SETTING_CONFIG_EMANDATE = "default_capture_setting_config_emandate";
+
     // This is to show the feedback collection popup for npci
     public const ALLOW_NPCI_FEEDBACK_POPUP = "allow_npci_feedback_popup";
 

@@ -72,6 +72,7 @@ use RZP\Models\Payment\Flow;
 use RZP\Jobs\TransferProcess;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Metric;
+use RZP\Models\Payment\Gateway as PaymentGateway;
 use RZP\Models\Upi\Turbo\Utils;
 use RZP\Services\KafkaProducer;
 use RZP\Models\Payment\Status;
@@ -10205,6 +10206,21 @@ class Processor
 
                     if ($autoTimeoutDuration < $defaultCardAutoCaptureExpiry) $autoTimeoutDuration = $defaultCardAutoCaptureExpiry;
                     if ($manualTimeoutDuration < $defaultCardAutoCaptureExpiry) $manualTimeoutDuration = $defaultCardAutoCaptureExpiry;
+                }
+            }
+            elseif (($payment->getMethod() === Constants::EMANDATE) and
+                    (PaymentGateway::isSupportedEmandateDirectIntegrationGateway($payment->getGateway()) === true))
+            {
+                $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
+                    Merchant\RazorxTreatment::DEFAULT_CAPTURE_SETTING_CONFIG_EMANDATE,
+                    $this->app['rzp.mode']);
+
+                if (strtolower($variant) === 'on')
+                {
+                    $defaultEmandateCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_EMANDATE_DEBIT_PAYMENTS;
+
+                    if ($autoTimeoutDuration < $defaultEmandateCaptureExpiry) $autoTimeoutDuration = $defaultEmandateCaptureExpiry;
+                    if ($manualTimeoutDuration < $defaultEmandateCaptureExpiry) $manualTimeoutDuration = $defaultEmandateCaptureExpiry;
                 }
             }
 
