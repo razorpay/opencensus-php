@@ -189,6 +189,10 @@ final class KeylessPublicAuth
             }
             catch (\Throwable $e)
             {
+                if ($entity === E::ORDER) {
+                    $app = App::getFacadeRoot();
+                    $app['rzp.mode'] = Mode::TEST;
+                }
                 $entityData = $this->repo->$entity->connection(Mode::TEST)->findOrFail($entityId);
 
                 return [Mode::TEST, $entityData->merchant];
