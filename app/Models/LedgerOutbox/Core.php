@@ -188,6 +188,13 @@ class Core extends Base\Core
         try
         {
             $this->handleTransactionCreationOnAcknowledgement($journal, $transactorId, $transactorEvent, false);
+
+            $durationOfCompletion = millitime() - $ledgerCreatedAt;
+
+            $this->trace->histogram(
+                Metric::PG_LEDGER_KAFKA_ACKNOWLEDGMENT_PROCESSED,
+                $durationOfCompletion,
+            );
         }
         catch (\Throwable $e)
         {

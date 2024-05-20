@@ -4,6 +4,7 @@ namespace RZP\Models\Ledger\ReverseShadow\Adjustments;
 
 use App;
 use RZP\Models\Base;
+use RZP\Error\Error;
 use Ramsey\Uuid\Uuid;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Trace\TraceCode;
@@ -15,6 +16,7 @@ use RZP\Models\Ledger\Constants;
 use RZP\Models\Adjustment\Entity;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
 
 class Core extends Base\Core
 {
@@ -54,7 +56,7 @@ class Core extends Base\Core
 
         $journalPayload = array_merge($transactionMessage, $disputeDeductData);
 
-        $journal = $this->createJournalInLedger($journalPayload);
+        $journal = $this->createAdjustemntAndDisputeJournalInLedger($journalPayload);
 
         $this->dispatchToSettlementFromJournalIfApplicable($journal, $adjustment);
 
@@ -63,6 +65,49 @@ class Core extends Base\Core
         return $journal;
     }
 
+    public function createAdjustemntAndDisputeJournalInLedger($journalPayload)
+    {
+        try 
+        {
+            $journal = $this->createJournalInLedger($journalPayload);
+
+            return $journal;
+        }
+        catch( \Exception $e)
+        {
+            $err = $e->getError() ? $e->getError()->toPublicArray() : [];
+
+            $errorResponse = $err['error'] ?? [];
+            
+            $errorMessage =  $errorResponse[Error::DESCRIPTION];
+
+            $transactorId = $journalPayload[Constants::TRANSACTOR_ID];
+
+            $transactorEvent = $journalPayload[Constants::TRANSACTOR_EVENT];
+
+            if (str_contains($errorMessage, LedgerReverseShadowConstants::BAD_REQUEST_RECORD_ALREADY_EXIST) === true)
+            {
+                //fetch journal and return
+                $ledgerService = $this->app['ledger'];
+
+                $existingJournal = $this->getJournalByTransactorInfo($transactorId, $transactorEvent, $ledgerService);
+
+                if ($existingJournal === null)
+                {
+                    $this->trace->info(TraceCode::PG_LEDGER_JOURNAL_NOT_FOUND, [
+                        Constants::TRANSACTOR_ID               => $transactorId,
+                        Constants::TRANSACTOR_EVENT            => $transactorEvent,
+                    ]);
+
+                    throw $e;
+                }
+
+                return $existingJournal;
+            }
+
+            throw $e;
+        }
+    }
     public function createLedgerEntryForForRazorpayDisputeReversalReverseShadow(Entity $adjustment, $disputePublicId)
     {
         $adjustmentAmount = $adjustment->getAmount() != null ? abs($adjustment->getAmount()) : 0;
@@ -88,7 +133,7 @@ class Core extends Base\Core
 
         $journalPayload = array_merge($transactionMessage, $disputeReversalData);
 
-        $journal = $this->createJournalInLedger($journalPayload);
+        $journal = $this->createAdjustemntAndDisputeJournalInLedger($journalPayload);
 
         $this->dispatchToSettlementFromJournalIfApplicable($journal, $adjustment);
 
@@ -125,7 +170,7 @@ class Core extends Base\Core
 
         $journalPayload = array_merge($transactionMessage, $manualAdjData);
 
-        $journal = $this->createJournalInLedger($journalPayload);
+        $journal = $this->createAdjustemntAndDisputeJournalInLedger($journalPayload);
 
         $this->dispatchToSettlementFromJournalIfApplicable($journal, $adjustment);
 
@@ -160,7 +205,7 @@ class Core extends Base\Core
 
         $journalPayload = array_merge($transactionMessage, $manualAdjData);
 
-        $journal = $this->createJournalInLedger($journalPayload);
+        $journal = $this->createAdjustemntAndDisputeJournalInLedger($journalPayload);
 
         $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
     }

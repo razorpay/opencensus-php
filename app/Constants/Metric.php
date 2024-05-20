@@ -206,6 +206,7 @@ class Metric
     const PG_LEDGER_OUTBOX_CRON_RETRIES_EXHAUSTED               = 'pg_ledger_outbox_cron_retries_exhausted';
     const PG_LEDGER_KAFKA_ACKNOWLEDGMENT_RECEIVED_FROM_PG       = 'pg_ledger_kafka_acknowledgement_received_from_pg';
     const PG_LEDGER_KAFKA_ACKNOWLEDGMENT_RECEIVED_FROM_LEDGER   = 'pg_ledger_kafka_acknowledgement_received_from_ledger';
+    const PG_LEDGER_KAFKA_ACKNOWLEDGMENT_PROCESSED              = 'pg_ledger_kafka_acknowledgement_processed';
     const LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR_TOTAL          = 'ledger_journal_fetch_transaction_error_total';
     const REFUND_API_TXN_KAFKA_PUSH_FAILURE                     = 'refund_api_txn_kafka_push_failure';
     const PG_LEDGER_ACK_WORKER_FAILURE                          = 'pg_ledger_ack_worker_failure';

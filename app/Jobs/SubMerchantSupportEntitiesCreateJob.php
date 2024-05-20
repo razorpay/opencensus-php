@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -80,6 +81,21 @@ class SubMerchantSupportEntitiesCreateJob extends Job
                                    [
                                        'merchant_id' => $this->merchantId
                                    ]);
+
+                if( ($partner !== null)
+                    and ($merchant->getParentId() === $partner->getId())
+                    and ($partner->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW)) )
+                {
+                    // If a parent merchant is onboarded on pg_ledger_reverse_shadow feature flag,
+                    // we need to ensure all of its linked account merchants are also onboarded on pg_ledger_reverse_shadow feature flag,
+                    // So every time a new linked account is created for a parent merchant,
+                    // enable pg_ledger_reverse_shadow feature for the sub merchant and create accounts in CLS
+                    $input = [
+                        "merchant_ids" => [$merchant->getId()],
+                    ];
+        
+                    (new Feature\Service)->onboardMerchantOnPGReverseShadow($input, true);
+                }
             }
             else
             {

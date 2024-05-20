@@ -112,7 +112,7 @@ return [
             'url' => '/adjustments',
             'method' => 'POST',
             'content' => [
-                'amount' => 500,
+                'amount' => 100,
                 'type' => 'primary',
                 'merchant_id' => '100abc000abc00',
                 'currency' => 'INR',
@@ -120,17 +120,13 @@ return [
             ]
         ],
         'response' => [
-            "error_response" => [
-                "code" => "BAD_REQUEST_ERROR",
-                "description" => "record_already_exist: BAD_REQUEST_RECORD_ALREADY_EXISTS",
-                "source" => "NA",
-                "step" => "NA",
-                "reason" => "NA",
-                "metadata" => []
+            'content' => [
+                'entity'         => 'adjustment',
+                'amount'         => 100,
+                'currency'       => 'INR',
+                'description'    =>  'add primary balance in reverse shadow',
             ],
-            "http_status_code" => 400,
-            "internal_error_code" => "BAD_REQUEST_ERROR"
-        ],
+        ]
     ],
 
     'testManualAdjustmentCreateRetryableError' => [

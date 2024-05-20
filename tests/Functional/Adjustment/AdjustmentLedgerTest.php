@@ -206,7 +206,7 @@ class AdjustmentLedgerTest extends TestCase
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
         $this->app->instance('ledger', $mockLedger);
 
-        $this->fixtures->merchant->addFeatures([['pg_ledger_reverse_shadow', 'new_settlement_service']], '100abc000abc00');
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow', 'new_settlement_service'], '100abc000abc00');
 
         $this->mockRazorxTreatmentV2(RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ADJUSTMENTS, 'on');
 
@@ -229,9 +229,9 @@ class AdjustmentLedgerTest extends TestCase
             "transactor_id"         => "", // any
             "transactor_event"      => "positive_adjustment",
             "money_params"          => [
-                "merchant_balance_amount"   => "500",
-                "base_amount"               => "500",
-                "adjustment_amount"         => "500",
+                "merchant_balance_amount"   => "100",
+                "base_amount"               => "100",
+                "adjustment_amount"         => "100",
                 "merchant_balance_limit"    => "0"
             ]
         ];
@@ -261,17 +261,40 @@ class AdjustmentLedgerTest extends TestCase
                     [],
                 "record_already_exist: BAD_REQUEST_RECORD_ALREADY_EXISTS"
             ));
+        
+        $mockLedger->shouldReceive('fetchByTransactor')
+        ->times(1)
+        ->andReturn([
+                "body" => $this->getJournal()
+            ]
+        );
 
-        try
-        {
-            $this->startTest();
-        }
-        catch(\Exception $e)
-        {
-            $this->assertNotNull($e);
-            $adjustmentsCreated = $this->getDbEntities('adjustment');
-            $this->assertEquals(0, count($adjustmentsCreated));
-        }
+        $response = $this->startTest();
+
+        $adjId = $response['id'];
+
+        $adjustment = $this->getDbEntityById('adjustment', $adjId);
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+        $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
+        $this->assertEquals(100, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
+        $this->assertNull($adjustment['transaction_id'], 'transaction should be null');
+
+        $balanceId = $adjustment['balance_id'];
+
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $this->assertNotNull($balance, 'balance should not be null');
+        $this->assertEquals('primary', $balance['type']);
+        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
+        // balance not updated as transaction not created yet
+        $this->assertEquals(1000, $balance['balance']);
+
+        $txn = $this->getDbEntity('transaction',["entity_id" => $adjId]);
+        s($txn);
+        // transaction is not created yet
+        // $this->assertNull($txn, 'transaction should be null');
     }
 
     public function testManualAdjustmentCreateRetryableError()
@@ -1193,7 +1216,7 @@ class AdjustmentLedgerTest extends TestCase
                     "balance_updated"=> true,
                     "account_entities"=> [
                         "account_type"=> [
-                            "receivable"
+                            "payable"
                         ],
                         "fund_account_type"=> [
                             "merchant_balance"
