@@ -24,7 +24,9 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT                      = 'updated_at';
     const DELETED_AT                      = 'deleted_at';
     const PRICING_PERCENT                 = 'pricing_percent';
+    const PRICING_PERCENT_SCALE_FACTOR    = 'pricing_percent_scale_factor';
     const ES_PRICING_PERCENT              = 'es_pricing_percent';
+    const ES_PRICING_PERCENT_SCALE_FACTOR = 'es_pricing_percent_scale_factor';
 
     const FULL_ACCESS                     = 'full_access';
     const AMOUNT                          = 'amount';

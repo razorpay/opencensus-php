@@ -496,7 +496,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function createOrUpdatePricingRule($merchant, $pricingPercent, $pricingFeature)
+    public function createOrUpdatePricingRule($merchant, $pricingPercent, $pricingFeature, $pricingPercentScaleFactor = null)
     {
         $pricing = $this->core()->getOndemandPricingByFeature($merchant, $pricingFeature);
 
@@ -504,7 +504,7 @@ class Service extends Base\Service
         {
             try
             {
-                $this->core()->addDefaultPricing($merchant, $pricingPercent, $pricingFeature);
+                $this->core()->addDefaultPricing($merchant, $pricingPercent, $pricingFeature, $pricingPercentScaleFactor);
             }
             catch(\Throwable $e)
             {
@@ -520,7 +520,7 @@ class Service extends Base\Service
         {
             try
             {
-                $this->core()->updateOndemandPricingPercentByFeature($merchant, $pricingPercent, $pricingFeature);
+                $this->core()->updateOndemandPricingPercentByFeature($merchant, $pricingPercent, $pricingFeature, $pricingPercentScaleFactor);
             }
             catch(\Throwable $e)
             {

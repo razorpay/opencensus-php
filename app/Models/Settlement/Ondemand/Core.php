@@ -423,7 +423,7 @@ class Core extends Base\Core
                                                                                $merchant->getSignedOrgId());
     }
 
-    public function updateOndemandPricingPercentByFeature($merchant, $percentRate, $pricingFeature)
+    public function updateOndemandPricingPercentByFeature($merchant, $percentRate, $pricingFeature, $pricingPercentScaleFactor = null)
     {
         $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant, $pricingFeature);
 
@@ -432,6 +432,8 @@ class Core extends Base\Core
             $pricingArray = $settlementOndemandPricing->toArray();
 
             $pricingArray[Pricing\Entity::PERCENT_RATE] = $percentRate;
+
+            $pricingArray[Pricing\Entity::PERCENT_RATE_SCALE_FACTOR] = $pricingPercentScaleFactor;
 
             $pricingArray['idempotency_key'] ='random';
 
@@ -546,15 +548,19 @@ class Core extends Base\Core
         return $merchantIdList;
     }
 
-    public function addDefaultPricing($merchant, $percentRate, $pricingFeature = PricingFeature::SETTLEMENT_ONDEMAND)
+    public function addDefaultPricing($merchant, $percentRate, $pricingFeature = PricingFeature::SETTLEMENT_ONDEMAND, $pricingPercentScaleFactor = null)
     {
         if ($percentRate === null)
         {
             $percentRate = $this->findPricing($merchant, $pricingFeature);
         }
+        if ($pricingPercentScaleFactor === null || $pricingPercentScaleFactor === '')
+        {
+            $pricingPercentScaleFactor = 100;
+        }
         $pricingPlanId = $merchant->getPricingPlanId();
 
-        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchant, $pricingPlanId, $percentRate, $pricingFeature)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchant, $pricingPlanId, $percentRate, $pricingPercentScaleFactor, $pricingFeature)
         {
             $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 
@@ -573,6 +579,7 @@ class Core extends Base\Core
                 Pricing\Entity::FEATURE => $pricingFeature,
                 Pricing\Entity::PAYMENT_METHOD => Payout\Method::FUND_TRANSFER,
                 Pricing\Entity::PERCENT_RATE => $percentRate,
+                Pricing\Entity::PERCENT_RATE_SCALE_FACTOR => $pricingPercentScaleFactor,
                 Pricing\Entity::AMOUNT_RANGE_ACTIVE => 0,
                 Pricing\Entity::AMOUNT_RANGE_MAX => 0,
                 Pricing\Entity::AMOUNT_RANGE_MIN => 0,

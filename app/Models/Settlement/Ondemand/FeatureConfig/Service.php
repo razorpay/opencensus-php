@@ -51,14 +51,16 @@ class Service extends Base\Service
                                else updates the present pricing rule with given pricing_percent */
 
                             (new Ondemand\Service)->createOrUpdatePricingRule($merchant, $input[Entity::PRICING_PERCENT],
-                                                                        PricingFeature::SETTLEMENT_ONDEMAND);
+                                                                        PricingFeature::SETTLEMENT_ONDEMAND,
+                                                                        $input[Entity::PRICING_PERCENT_SCALE_FACTOR]);
 
                             $input[Entity::ES_PRICING_PERCENT] = (isset($input[Entity::ES_PRICING_PERCENT]) === true) ?
                                                                  $input[Entity::ES_PRICING_PERCENT]: self::DEFAULT_ES_PRICING_PERCENT;
 
 
                             (new Ondemand\Service)->createOrUpdatePricingRule($merchant, $input[Entity::ES_PRICING_PERCENT],
-                                                                PricingFeature::ESAUTOMATIC_RESTRICTED);
+                                                                PricingFeature::ESAUTOMATIC_RESTRICTED,
+                                                                $input[Entity::ES_PRICING_PERCENT_SCALE_FACTOR]);
 
                             $flagUpdate = $this->enableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND);
 

@@ -847,13 +847,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $settlementOndemandFeatureConfigTypeRowRules = [
-        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID                 => 'required|string|size:14',
-        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT            => 'required|integer',
-        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PERCENTAGE_OF_BALANCE_LIMIT => 'required|integer',
-        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_SETTLEMENTS_COUNT_LIMIT     => 'required|integer',
-        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT             => 'required|integer',
-        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_ES_PRICING_PERCENT          => 'sometimes|integer',
-        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS                 => 'required|in:yes,no'
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID                      => 'required|string|size:14',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT                 => 'required|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PERCENTAGE_OF_BALANCE_LIMIT      => 'required|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_SETTLEMENTS_COUNT_LIMIT          => 'required|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT                  => 'required|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT_SCALE_FACTOR     => 'sometimes|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_ES_PRICING_PERCENT               => 'sometimes|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_ES_PRICING_PERCENT_SCALE_FACTOR  => 'sometimes|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS                      => 'required|in:yes,no'
     ];
 
     protected static $capitalMerchantEligibilityConfigTypeRowRules = [

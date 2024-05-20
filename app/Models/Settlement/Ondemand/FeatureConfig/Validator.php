@@ -11,21 +11,25 @@ class Validator extends Base\Validator
     const FETCH_FEATURE_CONFIG_INPUT = 'fetch_feature_config_input';
 
     protected static $settlementOndemandFeatureConfigInputRules = [
-        Entity::MERCHANT_ID                  => 'required|string|size:14',
-        Entity::PERCENTAGE_OF_BALANCE_LIMIT  => 'required|integer',
-        Entity::SETTLEMENTS_COUNT_LIMIT      => 'required|integer',
-        Entity::PRICING_PERCENT              => 'required|integer',
-        Entity::ES_PRICING_PERCENT           => 'sometimes|integer',
-        Entity::FULL_ACCESS                  => 'required|in:yes,no',
-        Entity::MAX_AMOUNT_LIMIT             => 'required|integer'
+        Entity::MERCHANT_ID                     => 'required|string|size:14',
+        Entity::PERCENTAGE_OF_BALANCE_LIMIT     => 'required|integer',
+        Entity::SETTLEMENTS_COUNT_LIMIT         => 'required|integer',
+        Entity::PRICING_PERCENT                 => 'required|integer',
+        Entity::PRICING_PERCENT_SCALE_FACTOR    => 'sometimes|integer',
+        Entity::ES_PRICING_PERCENT              => 'sometimes|integer',
+        Entity::ES_PRICING_PERCENT_SCALE_FACTOR => 'sometimes|integer',
+        Entity::FULL_ACCESS                     => 'required|in:yes,no',
+        Entity::MAX_AMOUNT_LIMIT                => 'required|integer'
     ];
 
     protected static $createRules = [
-        Entity::MERCHANT_ID                  => 'required|string|size:14',
-        Entity::PERCENTAGE_OF_BALANCE_LIMIT  => 'required|integer',
-        Entity::SETTLEMENTS_COUNT_LIMIT      => 'required|integer',
-        Entity::MAX_AMOUNT_LIMIT             => 'required|integer',
-        Entity::PRICING_PERCENT              => 'required|integer',
-        Entity::ES_PRICING_PERCENT           => 'sometimes|integer'
+        Entity::MERCHANT_ID                     => 'required|string|size:14',
+        Entity::PERCENTAGE_OF_BALANCE_LIMIT     => 'required|integer',
+        Entity::SETTLEMENTS_COUNT_LIMIT         => 'required|integer',
+        Entity::MAX_AMOUNT_LIMIT                => 'required|integer',
+        Entity::PRICING_PERCENT                 => 'required|integer',
+        Entity::PRICING_PERCENT_SCALE_FACTOR    => 'sometimes|integer',
+        Entity::ES_PRICING_PERCENT              => 'sometimes|integer',
+        Entity::ES_PRICING_PERCENT_SCALE_FACTOR => 'sometimes|integer'
     ];
 }
