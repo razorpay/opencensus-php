@@ -1369,13 +1369,13 @@ class Service extends Base\Service
 
         // slack details to send
         $link = "https://admin-dashboard.razorpay.com/admin/entity/ufh.files/". $this->app['rzp.mode']. "/" . $response[GatewayConstants::ID];
-        $team = "<!subteam^S039KPJ0LTS> <!subteam^S06G1542BME> <!subteam^S01AKDC3XJ4> <!subteam^S06SF33P0KX> "; // @cross-border-oncall, @cross-border-product, @finops_settlements, @cross-border-import-business in order
+        $team = "<!subteam^S06G1542BME> <!subteam^S01AKDC3XJ4> <!subteam^S06SF33P0KX> "; // @cross-border-product, @finops_settlements, @cross-border-import-business in order
         $text = $team . " JPMC Reverse File Received: ". "<$link>";
         $data = [
             'ufh_file_id'   => $response[GatewayConstants::ID],
             'file_name'     => $fileName,
         ];
-        $channel = $this->app->config->get('slack.channels.cross_border_alerts');
+        $channel = $this->app->config->get('slack.channels.tech-cross-border-alerts');
         $color = 'good';
 
         $this->slackPost($text, $data, $channel, '', $color);

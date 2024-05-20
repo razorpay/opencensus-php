@@ -217,6 +217,8 @@ return array(
 
         'cross_border_alerts' => 'C033XHUNAUW',
 
+        'tech-cross-border-alerts' => 'C02C6G824TW',
+
         'x-acquisition-alerts'  => 'C03JZRN078C',
     ],
 
