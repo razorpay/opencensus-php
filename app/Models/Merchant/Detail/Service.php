@@ -219,11 +219,17 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
         $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $this->merchant->getCountry());
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.get_merchant_activation_response_from_pgos'),
-        ];
-        $isPGOSExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+        $isPGOSExpEnabled     = false;
+        $isActivated          = $this->merchant->isActivated();
+
+        if ($shouldMerchantOnboardViaPGOS === true and $isActivated === false)
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.get_merchant_activation_response_from_pgos'),
+            ];
+            $isPGOSExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+        }
 
         $response = [];
 
