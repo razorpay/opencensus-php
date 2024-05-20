@@ -5160,6 +5160,61 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($expectedHeaders, $actualHeaders);
     }
 
+    public function testSwitchDashboardAccessForFetchSubmerchantsOfPurePlatformPartner()
+    {
+        $partner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
+        $partnerUser = $partner->primaryOwner() ?? $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_1,
+            'type'        => null,
+            'name'        => 'App 1',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type' => 'pure_platform'
+        ]);
+
+        $subMerchantWithDashboardAccess = $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'name' => 'random_name_1',
+            'email' => 'subm1@xyz.com'
+        ]);
+
+        $this->fixtures->user->createUserForMerchant($subMerchantWithDashboardAccess->getId(), ['email' => 'subm1@xyz.com']);
+
+        $this->addUserToMerchant($partnerUser, $subMerchantWithDashboardAccess->getId(), 'partner');
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), $subMerchantWithDashboardAccess->getId(), self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $subMerchantWithoutDashboardAccess = $this->fixtures->merchant->create([
+            'id' => self::DEFAULT_SUBMERCHANT_ID_2,
+            'name' => 'random_name_2',
+            'email' => 'subm2@xyz.com'
+       ]);
+
+        $this->fixtures->user->createUserForMerchant($subMerchantWithoutDashboardAccess->getId(), ['email' => 'subm2@xyz.com']);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), $subMerchantWithoutDashboardAccess->getId(), self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $expectedContent = $testData['response']['content']['items'];
+        $testData['response']['content']['items'] = [];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        usort($response['items'], function ($a, $b)
+        {
+            return strcmp($a['id'], $b['id']);
+        });
+
+        $this->assertArraySelectiveEquals($expectedContent, $response['items']);
+    }
+
     private function createPurePlatformPartnerWithDefaultConfig()
     {
         $liveMode = $this->app['basicauth']->getLiveConnection();

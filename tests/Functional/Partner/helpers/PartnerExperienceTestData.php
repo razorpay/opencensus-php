@@ -2549,4 +2549,56 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testSwitchDashboardAccessForFetchSubmerchantsOfPurePlatformPartner' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'name'             => 'random_name_1',
+                        'email'            => 'subm1@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'user'              => [
+                            'email'             => 'subm1@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => true,
+                        'application' => [
+                            'id' => '8ckeirnw84ifke',
+                        ],
+                        'kyc_access'        => null,
+                    ],
+                    [
+                        'id'               => 'acc_10000000000010',
+                        'name'             => 'random_name_2',
+                        'email'            => 'subm2@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'user'              => [
+                            'email'             => 'subm2@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => false,
+                        'application' => [
+                            'id' => '8ckeirnw84ifke',
+                        ],
+                        'kyc_access'        => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

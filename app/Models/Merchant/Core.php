@@ -5732,15 +5732,14 @@ class Core extends Base\Core
     ): PublicCollection
     {
         $accessRequests = null;
+        $dashboardAccesses = null;
         if ($partner->isResellerPartner())
         {
             $accessRequests = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityIds(
                 $partner->getId(), $submerchants->getIds()
             )->groupBy(\RZP\Models\Partner\KycAccessState\Entity::ENTITY_ID);
         }
-
-        $dashboardAccesses = null;
-        if ($partner->isAggregatorPartner() || $partner->isFullyManagedPartner())
+        else
         {
             $dashboardAccesses = $this->fetchSubmerchantDashboardAccesses($submerchants->getIds());
         }
