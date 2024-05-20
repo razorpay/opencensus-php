@@ -1003,6 +1003,8 @@ final class RazorxTreatment
      */
     const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ADJUSTMENTS = 'early_dispatch_of_txns_for_settlements_using_journal_adjustments';
 
+    const SHOW_BALANCE_FROM_CLS                                            = 'show_balance_from_cls';
+
     /**
      * Experiment to dispatch transactions to settlements service using ledger journals in ledger reverse
      * shadow mode for ODS transactions

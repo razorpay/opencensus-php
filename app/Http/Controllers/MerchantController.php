@@ -9,9 +9,11 @@ use Illuminate\Http\Response as HttpResponse;
 use Request;
 use ApiResponse;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Mode;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Constants\Entity;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Settlement;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
@@ -37,6 +39,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\AccessMap;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\InheritanceMap;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Services\SumoLogic\Service as SumoLogicService;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\Merchant\OneClickCheckout\Config\Service as OneClickCheckoutConfigService;
@@ -773,19 +776,46 @@ class MerchantController extends Controller
 
     public function getAccountBalance()
     {
-
         $data = $this->service()->fetchBalance();
 
         $merchant = $this->app['basicauth']->getMerchant();
 
-        if(($merchant !== null && $merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true))
+        $showBalanceExp = 'off';
+
+        if($merchant !== null && $merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true)
         {
+            $showBalanceExp = App::getFacadeRoot()->razorx->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::SHOW_BALANCE_FROM_CLS,
+                Mode::LIVE
+            );
 
-            $reverseShadowCapital = new ReverseShadowCapitalCore();
+            if ($showBalanceExp === 'on')
+            {
+                $ledgerService = $this->app['ledger'];
 
-            $data[Balance\Entity::BALANCE] = $reverseShadowCapital->fetchMerchantBalanceOnly($merchant);
+                $ledgerOutboxCore = new LedgerOutboxCore();
+
+                $accountBalanceMap = $ledgerOutboxCore->getMerchantAccountBalances($ledgerService, $merchant->getId());
+
+                if (isset($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]) === true)
+                {
+                    $data[Balance\Entity::BALANCE] = $accountBalanceMap[LedgerConstants::MERCHANT_BALANCE];
+                }
+                if (isset($accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS]) === true)
+                {
+                    $data[Balance\Entity::AMOUNT_CREDITS] = $accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS];
+                }
+                if (isset($accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS]) === true)
+                {
+                    $data[Balance\Entity::FEE_CREDITS] = $accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS];
+                }
+                if (isset($accountBalanceMap[LedgerConstants::MERCHANT_REFUND_CREDITS]) === true)
+                {
+                    $data[Balance\Entity::REFUND_CREDITS] = $accountBalanceMap[LedgerConstants::MERCHANT_REFUND_CREDITS];
+                }
+            }
         }
-
 
         if ((new Settlement\Service)->includeDsSettlementTransactions() === true)
         {
@@ -799,7 +829,8 @@ class MerchantController extends Controller
             isset($data[Balance\Entity::AMOUNT_CREDITS]) === true &&
             $data[Balance\Entity::TYPE] === Balance\Type::PRIMARY &&
             $merchant !== null &&
-            $merchant->isFeatureEnabled(Feature::OLD_CREDITS_FLOW) === false)
+            $merchant->isFeatureEnabled(Feature::OLD_CREDITS_FLOW) === false and
+            ($merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === false or $showBalanceExp !== 'on'))
         {
             $data[Balance\Entity::AMOUNT_CREDITS] = $repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::AMOUNT);
         }

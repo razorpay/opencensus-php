@@ -115,7 +115,7 @@ trait ReverseShadowTrait
         return sprintf("%s-%s", $transactorId, $transactorEvent);
     }
 
-    protected function getMerchantAccountBalances($ledgerService, $merchantId): array
+    public function getMerchantAccountBalances($ledgerService, $merchantId): array
     {
         $accountPayload = $this->getAccountBalancePayload($merchantId);
 
@@ -156,6 +156,10 @@ trait ReverseShadowTrait
 
                 case Constants::MERCHANT_BALANCE:
                     $accountBalances[Constants::MERCHANT_BALANCE] = $account[Constants::BALANCE];
+                    break;
+                    
+                case Constants::MERCHANT_REFUND_CREDITS:
+                    $accountBalances[Constants::MERCHANT_REFUND_CREDITS] = $account[Constants::BALANCE];
                     break;
             }
         }
@@ -258,6 +262,11 @@ trait ReverseShadowTrait
                 [
                     Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
                     Constants::FUND_ACCOUNT_TYPE => [Constants::REWARD]
+                ],
+                // PG Merchant Refund Credit Account
+                [
+                    Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
+                    Constants::FUND_ACCOUNT_TYPE => [Constants::MERCHANT_REFUND_CREDITS]
                 ],
             ],
         ];
