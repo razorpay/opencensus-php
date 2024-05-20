@@ -2650,7 +2650,6 @@ class GatewayController extends Controller
                     {
                         $tokenData[TokenEntity::STATUS]           = TokenConstants::ACTIVE;
                         $tokenData[TokenEntity::RECURRING_STATUS] = RecurringStatus::CONFIRMED;
-                        $tokenData[TokenEntity::CONFIRMED_AT]     = Carbon::now()->getTimestamp();
                         // default expiry of tng token is 15 years
                         $tokenData[TokenEntity::EXPIRED_AT]       = Carbon::now()->addYears(15)->timestamp;
                     }
@@ -2658,7 +2657,6 @@ class GatewayController extends Controller
                     {
                         $tokenData[TokenEntity::STATUS]           = TokenConstants::DEACTIVATED;
                         $tokenData[TokenEntity::RECURRING_STATUS] = RecurringStatus::CANCELLED;
-                        $tokenData[TokenEntity::EXPIRED_AT]       = Carbon::now()->getTimestamp();
                     }
 
                     $token = (new Payment\Processor\Processor($merchant))->updateToken($payment, $tokenData);

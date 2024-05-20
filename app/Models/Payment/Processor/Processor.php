@@ -10464,7 +10464,7 @@ class Processor
         return $token;
     }
 
-    public function updateToken(Payment\Entity $payment, array $data): Customer\Token\Entity
+    public function updateToken(Payment\Entity $payment, array $data): Token\Entity
     {
         $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
 
@@ -10473,6 +10473,13 @@ class Processor
         if ($token->getTerminalId() === null)
         {
             $token->terminal()->associate($payment->terminal);
+        }
+
+        if (empty($data[Token\Entity::RECURRING_STATUS]) === false)
+        {
+            $recurringStatus = $data[Token\Entity::RECURRING_STATUS];
+
+            $token->setRecurringStatus($recurringStatus);
         }
 
         $token->saveOrFail();
