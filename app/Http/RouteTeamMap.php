@@ -19,6 +19,8 @@ class RouteTeamMap
     const TEAM_CMMA                     = 'cmma';
     const TEAM_DEFAULT                  = self::TEAM_PAYMENTS_DASHBOARD;
 
+    const TEAM_PAYMENTS_CORE            = 'payments_core';
+
     /**
      * Team Slack Handle mapping
      */
@@ -29,6 +31,7 @@ class RouteTeamMap
         self::TEAM_PAYMENTS_CARE            => '<!subteam^S03SHBX9MNU>',
         self::TEAM_PAYMENTS_SETTLEMENTS     => '<!subteam^S018FSZK2TC>',
         self::TEAM_CMMA                     => '<!subteam^S03BJ8BP0BH>',
+        self::TEAM_PAYMENTS_CORE            => '<!subteam^SP8Q9CNF9>'
     ];
 
     protected static $routeTeamMap = [
@@ -549,7 +552,7 @@ class RouteTeamMap
         'setl_trigger_es_multiple'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_set_dcs_object'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
         //downtime manager route
-        'downtime_auto_resolve_cron'                      =>[self::TEAM_PAYMENTS_DOWNTIME],
+        'downtime_auto_resolve_cron'                      => [self::TEAM_PAYMENTS_DOWNTIME],
         'dispute_ingestion'                               => [self::TEAM_CMMA],
         'dispute_bulk_create_internal'                    => [self::TEAM_CMMA],
         'dispute_dcs_config_add'                          => [self::TEAM_CMMA],
@@ -557,6 +560,7 @@ class RouteTeamMap
         'dispute_dcs_config_update'                       => [self::TEAM_CMMA],
         'merchant_fetch_payment_failure_analysis'         => [self::TEAM_PAYMENTS_DASHBOARD],
         'pos_fetch_latest_order'                          => [self::TEAM_PAYMENTS_GROWTH],
+        'balance_fetch'                                   => [self::TEAM_PAYMENTS_CORE],
     ];
 
     /**
