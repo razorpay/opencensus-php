@@ -120,7 +120,7 @@ const SubMerchantKycStatusLabel = ({
     if (activation_status === 'activated_mcc_pending') {
       return 'Activated';
     }
-    if ([null, '', NA_ACTIVATION_STATUS].includes(activation_status)) {
+    if ([undefined, null, '', NA_ACTIVATION_STATUS].includes(activation_status)) {
       return 'Pending Completion';
     }
 
@@ -129,7 +129,7 @@ const SubMerchantKycStatusLabel = ({
 
   return (
     <Box
-      minWidth="150px"
+      minWidth="160px"
       className={`submerchant-kyc-status ${description ? '' : 'no-description'}`}
     >
       <ConditionalTooltip
