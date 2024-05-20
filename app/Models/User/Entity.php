@@ -331,12 +331,16 @@ class Entity extends Base\PublicEntity
     {
         $merchantsWithPivot = [];
         foreach ($merchants as $merchant) {
-            $merchant['pivot'] = [];
+            $mergedMerchant = $merchant->getAttributes();
+            $mergedMerchant['pivot'] = [];
 
             foreach ($merchantUsers as $merchantUser) {
                 if ($merchantUser['merchant_id'] === $merchant['id']) {
-                    $merchant['pivot'] = (object) $merchantUser;
-                    $merchantsWithPivot[] = $merchant;
+                    $mergedMerchant['pivot'] = (object) $merchantUser;
+                    $mE = new Merchant\Entity();
+                    $mE->exists = true;
+                    $mE->setRawAttributes($mergedMerchant, true);
+                    $merchantsWithPivot[] = $mE;
                 }
             }
         }
