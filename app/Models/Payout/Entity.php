@@ -1862,7 +1862,7 @@ class Entity extends Base\PublicEntity
             }
             else
             {
-                (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($this, true);
+                (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($this);
             }
         }
 
