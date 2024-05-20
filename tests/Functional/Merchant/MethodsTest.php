@@ -1998,4 +1998,127 @@ class MethodsTest extends TestCase
         $this->assertTrue($merchantMethods->isSodexoEnabled());
 
     }
+
+    public function testEnableCcOnUpi()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'convertContentToString' => false,
+            'content' => [
+                'cc_on_upi' => 1,
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue($merchantMethods->isCcOnUpiEnabled());
+        $this->assertFalse($merchantMethods->isWalletOnUpiEnabled());
+        $this->assertFalse($merchantMethods->isCreditlineOnUpiEnabled());
+    }
+
+    public function testEnableWalletOnUpi()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'convertContentToString' => false,
+            'content' => [
+                'wallet_on_upi' => 1,
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isCcOnUpiEnabled());
+        $this->assertTrue($merchantMethods->isWalletOnUpiEnabled());
+        $this->assertFalse($merchantMethods->isCreditlineOnUpiEnabled());
+    }
+
+    public function testEnableCreditlineOnUpi()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'convertContentToString' => false,
+            'content' => [
+                'creditline_on_upi' => 1,
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->asserFalse($merchantMethods->isCcOnUpiEnabled());
+        $this->assertFalse($merchantMethods->isWalletOnUpiEnabled());
+        $this->assertTrue($merchantMethods->isCreditlineOnUpiEnabled());
+    }
+
+    public function testEnableMultipleUPIAddons()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'convertContentToString' => false,
+            'content' => [
+                'cc_on_upi' => 1,
+                'creditline_on_upi' => 1,
+                'wallet_on_upi' => 1,
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue($merchantMethods->isCcOnUpiEnabled());
+        $this->assertTrue($merchantMethods->isWalletOnUpiEnabled());
+        $this->assertTrue($merchantMethods->isCreditlineOnUpiEnabled());
+    }
+
 }

@@ -81,6 +81,10 @@ class Entity extends Base\PublicEntity
     const IN_APP             = 'in_app';
     const IN_APP_CREDIT_CARD = 'in_app_credit_card';
 
+    const CC_ON_UPI         = 'cc_on_upi';
+    const WALLET_ON_UPI     = 'wallet_on_upi';
+    const CREDITLINE_ON_UPI = 'creditline_on_upi';
+
     const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
     const CREDIT_EMI_PROVIDERS  = 'credit_emi_providers';
     const CARDLESS_EMI_PROVIDERS = 'cardless_emi_providers';
@@ -210,6 +214,9 @@ class Entity extends Base\PublicEntity
         self::FPX,
         self::IN_APP,
         self::IN_APP_CREDIT_CARD,
+        self::CC_ON_UPI,
+        self::WALLET_ON_UPI,
+        self::CREDITLINE_ON_UPI,
         self::BAJAJPAY,
         self::BOOST,
         self::MCASH,
@@ -271,6 +278,9 @@ class Entity extends Base\PublicEntity
         self::FPX,
         self::IN_APP,
         self::IN_APP_CREDIT_CARD,
+        self::CC_ON_UPI,
+        self::WALLET_ON_UPI,
+        self::CREDITLINE_ON_UPI,
         self::BAJAJPAY,
         self::BOOST,
         self::MCASH,
@@ -288,6 +298,9 @@ class Entity extends Base\PublicEntity
         self::CITIBANKREWARDS,
         self::IN_APP,
         self::IN_APP_CREDIT_CARD,
+        self::CC_ON_UPI,
+        self::WALLET_ON_UPI,
+        self::CREDITLINE_ON_UPI,
         self::CREDIT_EMI_PROVIDERS ,
         self::CARDLESS_EMI_PROVIDERS ,
         self::PAYLATER_PROVIDERS ,
@@ -448,6 +461,9 @@ class Entity extends Base\PublicEntity
         self::UPI => [
             self::IN_APP,
             self::IN_APP_CREDIT_CARD,
+            self::CC_ON_UPI,
+            self::WALLET_ON_UPI,
+            self::CREDITLINE_ON_UPI,
         ],
         self::INTL_BANK_TRANSFER => [
             IntlBankTransfer::ACH,
@@ -958,6 +974,20 @@ class Entity extends Base\PublicEntity
         return !empty($addonMethods[self::CARD][self::SODEXO]);
     }
 
+    public function isCcOnUpiEnabled(): bool
+    {
+        return (($this->getPaymentAddOnMethod(self::UPI, self::CC_ON_UPI)) === 1);
+    }
+
+    public function isWalletOnUpiEnabled(): bool
+    {
+        return $this->getPaymentAddOnMethod(self::UPI, self::WALLET_ON_UPI) === 1;
+    }
+
+    public function isCreditlineOnUpiEnabled(): bool
+    {
+        return $this->getPaymentAddOnMethod(self::UPI, self::CREDITLINE_ON_UPI) === 1;
+    }
 
     public function isMethodEnabled($method)
     {
@@ -1306,6 +1336,33 @@ class Entity extends Base\PublicEntity
     public function getSodexoAttribute()
     {
         return $this->getSodexo();
+    }
+
+    public function getCcOnUpiAttribute()
+    {
+        return $this->getPaymentAddOnMethod(self::UPI, self::CC_ON_UPI);
+    }
+
+    public function getWalletOnUpiAttribute()
+    {
+        return $this->getPaymentAddOnMethod(self::UPI, self::WALLET_ON_UPI);
+    }
+
+    public function getCreditlineOnUpiAttribute()
+    {
+        return $this->getPaymentAddOnMethod(self::UPI, self::CREDITLINE_ON_UPI);
+    }
+
+    public function getPaymentAddOnMethod(string $method, string $submethod)
+    {
+        $addonMethods = $this->getAttribute(self::ADDON_METHODS);
+
+        if(isset($addonMethods[$method]) and isset($addonMethods[$method][$submethod]))
+        {
+            return $addonMethods[$method][$submethod];
+        }
+
+        return 0;
     }
 
     // ----------------------- Getters End -----------------------------------------
