@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature\Constants as Features;
 
 class Generator extends Base\Core
 {
@@ -43,7 +44,15 @@ class Generator extends Base\Core
     protected function getOfflineChallanInput(
         Base\PublicEntity $entity): array
     {
-        $challanNumber = $this->generateChallanNumber();
+
+        if($this->merchant->isFeatureEnabled(Features::OTC_MERCHANT_CHALLAN) === true)
+        {
+            $challanNumber = $entity['notes'][Entity::CHALLAN_NUMBER];
+        }
+        else
+        {
+            $challanNumber = $this->generateChallanNumber();
+        }
 
         $offlineInput[Entity::CHALLAN_NUMBER] = $challanNumber;
 

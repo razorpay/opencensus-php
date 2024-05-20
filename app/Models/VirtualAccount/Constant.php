@@ -16,7 +16,7 @@ class Constant
     const HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_MINUTES = 5 * 24 * 60;
 
     const VA_EXPIRY_OFFSET = 'va_expiry_offset';
-
+    const VA_EXPIRY_OFFSET_MERCHANT_CHALLAN = 'va_expiry_offset_merchant_challan';
     const FETCH_LIMIT = 100;
     const PAGE_COUNT  = 1000;
 
@@ -27,7 +27,7 @@ class Constant
 
     const IDEMPOTENCY_KEY             = 'idempotency_key';
     const VIRTUAL_ACCOUNT_ID          = 'virtual_account_id';
-
+    const CHALLAN_NUMBER              = 'challan_number';
     const BATCH_ERROR                 = 'error';
     const BATCH_ERROR_CODE            = 'code';
     const BATCH_ERROR_DESCRIPTION     = 'description';

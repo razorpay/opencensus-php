@@ -52,7 +52,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY           = 'currency';
     const GATEWAY            = 'gateway';
 
-    const CHALLAN_LENGTH = 16;
+    const CHALLAN_LENGTH = 40;
 
     // Indicates whether the bank transfer corresponds
     // to an active virtual account on our side. If

@@ -1205,7 +1205,8 @@ class ErrorCode
 
     //OTC Errors
     const BAD_REQUEST_ALREADY_PROCESSED                                         = 'BAD_REQUEST_ALREADY_PROCESSED';
-    const BAD_REQUEST_CHALLAN_NOT_FOUND                                     = 'BAD_REQUEST_CHALLAN_NOT_FOUND';
+    const BAD_REQUEST_CHALLAN_NOT_FOUND                                         = 'BAD_REQUEST_CHALLAN_NOT_FOUND';
+    const BAD_REQUEST_CHALLAN_NOT_FOUND_IN_NOTES                                = 'BAD_REQUEST_CHALLAN_NOT_FOUND_IN_NOTES';
     const BAD_REQUEST_CHALLAN_EXPIRED                                           = 'BAD_REQUEST_CHALLAN_EXPIRED';
     const BAD_REQUEST_CLIENT_CODE_NOT_FOUND                                     = 'BAD_REQUEST_CLIENT_CODE_NOT_FOUND';
     const BAD_REQUEST_IDENTIFICATION_ID_NOT_FOUND                               = 'BAD_REQUEST_IDENTIFICATION_ID_NOT_FOUND';

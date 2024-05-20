@@ -97,7 +97,8 @@ class Validator extends Base\Validator
     ];
 
     public static $defaultVAExpiryRules = [
-        Constant::VA_EXPIRY_OFFSET => 'required|integer',
+        Constant::VA_EXPIRY_OFFSET => 'sometimes|integer',
+        Constant::VA_EXPIRY_OFFSET_MERCHANT_CHALLAN => 'sometimes|integer',
         Entity::MERCHANT_ID => 'sometimes|string'
     ];
 
@@ -129,14 +130,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $offlineChallanGenericRules = [
-        'challan_number'                =>  'required|string|size:16',
+        'challan_number'                =>  'required|string|between:5,40',
         'client_code'                   =>  'required|string',
         'identification_id'             =>  'required|string',
         'amount'                        =>  'sometimes|required|integer'
     ];
 
     public static $offlineChallanHdfcRules = [
-        'challan_no'                    =>  'required|string|size:16',
+        'challan_no'                    =>  'required|string|between:5,40',
         'client_code'                   =>  'required|string',
         'identification_id'             =>  'required|string',
         'expected_amount'               =>  'sometimes|required|integer'
@@ -369,6 +370,12 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestValidationFailureException("End date cannot be less than $expiryDelta days away from current day");
             }
+        }
+    }
+    public function validateVAExpiryOffset(array $input){
+        if(isset($input[Constant::VA_EXPIRY_OFFSET]) === false and isset($input[Constant::VA_EXPIRY_OFFSET_MERCHANT_CHALLAN]) === false)
+        {
+            throw new BadRequestValidationFailureException('Please pass either va_expiry_offset or va_expiry_offset_merchant_challan');
         }
     }
 }

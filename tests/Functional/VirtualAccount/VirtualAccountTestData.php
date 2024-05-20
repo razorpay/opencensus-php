@@ -240,10 +240,29 @@ return [
         ],
     ],
 
+    'testVirtualAccountMerchantChallanExpirySetting' => [
+        'request'  => [
+            'url'     => '/virtual_accounts/setting/expiry',
+            'method'  => 'post',
+            'content' => [
+                'va_expiry_offset_merchant_challan'  => 24,
+                'merchant_id' => 10000000000000
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
     'testVirtualAccountExpirySettingFetch' => [
         'request'  => [
             'url'     => '/virtual_accounts/setting/expiry',
-            'method'  => 'get'
+            'method'  => 'get',
+             'content' => [
+                'merchant_id' => 10000000000000
+            ]
         ],
         'response' => [
             'content' => [
@@ -308,6 +327,45 @@ return [
         ],
     ],
 
+    'testVirtualAccountMerchantChallanExpirySettingForAdminDashboard' => [
+        'request'  => [
+            'url'     => '/admins/virtual_accounts/setting/expiry',
+            'method'  => 'post',
+            'content' => [
+                'va_expiry_offset_merchant_challan'  => 24,
+                'merchant_id' => 10000000000000
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testVirtualAccountMerchantChallanExpirySettingForAdminDashboardNegative' => [
+        'request'  => [
+            'url'     => '/admins/virtual_accounts/setting/expiry',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id' => 10000000000000
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Please pass either va_expiry_offset or va_expiry_offset_merchant_challan',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testVirtualAccountExpirySettingFetchForAdminDashboard' => [
         'request'  => [
             'url'     => '/admins/virtual_accounts/setting/expiry',
@@ -319,6 +377,21 @@ return [
         'response' => [
             'content' => [
                 "expiry" => 12
+            ],
+        ],
+    ],
+
+    'testVirtualAccountMerchantChallanExpirySettingFetchForAdminDashboard' => [
+        'request'  => [
+            'url'     => '/admins/virtual_accounts/setting/expiry',
+            'method'  => 'get',
+            'content' => [
+                'merchant_id' => 10000000000000
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "va_expiry_offset_merchant_challan" => 16
             ],
         ],
     ],
@@ -1812,6 +1885,149 @@ return [
             'convertContentToString'    => false,
             'url'                       => '/validate/ecollect/offline',
             'method'                    => 'POST'
+        ],
+    ],
+
+    'testValidateOfflineChallanForWrongMinLength' => [
+        'request' => [
+            'convertContentToString'    => false,
+            'url'                       => '/validate/ecollect/offline',
+            'method'                    => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                    'description' => 'The challan number must be between 5 and 40 characters',
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testValidateOfflineChallanForWrongMaxLength' => [
+        'request' => [
+            'convertContentToString'    => false,
+            'url'                       => '/validate/ecollect/offline',
+            'method'                    => 'POST'
+        ],
+
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                    'description' => 'The challan number must be between 5 and 40 characters',
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
+        ],
+
+    ],
+
+    'testValidateOfflineChallanWithInvalidVirtualAccount' => [
+        'request' => [
+            'convertContentToString'    => false,
+            'url'                       => '/validate/ecollect/offline',
+            'method'                    => 'POST'
+        ],
+
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
+        ],
+
+    ],
+
+    'testValidateOfflineChallanPresentInNotesWithExpirySettingNegative' => [
+        'request' => [
+            'convertContentToString'    => false,
+            'url'                       => '/validate/ecollect/offline',
+            'method'                    => 'POST',
+            'content' =>[
+                'challan_no'                => 'aiynu34mmdkd9989rpwbhg61hg612q89rpw89rpw',
+                'client_code'               => '12345678',
+                'identification_id'         => '12345'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'challan_no' => 'aiynu34mmdkd9989rpwbhg61hg612q89rpw89rpw',
+                'expected_amount' =>  1000,
+                'identification_id' => '12345',
+                'currency' =>  'INR',
+                'partial_payment' =>  false,
+                'status' =>  '1',
+                'error' => [
+                    'code'        => 'BAD_REQ_ER',
+                    'description' => 'Challan was expired on receipt of API push from the bank',
+                    'reason' =>  'CHALLAN_EXPIRED'
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateOfflineChallanPresentInNotesWithExpirySetting' => [
+        'request' => [
+            'convertContentToString'    => false,
+            'url'                       => '/validate/ecollect/offline',
+            'method'                    => 'POST',
+            'content' =>[
+                'challan_no'                => 'aiynu34mmdkd9989rpwbhg61hg612q89rpw89rpw',
+                'client_code'               => '12345678',
+                'identification_id'         => '12345'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'challan_no' => 'aiynu34mmdkd9989rpwbhg61hg612q89rpw89rpw',
+                'expected_amount' => 1000,
+                'currency' => 'INR',
+                'partial_payment' => false,
+                'status' => '0',
+                'error' => null,
+                'identification_id' => '12345'
+            ],
+        ],
+    ],
+
+    'testValidateOfflineChallanPresentInNotes' => [
+        'request' => [
+            'convertContentToString'    => false,
+            'url'                       => '/validate/ecollect/offline',
+            'method'                    => 'POST',
+            'content' =>[
+                'challan_no'                => 'aiynuvrpwbhg6161uvrpwbrpwbhg612quvrpwbhg',
+                'client_code'               => '12345678',
+                'identification_id'         => '12345'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'challan_no' => 'aiynuvrpwbhg6161uvrpwbrpwbhg612quvrpwbhg',
+                'expected_amount' => 1000,
+                'currency' => 'INR',
+                'partial_payment' => false,
+                'status' => '0',
+                'error' => null,
+                'identification_id' => '12345'
+            ],
         ],
     ],
 

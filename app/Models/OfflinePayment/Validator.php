@@ -33,7 +33,7 @@ class Validator extends Base\Validator
     ];
 
     public static $OfflinePaymentRules = [
-        'challan_no'                        => 'required|alpha_num|size:16',
+        'challan_no'                        => 'required|alpha_num|between:5,40',
         'amount'                            => 'required|int',
         'mode'                              => 'required|string',
         'status'                            => 'required|string',

@@ -7233,3 +7233,7 @@ CREATE TABLE notifications (
   INDEX idx_created_at (created_at),
   INDEX idx_updated_at (updated_at)
 );
+
+ALTER TABLE offline_challans MODIFY COLUMN challan_number VARCHAR(40) ;
+
+ALTER TABLE offline_payments MODIFY COLUMN challan_number VARCHAR(40) ;

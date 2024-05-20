@@ -11,7 +11,6 @@ use RZP\Base\RuntimeManager;
 use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\VirtualAccountsAutoCloseInactive;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
@@ -40,6 +39,7 @@ use RZP\Models\VirtualAccountProducts;
 use RZP\Models\VirtualAccount\Constant as VAConstants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Offline\Device as OfflineDevice;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\OfflineChallan\Repository as OfflineChallanRepo;
 
 class Service extends Base\Service
@@ -115,9 +115,10 @@ class Service extends Base\Service
         //check if receiver is offline_challan
         $isOfflineChallan = (new Receiver($this->entity))->checkReceiverIsOfflineChallan($input);
 
+        $orderNotes = [];
+
         if ($isOfflineChallan and ($this->mode === Mode::LIVE))
         {
-
             $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST,
                 [
                     '$isoffline'   => $isOfflineChallan,
@@ -130,7 +131,18 @@ class Service extends Base\Service
             $order = $this->repo
                 ->order
                 ->findByPublicIdAndMerchant($orderId, $this->merchant);
-      }
+        }
+
+        if($this->merchant->isFeatureEnabled(FeatureConstants::OTC_MERCHANT_CHALLAN) === true)
+        {
+            $orderNotes = $order->getNotes()->toArray();
+
+            if(empty($orderNotes[VAConstants::CHALLAN_NUMBER]) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CHALLAN_NOT_FOUND_IN_NOTES);
+            }
+        }
 
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST,
             [
@@ -152,7 +164,7 @@ class Service extends Base\Service
 
         $response = $this->mutex->acquireAndRelease(
             $orderId,
-            function() use ($order, $input)
+            function() use ($order, $input, $orderNotes)
             {
                 $virtualAccount = $this->repo
                                        ->virtual_account
@@ -175,7 +187,7 @@ class Service extends Base\Service
                 $createArray = [
                     Entity::ORDER_ID        => $order->getPublicId(),
                     Entity::AMOUNT_EXPECTED => $order->getAmountDue(),
-                    Entity::NOTES           => $input[Entity::NOTES] ?? [],
+                    Entity::NOTES           => $this->getNotesForMerchantOfflineChallan($input, $orderNotes),
                 ];
 
                 if ((isset($input[Entity::RECEIVERS]) === true) and
@@ -1423,6 +1435,8 @@ class Service extends Base\Service
 
         (new Validator())->validateInput('defaultVAExpiry', $input);
 
+        (new Validator())->validateVAExpiryOffset($input);
+
         try
         {
             (new Settings\Service())->upsert(Module::VIRTUAL_ACCOUNT, $input, $merchant);
@@ -1493,7 +1507,6 @@ class Service extends Base\Service
 
             $response = (new Settings\Service())->get(Module::VIRTUAL_ACCOUNT,
                                                       Constant::VA_EXPIRY_OFFSET, $merchant);
-
         }
         catch (\Exception $ex)
         {
@@ -1505,13 +1518,44 @@ class Service extends Base\Service
                     'merchant_id' => $merchant->getPublicId(),
                 ]
             );
-
             return -1;
         }
 
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_GET_RESPONSE,
                            [
                                'merchant_id' => $merchant->getPublicId(),
+                               'response'    => $response
+                           ]);
+
+        return is_string($response['settings']) ? (int) $response['settings'] : -1;
+    }
+
+    public function getMerchantChallanExpiry($merchantId)
+    {
+        try
+        {
+            $merchant = $this->repo->merchant->find($merchantId);
+
+            $response = (new Settings\Service())->get(Module::VIRTUAL_ACCOUNT,
+                                                        Constant::VA_EXPIRY_OFFSET_MERCHANT_CHALLAN, $merchant);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_FETCH_FAILED,
+                [
+                    'merchant_id' => $merchantId,
+                ]
+            );
+
+            return -1;
+        }
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_GET_RESPONSE,
+                           [
+                               'merchant_id' => $merchantId,
                                'response'    => $response
                            ]);
 
@@ -1615,10 +1659,9 @@ class Service extends Base\Service
             'error' => null
         ];
 
-        $offlineChallan = (new OfflineChallanRepo)->fetchByChallanNumber($input['challan_number']);
+        $offlineChallan = (new OfflineChallanRepo)->fetchByChallanNumber($input[VAConstants::CHALLAN_NUMBER]);
 
         $response = $this->checkOfflineChallanForBankRequest($input,$response,$offlineChallan);
-
 
      //   $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($offlineChallan['id']);
 
@@ -1638,6 +1681,27 @@ class Service extends Base\Service
         $response = $this->checkIdentificationIdForBankRequest($order,$input,$response);
 
         $response = $this->checkOrderAmountForBankRequest($order,$input,$response);
+
+        $expirySettingInMinutes = $this->getMerchantChallanExpiry($virtualAccount['merchant_id']);
+
+        if($expirySettingInMinutes !== -1)
+        {
+            $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $challanExpiryTimestamp =  Carbon::createFromTimestamp($virtualAccount['created_at'], Timezone::IST)
+                                                ->addMinutes($expirySettingInMinutes)->endOfDay()->timestamp;
+
+            $isChallanExpired =  $currentTimestamp > $challanExpiryTimestamp;
+
+            if($isChallanExpired === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED,null,[
+                    'response' => $response ,
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED
+                ]);
+            }
+        }
 
         $response['status'] = '0';
 
@@ -1687,7 +1751,16 @@ class Service extends Base\Service
             ]);
         }
 
-        if ($virtualAccount->getStatus() !== Status::ACTIVE)
+        if($virtualAccount->isClosed() === true){
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CLOSED_VIRTUAL_ACCOUNT,null,[
+                    'response' => $response ,
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CLOSED_VIRTUAL_ACCOUNT
+                ]);
+            }
+        }
+        elseif ($virtualAccount->getStatus() !== Status::ACTIVE)
         {
             {
                 throw new Exception\BadRequestException(
@@ -1834,5 +1907,12 @@ class Service extends Base\Service
             ->findByPublicIdAndMerchant($id, $merchant);
 
         return $this->closeVirtualAccountEntity($virtualAccount);
+    }
+
+    public function getNotesForMerchantOfflineChallan(array $input, $orderNotes): array
+    {
+        $notesForVA = $input[Entity::NOTES] ?? [];
+        $notesForOrder = $orderNotes ?? [];
+        return array_merge($notesForVA, $notesForOrder);
     }
 }

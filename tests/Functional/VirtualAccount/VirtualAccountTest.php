@@ -33,6 +33,7 @@ use RZP\Models\VirtualAccount\Core;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\VirtualAccount\Constant;
 use RZP\Models\VirtualAccount\Provider;
@@ -49,6 +50,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\BankAccount\Constants as BankAccountConstants;
+use RZP\Models\OfflineChallan\Repository as OfflineChallanRepo;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class VirtualAccountTest extends TestCase
@@ -184,6 +186,15 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testVirtualAccountMerchantChallanExpirySetting()
+    {
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000035');
+
+        $this->ba->proxyAuth('rzp_test_10000000000035', $merchantUser['id']);
+
+        $this->startTest();
+    }
+
     public function testVirtualAccountExpirySettingFetch()
     {
         $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000035');
@@ -247,6 +258,20 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testVirtualAccountMerchantChallanExpirySettingForAdminDashboard()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testVirtualAccountMerchantChallanExpirySettingForAdminDashboardNegative()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testVirtualAccountExpirySettingFetchForAdminDashboard()
     {
         $this->ba->adminAuth();
@@ -293,6 +318,18 @@ class VirtualAccountTest extends TestCase
 
     }
 
+    public function testVirtualAccountMerchantChallanExpirySettingFetchForAdminDashboard()
+    {
+        $this->ba->adminAuth();
+
+        $request = $this->testData['testVirtualAccountExpirySettingForAdminDashboard']['request'];
+
+        $request['content'][Constant::VA_EXPIRY_OFFSET_MERCHANT_CHALLAN] = 16;
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->startTest();
+    }
     /**
      * Asserts that the entity origin for a VA created through the partner auth is set to application.
      * Also asserts that the payment created for such a VA (irrespective of the receiver type) has the entity origin
@@ -3502,6 +3539,141 @@ class VirtualAccountTest extends TestCase
 
     }
 
+
+    public function testValidateOfflineChallanForWrongMinLength()
+    {
+        try {
+            $content = [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'receipt' => 'rec1',
+                'customer_additional_info' => [
+                    'property_id' => '12345',
+                    'property_value' => 'abc'
+                ],
+                'notes' => [
+                    'challan_number' => 'wnyx',
+                ],
+            ];
+
+            $orderId = $this->generateOrderId($content);
+
+        $terminalCreateData = [
+            'gateway'                  => 'offline_hdfc',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                   =>  1,
+            'merchant_id'              =>  '10000000000000',
+        ];
+
+            $this->fixtures->create(
+                'terminal', $terminalCreateData);
+
+            $this->fixtures->merchant->enableOffline();
+
+            $this->fixtures->merchant->addFeatures(Feature\Constants::OTC_MERCHANT_CHALLAN);
+
+
+            $input = [
+                'customer_id' => $this->customer['id'],
+                'receivers' => ['offline_challan'],
+            ];
+
+            $virtualAccount = $this->createVirtualAccountForOfflineOrder($orderId, $input);
+
+            $requestContent = [
+                'challan_no' => $virtualAccount['notes']['challan_number'],
+                'client_code' => $terminalCreateData['gateway_merchant_id'],
+                'identification_id' => '12345',
+
+            ];
+
+            $testData = $this->testData[__FUNCTION__];
+
+            $testData['request']['content'] = $requestContent;
+
+            $this->ba->hdfcOtcAuth();
+
+            $this->testData[__FUNCTION__]['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
+
+             $this->startTest($testData);
+        }catch (BadRequestValidationFailureException $e) {
+            // Check if the exception message matches the expected message
+            $this->assertEquals('The challan number must be between 5 and 40 characters.', $e->getMessage());
+            return;
+        }
+
+        $this->fail('Expected exception BadRequestValidationFailureException was not thrown');
+
+    }
+
+    public function testValidateOfflineChallanForWrongMaxLength()
+    {
+
+     try {
+         $content = [
+             'amount' => 1000,
+             'currency' => 'INR',
+             'receipt' => 'rec1',
+             'customer_additional_info' => [
+                 'property_id' => '12345',
+                 'property_value' => 'abc'
+             ],
+             'notes' => [
+                 'challan_number' => 'wnyxuarmib26jd83wnyxuarmib26jd83wnyxuarmib26jd83',
+             ],
+         ];
+
+         $orderId = $this->generateOrderId($content);
+
+         $terminalCreateData = [
+             'gateway' => 'offline_hdfc',
+             'gateway_merchant_id' => '12345678',
+             'gateway_secure_secret' => '12345',
+             'offline' => 1,
+             'merchant_id' => '10000000000000',
+         ];
+
+         $this->fixtures->create(
+             'terminal', $terminalCreateData);
+
+         $this->fixtures->merchant->enableOffline();
+
+         $this->fixtures->merchant->addFeatures(Feature\Constants::OTC_MERCHANT_CHALLAN);
+
+
+         $input = [
+             'customer_id' => $this->customer['id'],
+             'receivers' => ['offline_challan'],
+         ];
+
+         $virtualAccount = $this->createVirtualAccountForOfflineOrder($orderId, $input);
+
+         $requestContent = [
+             'challan_no' => $virtualAccount['notes']['challan_number'],
+             'client_code' => $terminalCreateData['gateway_merchant_id'],
+             'identification_id' => '12345',
+
+         ];
+
+         $testData = $this->testData[__FUNCTION__];
+
+         $testData['request']['content'] = $requestContent;
+
+         $this->ba->hdfcOtcAuth();
+
+         $this->testData[__FUNCTION__]['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
+
+         $this->startTest($testData);
+     }catch (BadRequestValidationFailureException $e) {
+         // Check if the exception message matches the expected message
+         $this->assertEquals('The challan number must be between 5 and 40 characters.', $e->getMessage());
+         return;
+     }
+
+        $this->fail('Expected exception BadRequestValidationFailureException was not thrown');
+    }
+
     public function testValidateOfflineChallan($functionalRequestContent = null,
                                                $functionalResponseContent = null, $sendChallanNumber = false)
     {
@@ -3572,6 +3744,357 @@ class VirtualAccountTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testValidateOfflineChallanPresentInNotesWithExpirySetting()
+    {
+        $content = [
+            'amount' => 1000,
+            'currency' => 'INR',
+            'receipt' => 'rec1',
+            'customer_additional_info' => [
+                'property_id' => '12345',
+                'property_value' => 'abc'
+            ],
+            'notes' => [
+                'challan_number' => 'aiynu34mmdkd9989rpwbhg61hg612q89rpw89rpw',
+            ],
+        ];
+
+        $orderId = $this->generateOrderId($content);
+
+        $terminalCreateData = [
+            'gateway'                  => 'offline_hdfc',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                   =>  1,
+            'merchant_id'              =>  '10000000000000',
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreateData);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $this->fixtures->merchant->addFeatures(Feature\Constants::OTC_MERCHANT_CHALLAN);
+
+        $input = [
+            'customer_id' => $this->customer['id'],
+            'receivers' => ['offline_challan'],
+        ];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser['id']);
+
+        $request = $this->testData['testVirtualAccountMerchantChallanExpirySetting'];
+
+        $request['request']['content'][Constant::VA_EXPIRY_OFFSET_MERCHANT_CHALLAN] = 1550 ;
+
+        $this->runRequestResponseFlow($request);
+
+        $this->createVirtualAccountForOfflineOrder($orderId, $input);
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        return  $this->startTest($testData);
+    }
+
+    public function testValidateOfflineChallanPresentInNotesWithExpirySettingNegative()
+    {
+        $content = [
+            'amount' => 1000,
+            'currency' => 'INR',
+            'receipt' => 'rec1',
+            'customer_additional_info' => [
+                'property_id' => '12345',
+                'property_value' => 'abc'
+            ],
+            'notes' => [
+                'challan_number' => 'aiynu34mmdkd9989rpwbhg61hg612q89rpw89rpw',
+            ],
+        ];
+        $orderId = $this->generateOrderId($content);
+
+        $terminalCreateData = [
+            'gateway'                  => 'offline_hdfc',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                   =>  1,
+            'merchant_id'              =>  '10000000000000',
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreateData);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $this->fixtures->merchant->addFeatures(Feature\Constants::OTC_MERCHANT_CHALLAN);
+
+        $input = [
+            'customer_id' => $this->customer['id'],
+            'receivers' => ['offline_challan'],
+        ];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser['id']);
+
+        $this->runRequestResponseFlow($this->testData['testVirtualAccountMerchantChallanExpirySetting']);
+
+        $virtualAccount = $this->createVirtualAccountForOfflineOrder($orderId, $input);
+
+        $beforeTenDays =  Carbon::today(Timezone::IST)->subDays(10)->timestamp;
+
+        $this->fixtures->edit('virtual_account', $virtualAccount['id'], ['created_at' => $beforeTenDays]);
+
+        $this->fixtures->edit('virtual_account', $virtualAccount['id'], ['updated_at' => $beforeTenDays]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
+
+        return $this->startTest($testData);
+    }
+
+    public function testOfflinePaymentCreditWithMerchantChallan()
+    {
+        $challanNumber = $this->testValidateOfflineChallanPresentInNotes()['challan_no'];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 0
+            ],
+        ];
+
+        $this->startTest();
+    }
+
+    public function testOfflinePaymentCreditForMerchantChallanWithExpirySuccess(){
+
+        $challanNumber = $this->testValidateOfflineChallanPresentInNotesWithExpirySetting()['challan_no'];
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 0
+            ],
+        ];
+
+        $this->startTest();
+    }
+
+    public function testOfflinePaymentCreditForMerchantChallanWithExpiryFailure()
+    {
+        $challanNumber = $this->testValidateOfflineChallanPresentInNotesWithExpirySettingNegative()['challan_no'];
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 1,
+                'error' => [
+                    'code'        => 'BAD_REQ_ER',
+                    'description' => 'Challan is not validated',
+                    'source'      =>  'business',
+                    'reason'      =>  'Challan is not validated'
+                ],
+            ],
+        ];
+
+        $this->startTest();
+    }
+
+    public function testValidateOfflineChallanPresentInNotes()
+    {
+        $content = [
+            'amount' => 1000,
+            'currency' => 'INR',
+            'receipt' => 'rec1',
+            'customer_additional_info' => [
+                'property_id' => '12345',
+                'property_value' => 'abc'
+            ],
+            'notes' => [
+                'challan_number' => 'aiynuvrpwbhg6161uvrpwbrpwbhg612quvrpwbhg',
+            ],
+        ];
+        $orderId = $this->generateOrderId($content);
+
+        $terminalCreateData = [
+            'gateway'                  => 'offline_hdfc',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                   =>  1,
+            'merchant_id'              =>  '10000000000000',
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreateData);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $this->fixtures->merchant->addFeatures(Feature\Constants::OTC_MERCHANT_CHALLAN);
+
+        $input = [
+            'customer_id' => $this->customer['id'],
+            'receivers' => ['offline_challan'],
+        ];
+
+        $this->createVirtualAccountForOfflineOrder($orderId, $input);
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        return $this->startTest($testData);
+    }
+
     public function testValidateOfflineChallanWithoutCert()
     {
         $content = [
@@ -3619,6 +4142,54 @@ class VirtualAccountTest extends TestCase
         $this->ba->hdfcOtcAuth();
 
         $res = $this->startTest($testData);
+    }
+
+    public function testValidateOfflineChallanWithInvalidVirtualAccount()
+    {
+      try {
+
+          $orderId = " ";
+
+          $terminalCreateData = [
+              'gateway' => 'offline_hdfc',
+              'gateway_merchant_id' => '12345678',
+              'gateway_secure_secret' => '12345',
+              'offline' => 1,
+              'merchant_id' => '10000000000000',
+          ];
+
+          $this->fixtures->create(
+              'terminal', $terminalCreateData);
+
+          $this->fixtures->merchant->enableOffline();
+
+          //sending null order id
+          $virtualAccount = $this->createVirtualAccountForOfflineOrder($orderId, ['customer_id' => $this->customer['id'], 'receivers' => ['offline_challan']]);
+
+          $requestContent = [
+              'challan_no' => $virtualAccount['receivers'][0]['challan_number'],
+              'client_code' => $terminalCreateData['gateway_merchant_id'],
+              'identification_id' => '12345',
+
+          ];
+
+          $testData = $this->testData[__FUNCTION__];
+
+          $testData['request']['content'] = $functionalRequestContent ?? $requestContent;
+
+          $testData['request']['content']['challan_no'] = $virtualAccount['receivers'][0]['challan_number'];
+
+          $testData['request']['content']['challan_no'] = 'asdaf1q124314112';
+
+          $this->ba->hdfcOtcAuth();
+
+          $res = $this->startTest($testData);
+      }catch(BadRequestException $exp){
+          $this->assertEquals('The id provided does not exist', $exp->getMessage());
+          return;
+      }
+
+        $this->fail('Expected exception BadRequestException was not thrown');
     }
 
     public function testValidateOfflineChallanClientCodeNotFound()

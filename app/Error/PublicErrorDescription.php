@@ -1190,10 +1190,11 @@ class PublicErrorDescription
     //OTC Error Codes
     const BAD_REQUEST_ALREADY_PROCESSED                                      = 'Re-push response in case transaction was validated initially against the same challan number';
     const BAD_REQUEST_DUPLICATE_TRANSACTION                                  = 'Duplicate payment identified against an already paid Challan';
-    const BAD_REQUEST_CHALLAN_NOT_FOUND                                  = 'Challan not found in system';
+    const BAD_REQUEST_CHALLAN_NOT_FOUND_IN_NOTES                             = 'Challan Number not found in notes field of order request.';
+    const BAD_REQUEST_CHALLAN_NOT_FOUND                                      = 'Challan not found in system';
     const BAD_REQUEST_CHALLAN_EXPIRED                                        = 'Challan was expired on receipt of API push from the bank';
     const BAD_REQUEST_CLIENT_CODE_NOT_FOUND                                  = 'Client Code not found in system';
-    //const BAD_REQUEST_AMOUNT_MISMATCH                                        = 'Discrepancy between expected challan amount and paid Amount';
+    //const BAD_REQUEST_AMOUNT_MISMATCH                                      = 'Discrepancy between expected challan amount and paid Amount';
     const BAD_REQUEST_IDENTIFICATION_ID_NOT_FOUND                            = 'Identification id not found in system';
     const BAD_REQUEST_MERCHANT_OTC_NOT_ENABLED                               = 'Merchant is not enabled on OTC';
     const BAD_REQUEST_CHALLAN_DOES_NOT_HAVE_ORDER                            = 'Challan does not have order';

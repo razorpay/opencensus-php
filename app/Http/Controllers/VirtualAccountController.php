@@ -18,6 +18,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\VirtualAccount\Entity;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\VirtualAccount\Validator;
+use \RZP\Models\VirtualAccount\Constant;
 use RZP\Trace\Tracer;
 
 class VirtualAccountController extends Controller
@@ -374,9 +375,16 @@ class VirtualAccountController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->getMerchantDefaultVirtualAccountExpiry($input);
+        $expiry = $this->service()->getMerchantDefaultVirtualAccountExpiry($input);
 
-        return ApiResponse::json(["expiry" => $response]);
+        $merchantChallanExpiry = $this->service()->getMerchantChallanExpiry($input['merchant_id']);
+
+        $response = ApiResponse::json([
+            "expiry" => $expiry,
+            Constant::VA_EXPIRY_OFFSET_MERCHANT_CHALLAN => $merchantChallanExpiry
+        ]);
+
+        return $response;
     }
 
     public function addAllowedPayer(string $id)

@@ -15,7 +15,7 @@ class Entity extends Base\PublicEntity
 
     const CHALLAN_NUMBER = 'challan_number';
 
-    const CHALLAN_LENGTH = 16;
+    const CHALLAN_LENGTH = 40;
 
     const BANK_NAME = 'bank_name';
 
