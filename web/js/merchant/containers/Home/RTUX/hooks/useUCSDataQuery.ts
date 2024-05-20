@@ -19,4 +19,6 @@ export const useUCSDataQuery = (widgetName: Array<string>, data = {}): any =>
     refetchOnWindowFocus: false,
     staleTime: 60000 * 1, // 1 minute
     retry: false,
+    // https://stackoverflow.com/a/78365989
+    networkMode: 'always',
   });

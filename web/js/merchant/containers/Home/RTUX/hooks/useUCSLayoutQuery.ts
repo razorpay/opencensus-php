@@ -20,4 +20,6 @@ export const useUCSLayoutQuery = (
     refetchOnWindowFocus: false,
     staleTime: 60000 * 1, // 1 minute (keep in sync with useUCSDataQuery for consistent skeleton)
     retry: false,
+    // https://stackoverflow.com/a/78365989
+    networkMode: 'always',
   });

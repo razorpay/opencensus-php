@@ -95,7 +95,7 @@ export async function fetchUCS<T extends any>(
       },
     });
     const result = response.data;
-    if (response.status >= 200 && response.status <= 204) {
+    if (response.status >= 200 && response.status <= 204 && result) {
       return result;
     } else {
       const errorResult =
