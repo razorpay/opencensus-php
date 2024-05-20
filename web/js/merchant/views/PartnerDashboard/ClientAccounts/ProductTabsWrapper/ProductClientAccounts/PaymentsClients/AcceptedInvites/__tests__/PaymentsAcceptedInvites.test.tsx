@@ -210,7 +210,7 @@ describe('PaymentsAcceptedInvites for Razorpay', () => {
         expect(screen.queryByText('Settlement Status')).toBeInTheDocument();
       });
       // Filters and columns
-      expect(screen.queryByText('Switch Account')).toBeNull();
+      expect(screen.getAllByText('Switch Account')).toHaveLength(1);
       expect(screen.getAllByText('App Id')).toHaveLength(1);
       expect(screen.getAllByText('Application ID')).toHaveLength(1);
 

@@ -779,6 +779,7 @@ class ProductSubMerchantsList extends ListContainer {
     let conditionalSwitchMerchantColumn = [];
     if (user.isPartner('pure_platform')) {
       conditionalAppIdColumn = [appId];
+      conditionalSwitchMerchantColumn = [this.switchMerchantActionBtn(this.handleSwitchMerchant)];
     } else if (user.isPartner('aggregator', 'fully_managed')) {
       conditionalSwitchMerchantColumn = [this.switchMerchantActionBtn(this.handleSwitchMerchant)];
     }
@@ -793,6 +794,7 @@ class ProductSubMerchantsList extends ListContainer {
         ...conditionalAppIdColumn,
         activationStatus,
         ...conditionalActionsColumn,
+        ...conditionalSwitchMerchantColumn,
         inviteAcceptedOn,
       ];
     };

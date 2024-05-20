@@ -145,6 +145,7 @@ export const getColumns: GetColumnsType = ({ user, org, experiments }) => {
   let conditionalSwitchMerchantColumn = [] as DataTableColumns;
   if (user.isPartner('pure_platform')) {
     conditionalAppIdColumn = [appIdColumn];
+    conditionalSwitchMerchantColumn = [switchMerchantColumn];
   } else if (user.isPartner('aggregator') || user.isPartner('fully_managed')) {
     conditionalSwitchMerchantColumn = [switchMerchantColumn];
   }
@@ -157,9 +158,10 @@ export const getColumns: GetColumnsType = ({ user, org, experiments }) => {
       conditionalIdColumn,
       conditionalNameColumn,
       mobileAndEmailColumn,
-      ...conditionalAppIdColumn,
       activationStatusColumn,
       ...conditionalActionsColumn,
+      ...conditionalSwitchMerchantColumn,
+      ...conditionalAppIdColumn,
       inviteAcceptedOn,
     ];
   }
@@ -173,11 +175,11 @@ export const getColumns: GetColumnsType = ({ user, org, experiments }) => {
     conditionalIdColumn,
     conditionalNameColumn,
     emailOrContact,
-    ...conditionalAppIdColumn,
-    addedOnColumn,
     activationStatusColumn,
     settlementStatus,
     ...conditionalSwitchMerchantColumn,
+    ...conditionalAppIdColumn,
+    addedOnColumn,
   ];
 
   if (user.isSubMerchantKycEnabled && user.isPartner('reseller')) {
