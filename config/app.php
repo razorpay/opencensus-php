@@ -891,4 +891,5 @@ return array(
     'cmma_subm_escalation_experiment_id' => env('CMMA_SUBM_ESCALATION_EXPERIMENT_ID'),
 
     'zestmoney_whitelisted_merchants_experiment_id'  => env('ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
+    'recurring_customer_contact_reuse' => env('RECURRING_CUSTOMER_CONTACT_REUSE_EXP_ID'),
 );

@@ -3260,6 +3260,8 @@ class Processor
 
             $this->validateTokenisedPayment($input);
 
+            $this->preProcessRecurring($input);
+
             $this->validateCardRecurringAutoPayment($input);
 
             $this->setMethodForSubscription($input);
@@ -5370,6 +5372,54 @@ class Processor
         ];
     }
 
+    // re-use customer contact and email from customer entity if customer_id is part of payment create request.
+    // and email and contact is not passed in the request.
+    protected function preProcessRecurring(& $input): void
+    {
+        if (isset($input[Payment\Entity::RECURRING]) and
+            ($input[Payment\Entity::RECURRING] === '1'))
+        {
+            // Temp experiment for the ramp-up of feature
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.' . Merchant\RazorxTreatment::RECURRING_CUSTOMER_CONTACT_REUSE),
+                'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId()]),
+            ];
+
+            $isEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'variant_on');
+            if ($isEnabled !== true)
+            {
+                return;
+            }
+
+            $customerId = $input[Payment\Entity::CUSTOMER_ID];
+
+            if (empty($customerId) === false)
+            {
+                Customer\Entity::verifyIdAndStripSign($customerId);
+
+                $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+
+                if ($customer->isLocal() === true)
+                {
+                    if ((empty($input[Payment\Entity::CONTACT]) === true) and
+                        (empty($customer->getContact()) === false) and
+                        ($this->merchant->isPhoneOptional() === false))
+                    {
+                        $input[Payment\Entity::CONTACT] = $customer->getContact();
+                    }
+
+                    if (((empty($input[Payment\Entity::EMAIL]) === true) or
+                            ($input[Payment\Entity::EMAIL] === Payment\Entity::DUMMY_EMAIL)) and
+                        (empty($customer->getEmail()) === false) and
+                        ($this->merchant->isEmailOptional() === false))
+                    {
+                        $input[Payment\Entity::EMAIL] = $customer->getEmail();
+                    }
+                }
+            }
+        }
+    }
 
     protected function validateTokenisedPayment(& $input)
     {
