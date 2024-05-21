@@ -63,6 +63,7 @@ function getDependencies(depCommits) {
     // TODO: Make this changes dyamic from depCommits payload;
     if (depName === 'api') {
       dependency.chart_values = {
+        replicas: 2,
         enable_edge_base: true,
       };
     }
@@ -115,6 +116,7 @@ const getSelfPayload = ({ repoName, selfCommit, affectedProjects }) => {
       self_serve_image: getCommit('self-serve'),
       web_requests_memory: '350Mi',
       web_requests_cpu: '500m',
+      replicas: 2,
     },
   };
   return payload;
