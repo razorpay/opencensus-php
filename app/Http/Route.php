@@ -676,7 +676,8 @@ class Route
         'terminals_proxy_refresh_gateway_methods_v3'        =>  ['put',     'v3/terminals/proxy/optimizer/merchant/provider/{id}/refresh_enabled_methods',  'TerminalController@proxyV2TerminalService'             ],
         'terminals_proxy_add_optimizer_provider_v3'         =>  ['post',    'v3/terminals/proxy/optimizer/mid/provider',             'TerminalController@proxyV2TerminalService'             ],
         'terminals_proxy_edit_optimizer_provider_v3'        =>  ['patch',   'v3/terminals/proxy/optimizer/merchant/provider/{id}',             'TerminalController@proxyV2TerminalService'             ],
-        'terminals_proxy_get_enabled_methods_v3'            =>  ['get',   'v3/terminals/proxy/optimizer/merchant/provider/{id}/enabled_methods',             'TerminalController@proxyV2TerminalService'             ],
+        'terminals_proxy_get_enabled_methods_v3'            =>  ['get',     'v3/terminals/proxy/optimizer/merchant/provider/{id}/enabled_methods',             'TerminalController@proxyV2TerminalService'             ],
+        'terminals_proxy_update_audit_integration_data_v3'  =>  ['put',     'v3/terminals/proxy/optimizer/merchant/provider/{id}',             'TerminalController@proxyV2TerminalService'             ],
 
         // Automatic terminal testing
         'execute_terminal_test_run'                => ['post',     'terminals/proxy/terminal_test_run',                              'TerminalController@proxyV2TerminalService'                         ],
@@ -7401,6 +7402,7 @@ class Route
         'terminals_proxy_get_optimizer_merchant_methods_v3',
         'terminals_proxy_refresh_gateway_methods_v3',
         'terminals_proxy_get_enabled_methods_v3',
+        'terminals_proxy_update_audit_integration_data_v3',
         'payout_links_merchant_settings_post',
         'payout_links_merchant_settings_get',
         'payout_links_merchant_on_boarding_status',
@@ -10371,6 +10373,7 @@ class Route
         'terminals_proxy_add_optimizer_provider_v3'         => Permission::VIEW_GATEWAY_RULE,
         'terminals_proxy_edit_optimizer_provider_v3'        => Permission::VIEW_GATEWAY_RULE,
         'terminals_proxy_get_enabled_methods_v3'            => Permission::VIEW_GATEWAY_RULE,
+        'terminals_proxy_update_audit_integration_data_v3'  => Permission::VIEW_GATEWAY_RULE,
 
         'setl_optimizer_settlement_manual_api'              => Permission::OPTIMIZER_SINGLE_RECON,
         'setl_insert_new_transaction_records'               => Permission::OPTIMIZER_SINGLE_RECON,
@@ -12489,6 +12492,7 @@ class Route
             'terminals_proxy_get_optimizer_merchant_methods_v3',
             'terminals_proxy_refresh_gateway_methods_v3',
             'terminals_proxy_get_enabled_methods_v3',
+            'terminals_proxy_update_audit_integration_data_v3',
             'inspector_view_get',
             'invitation_create',
             'invitation_delete',
@@ -14447,6 +14451,7 @@ class Route
             'terminals_proxy_get_optimizer_merchant_methods_v3',
             'terminals_proxy_refresh_gateway_methods_v3',
             'terminals_proxy_get_enabled_methods_v3',
+            'terminals_proxy_update_audit_integration_data_v3',
             'setl_optimizer_settlement_manual_api',
             'setl_insert_new_transaction_records',
             'setl_update_optimiser_execution_status',

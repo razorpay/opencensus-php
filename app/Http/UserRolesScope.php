@@ -1149,6 +1149,7 @@ class UserRolesScope
             'terminals_proxy_get_optimizer_merchant_methods_v3'    => [Role::OWNER, Role::ADMIN],
             'terminals_proxy_refresh_gateway_methods_v3'           => [Role::OWNER, Role::ADMIN],
             'terminals_proxy_get_enabled_methods_v3'               => [Role::OWNER, Role::ADMIN],
+            'terminals_proxy_update_audit_integration_data_v3'     => [Role::OWNER, Role::ADMIN],
             'token_create'                                         => [Role::OWNER, Role::ADMIN],
             'token_delete'                                         => [Role::OWNER, Role::ADMIN],
             'token_fetch'                                          => [Role::OWNER, Role::ADMIN],
