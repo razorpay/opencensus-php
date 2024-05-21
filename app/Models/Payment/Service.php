@@ -3515,6 +3515,11 @@ class Service extends Base\Service
 
                 $isRefundRequired = $this->isRefundRequiredForPayment($payment);
 
+                if ($payment->merchant->isFeatureEnabled(Features::DISABLE_AUTO_REFUNDS))
+                {
+                    return true;
+                }
+
                 /**
                  * Check that if the refund is not required , then unset the refund_at
                  * for the payment.
