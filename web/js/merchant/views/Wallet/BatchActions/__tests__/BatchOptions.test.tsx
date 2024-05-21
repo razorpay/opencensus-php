@@ -28,14 +28,36 @@ const storeState = {
 
 describe('BatchOptions tests', () => {
   test('it should render expected options', () => {
-    const { container } = render(<CreateBatchOptions openModal={jest.fn()} />);
+    const { container } = render(
+      <CreateBatchOptions
+        batches={{
+          items: [
+            { type: 'create_wallet_accounts', status: 'processed' },
+            { type: 'create_wallet_accounts', status: 'processing' },
+            { type: 'create_wallet_loads', status: 'processing' },
+          ],
+        }}
+        openModal={jest.fn()}
+      />,
+    );
 
     expect(getAllByTestId(container, 'batch-type-option')).toHaveLength(3);
   });
 
   test('it should call openModal with expected properties', async () => {
     const mock = jest.fn();
-    render(<CreateBatchOptions openModal={mock} />);
+    render(
+      <CreateBatchOptions
+        batches={{
+          items: [
+            { type: 'create_wallet_accounts', status: 'processed' },
+            { type: 'create_wallet_accounts', status: 'processing' },
+            { type: 'create_wallet_loads', status: 'processing' },
+          ],
+        }}
+        openModal={mock}
+      />,
+    );
 
     await fireEvent.click(screen.getByText('Accounts'));
     await fireEvent.click(screen.getByText('Loads'));
