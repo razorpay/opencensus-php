@@ -26,6 +26,19 @@ const activateAccountSuccess = () => {
   );
 };
 
+const exportId = 'dummy_export_id';
+
+const createPublicPaymentLinkSuccess = () => {
+  services.createPublicPaymentLink.mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ success: true, data: { export_id: exportId } });
+        });
+      }),
+  );
+};
+
 const activateAccountFailure = (errors) => {
   services.activateAccount.mockImplementation(
     () =>
@@ -72,19 +85,18 @@ describe('Acknowledgement Popup flow', () => {
 
   test('should close the modal when api request results in an success', async () => {
     activateAccountSuccess();
+    createPublicPaymentLinkSuccess();
 
-    renderComponent();
+    const onSuccess = jest.fn();
+
+    renderComponent({ onSuccess });
 
     //mocking activate now click event
     await userEvent.click(screen.getByText('Activate Now'));
 
-    //close modal should have been called
+    //onSuccess and close modal should have been called
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledWith('USD', exportId));
     await waitFor(() => expect(closeModal).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(showNotification).toHaveBeenCalledTimes(1));
-    expect(showNotification).toHaveBeenCalledWith({
-      type: 'success',
-      message: 'Account have been successfully created!',
-    });
   });
 
   test('should not close the modal when api request results in an list of errors', async () => {

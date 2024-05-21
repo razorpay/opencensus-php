@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { fetchB2bAccounts } from 'merchant/reducers/b2bExports/actions';
+import { fetchB2bAccounts, setPublicPaymentLink } from 'merchant/reducers/b2bExports/actions';
 import { fetchPurposeCode } from 'merchant/reducers/profile';
 import { videoKycBannerActions } from 'merchant/reducers/videoKYCBanner';
 import lazy from 'merchant/routes/LazyLoader';
@@ -15,6 +15,7 @@ import { trackTandCPopupOpened } from 'merchant/views/Settings/PaymentMethods/co
 import {
   VA_USD,
   DISABLE_REQUEST_TOOLTIP,
+  INIT_POPUP_DETAILS,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 import { LocalWireTransferPropsInterface } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 import { openModal } from 'merchant_common/reducers/modals';
@@ -22,6 +23,8 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 //Styles
 import './LocalWireTransfer.styl';
+import { fetchPublicPaymentLink } from './services';
+import { getPublicPaymentLinkForContainer } from './utils';
 
 const AcknowledgementPopup = lazy(
   () =>
@@ -37,6 +40,13 @@ const PurposeCodeIneligiblePopup = lazy(
     ),
 );
 
+const SuccessPopup = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "SuccessPopup" */ 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/SuccessPopup'
+    ),
+);
+
 const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
   leafList,
   config,
@@ -44,6 +54,7 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
   isIneligiblePurposeCodeModalOpen,
   purposeCode,
   fetchB2bAccounts,
+  setPublicPaymentLink,
   fetchPurposeCode,
   showNotification,
   openModal,
@@ -54,12 +65,27 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
     containerStatus,
     containerError,
     accounts,
+    publicPaymentLink,
     shouldShowAction,
     shouldShowListAction,
     isRequestButtonDisabled,
   } = config;
 
   const [isOpen, setIsOpen] = useState<boolean | string>(false);
+  const [successPopupDetails, setSuccessPopupDetails] = useState(INIT_POPUP_DETAILS);
+
+  const paymentLinkForContainer = useMemo(
+    () => getPublicPaymentLinkForContainer(leafList, accounts, publicPaymentLink),
+    [publicPaymentLink, accounts, leafList],
+  );
+
+  const onAccountCreationSuccess = (account, url) => {
+    setSuccessPopupDetails({ isOpen: true, account, url });
+  };
+
+  const onSuccessDismiss = () => {
+    setSuccessPopupDetails(INIT_POPUP_DETAILS);
+  };
 
   /**
    * acknowledgement popup is opened to get T&C approval from merchant
@@ -71,7 +97,7 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
       size: 'medium',
       component: (
         <SuspenseWithLoader>
-          <AcknowledgementPopup account={data.vaCurrency} />
+          <AcknowledgementPopup account={data.vaCurrency} onSuccess={onAccountCreationSuccess} />
         </SuspenseWithLoader>
       ),
     });
@@ -95,14 +121,24 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
     [onMoneySaverAccountsActivated],
   );
 
+  const initRequest = async () => {
+    fetchPurposeCode();
+    if (!accounts?.length) {
+      const response = await fetchB2bAccounts();
+      if (response.data?.accounts?.length) {
+        const response = await fetchPublicPaymentLink();
+        if (response.data.export_id) setPublicPaymentLink(response.data.export_id);
+      }
+    }
+  };
+
   /**
    * We are calling the fetch purpose code api to check if purpose code is
    * attached with the merchant or not, depending upon which we'll ask merchant
    * to update the purpose code
    */
   useEffect(() => {
-    fetchPurposeCode();
-    if (!accounts?.length) fetchB2bAccounts();
+    initRequest();
   }, []);
 
   //this handles api errors
@@ -142,8 +178,17 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
         error={containerError}
         isRequestButtonDisabled={isRequestButtonDisabled}
         requestTooltipText={isRequestButtonDisabled ? DISABLE_REQUEST_TOOLTIP : ''}
+        publicPaymentLink={paymentLinkForContainer}
         {...data}
       />
+      {successPopupDetails.isOpen && (
+        <SuccessPopup
+          isOpen={successPopupDetails.isOpen}
+          shouldAllowEdit={!!successPopupDetails.url}
+          account={successPopupDetails.account}
+          onDismiss={onSuccessDismiss}
+        />
+      )}
     </ErrorBoundary>
   );
 };
@@ -157,6 +202,7 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
       fetchB2bAccounts,
+      setPublicPaymentLink,
       fetchPurposeCode,
       showNotification,
       openModal,

@@ -13,6 +13,7 @@ import {
   B2B_EXPORTS_GET_BENEFICIARY,
   B2B_EXPORTS_CREATE_PAYOUT,
   B2B_CLOSE_PURPOSE_CODE_INELIGIBLE_MODAL,
+  B2B_PUBLIC_PAYMENT_LINK,
 } from './constants';
 
 const fetchB2bAccounts = () => {
@@ -160,6 +161,13 @@ const closePurposeCodeIneligibleModal = () => {
   };
 };
 
+const setPublicPaymentLink = (payload) => {
+  return {
+    type: B2B_PUBLIC_PAYMENT_LINK,
+    payload,
+  };
+};
+
 export {
   uploadInvoice,
   uploadInvoiceError,
@@ -184,4 +192,5 @@ export {
   fetchBeneficiaryDetailsSuccess,
   fetchBeneficiaryDetailsError,
   closePurposeCodeIneligibleModal,
+  setPublicPaymentLink,
 };

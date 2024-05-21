@@ -19,12 +19,14 @@ import {
   activateAccountError,
   activateAccountPending,
   activateAccountSuccess,
+  setPublicPaymentLink,
 } from 'merchant/reducers/b2bExports/actions';
 import lazy from 'merchant/routes/LazyLoader';
 import {
   trackActivateClick,
   trackAccountActivated,
   trackAccountError,
+  trackLinkCreation,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
 import {
   VA_USD,
@@ -32,7 +34,10 @@ import {
   ACTIVATION_POPUP_CONTENT,
   B2B_EXPORTS_TNC_LINK,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
-import { activateAccount } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
+import {
+  activateAccount,
+  createPublicPaymentLink,
+} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
 import { AcknowledgementPopupProps } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 import { hasMCCInEligibleError } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/utils';
 import { STANDARD_PRICING_URL } from 'merchant/views/Settings/PaymentMethods/constants';
@@ -46,6 +51,10 @@ const MCCIneligiblePopup = lazy(
     ),
 );
 
+const mapStateToProps = ({ b2bExportsAccounts }) => ({
+  publicPaymentLink: b2bExportsAccounts.publicPaymentLink,
+});
+
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
@@ -55,11 +64,12 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
       activateAccountError,
       activateAccountPending,
       activateAccountSuccess,
+      setPublicPaymentLink,
     },
     dispatch,
   );
 
-const connector = connect(null, mapDispatchToProps);
+const connector = connect(mapStateToProps, mapDispatchToProps);
 
 const AcknowledgementPopup: React.FC<
   AcknowledgementPopupProps<ConnectedProps<typeof connector>>
@@ -72,6 +82,9 @@ const AcknowledgementPopup: React.FC<
   activateAccountError,
   activateAccountPending,
   activateAccountSuccess,
+  setPublicPaymentLink,
+  onSuccess,
+  publicPaymentLink,
 }) => {
   const [isChecked, setIsChecked] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,23 +119,25 @@ const AcknowledgementPopup: React.FC<
 
       const response = await activateAccount(account, isTnCAccepted ? 1 : 0);
 
-      setIsLoading(false);
       activateAccountSuccess({
         type: REQUEST_ACCOUNT_TYPE[account],
         response: response?.data ?? [],
       });
 
       if (response?.success) {
+        let exportId;
+        if (!publicPaymentLink) {
+          const response = await createPublicPaymentLink();
+          trackLinkCreation(account, false);
+          exportId = response.data.export_id;
+          setPublicPaymentLink(exportId);
+        }
+        onSuccess(account, exportId);
         trackAccountActivated(account);
         closeModal();
-        showNotification({
-          type: 'success',
-          message: 'Account have been successfully created!',
-        });
       }
     } catch (errorMessage) {
       trackAccountError(errorMessage as string, account);
-      setIsLoading(false);
       showNotification({
         type: 'error',
         message: errorMessage,
@@ -132,6 +147,8 @@ const AcknowledgementPopup: React.FC<
       if (hasMCCInEligibleError(errorMessage)) {
         onOpenMCCIneligiblePopup(errorMessage as string);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 

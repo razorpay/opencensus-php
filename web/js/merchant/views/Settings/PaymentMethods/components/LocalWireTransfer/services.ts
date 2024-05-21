@@ -1,6 +1,8 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 import { ActivateAccountResponseType } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 
+import { transformError } from './utils';
+
 export const activateAccount = async (
   va_currency: string,
   accept_b2b_tnc = 0,
@@ -13,16 +15,40 @@ export const activateAccount = async (
     });
     return response;
   } catch (error) {
-    let errorMessage = '';
+    throw transformError(error);
+  }
+};
 
-    if (error && typeof error === 'object' && 'errors' in error && Array.isArray(error.errors)) {
-      errorMessage = error.errors[0];
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-    } else {
-      errorMessage = 'Something went wrong. Please try again later.';
-    }
+export const fetchPublicPaymentLink = async () => {
+  try {
+    const response = await merchantFetch('payments_cross_border_live/v1/export-link');
+    return response;
+  } catch (error) {
+    throw transformError(error);
+  }
+};
 
-    throw errorMessage;
+export const createPublicPaymentLink = async () => {
+  try {
+    const response = await merchantFetch({
+      url: 'payments_cross_border_live/v1/export-link',
+      method: 'POST',
+    });
+    return response;
+  } catch (error) {
+    throw transformError(error);
+  }
+};
+
+export const updatePublicPaymentLink = async (exportId = '') => {
+  try {
+    const response = await merchantFetch({
+      url: 'payments_cross_border_live/v1/export-link',
+      method: 'PATCH',
+      data: { export_id: exportId },
+    });
+    return response;
+  } catch (error) {
+    throw transformError(error);
   }
 };

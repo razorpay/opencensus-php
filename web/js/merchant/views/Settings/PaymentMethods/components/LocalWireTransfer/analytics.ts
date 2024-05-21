@@ -125,3 +125,34 @@ export const trackWithdrawClicked = (): void => {
     actionName: 'click',
   });
 };
+
+export const trackCopyLinkClicked = () => {
+  track({
+    objectName: 'b2b accounts link',
+    actionName: 'copied',
+  });
+};
+
+export const trackEditLinkClicked = (account) => {
+  track({
+    objectName: `b2b accounts ${account} link`,
+    actionName: 'edited',
+  });
+};
+
+export const trackLinkCreation = (
+  account: string,
+  isEdited = false,
+  isSuccess = true,
+  errorReason?: string,
+) => {
+  track({
+    objectName: `b2b accounts ${account} link`,
+    actionName: 'creation',
+    properties: {
+      isEdited,
+      isSuccess,
+      errorReason,
+    },
+  });
+};

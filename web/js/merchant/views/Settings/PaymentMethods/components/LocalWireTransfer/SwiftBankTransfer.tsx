@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -13,17 +13,26 @@ import { trackTandCPopupOpened } from 'merchant/views/Settings/PaymentMethods/co
 import {
   VA_SWIFT,
   DISABLE_REQUEST_TOOLTIP,
+  INIT_POPUP_DETAILS,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 //Styles
 import './LocalWireTransfer.styl';
+import { getPublicPaymentLinkForContainer } from './utils';
 
 const AcknowledgementPopup = lazy(
   () =>
     import(
       /* webpackChunkName: "AcknowledgementPopup" */ 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/AcknowledgementPopup'
+    ),
+);
+
+const SuccessPopup = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "SuccessPopup" */ 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/SuccessPopup'
     ),
 );
 
@@ -35,9 +44,24 @@ const SwiftBankTransfer = ({ leafList, config, showNotification, openModal, ...d
     shouldShowAction,
     shouldShowListAction,
     isRequestButtonDisabled,
+    publicPaymentLink,
   } = config;
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [successPopupDetails, setSuccessPopupDetails] = useState(INIT_POPUP_DETAILS);
+
+  const paymentLinkForContainer = useMemo(
+    () => getPublicPaymentLinkForContainer(leafList, accounts, publicPaymentLink),
+    [publicPaymentLink, accounts, leafList],
+  );
+
+  const onAccountCreationSuccess = (account, url) => {
+    setSuccessPopupDetails({ isOpen: true, account, url });
+  };
+
+  const onSuccessDismiss = () => {
+    setSuccessPopupDetails(INIT_POPUP_DETAILS);
+  };
 
   const onRequest = () => {
     trackTandCPopupOpened(VA_SWIFT);
@@ -45,7 +69,7 @@ const SwiftBankTransfer = ({ leafList, config, showNotification, openModal, ...d
       size: 'medium',
       component: (
         <SuspenseWithLoader>
-          <AcknowledgementPopup account={VA_SWIFT} />
+          <AcknowledgementPopup account={VA_SWIFT} onSuccess={onAccountCreationSuccess} />
         </SuspenseWithLoader>
       ),
     });
@@ -66,8 +90,17 @@ const SwiftBankTransfer = ({ leafList, config, showNotification, openModal, ...d
         error={containerError}
         isRequestButtonDisabled={isRequestButtonDisabled}
         requestTooltipText={isRequestButtonDisabled ? DISABLE_REQUEST_TOOLTIP : ''}
+        publicPaymentLink={paymentLinkForContainer}
         {...data}
       />
+      {successPopupDetails.isOpen && (
+        <SuccessPopup
+          isOpen={successPopupDetails.isOpen}
+          shouldAllowEdit={!!successPopupDetails.url}
+          account={successPopupDetails.account}
+          onDismiss={onSuccessDismiss}
+        />
+      )}
     </ErrorBoundary>
   );
 };

@@ -32,6 +32,7 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
     fircData,
     accountsDeactivated,
     reason,
+    publicPaymentLink,
     openModal,
     showMorePaymentMethodsSection,
     ...props
@@ -113,6 +114,7 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
       shouldShowAction,
       shouldShowListAction,
       containerStatus,
+      publicPaymentLink,
       containerError: getContainerError(),
       isRequestButtonDisabled: isDisableInternationalPaymentMethods,
     };
@@ -128,6 +130,7 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
     user: session.user,
     fircData: profile.fircDetails,
     showMorePaymentMethodsSection: unlockIntlPaymentMethods.showMorePaymentMethodsSection,
+    publicPaymentLink: b2bExportsAccounts.publicPaymentLink,
   });
 
   const mapDispatchToProps = (dispatch) =>

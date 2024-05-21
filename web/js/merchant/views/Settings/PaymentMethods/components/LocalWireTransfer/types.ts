@@ -55,6 +55,13 @@ export type BankTransferConfigType = {
   containerStatus: string;
   containerError: ContainerErrorType | boolean;
   isRequestButtonDisabled: boolean;
+  publicPaymentLink: string | undefined;
+};
+
+export type FetchB2BResponse = {
+  data: {
+    accounts?: Array<AccountType>;
+  };
 };
 
 export interface LocalWireTransferPropsInterface {
@@ -63,8 +70,9 @@ export interface LocalWireTransferPropsInterface {
   apiError: { errors?: Array<string> };
   purposeCode?: string;
   isIneligiblePurposeCodeModalOpen: boolean;
+  setPublicPaymentLink: (link: string) => void;
   fetchPurposeCode: () => void;
-  fetchB2bAccounts: () => void;
+  fetchB2bAccounts: () => Promise<FetchB2BResponse>;
   showNotification: (payload: { type: string; message: unknown }) => void;
   openModal: (payload: { size: string; component: JSX.Element }) => void;
   onMoneySaverAccountsActivated: (status: boolean) => void;
@@ -107,6 +115,7 @@ export interface BankTransferConfigInterface {
   accountsDeactivated: boolean;
   reason: string;
   showMorePaymentMethodsSection: boolean;
+  publicPaymentLink: string | undefined;
 }
 
 export interface AccountBalancePropsInterface {
@@ -134,3 +143,13 @@ export type MCCIneligibleProps = {
   onClose: () => void;
   onCloseAction: () => void;
 };
+
+export interface SuccessPopupProps {
+  isOpen: boolean;
+  account: string;
+  shouldAllowEdit: boolean;
+  publicPaymentLink: string | undefined;
+  onDismiss: () => void;
+  setPublicPaymentLink: (link: string) => void;
+  showNotification: (payload: { type: string; message: unknown }) => void;
+}

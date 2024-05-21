@@ -13,6 +13,7 @@ import {
   B2B_EXPORTS_CREATE_PAYOUT,
   B2B_PURPOSE_CODE_INELIGIBLE_ERROR_KEY,
   B2B_CLOSE_PURPOSE_CODE_INELIGIBLE_MODAL,
+  B2B_PUBLIC_PAYMENT_LINK,
 } from './constants';
 
 import { extractVirtualAccountDetails, extractPurposeCodeError } from './helpers';
@@ -109,6 +110,7 @@ function b2bExportsAccountsReducer(
     featureFlags: {
       isB2BEnabled: false,
     },
+    publicPaymentLink: null,
     localBankTransfer: {
       isActivating: false,
       error: null,
@@ -203,6 +205,9 @@ function b2bExportsAccountsReducer(
       // update localStorage to not to open this modal again on same error
       setItem(B2B_PURPOSE_CODE_INELIGIBLE_ERROR_KEY, true);
       return set(state, 'isIneligiblePurposeCodeModalOpen', false);
+    }
+    case B2B_PUBLIC_PAYMENT_LINK: {
+      return set(state, 'publicPaymentLink', action.payload);
     }
     default:
       return state;

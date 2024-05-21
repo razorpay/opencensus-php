@@ -1,8 +1,18 @@
-import { Button, Tooltip, TooltipInteractiveWrapper } from '@razorpay/blade/components';
+import {
+  Button,
+  Tooltip,
+  TooltipInteractiveWrapper,
+  Alert,
+  Box,
+  Text,
+} from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
+import copyToClipboard from 'common/utils/copyToClipboard';
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import ErrorContainer from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer/ErrorContainer';
+import { trackCopyLinkClicked } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
+import { BASE_PAYMENT_LINK_URL } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 import { GREYED, REQUESTABLE } from 'merchant/views/Settings/PaymentMethods/constants';
 
 import Instrument from './Instrument';
@@ -31,6 +41,7 @@ const InstrumentContainer = (props) => {
     isActivating = false,
     requestTooltipText,
     isRequestButtonDisabled = false,
+    publicPaymentLink = false,
     error,
   } = props;
   const { listHeader, listDescription, list } = leafList;
@@ -40,6 +51,11 @@ const InstrumentContainer = (props) => {
     onButtonClick && onButtonClick();
   };
 
+  const onCopyClick = () => {
+    copyToClipboard(BASE_PAYMENT_LINK_URL + publicPaymentLink);
+    trackCopyLinkClicked();
+  };
+
   return (
     <div className="instruments-methods-container">
       <div className="top-container">
@@ -47,6 +63,30 @@ const InstrumentContainer = (props) => {
           <div className="left-text-wrapper">
             {listHeader ? <h4>{listHeader}</h4> : null}
             {listDescription ? <p>{listDescription}</p> : null}
+            {publicPaymentLink && !showAction ? (
+              <Alert
+                actions={{
+                  primary: {
+                    onClick: onCopyClick,
+                    text: 'Copy Link',
+                  },
+                }}
+                marginTop="spacing.3"
+                color="positive"
+                description={
+                  <Box>
+                    <Text>
+                      Congratulations! You now have a dedicated page with details of your local
+                      currency bank account(s) which can be shared with anyone:
+                    </Text>
+                    <Text weight="semibold">{`${BASE_PAYMENT_LINK_URL}${publicPaymentLink}`}</Text>
+                  </Box>
+                }
+                emphasis="subtle"
+                isDismissible={false}
+                isFullWidth
+              />
+            ) : null}
           </div>
           {showAction &&
             ([REQUESTABLE, GREYED].includes(containerStatus) ? (
