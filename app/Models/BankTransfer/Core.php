@@ -1109,6 +1109,15 @@ class Core extends Base\Core
         }
         $billingAddressFromInput['country']     = trim($senderDetails[2]);
 
+        if(empty($billingAddressFromInput['line1']) === true or strlen($billingAddressFromInput['line1']) > 255) {
+            $billingAddressFromInput['line1'] = "default address for b2b";
+        }
+
+        if(isset($billingAddressFromInput['city']) && (strlen($billingAddressFromInput['city'])<2 or strlen($billingAddressFromInput['city'])>32)) {
+            unset($billingAddressFromInput['city']);
+        }
+
+
         if(!ctype_digit($billingAddressFromInput['zipcode']) or strlen($billingAddressFromInput['zipcode'])<2 or strlen($billingAddressFromInput['zipcode'])>10) {
             unset($billingAddressFromInput['zipcode']);
         }

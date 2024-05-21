@@ -477,6 +477,113 @@ class InternationalBankTransferTest extends TestCase
         return $response;
 
     }
+    public function testSenderDetailsStoringAndRetrievingWithCityAndLineDetailsMissing()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], [], Role::OWNER);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        // Test to increase txn limit for B2B intl_bank_transfer payments
+        // Higher limit is now Rs 8.2L base amount
+        // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
+        $this->mockMozartResponseForCurrencyCloud(2199);
+
+        $this->ba->directAuth();
+        $request = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $paymentEntity = $this->getLastPayment('payment', 'true');
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals('currency_cloud', $paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer', $paymentEntity['method']);
+        $this->assertEquals('ach', $paymentEntity['wallet']);
+        $this->assertEquals(2155020, $paymentEntity['base_amount']);
+        $this->assertEquals(219900, $paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9', $paymentEntity['reference1']);
+
+        $this->testSendNotificationForB2B($paymentEntity);
+        $this->fixtures->merchant->addFeatures('enable_intl_bank_transfer', $paymentEntity['merchant_id']);
+        $addressPayload = [
+            'url'       => '/payments?skip=0&count=25&expand[]=sender_address',
+            'method'    => 'get',
+        ];
+        $this->ba->proxyAuth('rzp_test_' . $paymentEntity['merchant_id'], $merchantUser['id']);
+
+        $responseData = $this->makeRequestAndGetContent($addressPayload);
+        $this->assertNotNull($responseData);
+        $this->assertEquals('payment',$responseData['items'][0]['entity']);
+        $this->assertEquals($paymentEntity['id'],$responseData['items'][0]['id']);
+        $senderData = $responseData['items'][0]['sender_address'];
+
+
+        $this->assertEquals('David Jenkins',$senderData['name']);
+        $this->assertEquals('default address for b2b',$senderData['line1'] );
+        $this->assertEquals('gb',$senderData['country']);
+
+        return $response;
+
+    }
+
+    public function testSenderDetailsStoringAndRetrievingWithCityNameExceedingLength()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], [], Role::OWNER);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        // Test to increase txn limit for B2B intl_bank_transfer payments
+        // Higher limit is now Rs 8.2L base amount
+        // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
+        $this->mockMozartResponseForCurrencyCloud(3199);
+
+        $this->ba->directAuth();
+        $request = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $paymentEntity = $this->getLastPayment('payment', 'true');
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals('currency_cloud', $paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer', $paymentEntity['method']);
+        $this->assertEquals('ach', $paymentEntity['wallet']);
+        $this->assertEquals(319900, $paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9', $paymentEntity['reference1']);
+
+        $this->testSendNotificationForB2B($paymentEntity);
+        $this->fixtures->merchant->addFeatures('enable_intl_bank_transfer', $paymentEntity['merchant_id']);
+        $addressPayload = [
+            'url'       => '/payments?skip=0&count=25&expand[]=sender_address',
+            'method'    => 'get',
+        ];
+        $this->ba->proxyAuth('rzp_test_' . $paymentEntity['merchant_id'], $merchantUser['id']);
+
+        $responseData = $this->makeRequestAndGetContent($addressPayload);
+        $this->assertNotNull($responseData);
+        $this->assertEquals('payment',$responseData['items'][0]['entity']);
+        $this->assertEquals($paymentEntity['id'],$responseData['items'][0]['id']);
+        $senderData = $responseData['items'][0]['sender_address'];
+
+
+        $this->assertEquals('David Jenkins',$senderData['name']);
+        $this->assertEquals('default address for b2b',$senderData['line1'] );
+        $this->assertNull($senderData['city']);
+        $this->assertEquals('gb',$senderData['country']);
+
+        return $response;
+
+    }
     public function testCashManagerTransactionNotificationForCurrencyCloudForFPS()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -1221,6 +1328,15 @@ class InternationalBankTransferTest extends TestCase
                     }
                     elseif ($action == 'get_sender_detail')
                     {
+                        $senderAddress = "David Jenkins; 31 High Street, Brighton, East Sussex, 560068;GB;1111111111;;00000000";
+
+                        if ($amount === 2199) {
+                            $senderAddress = "David Jenkins;, East Sussex, 560068 ;GB;1111111111;;00000000";
+                        }
+
+                        if ($amount === 3199) {
+                            $senderAddress = "David Jenkins;, Brighton exceeds expected city length, East Sussex, 560068;GB;1111111111;;00000000";
+                        }
                         return [
                             'data' => [
                                 'id'                      => "e68301d3-5b04-4c1d-8f8b-13a9b8437040",
@@ -1228,7 +1344,7 @@ class InternationalBankTransferTest extends TestCase
                                 'currency'                => $currency,
                                 'additional_information'  => "USTRD-0001",
                                 'value_date'              => "2018-07-04T00:00:00+00:00",
-                                'sender'                  => "David Jenkins; 31 High Street, Brighton, East Sussex, 560068;GB;1111111111;;00000000",
+                                'sender'                  => $senderAddress,
                                 'receiving_account_number'=> null,
                                 "receiving_account_iban"  => null,
                                 "created_at"              => "2018-07-04T14:57:38+00:00",
