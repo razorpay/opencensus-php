@@ -34,6 +34,7 @@ use RZP\Models\Payment\Processor\Upi as UpiPayment;
 use \RZP\Models\UpiMandate\Frequency as UpiFrequency;
 use \RZP\Models\UpiMandate\Validator as UpiValidator;
 use RZP\Models\Customer\GatewayToken\Core as GatewayToken;
+use RZP\Models\Terminal;
 
 class Core extends Base\Core
 {
@@ -176,7 +177,17 @@ class Core extends Base\Core
             }
         );
 
+        if ((new Terminal\Service())->removeAPITerminalReads(__FUNCTION__))
+        {
+            $token = $this->repo->token->findOrFail($token->getId());
+        }
+        else
+        {
         $token->refresh();
+
+            (new Terminal\Service())->pushTerminalDirectReadMetrics(__FUNCTION__, false);
+
+        }
 
         // ToDo: for metrics
         // $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_MIGRATED,$token->getMetricDimensions());
