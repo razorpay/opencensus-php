@@ -36,7 +36,7 @@ class Service extends Base\Service
 
     public function editIin($id, $input)
     {
-        $iin = $this->repo->iin->findOrFail($id);
+        $iin = $this->repo->iin->findOrFailAPIEntity($id);
 
         $this->formatEditInput($iin, $input);
 
@@ -1014,7 +1014,7 @@ class Service extends Base\Service
             {
                 $flows[$flow] = '1';
             }
-    
+
             $entity[Entity::FLOWS] = $flows;
 
             foreach($features as $key => $value)
@@ -1056,8 +1056,8 @@ class Service extends Base\Service
 
     public function shouldReadFromBinServiceInShadowMode() : bool
     {
-        if (Environment::isTestingEnvironment($this->app['env']) === true || 
-            Environment::isEnvironmentQA($this->app['env']) === true || 
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
             Environment::isEnvironmentItf($this->app['env']) === true )
         {
             return false;
@@ -1075,8 +1075,8 @@ class Service extends Base\Service
 
     public function shouldReadBinServiceInPrimaryMode(string $iin) : bool
     {
-        if (Environment::isTestingEnvironment($this->app['env']) === true || 
-            Environment::isEnvironmentQA($this->app['env']) === true || 
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
             Environment::isEnvironmentItf($this->app['env']) === true)
         {
             return false;

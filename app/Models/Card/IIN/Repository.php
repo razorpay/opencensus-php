@@ -121,11 +121,11 @@ class Repository extends Base\Repository
         if (!empty($iin) && $iinService->shouldReadBinServiceInPrimaryMode($iin) === true)
         {
             $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_PRIMARY_READ_MODE);
-            
+
             if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
             {
                 $iinEntity = new Entity();
-        
+
                 return $iinEntity->forceFill($binServiceIINEntity);
             }
         }
@@ -152,9 +152,9 @@ class Repository extends Base\Repository
         if (!empty($iin) && $iinService->shouldReadBinServiceInPrimaryMode($iin) === true)
         {
             $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_PRIMARY_READ_MODE);
-    
+
             $iinEntity = new Entity();
-    
+
             return $iinEntity->forceFill($binServiceIINEntity);
         }
         else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
@@ -180,9 +180,9 @@ class Repository extends Base\Repository
         if (!empty($iin) && $iinService->shouldReadBinServiceInPrimaryMode($iin) === true)
         {
             $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_PRIMARY_READ_MODE);
-    
+
             $iinEntity = new Entity();
-    
+
             return $iinEntity->forceFill($binServiceIINEntity);
         }
         else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
@@ -196,5 +196,10 @@ class Repository extends Base\Repository
         }
 
         return $apiServiceIINEntity;
+    }
+
+    public function findOrFailAPIEntity($iin, $columns = array('*'), string $connectionType = null)
+    {
+        return parent::find($iin, $columns, $connectionType);
     }
 }
