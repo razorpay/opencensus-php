@@ -475,6 +475,11 @@ class Processor
     const ALLOW_PG_LEDGER_MERCHANTS_ON_REARCH_UPS = 'allow_pg_ledger_merchants_on_rearch_ups';
 
     /**
+     * Razorx flag to allow payment create bypass on customer_id
+     */
+    const ALLOW_UPI_GLOBAL_TOKEN_SAVE_ON_REARCH_UPS = 'allow_upi_global_token_save_on_rearch_ups';
+
+    /**
      * Razorx flag to indicate which method and gateway are supported by barricade service
      */
     const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
@@ -12082,15 +12087,26 @@ class Processor
      */
     private function shouldRouteUpsReArchTokenSave($input): bool
     {
-        if (empty($input[Payment\Entity::CUSTOMER_ID]) == true)
-        {
-            return false;
-        }
-
         // if merchant does not have save vpa feature enabled then we can route payments to rearch
         if ($this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::SAVE_VPA) === false)
         {
             return true;
+        }
+
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) == true)
+        {
+            $feature = self::ALLOW_UPI_GLOBAL_TOKEN_SAVE_ON_REARCH_UPS;
+
+            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
+
+            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
+                'merchant_id' => $this->merchant->getMerchantId(),
+                'variant'     => $variant,
+                'mode'        => $this->mode,
+                'feature'     => $feature,
+            ]);
+
+            return str_starts_with($variant, 'on') === true;
         }
 
         $feature = self::ALLOW_UPI_TOKEN_SAVE_ON_REARCH_UPS ;
