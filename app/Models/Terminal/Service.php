@@ -1268,6 +1268,8 @@ class Service extends Base\Service
             }
             else
             {
+                $client->pushTerminalSyncFailureEvent($terminal->getId(), Terminal\Constants::CREATE_OR_UPDATE);
+
                 $this->processMigrateTerminalFailure($terminal);
             }
         });

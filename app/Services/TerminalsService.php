@@ -326,7 +326,7 @@ class TerminalsService
     }
 
 
-    private function pushTerminalSyncFailureEvent($id, $action) {
+    public function pushTerminalSyncFailureEvent($id, $action) {
 
         try
         {
