@@ -42,8 +42,8 @@ import {
   ProviderConfiguration,
   PaymentMethodCoverage,
   TestingConfirmation,
+  IntegrationTesting,
 } from './components';
-import IntegrationTesting from './components/IntegrationTesting';
 import {
   isIntegrationAuditEnabled,
   isGatewaySupportIntegrationAudit,

@@ -13,6 +13,7 @@ import { fetchRules, fetchRule, fetchTerminalProviders } from 'merchant/reducers
 import lazy from 'merchant/routes/LazyLoader';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { shouldShowRules, shouldShowOnBoarding } from 'merchant/views/Navigator/components/util';
+import { isIntegrationAuditEnabled } from 'merchant/views/Optimizer/AddProvider/utils';
 
 const AddProvider = lazy(() =>
   import(/* webpackChunkName: 'AddProvider' */ 'merchant/views/Navigator/components/AddProvider'),
@@ -20,6 +21,12 @@ const AddProvider = lazy(() =>
 
 const AddProviderV2 = lazy(() =>
   import(/* webpackChunkName: 'AddProviderV2' */ 'merchant/views/Optimizer/AddProvider'),
+);
+
+const ProviderDetailsV2 = lazy(() =>
+  import(
+    /* webpackChunkName: "componentsProviderDetailsV2" */ 'merchant/views/Optimizer/AddProvider/ProviderView'
+  ),
 );
 
 const CreateRule = lazy(() =>
@@ -53,6 +60,7 @@ class Navigator extends React.Component {
   render() {
     const { user, splitz } = this.props;
     const addProviderExpEnabled = addProviderRevamp(splitz);
+    const integrationAuditFlowEnabled = isIntegrationAuditEnabled(splitz);
 
     const redirectionURL = shouldShowRules(user) ? '/optimizer/rules' : '/optimizer/onboarding';
 
@@ -74,6 +82,15 @@ class Navigator extends React.Component {
                 element={
                   <RouteGuard>
                     {addProviderExpEnabled ? <AddProviderV2 /> : <AddProvider />}
+                  </RouteGuard>
+                }
+              />
+
+              <Route
+                path="provider/:id/*"
+                element={
+                  <RouteGuard>
+                    {integrationAuditFlowEnabled ? <ProviderDetailsV2 /> : null}
                   </RouteGuard>
                 }
               />

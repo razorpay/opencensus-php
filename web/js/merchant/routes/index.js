@@ -1,6 +1,7 @@
 import { isMobileResolution } from 'common/utils/rzp-utils';
 import store from 'merchant/store';
 import { getProvidedChannels } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
+import { isIntegrationAuditEnabled } from 'merchant/views/Optimizer/AddProvider/utils';
 import { isPartnershipsForPosEnabled } from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import {
@@ -404,6 +405,7 @@ const entityDetailsMap = {
   },
   '/optimizer/provider/:id': {
     component: ProviderDetails,
+    additionalCondition: (_, extraConfig) => !isIntegrationAuditEnabled(extraConfig?.splitz),
   },
   '/offers/:id(offer_.+)': {
     component: OfferEntity,
