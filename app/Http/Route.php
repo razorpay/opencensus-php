@@ -631,8 +631,8 @@ class Route
         'terminal_edit_god_mode'                   => ['put',      'terminals/god_mode_edit/{id}',                   'TerminalController@putTerminal'                                    ],// Only the permission is different thant terminal_edit
         'terminal_edit_validatev3'                 => ['post',     'terminals/{id}/validate_edit_v3',                'TerminalController@updateTerminalValidatev3'                       ],
         'terminal_edit_v3'                         => ['patch',    'terminals/{id}/v3',                              'TerminalController@updateTerminalv3'                               ],
-        'terminal_edit_god_mode_validatev3'        => ['post',     'terminals/god_mode_edit/{id}/validate_edit_v3',  'TerminalController@updateTerminalValidatev3'                                    ],
-        'terminal_edit_god_mode_v3'                => ['patch',    'terminals/god_mode_edit/{id}/v3',                'TerminalController@updateTerminalv3'                                    ],// Only the permission is different thant terminal_edit
+        'terminal_edit_god_mode_validatev3'        => ['post',     'terminals/god_mode_edit/{id}/validate_edit_v3',  'TerminalController@updateTerminalGodModeValidatev3'                ],
+        'terminal_edit_god_mode_v3'                => ['patch',    'terminals/god_mode_edit/{id}/v3',                'TerminalController@updateTerminalGodModev3'                        ],// Only the permission is different thant terminal_edit
         'terminal_fetch_editable_fields'           => ['get',      'terminals/editable_fields',                      'TerminalController@getEditableFields'                              ],
         'buy_pricing_assign_bulk'                  => ['post',     'buy_pricing/assign/bulk',                        'TerminalController@postBulkAssignBuyPricingPlans'                  ],
         'terminal_edit_internal'                   => ['put',      'terminals/{id}/internal',                        'TerminalController@putTerminal'                                    ],
@@ -6113,8 +6113,6 @@ class Route
         'internal_merchant_auto_disabled_methods',
         'terminal_edit_internal',
         'terminal_edit_god_mode',
-        'terminal_edit_god_mode_validatev3',
-        'terminal_edit_god_mode_v3',
         'terminal_fetch_editable_fields',
         'internal_send_merchant_email',
         'terminal_fetch_by_id_internal',

@@ -354,12 +354,12 @@ class Service extends Base\Service
 
     public function validateTerminalGodModeEditV3($id, $input)
     {
-        return $this->app['terminals_service']->validateTerminalEditV3($id, $input);
+        return $this->app['terminals_service']->validateTerminalGodModeEditV3($id, $input);
     }
 
     public function godModeEditTerminalV3($terminalId, $input)
     {
-        return $this->app['terminals_service']->editTerminalV3($terminalId, $input);
+        return $this->app['terminals_service']->godModeEditTerminalV3($terminalId, $input);
     }
 
     public function getEditableFields()
