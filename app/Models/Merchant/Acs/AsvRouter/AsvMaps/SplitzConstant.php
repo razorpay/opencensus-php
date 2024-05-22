@@ -88,4 +88,6 @@ final class SplitzConstant
     const SPLITZ_SEND_TRANSACTION_FLOW_TO_ASV = 'splitz_send_transaction_flow_to_asv';
 
     const SPLITZ_SEND_RELOAD_TO_ASV = 'splitz_send_reload_to_asv';
+
+    const SPLITZ_ENABLE_EXCLUSION_FLOW = 'splitz_enable_exclusion_flow';
 }

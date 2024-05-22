@@ -97,6 +97,7 @@ final class RepoAndFunctionToSplitzMap
     public const ROUTE_FILTER_REQUEST_TO_ASV = SplitzConstant::SPLITZ_SEND_FILTER_TO_ASV;
     public const ROUTE_TRANSACTION_FLOW_TO_ASV = SplitzConstant::SPLITZ_SEND_TRANSACTION_FLOW_TO_ASV;
     public const ROUTE_RELOAD_REQUEST_TO_ASV = SplitzConstant::SPLITZ_SEND_RELOAD_TO_ASV;
+    public const ENABLE_EXCLUSION_FLOW = SplitzConstant::SPLITZ_ENABLE_EXCLUSION_FLOW;
 
     public static function getExperimentName(string $repoClass, string $functionName): string
     {
@@ -125,5 +126,9 @@ final class RepoAndFunctionToSplitzMap
 
     public static function getExperimentNameForTransactionFlow(): string {
         return self::ROUTE_TRANSACTION_FLOW_TO_ASV;
+    }
+
+    public static function getExperimentNameForEnableExclusionFlow(): string {
+        return self::ENABLE_EXCLUSION_FLOW;
     }
 }
