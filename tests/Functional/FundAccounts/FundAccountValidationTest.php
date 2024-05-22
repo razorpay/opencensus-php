@@ -1278,8 +1278,6 @@ class FundAccountValidationTest extends TestCase
 
         $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_COMPOSITE_API_HANDLING => 'on']);
-
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
@@ -1304,6 +1302,10 @@ class FundAccountValidationTest extends TestCase
         ];
 
         $this->verifyFAVStatusEvent('fund_account_validation.status', $expectedProperties, $isEventValidated);
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $this->assertEquals('new_fav_composite', $fav['receipt']);
 
         $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
 
@@ -1355,8 +1357,6 @@ class FundAccountValidationTest extends TestCase
 
         $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_COMPOSITE_API_HANDLING => 'on']);
-
         Queue::fake();
 
         (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
@@ -1374,10 +1374,14 @@ class FundAccountValidationTest extends TestCase
 
         $response = $this->startTest();
 
-        $fav         = $this->getLastEntity('fund_account_validation', true);
-        $txn = $this->getLastEntity('transaction', true);
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        self::assertEquals("new_fav_composite", $fav['receipt']);
+
+        $fav     = $this->getLastEntity('fund_account_validation', true);
+        $txn     = $this->getLastEntity('transaction', true);
         $balance = $this->getLastEntity('balance', true);
-        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $fta     = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fav['id'], $txn['entity_id']);
         $this->assertEquals('fund_account_validation', $txn['type']);
@@ -2641,6 +2645,25 @@ class FundAccountValidationTest extends TestCase
         $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
 
         $this->testCreateValidationWithFundAccountId();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $fav['id']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCompositeFavByIdInAPI()
+    {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
+        $this->testCreateValidationWithComposite();
 
         $fav = $this->getLastEntity('fund_account_validation', true);
 

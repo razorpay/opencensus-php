@@ -84,9 +84,6 @@ final class RazorxTreatment
     const ORDER_OUTBOX_ONBOARDING = 'order_outbox_onboarding';
 
     //It is used to maintain backward compatibility for fav composite api response.
-    const FAV_COMPOSITE_API_HANDLING = 'fav_composite_api_handling';
-
-    //It is used to maintain backward compatibility for fav composite api response.
     const FAV_COMPOSITE_SERVICE_FORWARDING = 'fav_composite_service_forwarding';
 
     // Decide whom to use k8s batch upload job instead of queue worker

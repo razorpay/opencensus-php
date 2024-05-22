@@ -39,6 +39,8 @@ class Constants
 
     const DESC_CREATED                    = "validation request is created";
 
+    const TYPE_NEW_FAV_COMPOSITE          = "new_fav_composite";
+
 
     protected $slackSettings;
 

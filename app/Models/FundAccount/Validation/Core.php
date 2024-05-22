@@ -117,16 +117,25 @@ class Core extends Base\Core
 
         $validationRequestType = Constants::TYPE_OPTIMIZED;
 
-        if ((isset($input[Entity::FUND_ACCOUNT][Entity::ID]) === false))
+        if ((isset($input[Entity::FUND_ACCOUNT][Entity::ID]) === false)
+            && (isset($input[Entity::SOURCE_ACCOUNT_NUMBER]) === true))
         {
             $isCompositeFavRequest = true;
         }
 
-        $newCompositeResponseApplicable = $this->app->razorx->getTreatment($merchant->getId(),
-            RazorxTreatment::FAV_COMPOSITE_API_HANDLING,
-            $this->mode);
+        $isFavServiceForwardingApplicable = $this->isFavServiceForwardingApplicable($merchant);
 
-        if (($isCompositeFavRequest === true) && ($newCompositeResponseApplicable === RazorxTreatment::RAZORX_VARIANT_ON))
+        $this->trace->info(TraceCode::FAV_MERCHANT_FLAGS_STATUS, [
+            'merchant_id'           => $merchant->getId(),
+            'fav_service_enabled'   => $isFavServiceForwardingApplicable,
+            'isCompositeFavRequest' => $isCompositeFavRequest
+        ]);
+
+        if (($isCompositeFavRequest === true) && ($isFavServiceForwardingApplicable === true))
+        {
+            return $this->createFavUsingMicroService($merchant, $input);
+        }
+        else if ($isCompositeFavRequest === true)
         {
             $validator = new Validator();
 
@@ -160,48 +169,6 @@ class Core extends Base\Core
                 $input[Entity::CURRENCY] = "INR";
             }
         }
-        else if (($isCompositeFavRequest === true) && ($this->isFavServiceForwardingApplicable($merchant) === true))
-        {
-            $this->trace->info(TraceCode::FAV_MERCHANT_FLAGS_STATUS, [
-                'merchant_id'           => $merchant->getId(),
-                'fav_service_enabled'   => $this->isFavServiceForwardingApplicable($merchant) === true,
-                'isCompositeFavRequest' => $isCompositeFavRequest
-            ]);
-
-            $validator = new Validator();
-
-            $validator->setStrictFalse();
-
-            $validator->validateInput('composite_create', $input);
-
-            $fundAccountData = $this->createFundAccountForCompositeFav($input, $merchant);
-
-            $favInput = $this->createInputForFavMicroService($input, $fundAccountData);
-
-            $response =  $this->favCreateServiceClient->createFavViaMicroservice($favInput, $merchant->getId());
-
-            $this->trace->info(
-                TraceCode::FAV_CREATE_RESPONSE_FROM_MICROSERVICE,
-                [
-                    'fav_id' => $response['id'],
-                    'merchant_id' => $merchant->getId(),
-                    'response' => $response
-                ]);
-
-            $id = $response[Entity::ID];
-
-            $id = Entity::verifyIdAndStripSign($id);
-
-            $fundAccountValidation = new FundAccount\Validation\Entity();
-
-            $fundAccountValidation->setId($id);
-
-            $fundAccountValidation->setIsCreatedUsingFavService(1);
-
-            $fundAccountValidation->favServiceResponse = $response;
-
-            return $fundAccountValidation;
-        }
 
         if ((isset($input['balance_id']) === false) and
             (isset($input['fund_account']['id']) === true))
@@ -214,7 +181,7 @@ class Core extends Base\Core
 
         try
         {
-            $fundAccountValidation = $this->createValidationEntity($input, $merchant);
+            $fundAccountValidation = $this->createValidationEntity($input, $merchant, $isCompositeFavRequest);
 
             // Skip fts calls for validation in case of ledger failure
             // This will be picked up from async job when ledger status is checked
@@ -276,21 +243,51 @@ class Core extends Base\Core
         // Todo: check if pushing this metric is ok in case of ledger reverse shadow failure
         (new Metric)->pushCreatedMetrics($fundAccountValidation->getFundAccountType());
 
-        $this->setAdditionalFieldsForCompositeResponse($fundAccountValidation, $newCompositeResponseApplicable);
+        $this->setAdditionalFieldsForCompositeResponse($fundAccountValidation, $isCompositeFavRequest);
 
         return $fundAccountValidation;
     }
 
-    public function setAdditionalFieldsForCompositeResponse(Entity $fav, string $variant = null)
+    public function createFavUsingMicroService(Merchant\Entity $merchant, array $input)
     {
-        if ($variant === null)
-        {
-            $variant = $this->app->razorx->getTreatment($fav->merchant->getId(),
-                RazorxTreatment::FAV_COMPOSITE_API_HANDLING,
-                $this->mode);
-        }
+        $validator = new Validator();
 
-        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        $validator->setStrictFalse();
+
+        $validator->validateInput('composite_create', $input);
+
+        $fundAccountData = $this->createFundAccountForCompositeFav($input, $merchant);
+
+        $favInput = $this->createInputForFavMicroService($input, $fundAccountData);
+
+        $response =  $this->favCreateServiceClient->createFavViaMicroservice($favInput, $merchant->getId());
+
+        $this->trace->info(
+            TraceCode::FAV_CREATE_RESPONSE_FROM_MICROSERVICE,
+            [
+                'fav_id' => $response['id'],
+                'merchant_id' => $merchant->getId(),
+                'response' => $response
+            ]);
+
+        $id = $response[Entity::ID];
+
+        $id = Entity::verifyIdAndStripSign($id);
+
+        $fundAccountValidation = new FundAccount\Validation\Entity();
+
+        $fundAccountValidation->setId($id);
+
+        $fundAccountValidation->setIsCreatedUsingFavService(1);
+
+        $fundAccountValidation->favServiceResponse = $response;
+
+        return $fundAccountValidation;
+    }
+
+    public function setAdditionalFieldsForCompositeResponse(Entity $fav, bool $isCompositeFavRequest = false)
+    {
+        if (($isCompositeFavRequest === true) || ($fav->getReceipt() === Constants::TYPE_NEW_FAV_COMPOSITE))
         {
             $fav->setIsCompositeResponse(true);
 
@@ -612,7 +609,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    protected function createValidationEntity(array $input, Merchant\Entity $merchant): Entity
+    protected function createValidationEntity(array $input, Merchant\Entity $merchant, $isCompositeFavRequest = false): Entity
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
@@ -629,7 +626,7 @@ class Core extends Base\Core
             return $validation;
         }
 
-        $validation = $this->repo->transaction(function () use ($input, $validation, $merchant)
+        $validation = $this->repo->transaction(function () use ($input, $validation, $merchant, $isCompositeFavRequest)
         {
             $this->runInputValidations($validation, $input);
 
@@ -638,6 +635,11 @@ class Core extends Base\Core
             $processor->setDefaultValuesForValidation();
 
             $validation->setAttempts(1);
+
+            if ($isCompositeFavRequest === true)
+            {
+                $validation->setReceipt(Constants::TYPE_NEW_FAV_COMPOSITE);
+            }
 
             // We are saving here because when creating transaction,
             // it is assumed that source already exist.

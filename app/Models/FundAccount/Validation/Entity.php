@@ -349,6 +349,11 @@ class Entity extends Base\PublicEntity
         $this->isCompositeResponse = $flag;
     }
 
+    public function setReceipt(string $value)
+    {
+        $this->setAttribute(self::RECEIPT, $value);
+    }
+
     // -------------- Public Setters --------------
 
     public function setPublicEntityAttribute(array & $array)

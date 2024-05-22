@@ -2012,6 +2012,55 @@ return [
         ],
     ],
 
+    'testGetCompositeFavByIdInAPI' => [
+        'request' => [
+            'url' => '/fund_accounts/validations/%s',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'fund_account.validation',
+                'fund_account' => [
+                    'entity' => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc' => 'SBIN0010411',
+                        'bank_name' => 'State Bank of India',
+                        'name' => 'Rohit Keshwani',
+                        'notes' => [],
+                        'account_number' => '123456789'
+                    ],
+                    'batch_id' => null,
+                    'active' => true,
+                    'contact' => [
+                        'entity' => 'contact',
+                        'name' => 'customer',
+                        'contact' => null,
+                        'email' => null,
+                        'type' => null,
+                        'reference_id' => null,
+                        'batch_id' => null,
+                        'active' => true,
+                        'notes' => [],
+                    ]
+                ],
+                'status' => 'completed',
+                'notes' => [],
+                'validation_results' => [
+                    'account_status' => 'active',
+                    'registered_name' => 'Razorpay Test',
+                    'name_match_score' => '19',
+                    'details' => 'The beneficiary account is valid'
+                ],
+                'status_details' => [
+                    'description' => 'validation request is completed',
+                    'source' => 'beneficiary_bank',
+                    'reason' => 'validation_completed'
+                ]
+            ]
+        ],
+    ],
+
     'testGetFavByIdFromMicroservice' => [
         'request'  => [
             'url'    => '/fund_accounts/validations/%s',
