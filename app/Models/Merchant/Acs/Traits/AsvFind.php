@@ -214,7 +214,7 @@ trait AsvFind
     {
         $app = App::getFacadeRoot();
 
-        if ($entityName == "terminal" && $app->environment(Environment::PRODUCTION)) {
+        if (in_array($entityName, ["terminal", "payout"]) && $app->environment(Environment::PRODUCTION)) {
             $shouldCallAsv = true;
         } else {
             $shouldCallAsv = $this->asvRouter->shouldRouteFindForImplicitJoinToAccountService($id, $entityName, $columns, $connectionType, get_class($this), FunctionConstant::FIND_FOR_IMPLICIT_JOIN);

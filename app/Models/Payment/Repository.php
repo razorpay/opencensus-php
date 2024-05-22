@@ -3854,7 +3854,7 @@ EOT;
         // `payments`.`method` = ? and
         // `gateway` = ?
         //
-        return $this->newQuery()
+        $payment =  $this->newQuery()
                     ->select($selectCols)
                     ->join(
                       Table::TOKEN,
@@ -3870,8 +3870,10 @@ EOT;
                     ->where($paymentRecurringColumn, 1)
                     ->where($paymentMethodColumn, Method::EMANDATE)
                     ->where(Entity::GATEWAY, $gateway)
-                    ->with('merchant')
                     ->firstOrFail();
+
+        $payment->merchant;
+        return $payment;
     }
 
     protected function addQueryParamBankReference($query, $params)

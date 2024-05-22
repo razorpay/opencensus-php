@@ -35,12 +35,14 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Workflow\Action\Checker;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 use RZP\Models\PayoutsDetails\Entity as PayoutDetailsEntity;
 use RZP\Models\Workflow\Service\StateMap\Entity as WorkflowStateMap;
 use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMap;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -859,10 +861,21 @@ class Repository extends Base\Repository
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $purposeColumn = $this->dbColumn(Entity::PURPOSE);
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->with(['balance', 'merchant', 'merchant.org'])
-                      ->where($statusColumn, '=', Status::QUEUED)
-                      ->where($balanceIdColumn, '=', $balanceId);
+        $newAsvFlow = (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__);
+
+        if($newAsvFlow === true)
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                ->with(['balance'])
+                ->where($statusColumn, '=', Status::QUEUED)
+                ->where($balanceIdColumn, '=', $balanceId);
+        } else
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                ->with(['balance', 'merchant', 'merchant.org'])
+                ->where($statusColumn, '=', Status::QUEUED)
+                ->where($balanceIdColumn, '=', $balanceId);
+        }
 
         if ($purpose != null)
         {
@@ -874,8 +887,21 @@ class Repository extends Base\Repository
             $query->offset($offset);
         }
 
-        return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
+        $payouts =  $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
                      ->get();
+
+
+        if($newAsvFlow === true)
+        {
+            foreach ($payouts as $payout)
+            {
+                if(empty($payout) === false && $payout->getMerchantId() !== null)
+                {
+                    $payout->merchant;
+                }
+            }
+        }
+        return $payouts;
     }
 
     public function fetchCountOfQueuedPayoutsForBalance(string $balanceId)
