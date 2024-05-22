@@ -1556,10 +1556,7 @@ class Core extends Base\Core
 
     public function createRZPFeesContactAndFundAccount(Merchant\Entity $merchant, string $channel)
     {
-        $rzpFeesContacts = $this->repo->contact->fetch([
-                                                           Contact\Entity::TYPE => Contact\Type::RZP_FEES
-                                                       ],
-                                                       $merchant->getId());
+        $rzpFeesContacts = $this->repo->contact->fetchContactsFromReplica($merchant->getId(), Contact\Type::RZP_FEES, 1);
 
         if ($rzpFeesContacts->count() === 0)
         {

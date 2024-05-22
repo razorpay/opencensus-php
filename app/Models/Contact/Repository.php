@@ -240,4 +240,13 @@ class Repository extends Base\Repository
                     ->limit($limit)
                     ->get();
     }
+
+    public function fetchContactsFromReplica(string $merchantId, string $type, int $limit = 1000)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+            ->merchantId($merchantId)
+            ->where(Entity::TYPE, '=', $type)
+            ->limit($limit)
+            ->get();
+    }
 }
