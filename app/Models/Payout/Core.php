@@ -7416,7 +7416,7 @@ class Core extends Base\Core
     public function handlePayoutProcessedForPayoutService(
         Entity $payout,
         string $ftaStatus = null,
-        array $ftsSourceAccountInformation = [])
+        array  $ftsSourceAccountInformation = [])
     {
         $ftsInfo = [
             Constants\Entity::FTS_STATUS => $ftaStatus
@@ -7428,6 +7428,16 @@ class Core extends Base\Core
             "",
             "",
             $ftsInfo + $ftsSourceAccountInformation);
+
+        $merchant = $payout->merchant;
+        if (empty($merchant) === false)
+        {
+            if ($payout->isBalanceAccountTypeDirect() === true)
+            {
+                $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_PAYOUT_PROCESSED, $merchant);
+            }
+        }
+
     }
 
     public function handlePayoutReversedForPayoutService(Entity $payout,

@@ -7,6 +7,7 @@ use RZP\Exception\InvalidArgumentException;
 class TraceCode extends \Razorpay\Trace\TraceCode
 {
     //consents
+    const PS_CA_FEE_RECOVERY_FAILED                 = 'PS_CA_FEE_RECOVERY_FAILED';
     const SKIP_NOTIFY_ON_LATE_AUTH = 'SKIP_NOTIFY_ON_LATE_AUTH';
     const FAIL_CREATED_PAYMENT_UNDER_FEATURE_FLAG = 'FAIL_CREATED_PAYMENT_UNDER_FEATURE_FLAG';
     const QR_API_REF_ID_GENERATION_FAILED           = 'QR_API_REF_ID_GENERATION_FAILED';

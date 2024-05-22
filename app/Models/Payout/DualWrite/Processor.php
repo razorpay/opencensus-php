@@ -3,12 +3,19 @@
 namespace RZP\Models\Payout\DualWrite;
 
 use App;
-use Illuminate\Foundation\Application;
-
-use RZP\Error\ErrorCode;
 use RZP\Services\Mutex;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
+use RZP\Models\FeeRecovery;
+use RZP\Models\Payout\Entity;
+use RZP\Models\Payout\Status;
 use RZP\Base\RepositoryManager;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
+use Illuminate\Foundation\Application;
+use RZP\Constants\Entity as EntityConstant;
+
 
 class Processor
 {
@@ -69,6 +76,16 @@ class Processor
             function() use ($payoutId) {
                 $this->repo->transaction(function() use ($payoutId)
                 {
+                    /** @var Entity $apiPayoutBeforeDualWrite */
+                    $apiPayoutBeforeDualWrite= $this->repo->payout->find($payoutId);
+                    $previousStatus= null;
+
+                    if($apiPayoutBeforeDualWrite!==null)
+                    {
+                        $previousStatus= $apiPayoutBeforeDualWrite->getStatus();
+                    }
+
+
                     (new Payout)->dualWritePSPayout($payoutId);
 
                     (new Reversal)->dualWritePSReversal($payoutId);
@@ -82,10 +99,127 @@ class Processor
                     (new PayoutStatusDetails)->dualWritePSPayoutStatusDetails($payoutId);
 
                     (new IdempotencyKey)->dualWritePSPayoutIdempotencyKey($payoutId);
+
+                    $this->makeFeeRecoveryIfApplicableForPSCAPayout($payoutId, $previousStatus);
+
                 });
             },
             self::MUTEX_LOCK_TIMEOUT_PS_DUAL_WRITE,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
     }
+
+    /**
+     * @param string $payoutId
+     * @param mixed $previousStatus
+     * @return void
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+    function makeFeeRecoveryIfApplicableForPSCAPayout(string $payoutId, mixed $previousStatus): void
+    {
+        /** @var Entity $apiPayout */
+        $apiPayout = $this->repo->payout->find($payoutId);
+
+        if ( $apiPayout->isBalanceAccountTypeDirect() === true and $previousStatus !== null)
+        {
+            $status = $apiPayout->getStatus();
+            if ($previousStatus === $status)
+            {
+                return;
+            }
+            // We need to create a fee_recovery entity for every payout when it goes from created to initiated state.
+            // Keeping this code here because this status change is allowed only once and there is no chance of this
+            // getting triggered twice
+            $this->feeRecoveryForPSCAPayout($apiPayout, $previousStatus);
+
+            switch ($status)
+            {
+                case Status::PROCESSED:
+                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($apiPayout);
+                    break;
+
+                case Status::REVERSED:
+                    $reversal = $this->repo->reversal->findReversalForPayout($payoutId);
+                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($apiPayout, $previousStatus, $reversal);
+                    break;
+
+                case Status::FAILED:
+                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($apiPayout, $previousStatus);
+                    break;
+            }
+
+        }
+    }
+
+
+    public function feeRecoveryForPSCAPayout(Entity $payout, $previous)
+    {
+        $status = $payout->getStatus();
+
+        try
+        {
+            if (($previous === Status::CREATED) and
+                ($status === Status::INITIATED) and
+                ($payout->isBalanceAccountTypeDirect() === true) and
+                ($payout->getFeeType() !== Transaction\CreditType::REWARD_FEE))
+            {
+                $featureEnabled = (new \RZP\Models\Merchant\Credits\Service())->isRzpxFeeCreditEnabledForMerchant($payout->merchant);
+
+                if ($featureEnabled === true and $payout->getFeeType() === null)
+                {
+                    $feeRecovery = (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($payout);
+
+                    if ($feeRecovery === null)
+                    {
+                        throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID,
+                            null,
+                            [
+                                'entity_id' => $payout->getId(),
+                                'entity_type' => 'payout'
+                            ]);
+                    }
+
+                    $fees = $payout->getFees();
+
+                    $app = App::getFacadeRoot();
+
+                    $app['repo']->transaction(
+                        function () use ($feeRecovery, $fees, $payout)
+                        {
+                            $feeCreditsConsumed = (new \RZP\Models\Merchant\Credits\Transaction\Core)->subtractAndGetMerchantCreditsConsumed($payout->merchant, Entity::FEE_CREDIT, Entity::BANKING, $fees, $payout);
+
+                            if ($feeCreditsConsumed !== 0 and $feeCreditsConsumed === $fees)
+                            {
+                                // We will set the payout_id in place of recovery payout_id.
+                                $feeRecovery->setRecoveryPayoutId($payout->getId());
+
+                                (new FeeRecovery\Core)->updateFeeRecoveryStatusForFeeCredit($feeRecovery, FeeRecovery\Status::RECOVERED);
+                            }
+                        });
+                }
+                else
+                {
+                    (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($payout, false);
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PS_CA_FEE_RECOVERY_FAILED,
+                [
+                    'entity_id' => $payout->getId(),
+                    'entity_type' => EntityConstant::PAYOUT
+                ]
+            );
+
+            throw $e;
+        }
+    }
+
 }
+
