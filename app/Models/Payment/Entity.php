@@ -138,6 +138,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
     const LOCAL_TOKEN           = 'localToken';
+    const GLOBAL_TOKEN          = 'globalToken';
     const API_VAULT             = 'api_vault';
     const TOKEN_ID              = 'token_id';
     const GLOBAL_TOKEN_ID       = 'global_token_id';
@@ -2051,6 +2052,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setTokenRelations()
     {
         $this->ignoredRelations = [self::ORDER, self::LOCAL_TOKEN];
+    }
+
+    public function removeGlobalTokenRelations()
+    {
+        $this->ignoredRelations = [self::ORDER, self::GLOBAL_TOKEN];
     }
 
 // ----------------------- Mutator Ends ----------------------------------------

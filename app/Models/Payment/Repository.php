@@ -4891,12 +4891,20 @@ EOT;
     {
        if ($payment->isExternal() === false)
        {
-          if ($payment->isUpi() === true
-              and $payment->localToken !== null
-              and $payment->localToken->isExternal() === true)
-          {
-              $payment->setTokenRelations();
-          }
+           if ($payment->isUpi() === true
+               and $payment->localToken !== null
+               and $payment->localToken->isExternal() === true)
+           {
+               $payment->setTokenRelations();
+           }
+
+           if ($payment->isUpi() === true
+               and $payment->globalToken !== null
+               and $payment->globalToken->isExternal() === true)
+           {
+               $payment->removeGlobalTokenRelations();
+           }
+
 
           $emiPlan = $this->stripEmiRelation($payment);
 
