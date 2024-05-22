@@ -31,6 +31,7 @@ use Rzp\Bvs\Validation\V1\TwirpError;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\PaymentLink;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\GstinAuth;
 use RZP\Models\Merchant\BusinessDetail;
@@ -4332,7 +4333,9 @@ class Core extends Base\Core
 
                 $event = 'api.account.' . $status;
 
-                $this->app['events']->dispatch($event, $eventPayload);
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($event, $eventPayload) {
+                    $this->app['events']->dispatch($event, $eventPayload);
+                }));
             }
         });
 
