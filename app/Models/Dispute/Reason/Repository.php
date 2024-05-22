@@ -38,11 +38,11 @@ class Repository extends Base\Repository
         if (empty($code) === false)
         {
             return $query->where(Entity::CODE, $code)->latest()
-                                                     ->first();
+                                                     ->get();
         }
 
         return $query->latest()
-                     ->first();
+                     ->get();
     }
 
     public function getReasonByNetworkAndGatewayCode(string $network, string $gatewayCode)
