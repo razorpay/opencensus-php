@@ -9,6 +9,7 @@ use Carbon\Carbon;
 
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -67,7 +68,14 @@ class EnachNpciNetbanking extends Base
             }
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
-            
+
+            $this->trace->info(
+                TraceCode::EMANDATE_FILE_GENERATED,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
+                ]);
+
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
             
         }

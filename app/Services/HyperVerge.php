@@ -29,8 +29,6 @@ class HyperVerge
 
     protected $client;
 
-    protected $clientNew;
-
     /**
      * Trace instance used for tracing
      * @var Trace
@@ -39,19 +37,15 @@ class HyperVerge
 
     const REQUEST_TIMEOUT = 10;
 
-    const GENERATE_NACH = 'populateNACH';
-    const EXTRACT_NACH  = 'extractNach';
-    const GENERATE_NACH_V2 = 'nach_generation';
-    const EXTRACT_NACH_V2  = 'nach_extraction';
+    const GENERATE_NACH = 'nach_generation';
+    const EXTRACT_NACH  = 'nach_extraction';
 
     const RESULT = 'result';
     const DETAILS = 'details';
 
     const URLS = [
-        self::GENERATE_NACH => 'populateNACH',
-        self::EXTRACT_NACH  => 'readNACH',
-        self::GENERATE_NACH_V2 => 'nach_generation',
-        self::EXTRACT_NACH_V2  => 'nach_extraction',
+        self::GENERATE_NACH => 'nach_generation',
+        self::EXTRACT_NACH  => 'nach_extraction',
     ];
 
     const UMRN                        = 'UMRN';
@@ -134,13 +128,6 @@ class HyperVerge
         else {
             $this->client = $client;
         }
-
-        if ($this->clientNew === null){
-            $this->clientNew = new Client([
-                'base_uri' => "https://ind-engine.thomas.hyperverge.co/v1/",
-                'connect_timeout' => self::REQUEST_TIMEOUT
-            ]);
-        }
     }
 
     public function generateNACH(array $input, PaperMandate\Entity $paperMandate)
@@ -149,14 +136,11 @@ class HyperVerge
 
         unset($logInput[self::ACCOUNT_NUMBER]);
 
-        $newNachForm = $this->shouldGenerateOrExtractNewNachForm($paperMandate->getMerchantId());
-
         $this->trace->info(
             TraceCode::PAPER_MANDATE_CREATE_FORM_REQUEST_TO_HYPERVERGE,
             [
                 'paper_mandate_id' => $paperMandate->getPublicId(),
-                'input'            => $logInput,
-                'newNachForm'       => $newNachForm
+                'input'            => $logInput
             ]);
 
         $headers = $this->getHeaders($paperMandate);
@@ -167,30 +151,14 @@ class HyperVerge
 
         try
         {
-            if($newNachForm === true){
-                // adding 'uidType' here due to razorx, once we remove the razorx,
-                // move this to the place where we are declaring all the input parameters
-                $input['uidType'] = 'random_uppercase_alpha';
-
-                $response = $this->clientNew->request(
-                    Requests::POST,
-                    self::URLS[self::GENERATE_NACH_V2],
-                    [
-                        'body'    => json_encode($input, JSON_UNESCAPED_SLASHES),
-                        'headers' => $headers,
-                    ]
-                );
-            }
-            else{
-                $response = $this->client->request(
-                    Requests::POST,
-                    self::URLS[self::GENERATE_NACH],
-                    [
-                        'body'    => json_encode($input, JSON_UNESCAPED_SLASHES),
-                        'headers' => $headers,
-                    ]
-                );
-            }
+            $response = $this->client->request(
+                Requests::POST,
+                self::URLS[self::GENERATE_NACH],
+                [
+                    'body'    => json_encode($input, JSON_UNESCAPED_SLASHES),
+                    'headers' => $headers,
+                ]
+            );
         }
         catch (\Exception $e)
         {
@@ -234,75 +202,46 @@ class HyperVerge
 
         try
         {
-            $newNachForm = $this->shouldGenerateOrExtractNewNachForm($paperMandate->getMerchantId());
-            if($newNachForm === true){
-                // Determine MIME types of the image
-                $imageMimeType = ($input[PaperMandate\Entity::FORM_UPLOADED])->getMimeType();
-                $options = [
-                    'multipart' => [
-                        [
-                            'name'     => 'image',
-                            'contents' => fopen($input[PaperMandate\Entity::FORM_UPLOADED], 'r'),
-                            // Headers for this part
-                            'headers' => [
-                                'Content-Type' => $imageMimeType // Set the MIME type of the image
-                            ]
-                        ],
-                        [
-                            'name'     => 'enableOutputJPEG',
-                            'contents' => 'yes'
-                        ],
-                        [
-                            'name'     => 'enableOutputTIF',
-                            'contents' => 'no'
-                        ],
-                        [
-                            'name'     => 'enableOutputPDF',
-                            'contents' => 'no'
-                        ],
-                        [
-                            'name'     => PaperMandate\HyperVerge::DETECT_FORM_CHECKSUM,
-                            'contents' => 'yes'
+            // Determine MIME types of the image
+            $imageMimeType = ($input[PaperMandate\Entity::FORM_UPLOADED])->getMimeType();
+            $options = [
+                'multipart' => [
+                    [
+                        'name'     => 'image',
+                        'contents' => fopen($input[PaperMandate\Entity::FORM_UPLOADED], 'r'),
+                        // Headers for this part
+                        'headers' => [
+                            'Content-Type' => $imageMimeType // Set the MIME type of the image
                         ]
                     ],
-                    'headers'   => $headers,
-                ];
-
-                $this->trace->info(
-                    TraceCode::PAPER_MANDATE_EXTRACT_FORM_REQUEST_TO_HYPERVERGE,
                     [
-                        'transactionId' => $paperMandate->getPublicId(),
-                        'mimeType' => $imageMimeType,
-                        'newNachForm' => $newNachForm
-                    ]);
-
-                $response = $this->clientNew->request(Requests::POST, self::URLS[self::EXTRACT_NACH_V2], $options);
-            }
-            else{
-                $this->trace->info(
-                    TraceCode::PAPER_MANDATE_EXTRACT_FORM_REQUEST_TO_HYPERVERGE,
-                    [
-                        'transactionId' => $paperMandate->getPublicId(),
-                        'newNachForm' => $newNachForm
-                    ]);
-                $response = $this->client->request(Requests::POST, self::URLS[self::EXTRACT_NACH], [
-                    'multipart' => [
-                        [
-                            'name'     => 'image',
-                            'contents' => fopen($input[PaperMandate\Entity::FORM_UPLOADED], 'r')
-                        ],
-                        [
-                            'name'     => 'enableOutputJPEG',
-                            'contents' => 'yes'
-                        ],
-                        [
-                            'name'     => PaperMandate\HyperVerge::DETECT_FORM_CHECKSUM,
-                            'contents' => 'yes'
-                        ]
+                        'name'     => 'enableOutputJPEG',
+                        'contents' => 'yes'
                     ],
-                    'headers'   => $headers,
+                    [
+                        'name'     => 'enableOutputTIF',
+                        'contents' => 'no'
+                    ],
+                    [
+                        'name'     => 'enableOutputPDF',
+                        'contents' => 'no'
+                    ],
+                    [
+                        'name'     => PaperMandate\HyperVerge::DETECT_FORM_CHECKSUM,
+                        'contents' => 'yes'
+                    ]
+                ],
+                'headers'   => $headers,
+            ];
+
+            $this->trace->info(
+                TraceCode::PAPER_MANDATE_EXTRACT_FORM_REQUEST_TO_HYPERVERGE,
+                [
+                    'transactionId' => $paperMandate->getPublicId(),
+                    'mimeType' => $imageMimeType
                 ]);
-            }
+
+            $response = $this->client->request(Requests::POST, self::URLS[self::EXTRACT_NACH], $options);
         }
         catch (\Exception $e)
         {
@@ -484,27 +423,5 @@ class HyperVerge
             default:
                 return '';
         }
-    }
-
-    private function shouldGenerateOrExtractNewNachForm($merchantId): bool
-    {
-        try
-        {
-            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-            $status = $this->app['razorx']->getTreatment($merchantId,
-                RazorxTreatment::GENERATE_OR_EXTRACT_NEW_NACH_FORM, $mode);
-
-            return (strtolower($status) === 'on');
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::NEW_NACH_FORM_RZX_FAILURE
-            );
-        }
-        return false;
     }
 }

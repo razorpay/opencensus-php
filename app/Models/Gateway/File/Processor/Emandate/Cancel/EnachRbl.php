@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Emandate\Cancel;
 
 use RZP\Models\Gateway\File\Metric;
+use RZP\Trace\TraceCode;
 use Storage;
 use DOMDocument;
 use Carbon\Carbon;
@@ -67,7 +68,14 @@ class EnachRbl extends Base
             }
             
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
-            
+
+            $this->trace->info(
+                TraceCode::EMANDATE_FILE_GENERATED,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
+                ]);
+
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
         }
         catch (\Throwable $e)

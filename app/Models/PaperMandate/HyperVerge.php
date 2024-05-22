@@ -48,6 +48,7 @@ class HyperVerge extends Base\Core
     const FORM_CHECKSUM            = 'uid';
     const SET_FORM_CHECKSUM        = 'setUid';
     const DETECT_FORM_CHECKSUM     = 'detectUid';
+    const UID_TYPE                 = 'uidType';
 
     // Bank account types
     const SB     = 'SB';
@@ -185,6 +186,8 @@ class HyperVerge extends Base\Core
         }
 
         $input[self::SET_FORM_CHECKSUM] = "yes";
+
+        $input[self::UID_TYPE] = 'random_uppercase_alpha';
 
         $logoUrl = $this->merchant->getLogoUrl();
 

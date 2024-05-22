@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Nach\Cancel;
 
+use RZP\Trace\TraceCode;
 use Storage;
 use Carbon\Carbon;
 
@@ -64,7 +65,14 @@ class CombinedNachCiti extends Base
             }
             
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
-            
+
+            $this->trace->info(
+                TraceCode::EMANDATE_FILE_GENERATED,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
+                ]);
+
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
         }
         catch (\Throwable $e)
