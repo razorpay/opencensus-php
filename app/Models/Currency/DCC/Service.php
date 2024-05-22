@@ -211,7 +211,7 @@ class Service extends Base\Service
                 $supportedCurrencies[$currency]['amount'] = $this->roundOffGatewayAmountIfApplicable($gatewayAmount, $currency);
                 $supportedCurrencies[$currency]['forex_rate'] = (float) $forexRateConverted;
                 $supportedCurrencies[$currency]['fee'] =
-                    (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
+                    (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent, $denominationFactor);
                 $supportedCurrencies[$currency]['conversion_percentage'] = $markUpPercent;
                 $supportedCurrencies[$currency]['show_markup_conversion_percentage'] = ceil($markUpPercent - ($markUpPercent * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT/100)));
             }
@@ -270,7 +270,7 @@ class Service extends Base\Service
                 $supportedCurrencies[$currency]['amount'] = $this->roundOffGatewayAmountIfApplicable($gatewayAmount, $currency);
                 $supportedCurrencies[$currency]['forex_rate'] = (float) $forexRateConverted;
                 $supportedCurrencies[$currency]['fee'] =
-                    (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
+                    (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent, $denominationFactor);
                 $supportedCurrencies[$currency]['conversion_percentage'] = $markUpPercent;
                 $supportedCurrencies[$currency]['show_markup_conversion_percentage'] = ceil($markUpPercent - ($markUpPercent * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT/100)));
             }

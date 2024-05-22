@@ -4494,8 +4494,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             $array[PaymentMeta\Entity::DCC_MARK_UP_PERCENT] = ($paymentMetaEntity != null) ? $paymentMetaEntity->getDccMarkUpPercent() : null;
 
+            $denominationFactorGatewayCurrency = Currency\Currency::DENOMINATION_FACTOR[$this->getGatewayCurrency()];
+            $denominationFactorPaymentCurrency = Currency\Currency::DENOMINATION_FACTOR[$this->getCurrency()];
+            $denominationFactor = $denominationFactorGatewayCurrency / $denominationFactorPaymentCurrency;
+
             $array[self::DCC_MARKUP_AMOUNT] = ($this->isDcc() === true) ?
-                $this->getCurrencyConversionFee($this->getAmount(), $paymentMetaEntity->getForexRate(), $paymentMetaEntity->getDccMarkUpPercent()) : null;
+                $this->getCurrencyConversionFee($this->getAmount(), $paymentMetaEntity->getForexRate(), $paymentMetaEntity->getDccMarkUpPercent(), $denominationFactor) : null;
         }
     }
 
@@ -5877,7 +5881,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $timeWindow = self::PAYMENT_TIMEOUT_WALLET;
             }
         }
-        
+
         if ($this->isNetbanking() === true)
         {
             if ($this->getBank() === 'HDFC_C')
@@ -6903,10 +6907,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->paymentMeta->getGatewayAmount() > 0));
     }
 
-    public function getCurrencyConversionFee($baseAmount, $rate, $markUpPercent)
+    public function getCurrencyConversionFee($baseAmount, $rate, $markUpPercent, $denominationFactor)
     {
-        $fee = (($baseAmount * $rate * $markUpPercent) / 100);
-
+        $fee = (($baseAmount * $rate * $markUpPercent * $denominationFactor) / 100);
         return (int) ceil($fee);
     }
 

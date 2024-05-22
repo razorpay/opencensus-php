@@ -25,6 +25,7 @@ use RZP\Models\Merchant\Email as MerchantEmail;
 use RZP\Models\Reward\Repository as RewardRepository;
 use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Currency;
 
 class Notify
 {
@@ -664,12 +665,17 @@ class Notify
             $paymentMeta = $this->payment->paymentMeta;
             $gatewayAmount = $paymentMeta->getGatewayAmount();
             $gatewayCurrency = $paymentMeta->getGatewayCurrency();
+            $paymentCurrency = $this->payment->getCurrency();
+            $paymentAmount = $this->payment->getAmount();
+            $gatewayCurrencyDenomination = Currency\Currency::DENOMINATION_FACTOR[$gatewayCurrency];
+            $paymentCurrencyDenomination = Currency\Currency::DENOMINATION_FACTOR[$paymentCurrency];
+            $denominationFactor = $gatewayCurrencyDenomination / $paymentCurrencyDenomination;
+            $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent(), $denominationFactor);
 
-            $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent());
-            $data['payment']['exchange_rate'] = round($paymentMeta->getGatewayAmount() / $this->payment->getAmount(), 5);
+            $data['payment']['exchange_rate'] = round(($gatewayAmount / $gatewayCurrencyDenomination) / ($paymentAmount / $paymentCurrencyDenomination), 5);
             if($this->merchant->isDCCMarkupVisible()) {
                 $reducedDccMarkupPercent = ceil($paymentMeta->getDccMarkUpPercent() - ($paymentMeta->getDccMarkUpPercent() * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT/100)));
-                $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $reducedDccMarkupPercent);
+                $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $reducedDccMarkupPercent, $denominationFactor);
             }
 
             $feeAsPerCurrency = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $fee);
