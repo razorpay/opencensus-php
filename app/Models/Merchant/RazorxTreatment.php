@@ -472,6 +472,10 @@ final class RazorxTreatment
     // Experiment to enable on_hold payouts creation via payouts service
     const ENABLE_ON_HOLD_PAYOUTS_VIA_PAYOUTS_SERVICE = 'enable_on_hold_payouts_via_payouts_service';
 
+    const ENABLE_BAS_CHECK_FOR_PAYOUTS_SERVICE = 'enable_bas_check_for_payouts_service';
+
+    const ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE = 'enable_ca_flow_via_payouts_service';
+
     const ROUTE_ORDER_TO_PG_ROUTER = "route_order_to_pg_router";
 
     const ROUTE_ORDER_TO_PG_ROUTER_REVERSE = "route_order_to_pg_router_reverse";

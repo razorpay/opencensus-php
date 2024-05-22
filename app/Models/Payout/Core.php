@@ -86,6 +86,7 @@ use RZP\Models\PartnerBankHealth\Events;
 use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Merchant\Balance\FreePayout;
@@ -5194,10 +5195,20 @@ class Core extends Base\Core
         // the below logic tries to find entry in Banking account statement table(BAS) for a payout
         // BAS table has rows only for CA payouts. So skipping below code for VA payouts
         // We are also skipping this for payouts done via PS, since these checks will be migrated there.
-        if (($payout->balance->isAccountTypeShared() === true) or
-            ($payout->getIsPayoutService() === true))
+        if ($payout->balance->isAccountTypeShared() === true)
         {
             return;
+        }
+
+        if (($payout->getIsPayoutService() === true) and
+            ($payout->balance->isAccountTypeDirect() === true))
+        {
+            $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
+                RazorxTreatment::ENABLE_BAS_CHECK_FOR_PAYOUTS_SERVICE, Constants\Mode::LIVE);
+
+            if ($variant != 'on') {
+                return;
+            }
         }
 
         $bas = null;
@@ -8905,10 +8916,20 @@ class Core extends Base\Core
     private function updateStatusFromFailedToReversedIfDebitAndCreditFoundForCA(&$status, Entity $payout)
     {
         if (($status !== Status::FAILED) or
-            ($payout->balance->isAccountTypeShared() === true) or
-            ($payout->getIsPayoutService() === true))
+            ($payout->balance->isAccountTypeShared() === true))
         {
             return;
+        }
+
+        if (($payout->getIsPayoutService() === true) and
+            ($payout->balance->isAccountTypeDirect() === true))
+        {
+            $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
+                RazorxTreatment::ENABLE_BAS_CHECK_FOR_PAYOUTS_SERVICE, Constants\Mode::LIVE);
+
+            if ($variant != 'on') {
+                return;
+            }
         }
 
         $this->trace->info(

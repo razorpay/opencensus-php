@@ -4272,6 +4272,15 @@ class Base extends BaseCore
 
             if ($this->isPayoutServiceEnabled === true)
             {
+                if ($this->balance->getAccountType() === AccountType::DIRECT) {
+
+                    $variant = $this->app['razorx']->getTreatment($this->merchant->getMerchantId(),
+                        RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Constants\Mode::LIVE);
+
+                    if ($variant != 'on') {
+                        return false;
+                    }
+                }
                 if ((isset($input[Payout\Entity::BATCH_ID]) === true) or
                     (isset($input[Payout\Entity::IDEMPOTENCY_KEY]) === true) or
                     (empty($this->batchId) === false))
