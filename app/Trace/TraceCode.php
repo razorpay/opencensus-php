@@ -3306,6 +3306,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EVENT_POST_FAILED                                     = 'EVENT_POST_FAILED';
     const EVENT_PLUGINS_FAILED                                  = 'EVENT_PLUGINS_FAILED';
 
+    const GET_ROUTE_NAME_ERROR                                  = 'GET_ROUTE_NAME_ERROR';
     // Trace code for features
 
     const FEATURE_DELETE_REQUEST                                = 'FEATURE_DELETE_REQUEST';

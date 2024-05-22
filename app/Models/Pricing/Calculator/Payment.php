@@ -1142,7 +1142,17 @@ class Payment extends Base
                 $input['is_lrs_merchant'] = true;
                 $input['order_id'] = $this->entity->getOrderAttribute()['id'];
             }
-            $amount = $amount - (new Core)->getBaseAmount($fee, $currency, $baseCurrency, $input);
+
+            // incase of partnership fee calculation route currency conversion is not required
+            // as the fee in payment entity is already in base currency
+            if ($this->isPartnershipFeeCalculationRoute() === true)
+            {
+                $amount = $amount - $fee;
+            }
+            else
+            {
+                $amount = $amount - (new Core)->getBaseAmount($fee, $currency, $baseCurrency, $input);
+            }
         }
 
         if ($this->entity->getEntity() === (Entity::PAYMENT))
@@ -1159,13 +1169,29 @@ class Payment extends Base
     protected function shouldAdjustPaymentFee()
     {
         $payment = $this->entity;
-        $currentRoute = app('request.ctx')->getRoute();
-        if ($currentRoute == 'calculate_commission' && $payment->getFeeBearer(true) === FeeBearer::PLATFORM)
+        if ($this->isPartnershipFeeCalculationRoute() && $payment->getFeeBearer(true) === FeeBearer::PLATFORM)
         {
             return false;
         }
         return true;
     }
+
+    protected function isPartnershipFeeCalculationRoute()
+    {
+        try
+        {
+            $currentRoute = app('request.ctx')->getRoute();
+            return $currentRoute == 'calculate_commission';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::GET_ROUTE_NAME_ERROR, [
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
     protected function setRewardAmount()
     {
         if (($this->entity->getEntity() === (Entity::PAYMENT)) and
