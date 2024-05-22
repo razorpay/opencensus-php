@@ -3,8 +3,10 @@
 namespace RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
 
+use Illuminate\Database\Eloquent\Collection;
 use phpDocumentor\Reflection\Types\Null_;
 use Razorpay\Asv\RequestMetadata;
+use Rzp\Accounts\Merchant\V1\FilterRequest;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BaseException;
@@ -17,6 +19,10 @@ use RZP\Trace\TraceCode;
 
 class MerchantWebsite extends Base
 {
+    const FIND_MERCHANT_WEBSITE_BY_MERCHANT_ID
+        = 'find_merchant_website_by_merchant_id';
+    const FILTER_TIMEOUT_IN_MICRO_SECONDS = 5000000;
+
     public function __construct()
     {
         parent::__construct();
@@ -108,6 +114,23 @@ class MerchantWebsite extends Base
        return function() use ($id, $requestMetadata) {
             return $this->getLatestByMerchantIdOrFail($id, $requestMetadata);
         };
+    }
+
+    public function findWebsitesForMerchantId(
+        string $merchantId, string $lastDocumentId = ''
+    ): Collection|PublicCollection
+    {
+        $filterRequest = (new FilterRequest())
+            ->setQueryIdentifier(
+                self::FIND_MERCHANT_WEBSITE_BY_MERCHANT_ID
+            )
+            ->setBindings(
+                json_encode([$merchantId, $lastDocumentId])
+            );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantWebsiteCollectionFromResponse($response);
     }
 
 }

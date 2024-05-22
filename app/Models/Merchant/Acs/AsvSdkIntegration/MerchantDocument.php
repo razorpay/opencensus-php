@@ -28,6 +28,8 @@ class MerchantDocument extends Base
         = 'find_documents_for_merchant_id_and_document_type_and_date';
     const FIND_NON_DELETED_DOCUMENT_FOR_MERCHANT_ID_AND_VALIDATION_ID
          = 'find_non_deleted_document_for_merchant_id_and_validation_id';
+    const FIND_DOCUMENT_BY_MERCHANT_ID_ENTITY_TYPE_AND_SOURCE
+        = 'find_document_by_merchant_id_entity_type_and_source';
 
     const FILTER_TIMEOUT_IN_MICRO_SECONDS = 5000000;
 
@@ -284,6 +286,23 @@ class MerchantDocument extends Base
             )
             ->setBindings(
                 json_encode([$merchantId, $documentType, $from, $to, $lastDocumentId])
+            );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantDocumentCollectionFromResponse($response);
+    }
+
+    public function findDocumentsForMerchantIdAndEntityTypeAndSource(
+        string $merchantId, string $source, string $entityType, string $lastDocumentId = ''
+    ): Collection|PublicCollection
+    {
+        $filterRequest = (new FilterRequest())
+            ->setQueryIdentifier(
+                self::FIND_DOCUMENT_BY_MERCHANT_ID_ENTITY_TYPE_AND_SOURCE
+            )
+            ->setBindings(
+                json_encode([$merchantId, $source, $entityType, $lastDocumentId])
             );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);

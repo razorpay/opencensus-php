@@ -583,11 +583,49 @@ class Repository extends Base\Repository
 
     public function findAllDocumentsForMerchant(string $merchantId)
     {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                $results        = new PublicCollection();
+                $lastDocumentId = '';
+
+                do
+                {
+                    $subset = (new MerchantDocumentSDKWrapper())->findDocumentsForMerchantIdAndEntityTypeAndSource(
+                        $merchantId, 'UFH', 'merchant', $lastDocumentId
+                    );
+
+                    $lastDocumentId = $subset->pluck(Base\UniqueIdEntity::ID)->last();
+
+                    $results->push(...$subset);
+
+                } while(sizeof($subset) == AsvSdkIntegration::FETCH_SERVICE_FILTER_LIMIT);
+
+                $this->resetConnectionOnModels($results);
+
+                return $results;
+            }
+        }
+        else
+        {
+            $query =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA));
+        }
+
+        $results = $query
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::SOURCE, 'UFH')
                     ->where(Entity::ENTITY_TYPE, 'merchant')
                     ->get();
+
+        $this->resetConnectionOnModels($results);
+        return $results;
     }
 
     /*

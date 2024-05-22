@@ -31,6 +31,7 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\Merch
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantDetail as MerchantDetailProtoMapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantDocument as MerchantDocumentProtoMapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantEmail as MerchantEmailProtoMapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\MerchantWebsite as MerchantWebsiteProtoMapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\RequestHeadersHelper\RequestHeadersHelper;
 use RZP\Models\Merchant\Website\Entity;
 use RZP\Trace\TraceCode;
@@ -520,5 +521,24 @@ class Base
         }
 
         return (new Merchant\Email\Entity())->newCollection($merchantEmailsArray);
+    }
+
+    /**
+     * @param FilterResponse $response
+     *
+     * @return Collection|PublicCollection
+     */
+    public function getMerchantWebsiteCollectionFromResponse(FilterResponse $response): Collection|PublicCollection
+    {
+        $merchantWebsites = $response->getMerchantWebsites();
+        $merchantWebsitesArray = [];
+
+        foreach ($merchantWebsites as $merchantWebsite) {
+            $merchantWebsiteProtoConvertor = new MerchantWebsiteProtoMapper($merchantWebsite);
+            $merchantWebsiteEntity = $merchantWebsiteProtoConvertor->ToEntity();
+            $merchantWebsitesArray[] = $merchantWebsiteEntity;
+        }
+
+        return (new Merchant\Website\Entity())->newCollection($merchantWebsitesArray);
     }
 }

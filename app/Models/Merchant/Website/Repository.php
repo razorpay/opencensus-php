@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant\Website;
 use Database\Connection;
 use RZP\Models\Base;
 use RZP\Base\ConnectionType;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\RepositoryUpdateTestAndLiveAndAsv;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
@@ -13,8 +14,10 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant
 use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
+use RZP\Models\Merchant\Document\Entity;
 use RZP\Models\Merchant\Website\Entity as MerchantWebsiteEntity;
 use RZP\Modules\Acs\Wrapper\MerchantWebsite as MerchantWebsiteWrapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkIntegration;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantWebsite as MerchantWebsiteSDKWrapper;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 
@@ -104,9 +107,47 @@ class Repository extends Base\Repository
 
     public function getAllWebsiteDetailsForMerchantId(string $merchantId)
     {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            }
+            else
+            {
+                $results        = new PublicCollection();
+                $lastDocumentId = '';
+
+                do
+                {
+                    $subset = (new MerchantWebsiteSDKWrapper())->findWebsitesForMerchantId(
+                        $merchantId, $lastDocumentId
+                    );
+
+                    $lastDocumentId = $subset->pluck(Base\UniqueIdEntity::ID)->last();
+
+                    $results->push(...$subset);
+
+                } while(sizeof($subset) == AsvSdkIntegration::FETCH_SERVICE_FILTER_LIMIT);
+
+                $this->resetConnectionOnModels($results);
+
+                return $results;
+            }
+        }
+        else
+        {
+            $query =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA));
+        }
+
+        $results =  $query
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->get();
+
+        $this->resetConnectionOnModels($results);
+        return $results;
     }
 
     /*
