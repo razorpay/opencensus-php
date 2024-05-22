@@ -1692,6 +1692,28 @@ class Header
     const S2P_USERS_ONBOARDING_MANAGER_EMAIL_ID = "Reporting Manager Email ID (Optional) Team member reporting manager email ID (they should already be added to the MID)";
     const S2P_USERS_ONBOARDING_GROUP_IDS = "Groups (Optional) User groups that the team member is a part of (groups should already be added to the MID)";
 
+    // vendor onboarding headers
+    const VENDOR_ONBOARDING_NAME = "Vendor Name (Mandatory) Special characters not supported";
+    const VENDOR_ONBOARDING_EMAIL = "Vendor Email (Mandatory) Please enter the primary email account of the vendor. For example gaurav.kumar@example.com.";
+    const VENDOR_ONBOARDING_PHONE = "Vendor Phone Number (Mandatory) Please enter the primary phone number of the vendor.  For example enter 8809077840 rather than +91 8809077840";
+    const VENDOR_ONBOARDING_VERIFICATION_MODE = "Mode of Vendor Verification(Mandatory) Please enter 'Self' if vendor is KYC by you and 'RazorpayX Verification' if you want to empanel the vendor via RazorpayX";
+    const VENDOR_ONBOARDING_PORTAL_ACCESS = "Vendor Portal Access(Mandatory) Please enter Yes if you want to give your vendors access to the vendor portal and No to not.";
+    const VENDOR_ONBOARDING_CIN = "Vendor CIN Number (Optional) Typically 25 character long";
+    const VENDOR_ONBOARDING_MSME = "Vendor MSME Number (Optional) Typically 19 digits long";
+    const VENDOR_ONBOARDING_GST = "Vendor GST Number (Optional) Typically 15 character long";
+    const VENDOR_ONBOARDING_PAN = "Vendor PAN Number (Optional) Typically 10 character long";
+    const VENDOR_ONBOARDING_TAN = "Vendor TAN Number (Optional) Typically 10 character long";
+    const VENDOR_ONBOARDING_TDS_CATEGORY = "Default Vendor TDS category (Optional) Please do not add space before or after.";
+    const VENDOR_ONBOARDING_FUND_ACCOUNT_TYPE = "Fund Account Type (Optional) Here it will either be bank_account vpa.";
+    const VENDOR_ONBOARDING_FUND_ACCOUNT_NAME = "Fund Account Name (Optional) The official name associated with your vendor's fund account";
+    const VENDOR_ONBOARDING_FUND_ACCOUNT_IFSC = "IFSC Code (Optional) 11 digit code of the beneficiary's bank account. Eg. HDFC0004277";
+    const VENDOR_ONBOARDING_FUND_ACCOUNT_NUMBER = "Vendor Account Number (Optional) Typically 9-18 digits.";
+    const VENDOR_ONBOARDING_FUND_ACCOUNT_VPA = "Vendor VPA (Optional) Vendor's virtual payment address. For example gauravkumar@exampleupi.";
+    const VENDOR_ONBOARDING_FUND_ACCOUNT_PROVIDER = "Vendor Fund Account Provider (Optional) Applicable only for fund account type bank_account. For example HDFC Bank";
+    const VENDOR_ONBOARDING_CONTACT_REFERENCE_ID = "Contact Reference Id (Optional) Contact ID in RazorpayX. Do not fill unless the contact already exists in Razorpay";
+    const VENDOR_ONBOARDING_NOTES = "Notes";
+
+
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
         Header::WALLET_ACCOUNTS_NAME,
@@ -4853,6 +4875,38 @@ class Header
                 self:: TRANSACTOR_EVENT,
                 self:: CREATED_AT,
                 self:: UPDATED_AT,
+                self:: ERROR_CODE,
+                self:: ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::VENDOR_ONBOARDING => [
+            self::INPUT => [
+                self::VENDOR_ONBOARDING_NAME,
+                self::VENDOR_ONBOARDING_EMAIL,
+                self::VENDOR_ONBOARDING_PHONE,
+                self::VENDOR_ONBOARDING_VERIFICATION_MODE,
+                self::VENDOR_ONBOARDING_PORTAL_ACCESS,
+                self::VENDOR_ONBOARDING_CIN,
+                self::VENDOR_ONBOARDING_MSME,
+                self::VENDOR_ONBOARDING_GST,
+                self::VENDOR_ONBOARDING_PAN,
+                self::VENDOR_ONBOARDING_TAN,
+                self::VENDOR_ONBOARDING_TDS_CATEGORY,
+                self::VENDOR_ONBOARDING_FUND_ACCOUNT_TYPE,
+                self::VENDOR_ONBOARDING_FUND_ACCOUNT_NAME,
+                self::VENDOR_ONBOARDING_FUND_ACCOUNT_IFSC,
+                self::VENDOR_ONBOARDING_FUND_ACCOUNT_NUMBER,
+                self::VENDOR_ONBOARDING_FUND_ACCOUNT_VPA,
+                self::VENDOR_ONBOARDING_FUND_ACCOUNT_PROVIDER,
+                self::VENDOR_ONBOARDING_CONTACT_REFERENCE_ID,
+                self::VENDOR_ONBOARDING_NOTES,
+            ],
+            self::OUTPUT => [
+                self::VENDOR_ONBOARDING_NAME,
+                self::VENDOR_ONBOARDING_EMAIL,
+                self::VENDOR_ONBOARDING_PHONE,
+                self::VENDOR_ONBOARDING_VERIFICATION_MODE,
                 self:: ERROR_CODE,
                 self:: ERROR_DESCRIPTION,
             ],

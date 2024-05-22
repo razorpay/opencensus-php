@@ -249,6 +249,8 @@ class Type
 
     const S2P_USERS_ONBOARDING        = 's2p_users_onboarding';
 
+    const VENDOR_ONBOARDING           = 'vendor_onboarding';
+
 
 
     //
@@ -567,6 +569,7 @@ class Type
         self::OAUTH_MIGRATION_TOKEN,
         self::LINKED_ACCOUNT_REVERSAL,
         self::ADJUSTMENT,
+        self::VENDOR_ONBOARDING,
         self::PAYMENT_LINK_V2,
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
@@ -645,6 +648,7 @@ class Type
         self::MERCHANT_CONFIG_INHERITANCE,
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
+        self::VENDOR_ONBOARDING,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,

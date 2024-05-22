@@ -149,6 +149,13 @@ class Validator extends Base\Validator
         Entity::FILE_ID                 => 'required_without:file|public_id',
     ];
 
+    protected static $vendorOnboardingCreateRules = [
+        Entity::TYPE                    => 'required|in:vendor_onboarding',
+        Entity::NAME                    => 'filled|string|max:255',
+        Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE,  // 60MB
+        Entity::FILE_ID                 => 'required_without:file|public_id',
+    ];
+
     protected static $ledgerBulkJournalCreateRules = [
         Entity::TYPE                    => 'required|in:ledger_bulk_journal_create',
         Entity::NAME                    => 'filled|string|max:255',
