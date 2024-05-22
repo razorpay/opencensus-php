@@ -16886,6 +16886,8 @@ class Route
 
         'capital_lender' => [
             'subscription_registration_create_links',
+            'payment_fetch_by_id',
+            'customer_fetch_token',
         ],
 
         'capital_cards_m2p' =>[
