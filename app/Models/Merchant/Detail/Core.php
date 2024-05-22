@@ -905,17 +905,23 @@ class Core extends Base\Core
         $ocrInput = [
             'website_url' => $input[Entity::BUSINESS_WEBSITE]
         ];
+        // load merchant to avoid null values
+        $merchant = $this->merchant;
+        if ($this->isPartnerAuthContextRoute())
+        {
+            $merchantDetails->load('merchant');
+            $merchant = $merchantDetails->merchant;
+        }
+        $this->triggerOCRService($ocrInput, Constant::WEBSITE_POLICY, $merchant);
 
-        $this->triggerOCRService($ocrInput, Constant::WEBSITE_POLICY);
-
-        $this->triggerOCRService($ocrInput, Constant::MCC_CATEGORISATION);
+        $this->triggerOCRService($ocrInput, Constant::MCC_CATEGORISATION, $merchant);
 
         $this->triggerOCRService([
-            BvsValidation\Entity::OWNER_ID              => $this->merchant->getMerchantId(),
+            BvsValidation\Entity::OWNER_ID              => $merchant->getId(),
             BvsValidation\Entity::PLATFORM              => Constant::PG,
             Constant::DOCUMENT_TYPE                     => Constant::SITE_CHECK,
             Constant::DETAILS                           => $ocrInput
-        ], Constant::NEGATIVE_KEYWORDS);
+        ], Constant::NEGATIVE_KEYWORDS, $merchant);
 
         return true;
     }
@@ -948,21 +954,41 @@ class Core extends Base\Core
         return $response['response']['variant']['name'] ?? '';
     }
 
-    public function triggerOCRService($input, $ocrServiceName)
+    public function triggerOCRService($input, $ocrServiceName, $merchant)
     {
         try
         {
-            $processor = (new Factory())->getProcessor($input, $this->merchant, $ocrServiceName);
+            $processor = (new Factory())->getProcessor($input, $merchant, $ocrServiceName);
 
             $processor->Process();
         }
         catch (\Throwable $ex)
         {
             $this->trace->traceException($ex, Logger::ERROR, TraceCode::OCR_REQUEST_FAILURE, [
-                'merchant_id' => $this->merchant->getId()
+                'merchant_id' => $merchant->getId(),
             ]);
         }
     }
+
+    protected function isPartnerAuthContextRoute()
+    {
+        try
+        {
+            $partnerAuthContextRoutes = [
+                'account_create_v2',
+                'account_edit_v2'
+            ];
+            $runningInQueue = app()->runningInQueue();
+            $routeName = app('request.ctx')->getRoute();
+            return $runningInQueue === false && in_array($routeName, $partnerAuthContextRoutes);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::GET_PARTNER_AUTH_CONTEXT_ERROR);
+        }
+        return false;
+    }
+
 
     public function getUrlDetails($url)
     {

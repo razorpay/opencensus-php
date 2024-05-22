@@ -6107,7 +6107,7 @@ class CoreTest extends TestCase
             'website_url' => 'http:razorpay.com'
         ];
 
-        $detailCoreMock->triggerOCRService($ocrInput, 'mcc_categorisation');
+        $detailCoreMock->triggerOCRService($ocrInput, 'mcc_categorisation', $merchant);
 
         $bvsValidation = $this->getDbEntity('bvs_validation',
                                             ['owner_id'      => $merchantDetails->getId(),
@@ -6176,7 +6176,7 @@ class CoreTest extends TestCase
             'website_url' => 'http:razorpay.com'
         ];
 
-        $detailCoreMock->triggerOCRService($ocrInput, 'mcc_categorisation');
+        $detailCoreMock->triggerOCRService($ocrInput, 'mcc_categorisation', $merchant);
 
         $bvsValidation = $this->getDbEntity('bvs_validation',
                                             ['owner_id'        => $merchantDetails->getId(),
@@ -7801,7 +7801,7 @@ class CoreTest extends TestCase
             'website_url' => 'http:razorpay.com'
         ];
 
-        $detailCoreMock->triggerOCRService($ocrInput, 'website_policy');
+        $detailCoreMock->triggerOCRService($ocrInput, 'website_policy', $merchant);
 
         $bvsValidation = $this->getDbEntity('bvs_validation', [
             'owner_id'        => $merchantDetails->getId(),
@@ -7871,7 +7871,7 @@ class CoreTest extends TestCase
             'website_url' => 'http:razorpay.com'
         ];
 
-        $detailCoreMock->triggerOCRService($ocrInput, 'website_policy');
+        $detailCoreMock->triggerOCRService($ocrInput, 'website_policy', $merchant);
 
         $bvsValidation = $this->getDbEntity('bvs_validation',
             ['owner_id'        => $merchantDetails->getId(),
@@ -8165,7 +8165,7 @@ class CoreTest extends TestCase
             'platform'                                  => Constant::PG,
             Constant::DOCUMENT_TYPE                     => Constant::SITE_CHECK,
             Constant::DETAILS                           => $ocrInput
-        ], Constant::NEGATIVE_KEYWORDS);;
+        ], Constant::NEGATIVE_KEYWORDS, $merchant);;
 
         $bvsValidation = $this->getDbEntity('bvs_validation', [
             'owner_id'        => $merchantDetails->getId(),
@@ -8241,7 +8241,7 @@ class CoreTest extends TestCase
             'platform'                                  => Constant::PG,
             Constant::DOCUMENT_TYPE                     => Constant::SITE_CHECK,
             Constant::DETAILS                           => $ocrInput
-        ], Constant::NEGATIVE_KEYWORDS);;
+        ], Constant::NEGATIVE_KEYWORDS, $merchant);;
 
         $bvsValidation = $this->getDbEntity('bvs_validation', [
             'owner_id'        => $merchantDetails->getId(),

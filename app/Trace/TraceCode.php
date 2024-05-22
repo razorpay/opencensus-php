@@ -7894,6 +7894,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FOH_REMOVAL_NEGATIVE_BALANCE_MERCHANTS        = 'FOH_REMOVAL_NEGATIVE_BALANCE_MERCHANTS';
     const FOH_REMOVAL_DATA_COLLECTOR                    = 'FOH_REMOVAL_DATA_COLLECTOR';
 
+    const GET_PARTNER_AUTH_CONTEXT_ERROR                        = 'GET_PARTNER_AUTH_CONTEXT_ERROR';
+
     const CREATE_CRON_JOB                       = 'CREATE_CRON_JOB';
     const EDIT_CRON_JOB                         = 'EDIT_CRON_JOB';
 
