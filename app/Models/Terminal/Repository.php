@@ -2965,26 +2965,12 @@ class Repository extends Base\Repository
 
     public function isTerminalsTidbReadMigrationEnabled($function = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            $function,
-            RazorxTreatment::TERMINALS_TIDB_QUERIES_MIGRATION,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::TERMINALS_READS_TIDB_MIGRATION_RAMPED,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if($this->isTestEnv())
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
 }
