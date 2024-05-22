@@ -61,6 +61,10 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
       .then(() => {
         updateSopcMetafields(transformedData);
         showNotification({ type: 'success', message: 'Settings saved successfully' });
+        if (transformedData.status === 'live') {
+          const themeAppExtensionDeepLink = `${settings.domain_url}/admin/themes/current/editor?context=apps&activateAppId=c13c688d-5c45-4054-b95f-1edd63faa705/magicx-script`;
+          window.open(themeAppExtensionDeepLink, '_blank', 'noopener, noreferrer');
+        }
       })
       .catch(() => {
         showNotification({ type: 'error', message: 'Failed to save settings' });
