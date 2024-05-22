@@ -2161,6 +2161,12 @@ class Constants
      */
     const VENDOR_ONBOARDING_ENABLED = 'vendor_onboarding_enabled';
 
+    /**
+     * this feature flag is to distinguish merchants on CollectX and create VAs for them
+     * with balance type as banking compared to normal smart collect VAs with balance type primary
+     */
+    const COLLECTX_ENABLED = 'collectx_enabled';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2989,6 +2995,7 @@ class Constants
         self::IN_PERSON_CARDS_ENABLE_LABEL_MAPPING   => true,
         self::IN_PERSON_CARDS_ENABLE_TERMINAL_ROUTING   => true,
         self::VENDOR_ONBOARDING_ENABLED              => true,
+        self::COLLECTX_ENABLED                       => true,
     ];
 
     // Entity type constants
@@ -4299,6 +4306,11 @@ class Constants
             'display_name' => "Feature flag to link wallets from merchant dashboard",
             'documentation' => "",
         ],
+        self::COLLECTX_ENABLED => [
+            'feature'       => self::COLLECTX_ENABLED,
+            'display_name'  => 'CollectX Enabled',
+            'documentation' => 'Enable merchant on CollectX and create VAs with balance type banking',
+        ]
     ];
 
     /**
