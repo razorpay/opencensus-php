@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Services\Segment\Constants as SegmentConstants;
+use function PHPUnit\Framework\isEmpty;
 
 class Core extends Base\Core
 {
@@ -36,6 +37,12 @@ class Core extends Base\Core
         $merchant = $this->merchant;
 
         $resource = 'config_create_' . $merchant->getId();
+
+        if (empty($input['mutex_order_id']) === false)
+        {
+            $resource = 'config_create_' . $input['mutex_order_id'];
+            unset($input['mutex_order_id']);
+        }
 
         return $this->mutex->acquireAndRelease(
             $resource,
