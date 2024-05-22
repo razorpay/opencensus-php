@@ -5426,6 +5426,28 @@ class Service extends Base\Service
         }
     }
 
+    public function getWebhookPayload(array $input)
+    {
+        $event = $input['event'];
+
+        $id = $input["id"];
+
+        $payment = $this->repo->payment->findOrFail($id);
+
+        $processor = new Payment\Processor\Processor($payment->merchant);
+
+        $processor->setPayment($payment);
+
+        return match ($event) {
+            "payment_created_event" => $processor->getWebhookPayload("payment.created"),
+            "payment_authorized_event" => $processor->getWebhookPayload("payment.authorized"),
+            "payment_captured_event" => $processor->getWebhookPayload("payment.captured"),
+            "payment_failed_event" => $processor->getWebhookPayload("payment.failed"),
+            "order_paid" => $processor->getWebhookPayload("order.paid"),
+            default => null,
+        };
+    }
+
     public function sendNotificationCron(array $input)
     {
         if ((isset($input['event']) === false) or

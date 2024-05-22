@@ -767,6 +767,15 @@ class PaymentController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function internalGetWebhookPayload()
+    {
+        $input = Request::all();
+
+        $this->service()->getWebhookPayload($input);
+
+        return ApiResponse::json([]);
+    }
+
     public function sendNotificationCron()
     {
         $input = Request::all();

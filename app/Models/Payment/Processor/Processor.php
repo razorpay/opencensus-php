@@ -3723,6 +3723,82 @@ class Processor
         }
     }
 
+    public function getWebhookPayload($eventName)
+    {
+        $payment = $this->payment;
+
+        $payload = $this->getPaymentPayloadForWebhook($payment);
+
+        if ($eventName === "order.paid")
+        {
+            $payload = $this->getOrderPayloadForWebhook($payment);
+        }
+
+        $merchantId = $payment->getMerchantId();
+
+        $accountId = "";
+
+        if (isset($merchantId) === true)
+        {
+            $accountId = Merchant\Account\Entity::getSignedId($merchantId);
+        }
+
+        $webhookPayload = array(
+            "account_id" => $accountId,
+            "payload" => $payload,
+        );
+
+        if(($eventName === "payment.authorized") and (($payment->merchant->isFeatureEnabled(Feature::SILENT_REFUND_LATE_AUTH) === true))
+            and ($payment->isLateAuthorized() === true))
+        {
+            $webhookPayload = null;
+        }
+
+        return $webhookPayload;
+    }
+
+    protected function getOrderPayloadForWebhook($payment)
+    {
+        $order = $payment->order;
+
+        $partialPayload[E::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
+
+        $partialPayload[E::ORDER] = [
+            'entity' => $order->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getPaymentPayloadForWebhook($payment)
+    {
+        $payload = [
+            E::PAYMENT => [
+                'entity' => $payment->toArrayWebhook(),
+            ],
+        ];
+
+        $order = $payment->order;
+
+        $merchant = $payment->merchant;
+
+        // for backward compatibility with new pl service, payment entity needs to have invoice_id in webhook payload
+        // as few merchants depend on this field.
+        if ((isset($order) === true) and
+            (isset($merchant) === true) and
+            ($order->getProductType() === ProductType::PAYMENT_LINK_V2) and
+            ($merchant->isFeatureEnabled(Features::PAYMENTLINKS_COMPATIBILITY_V2) === true))
+        {
+            $invoiceId = $order->getProductId();
+
+            $payload[E::PAYMENT]['entity'][Payment\Entity::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
+        }
+
+        return $payload;
+    }
+
     protected function appendMetadataForPayment(array & $input)
     {
         if ($this->app['basicauth']->isPrivateAuth() === true)
