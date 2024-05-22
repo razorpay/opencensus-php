@@ -10,6 +10,7 @@ Following docs will help you with various common tasks on the merchant dashboard
 - [Local Setup](./wiki/local-setup.md) - setup dashboard on your local machine
 - [Using Devstack](./wiki/dashboard-devstack.md) - use the dev environment and see your code running
 - [HMR Setup](./wiki/hmr-dev-guide.md) - use hmr for your dev environment
+- [local-SSL-setup](./wiki/local-ssl-setup) - setup a local SSL server for testing out changes that needs https connection
 - [Contributing Guide](./CONTRIBUTING.md) - guidelines to help you start contributing to the dashboard
 - [PR Strategy](./wiki/pr-strategy.md) - learn strategies for creating and managing Pull requests
 - [Deployment Guide](./wiki/deployment-guide.md) - ship your code to millions of users

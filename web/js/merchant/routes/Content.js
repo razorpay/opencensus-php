@@ -59,16 +59,23 @@ import { isExperimentEnabled } from 'common/splitz/utils';
 import MagicKonnect from 'merchant/views/MagicKonnect';
 
 // eslint-disable-next-line require-await
-const loadModule = async (module) =>
+const loadModule = async ({ module, scope }) =>
   importRemote({
     url: window.cdnDashboardAssetsUrl,
-    scope: 'selfserve',
+    scope,
     module,
   });
 
 const SelfServe = lazy(() =>
-  /**  webpackChunkName: "SelfServeRouter" */ loadModule('SelfServeRouter'),
+  /**  webpackChunkName: "SelfServeRouter" */ loadModule({
+    module: 'SelfServeRouter',
+    scope: 'selfserve',
+  }),
 );
+
+// const PosApp = lazy(() =>
+//   /**  webpackChunkName: "PosApp" */ loadModule({ module: 'PosApp', scope: 'pos' }),
+// );
 
 const B2bPaymentsList = lazy(() =>
   import(
@@ -2109,6 +2116,19 @@ class Content extends Component {
               </RouteGuard>
             }
           />
+
+          {/* <Route
+            path="pos-sales/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  isPosExperimentEnabled({ user, abExperiments: this.props.splitz?.abExperiments })
+                }
+              >
+                <PosApp />
+              </RouteGuard>
+            }
+          /> */}
 
           <Route
             path="reports/*"

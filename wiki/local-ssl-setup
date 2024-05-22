@@ -1,0 +1,81 @@
+<header>
+  <h1 align="center">Local SSL setup guide</h1>
+  <details>
+    <summary align="center"><b>Changelog</b></summary>
+
+| Version | Date         | Creators           | Reviewers            | Remarks             |
+| ------- | ------------ | ------------------ | -------------------- | ------------------- |
+| 1.0     | Apr 24, 2024 | `Prashant Kushwaha`| `Amitabh Baruah`     | Initial Draft       |
+
+  </details>
+</header>
+
+Want to test out your changes (ex: PWA setup) on dashboard that needs an https (TLS) connection?
+
+Here is a step-by-step guide to setup a local SSL authority and have self-signed SSL certificates that your local http server can consume:
+
+- [1. mkcert install and setup](#1-mkcert-setup)
+- [2. creating signed certificates with mkcert](#2-create-certificates)
+- [3. using http-server to serve local files via https](#3-use-ssl-certificates)
+
+Assuming you're ready with frontend installation.
+
+### 1. MKcert Setup
+
+- Install mkcert tool on your machine
+    ```
+        brew install mkcert
+    ```
+- Install nss (only needed if you use Firefox)
+    ```
+        brew install nss
+    ```
+- Setup mkcert on your machine (creates a CA)
+    ```
+        mkcert -install
+    ```
+
+### 2. Create Certificates
+- In your terminal, navigate to the root directory of the dashboard repo. Then, run:
+    ```
+        mkcert localhost
+    ```
+- If you're using a custom hostname like mysite.example, run:
+    ```
+        mkcert mysite.example
+    ```
+- This command does two things:
+    1. Generates a certificate for the hostname you've specified.
+    2. Lets mkcert sign the certificate.
+
+Your certificate is now ready and signed by a certificate authority your browser trusts locally.
+
+### 3. Use SSL certificates
+**3.1. Install and use http-server**
+
+- Install http-server globally. Run,
+    ```
+        npm install --global http-server
+    ```
+- Go to the root directory of the dashboard repo. Here you will see 2 files created ( cert and key ) from the previous steps of creating certificates. We will use these with http-server to enable TLS.
+
+- Now run,
+    ```
+        http-server -S -C cert.pem -o -p 8000 --cors
+    ```
+here -p 8000 is the port and --cors is argument to enable cors.
+        
+
+**3.2. Enable Redirector**
+
+  ![](./assets/redirector-extension.png)
+
+**3.3. Make suitable redirects**
+
+- Make suitable redirects in the redirector chrome extension to serve the needed files locally via https. Eample: 
+  ![](./assets/http-server-redirect-example.png)
+
+
+
+
+

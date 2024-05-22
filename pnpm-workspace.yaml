@@ -2,5 +2,6 @@ prefer-workspace-packages: true
 packages:
   - web
   - apps/self-serve
+  - apps/pos
   - libs/shared-ui
   - libs/shared-utils

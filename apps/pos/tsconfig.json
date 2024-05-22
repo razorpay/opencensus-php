@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "jsx": "react",
+    "lib": ["es6", "dom"],
+    "noImplicitAny": false,
+    "noImplicitThis": true,
+    "composite": true,
+    "declaration": true,
+    "typeRoots": ["node_modules/@types"],
+    "preserveSymlinks": true
+  },
+  "extends": "../../tsconfig.base.json",
+  "include": ["src", "src/**/*.json", "custom.d.ts", "e2e"],
+  "exclude": ["node_modules", "**/*.stories.ts", "**/*.stories.tsx", "**/*.stories.jsx", "out"],
+  "references": [
+    { "path": "../../web" },
+    { "path": "../../libs/shared-ui/tsconfig.lib.json" },
+    { "path": "../../libs/shared-utils/tsconfig.lib.json" }
+  ],
+  "types": ["resize-observer-browser", "jest", "jest-dom"]
+}

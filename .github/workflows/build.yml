@@ -157,15 +157,12 @@ jobs:
           AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
 
-        # Run based on output of affected
+      # Run based on output of affected
       - name: Micro Apps - Push Artifacts for Devstack
         run: |-
-          aws s3 cp \
-          --metadata-directive REPLACE \
-          --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
-          apps/self-serve/$BUILD_PATH/selfserve.remoteEntry.js s3://$AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET/dashboard/federated-bundles/selfserve/devstack/$VERSION/$BUILD_PATH/selfserve.remoteEntry.js
-
-          aws s3 sync --cache-control "public,max-age=31536000" apps/self-serve/$BUILD_PATH s3://$AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET/dashboard/federated-bundles/selfserve/devstack/$VERSION/$BUILD_PATH --exclude $BUILD_PATH/selfserve.remoteEntry.js
+          node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET}}
+        env:
+          ENVIRONMENT: devstack
 
   build-micro-apps-automation:
     name: Build Dashboard - MFEs - Automation
@@ -214,12 +211,9 @@ jobs:
       # Run based on output of affected
       - name: Micro Apps - Push Artifacts for Automation
         run: |-
-          aws s3 cp \
-          --metadata-directive REPLACE \
-          --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
-          apps/self-serve/$BUILD_PATH/selfserve.remoteEntry.js s3://$AWS_STAGE_COMMON_CACHE_BUCKET/dashboard/federated-bundles/selfserve/automation/$VERSION/$BUILD_PATH/selfserve.remoteEntry.js
-
-          aws s3 sync --cache-control "public,max-age=31536000" apps/self-serve/$BUILD_PATH s3://$AWS_STAGE_COMMON_CACHE_BUCKET/dashboard/federated-bundles/selfserve/automation/$VERSION/$BUILD_PATH --exclude $BUILD_PATH/selfserve.remoteEntry.js
+          node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_STAGE_COMMON_CACHE_BUCKET}}
+        env:
+          ENVIRONMENT: automation
 
   build-micro-apps-production:
     name: Build Prod Dashboard - MFEs - Production
@@ -265,12 +259,9 @@ jobs:
       # TODO: move to shell script and run sync based on affected output
       - name: Micro Apps - Push Artifacts for Production
         run: |-
-          aws s3 cp \
-          --metadata-directive REPLACE \
-          --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
-          apps/self-serve/$BUILD_PATH/selfserve.remoteEntry.js s3://$AWS_PROD_COMMON_CACHE_BUCKET/dashboard/federated-bundles/selfserve/production/$VERSION/$BUILD_PATH/selfserve.remoteEntry.js
-
-          aws s3 sync --cache-control "public,max-age=31536000" apps/self-serve/$BUILD_PATH s3://$AWS_PROD_COMMON_CACHE_BUCKET/dashboard/federated-bundles/selfserve/production/$VERSION/$BUILD_PATH --exclude $BUILD_PATH/selfserve.remoteEntry.js
+          node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_PROD_COMMON_CACHE_BUCKET}}
+        env:
+          ENVIRONMENT: production
 
   workflow_status:
     runs-on: [self-hosted]

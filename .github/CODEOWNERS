@@ -42,4 +42,5 @@ web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe
 web/js/merchant/views/POS                         @amitabh-blade @prashant-kush @nashcheez
 plugins/i18n-rules                                @razorpay/i18n-fe
 smart-linter.js                                   @razorpay/i18n-fe
-pnpm-lock.yaml                                   @aniketonweb
+apps/pos                                          @amitabh-blade @prashant-kush @loombarishav
+pnpm-lock.yaml                                    @aniketonweb
