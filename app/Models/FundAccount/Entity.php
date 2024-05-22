@@ -469,6 +469,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UNIQUE_HASH, $uniqueHash);
     }
 
+    public function setSourceType($sourceId)
+    {
+        $this->setAttribute(self::SOURCE_TYPE, $sourceId);
+    }
+
+    public function setSourceId($sourceId)
+    {
+        $this->setAttribute(self::SOURCE_ID, $sourceId);
+    }
+
     // ------------- End Setters -------------
 
     // --------------- Helpers ---------------

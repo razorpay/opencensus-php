@@ -324,6 +324,77 @@ class FundAccountsTest extends TestCase
 
     }
 
+    public function testCreateFundAccountVendorPortalV2BankAccount()
+    {
+        Queue::fake();
+
+        $this->ba->vendorExperienceServiceAppAuth();
+
+        $response = $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $expectedBankAccount = [
+            'ifsc_code'        => 'SBIN0007105',
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|||bank_account|111000111|SBIN0007105|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+    }
+
+    public function testUpdateFundAccountVendorPortalV2BankAccount()
+    {
+        $this->testCreateFundAccountVendorPortalV2BankAccount();
+
+        $this->ba->vendorExperienceServiceAppAuth();
+
+        $fundAccountId = $this->getDbLastEntity('fund_account')->getId();
+
+        $testData = &$this->testData['testUpdateFundAccountVendorPortalV2BankAccount'];
+        $testData['request']['content']['fund_accounts'][0]['id'] = $fundAccountId;
+
+        $response = $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $expectedBankAccount = [
+            'ifsc_code'        => 'SBIN0007106',
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|||bank_account|111000111|SBIN0007106|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        $this->assertEquals($fundAccountId, $fundAccount->getId());
+    }
+
     public function testCreateFundAccountBankAccountWithOldIfsc()
     {
         Queue::fake();

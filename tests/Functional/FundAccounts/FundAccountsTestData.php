@@ -158,6 +158,80 @@ return [
         ],
     ],
 
+    'testCreateFundAccountVendorPortalV2BankAccount' => [
+        'request'  => [
+            'content' => [
+                'fund_accounts' => [
+                    [
+                        'vendor_id' => '12345678912345',
+                        'account_type' => 'bank_account',
+                        'bank_account'      => [
+                            'ifsc'           => 'SBIN0007105',
+                            'name'           => 'Amit M',
+                            'account_number' => '111000111',
+                        ],
+                    ],
+                ],
+            ],
+            'url'     => '/vendor-experience/fund-account-create',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'bank_account'      => [
+                        'ifsc'           => 'SBIN0007105',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111'
+                    ],
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testUpdateFundAccountVendorPortalV2BankAccount' => [
+        'request'  => [
+            'content' => [
+                'fund_accounts' => [
+                    [
+                        'vendor_id' => '12345678912345',
+                        'account_type' => 'bank_account',
+                        'bank_account'      => [
+                            'ifsc'           => 'SBIN0007106',
+                            'name'           => 'Amit M',
+                            'account_number' => '111000111',
+                        ],
+                    ],
+                ],
+            ],
+            'url'     => '/vendor-experience/fund-account-create',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'bank_account'      => [
+                        'ifsc'           => 'SBIN0007106',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111'
+                    ],
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
     'testCreateFundAccountBankAccountWithOldIfsc' => [
         'request'  => [
             'content' => [

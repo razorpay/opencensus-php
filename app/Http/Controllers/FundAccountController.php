@@ -64,4 +64,20 @@ class FundAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createForVendorPortalV2()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createForVendorPortalV2($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchBySourceTypeAndId(string $sourceType, string $sourceId)
+    {
+        $response = $this->service()->fetchBySourceTypeAndId($sourceType, $sourceId);
+
+        return ApiResponse::json($response);
+    }
 }

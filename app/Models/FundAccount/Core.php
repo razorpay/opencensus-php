@@ -61,6 +61,8 @@ class Core extends Base\Core
     const FUND_ACCOUNT_CREATED_MESSAGE = "FUND_ACCOUNT_CREATED";
     const FUND_ACCOUNT_UPDATED_MESSAGE = "FUND_ACCOUNT_UPDATED";
 
+    const SOURCE_TYPE_VENDOR = 'vendor';
+
     protected $vendorPaymentService;
 
     public function __construct()
@@ -94,6 +96,23 @@ class Core extends Base\Core
         $input = $this->trimSpaces($input);
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
+
+        $vendorId = ''; // This field will be present in input if fund_account_create request is coming from vendor_portal_v2
+
+        if(isset($input['vendor_id']) === true)
+        {
+            $updateFundAccountResponse = $this->updateFundAccountIfPresent($input, $merchant);
+
+            if ($updateFundAccountResponse !== null)
+            {
+                return $updateFundAccountResponse;
+            }
+
+            $vendorId = $input['vendor_id'];
+
+            unset($input['vendor_id']);
+            unset($input['id']);
+        }
 
         if ((isset($input[Entity::ACCOUNT_TYPE]) === true) and
             (strtolower($input[Entity::ACCOUNT_TYPE]) ===  Entity::WALLET))
@@ -199,7 +218,16 @@ class Core extends Base\Core
 
         $account = $this->createAccount($input, $merchant, $source);
 
-        $fundAccount->source()->associate($source);
+        if($vendorId !== '')
+        {
+            $fundAccount->setSourceType(self::SOURCE_TYPE_VENDOR);
+
+            $fundAccount->setSourceId($vendorId);
+        }
+        else
+        {
+            $fundAccount->source()->associate($source);
+        }
 
         $fundAccount->account()->associate($account);
 
@@ -1641,5 +1669,61 @@ class Core extends Base\Core
             );
         }
         return false;
+    }
+
+    public function fetchBySourceTypeAndId(string $sourceType, string $sourceId)
+    {
+        return $this->repo->fund_account->fetchBySourceTypeAndId($sourceType, $sourceId);
+    }
+
+    protected function updateFundAccountIfPresent(array $input, Merchant\Entity $merchant)
+    {
+        if (isset($input['id']) === true and empty($input['id']) === false)
+        {
+            $this->trace->info(TraceCode::FUND_ACCOUNT_UPDATE_REQUEST_VENDOR_PORTAL_V2, $input);
+
+            $input = $this->trimSpaces($input);
+
+            $fundAccount = $this->repo->fund_account->findByIdAndMerchant($input['id'], $merchant);
+
+            if ($fundAccount === null ||
+                $fundAccount->getSourceType() !== self::SOURCE_TYPE_VENDOR ||
+                $fundAccount->getAccountType() !== $input['account_type'])
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FUND_ACCOUNT);
+            }
+
+            $account = $fundAccount->account;
+
+            $accountType = $fundAccount->getAccountType();
+
+            if ($accountType !== Type::BANK_ACCOUNT)
+            {
+                return null; // Only bank_account has multiple identifier fields.
+                             // We will check for same account_number and update rest of the fields.
+                             // For rest of the account_types we will create a new fund_account.
+            }
+
+            if ($account->getAccountNumber() === $input['bank_account']['account_number'] and
+                ($account->getIfscCode() !== $input['bank_account']['ifsc'] or $account->getBeneficiaryName() !== $input['bank_account']['name'])) {
+
+                $updatedAccount = $this->createAccount($input, $merchant);
+
+                $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
+                    $merchant,
+                    $updatedAccount->toArray(),
+                    null);
+
+                $fundAccount->account()->associate($updatedAccount);
+
+                $fundAccount->setUniqueHash($uniqueHash);
+
+                $this->repo->saveOrFail($fundAccount);
+
+                return $fundAccount;
+            }
+        }
+
+        return null;
     }
 }

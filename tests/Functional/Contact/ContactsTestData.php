@@ -2872,4 +2872,97 @@ return [
             ],
         ],
     ],
+    'testCreateContactFromVendorExperienceServiceWithFFEnabled' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+            'url'     => '/contacts_internal',
+            'server'  =>  [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactFromVendorExperienceServiceWithFFDisabled' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+            'url'     => '/contacts_internal',
+            'server'  =>  [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VENDOR_CONTACT_CREATION_NOT_PERMITTED,
+        ]
+    ],
+
+    'testCreateContactFromVendorPaymentsServiceWithFFEnabled' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+            'url'     => '/contacts_internal',
+            'server'  =>  [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VENDOR_CONTACT_CREATION_NOT_PERMITTED,
+        ]
+    ],
 ];

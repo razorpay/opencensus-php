@@ -20,6 +20,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     const BEFORE_CREATE = 'before_create';
+    const BEFORE_CREATE_VENDOR_PORTAL_V2 = 'before_create_vendor_portal_v2';
     const PUBLIC_CREATE = 'public_create';
 
     /**
@@ -37,7 +38,10 @@ class Validator extends Base\Validator
      */
     const MAX_WALLET_ACCOUNT_AMAZON_PAY_AMOUNT = 1000000;
 
+    const VENDOR_ID = 'vendor_id';
+
     protected static $createRules = [
+        self::VENDOR_ID                                  => 'sometimes|string|size:14',
         Entity::CUSTOMER_ID                              => 'sometimes|public_id',
         Entity::CONTACT_ID                               => 'sometimes|public_id',
         Entity::ACCOUNT_TYPE                             => 'required|string|custom',
@@ -69,6 +73,10 @@ class Validator extends Base\Validator
     protected static $beforeCreateRules = [
         Entity::CONTACT_ID  => 'required_without:customer_id|public_id',
         Entity::CUSTOMER_ID => 'required_without:contact_id|public_id',
+    ];
+
+    protected static $beforeCreateVendorPortalV2Rules = [
+        self::VENDOR_ID => 'required|string|size:14',
     ];
 
     protected static $editRules = [

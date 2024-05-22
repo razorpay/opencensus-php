@@ -94,6 +94,17 @@ class Core extends Base\Core
 
         $contact->merchant()->associate($merchant);
 
+        if($this->isContactCreateAndEditDisabledForSourceTypeVendor($contact) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VENDOR_CONTACT_CREATION_NOT_PERMITTED,
+                null,
+                [
+                    'merchant_id' => $contact->merchant->getId(),
+                    'input'       => $input
+                ]);
+        }
+
         // Contact of type rzp_fees can be created by all internal requests.
         // So we approve it by simply looking at "$allowRZPFeesContactCreation".
 
@@ -247,6 +258,17 @@ class Core extends Base\Core
         (new Validator)->validateInput('edit', $input);
 
         $input = $this->trimSpaces($input);
+
+        if($this->isContactCreateAndEditDisabledForSourceTypeVendor($contact) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VENDOR_CONTACT_UPDATION_NOT_PERMITTED,
+                null,
+                [
+                    'merchant_id' => $contact->merchant->getId(),
+                    'input'       => $input
+                ]);
+        }
 
         $this->setTypeIfApplicable($contact, $input);
 
@@ -911,5 +933,25 @@ class Core extends Base\Core
                 Trace::CRITICAL,
                 TraceCode::CONTACT_UPDATED_MESSAGE_FAILED);
         }
+    }
+
+    public function isContactCreateAndEditDisabledForSourceTypeVendor(Contact\Entity $contact): bool
+    {
+        if ($contact->getType() !== Type::VENDOR)
+        {
+            return false;
+        }
+
+        // Block contact update for vendor type if merchant has `vendor_onboarding_enabled` feature enabled
+        // This is to ensure that the vendor contact updation is done via vendor experience service only
+        if (($contact->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VENDOR_ONBOARDING_ENABLED) === true
+                and $this->app['basicauth']->isVendorExperienceApp() === false)
+            or ($contact->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VENDOR_ONBOARDING_ENABLED) === false
+                and $this->app['basicauth']->isVendorExperienceApp() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -2019,6 +2019,8 @@ class Route
         // Vendor Experience service routes
         'create_new_vendor_entities'                => ['post',     'vendor-experience/vendor/create-entities', 'UserController@createVendorEntities'     ],
         'invite_to_vendor_portal_v2'                => ['post',     'vendor-experience/vendor-invitation',      'InvitationController@createVendorPortalInvitationV2' ],
+        'create_fund_account_vendor_portal_v2'      => ['post',     'vendor-experience/fund-account-create',    'FundAccountController@createForVendorPortalV2' ],
+        'fetch_fund_accounts_vendor_portal_v2'      => ['get',      'vendor-experience/fund-account-fetch/{source_type}/{source_id}',   'FundAccountController@fetchBySourceTypeAndId' ],
 
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
@@ -6649,6 +6651,8 @@ class Route
         'create_new_vendor_entities',
         'multiple_users_fetch_internal',
         'invite_to_vendor_portal_v2',
+        'create_fund_account_vendor_portal_v2',
+        'fetch_fund_accounts_vendor_portal_v2',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -11931,12 +11935,15 @@ class Route
         ],
 
         'vendor_experience' => [
+            'user_all_roles',
             'internal_merchant_fetch',
             'create_new_vendor_entities',
             'multiple_users_fetch_internal',
             'invite_to_vendor_portal_v2',
             'merchant_fetch_internal_users',
             'merchant_search_users_internal',
+            'create_fund_account_vendor_portal_v2',
+            'fetch_fund_accounts_vendor_portal_v2',
             'contact_create_internal',
             'fund_account_create_internal',
         ],

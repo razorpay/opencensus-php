@@ -79,6 +79,30 @@ class Service extends Base\Service
         return $this->handleFundAccountCreationForCustomer($input);
     }
 
+    public function createForVendorPortalV2(array $input): array
+    {
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST_VENDOR_PORTAL_V2, $input);
+
+        $fundAccounts = $input['fund_accounts'];
+
+        $fundAccountCreateResponse = [];
+
+        foreach ($fundAccounts as $fundAccount)
+        {
+            $this->unsetIfscIfRequired($fundAccount);
+
+            (new OrderService())->updateIfscIfRequired($fundAccount);
+
+            (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE_VENDOR_PORTAL_V2, $fundAccount);
+
+            $entity = $this->core->create($fundAccount, $this->merchant);
+
+            $fundAccountCreateResponse[] = $entity->toArrayPublic();
+        }
+
+        return $fundAccountCreateResponse;
+    }
+
     /**
      * @param array           $input
      * @param Contact\Entity  $contact
@@ -371,7 +395,8 @@ class Service extends Base\Service
                 ($this->auth->isXPayrollApp() === true) or
                 ($this->auth->isPayoutService() === true) or
                 ($this->auth->isCapitalCollectionsApp() === true) or
-                ($this->isFundManagementPayoutInitiateWorker() === true));
+                ($this->isFundManagementPayoutInitiateWorker() === true) or
+                ($this->auth->isVendorExperienceApp() === true));
     }
 
     protected function isFundManagementPayoutInitiateWorker(): bool
@@ -429,5 +454,12 @@ class Service extends Base\Service
         $entities = $this->core->fetchMultiple($this->merchant, $input);
 
         return $entities->toArrayPublic();
+    }
+
+    public function fetchBySourceTypeAndId(string $sourceType, string $sourceId): array
+    {
+        $fundAccounts = $this->core->fetchBySourceTypeAndId($sourceType, $sourceId);
+
+        return $fundAccounts->toArrayPublic();
     }
 }

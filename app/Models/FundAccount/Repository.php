@@ -402,4 +402,12 @@ class Repository extends Base\Repository
                     ->orderBy(Entity::CREATED_AT, 'asc')
                     ->first();
     }
+
+    public function fetchBySourceTypeAndId(string $sourceType, string $sourceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->get();
+    }
 }

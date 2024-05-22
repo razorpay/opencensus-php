@@ -1951,6 +1951,11 @@ class BasicAuth
         return $this->internalApp === 'vendor_payments';
     }
 
+    public function isVendorExperienceApp()
+    {
+        return $this->internalApp === 'vendor_experience';
+    }
+
     public function isMetroApp()
     {
         return $this->internalApp === 'metro';
