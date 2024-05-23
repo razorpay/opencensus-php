@@ -255,7 +255,7 @@ describe('Payment Link Create V2 Unit Test', () => {
     );
     // Fill Customer details.
     await userEvent.type(screen.getByPlaceholderText('john@example.com'), 'test@gmail.com');
-    await userEvent.type(screen.getByPlaceholderText('+91 9876543210'), '+917394926646');
+    await userEvent.type(screen.getByPlaceholderText('+91 9876543210'), '1234567890');
     // Fill reference id field.
     await userEvent.type(screen.getByPlaceholderText('123456'), '123456');
     // Fill link expiry.
@@ -281,7 +281,7 @@ describe('Payment Link Create V2 Unit Test', () => {
       email_notify: '1',
       email: 'test@gmail.com',
       sms_notify: '1',
-      contact: '+917394926646',
+      contact: '1234567890',
       reference_id: '123456',
       expire_by: null,
       notes: { 'Test note title': 'Test note description' },
