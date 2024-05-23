@@ -3544,7 +3544,7 @@ class Repository extends Base\Repository
         return new PublicCollection();
     }
 
-    public function getNonSuspendedMerchantsFromIds(array $ids)
+    public function getNonSuspendedMerchantsFromIds(array $ids): EloquentCollection|PublicCollection
     {
         if (sizeof($ids) > 0 )
         {
@@ -3588,6 +3588,6 @@ class Repository extends Base\Repository
             }
 
         }
-        return [];
+        return (new PublicCollection());
     }
 }
