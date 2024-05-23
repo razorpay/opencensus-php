@@ -486,7 +486,7 @@ class Core extends Base\Core
             'settled_by'        => $settledBy,
             'on_hold'           => $txn->getOnHold(),
             'on_hold_reason'    => $onHoldReason,
-            'meta'              => $meta,
+            'meta'              => (object) $meta,
         ];
 
         if ($initialRamp === true)
@@ -503,6 +503,7 @@ class Core extends Base\Core
                 [
                     'transaction_id' => $txn->getId(),
                     'merchant_id'    => $txn->getMerchantId(),
+                    'payload'        => $payload,
                 ]);
         }
         catch (\Throwable $e)
