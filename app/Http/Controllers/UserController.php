@@ -75,6 +75,8 @@ class UserController extends Controller
      */
     private $edgeClient;
 
+    private $cache;
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -86,6 +88,9 @@ class UserController extends Controller
         $this->metrics = $app['metrics'];
 
         $this->edgeClient = new EdgeClient();
+
+        $this->cache = $app['cache'];
+
     }
 
     public function getDataForRendering($details, $org, $userError, $orgError): array
@@ -397,21 +402,23 @@ class UserController extends Controller
                 $data['isMobileConfirmed'] = false;
             }
 
-            // Chunk based straming: get the flag to check streaming
-            $isMerchantLogin = Session::get('is_merchant_login');
+            // Chunk based streaming: get the flag to check streaming
+            $isMerchantLogin = $this->userService->getMerchantLogin($currentMerchantId);
 
             $this->trace->info(TraceCode::CHUNKED_DETAILS, [
                 'isMerchantLogin'     => $isMerchantLogin,
                 'currentMerchantId'   => $currentMerchantId
             ]);
 
-            if (is_null($isMerchantLogin) === true)
+            if ($isMerchantLogin === false)
             {
 
                 if (is_null($currentMerchantId) === false)
                 {
                     // Chunk based straming: set flag to enable streaming
-                    Session::put('is_merchant_login', true);
+                    // Add to cache with 12 hr of ttl
+                    $key = Util::getIsMerchantLoginCacheKey($currentMerchantId);
+                    $this->cache->put($key, true, 43200);
                 }
 
                 $timeTaken = self::millitime() - $startTime;
@@ -584,7 +591,8 @@ class UserController extends Controller
             ]);
         }
 
-        $isMerchantLogin = Session::get('is_merchant_login');
+        $merchantId= $this->getMidIfExists($firstChunkData);
+        $isMerchantLogin = $this->userService->getMerchantLogin($merchantId);
 
         $this->trace->info(TraceCode::CHUNKED_DETAILS, [
             'shouldRenderCBS' => $isMerchantLogin,
@@ -596,7 +604,7 @@ class UserController extends Controller
 
         $isConcurrentApiCallEnabled = $this->isConcurrentApiCallEnabledForDashboardUser();
 
-        if (is_null($isMerchantLogin) === true)
+        if ($isMerchantLogin === false)
         {
             if (empty($userError) and empty($orgError))
             {
@@ -1620,7 +1628,7 @@ class UserController extends Controller
 
         Session::forget('show_tnc_popup');
 
-        Session::forget('is_merchant_login');
+        $this->forgetCacheForIsMerchantLogin($userDetails);
 
         Cookie::expire(AppConstants::RZP_ACCESS_TOKEN, AppConstants::ROOT_PATH);
 
@@ -2043,5 +2051,23 @@ class UserController extends Controller
                 'timeout' => $timeOut,
             ]
         ]);
+    }
+
+    private function getMidIfExists($firstChunkData):string
+    {
+        $currentMerchant = $firstChunkData['currentMerchant'] ?? null;
+        if (is_null($currentMerchant) === true) {
+            return "";
+        }
+        return $currentMerchant->id;
+    }
+
+    private function forgetCacheForIsMerchantLogin($userDetails): void
+    {
+        if(is_null($userDetails->id) === false and $userDetails->id !== "")
+        {
+            $cacheKey = Util::getIsMerchantLoginCacheKey($userDetails->id);
+            $this->cache->forget($cacheKey);
+        }
     }
 }

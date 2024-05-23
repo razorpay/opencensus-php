@@ -1108,11 +1108,13 @@ class Service extends Base\Service
 
             // Forgetting is_merchant_login session for current Merchant i.e the merchant who has done switched account.
             // so that switched merchant not go through Chunked Based streaming part in first render.
-            $isMerchantLogin = Session::get('is_merchant_login');
 
-            if ($isMerchantLogin !== null)
+            $isMerchantLogin = $this->getMerchantLogin($merchantId);
+
+            if ($isMerchantLogin !== false)
             {
-                Session::forget('is_merchant_login');
+                $key = Util::getIsMerchantLoginCacheKey($merchantId);
+                $this->cache->forget($key);
             }
 
             $traceData = [
@@ -3489,5 +3491,21 @@ class Service extends Base\Service
         }
 
         return MerchantConstants::OAUTH_ACTION_REDIRECT;
+    }
+
+    public function getMerchantLogin($merchantId): bool
+    {
+        if (empty($merchantId) === true or $merchantId === null)
+        {
+            return false;
+        }
+        $key = Util::getIsMerchantLoginCacheKey($merchantId);
+        $isMerchantLogin = $this->cache->get($key);
+
+        if (is_null($isMerchantLogin) === true)
+        {
+            return false;
+        }
+        return $isMerchantLogin;
     }
 }

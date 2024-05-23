@@ -170,4 +170,9 @@ class Util
 
         return count($result) > 0;
     }
+
+    public static function getIsMerchantLoginCacheKey($merchantId): string
+    {
+        return 'is_merchant_login_'.$merchantId;
+    }
 }
