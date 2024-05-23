@@ -26,6 +26,13 @@ class Rejection extends Mailable
         return $this->data;
     }
 
+    protected function addMailData()
+    {
+        $this->with($this->data);
+
+        return $this;
+    }
+
     protected function addRecipients()
     {
         $this->to($this->data['email'], $this->data['name']);

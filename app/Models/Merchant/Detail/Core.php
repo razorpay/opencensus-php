@@ -5343,6 +5343,7 @@ class Core extends Base\Core
 
     public function getPayloadForClarificationEmail(Merchant\Entity $merchant, Org\Entity $org, $clarificationReasons)
     {
+        $isCustomOnboardingEmail = $org->isFeatureEnabled(FeatureConstants::CUSTOM_ONBOARDING_EMAILS);
         $data = [
             DetailConstants::MERCHANT          => [
                 Merchant\Entity::NAME          => $merchant->getName(),
@@ -5353,6 +5354,7 @@ class Core extends Base\Core
                 ]
             ],
             DetailConstants::CLARIFICATION_REASON => $clarificationReasons,
+            'isCustomOnboardingEmail' => $isCustomOnboardingEmail,
         ];
 
         return $data;
