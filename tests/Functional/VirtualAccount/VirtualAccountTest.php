@@ -35,6 +35,7 @@ use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\ServerErrorException;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\VirtualAccount\Constant;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -3529,7 +3530,10 @@ class VirtualAccountTest extends TestCase
         'content'                => $input,
     ];
 
-        $this->fixtures->merchant->addFeatures(FeatureConstants::OFFLINE_PAYMENT_ON_CHECKOUT);
+        if($this->fixtures->merchant->isFeatureEnabled([FeatureConstants::OFFLINE_PAYMENT_ON_CHECKOUT]) === false)
+        {
+            $this->fixtures->merchant->addFeatures(FeatureConstants::OFFLINE_PAYMENT_ON_CHECKOUT);
+        }
 
         $this->ba->privateAuth();
 
@@ -4093,6 +4097,102 @@ class VirtualAccountTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         return $this->startTest($testData);
+    }
+
+    public function testValidateOfflineChallanNotPresentInNotes()
+    {
+        try
+        {
+            $content = [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'receipt' => 'rec1',
+                'customer_additional_info' => [
+                    'property_id' => '12345',
+                    'property_value' => 'abc'
+                ]
+            ];
+
+            $orderId = $this->generateOrderId($content);
+
+            $terminalCreateData = [
+                'gateway'                  => 'offline_hdfc',
+                'gateway_merchant_id'      => '12345678',
+                'gateway_secure_secret'    => '12345',
+                'offline'                   =>  1,
+                'merchant_id'              =>  '10000000000000',
+            ];
+
+            $this->fixtures->create(
+                'terminal', $terminalCreateData);
+
+            $this->fixtures->merchant->enableOffline();
+
+            $this->fixtures->merchant->addFeatures(Feature\Constants::OTC_MERCHANT_CHALLAN);
+
+            $input = [
+                'customer_id' => $this->customer['id'],
+                'receivers' => ['offline_challan'],
+            ];
+
+            $this->createVirtualAccountForOfflineOrder($orderId, $input);
+        }
+        catch(BadRequestException $e)
+        {
+            $this->assertEquals(PublicErrorDescription::BAD_REQUEST_CHALLAN_NOT_FOUND_IN_NOTES, $e->getMessage());
+        }
+    }
+
+    public function testValidateOfflineChallanPresentInNotesWithDuplicateRequest(){
+
+        $content = [
+            'amount' => 1000,
+            'currency' => 'INR',
+            'receipt' => 'rec1',
+            'customer_additional_info' => [
+                'property_id' => '12345',
+                'property_value' => 'abc'
+            ],
+            'notes' => [
+                'challan_number' => 'bG7jLw8TzQ1xVrKd9P3eZmB2Ny6HfJ4uAoXpRsMh',
+            ],
+        ];
+
+        $terminalCreateData = [
+            'gateway'                  => 'offline_hdfc',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                   =>  1,
+            'merchant_id'              =>  '10000000000000',
+        ];
+
+        $input = [
+            'customer_id' => $this->customer['id'],
+            'receivers' => ['offline_challan'],
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreateData);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $this->fixtures->merchant->addFeatures(Feature\Constants::OTC_MERCHANT_CHALLAN);
+
+        $orderId1 = $this->generateOrderId($content);
+
+        $this->createVirtualAccountForOfflineOrder($orderId1, $input);
+
+        $orderId2 = $this->generateOrderId($content);
+
+        try
+        {
+            //Creating the OfflineChallan entity again on the same challan number.
+            $this->createVirtualAccountForOfflineOrder($orderId2, $input);
+        }
+        catch(BadRequestException $e)
+        {
+            $this->assertEquals(PublicErrorDescription::BAD_REQUEST_OFFLINE_CHALLAN_DUPLICATE_REQUEST, $e->getMessage());
+        }
     }
 
     public function testValidateOfflineChallanWithoutCert()

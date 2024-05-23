@@ -1191,6 +1191,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ALREADY_PROCESSED                                      = 'Re-push response in case transaction was validated initially against the same challan number';
     const BAD_REQUEST_DUPLICATE_TRANSACTION                                  = 'Duplicate payment identified against an already paid Challan';
     const BAD_REQUEST_CHALLAN_NOT_FOUND_IN_NOTES                             = 'Challan Number not found in notes field of order request.';
+    const BAD_REQUEST_OFFLINE_CHALLAN_DUPLICATE_REQUEST                      = 'Duplicate challan identified against an already created Challan';
     const BAD_REQUEST_CHALLAN_NOT_FOUND                                      = 'Challan not found in system';
     const BAD_REQUEST_CHALLAN_EXPIRED                                        = 'Challan was expired on receipt of API push from the bank';
     const BAD_REQUEST_CLIENT_CODE_NOT_FOUND                                  = 'Client Code not found in system';

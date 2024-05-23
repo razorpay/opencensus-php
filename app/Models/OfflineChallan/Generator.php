@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Error\PublicErrorDescription;
 
 class Generator extends Base\Core
 {
@@ -52,6 +53,16 @@ class Generator extends Base\Core
         else
         {
             $challanNumber = $this->generateChallanNumber();
+        }
+
+        $offlineChallan = $this->repo->offline_challan->fetchByChallanNumber($challanNumber);
+
+        if(isset($offlineChallan) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_OFFLINE_CHALLAN_DUPLICATE_REQUEST,null,[
+                'internal_error_code' => PublicErrorDescription::BAD_REQUEST_OFFLINE_CHALLAN_DUPLICATE_REQUEST
+            ]);
         }
 
         $offlineInput[Entity::CHALLAN_NUMBER] = $challanNumber;
