@@ -19574,6 +19574,7 @@ class Route
     protected static $hostMapping = array(
         "prod-api-int.razorpay.com" => "api.razorpay.com",
         "api-dark-int.razorpay.com" => "api-dark.razorpay.com",
+        "api-web.dev.razorpay.in"   => "api-web.ext.dev.razorpay.in",
     );
 
     /**
