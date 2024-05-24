@@ -30,7 +30,6 @@
     "test:jest-watch-changed": "jest --watch",
     "test:jest-watch": "jest --watchAll --silent=false",
     "test:setup": "pnpm exec universe web-e2e install",
-    "test:e2e": "pnpm exec universe web-e2e test",
     "test:e2e:show-report": "pnpm exec universe web-e2e show-report",
     "devstack-deploy": "pnpm exec universe infra-e2e devstack-deploy",
     "devstack-revert": "pnpm exec universe infra-e2e devstack-revert",
