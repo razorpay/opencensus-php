@@ -36,7 +36,7 @@ const UnicommerceForm = (props: UnicommerceFormPropType) => {
   });
 
   const [isCtaEnabled, setIsCtaEnabled] = useState<boolean>(false);
-  const [isUsernameValid, setIsUsernameValid] = useState<boolean>(true);
+  const [isTenantNameValid, setIsTenantNameValid] = useState<boolean>(true);
 
   const checkCtaEnabled = (formData: UnicommerceFormDataType) => {
     const { username, password, tenant } = formData;
@@ -87,19 +87,19 @@ const UnicommerceForm = (props: UnicommerceFormPropType) => {
     checkCtaEnabled(formData);
   }, [formData]);
 
-  const handleUsernameValidation = (fieldName: string) => {
-    if (fieldName !== FORM_FIELDS[0].name) {
+  const handleTenantnameValidation = (fieldName: string) => {
+    if (fieldName !== FORM_FIELDS[2].name) {
       return;
     }
 
-    const { username } = formData;
-    if (username !== '') {
-      setIsUsernameValid(USERNAME_INVALID_REGEX.test(username));
+    const { tenant } = formData;
+    if (tenant !== '') {
+      setIsTenantNameValid(USERNAME_INVALID_REGEX.test(tenant));
     }
   };
 
   const getValidationState = (fieldName: string) => {
-    return !isUsernameValid && fieldName === FORM_FIELDS[0].name ? 'error' : 'none';
+    return !isTenantNameValid && fieldName === FORM_FIELDS[2].name ? 'error' : 'none';
   };
 
   return (
@@ -115,9 +115,9 @@ const UnicommerceForm = (props: UnicommerceFormPropType) => {
             necessityIndicator="required"
             value={formData[field.name]}
             helpText={field.helpText}
-            onBlur={() => handleUsernameValidation(field.name)}
+            onBlur={() => handleTenantnameValidation(field.name)}
             validationState={getValidationState(field.name)}
-            errorText="Please enter valid username"
+            errorText="Please enter valid tenant name"
           />
         </Box>
       ))}
@@ -144,7 +144,7 @@ const UnicommerceForm = (props: UnicommerceFormPropType) => {
           onClick={handleUnicommerceConnect}
           icon={ArrowRightIcon}
           iconPosition="right"
-          isDisabled={!isCtaEnabled || !isUsernameValid}
+          isDisabled={!isCtaEnabled || !isTenantNameValid}
         >
           Connect to Unicommerce
         </Button>

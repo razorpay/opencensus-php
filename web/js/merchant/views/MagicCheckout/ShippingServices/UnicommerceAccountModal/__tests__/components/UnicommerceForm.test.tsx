@@ -70,7 +70,7 @@ describe('testing Unicommerce component', () => {
     });
   });
 
-  test('should show error, if the username validation fails', async () => {
+  test('should show error, if the tenant name validation fails', async () => {
     render(<UnicommerceForm />);
 
     const usernameInput = screen.getByPlaceholderText(new RegExp('Enter username', 'i'));
@@ -79,11 +79,11 @@ describe('testing Unicommerce component', () => {
 
     const tenantInput = screen.getByPlaceholderText(new RegExp('Enter tenant', 'i'));
 
+    await userEvent.type(tenantInput, 'tenant.com');
     await userEvent.type(usernameInput, 'test_user.com');
     await userEvent.type(passwordInput, 'test_password');
-    await userEvent.type(tenantInput, 'test_tenant');
 
-    expect(screen.queryByText(/Please enter valid username/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Please enter valid tenant name/i)).toBeInTheDocument();
 
     const linkAccountCta = screen.getByRole('button', {
       name: 'Connect to Unicommerce',
