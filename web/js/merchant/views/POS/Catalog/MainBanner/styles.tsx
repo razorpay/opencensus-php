@@ -109,5 +109,6 @@ export const MainBannerTileImage = styled.div(
 export const StyledMainBannerImage = styled.img`
   max-width: 230px;
   min-width: 150px;
-  height: 90%;
+  max-height: 500px;
+  height: 100%;
 `;

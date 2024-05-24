@@ -152,10 +152,17 @@ export const MobilePosCardEllipse2 = styled.div(
   `,
 );
 
-export const StyledProductCardImage = styled.img`
+export const StyledProductCardImage = styled.img(
+  ({ theme }: { theme: Theme }) => `
   max-inline-size: 100%;
   height: 100%;
-`;
+  max-height: 500px;
+
+  @media screen and (min-width: ${theme.breakpoints.m}px) {
+    max-height: 350px;
+  }
+`,
+);
 
 export const MobileEllpise = styled.div(
   ({ theme }: { theme: Theme }) => `
