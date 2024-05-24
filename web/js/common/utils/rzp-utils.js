@@ -1749,7 +1749,7 @@ export const openTicketModal = (data = {}) => {
 };
 
 export function isConfigTagAPISupported(merchantCountryCode) {
-  const SUPPORTED_COUNTRIES = ['MY'];
+  const SUPPORTED_COUNTRIES = ['MY', 'SG'];
 
   return SUPPORTED_COUNTRIES.find((countryCode) => countryCode === merchantCountryCode);
 }

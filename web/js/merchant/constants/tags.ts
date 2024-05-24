@@ -87,6 +87,7 @@ export enum CONFIG_TAGS_ENUM {
   'account.trusted_badge' = 'account.trusted_badge',
   'account.whatsapp_notification' = 'account.whatsapp_notification',
   'account.mobile_app' = 'account.mobile_app',
+  'account.customer_support_details' = 'account.customer_support_details',
   'announcements.announcements' = 'announcements.announcements',
   'app_store.app_store' = 'app_store.app_store',
   'app_switcher.app_switcher' = 'app_switcher.app_switcher',

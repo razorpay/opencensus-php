@@ -115,8 +115,11 @@ export const PRODUCTS_DATA = {
   },
   payment_metrics: {
     icon: 'i-chart',
-    additionalCondition: (user: { isCheckoutAnalyticsEnabled: boolean; isOrgRZP: boolean }) =>
-      user.isCheckoutAnalyticsEnabled && user.isOrgRZP,
+    additionalCondition: (user: {
+      isCheckoutAnalyticsEnabled: boolean;
+      isOrgRZP: boolean;
+      isINCountry: boolean;
+    }) => user.isCheckoutAnalyticsEnabled && user.isOrgRZP && user.isINCountry,
   },
   qr_codes: {
     icon: 'i-qr-code',
@@ -126,7 +129,7 @@ export const PRODUCTS_DATA = {
   affordability: {
     icon: 'i-affordability',
     additionalCondition: (user: any) => {
-      return user.isShowAffordabilityWidget && user.isOrgRZP;
+      return user.isShowAffordabilityWidget && user.isOrgRZP && user.isINCountry;
     },
   },
   subscriptions: {
@@ -138,11 +141,13 @@ export const PRODUCTS_DATA = {
   },
   x_payroll: {
     icon: 'i-razorpayx',
-    additionalCondition: (user: any): boolean => user.isShowPayrollWidgetEnabled && user.isOrgRZP,
+    additionalCondition: (user: any): boolean =>
+      user.isShowPayrollWidgetEnabled && user.isOrgRZP && user.isINCountry,
   },
   x_banking: {
     icon: 'i-razorpayx',
-    additionalCondition: (user: any): boolean => user.isShowRazorpayXWidgetEnabled && user.isOrgRZP,
+    additionalCondition: (user: any): boolean =>
+      user.isShowRazorpayXWidgetEnabled && user.isOrgRZP && user.isINCountry,
   },
   route: {
     icon: 'i-route',
@@ -200,7 +205,8 @@ export const PRODUCTS_DATA = {
   },
   app_store: {
     icon: 'i-app-store',
-    additionalCondition: (): boolean => !isOrgFeatureExist('hide_razorpay_text_link'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      !isOrgFeatureExist('hide_razorpay_text_link') && !isConfigTagEnabled?.('app_store.app_store'),
   },
   accountsettings: {
     icon: 'i-settings',

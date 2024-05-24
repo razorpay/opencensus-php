@@ -52,6 +52,7 @@ import { getLeftNavItemsCache, setLeftNavItemsCache } from './utils/Sidebar';
 import { getActiveTab, initializeRoutes } from './utils/href';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
+import { useI18Service } from 'common/i18';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const {
@@ -69,6 +70,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
     toggleMobileMenu,
   } = props;
 
+  const { isConfigTagEnabled } = useI18Service();
   const isRTUXHomepage = useIsRTUXHomepageEnabled();
   const { location, history } = props;
 
@@ -176,7 +178,12 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
             />
           </Link>
         </SidebarSection>
-        <ShowWhen additionalCondition={() => !isOrgFeatureExist('hide_activation_form')}>
+        <ShowWhen
+          additionalCondition={() =>
+            !isOrgFeatureExist('hide_activation_form') &&
+            !isConfigTagEnabled('onboarding.onboarding')
+          }
+        >
           <ActivationProgress
             onSidebarActivationClick={handleActivationClick}
             user={user}

@@ -330,7 +330,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'kylas' },
     ],
     icon: app_store.icon,
-    additionalCondition: (): boolean => app_store.additionalCondition(),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      app_store.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -773,7 +774,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     tags: [{ value: 'FIRS certificate' }, { value: 'Proof of foreign transfers' }],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.international_settings,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean => shouldShowFIRCSection(user),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      shouldShowFIRCSection(user, extraConfig),
     apiCondition: false,
   },
   {

@@ -1738,8 +1738,7 @@ export const openTicketModal = (data = {}) => {
 export const isPosEnabled = (experimenets) =>
   experimenets?.pos_onboarding?.variables.result === 'on';
 
+const SUPPORTED_COUNTRIES = ['MY', 'SG'];
 export function isConfigTagAPISupported(merchantCountryCode) {
-  const SUPPORTED_COUNTRIES = ['MY'];
-
   return SUPPORTED_COUNTRIES.find((countryCode) => countryCode === merchantCountryCode);
 }

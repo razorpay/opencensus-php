@@ -1,5 +1,10 @@
+import React, { Suspense } from 'react';
+import { connect } from 'react-redux';
+import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router-dom';
+
 import Breadcrumb from 'common/components/Breadcrumb';
 import Loader from 'common/components/Loader';
+import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { useSplitzService } from 'common/splitz';
@@ -26,12 +31,9 @@ import {
   isTeamManagementAllowed,
   shouldShowTeamInvitations,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import React, { Suspense } from 'react';
-import { connect } from 'react-redux';
-import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router-dom';
-import { BusinessSettingsProps } from './typings';
-import { withRouter } from 'common/deprecated/withRouter';
+
 import { useGSTUpdateExperiment } from './Tabs/GSTDetails/utils';
+import { BusinessSettingsProps } from './typings';
 
 const AccountDetails = lazy(
   () => import(/* webpackChunkName: "AccountDetails" */ './Tabs/AccountDetails/v1'),
@@ -134,7 +136,13 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
             <NavLink to={ROUTES_INFO.GST_DETAILS}>GST details</NavLink>
           </ShowWhen>
 
-          <NavLink to={ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS}>Customer support details</NavLink>
+          <ShowWhen
+            additionalCondition={() =>
+              !extraConfig.isConfigTagEnabled('account.customer_support_details')
+            }
+          >
+            <NavLink to={ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS}>Customer support details</NavLink>
+          </ShowWhen>
           <ShowWhen additionalCondition={(user) => isTeamManagementAllowed(user)}>
             <NavLink to={ROUTES_INFO.MANAGE_TEAM_DETAILS}>Manage team</NavLink>
           </ShowWhen>

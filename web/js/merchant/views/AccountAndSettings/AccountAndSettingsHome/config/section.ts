@@ -58,6 +58,7 @@ import {
   shouldShowFeeBearerSelfServe,
   shouldShowTeamInvitations,
   isWhatsAppAccountSetupEnabled,
+  isCustomerSupportDetailsEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 export const AccountNSettingsIcons = {
@@ -315,6 +316,10 @@ export const Sections: SectionCardInterface[] = [
         id: BusinessSettingsFields.CUSTOMER_SUPPORT_DETAILS,
         title: BusinessSettingsTitles[BusinessSettingsFields.CUSTOMER_SUPPORT_DETAILS],
         href: ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS,
+        additionalCondition:
+          ({ extraConfig }: AdditionalContextInterface) =>
+          (): boolean =>
+            isCustomerSupportDetailsEnabled(extraConfig),
       },
       {
         id: BusinessSettingsFields.ACTIVATION_DETAILS,
@@ -588,7 +593,10 @@ export const Sections: SectionCardInterface[] = [
     title: 'International payments settings',
     icon: AccountNSettingsIcons.international_settings,
     iconBackground: 'linear-gradient(162.28deg, #2A86F3 27.27%, #C592FF 121.23%)',
-    additionalCondition: (): ((user: User) => boolean) => shouldShowFIRCSection,
+    additionalCondition:
+      ({ extraConfig }: AdditionalContextInterface) =>
+      (user: User): boolean =>
+        shouldShowFIRCSection(user, extraConfig),
     subSections: [
       {
         id: InternationalSettingsFields.FIRS,

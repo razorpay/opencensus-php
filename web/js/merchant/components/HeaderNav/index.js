@@ -83,6 +83,10 @@ class HeaderNav extends Component {
   };
 
   isRAYEnabled() {
+    if (!this.props.user.isINCountry) {
+      return false;
+    }
+
     const { abExperiments } = this.props.splitz || {
       abExperiments: { ray_ai: undefined },
     };
@@ -322,7 +326,7 @@ class HeaderNav extends Component {
                     </GrowthAssetEB>
                   </li>
                 </ShowWhen>
-                {user?.isOrgRZP && user?.isInternalStatusPageEnabled && (
+                {user?.isOrgRZP && user?.isInternalStatusPageEnabled && user.isINCountry && (
                   <li id="status-details" data-testid="header-status-details">
                     {user.isEcosystemDowntimeEnabled ? (
                       <EcosystemDowntimes

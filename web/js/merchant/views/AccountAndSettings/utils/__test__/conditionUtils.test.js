@@ -1,7 +1,7 @@
-import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 jest.mock('merchant/models/User', () => ({
   ...jest.requireActual('merchant/models/User'),
@@ -43,6 +43,7 @@ describe('Condition Utils', () => {
     { reverse = false, extraTestMessage = '' } = {},
   ) => {
     describe(utilName, () => {
+      const extraConfig = { isConfigTagEnabled: jest.fn() };
       test.each([
         [reverse, false],
         [!reverse, true],
@@ -50,7 +51,7 @@ describe('Condition Utils', () => {
         `should return %s when user.${userProperty} returns %s ${extraTestMessage}`,
         (userKeyOutput, utilOutput) => {
           user[userProperty].mockReturnValueOnce(userKeyOutput);
-          expect(conditionalUtils[utilName](user)).toBe(utilOutput);
+          expect(conditionalUtils[utilName](user, extraConfig)).toBe(utilOutput);
         },
       );
     });
@@ -345,12 +346,34 @@ describe('Condition Utils', () => {
   });
 
   describe('shouldShowFIRCSection', () => {
-    test('should return true when user.international is true', () => {
-      const shouldShowFIRCSection = conditionalUtils.shouldShowFIRCSection({
-        ...user,
-        international: true,
-      });
+    const extraConfig = { isConfigTagEnabled: jest.fn() };
+
+    test('should "return true" when user.international is true', () => {
+      const shouldShowFIRCSection = conditionalUtils.shouldShowFIRCSection(
+        {
+          ...user,
+          international: true,
+        },
+        extraConfig,
+      );
       expect(shouldShowFIRCSection).toBe(true);
+    });
+
+    test('should return "true" when isConfigTagEnabled is return false', () => {
+      extraConfig.isConfigTagEnabled.mockReturnValue(false);
+
+      user.findTag.mockReturnValue(true);
+
+      const shouldShowFIRCSection = conditionalUtils.shouldShowFIRCSection(user, extraConfig);
+      expect(shouldShowFIRCSection).toBe(true);
+    });
+
+    test('should return "false" when isConfigTagEnabled is true', () => {
+      extraConfig.isConfigTagEnabled.mockReturnValue(true);
+
+      user.findTag.mockReturnValue(true);
+      const shouldShowFIRCSection = conditionalUtils.shouldShowFIRCSection(user, extraConfig);
+      expect(shouldShowFIRCSection).toBe(false);
     });
   });
 
@@ -449,6 +472,19 @@ describe('Condition Utils', () => {
           }),
         ).toBe(['owner', 'admin'].includes(role));
       }
+    });
+  });
+
+  describe('isWhatsAppAccountSetupEnabled', () => {
+    test('should return false only when user is belong to Singapore', () => {
+      expect(
+        conditionalUtils.isEmailNotificationEnabled({
+          user: {
+            ...user,
+            isSGCountry: true,
+          },
+        }),
+      ).toBeFalsy();
     });
   });
 });

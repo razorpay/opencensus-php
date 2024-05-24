@@ -25,6 +25,7 @@ import { getCustomURL } from 'merchant/components/DocsLink';
 import { REFUND_SETTINGS } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { updateMerchant as updateMerchantReducer } from 'merchant/reducers/session';
+import { withI18Service } from 'common/i18';
 
 const raiseTicket = () => {
   if (window.rzpTicketSystem) {
@@ -50,6 +51,7 @@ const raiseTicket = () => {
   }
 };
 // eslint-disable-next-line react/no-unsafe
+@withI18Service
 class DefaultRefundSpeed extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -196,6 +198,7 @@ class DefaultRefundSpeed extends Component {
 
   render() {
     const { isInstantRefundOrg, isInstantRefundMid } = this.state;
+    const { isConfigTagEnabled } = this.props.i18;
 
     const feeBearerValue = this.props.user?.merchant?.fee_bearer;
 
@@ -290,106 +293,107 @@ class DefaultRefundSpeed extends Component {
                 </span>
               </div>
             </div>
-            {(!isInstantRefundOrg || (isInstantRefundOrg && isInstantRefundMid)) && (
-              <div className="col-sm-6 p5">
-                <div
-                  className={`refund-panel-col ${
-                    this.state.default_refund_speed == 'optimum' ? 'active' : ''
-                  }
+            {(!isInstantRefundOrg || (isInstantRefundOrg && isInstantRefundMid)) &&
+              !isConfigTagEnabled('refunds.instant_refunds') && (
+                <div className="col-sm-6 p5">
+                  <div
+                    className={`refund-panel-col ${
+                      this.state.default_refund_speed == 'optimum' ? 'active' : ''
+                    }
                   ${feeBearerValue === 'customer' ? 'disabled' : ''}`}
-                  id="instant-refund-panel-col"
-                >
-                  <h4>
-                    <i className="i i-instant-refund" />
-                    <b>Instant Refund</b>
+                    id="instant-refund-panel-col"
+                  >
+                    <h4>
+                      <i className="i i-instant-refund" />
+                      <b>Instant Refund</b>
 
+                      {!showWhenUtil({
+                        featureEnabled: 'disable_instant_refunds',
+                      }) ? (
+                        feeBearerValue === 'customer' ? (
+                          <i className="i i-outline-lock" />
+                        ) : (
+                          <input
+                            type="radio"
+                            className="radio-pointer refund-speed-change-permission"
+                            checked={this.state.default_refund_speed == 'optimum'}
+                            name="default_instant"
+                            onChange={(e) => {
+                              const speed = e.target.checked ? 'optimum' : 'normal';
+                              this.checkDefaultRefundSpeed(speed);
+                            }}
+                          />
+                        )
+                      ) : null}
+                    </h4>
+                    <p>
+                      At a{' '}
+                      <strong
+                        className="pointer"
+                        onClick={() => {
+                          this.props.tracking.trackEvent(
+                            window.rzpQ.merchantActions().initiated(`Click - Minimal Fee`, {
+                              label: `Setting Page`,
+                              session_id: window.session_id,
+                              category: 'Merchant Dashboard - IR',
+                            }),
+                          );
+                          this.props.openModal({
+                            component: <InstantRefundFee pricing={this.props.refund_pricing} />,
+                            size: 'small',
+                          });
+                        }}
+                      >
+                        minimal fee
+                      </strong>
+                      , your customer will get refunds instantly.
+                    </p>
+
+                    <br />
                     {!showWhenUtil({
                       featureEnabled: 'disable_instant_refunds',
                     }) ? (
-                      feeBearerValue === 'customer' ? (
-                        <i className="i i-outline-lock" />
-                      ) : (
-                        <input
-                          type="radio"
-                          className="radio-pointer refund-speed-change-permission"
-                          checked={this.state.default_refund_speed == 'optimum'}
-                          name="default_instant"
-                          onChange={(e) => {
-                            const speed = e.target.checked ? 'optimum' : 'normal';
-                            this.checkDefaultRefundSpeed(speed);
-                          }}
-                        />
-                      )
-                    ) : null}
-                  </h4>
-                  <p>
-                    At a{' '}
-                    <strong
-                      className="pointer"
-                      onClick={() => {
-                        this.props.tracking.trackEvent(
-                          window.rzpQ.merchantActions().initiated(`Click - Minimal Fee`, {
-                            label: `Setting Page`,
-                            session_id: window.session_id,
-                            category: 'Merchant Dashboard - IR',
-                          }),
-                        );
-                        this.props.openModal({
-                          component: <InstantRefundFee pricing={this.props.refund_pricing} />,
-                          size: 'small',
-                        });
-                      }}
-                    >
-                      minimal fee
-                    </strong>
-                    , your customer will get refunds instantly.
-                  </p>
-
-                  <br />
-                  {!showWhenUtil({
-                    featureEnabled: 'disable_instant_refunds',
-                  }) ? (
-                    <span className="refunds-speed-tag">
-                      OPTIMUM SPEED &nbsp;
-                      <span>
-                        <i className="i i-help" />
-                        <Popover align="bottom" theme="dark">
-                          <PopoverBody>
-                            <div>
-                              All your refund API calls will have speed set to `optimum` by default
-                              unless it is set to `normal` explicitly{' '}
-                            </div>
-                          </PopoverBody>
-                        </Popover>
+                      <span className="refunds-speed-tag">
+                        OPTIMUM SPEED &nbsp;
+                        <span>
+                          <i className="i i-help" />
+                          <Popover align="bottom" theme="dark">
+                            <PopoverBody>
+                              <div>
+                                All your refund API calls will have speed set to `optimum` by
+                                default unless it is set to `normal` explicitly{' '}
+                              </div>
+                            </PopoverBody>
+                          </Popover>
+                        </span>
                       </span>
+                    ) : (
+                      <p>
+                        {' '}
+                        To enable it, please{' '}
+                        <a
+                          onClick={() => {
+                            raiseTicket();
+                            window.rzpAnalytics?.({
+                              eventCategory: 'Dashboard - Instant Refund',
+                              eventAction: 'Contact Support',
+                              eventLabel: `Setting Page | Contact Support`,
+                            });
+                          }}
+                          className="highlight know-more contact-support-link"
+                        >
+                          <strong>contact support</strong>
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                  {feeBearerValue === 'customer' && (
+                    <span className="instant-refund-disabled-text">
+                      Locked when convenience fee model is selected
                     </span>
-                  ) : (
-                    <p>
-                      {' '}
-                      To enable it, please{' '}
-                      <a
-                        onClick={() => {
-                          raiseTicket();
-                          window.rzpAnalytics?.({
-                            eventCategory: 'Dashboard - Instant Refund',
-                            eventAction: 'Contact Support',
-                            eventLabel: `Setting Page | Contact Support`,
-                          });
-                        }}
-                        className="highlight know-more contact-support-link"
-                      >
-                        <strong>contact support</strong>
-                      </a>
-                    </p>
                   )}
                 </div>
-                {feeBearerValue === 'customer' && (
-                  <span className="instant-refund-disabled-text">
-                    Locked when convenience fee model is selected
-                  </span>
-                )}
-              </div>
-            )}{' '}
+              )}{' '}
           </div>
         </div>
       </div>

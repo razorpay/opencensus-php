@@ -7,8 +7,8 @@ export const getIsPayrollWidgetEnabled = (currentUser = {}) => {
 };
 
 export const getIsShowAffordabilityWidget = (currentUser = {}) => {
-  return currentUser.isShowAffordabilityWidget && currentUser.isOrgRZP;
+  return currentUser.isShowAffordabilityWidget && currentUser.isOrgRZP && currentUser.isINCountry;
 };
 
 export const getIsCheckoutPaymentMetricsEnabled = (currentUser = {}) =>
-  currentUser.isCheckoutAnalyticsEnabled && currentUser.isOrgRZP;
+  currentUser.isCheckoutAnalyticsEnabled && currentUser.isOrgRZP && currentUser.isINCountry;

@@ -441,7 +441,7 @@ export default class User {
 
   get isMagicKonnectEnabled() {
     const accessRoles = [rolesList.OWNER, rolesList.ADMIN, rolesList.MANAGER, rolesList.PARTNER];
-    return this.isOrgRZP && accessRoles.indexOf(this.userRole) > -1;
+    return this.isOrgRZP && accessRoles.indexOf(this.userRole) > -1 && this.isINCountry;
   }
 
   get isMerchantExpiryPPEnabled() {
@@ -861,6 +861,16 @@ export default class User {
 
   get isInvoiceReceiptMandatory() {
     return this.isFeatureEnabled('invoice_receipt_mandatory');
+  }
+
+  get isSGCountry() {
+    // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
+    return this.merchant.country_code === 'SG';
+  }
+
+  get isINCountry() {
+    // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
+    return this.merchant.country_code === 'IN';
   }
 
   get isRBLRoleEnabled() {
@@ -1936,7 +1946,8 @@ export default class User {
   get isUniversalSearchEnabled() {
     return (
       getSplitzExperimentVariant('universal_search_enabled')?.variables?.result === 'on' &&
-      this.isOrgRZP
+      this.isOrgRZP &&
+      this.isINCountry
     );
   }
 

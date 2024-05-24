@@ -1,10 +1,10 @@
+import { SpiltzContextState } from 'common/splitz/types';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import User, { isOrgFeatureExist } from 'merchant/models/User';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import { AdditionalContextInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
-import { isExperimentEnabled } from 'common/splitz/utils';
-import { SpiltzContextState } from 'common/splitz/types';
 
 export const isConfigurationViewAllowed = (user: User): boolean =>
   user.isAllowedView('configuration');
@@ -94,6 +94,9 @@ export const isCreditsEnabled = (user: User, extraConfig: ExtraConfig): boolean 
 export const isReminderEnabled = (extraConfig: ExtraConfig): boolean =>
   !extraConfig.isConfigTagEnabled('reminders.reminder');
 
+export const isCustomerSupportDetailsEnabled = (extraConfig: ExtraConfig): boolean =>
+  !extraConfig.isConfigTagEnabled('account.customer_support_details');
+
 export const isPaymentCaptureAndRefundEnabled = (extraConfig: ExtraConfig): boolean =>
   !extraConfig.isConfigTagEnabled('account.payment_capture') ||
   !extraConfig.isConfigTagEnabled('refunds.refund');
@@ -108,14 +111,16 @@ export const isBankAccountDetailsAllowed = (extraConfig: ExtraConfig): boolean =
 export const isSettlementsAllowed = (extraConfig: ExtraConfig): boolean =>
   !extraConfig.isConfigTagEnabled('settlements.settlement');
 
-export const shouldShowFIRCSection = (user: User): boolean => {
+export const shouldShowFIRCSection = (user: User, extraConfig: ExtraConfig): boolean => {
   /**
    * Show FIRC section either when user is international enabled or when opgsp_import_flow feature flag is enabled.
    */
   if (user.international) {
     return true;
   }
-  return user.findTag('opgsp_import_flow');
+  return (
+    user.findTag('opgsp_import_flow') && !extraConfig.isConfigTagEnabled('settings.international')
+  );
 };
 
 export const accountAccessHoverDescription = (user: User): boolean => {
@@ -137,6 +142,8 @@ export const isWhatsAppAccountSetupEnabled = (
   { abExperiments }: Pick<SpiltzContextState, 'abExperiments'> = { abExperiments: {} },
   roleCheckEnable?: boolean,
 ): boolean => {
+  if (user.isSGCountry) return false;
+
   if (!abExperiments?.whatsAppPLEnabled) {
     return false;
   }
