@@ -11,7 +11,7 @@ test.describe.serial(
   'Test Create and Edit Customer @flow=customer @project=payments @project=payments-roast',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
     let newlyCreatedCustomer = '';
     // roast test createCustomerTest

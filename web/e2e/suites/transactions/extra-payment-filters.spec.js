@@ -1,6 +1,6 @@
-import { expect, test } from 'utils/base';
 import moment from 'moment';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { expect, test } from 'utils/base';
 
 import { navigateToTransactions } from './utils';
 

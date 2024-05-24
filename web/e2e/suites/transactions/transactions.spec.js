@@ -1,11 +1,11 @@
-import { expect, test } from 'utils/base';
 import { getStorageStatePath, BASE_PATH } from 'testConstants';
+import { expect, test } from 'utils/base';
 
 import { navigateToTransactions } from './utils';
 
 test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).TRANSACTIONS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test('should show Batch Upload modal in Batch Payments', async ({ page }) => {
@@ -66,13 +66,13 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
     for await (const column of columns) {
       await expect(page.getByRole('cell', { name: column })).toBeVisible();
     }
-    await page.locator('input[name="id"]').fill('pay_MWm0faxRp7Whwh');
+    await page.locator('input[name="id"]').fill('pay_OB5ZB0lZSaC2yb');
     await page.getByRole('button', { name: 'Search' }).click();
     const details = [
-      'pay_MWm0faxRp7Whwh',
+      'pay_OB5ZB0lZSaC2yb',
       'amount-info ₹ - Indian Rupee (INR)',
-      /31 Aug 2023/,
-      'Upi',
+      /16 May 2024/,
+      'Card',
       'Authorized',
       /Upload Invoice/,
     ];

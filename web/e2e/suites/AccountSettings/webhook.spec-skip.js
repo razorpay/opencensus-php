@@ -11,7 +11,7 @@ const ELEMENT_CONSTANTS = {
 
 test.describe('Test webhook creation @flow=settings @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
   test.skip('should create webhook @priority=critical', async ({ page }) => {
     // go to the webhook settings tab

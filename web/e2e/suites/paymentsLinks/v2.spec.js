@@ -23,7 +23,7 @@ test.describe.parallel(
   'Test Payments Links V2 @flow=payment-links-v2 @project=no-code @project=no-code-roast',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test.beforeEach(async ({ page }) => {

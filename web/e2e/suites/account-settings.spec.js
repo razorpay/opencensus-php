@@ -9,7 +9,7 @@ test.describe.parallel(
   'My account and settings @flow=account-settings @project=payments @project=payments-roast',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test.beforeEach(async ({ page }) => {
@@ -231,7 +231,7 @@ test.describe.parallel(
       await expect(businessDetailsSection).toBeVisible();
 
       await expect(await businessDetailsSection.getByText('Business Name')).toBeVisible();
-      await expect(await businessDetailsSection.getByText('Playwright Test Account')).toBeVisible();
+      await expect(await businessDetailsSection.getByText('Test Ssab T')).toBeVisible();
     });
 
     test.describe.parallel('Rewards & Streak tile - Test Mode', () => {
@@ -247,7 +247,7 @@ test.describe.parallel(
   'My account and settings @flow=account-settings @project=payments @project=payments-roast - Live Mode',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_LIVE_LOGIN_STATE, // Live mode credential
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test.beforeEach(async ({ page }) => {

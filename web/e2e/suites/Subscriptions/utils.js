@@ -1,5 +1,5 @@
-import { expect } from 'utils/base';
 import { routes } from 'testConstants';
+import { expect } from 'utils/base';
 
 import { navigateToInCurlecDashboard } from '../../utils/common';
 

@@ -1,9 +1,9 @@
-const { test, expect } = require('utils/base');
 const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
+const { test, expect } = require('utils/base');
 
 test.describe('GCMS orders create @flow=ordersCreate @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).MOBILE_TEST_GCMS_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {
@@ -18,7 +18,7 @@ test.describe('GCMS orders create @flow=ordersCreate @project=payments', () => {
     await expect(page).toHaveURL(`${routes.GCMS_RESELLERS}/N91osUDdN9WdO9/programs`); //Reseller id of first reseller
     await expect(await page.getByText('N91osUDdN9WdO9')).toBeVisible(); //Reseller id of first reseller
     await expect(await page.getByText('Account Balance')).toBeVisible();
-    await expect(await page.getByText('Thank You Gift Card').first()).toBeVisible();
+    await expect(await page.getByText('GCMS_UI_Non_PPI_Range_Program_001').first()).toBeVisible();
     await expect(await page.getByText('Ibaco')).toBeVisible();
 
     await page.getByRole('button', { name: 'Create Order' }).first().click();
@@ -27,7 +27,7 @@ test.describe('GCMS orders create @flow=ordersCreate @project=payments', () => {
 
     const firstCard = await page
       .locator('div[data-blade-component="card"]')
-      .filter({ hasText: 'Special New Year Gift Card' })
+      .filter({ hasText: 'GCMS_UI_Non_PPI_Range_Program_001' })
       .first();
     await expect(firstCard).toBeVisible();
     await firstCard.click();

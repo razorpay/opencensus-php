@@ -3,7 +3,6 @@ const {
   getEmailCredentials,
   getMobileCredentials,
   getActivatedNotIECredentials,
-  getMagicCheckoutCredentials,
   getPosCredentials,
   getCurlecCredentials,
 } = require('../constants/constants');
@@ -63,7 +62,6 @@ function getCredentials() {
     emailCred: getEmailCredentials(),
     mobileCred: getMobileCredentials(),
     activatedNotIe: getActivatedNotIECredentials(),
-    magicCheckout: getMagicCheckoutCredentials(),
     posCredentials: getPosCredentials(),
     curlecCred: getCurlecCredentials(),
   };

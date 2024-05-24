@@ -1,6 +1,7 @@
-const { test, expect } = require('utils/base');
 const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
+const { test, expect } = require('utils/base');
 const { navigateTo } = require('utils/common');
+
 const { waitForPosNcModalToLoad } = require('./utils');
 
 test.describe.parallel('POS activation status @flow=pos-activation-status', () => {

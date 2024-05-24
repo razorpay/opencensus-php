@@ -53,7 +53,7 @@ test.describe(
   'Test Settlements view when no settlments are present @flow=settlements @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
     test('should show no settlements alert @priority=normal', async ({ page }) => {
       await page.goto(routes.SETTLEMENTS);

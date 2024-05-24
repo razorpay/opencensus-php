@@ -62,8 +62,14 @@ web/js/coverage
 web/report.json
 
 web/test-results
+web/e2e/.auth/*
+!web/e2e/.auth/.gitkeep
+
 web/e2e/storageState/*
 !web/e2e/storageState/.gitkeep
+
+playwright/.auth/*
+!playwright/.auth/.gitkeep
 
 playwright/storageState/*
 !playwright/storageState/.gitkeep

@@ -157,13 +157,13 @@ const NavLinkProduct = ({
           {sectionProducts.valid.length > 3 && (
             <>
               {isRTUXHomepage ? (
-                <ShowMoreWrapper onClick={handleToggle}>
+                <ShowMoreWrapper data-testid="show-all-products" onClick={handleToggle}>
                   <Text weight="semibold" size="small" color="interactive.text.primary.subtle">
                     {isOpen ? 'Show less' : `Show all (${sectionProducts.valid.length})`}
                   </Text>
                 </ShowMoreWrapper>
               ) : (
-                <Toggler onClick={handleToggle} type="button">
+                <Toggler data-testid="show-all-products" onClick={handleToggle} type="button">
                   {isOpen ? 'Show less' : `Show all (${sectionProducts.valid.length})`}
                 </Toggler>
               )}

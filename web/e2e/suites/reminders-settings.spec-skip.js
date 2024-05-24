@@ -14,7 +14,7 @@ test.describe(
   'My account and settings @flow=account-settings @project=payments @project=payments-roast',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_LIVE_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     // roast test setReminders

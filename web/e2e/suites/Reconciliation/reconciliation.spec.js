@@ -1,9 +1,9 @@
-const { test, expect } = require('utils/base');
 const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
+const { test, expect } = require('utils/base');
 
 test.describe.parallel('@flow=recon-saas @suite=recon-saas @project=recon-saas', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test('should be able to load recon dashboard', async ({ page }) => {

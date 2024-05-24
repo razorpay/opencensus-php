@@ -6,7 +6,7 @@ test.describe.parallel(
   'Test customer support details @flow=customer-support @project=payments',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_LIVE_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test('should show customer support details @priority=normal', async ({ page }) => {

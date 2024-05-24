@@ -18,7 +18,7 @@ test.describe.parallel(
   'Test dashboard landing page @flow=home @project=payments @project=payments-roast',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
     test.beforeEach(async ({ page }) => {
       await page.goto(routes.DASHBOARD);

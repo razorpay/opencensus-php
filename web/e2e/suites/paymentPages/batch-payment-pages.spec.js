@@ -9,17 +9,17 @@ import {
   clickSkipAndStartBtn,
 } from './utils';
 import { switchToTestMode } from '../../utils';
+import { navigateTo } from '../../utils/common';
 
 test.setTimeout(2 * 60 * 1000);
-
 test.describe.parallel(
   'Test Batch Payments Pages @flow=batch-payment-pages @project=no-code',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
-
     test.beforeEach(async ({ page }) => {
+      await navigateTo(page, routes.DASHBOARD);
       await switchToTestMode({ page });
       await page.goto(routes.PAYMENT_PAGES);
       await clickSkipAndStartBtn({ page });

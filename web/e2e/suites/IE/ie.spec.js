@@ -15,7 +15,7 @@ const CONSTANTS = {
 
 test.describe.parallel('Test International enablement @flow=ie @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).TRANSACTIONS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
   // TODO: enable these tests after multiple auth setup is done
   test.skip('should be able to request for IE @priority=normal', async ({ page }) => {

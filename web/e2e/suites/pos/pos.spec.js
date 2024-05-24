@@ -1,5 +1,5 @@
-const { test, expect } = require('utils/base');
 const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
+const { test, expect } = require('utils/base');
 const { navigateTo } = require('utils/common');
 
 const { MAIN_BANNER_TEXT_CONTENT, PDP_CONTENT, DEVICE_CODES } = require('./constants');

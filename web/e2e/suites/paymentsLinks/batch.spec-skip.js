@@ -7,19 +7,19 @@ import { clickSkipAndStartBtn, searchAndVerifyByPLId } from './utils';
 
 [
   {
-    loginState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+    loginState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     testDescription: 'Test V2 PL Batch Uploads @flow=payment-links-v2',
     plType: 'V2',
     isTestMode: true,
   },
   {
-    loginState: getStorageStatePath(BASE_PATH).EMAIL_LIVE_LOGIN_STATE,
+    loginState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     testDescription: 'Test UPI PL Batch Uploads @flow=payment-links-upi',
     plType: 'UPI',
     isTestMode: false,
   },
   {
-    loginState: getStorageStatePath(BASE_PATH).ACTIVATED_NOT_IE_STATE,
+    loginState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     testDescription: 'Test classic PL Batch Uploads @flow=payment-links-v1',
     plType: 'v1',
     isTestMode: true,

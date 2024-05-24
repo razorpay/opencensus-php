@@ -13,7 +13,7 @@ import { assertSearchResults, findInSearchResultsEl, getSearchResultsEl } from '
 
 test.describe.parallel('Test universal search @flow=universal-search @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {
@@ -133,7 +133,7 @@ test.describe.parallel(
   'Test universal search @flow=universal-entity-search @project=payments',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test.beforeEach(async ({ page }) => {

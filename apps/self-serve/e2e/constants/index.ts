@@ -1,4 +1,4 @@
-export const BASE_PATH = '../../playwright/storageState';
+export const BASE_PATH = '../../playwright/.auth';
 
 export const payments = {
   paymentId: {

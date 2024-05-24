@@ -44,7 +44,7 @@ const mockApiResponseForConnectedApplication = async ({ page }) => {
 
 test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
   test('should show Whatsapp account setup page @priority=normal', async ({ page }) => {
     await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);

@@ -25,7 +25,7 @@ test.describe.parallel(
   'Rize Marketplace listing page @flow=rize-marketplace @project=payments',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
       permissions: ['clipboard-read'],
     });
 

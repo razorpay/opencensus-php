@@ -1,5 +1,5 @@
-import { expect } from 'utils/base';
 import { routes } from 'testConstants';
+import { expect } from 'utils/base';
 import { navigateTo } from 'utils/common';
 
 // helpers - start

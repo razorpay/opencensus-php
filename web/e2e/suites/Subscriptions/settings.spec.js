@@ -1,5 +1,5 @@
-import { expect, test } from 'utils/base';
 import { getStorageStatePath, BASE_PATH } from 'testConstants';
+import { expect, test } from 'utils/base';
 
 import { navigateToSubscriptionsSettings } from './utils';
 

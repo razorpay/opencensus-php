@@ -11,7 +11,7 @@ import {
 
 test.describe.parallel('Transactions (Live Mode) @flow=transactionsV1 @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).TRANSACTIONS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test('should show payments list in Upload Invoices', async ({ page }) => {

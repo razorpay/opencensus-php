@@ -4,7 +4,7 @@ const { test, expect } = require('utils/base');
 
 test.describe.parallel('Payment Metrics @flow=payments-metrics @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).EMAIL_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {
@@ -15,6 +15,7 @@ test.describe.parallel('Payment Metrics @flow=payments-metrics @project=payments
   test('should navigate to Payment Metrics Page on CTA click', async ({ page }) => {
     // click on Payment Metrics link in sidebar
     await page.goto(routes.DASHBOARD);
+    await page.getByTestId('show-all-products').first().click();
     await page.getByRole('link', { name: 'Payment Metrics' }).click();
     await expect(page).toHaveURL(routes.PAYMENT_METRICS);
   });

@@ -6,7 +6,7 @@ import { assertAPICallForDataRefresh, getRTUXResponse, getWidgetResponse } from 
 
 test.describe.parallel('RTUX - Transacted Merchant @flow=rtux', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test('should show merchant overview @priority=normal', async ({ page }) => {
@@ -95,7 +95,7 @@ test.describe.parallel('RTUX - Transacted Merchant @flow=rtux', () => {
 
 test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).TRANSACTIONS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test('should show merchant overview @priority=normal', async ({ page }) => {
@@ -128,12 +128,12 @@ test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux', () => {
 
 test.describe.parallel('RTUX - Header Nav @flow=rtux', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).TRANSACTIONS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux', () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test('should show announcement nav item @priority=normal', async ({ page }) => {

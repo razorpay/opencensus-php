@@ -1,6 +1,6 @@
-import { expect } from 'utils/base';
 import { CTA_SELECTORS, CONTENT_SELECTORS } from 'partnerDashboard/common/constants';
 import { routes } from 'testConstants';
+import { expect } from 'utils/base';
 import { waitForSelectorToBeVisible } from 'utils/common';
 
 export const fillInputAndLoadSearchResults = async (

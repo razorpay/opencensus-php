@@ -1,9 +1,9 @@
-const { test, expect } = require('utils/base');
 const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
+const { test, expect } = require('utils/base');
 
 test.describe('GCMS Funds Reseller Accounts @flow=funds @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).MOBILE_TEST_GCMS_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {
@@ -22,7 +22,7 @@ test.describe('GCMS Funds Reseller Accounts @flow=funds @project=payments', () =
     await expect(await page.getByText('Reseller ID').first()).toBeVisible();
     await page.getByPlaceholder(/search reseller name/i).fill('Ibaco');
     await page.getByRole('button', { name: /search/i }).click();
-    await expect(await page.getByText('NMmhaISjmvNGoo').first()).toBeVisible();
+    await expect(await page.getByText('ODQKaJ2Fssjugd').first()).toBeVisible();
   });
 
   // test('should be able to fetch next batch of reseller accounts', async ({ page }) => {

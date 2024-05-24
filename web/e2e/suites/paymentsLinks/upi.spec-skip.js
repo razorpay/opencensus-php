@@ -23,7 +23,7 @@ test.describe.parallel(
   'Test UPI Payment Links @flow=payment-links-upi @project=no-code @project=no-code-roast',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_LIVE_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test.beforeEach(async ({ page }) => {

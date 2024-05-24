@@ -20,7 +20,7 @@ test.describe.parallel(
   'Test risk visibility block rule feature @flow=risk-visibility @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).INTERNATIONAL_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test.beforeEach(async ({ page }) => {

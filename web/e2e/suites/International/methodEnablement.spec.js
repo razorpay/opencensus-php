@@ -26,7 +26,7 @@ test.describe.parallel(
   'Test international method enablement flow @flow=ie-method-enablement @project=payments',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).INTERNATIONAL_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
     // TODO: enable these tests after multiple auth setup is done
     test.skip('should show request button in disabled state with method enablement tab @priority=normal', async ({

@@ -3,7 +3,7 @@ const { test, expect } = require('utils/base');
 
 test.describe('Test wallet reports @flow=reports @project=payments ', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).WALLET_REPORTS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

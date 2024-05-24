@@ -6,7 +6,7 @@ const { BASE_PATH, getStorageStatePath } = require('testConstants');
 
 test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).OPTIMIZER_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test.describe.parallel('Optimizer Landing screen Provider section', () => {

@@ -17,7 +17,7 @@ const TEST_DESCRIPTION =
   'Risk Visibility Dashboard @flow=risk-visibility @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast';
 
 test.describe.parallel(TEST_DESCRIPTION, () => {
-  test.use({ storageState: getStorageStatePath(BASE_PATH).INTERNATIONAL_LOGIN_STATE });
+  test.use({ storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT });
 
   // feature flag - "show_intl_risk_dashboard"
   test('show "Risk Visibility" page when feature flag is enabled @priority=normal', async ({

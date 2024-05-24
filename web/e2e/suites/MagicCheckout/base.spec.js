@@ -3,7 +3,7 @@ const { test, expect } = require('utils/base');
 
 test.describe('Magic Checkout Settings Tab @project=magic-checkout', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).MAGIC_CHECKOUT_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test('should render magic checkout settings page correctly', async ({ page }) => {

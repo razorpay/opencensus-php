@@ -6,7 +6,7 @@ test.describe.parallel(
   'Test International Activation flow when merchant is eligible for international @flow=international-activation',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).INTERNATIONAL_ACTIVATION_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test('should show international activation form', async ({ page }) => {

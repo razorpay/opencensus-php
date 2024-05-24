@@ -1,9 +1,9 @@
-const { test, expect } = require('utils/base');
 const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
+const { test, expect } = require('utils/base');
 
 test.describe('GCMS brand transactions @flow=brandTransactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).MOBILE_TEST_GCMS_STATE,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

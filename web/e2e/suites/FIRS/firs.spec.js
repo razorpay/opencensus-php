@@ -9,7 +9,7 @@ test.describe.parallel(
   'Test FIRS route when merchant is International @flow=firs @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).INTERNATIONAL_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test('should show FIRS page when merchant is international @priority=normal', async ({

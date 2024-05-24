@@ -1,10 +1,10 @@
-import { expect, test } from 'utils/base';
 import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
+import { expect, test } from 'utils/base';
 
 test.describe.parallel('GST update @flow=account-settings @project=payments', () => {
   test.describe.parallel('Unregistered merchant', () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).EMAIL_LIVE_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_NOT_IE_STATE,
     });
 
     test('should be able to see GST Details page', async ({ page }) => {
@@ -23,7 +23,7 @@ test.describe.parallel('GST update @flow=account-settings @project=payments', ()
 
   test.describe.parallel('Registered merchant', () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).TRANSACTIONS_LOGIN_STATE,
+      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
 
     test('should be able to see GST Details page', async ({ page }) => {

@@ -1,9 +1,9 @@
-import { expect } from 'utils/base';
 import {
   CTA_SELECTORS,
   CONTENT_SELECTORS,
   INPUT_SELECTORS,
 } from 'partnerDashboard/common/constants';
+import { expect } from 'utils/base';
 import { waitForSelectorToBeVisible } from 'utils/common';
 
 const { resolve } = require('path');
