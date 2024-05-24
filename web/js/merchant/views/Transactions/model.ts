@@ -104,8 +104,9 @@ export const fetchPaymentNotesKeys = (): Promise<any> => {
 };
 
 export const fetchEncodedPaymentReceipt = async (payment_id) => {
+  const strippedPaymentId = payment_id.replace('pay_', '');
   const { data } = await merchantFetch({
-    absUrl: `/ezetap/receipt/${payment_id}`,
+    absUrl: `/ezetap/receipt/${strippedPaymentId}`,
     appendModeInURL: false,
     method: 'get',
   });
