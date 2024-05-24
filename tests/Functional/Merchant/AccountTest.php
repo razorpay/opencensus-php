@@ -107,7 +107,7 @@ class AccountTest extends TestCase
         $this->app->instance('ledger', $mockLedger);
 
         $mockLedger->shouldReceive('createAccountsOnEvent')
-            ->times(1)
+            ->times(2)
             ->andReturn([
                 'body' => [
                     "accounts" => [

@@ -84,9 +84,9 @@ class Service extends Base\Service
 
         $currentTimestamp = time();
 
-        $startDateTimestamp = strtotime('-7 days', $currentTimestamp);
+        $startDateTimestamp = strtotime('-4 days', $currentTimestamp);
 
-        $endDateTimestamp = strtotime('-4 days', $currentTimestamp);
+        $endDateTimestamp = strtotime('-1 days', $currentTimestamp);
 
         $refundsWithMissingTxn = $this->core->fetchRefundWithMissingTransactions($startDateTimestamp, $endDateTimestamp);
 

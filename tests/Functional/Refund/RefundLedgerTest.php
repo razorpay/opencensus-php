@@ -4378,7 +4378,7 @@ class RefundLedgerTest extends TestCase
 
         $currentTimestamp = time();
 
-        $refundCreatedAt = strtotime('-5 days', $currentTimestamp);
+        $refundCreatedAt = strtotime('-2 days', $currentTimestamp);
 
         $this->fixtures->edit('refund', $refund['id'], [
            "created_at" => $refundCreatedAt,

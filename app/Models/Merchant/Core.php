@@ -566,6 +566,23 @@ class Core extends Base\Core
 
         }
 
+        // This is not optimized and sent via queue as transfers can be created immediately and it requires the child MiD
+        // to already be on reverse shadow.
+        if(($aggregatorMerchant !== null)
+            and ($subMerchant->getParentId() === $aggregatorMerchant->getId())
+            and ($aggregatorMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW)) )
+        {
+            // If a parent merchant is onboarded on pg_ledger_reverse_shadow feature flag,
+            // we need to ensure all of its linked account merchants are also onboarded on pg_ledger_reverse_shadow feature flag,
+            // So every time a new linked account is created for a parent merchant,
+            // enable pg_ledger_reverse_shadow feature for the sub merchant and create accounts in CLS
+            $input = [
+                "merchant_ids" => [$subMerchant->getId()],
+            ];
+
+            (new Feature\Service)->onboardMerchantOnPGReverseShadow($input, true);
+        }
+
         return $subMerchant;
     }
 
@@ -1899,21 +1916,6 @@ class Core extends Base\Core
         }
 
         $this->addPartnerAddedFeaturesToSubmerchant($merchant, $aggregatorMerchant);
-
-        if(($onboardOnReverseShadow === true) and ($aggregatorMerchant !== null)
-            and ($merchant->getParentId() === $aggregatorMerchant->getId())
-            and ($aggregatorMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW)) )
-        {
-            // If a parent merchant is onboarded on pg_ledger_reverse_shadow feature flag,
-            // we need to ensure all of its linked account merchants are also onboarded on pg_ledger_reverse_shadow feature flag,
-            // So every time a new linked account is created for a parent merchant,
-            // enable pg_ledger_reverse_shadow feature for the sub merchant and create accounts in CLS
-            $input = [
-                "merchant_ids" => [$merchant->getId()],
-            ];
-
-            (new Feature\Service)->onboardMerchantOnPGReverseShadow($input, true);
-        }
     }
 
     private function addDefaultFeatures(Entity $merchant)
