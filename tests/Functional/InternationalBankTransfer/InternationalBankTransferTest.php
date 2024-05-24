@@ -467,7 +467,6 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals($paymentEntity['id'],$responseData['items'][0]['id']);
         $senderData = $responseData['items'][0]['sender_address'];
 
-
         $this->assertEquals('David Jenkins',$senderData['name']);
         $this->assertEquals('560068',$senderData['zipcode']);
         $this->assertEquals('31 High Street',$senderData['line1'] );
@@ -524,7 +523,8 @@ class InternationalBankTransferTest extends TestCase
 
 
         $this->assertEquals('David Jenkins',$senderData['name']);
-        $this->assertEquals('default address for b2b',$senderData['line1'] );
+        $this->assertEquals('address not available',$senderData['line1']);
+        $this->assertEquals('not available',$senderData['city']);
         $this->assertEquals('gb',$senderData['country']);
 
         return $response;
@@ -577,8 +577,8 @@ class InternationalBankTransferTest extends TestCase
 
 
         $this->assertEquals('David Jenkins',$senderData['name']);
-        $this->assertEquals('default address for b2b',$senderData['line1'] );
-        $this->assertNull($senderData['city']);
+        $this->assertEquals('address not available',$senderData['line1']);
+        $this->assertEquals('not available',$senderData['city']);
         $this->assertEquals('gb',$senderData['country']);
 
         return $response;
@@ -1331,11 +1331,11 @@ class InternationalBankTransferTest extends TestCase
                         $senderAddress = "David Jenkins; 31 High Street, Brighton, East Sussex, 560068;GB;1111111111;;00000000";
 
                         if ($amount === 2199) {
-                            $senderAddress = "David Jenkins;, East Sussex, 560068 ;GB;1111111111;;00000000";
+                            $senderAddress = "David Jenkins; ;GB;1111111111;;00000000";
                         }
 
                         if ($amount === 3199) {
-                            $senderAddress = "David Jenkins;, Brighton exceeds expected city length, East Sussex, 560068;GB;1111111111;;00000000";
+                            $senderAddress = "David Jenkins;, Brighton exceeds expected city length way longer than usual, East Sussex, 560068;GB;1111111111;;00000000";
                         }
                         return [
                             'data' => [

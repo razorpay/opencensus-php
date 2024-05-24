@@ -39,6 +39,9 @@ class Constants
     const SEEDS_OR_PLANTS               = '5193';
     const TOBACCO                       = '5993';
 
+    const CITY_NOT_AVAILABLE            = 'not available';
+    const ADDRESS_ONE_NOT_AVAILABLE     = 'address not available';
+
     // List as per: https://razorpay.atlassian.net/browse/CB-1864
     const BLACKLISTED_MCC_FOR_CURRENCY_CLOUD = [
         self::ALCOHOL,
