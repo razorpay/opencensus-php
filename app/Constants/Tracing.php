@@ -405,6 +405,7 @@ class Tracing
             'fund_account_list',
             'fund_account_get',
             'payout_fetch_multiple',
+            'payout_fetch_multiple_all',
             'payouts_summary',
             'user_otp_create',
             'payout_reject',

@@ -30,6 +30,7 @@ class AccessAuthorizationService
             'payout_bulk_approve'                   => ['/v1/payouts/bulk_approve', 'post'],
             'payout_fetch_by_id'                    => ['/v1/payouts_internal/{id}', 'get'],
             'payout_fetch_multiple'                 => ['/v1/payouts', 'get'],
+            'payout_fetch_multiple_all'             => ['/v1/payouts/all', 'get'],
             'transaction_statement_fetch'           => ['/v1/transactions/{id}', 'get'],
             'transaction_statement_fetch_multiple'  => ['/v1/transactions', 'get'],
             'fund_account_create'                   => ['/v1/fund_accounts', 'post'],
