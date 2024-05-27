@@ -5758,7 +5758,7 @@ class CoreTest extends TestCase
             BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::PROOF,
             BVSEntity::VALIDATION_STATUS => BvsValidationConstants::FAILED,
             BVSEntity::ERROR_CODE => 'NO_PROVIDER_ERROR',
-            BVSEntity::ERROR_DESCRIPTION => 'input document does not match AadhaarBack document'
+            BVSEntity::ERROR_DESCRIPTION => 'input document does not match  AadhaarBack document'
         ]);
         $merchantDetail = $fixtures['merchant_detail'];
         $merchantId = $merchantDetail->getMerchantId();
@@ -5785,6 +5785,50 @@ class CoreTest extends TestCase
         $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
         // output falls back to the error code
         $this->assertEmpty($error_codes);
+    }
+
+    public function testFetchVerificationErrorCodesForPGOSMatchErrorDescription()
+    {
+        // when records are found and error description is matched and validation status is failed
+        $core = new DetailCore();
+        $this->createAndFetchMocks();
+        $fixtures = $this->createAndFetchFixtures([
+        ],[],[
+            BVSConstants::ARTEFACT_TYPE     => BVSConstants::AADHAAR,
+            BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::PROOF,
+            BVSEntity::VALIDATION_STATUS => BvsValidationConstants::FAILED,
+            BVSEntity::ERROR_CODE    => 'AADHAAR_FRONT_INVALID',
+            BVSEntity::ERROR_DESCRIPTION => 'input document is not a valid AadhaarFrontBottom document',
+        ]);
+
+        $user = $this->fixtures->create('user', ['email' => 'old@razorpay.com']);
+
+        $merchantUser = $this->fixtures->create('user_device_detail', [
+            'merchant_id'         => $fixtures['merchant_detail']->getMerchantId(),
+            'user_id'             => $user->getId(),
+            'signup_campaign'     => 'easy_onboarding',
+            'metadata'            => ['service'=>'pgos']
+        ]);
+
+        $input = [
+            "experiment_id" => "O4mkX116qZcqdQ",
+            "id"            => $fixtures['merchant_detail']->getMerchantId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+        $merchantDetail = $fixtures['merchant_detail'];
+        $merchantId = $merchantDetail->getMerchantId();
+        $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
+        $expectedOutput = [Entity::POA_VERIFICATION_STATUS => 'AADHAAR_FRONT_INVALID'];
+        $this->assertEquals($error_codes, $expectedOutput);
     }
 
     public function testFetchVerificationErrorCodesNotMatchDescription()

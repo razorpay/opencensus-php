@@ -305,6 +305,12 @@ class Constant
         self::DETAILS
     ];
 
+    public const ARTEFACT_TYPE_MAPPING = [
+        Constant::AADHAAR       => Type::AADHAR_FRONT,
+        Constant::PASSPORT      => Type::PASSPORT_FRONT,
+        Constant::VOTERS_ID     => Type::VOTER_ID_FRONT,
+    ];
+
     public const ARTEFACT_STATUS_ATTRIBUTE_MAPPING = [
         Constant::PERSONAL_PAN . '-' . BvsValidationConstants::IDENTIFIER                             => [Table::MERCHANT_DETAIL, Entity::POI_VERIFICATION_STATUS],
         Constant::BUSINESS_PAN . '-' . BvsValidationConstants::IDENTIFIER                             => [Table::MERCHANT_DETAIL, Entity::COMPANY_PAN_VERIFICATION_STATUS],

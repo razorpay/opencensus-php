@@ -713,6 +713,8 @@ return array(
 
     'enable_kyc_qualified_unactivated' => env('ENABLE_KYC_QUALIFIED_UNACTIVATED_EXP_ID'),
 
+    'enable_document_check_for_error_code' => env('ENABLE_DOCUMENT_CHECK_FOR_ERROR_CODE_EXP_ID'),
+
     'enable_document_expiry_check_for_activation' => env('ENABLE_DOCUMENT_EXPIRY_CHECK_FOR_ACTIVATION_EXP_ID'),
 
     'add_delay_timestamp_for_kafka_event' => env('ADD_DELAY_TIMESTAMP_FOR_KAFKA_EVENT'),

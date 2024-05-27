@@ -10664,8 +10664,21 @@ class Core extends Base\Core
             if ($validationUnit === BvsValidationConstants::PROOF)
             {
                 // verify that the latest validation does not belong to a deleted document
-                $document = $this->repo->merchant_document->findNonDeletedDocumentForMerchantIdAndValidationId($merchantId,
-                                                                                                               $validation->getValidationId());
+                $isPgosMerchant = $this->isPGOSMerchant($merchant);
+
+                $isExpEnabled = (new Validator())->checkDocumentForPGOSExperimentEnabled($merchant->getId());
+                if( $isExpEnabled === true && $isPgosMerchant === true )
+                {
+                    $documentType = Constant::ARTEFACT_TYPE_MAPPING[$artefactType] ?? '';
+                    if ( $documentType !== '') {
+                        $document = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeFromDatabase($merchantId, $documentType);
+                    }
+                }
+                else {
+                    $document = $this->repo->merchant_document->findNonDeletedDocumentForMerchantIdAndValidationId($merchantId,
+                                                                                                                   $validation->getValidationId());
+                }
+
                 if (empty($document) === true)
                 {
                     // since document associated with the validation is deleted, skip the processing

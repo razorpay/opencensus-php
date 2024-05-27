@@ -1943,6 +1943,17 @@ class Validator extends Base\Validator
         );
     }
 
+    public function checkDocumentForPGOSExperimentEnabled($merchantId): bool
+    {
+        return (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.enable_document_check_for_error_code'),
+            ],
+            'enable'
+        );
+    }
+
     public function validatePersonalPAN($merchantDetail)
     {
         if (empty($merchantDetail->getPromoterPan()) === true)
