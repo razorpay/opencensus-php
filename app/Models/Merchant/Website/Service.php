@@ -1127,7 +1127,7 @@ class Service extends Base\Service
             if(optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED){
                 $gracePeriodValue = 0;
             }
-            else if((new DetailCore)->isGracePeriodApplicableForMerchantRequiredPolicies($merchantDetails, $websitePolicy) ===true )
+            else if((new DetailCore)->hasRazorpayHostedUrl($merchantDetails) ===true )
             {
                 $gracePeriodValue = 1;
             }

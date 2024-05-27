@@ -8,12 +8,12 @@ use Queue;
 use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\User;
 use RZP\Constants\Mode;
-use Razorpay\Trace\Logger;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
@@ -6687,12 +6687,17 @@ class Core extends Base\Core
 
         if ($this->hasBusinessWebsiteOrAppUrls($merchantDetails->merchant) === true)
         {
-            $eligibleForAMP = (
-                $eligibleForAMP and
-                (optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED or
-                 $this->isGracePeriodApplicableForMerchantRequiredPolicies($merchantDetails, $websitePolicy) === true ) and
-                optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED
-            );
+            try {
+                $eligibleForAMP = (
+                    $eligibleForAMP and
+                    (optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED or
+                        $this->areRequiredPoliciesMet($merchantDetails, $websitePolicy) === true) and
+                    optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED
+                );
+            } catch (BadRequestException $e) {
+                $this->trace->traceException($e, Logger::ERROR, TraceCode::FETCH_MERCHANT_POLICY_VERIFICATION_RESULT_FAILED);
+                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+            }
         }
 
         if ($eligibleForAMP === true)
@@ -6836,16 +6841,18 @@ class Core extends Base\Core
 
                 }
 
-                if (optional($mccCategorisation)->getStatus() === BvsValidation\Constants::VERIFIED and
-                    optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED and
-                    (optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED or
-                     $this->isGracePeriodApplicableForMerchantRequiredPolicies($merchantDetails, $websitePolicy) === true) and
-                    optional($signatory)->getStatus() === BvsValidationConstants::VERIFIED)
-                {
-                    return Status::ACTIVATED;
-                }
-                else
-                {
+                try {
+                    if (optional($mccCategorisation)->getStatus() === BvsValidation\Constants::VERIFIED and
+                        optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED and
+                        (optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED or
+                            $this->areRequiredPoliciesMet($merchantDetails, $websitePolicy) === true) and
+                        optional($signatory)->getStatus() === BvsValidationConstants::VERIFIED) {
+                        return Status::ACTIVATED;
+                    } else {
+                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                    }
+                } catch (BadRequestException $e) {
+                    $this->trace->traceException($e, Logger::ERROR, TraceCode::FETCH_MERCHANT_POLICY_VERIFICATION_RESULT_FAILED);
                     return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
                 }
             }
@@ -6869,105 +6876,107 @@ class Core extends Base\Core
         }
     }
 
-    public function isGracePeriodApplicableForMerchantRequiredPolicies(Entity $merchantDetails, MVD\Entity $websitePolicy = null) : bool
+    /**
+     * Check if any required policy has a Razorpay hosted URL with section status 3.
+     *
+     * @param Entity $merchantDetails
+     * @return bool
+     * @throws BadRequestException
+     */
+    public function hasRazorpayHostedUrl(Entity $merchantDetails): bool
     {
-        $subCategory = $merchantDetails->getBusinessSubcategory();
+        $businessSubcategory = $merchantDetails->getBusinessSubcategory();
+        $businessCategory = $merchantDetails->getBusinessCategory();
 
-        $category = $merchantDetails->getBusinessCategory();
+        $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($businessCategory, $businessSubcategory);
 
-        if ($merchantDetails->getActivationFormMilestone() !== Detail\Constants::L2_SUBMISSION)
-        {
-            return false;
-        }
-
-        if (empty($websitePolicy) === true)
-        {
-            return false;
-        }
-
-        $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($category, $subCategory);
-
+        // Extract required policies from the metadata
         $requiredPolicies = $subcategoryMetaData[SubcategoryV2::REQUIRED_WEBSITE_POLICIES];
-        /* example of $requiredPolicies
-             [
-                self::TERMS_AND_CONDITIONS  => true,
-                self::CONTACT_US            => true,
-                self::SHIPPING              => false,
-            ]
-         */
+        $requiredPolicyNames = array_keys(array_filter($requiredPolicies));
 
-
-        $requiredPolicyArray = [];
-        foreach ($requiredPolicies as $policyName => $required)
-        {
-            if ($required === true)
-            {
-                $requiredPolicyArray[] = $policyName;
-            }
-        }
-
-        $websitePolicyMetadata = optional($websitePolicy)->getMetadata() ?? [];
-
-        // Initialize an empty map for policies and validation results
-        $policyMap = [];
-        /* example of $policyMap
-            [
-               self::TERMS_AND_CONDITIONS  => true,
-               self::CONTACT_US            => true,
-               self::SHIPPING              => false,
-           ]
-        */
-        foreach ($websitePolicyMetadata as $policyName => $policyData)
-        {
-            // Check if analysis_result exists and is not null
-            if (in_array($policyName, $requiredPolicyArray) === true and
-                isset($policyData["analysis_result"]) === true and
-                $policyData["analysis_result"] !== null)
-            {
-                // Check if the validation_result exists within analysis_result
-                if (isset($policyData["analysis_result"]["validation_result"]) === true and $policyData["analysis_result"]["validation_result"] === true)
-                {
-                    $policyMap[$policyName] = true;
-                }
-            }
-        }
-
+        // Fetch website details for the merchant
         $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetails->getMerchantId());
-        $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
-        /* example of policiesData
-        [
-            "terms" => [
-                "section_status" => 3,
-                "status"         => "submitted",
-                "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms" ]
-        ]
-        */
+        $merchantWebsiteDetails = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
 
-        foreach ($policiesData as $policyName => $policyData)
-        {
-            if (in_array($policyName, $requiredPolicyArray) === true and isset($policyMap[$policyName]) === false)
-            {
-                if (isset($policyData["published_url"]) === true and
-                    empty($policyData["published_url"]) === false and
-                    $policyData["section_status"] === 3)
-                {
-                    $policyMap[$policyName] = true;
+        // Check if any required policy has a published URL with section status 3
+        foreach ($merchantWebsiteDetails as $policyName => $policyData) {
+            if (in_array($policyName, $requiredPolicyNames) && isset($policyData['published_url']) &&
+                !empty($policyData['published_url']) && $policyData['section_status'] === 3) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the required policies meet the specified conditions.
+     *
+     * @param Entity $merchantDetails
+     * @param MVD\Entity|null $websiteVerificationDetails
+     * @return bool
+     * @throws BadRequestException
+     */
+    public function areRequiredPoliciesMet(Entity $merchantDetails, MVD\Entity $websiteVerificationDetails = null): bool
+    {
+        $businessSubcategory = $merchantDetails->getBusinessSubcategory();
+        $businessCategory = $merchantDetails->getBusinessCategory();
+
+        if ($merchantDetails->getActivationFormMilestone() !== Detail\Constants::L2_SUBMISSION) {
+            return false;
+        }
+
+        if (empty($websiteVerificationDetails)) {
+            return false;
+        }
+
+        $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($businessCategory, $businessSubcategory);
+
+        // Extract required policies from the metadata
+        $requiredPolicies = $subcategoryMetaData[SubcategoryV2::REQUIRED_WEBSITE_POLICIES];
+        $requiredPolicyNames = array_keys(array_filter($requiredPolicies));
+
+        // Extract metadata from the website verification result
+        $websiteVerificationMetadata = optional($websiteVerificationDetails)->getMetadata() ?? [];
+        $policyValidationResults = [];
+
+        // Check if policies are validated in the website verification metadata
+        foreach ($websiteVerificationMetadata as $policyName => $policyData) {
+            if (in_array($policyName, $requiredPolicyNames) && isset($policyData['analysis_result']['validation_result']) &&
+                $policyData['analysis_result']['validation_result'] === true &&
+                empty($policyData['analysis_result']['links_found'][0] === false)) {
+                $policyValidationResults[$policyName] = true;
+            }
+        }
+
+        // Fetch website details for the merchant
+        $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetails->getMerchantId());
+        $merchantWebsiteDetails = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
+
+        // Check the required policies in the merchant website details
+        foreach ($merchantWebsiteDetails as $policyName => $policyData) {
+            if (in_array($policyName, $requiredPolicyNames) && !isset($policyValidationResults[$policyName])) {
+                // Check if policies manually entered by merchant are verified
+                if (isset($policyData['website'][$merchantDetails->getWebsite()]['url']) && !empty($policyData['website'][$merchantDetails->getWebsite()]['url']) &&
+                    isset($policyData['website'][$merchantDetails->getWebsite()]['system_approved']) && $policyData['website'][$merchantDetails->getWebsite()]['system_approved'] === true &&
+                    $policyData['section_status'] === 1) {
+                    $policyValidationResults[$policyName] = true;
+                }
+                // Check if merchants published Razorpay hosted policy links
+                elseif (isset($policyData['published_url']) && !empty($policyData['published_url']) && $policyData['section_status'] === 3) {
+                    $policyValidationResults[$policyName] = true;
                 }
             }
         }
 
-        foreach ($requiredPolicyArray as $policyName)
-        {
-            $policyResult = $policyMap[$policyName] ?? null;
-
-            if ($policyResult !== true)
-            {
+        // Ensure all required policies are validated or meet the criteria
+        foreach ($requiredPolicyNames as $policyName) {
+            if (!isset($policyValidationResults[$policyName]) || $policyValidationResults[$policyName] !== true) {
                 return false;
             }
         }
 
         return true;
-
     }
 
     public function hasAppUrls(Entity $merchantDetails): bool

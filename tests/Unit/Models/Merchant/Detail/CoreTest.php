@@ -12906,6 +12906,176 @@ class CoreTest extends TestCase
 
     }
 
+    public function testGetApplicableActivationStatusForRealTimeVerifiedPolicies()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        Config::set('pgos.proxy.request.mock', true);
+
+        Config::set('pgos.proxy.request.response', true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isEligibleForAutomationActivation'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH8gGHX1Vf0bK2",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "website_policy",
+            "artefact_identifier" => "number",
+            "status"              => "failed",
+            "audit_id"            => "MH98mqZfN59Wx8",
+            "metadata"            => [
+                "refund"              => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesarees.com/pages/returns"
+                        ],
+                        "confidence_score"  => 0.5465,
+                        "relevant_details"  => [
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "privacy"             => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesares.myshopify.com/pages/privacy-policy"
+                        ],
+                        "confidence_score"  => 0.9853,
+                        "relevant_details"  => [
+                            "note" => "Privacy Policy is majorly about First Party Collection/Use, Third Party Sharing/Collection, Data Security, Introductory/Generic, Practice not covered. Privacy Policy includes the following attributes Does, Explicit, Implicit, Collect on website, Unspecified, Identifiable, Aggregated or anonymized, Contact, Cookies and tracking elements, Basic service/feature, Additional service/feature, Marketing, Analytics/Research, Personalization/Customization, Service operation and security, Unspecified, User with account, Opt-in, Dont use service/feature, Opt-out via contacting company, Browser/device privacy controls, Collection, First party use, Unnamed third party, Named third party, Receive/Shared with, Track on first party website/app, Secure data transfer"
+                        ],
+                        "validation_result" => true
+                    ]
+                ]
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'education',
+                'subcategory'       => 'college',
+                'predicted_mcc'     => 8220,
+                'confidence_score'  => 0.83
+            ]
+        ]);
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        /*we don't have all urls in merchant_website fixture, once updation is done ,
+         then we have to check expected urls are updated in merchant_website entity
+        */
+        $attributes = [
+            'id' => 'LGjQP2ZQxa02as',
+            'merchant_id' => $merchant->getId(),
+            'status' => 'submitted',
+            "shipping_period" => "3-5 days",
+            "refund_request_period" => "3-5 days",
+            "refund_process_period" => "3-5 days",
+            "additional_data" => [
+                "support_contact_number" => "9980004017",
+                "support_email" => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "terms" => [
+                    "section_status" => 3,
+                    "status" => "submitted",
+                    "published_url" => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                ],
+                "shipping" => [
+                    "section_status" => 1,
+                    "website"        => [
+                        "https://google.com" => [
+                            "url" => "https://google.com/shipping",
+                            "system_approved" => true,
+                        ]
+                    ]
+                ],
+                "contact_us" => [
+                    "section_status" => 1,
+                    "website"        => [
+                        "https://google.com" => [
+                            "url" => "https://google.com/contact_us",
+                            "system_approved" => true,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $this->fixtures->on('live')->create('merchant_website', $attributes);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_website', $attributes);
+        $this->fixtures->on('test')->create('merchant_website', $attributes);
+
+        $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
     public function testOCRPassedActivationBlockUnderReview()
     {
         $this->changeEnvToNonTest();

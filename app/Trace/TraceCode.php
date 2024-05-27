@@ -9590,6 +9590,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUSINESS_DETAIL_DOES_NOT_EXIST                                 = 'BUSINESS_DETAIL_DOES_NOT_EXIST';
     const MERCHANT_BUSINESS_WEBSITE_DETAILS                              = 'MERCHANT_BUSINESS_WEBSITE_DETAILS';
     const MERCHANT_EDIT_BUSINESS_DETAILS_FAILED                          = 'MERCHANT_EDIT_BUSINESS_DETAILS_FAILED';
+    const FETCH_MERCHANT_POLICY_VERIFICATION_RESULT_FAILED               = 'FETCH_MERCHANT_POLICY_VERIFICATION_RESULT_FAILED';
 
     //Digilocker redirect flow
     const MERCHANT_IDENTITY_VERIFICATION                                = 'MERCHANT_IDENTITY_VERIFICATION';
