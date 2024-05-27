@@ -6165,7 +6165,23 @@ return [
             ],
         ],
     ],
-
+    
+    'testOptInStatusForWhatsappForAdminAuth' => [
+        'request' => [
+            'url'     => '/users/whatsapp/opt_in_status',
+            'method'  => 'GET',
+            'content' => [
+                'source'          => 'api.admin.test.sms',
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'consent_status' => false,
+                'phone_number'   => '9999999999',
+            ],
+        ],
+    ],
+    
     'optInStatusForWhatsappStorkExpectations' => [
         'expected_request' => [
             'path'    => '/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/GetUserConsent',

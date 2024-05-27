@@ -661,6 +661,11 @@ class Name
     const CREATE_FUND_ACCOUNT_BULK            = 'create_fund_account_bulk';
     const CREATE_MERCHANT_KEY                 = 'create_merchant_key';
     const VIEW_MERCHANT_KEY                   = 'view_merchant_key';
+    const VIEW_MERCHANT_CONFIG                = 'view_merchant_config';
+    const VIEW_USER_OPT_IN_STATUS_WHATSAPP    = 'view_user_opt_in_status_whatsapp';
+    const VIEW_SETTLEMENT_SMS_STATUS          = 'view_settlement_sms_status';
+    const VIEW_MERCHANT_SCHEDULED_TASK        = 'view_merchant_scheduled_task';
+    const VIEW_INTERNATIONAL_PRODUCT_STATUS   = 'view_international_product_status';
     const VIEW_MERCHANT_INVOICE               = 'view_merchant_invoice';
     const UPDATE_USER_PROFILE                 = 'update_user_profile';
     const VIEW_USER                           = 'view_user';

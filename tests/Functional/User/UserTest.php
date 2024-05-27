@@ -75,6 +75,8 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Merchant\Partner\PartnerTest;
 use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
@@ -96,6 +98,7 @@ class UserTest extends TestCase
     use RequestResponseFlowTrait;
     use TestsStorkServiceRequests;
     use BankingAccountTrait;
+    use HeimdallTrait;
 
     protected $coreMock;
 
@@ -10115,6 +10118,36 @@ class UserTest extends TestCase
 
         $this->expectStorkServiceRequestForAction('optInStatusForWhatsapp');
 
+        $this->startTest();
+    }
+    
+    public function testOptInStatusForWhatsappForAdminAuth()
+    {
+        $merchantId = '10000000000000';
+    
+        $this->fixtures->edit('merchant', $merchantId, [
+            'name' => 'test merchant',
+        ]);
+        
+        $admin = $this->ba->getAdmin();
+    
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+    
+        $role = $admin->roles()->get()[0];
+    
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::VIEW_USER_OPT_IN_STATUS_WHATSAPP]);
+    
+        $role->permissions()->attach($perm->getId());
+        
+        $this->ba->adminProxyAuth($merchantId, 'rzp_test_'.$merchantId);
+        
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+            ]);
+    
+        $this->expectStorkServiceRequestForAction('optInStatusForWhatsapp');
+        
         $this->startTest();
     }
 

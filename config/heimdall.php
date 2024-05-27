@@ -531,6 +531,30 @@ return [
                 'assignable' => true,
                 'description'   => 'allows deactivating a promotion'
             ],
+            Permission::VIEW_MERCHANT_KEY => [
+                'assignable'    => true,
+                'description'   => 'view merchant key'
+            ],
+            Permission::VIEW_MERCHANT_CONFIG => [
+                'assignable'    => true,
+                'description'   => 'view merchant config'
+            ],
+            Permission::VIEW_USER_OPT_IN_STATUS_WHATSAPP => [
+                'assignable'    => true,
+                'description'   => 'view user opt in status whatsapp'
+            ],
+            Permission::VIEW_SETTLEMENT_SMS_STATUS => [
+                'assignable'    => true,
+                'description'   => 'view settlement sms status'
+            ],
+            Permission::VIEW_MERCHANT_SCHEDULED_TASK => [
+                'assignable'    => true,
+                'description'   => 'view merchant scheduled task'
+            ],
+            Permission::VIEW_INTERNATIONAL_PRODUCT_STATUS => [
+                'assignable'    => true,
+                'description'   => 'view international product status'
+            ],
             Permission::CREATE_PROMOTION_COUPON             => '',
             Permission::CREATE_RECONCILIATE                 => '',
             Permission::BATCH_API_CALL                      => '',

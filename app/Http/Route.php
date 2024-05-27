@@ -11049,7 +11049,18 @@ class Route
         'org_admin_update'                         => Permission::BANKING_IDAM_ADMIN,
         'org_admin_get'                            => Permission::BANKING_IDAM_ADMIN,
         'org_admin_get_multiple'                   => Permission::BANKING_IDAM_ADMIN,
-    ];
+
+        'merchant_fetch_keys'                      => Permission::VIEW_MERCHANT_KEY,
+        'merchant_fetch_config'                    => Permission::VIEW_MERCHANT_CONFIG,
+        'user_opt_in_status_whatsapp'              => Permission::VIEW_USER_OPT_IN_STATUS_WHATSAPP,
+        'webhook_fetch_multiple'                   => Permission::VIEW_WEBHOOK,
+        'webhook_fetch'                            => Permission::VIEW_WEBHOOK,
+        'setl_sms_notification_status'             => Permission::VIEW_SETTLEMENT_SMS_STATUS,
+        'merchant_fetch_schedule_tasks'            => Permission::VIEW_MERCHANT_SCHEDULED_TASK,
+        'fetch_product_status'                     => Permission::VIEW_INTERNATIONAL_PRODUCT_STATUS,
+        
+        'merchant_instrument_status_get_by_merchant_id' => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
+      ];
 
     public static $bankLmsRoutePermissions = [
         'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
@@ -16260,6 +16271,7 @@ class Route
             'pos_fetch_device_order',
             'pos_fetch_all_device_orders',
             'pos_fetch_latest_order',
+            'get_non_3ds_details',
         ],
 
         //

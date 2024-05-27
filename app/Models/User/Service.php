@@ -76,6 +76,8 @@ class Service extends Base\Service
     protected $m2mReferralService;
 
     protected $pgosProxyController;
+    
+    protected $ba;
 
     public function __construct(Core $core = null, Validator $validator = null, Merchant\Service $merchantService = null,
                                 Merchant\M2MReferral\Service $m2mReferralService = null)
@@ -93,6 +95,8 @@ class Service extends Base\Service
         $this->pgosProxyController = new MerchantOnboardingProxyController();
 
         $this->elfin = $this->app['elfin'];
+    
+        $this->ba = $this->app['basicauth'];
     }
 
     /**
@@ -3416,9 +3420,13 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('opt_in_status_whatsapp', $input);
 
-        if(empty($user) === true)
+        if((empty($user) === true) && ($this->ba->isAdminAuth() === false))
         {
             $user = $this->user;
+    
+        } else if ((empty($user) === true) && $this->ba->isAdminAuth() === true)
+        {
+            $user  = $this->merchant->primaryOwner();
         }
 
         $contact = $user->getContactMobile();
