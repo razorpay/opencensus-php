@@ -198,6 +198,7 @@ class Entity
     const SUB_BALANCE_MAP              = 'sub_balance_map';
 
     const ORG_FEATURE                  = 'org_feature';
+    const ORG_DETAILS                  = 'org_details';
 
     const PAYOUTS_INTERMEDIATE_TRANSACTIONS = 'payouts_intermediate_transactions';
 

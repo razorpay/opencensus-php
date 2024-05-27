@@ -6379,6 +6379,7 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT][EntityConstants::FEATURE] = $merchant->getEnabledFeatures();
         $data[EntityConstants::MERCHANT][EntityConstants::ORG_FEATURE] = $merchant->org->getEnabledFeatures();
+        $data[EntityConstants::MERCHANT][EntityConstants::ORG_DETAILS] = $merchant->org->ToArray();
 
         $isTransacted = (new \RZP\Models\Payment\Repository)
             ->hasMerchantTransacted($merchant->getId());
