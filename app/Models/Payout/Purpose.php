@@ -28,6 +28,7 @@ class Purpose
     const PAYOUT               = 'payout';
     const INTER_ACCOUNT_PAYOUT = 'inter_account_payout';
     const RZP_FEES             = 'rzp_fees';
+    const RZP_CHARGE_COLLECTIONS = 'rzp_charge_collections';
     const RZP_TAX_PAYMENT      = 'rzp_tax_pay';
     const MERCHANT_ID          = 'merchant_id';
     const RZP_FUND_MANAGEMENT  = 'RZP Fund Management';
@@ -53,9 +54,10 @@ class Purpose
     ];
 
     protected static $internalPurposeTypeMap = [
-        self::RZP_FEES            => FTAPurpose::SETTLEMENT,
-        self::RZP_TAX_PAYMENT     => FTAPurpose::SETTLEMENT,
-        self::RZP_FUND_MANAGEMENT => FTAPurpose::RZP_FUND_MANAGEMENT,
+        self::RZP_FEES                  => FTAPurpose::SETTLEMENT,
+        self::RZP_TAX_PAYMENT           => FTAPurpose::SETTLEMENT,
+        self::RZP_CHARGE_COLLECTIONS    => FTAPurpose::SETTLEMENT,
+        self::RZP_FUND_MANAGEMENT       => FTAPurpose::RZP_FUND_MANAGEMENT,
     ];
 
     protected static $finopsPurposeTypeMap = [

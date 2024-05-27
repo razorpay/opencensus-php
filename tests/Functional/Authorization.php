@@ -1196,6 +1196,15 @@ class Authorization
         $this->appAuth('rzp_' . $mode, $pwd);
     }
 
+    public function chargeCollectionsAuth($mode = 'test')
+    {
+        $chargeCollectionsConfig = \Config::get('applications.charge_collections_internal');
+
+        $pwd = $chargeCollectionsConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
     public function capitalCardsAuth($mode = 'test')
     {
         $cardsServiceConfig = \Config::get('applications.capital_cards_client');

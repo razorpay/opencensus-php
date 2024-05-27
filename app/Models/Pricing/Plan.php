@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Models\Bank;
+use RZP\Models\Payout;
 use RZP\Models\Base\Utility;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
@@ -479,6 +480,22 @@ class Plan extends PublicCollection
                 ($rule->getFeature() === Feature::PAYOUT) and
                 ($rule->isAccountTypeDirect() === true) and
                 ($rule->isPayoutsFilterFreePayout() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasBankingAccountChargeCollectionsRule(): bool
+    {
+        /** @var Entity $rule */
+        foreach ($this->items as $rule)
+        {
+            if (($rule->isBankingProduct() === true) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->getPayoutsFilter() === Payout\Purpose::RZP_CHARGE_COLLECTIONS))
             {
                 return true;
             }

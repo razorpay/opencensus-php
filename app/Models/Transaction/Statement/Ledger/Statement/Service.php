@@ -92,6 +92,9 @@ class Service extends Base\Service
         LedgerProcessor\CreditTransfer::VA_TO_VA_CREDIT_PROCESSED => E::CREDIT_TRANSFER,
         LedgerProcessor\Payout::DA_EXT_DEBIT                      => E::EXTERNAL,
         LedgerProcessor\Payout::DA_EXT_CREDIT                     => E::EXTERNAL,
+
+        LedgerProcessor\Payout::CHARGE_COLLECTIONS_DEBIT_PROCESSED  => E::PAYOUT,
+        LedgerProcessor\Payout::CHARGE_COLLECTIONS_DEBIT_REVERSED   => E::REVERSAL,
     ];
 
     public static function getTxnSourceEntityFromLedgerTxnEvent(string $transactorEvent) :string

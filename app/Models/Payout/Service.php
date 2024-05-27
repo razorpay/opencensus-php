@@ -834,6 +834,7 @@ class Service extends Base\Service
                $this->auth->isSettlementsApp() or
                $this->auth->isXPayrollApp() or
                $this->auth->isScroogeApp() or
+               $this->auth->isChargeCollectionsApp() or
                $this->auth->isCapitalCollectionsApp() or
                $this->auth->isFTSApp();
     }
@@ -856,6 +857,11 @@ class Service extends Base\Service
     public function isScroogeApp(): bool
     {
         return $this->auth->isScroogeApp();
+    }
+
+    public function isChargeCollectionsApp(): bool
+    {
+        return $this->auth->isChargeCollectionsApp();
     }
 
     public function isBatchApp(): bool

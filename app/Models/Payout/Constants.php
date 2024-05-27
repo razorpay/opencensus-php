@@ -121,6 +121,10 @@ class Constants
     const BALANCE                           = 'balance';
     const BALANCE_ENTITY                    = 'balance_entity';
 
+    // Charge collection constants
+    const PRODUCT_ID    = "product_id";
+    const CHARGE_ID     = "charge_id";
+
     const PAYOUT_FEE_TAX_PERCENTAGE         = 18;
     const TAX                               = 'tax';
 

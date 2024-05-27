@@ -10,6 +10,8 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
+use RZP\Models\Payout\Purpose;
+use RZP\Models\Payout\Service;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Credits;
@@ -18,6 +20,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Constants\Mode as ConstantMode;
 use RZP\Constants\Entity as ConstantEntity;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 class Base extends FundAccountPayout\Base
@@ -25,6 +28,8 @@ class Base extends FundAccountPayout\Base
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA. For now have hardcoded this
     // to 50 minutes . So if last fetched at was while ago (more than 50 minutes) only then we will fetch.
     const DEFAULT_GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = 50; //in minutes
+
+    const NON_ZERO_PRICING_ERROR_MESSAGE = "Payout failed. Contact support for help.";
 
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
@@ -74,7 +79,8 @@ class Base extends FundAccountPayout\Base
 
     protected function queueIfLowBalance(Entity $payout) : bool
     {
-        if ($payout->getPurpose() != Payout\Purpose::RZP_FEES)
+        if (($payout->getPurpose() != Payout\Purpose::RZP_FEES) and
+            ($payout->getPurpose() != Payout\Purpose::RZP_CHARGE_COLLECTIONS))
         {
             $queueDueToFeeRecovery = (new Payout\Processor\Base)->getQueuedFeeRecoveryPayoutsFlag($payout);
 
@@ -202,6 +208,10 @@ class Base extends FundAccountPayout\Base
         }
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
+     */
     public function setFeeAndTaxForPayout($payout)
     {
         list($fees, $tax, $pricingRuleId) = $this->calculateFeesAndTaxForPayouts($payout);
@@ -209,6 +219,13 @@ class Base extends FundAccountPayout\Base
         if (empty($pricingRuleId) === true)
         {
             throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
+        }
+
+        // Zero pricing for charge collections payout.
+        if (($payout->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS) and
+            (($fees !== 0) or ($tax !== 0)))
+        {
+            throw new BadRequestValidationFailureException(self::NON_ZERO_PRICING_ERROR_MESSAGE);
         }
 
         if ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === false)

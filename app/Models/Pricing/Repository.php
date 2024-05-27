@@ -668,6 +668,63 @@ class Repository extends Base\Repository
      * @param Merchant\Entity $merchant
      * @return mixed
      *
+     * only non app pricing rules from the default plan are fetched
+     *
+     */
+    public function getBankingAccountChargeCollectionDefaultPricingRules(string $feature,
+                                                                         Merchant\Entity $merchant)
+    {
+        $orgId = $merchant->getOrgId();
+
+        $cacheTags = Entity::getCacheTagsForAccountType($this->entity, $orgId, Fee::DEFAULT_BANKING_PLAN_ID, $feature, '', Payout\Purpose::RZP_CHARGE_COLLECTIONS);
+
+        try
+        {
+            $query = $this->newQuery()
+                ->product(Product::BANKING)
+                ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                ->where(Pricing\Entity::FEATURE, '=', $feature)
+                ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                ->whereNull(Pricing\Entity::APP_NAME)
+                ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Purpose::RZP_CHARGE_COLLECTIONS)
+                ->remember($this->getCacheTtl())
+                ->cacheTags($cacheTags);
+
+            // see comment in config/pricing.php
+            if (self::shouldDistributeQueryCacheLoad($merchant) === true)
+            {
+                $prefix = self::getQueryCachePrefixForDistributingLoad();
+
+                $query = $query->prefix($prefix);
+            }
+
+            return $query->get();
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PRICING_QUERY_CACHE_ERROR);
+
+            return $this->newQuery()
+                ->product(Product::BANKING)
+                ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                ->where(Pricing\Entity::FEATURE, '=', $feature)
+                ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                ->whereNull(Pricing\Entity::APP_NAME)
+                ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Purpose::RZP_CHARGE_COLLECTIONS)
+                ->get();
+        }
+    }
+
+    /**
+     * @param string $feature
+     * @param Merchant\Entity $merchant
+     * @return mixed
+     *
      * All the app pricing rules from the default plan are returned
      *
      */

@@ -28,6 +28,7 @@ final class Type
     const TAX_PAYMENT_INTERNAL_CONTACT         = 'rzp_tax_pay';
     const XPAYROLL_INTERNAL                    = 'rzp_xpayroll';
     const CAPITAL_COLLECTIONS_INTERNAL_CONTACT = 'rzp_capital_collections';
+    const RZP_CHARGE_COLLECTIONS_INTERNAL_CONTACT = 'rzp_charge_collections';
 
     // Settings module key
     const TYPES = 'types';
@@ -43,6 +44,7 @@ final class Type
         self::RZP_FEES,
         self::TAX_PAYMENT_INTERNAL_CONTACT,
         self::CAPITAL_COLLECTIONS_INTERNAL_CONTACT,
+        self::RZP_CHARGE_COLLECTIONS_INTERNAL_CONTACT,
         self::XPAYROLL_INTERNAL,
     ];
 
@@ -54,6 +56,9 @@ final class Type
         ],
         'capital_collections_client' => [
             self::CAPITAL_COLLECTIONS_INTERNAL_CONTACT,
+        ],
+        'charge_collections_internal' => [
+            self::RZP_CHARGE_COLLECTIONS_INTERNAL_CONTACT,
         ],
         'xpayroll' => [
             self::XPAYROLL_INTERNAL,

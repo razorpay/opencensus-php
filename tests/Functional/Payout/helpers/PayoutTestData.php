@@ -19195,6 +19195,55 @@ return [
         ],
     ],
 
+    'testPayoutCreateOnInternalContactByChargeCollections'=> [
+        'request'  => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST',
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'rzp_charge_collections',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => '',
+                'notes'           => [
+                    'product_id'    => 'xyz',
+                    'charge_id'     => 'xyz',
+                    'account_type'  => 'xyz',
+                ],
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'charge_collections',
+                        'priority'    => 1,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'payout',
+                'amount'    => 2000000,
+                'currency'  => 'INR',
+                'narration' => 'Batman',
+                'purpose'   => 'rzp_charge_collections',
+                'status'    => 'processing',
+                'mode'      => 'IMPS',
+                'tax'       => 0,
+                'fees'      => 0,
+                'notes'           => [
+                    'product_id'    => 'xyz',
+                    'charge_id'     => 'xyz',
+                    'account_type'  => 'xyz',
+                ],
+            ]
+        ],
+    ],
+
     'testPayoutCreateOnXpayrollInternalContactByOtherAppFailure'=> [
         'request'  => [
             'server'  => [

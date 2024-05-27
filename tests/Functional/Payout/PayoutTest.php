@@ -26602,6 +26602,253 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
     }
 
+    public function testPayoutCreateOnInternalContactByChargeCollections()
+    {
+        $this->ba->chargeCollectionsAuth();
+
+        $this->setUpZeroPricing('IMPS', Payout\Purpose::RZP_CHARGE_COLLECTIONS);
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => \RZP\Models\Contact\Type::RZP_CHARGE_COLLECTIONS_INTERNAL_CONTACT
+            ]);
+
+        $contactDb = $this->getDbLastEntity('contact');
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ]);
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('ledger', $ledgerMock);
+
+        $ledgerMock->shouldReceive('createJournal')
+            ->withArgs(function($payload, $headers, $throwExOnFailure) {
+                $this->assertArraySelectiveEquals([
+                    'tenant'                => 'X',
+                    'mode'                  => 'test',
+                    'merchant_id'           => '10000000000000',
+                    'currency'              => 'INR',
+                    'amount'                => '2000000',
+                    'base_amount'           => '2000000',
+                    'commission'            => '0',
+                    'tax'                   => '0',
+                    //'transactor_id'         => (string) $payout->getId(),
+                    'transactor_event'      => 'cc_debit_initiated',
+                    'identifiers'           => [
+                        'product_id'            => 'xyz',
+                        'banking_account_id'    => $this->bankingBalance->bankingAccount->getPublicId()
+                    ],
+                    'notes' => [
+                        'balance_id' => $this->bankingBalance->getId(),
+                    ],
+                    'additional_params' => [
+                        'account_type' => 'xyz'
+                    ]
+                ], $payload);
+
+                return true;
+            })
+            ->once();
+
+        $this->startTest();
+
+        $this->assertEquals($contactDb['type'], 'rzp_charge_collections');
+
+        $this->assertEquals($contactDb['id'], $contact['id']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
+    }
+
+    public function testPayoutCreateOnInternalContactByChargeCollectionsAndInvalidNotes()
+    {
+        $this->ba->chargeCollectionsAuth();
+
+        $this->setUpZeroPricing();
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => \RZP\Models\Contact\Type::RZP_CHARGE_COLLECTIONS_INTERNAL_CONTACT
+            ]);
+
+        $contactDb = $this->getDbLastEntity('contact');
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testPayoutCreateOnInternalContactByChargeCollections'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['notes'] = [];
+
+        $this->testData[__FUNCTION__]['response'] = [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'notes.product_id is/are required and but not sent',
+                ],
+            ]
+        ];
+
+        $this->testData[__FUNCTION__]['exception'] = [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ];
+
+        $this->startTest();
+    }
+
+    public function testPayoutCreateOnInternalContactByChargeCollectionsAndInvalidContactType()
+    {
+        $this->ba->chargeCollectionsAuth();
+
+        $this->setUpZeroPricing();
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => 'random'
+            ]);
+
+        $contactDb = $this->getDbLastEntity('contact');
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testPayoutCreateOnInternalContactByChargeCollections'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->testData[__FUNCTION__]['response'] = [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_ONLY_INTERNAL_CONTACT_PERMITTED',
+                ],
+            ]
+        ];
+
+        $this->testData[__FUNCTION__]['exception'] = [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ];
+
+        $this->startTest();
+    }
+
+    public function testPayoutCreateOnInternalContactByChargeCollectionsForDirectAccount()
+    {
+        $this->ba->chargeCollectionsAuth();
+
+        $balance = $this->createDirectBankingBalance()->toArray();
+
+        $bankingAccountParams = [
+            'id'             => 'xba00000000000',
+            'merchant_id'    => '10000000000000',
+            'account_ifsc'   => 'RATN0000088',
+            'account_number' => '2224440041626906',
+            'status'         => 'active',
+            'channel'        => 'rbl',
+            'balance_id'     => $balance['id'],
+        ];
+
+        $bankingAccount = $this->createBankingAccount($bankingAccountParams);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance['id'],
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626906',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $balanceId = $balance['id'];
+
+        $this->fixtures->edit('balance', $balanceId, ['balance' => 0]);
+
+        $this->setUpZeroPricing('IMPS', Payout\Purpose::RZP_CHARGE_COLLECTIONS);
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => \RZP\Models\Contact\Type::RZP_CHARGE_COLLECTIONS_INTERNAL_CONTACT
+            ]);
+
+        $contactDb = $this->getDbLastEntity('contact');
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testPayoutCreateOnInternalContactByChargeCollections'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['account_number']  = '2224440041626906';
+
+        $this->startTest();
+
+        $this->assertEquals($contactDb['type'], 'rzp_charge_collections');
+
+        $this->assertEquals($contactDb['id'], $contact['id']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $feeRecovery = $this->getDbLastEntity('fee_recovery');
+
+        $this->assertNull($feeRecovery);
+
+        $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
+    }
+
     public function testPayoutCreateOnXpayrollInternalContactByOtherAppFailure()
     {
         $this->ba->xPayrollAuth();
@@ -38035,7 +38282,7 @@ class PayoutTest extends OAuthTestCase
         return [$subVirtualAccount, $masterBalance, $subBalance];
     }
 
-    public function setUpZeroPricing($mode = Payout\Mode::IMPS)
+    public function setUpZeroPricing($mode = Payout\Mode::IMPS, $payoutFilters = null)
     {
         $planId = random_alphanum_string(14);
 
@@ -38050,9 +38297,29 @@ class PayoutTest extends OAuthTestCase
             'percent_rate'        => 0,
             'fixed_rate'          => 0,
             'amount_range_active' => false,
-            'payouts_filter'      => null,
+            'payouts_filter'      => $payoutFilters,
             'org_id'              => '100000razorpay',
             'account_type'        => AccountType::SHARED,
+            'channel'             => null,
+            'expired_at'          => null,
+            'created_at'          => time(),
+            'updated_at'          => time(),
+        ]);
+
+        $this->fixtures->create('pricing', [
+            'id'                  => 'zeroPricing001',
+            'plan_id'             => $planId,
+            'plan_name'           => 'Zero Pricing Plan',
+            'product'             => 'banking',
+            'feature'             => 'payout',
+            'payment_method'      => ($mode === Payout\Mode::UPI) ? 'upi' : 'fund_transfer',
+            'auth_type'           => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+            'amount_range_active' => false,
+            'payouts_filter'      => $payoutFilters,
+            'org_id'              => '100000razorpay',
+            'account_type'        => AccountType::DIRECT,
             'channel'             => null,
             'expired_at'          => null,
             'created_at'          => time(),

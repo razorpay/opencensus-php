@@ -4,6 +4,8 @@ namespace RZP\Models\Pricing\Calculator;
 
 use RZP\Models\Pricing;
 use RZP\Http\BasicAuth;
+use RZP\Models\Payout\Purpose;
+use RZP\Models\Payout\Service;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payout as PayoutModel;
 use RZP\Models\Merchant\Balance\Entity;
@@ -76,7 +78,11 @@ class Payout extends Base
         $accountType   = $balance->getAccountType();
         $channel       = $balance->getChannel();
         $authType      = $this->getAuthForPayout();
-        $payoutsFilter = $this->getFreePayoutsFilter();
+        $payoutsFilter = $this->getChargeCollectionPayoutsFilter();
+        if ($payoutsFilter === null)
+        {
+            $payoutsFilter = $this->getFreePayoutsFilter();
+        }
 
         $payoutSourceDetails = $this->entity->getSourceDetailsAttribute();
         $payoutSourceDetails = $payoutSourceDetails->toArray();
@@ -161,5 +167,11 @@ class Payout extends Base
     {
         return ($this->entity->getFeeType() === PayoutModel\Entity::FREE_PAYOUT) ?
                                                 PayoutModel\Entity::FREE_PAYOUT : null;
+    }
+
+    protected function getChargeCollectionPayoutsFilter()
+    {
+        return ($this->entity->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS) ?
+            Purpose::RZP_CHARGE_COLLECTIONS : null;
     }
 }

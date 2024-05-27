@@ -319,6 +319,13 @@ class Status
         self::REVERSED => Ledger\Payout::VA_TO_VA_PAYOUT_FAILED
     ];
 
+    public static $payoutStatusToLedgerEventMapForChargeCollectionsPayouts = [
+        self::CREATED   => Ledger\Payout::CHARGE_COLLECTIONS_DEBIT_INITIATED,
+        self::PROCESSED => Ledger\Payout::CHARGE_COLLECTIONS_DEBIT_PROCESSED,
+        self::REVERSED  => Ledger\Payout::CHARGE_COLLECTIONS_DEBIT_REVERSED,
+        self::FAILED    => Ledger\Payout::CHARGE_COLLECTIONS_DEBIT_FAILED,
+    ];
+
     /**
      * @param string $payoutStatus
      * @param string $purpose
@@ -346,6 +353,10 @@ class Status
     {
         if ($payoutStatus === null){
             $payoutStatus = $payout->getStatus();
+        }
+
+        if ($payout->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS) {
+            return self::$payoutStatusToLedgerEventMapForChargeCollectionsPayouts[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
         }
 
         if (($payout->isVaToVaPayout() === true) or ($payout->isSubAccountPayout() === true))

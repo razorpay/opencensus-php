@@ -60,6 +60,12 @@ class Factory
 
                     break;
 
+                case PayoutSourceEntity::CHARGE_COLLECTIONS:
+
+                    array_push($subscriberList, (new ChargeCollections($payout, $mode)));
+
+                    break;
+
                 case PayoutSourceEntity::CAPITAL_COLLECTIONS:
 
                     array_push($subscriberList, (new CapitalCollectionsUpdater($payout, $mode)));

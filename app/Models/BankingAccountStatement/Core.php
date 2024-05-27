@@ -5126,6 +5126,10 @@ class Core extends Base\Core
             {
                 $this->processLedgerPayoutForDirect($merchant, Transaction\Processor\Ledger\Payout::DA_FEE_PAYOUT_PROCESSED, $sourceEntity);
             }
+            else if ($sourceEntity->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS)
+            {
+                $this->processLedgerPayoutForDirect($merchant, Transaction\Processor\Ledger\Payout::CHARGE_COLLECTIONS_DEBIT_PROCESSED, $sourceEntity);
+            }
             else
             {
                 $this->processLedgerPayoutForDirect($merchant, Transaction\Processor\Ledger\Payout::DA_PAYOUT_PROCESSED, $sourceEntity);
@@ -5139,6 +5143,10 @@ class Core extends Base\Core
             if ($payout->getPurpose() === Purpose::RZP_FEES)
             {
                 $this->processLedgerPayoutForDirect($merchant, Transaction\Processor\Ledger\Payout::DA_FEE_PAYOUT_REVERSED, $payout, $sourceEntity);
+            }
+            else if ($payout->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS)
+            {
+                $this->processLedgerPayoutForDirect($merchant, Transaction\Processor\Ledger\Payout::CHARGE_COLLECTIONS_DEBIT_REVERSED, $sourceEntity);
             }
             else {
                 $this->processLedgerPayoutForDirect($merchant,Transaction\Processor\Ledger\Payout::DA_PAYOUT_REVERSED, $payout, $sourceEntity);

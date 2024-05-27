@@ -13,6 +13,8 @@ use RZP\Models\External;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
+use RZP\Models\Payout\Purpose;
+use RZP\Models\Payout\Service;
 use RZP\Models\Merchant\Credits;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
@@ -20,6 +22,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Ledger as LedgerService;
+use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccountStatement\Entity as BASEntity;
@@ -68,6 +71,12 @@ class Payout extends Base
     const DA_EXT_FEE_PAYOUT_PROCESSED   = "da_ext_fee_payout_processed";
     const DA_EXT_FEE_PAYOUT_REVERSED    = "da_ext_fee_payout_reversed";
 
+    // Charge collections event
+    const CHARGE_COLLECTIONS_DEBIT_INITIATED  = "cc_debit_initiated";
+    const CHARGE_COLLECTIONS_DEBIT_PROCESSED  = "cc_debit_processed";
+    const CHARGE_COLLECTIONS_DEBIT_FAILED     = "cc_debit_failed";
+    const CHARGE_COLLECTIONS_DEBIT_REVERSED   = "cc_debit_reversed";
+
     const MAX_IDEM_KEY_LENGTH = 36;
 
     // This is used to maintain the idempotency key for ledger.
@@ -87,6 +96,8 @@ class Payout extends Base
 
     protected $eventsWithoutFtsInfo = [self::PAYOUT_FAILED,
                                        self::PAYOUT_INITIATED,
+                                       self::CHARGE_COLLECTIONS_DEBIT_FAILED,
+                                       self::CHARGE_COLLECTIONS_DEBIT_INITIATED,
                                        self::VA_TO_VA_PAYOUT_INITIATED,
                                        self::VA_TO_VA_PAYOUT_FAILED,
                                        self::INTER_ACCOUNT_PAYOUT_INITIATED];
@@ -271,6 +282,7 @@ class Payout extends Base
 
             switch ($transactorEvent)
             {
+                case self::CHARGE_COLLECTIONS_DEBIT_PROCESSED:
                 case self::DA_FEE_PAYOUT_PROCESSED:
                 case self::DA_PAYOUT_PROCESSED:
                     $apiTransactionId = $payout->getTransactionId();
@@ -288,6 +300,7 @@ class Payout extends Base
 
                     break;
 
+                case self::CHARGE_COLLECTIONS_DEBIT_REVERSED:
                 case self::DA_FEE_PAYOUT_REVERSED:
                 case self::DA_PAYOUT_REVERSED:
                     if ($reversal !== null){
@@ -474,6 +487,8 @@ class Payout extends Base
 
         if (($transactorEvent === self::PAYOUT_REVERSED) or
             ($transactorEvent === self::PAYOUT_FAILED) or
+            ($transactorEvent === self::CHARGE_COLLECTIONS_DEBIT_FAILED) or
+            ($transactorEvent === self::CHARGE_COLLECTIONS_DEBIT_REVERSED) or
             ($transactorEvent === self::INTER_ACCOUNT_PAYOUT_REVERSED) or
             ($transactorEvent === self::INTER_ACCOUNT_PAYOUT_FAILED) or
             ($transactorEvent === self::VA_TO_VA_PAYOUT_FAILED))
@@ -493,9 +508,21 @@ class Payout extends Base
         }
 
         if (($transactorEvent === self::PAYOUT_PROCESSED) or
+            ($transactorEvent === self::CHARGE_COLLECTIONS_DEBIT_PROCESSED) or
             ($transactorEvent === self::INTER_ACCOUNT_PAYOUT_PROCESSED))
         {
             $payload[self::TRANSACTION_DATE] = $payout->getProcessedAt();
+        }
+
+        if ($payout->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS) {
+            $notes = $payout->getNotes();
+            $payload[self::IDENTIFIERS] += [
+                PayoutConstants::PRODUCT_ID => $notes[PayoutConstants::PRODUCT_ID],
+            ];
+
+            $payload[self::ADDITIONAL_PARAMS] = [
+              self::ACCOUNT_TYPE => $notes[PayoutConstants::ACCOUNT_TYPE],
+            ];
         }
 
         $this->updatePayloadForPrePaidSourceAccounts($payload, $payout);
@@ -693,12 +720,27 @@ class Payout extends Base
     {
         $additional_params = [];
         $channel = $payout->getChannel();
+        $notes = $payout->getNotes();
         $accountNumber = $payout->balance->getAccountNumber();
         $basDetails = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
 
         $identifiers = [
             self::BANKING_ACCOUNT_STMT_DETAIL_ID  => (string) $basDetails->getPublicId(),
         ];
+
+        if ((isset($notes) === true) and
+            (isset($notes[PayoutConstants::PRODUCT_ID]) === true)) {
+            $identifiers += [
+                PayoutConstants::PRODUCT_ID => $notes[PayoutConstants::PRODUCT_ID],
+            ];
+            }
+
+        if ((isset($notes) === true) and
+            (isset($notes[PayoutConstants::ACCOUNT_TYPE]) === true)) {
+            $additional_params += [
+                PayoutConstants::ACCOUNT_TYPE => $notes[PayoutConstants::ACCOUNT_TYPE],
+            ];
+        }
 
         return [
             self::TENANT              => self::X,

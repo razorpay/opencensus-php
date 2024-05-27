@@ -382,6 +382,7 @@ class Validator extends Base\Validator
         'source_details',
         'tds_details',
         'attachments',
+        'notes',
     ];
 
     protected static $beforeSmartRoutingPayoutValidators = [
@@ -1558,6 +1559,32 @@ class Validator extends Base\Validator
             $this->validatePrioritySequence($input[Entity::SOURCE_DETAILS]);
 
             $this->validateIfCardDetailsReceivedForScroogeAppOnly($input);
+        }
+    }
+
+    protected function validateNotes($input)
+    {
+        $isChargeCollectionsApp = (new Service)->isChargeCollectionsApp();
+
+        if ($isChargeCollectionsApp === true) {
+
+            if (empty($input[Entity::NOTES][PayoutConstants::PRODUCT_ID]) === true) {
+                throw new Exception\BadRequestValidationFailureException(
+                    Entity::NOTES . '.' . PayoutConstants::PRODUCT_ID . " is/are required and but not sent"
+                );
+            }
+
+            if (empty($input[Entity::NOTES][PayoutConstants::CHARGE_ID]) === true) {
+                throw new Exception\BadRequestValidationFailureException(
+                    Entity::NOTES . '.' . PayoutConstants::CHARGE_ID . " is/are required and but not sent"
+                );
+            }
+
+            if (empty($input[Entity::NOTES][PayoutConstants::ACCOUNT_TYPE]) === true) {
+                throw new Exception\BadRequestValidationFailureException(
+                    Entity::NOTES . '.' . PayoutConstants::ACCOUNT_TYPE . " is/are required and but not sent"
+                );
+            }
         }
     }
 

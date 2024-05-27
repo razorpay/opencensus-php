@@ -3765,6 +3765,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CHARGE_COLLECTIONS_REQUEST                            = 'CHARGE_COLLECTIONS_REQUEST';
     const CHARGE_COLLECTIONS_RESPONSE                           = 'CHARGE_COLLECTIONS_RESPONSE';
     const CHARGE_COLLECTIONS_REQUEST_FAILURE                    = 'CHARGE_COLLECTIONS_REQUEST_FAILURE';
+    const CHARGE_COLLECTIONS_PAYOUT_UPDATER_ERROR               = 'CHARGE_COLLECTIONS_PAYOUT_UPDATER_ERROR';
 
     // Offers On Subscription
     const OFFER_ON_SUBSCRIPTION                                 = 'OFFER_ON_SUBSCRIPTION';

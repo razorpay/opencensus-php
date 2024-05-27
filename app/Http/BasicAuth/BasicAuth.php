@@ -1976,6 +1976,11 @@ class BasicAuth
         return $this->internalApp === 'scrooge';
     }
 
+    public function isChargeCollectionsApp()
+    {
+        return $this->internalApp === 'charge_collections_internal';
+    }
+
     public function isEzetapApiApp()
     {
         return $this->internalApp === 'ezetap-api';
@@ -2056,6 +2061,7 @@ class BasicAuth
                 ($this->isCapitalEarlySettlementApp() === true) or
                 ($this->isSettlementsApp() === true) or
                 ($this->isScroogeApp() === true) or
+                ($this->isChargeCollectionsApp() === true) or
                 ($this->isEzetapApiApp() === true) or
                 ($this->isReminderServiceAuth() === true) or
                 (($this->isBatchApp() === true) and

@@ -11,6 +11,7 @@ use RZP\Models\Payout\Metric;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Purpose;
+use RZP\Models\Payout\Service;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Payout\QueuedReasons;
@@ -56,7 +57,8 @@ class Base extends DSBase
         /*
          * We don't want fee recovery payouts to go through the free payout flow, hence the check here.
          */
-        if ($payout->getPurpose() === Purpose::RZP_FEES)
+        if (($payout->getPurpose() === Purpose::RZP_FEES) or
+            ($payout->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS))
         {
             return;
         }
@@ -80,7 +82,8 @@ class Base extends DSBase
 
     protected function adjustMerchantFeesThroughRewardFeeCreditsForPayout(Entity $payout, & $fees, & $tax)
     {
-        if ($payout->getFeeType() !== null)
+        if (($payout->getFeeType() !== null) or
+            ($payout->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS))
         {
             return;
         }

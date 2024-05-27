@@ -1065,6 +1065,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BALANCE_ID);
     }
 
+    public function getBankingAccountId()
+    {
+        return $this->getAttribute(self::BANKING_ACCOUNT_ID);
+    }
+
     public function getIsPayoutService(): bool
     {
         return ($this->getAttribute(self::IS_PAYOUT_SERVICE) === 1);
@@ -1825,6 +1830,7 @@ class Entity extends Base\PublicEntity
             ($status === Status::INITIATED) and
             ($this->isBalanceAccountTypeDirect() === true) and
             ($this->getFeeType() !== Transaction\CreditType::REWARD_FEE) and
+            ($this->getPurpose() !== Purpose::RZP_CHARGE_COLLECTIONS) and
             ($this->getIsPayoutService() === false))
         {
             $featureEnabled = (new \RZP\Models\Merchant\Credits\Service())->isRzpxFeeCreditEnabledForMerchant($this->merchant);

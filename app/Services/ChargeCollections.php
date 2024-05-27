@@ -13,6 +13,12 @@ use RZP\Models\Pricing\Calculator\Metrics;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payout\Entity;
+use RZP\Models\BankingAccount;
+use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\BankingAccountStatement as BAS;
+use RZP\Models\Payout\Constants as PayoutConstants;
+use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 
 class ChargeCollections
 {
@@ -50,6 +56,8 @@ class ChargeCollections
 
     // Charge Collections APIs
     const GetReceiptForInvoiceURL = 'v1/subscription/getReceiptForInvoice';
+
+    const CHARGE_PAYOUT_STATUS = 'v1/charge_payout_status';
 
     // Requests/responses will be logged by default or if value for path mentioned here is true.
     const REQUEST_LOGGER_MAP = [];
@@ -112,6 +120,72 @@ class ChargeCollections
             $logResponse = self::RESPONSE_LOGGER_MAP[$mapKey];
         }
         return $logResponse;
+    }
+
+    public function pushPayoutStatusUpdate(Entity $payout, string $mode)
+    {
+        $dataToSend = [
+            'id'                    => $payout->getId(),
+            'charge_id'             => $payout->getNotes()[PayoutConstants::CHARGE_ID],
+            'amount'                => $payout->getAmount(),
+            'currency'              => $payout->getCurrency(),
+            'notes'                 => $payout->getNotes()->toArray(),
+            'status'                => $payout->getStatus(),
+            'purpose'               => $payout->getPurpose(),
+            'mode'                  => $payout->getMode(),
+            'failure_reason'        => $payout->getFailureReason(),
+            'created_at'            => $payout->getCreatedAt(),
+            'status_details'        => $this->getStatusDetailsFromPayout($payout),
+            'banking_account_id'    => (new BankingAccount\Service())->fetchBankingAccountIdByBalanceId($payout->balance->getId()),
+        ];
+
+        $basDetails = (new BAS\Core)->getBasDetails($payout->balance->getAccountNumber(), $payout->getChannel());
+
+        if (!empty($basDetails)) {
+            $dataToSend['banking_account_stmt_detail_id'] = $basDetails->getPublicId();
+        }
+
+        $this->sendStatusUpdate($dataToSend, $mode);
+    }
+
+    public function sendStatusUpdate(array $input, string $mode) : array
+    {
+        return $this->sendRequest(self::CHARGE_PAYOUT_STATUS, Requests::POST, $input);
+    }
+
+    public function getStatusDetailsFromPayout(PayoutEntity $payout)
+    {
+        if ($payout->getStatusDetailsId() === null)
+        {
+            $statusDetailsArray =
+                [
+                    'reason'        => null,
+                    'description'   => null,
+                    'source'        => null,
+                ];
+        }
+        else
+        {
+            $statusDetails = (new PayoutsStatusDetails\Repository())->fetchStatusDetailsFromStatusDetailsId($payout->getStatusDetailsId());
+
+            if ($statusDetails !== null)
+            {
+                $source = $payout->getSourceForStatusDetails($statusDetails);
+            }
+            else
+            {
+                $source = null;
+            }
+
+            $statusDetailsArray =
+                [
+                    'reason'        => $statusDetails['reason'],
+                    'description'   => $statusDetails['description'],
+                    'source'        => $source,
+                ];
+        }
+
+        return $statusDetailsArray;
     }
 
     /**

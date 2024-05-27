@@ -18,6 +18,8 @@ use RZP\Models\Payout\Core;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Metric;
+use RZP\Models\Payout\Purpose;
+use RZP\Models\Payout\Service;
 use RZP\Models\Merchant\Credits;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
@@ -500,6 +502,10 @@ class Base extends FundAccountPayout\Base
         }
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
+     */
     public function setFeeAndTaxForPayout($payout)
     {
         list($fees, $tax, $pricingRuleId) = $this->calculateFeesAndTaxForPayouts($payout);
@@ -515,6 +521,13 @@ class Base extends FundAccountPayout\Base
             ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === false))
         {
             $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
+        }
+
+        // Zero pricing for charge collections payout.
+        if (($payout->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS) and
+            (($fees !== 0) or ($tax !== 0)))
+        {
+            throw new BadRequestValidationFailureException(self::NON_ZERO_PRICING_ERROR_MESSAGE);
         }
 
         if (($payout->isSubAccountPayout() === true) and

@@ -13,6 +13,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Payment;
@@ -469,6 +470,14 @@ class Fee extends Base\Core
 
     protected function addNonAppBankingPayoutFallbackRules(Plan $pricingPlan, Merchant\Entity $merchant)
     {
+        //
+        // Add default pricing rules with payouts_filter = rzp_charge_collections, only when no such rules are already defined.
+        if ($pricingPlan->hasBankingAccountChargeCollectionsRule() === false)
+        {
+            $rules       = $this->repo->getBankingAccountChargeCollectionDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $pricingPlan = $pricingPlan->merge($rules);
+        }
+
         //
         // Add default pricing rules with payouts_filter = free_payout, only when no such rules are already defined for
         // Shared accounts.

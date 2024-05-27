@@ -17667,6 +17667,7 @@ class Route
         'charge_collections_internal' => [
             'cc_create_transaction',
             'internal_payment_pricing',
+            'payout_create_on_internal_contact',
         ],
 
         'affordability' => [

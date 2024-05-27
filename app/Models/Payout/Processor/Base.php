@@ -352,7 +352,8 @@ class Base extends BaseCore
             }
 
             if (($payout->getQueuePayoutCreateRequest() === true) and
-                ($payout->getPurpose() !== Payout\Purpose::RZP_FEES))
+                ($payout->getPurpose() !== Payout\Purpose::RZP_FEES) and
+                ($payout->getPurpose() !== Payout\Purpose::RZP_CHARGE_COLLECTIONS))
             {
                 $createRequestEnqueueStartTime = millitime();
 
@@ -521,8 +522,9 @@ class Base extends BaseCore
 
     public function setQueuedFeeRecoveryPayoutsFlag(Entity $payout): void
     {
-        if (($payout->getPurpose() !== Payout\Purpose::RZP_FEES) ||
-            ($payout->getStatus() !== Status::QUEUED))
+        if ((($payout->getPurpose() !== Payout\Purpose::RZP_FEES) &&
+                ($payout->getPurpose() !== Payout\Purpose::RZP_CHARGE_COLLECTIONS)) ||
+                ($payout->getStatus() !== Status::QUEUED))
         {
             return;
         }

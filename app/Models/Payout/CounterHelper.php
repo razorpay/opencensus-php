@@ -41,7 +41,7 @@ class CounterHelper extends Base\Core
     {
         if (($balance->getType() !== Balance\Type::BANKING) or
             (($balance->merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true) and
-             ($balance->getAccountType() === Balance\AccountType::SHARED)))
+            ($balance->getAccountType() === Balance\AccountType::SHARED)))
         {
             return null;
         }

@@ -15,6 +15,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Task;
+use RZP\Models\Payout\Purpose;
+use RZP\Models\Payout\Service;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
@@ -145,6 +147,10 @@ class Core extends Base\Core
         if (($payout->getFeeType() !== null) and
             ($payout->getFeeType() === CreditType::REWARD_FEE))
         {
+            return;
+        }
+
+        if ($payout->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS) {
             return;
         }
 

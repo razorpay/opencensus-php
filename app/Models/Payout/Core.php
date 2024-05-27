@@ -3088,7 +3088,8 @@ class Core extends Base\Core
 
             $purpose = $payout->getPurpose();
 
-            if ($purpose === Purpose::RZP_FEES)
+            if (($purpose === Purpose::RZP_FEES) or
+                ($purpose === Purpose::RZP_CHARGE_COLLECTIONS))
             {
                 $totalPayoutAmount = $payout->getAmount();
 

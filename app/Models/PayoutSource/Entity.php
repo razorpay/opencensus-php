@@ -26,6 +26,8 @@ class Entity extends Base\PublicEntity
     const SETTLEMENTS                    = 'settlements';
     const XPAYROLL                       = 'xpayroll';
     const REFUND                         = 'refund';
+
+    const CHARGE_COLLECTIONS             = 'charge_collections';
     const CAPITAL_COLLECTIONS            = 'capital_collections';
     const GENERIC_ACCOUNTING_INTEGRATION = 'generic_accounting_integration';
 
