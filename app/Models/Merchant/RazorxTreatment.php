@@ -755,8 +755,6 @@ final class RazorxTreatment
     // This is to get the query data via WDA for emandate
     public const FETCH_PENDING_EMANDATE_REGISTRATION_FROM_WDA = "fetch_pending_emandate_registration_from_wda";
 
-    public const FETCH_CANCELLATION_EMANDATE_TOKENS_FROM_TIDB = "fetch_cancellation_emandate_tokens_from_tidb";
-
     public const CARD_MANDATE_CORRECT_DETAILS_FETCH = "card_mandate_correct_details_fetch";
 
     public const CARD_RECURRING_CYBERSOURCE = "card_recurring_cybersource";
