@@ -605,7 +605,34 @@ class Service extends Base\Service
         return $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchantDetail);
 
     }
-
+    
+    /**
+     * Verifies the merchant's website policy by sending a request to the PGOS proxy server.
+     *
+     * @param array $input The input data required for the policy verification request.
+     * @return mixed
+     * @throws BadRequestException
+     * @throws ServerErrorException
+     */
+    public function verifyMerchantWebsitePolicy(array $input)
+    {
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_website_policy_verify', $input, $this->merchant, true);
+        
+        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+            'route'         => 'merchant_website_policy_verify',
+            'merchant_id'   => $this->merchant->getId(),
+            'response'      => $response
+        ]);
+        
+        if (isset($response['meta']) && isset($response['meta']['description']) && $response['meta']['description'] === "something bad happened" && isset($response["msg"]) && empty($response['msg']) === false)
+        {
+            $response['meta']['description'] = null;
+        }
+        $this->pgosProxyController->errorHandler($response);
+        
+        return $response;
+    }
+    
     private function getAllMerchantWebsites($merchantDetails)
     {
         $urls = [];
@@ -2136,9 +2163,10 @@ class Service extends Base\Service
 
         /*transforming ADMIN_WEBSITE_DETAILS based on the priority
         1-BVS
-        2-admin section Urls
+        2. Individual verified policy links
+        3-admin section Urls
 
-        fetch business verfication details to fill the admin website details
+        fetch website verfication details to fill the admin website details
         */
         $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
             $merchant->getId(),
@@ -2166,6 +2194,7 @@ class Service extends Base\Service
 
         $transformedWebsiteDetail = $websiteDetail->toArray();
         $websitePolicyLinks = [];
+        $merchantWebsite = $merchantDetails->getWebsite();
         foreach ($websitePolicyResult as $policy => $value)
         {
             if (empty($value['analysis_result']['links_found'][0]) === false and
@@ -2175,18 +2204,74 @@ class Service extends Base\Service
             {
                 if ($policy === 'refund')
                 {
-                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()]['cancellation']['url'] = $value['analysis_result']['links_found'][0];
-                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()]['cancellation']['system_approved'] = true;
+                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantWebsite]['cancellation']['url'] = $value['analysis_result']['links_found'][0];
+                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantWebsite]['cancellation']['system_approved'] = true;
                     $websitePolicyLinks['cancellation'] = true;
                 }
-                $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()][$policy]['url'] = $value['analysis_result']['links_found'][0];
-                $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()][$policy]['system_approved'] = true;
+                $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantWebsite][$policy]['url'] = $value['analysis_result']['links_found'][0];
+                $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantWebsite][$policy]['system_approved'] = true;
                 $websitePolicyLinks[$policy] = true;
+            }
+        }
+        
+        $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
+        /* example of policiesData
+        [
+            "terms" => [
+                "status"         => "submitted",
+                "website" =>[
+                      "https://sme-dashboard.dev.razorpay.in": [
+                            "url" => "https://sme-dashboard.dev.razorpay.in/terms",
+                            "system_approved" => true
+                       ]
+                ]
+             ]
+        ]
+        */
+        foreach ($policiesData as $policyName => $policyDetails)
+        {
+            if ($this->isMerchantProvidedPolicyVerified($websitePolicyLinks, $policyName, $policyDetails,$merchantDetails) === true)
+            {
+                    if ($policyName === 'refund' and isset($websitePolicyLinks['cancellation']) === false)
+                    {
+                        $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantWebsite]["cancellation"]['url'] = $policyDetails['website'][$merchantDetails->getWebsite()]['url'];
+                        $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantWebsite]["cancellation"]['system_approved'] = true;
+                        $websitePolicyLinks['cancellation']['url'] = true;
+                    }
+                    $websitePolicyLinks[$policyName]['url'] = true;
+                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantWebsite][$policyName]['url'] =$policyDetails['website'][$merchantDetails->getWebsite()]['url'] ;
+                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantWebsite][$policyName]['system_approved'] = true;
+                    
+                
             }
         }
         return $this->createResponse($transformedWebsiteDetail, $websiteDetail, $merchantDetails);
     }
-
+    
+    function isMerchantProvidedPolicyVerified($existingPolicyLinks, $policyName, $policyMetadata, $merchantDetails)
+    {
+        if (in_array($policyName, ['about_us', 'pricing']) || isset($existingPolicyLinks[$policyName]))
+        {
+            return false;
+        }
+        
+        if (empty($policyMetadata['section_status']) === true || $policyMetadata['section_status'] !== 1)
+        {
+            return false;
+        }
+        
+        $merchantWebsite = $merchantDetails->getWebsite();
+        if (empty($policyMetadata['website'][$merchantWebsite]))
+        {
+            return false;
+        }
+        
+        $merchantWebsitePolicy = $policyMetadata['website'][$merchantWebsite];
+        $isSystemApproved = isset($merchantWebsitePolicy['system_approved']) === true and $merchantWebsitePolicy['system_approved'] === true;
+        
+        return $isSystemApproved;
+    }
+    
     public function saveAdminWebsiteSection($merchantId, array $input)
     {
         $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, $input);

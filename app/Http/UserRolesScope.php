@@ -48,8 +48,9 @@ class UserRolesScope
             'merchant_document_save'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
 
             'merchant_get_l2_dynamic_configs'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER_AGENT, Role::PARTNER],
-            'merchant_policy_section_publish_v2'                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
-
+            'merchant_policy_section_publish_v2'                   => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
+            'merchant_website_policy_verify'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
+            
             'pgos_send_sms_otp'                                    => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'pgos_verify_otp'                                      => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 

@@ -11954,6 +11954,32 @@ class Core extends Base\Core
         if (empty($websiteDetail) === false)
         {
             $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
+            
+            
+            /* example of policiesData
+            [
+                "terms" => [
+                    "status"         => "submitted",
+                    "website" =>[
+                          "https://sme-dashboard.dev.razorpay.in": [
+                                "url" => "https://sme-dashboard.dev.razorpay.in/terms",
+                                "system_approved" => true
+                           ]
+                    ]
+                 ]
+            ]
+            */
+            foreach ($policiesData as $policyName => $policyDetails)
+            {
+                if ((new Merchant\Website\Service())->isMerchantProvidedPolicyVerified($websitePolicyLinks, $policyName, $policyDetails, $merchantDetail) === true)
+                {
+                    if ($policyName === 'refund' and isset($websitePolicyLinks['cancellation']) === false)
+                    {
+                        $websitePolicyLinks['cancellation']['url'] = $policyDetails['website'][$merchantDetail->getWebsite()]['url'];
+                    }
+                    $websitePolicyLinks[$policyName]['url'] = $policyDetails['website'][$merchantDetail->getWebsite()]['url'];
+                }
+            }
             /* example of policiesData
             [
                 "terms" => [

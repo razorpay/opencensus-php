@@ -28,6 +28,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     const GET_MERCHANT_ACTIVATION_DETAILS = 'get_merchant_activation_details';
     const MERCHANT_SIGN_UP               = 'merchant_sign_up';
+    const MERCHANT_WEBSITE_POLICY_VERIFY = 'merchant_website_policy_verify';
     const MERCHANT_DOCUMENT_UPLOAD       = 'merchant_document_upload';
     const MERCHANT_DOCUMENT_DELETE       = 'merchant_document_delete';
     const GET_MERCHANT_BMC_RESPONSE      = 'get_merchant_bmc_response';
@@ -157,6 +158,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::GET_MERCHANT_BMC_RESPONSE,
         self::SAVE_MERCHANT_BMC_RESPONSE,
 
+        self::MERCHANT_WEBSITE_POLICY_VERIFY,
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS,
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS,
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS,
@@ -215,6 +217,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SAVE_MERCHANT_DOCUMENT_DETAILS   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantDocumentMetadata',
         self::FETCH_MERCHANT_DOCUMENT_DETAILS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantDocumentMetadata',
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/CheckMerchantDocumentDetailsValidity',
+        self::MERCHANT_WEBSITE_POLICY_VERIFY           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantIndividualPolicyVerification',
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetPolicyComplianceDetails',
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantSavePolicyComplianceDetails',
@@ -272,6 +275,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         // This is temporarily being increased to unblock curlec signup flows.
         // https://razorpay.slack.com/archives/C043K5N223F/p1700641894030849?thread_ts=1699005756.802759&cid=C043K5N223F
         self::SEND_OTP                                  => 20,
+        self::MERCHANT_WEBSITE_POLICY_VERIFY                    => 30,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
@@ -279,6 +283,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SAVE_MERCHANT_BMC_RESPONSE,
         self::MERCHANT_UPDATE_BY_ADMIN,
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION,
+        self::MERCHANT_WEBSITE_POLICY_VERIFY,
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS,
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS,
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS,

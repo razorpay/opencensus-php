@@ -3084,7 +3084,15 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
-
+    
+    public function verifyMerchantWebsitePolicy()
+    {
+        $input = Request::all();
+        
+        $response = $this->service(E::MERCHANT_WEBSITE)->verifyMerchantWebsitePolicy($input);
+        
+        return ApiResponse::json($response);
+    }
     public function getMerchantWebsiteSection()
     {
         $input = Request::all();

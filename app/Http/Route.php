@@ -1477,9 +1477,9 @@ class Route
         'pgos_verify_otp'                          => ['post',     'pg/onboarding/verify_otp',                       'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
 
 
-        'merchant_get_l2_dynamic_configs'          => ['get',     'pg/onboarding/merchant_get_l2_dynamic_configs',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_get_l2_dynamic_configs'          => ['get',     'pg/onboarding/merchant_get_l2_dynamic_configs',    'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_policy_section_publish_v2'       => ['post',    'pg/onboarding/merchant_policy_section_publish_v2', 'MerchantOnboardingProxyController@handleDashboardProxyRequests'   ],
-
+        'merchant_website_policy_verify'           => ['put',     'merchant/website/policy/verify',                   'MerchantController@verifyMerchantWebsitePolicy' ],
         'rize_marketplace_dashboard'               => ['post',       'rize/dashboard/{path?}', 'RizeMarketplaceProxyController@handleDashboardProxyRequest' ],
 
 
@@ -6802,6 +6802,7 @@ class Route
         'merchant_website_section_page_load_v2',
         'user_update_name',
         'merchant_get_l2_dynamic_configs',
+        'merchant_website_policy_verify',
         'merchant_bmc_response_fetch',
         'merchant_bmc_response_save',
         'onboarding_order_create',
@@ -9449,6 +9450,7 @@ class Route
         'merchant_website_plugin_save'                    => Permission::VIEW_MERCHANT,
         'merchant_consents_save'                          => Permission::EDIT_MERCHANT,
         'merchant_get_l2_dynamic_configs'                 => Permission::VIEW_MERCHANT,
+        'merchant_website_policy_verify'                          => Permission::EDIT_MERCHANT,
         'merchant_bmc_response_fetch'                     => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_fetch_admin'               => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_save'                      => Permission::EDIT_MERCHANT,
@@ -12063,6 +12065,7 @@ class Route
             'fetch_onboarding_payment_details',
             'merchant_policy_section_publish_v2',
             'merchant_get_l2_dynamic_configs',
+            'merchant_website_policy_verify',
             'merchant_website_section_page_load_v2',
             'merchant_bmc_response_fetch',
             'merchant_bmc_response_save',

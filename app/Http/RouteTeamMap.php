@@ -384,6 +384,7 @@ class RouteTeamMap
 
         'merchant_get_l2_dynamic_configs'                 => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_policy_section_publish_v2'              => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_website_policy_verify'                  => [self::TEAM_PAYMENTS_GROWTH],
 
         'onboarding_order_create'                         => [self::TEAM_PAYMENTS_GROWTH],
         'fetch_onboarding_payment_details'                => [self::TEAM_PAYMENTS_GROWTH],
