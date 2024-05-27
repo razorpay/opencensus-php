@@ -4078,7 +4078,9 @@ class Core extends Base\Core
                     'shouldSave' => $shouldSave,
                 ]);
 
-                $this->triggerRequestToBvs($merchant, Status::ACTIVATED);
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant) {
+                    $this->triggerRequestToBvs($merchant, Status::ACTIVATED);
+                }));
 
                 if (!$isMerchantPreviouslyActivated)
                 {
@@ -4112,7 +4114,9 @@ class Core extends Base\Core
                 $this->app['workflow']
                     ->handle();
 
-                $this->triggerRequestToBvs($merchant, Status::KYC_QUALIFIED_UNACTIVATED);
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant) {
+                    $this->triggerRequestToBvs($merchant, Status::KYC_QUALIFIED_UNACTIVATED);
+                }));
 
                 if ($merchant->isNoDocOnboardingFeatureEnabled() === true)
                 {
@@ -4133,7 +4137,9 @@ class Core extends Base\Core
 
                 $shouldSave = true;
 
-                $this->triggerRequestToBvs($merchant, Status::ACTIVATED_MCC_PENDING);
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant) {
+                    $this->triggerRequestToBvs($merchant, Status::ACTIVATED_MCC_PENDING);
+                }));
 
                 if (!$isMerchantPreviouslyActivated)
                 {
@@ -4197,7 +4203,9 @@ class Core extends Base\Core
                     }
                 }
 
-                $this->triggerRequestToBvs($merchant, Status::REJECTED, $rejectionReasons);
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant, $rejectionReasons) {
+                    $this->triggerRequestToBvs($merchant, Status::REJECTED, $rejectionReasons);
+                }));
 
                 if ($merchant->isNoDocOnboardingFeatureEnabled() === true)
                 {
