@@ -49,7 +49,8 @@ class CardlessEmiProvider
         self::HCIN,
         self::FDRL,
         self::BARB,
-        self::KRBE
+        self::KRBE,
+        self::LIQUILOANS,
     ];
 
     public static $experimentCheckRequiredCardlessEmiProviders = [
