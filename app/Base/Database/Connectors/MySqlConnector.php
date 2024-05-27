@@ -16,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Tracing;
 use RZP\Base\Database\Metric;
+use RZP\Constants\Metric as AppMetrics;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\ServerErrorException;
 use RZP\Base\Database\DetectsLostConnections;
@@ -184,6 +185,8 @@ class MySqlConnector extends BaseMySqlConnector
                 $this->app['trace']->info(TraceCode::CIRCUIT_BREAKER_OPEN, [
                     'total_failures' => $this->cb->getFailuresCounter(),
                 ]);
+                
+                $this->app['trace']->count(AppMetrics::CIRCUIT_BREAKER_OPEN);
 
                 throw new ServerErrorException(
                     'DB Circuit Breaker Open',

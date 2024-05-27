@@ -218,4 +218,5 @@ class Metric
 
     const PROXYSQL_OR_DB_CONNECTION                             = 'proxysql_or_db_connection';
 
+    const CIRCUIT_BREAKER_OPEN                                  = 'circuit_breaker_open';
 }
