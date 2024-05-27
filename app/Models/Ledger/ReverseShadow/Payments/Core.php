@@ -116,6 +116,15 @@ class Core extends Base\Core
         }
 
         $moneyParams = $this->getDefaultMoneyParamsForFeeBreakupAndTax();
+
+        // In few cases like isCardlessEmiWalnut369 payments, $totalCommission can be zero and $feeSplit can be non-zero
+        if ($totalCommission === 0)
+        {
+            $moneyParams[Constants::COMMISSION] = strval($totalCommission);
+            $moneyParams[Constants::TAX] = strval($totalTax);
+            return $moneyParams;
+        }
+
         $allocatedCommission = 0;
         $allocatedTax = 0;
         foreach ($feeSplit as $fee)
