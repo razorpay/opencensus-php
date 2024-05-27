@@ -1837,10 +1837,6 @@ class Base extends BaseCore
                                     'payout_status'  => $payout->getStatus(),
                                 ]);
 
-                            // We have only implemented the email function. No SMS will be sent.
-                            (new Notifications\Factory)->getNotifier(Notifications\Type::PAYOUT_FAILED, $payout)
-                                                       ->notify();
-
                             return $payout;
                         }
                         else
@@ -1869,6 +1865,12 @@ class Base extends BaseCore
 
                     return $payout;
                 });
+
+            if ($payout->isStatusFailed() === true)
+            {
+                // We have only implemented the email function. No SMS will be sent.
+                (new Notifications\Factory)->getNotifier(Notifications\Type::PAYOUT_FAILED, $payout)->notify();
+            }
 
             if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
                 ($payout->isStatusCreated() === true))
