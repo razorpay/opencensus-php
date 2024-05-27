@@ -246,6 +246,10 @@ class Core extends Base\Core
             {
                 $namespace = $payment->getMethod() . '_' . $payment->getGateway() . '_instant_verify';
             }
+            else if ($payment->getMethod() == Method::UPI and $this->isOptimiserAuditPayment($payment) === true)
+            {
+                $namespace = Constants::UPI_OPTIMIZER_AUDIT;
+            }
             else
             {
                 $namespace = $payment->getMethod() . '_' . $payment->getGateway() . '_verify';
@@ -364,6 +368,17 @@ class Core extends Base\Core
         }
 
         return $isPushedToKafka;
+    }
+
+    public function isOptimiserAuditPayment($payment): bool
+    {
+        $notes = $payment->getNotes()->toArray();
+
+        if (empty($notes["integration_audit"]) === false)
+        {
+            return true;
+        }
+        return false;
     }
 
     public function pushPaymentToKafkaForDeRegistrations($payment, $startTime): void

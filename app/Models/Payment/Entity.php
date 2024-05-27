@@ -4612,7 +4612,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $merchant = $this->merchant;
 
-        if ($merchant->isFeatureEnabledOnNonPurePlatformPartner(Feature\Constants::SEND_PAYMENT_LATE_AUTH) === true)
+        $app = \App::getFacadeRoot();
+
+        if ($merchant->isFeatureEnabledOnNonPurePlatformPartner(Feature\Constants::SEND_PAYMENT_LATE_AUTH) === true
+        or $app['basicauth']->isOptimiserDashboardRequest() === true)
         {
             $lateAuth = $this->isLateAuthorized();
 

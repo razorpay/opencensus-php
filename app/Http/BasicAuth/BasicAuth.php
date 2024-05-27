@@ -2185,8 +2185,8 @@ class BasicAuth
     public function isOptimiserDashboardRequest()
     {
         return ($this->isProxyAuth() === true and
-                ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::MERCHANT, $this->getMerchantId(), Feature\Constants::RAAS))['status'] and
-                ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::MERCHANT, $this->getMerchantId(), Feature\Constants::ENABLE_SINGLE_RECON))['status']);
+            ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::MERCHANT, $this->getMerchantId(), Feature\Constants::RAAS))['status'] and
+            ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::MERCHANT, $this->getMerchantId(), Feature\Constants::ENABLE_SINGLE_RECON))['status']);
     }
 
     /**

@@ -77,6 +77,8 @@ class Constants
     //Namespace suffix
     const TIMEOUT_SUFFIX       =   "_payments_timeout";
 
+    const UPI_OPTIMIZER_AUDIT = "upi_optimizer_audit";
+
     //Auto Refund Reasons
     const MERCHANT_AUTO_REFUND_DELAY            = 'Merchants auto_refund_delay %s has been set as refund_at value';
     const REFUND_AT_FOR_EMANDATE_PAYMENT        = 'Merchants default value %s for emandate payments has been set as refund_at value';
