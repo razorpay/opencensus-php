@@ -8,6 +8,7 @@ class RequestSource
 {
     const DASHBOARD           = 'dashboard';
     const CHECKOUT            = 'checkout';
+    const PAYMENT_LINKS       = 'payLinks'; // shortened to fit the column size.
     const API                 = 'api';
     const PAYMOBAPP           = 'payMobApp';
     const FALLBACK            = 'fallback';

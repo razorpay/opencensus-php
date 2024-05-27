@@ -8,6 +8,7 @@ use RZP\Base\Luhn;
 use RZP\Models\Card;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Order\Status;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
@@ -83,7 +84,7 @@ class Processor extends Base\Core
         // 3. set merchant based on qr code (shared or not)
         $this->merchant = $this->qrCode->merchant;
 
-        if ($this->qrCode->isCheckoutQrCode()) {
+        if ($this->qrCode->isCheckoutQrCode() || $this->qrCode->isPaymentLinksQrCode()) {
             // 3.1 Set Merchant in auth as it would be NULL in callback flow
             $this->app['basicauth']->setMerchant($this->merchant);
             // 3.2 Fetch Key for this Merchant. It gets used in forming
@@ -275,7 +276,7 @@ class Processor extends Base\Core
 
         if ($entity->isExpected() === true)
         {
-            if ((! $this->qrCode->isCheckoutQrCode()) &&
+            if ((! $this->qrCode->isCheckoutQrCode()) && (!$this->qrCode->isPaymentLinksQrCode()) &&
                 ($entity->payment->hasBeenCaptured() === false))
             {
 
@@ -588,6 +589,26 @@ class Processor extends Base\Core
                 return;
             }
         }
+
+
+        if ($this->qrCode->isPaymentLinksQrCode())
+        {
+            $order = $this->qrCode->source;
+
+            if ($order === null)
+            {
+                $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::PAYMENT_LINKS_ORDER_NOT_PRESENT);
+                return;
+            }
+
+
+            if ($order->getStatus() === Status::PAID)
+            {
+                $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::PAYMENT_LINKS_ORDER_ALREADY_PAID);
+                return;
+            }
+        }
+
 
         if ($this->qrCode->isClosed())
         {

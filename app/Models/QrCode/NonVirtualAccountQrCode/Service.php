@@ -194,6 +194,70 @@ class Service extends QrCode\Service
         return $qrCode->toArrayPublic();
     }
 
+    public function createForPaymentLinks($input)
+    {
+        $startTimeMs = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::QR_CODE_PAYMENT_LINKS_CREATE_REQUEST, $input);
+
+        (new Validator())->validateInput('createForPaymentLinks', $input);
+
+        $errorMessage = null;
+
+        $metric = new Metric();
+
+        try
+        {
+            $order = $this->repo->order->findByPublicIdAndMerchant($input[Entity::ENTITY_ID], $this->merchant);
+
+            if ($order === null)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_INVALID_ORDER_ID);
+            }
+
+            if ($order->isPaid() === true)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_DISALLOWED_FOR_ORDER);
+            }
+
+            $qrCode = Tracer::inspan(
+                ['name' => HyperTrace::QR_CODE_CREATE_FOR_PAYMENT_LINKS_SERVICE],
+                function () use ($input, $order) {
+                    return $this->createForPaymentLinksOrder($input, $order);
+            });
+
+        }
+        catch (\Exception $ex)
+        {
+            $errorMessage = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::QR_CODE_CREATE_REQUEST_FAILED, $input);
+
+            throw $ex;
+        } finally {
+            $input = array_merge($input, [
+                Entity::REQ_PROVIDER    => QrCode\Type::UPI_QR,
+                Entity::REQ_USAGE_TYPE  => UsageType::SINGLE_USE,
+                Entity::REQUEST_SOURCE  => RequestSource::PAYMENT_LINKS,
+            ]);
+
+            (new Metric())->pushCreateMetrics($input, $errorMessage);
+        }
+
+        $this->handleReminderForQrCode($qrCode);
+
+        $this->trace->info(TraceCode::QR_CODE_PAYMENT_LINKS_CREATED, $qrCode->toArrayPublic());
+
+        $createInput = $this->computeInputForQrOnPaymentLinksMetrics($input);
+
+        $createInput[Entity::GATEWAY] = $qrCode->getGatewayFromQrString();
+
+        $metric->pushCreateLatencyMetrics($createInput, $startTimeMs, $qrCode->getGatewayLatencyForQrCreate());
+
+        return $this->getCreateForPaymentLinksResponse($qrCode);
+    }
+
+
     /**
      * Create a QrCode entity for a checkout order.
      *
@@ -242,6 +306,100 @@ class Service extends QrCode\Service
             },
             60,
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
+    }
+
+    private function createForPaymentLinksOrder($input, $order)
+    {
+        return $this->mutex->acquireAndRelease(
+            $order->getId(),
+            function() use ($order, $input)
+            {
+                $qrCode = $this->repo->qr_code->findActiveQrCodeByOrder($order); // fetches latest active qr
+
+                if ($qrCode !== null)
+                {
+                    // if a QR already exists, make sure the user has enough buffer to finish the payment
+                    // and only then reuse the same QR.
+                    $buffer_time = $qrCode->getAttribute(Entity::CLOSE_BY) - Carbon::now()->getTimestamp(); // in seconds
+                    if ($buffer_time >= 10*60)
+                    {
+                        return $qrCode;
+                    }
+                }
+
+                $createArray = $this->computeInputForQrOnPaymentLinks($input, $order);
+
+                return (new Core)->buildQrCode($createArray, $order);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
+    }
+
+
+    private function getCreateForPaymentLinksResponse($qrCode) : array
+    {
+        $response = $qrCode->toArrayPublic();
+
+        $response[Entity::QR_STRING] = $qrCode[Entity::QR_STRING];
+
+        return $response;
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    private function computeInputForQrOnPaymentLinksMetrics(array $input): array
+    {
+        $createArray = [
+            Entity::REQ_PROVIDER    => QrCode\Type::UPI_QR,
+            Entity::REQ_USAGE_TYPE  => UsageType::SINGLE_USE,
+            Entity::FIXED_AMOUNT    => true,
+            Entity::REQUEST_SOURCE  => RequestSource::PAYMENT_LINKS,
+        ];
+
+        $createArray[Entity::CLOSE_BY] = $input[Entity::CLOSE_BY];
+
+        $additionalAttributes = [Entity::CUSTOMER_ID, Entity::DESCRIPTION, Entity::NAME, Entity::NOTES];
+
+        foreach ($additionalAttributes as $attribute) {
+            if (!empty($input[$attribute])) {
+                $createArray[$attribute] = $input[$attribute];
+            }
+        }
+
+        return $createArray;
+    }
+
+
+    /**
+     * @param array $input
+     * @param Order $order
+     *
+     * @return array
+     */
+    private function computeInputForQrOnPaymentLinks(array $input, Order $order): array
+    {
+        $createArray = [
+            Entity::REQ_PROVIDER    => QrCode\Type::UPI_QR,
+            Entity::REQ_USAGE_TYPE  => UsageType::SINGLE_USE,
+            Entity::FIXED_AMOUNT    => true,
+            Entity::REQUEST_SOURCE  => RequestSource::PAYMENT_LINKS,
+        ];
+
+        $createArray[Entity::REQ_AMOUNT] = $order->getAmount();
+
+        $createArray[Entity::CLOSE_BY] = $input[Entity::CLOSE_BY];
+
+        $additionalAttributes = [Entity::CUSTOMER_ID, Entity::DESCRIPTION, Entity::NAME, Entity::NOTES];
+
+        foreach ($additionalAttributes as $attribute) {
+            if (!empty($input[$attribute])) {
+                $createArray[$attribute] = $input[$attribute];
+            }
+        }
+
+        return $createArray;
     }
 
     /**

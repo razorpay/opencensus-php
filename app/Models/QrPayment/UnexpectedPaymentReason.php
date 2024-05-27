@@ -26,6 +26,11 @@ class UnexpectedPaymentReason
 
     const CHECKOUT_ORDER_CLOSED = 'The checkout order associated to the QR is closed';
 
+    const PAYMENT_LINKS_ORDER_NOT_PRESENT = 'The Payment Links QR code does not have an order associated to it';
+
+    const PAYMENT_LINKS_ORDER_ALREADY_PAID = 'The order associated with the Payment Links QR is already in paid state';
+
+
     protected static $toCreateUnexpected = [
         self::QR_CODE_PAYMENT_FAILED_FEE_OR_TAX_TAMPERED,
         self::QR_CODE_PAYMENT_FAILED_UPI_NOT_ENABLED,

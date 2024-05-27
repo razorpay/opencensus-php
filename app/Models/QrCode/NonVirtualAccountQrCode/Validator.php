@@ -43,6 +43,16 @@ class Validator extends QrCode\Validator
         Entity::REQ_AMOUNT     => 'sometimes|integer|min:1',
     ];
 
+    protected static $createForPaymentLinksRules = [
+        Entity::CLOSE_BY       => 'required|epoch|custom',
+        Entity::CUSTOMER_ID    => 'filled|string',
+        Entity::DESCRIPTION    => 'sometimes|custom',
+        Entity::ENTITY_ID      => 'required|string',
+        Entity::ENTITY_TYPE    => 'required|in:order',
+        Entity::NAME           => 'sometimes|custom',
+        Entity::NOTES          => 'filled|notes',
+    ];
+
     protected static $taxInvoiceRules = [
         InvoiceDetails::INVOICE_DATE   => 'sometimes|integer',
         InvoiceDetails::INVOICE_NUMBER => 'sometimes|string',

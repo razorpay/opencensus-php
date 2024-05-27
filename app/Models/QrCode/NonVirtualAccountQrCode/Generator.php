@@ -368,6 +368,11 @@ class Generator extends QrCode\Generator
             $content[Base\IntentParams::TXN_NOTE] = 'Payment to ' . $this->merchant->getFilteredDba();
         }
 
+        if($qrCode->isPaymentLinksQrCode() && !empty($qrCode->getDescription()))
+        {
+            $content[Base\IntentParams::TXN_NOTE] = $qrCode->getDescription();
+        }
+
         if ($qrCode->hasFixedAmount())
         {
             $amount    = $qrCode->getAmount() / 100;

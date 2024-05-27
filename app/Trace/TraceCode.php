@@ -4619,9 +4619,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_UPI_GATEWAY_CALL_FOR_INTENT_URL               = 'QR_CODE_UPI_GATEWAY_CALL_FOR_INTENT_URL';
     const QR_CODE_CREATE_REQUEST                                = 'QR_CODE_CREATE_REQUEST';
     const QR_CODE_CHECKOUT_CREATE_REQUEST                       = 'QR_CODE_CHECKOUT_CREATE_REQUEST';
+    const QR_CODE_PAYMENT_LINKS_CREATE_REQUEST                  = 'QR_CODE_PAYMENT_LINKS_CREATE_REQUEST';
     const QR_CODE_CLOSE_REQUEST                                 = 'QR_CODE_CLOSE_REQUEST';
     const QR_CODE_CREATED                                       = 'QR_CODE_CREATED';
     const QR_CODE_CHECKOUT_CREATED                              = 'QR_CODE_CHECKOUT_CREATED';
+    const QR_CODE_PAYMENT_LINKS_CREATED                         = 'QR_CODE_PAYMENT_LINKS_CREATED';
     const QR_PAYMENT_CACHE_UPDATE_FAILED                        = 'QR_PAYMENT_CACHE_UPDATE_FAILED';
     const PAYMENT_DB_CALL_FAILED                                = 'PAYMENT_DB_CALL_FAILED';
     const QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT        = 'QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT';

@@ -285,6 +285,11 @@ class Entity extends QrCode\Entity
         return $this->getRequestSource() === RequestSource::CHECKOUT;
     }
 
+    public function isPaymentLinksQrCode(): bool
+    {
+        return $this->getRequestSource() === RequestSource::PAYMENT_LINKS;
+    }
+
     public function isRazorpayPosQrCode(): bool
     {
         return $this->getRequestSource() === RequestSource::EZETAP;

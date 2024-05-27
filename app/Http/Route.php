@@ -803,6 +803,7 @@ class Route
         'qr_code_fetch'                            => ['get',      'payments/qr_codes/{id}',                         'QrCodeController@get'                                              ],
         'qr_code_close'                            => ['post',     'payments/qr_codes/{id}/close',                   'QrCodeController@closeQrCode'                                      ],
         'qr_code_create'                           => ['post',     'payments/qr_codes',                              'QrCodeController@create'                                           ],
+        'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
         //'qr_code_checkout_create'                  => ['post',     'checkout/qr_codes',                              'QrCodeController@createForCheckout'                                           ],
         'qr_code_fetch_payment_status'             => ['get',      'checkout/qr_code/{id}/payment/status',           'QrPaymentController@fetchCheckoutPaymentStatusByQrCodeId'          ],
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
@@ -7652,6 +7653,7 @@ class Route
         'proxy_merchant_create_support_details',
         'proxy_merchant_edit_support_details',
         'virtual_account_create_for_internal',
+        'qr_code_payment_links_create',
         'payment_links_switch_versions',
         'subscription_get_revenue_by_source',
 
@@ -7953,6 +7955,7 @@ class Route
         'order_fetch_internal_checkout',
         'merchant_methods_offers_checkout_internal',
         'checkout_1cc_configs_get',
+
 
         'partner_config_fetch',
         'partner_config_edit',
@@ -16797,6 +16800,7 @@ class Route
             'batch_stats',
             'invoice_send_notification_proxy',
             'virtual_account_create_for_internal',
+            'qr_code_payment_links_create',
             'payment_links_sign_payload_internal',
             'payment_refund',
             'entity_origin_create',

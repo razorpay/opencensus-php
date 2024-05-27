@@ -46,6 +46,17 @@ class QrCodeController extends Controller
         return ApiResponse::json($entity);
     }
 
+    public function createForPaymentLinks()
+    {
+        $input = Request::all();
+
+        $entity = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_FOR_PAYMENT_LINKS], function () use ($input) {
+            return (new NonVAQrCodeService())->createForPaymentLinks($input);
+        });
+
+        return ApiResponse::json($entity);
+    }
+
     public function closeQrCode(string $id)
     {
         $response = (new NonVAQrCodeService())->closeQrCode($id);

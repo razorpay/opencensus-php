@@ -4,6 +4,8 @@ namespace Functional\QrCode;
 
 use Mockery;
 use Carbon\Carbon;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity;
 use RZP\Services\SplitzService;
 use Queue;
 
@@ -744,6 +746,364 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($testData['content']['type'],$response['type']);
 
         $this->assertNotNull($response['id']);
+    }
+
+    /**
+     * @group payment_links
+     */
+    public function testQrCodeCreateForPaymentLinks()
+    {
+        $order = $this->fixtures->order->create([
+            'product_type' => 'payment_link_v2',
+            'amount' => '1000',
+            'currency' => 'INR',
+        ]);
+
+        [$input, $response] = $this->createQrCodeForPaymentLinksOrder($order);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $this->assertEquals($response['payment_amount'], $order->getAmount());
+        $this->assertStringContainsString('RZP' . $qrCode['id'] . 'qrv2', $response[Entity::QR_STRING]);
+
+        $this->runEntityAssertionsForPaymentLinksQR($qrCode, $input, $order);
+
+    }
+
+    /**
+     * @group payment_links
+     */
+    public function testQrCodeCreateForPaymentLinksUsingExistingQR()
+    {
+        $order = $this->fixtures->order->create([
+            'product_type' => 'payment_link_v2',
+            'amount' => '1000',
+            'currency' => 'INR',
+        ]);
+
+        /* Call 1: initial call where fresh QR is always created */
+        [$inputCall1, $responseCall1] = $this->createQrCodeForPaymentLinksOrder($order);
+
+        $qrCode1 = $this->getDbLastEntity('qr_code');
+
+
+        /* Call 2: As there would be enough buffer for the user to pay before expiry, we reuse the QR */
+        $tsCall2 = Carbon::now()->getTimestamp();
+        [$inputCall2, $responseCall2] = $this->createQrCodeForPaymentLinksOrder($order);
+
+        $qrCode2 = $this->getDbLastEntity('qr_code');
+        $buffer = $qrCode2->getAttribute(Entity::CLOSE_BY) - Carbon::now()->getTimestamp();
+
+        $this->assertEquals($responseCall2['id'], 'qr_' . $qrCode1->getId());
+        $this->assertEquals($qrCode2->getId(), $qrCode1->getId());
+        $this->runEntityAssertionsForPaymentLinksQR($qrCode2, $inputCall2, $order);
+        // time checks
+        $this->assertGreaterThanOrEqual($qrCode2->getCreatedAt(), $tsCall2);
+        $this->assertGreaterThanOrEqual(10*100, $buffer);
+
+
+        /* Call 3: When there's no enough buffer, create a new QR */
+        $this->fixtures->qr_code->edit($qrCode1->getId(), ['close_by' => Carbon::now()->getTimestamp() + 2*100 ]); // change expiry.
+
+        $tsCall3 = Carbon::now()->getTimestamp();
+        [$inputCall3, $responseCall3] = $this->createQrCodeForPaymentLinksOrder($order);
+
+        $qrCode3 = $this->getDbLastEntity('qr_code');
+        $buffer = $qrCode3->getAttribute(Entity::CLOSE_BY) - Carbon::now()->getTimestamp();
+
+        $this->assertNotEquals($responseCall3['id'], 'qr_' . $qrCode1->getId());
+        $this->assertNotEquals($qrCode3->getId(), $qrCode1->getId());
+        $this->runEntityAssertionsForPaymentLinksQR($qrCode3, $inputCall3, $order);
+        // time checks
+        $this->assertGreaterThanOrEqual($tsCall3, $qrCode3->getCreatedAt());
+        $this->assertGreaterThanOrEqual(10*100, $buffer);
+
+    }
+
+    /**
+     * @group payment_links
+     */
+    public function testPaymentOnAutoCapturePaymentLinksQr()
+    {
+
+        $order = $this->fixtures->order->create([
+            'product_type' => 'payment_link_v2',
+            'amount' => '1000',
+            'currency' => 'INR',
+            'payment_capture' => true
+        ]);
+
+        $this->createQrCodeForPaymentLinksOrder($order);
+
+        $qrCode = $this->fetchAndAssertQrEntity();
+
+        $this->hitUpiIciciCallbackForQRv2($qrCode, $order);
+
+        // load entities
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $qrCode = $this->getDbLastEntity('qr_code');
+        $order->reload();
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($order->getAmount(), $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertTrue($qrPayment['expected']);
+        $this->assertEquals(Status::CLOSED, $qrCode['status']);
+        $this->assertEquals(CloseReason::PAID, $qrCode['close_reason']);
+        $this->assertEquals(Order\Status::PAID, $order->getStatus());
+    }
+
+    /**
+     * @group payment_links
+     */
+    public function testPaymentOnManualCapturePaymentLinksQr()
+    {
+        $order = $this->fixtures->order->create([
+            'product_type' => 'payment_link_v2',
+            'amount' => '1000',
+            'currency' => 'INR',
+            'payment_capture' => false // set auto capture false
+        ]);
+
+        $this->createQrCodeForPaymentLinksOrder($order);
+
+        $qrCode = $this->fetchAndAssertQrEntity();
+
+        $this->hitUpiIciciCallbackForQRv2($qrCode, $order);
+
+        // load entities
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $qrCode = $this->getDbLastEntity('qr_code');
+        $order->reload();
+
+        // basic assertions.
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals($order->getAmount(), $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertTrue($qrPayment['expected']);
+        $this->assertEquals(Status::CLOSED, $qrCode['status']);
+        $this->assertEquals(CloseReason::PAID, $qrCode['close_reason']);
+
+        // status checks - payment should not be captured already.
+        $this->assertEquals(Order\Status::ATTEMPTED, $order->getStatus());
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    /**
+     * @group payment_links
+     */
+    public function testUnexpectedPaymentAmountMismatchOnPLQr()
+    {
+
+        $order = $this->fixtures->order->create([
+            'product_type' => 'payment_link_v2',
+            'amount' => '1000',
+            'currency' => 'INR',
+            'payment_capture' => true
+        ]);
+
+        $this->createQrCodeForPaymentLinksOrder($order);
+
+        $qrCode = $this->fetchAndAssertQrEntity();
+
+        $this->hitUpiIciciCallbackForQRv2($qrCode, $order, ['PayerAmount' => 40]);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $order->reload();
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('FallbackQrCode', $qrPayment['qr_code_id']);
+        $this->assertEquals('FallbackQrCode', $payment['receiver_id']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+
+        $this->assertFalse($qrPayment['expected']);
+        $this->assertEquals(\RZP\Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH, $qrPayment['unexpected_reason']);
+    }
+
+    /**
+     * @group payment_links
+     */
+    public function testUnexpectedPaymentPaidOrderOnPLQr()
+    {
+
+        $order = $this->fixtures->order->create([
+            'product_type' => 'payment_link_v2',
+            'amount' => '1000',
+            'currency' => 'INR',
+            'payment_capture' => true
+        ]);
+
+        $this->createQrCodeForPaymentLinksOrder($order);
+
+        // mark the order paid before payment
+        $this->fixtures->order->edit($order->getId(), ['status' => 'paid']);
+
+        $qrCode = $this->fetchAndAssertQrEntity();
+
+        $this->hitUpiIciciCallbackForQRv2($qrCode, $order);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $order->reload();
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('FallbackQrCode', $qrPayment['qr_code_id']);
+        $this->assertEquals('FallbackQrCode', $payment['receiver_id']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals($order->getAmount(), $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertFalse($qrPayment['expected']);
+        $this->assertEquals(\RZP\Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID, $qrPayment['unexpected_reason']);
+
+    }
+
+    /**
+     * @group payment_links
+     */
+    public function testPaymentOnClosedQrOnPLQr()
+    {
+        $order = $this->fixtures->order->create([
+            'product_type' => 'payment_link_v2',
+            'amount' => '1000',
+            'currency' => 'INR',
+            'payment_capture' => true
+        ]);
+
+        $this->createQrCodeForPaymentLinksOrder($order);
+
+        $qrCode = $this->fetchAndAssertQrEntity();
+
+        $qrCode = $this->closeQrCode('qr_' . $qrCode['id']);
+        $this->assertEquals('closed', $qrCode['status']);
+
+        $this->hitUpiIciciCallbackForQRv2($qrCode, $order);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getLastEntity('payment', true);
+
+        //Payment made before Closing Time so, we will accept this Callback
+        $refund = $this->getDbLastEntity('refund');
+        $this->assertNull($refund,'Refund Entity should be null');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(1000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCode['id'], 'qr_' . $qrPayment['qr_code_id']);
+
+        $this->assertEquals(true, $qrPayment['expected']);
+    }
+
+    /**
+     * @group payment_links
+     */
+    public function testDuplicatePaymentOnPLQr()
+    {
+        $order = $this->fixtures->order->create([
+            'product_type' => 'payment_link_v2',
+            'amount' => '1000',
+            'currency' => 'INR',
+            'payment_capture' => true
+        ]);
+
+        $this->createQrCodeForPaymentLinksOrder($order);
+
+        $qrCode = $this->fetchAndAssertQrEntity();
+
+        $this->hitUpiIciciCallbackForQRv2($qrCode, $order);
+
+        $oldQrPaymentRequest = $this->getDbLastEntity('qr_payment_request');
+        $this->assertEquals($oldQrPaymentRequest['expected'], true);
+
+        // Call 2
+        $this->hitUpiIciciCallbackForQRv2($qrCode, $order);
+
+        $newQrPaymentRequest = $this->getDbLastEntity('qr_payment_request');
+
+        $this->assertEquals($newQrPaymentRequest['transaction_reference'], $oldQrPaymentRequest['transaction_reference']);
+
+        $this->assertNull($newQrPaymentRequest['expected']);
+        $this->assertEquals($newQrPaymentRequest['failure_reason'], 'QR_PAYMENT_DUPLICATE_NOTIFICATION');
+    }
+
+
+
+    /**
+     * @group payment_links
+     */
+    public function testPaymentLinksQrCodePricing(): void
+    {
+        $upiPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => null,
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 200, // 2.00%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $upiPricingPlan);
+
+        $qrPricingPlan = [
+            'plan_id'             => 'TestPlan1',
+            'plan_name'           => 'TestMerchantQrCodePricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'qr_code',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 100, // 100 base points i.e. 1.00%
+            'fixed_rate'          => 0,
+        ];
+
+        $this->fixtures->create('pricing', $qrPricingPlan);
+
+        $this->fixtures->merchant->editPricingPlanId('TestPlan1', Account::TEST_ACCOUNT);
+
+        $order = $this->fixtures->order->create([
+            'product_type' => 'payment_link_v2',
+            'amount' => '10000',
+            'currency' => 'INR',
+            'payment_capture' => true
+        ]);
+
+        $this->createQrCodeForPaymentLinksOrder($order);
+
+        $qrCode = $this->fetchAndAssertQrEntity();
+
+        $this->hitUpiIciciCallbackForQRv2($qrCode, $order);
+
+        // load entities
+        $payment = $this->getDbLastPayment();
+        $feeBreakup = $this->getDbEntities(
+            'fee_breakup',
+            ['transaction_id' => $payment->getTransactionId()]
+        );
+
+        // Payment Assertions
+        $this->assertEquals(Account::TEST_ACCOUNT, $payment->getMerchantId());
+        $this->assertEquals($order->getAmount(), $payment->getAmount());
+        $this->assertEquals('captured', $payment->getStatus());
+        // Ensure UPI Fees is Charged and not QR's i.e. 2.00%
+        $this->assertEquals(236, $payment->getFee());
+        $this->assertEquals(36, $payment->getTax());
+        // Fee Breakup Assertions
+        $this->assertCount(2, $feeBreakup);
+        $this->assertEquals('payment', $feeBreakup[0]['name']);
+        $this->assertEquals(200, $feeBreakup[0]['amount']); // 2.00% of 10000
+        $this->assertEquals('tax', $feeBreakup[1]['name']);
+        $this->assertEquals(36, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 200
     }
 
     public function testQrCodeCreateForCheckoutWithOrder()

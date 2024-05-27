@@ -33,7 +33,7 @@ class Metric extends Base\Core
 
     protected function getDefaultDimensions($requestSource): array
     {
-        if ($requestSource === RequestSource::CHECKOUT) {
+        if ($requestSource === RequestSource::CHECKOUT || $requestSource === RequestSource::PAYMENT_LINKS) {
             // Not adding merchant_id in checkout qr codes as cardinality
             // would be very high
             return [];

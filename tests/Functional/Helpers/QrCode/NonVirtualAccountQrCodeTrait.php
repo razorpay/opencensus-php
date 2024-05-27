@@ -16,6 +16,7 @@ use RZP\Services\Mock\Reminders;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity;
+use RZP\Models\Order\Entity as OrderEntity;
 
 trait NonVirtualAccountQrCodeTrait
 {
@@ -253,6 +254,51 @@ trait NonVirtualAccountQrCodeTrait
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
+    }
+
+
+    private function hitUpiIciciCallbackForQRv2($qrCode, $order, $changes = []) {
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = $order->getAmount() / 100;
+
+        if (!empty($changes['PayerAmount'])) {
+            $request['content']['PayerAmount'] = $changes['PayerAmount'];
+        }
+
+        $this->makeUpiIciciPayment($request);
+    }
+
+    private function fetchAndAssertQrEntity() {
+        $qrCode = $this->getDbLastEntity('qr_code');
+        $qrCodeId = $qrCode['id'];
+        $this->assertNotNull($qrCodeId);
+        return $qrCode;
+    }
+
+    private function createQrCodeForPaymentLinksOrder($order)
+    {
+        $this->ba->paymentLinksAuth();
+
+        $input[Entity::ENTITY_TYPE] = 'order';
+        $input[Entity::ENTITY_ID] = $order->getPublicId();
+        $input[Entity::DESCRIPTION] = empty($description) ? 'default razorpay transaction note' : $description;
+        $input[Entity::CLOSE_BY] = empty($closeby)? strtotime('+60 minutes', time()) : $closeby;
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payment_links/qr_codes',
+            'content' => $input,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return [$input, $response];
     }
 
     private function fetchPaymentByQrCodeIdOnCheckout(string $id)
@@ -777,6 +823,33 @@ trait NonVirtualAccountQrCodeTrait
         ];
 
         return $content;
+    }
+
+    public function runEntityAssertionsForPaymentLinksQR(Entity $qrCode, $createQrInput, OrderEntity $order)
+    {
+        $this->assertEquals(true, $qrCode->isPaymentLinksQrCode());
+
+        $this->assertEquals($order->getId(), $qrCode->getEntityId());
+        $this->assertEquals('order', $qrCode->getEntityType());
+
+        $this->assertEquals(true, !empty($qrCode));
+        $this->assertNotNull($qrCode['id']);
+        $this->assertEquals('single_use', $qrCode->getUsageType());
+        $this->assertEquals('upi_qr', $qrCode['provider']);
+
+        // Intent link checks
+        $tr = 'RZP' . $qrCode['id'] . 'qrv2';
+        $this->assertStringContainsString($tr, $qrCode['qr_string']);
+        $this->assertStringContainsString('qrmoremegast', $qrCode['qr_string']);
+        $this->assertStringContainsString('@icici', $qrCode['qr_string']);
+        $this->assertStringContainsString('am=' . $qrCode['amount']/100, $qrCode['qr_string']);
+
+        $this->assertGreaterThan(0, $qrCode['fixed_amount']);
+
+        $this->assertGreaterThan(time() + 5*100, $qrCode[Entity::CLOSE_BY]);
+
+        $this->assertEquals($createQrInput[Entity::DESCRIPTION], $qrCode[Entity::DESCRIPTION]);
+
     }
 
     public function runEntityAssertions($response)
