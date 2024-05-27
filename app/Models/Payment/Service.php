@@ -1192,6 +1192,33 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * forceAuthorizePayment is payment method-generic function for force authorizing payment
+     * @param $id payment_id
+     * @param $input
+     * @return array|void
+     * @throws BadRequestException
+     */
+    public function forceAuthorizePayment($id, $input)
+    {
+        (new Payment\Validator)->validateInput('force_authorize_payment', $input);
+
+        $method = $input['payment']['method'];
+
+        switch($method)
+        {
+            case Payment\Method::UPI:
+                return $this->authorizeFailedUpiPayment($input);
+
+                //ToDo: Cards team to handle their case here
+
+            default:
+                throw new Exception\BadRequestValidationFailureException(
+                    'incorrect method provided');
+        }
+
+    }
+
     public function authorizeLockTimeOutPayments($paymentIds)
     {
         $paymentIds = explode(',', $paymentIds);

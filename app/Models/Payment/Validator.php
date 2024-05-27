@@ -493,6 +493,18 @@ class Validator extends Base\Validator
         'meta.version'                  => 'required',
     ];
 
+    protected static $forceAuthorizePaymentRules = [
+        'payment'                       => 'required|array',
+        'payment.method'                => 'required|string|in:upi',
+        'payment.id'                    => 'required|string|size:14',
+        'payment.amount'                => 'required|integer',
+        'upi'                           => 'sometimes|array',
+        'meta'                          => 'required|array',
+        'meta.force_auth_payment'       => 'required|boolean',
+        'meta.art_request_id'           => 'required',
+        'meta.version'                  => 'required',
+    ];
+
     protected static $authorizeFailedNetbankingPaymentRules = [
         'payment'                              => 'required|array',
         'payment.method'                       => 'required|string|in:netbanking',

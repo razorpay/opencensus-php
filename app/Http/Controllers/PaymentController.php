@@ -276,6 +276,21 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
+
+    /**
+     * postForceAuthorizePayments is method generic route for authorizing a failed payment
+     * @param $id - payment_id
+     * @return mixed - json response
+     */
+    public function postForceAuthorizePayments($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->forceAuthorizePayment($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postRefundOldAuthorizedPayments()
     {
         $input = Request::all();

@@ -308,7 +308,8 @@ class Route
         'payment_card_recon_create_transaction'    => ['post',     'payments/recon/create/transaction',              'PaymentController@postReconCreateTransaction'                       ],
         'payment_nbplus_authorize_failed'          => ['post',     'payments/authorize/nbplus/failed',               'PaymentController@postAuthorizeFailedNetbankingPayment'            ],
         'subscription_payment_fetch_by_id'         => ['get',      'payments/{paymentId}/subscriptions/{subId}',     'PaymentController@getPaymentForSubscription'                       ],
-        'subscription_fetch_by_id'                 => ['get',      'payments//subscriptions/{subId}',                 'PaymentController@getPaymentwithSubscription'                       ],
+        'subscription_fetch_by_id'                 => ['get',      'payments//subscriptions/{subId}',                'PaymentController@getPaymentwithSubscription'                       ],
+        'post_force_authorize_payments'            => ['post',     'payments/{id}/force_authorize_failed',           'PaymentController@postForceAuthorizePayments'                       ],
 
         // TODO:remove after migration,
         // Temporary route to copy email and contact in subscriptions table from payments table.
@@ -6501,6 +6502,8 @@ class Route
         'payments_card_es_sync_cron',
 
         'payment_upi_authorize_failed',
+
+        'post_force_authorize_payments',
 
         'payment_card_authorize_failed',
 
@@ -17423,6 +17426,7 @@ class Route
             'order_transfer_process_rearch',
             'customer_fetch_by_id_internal',
             'transfer_reversal_transactions_create',
+            'post_force_authorize_payments',
         ],
 
         'freshdesk_webhook' => [
