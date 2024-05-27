@@ -4269,8 +4269,7 @@ class Base extends BaseCore
      */
     protected function isPayoutServiceIfApplicable(array $input) : bool
     {
-        if (($this->mode == Mode::LIVE) and
-            ($this->balance->getAccountType() === AccountType::SHARED))
+        if ($this->mode == Mode::LIVE)
         {
             $this->isPayoutServiceEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED);
 
@@ -4279,7 +4278,7 @@ class Base extends BaseCore
                 if ($this->balance->getAccountType() === AccountType::DIRECT) {
 
                     $variant = $this->app['razorx']->getTreatment($this->merchant->getMerchantId(),
-                        RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Constants\Mode::LIVE);
+                        RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
 
                     if ($variant != 'on') {
                         return false;
@@ -4354,61 +4353,60 @@ class Base extends BaseCore
         {
             $input[Balance\Entity::ACCOUNT_NUMBER] = $this->balance->getAccountNumber();
 
-            if ($this->balance->getAccountType() === AccountType::SHARED)
-            {
-                [$fetchUnusedCreditsSuccess, $unusedCredits] =  (new Credits\Transaction\Core)->fetchMerchantUnusedCredits(
-                                                                           $this->merchant,
-                                                                           CreditType::REWARD_FEE,
-                                                                           Product::BANKING);
 
-                [$fetchFundAccountInfoSuccess, $fundAccountInfo, $fundAccount] =
-                    (new FundAccount\Core)->fetchFundAccountForPayoutServiceProcessing($this->merchant->getId(),
-                                                                                       $input);
+            [$fetchUnusedCreditsSuccess, $unusedCredits] = (new Credits\Transaction\Core)->fetchMerchantUnusedCredits(
+                $this->merchant,
+                CreditType::REWARD_FEE,
+                Product::BANKING);
 
-                [$beneficiaryFundAccountMerchantId, $isBeneficiaryVpaFundAccountVirtualAccount] =
-                    $this->fetchVaToVaInfoForPayoutServiceProcessing($input[Payout\Entity::FUND_ACCOUNT_ID],
-                                                                     $fundAccount);
+            [$fetchFundAccountInfoSuccess, $fundAccountInfo, $fundAccount] =
+                (new FundAccount\Core)->fetchFundAccountForPayoutServiceProcessing($this->merchant->getId(),
+                    $input);
 
-                $extraInfo = [
-                    Payout\Entity::FUND_ACCOUNT_INFO => [
-                        Payout\Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS => $fetchFundAccountInfoSuccess,
-                        Payout\Entity::FUND_ACCOUNT                    => $fundAccountInfo
-                    ],
-                    Payout\Entity::CREDITS_INFO      => [
-                        Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS => $fetchUnusedCreditsSuccess,
-                        Payout\Entity::UNUSED_CREDITS               => $unusedCredits
-                    ],
-                    Payout\Entity::VA_TO_VA_INFO     => [
-                        Payout\Entity::BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID            =>
-                            $beneficiaryFundAccountMerchantId,
-                        Payout\Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT =>
-                            $isBeneficiaryVpaFundAccountVirtualAccount
-                    ],
-                ];
+            [$beneficiaryFundAccountMerchantId, $isBeneficiaryVpaFundAccountVirtualAccount] =
+                $this->fetchVaToVaInfoForPayoutServiceProcessing($input[Payout\Entity::FUND_ACCOUNT_ID],
+                    $fundAccount);
 
-                $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input,
-                                                                                          $this->merchant->getId(),
-                                                                                          $this->isInternal,
-                                                                                          $extraInfo);
+            $extraInfo = [
+                Payout\Entity::FUND_ACCOUNT_INFO => [
+                    Payout\Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS => $fetchFundAccountInfoSuccess,
+                    Payout\Entity::FUND_ACCOUNT => $fundAccountInfo
+                ],
+                Payout\Entity::CREDITS_INFO => [
+                    Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS => $fetchUnusedCreditsSuccess,
+                    Payout\Entity::UNUSED_CREDITS => $unusedCredits
+                ],
+                Payout\Entity::VA_TO_VA_INFO => [
+                    Payout\Entity::BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID =>
+                        $beneficiaryFundAccountMerchantId,
+                    Payout\Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT =>
+                        $isBeneficiaryVpaFundAccountVirtualAccount
+                ],
+            ];
 
-                $this->trace->info(
-                    TraceCode::PAYOUT_CREATE_RESPONSE_FROM_MICROSERVICE,
-                    [
-                        'response' => $response
-                    ]);
+            $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input,
+                $this->merchant->getId(),
+                $this->isInternal,
+                $extraInfo);
 
-                $id = $response[Entity::ID];
-                $id = Entity::verifyIdAndStripSign($id);
+            $this->trace->info(
+                TraceCode::PAYOUT_CREATE_RESPONSE_FROM_MICROSERVICE,
+                [
+                    'response' => $response
+                ]);
 
-                $payout = new Payout\Entity;
+            $id = $response[Entity::ID];
+            $id = Entity::verifyIdAndStripSign($id);
 
-                $payout->setId($id);
-                $payout->setIsPayoutService(1);
+            $payout = new Payout\Entity;
 
-                $payout->payoutServiceResponse = $response;
+            $payout->setId($id);
+            $payout->setIsPayoutService(1);
 
-                return $payout;
-            }
+            $payout->payoutServiceResponse = $response;
+
+            return $payout;
+
         }
 
         return null;
