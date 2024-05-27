@@ -74,6 +74,7 @@ use RZP\Services\BankingAccountService;
  * @property Balance\Entity           $sharedBankingBalance
  * @property Balance\Entity           $directBankingBalances
  * @property Balance\Entity           $primaryBalance
+ * @property Balance\Entity           $directBankingBalance
  * @property Balance\Entity           $reservePrimaryBalance
  * @property Balance\Entity           $reserveBankingBalance
  * @property Base\Collection          $activeBankingAccounts
@@ -1698,6 +1699,13 @@ class Entity extends Base\PublicEntity
         return $this->hasOne(Balance\Entity::class)
                     ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
                     ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::SHARED);
+    }
+
+    public function directBankingBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+            ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
+            ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::DIRECT);
     }
 
     public function bankingBalances()

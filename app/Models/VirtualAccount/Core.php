@@ -309,6 +309,11 @@ class Core extends Base\Core
 
             $balance = $balance ?: $virtualAccount->merchant->primaryBalance;
 
+            if (($virtualAccount->merchant !== null) and $this->isCollectXMerchant($virtualAccount))
+            {
+                $balance = $virtualAccount->merchant->directBankingBalance;
+            }
+
             if (($balance !== null) and
                 ($balance->getType() !== Balance\Type::PRIMARY) and
                 ($input[Entity::RECEIVERS] === Receiver::OFFLINE_CHALLAN))
@@ -469,9 +474,14 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
+    private function isCollectXMerchant(Entity $virtualAccount)
+    {
+        return $virtualAccount->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true;
+    }
+
     protected function buildReceivers(Entity $virtualAccount, array $receivers)
     {
-        $virtualAccount->getValidator()->validateReceiversForBanking($receivers);
+        $virtualAccount->getValidator()->validateReceiversForBanking($receivers, $this->isCollectXMerchant($virtualAccount));
 
         $receiverHelper = $virtualAccount->getReceiverBuilder();
 

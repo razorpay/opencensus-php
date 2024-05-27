@@ -23,6 +23,18 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountForBankingWithVPAReceiver' => [
+        'name'            => 'Test virtual account',
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'description'     => 'VA for tests',
+        'receivers'  => [
+            [
+                'entity' => 'vpa'
+            ],
+        ],
+    ],
+
     'testCreateVirtualAccount401ForOrgMerchantFeatureFlag' => [
         'error' => [
             'code'          => "BAD_REQUEST_ERROR",

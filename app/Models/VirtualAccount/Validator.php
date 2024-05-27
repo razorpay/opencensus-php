@@ -240,7 +240,7 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function validateReceiversForBanking(array $receivers)
+    public function validateReceiversForBanking(array $receivers, $isCollectXMerchant = false)
     {
         /** @var Entity $virtualAccount */
         $virtualAccount = $this->entity;
@@ -251,8 +251,7 @@ class Validator extends Base\Validator
         }
 
         // Must only have types as [bank_account] for banking balance case.
-        if ((count($receivers[Entity::TYPES]) !== 1) or
-            ($receivers[Entity::TYPES][0] !== Receiver::BANK_ACCOUNT))
+        if ($isCollectXMerchant === false and ((count($receivers[Entity::TYPES]) !== 1) or ($receivers[Entity::TYPES][0] !== Receiver::BANK_ACCOUNT)))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Receiver of type bank_account must only exist',

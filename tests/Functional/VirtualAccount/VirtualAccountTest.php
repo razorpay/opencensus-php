@@ -365,6 +365,17 @@ class VirtualAccountTest extends TestCase
         $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
     }
 
+    public function testCreateVirtualAccountForBankingWithVPAReceiver()
+    {
+        $response = $this->createVirtualAccount(vpa: true);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+    }
+
     public function testCreateVirtualAccountWithQrCodeReceiver() {
 
         $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
