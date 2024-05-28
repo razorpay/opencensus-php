@@ -1,8 +1,13 @@
 import React from 'react';
-import { ChartComponentProps, Line } from 'react-chartjs-2';
 import { Theme, useTheme } from '@razorpay/blade/components';
+import { ChartComponentProps, Line } from 'react-chartjs-2';
 
-export const getTabbedChartOptions = (colors: Theme['colors']): ChartComponentProps['options'] => {
+import { TOOLTIP_CHART_CONFIG } from 'merchant/widgets/common/utils';
+
+export const getLineChartOptions = (
+  colors: Theme['colors'],
+  chartData: ChartComponentProps['data'],
+): ChartComponentProps['options'] => {
   return {
     maintainAspectRatio: false,
     responsive: true,
@@ -12,6 +17,10 @@ export const getTabbedChartOptions = (colors: Theme['colors']): ChartComponentPr
     elements: {
       line: {
         tension: 0.1,
+      },
+      point: {
+        radius: 0, // hide point on chart
+        hoverRadius: 4, // make the point bigger when user hovers
       },
     },
     scales: {
@@ -36,16 +45,25 @@ export const getTabbedChartOptions = (colors: Theme['colors']): ChartComponentPr
             fontColor: colors.surface.text.gray.subtle,
             display: false,
             beginAtZero: true,
+            callback: (value) => {
+              if (chartData) {
+                const dataset = chartData.datasets[0];
+                if (dataset) {
+                  const schemaY = dataset.schema.y;
+                  if (schemaY && schemaY.type === 'amount') {
+                    const currencySymbol = dataset.currency_symbol || '₹';
+                    return `${currencySymbol}${value}`;
+                  }
+                }
+              }
+              return value;
+            },
           },
           gridLines: {
             display: false,
           },
         },
       ],
-    },
-    tooltips: {
-      enabled: true,
-      position: 'nearest',
     },
     layout: {
       padding: {
@@ -55,6 +73,7 @@ export const getTabbedChartOptions = (colors: Theme['colors']): ChartComponentPr
         bottom: 0,
       },
     },
+    ...TOOLTIP_CHART_CONFIG,
   };
 };
 

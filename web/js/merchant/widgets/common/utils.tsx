@@ -1,4 +1,5 @@
 import { ArrowRightIcon, LinkProps } from '@razorpay/blade/components';
+import { CurrencyCodeType, convertToMajorUnit } from '@razorpay/i18nify-js';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { renderWidgetProps } from 'merchant/widgets/types';
 import {
@@ -6,8 +7,8 @@ import {
   inputKeyToComponentMapping,
 } from 'merchant/widgets/common/mapping';
 import { renderWidget } from 'merchant/widgets/utils';
-import { ChartDataType, ChartSchemaType, PointType } from './types';
-import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
+import { ChartDataType, ChartSchemaType, PointType, Dataset } from './types';
+import { currencySymbols } from 'common/utils/rzp-utils';
 import moment from 'moment';
 import { DateRangeValues } from './Select/types';
 import { BASE_ROUTES } from 'merchant/components/Sidebar';
@@ -104,7 +105,7 @@ export function formatXAxis(
 export function formatYAxis(point: PointType['y'], schema: ChartSchemaType['y']) {
   switch (schema.type) {
     case 'amount':
-      return i18CurrencyConversionFromMinorUnitToCommonUnit(point, schema.unit);
+      return convertToMajorUnit(point, { currency: schema.unit as CurrencyCodeType });
     case 'number':
       return point;
     default:
@@ -117,28 +118,43 @@ export const getChartData = (
   unit?: DateRangeValues,
 ): {
   labels: Array<string>;
-  datasets: Array<{
-    label: string;
-    data: Array<number>;
-    fill: boolean;
-    backgroundColor?: Array<string>;
-    borderWidth?: number;
-    borderColor?: string;
-  }>;
+  datasets: Array<Dataset>;
 } => {
   const labels = chartData.data[0].points.map((point) =>
     formatXAxis(point.x, chartData.schema.x, unit),
   );
-  const datasets = chartData.data.map((dataSet) => ({
+  const datasets: Array<Dataset> = chartData.data.map((dataSet) => ({
     label: dataSet.label,
     data: dataSet.points.map((point) => formatYAxis(point.y, chartData.schema.y)),
     fill: false,
+    schema: chartData.schema,
+    currency_symbol:
+      chartData.schema.y.type === 'amount' ? currencySymbols[chartData.schema.y.unit] : undefined,
   }));
 
   return {
     labels,
     datasets,
   };
+};
+
+export const TOOLTIP_CHART_CONFIG = {
+  tooltips: {
+    enabled: true,
+    position: 'nearest',
+    callbacks: {
+      label: (tooltipItem, data) => {
+        const dataset = data.datasets[tooltipItem.datasetIndex];
+        const schemaY = dataset.schema.y;
+        const value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+        if (schemaY.type === 'amount') {
+          const currencySymbol = dataset.currency_symbol || '₹';
+          return `${dataset.label}: ${currencySymbol}${value}`;
+        }
+        return `${dataset.label}: ${value}`;
+      },
+    },
+  },
 };
 
 function getTimestampFormat(unit?: DateRangeValues) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChartComponentProps, Doughnut } from 'react-chartjs-2';
 import { ChartDataType } from '../InsightItem/types';
+import { TOOLTIP_CHART_CONFIG } from 'merchant/widgets/common/utils';
 
 export const getOptions = (): ChartComponentProps['options'] => {
   return {
@@ -11,10 +12,6 @@ export const getOptions = (): ChartComponentProps['options'] => {
       position: 'left',
     },
     borderWidth: 0,
-    tooltips: {
-      enabled: true,
-      position: 'nearest',
-    },
     layout: {
       padding: {
         top: 5,
@@ -23,6 +20,7 @@ export const getOptions = (): ChartComponentProps['options'] => {
         bottom: 5,
       },
     },
+    ...TOOLTIP_CHART_CONFIG,
   };
 };
 

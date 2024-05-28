@@ -49,3 +49,14 @@ export interface ChartProps {
   chartData: ChartDataType;
   unit?: DateRangeValues;
 }
+
+export interface Dataset {
+  label: string;
+  data: Array<number>;
+  fill: boolean;
+  backgroundColor?: Array<string>;
+  borderWidth?: number;
+  borderColor?: string;
+  schema: ChartSchemaType;
+  currency_symbol: string | undefined;
+}
