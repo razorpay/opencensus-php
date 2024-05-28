@@ -9,11 +9,18 @@ import {
   PAYMENT_METHODS,
 } from 'merchant/views/Subscriptions/constants';
 
+// Set navigator languages based on currency for testing formatNumber from i18nify
+const langGetter = jest.spyOn(window.navigator, 'languages', 'get');
+
 describe('RL - Token Details Form', () => {
   const onBlurElement = jest.fn();
   const renderApp = (props) => {
     render(<App onBlurElement={onBlurElement} {...props} handleDateChange={() => {}} />);
   };
+
+  beforeEach(() => {
+    langGetter.mockReturnValue(['en-IN']);
+  });
 
   test('Should render all the card token fields', () => {
     renderApp({

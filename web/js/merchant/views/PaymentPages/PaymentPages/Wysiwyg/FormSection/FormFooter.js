@@ -1,11 +1,11 @@
 import React from 'react';
-import CreatorModal from './CreatorModal';
-import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditLayer';
-import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
 
-import { classList } from 'common/utils/rzp-utils';
+import Button from 'common/new-ui/Button';
+import Input from 'common/new-ui/Input';
 import { getCurrency } from 'common/ui/Amount';
+import { classList, getCurrencyConfig } from 'common/utils/rzp-utils';
+import CreatorModal from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/CreatorModal';
+import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditLayer';
 
 export default class FormFooter extends React.PureComponent {
   state = {
@@ -61,6 +61,26 @@ export default class FormFooter extends React.PureComponent {
 
   setRef = (el) => (this.formFooter = el);
 
+  /**
+   * Returns the pay button text, based on the currency
+   * INR -> 000.00
+   * BIF -> 000
+   * KWD -> 000.000
+   *
+   * @returns {string} The pay button text.
+   */
+  payButtonText = () => {
+    let amount = '000';
+    const { currency } = this.props;
+    const { decimals } = getCurrencyConfig(currency);
+
+    if (decimals) {
+      amount = `${amount}.${'0'.repeat(decimals)}`;
+    }
+
+    return amount;
+  };
+
   render() {
     const { currency, isListSorting, securityBrandingLogo } = this.props;
     const { isEditModalOpened, paymentButtonLabel, disableSubmit } = this.state;
@@ -72,7 +92,7 @@ export default class FormFooter extends React.PureComponent {
         <button class="btn btn-gradient">
           {isEditModalOpened ? paymentButtonLabel : this.props.paymentButtonLabel}{' '}
           <span style={{ marginLeft: 4 }}>
-            <b class="currency-symbol">{getCurrency(currency).symbol}</b> 000.00
+            <b class="currency-symbol">{getCurrency(currency).symbol}</b> {this.payButtonText()}
           </span>
         </button>
       </div>

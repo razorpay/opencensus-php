@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 import Input from 'common/new-ui/Input';
 
-import { isAmount, isEmail, isPhone, maxLength } from 'common/utils/validators';
+import { isEmail, isPhone, maxLength, validateAmount } from 'common/utils/validators';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import Popover from 'common/ui/Popover';
 
@@ -15,6 +15,8 @@ import {
   PopoverBodyText,
   validateMinAmount,
 } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/EditMinimumAmount';
+
+import { getAmountFieldPlaceholder } from 'common/utils/rzp-utils';
 
 const CustomInput = (props) => {
   return (
@@ -66,21 +68,14 @@ export default [
       {
         name: 'amount',
         type: 'tel',
-        placeholder: '0.00',
+        placeholder: function placeholder() {
+          return getAmountFieldPlaceholder(this.state?.dirty?.currency);
+        },
         required: true,
         autoFocus: true,
         labelClass: 'Input-label pb-8',
-        validator: (val) => {
-          if (!isAmount(val)) {
-            const decimal = val && val.split('.');
-
-            if (decimal.length == 2 && decimal[1].length > 2) {
-              return 'Enter upto 2 decimals';
-            } else {
-              return 'Invalid Amount';
-            }
-          }
-          return undefined;
+        validator: function validator(val) {
+          return validateAmount(val, undefined, this.state?.dirty?.currency);
         },
       },
     ],
@@ -95,7 +90,9 @@ export default [
     },
     {
       name: 'first_payment_min_amount',
-      placeholder: '0.00',
+      placeholder: function placeholder() {
+        return getAmountFieldPlaceholder(this.state?.dirty?.currency);
+      },
       size: 'half_big',
       _autoRenderImpure: true,
       _cmp: CustomInput,

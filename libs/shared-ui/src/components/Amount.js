@@ -12,37 +12,14 @@ import { analyticsTrack } from '@dashboard/shared-utils/analytics';
 import useViewport, { ViewportProvider } from '../hooks/useViewPort';
 import Popover, { PopoverBody } from './Popover';
 
-const currencies = {
-  INR: {
-    name: 'Indian Rupee',
-    symbol: '₹',
-  },
-  USD: {
-    name: 'US Dollar',
-    symbol: '$',
-  },
-  SGD: {
-    name: 'Singapore Dollar',
-    symbol: 'S$',
-  },
-  EUR: {
-    name: 'Euro',
-    symbol: '€',
-  },
-  MYR: {
-    name: 'Malaysian Ringgit',
-    symbol: 'RM',
-  },
-};
-
 const RTL_CURRENCIES = ['BHD', 'KWD', 'OMR'];
 
 export function getCurrency(currencyISO) {
   return window.currencyList?.[currencyISO] || {};
 }
 
-export function getCurrencySymbol(currency) {
-  let currencySymbol = currencies[currency] ? currencies[currency].symbol : currency;
+export function getCurrencySymbol(currency = 'INR') {
+  let currencySymbol = i18nifyGetCurrencySymbol(currency);
 
   if (window.currencyList && window.currencyList[currency]) {
     currencySymbol = window.currencyList[currency].symbol;

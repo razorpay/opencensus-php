@@ -184,7 +184,7 @@ describe('Tests for validateAmount', () => {
 
   test('function should handle different input types gracefully', () => {
     expect(validateAmount(123.123, 100, 'INR')).toBe(
-      'Amount must be a number in the format 123.45',
+      'Amount in selected currency must have upto 2 decimal places',
     );
 
     expect(validateAmount(123.12, 100, 'INR')).toBe(undefined);
@@ -192,7 +192,7 @@ describe('Tests for validateAmount', () => {
 
   test('function should return error when amount is invalid', () => {
     expect(validateAmount('123.123', 100, 'INR')).toBe(
-      'Amount must be a number in the format 123.45',
+      'Amount in selected currency must have upto 2 decimal places',
     );
 
     expect(validateAmount('1,123.123', 100, 'INR')).toBe(
@@ -206,13 +206,13 @@ describe('Tests for validateAmount', () => {
 
   test('function should return error when currency is KWD and amount is greater than 3 decimal', () => {
     expect(validateAmount('123.1234', 100, 'KWD')).toBe(
-      'Amount must be a number in the format 123.450',
+      'Amount in selected currency must have upto 3 decimal places',
     );
   });
 
   test('function should return error when currency is INR and amount is greater than 2 decimal', () => {
     expect(validateAmount('123.1234', 100, 'INR')).toBe(
-      'Amount must be a number in the format 123.45',
+      'Amount in selected currency must have upto 2 decimal places',
     );
   });
 

@@ -457,7 +457,7 @@ describe('RefundModal', () => {
       });
       await userEvent.click(issueRefund);
       expect(
-        screen.getByText('Amount can only be a Number with atmost 2 decimal places.'),
+        screen.getByText('Amount in selected currency must have upto 2 decimal places'),
       ).toBeInTheDocument();
     });
   });

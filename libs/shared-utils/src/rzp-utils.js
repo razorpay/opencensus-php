@@ -14,8 +14,11 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable no-use-before-define */
 /* eslint-disable prefer-const */
-
-import { formatNumberByParts, convertToMajorUnit } from '@razorpay/i18nify-js/currency';
+import {
+  formatNumberByParts,
+  convertToMajorUnit,
+  getCurrencyList,
+} from '@razorpay/i18nify-js/currency';
 import moment from 'moment';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
@@ -24,7 +27,6 @@ import isEmpty from 'lodash/isEmpty';
 import { SENSITIVE_FIELDS } from './constants';
 import { acronyms, shortenText } from './acronyms';
 import currencies from './constants/currency';
-import { CURRENCY_FORMATTERS } from './currency';
 import abExperimentsMap from './abExperimentsMap';
 
 moment.updateLocale('en', {
@@ -315,9 +317,25 @@ export const getSplitzExperimentVariant = (experimentName) => {
   return splitzExperimentVariant || {};
 };
 
-//This will be removed once experiment is ramped to 100%
-export const isNExponentSupported = () =>
-  getSplitzExperimentVariant('n_exponent_support').variables?.result === 'on';
+/**
+ * Formats the given amount with the specified currency.
+ * @example
+ * formatCurrencyWithAmount('INR', 1000) // ₹10.00
+ *
+ * @param {string} currency - The currency symbol or code.
+ * @param {number} amount - The amount to be formatted.
+ * @returns {string} The formatted currency amount.
+ */
+export const formatCurrencyWithAmount = (currency, amount) => {
+  const formatted = formatNumberByParts(amount, { currency: currency ?? 'INR' });
+  let formattedStr = formatted?.integer + '';
+
+  if (formatted?.decimal + formatted?.fraction) {
+    formattedStr += formatted?.decimal + formatted?.fraction;
+  }
+
+  return formattedStr;
+};
 
 /**
  * This function returns decimals and formatter for the currency passed
@@ -329,14 +347,12 @@ export const isNExponentSupported = () =>
  * @returns {Object}
  */
 export const getCurrencyConfig = (currency = 'INR') => {
-  if (isNExponentSupported()) {
-    const currencyList = window.currencyList || currencies;
-    const denomination = currencyList[currency]?.denomination || currencies.default.denomination;
-    const formatter = currencyList[currency]?.format || currencies.default.format;
-    return { decimals: denomination.toString().length - 1, formatter };
-  } else {
-    return { decimals: 2, formatter: CURRENCY_FORMATTERS.inr };
-  }
+  const currencyList = window.currencyList;
+  const denomination = currencyList[currency]?.denomination?.toString().length - 1;
+  return {
+    decimals: denomination || Number(getCurrencyList()[currency].minor_unit),
+    formatter: formatCurrencyWithAmount.bind(null, currency),
+  };
 };
 
 /**
@@ -377,11 +393,8 @@ export const getFormattedAmountByParts = (amount, currency = 'INR') => {
 
 // following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
 export const getFormattedAmount = (amount, currency = 'INR') => {
-  if (isNExponentSupported()) {
-    const { decimals, formatter } = getCurrencyConfig(currency);
-    return formatter((amount / 10 ** decimals).toFixed(decimals), decimals);
-  }
-  return (amount / 100).toFixed(2).replace(numberFormatRegex, '$1,');
+  const { decimals, formatter } = getCurrencyConfig(currency);
+  return formatter((amount / 10 ** decimals).toFixed(decimals));
 };
 
 /**

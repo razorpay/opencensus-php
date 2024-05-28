@@ -1,7 +1,7 @@
 import { Component, Fragment } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import moment from 'moment';
 import PropTypes from 'prop-types';
-import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { compose, bindActionCreators } from 'redux';
@@ -20,8 +20,8 @@ import {
   getCommonAnalyticsProperties,
   i18CurrencyConversionFromMinorUnitToCommonUnit,
   i18CurrencyConversionFromCommonUnitToMinorUnit,
-  getCurrencyConfig,
 } from 'common/utils/rzp-utils';
+import { validateAmount } from 'common/utils/validators';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import {
   refundPayment,
@@ -54,8 +54,6 @@ export const isPartialPayment = (props) => {
 export const amountValidation = (props) => {
   const value = props.payable_amount || '';
   const currency = props.payment?.currency || 'INR';
-  const decimalPart = value.toString()?.split('.')[1] ?? '';
-  const { decimals } = getCurrencyConfig(currency);
 
   if (!value) {
     return 'Amount is required';
@@ -65,16 +63,10 @@ export const amountValidation = (props) => {
     return `Amount can't be less than 1`;
   }
 
-  if (isNaN(value) || decimalPart.length > decimals) {
-    return `Amount can only be a Number with atmost ${decimals} decimal places.`;
-  }
+  const amountError = validateAmount(value, null, currency);
 
-  if (decimals === 3 && decimalPart.length === 3 && decimalPart[2] != 0) {
-    return 'Last digit should be 0 for three decimal currencies';
-  }
-
-  if (value < 0) {
-    return `Amount can't be negative.`;
+  if (amountError) {
+    return amountError;
   }
 
   const refundableAmount = props.payment.amount - props.payment.amount_refunded;
@@ -135,8 +127,9 @@ class RefundModal extends Component {
   };
 
   componentDidUpdate(prevProps) {
-    const current_payable_amount = rupeesToPaise(this.props.payable_amount);
-    const prev_payable_amount = rupeesToPaise(prevProps.payable_amount);
+    const { payment, payable_amount } = this.props;
+    const current_payable_amount = rupeesToPaise(payable_amount, payment.currency);
+    const prev_payable_amount = rupeesToPaise(prevProps.payable_amount, payment.currency);
     if (
       current_payable_amount &&
       current_payable_amount !== prev_payable_amount &&
@@ -408,55 +401,58 @@ class RefundModal extends Component {
     });
     // If instant_refund is checked
     if ((props.instant_refund || this.state.instantChecked) && Number(props.amount) >= 1) {
-      this.props.fetchRefundFee(this.props.payment, rupeesToPaise(props.amount)).then(() => {
-        this.context
-          .confirm({
-            header: 'Do you want to refund this payment?',
-            message: () => (
-              <div class="confirm-note">
-                The payment will be instantly refunded &nbsp;
-                <span>
-                  <i class="i i-help" />
-                  <PopoverComponent
-                    theme="dark"
-                    align="bottom"
-                    parentQuerySelector=".Modal--confirm"
-                  >
-                    <PopoverBody>
-                      <div>
-                        If the instant refund is unsuccessful, the fee will be reversed. The payment
-                        will still be refunded in 5-7 days.
-                      </div>
-                    </PopoverBody>
-                  </PopoverComponent>
-                </span>
-              </div>
-            ),
-            affirmativeLabel: 'Yes, Refund',
-            affirmativePendingLabel: 'Refunding...',
-            abortLabel: "No, don't!",
-            action: () => {
-              window.rzpAnalytics?.({
-                eventCategory: 'Dashboard - Payments',
-                eventAction: 'Refund - Payment',
-                eventLabel: `payment_id=${this.props.payment.id}`,
-                speed_requested: 'optimum',
-              });
+      const { currency } = this.props.payment;
+      this.props
+        .fetchRefundFee(this.props.payment, rupeesToPaise(props.amount, currency))
+        .then(() => {
+          this.context
+            .confirm({
+              header: 'Do you want to refund this payment?',
+              message: () => (
+                <div class="confirm-note">
+                  The payment will be instantly refunded &nbsp;
+                  <span>
+                    <i class="i i-help" />
+                    <PopoverComponent
+                      theme="dark"
+                      align="bottom"
+                      parentQuerySelector=".Modal--confirm"
+                    >
+                      <PopoverBody>
+                        <div>
+                          If the instant refund is unsuccessful, the fee will be reversed. The
+                          payment will still be refunded in 5-7 days.
+                        </div>
+                      </PopoverBody>
+                    </PopoverComponent>
+                  </span>
+                </div>
+              ),
+              affirmativeLabel: 'Yes, Refund',
+              affirmativePendingLabel: 'Refunding...',
+              abortLabel: "No, don't!",
+              action: () => {
+                window.rzpAnalytics?.({
+                  eventCategory: 'Dashboard - Payments',
+                  eventAction: 'Refund - Payment',
+                  eventLabel: `payment_id=${this.props.payment.id}`,
+                  speed_requested: 'optimum',
+                });
 
-              this.refund('optimum', props, partial);
-            },
-          })
-          .catch(
-            /* istanbul ignore next */ () => {
-              window.rzpAnalytics?.({
-                eventCategory: 'Dashboard - Payments',
-                eventAction: 'Click - Cancel Refund',
-                eventLabel: `payment_id=${this.props.payment.id}`,
-                speed_requested: 'optimum',
-              });
-            },
-          );
-      });
+                this.refund('optimum', props, partial);
+              },
+            })
+            .catch(
+              /* istanbul ignore next */ () => {
+                window.rzpAnalytics?.({
+                  eventCategory: 'Dashboard - Payments',
+                  eventAction: 'Click - Cancel Refund',
+                  eventLabel: `payment_id=${this.props.payment.id}`,
+                  speed_requested: 'optimum',
+                });
+              },
+            );
+        });
     } else {
       this.context
         .confirm({
@@ -509,7 +505,7 @@ class RefundModal extends Component {
     const merchant = user?.merchants[user.current] || {};
     const isBalanceSource = merchant?.refund_source === 'balance';
 
-    const amount = rupeesToPaise(payable_amount);
+    const amount = rupeesToPaise(payable_amount, payment.currency);
     let balance = isBalanceSource ? data?.balance : data?.refund_credits;
 
     if (user?.isRefundCreditSelfServeEnabled && user?.isRefundSourceFallbackEnabled) {
@@ -672,7 +668,10 @@ class RefundModal extends Component {
                   A total amount of &nbsp;
                   <Amount
                     parentQuerySelector=".Modal--small"
-                    value={rupeesToPaise(this.props.payable_amount) + this.state.instant_fee.fee}
+                    value={
+                      rupeesToPaise(this.props.payable_amount, this.props.payment.currency) +
+                      this.state.instant_fee.fee
+                    }
                     currency={payment.currency}
                   />
                   &nbsp; will be deducted
@@ -706,7 +705,10 @@ class RefundModal extends Component {
                             <div class="w50 text-left">Refund Amount</div>
                             <div class="w50 text-right">
                               <Amount
-                                value={rupeesToPaise(this.props.payable_amount)}
+                                value={rupeesToPaise(
+                                  this.props.payable_amount,
+                                  this.props.payment.currency,
+                                )}
                                 currency={payment.currency}
                               />
                             </div>
@@ -747,7 +749,10 @@ class RefundModal extends Component {
                                 <Amount
                                   value={
                                     this.state.instant_fee.fee +
-                                    rupeesToPaise(this.props.payable_amount)
+                                    rupeesToPaise(
+                                      this.props.payable_amount,
+                                      this.props.payment.currency,
+                                    )
                                   }
                                   currency={payment.currency}
                                 />
@@ -769,7 +774,10 @@ class RefundModal extends Component {
 
   getRefundFee = () => {
     return this.props
-      .fetchRefundFee(this.props.payment, rupeesToPaise(this.props.payable_amount))
+      .fetchRefundFee(
+        this.props.payment,
+        rupeesToPaise(this.props.payable_amount, this.props.payment.currency),
+      )
       .then((d) => {
         this.setState({ instant_fee: d.data });
       });

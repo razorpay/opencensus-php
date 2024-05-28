@@ -8,7 +8,11 @@ import Input from 'common/new-ui/Input';
 import { getCurrency } from 'common/ui/Amount';
 import ModalHeader from 'common/ui/ModalHeader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { classList, i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
+import {
+  classList,
+  getAmountFieldPlaceholder,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+} from 'common/utils/rzp-utils';
 import { validateAmount } from 'common/utils/validators';
 import {
   isMandatoryToBool,
@@ -168,7 +172,7 @@ export default class BaseForm extends React.PureComponent {
       ? isBatchPaymentPages
         ? BATCH_UPLOAD_MSG
         : FILLED_BY_CUSTOMER
-      : '0.00';
+      : getAmountFieldPlaceholder(currency);
 
     const minAmountAllowed = isDisabled
       ? ''

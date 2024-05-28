@@ -1,7 +1,8 @@
 import React from 'react';
+
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
-import { titleCase, getFormattedAmount } from 'common/utils/rzp-utils';
+import { titleCase, getFormattedAmountWithSymbol } from 'common/utils/rzp-utils';
 import {
   trackDetailsCopy,
   trackDetailsClick,
@@ -412,7 +413,8 @@ export const getRefundsOverviewDetails = (paymentRefundDetails) => {
     const createdAt = getTime(refund.created_at).join(', ');
     return (
       <Text color="surface.text.gray.normal" weight="semibold" size="small">
-        Refund of ₹{getFormattedAmount(refund.amount, refund.currency)}issued on{createdAt}
+        Refund of {getFormattedAmountWithSymbol(refund.amount, refund.currency)} issued on{' '}
+        {createdAt}
       </Text>
     );
   } else {
@@ -432,38 +434,38 @@ export const getDisputesOverviewDetails = (paymentDetails, viewDisputeCallback) 
   if (disputes.length === 1) {
     const dispute = disputes[0];
     const createdAt = getTime(dispute.created_at).join(', ');
-    let info = `Refund of ₹${getFormattedAmount(
+    let info = `Refund of ${getFormattedAmountWithSymbol(
       dispute.amount,
       dispute.currency,
     )} issued on ${createdAt}`;
 
     switch (dispute.status) {
       case 'open':
-        info = `Dispute of ₹${getFormattedAmount(
+        info = `Dispute of ${getFormattedAmountWithSymbol(
           dispute.amount,
           dispute.currency,
         )} initiated by the issusing bank.`;
         break;
       case 'closed':
-        info = `Dispute of ₹${getFormattedAmount(
+        info = `Dispute of ${getFormattedAmountWithSymbol(
           dispute.amount,
           dispute.currency,
         )} has been closed`;
         break;
       case 'won':
-        info = `You've won the chargeback for contesting dispute of ₹${getFormattedAmount(
+        info = `You've won the chargeback for contesting dispute of ${getFormattedAmountWithSymbol(
           dispute.amount,
           dispute.currency,
         )}.`;
         break;
       case 'lost':
-        info = `You've lost the chargeback for contesting dispute of ₹${getFormattedAmount(
+        info = `You've lost the chargeback for contesting dispute of ${getFormattedAmountWithSymbol(
           dispute.amount,
           dispute.currency,
         )}. The amount is being refunded to the customer`;
         break;
       case 'under_review':
-        info = `Your documents are under review for contesting dispute of ₹${getFormattedAmount(
+        info = `Your documents are under review for contesting dispute of ${getFormattedAmountWithSymbol(
           dispute.amount,
           dispute.currency,
         )}.`;

@@ -1,8 +1,8 @@
 import Input from 'common/new-ui/Input';
+import { getAmountFieldPlaceholder } from 'common/utils/rzp-utils';
 import { validateAmount } from 'common/utils/validators';
-
-import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 import { FORM_CLASS_NAME } from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/FormWizard';
+import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 
 const Amount = (props) => {
   const { defaultCurrency, defaultAmount, disableCurrencySelect, disabled } = props;
@@ -27,7 +27,7 @@ const Amount = (props) => {
           autoRender
           required
           name="amount"
-          placeholder="0.00"
+          placeholder={getAmountFieldPlaceholder(defaultCurrency)}
           defaultValue={defaultAmount}
           validator={(value) => amountValidator(value, defaultCurrency)}
           onBlur={callTrackers(props)}

@@ -19,6 +19,28 @@ export const currencyList = {
   },
 };
 
+export const ZERO_EXPONENT_CURRENCIES = [
+  'BIF',
+  'CLP',
+  'DJF',
+  'GNF',
+  'ISK',
+  'JPY',
+  'KMF',
+  'KRW',
+  'PYG',
+  'RWF',
+  'UGX',
+  'VUV',
+  'XAF',
+  'XOF',
+  'XPF',
+];
+
+export const THREE_EXPONENT_CURRENCIES = ['KWD', 'OMR', 'BHD'];
+
+export const TWO_EXPONENT_CURRENCIES = ['INR', 'USD', 'GBP', 'CAD', 'AUD', 'NZD', 'MYR'];
+
 export const getSplitzExperiments = (experimentIds, result = 'on') => {
   return experimentIds.reduce((prev, current) => {
     prev[current] = {

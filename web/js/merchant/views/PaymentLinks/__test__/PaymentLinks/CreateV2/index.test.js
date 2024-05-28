@@ -138,7 +138,7 @@ describe('Payment Link Create V2 Unit Test', () => {
     expect(screen.getByText('Customer Details')).toBeInTheDocument();
     expect(screen.getByText('Send auto reminders')).toBeInTheDocument();
     // create payment link
-    const amount = screen.getByPlaceholderText('0.00');
+    const amount = screen.getByPlaceholderText('100.00');
     expect(amount).toBeInTheDocument();
     await userEvent.type(amount, '200');
     const createPLCTA = screen.getByRole('button', {
@@ -227,7 +227,7 @@ describe('Payment Link Create V2 Unit Test', () => {
     await waitForLoadingToFinish();
 
     // create payment link
-    await userEvent.type(screen.getByPlaceholderText('0.00'), '200');
+    await userEvent.type(screen.getByPlaceholderText('100.00'), '200');
     await userEvent.click(screen.getByRole('button', { name: /Create Payment Link/i }));
 
     expect(apiHelpers.createPaymentLinkV2).toHaveBeenCalledWith({
@@ -247,7 +247,7 @@ describe('Payment Link Create V2 Unit Test', () => {
     await userEvent.click(screen.getAllByText('Create Now')[0]);
 
     // Fill amount field.
-    await userEvent.type(screen.getByPlaceholderText('0.00'), '1');
+    await userEvent.type(screen.getByPlaceholderText('100.00'), '1');
     // Fill payment description.
     await userEvent.type(
       screen.getByPlaceholderText('Payment description'),
@@ -309,7 +309,7 @@ describe('Payment Link Create V2 Unit Test', () => {
     await userEvent.click(screen.getAllByText('Create Now')[0]);
 
     // Fill amount field.
-    await userEvent.type(screen.getByPlaceholderText('0.00'), '400');
+    await userEvent.type(screen.getByPlaceholderText('100.00'), '400');
     // Fill account number field.
     await userEvent.type(screen.getByPlaceholderText('Account Number'), 'test_account_number');
     // Fill reference id field.

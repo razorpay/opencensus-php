@@ -130,6 +130,14 @@ function WizardFields(field) {
     isComponentDisabled = true;
   }
 
+  if (typeof rest.placeholder === 'function') {
+    rest.placeholder = rest.placeholder.call(this);
+  }
+
+  if (typeof rest.validator === 'function') {
+    rest.validator = rest.validator.bind(this);
+  }
+
   let isRequired = required;
   if (typeof isRequired === 'function') {
     isRequired = isRequired(this);

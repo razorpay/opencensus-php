@@ -309,15 +309,26 @@ export function validateAmount(val, minAmountAllowed, currency = 'INR') {
   if (val) {
     const { decimals } = getCurrencyConfig(currency);
     const decimalPart = val?.toString()?.split('.')?.[1] ?? '';
-    const amountPattern = `^[0-9]+(.([0-9]){1,${decimals}})?$`;
-    const regex = new RegExp(amountPattern);
+    const value = Number(val);
+
     const validPattern = 123.45;
 
-    if (!regex.test(Number(val))) {
+    // Validate input is of number type
+    if (isNaN(value)) {
       return `Amount must be a number in the format ${validPattern.toFixed(decimals)}`;
     }
 
-    if (typeof minAmountAllowed !== 'undefined' && Number(val) < Number(minAmountAllowed)) {
+    if (value < 0) {
+      return "Amount can't be negative.";
+    }
+
+    if (decimalPart.length > decimals) {
+      return decimals === 0
+        ? 'Amount in selected currency must not have any decimal places'
+        : `Amount in selected currency must have upto ${decimals} decimal places`;
+    }
+
+    if (typeof minAmountAllowed !== 'undefined' && value < Number(minAmountAllowed)) {
       return `Amount must be at least ${minAmountAllowed}`;
     }
 

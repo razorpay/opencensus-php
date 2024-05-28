@@ -14,6 +14,7 @@ import {
   getEventCategoryFromPath,
   getURLQueryParams,
   paiseToRupees,
+  getAmountFieldPlaceholder,
 } from 'common/utils/rzp-utils';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { required, validateAmount } from 'common/utils/validators';
@@ -306,7 +307,7 @@ class NewPlan extends Component {
                         required('Billing amount is required'),
                         (value) => validateAmount(value, null, currency),
                       ]}
-                      placeholder="0.00"
+                      placeholder={getAmountFieldPlaceholder(currency)}
                       onBlur={() => analytics.track('plan.create.amount', this.cloneOptions)}
                     />
                     <span class="help-block label--secondary">

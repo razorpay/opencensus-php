@@ -1,3 +1,6 @@
+import FileSaver from 'file-saver';
+import xlsx from 'xlsx';
+
 import {
   convertToLocale,
   exportFileAsExcel,
@@ -10,15 +13,24 @@ import {
   mergeCurrencyFormatting,
   openTicketModal,
   stringTemplate,
+  getAmountFieldPlaceholder,
   isConfigTagAPISupported,
 } from 'common/utils/rzp-utils';
-import FileSaver from 'file-saver';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
-import xlsx from 'xlsx';
-import { currencyList, getSplitzExperiments } from './mocks/fixtures';
+
+import {
+  currencyList,
+  getSplitzExperiments,
+  ZERO_EXPONENT_CURRENCIES,
+  TWO_EXPONENT_CURRENCIES,
+  THREE_EXPONENT_CURRENCIES,
+} from './mocks/fixtures';
 
 const saveAsSpy = jest.spyOn(FileSaver, 'saveAs');
 const writeSpy = jest.spyOn(xlsx, 'write');
+
+// Set navigator languages based on currency for testing formatNumber from i18nify
+const langGetter = jest.spyOn(window.navigator, 'languages', 'get');
 
 describe('test for getCurrentFinancialYear', () => {
   it('should return correct financial year for 31st march', () => {
@@ -53,9 +65,10 @@ describe('Tests for currency formatting', () => {
   });
 
   test('getCurrencyConfig should refer to INR when no currency is passed', () => {
+    langGetter.mockReturnValue(['en-IN', 'en']);
     const { decimals, formatter } = getCurrencyConfig();
     expect(decimals).toBe(2);
-    expect(formatter('1234567.12', decimals)).toBe('12,34,567.12');
+    expect(formatter('1234567.12')).toBe('12,34,567.12');
   });
 
   test('getCurrencyConfig should refer to local currency list when window.currencyList is undefined', () => {
@@ -64,19 +77,21 @@ describe('Tests for currency formatting', () => {
   });
 
   test('getCurrencyConfig should return decimals as 2 and default formatting if Currency is not found in the list', () => {
+    langGetter.mockReturnValue(['en-US', 'en']);
     const { decimals, formatter } = getCurrencyConfig('ABC');
     expect(decimals).toBe(2);
-    expect(formatter(1234567.12, decimals)).toBe('1,234,567.12');
+    expect(formatter(1234567.12)).toBe('1,234,567.12');
   });
 
   test('getCurrencyConfig should return default formatting function if formatting is not present for a currency', () => {
-    const { decimals, formatter } = getCurrencyConfig('USD');
-    expect(formatter(1000000.12, decimals)).toBe('1,000,000.12');
+    const { formatter } = getCurrencyConfig('USD');
+    expect(formatter(1000000.12)).toBe('1,000,000.12');
   });
 
   test('getCurrencyConfig should return specific formatting function if formatting is present for a currency', () => {
-    const { decimals, formatter } = getCurrencyConfig('INR');
-    expect(formatter(1000000.12, decimals)).toBe('10,00,000.12');
+    langGetter.mockReturnValue(['en-IN', 'en']);
+    const { formatter } = getCurrencyConfig('INR');
+    expect(formatter(1000000.12)).toBe('10,00,000.12');
   });
 
   test('getFormattedAmount should return value with correct formatting if only amount is passed', () => {
@@ -96,7 +111,8 @@ describe('Tests for currency formatting', () => {
   });
 
   test('getFormattedAmount should return value with correct formatting for currencies with specific format', () => {
-    expect(getFormattedAmount(1111111, 'AUD')).toBe('11 111.11');
+    langGetter.mockReturnValue(['en-AU', 'en']);
+    expect(getFormattedAmount(111111111, 'AUD')).toBe('1,111,111.11');
   });
 
   test('getFormattedAmount should return value with default formatting if no formatting is associated with a currency', () => {
@@ -220,7 +236,7 @@ describe('Tests for unit conversion', () => {
   });
 
   test('i18CurrencyConversionFromCommonUnitToMinorUnit should return correct conversion when 2 decimal currency is passed', () => {
-    expect(i18CurrencyConversionFromCommonUnitToMinorUnit(100.123, 'INR')).toBe(10012);
+    expect(i18CurrencyConversionFromCommonUnitToMinorUnit(100.12, 'INR')).toBe(10012);
   });
 
   test('i18CurrencyConversionFromCommonUnitToMinorUnit should return correct conversion when 3 decimal currency is passed', () => {
@@ -357,6 +373,28 @@ describe('Test for convertToLocale function', () => {
       expect(result).toBe(formattedAmount);
     });
   }
+});
+
+describe('Test getAmountFieldPlaceholder', () => {
+  langGetter.mockReturnValue(['en-IN', 'en']);
+
+  ZERO_EXPONENT_CURRENCIES.forEach((currency) => {
+    test(`should return 100 placeholder text for ${currency}`, () => {
+      expect(getAmountFieldPlaceholder(currency)).toBe('100');
+    });
+  });
+
+  TWO_EXPONENT_CURRENCIES.forEach((currency) => {
+    test(`should return 100.00 placeholder text for ${currency}`, () => {
+      expect(getAmountFieldPlaceholder(currency)).toBe('100.00');
+    });
+  });
+
+  THREE_EXPONENT_CURRENCIES.forEach((currency) => {
+    test(`should return 100.000 placeholder text for ${currency}`, () => {
+      expect(getAmountFieldPlaceholder(currency)).toBe('100.000');
+    });
+  });
 });
 
 describe('Tests for isConfigTagAPISupported', () => {

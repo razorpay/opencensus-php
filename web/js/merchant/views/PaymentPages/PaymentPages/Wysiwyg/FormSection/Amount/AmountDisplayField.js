@@ -1,19 +1,19 @@
+import { formatNumberByParts, getCurrencySymbol } from '@razorpay/i18nify-js/currency';
 import { sortableHandle } from 'react-sortable-hoc';
-import { classList, getCurrencyConfig } from 'common/utils/rzp-utils';
 
-import CreatorManager from './CreatorManager';
-import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditLayer';
-
+import { classList } from 'common/utils/rzp-utils';
 import {
   mapFieldToAmountFieldType,
   isMandatoryToBool,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
-import { getCurrency } from 'common/ui/Amount';
+import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditLayer';
 import {
   BATCH_UPLOAD_MSG,
   FILLED_BY_CUSTOMER,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
+
+import CreatorManager from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/CreatorManager';
 
 const DragHandle = sortableHandle(() => (
   <span class="dragHandle">
@@ -34,13 +34,18 @@ const displayField = ({
   const fieldType = mapFieldToAmountFieldType(field, countryCode);
   let addOnAfter;
 
-  const amountDisplay =
-    field.item.amount && Number(field.item.amount).toFixed(getCurrencyConfig(currency).decimals);
+  const amountDisplay = field.item.amount && formatNumberByParts(field.item.amount, { currency });
 
   let fieldEl = amountDisplay && (
     <div class="Field-el">
       <label>
-        <b>{amountDisplay.split('.')[0]}</b>.{amountDisplay.split('.')[1]}
+        <b>{amountDisplay.integer}</b>
+        {amountDisplay.decimal && amountDisplay.fraction && (
+          <span>
+            {amountDisplay.decimal}
+            {amountDisplay.fraction}
+          </span>
+        )}
       </label>
     </div>
   );
@@ -102,7 +107,7 @@ const displayField = ({
       break;
   }
 
-  const currencySymbol = getCurrency(currency).symbol;
+  const currencySymbol = getCurrencySymbol(currency);
 
   return (
     <EditLayer

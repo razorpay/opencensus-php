@@ -51,7 +51,7 @@ describe('[Component] Amount', () => {
       renderApp();
 
       // Get the amount input field and trigger the onBlur event
-      const input = screen.getByPlaceholderText('0.00');
+      const input = screen.getByPlaceholderText('100.00');
       fireEvent.blur(input);
 
       // Verify that track.lj.fields.amount is called with the correct arguments
