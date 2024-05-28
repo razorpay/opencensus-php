@@ -1,10 +1,19 @@
 import React from 'react';
+import {
+  Box,
+  TableBody,
+  Table,
+  TableHeader,
+  TableHeaderRow,
+  TableHeaderCell,
+  TableRow,
+  TableCell,
+} from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import ListContainer from 'merchant/containers/ListContainer';
+
 import { withRouter } from 'common/deprecated/withRouter';
-import EmptyList from 'merchant/components/EmptyList';
-import DataTable from 'common/ui/Table/DataTable';
-import { fetchOffers as fetchAll } from 'merchant/reducers/offers/offersList';
+import Pager from 'common/ui/Pager';
+import Spinner from 'common/ui/Spinner';
 import {
   offerId,
   OfferIdWithoutLink,
@@ -16,19 +25,11 @@ import {
   endsOn,
 } from 'common/ui/item/pair';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchOffers as fetchAll } from 'merchant/reducers/offers/offersList';
+
 import { isOfferIdClickable } from './utils';
-
-const EmptyComponent = () => (
-  <EmptyList
-    description={
-      <React.Fragment>
-        <div>There are no offers yet!!</div>
-        <div>Start creating new offers now.</div>
-      </React.Fragment>
-    }
-  />
-);
-
 const _offerId = {
   title: offerId.title,
   value: (item) => {
@@ -51,25 +52,82 @@ const _offerId = {
 
 class OffersList extends ListContainer {
   render() {
-    const { user } = this.props;
+    const { user, loading, items, skip, count, hasMoreData = true } = this.props;
+    const offerListColumns = [
+      isOfferIdClickable(user) ? _offerId : OfferIdWithoutLink,
+      offerTitle,
+      promotionType,
+      paymentMethod,
+      startOn,
+      endsOn,
+      offerStatus,
+    ];
+    const tableData = {
+      nodes: items ?? [],
+    };
+
     return (
-      <DataTable
-        title="Offers"
-        columns={[
-          isOfferIdClickable(user) ? _offerId : OfferIdWithoutLink,
-          offerTitle,
-          promotionType,
-          paymentMethod,
-          startOn,
-          endsOn,
-          offerStatus,
-        ]}
-        count={this.state.count}
-        skip={this.state.skip}
-        paginate={this.paginate}
-        {...this.props}
-        EmptyComponent={EmptyComponent}
-      />
+      <div className="content">
+        {loading ? (
+          <div className="page-spinner-container">
+            <Spinner center={undefined} />
+          </div>
+        ) : Array.isArray(tableData.nodes) && tableData.nodes.length > 0 ? (
+          <>
+            <Table
+              data={tableData}
+              showStripedRows={true}
+              gridTemplateColumns={`repeat(${offerListColumns.length}, minmax(auto, 1fr))`}
+            >
+              {(offerItems) => {
+                return (
+                  <>
+                    <TableHeader>
+                      <TableHeaderRow>
+                        {offerListColumns.map(({ title }) => (
+                          <TableHeaderCell key={title}>{title}</TableHeaderCell>
+                        ))}
+                      </TableHeaderRow>
+                    </TableHeader>
+                    <TableBody>
+                      {offerItems.map((order, index) => (
+                        <TableRow key={index} item={order}>
+                          {offerListColumns.map(({ title, value }) => (
+                            <TableCell key={title}>{value(order)}</TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </>
+                );
+              }}
+            </Table>
+            <Box>
+              {this.paginate && (
+                <Pager
+                  count={count}
+                  skip={skip}
+                  length={items.length}
+                  onClick={this.paginate}
+                  hasMoreData={hasMoreData}
+                />
+              )}
+            </Box>
+          </>
+        ) : (
+          <Box display="flex" alignItems="center" justifyContent="center">
+            <EmptyListWithTableRow
+              colSpan={8}
+              description={
+                <React.Fragment>
+                  <div>There are no offers yet!!</div>
+                  <div>Start creating new offers now.</div>
+                </React.Fragment>
+              }
+            />
+          </Box>
+        )}
+      </div>
     );
   }
 }

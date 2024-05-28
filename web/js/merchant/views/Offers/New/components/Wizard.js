@@ -1,6 +1,6 @@
 import React from 'react';
+import { Button, Heading } from '@razorpay/blade/components';
 
-import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
@@ -146,7 +146,7 @@ export default class CreateOfferWizard extends React.Component {
         />
 
         <main class="form-container">
-          <main-title>{this.TABS_DATA[currentTab].name}</main-title>
+          <Heading size="medium">{this.TABS_DATA[currentTab].name}</Heading>
 
           <Form class={CLASS_NAME} layout={layout} onChange={props.onChange}>
             {this.renderForm()}
@@ -155,24 +155,41 @@ export default class CreateOfferWizard extends React.Component {
 
         <footer>
           {currentTab > 0 && (
-            <Button class="btn-outline" type="button" onClick={this.changeTab(-1)}>
+            <Button
+              color="primary"
+              onClick={this.changeTab(-1)}
+              size="medium"
+              type="button"
+              variant="tertiary"
+              marginRight={'spacing.4'}
+            >
               Previous
             </Button>
           )}
 
           {!isLastTab ? (
-            <Button.Primary type="button" disabled={isDisabled()} onClick={this.changeTab(1)}>
+            <Button
+              color="primary"
+              onClick={this.changeTab(1)}
+              size="medium"
+              type="button"
+              variant="primary"
+              isDisabled={isDisabled()}
+            >
               Next
-            </Button.Primary>
+            </Button>
           ) : (
-            <AsyncBtn.Primary
-              pendingState="Creating..."
-              type="submit"
+            <Button
+              color="primary"
               onClick={props.onSubmit}
-              disabled={disabled}
+              size="medium"
+              type="submit"
+              variant="primary"
+              isDisabled={disabled}
+              isLoading={!!this.props.isPending}
             >
               {props.submitBtnText}
-            </AsyncBtn.Primary>
+            </Button>
           )}
         </footer>
       </div>

@@ -1,18 +1,16 @@
 /* eslint-disable */
-
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
+import { Button, PlusIcon, Heading } from '@razorpay/blade/components';
 import HeaderAction from 'common/ui/HeaderAction';
 import Alert from 'common/ui/Forms/Alert';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-
+import { withRouter } from 'shell/deprecated/withRouter';
 import { RZPFeatures } from 'merchant/helpers/data';
-
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import List from 'merchant/views/Offers/List';
-import { Route, Routes, NavLink } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import { withSplitzService } from 'common/splitz';
@@ -30,6 +28,10 @@ import { withI18Service } from 'common/i18';
 import OnBoarding, { getIsOffersEnabled, getIsAllowedResetOffersOnBoarding } from './OnBoarding';
 
 // eslint-disable-next-line react/no-unsafe
+const OfferIndexWrapper = (props) => {
+  const navigate = useNavigate();
+  return <OfferIndex navigate={navigate} {...props} />;
+};
 @connect(
   (state) => {
     return {
@@ -83,9 +85,8 @@ class OfferIndex extends Component {
 
     this.props.handleProductQuickGuide(offersProductOnBoarding);
   };
-
   render() {
-    const { offersProductOnBoarding, i18 } = this.props;
+    const { offersProductOnBoarding, i18, navigate } = this.props;
     const { showOnboarding } = offersProductOnBoarding;
     const { isConfigTagEnabled } = i18;
     if (showOnboarding) {
@@ -106,6 +107,15 @@ class OfferIndex extends Component {
 
       isLowCostExperimentEnabled = isLowCostEnabled(Low_cost_offer);
     }
+    const handleOnClick = (path, merchantAction, selfServeAction) => {
+      navigate(path);
+      this.props.tracking.trackEvent(window.rzpQ.merchantActions().initiated(merchantAction));
+      selfServeTrackInitiate({
+        selfServeAction: selfServeAction,
+        page: 'Offers',
+        screen: 'Offers',
+      });
+    };
 
     return (
       <>
@@ -114,9 +124,14 @@ class OfferIndex extends Component {
         </div>
         <tabbed-container>
           <header id="link-header">
-            <NavLink end to="/offers">
+            <Heading
+              color="surface.text.gray.staticBlack.Normal"
+              size="medium"
+              weight="semibold"
+              display={'inline'}
+            >
               Offers
-            </NavLink>
+            </Heading>
           </header>
 
           <TestModeBanner />
@@ -137,46 +152,42 @@ class OfferIndex extends Component {
                               user.isAllowedEdit('offers')
                             }
                           >
-                            <NavLink class="btn btn-primary" end to={createOfferRoute}>
-                              <i className="i i-plus" />
-                              <span
-                                onClick={() => {
-                                  this.props.tracking.trackEvent(
-                                    window.rzpQ.merchantActions().initiated('Offer_create'),
-                                  );
-                                  selfServeTrackInitiate({
-                                    selfServeAction: 'New Offer Created',
-                                    page: 'Offers',
-                                    screen: 'Offers',
-                                  });
-                                }}
-                              >
-                                Create New Offer
-                              </span>
-                            </NavLink>
-                            <NavLink
-                              class="btn btn-primary"
-                              end
-                              to="/offers/new?offer_creation_modal_type=no-cost-emi"
+                            <Button
+                              color="primary"
+                              onClick={() => {
+                                handleOnClick(
+                                  createOfferRoute,
+                                  'Offer_create',
+                                  'New Offer Created',
+                                );
+                              }}
+                              size="medium"
+                              type="button"
+                              variant="primary"
+                              icon={PlusIcon}
+                              marginRight="spacing.3"
+                              marginBottom="spacing.2"
                             >
-                              <i className="i i-plus" />
-                              <span
-                                onClick={() => {
-                                  this.props.tracking.trackEvent(
-                                    window.rzpQ.merchantActions().initiated('nocostemi_create'),
-                                  );
-                                  selfServeTrackInitiate({
-                                    selfServeAction: 'New No Cost EMI Offer Created',
-                                    page: 'Offers',
-                                    screen: 'Offers',
-                                  });
-                                }}
-                              >
-                                {!isLowCostExperimentEnabled
-                                  ? 'Create No Cost EMI'
-                                  : 'Create No & Low Cost EMI'}
-                              </span>
-                            </NavLink>
+                              Create New Offer
+                            </Button>
+                            <Button
+                              color="primary"
+                              onClick={() => {
+                                handleOnClick(
+                                  '/offers/new?offer_creation_modal_type=no-cost-emi',
+                                  'nocostemi_create',
+                                  'New No Cost EMI Offer Created',
+                                );
+                              }}
+                              size="medium"
+                              type="button"
+                              variant="primary"
+                              icon={PlusIcon}
+                            >
+                              {!isLowCostExperimentEnabled
+                                ? 'Create No Cost EMI'
+                                : 'Create No & Low Cost EMI'}
+                            </Button>
                           </ShowWhen>
                         </div>
                       </HeaderAction>
@@ -194,4 +205,4 @@ class OfferIndex extends Component {
   }
 }
 
-export default withSplitzService(withI18Service(OfferIndex));
+export default withRouter(withSplitzService(withI18Service(OfferIndexWrapper)));

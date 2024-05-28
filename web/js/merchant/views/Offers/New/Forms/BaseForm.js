@@ -201,7 +201,7 @@ export default class BaseForm extends React.Component {
             render: () => null,
           },
         ]}
-        submitBtnText="Create"
+        submitBtnText="Create Offer"
       />
     );
   }

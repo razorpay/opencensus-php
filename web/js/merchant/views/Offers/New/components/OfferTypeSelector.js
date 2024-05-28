@@ -1,7 +1,14 @@
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, ChevronLeftIcon } from '@razorpay/blade/components';
+import { useNavigate } from 'react-router-dom';
+import { withRouter } from 'shell/deprecated/withRouter';
 
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
-
+const OfferTypeSelectorWrapper = (props) => {
+  const navigate = useNavigate();
+  return <OfferTypeSelector navigate={navigate} {...props} />;
+};
 const OFFER_TYPES = [
   {
     key: 'basic',
@@ -18,9 +25,13 @@ const OFFER_TYPES = [
   },
 ];
 
-export default class OfferTypeSelector extends React.PureComponent {
+class OfferTypeSelector extends React.PureComponent {
   handleTemplateSelection = (linkType) => () => {
     this.props.selectTemplate(linkType);
+  };
+
+  handleOnClick = (path) => {
+    return this.props.navigate(path);
   };
 
   render() {
@@ -35,7 +46,9 @@ export default class OfferTypeSelector extends React.PureComponent {
           {OFFER_TYPES.map((templateData) => {
             return (
               <TemplateCard
+                key={templateData.key}
                 {...templateData}
+                // eslint-disable-next-line no-undef
                 {...(props.isTestMode && TEST_MODE_TYPES[templateData.key])}
                 onClick={this.handleTemplateSelection(templateData.key)}
               />
@@ -51,11 +64,19 @@ export default class OfferTypeSelector extends React.PureComponent {
           class="PaymentLinks--CreateV2--LinkTypeSelection Offers--TypeSelection"
           maskClosable={false}
         >
-          <Link class="back-btn" to="/offers/">
-            <i class="i i-chevron-left" />
-            Back to Dashboard
-          </Link>
           <Modal class={content && 'animate-down'} showCloseBtn={false}>
+            <Link
+              icon={ChevronLeftIcon}
+              color="white"
+              iconPosition="left"
+              size="large"
+              marginLeft="spacing.5"
+              marginTop="spacing.5"
+              onClick={() => this.handleOnClick('/offers/')}
+              variant="button"
+            >
+              Back to Dashboard
+            </Link>
             <ModalContent>{content}</ModalContent>
           </Modal>
         </ModalMask>
@@ -97,3 +118,4 @@ class TemplateCard extends React.PureComponent {
     );
   }
 }
+export default withRouter(OfferTypeSelectorWrapper);
