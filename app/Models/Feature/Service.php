@@ -1736,6 +1736,8 @@ class Service extends Base\Service
         foreach ($merchantIds as $merchantId)
         {
 
+            $featureCore = (new Core);
+
             $result = [
                 Constants::MERCHANT_ID     => $merchantId,
                 Constants::STATUS          => Constants::SUCCESS,
@@ -1761,7 +1763,7 @@ class Service extends Base\Service
                 //Remove PG_LEDGER_JOURNAL_WRITES feature from  merchant if exists
                 if (!empty($feature))
                 {
-                    (new Core)->delete($feature);
+                    $featureCore->delete($feature);
 
                     $this->trace->info(
                         TraceCode::MERCHANT_OFFBOARDED_FROM_PG_LEDGER,
@@ -1772,7 +1774,7 @@ class Service extends Base\Service
                     );
                 }
 
-                $this->repo->transaction(function () use ($merchant, $merchantId, &$result)
+                $this->repo->transaction(function () use ($merchant, $merchantId, &$result, $featureCore)
                 {
                     // Create PG account on ledger service
                     $response = $this->ledgerPGAccountCreateRequest($merchant);
@@ -1792,8 +1794,16 @@ class Service extends Base\Service
                         );
                     }
 
+                    // Add PG_LEDGER_RAMP_ON_HOLD feature to merchant
+                    $featureCore->create(
+                        [
+                            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                            Entity::ENTITY_ID => $merchant->getId(),
+                            Entity::NAME => Constants::PG_LEDGER_RAMP_ON_HOLD,
+                        ]);
+
                     // Add PG_LEDGER_REVERSE_SHADOW feature to merchant
-                    (new Core)->create(
+                    $featureCore->create(
                         [
                             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
                             Entity::ENTITY_ID => $merchant->getId(),
@@ -1839,6 +1849,342 @@ class Service extends Base\Service
                 {
                     $this->trace->count(\RZP\Constants\Metric::PG_LEDGER_REVERSE_SHADOW_ONBOARD_FAILURE);
 
+                    throw $e;
+                }
+            }
+            $response->add($result);
+        }
+        return $response;
+    }
+
+    /**
+     * Onboards merchant to pg ledger reverse shadow mode
+     * Syncs api balances of merchant with ledger balance
+     *
+     * @param array $input
+     */
+    public function onlyCreatePGAccountsOnReverseShadow(array $input, $throwException = false)
+    {
+        $response = new Base\PublicCollection;
+
+        $merchantIds = $input["merchant_ids"];
+
+        $this->trace->info(
+            TraceCode::ONLY_CREATE_PG_ACCOUNTS_ON_REVERSE_SHADOW,
+            [
+                Constants::MERCHANT_ID => $merchantIds,
+            ]
+        );
+
+        if(empty($merchantIds))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
+                'merchant_ids',
+                null,
+                "merchant_ids should not empty"
+            );
+        }
+
+        foreach ($merchantIds as $merchantId)
+        {
+
+            $result = [
+                Constants::MERCHANT_ID     => $merchantId,
+                Constants::STATUS          => Constants::SUCCESS,
+            ];
+
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                    EntityConstants::MERCHANT,
+                    $merchant->getId(),
+                    Constants::PG_LEDGER_JOURNAL_WRITES);
+
+                //Remove PG_LEDGER_JOURNAL_WRITES feature from  merchant if exists
+                if (!empty($feature))
+                {
+                    (new Core)->delete($feature);
+
+                    $this->trace->info(
+                        TraceCode::MERCHANT_OFFBOARDED_FROM_PG_LEDGER_SHADOW,
+                        [
+                            Constants::MERCHANT_ID => $merchantId,
+                            CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_JOURNAL_WRITES
+                        ]
+                    );
+                }
+
+                $this->repo->transaction(function () use ($merchant, $merchantId, &$result)
+                {
+                    // Create PG account on ledger service
+                    $response = $this->ledgerPGAccountCreateRequest($merchant);
+
+                    if (!$response[Constants::ACCOUNTS_CREATED_RESPONSE] || !$response[Constants::ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE])
+                    {
+                        throw new \Exception(Constants::ACCOUNT_CREATION_FAILED);
+                    }
+                    else
+                    {
+                        $this->trace->info(
+                            TraceCode::ACCOUNT_CREATED,
+                            [
+                                Constants::MERCHANT_ID => $merchantId,
+                                CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_REVERSE_SHADOW
+                            ]
+                        );
+                    }
+
+                    $this->trace->info(
+                        TraceCode::MERCHANT_ACCOUNT_CREATED_ON_REVERSE_SHADOW,
+                        [
+                            Constants::MERCHANT_ID  => $merchantId,
+                            CONSTANTS::RESPONSE     => $response
+                        ]
+                    );
+
+                    $result[Constants::MESSAGE]                   = CONSTANTS::MERCHANT_ONBOARDED;
+                    $result[Constants::BALANCE_RESPONSE]          = $response[Constants::BALANCE_RESPONSE];
+                    $result[Constants::CREDITS_RESPONSE]          = $response[Constants::CREDITS_RESPONSE];
+                    $result[Constants::RESERVE_BALANCE_RESPONSE]  = $response[Constants::RESERVE_BALANCE_RESPONSE];
+                    $result[Constants::ACCOUNTS_CREATED_RESPONSE] = $response[Constants::ACCOUNTS_CREATED_RESPONSE];
+                    $result[Constants::ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE] = $response[Constants::ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE];
+
+                });
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::ONBOARD_MERCHANT_TO_PG_LEDGER_REVERSE_SHADOW_FAILED,
+                    [
+                        "exception"             => $e,
+                        "message"               => $e->getMessage(),
+                        Constants::MERCHANT_ID  => $merchantId
+                    ]
+                );
+
+                $result[Constants::STATUS] = Constants::FAILURE;
+                $result[Constants::MESSAGE] = $e->getMessage();
+
+                if($throwException)
+                {
+                    $this->trace->count(\RZP\Constants\Metric::PG_LEDGER_REVERSE_SHADOW_ONBOARD_FAILURE);
+
+                    throw $e;
+                }
+            }
+            $response->add($result);
+        }
+        return $response;
+    }
+
+    /**
+     * Onboards merchant to pg ledger reverse shadow mode
+     * Syncs api balances of merchant with ledger balance
+     *
+     * @param array $input
+     */
+    public function rampupOnHoldMerchantBulk(array $input, $throwException = false)
+    {
+        $response = new Base\PublicCollection;
+
+        $merchantIds = $input["merchant_ids"];
+
+        $this->trace->info(
+            TraceCode::ON_HOLD_ENABLE_PG_LEDGER_REQUEST,
+            [
+                Constants::MERCHANT_ID => $merchantIds,
+            ]
+        );
+
+        if(empty($merchantIds))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
+                'merchant_ids',
+                null,
+                "merchant_ids should not empty"
+            );
+        }
+
+        foreach ($merchantIds as $merchantId)
+        {
+
+            $featureCore = (new Core);
+
+            $result = [
+                Constants::MERCHANT_ID     => $merchantId,
+                Constants::STATUS          => Constants::SUCCESS,
+                CONSTANTS::FEATURE         => CONSTANTS::PG_LEDGER_RAMP_ON_HOLD
+            ];
+
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if($merchant->isFeatureEnabled(Constants::PG_LEDGER_RAMP_ON_HOLD))
+                {
+                    $result[Constants::MESSAGE] = Constants::MERCHANT_FEATURE_ALREADY_ENABLED;
+                    $response->add($result);
+                    continue;
+                }
+
+                $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                    EntityConstants::MERCHANT,
+                    $merchant->getId(),
+                    Constants::PG_LEDGER_JOURNAL_WRITES);
+
+                //Remove PG_LEDGER_JOURNAL_WRITES feature from  merchant if exists
+                if (!empty($feature))
+                {
+                    $featureCore->delete($feature);
+
+                    $this->trace->info(
+                        TraceCode::MERCHANT_OFFBOARDED_FROM_PG_LEDGER,
+                        [
+                            Constants::MERCHANT_ID => $merchantId,
+                            CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_JOURNAL_WRITES
+                        ]
+                    );
+                }
+
+                $this->repo->transaction(function () use ($merchant, $merchantId, &$result, $featureCore)
+                {
+                    // Add PG_LEDGER_RAMP_ON_HOLD feature to merchant
+                    $featureCore->create(
+                        [
+                            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                            Entity::ENTITY_ID => $merchant->getId(),
+                            Entity::NAME => Constants::PG_LEDGER_RAMP_ON_HOLD,
+                        ]);
+
+
+                    $this->trace->info(
+                        TraceCode::MERCHANT_ONBOARDED_TO_PG_LEDGER_REVERSE_SHADOW,
+                        [
+                            Constants::MERCHANT_ID  => $merchantId,
+                            CONSTANTS::FEATURE      => CONSTANTS::PG_LEDGER_RAMP_ON_HOLD,
+                            CONSTANTS::RESPONSE     => []
+                        ]
+                    );
+
+                    $result[Constants::MESSAGE]                   = CONSTANTS::MERCHANT_ONBOARDED;
+                    $result[Constants::FEATURE]                   = CONSTANTS::PG_LEDGER_RAMP_ON_HOLD;
+
+                });
+
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::ON_HOLD_ENABLE_PG_LEDGER_REQUEST_FAILED,
+                    [
+                        "exception"             => $e,
+                        "message"               => $e->getMessage(),
+                        Constants::MERCHANT_ID  => $merchantId
+                    ]
+                );
+
+                $result[Constants::STATUS] = Constants::FAILURE;
+                $result[Constants::MESSAGE] = $e->getMessage();
+
+                if($throwException)
+                {
+                    throw $e;
+                }
+            }
+            $response->add($result);
+        }
+        return $response;
+    }
+
+    /**
+     * Onboards merchant to pg ledger reverse shadow mode
+     * Syncs api balances of merchant with ledger balance
+     *
+     * @param array $input
+     */
+    public function rampupOnHoldMerchantDisableBulk(array $input, $throwException = false)
+    {
+        $response = new Base\PublicCollection;
+
+        $merchantIds = $input["merchant_ids"];
+
+        $this->trace->info(
+            TraceCode::ON_HOLD_ENABLE_PG_LEDGER_REQUEST,
+            [
+                Constants::MERCHANT_ID => $merchantIds,
+            ]
+        );
+
+        if(empty($merchantIds))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
+                'merchant_ids',
+                null,
+                "merchant_ids should not empty"
+            );
+        }
+
+        foreach ($merchantIds as $merchantId)
+        {
+
+            $result = [
+                Constants::MERCHANT_ID     => $merchantId,
+                Constants::STATUS          => Constants::SUCCESS,
+                CONSTANTS::FEATURE         => CONSTANTS::PG_LEDGER_RAMP_ON_HOLD
+            ];
+
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if(!$merchant->isFeatureEnabled(Constants::PG_LEDGER_RAMP_ON_HOLD))
+                {
+                    $result[Constants::MESSAGE] = Constants::MERCHANT_FEATURE_ALREADY_DISABLED;
+                    $response->add($result);
+                    continue;
+                }
+
+                $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                    EntityConstants::MERCHANT,
+                    $merchant->getId(),
+                    Constants::PG_LEDGER_RAMP_ON_HOLD);
+
+                //Remove PG_LEDGER_RAMP_ON_HOLD feature from  merchant if exists
+                if (!empty($feature))
+                {
+                    (new Core)->delete($feature);
+
+                    $this->trace->info(
+                        TraceCode::PG_LEDGER_ON_HOLD_DISABLED,
+                        [
+                            Constants::MERCHANT_ID => $merchantId,
+                            CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_RAMP_ON_HOLD
+                        ]
+                    );
+                }
+
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::ON_HOLD_DISABLE_PG_LEDGER_REQUEST_FAILED,
+                    [
+                        "exception"             => $e,
+                        "message"               => $e->getMessage(),
+                        Constants::MERCHANT_ID  => $merchantId
+                    ]
+                );
+
+                $result[Constants::STATUS] = Constants::FAILURE;
+                $result[Constants::MESSAGE] = $e->getMessage();
+
+                if($throwException)
+                {
                     throw $e;
                 }
             }
@@ -1953,6 +2299,15 @@ class Service extends Base\Service
                 break;
             case 'reverse-shadow':
                 $response = $this->onboardMerchantOnPGReverseShadow($input);
+                break;
+            case 'only_create_accounts':
+                $response = $this->onlyCreatePGAccountsOnReverseShadow($input);
+                break;
+            case 'enable_ramp_on_hold':
+                $response = $this->rampupOnHoldMerchantBulk($input);
+                break;
+            case 'disable_ramp_on_hold':
+                $response = $this->rampupOnHoldMerchantDisableBulk($input);
                 break;
             default:
                 throw new Exception\BadRequestException(

@@ -9771,6 +9771,7 @@ class Service extends Base\Service
             "merchant_email"                   => $email,
             "partner_commissions_config"       => $partnerCommissionConfig,
             "pg_ledger_reverse_shadow_enabled" => $this->isMerchantOnPGReverseShadow($merchant),
+            "pg_ledger_ramp_on_hold_enabled"   => $this->isMerchantPGLedgerRampOnHold($merchant),
             "country_code"                     => $merchant->getCountry(),
             "merchant_settlement_currency"     => $merchant->getCurrency(),
             "cross_border_import_flow"         => $this->getCrossBorderImportFlow($merchant),
@@ -9854,6 +9855,11 @@ class Service extends Base\Service
     private function isMerchantOnPGReverseShadow($merchant)
     {
         return $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true;
+    }
+
+    private function isMerchantPGLedgerRampOnHold($merchant)
+    {
+        return $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_RAMP_ON_HOLD) === true;
     }
 
     private function getCrossBorderImportFlow($merchant)

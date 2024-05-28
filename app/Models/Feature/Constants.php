@@ -1390,6 +1390,8 @@ class Constants
 
     const PG_LEDGER_REVERSE_SHADOW = 'pg_ledger_reverse_shadow';
 
+    const PG_LEDGER_RAMP_ON_HOLD = "pg_ledger_ramp_on_hold";
+
     /**
      * If contact number updated via admin dashboard, mark it verified by default if feature present on org
      */
@@ -2688,6 +2690,7 @@ class Constants
         self::DA_LEDGER_JOURNAL_WRITES                     => true,
         self::PG_LEDGER_JOURNAL_WRITES                     => true,
         self::PG_LEDGER_REVERSE_SHADOW                     => true,
+        self::PG_LEDGER_RAMP_ON_HOLD                       => true,
         self::LEDGER_JOURNAL_READS                         => true,
         self::LEDGER_REVERSE_SHADOW                        => true,
         self::ORG_AXIS_PAYPAL                              => true,
@@ -4388,7 +4391,8 @@ class Constants
         self::LEDGER_REVERSE_SHADOW,
         self::DA_LEDGER_JOURNAL_WRITES,
         self::PG_LEDGER_JOURNAL_WRITES,
-        self::PG_LEDGER_REVERSE_SHADOW
+        self::PG_LEDGER_REVERSE_SHADOW,
+        self::PG_LEDGER_RAMP_ON_HOLD
     ];
 
     // Payout service related features
