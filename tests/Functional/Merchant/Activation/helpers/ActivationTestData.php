@@ -4702,4 +4702,47 @@ return [
             ],
         ],
     ],
+
+    'expectedPayloadForL2ConsentGeneration' => [
+        'client_details' => [
+            'platform' => 'pg'
+        ],
+        'owner_details' => [
+            'owner_id' => '1cXSLlUU8V9sXa',
+            'ip_address' => '10.0.123.123',
+            'signatory_name' => 'John Doe',
+            'owner_name' => null,
+            'contact_number' => null,
+            'email' => null,
+            'time_zone' => 'IST',
+        ],
+        'documents_detail' => [
+            [
+                'type' => 'Privacy Policy',
+                'template_id' => 'k73mkwp7p8jqGx',
+            ],
+        ],
+        'send_email' => true,
+        'send_sms' => false,
+        'email_details' => [
+            'owner_id' => '1cXSLlUU8V9sXa',
+            'owner_type' => 'merchant',
+            'org_id' => '100000razorpay',
+            'template_name' => 'email.payments_consent.terms_and_privacy',
+            'template_namespace' => 'payments_onboarding',
+            'service' => 'api',
+            'from' => [
+                'address' => 'no-reply@razorpay.com',
+                'name' => 'Razorpay',
+            ],
+            'params' => [
+                'ownerName' => null,
+            ],
+            'to' => [
+                'address' => 'useremail@yahoo.com',
+                'name' => null,
+            ],
+            'subject' => 'Razorpay: Our Terms of Service and Privacy Policy',
+        ],
+    ],
 ];

@@ -5086,7 +5086,7 @@ class Service extends Base\Service
 
         $send_sms = (empty($user) === false and $send_email === false) ? $user['contact_mobile_verified'] : false;
 
-        $email_details = ($send_email === true) ? $this->getEmailDetails($acceptanceTimestamp) : null;
+        $email_details = ($send_email === true) ? $this->getEmailDetails($acceptanceTimestamp, $user ?? null) : null;
 
         $sms_details = ($send_sms === true) ? $this->getSmsDetails() : null;
 
@@ -5098,7 +5098,7 @@ class Service extends Base\Service
         ];
     }
 
-    private function getEmailDetails($acceptanceTimestamp = null)
+    private function getEmailDetails($acceptanceTimestamp = null, $user = null)
     {
         $ownerName = $this->merchant->merchantDetail->getBusinessName();
 
@@ -5124,7 +5124,7 @@ class Service extends Base\Service
                 "acceptance_timestamp" => $formattedDateTime,
             ],
             "to"                    =>  [
-                "address"   => $this->merchant->getEmail(),
+                "address"   => $this->merchant->getEmail() ?? $user['email'] ?? null,
                 "name"      => $ownerName
             ],
             "subject"               => "Razorpay: Our Terms of Service and Privacy Policy"

@@ -295,6 +295,40 @@ class MerchantAuthorizePartnerTest extends TestCase
         $this->startTest($testData);
     }
 
+    //This test case is to cover the scenario where merchant's email is null. Hence we fetch user email to send consent mail to merchants
+    public function testSaveMerchantAuthorizationWhenMerchantEmailIsEmpty()
+    {
+        $testData = &$this->testData['testSaveMerchantAuthorizationWhenMerchantConsentIsPresentForAnotherPartner'];
+
+        list($partner, $app) = $this->createPartnerAndApplication();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->fixtures->edit('merchant_detail', $partner->getId(), ['business_name' => 'Amazon Inc']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['email' => null]);
+
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth();
+
+        $bvsMock = $this->mockCreateLegalDocument();
+
+        $bvsMock->expects($this->once())->method('createLegalDocumentV2')->with($this->callback(function ($requestPayload) {
+            $expectedDataWithoutTimestamp = $this->testData['expectedPayloadForPhantomAggregatorConsentGeneration'];
+
+            $expectedDataWithoutTimestamp['owner_details']['email'] = null;
+            $expectedDataWithoutTimestamp['email_details']['to']['address'] = "merchantuser01@razorpay.com";
+
+            $actualPayload = $this->removeAcceptanceTimestamp($requestPayload);
+
+            return $actualPayload == $expectedDataWithoutTimestamp;
+
+        }), $this->isInstanceOf(\RZP\Models\Merchant\Entity::class));
+
+        $this->startTest($testData);
+    }
+
     private function removeAcceptanceTimestamp($array)
     {
         foreach ($array as $key => &$value) {

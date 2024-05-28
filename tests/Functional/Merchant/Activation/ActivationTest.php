@@ -55,6 +55,7 @@ use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
+use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 use \RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
@@ -82,6 +83,7 @@ class ActivationTest extends OAuthTestCase
     use WorkflowTrait;
     use FreshdeskTrait;
     use HeimdallTrait;
+    use CreateLegalDocumentsTrait;
 
     const DEFAULT_MERCHANT_ID = '10000000000000';
     const RZP_ORG                   = '100000razorpay';
@@ -2719,7 +2721,7 @@ class ActivationTest extends OAuthTestCase
             'transaction_report_email' => 'test@razorpay.com',
             'created_at'               => 1670889499
         ];
-        
+
         $this->fixtures->edit('merchant', $merchantId, $merchantAttributes);
 
         $this->fixtures->on('live')->edit('merchant_detail', $merchantId, [
@@ -5888,6 +5890,74 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals($merchantId, $consentDetail['merchant_id']);
 
         $this->assertEquals('initiated', $consentDetail['status']);
+    }
+
+    public function testSendNotificationWhenMerchantEmailIsNullForL2Consents()
+    {
+        Mail::fake();
+
+        $bvsMock = $this->mockCreateLegalDocument();
+
+        Config::set('services.send.notification', false);
+
+        $merchantId = '1cXSLlUU8V9sXa';
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->fixtures->create('merchant', ['id' => $merchantId, 'email' => null]);
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $merchantUser = $this->getDbEntity('merchant_user', ['merchant_id' => $merchantId] )->toArray();
+
+        $userId = $merchantUser['user_id'];
+
+        $user = $this->getDbEntity('user', ['id' => $userId], 'live');
+
+        $this->fixtures->edit(
+            'user',
+            $user->getId(),
+            [
+                'email' => 'useremail@yahoo.com',
+            ]);
+
+        $bvsMock->expects($this->once())->method('createLegalDocumentV2')
+            ->with($this->callback(function ($requestPayload) {
+            $expectedDataWithoutTimestamp = $this->testData['expectedPayloadForL2ConsentGeneration'];
+
+            $actualPayload = $this->removeAcceptanceTimestamp($requestPayload);
+
+            return $actualPayload == $expectedDataWithoutTimestamp;
+
+        }), $this->isInstanceOf(\RZP\Models\Merchant\Entity::class));
+
+        $testData = $this->testData['testSendNotificationEnableForL2Consents'];
+
+        $this->startTest($testData);
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals($merchantId, $consentDetail['merchant_id']);
+    }
+
+    private function removeAcceptanceTimestamp($array)
+    {
+        foreach ($array as $key => &$value) {
+            if ($key === 'acceptance_timestamp') {
+                unset($array[$key]);
+            } elseif (is_array($value)) {
+                $value = $this->removeAcceptanceTimestamp($value);
+            }
+        }
+        return $array;
     }
 
     public function testConsentDetails()
