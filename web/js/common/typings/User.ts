@@ -123,7 +123,7 @@ type UserProperties = {
   };
   created_at: number;
   submitted: boolean;
-  pos_activation_flow: 'blacklist' | 'whitelist';
+  pos_activation_flow: 'blacklist' | 'whitelist' | 'greylist';
   kyc_terms_and_conditions_checked?: boolean;
   business_registered_address?: string;
   business_registered_address_l2?: string;

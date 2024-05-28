@@ -50,10 +50,11 @@ export const isPosExperimentEnabled = ({
   abExperiments: ExperimentInfoType;
 }): boolean => {
   const isUnregisteredMerchant = user?.business_type === '11' || user.business_type === '2';
+  const allowedFlows = ['whitelist', 'greylist'];
 
   const isWhitelistedForPos =
     user?.pos_activation_status !== null && typeof user?.pos_activation_status !== 'undefined'
-      ? user?.pos_activation_flow === 'whitelist'
+      ? allowedFlows.includes(user?.pos_activation_flow ?? '')
       : true;
 
   return (
@@ -977,7 +978,10 @@ export const preCheckoutAdditionalDetails = ({
         : `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES.l2onboardingWithIntent}`,
       isCaseCreateRequired: false,
     };
-  } else if (!checkIfMerchantHasOnlinePresence(user) && !hasShopImages) {
+  } else if (
+    (!checkIfMerchantHasOnlinePresence(user) && !hasShopImages) ||
+    (user.pos_activation_flow === 'greylist' && !hasShopImages)
+  ) {
     return {
       isRequired: true,
       url: isPOSPaymentChannelSelected
