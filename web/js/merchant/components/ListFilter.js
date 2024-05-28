@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { reduxForm } from 'redux-form';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import {
@@ -14,16 +15,19 @@ import {
   decodeSensitiveFields,
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { withRouter } from 'common/deprecated/withRouter';
 
 // Keep this util here, will break web/js/merchant/views/Transactions/v2/common/__tests__/utils.test.js testcases
 export const isTransactionsV2Enabled = (splitz, user) => {
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
+
   if (!abExperiments?.Transactions_Revamp) return false;
   if (user.isOrgCurlec) {
     return false;
   }
-  return isExperimentEnabled(abExperiments.Transactions_Revamp) && user.isOrgRZP;
+  return (
+    isExperimentEnabled(abExperiments.Transactions_Revamp) &&
+    (user.isOrgRZP || user.isVasTestingMerchant)
+  );
 };
 
 const DEFAULT_MAX_FILTER_COUNT_DESKTOP = 10;

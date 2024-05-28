@@ -1891,10 +1891,14 @@ export default class User {
     );
   }
 
+  get isVasTestingMerchant() {
+    return getSplitzExperimentVariant('enable_testing_for_vas')?.variables?.result === 'on';
+  }
+
   get isAccountAndSettingsRevampEnabled() {
     return (
       getSplitzExperimentVariant('account_settings_revamp')?.variables?.result === 'on' &&
-      (this.isOrgRZP || this.isOrgCurlec)
+      (this.isOrgRZP || this.isOrgCurlec || this.isVasTestingMerchant)
     );
   }
 
@@ -1974,7 +1978,7 @@ export default class User {
   get isSettlementV3RevampEnabled() {
     return (
       getSplitzExperimentVariant('settlement_v3_revamp')?.variables?.result === 'on' &&
-      this.isOrgRZP
+      (this.isOrgRZP || this.isVasTestingMerchant)
     );
   }
 

@@ -1223,7 +1223,7 @@ class App extends Component {
     const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
 
     const isSidebarV2 =
-      user.isOrgRZP &&
+      (user.isOrgRZP || user.isVasTestingMerchant) &&
       !user.isPartner() &&
       !user.isSourceRX &&
       !user.isPartnerAgentRole &&

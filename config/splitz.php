@@ -232,5 +232,7 @@ return [
 
 
 
+        // enable testing for vas
+        'ENABLE_TESTING_FOR_VAS' => env('ENABLE_TESTING_FOR_VAS', ''),
     ]
 ];

@@ -213,7 +213,10 @@ export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User):
   if (user.isOrgCurlec) {
     return false;
   }
-  return isExperimentEnabled(abExperiments.Transactions_Revamp) && user.isOrgRZP;
+  return (
+    isExperimentEnabled(abExperiments.Transactions_Revamp) &&
+    (user.isOrgRZP || user.isVasTestingMerchant)
+  );
 };
 
 export const isSettlementRetryTimelineEnabled = (

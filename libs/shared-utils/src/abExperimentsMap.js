@@ -649,4 +649,12 @@ export default {
     // beta experiment
     'MHJsO5gmOwUIVt',
   ],
+
+  enable_testing_for_vas: [
+    //beta experiment ids
+    'OFCSIXH6cNWZYg',
+
+    //prod experiment ids,
+    'OFCW2MWexDUNCB',
+  ],
 };

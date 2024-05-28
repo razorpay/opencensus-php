@@ -78,6 +78,7 @@ type Getters = {
   isRazorxAnnouncementEnabled: boolean;
   isINCountry: boolean;
   isSGCountry: boolean;
+  isVasTestingMerchant: boolean;
 };
 
 type Merchant = {

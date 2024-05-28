@@ -407,6 +407,7 @@ describe('utils', () => {
       const user = {
         isOrgCurlec: false,
         isOrgRZP: false,
+        isVasTestingMerchant: false,
       };
       const result = isTransactionsV2Enabled(splitz, user);
       expect(result).toBe(false);

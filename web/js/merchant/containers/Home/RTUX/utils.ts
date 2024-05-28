@@ -1,7 +1,8 @@
+import { useStore } from 'shell/commonStore';
+
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import User from 'merchant/models/User';
-import { useStore } from 'shell/commonStore';
 
 interface RTUXHomepageEnabled {
   user: User;
@@ -14,7 +15,7 @@ export const isRTUXHomepageEnabled = ({ user, abExperiments }: RTUXHomepageEnabl
 
   return (
     isActivated &&
-    user.isOrgRZP &&
+    (user.isOrgRZP || user.isVasTestingMerchant) &&
     !user.isPartner() &&
     isExperimentEnabled(abExperiments.rtux_homepage)
   );
