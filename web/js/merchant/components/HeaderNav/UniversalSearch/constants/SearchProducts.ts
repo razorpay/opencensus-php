@@ -59,6 +59,7 @@ const {
   x_banking,
   x_corporate_cards,
   line_of_credit,
+  capital_loans,
   settlements,
   payment_links,
   affordability,
@@ -1087,8 +1088,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'Instant settlement' },
     ],
     icon: cash_advance.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
-      cash_advance.additionalCondition(user, extraConfig),
+    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
+      cash_advance.additionalCondition(user),
     apiCondition: false,
   },
   {
@@ -1132,8 +1133,17 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     url: SEARCH_PRODUCTS_URL.line_of_credit,
     tags: [{ value: 'Business' }, { value: 'Loan' }, { value: 'Credit' }],
     icon: line_of_credit.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
-      line_of_credit.additionalCondition(user, extraConfig),
+    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
+      line_of_credit.additionalCondition(user),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.capital_loans,
+    url: SEARCH_PRODUCTS_URL.capital_loans,
+    tags: [{ value: 'Business' }, { value: 'Loan' }, { value: 'Credit' }],
+    icon: capital_loans.icon,
+    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
+      capital_loans.additionalCondition(user),
     apiCondition: false,
   },
   {

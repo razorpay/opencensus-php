@@ -258,20 +258,44 @@ export const getProductType = (user) => {
   return user.isFeatureEnabled('cash_on_card') ? CASH_ADVANCE_PRODUCT_TYPES.CASH_ON_CARD : '';
 };
 
+const isRegionIN = (user) => {
+  return user.merchant.country_code === 'IN';
+};
+
 export const canViewCashAdvanceProduct = (user) => {
   // All Cash Adance merchants should have loc feature flag(withdraw_loc is common for LOC and LOC_EMI)
-  // isAllowedView has checks for current user role and white labelled orgs
-  return (user.isAllowedView('cash_advance') && user.isLOCEnabled) || user.isCashOnCardEnabled;
+  // isAllowedView has checks for current user role and white labelled orgs - admin and owner can access
+  return (
+    user.isOrgRZP &&
+    isRegionIN(user) &&
+    (user.isLOCEnabled || user.isCashOnCardEnabled) &&
+    user.isAllowedView('cash_advance')
+  );
 };
 
 export const isCashAdvanceProductActive = (user) => {
   return (
-    (canViewCashAdvanceProduct(user) && user.isWithdrawFeatureEnabled) || user.isCashOnCardEnabled
+    canViewCashAdvanceProduct(user) && (user.isWithdrawFeatureEnabled || user.isCashOnCardEnabled)
   );
 };
 
 export const canViewLOCEMIProduct = (user) => {
-  return !canViewCashAdvanceProduct(user) && user.isAllowedView('cash_advance') && user.isOrgRZP;
+  return (
+    !canViewCashAdvanceProduct(user) &&
+    user.isOrgRZP &&
+    isRegionIN(user) &&
+    (user.isLOCEMIEnabled || user.isWithdrawFeatureEnabled) &&
+    user.isAllowedView('cash_advance')
+  );
+};
+
+export const canViewLoans = (user) => {
+  return (
+    user.isOrgRZP &&
+    isRegionIN(user) &&
+    !user.isWithdrawFeatureEnabled &&
+    user.isAllowedView('cash_advance')
+  );
 };
 
 export function getCashOnCardRenderDateKey() {

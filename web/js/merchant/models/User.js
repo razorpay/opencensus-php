@@ -1505,6 +1505,10 @@ export default class User {
     return this.isFeatureEnabled('cash_on_card');
   }
 
+  get isLOCEMIEnabled() {
+    return this.isFeatureEnabled('loc_emi');
+  }
+
   get isNetBankingEnabled() {
     return true;
   }

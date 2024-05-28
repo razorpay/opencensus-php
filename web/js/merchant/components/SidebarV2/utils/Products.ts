@@ -4,7 +4,11 @@ import { isMobileResolution } from 'common/utils/rzp-utils';
 import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
 import { ConfigTagType } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
+import {
+  canViewCashAdvanceProduct,
+  canViewLOCEMIProduct,
+  canViewLoans,
+} from 'merchant/views/Capital/utils';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import magicKonnectLogo from 'assets/magicKonnectLogo.png';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
@@ -62,10 +66,6 @@ export const PRODUCTS_DATA = {
   x_corporate_cards: {
     icon: 'i-credit-card',
     additionalCondition: (user: any): boolean => user.isCardsLOSEnabled,
-  },
-  loans: {
-    icon: 'i-rupee',
-    additionalCondition: (user: any): boolean => user.isAllowedView('loans') && user.isLoansEnabled,
   },
   working_capital_loans: {
     icon: 'i-rupee',
@@ -197,6 +197,10 @@ export const PRODUCTS_DATA = {
   line_of_credit: {
     icon: 'i-rupee',
     additionalCondition: canViewLOCEMIProduct,
+  },
+  capital_loans: {
+    icon: 'i-rupee',
+    additionalCondition: canViewLoans,
   },
   invoices: {
     icon: 'i-notes',

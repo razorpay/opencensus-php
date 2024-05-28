@@ -2,7 +2,11 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
-import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
+import {
+  canViewCashAdvanceProduct,
+  canViewLOCEMIProduct,
+  canViewLoans,
+} from 'merchant/views/Capital/utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isMobileResolution } from 'common/utils/rzp-utils';
 import { isExperimentEnabled } from 'common/splitz/utils';
@@ -391,11 +395,9 @@ function MerchantNavLinks(props) {
       <MainNavLink
         label="Loans"
         icon="i i-rupee text-warm"
-        to="/capital/loans/apply"
+        to="/capital/loans"
         isNew={!isRecommendProduct}
-        additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('loans') && currentUser.isLoansEnabled
-        }
+        additionalCondition={canViewLoans}
       />
 
       <MainNavLink

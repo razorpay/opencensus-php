@@ -31,7 +31,11 @@ import {
   shouldShowFIRCSection,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSchedule';
-import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
+import {
+  canViewCashAdvanceProduct,
+  canViewLOCEMIProduct,
+  canViewLoans,
+} from 'merchant/views/Capital/utils';
 import { openSlider } from 'merchant_common/reducers/slider';
 import qs from 'query-string';
 import React, { Component, Suspense } from 'react';
@@ -450,6 +454,10 @@ const PaypalOnboardRedirect = lazy(() =>
 
 const LoanDetails = lazy(() =>
   import(/* webpackChunkName: "CapitalLoans" */ 'merchant/views/Capital/Loans'),
+);
+
+const CapitalLoans = lazy(() =>
+  import(/* webpackChunkName: "CapitalLoansV2" */ 'merchant/views/Capital/Loans/LoansV2'),
 );
 
 const NonFldgLoans = lazy(() =>
@@ -1984,7 +1992,14 @@ class Content extends Component {
             </Route>
             <Route>
               <Route path="loans/*">
-                <Route index element={<Navigate to="/capital/loans/apply" replace />} />
+                <Route
+                  index
+                  element={
+                    <RouteGuard additionalCondition={canViewLoans}>
+                      <CapitalLoans />
+                    </RouteGuard>
+                  }
+                />
                 <Route
                   path=":section/*"
                   element={

@@ -1,13 +1,19 @@
+import User from 'merchant/models/User';
+import store, { storeWithInitialState } from 'merchant/store';
 import {
   canViewCashAdvanceProduct,
   canViewLOCEMIProduct,
   isLOCEMIProduct,
   isCashAdvanceProductActive,
+  canViewLoans,
 } from 'merchant/views/Capital/utils/index';
-import { storeWithInitialState } from 'merchant/store';
-import User from 'merchant/models/User';
 
-const getUserInstance = ({ features = [], role = 'admin' } = {}) => {
+const getUserInstance = ({
+  features = [],
+  role = 'admin',
+  country_code = 'IN',
+  custom_code = 'rzp',
+} = {}) => {
   const state = storeWithInitialState({
     session: {
       user: new User({
@@ -18,12 +24,19 @@ const getUserInstance = ({ features = [], role = 'admin' } = {}) => {
           },
         },
         features: [...features],
+        merchant: {
+          country_code,
+        },
       }),
+      org: {
+        custom_code,
+      },
     },
   }).getState();
   const user = state.session.user;
+  store.getState().session.org = { custom_code };
   return {
-    state,
+    session: store.getState().session,
     user,
   };
 };
@@ -50,7 +63,10 @@ describe('capital/utils', () => {
   test('canViewLOCEMIProduct', () => {
     const { user } = getUserInstance();
     // eligible for loc emi
-    // expect(canViewLOCEMIProduct(userInstance)).toBe(true); todo unable to mock getOrg from merchant/store so need to debug more
+    user.features = [{ feature: 'withdraw_loc' }];
+    expect(canViewLOCEMIProduct(user)).toBe(true);
+    user.features = [{ feature: 'loc_emi' }];
+    expect(canViewLOCEMIProduct(user)).toBe(true);
     // not eligible whe has cash advance
     user.features = [{ feature: 'loc' }];
     expect(canViewLOCEMIProduct(user)).toBe(false);
@@ -73,13 +89,38 @@ describe('capital/utils', () => {
     expect(isCashAdvanceProductActive(user)).toBe(false);
     user.features = [{ feature: 'cash_on_card' }, { feature: 'loc' }];
     expect(isCashAdvanceProductActive(user)).toBe(true);
+    user.features = [{ feature: 'withdraw_loc' }, { feature: 'loc' }];
+    expect(isCashAdvanceProductActive(user)).toBe(true);
   });
 
-  test('Allowed Roles for  canViewLOCEMIProduct/canViewCashAdvanceProduct', () => {
+  test('Allowed Roles for canViewLOCEMIProduct/canViewCashAdvanceProduct', () => {
     const { user } = getUserInstance({ role: 'operations' });
     expect(canViewCashAdvanceProduct(user)).toBe(false);
     expect(canViewLOCEMIProduct(user)).toBe(false);
     user.features = [{ feature: 'loc' }];
     expect(canViewLOCEMIProduct(user)).toBe(false);
+  });
+
+  describe('canViewLoans', () => {
+    it('should hava access for rzp org, IN region, admin role and non active loc merchants', () => {
+      const { user } = getUserInstance();
+      expect(canViewLoans(user)).toBe(true);
+    });
+    it('should not have access for active loc merchants', () => {
+      const { user } = getUserInstance({ features: [{ feature: 'withdraw_loc' }] });
+      expect(canViewLoans(user)).toBe(false);
+    });
+    it('should not have access for finance role', () => {
+      const { user } = getUserInstance({ role: 'finance' });
+      expect(canViewLoans(user)).toBe(false);
+    });
+    it('should not have access for non rzp org', () => {
+      const { user } = getUserInstance({ custom_code: 'curlec' });
+      expect(canViewLoans(user)).toBe(false);
+    });
+    it('should not have access for non IN region', () => {
+      const { user } = getUserInstance({ country_code: 'SG' });
+      expect(canViewLoans(user)).toBe(false);
+    });
   });
 });
