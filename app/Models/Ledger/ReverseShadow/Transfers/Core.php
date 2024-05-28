@@ -234,7 +234,30 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->pushTransferDataToKafkaForAPITransactionCreation($transfer, $transferPayment,$creditJournalId, $debitJournalId);
+        $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabled($transfer->merchant);
+
+        if ($isExpEnabled === true)
+        {
+            $filteredDebitJournal = array_filter($journalResponse, function ($item) use ($debitJournalId) {
+                return $item['id'] === $debitJournalId;
+            });
+
+            $filteredCreditJournal = array_filter($journalResponse, function ($item) use ($creditJournalId) {
+                return $item['id'] === $creditJournalId;
+            });
+
+            $debitJournal = reset($filteredDebitJournal);
+
+            $creditJournal = reset($filteredCreditJournal);
+
+            // create txns without balance update and dispatch for settlement if experiment is enabled
+            // balance update is done asynchronously via Kafka for sync journal creates
+            $this->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
+        }
+        else
+        {
+            $this->pushTransferDataToKafkaForAPITransactionCreation($transfer, $transferPayment,$creditJournalId, $debitJournalId);
+        }
 
         return [$fee, $tax];
     }
