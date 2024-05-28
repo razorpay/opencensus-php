@@ -10175,17 +10175,21 @@ class Core extends Base\Core
         return $this->postBusinessWebsiteViaWorkflow($urlType, $input);
     }
 
+    // Update business website details
     public function updateBusinessWebsite(Merchant\Entity $merchant, string $newUrl)
     {
         $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $newUrl) {
-            $this->merchant->merchantDetail->setWebsite($newUrl);
 
-            $this->repo->merchant_detail->saveOrFail($this->merchant->merchantDetail);
+            $merchantDetail = $this->merchant->merchantDetail;
+
+            $merchantDetail->setWebsite($newUrl);
+
+            $this->repo->merchant_detail->saveOrFail($merchantDetail);
 
             // Sync key business_website  to merchant entity
             $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, [Entity::BUSINESS_WEBSITE => $newUrl]);
 
-            $this->checkAndMarkHasKeyAccess($this->merchant->merchantDetail, $merchant);
+            $this->checkAndMarkHasKeyAccess($merchantDetail, $merchant);
 
             $this->repo->saveOrFail($merchant);
         });
