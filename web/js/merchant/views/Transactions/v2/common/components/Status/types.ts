@@ -5,4 +5,5 @@ export type StatusProps = {
   variant: BadgeProps['color'];
   content: string;
   status: Item['status'];
+  isFailedIconEnabled?: boolean;
 };

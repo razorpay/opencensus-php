@@ -1,32 +1,43 @@
 import React from 'react';
+import {
+  Theme,
+  BadgeProps,
+  Text,
+  Link,
+  ChevronRightIcon,
+  UserPlusIcon,
+  CreditCardIcon,
+  AlertTriangleIcon,
+} from '@razorpay/blade/components';
+import moment from 'moment';
+import Lottie from 'react-lottie';
 
+import { SpiltzContextState } from 'common/splitz/types';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import copyToClipboard from 'common/utils/copyToClipboard';
+import { titleCase, getFormattedAmountWithSymbol } from 'common/utils/rzp-utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
-import { titleCase, getFormattedAmountWithSymbol } from 'common/utils/rzp-utils';
+import { SettlementStatus } from 'merchant/views/Settlements/v3/typings';
+import { TimelineJourneyPoint } from 'merchant/views/Transactions/v2/Payments/components/Timeline/types';
+import AuthorizedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Authorized';
+import CapturedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Captured';
+import CreatedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Created';
+import FailedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Failed';
+import RefundAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Refund';
 import {
   trackDetailsCopy,
   trackDetailsClick,
 } from 'merchant/views/Transactions/v2/common/tracking';
-import copyToClipboard from 'common/utils/copyToClipboard';
+
 import {
   IPaymentDetails,
   PaymentStatus,
   IPaymentIdRefundDetail,
   IBankTransfer,
   DisputeStatus,
+  IQuestionDetails,
 } from './types';
-import { TimelineJourneyPoint } from 'merchant/views/Transactions/v2/Payments/components/Timeline/types';
-import { Theme, BadgeProps, Text, Link, ChevronRightIcon } from '@razorpay/blade/components';
-import Lottie from 'react-lottie';
-import AuthorizedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Authorized';
-import CapturedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Captured';
-import CreatedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Created';
-import FailedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Failed';
-import RefundAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Refund';
-import moment from 'moment';
-import { SettlementStatus } from 'merchant/views/Settlements/v3/typings';
-import { isExperimentEnabled } from 'common/splitz/utils';
-import { SpiltzContextState } from 'common/splitz/types';
 
 export const shouldHideCapturePaymentAction = (
   payment: IPaymentDetails,
@@ -508,4 +519,131 @@ export const isChargeSlipForPosEnabled = (splitz: SpiltzContextState): boolean =
   const { abExperiments } = splitz || { abExperiments: { pos_chargeslip: undefined } };
   if (!abExperiments?.pos_chargeslip) return false;
   return isExperimentEnabled(abExperiments.pos_chargeslip);
+};
+
+export const getIsQuestionsApplicable = ({ status, method }: IPaymentDetails) => {
+  const whiteListedMethods = ['upi', 'card'];
+  return status === 'failed' && whiteListedMethods.includes(method);
+};
+
+export const getQuestionBody = (paymentDetails: IPaymentDetails): IQuestionDetails[] => {
+  return [
+    {
+      id: 'payment-failed',
+      icon: {
+        type: AlertTriangleIcon,
+        iconProps: {
+          color: 'surface.icon.gray.subtle',
+          size: 'medium',
+        },
+      },
+      question: {
+        value: 'Your payment has failed',
+        props: {
+          color: 'surface.text.gray.normal',
+        },
+      },
+      answer:
+        paymentDetails?.error_merchant_desc ||
+        paymentDetails?.error_description ||
+        'Your payment has failed due to a technical error.',
+    },
+    {
+      id: 'money-implication',
+      icon: {
+        type: CreditCardIcon,
+        iconProps: {
+          color: 'surface.icon.gray.subtle',
+          size: 'medium',
+        },
+      },
+      question: {
+        value: 'What happens to the money?',
+        props: {
+          color: 'surface.text.gray.normal',
+        },
+      },
+      answer:
+        paymentDetails?.error_money_implication ||
+        'Any money deducted will be refunded within 7 working days',
+    },
+    {
+      id: 'next-steps',
+      icon: {
+        type: UserPlusIcon,
+        iconProps: {
+          color: 'surface.icon.gray.subtle',
+          size: 'medium',
+        },
+      },
+      question: {
+        value: 'What should I do next?',
+        props: {
+          color: 'surface.text.gray.normal',
+        },
+      },
+      answer:
+        paymentDetails?.error_next_step || 'Please advise your customer to retry the payment.',
+    },
+  ];
+};
+
+export const getHighlightDetails = ({ applicationDetails, createdDay, createdTime }) => {
+  const highlights = [
+    {
+      title: 'Created on',
+      value: `${createdDay}, ${createdTime}`,
+    },
+  ];
+  if (applicationDetails?.name) {
+    highlights.push({
+      title: 'Payment initiated via',
+      value: applicationDetails.name,
+    });
+  }
+  return highlights;
+};
+
+const CUSTOMER = 'customer';
+const BANK = 'bank';
+const BUSINESS_AND_OTHERS = 'business_and_others';
+
+export const FailureCategoryMapping = {
+  customer: CUSTOMER,
+  bank: BANK,
+  gateway: BANK,
+  issuer_bank: BANK,
+  customer_psp: BANK,
+  network: BANK,
+  issuer: BANK,
+  beneficiary_bank: BANK,
+  business: BUSINESS_AND_OTHERS,
+  merchant: BUSINESS_AND_OTHERS,
+  provider: BUSINESS_AND_OTHERS,
+  internal: BUSINESS_AND_OTHERS,
+};
+
+const CUSTOMER_DROP_OFF = 'Customer drop-offs';
+const BANK_FAILURE = 'Bank-Related';
+const BUSINESS_FAILURE = 'Business failures/Others';
+
+export const FailureTypeMapping = {
+  [CUSTOMER]: CUSTOMER_DROP_OFF,
+  [BANK]: BANK_FAILURE,
+  [BUSINESS_AND_OTHERS]: BUSINESS_FAILURE,
+};
+
+export const getStatusText = (
+  paymentDetails: IPaymentDetails,
+  isPaymentsRoute: boolean,
+): string => {
+  const { status, error_source } = paymentDetails;
+  if (status === PaymentStatus.FAILED && isPaymentsRoute) {
+    return `Payment Failed${
+      error_source && FailureCategoryMapping[error_source]
+        ? `: ${FailureTypeMapping[FailureCategoryMapping[error_source]]}`
+        : ''
+    }`;
+  }
+  return titleCase(status);
 };

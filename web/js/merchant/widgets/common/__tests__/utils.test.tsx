@@ -52,7 +52,7 @@ describe('Widget->common->utils->makeLink', () => {
   });
   test('should return correct url for payment_failed', () => {
     const url = makeLink('payment_failed', { from: 123, to: 456, status: 'failed' });
-    expect(url).toBe('/payments?from=123&to=456&status=failed');
+    expect(url).toBe('/failed-payments');
   });
   test('should return correct url for refund_failed', () => {
     const url = makeLink('refund_failed', { from: 123, to: 456, public_status: 'failed' });

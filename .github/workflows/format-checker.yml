@@ -1,8 +1,5 @@
 name: Format Checker Workflow
-
-on:
-  pull_request:
-    types: [opened, reopened, synchronize, labeled]
+on: push
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

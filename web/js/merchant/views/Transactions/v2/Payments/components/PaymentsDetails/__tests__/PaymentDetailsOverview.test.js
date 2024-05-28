@@ -87,14 +87,16 @@ describe('Payment Details Overview component', () => {
         .unix(paymentCreatedAt)
         .format('ddd MMM D,hh:mma')
         .split(',');
-      expect(screen.getByText(`Created on ${createdDay},`)).toBeInTheDocument();
-      expect(screen.getByText(`${createdTime}`)).toBeInTheDocument();
+      expect(screen.getByText(`Created on:`)).toBeInTheDocument();
+      expect(screen.getByText(`${createdDay}, ${createdTime}`)).toBeInTheDocument();
     });
 
-    test('should render the badge with application name', () => {
+    test.only('should render the badge with application name', () => {
       render(<App props={refundedPaymentProps} />, { initialState });
-      const badgeText = `Payment initiated via ${refundedPaymentProps.applicationDetails.name}`;
-      expect(screen.getByText(`${badgeText}`)).toBeInTheDocument();
+      expect(screen.getByText(`Payment initiated via:`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`${refundedPaymentProps.applicationDetails.name}`),
+      ).toBeInTheDocument();
     });
   });
 

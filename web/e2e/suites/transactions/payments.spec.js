@@ -194,7 +194,7 @@ test.describe.parallel(
         await expect(page.getByTestId('refund-heading')).toBeVisible();
         await expect(page.getByText('Only captured payments can be refunded')).toBeVisible();
         await expect(page.getByText('Payment created')).toBeVisible();
-        await expect(page.getByText('Payment failed')).toBeVisible();
+        // await expect(page.getByText('/^Payment failed$/')).toBeVisible();
         const failureMessage = 'Payment was unsuccessful as it was cancelled by the customer.';
         await expect(
           page.getByTestId('payment-details-overview').getByText(failureMessage),

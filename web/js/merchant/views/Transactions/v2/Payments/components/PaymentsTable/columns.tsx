@@ -1,9 +1,18 @@
 import React from 'react';
-import { Box, CopyIcon, Text, VisuallyHidden } from '@razorpay/blade/components';
+import {
+  Box,
+  CopyIcon,
+  Text,
+  VisuallyHidden,
+  BankIcon,
+  UserXIcon,
+  BriefcaseIcon,
+} from '@razorpay/blade/components';
 
 import Amount from 'common/ui/Amount';
 import MaskedContact from 'merchant/components/Mask/Contact';
 import { createCustomColumnView } from 'merchant/views/Transactions/utils';
+import { FailureCategoryMapping } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/utils';
 import { Item } from 'merchant/views/Transactions/v2/Payments/types';
 import CreatedOn from 'merchant/views/Transactions/v2/common/components/CreatedOn';
 import Details from 'merchant/views/Transactions/v2/common/components/Details';
@@ -22,10 +31,27 @@ import { getPaymentMethod, getSourceChannelType } from './utils';
 
 const { FAILED_PAYMENTS, PAYMENTS } = TransactionsEntityRoute;
 
+export const FailureTypeTableMapping = {
+  customer: {
+    title: 'Customer drop-offs',
+    icon: UserXIcon,
+  },
+  bank: {
+    title: 'Banking Failure',
+    icon: BankIcon,
+  },
+  business_and_others: {
+    title: 'Business Failure/Others',
+    icon: BriefcaseIcon,
+  },
+};
+
+const PAYMENT_ID = 'Payment ID';
+
 export const paymentId = {
   title: (
     <Text size="medium" weight="semibold" color="surface.text.gray.normal">
-      Payment ID
+      {PAYMENT_ID}
     </Text>
   ),
   value: ({ id }: { id: Item['id'] }): JSX.Element => (
@@ -41,7 +67,7 @@ export const paymentId = {
 export const omniPaymentId = {
   title: (
     <Text size="medium" weight="semibold" color="surface.text.gray.normal">
-      Payment ID
+      {PAYMENT_ID}
     </Text>
   ),
   value: ({
@@ -157,7 +183,31 @@ export const status = {
       return <Text>--</Text>;
     }
     const { variant, content } = paymentStatusVariantMap[status];
-    return <Status variant={variant} content={content} status={status} />;
+    return <Status variant={variant} content={content} status={status} isFailedIconEnabled />;
+  },
+};
+
+export const reason = {
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Reason
+    </Text>
+  ),
+  value: ({ error_source }: Item): JSX.Element => {
+    if (!error_source || !FailureCategoryMapping[error_source]) {
+      return <Text>--</Text>;
+    }
+
+    const { title, icon: Icon } = FailureTypeTableMapping[FailureCategoryMapping[error_source]];
+
+    return (
+      <Box display="flex" gap="spacing.3" alignItems="center">
+        <Box display="flex">
+          <Icon size="medium" color="feedback.icon.neutral.intense" />
+        </Box>
+        <Text>{title}</Text>
+      </Box>
+    );
   },
 };
 
@@ -216,14 +266,29 @@ export const desktopColumns = [
   actions,
 ];
 
+export const failedPaymentDesktopColumns = [
+  amount,
+  status,
+  reason,
+  customerDetail,
+  paymentId,
+  bankRRN,
+  createdOn,
+  actions,
+];
+
 export const getDesktopColumns = (
   isOmniView: boolean,
   shouldShowCustomTransactionTabView: boolean,
   selectedColumnsList: string[],
 ) => {
-  let updatedDesktopColumns = desktopColumns;
+  const isFailedPaymentView = window.location.pathname.includes(FAILED_PAYMENTS);
+  let updatedDesktopColumns = isFailedPaymentView ? failedPaymentDesktopColumns : desktopColumns;
+
   if (isOmniView) {
-    updatedDesktopColumns = [omniPaymentId, ...desktopColumns.slice(1, desktopColumns.length)];
+    updatedDesktopColumns = updatedDesktopColumns.map((column) =>
+      column.title?.props?.children === PAYMENT_ID ? omniPaymentId : column,
+    );
   }
 
   if (shouldShowCustomTransactionTabView) {

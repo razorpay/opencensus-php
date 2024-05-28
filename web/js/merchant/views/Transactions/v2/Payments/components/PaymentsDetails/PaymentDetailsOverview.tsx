@@ -1,13 +1,22 @@
 import React, { useEffect } from 'react';
-import { Badge, Box, Card, CardBody, Divider, Text, useTheme } from '@razorpay/blade/components';
+import {
+  Alert,
+  Badge,
+  Box,
+  Card,
+  CardBody,
+  Divider,
+  Text,
+  useTheme,
+  CloseIcon,
+} from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
-import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { useLocation } from 'react-router-dom';
 import { bindActionCreators, compose } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import Amount from 'common/ui/Amount';
-import { titleCase } from 'common/utils/rzp-utils';
 import {
   fetchSchedule,
   fetchHolidayList,
@@ -16,17 +25,28 @@ import {
 import * as ModalActions from 'merchant_common/reducers/modals';
 
 import Tooltip from './Tooltip';
-import { OverviewIconWrapper, OverviewSubtextWrapper, StyledAmountWrapper } from './styled';
-import { IPaymentDetails, IPaymentIdRefundDetails, ApplicationDetails } from './types';
-
+import { ERROR_DESCRIPTION_CONTENT_MAP } from './constants';
+import { OverviewIconWrapper, StyledAmountWrapper } from './styled';
+import {
+  IPaymentDetails,
+  IPaymentIdRefundDetails,
+  ApplicationDetails,
+  IQuestionDetails,
+  PaymentStatus,
+} from './types';
 import {
   getBadgeIcon,
   getBaseVariant,
   getTime as useTime,
   getRefundsOverviewDetails,
   getDisputesOverviewDetails,
+  getIsQuestionsApplicable,
+  getQuestionBody,
+  getHighlightDetails,
+  getStatusText,
 } from './utils';
-import { ERROR_DESCRIPTION_CONTENT_MAP } from './constants';
+
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 export const OverviewIcon = ({ status }) => {
   const Icon = getBadgeIcon(status);
@@ -43,6 +63,79 @@ interface IPaymentDetailsOverview extends RouteComponentProps {
   openModal: (args) => void;
 }
 
+const BadgeStatusIcon = ({ type, ...props }): JSX.Element => {
+  if (type === PaymentStatus.FAILED) {
+    return <CloseIcon size="medium" color="feedback.icon.negative.intense" />;
+  }
+  return <Tooltip type={type} {...props} />;
+};
+
+const FailedPaymentCommunication = ({
+  paymentDetails,
+  isPaymentsRoute,
+}: {
+  paymentDetails: IPaymentDetails;
+  isPaymentsRoute: boolean;
+}): JSX.Element | null => {
+  const isQuestionsApplicable = getIsQuestionsApplicable(paymentDetails);
+  if (isQuestionsApplicable && isPaymentsRoute) {
+    const questions = getQuestionBody(paymentDetails);
+    return (
+      <Box display="flex" flexDirection="column" gap="spacing.5" paddingTop="spacing.5">
+        <Divider />
+        <Box
+          borderRadius="medium"
+          padding="spacing.6"
+          backgroundColor="surface.background.gray.moderate"
+          borderColor="surface.border.gray.subtle"
+          borderWidth="thin"
+          display="flex"
+          flexDirection="column"
+          gap="spacing.5"
+        >
+          {questions.map((eachQuestion: IQuestionDetails): JSX.Element => {
+            const { id, icon, question, answer }: IQuestionDetails = eachQuestion;
+            const IconComponent = icon.type;
+            return (
+              <Box key={id} display="flex" gap="spacing.4">
+                <Box display="flex">
+                  <IconComponent {...icon.iconProps} marginTop="spacing.1" />
+                </Box>
+                <Box display="flex" flexDirection="column" gap="spacing.2">
+                  <Text size="medium" weight="medium" {...question.props}>
+                    {question.value}
+                  </Text>
+                  <Text size="small" color="surface.text.gray.subtle">
+                    {answer}
+                  </Text>
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      </Box>
+    );
+  }
+  if (paymentDetails?.error_description) {
+    return (
+      <Box marginTop="spacing.7">
+        <Alert
+          color="negative"
+          description={
+            ERROR_DESCRIPTION_CONTENT_MAP[paymentDetails?.error_description]
+              ? ERROR_DESCRIPTION_CONTENT_MAP[paymentDetails?.error_description]
+              : paymentDetails?.error_description
+          }
+          emphasis="subtle"
+          isFullWidth
+          isDismissible={false}
+        />
+      </Box>
+    );
+  }
+  return null;
+};
+
 function PaymentDetailsOverview({
   paymentDetails,
   paymentIdRefundDetails,
@@ -55,6 +148,9 @@ function PaymentDetailsOverview({
   const { currency, amount, created_at, status } = paymentDetails;
   const settlementId = paymentDetails?.transaction?.settlement_id;
   const [createdDay, createdTime] = useTime(created_at);
+
+  const { pathname } = useLocation();
+  const isPaymentsRoute = pathname.includes('/payments');
 
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
@@ -72,6 +168,12 @@ function PaymentDetailsOverview({
   }, [settlementId]);
 
   const viewDisputeCallback = (route: string) => history.push(route);
+
+  const highlightDetails = getHighlightDetails({
+    createdDay,
+    createdTime,
+    applicationDetails,
+  });
 
   return (
     <Box testID="payment-details-overview">
@@ -93,33 +195,34 @@ function PaymentDetailsOverview({
                       marginTop="spacing.2"
                       size="large"
                       color={getBaseVariant(status)}
-                      icon={(props) => <Tooltip type={status} {...props} />}
+                      icon={(props) => <BadgeStatusIcon type={status} {...props} />}
                     >
-                      {titleCase(status)}
+                      {getStatusText(paymentDetails, isPaymentsRoute)}
                     </Badge>
-                    {applicationDetails?.name ? (
-                      <Badge
-                        emphasis="subtle"
-                        marginRight="spacing.3"
-                        marginTop="spacing.2"
-                        size="large"
-                        color={getBaseVariant(status)}
-                      >
-                        Payment initiated via {applicationDetails?.name}
-                      </Badge>
-                    ) : null}
                   </Box>
                   <StyledAmountWrapper type="regular" fontSize={28}>
                     <Amount currency={currency || 'INR'} value={amount} />
                   </StyledAmountWrapper>
                 </Box>
-                <Box display="flex" justifyContent="center" marginTop="spacing.3">
-                  <OverviewSubtextWrapper isMobile={isMobile}>
-                    <Text color="surface.text.gray.normal" display="flex">
-                      Created on {createdDay},
-                      <Text color="surface.text.gray.muted">{createdTime}</Text>
-                    </Text>
-                  </OverviewSubtextWrapper>
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  flexDirection="column"
+                  marginTop="spacing.3"
+                  alignItems="center"
+                  gap="spacing.2"
+                >
+                  {highlightDetails.map(({ title, value }) => (
+                    <>
+                      {' '}
+                      <Box display="flex" gap="spacing.2">
+                        <Text color="surface.text.gray.muted" display="flex">
+                          {title}:
+                        </Text>
+                        <Text color="surface.text.gray.subtle">{value}</Text>
+                      </Box>
+                    </>
+                  ))}
                 </Box>
               </Box>
             ) : (
@@ -142,42 +245,39 @@ function PaymentDetailsOverview({
                       marginTop="spacing.2"
                       size="large"
                       color={getBaseVariant(status)}
-                      icon={(props) => <Tooltip type={status} {...props} />}
+                      icon={(props) => <BadgeStatusIcon type={status} {...props} />}
                     >
-                      {titleCase(status)}
+                      {getStatusText(paymentDetails, isPaymentsRoute)}
                     </Badge>
-                    {applicationDetails?.name ? (
-                      <Badge
-                        emphasis="subtle"
-                        marginRight="spacing.3"
-                        marginTop="spacing.2"
-                        size="large"
-                        color={getBaseVariant(status)}
-                      >
-                        Payment initiated via {applicationDetails?.name}
-                      </Badge>
-                    ) : null}
                   </Box>
                 </Box>
-                <OverviewSubtextWrapper isMobile={isMobile}>
-                  <Text color="surface.text.gray.normal" display="flex">
-                    Created on {createdDay},
-                    <Text color="surface.text.gray.muted">{createdTime}</Text>
-                  </Text>
-                </OverviewSubtextWrapper>
+                <Box display="flex" gap="spacing.2" flexWrap="wrap">
+                  {highlightDetails.map(({ title, value }, index) => (
+                    <>
+                      {' '}
+                      <Box display="flex" gap="spacing.2">
+                        <Text color="surface.text.gray.muted" display="flex">
+                          {title}:
+                        </Text>
+                        <Text color="surface.text.gray.subtle">{value}</Text>
+                      </Box>
+                      {index < highlightDetails.length - 1 ? (
+                        <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
+                          •
+                        </Text>
+                      ) : null}
+                    </>
+                  ))}
+                </Box>
               </Box>
             )}
           </Box>
-          {paymentDetails?.status === 'failed' && paymentDetails?.error_description && (
-            <Box marginTop="spacing.5">
-              <Divider marginBottom="spacing.3" />
-              <Text variant="body" size="small" weight="semibold" color="surface.text.gray.normal">
-                {ERROR_DESCRIPTION_CONTENT_MAP[paymentDetails?.error_description]
-                  ? ERROR_DESCRIPTION_CONTENT_MAP[paymentDetails?.error_description]
-                  : paymentDetails?.error_description}
-              </Text>
-            </Box>
-          )}
+          {paymentDetails?.status === 'failed' ? (
+            <FailedPaymentCommunication
+              paymentDetails={paymentDetails}
+              isPaymentsRoute={isPaymentsRoute}
+            />
+          ) : null}
           {(paymentDetails?.status === 'refunded' || paymentIdRefundDetails.length > 0) &&
             paymentDetails.disputes.items.length === 0 && (
               <Box marginTop="spacing.5">

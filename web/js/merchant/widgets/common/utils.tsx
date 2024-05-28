@@ -41,8 +41,7 @@ export const makeLink = (key: string, params: Record<string, any> = {}) => {
     case 'refund_details':
       return `/refunds/${params.refund_id ?? ''}`;
     case 'payment_failed':
-      // params is an object, URLSearchParams helps to convert it into a query string.
-      return `/payments?${new URLSearchParams(params).toString()}`;
+      return '/failed-payments';
     case `refund_failed`:
       return `/refunds?${new URLSearchParams(params).toString()}`;
     case `qr_codes`:

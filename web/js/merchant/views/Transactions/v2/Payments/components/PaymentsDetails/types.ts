@@ -1,3 +1,4 @@
+import React from 'react';
 import { Store } from 'common/typings';
 import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
 
@@ -89,6 +90,22 @@ type PaymentMethod =
   | 'app'
   | 'bank_transfer'
   | 'emi';
+
+export interface IQuestionDetails {
+  question: {
+    value: string;
+    props: Record<string, string>;
+  };
+  answer: string;
+  icon: {
+    type: React.ElementType;
+    iconProps: {
+      color: string;
+      size: string;
+    };
+  };
+  id: string;
+}
 export interface IPaymentDetails {
   id: string;
   amount: number;
@@ -111,6 +128,9 @@ export interface IPaymentDetails {
   description: null;
   invoice_id: string;
   card_id: string;
+  error_merchant_desc: string;
+  error_money_implication: string;
+  error_next_step: string;
   card: Card | null;
   bank: null | string;
   wallet: null | string;
