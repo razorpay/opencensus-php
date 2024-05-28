@@ -15,9 +15,11 @@ import { getCurrencySymbol } from '@razorpay/i18nify-js/currency';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import { loadCheckoutScript } from 'merchant/views/Capital/utils';
+import { storeAuditData } from 'merchant/views/Optimizer/AddProvider/service';
 
 import { PaymentFailureAlert, PaymentWebhookFailureAlert } from './FailureAlerts';
 import { TestingResult } from './TestingResult';
+import { AUDIT_TYPES } from './constants';
 
 export const PaymentTesting = ({
   currency,
@@ -37,6 +39,7 @@ export const PaymentTesting = ({
   changeIntegrationTestingStep,
   isPaymentDetailsFetched,
   setIsPaymentDetailsFetched,
+  providerId,
 }) => {
   useEffect(() => {
     loadCheckoutScript();
@@ -52,6 +55,10 @@ export const PaymentTesting = ({
 
   useEffect(() => {
     if (isPaymentDone && paymentId) {
+      storeAuditData(providerId, {
+        audit_type: AUDIT_TYPES.payment,
+        audit_data: { id: paymentId },
+      });
       merchantFetch({
         url: `payments/${paymentId}`,
         method: 'GET',

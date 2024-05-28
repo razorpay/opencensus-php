@@ -24,11 +24,12 @@ import {
   fetchRefundDetails,
   fetchRefund,
   updateProvider,
+  storeAuditData,
 } from 'merchant/views/Optimizer/AddProvider/service';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { GoLiveConfirmation } from './GoLiveConfirmation';
-import { INTEGRATION_TESTING_STEPS } from './IntegrationTesting/constants';
+import { INTEGRATION_TESTING_STEPS, AUDIT_TYPES } from './IntegrationTesting/constants';
 
 const IntegrationTesting = ({
   isModalOpen,
@@ -317,6 +318,7 @@ const IntegrationTesting = ({
         actionName: 'failed',
         properties: {
           error: response.error.description,
+          payment_id: response.error?.metadata?.payment_id,
         },
         screen: 'Optimizer Integration Testing',
       });
@@ -324,6 +326,7 @@ const IntegrationTesting = ({
       setIsPaymentSuccessfull(false);
       setIsPaymentDetailsFetched(true);
       setPaymentError(response.error.description);
+      setPaymentId(response.error?.metadata?.payment_id);
     });
   };
 
@@ -350,6 +353,10 @@ const IntegrationTesting = ({
     });
     createRefund({ id, amount })
       .then((res) => {
+        storeAuditData(providerId, {
+          audit_type: AUDIT_TYPES.refund,
+          audit_data: { id: res?.data?.id },
+        });
         setTimeout(() => {
           setIsRefundDetialsFetched(true);
           setIsRefundDone(true);
@@ -513,6 +520,7 @@ const IntegrationTesting = ({
                 changeIntegrationTestingStep={changeIntegrationTestingStep}
                 isPaymentDetailsFetched={isPaymentDetailsFetched}
                 setIsPaymentDetailsFetched={setIsPaymentDetailsFetched}
+                providerId={providerId}
               />
             )}
             {currentStep === 'refund_testing' && (

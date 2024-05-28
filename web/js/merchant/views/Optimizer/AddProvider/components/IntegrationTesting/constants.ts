@@ -94,3 +94,8 @@ export const CARD_NETWORKS = {
   AMEX: 'American Express Cards',
   DICL: 'Diners Club Cards',
 };
+
+export const AUDIT_TYPES = {
+  payment: 'payment',
+  refund: 'refund',
+};

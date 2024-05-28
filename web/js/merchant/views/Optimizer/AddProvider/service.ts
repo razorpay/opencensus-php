@@ -85,3 +85,11 @@ export function refreshGatewayEnabledMethods(providerId) {
     method: 'put',
   });
 }
+
+export function storeAuditData(providerId, payload) {
+  return merchantFetch({
+    url: `v3/terminals/proxy/optimizer/merchant/provider/${providerId}`,
+    method: 'put',
+    data: payload,
+  });
+}
