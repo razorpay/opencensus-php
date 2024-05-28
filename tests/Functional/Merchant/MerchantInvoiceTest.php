@@ -18,6 +18,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
+use RZP\Exception;
 
 class MerchantInvoiceTest extends TestCase
 {
@@ -1163,7 +1164,7 @@ class MerchantInvoiceTest extends TestCase
         return  $this->makeRequestAndGetContent($request);
     }
 
-    protected function merchantInvoiceControl($action, $reason = null, $merchantIds = [])
+    protected function merchantInvoiceControl($action, $reason = null, $merchantIds = [], $orgIds = [], $isOrgIdSelected = false)
     {
         $this->ba->adminAuth();
 
@@ -1181,6 +1182,13 @@ class MerchantInvoiceTest extends TestCase
             $content['merchant_ids'] = $merchantIds;
         }
 
+        if(empty($orgIds) === false)
+        {
+            $content['org_ids'] = $orgIds;
+        }
+
+        $content['isOrgIdSelected'] = $isOrgIdSelected;
+
         $request = [
             'url'     => '/merchants/invoice/control',
             'method'  => 'POST',
@@ -1188,6 +1196,43 @@ class MerchantInvoiceTest extends TestCase
         ];
 
        return  $this->makeRequestAndGetContent($request);
+    }
+
+    public function testMerchantInvoiceControlWithOrgIdSelectedSuccess() {
+        $result =  $this->merchantInvoiceControl(
+            'add',
+            'adding to skip automatic merchant invoice creation',
+            [],
+            ['100000razorpay'],
+            true
+        );
+
+        $this->assertEmpty($result['failed_mids']);
+        $this->assertEquals('100000razorpay', $result[0]['orgId']);
+
+        $result =  $this->merchantInvoiceControl(
+            'remove',
+            'adding to skip automatic merchant invoice creation',
+            [],
+            ['100000razorpay'],
+            true
+        );
+
+        $this->assertEmpty($result['failed_mids']);
+        $this->assertEquals('100000razorpay', $result[0]['orgId']);
+    }
+
+    public function testMerchantInvoiceControlWithOrgIdSelectedFailure()
+    {
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('org_ids field is required if org Id option is selected and action is add or remove');
+        $result = $this->merchantInvoiceControl(
+            'add',
+            'adding to skip automatic merchant invoice creation',
+            [],
+            [],
+            true
+        );
     }
 
     public function testPgInvoiceEntityCreateWithEInvoice()

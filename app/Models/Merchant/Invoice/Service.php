@@ -4,8 +4,10 @@ namespace RZP\Models\Merchant\Invoice;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Exception\BaseException;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Request\Requests;
@@ -21,6 +23,7 @@ use RZP\Jobs\MerchantInvoiceBackFill;
 use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Base\Traits\ProcessAccountNumber;
 use RZP\Models\Merchant\Invoice\EInvoice\PgEInvoice;
+use RZP\Models\Feature;
 
 class Service extends Base\Service
 {
@@ -456,25 +459,82 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function generationControl($input)
-    {
-        (new Validator())->validateInput('generation_control', $input);
-
-        $redis = $this->app->redis->Connection('mutex_redis');
-
-        $values = $redis->LRANGE(Constants::MERCHANT_INVOICE_SKIPPED_MIDS_KEY, 0, -1);
-
-        if ($input['action'] === Constants::SHOW_SKIPPED_MIDS_LIST)
-        {
-            return $values;
-        }
-
-        $result = [
-            'failed_mids'  => [],
-            'success_mids' => [],
+    /**
+     * @throws BadRequestException
+     */
+    protected function addFeatureFlag($merchantId): void {
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => $merchantId,
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAMES       => [Feature\Constants::SHOW_INVOICE_REPORT],
+            Feature\Entity::SHOULD_SYNC => true
         ];
+        try
+        {
+            (new Feature\Service)->addFeatures($featureParams);
+        }
+        catch (BadRequestException $exception)
+        {
+            if ($exception->getCode() === ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED)
+            {
+                $this->trace->info(TraceCode::FEATURE_STALE_READ_SUCCESS, $featureParams);
+            }
+            else
+            {
+                throw $exception;
+            }
+        }
+    }
 
-        foreach ($input['merchant_ids'] as $merchantId)
+    /**
+     * @throws BadRequestException
+     */
+    protected function removeFeatureFlag($merchantId): void {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        if(!empty($merchant) && $merchant->isFeatureEnabled(Feature\Constants::SHOW_INVOICE_REPORT)) {
+            try {
+                $features = (new Feature\Service)->deleteEntityFeature(
+                    'accounts',
+                    $merchantId,
+                    Feature\Constants::SHOW_INVOICE_REPORT,
+                    [Feature\Entity::SHOULD_SYNC => true]);
+
+            } catch(BadRequestException $exception) {
+                if ($exception->getCode() === ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST)
+                {
+                    $this->trace->info(ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST, [
+                        'merchantId' => $merchantId,
+                        'feature' => Feature\Constants::SHOW_INVOICE_REPORT
+                    ]);
+                }
+                else
+                {
+                    throw $exception;
+                }
+            }
+        }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    protected function toggleFeatureFlagIdentifier($input, $merchantId = null): void {
+        switch ($input['action'])
+        {
+            case Constants::ADD_TO_SKIPPED_MIDS_LIST:
+                if ($merchantId !== null) {
+                    $this->addFeatureFlag($merchantId);
+                }
+                break;
+
+            case Constants::REMOVE_FROM_SKIPPED_MIDS_LIST:
+                $this->removeFeatureFlag($merchantId);
+                break;
+        }
+    }
+
+    protected function performInvoiceControlAction($mids, $res, $values, $input, $redis): array {
+        foreach ($mids as $merchantId)
         {
             $skip = 0;
 
@@ -485,7 +545,7 @@ class Service extends Base\Service
                     case Constants::ADD_TO_SKIPPED_MIDS_LIST:
                         if(in_array($merchantId, $values) === true)
                         {
-                            $result['failed_mids'][] = $merchantId;
+                            $res['failed_mids'][] = $merchantId;
 
                             $this->trace->info(
                                 TraceCode::MERCHANT_INVOICE_GENERATION_CONTROL_FAILED,
@@ -498,12 +558,13 @@ class Service extends Base\Service
                         }
 
                         $redis->LPUSH(Constants::MERCHANT_INVOICE_SKIPPED_MIDS_KEY, $merchantId);
+                        $this->toggleFeatureFlagIdentifier($input, $merchantId);
                         break;
 
                     case Constants::REMOVE_FROM_SKIPPED_MIDS_LIST:
                         if(in_array($merchantId, $values) === false)
                         {
-                            $result['failed_mids'][] = $merchantId;
+                            $res['failed_mids'][] = $merchantId;
 
                             $this->trace->info(
                                 TraceCode::MERCHANT_INVOICE_GENERATION_CONTROL_FAILED,
@@ -516,11 +577,12 @@ class Service extends Base\Service
                             break;
                         }
                         $redis->LREM(Constants::MERCHANT_INVOICE_SKIPPED_MIDS_KEY, 0, $merchantId);
+                        $this->toggleFeatureFlagIdentifier($input, $merchantId);
                         break;
                 }
                 if($skip === 0)
                 {
-                    $result['success_mids'][] = $merchantId;
+                    $res['success_mids'][] = $merchantId;
                 }
             }
             catch (\Throwable $e)
@@ -534,8 +596,62 @@ class Service extends Base\Service
                        'reason'      => 'failed to' . $input['action']. 'to redis skipped list'
                     ]);
 
-                $result['failed_mids'][] = $merchantId;
+                $res['failed_mids'][] = $merchantId;
             }
+        }
+        return $res;
+    }
+    public function generationControl($input)
+    {
+        (new Validator())->validateRequestInput($input);
+
+        $redis = $this->app->redis->Connection('mutex_redis');
+
+        $values = $redis->LRANGE(Constants::MERCHANT_INVOICE_SKIPPED_MIDS_KEY, 0, -1);
+
+        if ($input['action'] === Constants::SHOW_SKIPPED_MIDS_LIST)
+        {
+            return $values;
+        }
+
+        if (!empty($input['isOrgIdSelected'])) {
+            $result = [];
+            foreach ($input['org_ids'] as $orgId) {
+                $currObject = [
+                    "orgId" => $orgId,
+                    "success_mids" => [],
+                    "failed_mids" => []
+                ];
+
+                $offset = 0;
+                $index = 0;
+                $associatedMids = [];
+                while (true) {
+                    $mids = $this->repo->merchant->fetchMerchantsByOrgIdFromTidb($orgId, $offset, 1000);
+                    if (empty($mids) === true) {
+                        break;
+                    }
+                    $associatedMids = array_merge($associatedMids, $mids);
+
+                    $index++;
+
+                    $offset = $index * 1000;
+                }
+
+                if(!empty($input['exempted_mids'])) {
+                    $excludedMids = $input['exempted_mids'];
+                    $associatedMids = array_diff($associatedMids, $excludedMids);
+                }
+                $currObject = $this->performInvoiceControlAction($associatedMids, $currObject, $values, $input, $redis);
+                $result[] = $currObject;
+            }
+        } else {
+            $result = [
+                'failed_mids'  => [],
+                'success_mids' => [],
+            ];
+
+            $result = $this->performInvoiceControlAction($input['merchant_ids'], $result, $values, $input, $redis);
         }
 
         $this->trace->info(

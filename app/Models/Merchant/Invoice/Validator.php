@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Invoice;
 
 use RZP\Exception;
 use RZP\Base;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -75,9 +76,13 @@ class Validator extends Base\Validator
 
     protected static $generationControlRules = [
         'action'          => 'required|string|in:add,remove,show',
-        'merchant_ids'    => 'required_if:action,add,remove|array',
+        'merchant_ids'    => 'sometimes|array',
         'merchant_ids.*'  => 'required|string|size:14',
-        'reason'          => 'required_if:action,add,remove|string'
+        'reason'          => 'required_if:action,add,remove|string',
+        'org_ids'         => 'sometimes|array',
+        'org_ids.*'       => 'required|string|size:14',
+        'isOrgIdSelected' => 'sometimes|boolean',
+        'exempted_mids'   => 'sometimes|array'
     ];
 
     protected function validateType($input)
@@ -87,5 +92,24 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid commission type: ', $input[Entity::TYPE]);
         }
+    }
+
+    public function validateRequestInput($input): void {
+        (new Validator())->validateInput('generation_control', $input);
+
+        if (!$input['isOrgIdSelected']) {
+            //if org Id radio button not selected and action is add or remove
+            if (($input['action'] == 'add' or $input['action'] == 'remove') && empty($input['merchant_ids']))
+            {
+                throw new BadRequestValidationFailureException('Merchant_ids field is required if Merchant Id option is selected and action is add or remove');
+            }
+        } else {
+            //if org Id radio button selected
+            if (($input['action'] == 'add' or $input['action'] == 'remove') && empty($input['org_ids']))
+            {
+                throw new BadRequestValidationFailureException('org_ids field is required if org Id option is selected and action is add or remove');
+            }
+        }
+
     }
 }

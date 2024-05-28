@@ -1083,6 +1083,21 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchMerchantsByOrgIdFromTidb($orgId, $skip, $limit)
+    {
+        $connection = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        return $this->newQueryWithConnection($connection)
+            ->select(Entity::ID)
+            ->where(Entity::ORG_ID, $orgId)
+            ->skip($skip)
+            ->take($limit)
+            ->orderBy(Entity::ID)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     public function fetchReferredMerchants($merchantId)
     {
         $tag = Constants::PARTNER_REFERRAL_TAG_PREFIX.$merchantId;

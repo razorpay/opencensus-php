@@ -232,6 +232,12 @@ class Constants
      */
     const SHOW_CUSTOM_DCC_DISCLOSURES = 'show_custom_dcc_discl';
 
+    //org feature flag to hide monthly invoice report from dashboard
+    const HIDE_INVOICE_REPORT = 'hide_invoice_report';
+
+    //merchant feature flag to show monthly invoice report, to be used in conjuction with HIDE_INVOICE_REPORT
+    const SHOW_INVOICE_REPORT = 'show_invoice_report';
+
     /**
      * The feature flag is used for VAS merchant on-boarding, enabling the skipping of document verification in KYC form submission,
      * from the backend. Since KYC verification does not apply to the banking's merchants, the bank itself performs the verification.
@@ -2991,6 +2997,8 @@ class Constants
         self::AMAZON_GC_VALIDATIONS                  => true,
         self::CUSTOM_ONBOARDING_EMAILS               => true,
         self::VAS_LINK_WALLETS                       => true,
+        self::HIDE_INVOICE_REPORT                    => true,
+        self::SHOW_INVOICE_REPORT                   => true,
         self::ORG_SPECIFIC_CREDENTIALS              => true,
         self::DISABLE_SINCH_SMS_EMAIL               => true,
         self::IN_PERSON_CARDS_ENABLE_TERMINAL_SELECTION => true,
@@ -4313,7 +4321,17 @@ class Constants
             'feature'       => self::COLLECTX_ENABLED,
             'display_name'  => 'CollectX Enabled',
             'documentation' => 'Enable merchant on CollectX and create VAs with balance type banking',
-        ]
+        ],
+        self::HIDE_INVOICE_REPORT => [
+            'feature'       => self::HIDE_INVOICE_REPORT,
+            'display_name'  => 'org level Feature to hide monthly invoice report',
+            'documentation' => ''
+        ],
+        self::SHOW_INVOICE_REPORT => [
+            'feature'       => self::SHOW_INVOICE_REPORT,
+            'display_name'  => 'merchant level Feature to show monthly invoice report',
+            'documentation' => ''
+        ],
     ];
 
     /**
