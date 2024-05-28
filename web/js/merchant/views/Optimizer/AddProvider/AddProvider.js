@@ -736,6 +736,17 @@ class AddProvider extends React.Component {
     } else {
       isTestingConfirmationModalOpen = true;
     }
+    trackOptimizerEvents({
+      objectName: 'method coverage',
+      actionName: 'found',
+      properties: {
+        gateway: this.getSelectedProviderWithAcquirer(),
+        mandatory_methods: mandatoryMethods,
+        gateway_coverage: gatewayCoverage,
+        razorpay_coverage: razorpayCoverage,
+      },
+      screen: 'Optimizer Integration Testing',
+    });
     this.setState({
       showMethodCoverage,
       gatewayCoverage,
@@ -780,21 +791,33 @@ class AddProvider extends React.Component {
       Gateway_details,
     };
 
-    trackOptimizerEvents({
-      screen: `Optimizer ${isEdit ? 'Update' : 'Add'} Provider`,
-      objectName: `${isEdit ? 'update' : 'add'} provider submit`,
-      actionName: 'click',
-      properties: {
-        gateway: payload?.Gateway,
-        payment_methods: payload?.Gateway_details?.['Payment Methods'],
-      },
-    });
+    const integrationAuditFlow =
+      isIntegrationAuditEnabled(splitz) && isGatewaySupportIntegrationAudit(payload?.Gateway);
+
+    if (integrationAuditFlow) {
+      trackOptimizerEvents({
+        objectName: 'test integration button',
+        actionName: 'click',
+        properties: {
+          gateway: payload?.Gateway,
+        },
+        screen: 'Optimizer Integration Testing',
+      });
+    } else {
+      trackOptimizerEvents({
+        screen: `Optimizer ${isEdit ? 'Update' : 'Add'} Provider`,
+        objectName: `${isEdit ? 'update' : 'add'} provider submit`,
+        actionName: 'click',
+        properties: {
+          gateway: payload?.Gateway,
+          payment_methods: payload?.Gateway_details?.['Payment Methods'],
+        },
+      });
+    }
 
     this.setState({ isSaving: true });
 
     let res = null;
-    const integrationAuditFlow =
-      isIntegrationAuditEnabled(splitz) && isGatewaySupportIntegrationAudit(payload?.Gateway);
 
     try {
       if (isEdit) {
@@ -891,6 +914,18 @@ class AddProvider extends React.Component {
   };
 
   startIntegrationTesting = () => {
+    const { provider } = this.state;
+    trackOptimizerEvents({
+      objectName: 'self serve integration testing',
+      actionName: 'selected',
+      properties: {
+        gateway: this.getSelectedProviderWithAcquirer(),
+        integration_type: provider?.Gateway_details?.optimizer_seamless_disabled
+          ? 'instant'
+          : 's2s',
+      },
+      screen: 'Optimizer Integration Testing',
+    });
     this.setState({ isTestingConfirmationModalOpen: false, isStartIntegrationTesting: true });
   };
 
@@ -899,6 +934,18 @@ class AddProvider extends React.Component {
   };
 
   raiseTicket = () => {
+    const { provider } = this.state;
+    trackOptimizerEvents({
+      objectName: 'raise ticket',
+      actionName: 'click',
+      properties: {
+        gateway: this.getSelectedProviderWithAcquirer(),
+        integration_type: provider?.Gateway_details?.optimizer_seamless_disabled
+          ? 'instant'
+          : 's2s',
+      },
+      screen: 'Optimizer Integration Testing',
+    });
     this.closeTestingConfirmationModal();
     this.closeIntegrationTestingModal();
     document.dispatchEvent(new CustomEvent('create-ticket', { detail: { id: 'tickets' } }));

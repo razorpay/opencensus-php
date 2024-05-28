@@ -116,6 +116,15 @@ const IntegrationTesting = ({
   };
 
   const changeIntegrationTestingStep = ({ name, successValue, failedValue }) => {
+    trackOptimizerEvents({
+      objectName: 'integration testing step',
+      actionName: 'change',
+      properties: {
+        new_step: name,
+        provider_id: providerId,
+      },
+      screen: 'Optimizer Integration Testing',
+    });
     if (name === 'provider_settings') {
       setDefaultMethodsList();
     }
@@ -241,6 +250,17 @@ const IntegrationTesting = ({
   const currentStep = steps.find((step) => step.active)?.value;
 
   const testPayment = () => {
+    trackOptimizerEvents({
+      objectName: 'test payment button',
+      actionName: 'click',
+      screen: 'Optimizer Integration Testing',
+      properties: {
+        amount: Number(amount),
+        method: 'upi',
+        api_key: merchantKey,
+        provider_id: providerId,
+      },
+    });
     const OPTIONS = {
       key: merchantKey,
       force_terminal_id: `term_${providerId}`,
@@ -372,6 +392,15 @@ const IntegrationTesting = ({
   };
 
   const takeProviderLive = (confirmation) => {
+    trackOptimizerEvents({
+      objectName: 'go live button',
+      actionName: 'click',
+      screen: 'Optimizer Integration Testing',
+      properties: {
+        provider_id: providerId,
+        methods,
+      },
+    });
     if (confirmation) {
       trackOptimizerEvents({
         objectName: 'provider go live confirmation',

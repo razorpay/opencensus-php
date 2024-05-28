@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Heading, Accordion, AccordionItem, Text } from '@razorpay/blade/components';
 import isEmpty from 'lodash/isEmpty';
+
+import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 
 import {
   PaymentFailureAlert,
@@ -23,6 +25,22 @@ export const IntegrationAuditSummary = ({
   razorpayCoverage,
   gatewayCoverage,
 }) => {
+  useEffect(() => {
+    trackOptimizerEvents({
+      objectName: 'integration audit summary',
+      actionName: 'loaded',
+      properties: {
+        gateway,
+        payment_status: isPaymentSuccessfull,
+        webhook_failure: isWebhookFailure,
+        payment_error: paymentError,
+        refund_result: refundResult,
+        gateway_coverage: gatewayCoverage,
+        razorpay_coverage: razorpayCoverage,
+      },
+      screen: 'Optimizer Integration Testing',
+    });
+  });
   return (
     <Box display="flex" flexDirection="column" padding="spacing.8">
       <Heading size="medium">Integration audit summary</Heading>
