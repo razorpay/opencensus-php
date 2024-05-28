@@ -17,6 +17,7 @@ const getStorageStatePath = (BASE_PATH) => ({
   // POS_KYC_STATUS_NC: `${BASE_PATH}/pos-kyc-status-nc.json`,
   OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
   CURLEC_TEST_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-login.json`,
+  CURLEC_TEST_CAW_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-caw-login.json`,
 });
 
 const routes = {
@@ -79,6 +80,7 @@ const routes = {
   RISK_AND_FRAUD: '/app/risk-and-fraud',
   RECON_DASHBOARD: '/app/reconciliations/dashboard',
   ASSISTED_FINANCING: '/app/assisted-financing',
+  NAW_REGISTRATION_LINKS: '/app/registration_links/new',
 };
 
 module.exports = {

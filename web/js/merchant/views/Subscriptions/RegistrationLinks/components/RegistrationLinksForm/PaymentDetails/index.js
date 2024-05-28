@@ -1,19 +1,24 @@
 /* eslint-disable react/jsx-pascal-case */
-import { PowerSelect } from 'react-power-select';
 import { Amount } from '@razorpay/blade/components';
+import { convertToMajorUnit } from '@razorpay/i18nify-js/currency';
+import { PowerSelect } from 'react-power-select';
 
 import { useI18Service } from 'common/i18';
 import Input from 'common/new-ui/Input';
-
 import DocsLink from 'merchant/components/DocsLink';
+import ShowWhen from 'merchant/components/ShowWhen';
+import {
+  DEFAULT_UPI_LIMIT,
+  DEFAULT_TOUCH_N_GO_MIN_LIMIT,
+  PAYMENT_METHODS,
+  DEFAULT_TOUCH_N_GO_MAX_LIMIT,
+} from 'merchant/views/Subscriptions/constants';
 
 import AmountScreen from './Amount';
-import NACH from './NACH';
 import Emandate from './Emandate';
+import NACH from './NACH';
 import UPI from './UPI';
 import { checkIfAmount, getPaymentMethodOptions, DOCUMENTATION_LINKS } from './utils';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { DEFAULT_UPI_LIMIT } from 'merchant/views/Subscriptions/constants';
 
 export default function PaymentDetailsForm(props) {
   const {
@@ -45,6 +50,7 @@ export default function PaymentDetailsForm(props) {
     trackReceivedNACHForm,
     trackNACHToolTipHover,
     currency,
+    isWalletPayment,
   } = props;
   let recurringMethods = availableMethods;
   // for TPV enabled Merchant, only emandate and UPI should be enabled
@@ -81,7 +87,17 @@ export default function PaymentDetailsForm(props) {
           amount={amount}
           onBlurElement={onBlurElement}
           placeholder="Minimum 1"
-          amountValidator={amountValidator}
+          amountValidator={(value) => amountValidator(value, { currency })}
+          currency={currency}
+        />
+      )}
+
+      {isWalletPayment && (
+        <AmountScreen
+          amount={amount}
+          onBlurElement={onBlurElement}
+          placeholder={`Minimum ${DEFAULT_TOUCH_N_GO_MIN_LIMIT} ${currency}`}
+          amountValidator={(value) => amountValidator(value, { isWalletPayment, currency })}
           currency={currency}
         />
       )}
@@ -91,7 +107,7 @@ export default function PaymentDetailsForm(props) {
           amount={amount}
           placeholder="Max 200000"
           onBlurElement={onBlurElement}
-          amountValidator={amountValidator}
+          amountValidator={(value) => amountValidator(value, { currency })}
           bankAccountIFSC={bankAccountIFSC}
           beneficiaryName={beneficiaryName}
           bankAccountNumber={bankAccountNumber}
@@ -133,7 +149,7 @@ export default function PaymentDetailsForm(props) {
 }
 
 function getDocLinkForSelectedPayment(method) {
-  if (!method || method === 'nach') return null;
+  if (!method || method === PAYMENT_METHODS.NACH || method === PAYMENT_METHODS.WALLET) return null;
   const { title, href } = DOCUMENTATION_LINKS[method];
   if (!title || !href) return null;
   return <DocsLink url={href} title={title} style={{ padding: '4px 0px' }} />;
@@ -214,11 +230,31 @@ function paymentMethodOption({ option }, optionsList) {
   );
 }
 
-function amountValidator(value) {
+export function amountValidator(value, { isWalletPayment, currency }) {
   const validation = checkIfAmount(value);
 
   if (validation) {
     return validation;
+  }
+
+  if (isWalletPayment) {
+    const amountValue = convertToMajorUnit(DEFAULT_TOUCH_N_GO_MAX_LIMIT, { currency });
+    if (value > amountValue) {
+      return (
+        <>
+          Amount should not be greater than{' '}
+          <Amount
+            color="feedback.text.negative.intense"
+            value={amountValue}
+            type="body"
+            size="small"
+            currency={currency}
+          />
+        </>
+      );
+    }
+
+    return null;
   }
 
   if (value > DEFAULT_UPI_LIMIT) {
@@ -230,6 +266,7 @@ function amountValidator(value) {
           value={DEFAULT_UPI_LIMIT}
           type="body"
           size="small"
+          currency={currency}
         />
       </>
     );

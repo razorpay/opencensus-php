@@ -17,6 +17,7 @@ const getStorageStatePath = () => ({
   // POS_KYC_STATUS_NC: `${BASE_PATH}/pos-kyc-status-nc.json`,
   OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
   CURLEC_TEST_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-login.json`,
+  CURLEC_TEST_CAW_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-caw-login.json`,
 });
 
 const routes = {
@@ -137,6 +138,12 @@ const getCurlecCredentials = () => {
       username: process.env.CURLEC_TEST_MODE_USERNAME,
       password: process.env.CURLEC_TEST_MODE_PASSWORD,
       storagePath: StorageStatePath.CURLEC_TEST_LOGIN_STATE,
+    },
+    {
+      type: 'curlec-merchant-desktop-test-mode-caw-login.json',
+      username: process.env.CURLEC_CAW_TEST_MODE_USERNAME,
+      password: process.env.CURLEC_CAW_TEST_MODE_PASSWORD,
+      storagePath: StorageStatePath.CURLEC_TEST_CAW_LOGIN_STATE,
     },
   ];
 };

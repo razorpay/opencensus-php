@@ -1,4 +1,5 @@
 import { isAmount } from 'common/utils/validators';
+import { PAYMENT_METHODS } from 'merchant/views/Subscriptions/constants';
 
 export const DOCUMENTATION_LINKS = {
   card: {
@@ -16,17 +17,17 @@ export const DOCUMENTATION_LINKS = {
 };
 
 export const getPaymentMethodOptions = (isEsignEnabled) => ({
-  card: {
+  [PAYMENT_METHODS.CARD]: {
     method: 'Card',
     icon: 'card',
     desc: 'Via Credit and Debit Cards',
   },
-  nach: {
+  [PAYMENT_METHODS.NACH]: {
     method: 'NACH',
     icon: 'bank',
     desc: 'Via a NACH Form',
   },
-  emandate: {
+  [PAYMENT_METHODS.EMANDATE]: {
     method: 'Emandate',
     icon: 'bank',
     desc: `${
@@ -35,10 +36,14 @@ export const getPaymentMethodOptions = (isEsignEnabled) => ({
         : 'Via Netbanking and Debit Card on supported bank accounts'
     }`,
   },
-  upi: {
+  [PAYMENT_METHODS.UPI]: {
     method: 'UPI',
     icon: 'upi',
     desc: 'Via UPI mandate',
+  },
+  [PAYMENT_METHODS.WALLET]: {
+    method: 'Wallet',
+    icon: 'wallet',
   },
 });
 

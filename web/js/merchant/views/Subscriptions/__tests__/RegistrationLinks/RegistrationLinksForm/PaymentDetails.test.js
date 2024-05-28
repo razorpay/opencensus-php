@@ -1,14 +1,17 @@
 import React from 'react';
-import { screen, render, updateUseI18ServiceSpy } from 'test-utils';
-import App from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/PaymentDetails';
+
 import User from 'merchant/models/User';
 import store from 'merchant/store';
+import App, {
+  amountValidator,
+} from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/PaymentDetails';
+import { screen, render, updateUseI18ServiceSpy } from 'test-utils';
 
 const stateSpy = jest.spyOn(store, 'getState');
 
 describe('RL - Payment Details Form', () => {
   const onBlurElement = jest.fn();
-  const availableMethods = ['card', 'emandate', 'upi', 'nach'];
+  const availableMethods = ['card', 'emandate', 'upi', 'nach', 'wallet'];
   const renderApp = (props) => {
     render(<App availableMethods={availableMethods} onBlurElement={onBlurElement} {...props} />);
   };
@@ -36,6 +39,13 @@ describe('RL - Payment Details Form', () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/minimum 1/i)).toBeInTheDocument();
+  });
+
+  test('Should render all the Wallet Fields', () => {
+    renderApp({ isWalletPayment: true, mandateMethod: 'wallet' });
+
+    expect(screen.getByText(new RegExp('wallet', 'i'))).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/minimum 0.1/i)).toBeInTheDocument();
   });
 
   test('Should render all the UPI Fields', () => {
@@ -152,5 +162,19 @@ describe('RL - Payment Details Form', () => {
     });
 
     expect(screen.queryByText(/supported banks & networks/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('amountValidator', () => {
+  it('should return error for Touch N Go payment if amount is less than min limit', () => {
+    const result = amountValidator(0, { isWalletPayment: true, currency: 'MYR' });
+    expect(result).toBe('Invalid Amount');
+  });
+
+  it('should return error for Touch N Go payment if amount is less than maximum limit', () => {
+    const result = amountValidator(22222222222222225, { isWalletPayment: true, currency: 'MYR' });
+    const { getByText } = render(result);
+    expect(getByText('Amount should not be greater than')).toBeInTheDocument();
+    expect(getByText('25,000')).toBeInTheDocument();
   });
 });

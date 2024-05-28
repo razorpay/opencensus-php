@@ -20,7 +20,7 @@ const BILLING_FREQUENCY = {
 };
 
 export default function MandatePaymentMethod({ mandate, user }) {
-  const { method, bank_account, card, bank: issuer } = mandate;
+  const { method, bank_account, card, bank: issuer, wallet } = mandate;
   const countryCode = user.country_code;
   const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[countryCode];
   if (method === 'emandate') {
@@ -103,6 +103,17 @@ export default function MandatePaymentMethod({ mandate, user }) {
             Max Billing Amount: <Amount value={maxAmount} currency="INR" />
           </>
         )}
+      </Definition>
+    );
+  }
+
+  if (method === 'wallet') {
+    return (
+      <Definition>
+        <strong>
+          {wallet} {method}
+        </strong>
+        {wallet}
       </Definition>
     );
   }

@@ -23,7 +23,8 @@ export const DEFAULT_NACH_LIMIT = 10000000; // Rs
 export const DEFAULT_UPI_LIMIT = 200000; // Rs
 export const DEFAULT_EMANDATE_LIMIT = 99999; // Rs
 
-export const DEFAULT_TOUCH_N_GO_MAX_LIMIT = 25000000; // Sen
+export const DEFAULT_TOUCH_N_GO_MIN_LIMIT = 0.1; // Sen
+export const DEFAULT_TOUCH_N_GO_MAX_LIMIT = 2500000; // Sen
 
 export const tokenStatuses = ['initiated', 'confirmed', 'rejected', 'cancelled', 'paused'];
 export const ONBOARDING_SUBSCRIPTIONS_DESCRIPTION = {
@@ -113,6 +114,7 @@ export const PAYMENT_METHODS = {
   EMANDATE: 'emandate',
   CARD: 'card',
   UPI: 'upi',
+  WALLET: 'wallet',
 };
 
 export const UPI_ERROR_DESCRIPTION =

@@ -1,4 +1,5 @@
 import React from 'react';
+import { convertToMinorUnit, convertToMajorUnit } from '@razorpay/i18nify-js/currency';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
@@ -12,7 +13,6 @@ import Spinner from 'common/ui/Spinner';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import { isEmail, isPhone, validateBeneficiaryName } from 'common/utils/validators';
 import DocsLink from 'merchant/components/DocsLink';
-import analytics from 'merchant/views/Subscriptions/analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { luminateRow } from 'merchant/reducers/app';
 import { saveInvoice } from 'merchant/reducers/invoices/list';
@@ -28,6 +28,7 @@ import {
   trackSubmitCreateForm,
   trackCloseCreateForm,
 } from 'merchant/views/Subscriptions/RegistrationLinks/ga';
+import analytics from 'merchant/views/Subscriptions/analytics';
 import {
   DEBIT_TYPES,
   FREQUENCY,
@@ -42,6 +43,7 @@ import {
   DEFAULT_EMANDATE_LIMIT,
   PAYMENT_METHODS,
   CAW_TABS,
+  DEFAULT_TOUCH_N_GO_MAX_LIMIT,
 } from 'merchant/views/Subscriptions/constants';
 import { isAmountLiesInRange, isMonthlyDebitPattern } from 'merchant/views/Subscriptions/utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -85,25 +87,19 @@ const DEFAULT_FIRST_CHARGE = 0; // in Paisa
 // gatewayMaxLimitValidator fn restrics the max gateway amount to be not greater than GATEWAY_MAX_LIMIT.
 const gatewayMaxLimitValidator = (value) => isAmountLiesInRange(value, GATEWAY_MAX_LIMIT);
 
-const CardMandatoryFields = [
-  {
-    name: 'amount',
-    validator: gatewayMaxLimitValidator,
-  },
-];
+const amountField = {
+  name: 'amount',
+  validator: gatewayMaxLimitValidator,
+};
 
-const UPIMandatoryFields = [
-  {
-    name: 'amount',
-    validator: gatewayMaxLimitValidator,
-  },
-];
+const CardMandatoryFields = [amountField];
+
+const WalletMandatoryFields = [amountField];
+
+const UPIMandatoryFields = [amountField];
 
 const UPITPVMandatoryFields = [
-  {
-    name: 'amount',
-    validator: gatewayMaxLimitValidator,
-  },
+  amountField,
   'bankAccountIFSC',
   {
     name: 'beneficiaryName',
@@ -218,6 +214,10 @@ class NewRegistrationLink extends React.Component {
     return isNACH;
   }
 
+  get isWalletPayment() {
+    return this.state.formFields.mandateMethod === PAYMENT_METHODS.WALLET;
+  }
+
   get getPaymentMethod() {
     if (this.isCardPayment) {
       return PAYMENT_METHODS.CARD;
@@ -227,6 +227,8 @@ class NewRegistrationLink extends React.Component {
       return PAYMENT_METHODS.EMANDATE;
     } else if (this.isNACHPayment) {
       return PAYMENT_METHODS.NACH;
+    } else if (this.isWalletPayment) {
+      return PAYMENT_METHODS.WALLET;
     }
     return PAYMENT_METHODS.CARD;
   }
@@ -384,6 +386,19 @@ class NewRegistrationLink extends React.Component {
             if (key === 'upi_autopay' && (!!value.intent || !!value.collect)) {
               uniqueMethodKeys.add(PAYMENT_METHODS.UPI);
             }
+          } else if (key === PAYMENT_METHODS.WALLET) {
+            let walletEnabled = false;
+            Object.entries(recurring.wallet).forEach(([, walletValue]) => {
+              if (walletEnabled) return;
+
+              if (walletValue && !walletEnabled) {
+                walletEnabled = true;
+              }
+            });
+
+            if (walletEnabled) {
+              uniqueMethodKeys.add(key);
+            }
           } else if (value) {
             uniqueMethodKeys.add(key);
           }
@@ -471,7 +486,7 @@ class NewRegistrationLink extends React.Component {
       receipt,
       type: 'link',
       expire_by: !Number(hasNoExpiry) ? expireAt : undefined,
-      amount: !!amount ? rupeesToPaise(amount) : 0,
+      amount: !!amount ? convertToMinorUnit(amount, { currency }) : 0,
       sms_notify: configSmsNotify,
       email_notify: configEmailNotify,
       notes: combinedNotes || undefined,
@@ -677,6 +692,8 @@ class NewRegistrationLink extends React.Component {
           }
         } else if (this.isNACHPayment) {
           mandatoryFields = NACHMandatoryFields;
+        } else if (this.isWalletPayment) {
+          mandatoryFields = WalletMandatoryFields;
         }
 
         return this.checkIfFormValid(mandatoryFields);
@@ -733,6 +750,15 @@ class NewRegistrationLink extends React.Component {
         if (this.isNACHPayment) {
           tokenDetailFields = getTokenDetailFields(maxAmountInPaisa, true);
           return this.checkIfFormValid(tokenDetailFields);
+        }
+        if (this.isWalletPayment) {
+          if (
+            !fields.mandateExpireAt ||
+            maxAmount >
+              convertToMajorUnit(DEFAULT_TOUCH_N_GO_MAX_LIMIT, { currency: fields.currency })
+          ) {
+            return false;
+          }
         }
         return true;
       }
@@ -797,6 +823,7 @@ class NewRegistrationLink extends React.Component {
             isCardPayment={this.isCardPayment}
             isNACHPayment={this.isNACHPayment}
             isUPIPayment={this.isUPIPayment}
+            isWalletPayment={this.isWalletPayment}
             isEmandatePayment={this.isEmandatePayment}
             handleNotesChange={this.handleNotesChange}
             trackSkipBankDetails={trackSkipBankDetails}
@@ -894,6 +921,7 @@ class NewRegistrationLink extends React.Component {
                   onClick={this.changeTab(1)}
                   type="button"
                   disabled={!this.isFormValid()}
+                  data-testId="create-registration-link__next"
                 >
                   Next
                 </Button.Primary>
@@ -903,6 +931,7 @@ class NewRegistrationLink extends React.Component {
                   type="submit"
                   onClick={this.onCreate}
                   disabled={!this.allMandatoryFieldsPresent()}
+                  data-testId="create-registration-link__create"
                 >
                   Create Registration Link
                 </AsyncBtn.Primary>

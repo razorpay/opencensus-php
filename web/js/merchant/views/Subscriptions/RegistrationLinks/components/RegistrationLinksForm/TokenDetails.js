@@ -1,27 +1,28 @@
+import { convertToMajorUnit } from '@razorpay/i18nify-js/currency';
 import moment from 'moment';
 
 import Input from 'common/new-ui/Input';
-import DocsLink from 'merchant/components/DocsLink';
-
 import { AmountTooltip } from 'common/ui/Amount';
-
-import { checkIfAmountForFirstCharge } from './PaymentDetails/utils';
+import DocsLink from 'merchant/components/DocsLink';
 import {
   FREQUENCY_DESC_MAP,
   CARD_AFA_MAX_AMOUNT,
   RECURRING_TYPE,
   FREQUENCY,
   PAYMENT_METHODS,
+  DEFAULT_TOUCH_N_GO_MAX_LIMIT,
 } from 'merchant/views/Subscriptions/constants';
-import {
-  getDebitPatternDesc,
-  disablePastAndPostFortyYear,
-} from 'merchant/views/Subscriptions/utils';
 import {
   getBillingFrequencies,
   getMaxAmountProps,
   getCardLabelText,
 } from 'merchant/views/Subscriptions/helper';
+import {
+  getDebitPatternDesc,
+  disablePastAndPostFortyYear,
+} from 'merchant/views/Subscriptions/utils';
+
+import { checkIfAmountForFirstCharge } from './PaymentDetails/utils';
 
 export default function TokenDetailsForm({
   amount,
@@ -187,7 +188,40 @@ export default function TokenDetailsForm({
 
   const renderTokenDetailsForm = () => {
     switch (method) {
-      case PAYMENT_METHODS.CARD: {
+      case PAYMENT_METHODS.WALLET:
+        return (
+          <>
+            <Input.Group label="Expiry of Token" class="InputGroup--vTop">
+              <Input.ToCalendar
+                disablePastDates
+                name="mandateExpireAt"
+                placeholder="Expiry (DD-MM-YYYY)"
+                placement="topLeft"
+                size="half_big"
+                addonAfter={<i class="i i-date-range" />}
+                onChange={handleDateChange('mandateExpireAt')}
+                data-name="token_expiry_date"
+                onBlur={onBlurElement}
+                required
+                defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
+              />
+            </Input.Group>
+            <Input
+              type="number"
+              size="big"
+              class="Input--Amount"
+              name="mandateMaxAmount"
+              data-name="token_max_amount"
+              label="Maximum Auto-debit Amount"
+              placeholder={`Max ${convertToMajorUnit(DEFAULT_TOUCH_N_GO_MAX_LIMIT, { currency })}`}
+              onBlur={onBlurElement}
+              value={mandateMaxAmount}
+              addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}
+              {...maxAmountProps}
+            />
+          </>
+        );
+      case PAYMENT_METHODS.CARD:
         return (
           <>
             {renderFrequencyField()}
@@ -237,7 +271,6 @@ export default function TokenDetailsForm({
             />
           </>
         );
-      }
       case PAYMENT_METHODS.UPI: {
         return (
           <>

@@ -1,5 +1,15 @@
 import { Amount } from '@razorpay/blade/components';
+import { convertToMajorUnit } from '@razorpay/i18nify-js/currency';
 
+import {
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+  getFormattedAmount,
+} from 'common/utils/rzp-utils';
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+
+import { checkIfAmount } from './RegistrationLinks/components/RegistrationLinksForm/PaymentDetails/utils';
 import {
   FREQUENCY,
   CARD_AFA_MAX_AMOUNT,
@@ -12,15 +22,8 @@ import {
   CARD_TOKEN_MAX_AMOUNT,
   CARD_PAYMENT_LABEL,
   UPI_ERROR_DESCRIPTION,
+  DEFAULT_TOUCH_N_GO_MAX_LIMIT,
 } from './constants';
-import {
-  i18CurrencyConversionFromCommonUnitToMinorUnit,
-  i18CurrencyConversionFromMinorUnitToCommonUnit,
-  getFormattedAmount,
-} from 'common/utils/rzp-utils';
-import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
-import { checkIfAmount } from './RegistrationLinks/components/RegistrationLinksForm/PaymentDetails/utils';
-import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 export const getCardLabelAndLimits = (countryCode) => {
   const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[countryCode];
@@ -58,9 +61,10 @@ export const maxAmountValidator = (amount, maxAllowedLimit, currency) => (value)
   if (maxBillingAmount > maxAllowedLimit) {
     return (
       <>
-        Max amount should not be greater than
+        Max amount should not be greater than{' '}
         <Amount
           value={Number(i18CurrencyConversionFromMinorUnitToCommonUnit(maxAllowedLimit, currency))}
+          currency={currency}
           color="feedback.text.negative.intense"
           type="body"
           size="small"
@@ -72,9 +76,10 @@ export const maxAmountValidator = (amount, maxAllowedLimit, currency) => (value)
   ) {
     return (
       <>
-        The maximum amount should be equal to or greater than
+        The maximum amount should be equal to or greater than{' '}
         <Amount
           value={Number(amount)}
+          currency={currency}
           color="feedback.text.negative.intense"
           type="body"
           size="small"
@@ -112,13 +117,20 @@ export const getMaxAmountProps = (method, amount, user, mandateMaxAmount = 0) =>
     merchant: { currency },
   } = user;
 
+  let tokenMaxAmount = MAX_TOKEN_AMOUNT;
+
+  if (method === PAYMENT_METHODS.WALLET) {
+    tokenMaxAmount = DEFAULT_TOUCH_N_GO_MAX_LIMIT;
+  }
+
   const maxAmountProps = {
-    validator: maxAmountValidator(amount, MAX_TOKEN_AMOUNT, currency),
+    validator: maxAmountValidator(amount, tokenMaxAmount, currency),
     description: (
       <>
         Max Amount for Mandate (Up to{' '}
         <Amount
-          value={i18CurrencyConversionFromMinorUnitToCommonUnit(MAX_TOKEN_AMOUNT, currency)}
+          currency={currency}
+          value={convertToMajorUnit(tokenMaxAmount, { currency })}
           type="body"
           size="small"
         />

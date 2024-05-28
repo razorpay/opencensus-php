@@ -39,6 +39,17 @@ describe('RL - Token Details Form', () => {
     expect(screen.getByTestId('billing_frequency')).toHaveLength(4);
   });
 
+  test('Should render all the wallet token fields', () => {
+    renderApp({
+      method: PAYMENT_METHODS.WALLET,
+      amount: 20,
+      user: { merchant: { currency: 'MYR', country_code: 'MY' } },
+      org: { custom_code: 'curlec' },
+    });
+    expect(screen.getByPlaceholderText(/expiry \(dd-mm-yyyy\)/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(new RegExp('Max 25000', 'i'))).toBeInTheDocument();
+  });
+
   test('Should render all the upi token fields', () => {
     renderApp({
       method: PAYMENT_METHODS.UPI,
