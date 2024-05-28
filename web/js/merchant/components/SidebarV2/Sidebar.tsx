@@ -184,13 +184,15 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
             !isConfigTagEnabled('onboarding.onboarding')
           }
         >
-          <ActivationProgress
-            onSidebarActivationClick={handleActivationClick}
-            user={user}
-            config={config}
-          />
+          {isRTUXHomepage ? null : (
+            <ActivationProgress
+              onSidebarActivationClick={handleActivationClick}
+              user={user}
+              config={config}
+            />
+          )}
         </ShowWhen>
-        <Navigation>
+        <Navigation isRTUXHomepage={isRTUXHomepage}>
           <NavContent>
             <>
               {' '}

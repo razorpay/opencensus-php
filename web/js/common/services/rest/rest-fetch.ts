@@ -103,7 +103,7 @@ export async function fetchUCS<T extends any>(
       throw new ClientError({ ...errorResult, status: response.status });
     }
   } catch (e: any) {
-    if (e.response.status === 401) {
+    if (e?.response?.status === 401) {
       document.body.dispatchEvent(
         new CustomEvent('NOT_AUTHENTICATED', {
           bubbles: true,

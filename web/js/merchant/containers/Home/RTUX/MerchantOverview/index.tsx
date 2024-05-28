@@ -28,6 +28,7 @@ const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps>
       backgroundSize="cover"
       backgroundPosition="center center"
       marginX={{ base: 'spacing.0', m: 'spacing.6' }}
+      elevation="lowRaised"
     >
       <Box display="flex" flexDirection="column" gap="spacing.2" alignItems="center">
         <Heading color="interactive.text.staticWhite.normal" size="xlarge">

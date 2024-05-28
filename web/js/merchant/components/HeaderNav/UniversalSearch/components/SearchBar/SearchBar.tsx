@@ -14,8 +14,7 @@ const SearchBar = forwardRef(
       isMobile,
       show,
       isDeviceInBreakpoint,
-      isRTUXHomepage,
-    }: CommonStateProps & { searchQuery: string; isMobile: boolean; isRTUXHomepage: boolean },
+    }: CommonStateProps & { searchQuery: string; isMobile: boolean },
     ref,
   ): JSX.Element => {
     const handleChange = (type, e): void => {
@@ -43,11 +42,7 @@ const SearchBar = forwardRef(
 
     return (
       <Box display="flex" alignItems="center" gap="spacing.5">
-        <StyledInputBox
-          isDeviceInBreakpoint={isDeviceInBreakpoint}
-          isMobile={isMobile}
-          isRTUXHomepage={isRTUXHomepage}
-        >
+        <StyledInputBox isDeviceInBreakpoint={isDeviceInBreakpoint} isMobile={isMobile}>
           <SearchIcon color="feedback.icon.neutral.intense" size="medium" />
           <StyledBaseInput
             ref={ref as React.RefObject<HTMLInputElement>}

@@ -23,7 +23,7 @@ const SettlementBlocked: React.FC<
       display="flex"
       justifyContent="space-between"
       padding="spacing.6"
-      backgroundImage="linear-gradient(90deg, #fee4e2 -2.86%, #fff5f5 46.32%, rgba(255, 245, 245, 0) 102.53%)"
+      backgroundImage="linear-gradient(90deg, #FDDDDD -2.86%, rgba(254, 228, 226, 0.50) 46.32%, rgba(255, 245, 245, 0.00) 102.53%)"
       borderRadius="large"
     >
       <Box

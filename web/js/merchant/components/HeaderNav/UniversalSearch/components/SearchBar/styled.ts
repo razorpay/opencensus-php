@@ -6,25 +6,17 @@ export const StyledInputBox = styled.div(
     isDeviceInBreakpoint,
     isMobile,
     theme,
-    isRTUXHomepage,
   }: {
     theme: Theme;
     isDeviceInBreakpoint: boolean;
     isMobile: boolean;
-    isRTUXHomepage: boolean;
   }) => `
     height: ${isMobile ? theme.spacing[9] : theme.spacing[8]}px;
-    width: ${isMobile ? '100%' : isDeviceInBreakpoint ? '200px' : '348px'};
+    width: ${isMobile ? '100%' : isDeviceInBreakpoint ? '200px' : '360px'};
     display: flex;
     align-items: center;
     gap: 6px;
-    background: ${
-      isRTUXHomepage
-        ? theme.colors.surface.background.gray.subtle
-        : isMobile
-        ? theme.colors.interactive.text.staticWhite.normal
-        : theme.colors.feedback.background.neutral.subtle
-    };
+    background: ${theme.colors.surface.background.gray.subtle};
     border: 1px solid rgba(121, 135, 156, 0.17);
     border-radius: ${theme.spacing[2]}px;
     padding: 6px 14px;

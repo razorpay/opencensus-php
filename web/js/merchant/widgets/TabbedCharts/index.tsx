@@ -71,6 +71,7 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
       marginX={{ base: 'spacing.0', m: 'spacing.6' }}
       backgroundColor="surface.background.gray.intense"
       borderRadius="large"
+      elevation="lowRaised"
     >
       <Box
         display="flex"

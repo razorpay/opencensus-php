@@ -107,9 +107,9 @@ const InsightItem: React.FC<InsightItemProps> = ({
       borderWidth="thin"
       borderColor="surface.border.gray.muted"
       gap="spacing.4"
-      alignItems={{ base: 'center', m: 'initial' }}
+      alignItems="end"
     >
-      <Box display="flex" flexDirection="column" flex="1" marginBottom="spacing.2">
+      <Box display="flex" flexDirection="column" flex="1">
         <Box display="flex">
           <Text marginRight="spacing.2" size="large" weight="semibold">
             {title}
@@ -119,11 +119,7 @@ const InsightItem: React.FC<InsightItemProps> = ({
         <Text marginBottom="spacing.6" color="surface.text.gray.muted">
           {durationOptionsSubtextMap[date]}
         </Text>
-        <Box
-          display="inline-flex"
-          gap={{ base: 'spacing.2', xl: 'spacing.4' }}
-          flexDirection={{ base: 'column', xl: 'row' }}
-        >
+        <Box display="inline-flex" gap="spacing.2" flexDirection="column">
           <CTAText value={value} value_type={value_type} currency={currency} />
           {value > 0 ? (
             <Change

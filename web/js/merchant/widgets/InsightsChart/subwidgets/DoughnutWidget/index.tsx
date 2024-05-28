@@ -86,7 +86,7 @@ const DoughnutWidget: React.FC<DoughnutWidgetProps> = ({
       borderColor="surface.border.gray.muted"
       gap="spacing.4"
     >
-      <Box display="flex" flexDirection="column" flex="1" marginBottom="spacing.2">
+      <Box display="flex" flexDirection="column" flex="1">
         <Box display="flex">
           <Text marginRight="spacing.2" size="large" weight="semibold">
             {title}

@@ -19,6 +19,7 @@ export const CarouselWithCountWrapper = ({
       backgroundImage={background_img ? getBackgroundImage(background_img) : undefined}
       backgroundColor={background_img ? undefined : 'surface.background.gray.intense'}
       testID="carousel-with-count-wrapper"
+      elevation="lowRaised"
     >
       {children}
     </Box>

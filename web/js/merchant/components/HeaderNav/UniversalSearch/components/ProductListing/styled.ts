@@ -37,7 +37,7 @@ export const StyledProductListingContainer = styled.div(
     isMobile: boolean;
   }) => `
     position: absolute;
-    width: 348px;
+    width: 360px;
     max-height: 228px;
     padding: ${theme.spacing[3]}px;
     background: ${theme.colors.interactive.text.staticWhite.normal};

@@ -46,6 +46,7 @@ export const InsightsChartWrapper = ({ children }: InsightsChartWrapperProps) =>
     marginX={{ base: 'spacing.0', m: 'spacing.6' }}
     backgroundColor="surface.background.gray.intense"
     borderRadius="large"
+    elevation="lowRaised"
   >
     {children}
   </Box>

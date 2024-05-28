@@ -42,7 +42,7 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
       }
       gap="spacing.2"
       minHeight={{ base: '120px', m: 'initial' }}
-      justifyContent="center"
+      justifyContent="flex-start"
     >
       <Box display="flex" gap="spacing.2" alignItems="center">
         <Text

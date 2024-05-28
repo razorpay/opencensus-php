@@ -21,6 +21,7 @@ export const CarouselWidgetWrapper = ({
       backgroundSize="cover"
       backgroundPosition="center center"
       testID="carousel-widget-wrapper"
+      elevation="lowRaised"
     >
       {children}
     </Box>

@@ -58,6 +58,7 @@ export const SidebarSection = styled.section<RTUXProps>(
     line-height: 50px;
     text-align: center;
     padding: 10px;
+    padding-top: 0px;
   }
   background-color: ${
     isRTUXHomepage
@@ -73,8 +74,8 @@ export const Logo = styled.img`
   max-width: 100%;
   height: auto;
   display: inline-block;
-  width: 145px;
-  height: 35px;
+  width: auto;
+  height: 28px;
 `;
 
 export const Items = styled.div`
@@ -89,15 +90,17 @@ export const NavContent = styled.div`
   list-style: none;
 `;
 
-export const Navigation = styled.nav`
-  padding: 15px 0 30px;
+export const Navigation = styled.nav<RTUXProps>(
+  ({ isRTUXHomepage }) => `
+  padding: ${isRTUXHomepage ? `8px` : `15px`} 0 30px;
   overflow-y: auto;
   overflow-x: hidden;
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
     display: none;
   }
-`;
+`,
+);
 
 export const ExternalLink = styled.a`
   height: 29px;
