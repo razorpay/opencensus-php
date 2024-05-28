@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Discount;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Offer;
 use RZP\Models\Emi;
 use RZP\Models\Card;
@@ -1150,7 +1151,24 @@ trait Callback
         }
         else
         {
-            $this->setPaymentError($e, TraceCode::PAYMENT_AUTH_PENDING);
+            //for touchngo wallet auto payment is done via s2s, it didnt required TOPUP action. need to set the status to failed if the status is insufficient fund.
+            $recurringIdVariant = (new MerchantCore())->isRazorxExperimentEnable($this->merchant->getId(), 'tng_auto_debit');
+
+            $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    '$recurringIdVariant' => $recurringIdVariant,
+                    'internalError' => $e->getError()->getInternalErrorCode()
+                ]);
+
+            if (($recurringIdVariant === true) and $this->payment->isGateway(Payment\Gateway::TNGD) === true && $this->payment->isWalletAutoRecurring() && $e->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE)
+            {
+                $this->updatePaymentAuthFailed($e);
+            }
+            else
+            {
+                $this->setPaymentError($e, TraceCode::PAYMENT_AUTH_PENDING);
+            }
         }
 
         throw $e;
