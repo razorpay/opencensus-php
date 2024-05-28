@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\GatewayFileException;
@@ -79,6 +81,13 @@ class Axis extends Base
         $bucketConfig = $config[$bucketType];
 
         return $bucketConfig;
+    }
+
+    protected function getFileToWriteName()
+    {
+        $date = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return self::FILE_NAME . '_' . $date;
     }
 
     protected function sendEmiFile($data)
