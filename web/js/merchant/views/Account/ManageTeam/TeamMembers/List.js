@@ -1,20 +1,22 @@
-import { connect } from 'react-redux';
-import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
+import AsyncButton from 'react-async-button';
+import { connect } from 'react-redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import DataTable from 'common/ui/Table/DataTable';
 import { role } from 'common/ui/item/pair';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ListContainer from 'merchant/containers/ListContainer';
-import { withRouter } from 'common/deprecated/withRouter';
-import * as NotificationActions from 'merchant_common/reducers/notifications';
 import {
   fetchTeam as fetchAll,
   unlockMember as unlockMemberReducer,
   unverifyContact as unverifyContactReducer,
 } from 'merchant/reducers/team';
-import { analyticsTrack } from 'common/utils/analytics';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+
 import Actions from './Actions';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 
 class MembersListContainer extends ListContainer {
   static contextTypes = {
@@ -54,7 +56,7 @@ class MembersListContainer extends ListContainer {
     title: 'Phone Number',
     value: (member) => (
       <>
-        <p>{member.contact_mobile || '--'}</p>
+        <p>{getI18FormattedPhoneNumber(member.contact_mobile) || '--'}</p>
         {!member.org_enforced_second_factor_auth &&
           member.id !== this.props.currentUser.id &&
           !!member.contact_mobile &&

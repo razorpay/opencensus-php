@@ -5,6 +5,8 @@ import {
   PersonalProfileFields,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 
+import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
+
 export const getInfoData = ({
   user,
   profile,
@@ -13,9 +15,16 @@ export const getInfoData = ({
 }: InfoDataPayload): InfoDataInterface[] => {
   return dataConfig.reduce((accumulator, each) => {
     const { isVisible, shouldEdit, getValue, ...rest } = each;
+    let value;
     if (isVisible({ user, profile, isRevampedInfo })) {
       const infoObject = { ...rest };
-      infoObject.value = getValue({ user });
+      if (each.id === PersonalProfileFields.CONTACT_MOBILE) {
+        // We only want to format Phone Number
+        value = getI18FormattedPhoneNumber(getValue({ user }));
+      } else {
+        value = getValue({ user });
+      }
+      infoObject.value = value;
       infoObject.isEditEnable = shouldEdit({ user });
       if (each.id === PersonalProfileFields.EMAIL) {
         const {

@@ -4,6 +4,7 @@ import { Box, Link, Text } from '@razorpay/blade/components';
 import { DetailsViewCardProps } from 'merchant/views/AccountAndSettings/BusinessSettings/typings';
 
 import { StyledDetailListing, StyledDivider } from './styled';
+import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 
 const DetailsViewCard = ({ title, info, handleAction }: DetailsViewCardProps): JSX.Element => {
   return (
@@ -30,7 +31,12 @@ const DetailsViewCard = ({ title, info, handleAction }: DetailsViewCardProps): J
                 justifyContent={{ base: 'space-between', m: 'initial' }}
                 alignItems="center"
               >
-                <Text weight="semibold">{item.value || '----'}</Text>
+                <Text weight="semibold">
+                  {item.type === 'phone_number'
+                    ? getI18FormattedPhoneNumber(item.value)
+                    : item.value || '----'}
+                </Text>
+
                 {item.isEditEnable || item.showDisabledCTA ? (
                   <Link
                     variant="button"

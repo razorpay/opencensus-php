@@ -1,9 +1,11 @@
 import '@testing-library/jest-dom/extend-expect';
+import React from 'react';
+
 import * as context from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 import store from 'merchant/store';
 import AccountDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails/v2';
 import * as modals from 'merchant_common/reducers/modals';
-import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
 
 const globalStore = store.getState();
@@ -115,8 +117,9 @@ describe('Merchant Profile Section Version 2', () => {
         initialState,
       });
       expect(screen.getByText(name)).toBeInTheDocument();
-      expect(screen.getByText(value)).toBeInTheDocument();
-
+      if (id === 'phone_number')
+        expect(screen.getByText(getI18FormattedPhoneNumber(value))).toBeInTheDocument();
+      else expect(screen.getByText(value)).toBeInTheDocument();
       if (isEditable) {
         const editButton = screen.getAllByRole('button');
         await userEvent.click(editButton[order]);

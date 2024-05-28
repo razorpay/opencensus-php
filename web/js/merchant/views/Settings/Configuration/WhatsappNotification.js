@@ -1,15 +1,18 @@
 import { useEffect, useState, useRef } from 'react';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
-import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
-import SwitchField from 'common/ui/Forms/SwitchField';
 import RTracking from 'react-tracking';
-import { WHATSAPP_NOTIF } from './deeplink-constants';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import SwitchField from 'common/ui/Forms/SwitchField';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { fetchFeatureStatus as fnFetchFeatureStatus } from 'merchant/reducers/config';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { fetchFeatureStatus as fnFetchFeatureStatus } from 'merchant/reducers/config';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
+
+import { WHATSAPP_NOTIF } from './deeplink-constants';
+import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 
 function WhatsappNotification({
   currentUser,
@@ -117,7 +120,7 @@ function WhatsappNotification({
     }
     /*
       Added the success check on the response data object because if the API is
-      getting timed out atleast the we will be able to properly communicate it 
+      getting timed out atleast the we will be able to properly communicate it
       to the user without throwing errror
     */
     updateWhatsappOptin(whatsapp_optin_checked)
@@ -189,7 +192,10 @@ function WhatsappNotification({
             <div className="description">
               Receive notifications {hideRazorpayTextLink ? '' : 'from Razorpay'} via WhatsApp&nbsp;
               <span>
-                on your number <strong>+91 - {currentUser.user.contact_mobile}</strong>
+                on your number{' '}
+                <strong>
+                  {getI18FormattedPhoneNumber(currentUser.user.contact_mobile) || '----'}
+                </strong>
               </span>
             </div>
           ) : (

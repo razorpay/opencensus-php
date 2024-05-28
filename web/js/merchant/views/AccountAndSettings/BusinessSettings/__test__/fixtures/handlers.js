@@ -84,15 +84,16 @@ export const rejectInvitationHandler = ({ isErrorCase = false, errors = [] } = {
   });
 };
 
-export const fetchSupportDetail = () => {
+export const fetchSupportDetail = (phoneNumber) => {
   return rest.get('*/merchants/supportdetails', (req, res, ctx) => {
+    const phone = phoneNumber || '9677868778'; // Use the provided phone number or default if none provided
     return res(
       ctx.status(200),
       ctx.json({
         status_code: 200,
         success: true,
         data: {
-          phone: '9677868778',
+          phone,
           email: 'support@example.com',
           url: '',
         },

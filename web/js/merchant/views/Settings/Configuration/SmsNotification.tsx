@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { connect } from 'react-redux';
-import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { graphqlRequestMutation, graphqlRequest } from 'common/services/graphql/graphql-client';
+import {
+  SmsNotificationStatusResponse,
+  MutationSmsNotificationToggleArgs,
+} from 'common/typings/graph-types';
+import SwitchField from 'common/ui/Forms/SwitchField';
+import LoaderDots from 'common/ui/LoaderDots';
+import TextHighlighter from 'common/ui/TextHighlighter';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { useQuery, useMutation } from '@tanstack/react-query';
-
-import SwitchField from 'common/ui/Forms/SwitchField';
-import { SMS_NOTIF } from './deeplink-constants';
-import TextHighlighter from 'common/ui/TextHighlighter';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import {
   SMS_NOTIFICATION_STATUS_QUERY,
   SMS_NOTIFICATION_TOGGLE_MUTATION,
 } from 'merchant/views/AccountAndSettings/NotificationSettings/queries';
-import LoaderDots from 'common/ui/LoaderDots';
-import {
-  SmsNotificationStatusResponse,
-  MutationSmsNotificationToggleArgs,
-} from 'common/typings/graph-types';
-import { graphqlRequestMutation, graphqlRequest } from 'common/services/graphql/graphql-client';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { SMS_NOTIF } from './deeplink-constants';
+import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 
 function SmsNotification({ currentUser, showNotification }) {
   const [isSmsOptin, setSmsOptin] = useState<boolean | undefined>(undefined);
@@ -190,7 +192,7 @@ function SmsNotification({ currentUser, showNotification }) {
           <div className="description">
             Receive notifications {isRazorpayTextLinkHidden ? '' : 'from Razorpay'} via SMS on
             your&nbsp;
-            <strong>{currentUser.contact_mobile}</strong>
+            <strong>{getI18FormattedPhoneNumber(currentUser.contact_mobile) || '----'}</strong>
           </div>
         </form>
       </div>
