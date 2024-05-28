@@ -98,8 +98,14 @@ class Service extends Base\Service
     public function canRouteOrderCreationToPGRouter($input, $merchant)
     {
         if ((app()->isEnvironmentProduction() === true) and
-            ($this->mode === Mode::TEST))
-        {
+            ($this->mode === Mode::TEST)) {
+            try {
+                $pgRouterTestModeResult = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+                    RazorxTreatment::ROUTE_ORDER_CREATE_TO_PG_ROUTER_TEST, $this->mode);
+                if (strtolower($pgRouterTestModeResult) === RazorxTreatment::RAZORX_VARIANT_ON)
+                    return true;
+            } catch (\Throwable $e) {
+            }
             return false;
         }
 
