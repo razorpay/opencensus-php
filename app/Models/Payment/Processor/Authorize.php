@@ -400,6 +400,7 @@ trait Authorize
         $this->setSelectedTerminals($payment, $gatewayInput);
         $this->performFraudCheckRaasInternational($payment, $input);
         $this->setSelectedTerminalsForApplicationMethodsIfApplicable($payment);
+        $this->selectAlternateEmandateSdnTerminalIfApplicable($payment, $this->selectedTerminals);
 
         //This try-catch block is temporary and will be removed by Optimizer team in 2-3 weeks
         try

@@ -2973,4 +2973,78 @@ class Repository extends Base\Repository
         return true;
     }
 
+    /**
+     * @throws \Throwable
+     */
+    public function getActiveTerminalsBasedOnMethodsAndGateways(
+        string $mid, array $methods, array $gateways, $acquirer=null): PublicCollection
+    {
+        $terminals = new PublicCollection();
+
+        $mids = [$mid, Merchant\Account::SHARED_ACCOUNT];
+
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        try
+        {
+            if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
+            {
+                $data = [
+                    "function"      => "getActiveRecurringTerminalsForBasedOnMethod",
+                    "merchant_ids"  => $mids,
+                    "methods"       => $methods,
+                    "gateways"      => $gateways,
+                    "acquirer"      => $acquirer
+                ];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_REQUEST_DATA, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
+
+                $content['merchant_ids'] = $mids;
+
+                $content['gateways'] = $gateways;
+
+                $content['enabled'] = true;
+
+                $content['api_type'] = [Type::RECURRING_3DS, Type::RECURRING_NON_3DS];
+
+                $content['methods'] = $methods;
+
+                $content["fetch_where_submerchant"] = true;
+
+                $content["status"] = Status::ACTIVATED;
+
+                if ($acquirer !== null)
+                {
+                    $content["gateway_acquirer"] = $acquirer;
+                }
+
+                $path = "v1/merchants/terminals";
+
+                $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+                return Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $data['message'] = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+            if(!$this->isTestEnv())
+            {
+                throw $ex;
+            }
+        }
+
+        return $terminals;
+    }
+
 }

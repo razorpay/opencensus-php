@@ -22,6 +22,8 @@ final class RazorxTreatment
 
     const EMANDATE_ENABLE_NR_DEBIT_FLOW                    = 'emandate_enable_nr_debit_flow';
 
+    const EMANDATE_CITI_SDN_IDENTIFICATION                 = 'emandate_citi_sdn_identification';
+
     const EMANDATE_ENABLE_ACH_DEBIT_RETURNS_FLOW           = 'emandate_enable_ach_debit_returns_flow';
 
     const PERFORM_KYC_VALIDATIONS_VASMERCHANTS             = 'perform_kyc_validations_VASMerchants';

@@ -7,12 +7,18 @@ use DateTimeZone;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\EMandate;
+use RZP\lib\FuzzyMatcher;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\EMandate\Constants as EmandateConstants;
 
 
@@ -616,5 +622,174 @@ trait EmandateRecurring
         $startOfDay = Carbon::createFromTimestamp($timestamp)->tz('Asia/Kolkata')->startOfDay();
         
         return $startOfDay->addHours(9)->getTimestamp();
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    protected function selectAlternateEmandateSdnTerminalIfApplicable(Payment\Entity $payment, $terminals): void
+    {
+        if(!in_array($payment->getMethod(), [Payment\Method::EMANDATE, Payment\Method::NACH]))
+        {
+            return;
+        }
+
+        if($payment->getRecurringType() !== Payment\RecurringType::INITIAL)
+        {
+            return;
+        }
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $isBeneficiaryNameMatched = false;
+
+        try
+        {
+            $terminal = $terminals[0];
+
+            if($this->isCitiTerminal($terminal, $payment->getMethod()) and $this->isCitiSdnRazorxEnabled())
+            {
+                $isBeneficiaryNameMatched = $this->isBeneficiaryNameMatched($token->getBeneficiaryName());
+
+                if($isBeneficiaryNameMatched)
+                {
+                    $alternateTerminal = $this->fetchAlternateTerminal($payment);
+
+                    if($alternateTerminal !== null)
+                    {
+                        $this->selectedTerminals = [$alternateTerminal];
+
+                        return;
+                    }
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::EMANDATE_CITI_SDN_IDENTIFICATION_ERROR);
+        }
+
+        if ($isBeneficiaryNameMatched)
+        {
+            $metricData = [
+                "function"     => __FUNCTION__,
+                "merchant_id"  => $payment->getMerchantId(),
+                "method"       => $payment->getMethod()
+            ];
+
+            $this->trace->count(EMandate\Metric::EMANDATE_SDN_ALTERNATE_TERMINAL_NOT_FOUND, $metricData);
+
+            $this->trace->info(TraceCode::EMANDATE_SDN_ALTERNATE_TERMINAL_NOT_FOUND,
+                [
+                    "merchant_id"       => $payment->getMerchantId(),
+                    "beneficiary_name"  => $token->getBeneficiaryName(),
+                    'payment_id'        => $payment->getMethod()
+                ]);
+
+            throw new Exception\BadRequestValidationFailureException(
+                'No alternate terminal found for merchant to redirect due to citi sdn issue',
+                ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
+                [
+                    'payment_id'        => $payment->getId()
+                ]
+            );
+        }
+    }
+
+    protected function isCitiTerminal($terminal, $method): bool
+    {
+        if($method === Payment\Method::EMANDATE and
+           $terminal->getGateway() === Payment\Gateway::ENACH_NPCI_NETBANKING and
+           $terminal->getGatewayAcquirer() === Payment\Gateway::ACQUIRER_CITI)
+        {
+            return true;
+        }
+
+        if($method === Payment\Method::NACH and
+           $terminal->getGateway() === Payment\Gateway::NACH_CITI and
+           $terminal->getGatewayAcquirer() === Payment\Gateway::ACQUIRER_CITI) {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isCitiSdnRazorxEnabled(): bool
+    {
+        $variant = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(), RazorxTreatment::EMANDATE_CITI_SDN_IDENTIFICATION, $this->mode);
+
+        $this->trace->info(TraceCode::EMANDATE_CITI_SDN_RAZORX, ["variant"   => $variant]);
+
+        return $variant === "on";
+    }
+
+    protected function isBeneficiaryNameMatched(string $beneficiaryName): bool
+    {
+        foreach (EMandate\Constants::CITI_SDN_BLACKLISTED_NAMES as $blackListedName)
+        {
+            // using tokenOrTokenSetMatch matcher as of now which looks efficient for this
+            $fuzzyMatcher = new FuzzyMatcher(EMandate\Constants::MATCH_PERCENT,
+                FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH);
+
+            $isMatch =  $fuzzyMatcher->isMatch($beneficiaryName, $blackListedName, $matchPercentage);
+
+            if($isMatch === true)
+            {
+                $metricData = [
+                    "blacklisted_name" => $blackListedName,
+                    "beneficiary_name" => $beneficiaryName,
+                    "percentage_match" => $matchPercentage,
+                ];
+
+                $this->trace->count(EMandate\Metric::EMANDATE_SDN_IDENTIFICATION_MATCH, $metricData);
+
+                $this->trace->info(TraceCode::EMANDATE_CITI_SDN_IDENTIFICATION_MATCH, $metricData);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function fetchAlternateTerminal(Payment\Entity $payment)
+    {
+        $terminals = [];
+
+        if ($payment->isEmandate())
+        {
+            $terminals = $this->repo->terminal->getActiveTerminalsBasedOnMethodsAndGateways(
+                $payment->getMerchantId(), [Payment\Method::EMANDATE],
+                [Gateway::ENACH_NPCI_NETBANKING], Payment\Gateway::ACQUIRER_YESB);
+        }
+
+        if ($payment->isNach())
+        {
+            $terminals = $this->repo->terminal->getActiveTerminalsBasedOnMethodsAndGateways(
+                $payment->getMerchantId(), [Payment\Method::NACH],
+                [Gateway::NACH_ICICI], Payment\Gateway::ACQUIRER_ICIC);
+        }
+
+        $this->trace->info(TraceCode::ALTERNATE_TERMINALS_FETCHED_FOR_SDN,
+            [
+                "terminals"       => $terminals,
+            ]);
+
+        if (count($terminals) > 0) {
+
+            $selectedTerminal = $terminals[0];
+
+            $this->trace->info(TraceCode::ALTERNATE_TERMINAL_SELECTED_FOR_CITI_SDN,
+                [
+                    "selected_terminal"       => $selectedTerminal,
+                    "gateway"                 => $selectedTerminal->getGateway(),
+                    "acquirer"                => $selectedTerminal->getGatewayAcquirer()
+                ]);
+
+            return $selectedTerminal;
+        }
+
+        return null;
     }
 }
