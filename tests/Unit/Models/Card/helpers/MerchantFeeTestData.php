@@ -72,6 +72,31 @@ return [
         ]
     ],
 
+    'testInterstateGstForCardWithPercentScaleFactorAndFeeRound' => [
+        [
+            'amount' => '1000',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 20,
+            'tax' => 0,
+            'fee_components' => [
+                'payment' => 20,
+                'tax' => 0,
+            ],
+            'splitz_variant' => 'on',
+        ],
+        [
+            'amount' => '1000',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 21,
+            'tax' => 0,
+            'fee_components' => [
+                'payment' => 20,
+                'tax' => 0,
+            ],
+            'splitz_variant' => 'control',
+        ]
+    ],
+
     'testFeeWithMaxFeeForWallet' => [
         [
             'amount' => 60000,

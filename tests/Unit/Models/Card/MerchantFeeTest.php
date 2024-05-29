@@ -15,6 +15,7 @@ use RZP\Models\Terminal;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Services\RazorXClient;
 use RZP\Models\Order\ProductType;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1866,6 +1867,67 @@ class MerchantFeeTest extends TestCase
         }
     }
 
+    // tests for pricing with percent rate scale factor And fee round experiment
+    public function testInterstateGstForCardWithPercentScaleFactorAndFeeRound()
+    {
+        $this->fee->setPricingRepo($this->getMockMaxFeePricingRepoWithScaleFactor());
+
+        // create merchant
+        $merchant = $this->fixtures->create('merchant');
+
+        $balance = $this->fixtures->create('balance', ['id' => $merchant->getId(), 'merchant_id' => $merchant->getId()]);
+
+        $merchantDetails = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => $merchant->getId(),
+                'gstin'       => '20kjsngjk2139',
+            ]);
+
+
+        foreach ($this->testData[__FUNCTION__] as $data)
+        {
+            // create payment
+            $amount = $data['amount'];
+
+            $paymentArray = $this->getDefaultPaymentEntityArray();
+
+            $paymentArray['merchant_id'] = $merchant->getId();
+
+            $paymentArray['amount'] = $amount;
+
+            $paymentArray[Payment\Entity::METHOD] = Payment\Method::CARD;
+
+            $payment = new Payment\Entity($paymentArray);
+
+            $payment->setAttribute(Payment\Entity::INTERNATIONAL, false);
+
+            $merchant = Merchant\Entity::find('10000000000000');
+
+            $payment->merchant()->associate($merchant);
+
+            $payment->associateTerminal($this->sharpTerminal);
+
+            $card = (new Card\Entity)->build($this->card);
+
+            $payment->card()->associate($card);
+
+            $payment->card->setNetwork('Visa');
+
+            $payment->card->setType($data['card_type']);
+
+            $payment->setBaseAmount($amount);
+
+            $this->mockSplitz($merchant->getId(), $data['splitz_variant']);
+
+            list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+
+            $this->assertFeesAndTax(
+                $fee, $tax, $feesSplit->toArray(),
+                $data['fee'], $data['tax'], $data['fee_components']);
+        }
+    }
+
     public function testFeeWithMaxFeeForCard()
     {
         $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
@@ -2370,6 +2432,34 @@ class MerchantFeeTest extends TestCase
                 {
                     return "on";
                 }));
+    }
+
+    private function mockSplitz($mid, $variantName)
+    {
+        $input = [
+            "experiment_id" => "OEJc9zQhbbw6RO",
+            "id"            => $mid,
+            'request_data'  => json_encode(['merchant_id' => $mid]),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variantName,
+                ]
+            ]
+        ];
+
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->atLeast()
+            ->once()
+            ->with($input)
+            ->andReturn($output);
     }
 
 

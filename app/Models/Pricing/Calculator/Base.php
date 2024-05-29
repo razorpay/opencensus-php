@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Pricing\Calculator;
 
+use App;
 use Cache;
 
 use RZP\Exception;
@@ -54,6 +55,8 @@ abstract class Base extends BaseModel\Core
 
     protected $processor;
 
+    protected $feeRoundExpId;
+
     const DEFAULT_PERCENT_RATE_SCALE_FACTOR = 100;
 
     const VALID_PERCENT_RATE_SCALE_FACTOR_VALUES = [100, 1000, 10000, 100000, 1000000];
@@ -73,6 +76,10 @@ abstract class Base extends BaseModel\Core
         $this->setAmount();
 
         $this->setRewardAmount();
+
+        $app = App::getFacadeRoot();
+
+        $this->feeRoundExpId = $app['config']->get('app.pricing_fee_round_experiment_id');
     }
 
     protected function setAmount()
@@ -790,7 +797,11 @@ abstract class Base extends BaseModel\Core
             $fee = $this->getUnroundedFeesForRewardAmount($percent, $fixed, $percentScaleFactor);
         }
 
-        $fee = (int) ceil($fee);
+        if ($this->isFeeRoundExpEnabled()) {
+            $fee = (int) round($fee);
+        } else {
+            $fee = (int) ceil($fee);
+        }
 
         // Fee is checked with bounds after being rounded up.
         // This ensures fee will always be within the bound.
@@ -843,6 +854,18 @@ abstract class Base extends BaseModel\Core
         }
 
         return $fee;
+    }
+    private function isFeeRoundExpEnabled(): bool
+    {
+        if($this->entity->getEntity() !== Constants\Entity::PAYMENT) {
+            return false;
+        }
+        $properties = [
+            'id' => $this->entity->getMerchantId(),
+            'experiment_id' => $this->feeRoundExpId,
+            'request_data'  => json_encode(['merchant_id' => $this->entity->getMerchantId()]),
+        ];
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     abstract protected function getPricingRule($rules, $method);

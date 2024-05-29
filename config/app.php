@@ -621,6 +621,8 @@ return array(
 
     'pricing_fallback_standard_plan_experiment_id' => env('PRICING_FALLBACK_STANDARD_PLAN_EXPERIMENT_ID'),
 
+    'pricing_fee_round_experiment_id' => env('PRICING_FEE_ROUND_EXPERIMENT_ID'),
+
     'charge_collections_invoicing_experiment_id' => env('CHARGE_COLLECTIONS_INVOICING_EXPERIMENT_ID'),
 
     'charge_collections_invoicing_x_experiment_id' => env('CHARGE_COLLECTIONS_INVOICING_X_EXPERIMENT_ID'),
