@@ -169,8 +169,7 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::PLAN_ID]))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PLAN_ID_IS_NOT_REQUIRED);
+            return;
         }
 
         $planName = $input[Entity::PLAN_NAME] ?? null;
