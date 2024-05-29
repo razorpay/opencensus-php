@@ -480,6 +480,11 @@ class Processor
     const ALLOW_UPI_GLOBAL_TOKEN_SAVE_ON_REARCH_UPS = 'allow_upi_global_token_save_on_rearch_ups';
 
     /**
+     * Razorx flag to allow payment create bypass on token
+     */
+    const ALLOW_UPI_TOKEN_ON_REARCH_UPS = 'allow_upi_token_on_rearch_ups';
+
+    /**
      * Razorx flag to indicate which method and gateway are supported by barricade service
      */
     const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
@@ -2365,8 +2370,10 @@ class Processor
 
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $routeViaReArch = false;
-            $dimensions[7] = 1;
+            if ($this->shouldRouteUpsReArchToken($input) === false) {
+                $routeViaReArch = false;
+                $dimensions[7] = 1;
+            }
         }
 
         if (empty($input[Payment\Entity::SAVE]) === false)
@@ -2568,7 +2575,9 @@ class Processor
 
         if ((isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::FLOW]) === true) &&
             ($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::FLOW] === UpiMetadata\Flow::COLLECT) &&
-            (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::VPA]) === false))
+            ((isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::VPA]) === false) &&
+                (empty($input[Payment\Entity::TOKEN]) === true))
+        )
         {
             $routeViaReArch = false;
             $dimensions[33] = 1;
@@ -12236,6 +12245,26 @@ class Processor
         }
 
         $feature = self::ALLOW_UPI_TOKEN_SAVE_ON_REARCH_UPS ;
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant'     => $variant,
+            'mode'        => $this->mode,
+            'feature'     => $feature,
+        ]);
+
+        return str_starts_with($variant, 'on') === true;
+    }
+
+    /**
+     * shouldRouteUpsReArchTokenSave checks if upi token  can be enabled
+     * @return bool
+     */
+    private function shouldRouteUpsReArchToken($input): bool {
+
+        $feature = self::ALLOW_UPI_TOKEN_ON_REARCH_UPS;
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
 
