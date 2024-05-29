@@ -319,7 +319,6 @@ class PayoutTest extends OAuthTestCase
                 $this->assertEquals('refund',$input['purpose']);
                 $this->assertNotNull($input['source_account_detail']);
                 $this->assertNotNull($input['merchant_detail']);
-                $this->assertNotNull($input['meta']);
                 $this->assertEquals($fund_account->account->getAccountNumber(), $input['fund_account']['bank_account']['account_number']);
                 $this->assertEquals($fund_account->account->getName(), $input['fund_account']['bank_account']['name']);
                 $this->assertEquals($fund_account->account->getIfscCode(), $input['fund_account']['bank_account']['ifsc']);
@@ -403,7 +402,6 @@ class PayoutTest extends OAuthTestCase
                 $this->assertEquals('refund',$input['purpose']);
                 $this->assertNotNull($input['source_account_detail']);
                 $this->assertNotNull($input['merchant_detail']);
-                $this->assertNotNull($input['meta']);
                 $this->assertEquals($fund_account->account->getAccountNumber(), $input['fund_account']['bank_account']['account_number']);
                 $this->assertEquals($fund_account->account->getName(), $input['fund_account']['bank_account']['name']);
                 $this->assertEquals($fund_account->account->getIfscCode(), $input['fund_account']['bank_account']['ifsc']);
@@ -483,7 +481,6 @@ class PayoutTest extends OAuthTestCase
                 $this->assertEquals('refund',$input['purpose']);
                 $this->assertNotNull($input['source_account_detail']);
                 $this->assertNotNull($input['merchant_detail']);
-                $this->assertNotNull($input['meta']);
                 $this->assertEquals($fund_account->account->getAccountNumber(), $input['fund_account']['bank_account']['account_number']);
                 $this->assertEquals($fund_account->account->getName(), $input['fund_account']['bank_account']['name']);
                 $this->assertEquals($fund_account->account->getIfscCode(), $input['fund_account']['bank_account']['ifsc']);
@@ -537,7 +534,6 @@ class PayoutTest extends OAuthTestCase
                 $this->assertEquals('refund',$input['purpose']);
                 $this->assertNotNull($input['source_account_detail']);
                 $this->assertNotNull($input['merchant_detail']);
-                $this->assertNotNull($input['meta']);
                 $this->assertNotNull($input['fund_account']['vpa']['address']);
                 $this->assertNotNull($input['fund_account']['contact']['name']);
                 $this->assertNotNull($input['fund_account']['contact']['email']);

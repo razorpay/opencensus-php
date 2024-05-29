@@ -52,6 +52,7 @@ class Base
     const VERSION = '/v1';
 
     const X_REQUEST_ID  = 'X-Request-ID';
+    const MERCHANT_IP   = 'Merchant-IP';
 
     const TYPE     = 'type';
     const CONSUMER = 'consumer';
@@ -181,6 +182,7 @@ class Base
             'headers' => [
                 RequestHeader::CONTENT_TYPE  => 'application/json',
                 self::X_REQUEST_ID           => $this->app['request']->getId(),
+                self::MERCHANT_IP            => $this->app['request']->getClientIp(),
             ],
             'content' => empty($input) ? $input: json_encode($input),
             'options' => [
@@ -310,6 +312,16 @@ class Base
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
                         null, null);
+                }
+                else if ($error[Error::DESCRIPTION] ===
+                    PublicErrorDescription::BAD_REQUEST_SUSPICIOUS_TRANSACTION)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_SUSPICIOUS_TRANSACTION,
+                        null,
+                        null,
+                        PublicErrorDescription::BAD_REQUEST_SUSPICIOUS_TRANSACTION
+                    );
                 }
                 else
                 {

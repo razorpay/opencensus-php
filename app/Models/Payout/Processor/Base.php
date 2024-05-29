@@ -215,6 +215,7 @@ class Base extends BaseCore
     const SOURCE_ACCOUNT_NUMBER   = 'source_account_number';
     const SOURCE_ACCOUNT_DETAIL   = 'source_account_detail';
     const SOURCE_ACCOUNT_TYPE     = 'source_account_type';
+    const SOURCE_ACCOUNT_CHANNEL  = 'source_account_channel';
     const ONBOARDING_DATETIME     = 'onboarding_datetime';
     const MCC                     = 'mcc';
     const META                    = 'meta';
@@ -4676,26 +4677,24 @@ class Base extends BaseCore
     protected function prepareShieldPayoutEvaluateRequest(Entity $payout): array
     {
         $requestBody = [
-            Payout\Entity::PAYOUT_ID        => $payout->getId(),
-            Payout\Entity::AMOUNT           => $payout->getAmount(),
-            Payout\Entity::CURRENCY         => $payout->getCurrency(),
-            Payout\Entity::CREATED_AT       => millitime(),
-            Payout\Entity::MODE             => $payout->getMode(),
-            Payout\Entity::NARRATION        => $payout->getNarration(),
-            Payout\Entity::PURPOSE          => $payout->getPurpose(),
-            Payout\Entity::PURPOSE_TYPE     => $payout->getPurposeType(),
-            Payout\Entity::USER_ID          => $payout->getUserId(),
-            self::SOURCE_ACCOUNT_DETAIL     => [
-                self::SOURCE_ACCOUNT_NUMBER => $this->balance->getAccountNumber(),
-                self::SOURCE_ACCOUNT_TYPE   => $this->balance->getAccountType(),
+            Payout\Entity::PAYOUT_ID         => $payout->getId(),
+            Payout\Entity::AMOUNT            => $payout->getAmount(),
+            Payout\Entity::CURRENCY          => $payout->getCurrency(),
+            Payout\Entity::CREATED_AT        => millitime(),
+            Payout\Entity::MODE              => $payout->getMode(),
+            Payout\Entity::NARRATION         => $payout->getNarration(),
+            Payout\Entity::PURPOSE           => $payout->getPurpose(),
+            Payout\Entity::PURPOSE_TYPE      => $payout->getPurposeType(),
+            Payout\Entity::USER_ID           => $payout->getUserId(),
+            self::SOURCE_ACCOUNT_DETAIL      => [
+                self::SOURCE_ACCOUNT_NUMBER  => $this->balance->getAccountNumber(),
+                self::SOURCE_ACCOUNT_TYPE    => $this->balance->getAccountType(),
+                self::SOURCE_ACCOUNT_CHANNEL => $this->balance->getChannel(),
             ],
             Merchant\Entity::MERCHANT_DETAIL    => [
                 Merchant\Entity::ID             => $this->merchant->getId(),
-                self::ONBOARDING_DATETIME       => $this->merchant->getCreatedAt(),
+                self::ONBOARDING_DATETIME       => $payout->bankingAccount->getCreatedAt(),
                 self::MCC                       => $this->merchant->getCategory(),
-            ],
-            self::META                          => [
-                self::SOURCE_IP => $this->app['request']->ip(),
             ]
         ];
 

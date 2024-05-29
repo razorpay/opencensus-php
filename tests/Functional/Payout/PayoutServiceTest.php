@@ -12,6 +12,7 @@ use Database\Connection;
 use RZP\Services\Mock\WorkflowService;
 use \WpOrg\Requests\Response;
 
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
@@ -144,7 +145,8 @@ class PayoutServiceTest extends TestCase
                                             $insufficient_balance = false,
                                             $newBankingError = false,
                                             &$assertionBody = [],
-                                            &$actualPayload = [])
+                                            &$actualPayload = [],
+                                            $isShieldError = false)
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -206,7 +208,7 @@ class PayoutServiceTest extends TestCase
                                 // We are returning this response only as we don't have a use case of supporting
                                 // response based on $request, if needed, that can also be added here using
                                 // andReturnUsing method instead of andReturn
-                                    $this->createResponseForPayoutServiceMock($fail, $status, $insufficient_balance, $newBankingError, $metadata)
+                                    $this->createResponseForPayoutServiceMock($fail, $status, $insufficient_balance, $newBankingError, $metadata, $isShieldError)
                                 );
 
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
@@ -846,7 +848,7 @@ class PayoutServiceTest extends TestCase
     }
 
 
-    public function createResponseForPayoutServiceMock($fail, $status = 'processing', $insufficient_balance = false, $newBankingError = false, $metadata = [])
+    public function createResponseForPayoutServiceMock($fail, $status = 'processing', $insufficient_balance = false, $newBankingError = false, $metadata = [], $isShieldError = false)
     {
         $response = new \WpOrg\Requests\Response();
 
@@ -924,6 +926,25 @@ class PayoutServiceTest extends TestCase
 
             $response->body = json_encode($content);
             $response->status_code = 200;
+            $response->success = true;
+        }
+        elseif($isShieldError === true)
+        {
+            $response->body = json_encode(
+                [
+                    "error"   =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Transaction blocked. Please reach out to support.",
+                            "reason"      =>"suspicious_transaction",
+                            "field"       => null,
+                            "source"      => "internal",
+                            "step"        => "",
+                            "reason"      => "suspicious_transaction",
+                            "metadata"    => [],
+                        ]
+                ]);
+            $response->status_code = 400;
             $response->success = true;
         }
         else
@@ -4273,6 +4294,37 @@ class PayoutServiceTest extends TestCase
     public function testCreatePayoutServiceFailure()
     {
         $this->mockPayoutServiceCreate(true);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutServicePayoutAndBlockByShield()
+    {
+        $testData = $this->testData['testCreatePayoutServiceFailure'];
+
+        $testData['response'] = [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Transaction blocked. Please reach out to support.',
+                ],
+            ],
+            'status_code' => 400,
+        ];
+
+        $testData['exception'] = [
+            'class' => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUSPICIOUS_TRANSACTION,
+        ];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $assertionBody = [];
+        $actualPayload = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody, $actualPayload,true);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
