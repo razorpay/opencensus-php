@@ -1797,7 +1797,7 @@ class Service extends Base\Service
             }
             catch (\Exception $ex)
             {
-                $balance = $this->repo->balance->findOrFail($balanceId);
+                $balance = $this->repo->balance->findOrFailById($balanceId);
 
                 // check for banking accounts in BAS
                 $bankingAccount = $this->fetchAccountByBalance($balance);
