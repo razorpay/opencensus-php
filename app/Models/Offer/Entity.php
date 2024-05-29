@@ -579,6 +579,16 @@ class Entity extends Base\PublicEntity
             }
         }
 
+        if (!empty($oeBenefits[Constants::NO_COST_EMI])) {
+            if(!empty($oeBenefits[Constants::NO_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT])) {
+                if ($oeBenefits[Constants::NO_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT]!== $stringDisc) {
+                    return true;
+                }
+            } else if ($stringDisc !== '0') {
+                return true;
+            }
+        }
+
         if (!empty($oeBenefits[Constants::LOW_COST_EMI])) {
             if(!empty($oeBenefits[Constants::LOW_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT])) {
                 if ($oeBenefits[Constants::LOW_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT]!== $stringDisc) {
@@ -590,6 +600,22 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function getDiscountAmountForPaymentFromOE(array $oeBenefits) : int
+    {
+        //  Calculate discount for only instant discounts,
+        // i.e. instant discount offers, lc emi offers  and nc emi offers
+        if(!empty($oeBenefits[Constants::DISCOUNT][0][Constants::DISCOUNT])) {
+            return $oeBenefits[Constants::DISCOUNT][0][Constants::DISCOUNT];
+        }
+        if(!empty($oeBenefits[Constants::NO_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT])) {
+            return $oeBenefits[Constants::NO_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT];
+        }
+        if(!empty($oeBenefits[Constants::LOW_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT])) {
+            return $oeBenefits[Constants::LOW_COST_EMI][0][Constants::CALCULATED_DISCOUNT][Constants::DISCOUNT];
+        }
+        return 0;
     }
 
     public function getDiscountAmountForPayment(int $amount, $payment): int

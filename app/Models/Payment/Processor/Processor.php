@@ -4103,6 +4103,51 @@ class Processor
         }
     }
 
+    /**
+     * @param Payment\Entity $payment
+     * @param $calculated_benefits
+     * @param Offer\Entity $offer
+     * @return void
+     * @throws Exception\ServerErrorException
+     */
+    public function setOfferBenefitAndAvailOnOE(Payment\Entity $payment, $calculated_benefits, Offer\Entity $offer): void
+    {
+        // Fetch discounted amount from api for nc emi offers
+        if ($this->offer->isNoCostEmi()) {
+
+            if (!empty($calculated_benefits[Offer\Constants::NO_COST_EMI])) {
+
+                if(!empty($calculated_benefits[Offer\Constants::NO_COST_EMI][0][Offer\Constants::CALCULATED_DISCOUNT][Offer\Constants::DISCOUNT])) {
+                    $orderAmount = $this->order->getAmount();
+
+                    $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
+
+                    $calculated_benefits[Offer\Constants::NO_COST_EMI][0][Offer\Constants::CALCULATED_DISCOUNT][Offer\Constants::DISCOUNT] =
+                        strval($orderAmount - $discountedAmount);
+
+                    $this->trace->info(TraceCode::OFFERS_ENGINE_UPDATED_DISCOUNT, [
+                        'UPDATED_NC_EMI_OFFERS_DISCOUNT' => $calculated_benefits,
+                    ]);
+                } else {
+                    $this->trace->info(TraceCode::OFFERS_ENGINE_UPDATED_DISCOUNT, [
+                        'Empty calculated benefit at Offers Engine' => $calculated_benefits,
+                    ]);
+                    return ;
+                }
+
+            } else {
+                $this->trace->info(TraceCode::OFFERS_ENGINE_UPDATED_DISCOUNT, [
+                    'Empty calculated benefit at Offers Engine' => $calculated_benefits,
+                ]);
+                return;
+            }
+        }
+
+        $payment->setAttribute(Payment\Entity::OFFER_BENEFITS, $calculated_benefits);
+
+        (new Offer\OffersEngine())->availOnOffersEngine($payment, $offer, $calculated_benefits);
+    }
+
     protected function addCustomerIdToInputForExternalSubscription(array & $input)
     {
         assert($this->subscription->isExternal() === true); // nosemgrep : assert-fix-false-positives
@@ -6060,7 +6105,11 @@ class Processor
             $this->offer = $offer;
         }
 
-        $this->setOfferForPaymentFromOrderOrInput($payment, $input);
+        $core = New Offer\Core();
+
+        $experiments = $core->bulkCalltoSplitz($payment->getMerchantId());
+
+        $this->setOfferForPaymentFromOrderOrInput($payment, $input, $experiments);
 
         if (($this->offer !== null) and
             ($this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER))
@@ -6070,6 +6119,8 @@ class Processor
             $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
+
+            $isReverseShadowEnabled =  $experiments[Offer\Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP];
 
             if (isset($payment[Payment\Entity::OFFER_BENEFITS]))
             {
@@ -6090,7 +6141,15 @@ class Processor
                             'API_DISCOUNT' => $orderAmount - $discountedAmount,
                             'OFFERS_DISCOUNT' => $payment->getAttribute(Payment\Entity::OFFER_BENEFITS),
                         ]);
-                };
+
+                    if ($isReverseShadowEnabled) {
+                        throw new Exception\ServerErrorException(
+                            'Unable to process this request.', ErrorCode::BAD_REQUEST_OFFERS_ENGINE_DISCOUNT_MISMATCH);
+                    }
+                } else if($isReverseShadowEnabled) {
+                    $discount = $this->offer->getDiscountAmountForPaymentFromOE($payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
+                    $payment->setAmount($orderAmount - $discount);
+                }
             }
 
             //setting original order amount to input array to set back the original amount as payment
@@ -6105,7 +6164,7 @@ class Processor
         }
     }
 
-    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input)
+    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input, array $experiments)
     {
         $order = $payment->order;
 
@@ -6133,18 +6192,23 @@ class Processor
 
         $this->offer = $offer;
 
-       $this->validateOffersViaOffersEngine($payment,$offer);
+        $this->validateOffersViaOffersEngine($payment, $offer, $experiments);
 
         $payment->associateOffer($this->offer);
+
+        if($order !== null){
+            $order_id = $order->getPublicId() !== null ? $order->getPublicId() : null;
+        }
 
         $this->trace->info(TraceCode::OFFER_SELECTED_FOR_PAYMENT, [
             'offer_id'   => $offer->getPublicId(),
             'payment_id' => $payment->getPublicId(),
-//            'order_id'   => $order->getPublicId(),
+            'order_id'   => $order_id ?? null,
         ]);
+
     }
 
-    protected function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer)
+    private function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer, array $experiments): void
     {
         $core = New Offer\Core();
 
@@ -6155,19 +6219,35 @@ class Processor
             return;
         }
 
-        $resp = $core->validateOnOffersEngine(
-            $payment, $order, $this->offer, false);
+        $isReverseShadowEnabled =  $experiments[Offer\Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP];
 
-        if ($resp[Offer\Constants::VALIDATE_OFFER_CALLED] === true  &&
+        $shouldValidateOnOffersEngine = $experiments[Offer\Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP];
+
+        $resp = $core->validateOnOffersEngine($shouldValidateOnOffersEngine, $payment, $order, $this->offer, false);
+
+        $isOfferValidAtOE = $resp[Offer\Constants::VALIDATE_OFFER_CALLED] === true &&
             isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]) === true &&
-            isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']) === true)
-        {
-            $payment->setAttribute(Payment\Entity::OFFER_BENEFITS,
-                $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']);
+            isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']) === true;
 
-            (new Offer\OffersEngine())->availOnOffersEngine($payment, $offer,
-                $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']);
+        $hasException = false;
+        if($isOfferValidAtOE)
+        {
+            try {
+                $this->setOfferBenefitAndAvailOnOE($payment,
+                    $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits'], $offer);
+            } catch (\Exception $e) {
+                $hasException = true;
+            }
         }
+
+        if (!$isOfferValidAtOE || $hasException) {
+            if($isReverseShadowEnabled && $this->offer->shouldBlockPayment() === true) {
+                $errorMessage = $this->offer->getErrorMessage();
+
+                throw new Exception\BadRequestValidationFailureException($errorMessage);
+            }
+        }
+
     }
 
     /**
@@ -6335,11 +6415,9 @@ class Processor
 
     protected function validateAndFetchOffer(Payment\Entity $payment, array $input)
     {
-
         $offerId = $input[Payment\Entity::OFFER_ID];
 
         Offer\Entity::verifyIdAndStripSign($offerId);
-
 
         // TODO: this needs to be checked for shared merchant offers also
         // skipping for now because there aren't any
@@ -6355,21 +6433,18 @@ class Processor
         // and associations don't happen.
         if ($offer->getCheckoutDisplay() === true)
         {
-
             return null;
         }
 
         // If offer is present in the payment request, we need to validate it against the order.
         if ($payment->order->offers->contains($offerId) === false)
         {
-
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
             [
                 'offer_id' => Offer\Entity::getSignedId($offerId),
                 'order_id' => $payment->order->getPublicId(),
             ]);
         }
-
 
         return $offer;
     }

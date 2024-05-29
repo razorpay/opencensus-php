@@ -165,7 +165,10 @@ class Checker extends Base\Core
         $this->order = $order;
 
         $core = New Core();
-        $oeResp = $core->validateOnOffersEngine($this->payment, $this->order, $this->offer, $this->isDummyPayment);
+        $shouldValidateOnOffersEngine = $core->shouldRouteToOffersEngine($payment->getMerchantId(),
+            Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP);
+        $oeResp = $core->validateOnOffersEngine($shouldValidateOnOffersEngine,
+            $this->payment, $this->order, $this->offer, $this->isDummyPayment);
 
         if(($this->offer->getMaxOfferUsage() !== NULL) and
             ($this->offer->getCurrentOfferUsage() >= $this->offer->getMaxOfferUsage()))

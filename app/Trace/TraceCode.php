@@ -3723,6 +3723,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_APPLIED_ON_PAYMENT                              = 'OFFER_APPLIED_ON_PAYMENT';
     const OFFER_NOT_APPLIED_ON_PAYMENT                          = 'OFFER_NOT_APPLIED_ON_PAYMENT';
     const OFFER_SELECTED_FOR_PAYMENT                            = 'OFFER_SELECTED_FOR_PAYMENT';
+    const OFFER_SELECTED_FOR_PAYMENT_WITHOUT_ORDER              = 'OFFER_SELECTED_FOR_PAYMENT_WITHOUT_ORDER';
     const OFFER_APPLIED_ON_ORDER                                = 'OFFER_APPLIED_ON_ORDER';
     const OFFER_ORDER_AMOUNT_CHECK                              = 'OFFER_ORDER_AMOUNT_CHECK';
     const OFFER_PAYMENT_AMOUNT_CHECK                            = 'OFFER_PAYMENT_AMOUNT_CHECK';
@@ -3767,6 +3768,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VALIDATE_OFFER_RESPONSE_MISMATCH                      = 'VALIDATE_OFFER_RESPONSE_MISMATCH';
 
     const OFFERS_ENGINE_TRANSACTION_FAILURE                     = 'OFFERS_ENGINE_TRANSACTION_FAILURE';
+    const OFFERS_ENGINE_PAYMENT_REVERSE_SHADOW                  = 'OFFERS_ENGINE_PAYMENT_REVERSE_SHADOW';
+    const OFFERS_ENGINE_UPDATED_DISCOUNT                        = 'OFFERS_ENGINE_UPDATED_DISCOUNT';
 
     // Charge collections trace codes
     const CHARGE_COLLECTIONS_REQUEST                            = 'CHARGE_COLLECTIONS_REQUEST';

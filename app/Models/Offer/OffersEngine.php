@@ -1005,6 +1005,10 @@ class OffersEngine extends Base\Core
 
         }
     }
+
+    /**
+     * @throws \Exception
+     */
     public function availOnOffersEngine(Payment\Entity $payment, Entity $offer, array $benefitApplied): void
     {
 
@@ -1019,8 +1023,8 @@ class OffersEngine extends Base\Core
             $this->app['offers_engine']->avail($payment->getMerchantId(), $input);
         }
         catch (\Exception $e) {
-            // ignore until this is in shadow mode
             $this->traceTransactionFailure("avail", $input, $e);
+            throw $e;
         }
     }
 
@@ -1105,17 +1109,7 @@ class OffersEngine extends Base\Core
                         'fact' => $fact,
                     ]);
                 }
-                elseif ($response['error']['description'] === "No Active offers found")
-                {
-                    return [
-                        'offer_id' => $offer->getPublicId(),
-                        'calculated_benefits' => [
-                            'discount' => []
-                        ],
-                    ];
-                }
             }
-
             return $response;
         }
         catch (\Exception $exception)
@@ -1247,7 +1241,6 @@ class OffersEngine extends Base\Core
         if (empty($providerReferenceId) !== true) {
             return $providerReferenceId;
         }
-
         $core = new Core();
 
         return $core->getParValue($this->payment, $this->isDummyPayment);
