@@ -204,6 +204,42 @@ class MerchantBankingInvoiceTest extends TestCase
         return $x['id'];
     }
 
+    protected function createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaYblCaAndVa()
+    {
+        $this->createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaAndVANonZero();
+
+        $x = $this->fixtures->create('balance',
+            [
+                'merchant_id'    => '10000000000000',
+                'type'           => 'banking',
+                'balance'        => 100000,
+                'account_number' => '2224440041626000',
+                'channel'        => 'yesbank',
+                'account_type'   => 'direct',
+            ]);
+
+        $y = $this->fixtures->create(
+            'payout',
+            [
+                'channel'           =>      'yesbank',
+                'amount'            =>      1000,
+                'balance_id'        =>      $x['id'],
+                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            ]);
+
+        $y = $this->fixtures->create(
+            'payout',
+            [
+                'channel'           =>      'yesbank',
+                'amount'            =>      1000,
+                'balance_id'        =>      $x['id'],
+                'fee_type'          =>      'free_credits',
+                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            ]);
+
+        return $x['id'];
+    }
+
     protected function createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaAndVANonZero()
     {
         $this->fixtures->edit('merchant', '10000000000000', [
@@ -549,7 +585,7 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function setupEInvoiceClientResponse($expectedContent, $times = 1)
+    public function setupEInvoiceClientResponse($expectedContent, $times = 1, $matchExpectedContent = false)
     {
         $this->eInvoiceClientMock
             ->shouldReceive('getEInvoice')
@@ -563,9 +599,12 @@ class MerchantBankingInvoiceTest extends TestCase
 
                 return true;
 
-            }), Mockery::on(function(array $input) use ($expectedContent)
+            }), Mockery::on(function(array $input) use ($expectedContent, $matchExpectedContent)
             {
-                //$this->assertArraySelectiveEquals($input, $expectedContent);
+                if($matchExpectedContent)
+                {
+                    $this->assertArraySelectiveEquals($expectedContent, $input);
+                }
 
                 return true;
             }))
@@ -2578,7 +2617,7 @@ class MerchantBankingInvoiceTest extends TestCase
         $request = [
             'url'     => '/reports/invoice/banking',
             'method'  => 'POST',
-            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year, 'seller' => 'RSPL'],
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year, 'seller' => 'RZPL'],
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -3359,5 +3398,166 @@ class MerchantBankingInvoiceTest extends TestCase
         $ufhService->shouldReceive('uploadFileAndGetUrl')->times(1)->andReturn([
             'file_id'   => 'file_MQgsR8C9eceTxZ',
         ]);
+    }
+
+    public function testBankingInvoiceEntityCreateWithEInvoiceForRblCaYblCaAndVaAfterApril2024()
+    {
+        $oldDateTime = Carbon::create(2024, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaYblCaAndVa();
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $expectedContent = $this->testData[__FUNCTION__]['expectedContent'];
+
+        $this->setupEInvoiceClientResponse($expectedContent, 1, true);
+
+        $this->makeRequestAndGetContent($request);
+
+        $eInvoiceEntities = $this->getEntities('merchant_e_invoice', [], true);
+
+        $eInvoiceEntities = $eInvoiceEntities['items'][0];
+
+        $this->assertEquals('10000000000000', $eInvoiceEntities['merchant_id']);
+        $this->assertEquals(7, $eInvoiceEntities['month']);
+        $this->assertEquals(2024, $eInvoiceEntities['year']);
+        $this->assertEquals('BANKING', $eInvoiceEntities['type']);
+        $this->assertEquals('generated', $eInvoiceEntities['status']);
+        $this->assertEquals('randomirn', $eInvoiceEntities['gsp_irn']);
+        $this->assertEquals('randominvoice', $eInvoiceEntities['gsp_signed_invoice']);
+        $this->assertEquals('randomcode', $eInvoiceEntities['gsp_signed_qr_code']);
+        $this->assertEquals('randomurl', $eInvoiceEntities['gsp_qr_code_url']);
+        $this->assertEquals('randompdf', $eInvoiceEntities['gsp_e_invoice_pdf']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testBankingInvoiceEntityCreateWithEInvoiceAndCreditNoteForRblCaYblCaAndVaAfterApril2024()
+    {
+        $oldDateTime = Carbon::create(2024, 6, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaYblCaAndVa();
+
+        $payouts = $this->getDbEntities('payout', ['merchant_id' => '10000000000000']);
+        $this->assertEquals(5, count($payouts));
+
+        for ($i=0; $i<3; $i++) // Fail 3 payouts
+        {
+            $this->fixtures->edit('payout', $payouts[$i]['id'], ['status' => 'failed']);
+        }
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $expectedContentForInvoice = $this->testData[__FUNCTION__]['expectedContentForInvoice'];
+
+        $expectedContentForCreditNote = $this->testData[__FUNCTION__]['expectedContentForCreditNote'];
+
+        $this->setupEInvoiceClientResponse($expectedContentForInvoice, 1, true);
+
+        $this->setupEInvoiceClientResponse($expectedContentForCreditNote, 1, true);
+
+        $this->makeRequestAndGetContent($request);
+
+        $eInvoiceEntities = $this->getEntities('merchant_e_invoice', [], true);
+
+        $eInvoiceEntityINV = $eInvoiceEntities['items'][0];
+        $eInvoiceEntityCRN = $eInvoiceEntities['items'][1];
+
+        $this->assertEquals('10000000000000', $eInvoiceEntityCRN['merchant_id']);
+        $this->assertEquals('INV', $eInvoiceEntityCRN['document_type']);
+        $this->assertEquals(6, $eInvoiceEntityCRN['month']);
+        $this->assertEquals(2024, $eInvoiceEntityCRN['year']);
+        $this->assertEquals('BANKING', $eInvoiceEntityCRN['type']);
+        $this->assertEquals('generated', $eInvoiceEntityCRN['status']);
+        $this->assertEquals('randomirn', $eInvoiceEntityCRN['gsp_irn']);
+        $this->assertEquals('randominvoice', $eInvoiceEntityCRN['gsp_signed_invoice']);
+        $this->assertEquals('randomcode', $eInvoiceEntityCRN['gsp_signed_qr_code']);
+        $this->assertEquals('randomurl', $eInvoiceEntityCRN['gsp_qr_code_url']);
+        $this->assertEquals('randompdf', $eInvoiceEntityCRN['gsp_e_invoice_pdf']);
+
+        $this->assertEquals('10000000000000', $eInvoiceEntityINV['merchant_id']);
+        $this->assertEquals('CRN', $eInvoiceEntityINV['document_type']);
+        $this->assertEquals(6, $eInvoiceEntityINV['month']);
+        $this->assertEquals(2024, $eInvoiceEntityINV['year']);
+        $this->assertEquals('BANKING', $eInvoiceEntityINV['type']);
+        $this->assertEquals('generated', $eInvoiceEntityINV['status']);
+        $this->assertEquals('randomirn', $eInvoiceEntityINV['gsp_irn']);
+        $this->assertEquals('randominvoice', $eInvoiceEntityINV['gsp_signed_invoice']);
+        $this->assertEquals('randomcode', $eInvoiceEntityINV['gsp_signed_qr_code']);
+        $this->assertEquals('randomurl', $eInvoiceEntityINV['gsp_qr_code_url']);
+        $this->assertEquals('randompdf', $eInvoiceEntityINV['gsp_e_invoice_pdf']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testBankingInvoiceEntityCreateWithEInvoiceForRblCaYblCaAndVaBeforeApril2024()
+    {
+        $oldDateTime = Carbon::create(2023, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaYblCaAndVa();
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $expectedContentForRblInvoice = $this->testData[__FUNCTION__]['expectedContentForRblInvoice'];
+        $expectedContentForNonRblInvoice = $this->testData[__FUNCTION__]['expectedContentForNonRblInvoice'];
+
+        $this->setupEInvoiceClientResponse($expectedContentForRblInvoice, 1, true);
+        $this->setupEInvoiceClientResponse($expectedContentForNonRblInvoice, 1, true);
+
+        $this->makeRequestAndGetContent($request);
+
+        $eInvoiceEntities = $this->getEntities('merchant_e_invoice', [], true);
+        $this->assertEquals(2, count($eInvoiceEntities['items']));
+
+        $rzpleInvoiceEntities = $eInvoiceEntities['items'][0];
+        $rspleInvoiceEntities = $eInvoiceEntities['items'][1];
+
+        $this->assertEquals('10000000000000', $rzpleInvoiceEntities['merchant_id']);
+        $this->assertEquals(7, $rzpleInvoiceEntities['month']);
+        $this->assertEquals(2023, $rzpleInvoiceEntities['year']);
+        $this->assertEquals('BANKING', $rzpleInvoiceEntities['type']);
+        $this->assertEquals('generated', $rzpleInvoiceEntities['status']);
+        $this->assertEquals('randomirn', $rzpleInvoiceEntities['gsp_irn']);
+        $this->assertEquals('randominvoice', $rzpleInvoiceEntities['gsp_signed_invoice']);
+        $this->assertEquals('randomcode', $rzpleInvoiceEntities['gsp_signed_qr_code']);
+        $this->assertEquals('randomurl', $rzpleInvoiceEntities['gsp_qr_code_url']);
+        $this->assertEquals('randompdf', $rzpleInvoiceEntities['gsp_e_invoice_pdf']);
+
+        $this->assertEquals('10000000000000', $rspleInvoiceEntities['merchant_id']);
+        $this->assertEquals(7, $rspleInvoiceEntities['month']);
+        $this->assertEquals(2023, $rspleInvoiceEntities['year']);
+        $this->assertEquals('BANKING', $rspleInvoiceEntities['type']);
+        $this->assertEquals('generated', $rspleInvoiceEntities['status']);
+        $this->assertEquals('randomirn', $rspleInvoiceEntities['gsp_irn']);
+        $this->assertEquals('randominvoice', $rspleInvoiceEntities['gsp_signed_invoice']);
+        $this->assertEquals('randomcode', $rspleInvoiceEntities['gsp_signed_qr_code']);
+        $this->assertEquals('randomurl', $rspleInvoiceEntities['gsp_qr_code_url']);
+        $this->assertEquals('randompdf', $rspleInvoiceEntities['gsp_e_invoice_pdf']);
+
+        Carbon::setTestNow();
     }
 }

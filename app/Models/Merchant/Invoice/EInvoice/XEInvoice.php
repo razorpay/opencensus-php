@@ -180,6 +180,18 @@ class XEInvoice extends Core
         $invoiceIssueTime = Carbon::createFromTimestamp($invoiceEntity->getCreatedAt(), Timezone::IST)
             ->format('d/m/Y');
 
+        $month = (int)substr($invoiceNumber, 12, 2);
+
+        $year = (int)substr($invoiceNumber, 14, 2);
+
+        // Coming forward from April 2024, RBL CA invoices will also be generated on RZPL seller entity.
+        if(($month >= 4 and $year >= 24) or $year >= 25)
+        {
+            $invoiceIssueTime = Carbon::createFromTimestamp($invoiceEntity->getCreatedAt(), Timezone::IST)
+                ->startOfMonth()
+                ->format('d/m/Y');
+        }
+
         foreach($this->xDocumentTypes as $documentType)
         {
             $eInvoiceEntity = $this->repo->merchant_e_invoice->fetchGeneratedEInvoiceFromInvoiceNumberTypeAndDocumentType($merchantId, $invoiceNumber, $type, $documentType);

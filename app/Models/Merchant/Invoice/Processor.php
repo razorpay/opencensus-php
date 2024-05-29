@@ -358,7 +358,7 @@ class Processor extends Base\Core
                         {
                             $mismatchingSellerEntity = $this->isMismatchingSellerEntity($data);
 
-                            if($mismatchingSellerEntity === false)
+                            if($mismatchingSellerEntity === false or ($this->month >= 4 and $this->year >= 2024) or ($this->year >= 2025))
                             {
                                 $this->checkIfCreditNoteAmountGreaterThanInvoiceAmount($data);
 

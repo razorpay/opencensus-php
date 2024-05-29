@@ -193,7 +193,7 @@ class Core extends Base\Core
 
         if($eInvoiceEntity->getType() === Types::BANKING && $eInvoiceEntity->getDocumentType() === DocumentTypes::CRN)
         {
-            $data[Constants::DOCUMENT_DETAILS][Constants::DOCUMENT_NUMBER] = $eInvoiceEntity->getInvoiceNumber();
+            $data[Constants::DOCUMENT_DETAILS][Constants::DOCUMENT_NUMBER] = $this->getCreditNoteDocumentNumberFromInvoiceNumber($eInvoiceEntity->getInvoiceNumber());
 
             $data[Constants::REFERENCE_DETAILS] = $this->getReferenceDetails($eInvoiceEntity);
         }
@@ -496,5 +496,22 @@ class Core extends Base\Core
             Constants::INVOICE_PERIOD_END_DATE      =>   $invoiceDate,
             Constants::PRECEDING_DOCUMENT_DETAILS   =>   $precedingDocumentDetails,
         ];
+    }
+
+    public function getCreditNoteDocumentNumberFromInvoiceNumber($invoiceNumber) : string
+    {
+        $month = (int)substr($invoiceNumber, 12, 2);
+
+        $year = (int)substr($invoiceNumber, 14, 2);
+
+        // CreditNote document number should be different from invoice number. We will take this up after april 2024
+        // to support for credit note numbers already generated.
+        if(($month >= 4 and $year >= 24) or $year >= 25)
+        {
+            // Invoice Number (JQEW7G0X1M3X1223) -> Credit Note Document Number (CNJQEW7G0X1X1223)
+            return 'CN' . substr($invoiceNumber, 0, 9) . substr($invoiceNumber, 11, 5);
+        }
+
+        return $invoiceNumber;
     }
 }

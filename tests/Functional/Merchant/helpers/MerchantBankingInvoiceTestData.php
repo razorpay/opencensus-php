@@ -980,4 +980,472 @@ return [
             ],
         ],
     ],
+    'testBankingInvoiceEntityCreateWithEInvoiceForRblCaYblCaAndVaAfterApril2024' => [
+        'rx_transactions' => [
+            'amount' => 500,
+            'tax'    => 90,
+        ],
+        'expectedContent' => [
+            'access_token' => '67118f6bfaa1efedba09c90f9b2bc578e70f8468',
+            'user_gstin' => '29AAKCR4702K1Z1',
+            'transaction_details' => [
+                'supply_type' => 'B2B',
+            ],
+            'document_details' => [
+                'document_type' => 'INV',
+                'document_number' => '10000000000X0724',
+                'document_date' => '31/07/2024',
+            ],
+            'seller_details' => [
+                'gstin' => '29AAKCR4702K1Z1',
+                'legal_name' => 'RZPX PRIVATE LIMITED',
+                'pincode' => 560030,
+                'state_code' => '29',
+                'address1' => 'First Floor SJR Cyber 22 laskar hosur road Adugodi',
+            ],
+            'buyer_details' => [
+                'gstin' => '29kjsngjk213922',
+                'legal_name' => 'abcd',
+                'pincode' => 123456,
+                'location' => 'abcdef',
+                'place_of_supply' => '29',
+                'state_code' => '29',
+                'address1' => 'abc street',
+            ],
+            'value_details' => [
+                'total_assessable_value' => '119.00',
+                'total_invoice_value' => '140.42',
+                'total_igst_value' => '0.00',
+                'total_sgst_value' => '10.71',
+                'total_cgst_value' => '10.71',
+            ],
+            'item_list' => [
+                [
+                    'item_serial_number' => 1,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                    'account_type' => 'direct',
+                    'channel' => 'rbl',
+                    'product_description' => 'RazorpayX Transactions Fees',
+                ],
+                [
+                    'item_serial_number' => 2,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                    'account_type' => 'shared',
+                    'channel' => null,
+                    'product_description' => 'RazorpayX Transactions Fees',
+                ],
+                [
+                    'item_serial_number' => 3,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '9.00',
+                    'total_amount' => '9.00',
+                    'assessable_value' => '9.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.81',
+                    'cgst_amount' => '0.81',
+                    'total_item_value' => '10.62',
+                    'account_type' => 'direct',
+                    'channel' => 'yesbank',
+                    'product_description' => 'RazorpayX Transactions Fees',
+                ],
+                [
+                    'item_serial_number' => 4,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '100.00',
+                    'total_amount' => '100.00',
+                    'assessable_value' => '100.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '9.00',
+                    'cgst_amount' => '9.00',
+                    'total_item_value' => '118.00',
+                    'account_type' => '',
+                    'channel' => '',
+                    'product_description' => 'Line Item 1'
+                ],
+            ],
+        ],
+    ],
+    'testBankingInvoiceEntityCreateWithEInvoiceAndCreditNoteForRblCaYblCaAndVaAfterApril2024' => [
+        'rx_transactions' => [
+            'amount' => 500,
+            'tax'    => 90,
+        ],
+        'expectedContentForInvoice' => [
+            'access_token' => '67118f6bfaa1efedba09c90f9b2bc578e70f8468',
+            'user_gstin' => '29AAKCR4702K1Z1',
+            'transaction_details' => [
+                'supply_type' => 'B2B'
+            ],
+            'document_details' => [
+                'document_type' => 'INV',
+                'document_number' => '10000000000X0624',
+                'document_date' => '30/06/2024'
+            ],
+            'seller_details' => [
+                'gstin' => '29AAKCR4702K1Z1',
+                'legal_name' => 'RZPX PRIVATE LIMITED',
+                'location' => 'Bangalore',
+                'pincode' => 560030,
+                'state_code' => '29',
+                'address1' => 'First Floor SJR Cyber 22 laskar hosur road Adugodi'
+            ],
+            'buyer_details' => [
+                'gstin' => '29kjsngjk213922',
+                'legal_name' => 'abcd',
+                'location' => 'abcdef',
+                'pincode' => 123456,
+                'place_of_supply' => '29',
+                'state_code' => '29',
+                'address1' => 'abc street'
+            ],
+            'value_details' => [
+                'total_assessable_value' => '119.00',
+                'total_invoice_value' => '140.42',
+                'total_igst_value' => '0.00',
+                'total_sgst_value' => '10.71',
+                'total_cgst_value' => '10.71'
+            ],
+            'item_list' => [
+                [
+                    'item_serial_number' => 1,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                    'account_type' => 'direct',
+                    'channel' => 'rbl',
+                    'product_description' => 'RazorpayX Transactions Fees'
+                ],
+                [
+                    'item_serial_number' => 2,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                    'account_type' => 'shared',
+                    'channel' => null,
+                    'product_description' => 'RazorpayX Transactions Fees'
+                ],
+                [
+                    'item_serial_number' => 3,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '9.00',
+                    'total_amount' => '9.00',
+                    'assessable_value' => '9.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.81',
+                    'cgst_amount' => '0.81',
+                    'total_item_value' => '10.62',
+                    'account_type' => 'direct',
+                    'channel' => 'yesbank',
+                    'product_description' => 'RazorpayX Transactions Fees'
+                ],
+                [
+                    'item_serial_number' => 4,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '100.00',
+                    'total_amount' => '100.00',
+                    'assessable_value' => '100.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '9.00',
+                    'cgst_amount' => '9.00',
+                    'total_item_value' => '118.00',
+                    'account_type' => '',
+                    'channel' => '',
+                    'product_description' => 'Line Item 1'
+                ],
+            ]
+        ],
+        'expectedContentForCreditNote' => [
+            'access_token' => '67118f6bfaa1efedba09c90f9b2bc578e70f8468',
+            'user_gstin' => '29AAKCR4702K1Z1',
+            'transaction_details' => [
+                'supply_type' => 'B2B'
+            ],
+            'document_details' => [
+                'document_type' => 'CRN',
+                'document_number' => 'CN100000000X0624',
+                'document_date' => '30/06/2024'
+            ],
+            'seller_details' => [
+                'gstin' => '29AAKCR4702K1Z1',
+                'legal_name' => 'RZPX PRIVATE LIMITED',
+                'location' => 'Bangalore',
+                'pincode' => 560030,
+                'state_code' => '29',
+                'address1' => 'First Floor SJR Cyber 22 laskar hosur road Adugodi'
+            ],
+            'buyer_details' => [
+                'gstin' => '29kjsngjk213922',
+                'legal_name' => 'abcd',
+                'location' => 'abcdef',
+                'pincode' => 123456,
+                'place_of_supply' => '29',
+                'state_code' => '29',
+                'address1' => 'abc street'
+            ],
+            'value_details' => [
+                'total_assessable_value' => '10.00',
+                'total_invoice_value' => '11.80',
+                'total_igst_value' => '0.00',
+                'total_sgst_value' => '0.90',
+                'total_cgst_value' => '0.90'
+            ],
+            'item_list' => [
+                [
+                    'item_serial_number' => 1,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                    'account_type' => 'direct',
+                    'channel' => 'rbl',
+                    'product_description' => 'RazorpayX Adjustments'
+                ],
+                [
+                    'item_serial_number' => 2,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                    'account_type' => 'shared',
+                    'channel' => null,
+                    'product_description' => 'RazorpayX Adjustments'
+                ]
+            ],
+            'reference_details' => [
+                'invoice_remarks' => 'Reference of Credit Note',
+                'invoice_period_start_date' => '20/06/2024',
+                'invoice_period_end_date' => '20/06/2024',
+                'preceding_document_details' => [
+                    'reference_of_original_invoice' => '10000000000X0624',
+                    'preceding_invoice_date' => '20/06/2024'
+                ]
+            ]
+        ],
+    ],
+    'testBankingInvoiceEntityCreateWithEInvoiceForRblCaYblCaAndVaBeforeApril2024' => [
+        'rx_transactions' => [
+            'amount' => 500,
+            'tax'    => 90,
+        ],
+        'expectedContentForNonRblInvoice' => [
+            'access_token' => '67118f6bfaa1efedba09c90f9b2bc578e70f8468',
+            'user_gstin' => '29AAKCR4702K1Z1',
+            'transaction_details' => [
+                'supply_type' => 'B2B'
+            ],
+            'document_details' => [
+                'document_type' => 'INV',
+                'document_number' => '10000000000X0723',
+                'document_date' => '31/07/2023'
+            ],
+            'seller_details' => [
+                'gstin' => '29AAKCR4702K1Z1',
+                'legal_name' => 'RZPX PRIVATE LIMITED',
+                'location' => 'Bangalore',
+                'pincode' => 560030,
+                'state_code' => '29',
+                'address1' => 'First Floor SJR Cyber 22 laskar hosur road Adugodi'
+            ],
+            'buyer_details' => [
+                'gstin' => '29kjsngjk213922',
+                'legal_name' => 'abcd',
+                'location' => 'abcdef',
+                'pincode' => 123456,
+                'place_of_supply' => '29',
+                'state_code' => '29',
+                'address1' => 'abc street'
+            ],
+            'value_details' => [
+                'total_assessable_value' => '114.00',
+                'total_invoice_value' => '134.52',
+                'total_igst_value' => '0.00',
+                'total_sgst_value' => '10.26',
+                'total_cgst_value' => '10.26'
+            ],
+            'item_list' => [
+                [
+                    'item_serial_number' => 1,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                    'account_type' => 'shared',
+                    'channel' => null,
+                    'product_description' => 'RazorpayX Transactions Fees'
+                ],
+                [
+                    'item_serial_number' => 2,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '9.00',
+                    'total_amount' => '9.00',
+                    'assessable_value' => '9.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.81',
+                    'cgst_amount' => '0.81',
+                    'total_item_value' => '10.62',
+                    'account_type' => 'direct',
+                    'channel' => 'yesbank',
+                    'product_description' => 'RazorpayX Transactions Fees'
+                ],
+                [
+                    'item_serial_number' => 3,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '100.00',
+                    'total_amount' => '100.00',
+                    'assessable_value' => '100.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '9.00',
+                    'cgst_amount' => '9.00',
+                    'total_item_value' => '118.00',
+                    'account_type' => '',
+                    'channel' => '',
+                    'product_description' => 'Line Item 1'
+                ],
+            ]
+        ],
+        'expectedContentForRblInvoice' => [
+            'access_token' => 'a78e74508f285f5cd120716b81d8e91f2af96326',
+            'user_gstin' => '29AAGCR4375J1ZU',
+            'transaction_details' => [
+                'supply_type' => 'B2B'
+            ],
+            'document_details' => [
+                'document_type' => 'INV',
+                'document_number' => '10000000000R0723',
+                'document_date' => '31/07/2023'
+            ],
+            'seller_details' => [
+                'gstin' => '29AAGCR4375J1ZU',
+                'legal_name' => 'Razorpay Software Private Limited',
+                'location' => 'Bangalore',
+                'pincode' => 560030,
+                'state_code' => '29',
+                'address1' => 'First Floor SJR Cyber 22 laskar hosur road Adugodi'
+            ],
+            'buyer_details' => [
+                'gstin' => '29kjsngjk213922',
+                'legal_name' => 'abcd',
+                'location' => 'abcdef',
+                'pincode' => 123456,
+                'place_of_supply' => '29',
+                'state_code' => '29',
+                'address1' => 'abc street'
+            ],
+            'value_details' => [
+                'total_assessable_value' => '5.00',
+                'total_invoice_value' => '5.90',
+                'total_igst_value' => '0.00',
+                'total_sgst_value' => '0.45',
+                'total_cgst_value' => '0.45'
+            ],
+            'item_list' => [
+                [
+                    'item_serial_number' => 1,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                    'account_type' => 'direct',
+                    'channel' => 'rbl',
+                    'product_description' => 'RazorpayX Transactions Fees'
+                ]
+            ]
+        ],
+    ],
 ];

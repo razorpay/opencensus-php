@@ -45,7 +45,7 @@ class XEInvoice extends Job
 
         $this->params       = $params;
 
-        $this->sellerEntity = $this->getSellerEntity($documentTypeData);
+        $this->sellerEntity = $this->getSellerEntity($documentTypeData, $params);
 
     }
 
@@ -208,8 +208,15 @@ class XEInvoice extends Job
         return $data;
     }
 
-    protected function getSellerEntity($documentTypeData)
+    protected function getSellerEntity($documentTypeData, $params)
     {
+        $month = $params[EInvoice\Entity::MONTH];
+        $year = $params[EInvoice\Entity::YEAR];
+
+        if(($month >= 4 and $year >= 2024) or $year >= 2025)
+        {
+            return EInvoice\Constants::RZPL;
+        }
         foreach($documentTypeData as $type => $lineItems)
         {
             $accounts = array_except($lineItems, BankingInvoiceReport::COMBINED);

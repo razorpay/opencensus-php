@@ -33,6 +33,7 @@ class PdfGenerator extends Base\Core
     const ISSUED_TO          = 'issued_to';
     const ROWS               = 'rows';
     const INVOICE_NUMBER     = 'invoice_number';
+    const CREDIT_NOTE_NUMBER = 'credit_note_number';
     const INVOICE_DATE       = 'invoice_date';
     const GSTIN              = 'gstin';
     const BILLING_PERIOD     = 'billing_period';
@@ -114,6 +115,7 @@ class PdfGenerator extends Base\Core
             $html = View::make(self::TEMPLATE_FILE_NAME)
                 ->with(self::ISSUED_TO, $data[BankingInvoiceReport::ISSUED_TO])
                 ->with(self::INVOICE_NUMBER, $data[BankingInvoiceReport::INVOICE_NUMBER])
+                ->with(self::CREDIT_NOTE_NUMBER, $data[BankingInvoiceReport::CREDIT_NOTE_NUMBER])
                 ->with(self::INVOICE_DATE, $data[BankingInvoiceReport::INVOICE_DATE])
                 ->with(self::GSTIN, $data[BankingInvoiceReport::GSTIN])
                 ->with(self::BILLING_PERIOD, $data[BankingInvoiceReport::BILLING_PERIOD])

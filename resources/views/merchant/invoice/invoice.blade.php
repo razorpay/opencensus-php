@@ -49,7 +49,7 @@
                                 <span class="text-black-o-40">Billing Period</span> {{$billing_period}} <br>
                             @endif
                             @if($pageName == 'CRN')
-                                <span class="text-black-o-40">Credit Note Number</span> {{$invoice_number}} <br>
+                                <span class="text-black-o-40">Credit Note Number</span> {{$credit_note_number}} <br>
                             @endif
                             @if($pageName == 'INV')
                                     <span class="text-black-o-40">Invoice Issued on</span> {{$invoice_date}}<br>

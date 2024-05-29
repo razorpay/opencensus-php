@@ -79,7 +79,7 @@ class Core extends Base\Core
 
         $balanceType = $balance->getType();
 
-        $balanceOwnedByRzpx = $this->isBalanceOwnedByRzpx($balance);
+        $balanceOwnedByRzpx = $this->isBalanceOwnedByRzpx($balance, (int)$input['month'], (int)$input['year']);
 
         $invoiceEntity->generateInvoiceNumber($input['month'], $input['year'], $balanceType,$balanceOwnedByRzpx);
 
@@ -405,15 +405,10 @@ class Core extends Base\Core
                     continue;
                 }
 
-                if($rblAccountInvoiceAmount > 0)
+                if($rblAccountInvoiceAmount > 0 and $this->isDateAfterMarch2024($input['month'], $input['year']) === false)
                 {
                     if($virtualAccountInvoiceAmount === 0){
                         $data[BankingInvoiceReport::ROWS][$type][BankingInvoiceReport::SELLER_ENTITY] = 'RSPL';
-
-                        if(($input['month'] >= 4 and $input['year'] >= 2024) or ($input['year'] >= 2025))
-                        {
-                            $input[Entity::SELLER] = 'RZPL';
-                        }
                     }
                     else{
                         return [
@@ -925,7 +920,7 @@ class Core extends Base\Core
     {
         $dateString = Carbon::createFromDate($year, $month, 1, Timezone::IST)->format('my');
 
-        $balanceOwnedByRzpx = $isIndependentOfBalanceID === true ? $isIndependentOfBalanceID : $this->isBalanceOwnedByRzpx($balance);
+        $balanceOwnedByRzpx = $isIndependentOfBalanceID === true ? $isIndependentOfBalanceID : $this->isBalanceOwnedByRzpx($balance, $month, $year);
 
         $invoiceNumber = Entity::generateInvoiceNumberForX($merchant->getId(),$dateString,$balanceOwnedByRzpx);
 
@@ -1074,7 +1069,7 @@ class Core extends Base\Core
 
     // This is used to split invoice number based on seller entity.
     // On X, RBL CA is owned by RSPL, we will be generating a different invoice with RSPL seller entity
-    private function isBalanceOwnedByRzpx(?Balance\Entity $balance): bool
+    private function isBalanceOwnedByRzpx(?Balance\Entity $balance, int $month, $year): bool
     {
         if (is_null($balance))
         {
@@ -1086,6 +1081,11 @@ class Core extends Base\Core
             return false;
         }
 
+        if ($this->isDateAfterMarch2024($month, $year))
+        {
+            return true;
+        }
+
         if ($balance->getAccountType() === AccountType::DIRECT &&
             $balance->getChannel() === Channel::RBL)
         {
@@ -1093,5 +1093,10 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function isDateAfterMarch2024($month, $year): bool
+    {
+        return ($month >= 4 and $year >= 2024) or $year >= 2025;
     }
 }

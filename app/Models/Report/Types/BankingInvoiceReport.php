@@ -4,6 +4,7 @@ namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Services\EInvoice;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
@@ -40,6 +41,7 @@ class BankingInvoiceReport extends BaseReport
     const GSTIN                     = 'gstin';
     const INVOICE_NUMBER            = 'invoice_number';
     const INVOICE_ID                = 'id';
+    const CREDIT_NOTE_NUMBER        = 'credit_note_number';
     const INVOICE_DATE              = 'invoice_date';
     const BILLING_PERIOD            = 'billing_period';
     const ISSUED_TO                 = 'issued_to';
@@ -376,13 +378,25 @@ class BankingInvoiceReport extends BaseReport
             $data[$type][self::SELLER_ENTITY] = null;
         }
 
+        $invoiceDate = Carbon::create($this->year, $this->month, 1, 0, 0, 0, Timezone::IST)
+            ->addMonth()
+            ->timestamp;
+
+        $creditNoteNumber = $invoice->getInvoiceNumber();
+
+        if (($this->month >= 4 and $this->year >= 2024) or $this->year >= 2025)
+        {
+            $creditNoteNumber = (new Invoice\EInvoice\Core())->getCreditNoteDocumentNumberFromInvoiceNumber($invoice->getInvoiceNumber());
+        }
+
         $invoiceReport = [
             self::TITLE              => self::TAX_INVOICE,
             self::ISSUED_TO          => $this->getIssuedToDetails(),
             self::INVOICE_NUMBER     => $invoice->getInvoiceNumber(),
+            self::CREDIT_NOTE_NUMBER => $creditNoteNumber,
             self::INVOICE_ID         => $invoice->getId(),
             self::BILLING_PERIOD     => $this->getBillingPeriod(),
-            self::INVOICE_DATE       => $this->getInvoiceDate($invoice->getCreatedAt()),
+            self::INVOICE_DATE       => $this->getInvoiceDate($invoiceDate),
             self::GSTIN              => $invoice->getGstin(),
             self::ROWS               => $data,
             self::E_INVOICE_DETAILS  => [],

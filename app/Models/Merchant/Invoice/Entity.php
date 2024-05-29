@@ -211,6 +211,15 @@ class Entity extends Base\PublicEntity
 
         $invoiceSeparator = $balanceOwnedByRzpx ? Constants::X_INVOICE_SEPARATOR_FOR_RZPX : Constants::X_INVOICE_SEPARATOR_FOR_RSPL;
 
+        $month = (int)substr($dateString, 0, 2);
+        $year = (int)substr($dateString, 2, 2);
+
+        // Coming forward from April 2024, RBL CA invoices will also be generated on RZPL seller entity.
+        if(($month >= 4 and $year >= 24) or $year >= 25)
+        {
+            $invoiceSeparator = Constants::X_INVOICE_SEPARATOR_FOR_RZPX;
+        }
+
         $invoiceNumber = $invoiceNumber . $invoiceSeparator;
 
         return $invoiceNumber . $dateString;
