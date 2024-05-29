@@ -129,7 +129,7 @@ class Format
         self::GPG     => ['application/pgp', 'application/octet-stream', 'application/pgp-encrypted'],
         self::PGP     => ['application/pgp', 'application/octet-stream', 'application/pgp-encrypted'],
         self::IOB     => ['text/plain'],
-        self::VAL     => ['text/plain'],
+        self::VAL     => ['text/plain', 'application/octet-stream'],
 
         // media
         self::TG2     => ['video/3gpp2', 'audio/3gpp2'],
