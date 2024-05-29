@@ -1130,4 +1130,9 @@ final class RazorxTreatment
      * Razorx for shield payout evaluate
      */
     const PAYOUT_SHIELD_EVALUATE_EXPERIMENT = 'payout_shield_evaluate_experiment';
+
+    /**
+     * Razorx for reverse shadow
+     */
+    const  TRANSFER_REVERSALS_VIA_REVERSE_SHADOW= 'transfer_reversals_via_reverse_shadow';
 }

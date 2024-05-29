@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Reversal;
 
+use App;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Error\Error;
@@ -27,6 +28,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Ledger\RefundJournalEvents;
@@ -372,6 +374,10 @@ class Core extends Base\Core
 
                     $refund = null;
 
+                    $sourcePayment = null;
+
+                    $isCustomerRefundApplicable = (bool) ($input[Entity::REFUND_TO_CUSTOMER] ?? false);
+
                     try
                     {
                         $result = $paymentProcessor->refundPaymentAndReverseTransfer($transfer, $input, $initiator, true);
@@ -382,8 +388,6 @@ class Core extends Base\Core
                         $refund = $result[1] ?? null;
 
                         $this->traceSuccess(TraceCode::DISPUTE_TRANSFER_SUCCESS, $reversal);
-
-                        $sourcePayment = null;
 
                         if ($transfer->getSourceType() === E::PAYMENT)
                         {
@@ -404,8 +408,6 @@ class Core extends Base\Core
                         {
                             $this->repo->saveOrFail($sourcePayment);
                         }
-
-                        $isCustomerRefundApplicable = (bool) ($input[Entity::REFUND_TO_CUSTOMER] ?? false);
 
                         //Update source payment with refunded amount. Transfer payment updated earlier.
                         if (($isCustomerRefundApplicable === true) && ($sourcePayment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
@@ -451,6 +453,34 @@ class Core extends Base\Core
 
                             // compensatory action in case of failure
                             $this->app['scrooge']->bulkUpdateRefundStatus($refundStatusUpdateInput);
+                            
+                            $variant = App::getFacadeRoot()->razorx->getTreatment(
+                                UniqueIdEntity::generateUniqueId(),
+                                Merchant\RazorxTreatment::TRANSFER_REVERSALS_VIA_REVERSE_SHADOW,
+                                $this->mode
+                            );
+                    
+                            $isExperimentEnabled = ($variant === 'on');
+                    
+                            $this->trace->info(TraceCode::TRANSFER_REVERSALS_VIA_REVERSE_SHADOW,
+                                [
+                                    'merchant'               => $transfer->merchant->getId(),
+                                    'isExperimentEnabled'    => $isExperimentEnabled,
+                                ]);
+                            
+                            if (($isExperimentEnabled) === true and ($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+                            {
+                                //rollback source payment with refunded amount. Transfer payment will get rolled abck due to txn block not committed earlier.
+                                if (($sourcePayment !== null) && ($sourcePayment->isExternal() === true) && ($isCustomerRefundApplicable === true))
+                                {
+                                    // Creates Payment Processor to update refunded amount in sourcePayment
+                                    $processor = new Payment\Processor\Processor($sourcePayment->merchant);
+
+                                    $processor->payment = $sourcePayment;
+
+                                    $processor->handlePaymentUpdate($sourcePayment, $customerRefund['id'], -$customerRefund['amount'], -$customerRefund['base_amount'], false);
+                                }
+                            }
                         }
                         catch (\Throwable $ex)
                         {
