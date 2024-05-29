@@ -1116,11 +1116,6 @@ class Core extends Base\Core
 
         $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $originPayment, $transfer);
 
-        // call bulk journal creation in sync
-        // If success then mark transfer as processed.
-        // If it fails then halt the process and send a failure response.
-        $this->createLedgerEntriesForTransferReverseShadowInSync($transfer, $transferPayment);
-
         $transfer->setProcessed();
 
         $this->repo->saveOrFail($transfer);
@@ -1134,14 +1129,19 @@ class Core extends Base\Core
             (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
         }
 
-        (new Transfer\Core())->createLedgerEntriesForTransfer($transferPayment, $transfer->merchant);
-
         $totalTds = $this->calculateTds($transferPayment, $transfer);
 
         if($totalTds > 0)
         {
             $this->createPaymentTransferTds($transferPayment, $totalTds);
         }
+
+        // call bulk journal creation in sync
+        // If success then mark transfer as processed.
+        // If it fails then halt the process and send a failure response.
+        $this->createLedgerEntriesForTransferReverseShadowInSync($transfer, $transferPayment);
+
+        (new Transfer\Core())->createLedgerEntriesForTransfer($transferPayment, $transfer->merchant);
 
         return $transfer;
     }
