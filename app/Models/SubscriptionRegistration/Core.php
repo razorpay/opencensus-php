@@ -79,6 +79,13 @@ class Core extends Base\Core
             }
         }
 
+        if ($subscriptionRegistration->getMethod() === Payment\Method::WALLET)
+        {
+            $validator->validateFrequencyAndMaxAmountWalletRecurring($input);
+
+            $subscriptionRegistration->setFrequency($input[Entity::FREQUENCY] ?? Entity::AS_PRESENTED);
+        }
+
         if ((empty($input[Entity::EXPIRE_AT]) === true) and
             (($input[Entity::METHOD] === Method::EMANDATE) or
             (($input[Entity::METHOD] === Method::NACH))))

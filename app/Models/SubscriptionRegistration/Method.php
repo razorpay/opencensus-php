@@ -8,5 +8,5 @@ class Method
     const EMANDATE      = 'emandate';
     const NACH          = 'nach';
     const UPI           = 'upi';
-
+    const WALLET        = 'wallet';
 }

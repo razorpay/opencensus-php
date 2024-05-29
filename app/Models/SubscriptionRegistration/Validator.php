@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
         Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical,migrated',
-        Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach,upi,touchngo_wallet,wallet',
+        Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach,upi,wallet',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::FREQUENCY                       => 'required_if:method,upi|in:weekly,monthly,yearly,as_presented,quarterly,fortnightly,bimonthly,half_yearly,daily',
         Entity::RECURRING_TYPE                  => 'sometimes|string|in:before,on,after',
@@ -84,7 +84,7 @@ class Validator extends Base\Validator
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
         Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical,migrated',
-        Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach,upi,touchngo_wallet,wallet',
+        Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach,upi,wallet',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::BANK_ACCOUNT                    => 'required_if:method,nach',
         Entity::NACH                            => 'sometimes_if:method,nach|custom',
@@ -140,6 +140,10 @@ class Validator extends Base\Validator
                 ($authType === Payment\AuthType::AADHAAR_FP))
             {
                 $maxAmountLimit = Token\Entity::AADHAAR_EMANDATE_MAX_AMOUNT_LIMIT;
+            }
+            elseif ($method === Payment\Method::WALLET)
+            {
+                $maxAmountLimit = Token\Entity::RECURRING_MAX_AMOUNT[$countryCode][Payment\Method::WALLET];
             }
             elseif ($method === Payment\Method::CARD or $method === null)
             {
@@ -202,6 +206,30 @@ class Validator extends Base\Validator
         }
 
         if($maxAmount === null){
+            throw new BadRequestValidationFailureException(
+                'max amount cannot be empty.',
+                Entity::MAX_AMOUNT
+            );
+        }
+    }
+
+    public function validateFrequencyAndMaxAmountWalletRecurring(array $input)
+    {
+        $freqArray = array(ENTITY::AS_PRESENTED);
+
+        $frequency = $input[Entity::FREQUENCY] ?? Entity::AS_PRESENTED;
+        $maxAmount = $input[Entity::MAX_AMOUNT] ?? null;
+
+        if (in_array($frequency, $freqArray) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'The selected frequency is invalid',
+                Entity::FREQUENCY
+            );
+        }
+
+        if ($maxAmount === null)
+        {
             throw new BadRequestValidationFailureException(
                 'max amount cannot be empty.',
                 Entity::MAX_AMOUNT
@@ -746,6 +774,17 @@ class Validator extends Base\Validator
                 {
                     throw new BadRequestValidationFailureException(
                         'expire_at cannot be more than 30 years for upi'
+                    );
+                }
+            }
+
+            if ($input[Entity::METHOD] === Method::WALLET)
+            {
+                $validationTime = Carbon::now()->addYears(15)->addMinutes(1)->timestamp;
+                if ($input[Entity::EXPIRE_AT] > $validationTime)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'expire_at cannot be more than 15 years for wallet'
                     );
                 }
             }

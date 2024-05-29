@@ -144,10 +144,12 @@ class Entity extends Base\PublicEntity
     // Mapping of Max Recurring Amount with method and country code.
     const RECURRING_MAX_AMOUNT             = [
         'MY' => [
-            Payment\Method::CARD => 3000000
+            Payment\Method::CARD   => 3000000,
+            Payment\Method::WALLET => 2500000
         ],
         'IN' => [
-            Payment\Method::CARD => 100000000
+            Payment\Method::CARD   => 100000000,
+            Payment\Method::WALLET => 0
         ]
     ];
     /**

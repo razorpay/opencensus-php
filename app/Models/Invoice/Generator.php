@@ -538,6 +538,7 @@ class Generator extends Base\Core
                 $orderInput[Order\Entity::PRODUCT_TYPE] = Order\ProductType::AUTH_LINK;
 
                 if (($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE) or
+                    ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::WALLET) or
                     ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::NACH))
                 {
                     $orderInput[Order\Entity::METHOD] = $this->externalEntity->getMethod();
