@@ -62,6 +62,15 @@ class Processor extends Base\Core
             $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantId);
 
             $countryCode = $merchantDetail->getBusinessRegisteredCountry();
+            if (!isset($countryCode) or empty($countryCode))
+            {
+                // This is a fallback when country code is not up-to-date.
+                // Files may get rejected with IN as value by ICICI.
+                $countryCode = Country::IN;
+                $this->trace->warning(TraceCode::OPGSP_IMPORT_COUNTRY_CODE_MISSING, [
+                    'merchant_id' => $merchantId,
+                ]);
+            }
 
             $country = Country::getCountryNameByCode($countryCode);
             $currency = Currency::getCurrencyForCountry($merchantAccount['beneficiary_country']);
@@ -515,8 +524,8 @@ class Processor extends Base\Core
 
         foreach ($data as $datum)
         {
-            array_push($ids, $datum->getPaymentId());
-            $refundIdPaymentIdMap[$datum->getId()] = $datum->getPaymentId();
+            array_push($ids, $datum['payment_id']);
+            $refundIdPaymentIdMap[$datum['id']] = $datum['payment_id'];
         }
 
         return [$ids, $refundIdPaymentIdMap];
