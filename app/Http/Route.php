@@ -4575,6 +4575,7 @@ class Route
         'internal_sign_payload'                      => ['post',       'internal/payments/signer',                             'PaymentController@signPayloadInternal'                      ],
         'internal_generate_coproto'                  => ['post',       'internal/payments/coproto',                           'PaymentCreateController@generateCoprotoForRearch'            ],
         'internal_currency_rates_update'            => ['post',        'internal/currency/{currency}/rates',                  'CurrencyController@postUpdateCurrencyRatesRearch'            ],
+        'internal_order_associations_fetch'          => ['post',       'internal/order/associations',                         'OrderController@internalOrderAssociationsFetch'],
 
         // Onboarding APIs
         'complete_submerchant_onboarding'         => ['post',       'submerchants/{id}/onboard',                             'MerchantController@completeSubmerchantOnboarding'],
@@ -6404,6 +6405,7 @@ class Route
         'update_token_on_authorized',
         'internal_currency_rates_update',
         'order_transfer_process_rearch',
+        'internal_order_associations_fetch',
 
 
         // cron to send emails about pending payouts
@@ -11058,7 +11060,7 @@ class Route
         'setl_sms_notification_status'             => Permission::VIEW_SETTLEMENT_SMS_STATUS,
         'merchant_fetch_schedule_tasks'            => Permission::VIEW_MERCHANT_SCHEDULED_TASK,
         'fetch_product_status'                     => Permission::VIEW_INTERNATIONAL_PRODUCT_STATUS,
-        
+
         'merchant_instrument_status_get_by_merchant_id' => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
       ];
 
@@ -17451,6 +17453,7 @@ class Route
             'order_transfer_process_rearch',
             'customer_fetch_by_id_internal',
             'transfer_reversal_transactions_create',
+            'internal_order_associations_fetch',
             'post_force_authorize_payments',
         ],
 

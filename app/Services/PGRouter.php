@@ -1316,6 +1316,15 @@ class PGRouter
 
         $headers = $this->headers;
 
+        /*
+         * Pass extra header for Order Fetch parity ->
+         * Using which PG-Router will decide fetching order associations like tokens, products from API
+         */
+        if (isset($this->currentEndPoint) && $this->currentEndPoint == self::PGRouterFetchOrder && $method == Requests::GET)
+        {
+           $headers["X_API_ROUTE_NAME"] = $this->app['api.route']->getCurrentRouteName();
+        }
+
         $headers['PHP_AUTH_USER'] = $this->auth->getPublicKey();
 
         if ((in_array($this->app['api.route']->getCurrentRouteName(), self::MERCHANT_BASED_ROUTES) === true) or

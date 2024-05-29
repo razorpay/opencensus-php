@@ -48,4 +48,12 @@ class Core extends Base\Core
             }
         });
     }
+
+    /**
+     * @return Entity
+     */
+    public function findProducts($orderId)
+    {
+        return $this->repo->product->findByOrderId($orderId);
+    }
 }

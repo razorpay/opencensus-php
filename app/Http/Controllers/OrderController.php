@@ -270,6 +270,15 @@ class OrderController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function internalOrderAssociationsFetch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalOrderAssociationsFetch($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function internalCreateOrderBankAccountRelations()
     {
         $input = Request::all();

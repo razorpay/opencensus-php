@@ -8304,6 +8304,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ORDER_RESPONSE_PARITY                               = 'ORDER_RESPONSE_PARITY';
 
+    const ORDER_FETCH_RESPONSE_PARITY                         = 'ORDER_FETCH_RESPONSE_PARITY';
+
     const PG_ROUTER_REQUEST_FAILURE                           = 'PG_ROUTER_REQUEST_FAILURE';
 
     const BILL_ME_REQUEST_FAILURE                             = 'BILL_ME_REQUEST_FAILURE';
@@ -11438,6 +11440,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const RAZORX_EXPERIMENT_FOR_PG_ROUTER_TEST_FAILED          = "RAZORX_EXPERIMENT_FOR_PG_ROUTER_TEST_FAILED";
 
+    const RAZORX_EXPERIMENT_FOR_PG_ROUTER_FAILED               = "RAZORX_EXPERIMENT_FOR_PG_ROUTER_FAILED";
+
 
     const RIZE_SERVICE_PROXY_REQUEST                           = 'RIZE_SERVICE_PROXY_REQUEST';
 
@@ -11539,6 +11543,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MODIFY_SMART_ROUTING_RULES_FTS_RESPONSE               = 'MODIFY_SMART_ROUTING_RULES_FTS_RESPONSE';
 
+    const FIND_NOTIFICATION_RESULT                              = "FIND_NOTIFICATION_RESULT";
+
     const SUBM_CMMA_ESCALATION_EXP_ERROR                        = 'SUBM_CMMA_ESCALATION_EXP_ERROR';
 
     const ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_ERROR          = "ZESTMONEY_WHITELISTED_MERCHANTS_SPLITZ_ERROR";
@@ -11546,6 +11552,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ID_SET_FROM_HEADER                            = "PAYMENT_ID_SET_FROM_HEADER";
 
     const ERROR_SHIELD_EVALUATE_PAYOUTS_REQUEST                 = 'ERROR_SHIELD_EVALUATE_PAYOUTS_REQUEST';
+
+    const ORDER_ASSOCIATIONS_FETCH_FAILED                       = 'ORDER_ASSOCIATIONS_FETCH_FAILED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

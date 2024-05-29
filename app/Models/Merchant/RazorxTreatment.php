@@ -1126,6 +1126,8 @@ final class RazorxTreatment
 
     const SETTLEMENT_TRANSACTION_READ_MIGRATION = 'settlement_transaction_read_migration';
 
+    const FETCH_ORDER_ASSOCIATIONS_FROM_API = 'fetch_order_associations_from_api';
+
     /**
      * Razorx for shield payout evaluate
      */

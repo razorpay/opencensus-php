@@ -1002,6 +1002,84 @@ class Core extends Base\Core
         return $data;
     }
 
+    public function fetchOrderAssociations($input): array
+    {
+        $orderAssociations = [];
+        $order = (new Entity())->forceFill($input);
+
+        //fetching tokens
+        $tokenData = $this->getTokenData($order);
+        if (empty($tokenData) === false)
+        {
+            $orderAssociations['token'] = $tokenData;
+        }
+
+        //fetching notifications
+        try
+        {
+            $notification = (new Notification\Core())->findNotification($order->getId());
+            if (empty($notification) === false)
+            {
+                $orderAssociations[Entity::NOTIFICATION] = $notification->toArray();
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ORDER_ASSOCIATIONS_FETCH_FAILED
+            );
+        }
+
+        //fetching products
+        try
+        {
+            $products = (new Product\Core())->findProducts($order->getId());
+            if (empty($products) === false)
+            {
+                $orderAssociations[Entity::PRODUCTS] = $products->toArrayPublic()['items'];
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ORDER_ASSOCIATIONS_FETCH_FAILED
+            );
+        }
+
+        return $orderAssociations;
+    }
+
+    public function getTokenData(Entity $order): array
+    {
+        $tokenData = [];
+        $tokenEntity = $order->getTokenRegistration();
+
+        if (isset($tokenEntity))
+        {
+            $invoice = $order->getMethod() === Payment\Method::NACH ? $order->invoice : null;
+
+            $tokenData = $tokenEntity->toArrayTokenFields($invoice);
+
+            // Doing this as per the requirement for the orders api response for CAW Card methods.
+            if (($order->getMethod() === null) or
+                ($order->getMethod() === Payment\Method::CARD))
+            {
+                unset($tokenData[SubscriptionRegistration\Entity::NOTES]);
+                unset($tokenData[SubscriptionRegistration\Entity::METHOD]);
+                unset($tokenData[SubscriptionRegistration\Entity::CURRENCY]);
+                unset($tokenData[SubscriptionRegistration\Entity::AUTH_TYPE]);
+                unset($tokenData[SubscriptionRegistration\Entity::FAILURE_REASON]);
+                unset($tokenData[SubscriptionRegistration\Entity::RECURRING_STATUS]);
+                unset($tokenData[SubscriptionRegistration\Entity::FIRST_PAYMENT_AMOUNT]);
+            }
+        }
+        return $tokenData;
+    }
+
     public function internalOrderRelationsFetch($input)
     {
         $data = null;
@@ -1028,28 +1106,10 @@ class Core extends Base\Core
             $data['transfers'] = $tn["items"];
         }
 
-        $token = $order->getTokenRegistration();
-
-        if ($token !== null)
+        $tokenArr = $this->getTokenData($order);
+        if (empty($tokenArr) === false)
         {
-            $invoice = $order->getMethod() === Payment\Method::NACH ? $order->invoice : null;
-
-            $tokenVar = $token->toArrayTokenFields($invoice);
-
-            // Doing this as per the requirement for the orders api response for CAW Card methods.
-            if (($order->getMethod() === null) or
-                ($order->getMethod() === Payment\Method::CARD))
-            {
-                unset($tokenVar[SubscriptionRegistration\Entity::NOTES]);
-                unset($tokenVar[SubscriptionRegistration\Entity::METHOD]);
-                unset($tokenVar[SubscriptionRegistration\Entity::CURRENCY]);
-                unset($tokenVar[SubscriptionRegistration\Entity::AUTH_TYPE]);
-                unset($tokenVar[SubscriptionRegistration\Entity::FAILURE_REASON]);
-                unset($tokenVar[SubscriptionRegistration\Entity::RECURRING_STATUS]);
-                unset($tokenVar[SubscriptionRegistration\Entity::FIRST_PAYMENT_AMOUNT]);
-            }
-
-            $data['token'] = $tokenVar;
+            $data['token'] = $tokenArr;
         }
 
         return $data;

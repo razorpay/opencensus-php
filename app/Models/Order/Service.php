@@ -530,7 +530,27 @@ class Service extends Base\Service
 
         $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
-        return $order->toArrayPublic();
+
+        $apiResp = $order->toArrayPublic();
+
+        $pgRouterPublicResponse = $order->getAttribute("public_response");
+
+        if (isset($pgRouterPublicResponse))
+        {
+            $responseParity = $apiResp == $pgRouterPublicResponse;
+            $responseParityWithTripleCheck = $apiResp === $pgRouterPublicResponse;
+
+            $this->trace->info(TraceCode::ORDER_FETCH_RESPONSE_PARITY, [
+                "pg_router_response" => $pgRouterPublicResponse,
+                "api_response" => $apiResp,
+                "ARRAY_DIFF_API_PGROUTER" => array_diff($apiResp, $pgRouterPublicResponse),
+                "ARRAY_DIFF_PGROUTER_API" => array_diff($pgRouterPublicResponse, $apiResp),
+                "SAME_VALUE" => $responseParity,
+                "SAME_VALUE_AND_TYPE" => $responseParityWithTripleCheck,
+                "ORDER_RESPONSE" => $responseParityWithTripleCheck ? "SUCCESS" : $apiResp
+            ]);
+        }
+        return $apiResp;
     }
 
     public function fetchById($id)
@@ -1064,6 +1084,11 @@ class Service extends Base\Service
         }
 
         return (new Core)->internalOrderRelationsFetch($input);
+    }
+
+    public function internalOrderAssociationsFetch($input): array
+    {
+        return (new Core)->fetchOrderAssociations($input);
     }
 
     public function internalCreateOrderBankAccountRelations($input)
