@@ -12,6 +12,7 @@ use RZP\Models\Terminal\Type;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -77,6 +78,25 @@ class UpiAirtelQRCodeTest extends TestCase
             'type' => 'pricing',
             'feature' => 'payment',
             'receiver_type' => 'offline',
+            'fee_bearer' => 'platform',
+            'percent_rate' => 0,
+            'fixed_rate' => 0,
+            'channel' => 'in_person',
+        ];
+
+        $this->fixtures->create('pricing', $posQRPricingPlan);
+    }
+
+    public function createPricingForOfflineUnexpected()
+    {
+        $posQRPricingPlan = [
+            'plan_id' => '1hDYlICobzOCYt',
+            'plan_name' => 'TestMerchantPosUPIPricingPlan1',
+            'payment_method' => 'upi',
+            'org_id' => '100000razorpay',
+            'type' => 'pricing',
+            'feature' => 'payment',
+            'receiver_type' => null,
             'fee_bearer' => 'platform',
             'percent_rate' => 0,
             'fixed_rate' => 0,
@@ -733,7 +753,7 @@ class UpiAirtelQRCodeTest extends TestCase
             ]
         );
 
-        $this->createPricingForOffline();
+        $this->createPricingForOfflineUnexpected();
         $this->unexpectedPaymentSetUp();
 
         $this->createQrCode(
@@ -1387,5 +1407,224 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->makeUnexpectedLivePaymentAndGetContent($content);
 
     }
+
+    public function testDQRUnexpectedPaymentsForOffline(): void
+    {
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+
+        $this->createPricingForOfflineUnexpected();
+        $this->unexpectedPaymentSetUp();
+
+        $this->createQrCode(
+                     [
+                         'usage'          => 'single_use',
+                         'type'           => 'upi_qr',
+                         'fixed_amount'   => true,
+                         'payment_amount' => 300,
+                     ],
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+
+        $this->runQrCodeEntityAssertions('test');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random90']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($authorizeUpiEntity['merchant_reference']);
+
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertNotEquals($authorizeUpiEntity['merchant_reference'], $paymentEntity['id']);
+
+        $assertEqualsMap = [
+            'authorized'                              => $paymentEntity['status'],
+            'authorize'                               => $authorizeUpiEntity['action'],
+            'pay'                                     => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                      => 'pay_' .$authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']           => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id']    => $paymentEntity['id'],
+            $paymentTransactionEntity['type']         => 'payment',
+            $paymentTransactionEntity['amount']       => $paymentEntity['amount'],
+            Account::DEMO_ACCOUNT                     => $paymentEntity['merchant_id'],
+            $authorizeUpiEntity['gateway']            => $paymentEntity['gateway'],
+            $authorizeUpiEntity['amount']             => $paymentEntity['amount'],
+            $paymentEntity['amount']                  => 300,
+            $authorizeUpiEntity['merchant_reference'] => 'Random90'
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+
+        $this->assertEquals($paymentEntity['reference13'], 'in_person');
+    }
+
+    public function testDQRUnexpectedPaymentsForOnline(): void
+    {
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+
+        $this->createPricingForOffline();
+        $this->unexpectedPaymentSetUp();
+
+        $this->createQrCode(
+                    [
+                        'usage'          => 'single_use',
+                        'type'           => 'upi_qr',
+                        'fixed_amount'   => true,
+                        'payment_amount' => 300,
+                    ]
+        );
+
+
+        $this->runQrCodeEntityAssertions('test');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpa@mairtel', 'hdnOrderID' => 'Random90']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($authorizeUpiEntity['merchant_reference']);
+
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertNotEquals($authorizeUpiEntity['merchant_reference'], $paymentEntity['id']);
+
+        $assertEqualsMap = [
+            'authorized'                              => $paymentEntity['status'],
+            'authorize'                               => $authorizeUpiEntity['action'],
+            'pay'                                     => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                      => 'pay_' .$authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']           => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id']    => $paymentEntity['id'],
+            $paymentTransactionEntity['type']         => 'payment',
+            $paymentTransactionEntity['amount']       => $paymentEntity['amount'],
+            Account::DEMO_ACCOUNT                     => $paymentEntity['merchant_id'],
+            $authorizeUpiEntity['gateway']            => $paymentEntity['gateway'],
+            $authorizeUpiEntity['amount']             => $paymentEntity['amount'],
+            $paymentEntity['amount']                  => 300,
+            $authorizeUpiEntity['merchant_reference'] => 'Random90'
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+
+        $this->assertEquals($paymentEntity['reference13'], 'online');
+    }
+
+    public function testOfflineUPIUnexpectedPaymentCreationViaReconForAPB()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
+                'api_upi_airtel_pre_process_v1' => 'upi_airtel',
+                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        Reconciliate::$isReconRunning = true;
+
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+
+        $this->createPricingForOfflineUnexpected();
+        $content = $this->buildQRUnexpectedPaymentRequest($terminal);
+        $this->fixtures->merchant->activate();
+
+        $content['upi']['gateway_merchant_id'] = null;
+        unset($content['terminal']['gateway_merchant_id']);
+        $content['terminal']['gateway_merchant_id2'] = 'testvpaOffline@mairtel';
+
+        $response = $this->makeUnexpectedLivePaymentAndGetContent($content);
+        $this->assertTrue($response['success']);
+
+
+        $payment     = $this->getDbLastEntity('payment','test');
+        $upi         = $this->getDbLastEntity('upi','test');
+
+        $this->assertEquals($content['upi']['npci_reference_id'], $upi['npci_reference_id']);
+        $this->assertEquals($content['upi']['merchant_reference'], $upi['merchant_reference']);
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('upi_airtel', $payment['gateway']);
+        $this->assertEquals('in_person', $payment['reference13']);
+        $this->assertEquals($response['payment_id'], $payment['id']);
+    }
+
+    public function testOnlineUPIUnexpectedPaymentCreationViaReconForAPB()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
+                'api_upi_airtel_pre_process_v1' => 'upi_airtel',
+                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        Reconciliate::$isReconRunning = true;
+
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+
+        $this->createPricingForOffline();
+        $content = $this->buildQRUnexpectedPaymentRequest($terminal);
+        $this->fixtures->merchant->activate();
+
+        $content['upi']['gateway_merchant_id'] = null;
+        unset($content['terminal']['gateway_merchant_id']);
+        $content['terminal']['gateway_merchant_id2'] = 'testvpa@mairtel';
+
+        $response = $this->makeUnexpectedLivePaymentAndGetContent($content);
+        $this->assertTrue($response['success']);
+
+
+        $payment     = $this->getDbLastEntity('payment','test');
+        $upi         = $this->getDbLastEntity('upi','test');
+
+        $this->assertEquals($content['upi']['npci_reference_id'], $upi['npci_reference_id']);
+        $this->assertEquals($content['upi']['merchant_reference'], $upi['merchant_reference']);
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('upi_airtel', $payment['gateway']);
+        $this->assertEquals('online', $payment['reference13']);
+        $this->assertEquals($response['payment_id'], $payment['id']);
+    }
+
 
 }

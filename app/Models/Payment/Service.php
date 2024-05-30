@@ -2153,6 +2153,11 @@ class Service extends Base\Service
         {
             $merchantId = $terminal->getMerchantId();
         }
+        // marking unexpected payments as offline if terminal has type offline
+        if ($terminal->isOffline() === true)
+        {
+            $data['payment']['reference13'] = 'in_person';
+        }
 
         if (empty($input['meta']['art_reason']) === false and $input['meta']['art_reason'] === "amount_mismatch"){
             $merchantId = $isProduction ? Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
