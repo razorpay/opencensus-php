@@ -310,7 +310,8 @@ class Service extends Base\Service
             Constants::USERNAME => $ezetapReceiptConfig[Constants::USERNAME],
             Constants::APP_KEY  => $ezetapReceiptConfig[Constants::APP_KEY],
             Constants::RAZORPAY_REFERENCE_ID => $ezetapReceiptApi,
-            Constants::RAZORPAY_MERCHANT_ID => $merchantId
+            Constants::RAZORPAY_MERCHANT_ID => $merchantId,
+            Constants::RECEIPT_IMAGE_TYPE => Constants::MONOCHROME_ONE_BIT
         );
         return $this->requestRazorpayPosForReceipt($base_url . Constants::EZETAP_RECEIPT_ENDPOINT, $inputBody);
     }

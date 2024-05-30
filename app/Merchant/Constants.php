@@ -295,6 +295,8 @@ class Constants
     const EXTERNAL_REF_NUMBER = 'externalRefNumber';
     const RAZORPAY_REFERENCE_ID = 'razorpayReferenceId';
     const RAZORPAY_MERCHANT_ID = 'razorpayMerchantId';
+    const RECEIPT_IMAGE_TYPE = "receiptImageType";
+    const MONOCHROME_ONE_BIT = "MONOCHROME_ONE_BIT";
     const EZETAP_RECEIPT_ENCODED_IMAGE = 'encodedImageString';
     const EZETAP_RECEIPT_ENDPOINT = '/api/2.0/receipt/image/fetch/omni';
     const RAZORPAY_RECEIPT_ENCODED_IMAGE_RESPONSE = 'receipt_encoded_image';
