@@ -592,7 +592,7 @@ class Payment extends Base
 
         $rules = $this->applyFiltersOnRules($rules, $filter);
 
-        return $this->validateAndGetOnePricingRule($rules);
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
     protected function getRelevantPricingRuleForNBPayment($rules)

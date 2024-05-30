@@ -651,6 +651,48 @@ class MerchantFeeTest extends TestCase
             'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
+        $pricingPlanWalletAmountRange = new Pricing\Entity([
+            'id'                  => '1fq0O3dewppl6k',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'product'             => 'primary',
+            'feature'             => 'payment',
+            'payment_method'      => 'wallet',
+            'payment_method_type' => null,
+            'payment_network'     => 'phonepe',
+            'payment_issuer'      => null,
+            'amount_range_active' => true,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 600000,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 100,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
+        ]);
+
+        $pricingPlanWalletAmountRange2 = new Pricing\Entity([
+            'id'                  => '1fq0O3dewppm6k',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'product'             => 'primary',
+            'feature'             => 'payment',
+            'payment_method'      => 'wallet',
+            'payment_method_type' => null,
+            'payment_network'     => 'phonepe',
+            'payment_issuer'      => null,
+            'amount_range_active' => true,
+            'amount_range_min'    => 600000,
+            'amount_range_max'    => 100000000,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 2000,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
+        ]);
+
         $pricingPlanEmi = new Pricing\Entity([
             'id'                  => '1fq0O3demix3gf',
             'plan_id'             => '1hDYlICobzOCYt',
@@ -819,6 +861,8 @@ class MerchantFeeTest extends TestCase
             $pricingPlanWallet1,
             $pricingPlanWallet2,
             $pricingPlanWallet3,
+            $pricingPlanWalletAmountRange,
+            $pricingPlanWalletAmountRange2,
             $pricingPlanEmiPlan,
             $pricingPlanEmi,
             $pricingPlanEmiAmex,
@@ -1736,6 +1780,10 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTestWallet('payumoney', ['payment' => '1fq0O3dewex3ff']);
 
         $this->runMerchantFeeTestWallet('payzapp', ['payment' => '1fq0O3dewex3gf']);
+
+        $this->runMerchantFeeTestWallet('phonepe', ['payment' => '1fq0O3dewppl6k']);
+
+        $this->runMerchantFeeTestWallet('phonepe', ['payment' => '1fq0O3dewppm6k'], 700000);
     }
 
     public function testEmiRuleSelection()
