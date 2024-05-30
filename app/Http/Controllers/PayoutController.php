@@ -370,38 +370,6 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        // Check for - should we fetch payouts of the current user or the merchant
-        $userId = $this->app['basicauth']->getUser()?->getId();
-        $merchantId = $this->app['basicauth']->getMerchantId();
-
-        if ((isset($userId) === true) && ($this->app['basicauth']->isMerchantDashboardApp() === true))
-        {
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $this->app['config']->get('app.x_data_privacy_splitz_experiment_id'),
-                'request_data'  => json_encode(['merchantId' => $merchantId]),
-            ];
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $variables = $response['response']['variant']['variables'];
-            foreach ($variables as $variable)
-            {
-                if ($variable['key'] === "result" && $variable['value'] === "on")
-                {
-                    $input[Entity::USER_ID] = $userId;
-                }
-            }
-        }
-
-        $data = $this->service()->fetchMultiple($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getPayoutsAll()
-    {
-        $input = Request::all();
-
         $data = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($data);

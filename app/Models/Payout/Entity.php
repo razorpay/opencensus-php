@@ -137,7 +137,6 @@ class Entity extends Base\PublicEntity
     const SOURCE_TYPE_EXCLUDE                   = 'source_type_exclude';
     const ON_HOLD_AT                            = 'on_hold_at';
     const PAYOUT_FETCH_MULTIPLE                 = 'payout_fetch_multiple';
-    const PAYOUT_FETCH_MULTIPLE_ALL             = 'payout_fetch_multiple_all';
     const VPA                                   = 'vpa';
 
     // string constants
@@ -3120,8 +3119,8 @@ class Entity extends Base\PublicEntity
 
         $routeName = $route->getCurrentRouteName();
 
-        if ((($routeName === self::PAYOUT_FETCH_MULTIPLE) or ($routeName === self::PAYOUT_FETCH_MULTIPLE_ALL))
-            and ($basicAuth->isSlackApp() === false))
+        if (($routeName === self::PAYOUT_FETCH_MULTIPLE) and
+            ($basicAuth->isSlackApp() === false))
         {
             $this->publicSetters = $this->publicSettersListView;
         }

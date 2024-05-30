@@ -50,8 +50,7 @@ class Fetch extends BaseFetch
             Entity::SORTED_ON            => 'sometimes|string|custom',
             Entity::QUEUED_REASON        => 'sometimes|string|max:255',
             PayoutsStatusDetails::REASON => 'sometimes|string',
-            Entity::SOURCE_TYPE_EXCLUDE  => 'sometimes|string|max:255',
-            Entity::USER_ID              => 'sometimes|unsigned_id',
+            Entity::SOURCE_TYPE_EXCLUDE => 'sometimes|string|max:255',
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH                       => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
@@ -149,7 +148,6 @@ class Fetch extends BaseFetch
             PayoutDetails::TDS_CATEGORY_ID,
             PayoutDetails::TAX_PAYMENT_ID,
             Entity::PAYOUT_IDS,
-            Entity::USER_ID,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
@@ -162,7 +160,6 @@ class Fetch extends BaseFetch
             PayoutSource::SOURCE_TYPE,
             PayoutDetails::TDS_CATEGORY_ID,
             PayoutDetails::TAX_PAYMENT_ID,
-            Entity::USER_ID,
         ],
     ];
 
@@ -202,7 +199,6 @@ class Fetch extends BaseFetch
         Entity::SCHEDULED_TO,
         Entity::SCHEDULED_FROM,
         Entity::SOURCE_TYPE_EXCLUDE,
-        Entity::USER_ID,
     ];
 
     const PAYOUT_SERVICE_FETCH_ALLOWED_FIELDS = [
@@ -227,7 +223,6 @@ class Fetch extends BaseFetch
         Entity::CONTACT_TYPE,
         Entity::CHANNEL,
         Entity::PENDING_ON_ROLES,
-        Entity::USER_ID,
         Fetch::COUNT,
         Fetch::SKIP,
         Fetch::FROM,

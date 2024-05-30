@@ -55,7 +55,6 @@ class EsRepository extends Base\EsRepository
         Entity::CREATED_AT,
         Entity::NOTES,
         Entity::FUND_ACCOUNT_NUMBER,
-        Entity::USER_ID,
     ];
 
     protected function buildQueryForReversedFrom(array & $query, $value)
@@ -122,15 +121,5 @@ class EsRepository extends Base\EsRepository
         }
         //source_type != 'xpayroll'
         $this->addNegativeTermFilter($query, Entity::SOURCE_TYPE, $value);
-    }
-
-    protected function buildQueryForUserId(array & $query, string $value)
-    {
-        if (empty($value) === true)
-        {
-            return;
-        }
-
-        $this->addTermFilter($query, Entity::USER_ID, $value);
     }
 }

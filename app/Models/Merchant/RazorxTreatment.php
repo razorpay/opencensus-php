@@ -1134,6 +1134,11 @@ final class RazorxTreatment
     const PAYOUT_SHIELD_EVALUATE_EXPERIMENT = 'payout_shield_evaluate_experiment';
 
     /**
+     * Razorx for Payout Fetch API for Smart Routing Merchants
+     */
+    const RX_UNSET_ACCOUNT_NUMBER = 'rx_unset_account_number';
+  
+    /**
      * Razorx for reverse shadow
      */
     const  TRANSFER_REVERSALS_VIA_REVERSE_SHADOW= 'transfer_reversals_via_reverse_shadow';

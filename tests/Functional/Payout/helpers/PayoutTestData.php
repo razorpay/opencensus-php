@@ -11417,6 +11417,18 @@ return [
         ],
     ],
 
+    'testPayoutsFetchMultipleForSmartRouting' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payouts',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+
     'testRblPayoutWithInvalidMode' => [
         'request'  => [
             'method'  => 'POST',

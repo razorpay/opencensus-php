@@ -14919,6 +14919,68 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout2['fees'], $responsePayout['fees']);
     }
 
+    public function testPayoutsFetchMultipleForSmartRouting()
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'NEFT',
+                'fund_account_id' => 'fa_100000000000fa',
+                'reference_id'    => 'WckD1',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $payout2 = $this->makeRequestAndGetContent($request);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_SMART_ROUTING]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                  if ($feature === Merchant\RazorxTreatment::RX_UNSET_ACCOUNT_NUMBER)
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?account_number=2224440041626905&reference_id=WckD1';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout2['id'], $responsePayout['id']);
+        $this->assertEquals($payout2['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout2['fees'], $responsePayout['fees']);
+    }
+
     public function testWithUpdatedChannelBeforeFtaReconNonRBL()
     {
 

@@ -1869,6 +1869,18 @@ class Service extends Base\Service
             $input[Entity::SOURCE_TYPE_EXCLUDE] = PayoutSourceEntity::XPAYROLL;
         }
 
+        if ($this->shouldUnsetAccountNUmber())
+        {
+            if ($this->merchant->isFeatureEnabled(Features::ENABLE_SMART_ROUTING) === true)
+            {
+                if (isset($input[Entity::REFERENCE_ID]) === true)
+                {
+                    // unset account number to avoid smart routing failures
+                    unset($input[Entity::BALANCE_ID]);
+                }
+            }
+        }
+
         $payoutServiceInput = $input;
 
         if ($this->core->shouldFetchPayoutsViaMicroserviceAndUpdateInputAccordingly($payoutServiceInput) === true)
@@ -1925,6 +1937,16 @@ class Service extends Base\Service
             $this->mode);
 
         return strtolower($skipPayrollPayoutsExperimentVariant) === 'on';
+    }
+
+    public function shouldUnsetAccountNUmber()
+    {
+        $unsetAccountNumberExperimentVariant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::RX_UNSET_ACCOUNT_NUMBER,
+            $this->mode);
+
+        return strtolower($unsetAccountNumberExperimentVariant) === 'on';
     }
 
     public function processReversedPayout(string $id)
@@ -3568,7 +3590,6 @@ class Service extends Base\Service
         $routeName = $route->getCurrentRouteName();
 
         if (($routeName !== Entity::PAYOUT_FETCH_MULTIPLE) or
-            ($routeName !== Entity::PAYOUT_FETCH_MULTIPLE_ALL) or
             ($basicAuth->isSlackApp() === true))
         {
             return;
