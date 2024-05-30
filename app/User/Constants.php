@@ -106,6 +106,10 @@ class Constants
         "annapurna.pal+008@razorpay.com"
     ];
 
+    const USL_EXCLUDED_DOMAINS = [
+        "giga.razorpay.com"
+    ];
+
     const SPLITZ_API_CACHING_ENABLED = 'SPLITZ_API_CACHING_ENABLED';
     const VARIABLES = 'variables';
     const RESULT = 'result';

@@ -705,6 +705,15 @@ class UserController extends Controller
             return false;
         }
 
+        if (empty($queryParams['host']) === false and in_array($queryParams['host'], Constants::USL_EXCLUDED_DOMAINS) === true)
+        {
+            $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+                'giga_flow_check' => $queryParams['host'],
+            ]);
+
+            return false;
+        }
+
         $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
             'existingRedirectionConditions' => $existingRedirectionConditions,
         ]);
