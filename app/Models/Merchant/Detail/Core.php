@@ -136,6 +136,7 @@ use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Merchant\Request\Constants as RequestConstants;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Models\Workflow\Observer\Constants as ObserverConstants;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
@@ -5967,6 +5968,26 @@ class Core extends Base\Core
             ]);
             $response[DetailConstants::VERIFICATION_ERROR_CODES] = [];
         }
+
+        // append error codes to response
+        // add this in try-catch so that it doesn't affect the usual response flow.
+        try
+        {
+            // fetch user-device-details and append onboarding-workflow
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getMerchantId());
+            if (empty($userDeviceDetail) === false)
+            {
+                $merchantWorkflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+                $response[DeviceDetailConstants::WORKFLOW_TYPE] = $merchantWorkflowType;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::PGOS_ONBOARDING, [
+                'error' => $e,
+            ]);
+        }
+
         $this->trace->info(TraceCode::MERCHANT_CREATE_RESPONSE_LATENCY, [
             'merchant_id' => $merchantDetails->getId(),
             'duration'    => (microtime(true) - $startTime) * 1000,

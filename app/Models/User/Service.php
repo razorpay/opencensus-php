@@ -26,6 +26,7 @@ use RZP\Constants\Product;
 use RZP\Models\OAuthToken;
 use RZP\Models\Invitation;
 use Razorpay\Trace\Logger;
+use RZP\Constants\Country;
 use RZP\Models\Admin\Admin;
 use RZP\Constants\Timezone;
 use RZP\Http\RequestHeader;
@@ -76,7 +77,7 @@ class Service extends Base\Service
     protected $m2mReferralService;
 
     protected $pgosProxyController;
-    
+
     protected $ba;
 
     public function __construct(Core $core = null, Validator $validator = null, Merchant\Service $merchantService = null,
@@ -95,7 +96,7 @@ class Service extends Base\Service
         $this->pgosProxyController = new MerchantOnboardingProxyController();
 
         $this->elfin = $this->app['elfin'];
-    
+
         $this->ba = $this->app['basicauth'];
     }
 
@@ -772,6 +773,8 @@ class Service extends Base\Service
 
                 $merchantData = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, false);
 
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
+
                 if (empty($signupCampaign) === false)
                 {
                     $deviceDetailInput = [
@@ -782,8 +785,6 @@ class Service extends Base\Service
                             DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_API
                         ]
                     ];
-
-                    $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
 
                     (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
                 }
@@ -831,6 +832,16 @@ class Service extends Base\Service
         $shouldOnboardViaPGOS = false;
 
         $merchantCore = new Merchant\Core();
+
+        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
+
+        $this->trace->info(TraceCode::PGOS_ONBOARDING, [
+            'merchant_id' => $merchant->getId(),
+            '$workflowType' => $workflowType,
+            '$signupCampaign' => $signupCampaign,
+            '$countryCode' => $countryCode,
+            '$input' => $input
+        ]);
 
         //Determine whether onboarding should be done via PGOS or not
         if ($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING AND $countryCode === 'IN')
@@ -883,6 +894,11 @@ class Service extends Base\Service
             $shouldOnboardViaPGOS = true;
         }
 
+        if ($workflowType === DeviceDetail\Constants::MODULAR_ONBOARDING)
+        {
+            $shouldOnboardViaPGOS = true;
+        }
+
         if ($shouldOnboardViaPGOS === false)
         {
             return;
@@ -895,14 +911,18 @@ class Service extends Base\Service
             $orgId = $this->auth->getOrgId();
             Org\Entity::silentlyStripSign($orgId);
             $createWorkflowRequestBody = [
-                'account_id'                         => $merchant->getId(),
-                'account_type'                       => "merchant",
-                DeviceDetail\Entity::SIGNUP_SOURCE   => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
+                'account_id'                            => $merchant->getId(),
+                'account_type'                          => "merchant",
+                DeviceDetail\Entity::SIGNUP_SOURCE      => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
                                                         $this->auth->getRequestOriginProduct(),
-                DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
-                Merchant\Entity::COUNTRY_CODE        => $countryCode,
-                'org_id'                             => $orgId,
-                'user_id'                            => $user['id'],
+                DeviceDetail\Entity::SIGNUP_CAMPAIGN    => $signupCampaign,
+                Merchant\Entity::COUNTRY_CODE           => $countryCode,
+                'org_id'                                => $orgId,
+                'user_id'                               => $user['id'],
+                DeviceDetail\Constants::WORKFLOW_TYPE   => $workflowType,
+                DeviceDetail\Constants::PRODUCT         => $input[DeviceDetail\Constants::PRODUCT] ?? '',
+                DeviceDetail\Constants::PLATFORM        => $input[DeviceDetail\Constants::PLATFORM] ?? ''
+
             ];
 
             // sign up response is not driven by PGOS
@@ -936,7 +956,14 @@ class Service extends Base\Service
         }
         else
         {
-            $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS]];
+            if ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING)
+            {
+                $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS, DeviceDetailConstants::WORKFLOW_TYPE => DeviceDetailConstants::MODULAR_ONBOARDING ]];
+            }
+            else
+            {
+                $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS]];
+            }
         }
 
         $ddInput[DeviceDetail\Entity::METADATA] = $this->mergeJson($userDeviceDetail->getMetadata(), $ddInput[DeviceDetail\Entity::METADATA]);
@@ -959,18 +986,33 @@ class Service extends Base\Service
             // update mobile number
             try
             {
-                // merge input with detail input
-                $pgosPayload = [
-                    'contact_mobile' => $input[Entity::CONTACT_MOBILE],
-                    'merchant_id' => $merchant->getId(),
-                ] ;
+                if (empty($workflowType) === false && $workflowType === DeviceDetailConstants::MODULAR_ONBOARDING)
+                {
+                    $modularPayload = [
+                        'field_data' => [
+                            Entity::CONTACT_MOBILE => Country::getCountryCallingCode($countryCode) . $input[Entity::CONTACT_MOBILE],
+                            DeviceDetailConstants::SIGNUP_SOURCE =>  $input[DeviceDetailConstants::MOBILE],
+                        ]
+                    ];
+                    // this response is not used in this flow
+                    $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
 
-                // this response is not used in this flow
-                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $pgosPayload, $merchant, true);
+                }
+                else {
+                    // merge input with detail input
+                    $pgosPayload = [
+                        'contact_mobile' => $input[Entity::CONTACT_MOBILE],
+                        'merchant_id' => $merchant->getId(),
+                    ];
 
+                    // this response is not used in this flow
+                    $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $pgosPayload, $merchant, true);
+
+                }
                 $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
                     'response' => $response
                 ]);
+
             }
             catch (\Throwable $exception) {
                 // this should not introduce error counts as it is running in shadow mode
@@ -988,12 +1030,14 @@ class Service extends Base\Service
 
         $countryCode = $input['country_code'] ?? 'IN';
 
+        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
+
         //Determine whether onboarding should be done via PGOS or not
         //Not checking the experiment here because FE checks the experiment
         //All merchants who onboard via OAuth and FE sends signup campaign as EASY_ONBOARDING, needs to be onboarded via PGOS
-        if ($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING
+        if (($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING
             and (new Merchant\Core)->isRegularMerchant($merchant) === true
-            and $countryCode === 'IN')
+            and $countryCode === 'IN') || ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING))
         {
             $shouldOnboardViaPGOS = true;
         }
@@ -1009,14 +1053,17 @@ class Service extends Base\Service
             $orgId = $this->auth->getOrgId();
             Org\Entity::silentlyStripSign($orgId);
             $createWorkflowRequestBody = [
-                'account_id'                         => $merchant->getId(),
-                'account_type'                       => "merchant",
-                DeviceDetail\Entity::SIGNUP_SOURCE   => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
+                'account_id'                            => $merchant->getId(),
+                'account_type'                          => "merchant",
+                DeviceDetail\Entity::SIGNUP_SOURCE      => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
                                                         $this->auth->getRequestOriginProduct(),
-                DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
-                Merchant\Entity::COUNTRY_CODE        => $countryCode,
-                'org_id'                             => $orgId,
-                'user_id'                            => $user['id'],
+                DeviceDetail\Entity::SIGNUP_CAMPAIGN    => $signupCampaign,
+                Merchant\Entity::COUNTRY_CODE           => $countryCode,
+                'org_id'                                => $orgId,
+                'user_id'                               => $user['id'],
+                DeviceDetail\Constants::WORKFLOW_TYPE   => $workflowType,
+                DeviceDetail\Constants::PRODUCT         => $input[DeviceDetail\Constants::PRODUCT] ?? '',
+                DeviceDetail\Constants::PLATFORM        => $input[DeviceDetail\Constants::PLATFORM] ?? ''
             ];
 
             // sign up response is not driven by PGOS
@@ -1050,7 +1097,14 @@ class Service extends Base\Service
         }
         else
         {
-            $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS]];
+            if ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING)
+            {
+                $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS, DeviceDetailConstants::WORKFLOW_TYPE => DeviceDetailConstants::MODULAR_ONBOARDING ]];
+            }
+            else
+            {
+                $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS]];
+            }
         }
 
         $ddInput[DeviceDetail\Entity::METADATA] = $this->mergeJson($userDeviceDetail->getMetadata(), $ddInput[DeviceDetail\Entity::METADATA]);
@@ -1073,19 +1127,34 @@ class Service extends Base\Service
             // update email
             try
             {
-                // merge input with detail input
-                $pgosPayload = [
-                    'email' => $input[Entity::EMAIL],
-                    'merchant_id' => $merchant->getId(),
-                    'skip_email_uniqueness' => true,
-                ] ;
+                if ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING)
+                {
+                    $modularPayload = [
+                        'field_data' => [
+                            'contact_email' => $input[Entity::EMAIL],
+                            DeviceDetailConstants::SIGNUP_SOURCE => Entity::EMAIL
+                        ]
+                    ];
+                    // this response is not used in this flow
+                    $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
 
-                // this response is not used in this flow
-                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $pgosPayload, $merchant, true);
+                }
+                else
+                {
+                    // merge input with detail input
+                    $pgosPayload = [
+                        'email' => $input[Entity::EMAIL],
+                        'merchant_id' => $merchant->getId(),
+                        'skip_email_uniqueness' => true,
+                    ] ;
 
-                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-                    'response' => $response
-                ]);
+                    // this response is not used in this flow
+                    $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $pgosPayload, $merchant, true);
+
+                    $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                        'response' => $response
+                    ]);
+                }
             }
             catch (\Throwable $exception) {
                 // this should not introduce error counts as it is running in shadow mode
@@ -3423,7 +3492,7 @@ class Service extends Base\Service
         if((empty($user) === true) && ($this->ba->isAdminAuth() === false))
         {
             $user = $this->user;
-    
+
         } else if ((empty($user) === true) && $this->ba->isAdminAuth() === true)
         {
             $user  = $this->merchant->primaryOwner();

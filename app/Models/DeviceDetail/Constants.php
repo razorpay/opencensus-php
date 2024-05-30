@@ -27,4 +27,16 @@ class Constants
         self::IOS
     ];
     const I18N_MY_SIGNUP = 'i18n_my_signup';
+
+    const WORKFLOW_TYPE = 'workflow_type';
+
+    const PRODUCT  = "product";
+
+    const PLATFORM = "platform";
+
+    const MOBILE = "mobile";
+
+    const SIGNUP_SOURCE = "signup_source";
+
+    const MODULAR_ONBOARDING = 'MODULAR_ONBOARDING';
 }

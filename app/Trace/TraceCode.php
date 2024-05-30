@@ -3883,6 +3883,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PGOS_DOCUMENT_DELETE_REQUEST              = "PGOS_DOCUMENT_DELETE_REQUEST";
     const PGOS_DOCUMENT_DELETE_RESPONSE             = "PGOS_DOCUMENT_DELETE_RESPONSE";
     const PGOS_PROXY_RESPONSE                       = "PGOS_PROXY_RESPONSE";
+    const PGOS_ONBOARDING                           = "PGOS_ONBOARDING";
     const PGOS_ERROR_HANDLER                        = "PGOS_ERROR_HANDLER";
     const PGOS_PROXY_ERROR                          = "PGOS_PROXY_ERROR";
     const PGOS_PROXY_TIMEOUT                        = "PGOS_PROXY_TIMEOUT";

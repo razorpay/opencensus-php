@@ -23,7 +23,7 @@ use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 class MerchantOnboardingProxyController extends BaseProxyController
 {
 
-    // route key
+    // route keys
     const MERCHANT_ACTIVATION_SAVE       = 'merchant_activation_save';
 
     const GET_MERCHANT_ACTIVATION_DETAILS = 'get_merchant_activation_details';
@@ -35,6 +35,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const SAVE_MERCHANT_BMC_RESPONSE     = 'save_merchant_bmc_response';
     const MERCHANT_UPDATE_BY_ADMIN       = 'merchant_update_by_admin';
     const MERCHANT_CONSENTS_SAVE         = 'merchant_consents_save';
+
+    // modular onboarding APIs
+    const ONBOARDING_GET      = 'onboarding_get';
+    const ONBOARDING_SAVE     = 'onboarding_save';
 
     const MERCHANT_ACTIVATION_FETCH_INTERNAL    = 'merchant_activation_fetch_internal';
 
@@ -172,7 +176,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
         self::MERCHANT_CATEGORIES_V3,
         self::SEND_SMS_OTP,
-        self::VERIFY_OTP
+        self::VERIFY_OTP,
+        self::ONBOARDING_GET,
+        self::ONBOARDING_SAVE
     ];
 
     const ADMIN_ROUTES = [
@@ -217,6 +223,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SAVE_MERCHANT_DOCUMENT_DETAILS   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantDocumentMetadata',
         self::FETCH_MERCHANT_DOCUMENT_DETAILS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantDocumentMetadata',
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/CheckMerchantDocumentDetailsValidity',
+        self::ONBOARDING_GET                   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingGet',
+        self::ONBOARDING_SAVE                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingSave',
         self::MERCHANT_WEBSITE_POLICY_VERIFY           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantIndividualPolicyVerification',
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetPolicyComplianceDetails',
@@ -265,6 +273,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::FETCH_MERCHANT_DOCUMENT_DETAILS  => 15,
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK => 15,
         self::MERCHANT_ACTIVATION_SAVE                  => 15,
+        self::ONBOARDING_SAVE                           => 15,
+        self::ONBOARDING_GET                            => 15,
         self::MERCHANT_SIGN_UP                          => 20,
         self::MERCHANT_DOCUMENT_UPLOAD                  => 15,
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => 15,
@@ -461,6 +471,24 @@ class MerchantOnboardingProxyController extends BaseProxyController
         else
         {
             $routeKey = str_replace('/v1/pg/onboarding/' . $id . '/', '', $path);
+        }
+
+        // TODO: Migrate this for every route as we should be using route names rather than regex replacement done above
+        try
+        {
+            $routeName = $request->route()->getName();
+
+            if ($routeName === self::ONBOARDING_GET or $routeName === self::ONBOARDING_SAVE)
+            {
+                $routeKey = $routeName;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'error_message'     => $ex->getMessage()
+            ]);
+
         }
 
         $this->overrideRouteKeyIfApplicable($routeKey, $id);

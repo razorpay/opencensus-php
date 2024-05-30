@@ -16,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
+use RZP\Models\DeviceDetail;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Hashing\BcryptHasher;
 use RZP\Gateway\Upi\Base\ProviderCode;
@@ -59,6 +60,7 @@ class Validator extends Base\Validator
         // Remove this when signup experiment for X is ramped up.
         Entity::X_VERIFY_EMAIL                  => 'sometimes|string',
         Entity::SIGNUP_VIA_EMAIL                => 'sometimes|in:0,1',
+        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
     ];
 
     protected static $createRules = self::CREATE_COMMON_RULES + [
@@ -85,6 +87,7 @@ class Validator extends Base\Validator
         Entity::TOKEN                           => 'required|string',
         Entity::OTP                             => 'required|string|between:4,6',
         Entity::SIGNUP_VIA_EMAIL                => 'sometimes|in:0,1',
+        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
     ];
 
     protected static $createSubmerchantSignupRules = [
@@ -102,6 +105,7 @@ class Validator extends Base\Validator
         Entity::APP                             => 'sometimes|string',
         Entity::SKIP_SMS_REQUEST                => 'sometimes|boolean',
         Merchant\Entity::COUNTRY_CODE           => 'sometimes|string',
+        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
     ];
 
     protected static $salesforceOtpRules = [
@@ -142,6 +146,7 @@ class Validator extends Base\Validator
         Merchant\Entity::SIGNUP_SOURCE          => 'sometimes|string',
         Merchant\Entity::COUNTRY_CODE           => 'sometimes|string|max:2|in:IN,MY',
         Entity::SKIP_SMS_REQUEST                => 'sometimes|boolean',
+        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
     ];
 
     protected static $createOauthRules = [

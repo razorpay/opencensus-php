@@ -1506,9 +1506,21 @@ class Country
         self::ZW,
     ];
 
+    protected static array $countryCallingCodeMap = [
+        self::IN => "+91",
+        self::MY => "+60"
+        // extend this for other countries
+    ];
+
     public static function exists($code)
     {
         return defined(get_class() . '::' . strtoupper($code));
+    }
+
+    public static function getCountryCallingCode($countryCode)
+    {
+        // return default country code
+        return self::$countryCallingCodeMap[$countryCode] ?? "+91";
     }
 
     public static function getCountryCode($value)
