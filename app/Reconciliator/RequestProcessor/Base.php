@@ -228,7 +228,7 @@ class Base extends Core
         self::HITACHI                  => [],
         self::FULCRUM                  => [],
         self::CARD_FSS_HDFC            => ['merchantops@fss.co.in'],
-        self::ATOM                     => [],
+        self::ATOM                     => ['NDPS.helpdesk@nttdata.com'],
         self::CARD_FSS_BOB             => [],
         self::CARD_FSS_SBI             => ['ipay.support@sbi.co.in'],
         self::UPI_AXIS                 => [],
@@ -267,7 +267,7 @@ class Base extends Core
         self::NETBANKING_BDBL          => ['imps.dispute@bandhanbank.com'],
         self::NETBANKING_UCO           => ['hoe_banking.calcutta@ucobank.co.in','finances.recon@razorpay.com'],
         self::CARDLESS_EMI_EARLYSALARY => [],
-        self::NETBANKING_SARASWAT      => ['atmsupport@saraswatbank.com'],
+        self::NETBANKING_SARASWAT      => ['atmsupport@saraswatbank.com', 'statement@saraswatbank.com'],
         self::EMERCHANTPAY             => ['shruthi.krishna@emerchantpay.com'],
         self::NETBANKING_HDFC_CORP     => [],
         self::NETBANKING_DBS           => [],
@@ -488,6 +488,9 @@ class Base extends Core
             // All the attachment files have to be named as 'attachment-{number}'
             // Validations should take care of this.
             $file = $input['attachment-' . $attachmentNumber];
+            if($inputDetails['from'] === "donotreply@csb.co.in" && is_null($file)){
+                continue;
+            }
 
             if ($this->fileProcessor->isZipFile($file, $fileLocationType) === true)
             {

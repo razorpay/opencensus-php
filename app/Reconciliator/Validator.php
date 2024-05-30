@@ -92,7 +92,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_ALLAHABAD   => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY => ["/^Flexmoney Recon and Refund files/"],
         RequestProcessor\Base::PHONEPE            => [".*/Settlement Report/"],
-        RequestProcessor\Base::NETBANKING_KVB     => ["/(?i)Enclosedreconfiles/"],
+        RequestProcessor\Base::NETBANKING_KVB     => ["/(?i)Enclosedreconfiles/", "/(?i)RECONFILE DT/"],
         RequestProcessor\Base::BAJAJFINSERV       => ["/Payment MIS_Razorpay Software_ [0-9]{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) 20[0-9]{2}/"],
         RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::HDFC_DEBIT_EMI     => ["/^DCEMI Reconciliation & Payment Summary Report/"],
@@ -112,7 +112,8 @@ class Validator extends Base\Core
         RequestProcessor\Base::EMERCHANTPAY       => ["/Settlement Razorpay Software Private Ltd (Trustly|Poli|Sofort|Giropay) (EUR|GBP|AUD) [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         RequestProcessor\Base::WALLET_BAJAJ       => ["/(?i)^RZP MID BFL0000001675590 Settlement Data(.+)?/"],
         RequestProcessor\Base::NETBANKING_EQUITAS => ["/^(?i)Razorpay Transaction file/"],
-        RequestProcessor\Base::NETBANKING_KOTAK_V2 => ["/(?i)PG Transaction File-OTRAZORPAY/", "/(?i)PG Transaction File-OSRAZORPAY/", "/(?i)RAZORPAY Recon report/", "/(?i)PG Online Refund File-OTRAZORPAY/", "/(?i)PG Online Refund File-OSRAZORPAY/"]
+        RequestProcessor\Base::NETBANKING_KOTAK_V2 => ["/(?i)PG Transaction File-OTRAZORPAY/", "/(?i)PG Transaction File-OSRAZORPAY/", "/(?i)RAZORPAY Recon report/", "/(?i)PG Online Refund File-OTRAZORPAY/", "/(?i)PG Online Refund File-OSRAZORPAY/"],
+        RequestProcessor\Base::ATOM               => ["/Settlement Report/"]
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -229,7 +230,9 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_SARASWAT,
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::NETBANKING_BOB,
-        RequestProcessor\Base::NETBANKING_KOTAK_V2
+        RequestProcessor\Base::NETBANKING_KOTAK_V2,
+        RequestProcessor\Base::NETBANKING_SIB,
+        RequestProcessor\Base::ATOM
     ];
 
     const WHITELISTED_EMAIL_FOR_ART = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com", "reconciliate@mg.razorpay.com"];
@@ -978,11 +981,7 @@ class Validator extends Base\Core
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
             RequestProcessor\Base::NETBANKING_UCO);
 
-        $validAttachmentCount = $this->validateAttachmentCount(
-            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
-            RequestProcessor\Base::NETBANKING_UCO);
-
-        return ($validSubject and $validAttachmentCount);
+        return $validSubject;
     }
 
     public function validateEmerchantpayEmail(array $emailDetails)

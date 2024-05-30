@@ -87,7 +87,7 @@ class Service extends Base\Service
         RequestProcessor\Base::NETBANKING_IOB,
         RequestProcessor\Base::NETBANKING_PNB,
         RequestProcessor\Base::NETBANKING_RBL,
-        // RequestProcessor\Base::NETBANKING_SIB,
+        RequestProcessor\Base::NETBANKING_SIB,
         RequestProcessor\Base::NETBANKING_JKB,
         RequestProcessor\Base::NETBANKING_UCO,
         RequestProcessor\Base::NETBANKING_DLB,
@@ -103,7 +103,8 @@ class Service extends Base\Service
         RequestProcessor\Base::NETBANKING_SARASWAT,
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::NETBANKING_BOB,
-        RequestProcessor\Base::NETBANKING_KOTAK_V2
+        RequestProcessor\Base::NETBANKING_KOTAK_V2,
+        RequestProcessor\Base::ATOM
     ];
 
     protected $core;

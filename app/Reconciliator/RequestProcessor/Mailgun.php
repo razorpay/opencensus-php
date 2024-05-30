@@ -153,6 +153,13 @@ class Mailgun extends Base
                 "filename_pattern" => "/^(?i)kvb_ib_razorpay(tpv|)_(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}/",
                 "destination" => "recon/input/netbanking_kvb/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ],
+            [
+                "from" => ["atmcashtally@kvbmail.com", "lakshmim@kvbmail.com"],
+                "subject_pattern" => "/(?i)RECONFILE DT/",
+                "filename_pattern" => "/^(?i)kvb_ib_razorpay(tpv|)_(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}/",
+                "destination" => "recon/input/netbanking_kvb/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
         ],
         self::NETBANKING_IOB => [
@@ -290,7 +297,7 @@ class Mailgun extends Base
         ],
         self::NETBANKING_SARASWAT => [
             [
-                "from" => "atmsupport@saraswatbank.com",
+                "from" => ["atmsupport@saraswatbank.com", "statement@saraswatbank.com"],
                 "subject_pattern" => "/(?i)AUTO MAIL \|\| RAZORPAY Report/",
                 "filename_pattern" => "/(?i)razorpay_[0-9]{2}[0-9]{2}20[0-9]{2}/",
                 "destination" => "recon/input/netbanking_saraswat/bank_payment_report/",
@@ -349,6 +356,24 @@ class Mailgun extends Base
                 "subject_pattern" => "/(?i)PG Online Refund File-OSRAZORPAY/",
                 "filename_pattern" => "/(?i)OSRAZORPAY/",
                 "destination" => "recon/input/netbanking_kotak/bank_refund_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::NETBANKING_SIB => [
+            [
+                "from" => "epayments@sib.co.in",
+                "subject_pattern" => "/^Daily Transaction Details/",
+                "filename_pattern" => "/(?i)trn-1416203/",
+                "destination" => "recon/input/netbanking_sib/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+        self::ATOM => [
+            [
+                "from" => "NDPS.helpdesk@nttdata.com",
+                "subject_pattern" => "/(?i)Settlement Report/",
+                "filename_pattern" => "/(?i)razorpay/",
+                "destination" => "recon/input/atom/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
         ]
