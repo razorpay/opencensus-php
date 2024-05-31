@@ -6092,6 +6092,26 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($paymentFromResponse['razorpay_payment_id'], $paymentEntity['id']);
     }
 
+    public function testCreatePaymentWithForceTerminalIdWithFeatureEnabledForOptimiser()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['force_terminal_id'] = 'term_1000SharpTrmnl';
+
+        $paymentArray['notes'] = [
+            "integration_audit"          => "term_1000SharpTrmnl"
+        ];
+
+        $this->fixtures->merchant->addFeatures(['raas']);
+
+        $paymentFromResponse = $this->doAuthPayment($paymentArray);
+
+        // fetching payment in admin auth.
+        $paymentEntity = $this->getLastPayment(true);
+        $this->assertEquals($paymentFromResponse['razorpay_payment_id'], $paymentEntity['id']);
+        $this->assertEquals($paymentEntity['terminal_id'], '1000SharpTrmnl');
+    }
+
     public function testCreatePaymentWithForceTerminalIdWithoutFeatureEnabled()
     {
         $paymentArray = $this->getDefaultPaymentArray();

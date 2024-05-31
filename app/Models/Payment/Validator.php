@@ -144,7 +144,7 @@ class Validator extends Base\Validator
         'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
         'charge_account'                => 'sometimes|string',
         'app_present'                   => 'sometimes_if:method,app|boolean',
-        'force_terminal_id'             => 'sometimes|string|size:19|custom', // term_<14digitid>
+        'force_terminal_id'             => 'sometimes|string|size:19', // term_<14digitid>
         'language_code'                 => 'sometimes|string',
         'meta'                          => 'sometimes|array',
         'authentication'                => 'required_if:application,visasafeclick|array',
@@ -426,6 +426,8 @@ class Validator extends Base\Validator
         'charge_account',
         'cod',
         'wallet_user_id',
+        // We can't use custom due to nested validations required on input
+        'force_terminal_id',
     ];
 
     protected static $minAmountCheckRules = [
@@ -2087,14 +2089,21 @@ class Validator extends Base\Validator
 
     protected function validateForceTerminalId($input)
     {
-        $merchant = $this->entity->merchant;
+        if (isset($input['force_terminal_id'])){
+            $merchant = $this->entity->merchant;
 
-        $feature = Feature\Constants::ALLOW_FORCE_TERMINAL_ID;
+            $feature = Feature\Constants::ALLOW_FORCE_TERMINAL_ID;
 
-        if ($merchant->isFeatureEnabled($feature) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_FEATURE_FORCE_TERMINAL_ID_NOT_ENABLED);
+            if ($merchant->isFeatureEnabled($feature) === false)
+            {
+                if ($merchant->isFeatureEnabled(Feature\Constants::RAAS) === true and
+                    isset($input['notes']) and isset($input['notes']['integration_audit']))
+                {
+                    return;
+                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED_FEATURE_FORCE_TERMINAL_ID_NOT_ENABLED);
+            }
         }
     }
 
