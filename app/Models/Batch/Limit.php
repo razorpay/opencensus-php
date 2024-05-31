@@ -102,6 +102,10 @@ class Limit
         Type::PAYMENT_PAGE                          => 10000,
         Type::CREATE_WALLET_USER_CONTAINERS         => 1000000,
         Type::CREATE_WALLET_CONTAINER_LOADS         => 1000000,
+        Type::CREATE_WALLET_CONTAINER_REVERSALS     => 1000000,
+        Type::CREATE_WALLET_ACCOUNTS                => 1000000,
+        Type::CREATE_WALLET_LOADS                   => 1000000,
+        Type::CREATE_BULK_GIFT_CARDS                => 1000000,
         Type::ALT_ID_TERMINAL_ONBOARD              => 1000000,
         Type::BVS_BULK_KYC_VERIFICATION             => 50000,
     ];
