@@ -7028,6 +7028,17 @@ class Service extends Base\Service
 
         $input = (new Core())->processMerchantAnalyticsQuery($this->merchant->getId(), $input);
 
+        $variant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::HARVESTER_REFUND_FILTER,
+            $this->app['basicauth']->getMode() ?? "live"
+        );
+
+        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $input = $this->addRefundFilterToQueryIfApplicable($input);
+        }
+
         $this->trace->info(TraceCode::HARVESTER_REQUEST_DETAILS,[
             "data" => $input
         ]);
@@ -7067,6 +7078,61 @@ class Service extends Base\Service
         }
 
         return $dataProcessor->processMerchantAnalyticsResponse($response);
+    }
+
+    protected function addRefundFilterToQueryIfApplicable($input)
+    {
+        $refundStatuses = [
+            Refund\ScroogeStatus::CREATED,
+            Refund\ScroogeStatus::INIT,
+            Refund\ScroogeStatus::ON_HOLD,
+            Refund\ScroogeStatus::FTA_PENDING,
+            Refund\ScroogeStatus::FILE_INIT,
+            Refund\ScroogeStatus::RECON_PENDING,
+            Refund\ScroogeStatus::FILE_SENT,
+            Refund\ScroogeStatus::PROCESSED,
+        ];
+        $filterKeys = [];
+
+        if (isset($input['aggregations']['refundcountinstant']) === true)
+        {
+            $filterKeys[] = $input['aggregations']['refundcountinstant']['filter_key'];
+        }
+
+        if (isset($input['aggregations']['refundcountnormal']) === true)
+        {
+            $filterKeys[] = $input['aggregations']['refundcountnormal']['filter_key'];
+        }
+
+        if (isset($input['aggregations']['refundsuminstant']) === true)
+        {
+            $filterKeys[] = $input['aggregations']['refundsuminstant']['filter_key'];
+        }
+
+        if (isset($input['aggregations']['refundsumnormal']) === true)
+        {
+            $filterKeys[] = $input['aggregations']['refundsumnormal']['filter_key'];
+        }
+
+        if (count($filterKeys) === 0)
+        {
+            return $input;
+        }
+
+        $filterKeys = array_unique($filterKeys);
+
+        foreach ($input['filters'] as $filterName => &$filter)
+        {
+            if(in_array($filterName, $filterKeys) === true)
+            {
+                foreach ($input['filters'][$filterName] as &$filterVal)
+                {
+                    $filterVal['status'] = $refundStatuses;
+                }
+            }
+        }
+
+        return $input;
     }
 
     public function segregateQueries(array $input): array
