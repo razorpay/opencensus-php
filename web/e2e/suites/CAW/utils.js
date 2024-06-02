@@ -26,7 +26,7 @@ export const fillPaymentDetails = async (page, paymentData = {}) => {
 };
 
 export const fillTokenDetails = async (page, tokenData) => {
-  await fillExpiry({ page, expire_by: tokenData.expire_by });
+  await fillExpiry({ page });
   await page.fill('input[name="mandateMaxAmount"]', tokenData.mandateMaxAmount);
   await page.locator(`[data-testid="create-registration-link__create"]`).click();
 };

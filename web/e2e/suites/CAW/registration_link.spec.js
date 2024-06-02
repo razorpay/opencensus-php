@@ -46,7 +46,6 @@ test.describe.parallel('Create Registration Link @flow=CAW @country=MY', () => {
       amount: '2',
     });
     await fillTokenDetails(page, {
-      expire_by: 1,
       mandateMaxAmount: '100',
     });
 

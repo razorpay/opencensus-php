@@ -142,13 +142,17 @@ const hideSearchFTUXBannerByClick = async ({ page }) => {
   }
 };
 
-const getNextDate = async ({ page, offset }) => {
+const getLastDayOfMonth = (year, month) => {
+  return new Date(year, month + 1, 0).getDate();
+};
+
+const getNextDate = async ({ page }) => {
   const now = new Date();
   const currentDate = now;
 
-  now.setDate(now.getDate() + Number(offset));
+  now.setDate(now.getDate());
 
-  const targetDate = new Date(currentDate.getTime() + offset * 24 * 60 * 60 * 1000);
+  const targetDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
 
   let currentMonth = currentDate.getMonth();
   let currentYear = currentDate.getFullYear();
@@ -166,7 +170,7 @@ const getNextDate = async ({ page, offset }) => {
     }
   }
 
-  const month = now.getMonth();
+  const lastDayOfMonth = getLastDayOfMonth(targetYear, targetMonth);
   const monthNames = [
     'January',
     'February',
@@ -181,14 +185,44 @@ const getNextDate = async ({ page, offset }) => {
     'November',
     'December',
   ];
-  const date = `${monthNames[month]} ${now.getDate()}, ${now.getFullYear()}`;
+  const date = `${monthNames[targetMonth]} ${lastDayOfMonth}, ${targetYear}`;
   return date;
 };
 
-export const fillExpiry = async ({ page, expire_by }) => {
-  await page.getByPlaceholder('DD-MM-YYYY').click();
-  await page.waitForSelector('.rc-calendar-table');
-  const dateToSelect = await getNextDate({ page, offset: expire_by });
+export const fillExpiry = async ({ page, isLegacyLink }) => {
+  let openDatePicker = true;
+  if (isLegacyLink) {
+    const checkbox = await page.locator('input[data-name="hasNoExpiry"]');
+    if (await checkbox.isChecked()) {
+      await page.getByText('No Expiry', { exact: true }).click();
+      if (
+        await page.waitForSelector('.rc-calendar-table', {
+          state: 'visible',
+        })
+      ) {
+        openDatePicker = false;
+      }
+    }
+  }
+  if (openDatePicker) {
+    await page.getByPlaceholder('DD-MM-YYYY').click();
+    let calendarVisible = false;
+    while (!calendarVisible) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await page.waitForSelector('.rc-calendar-table', {
+          state: 'visible',
+        });
+        calendarVisible = true;
+      } catch (error) {
+        // eslint-disable-next-line no-await-in-loop
+        await page.getByPlaceholder('DD-MM-YYYY').click();
+      }
+    }
+  }
+  const dateToSelect = await getNextDate({
+    page,
+  });
   await page.locator(`td[title="${dateToSelect}"]`).click();
   await page.waitForSelector('.rc-calendar-table', { state: 'hidden' });
 };

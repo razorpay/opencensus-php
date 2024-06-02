@@ -584,6 +584,12 @@ class NewRegistrationLink extends React.Component {
       payload.subscription_registration.max_amount = cardMaxAmount;
     }
 
+    if (this.isWalletPayment) {
+      payload.subscription_registration.max_amount = convertToMinorUnit(mandateMaxAmount, {
+        currency,
+      });
+    }
+
     return payload;
   };
 

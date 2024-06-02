@@ -40,7 +40,7 @@ export const refunds = {
 
 export const uploadInvoices = {
   paymentId: {
-    allDetails: 'pay_NMU5tjbkt8Vxys',
+    allDetails: 'pay_NMO3gH6Jx2JF2y',
     noSenderName: 'pay_NMTpcCTxFlzjg2',
     noSenderCountry: 'pay_NMOIqK82Wvu7I7',
     noSenderAddr: 'pay_NMOMXwQAgFtuK2',
