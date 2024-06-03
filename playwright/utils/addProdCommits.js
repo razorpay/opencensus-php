@@ -19,23 +19,37 @@ const fetcher = async (url, method = 'GET') => {
   const response = await fetch(url, { method });
 
   const contentType = response.headers.get('content-type');
-  let res;
+  let data;
   if (contentType.includes('application/json')) {
-    res = await response.json();
+    data = await response.json();
   } else if (contentType.includes('text/plain')) {
-    res = await response.text();
+    data = await response.text();
   } else {
-    throw new Error('Invalid response type');
+    // eslint-disable-next-line no-lonely-if
+    if (response.ok) {
+      throw new Error('Invalid response type');
+    } else {
+      // allow any content type for error responses (text is fallback parsing method)
+      data = await response.text();
+    }
   }
-  return res;
+
+  if (!response.ok) {
+    const error = new Error(`Error fetching commit.txt`);
+    error.status = response.status;
+    error.statusText = response.statusText;
+    error.data = data;
+    throw error;
+  }
+
+  return data;
 };
 
 const fetchProdCommitId = async (serviceName) => {
   let commitId = '';
   try {
-    const prodCommitIdURL = prodCommitIdFetchURLMap[serviceName];
-    const res = await fetcher(prodCommitIdURL);
-
+    const commitUrl = prodCommitIdFetchURLMap[serviceName];
+    const res = await fetcher(commitUrl);
     if (serviceName === 'terminals') {
       // terminals returns with application/json type response
       commitId = res.commit_id.split(',')[0];
@@ -48,11 +62,8 @@ const fetchProdCommitId = async (serviceName) => {
     commitId = commitId.replaceAll('\r', '');
     console.log(`${serviceName} commit:`, commitId);
   } catch (error) {
-    console.log(
-      `fetching prod commit failed for ${serviceName}:`,
-      error?.response?.data,
-      error?.response?.status,
-    );
+    console.log(`fetchProdCommitId:error - ${serviceName}`, error.message, 'Response:', error.data);
+    console.log(`${serviceName} commit:`, 'failed. Using master commit.');
     // return empty string so that argo uses commit from master
     return '';
   }
@@ -94,6 +105,7 @@ async function updateDevstackJSONWithProdCommits() {
       dependentServices[serviceName] = commitId;
     });
     console.log('updated devstack.json:', JSON.stringify(dependentServices, null, 2));
+    // Disable the below line during dev testing
     fs.writeFileSync(devstackJSONPath, JSON.stringify(dependentServices, null, 2));
     response = 'devstack.json updated with production commits';
   } catch (error) {
