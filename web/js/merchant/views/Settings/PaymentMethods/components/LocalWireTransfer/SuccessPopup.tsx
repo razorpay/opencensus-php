@@ -104,7 +104,7 @@ const SuccessPopup = ({
               type="url"
               helpText={
                 shouldAllowEdit
-                  ? 'You may edit it so you and your customers can remember the name'
+                  ? 'You may edit the link name so you and your customer can remember the link'
                   : ''
               }
             />

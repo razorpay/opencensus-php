@@ -74,7 +74,7 @@ export const MCC_CODE_NOT_ELIGIBLE_ERROR = 'we do not support ach and swift acco
 export const DISABLE_REQUEST_TOOLTIP =
   "Please go to the 'More Intl Payment methods' section and submit your KYC details to initiate this request";
 
-export const BASE_PAYMENT_LINK_URL = 'razorpay.com/accounts/@';
+export const BASE_PAYMENT_LINK_URL = 'razorpay.com/export-link/@';
 
 export const INIT_POPUP_DETAILS = {
   isOpen: false,

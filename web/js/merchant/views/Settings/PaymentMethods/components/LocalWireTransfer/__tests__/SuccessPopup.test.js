@@ -50,7 +50,7 @@ describe('Tests for SuccessPopup - SEPA bank transfer', () => {
     expect(screen.getByRole('button', { name: 'Copy link' })).toBeInTheDocument();
 
     expect(
-      screen.getByText('You may edit it so you and your customers can remember the name'),
+      screen.getByText('You may edit the link name so you and your customer can remember the link'),
     ).toBeInTheDocument();
   });
 
