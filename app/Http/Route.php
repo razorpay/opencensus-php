@@ -17312,6 +17312,7 @@ class Route
             'internal_create_and_capture_commission',
             'internal_capture_commission',
             'internal_process_commissions_invoice',
+            'payment_fetch_by_id_internal'
         ],
 
         'terminals_service' => [

@@ -746,6 +746,24 @@ class PaymentFetchTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testFetchByIdForPartnershipsAuth()
+    {
+        $this->ba->partnershipServiceAuth();
+
+        $order = $this->fixtures->create('order', [
+            'amount'   => 50000,
+            'currency' => 'INR',
+            'receipt'  => 'rcptid42',
+        ]);
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+        $payment = $this->fixtures->create('payment', ['card_id' => $card->getId(), 'order_id' => $order->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testFetchByIdNotExpressAuthError()
     {
         $this->ba->privateAuth();

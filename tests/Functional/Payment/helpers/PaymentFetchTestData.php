@@ -448,6 +448,21 @@ return [
         ],
     ],
 
+    'testFetchByIdForPartnershipsAuth' => [
+        'request' => [
+            'url'     => '/payments_internal/',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'order' => [
+                    'entity' => 'order',
+                ],
+            ],
+        ],
+    ],
+
     'testFetchByIdNotExpressAuthError' => [
         'request' => [
             'url'     => '/payments_internal/',
