@@ -76,6 +76,7 @@ type Getters = {
   isOmniChannelMerchant: boolean;
   isOmniEnabledMerchant: boolean;
   isRazorxAnnouncementEnabled: boolean;
+  isHideMonthlyInvoiceEnabled: boolean;
   isINCountry: boolean;
   isSGCountry: boolean;
   isVasTestingMerchant: boolean;

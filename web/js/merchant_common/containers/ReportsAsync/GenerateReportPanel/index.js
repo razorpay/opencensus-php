@@ -1,24 +1,24 @@
 import React from 'react';
+import errorService from '@razorpay/universe-utils/errorService';
+import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import { analyticsTrack } from 'common/utils/analytics';
 
+import { withI18Service } from 'common/i18';
+import { AsyncBtn } from 'common/new-ui/Button';
+import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import { AsyncBtn } from 'common/new-ui/Button';
-import { isPresent, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import Spinner from 'common/ui/Spinner';
 import SelectAccount from 'common/ui/AccountsList';
-
-import SelectConfig from './SelectConfig';
-import SelectPeriod from './SelectPeriod';
-import SelectFormat from './SelectFormat';
-import EmailReport from './EmailReport';
-import errorService from '@razorpay/universe-utils/errorService';
-import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import Spinner from 'common/ui/Spinner';
+import { analyticsTrack } from 'common/utils/analytics';
+import { isPresent, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { reportConfigType } from 'merchant_common/containers/ReportsAsync/utils';
-import { connect } from 'react-redux';
-import { withI18Service } from 'common/i18';
+
+import EmailReport from './EmailReport';
+import SelectConfig from './SelectConfig';
+import SelectFormat from './SelectFormat';
+import SelectPeriod from './SelectPeriod';
 
 const marketplaceConfigTypes = ['transactions', 'payments', 'refunds', 'settlements'];
 @RTracking(() => window.rzpQ.component('GenerateReportPanel'))

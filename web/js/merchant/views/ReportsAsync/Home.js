@@ -1,16 +1,15 @@
 import { connect } from 'react-redux';
-import Reports from 'merchant_common/containers/ReportsAsync/Home';
-import { prefixEntityValue } from 'merchant_common/helpers/data';
 
 import { pickProps, uniqueArray } from 'common/utils/rzp-utils';
+import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
+import { fetchMerchantConfigs as fetchConfigs } from 'merchant/reducers/reports/configs';
 import {
   fetchMerchantReportLogs as fetchLogs,
   createMerchantReportLog as createLog,
   pollMerchantReportLog as pollLog,
 } from 'merchant/reducers/reports/logs';
-
-import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
-import { fetchMerchantConfigs as fetchConfigs } from 'merchant/reducers/reports/configs';
+import Reports from 'merchant_common/containers/ReportsAsync/Home';
+import { prefixEntityValue } from 'merchant_common/helpers/data';
 
 const mapStateToProps = (state) => {
   const sessionUser = state.session.user;

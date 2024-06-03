@@ -2044,6 +2044,10 @@ export default class User {
     return this.isFeatureEnabled('custom_txn_tab_view');
   }
 
+  get isHideMonthlyInvoiceEnabled() {
+    return this.isFeatureEnabled('show_invoice_report');
+  }
+
   get isCustomMerchantUPIQR() {
     return this.isFeatureEnabled('custom_merchant_upi_qr');
   }
