@@ -29,7 +29,6 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { withI18Service } from 'common/i18';
 import ProfileDropdownV2 from './ProfileDropdownV2';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import { ImageContainer } from './styled';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { withSplitzService } from 'common/splitz';
 
@@ -233,6 +232,7 @@ class ProfileDropdown extends Component {
           openSwitchMerchantModal={this.openSwitchMerchantModal}
           isRTBEnabled={isRTBEnabled}
           trustedBadgeTooltipInfo={trustedBadgeTooltipInfo}
+          showPartnerIntent={this.showPartnerIntent}
         />
       );
     }

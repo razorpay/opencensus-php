@@ -16,9 +16,13 @@ import {
   Tooltip,
   UserIcon,
   HeadphonesIcon,
+  Link as BladeLink,
 } from '@razorpay/blade/components';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import ShowWhen from 'merchant/components/ShowWhen';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 import { User } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
@@ -66,6 +70,7 @@ const ProfileDropdownV2: React.FC<{
   openSwitchMerchantModal: () => void;
   isRTBEnabled: boolean;
   trustedBadgeTooltipInfo: string;
+  showPartnerIntent: () => void;
 }> = ({
   user,
   mode,
@@ -74,6 +79,7 @@ const ProfileDropdownV2: React.FC<{
   openSwitchMerchantModal,
   isRTBEnabled,
   trustedBadgeTooltipInfo,
+  showPartnerIntent,
 }) => {
   const {
     id: merchantId,
@@ -233,6 +239,21 @@ const ProfileDropdownV2: React.FC<{
             onClick={handleLogout}
           />
         </ActionList>
+        <ShowWhen
+          additionalCondition={(user) =>
+            user.role === rolesList.OWNER &&
+            user.partner_type === null &&
+            !isOrgFeatureExist('hide_razorpay_text_link')
+          }
+        >
+          <Divider />
+          <Box display="flex" flexDirection="column" padding="spacing.5" gap="spacing.2">
+            Partner with us and start earning on every referral
+            <BladeLink variant="button" onClick={showPartnerIntent}>
+              Explore Partner Program
+            </BladeLink>
+          </Box>
+        </ShowWhen>
       </DropdownOverlay>
     </Dropdown>
   );
