@@ -2251,6 +2251,7 @@ class Route
         'vendor_payment_execute'                   => ['post',     'vendor-payments/{id}/execute',                                            'VendorPaymentController@executeVendorPayment'                      ],
         'vendor_payment_execute_2fa'               => ['post',     'vendor-payments/{id}/2fa/execute',                                        'VendorPaymentController@executeVendorPayment2fa'                   ],
         'vendor_payment_get_tds_categories'        => ['get',      'vendor-payments/tds-categories',                                          'VendorPaymentController@getTdsCategories'                          ],
+        'vendor_payment_get_tds_categories_internal'  => ['get',      'vendor-payments/tds-categories/internal',                              'VendorPaymentController@getTdsCategories'                          ],
         'vendor_payment_edit'                      => ['post',     'vendor-payments/{id}/edit',                                               'VendorPaymentController@edit'                                      ],
         'vendor_payment_cancel'                    => ['post',     'vendor-payments/{id}/cancel',                                             'VendorPaymentController@cancel'                                    ],
         'vendor_payment_bulk_cancel'               => ['post',     'vendor-payments/bulk-cancel',                                             'VendorPaymentController@bulkCancel'                                ],
@@ -5742,6 +5743,7 @@ class Route
         'cps_card_entity_create',
         'cps_backfill_entities',
         'vendor_payment_composite_expands_helper',
+        'vendor_payment_get_tds_categories_internal',
         'los_mail',
         'internal_merchant_payments_count',
         'api_entity_fetch',
@@ -11973,6 +11975,7 @@ class Route
             'fetch_fund_accounts_vendor_portal_v2',
             'contact_create_internal',
             'fund_account_create_internal',
+            'vendor_payment_get_tds_categories_internal',
         ],
 
         'master_onboarding' => [
