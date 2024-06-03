@@ -169,7 +169,7 @@ class Validator extends Base\Validator
     {
         if ((new Service())->isFeatureEnabledForPartner(FeatureConstants::SUBM_MANUAL_SETTLEMENT, $partner, $oauthApplicationId) === false)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED, $partner->getId());
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED);
         }
     }
 

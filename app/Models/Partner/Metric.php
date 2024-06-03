@@ -112,4 +112,7 @@ final class Metric
     const MASK_PII_FIELDS_SUCCESS_TOTAL = 'mask_pii_fields_success_total';
 
     const UPDATE_PARTNER_PRICING_TEMPLATE = 'update_partner_pricing_template';
+
+    const SUBMERCHANT_PAYMENT_RELEASE_SUCCESS = 'submerchant_payment_release_success';
+    const SUBMERCHANT_PAYMENT_RELEASE_FAILURE = 'submerchant_payment_release_failure';
 }

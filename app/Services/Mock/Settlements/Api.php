@@ -3,6 +3,7 @@
 namespace RZP\Services\Mock\Settlements;
 
 use RZP\Error\ErrorCode;
+use RZP\Exception\ServerErrorException;
 use RZP\Services\Settlements\Api as BaseSettlementsApi;
 
 class Api extends BaseSettlementsApi
@@ -14,6 +15,11 @@ class Api extends BaseSettlementsApi
         parent::__construct($app);
 
         $this->mockStatus = $mockStatus;
+    }
+
+    public function transactionRelease(array $txnIds) : array
+    {
+        throw new ServerErrorException("server error occurred", ErrorCode::SERVER_ERROR);
     }
 
     public function migrateMerchantConfigCreate(array $input, $mode = null) : array

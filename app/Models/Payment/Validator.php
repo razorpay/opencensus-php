@@ -2184,6 +2184,11 @@ class Validator extends Base\Validator
             throw new BadRequestException(ErrorCode::BAD_REQUEST_TRANSACTION_NOT_ON_HOLD, $transaction->getId());
         }
 
+        if ($payment->isDisputed() === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_UNDER_DISPUTE, $payment->getId());
+        }
+
         if ($transaction->isSettled() === true)
         {
             throw new BadRequestException(

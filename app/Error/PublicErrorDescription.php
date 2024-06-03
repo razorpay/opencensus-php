@@ -770,6 +770,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_BANK_NOT_ALLOWED                  = 'Sorry we do not support this bank right now for fund account validation.';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'Payment created long back and cannot be cancelled now';
     const BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE                             = 'Payment already has an open dispute';
+    const BAD_REQUEST_PAYMENT_UNDER_DISPUTE                                     = 'Payment is in dispute. Settlement can only be released once the dispute is resolved';
     const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';
     const BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE                              = 'This dispute is already closed and cannot be updated';
     const BAD_REQUEST_CANNOT_PERFORM_ACTION_ON_REFUNDED_PAYMENT_DISPUTE         = 'This action cannot be performed on refunded payment dispute';
@@ -917,6 +918,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS                             = 'User with given role already exists';
     const BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER                          = 'Action not allowed for self user';
+    const BAD_REQUEST_ACTION_NOT_ALLOWED                                        = 'Action not allowed.';
     const BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT                          = 'User doesn\'t belong to the current merchant';
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                           = 'Invitation is already sent to this email';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                            = 'User with given email is already a member of the team';
@@ -1097,7 +1099,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_LOGO_NOT_SQUARE                                   = 'The height and width of the logo are not the same. Upload a square image';
     const BAD_REQUEST_PARTNER_LOGO_NOT_IMAGE                                    = 'The image type is not jpg, jpeg or png';
     const BAD_REQUEST_PARTNER_LOGO_TOO_SMALL                                    = 'The dimensions of the image are too small. Minimum dimensions should be 256x256';
-    const BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED                             = 'Manual settlements not enabled on the partner account. Please reach out to Razorpay support to enable.';
     const BAD_REQUEST_INVALID_PARTNER_CONFIG_ENTITY_TYPE                        = 'Invalid partner config entity type.';
     const BAD_REQUEST_ROUTE_PARTNERSHIPS_FEATURE_NOT_ENABLED                    = 'The route_partnerships feature is not enabled for the merchant.';
 

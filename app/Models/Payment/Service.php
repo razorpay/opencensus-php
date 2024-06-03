@@ -85,6 +85,7 @@ use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\PaymentMeta;
 use RZP\Models\Payment\Fraud;
@@ -4277,9 +4278,14 @@ class Service extends Base\Service
         );
 
         $cronSummary = [
-            'total_count' => sizeof($paymentIds),
+            'total_count' => empty($paymentIds) ? 0 : sizeof($paymentIds),
             'failed_ids'  => []
         ];
+
+        if (empty($paymentIds))
+        {
+            return $cronSummary;
+        }
 
         $mapForSettlementService = [];
 
@@ -4350,6 +4356,11 @@ class Service extends Base\Service
     public function fetchSubmManualSettlementPaymentsBeforeTimestamp(int $timestamp): ?array
     {
         $partnerIds = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::SUBM_MANUAL_SETTLEMENT]);
+
+        if (empty($partnerIds))
+        {
+            return null;
+        }
 
         $subMerchantIds = $this->repo->merchant_access_map->getSubmIdsFromEntityOwnerIds($partnerIds);
 
@@ -8387,11 +8398,21 @@ class Service extends Base\Service
 
         if ($settlementBucketCore->shouldProcessViaNewService($this->merchant->getId(), $accountBalance) === true)
         {
-            $settlementBucketCore->settlementServiceToggleTransactionHold([$paymentTrxn->getId()]);
+            $response = $settlementBucketCore->settlementServiceToggleTransactionHold([$paymentTrxn->getId()]);
         }
         else
         {
-            (new Transaction\Core)->dispatchForSettlementBucketing($paymentTrxn);
+            $response = (new Transaction\Core)->dispatchForSettlementBucketing($paymentTrxn);
+        }
+
+        if ($response['success'] !== true)
+        {
+            $this->rollbackSubmerchantPaymentRelease($payment);
+
+            throw new Exception\ServerErrorException(
+                'Error releasing payment for settlement',
+                ErrorCode::SERVER_ERROR_PAYMENT_MANUAL_SETTLEMENT_FAILURE
+            );
         }
 
         $this->trace->info(
@@ -8404,7 +8425,53 @@ class Service extends Base\Service
             ]
         );
 
-        return $payment;
+        $paymentArr = $payment->toArray();
+
+        $paymentArr['settlement_onhold'] = $paymentTrxn->isOnHold();
+
+        return $paymentArr;
+    }
+
+    // set the on_hold flag of trxn to true with retry mechanism
+    private function rollbackSubmerchantPaymentRelease($payment)
+    {
+        $maxRetries = 2;
+        $attempt = 0;
+        $success = false;
+
+        while ($attempt < $maxRetries && !$success)
+        {
+            try
+            {
+                $this->repo->transaction(function() use ($payment) {
+                    /** @var Transaction\Entity */
+                    $paymentTrxn = $this->repo->transaction->lockForUpdate($payment->getTransactionId());
+
+                    $paymentTrxn->setOnHold(true);
+
+                    $this->repo->transaction->saveOrFail($paymentTrxn);
+                });
+
+                $this->trace->count(PartnerMetric::SUBMERCHANT_PAYMENT_RELEASE_SUCCESS);
+
+                $success = true;
+            }
+            catch (\Exception $e)
+            {
+                $attempt++;
+
+                $this->trace->error("Rollback attempt $attempt failed for submerchant payment release", ['exception' => $e]);
+
+                if ($attempt >= $maxRetries)
+                {
+                    $this->trace->count(PartnerMetric::SUBMERCHANT_PAYMENT_RELEASE_FAILURE);
+
+                    $this->trace->critical('Failed to rollback trxn for submerchant payment release after multiple attempts',
+                        ['payment_id' => $payment->getTransactionId()]
+                    );
+                }
+            }
+        }
     }
 
     public function releaseSubmerchantPaymentsCron(): array

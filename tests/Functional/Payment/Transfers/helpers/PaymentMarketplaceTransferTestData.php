@@ -648,7 +648,9 @@ return [
             'method'    => 'POST',
         ],
         'response'  => [
-            'content'     => [],
+            'content'     => [
+                'settlement_onhold' => false
+            ],
             'status_code' => 200,
         ],
     ],
@@ -659,7 +661,9 @@ return [
             'method'    => 'POST',
         ],
         'response'  => [
-            'content'     => [],
+            'content'     => [
+                'settlement_onhold' => false
+            ],
             'status_code' => 200,
         ],
     ],
@@ -670,7 +674,9 @@ return [
             'method'    => 'POST',
         ],
         'response'  => [
-            'content'     => [],
+            'content'     => [
+                'settlement_onhold' => false
+            ],
             'status_code' => 200,
         ],
     ],
@@ -704,14 +710,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACTION_NOT_ALLOWED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED
         ],
     ],
 
@@ -787,6 +793,44 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSACTION_NOT_ON_HOLD
+        ],
+    ],
+
+    'testReleaseSubmerchantPaymentByPartnerUnderDispute' => [
+        'request' => [
+            'url'       => '/payments/:id/settle',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UNDER_DISPUTE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UNDER_DISPUTE
+        ],
+    ],
+
+    'testReleaseSubmerchantPaymentByPartnerWithErrorFromNSS' => [
+        'request' => [
+            'url'       => '/payments/:id/settle',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_PAYMENT_MANUAL_SETTLEMENT_FAILURE
         ],
     ],
 

@@ -1611,6 +1611,65 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testReleaseSubmerchantPaymentByPartnerUnderDispute()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], '10000000000000');
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['disputed' => true]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['on_hold' => true]);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction->id, ['on_hold' => true]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReleaseSubmerchantPaymentByPartnerWithErrorFromNSS()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], '10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['new_settlement_service'], $subMerchantId);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['on_hold' => true]);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction->id, ['on_hold' => true]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+
+        // check if trxn is rolled back
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertTrue($transaction->getOnHold());
+    }
+
     public function testReleaseSubmerchantPaymentByPartnerWithTrxnAlreadySettled()
     {
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();

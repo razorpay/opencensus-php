@@ -2373,7 +2373,7 @@ class Core extends Base\Core
 
         if ($txn->getSettledAt() === null)
         {
-            return;
+            return ['success' => false];
         }
 
         try
@@ -2382,6 +2382,8 @@ class Core extends Base\Core
             // if not sent settledAt will be null in job as this entire thing is in a transaction
             //
             Bucket::dispatch($this->mode, $txn->getId());
+
+            return ['success' => true];
         }
         catch (\Throwable $e)
         {
@@ -2391,6 +2393,8 @@ class Core extends Base\Core
                 TraceCode::FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT
             );
         }
+
+        return ['success' => false];
     }
 
     /**

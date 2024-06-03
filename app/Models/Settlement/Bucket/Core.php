@@ -1059,6 +1059,8 @@ class Core extends Base\Core
             {
                 app('settlements_api')->transactionRelease($txnIds);
             }
+
+            return ['success' => true];
         }
         catch (\Throwable $e)
         {
@@ -1080,5 +1082,7 @@ class Core extends Base\Core
                 1,
                 'settlement_alerts');
         }
+
+        return ['success' => false];
     }
 }
