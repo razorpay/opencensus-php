@@ -605,6 +605,13 @@ class Service extends Base\Service
 
                     $payment = $this->repo->payment->findByPublicId($currentPaymentId);
 
+                    if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                    {
+                       array_push($failureIds, [ $currentPaymentId => "Transaction creation blocked for reverse shadow mode" ]);
+
+                       continue;
+                    }
+
                     $paymentProcessor = new Payment\Processor\Processor($payment->merchant);
 
                     $paymentProcessor->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
@@ -639,6 +646,17 @@ class Service extends Base\Service
                 $rearchPayment = $this->repo->payment->findByPublicId($payment->getId());
 
                 $rearchPayment->setExternal(true);
+
+                $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
+
+                $payment->merchant()->associate($merchant);
+
+                if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                {
+                    array_push($failureIds, [ $payment->getId() => "Transaction creation blocked for reverse shadow mode" ]);
+
+                    continue;
+                }
 
                 $txn = (new Transaction\Core)->createUpdateLedgerTransaction($rearchPayment);
 

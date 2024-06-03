@@ -208,6 +208,13 @@ class Core extends Base\Core
                 return $paymentTxn;
             }
 
+            if (($paymentTxn === null) and
+                ($payment->getTransactionId() !== null))
+            {
+                $txnId = $payment->getTransactionId();
+                $payment->setAttribute(Payment\Entity::TRANSACTION_ID, null);
+            }
+
             $txn =  $this->createTransactionForCapturedPayment($payment, $txnId);
 
             // for razorpay account payment method, journals are created in nbplus irrespective of ledger mode
