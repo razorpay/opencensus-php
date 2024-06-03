@@ -660,8 +660,7 @@ class Notify
         }
 
         // added dcc components in case it is a dcc transaction
-        if ($this->payment->isDCC())
-        {
+        if ($this->payment->isDCC()) {
             $paymentMeta = $this->payment->paymentMeta;
             $gatewayAmount = $paymentMeta->getGatewayAmount();
             $gatewayCurrency = $paymentMeta->getGatewayCurrency();
@@ -670,26 +669,44 @@ class Notify
             $gatewayCurrencyDenomination = Currency\Currency::DENOMINATION_FACTOR[$gatewayCurrency];
             $paymentCurrencyDenomination = Currency\Currency::DENOMINATION_FACTOR[$paymentCurrency];
             $denominationFactor = $gatewayCurrencyDenomination / $paymentCurrencyDenomination;
-            $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent(), $denominationFactor);
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::SHOW_CUSTOM_DCC_DISCLOSURES)) {
 
-            $data['payment']['exchange_rate'] = round(($gatewayAmount / $gatewayCurrencyDenomination) / ($paymentAmount / $paymentCurrencyDenomination), 5);
-            if($this->merchant->isDCCMarkupVisible()) {
-                $reducedDccMarkupPercent = ceil($paymentMeta->getDccMarkUpPercent() - ($paymentMeta->getDccMarkUpPercent() * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT/100)));
-                $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $reducedDccMarkupPercent, $denominationFactor);
+                $data['payment']['currency_conversion_fee'] = "{$paymentMeta->getDccMarkUpPercent()} %";
+                $data['payment']['show_custom_dcc_discl'] = true;
+
+                $gatewayAmountAsPerCurrency = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $gatewayAmount);
+                $data['payment']['gateway_amount'] = $gatewayAmountAsPerCurrency;
+
+                $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent(), $denominationFactor);
+                $data['payment']['exchange_rate'] = round($paymentMeta->getGatewayAmount() / $this->payment->getAmount(), 5);
+
+                $dccBaseAmount = $gatewayAmount - $fee;
+                $data['payment']['dcc_base_amount'] = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $dccBaseAmount);
+                $data['payment']['gateway_currency'] = $gatewayCurrency;
+                $data['payment']['currency_conversion_fee_without_symbol'] = $this->payment->getFormattedAmountWithoutSymbol($gatewayCurrency, $fee);
+                $data['payment']['gateway_amount_without_symbol'] = $this->payment->getFormattedAmountWithoutSymbol($gatewayCurrency, $gatewayAmount);
+            } else {
+                $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent(), $denominationFactor);
+
+                $data['payment']['exchange_rate'] = round(($gatewayAmount / $gatewayCurrencyDenomination) / ($paymentAmount / $paymentCurrencyDenomination), 5);
+                if ($this->merchant->isDCCMarkupVisible()) {
+                    $reducedDccMarkupPercent = ceil($paymentMeta->getDccMarkUpPercent() - ($paymentMeta->getDccMarkUpPercent() * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT / 100)));
+                    $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $reducedDccMarkupPercent, $denominationFactor);
+                }
+
+                $feeAsPerCurrency = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $fee);
+                $data['payment']['currency_conversion_fee'] = $feeAsPerCurrency;
+
+                $gatewayAmountAsPerCurrency = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $gatewayAmount);
+                $data['payment']['gateway_amount'] = $gatewayAmountAsPerCurrency;
+
+                $dccBaseAmount = $gatewayAmount - $fee;
+                $data['payment']['dcc_base_amount'] = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $dccBaseAmount);
+                $data['payment']['gateway_currency'] = $gatewayCurrency;
+                $data['payment']['currency_conversion_fee_without_symbol'] = $this->payment->getFormattedAmountWithoutSymbol($gatewayCurrency, $fee);
+                $data['payment']['gateway_amount_without_symbol'] = $this->payment->getFormattedAmountWithoutSymbol($gatewayCurrency, $gatewayAmount);
+                $data['payment']['reduced_markup_percent'] = ceil($paymentMeta->getDccMarkUpPercent() - ($paymentMeta->getDccMarkUpPercent() * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT / 100)));
             }
-
-            $feeAsPerCurrency = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $fee);
-            $data['payment']['currency_conversion_fee'] = $feeAsPerCurrency;
-
-            $gatewayAmountAsPerCurrency =$this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $gatewayAmount);
-            $data['payment']['gateway_amount'] = $gatewayAmountAsPerCurrency;
-
-            $dccBaseAmount = $gatewayAmount - $fee;
-            $data['payment']['dcc_base_amount'] = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $dccBaseAmount);
-            $data['payment']['gateway_currency'] = $gatewayCurrency;
-            $data['payment']['currency_conversion_fee_without_symbol'] = $this->payment->getFormattedAmountWithoutSymbol($gatewayCurrency, $fee);
-            $data['payment']['gateway_amount_without_symbol'] = $this->payment->getFormattedAmountWithoutSymbol($gatewayCurrency, $gatewayAmount);
-            $data['payment']['reduced_markup_percent'] = ceil($paymentMeta->getDccMarkUpPercent() - ($paymentMeta->getDccMarkUpPercent() * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT/100)));
         }
 
         if (($this->payment->isFailed() === false) and $this->fetchReward === true)

@@ -292,97 +292,6 @@
 
     </div>
 
-    <!--- DCC payments ---->
-    @if ($payment['dcc'] === true)
-    <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-
-          <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-              <tbody>
-              <tr>
-                  <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-
-                      <div class="mj-column-per-100 outlook-group-fix"
-                           style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                              <tbody>
-                              <tr>
-                                  <td style="vertical-align:top;padding:0px;">
-
-                                      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-                                          <tr>
-                                              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-                                                  <div
-                                                      style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                      <div class="card merchant-highlight informative"
-                                                           style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top-width: 0px; border-top-style: solid; padding-top: 20px; padding-bottom: 20px; border-top-color: {{ $merchant['brand_color'] }}; margin-top: 8px;">
-                                                          <div style="text-align:center">
-                                                              <div style="margin:0;font-size:16px;line-height:1.5;color:#7b8199">
-                                                                  <div style="display:inline-block">Currency Conversion Details</div>
-                                                              </div>
-                                                          </div>
-                                                          <hr width="90%" color = "#EBEDF2">
-                                                          <div class="information-row"
-                                                               style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5.5%; margin-bottom: 20px; padding-right: 4%;">
-                                                              <div class="label"
-                                                                   style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; max-width: 100%; min-width: 50%;">
-                                                                  Base Amount</div>
-                                                              <div class="value" style="color: #515978;display: inline-block;max-width: 50%;float: right;">
-                                                                  <div class="font-color-tertiary" style="color: #7B8199; text-align: right">{{$payment['dcc_base_amount']}}</div>
-                                                              </div>
-                                                          </div>
-                                                          <div class="information-row"
-                                                               style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5.5%; margin-bottom: 20px;padding-right: 4%">
-                                                              <div class="label"
-                                                                   style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; max-width: 100%; min-width: 50%;">
-                                                                  Fees</div>
-                                                              <div class="value" style="color: #515978;display: inline-block;max-width: 50%;float: right;">
-                                                              <div class="font-color-tertiary" style="color: #7B8199; text-align: right">{{$payment['currency_conversion_fee']}}</div>
-                                                              </div>
-                                                          </div>
-                                                          <div class="information-row"
-                                                               style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5.5%; margin-bottom: 20px; padding-right: 4%">
-                                                              <div class="label"
-                                                                   style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; max-width: 100%; min-width: 50%;">
-                                                                  Total Amount</div>
-                                                              <div class="value" style="color: #515978;display: inline-block;max-width: 50%;float: right;">
-                                                                  <div class="font-color-tertiary" style="color: #7B8199; text-align: right ">{{$payment['gateway_amount']}}</div>
-                                                              </div>
-                                                          </div>
-                                                          <div>
-                                                             <hr width="90%" color = "#EBEDF2">
-                                                          </div>
-                                                                  <div class="description"
-                                                                       style="text-align: center; color: #515978; font-size: 14px; line-height: 1.5;">
-                                                                  <!-- DCC Payments Disclaimer -->
-                                                                      The cost of currency conversion as they may be different depending on
-                                                                      whether you select your home currency or the transaction currency.
-                                                                      <br />
-                                                          </div>
-                                                      </div>
-                                                  </div>
-
-                                              </td>
-                                          </tr>
-
-                                      </table>
-
-                                  </td>
-                              </tr>
-                              </tbody>
-                          </table>
-
-                      </div>
-                  </td>
-              </tr>
-              </tbody>
-          </table>
-
-      </div>
-    @endif
-    <!------->
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
 
       <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
@@ -457,6 +366,188 @@
       </table>
 
     </div>
+
+    @if ($payment['dcc'] === true and $payment['show_custom_dcc_discl'] === true)
+    <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+
+          <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+              <tbody>
+              <tr>
+                  <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+
+                      <div class="mj-column-per-100 outlook-group-fix"
+                           style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                              <tbody>
+                              <tr>
+                                  <td style="vertical-align:top;padding:0px;">
+
+                                      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+
+                                          <tr>
+                                              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+                                                  <div
+                                                      style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                                                      <div class="card merchant-highlight informative"
+                                                           style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top-width: 0px; border-top-style: solid; padding-top: 20px; padding-bottom: 20px; border-top-color: {{ $merchant['brand_color'] }}; margin-top: 8px;">
+                                                          <div style="text-align:center">
+                                                              <div style="margin:0;font-size:16px;line-height:1.5;color:#7b8199">
+                                                                  <div style="display:inline-block">Transaction Amount</div>
+                                                              </div>
+                                                          </div>
+                                                          <hr width="90%" color = "#EBEDF2">
+                                                          <div class="information-row"
+                                                               style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5.5%; margin-bottom: 20px; padding-right: 4%;">
+                                                              <div class="label"
+                                                                   style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; max-width: 100%; min-width: 50%;">
+                                                                  Local Currency</div>
+                                                              <div class="value" style="color: #515978;display: inline-block;max-width: 50%;float: right;">
+                                                                  <div class="font-color-tertiary" style="color: #7B8199; text-align: right">{{$payment['amount']}}</div>
+                                                              </div>
+                                                          </div>
+                                                          <div class="information-row"
+                                                               style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5.5%; margin-bottom: 20px;padding-right: 4%">
+                                                              <div class="label"
+                                                                   style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; max-width: 100%; min-width: 50%;">
+                                                                  Card Holder Currency</div>
+                                                              <div class="value" style="color: #515978;display: inline-block;max-width: 50%;float: right;">
+                                                              <div class="font-color-tertiary" style="color: #7B8199; text-align: right">{{$payment['dcc_base_amount']}}</div>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+
+                                              </td>
+                                          </tr>
+
+                                      </table>
+
+                                  </td>
+                              </tr>
+                              </tbody>
+                          </table>
+
+                      </div>
+                  </td>
+              </tr>
+              </tbody>
+          </table>
+
+      </div>
+      @endif
+
+    @if ($payment['dcc'] === true)  
+    <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+
+          <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+              <tbody>
+              <tr>
+                  <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+
+                      <div class="mj-column-per-100 outlook-group-fix"
+                           style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                              <tbody>
+                              <tr>
+                                  <td style="vertical-align:top;padding:0px;">
+
+                                      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+
+                                          <tr>
+                                              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+                                                  <div
+                                                      style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                                                      <div class="card merchant-highlight informative"
+                                                           style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top-width: 0px; border-top-style: solid; padding-top: 20px; padding-bottom: 20px; border-top-color: {{ $merchant['brand_color'] }}; margin-top: 8px;">
+                                                          <div style="text-align:center">
+                                                              <div style="margin:0;font-size:16px;line-height:1.5;color:#7b8199">
+                                                                  <div style="display:inline-block">Currency Conversion Details</div>
+                                                              </div>
+                                                          </div>
+                                                          <hr width="90%" color = "#EBEDF2">
+                                                          <div class="information-row"
+                                                               style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5.5%; margin-bottom: 20px; padding-right: 4%;">
+                                                              <div class="label"
+                                                                   style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; max-width: 100%; min-width: 50%;">
+                                                                  Base Amount</div>
+                                                              <div class="value" style="color: #515978;display: inline-block;max-width: 50%;float: right;">
+                                                                  <div class="font-color-tertiary" style="color: #7B8199; text-align: right">{{$payment['dcc_base_amount']}}</div>
+                                                              </div>
+                                                          </div>
+                                                          @if ($payment['show_custom_dcc_discl'] === true)
+                                                          <div class="information-row"
+                                                               style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5.5%; margin-bottom: 20px;padding-right: 4%">
+                                                              <div class="label"
+                                                                   style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; max-width: 100%; min-width: 50%;">
+                                                                  Exchange Rate</div>
+                                                              <div class="value" style="color: #515978;display: inline-block;max-width: 50%;float: right;">
+                                                              <div class="font-color-tertiary" style="color: #7B8199; text-align: right">1 {{$payment['currency']}} = {{$payment['exchange_rate']}} {{$payment['gateway_currency']}}</div>
+                                                              </div>
+                                                          </div>
+                                                          @endif
+                                                          <div class="information-row"
+                                                               style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5.5%; margin-bottom: 20px;padding-right: 4%">
+                                                              <div class="label"
+                                                                   style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; max-width: 100%; min-width: 50%;">
+                                                                  {{$payment['show_custom_dcc_discl'] ? 'Currency Conversion Fee' : 'Fees'}}</div>
+                                                              <div class="value" style="color: #515978;display: inline-block;max-width: 50%;float: right;">
+                                                              <div class="font-color-tertiary" style="color: #7B8199; text-align: right">{{$payment['currency_conversion_fee']}}</div>
+                                                              </div>
+                                                          </div>
+                                                          <div class="information-row"
+                                                               style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5.5%; margin-bottom: 20px; padding-right: 4%">
+                                                              <div class="label"
+                                                                   style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; max-width: 100%; min-width: 50%;">
+                                                                  Final Transaction Amount</div>
+                                                              <div class="value" style="color: #515978;display: inline-block;max-width: 50%;float: right;">
+                                                                  <div class="font-color-tertiary" style="color: #7B8199; text-align: right ">{{$payment['gateway_amount']}}</div>
+                                                              </div>
+                                                          </div>
+                                                          <div>
+                                                             <hr width="90%" color = "#EBEDF2">
+                                                          </div>
+                                                          @if ($payment['show_custom_dcc_discl'] === true)
+                                                          <div class="description"
+                                                               style="text-align: center; color: #515978; font-size: 14px; line-height: 1.5;">
+                                                                <!-- DCC Payments Disclaimer -->
+                                                                  You have been given a choice of currency for this transaction and this currency 
+                                                                  conversion is conducted by Axis Bank.
+                                                              <br />
+                                                              <br />
+                                                          </div>
+                                                          @endif
+                                                          <div class="description"
+                                                               style="text-align: center; color: #515978; font-size: 14px; line-height: 1.5;">
+                                                                <!-- DCC Payments Disclaimer -->
+                                                                  The cost of currency conversion as they may be different depending on
+                                                                  whether you select your home currency or the transaction currency.
+                                                              <br />
+                                                          </div>
+                                                      </div>
+                                                  </div>
+
+                                              </td>
+                                          </tr>
+
+                                      </table>
+
+                                  </td>
+                              </tr>
+                              </tbody>
+                          </table>
+
+                      </div>
+                  </td>
+              </tr>
+              </tbody>
+          </table>
+
+      </div>
+      @endif
 
     @isset($rewards)
       <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
