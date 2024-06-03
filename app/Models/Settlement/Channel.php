@@ -44,6 +44,8 @@ class Channel
     // This channel is for in person transactions
     const HDFC_POS = 'hdfc_pos';
 
+    const AXIS_POS = 'axis_pos';
+
     public static $allChannels = [
         Constants\Country::IN => [
             self::KOTAK,
@@ -62,7 +64,8 @@ class Channel
             self::RZPX,
             self::MCS,
             self::IDFC,
-            self::HDFC_POS
+            self::HDFC_POS,
+            self::AXIS_POS
         ],
         Constants\Country::MY => [
             self::OCBC,
