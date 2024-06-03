@@ -26,13 +26,13 @@ export function getWidgetResponse(components, widgetKey) {
 }
 
 export async function assertAPICallForDataRefresh({ page, title }) {
-  const container = await page.getByText(`${title}Last weekTodayLast weekLast 30 days`);
+  const container = await page.getByText(`${title}Last weekTodayLast weekLast month`);
   await expect(container).toBeVisible();
   const dropDown = await container.getByTestId('date-picker-component');
   await expect(dropDown).toBeVisible();
 
   await dropDown.click();
 
-  const last30daysOption = page.getByRole('option', { name: 'Last 30 days' });
+  const last30daysOption = page.getByRole('option', { name: 'Last month' });
   await Promise.all([page.waitForResponse(UCS_DATA_API_URL), last30daysOption.click()]);
 }

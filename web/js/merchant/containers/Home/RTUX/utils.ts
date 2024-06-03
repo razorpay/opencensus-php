@@ -19,7 +19,7 @@ export const isRTUXHomepageEnabled = ({ user, abExperiments }: RTUXHomepageEnabl
     user.isINCountry &&
     (user.isOrgRZP || user.isVasTestingMerchant) &&
     !user.isPartner() &&
-    !checkIfPosSalesAgent({ user, abExperiments }) &&
+    !checkIfPosSalesAgent({ user, abExperiments })?.isPosSalesAgent &&
     isExperimentEnabled(abExperiments.rtux_homepage)
   );
 };

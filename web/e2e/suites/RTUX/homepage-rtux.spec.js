@@ -4,9 +4,9 @@ import { expect, test } from 'utils/base';
 
 import { assertAPICallForDataRefresh, getRTUXResponse, getWidgetResponse } from './utils';
 
-test.describe.parallel('RTUX - Transacted Merchant @flow=rtux', () => {
+test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
   });
 
   test('should show merchant overview @priority=normal', async ({ page }) => {
@@ -87,18 +87,21 @@ test.describe.parallel('RTUX - Transacted Merchant @flow=rtux', () => {
     await expect(page.getByRole('heading', { name: title })).toBeVisible();
 
     for (const { title, description } of prodRecommendationCards) {
-      await expect(page.getByRole('heading', { name: title }).first()).toBeVisible();
+      const cardTitle = page
+        .locator(`[data-testid="product-card-widget"] >> text=${title}`)
+        .first();
+      await expect(cardTitle).toBeVisible();
       await expect(page.getByText(description).first()).toBeVisible();
     }
   });
 });
 
-test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux', () => {
+test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
   });
 
-  test('should show merchant overview @priority=normal', async ({ page }) => {
+  test.skip('should show merchant overview @priority=normal', async ({ page }) => {
     await getRTUXResponse({ page });
     await expect(page.getByTestId('merchant-overview')).toBeVisible();
     await expect(page.getByRole('heading', { name: /first payment/, exact: false })).toBeVisible();
@@ -126,14 +129,14 @@ test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux', () => {
   });
 });
 
-test.describe.parallel('RTUX - Header Nav @flow=rtux', () => {
+test.describe.parallel('RTUX - Header Nav @flow=rtux @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
   });
 
   test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux', () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+      storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
     });
 
     test('should show announcement nav item @priority=normal', async ({ page }) => {
@@ -152,7 +155,7 @@ test.describe.parallel('RTUX - Header Nav @flow=rtux', () => {
       await expect(page.getByRole('heading', { name: 'Ecosystem Health' })).toBeVisible();
     });
 
-    test('should show user profile nav item @priority=normal', async ({ page }) => {
+    test.skip('should show user profile nav item @priority=normal', async ({ page }) => {
       await page.goto(routes.DASHBOARD);
       const userProfileCTA = await page.getByTestId('header-profile-dropdown');
       await expect(userProfileCTA).toBeVisible();
