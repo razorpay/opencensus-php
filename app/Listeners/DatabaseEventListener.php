@@ -51,6 +51,35 @@ class DatabaseEventListener
             'tableName' => $tableName,
         ]);
 
+        try
+        {
+            $query = strtolower($event->sql);
+
+            $isUpdateQuery = str_contains($query, "update");
+
+            $isTokenTable = str_contains($query, "tokens");
+
+            $idPresent = str_contains($query, "id");
+
+            if($isUpdateQuery === true && $isTokenTable === true && $idPresent === false)
+            {
+                $this->trace->info(
+                    TraceCode::TOKEN_UPDATE_DEBUG,
+                    [
+                        'application' => 'api',
+                        'route'      => $this->app['request.ctx']->getRoute() ?? $this->app['worker.ctx']->getJobName(),
+                        'connection' => $event->connectionName,
+                        'query'      => $event->sql,
+                        'bindings'   => $event->bindings,
+                        'time'       => $event->time
+                    ]);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // silent ignore for now
+        }
+
         $rand = rand(1,500000);
 
         if ($rand > $this->sampleRate)
