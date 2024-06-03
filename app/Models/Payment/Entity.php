@@ -1346,7 +1346,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $method = $this->getMethod();
 
-            if(($this->isUpiRecurring()) and ($this->getGateway() === 'upi_icici'))
+            if($this->isUpiRecurring())
             {
                 $method = 'upi_autopay';
             }
@@ -4460,7 +4460,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $method = $this->getMethod();
 
-        if(($this->isUpiRecurring() === true) and ($this->getGateway() === 'upi_icici'))
+        if($this->isUpiRecurring() === true)
         {
             $method = 'upi_autopay';
         }

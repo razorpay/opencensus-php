@@ -7885,7 +7885,7 @@ class Processor
         $payment = $this->payment;
         $method = $payment->getMethod();
 
-        if(($payment->isUpiRecurring()) and ($payment->getGateway() === 'upi_icici'))
+        if($payment->isUpiRecurring())
         {
             $method = 'upi_autopay';
         }
