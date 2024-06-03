@@ -3,7 +3,7 @@ import LazyLoad from 'react-lazyload';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import { HeadphonesIcon, Box } from '@razorpay/blade/components';
+import { HeadphonesIcon, Box, Button, UserIcon, Text, Heading } from '@razorpay/blade/components';
 import BusinessImage from 'assets/business.svg';
 import RTBUserIconBg from 'assets/trustedbadge/rtb_user_icon_bg.svg';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -29,6 +29,9 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { withI18Service } from 'common/i18';
 import ProfileDropdownV2 from './ProfileDropdownV2';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+import { ImageContainer } from './styled';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
+import { withSplitzService } from 'common/splitz';
 
 const trustedBadgeTooltipInfo =
   'You are a trusted business and the Razorpay trusted business badge is now being displayed on checkout for customers to see';
@@ -209,12 +212,18 @@ class ProfileDropdown extends Component {
       onSwitchMode,
       i18: { isConfigTagEnabled },
       isRTUXHomepage,
+      splitz,
     } = this.props;
     const { badgeStatus } = trustedBadge || {};
     const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
     const merchant = user.merchants[user.current];
     const { showRazorpayxToolTip } = this.state;
-    if (isRTUXHomepage) {
+    const { isPosSalesAgent } = checkIfPosSalesAgent({
+      user,
+      abExperiments: splitz.abExperiments,
+    });
+
+    if (isRTUXHomepage && !isPosSalesAgent) {
       return (
         <ProfileDropdownV2
           user={user}
@@ -232,10 +241,10 @@ class ProfileDropdown extends Component {
       <Dropdown closeOnClick={false} onShow={this.handleShow} onHide={this.handleHide}>
         <DropdownTrigger
           className={`dropdown-toggle  dropdown-toggle--large-icon${
-            isRTBEnabled ? ' rtb-user-dropdown' : ''
+            isRTBEnabled && !isPosSalesAgent ? ' rtb-user-dropdown' : ''
           }`}
         >
-          {isRTBEnabled ? (
+          {isRTBEnabled && !isPosSalesAgent ? (
             <>
               <span className="visible-xs">
                 <i className="rtb-nav-icon" />
@@ -277,222 +286,254 @@ class ProfileDropdown extends Component {
         </DropdownTrigger>
         <DropdownContent>
           <div className="dropdown-menu ProfileDropdown">
-            {user.current && (
-              <div className="media">
-                <div className="media-left">
-                  <div className="media-object">
-                    <Image src={user.logo_url}>
-                      <img src={BusinessImage} alt="business" />
-                    </Image>
-                  </div>
-                </div>
-                <div className="media-body merchant-details-container">
-                  <div className="merchantname">{merchant.name}</div>
-                  {isRTBEnabled && (
-                    <Link
-                      onClick={() => {
-                        tracking.trackEvent(
-                          window.rzpQ &&
-                            window.rzpQ
-                              .merchantActions()
-                              .interaction('RTBDashboardHomePageTagClicked', {
-                                merchantId: user?.merchant?.id,
-                                clickSource: 'merchant_dashboard',
-                              }),
-                        );
-                      }}
-                      to="/trustedbadge"
-                      className="rtb-text"
-                    >
-                      Razorpay Trusted Business
-                    </Link>
-                  )}
-                  <Group>
-                    <GroupItem>
-                      <small>{merchant.id}</small>
-                    </GroupItem>
-                    <GroupItem>
-                      <CustomClipboard
-                        value={merchant.id}
-                        onCopy={() => {
-                          analyticsTrack({
-                            objectName: 'user dropdown',
-                            actionName: 'clicked',
-                            screen: 'home page',
-                            properties: {
-                              action: 'Copy Merchant ID',
-                              location: 'top navigation',
-                              ...getCommonAnalyticsProperties(window.rzp_user),
-                            },
-                            toCleverTap: true,
-                          });
-                          return analytics('Copy - Merchant ID');
-                        }}
-                      >
-                        <button className="btn btn-default btn-xs">Copy Merchant Id</button>
-                      </CustomClipboard>
-                    </GroupItem>
-                  </Group>
-                </div>
-                {user.isPaymentHandleSplitzEnabled &&
-                  !isConfigTagEnabled('profile.razorpay_me') && <PaymentHandleSlug />}
-              </div>
-            )}
-            {showMobileNav && (
+            {isPosSalesAgent ? (
+              <Box padding="spacing.3" testID="pos-sales-agent-content">
+                <Heading marginBottom="spacing.4" color="interactive.text.gray.subtle">
+                  Logged in as:{' '}
+                </Heading>
+                <Box marginBottom="spacing.5" display="flex" alignItems="center">
+                  <Box
+                    height="30px"
+                    width="30px"
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    borderRadius="50%"
+                    backgroundColor="surface.background.gray.moderate"
+                    marginRight="spacing.2"
+                  >
+                    <UserIcon size="small" color="interactive.icon.gray.subtle" />
+                  </Box>
+                  <Text color="interactive.text.gray.subtle">{user?.user?.email}</Text>
+                </Box>
+                <Button onClick={this.logout} isFullWidth>
+                  Logout
+                </Button>
+              </Box>
+            ) : (
               <React.Fragment>
-                {Object.keys(user.merchants).length > 1 && (
-                  <div className="media media-action" onClick={this.openSwitchMerchantModal}>
-                    <div className="media-body">Switch Merchant</div>
+                {user.current && (
+                  <div className="media">
+                    <div className="media-left">
+                      <div className="media-object">
+                        <Image src={user.logo_url}>
+                          <img src={BusinessImage} alt="business" />
+                        </Image>
+                      </div>
+                    </div>
+                    <div className="media-body merchant-details-container">
+                      <div className="merchantname">{merchant.name}</div>
+                      {isRTBEnabled && (
+                        <Link
+                          onClick={() => {
+                            tracking.trackEvent(
+                              window.rzpQ &&
+                                window.rzpQ
+                                  .merchantActions()
+                                  .interaction('RTBDashboardHomePageTagClicked', {
+                                    merchantId: user?.merchant?.id,
+                                    clickSource: 'merchant_dashboard',
+                                  }),
+                            );
+                          }}
+                          to="/trustedbadge"
+                          className="rtb-text"
+                        >
+                          Razorpay Trusted Business
+                        </Link>
+                      )}
+                      <Group>
+                        <GroupItem>
+                          <small>{merchant.id}</small>
+                        </GroupItem>
+                        <GroupItem>
+                          <CustomClipboard
+                            value={merchant.id}
+                            onCopy={() => {
+                              analyticsTrack({
+                                objectName: 'user dropdown',
+                                actionName: 'clicked',
+                                screen: 'home page',
+                                properties: {
+                                  action: 'Copy Merchant ID',
+                                  location: 'top navigation',
+                                  ...getCommonAnalyticsProperties(window.rzp_user),
+                                },
+                                toCleverTap: true,
+                              });
+                              return analytics('Copy - Merchant ID');
+                            }}
+                          >
+                            <button className="btn btn-default btn-xs">Copy Merchant Id</button>
+                          </CustomClipboard>
+                        </GroupItem>
+                      </Group>
+                    </div>
+                    {user.isPaymentHandleSplitzEnabled &&
+                      !isConfigTagEnabled('profile.razorpay_me') && <PaymentHandleSlug />}
                   </div>
                 )}
-                <ShowWhen
-                  additionalCondition={(userData) =>
-                    !!showGSTModal &&
-                    userData.isAllowedView('profile_gst') &&
-                    !isConfigTagEnabled('account.gst')
-                  }
-                >
-                  <div className="media media-action" onClick={showGSTModal}>
-                    <div className="media-body">GST Details</div>
-                  </div>
-                </ShowWhen>
-                <ShowWhen
-                  additionalCondition={(userData) =>
-                    userData.isOrgAllowedFunctionality('external_links') &&
-                    !isConfigTagEnabled('documentation.documentation')
-                  }
-                >
-                  <div className="media media-action">
-                    <div className="media-body">
-                      <a
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        onClick={() => {
-                          analyticsTrack({
-                            objectName: 'documentation',
-                            actionName: 'clicked',
-                            screen: 'home page',
-                            properties: {
-                              location: 'top navigation',
-                              ...getCommonAnalyticsProperties(window.rzp_user),
-                            },
-                          });
-                        }}
-                        href="https://razorpay.com/docs"
+                {showMobileNav && (
+                  <React.Fragment>
+                    {Object.keys(user.merchants).length > 1 && (
+                      <div className="media media-action" onClick={this.openSwitchMerchantModal}>
+                        <div className="media-body">Switch Merchant</div>
+                      </div>
+                    )}
+                    <ShowWhen
+                      additionalCondition={(userData) =>
+                        !!showGSTModal &&
+                        userData.isAllowedView('profile_gst') &&
+                        !isConfigTagEnabled('account.gst')
+                      }
+                    >
+                      <div className="media media-action" onClick={showGSTModal}>
+                        <div className="media-body">GST Details</div>
+                      </div>
+                    </ShowWhen>
+                    <ShowWhen
+                      additionalCondition={(userData) =>
+                        userData.isOrgAllowedFunctionality('external_links') &&
+                        !isConfigTagEnabled('documentation.documentation')
+                      }
+                    >
+                      <div className="media media-action">
+                        <div className="media-body">
+                          <a
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            onClick={() => {
+                              analyticsTrack({
+                                objectName: 'documentation',
+                                actionName: 'clicked',
+                                screen: 'home page',
+                                properties: {
+                                  location: 'top navigation',
+                                  ...getCommonAnalyticsProperties(window.rzp_user),
+                                },
+                              });
+                            }}
+                            href="https://razorpay.com/docs"
+                          >
+                            Documentation
+                          </a>
+                        </div>
+                      </div>
+                    </ShowWhen>
+                    {/* Test Mode and Live Mode Button Action added for m-web only */}
+                    <div
+                      className={`media media-action ${mode === 'live' ? 'test-go' : 'live-go'}`}
+                      onClick={() => onSwitchMode(mode === 'live' ? 'test' : 'live')}
+                    >
+                      <div className="media-body">
+                        Enable {mode === 'live' ? 'Test' : 'Live'} Mode
+                      </div>
+                    </div>
+                  </React.Fragment>
+                )}
+                {user.isRazorxAnnouncementEnabled && (
+                  <>
+                    <div className="media media-action">
+                      <div className="media-left">
+                        <div className="media-object">
+                          <LazyLoad height={24} once>
+                            <img
+                              src="https://cdn.razorpay.com/static/assets/notifs/razorx.svg"
+                              alt="razorpay experiment"
+                              height="24"
+                            />
+                          </LazyLoad>
+                        </div>
+                      </div>
+                      <div className="media-body">
+                        <a rel="noreferrer noopener" href="https://x.razorpay.com" target="_blank">
+                          Go to RazorpayX
+                        </a>
+                      </div>
+                    </div>
+                    {!showMobileNav && showRazorpayxToolTip && user.isRazorxAnnouncementEnabled && (
+                      <Popover
+                        persistent={true}
+                        theme="dark"
+                        align="left"
+                        className="razorpayx-popover"
                       >
-                        Documentation
+                        <PopoverBody>You can switch to RazorpayX Dashboard from here</PopoverBody>
+                      </Popover>
+                    )}
+                  </>
+                )}
+                <div
+                  className="media media-action"
+                  onClick={() => {
+                    CreateTicketEmitter.emit('toggle-help-section');
+                  }}
+                >
+                  <div className="media-left">
+                    <div className="media-object">
+                      <Box display="flex" alignItems="center" justifyContent="center">
+                        <HeadphonesIcon
+                          size="large"
+                          color="surface.icon.gray.subtle"
+                          marginLeft="spacing.2"
+                        />
+                      </Box>
+                    </div>
+                  </div>
+                  <div className="media-body">Help & Support</div>
+                </div>
+                <div className="media loggedin-as">
+                  <div className="media-body">
+                    <div>Logged in as</div>
+                    <p className="account-details">
+                      <i className="i i-account" />
+                      {isLoggedInViaMobile() ? (
+                        <span title={user.user.contact_mobile}>{user.user.contact_mobile}</span>
+                      ) : (
+                        <span title={user.user.email}>{user.user.email}</span>
+                      )}
+                    </p>
+                    <button
+                      className="btn btn-primary logout-btn"
+                      onClick={() => {
+                        analyticsTrack({
+                          objectName: 'user dropdown',
+                          actionName: 'clicked',
+                          screen: 'home page',
+                          properties: {
+                            action: 'Logout',
+                            location: 'top navigation',
+                            ...getCommonAnalyticsProperties(window.rzp_user),
+                          },
+                        });
+                        this.logout();
+                      }}
+                    >
+                      Log out
+                    </button>
+                  </div>
+                </div>
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    user.role === rolesList.OWNER &&
+                    user.partner_type === null &&
+                    !isOrgFeatureExist('hide_razorpay_text_link')
+                  }
+                >
+                  <div className="media loggedin-as">
+                    <div className="media-body">
+                      <p className="small-txt">
+                        Partner with us and start earning on every referral
+                      </p>
+
+                      <a className="partner-link" onClick={this.showPartnerIntent}>
+                        <strong>Explore Partner Program</strong>{' '}
                       </a>
                     </div>
                   </div>
                 </ShowWhen>
-                {/* Test Mode and Live Mode Button Action added for m-web only */}
-                <div
-                  className={`media media-action ${mode === 'live' ? 'test-go' : 'live-go'}`}
-                  onClick={() => onSwitchMode(mode === 'live' ? 'test' : 'live')}
-                >
-                  <div className="media-body">Enable {mode === 'live' ? 'Test' : 'Live'} Mode</div>
-                </div>
               </React.Fragment>
             )}
-            {user.isRazorxAnnouncementEnabled && (
-              <>
-                <div className="media media-action">
-                  <div className="media-left">
-                    <div className="media-object">
-                      <LazyLoad height={24} once>
-                        <img
-                          src="https://cdn.razorpay.com/static/assets/notifs/razorx.svg"
-                          alt="razorpay experiment"
-                          height="24"
-                        />
-                      </LazyLoad>
-                    </div>
-                  </div>
-                  <div className="media-body">
-                    <a rel="noreferrer noopener" href="https://x.razorpay.com" target="_blank">
-                      Go to RazorpayX
-                    </a>
-                  </div>
-                </div>
-                {!showMobileNav && showRazorpayxToolTip && user.isRazorxAnnouncementEnabled && (
-                  <Popover
-                    persistent={true}
-                    theme="dark"
-                    align="left"
-                    className="razorpayx-popover"
-                  >
-                    <PopoverBody>You can switch to RazorpayX Dashboard from here</PopoverBody>
-                  </Popover>
-                )}
-              </>
-            )}
-            <div
-              className="media media-action"
-              onClick={() => {
-                CreateTicketEmitter.emit('toggle-help-section');
-              }}
-            >
-              <div className="media-left">
-                <div className="media-object">
-                  <Box display="flex" alignItems="center" justifyContent="center">
-                    <HeadphonesIcon
-                      size="large"
-                      color="surface.icon.gray.subtle"
-                      marginLeft="spacing.2"
-                    />
-                  </Box>
-                </div>
-              </div>
-              <div className="media-body">Help & Support</div>
-            </div>
-            <div className="media loggedin-as">
-              <div className="media-body">
-                <div>Logged in as</div>
-                <p className="account-details">
-                  <i className="i i-account" />
-                  {isLoggedInViaMobile() ? (
-                    <span title={user.user.contact_mobile}>{user.user.contact_mobile}</span>
-                  ) : (
-                    <span title={user.user.email}>{user.user.email}</span>
-                  )}
-                </p>
-                <button
-                  className="btn btn-primary logout-btn"
-                  onClick={() => {
-                    analyticsTrack({
-                      objectName: 'user dropdown',
-                      actionName: 'clicked',
-                      screen: 'home page',
-                      properties: {
-                        action: 'Logout',
-                        location: 'top navigation',
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                    this.logout();
-                  }}
-                >
-                  Log out
-                </button>
-              </div>
-            </div>
-            <ShowWhen
-              additionalCondition={(user) =>
-                user.role === rolesList.OWNER &&
-                user.partner_type === null &&
-                !isOrgFeatureExist('hide_razorpay_text_link')
-              }
-            >
-              <div className="media loggedin-as">
-                <div className="media-body">
-                  <p className="small-txt">Partner with us and start earning on every referral</p>
-
-                  <a className="partner-link" onClick={this.showPartnerIntent}>
-                    <strong>Explore Partner Program</strong>{' '}
-                  </a>
-                </div>
-              </div>
-            </ShowWhen>
           </div>
         </DropdownContent>
       </Dropdown>
@@ -500,4 +541,4 @@ class ProfileDropdown extends Component {
   }
 }
 
-export default withRouter(ProfileDropdown);
+export default withRouter(withSplitzService(ProfileDropdown));

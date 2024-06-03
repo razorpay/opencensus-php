@@ -2,7 +2,7 @@ import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hook
 import MainNavLink from 'merchant_common/components/MainNavLink';
 
 export default function PartnerNavLinks() {
-  const { isPartnerPlaybookEnabled, isPartnershipsForPosEnabled } =
+  const { isPartnerPlaybookEnabled, isPartnershipsForPosEnabled, isPosPartnerOwnerAccount } =
     usePartnerDashboardExperiments();
 
   return (
@@ -29,7 +29,9 @@ export default function PartnerNavLinks() {
         icon="i i-settings text-warning"
         to="/partners/manage-team"
         isNew
-        additionalCondition={(user) => isPartnershipsForPosEnabled && user.isAllowedTeamManagement}
+        additionalCondition={(user) =>
+          (isPartnershipsForPosEnabled || isPosPartnerOwnerAccount) && user.isAllowedTeamManagement
+        }
         end
       />
 

@@ -17,6 +17,7 @@ const getStorageStatePath = () => ({
   // POS_KYC_STATUS_NC: `${BASE_PATH}/pos-kyc-status-nc.json`,
   OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
   CURLEC_TEST_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-login.json`,
+  POS_SALES_AGENT: `${BASE_PATH}/pos-sales-agent.json`,
   CURLEC_TEST_CAW_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-caw-login.json`,
 });
 
@@ -114,6 +115,12 @@ const getPosCredentials = () => {
       username: ENV.POS_ORDER_DETAILS_USERNAME,
       password: ENV.POS_ORDER_DETAILS_PASSWORD,
       storagePath: StorageStatePath.POS_ORDER_DETAILS_LOGIN_STATE,
+    },
+    {
+      type: 'pos-sales-agent.json',
+      username: ENV.POS_SALES_AGENT_USERNAME,
+      password: ENV.POS_SALES_AGENT_PASSWORD,
+      storagePath: StorageStatePath.POS_SALES_AGENT,
     },
   ];
 };

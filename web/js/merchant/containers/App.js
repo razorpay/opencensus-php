@@ -83,6 +83,7 @@ import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
 
 import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -1215,19 +1216,18 @@ class App extends Component {
   };
 
   showSidebarV2 = () => {
-    const {
-      user,
-      splitz: { abExperiments },
-    } = this.props;
+    const { user, splitz } = this.props;
 
-    const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
+    const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments: splitz.abExperiments });
+    const { isPosSalesAgent } = checkIfPosSalesAgent({ user, abExperiments: splitz.abExperiments });
 
     const isSidebarV2 =
       (user.isOrgRZP || user.isVasTestingMerchant) &&
       !user.isPartner() &&
       !user.isSourceRX &&
       !user.isPartnerAgentRole &&
-      !user.isPartnerRole;
+      !user.isPartnerRole &&
+      !isPosSalesAgent;
 
     if (isRTUXHomepage) {
       return isSidebarV2;

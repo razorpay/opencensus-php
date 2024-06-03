@@ -110,6 +110,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'pos_sales_agent',
+        experimentId: {
+          beta: 'ODTBVSBUt60NFY',
+          production: 'ODTCh4BKr0owNg',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+            {
+              key: 'ezetapMids',
+              value: '',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'omniChannelGtm',
         experimentId: {
           beta: 'N4hyDcUWYc1G8p',

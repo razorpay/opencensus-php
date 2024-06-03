@@ -4,6 +4,7 @@ import { useSplitzService } from 'common/splitz';
 import { SpiltzContextState } from 'common/splitz/types';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { getUser } from 'merchant/store';
 
 /**
@@ -71,6 +72,7 @@ export type PartnerDashboardExperiments = {
   isAccountsListRevampEnabled: boolean;
   isPartnershipsForPosEnabled: boolean;
   isPartnershipCapitalBureauLinkEnabled: boolean;
+  isPosPartnerOwnerAccount: boolean;
 };
 const usePartnerDashboardExperiments = (): PartnerDashboardExperiments => {
   const user = getUser();
@@ -99,6 +101,7 @@ const usePartnerDashboardExperiments = (): PartnerDashboardExperiments => {
       isPartnershipCapitalBureauLinkEnabled: isPartnershipCapitalBureauLinkEnabled({
         abExperiments,
       }),
+      isPosPartnerOwnerAccount: !!checkIfPosSalesAgent({ user, abExperiments })?.isOwner,
     }),
     [user, abExperiments],
   );

@@ -1,5 +1,6 @@
 /* eslint-disable import/order */
 /* eslint-disable react/no-unsafe */
+/* eslint-disable max-lines */
 import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { ModalMask } from 'common/new-ui/Modal';
@@ -61,6 +62,7 @@ import AssistedFinancing from 'merchant/views/Affordability/AssistedFinancing';
 import { isExperimentEnabled } from 'common/splitz/utils';
 
 import MagicKonnect from 'merchant/views/MagicKonnect';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 
 // eslint-disable-next-line require-await
 const loadModule = async ({ module, scope }) =>
@@ -77,9 +79,9 @@ const SelfServe = lazy(() =>
   }),
 );
 
-// const PosApp = lazy(() =>
-//   /**  webpackChunkName: "PosApp" */ loadModule({ module: 'PosApp', scope: 'pos' }),
-// );
+const PosApp = lazy(() =>
+  /**  webpackChunkName: "PosApp" */ loadModule({ module: 'PosApp', scope: 'pos' }),
+);
 
 const B2bPaymentsList = lazy(() =>
   import(
@@ -615,6 +617,12 @@ class Content extends Component {
     return isMicrofrontendSelfserveEnabled(splitz);
   };
 
+  checkIfPosSalesAgent = () => {
+    const { splitz, user } = this.props;
+    const { isPosSalesAgent } = checkIfPosSalesAgent({ user, abExperiments: splitz.abExperiments });
+    return isPosSalesAgent;
+  };
+
   checkIsHelpWidgetDisabled = () => {
     const { splitz } = this.props;
     return isHelpWidgetDisabled(splitz);
@@ -753,11 +761,20 @@ class Content extends Component {
     const isTransactionV2Enabled = this.checkIsTransactionsV2Enabled();
     const isSettlementV3RevampEnabled = this.checkIsSettlementsV3RevampEnabled();
     const isMicrofrontendSelfserveEnabled = this.checkIsMicrofrontendSelfserveEnabled();
+    const isPosSalesAgent = this.checkIfPosSalesAgent();
+
     return (
       <Suspense fallback={<Loader />}>
         <Routes location={this.baseLocation}>
           <Route path="*" element={<HandleIndex />} />
-          <Route path="dashboard/*" element={<Home />} />
+          <Route
+            path="dashboard/*"
+            element={
+              <RouteGuard additionalCondition={() => !isPosSalesAgent}>
+                <Home />
+              </RouteGuard>
+            }
+          />
 
           <Route
             path="partners/*"
@@ -2124,26 +2141,16 @@ class Content extends Component {
             element={
               <RouteGuard
                 additionalCondition={(user) =>
-                  isPosExperimentEnabled({ user, abExperiments: this.props.splitz?.abExperiments })
+                  isPosExperimentEnabled({
+                    user,
+                    abExperiments: this.props.splitz?.abExperiments,
+                  }) && !isPosSalesAgent
                 }
               >
                 <Pos />
               </RouteGuard>
             }
           />
-
-          {/* <Route
-            path="pos-sales/*"
-            element={
-              <RouteGuard
-                additionalCondition={(user) =>
-                  isPosExperimentEnabled({ user, abExperiments: this.props.splitz?.abExperiments })
-                }
-              >
-                <PosApp />
-              </RouteGuard>
-            }
-          /> */}
 
           <Route
             path="reports/*"
@@ -2362,6 +2369,14 @@ class Content extends Component {
               </RouteGuard>
             }
           />
+          <Route
+            path="pos-sales/*"
+            element={
+              <RouteGuard additionalCondition={() => isPosSalesAgent}>
+                <PosApp />
+              </RouteGuard>
+            }
+          />
         </Routes>
       </Suspense>
     );
@@ -2409,10 +2424,12 @@ class Content extends Component {
 
     let DetailView = this.detailView;
     const BaseView = this.baseLocation ? this.getBaseView() : null;
+
     const isMobileSearchEnabled = user.isUniversalSearchEnabled && isMobile;
     let ModalFormView = this.modalView;
 
     const overlayCustomClass = this.getOverlayCustomClass();
+    const isPosSalesAgent = this.checkIfPosSalesAgent();
 
     if (DetailView) {
       DetailView = BaseView ? (
@@ -2457,7 +2474,11 @@ class Content extends Component {
         class={classList(
           !fullPageView && !isWebView && 'main-content',
           !fullPageView && !isWebView && this.props.isRTUXHomepage ? 'main-content--rtux' : '',
-          isMobileSearchEnabled && !fullPageView && !isWebView && 'search-header',
+          isMobileSearchEnabled &&
+            !fullPageView &&
+            !isWebView &&
+            !isPosSalesAgent &&
+            'search-header',
           mode === 'test' && isMobileDevice() ? 'test-mode' : '',
         )}
       >
@@ -2467,7 +2488,11 @@ class Content extends Component {
             {DetailView}
             {ModalFormView}
             <MultiSlider />
-            {!(this.checkIsHelpWidgetDisabled() || window?.RZP?.appName == 'businessbanking') && (
+            {!(
+              this.checkIsHelpWidgetDisabled() ||
+              window?.RZP?.appName == 'businessbanking' ||
+              isPosSalesAgent
+            ) && (
               <ErrorBoundary
                 resetOnProps
                 rank={Ranks.P0}

@@ -40,6 +40,7 @@ import UniversalSearch from './UniversalSearch';
 import { isRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { RayWrapper } from './styled';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -197,6 +198,7 @@ class HeaderNav extends Component {
       isSidebarV2,
       i18: { isConfigTagEnabled },
       openedCareWidget,
+      splitz,
     } = this.props;
     const { isSuccessfullyCouponApplied, mtuOfferCount } = this.state;
 
@@ -217,6 +219,11 @@ class HeaderNav extends Component {
     };
     const isUniversalSearchEnabled = user.isUniversalSearchEnabled;
     const isMobileSearch = isUniversalSearchEnabled && isMobile;
+    const { isPosSalesAgent } = checkIfPosSalesAgent({
+      user,
+      abExperiments: splitz.abExperiments,
+    });
+
     return (
       <div className="nav-wrapper">
         <nav
@@ -262,149 +269,181 @@ class HeaderNav extends Component {
                   )}
                 </div>
               )}
-              {isUniversalSearchEnabled && !isMobile && (
-                <div className="universal-search-desktop">
-                  <UniversalSearch isRTUXHomepage={isRTUXHomepage} />
-                </div>
-              )}
-              <ul className="nav navbar-nav navbar-right">
-                {!showMobileNav && (
-                  <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
-                )}
+              {!isPosSalesAgent ? (
+                <React.Fragment>
+                  {isUniversalSearchEnabled && !isMobile && (
+                    <div className="universal-search-desktop">
+                      <UniversalSearch isRTUXHomepage={isRTUXHomepage} />
+                    </div>
+                  )}
+                  <ul className="nav navbar-nav navbar-right">
+                    {!showMobileNav && (
+                      <NavFragment
+                        analytics={analytics}
+                        {...fragmentSpecificProps}
+                        {...commonProps}
+                      />
+                    )}
 
-                <ShowWhen
-                  additionalCondition={(_user) =>
-                    !isConfigTagEnabled('announcements.announcements') &&
-                    !isMobileDevice() &&
-                    !isRTUXHomepage
-                  }
-                >
-                  <GrowthAssetEB>
                     <ShowWhen
-                      additionalCondition={() => user.isProjectNitroEnabled && showMobileNav}
+                      additionalCondition={(_user) =>
+                        !isConfigTagEnabled('announcements.announcements') &&
+                        !isMobileDevice() &&
+                        !isRTUXHomepage
+                      }
                     >
-                      <OffersForYou showMobileNav={showMobileNav} mtuOfferCount={mtuOfferCount} />
-                    </ShowWhen>
-                  </GrowthAssetEB>
-                </ShowWhen>
-
-                {/* Will uncomment later. Please dont block this from going to prod  */}
-                {!isRTUXHomepage && !showMobileNav && user.isMobileSignupCareActive && (
-                  <li id="support-request">
-                    <SupportRequestDropdown showMobileNav={showMobileNav} />
-                  </li>
-                )}
-
-                <ShowWhen
-                  additionalCondition={(_user) =>
-                    _user.isOrgAllowedFunctionality('external_links') &&
-                    !isConfigTagEnabled('announcements.announcements')
-                  }
-                >
-                  <li id="whats-new-section" data-testid="header-announcement">
-                    <GrowthAssetEB FallbackComponent={ErrorFallbackComponent}>
-                      {user.isWhatsNewLazyEnabled ? (
-                        <NotificationIcon
-                          analytics={analytics}
-                          showMobileNav={showMobileNav}
-                          {...commonProps}
-                        />
-                      ) : (
+                      <GrowthAssetEB>
                         <ShowWhen
-                          additionalCondition={
-                            () => !org.features.includes('disable_announcements') // If the org features array include "disable_announcements" then we hide "Announcement Tab".
-                          }
+                          additionalCondition={() => user.isProjectNitroEnabled && showMobileNav}
                         >
-                          <SuspenseWithLoader type="default">
-                            <WhatsNew
+                          <OffersForYou
+                            showMobileNav={showMobileNav}
+                            mtuOfferCount={mtuOfferCount}
+                          />
+                        </ShowWhen>
+                      </GrowthAssetEB>
+                    </ShowWhen>
+
+                    {/* Will uncomment later. Please dont block this from going to prod  */}
+                    {!isRTUXHomepage && !showMobileNav && user.isMobileSignupCareActive && (
+                      <li id="support-request">
+                        <SupportRequestDropdown showMobileNav={showMobileNav} />
+                      </li>
+                    )}
+
+                    <ShowWhen
+                      additionalCondition={(_user) =>
+                        _user.isOrgAllowedFunctionality('external_links') &&
+                        !isConfigTagEnabled('announcements.announcements')
+                      }
+                    >
+                      <li id="whats-new-section" data-testid="header-announcement">
+                        <GrowthAssetEB FallbackComponent={ErrorFallbackComponent}>
+                          {user.isWhatsNewLazyEnabled ? (
+                            <NotificationIcon
                               analytics={analytics}
                               showMobileNav={showMobileNav}
                               {...commonProps}
                             />
-                          </SuspenseWithLoader>
-                        </ShowWhen>
-                      )}
-                    </GrowthAssetEB>
-                  </li>
-                </ShowWhen>
-                {user?.isOrgRZP && user?.isInternalStatusPageEnabled && user.isINCountry && (
-                  <li id="status-details" data-testid="header-status-details">
-                    {user.isEcosystemDowntimeEnabled ? (
-                      <EcosystemDowntimes
-                        mode={mode}
-                        showMobileNav={showMobileNav}
-                        isRTUXHomepage={isRTUXHomepage}
-                      />
-                    ) : (
-                      <StatusDetails
-                        AppMode={mode}
-                        showMobileNav={showMobileNav}
-                        isRTUXHomepage={isRTUXHomepage}
-                      />
+                          ) : (
+                            <ShowWhen
+                              additionalCondition={
+                                () => !org.features.includes('disable_announcements') // If the org features array include "disable_announcements" then we hide "Announcement Tab".
+                              }
+                            >
+                              <SuspenseWithLoader type="default">
+                                <WhatsNew
+                                  analytics={analytics}
+                                  showMobileNav={showMobileNav}
+                                  {...commonProps}
+                                />
+                              </SuspenseWithLoader>
+                            </ShowWhen>
+                          )}
+                        </GrowthAssetEB>
+                      </li>
+                    </ShowWhen>
+                    {user?.isOrgRZP && user?.isInternalStatusPageEnabled && user.isINCountry && (
+                      <li id="status-details" data-testid="header-status-details">
+                        {user.isEcosystemDowntimeEnabled ? (
+                          <EcosystemDowntimes
+                            mode={mode}
+                            showMobileNav={showMobileNav}
+                            isRTUXHomepage={isRTUXHomepage}
+                          />
+                        ) : (
+                          <StatusDetails
+                            AppMode={mode}
+                            showMobileNav={showMobileNav}
+                            isRTUXHomepage={isRTUXHomepage}
+                          />
+                        )}
+                      </li>
                     )}
-                  </li>
-                )}
 
-                <ShowWhen
-                  additionalCondition={(_user) =>
-                    !isRTUXHomepage &&
-                    _user?.isAppSwitcherEnabled &&
-                    _user?.isAccepted &&
-                    !_user?.isOrgAxis &&
-                    !_user?.isOrgKotak &&
-                    !isOrgFeatureExist('hide_razorpay_text_link') &&
-                    !isConfigTagEnabled('app_switcher.app_switcher')
-                  }
-                >
-                  <li id="app-switcher">
-                    <AppSwitcher analytics={analytics} {...commonProps} />
-                  </li>
-                </ShowWhen>
-                {this.isRAYEnabled() ? (
-                  <RayWrapper>
-                    <ErrorBoundary
-                      rank={Ranks.P0}
-                      team={Teams.CARE}
-                      FallbackComponent={() => <></>}
+                    <ShowWhen
+                      additionalCondition={(_user) =>
+                        !isRTUXHomepage &&
+                        _user?.isAppSwitcherEnabled &&
+                        _user?.isAccepted &&
+                        !_user?.isOrgAxis &&
+                        !_user?.isOrgKotak &&
+                        !isOrgFeatureExist('hide_razorpay_text_link') &&
+                        !isConfigTagEnabled('app_switcher.app_switcher')
+                      }
                     >
-                      <Ray
-                        user={user}
-                        onRAYOpen={this.onRAYOpenCallback}
-                        onRAYClose={this.onRAYCloseCallback}
-                        isDrawerVisible={openedCareWidget === 'RAY'}
+                      <li id="app-switcher">
+                        <AppSwitcher analytics={analytics} {...commonProps} />
+                      </li>
+                    </ShowWhen>
+                    {this.isRAYEnabled() ? (
+                      <RayWrapper>
+                        <ErrorBoundary
+                          rank={Ranks.P0}
+                          team={Teams.CARE}
+                          FallbackComponent={() => <></>}
+                        >
+                          <Ray
+                            user={user}
+                            onRAYOpen={this.onRAYOpenCallback}
+                            onRAYClose={this.onRAYCloseCallback}
+                            isDrawerVisible={openedCareWidget === 'RAY'}
+                          />
+                        </ErrorBoundary>
+                      </RayWrapper>
+                    ) : null}
+                    <li id="profile-dropdown">
+                      <ProfileDropdown
+                        analytics={analytics}
+                        showMobileNav={showMobileNav}
+                        mode={mode}
+                        onSwitchMode={onSwitchMode}
+                        {...commonProps}
                       />
-                    </ErrorBoundary>
-                  </RayWrapper>
-                ) : null}
-                <li id="profile-dropdown">
-                  <ProfileDropdown
-                    analytics={analytics}
-                    showMobileNav={showMobileNav}
-                    mode={mode}
-                    onSwitchMode={onSwitchMode}
-                    {...commonProps}
-                  />
-                </li>
-              </ul>
+                    </li>
+                  </ul>
+                </React.Fragment>
+              ) : (
+                <ul className="nav navbar-nav navbar-right">
+                  <li id="profile-dropdown">
+                    <ProfileDropdown
+                      analytics={analytics}
+                      showMobileNav={showMobileNav}
+                      mode={mode}
+                      onSwitchMode={onSwitchMode}
+                      {...commonProps}
+                    />
+                  </li>
+                </ul>
+              )}
             </div>
           </div>
         </nav>
-        {isMobileSearch && (
-          <div
-            className={classList('mobile-search-layout', isRTUXHomepage && 'homepage-rtux-navbar')}
-          >
-            <UniversalSearch isRTUXHomepage={isRTUXHomepage} />
-          </div>
-        )}
-        {mode === 'test' && isMobileDevice() && <HighlightTestMode onSwitchMode={onSwitchMode} />}
-        {isSuccessfullyCouponApplied && (
-          <SuccessFullCreditModal
-            onCloseModal={() => {
-              updateModalConfigDetails({ enable_mtu_congratulatory_popup: 0 }, 'onboarding');
-              this.setState({ isSuccessfullyCouponApplied: false });
-            }}
-          />
-        )}
+        {!isPosSalesAgent ? (
+          <React.Fragment>
+            {isMobileSearch && (
+              <div
+                className={classList(
+                  'mobile-search-layout',
+                  isRTUXHomepage && 'homepage-rtux-navbar',
+                )}
+              >
+                <UniversalSearch isRTUXHomepage={isRTUXHomepage} />
+              </div>
+            )}
+            {mode === 'test' && isMobileDevice() && (
+              <HighlightTestMode onSwitchMode={onSwitchMode} />
+            )}
+            {isSuccessfullyCouponApplied && (
+              <SuccessFullCreditModal
+                onCloseModal={() => {
+                  updateModalConfigDetails({ enable_mtu_congratulatory_popup: 0 }, 'onboarding');
+                  this.setState({ isSuccessfullyCouponApplied: false });
+                }}
+              />
+            )}
+          </React.Fragment>
+        ) : null}
       </div>
     );
   }
@@ -431,4 +470,4 @@ const enhancedComponent = compose(
   }),
 );
 
-export default enhancedComponent(withI18Service(HeaderNav));
+export default enhancedComponent(withI18Service(withSplitzService(HeaderNav)));

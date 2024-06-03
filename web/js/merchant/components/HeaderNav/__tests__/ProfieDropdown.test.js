@@ -1,3 +1,4 @@
+import * as posAgentUtils from 'common/utils/posAgent';
 import ProfileDropdown from 'merchant/components/HeaderNav/ProfileDropdown';
 import User from 'merchant/models/User';
 import store from 'merchant/store';
@@ -106,5 +107,24 @@ describe('test for ProfileDropdown component', () => {
 
     renderApp({ props });
     expect(screen.queryByText('ProfileDropdownV2 Component')).toBeInTheDocument();
+  });
+
+  test('should render sales profile dropdown if it is a sales agent logged in', () => {
+    const props = { ...defaultProps };
+    jest.spyOn(posAgentUtils, 'checkIfPosSalesAgent').mockReturnValue({
+      isEnabled: true,
+      isPosSalesAgent: true,
+    });
+    const updatedState = updateStore({
+      user: {
+        name: 'test',
+      },
+      role: 'pos_sales_agent',
+    });
+
+    renderApp({ props, updatedState });
+    expect(screen.getByTestId('pos-sales-agent-content')).toBeInTheDocument();
+    expect(screen.getByText('Logged in as:')).toBeInTheDocument();
+    expect(screen.getByText('Logout')).toBeInTheDocument();
   });
 });

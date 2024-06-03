@@ -27,6 +27,8 @@ import ActivationProgress from './ActivationProgress';
 import MainNavLinkGroup from './MainNavLinkGroup';
 import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
+import { withSplitzService } from 'common/splitz';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds|success-rate)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
@@ -391,7 +393,11 @@ class PartnerSidebarComponent extends Component {
   };
 
   render() {
-    const { user, merchantNavLinkProps } = this.props;
+    const { user, merchantNavLinkProps, splitz } = this.props;
+    const { isPosSalesAgent } = checkIfPosSalesAgent({
+      user,
+      abExperiments: splitz?.abExperiments,
+    });
     const isPartnershipFUX = user?.isPartnershipFUX || false;
     const fuxEnabledClass = isPartnershipFUX ? 'fux-enabled' : '';
     let partnerNavTitle = 'Partner';
@@ -416,7 +422,14 @@ class PartnerSidebarComponent extends Component {
         >
           <PartnerNavLinks />
         </MainNavLinkGroup>
-
+        <MainNavLink
+          label="POS Sales Dashboard"
+          icon="i i-chart text-info"
+          to="/pos-sales"
+          end
+          type="general"
+          additionalCondition={() => isPosSalesAgent}
+        />
         <MainNavLinkGroup
           additionalCondition={(currentUser) => !currentUser.isPartnerAgentRole}
           title={
@@ -432,4 +445,4 @@ class PartnerSidebarComponent extends Component {
   }
 }
 
-const PartnerSidebar = withRouter(PartnerSidebarComponent);
+const PartnerSidebar = withRouter(withSplitzService(PartnerSidebarComponent));

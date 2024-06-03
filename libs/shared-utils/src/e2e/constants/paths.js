@@ -10,6 +10,7 @@ const getStorageStatePath = (BASE_PATH) => ({
   POS_ORDER_DETAILS_LOGIN_STATE: `${BASE_PATH}/pos-login-order-details.json`,
   // POS_KYC_STATUS_NC: `${BASE_PATH}/pos-kyc-status-nc.json`,
   OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
+  POS_SALES_AGENT: `${BASE_PATH}/pos-sales-agent.json`,
 });
 
 const routes = {

@@ -22,6 +22,21 @@ jest.mock('merchant/components/Sidebar/ActivationProgress', () => ({
 }));
 
 jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) =>
+    (
+      <Component
+        {...props}
+        splitz={{
+          abExperiments: {
+            pos_sales_agent: {
+              variables: {
+                result: 'off',
+              },
+            },
+          },
+        }}
+      />
+    ),
   useSplitzService: () => ({
     abExperiments: {},
   }),

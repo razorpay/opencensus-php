@@ -12,7 +12,6 @@ const App = (): React.ReactElement => {
       <Heading size="large" weight="semibold">
         Assisted Onboarding
       </Heading>
-      <Box marginY="spacing.2">Assisted Onboarding Content Comes Here!</Box>
     </Box>
   );
 };

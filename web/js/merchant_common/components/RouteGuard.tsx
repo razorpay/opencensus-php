@@ -9,6 +9,7 @@ import Loader from 'common/ui/Loader';
 
 import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import type { Store } from 'common/typings';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 
 interface RouteGuardProps extends WithRouterProps {
   defaultPath?: string;
@@ -120,7 +121,7 @@ export function showWhenUtil(store) {
 
 export const RouteGuardComponent = withRouter((props: RouteGuardProps) => {
   const {
-    defaultPath = '/dashboard',
+    defaultPath,
     session,
     customLoader,
     children,
@@ -132,8 +133,10 @@ export const RouteGuardComponent = withRouter((props: RouteGuardProps) => {
     ...rest
   } = props;
   const i18 = useI18Service();
+  let fallbackPath = '';
   // creating an abstraction of just consuming splitz experiment, rest service should not be accessed via RouteGuard
-  const { abExperiments } = useSplitzService();
+  const splitz = useSplitzService();
+  const { abExperiments } = splitz;
 
   const showWhenUtilResult = validateUtil(
     {
@@ -146,12 +149,22 @@ export const RouteGuardComponent = withRouter((props: RouteGuardProps) => {
     },
   );
 
+  const user = session?.user;
+  const { isPosSalesAgent } = checkIfPosSalesAgent({ user, abExperiments });
+
+  if (!defaultPath && isPosSalesAgent) {
+    //default path should be always pos-sales for POS sales agent
+    fallbackPath = '/pos-sales';
+  } else {
+    fallbackPath = defaultPath ?? '/dashboard';
+  }
+
   if (showWhenUtilResult === TAGS_API_NOT_RESOLVED_YET) {
     return customLoader || <Loader />;
   } else if (showWhenUtilResult) {
     return React.cloneElement(children, { location, params, navigate, history, match });
   } else {
-    return <Navigate to={defaultPath} state={{ from: location, was404: true }} replace />;
+    return <Navigate to={fallbackPath} state={{ from: location, was404: true }} replace />;
   }
 });
 

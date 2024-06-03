@@ -22,6 +22,8 @@ coverage
 .devspace
 
 lighthouse-reports/
+playwright-report/
+test-results/
 
 # typescript compilation output
 out# editor configs
