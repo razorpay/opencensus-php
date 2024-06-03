@@ -1,9 +1,9 @@
 import React from 'react';
 
 import AndroidMiniPos from 'merchant/views/POS/Catalog/ProductCards/AndroidMiniPos';
-import { MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
+import { MOCK_PRODUCT_OFFERS, MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import { getProductPricingHandler } from 'merchant/views/POS/__tests__/mocks/handlers';
-import { ANDROID_MINI_POS, PRODUCT_OFFER_CONFIG } from 'merchant/views/POS/constants';
+import { ANDROID_MINI_POS } from 'merchant/views/POS/constants';
 import * as posHelpers from 'merchant/views/POS/helpers';
 import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
 import { render, screen, waitForElementToBeRemoved, server } from 'test-utils';
@@ -70,7 +70,7 @@ describe('<AndroidMiniPos/> with offer', () => {
     const fetchOffersSpy = jest.spyOn(posHelpers, 'fetchProductOffers');
     fetchOffersSpy.mockReturnValue({
       isEnabled: true,
-      offers: PRODUCT_OFFER_CONFIG,
+      offers: MOCK_PRODUCT_OFFERS,
     });
   });
 
@@ -105,7 +105,7 @@ describe('<AndroidMiniPos/> with offer', () => {
     const fetchOffersSpy = jest.spyOn(posHelpers, 'fetchProductOffers');
     fetchOffersSpy.mockReturnValue({
       isEnabled: true,
-      offers: PRODUCT_OFFER_CONFIG,
+      offers: MOCK_PRODUCT_OFFERS,
     });
     server.use(getProductPricingHandler(MOCK_PRODUCT_PRICING));
     renderApp();

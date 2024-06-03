@@ -18,7 +18,6 @@ import {
   PRODUCT_PLANS,
   FEE_TYPES,
   EASY_DASHBOARD_ROUTES,
-  PRODUCT_OFFER_CONFIG,
 } from './constants';
 import {
   CartItem,
@@ -65,6 +64,18 @@ export const isPosExperimentEnabled = ({
   );
 };
 
+export const getProductOffers = ({
+  abExperiments,
+}: {
+  abExperiments: ExperimentInfoType;
+}): Record<string, OfferConfig> | null => {
+  const offerConfig = (abExperiments?.pos_onboarding?.variables?.offerConfig as string) ?? '';
+
+  if (!offerConfig) return null;
+
+  return JSON.parse(offerConfig) as Record<string, OfferConfig>;
+};
+
 type FetchProductOffers = {
   isEnabled: boolean;
   offers: Record<string, OfferConfig> | null;
@@ -78,7 +89,7 @@ export const fetchProductOffers = ({
   const isEnabled = abExperiments?.pos_onboarding?.variables?.offersEnabled === 'on';
   return {
     isEnabled,
-    offers: isEnabled ? PRODUCT_OFFER_CONFIG : null,
+    offers: isEnabled ? getProductOffers({ abExperiments }) : null,
   };
 };
 

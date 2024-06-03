@@ -1,12 +1,12 @@
 import React from 'react';
 
 import MainBanner from 'merchant/views/POS/Catalog/MainBanner/MainBanner';
-import { MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
+import { MOCK_USER, MOCK_PRODUCT_OFFERS } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import {
   getProductPricingHandler,
   getPartnerProductPricingHandler,
 } from 'merchant/views/POS/__tests__/mocks/handlers';
-import { ANDROID_SMART_POS, PRODUCT_OFFER_CONFIG } from 'merchant/views/POS/constants';
+import { ANDROID_SMART_POS } from 'merchant/views/POS/constants';
 import * as posHelpers from 'merchant/views/POS/helpers';
 import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
 import { setupIntersectionObserverMock } from 'merchant/views/POS/utils/IntersectionObserverMock';
@@ -53,7 +53,7 @@ describe('<MainBanner/> with offer', () => {
     const fetchOffersSpy = jest.spyOn(posHelpers, 'fetchProductOffers');
     fetchOffersSpy.mockReturnValue({
       isEnabled: true,
-      offers: PRODUCT_OFFER_CONFIG,
+      offers: MOCK_PRODUCT_OFFERS,
     });
     setupIntersectionObserverMock();
   });

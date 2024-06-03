@@ -860,3 +860,38 @@ export const MOCK_PRODUCT_OFFER_CONFIG = {
     },
   },
 };
+
+export const MOCK_PRODUCT_OFFERS = {
+  a910: {
+    offerText: 'Limited Time Offer till 31st May',
+    pdpOfferText: 'Offer valid on orders placed before 31st May',
+    partnerOfferText: 'Partner Exclusive Time Offer till 31st May',
+    partnerPdpOfferText: 'Partner offer valid on orders placed before 31st May',
+    preRateConfig: {
+      monthly: 549,
+      lifetime: 12000,
+      setup_fee: 3000,
+    },
+    nextRateConfig: {
+      monthly: 299,
+      lifetime: null,
+      setup_fee: null,
+    },
+  },
+  a50: {
+    offerText: 'Limited Time Offer till 31st May',
+    pdpOfferText: 'Offer valid on orders placed before 31st May',
+    partnerOfferText: 'Partner Exclusive Time Offer till 31st May',
+    partnerPdpOfferText: 'Partner offer valid on orders placed before 31st May',
+    preRateConfig: {
+      monthly: 499,
+      lifetime: 10500,
+      setup_fee: 2000,
+    },
+    nextRateConfig: {
+      monthly: 249,
+      lifetime: null,
+      setup_fee: null,
+    },
+  },
+};
