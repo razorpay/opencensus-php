@@ -621,7 +621,7 @@ class Core extends Base\Core
 
         if (self::shouldFavGoThroughLedgerReverseShadowFlow($validation) === true)
         {
-            $validation = $this->processFavThroughLedger($validation, $merchant, $input);
+            $validation = $this->processFavThroughLedger($validation, $merchant, $input, $isCompositeFavRequest);
 
             return $validation;
         }
@@ -719,10 +719,10 @@ class Core extends Base\Core
         return $favInput;
     }
 
-    public function processFavThroughLedger(Entity $validation, Merchant\Entity $merchant, array $input): Entity
+    public function processFavThroughLedger(Entity $validation, Merchant\Entity $merchant, array $input, $isCompositeFavRequest = false): Entity
     {
         // Create the entity first, and calculate the pricing changes.
-        list($validation, $feesSplit) = $this->repo->transaction(function () use ($input, $validation, $merchant)
+        list($validation, $feesSplit) = $this->repo->transaction(function () use ($input, $validation, $merchant, $isCompositeFavRequest)
         {
             $this->runInputValidations($validation, $input);
 
@@ -737,6 +737,11 @@ class Core extends Base\Core
             $validation->setFees($fee);
 
             $validation->setTax($tax);
+
+            if ($isCompositeFavRequest === true)
+            {
+                $validation->setReceipt(Constants::TYPE_NEW_FAV_COMPOSITE);
+            }
 
             $this->repo->saveOrFail($validation);
 
