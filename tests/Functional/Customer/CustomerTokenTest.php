@@ -499,13 +499,14 @@ class CustomerTokenTest extends TestCase
 
         $setCookieHeaders = $headers['set-cookie'] ?? [];
         $this->assertNotEmpty($setCookieHeaders);
-        $this->assertCount(2, $setCookieHeaders);
+        $this->assertCount(3, $setCookieHeaders);
         foreach ($setCookieHeaders as $setCookie) {
             $this->assertThat(
                 $setCookie,
                 $this->logicalOr(
                     $this->stringStartsWith('razorpay_api_session_v2='),
                     $this->stringStartsWith('razorpay_api_session='),
+                    $this->stringStartsWith('razorpay_api_session_v2_partitioned='),
                 ),
             );
             $this->assertStringContainsStringIgnoringCase('Max-Age=0', $setCookie);

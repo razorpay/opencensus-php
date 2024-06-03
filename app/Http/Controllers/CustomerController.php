@@ -3,11 +3,13 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Http\Cookie\PartitionedCookie;
 use RZP\Models\Customer\Truecaller\AuthRequest\Service as TruecallerService;
 use RZP\Models\Customer\Service;
 use RZP\Trace\TraceCode;
@@ -235,10 +237,16 @@ class CustomerController extends Controller
 
         $data = $this->service(E::APP_TOKEN)->deleteAppTokensForGlobalCustomer($input);
 
+        $v2Cookie = cookie('razorpay_api_session_v2', null, -2628000, null, null, true, true, false, Cookie::SAMESITE_NONE);
+        // Create the partitioned cookie
+        $partitionedCookie = new PartitionedCookie('razorpay_api_session_v2_partitioned', '', Carbon::today()->subRealYears(5), '/', $v2Cookie->getDomain(), true, true, true, Cookie::SAMESITE_NONE);
+        $partitionedCookie->setPartitioned(true);
+
         // Expire razorpay_api_session_v2 cookie along with razorpay_api_session
         // cookie (managed by StartSession middleware)
         return ApiResponse::json($data)
-            ->withCookie(cookie('razorpay_api_session_v2', null, -2628000, null, null, true, true, false, Cookie::SAMESITE_NONE));
+            ->withCookie($v2Cookie)
+            ->withCookie($partitionedCookie);
     }
 
     public function postBankAccount($id)

@@ -12,6 +12,9 @@ class EncryptCookies extends BaseEncrypter
      * @var array
      */
     protected $except = [
-        'checkcookie'
+        'checkcookie',
+        // We use razorpay_api_session_v2_partitioned only in the customer-logout
+        // route to unset it on the browser.
+        'razorpay_api_session_v2_partitioned',
     ];
 }
