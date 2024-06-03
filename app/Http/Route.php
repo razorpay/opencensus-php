@@ -4250,6 +4250,7 @@ class Route
 
         //Razorpay Trusted Badge
         'trusted_badge_eligibility_cron'          => ['post',     'trusted_badge/eligibility_cron',                         'TrustedBadgeController@eligibilityCron'                       ],
+        'update_trusted_badge_eligibility_internal' => ['patch',  'internal/trusted_badge/eligibility',                     'TrustedBadgeController@updateTrustedBadgeEligibilityInternal' ],
         'fetch_trusted_badge_status'              => ['get',      'trusted_badge',                                          'TrustedBadgeController@fetch'                                 ],
         'trusted_badge_merchant_status'           => ['put',      'trusted_badge/merchant_status',                          'TrustedBadgeController@updateMerchantStatus'                  ],
         'trusted_badge_merchant_status_internal'  => ['put',      'internal/trusted_badge/merchant_status',                 'TrustedBadgeController@updateMerchantStatusInternal'          ],
@@ -7679,6 +7680,7 @@ class Route
         'fetch_trusted_badge_status',
         'trusted_badge_merchant_status',
         'trusted_badge_merchant_status_internal',
+        'update_trusted_badge_eligibility_internal',
         // merchant notification config
         'create_merchant_notification_config',
         'update_merchant_notification_config',
@@ -17722,6 +17724,7 @@ class Route
             'customer_truecaller_auth_internal',
             'fetch_trusted_badge_status',
             'trusted_badge_merchant_status_internal',
+            'update_trusted_badge_eligibility_internal',
             'update_trusted_badge_status_internal',
             'invoice_fetch_for_checkout_internal',
             'merchant_fetch_config_for_checkout_internal',

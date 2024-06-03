@@ -930,4 +930,73 @@ class TrustedBadgeTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testUpdateTrustedBadgeEligibilityInternal(): void
+    {
+        /**
+         * Make call to update trusted badge eligibility
+         * Then compare by making trusted badge api call.
+         * First check with no entry in table, try eligible
+         * Then assert eligible with get status call
+         * Second use api to make merchant ineligible
+         * Then assert ineligible with get status call
+         */
+        $this->ba->checkoutServiceProxyAuth();
+
+        $request = array(
+            'url'     => '/internal/trusted_badge/eligibility',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'eligible',
+            ],
+        );
+
+        $response = $this->makeRequestAndGetRawContent($request);
+
+        $expectedResponse = ['response'=>['status_code'=>204]];
+
+        $this->processAndAssertStatusCode($expectedResponse, $response);
+
+        $this->ba->proxyAuth();
+        $request = array(
+            'url'     => '/trusted_badge',
+            'method'  => 'GET',
+            'content' => []
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('eligible', $response['status']);
+
+        $this->ba->checkoutServiceProxyAuth();
+        $request = array(
+            'url'     => '/internal/trusted_badge/eligibility',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'ineligible',
+            ],
+        );
+
+        $response = $this->makeRequestAndGetRawContent($request);
+
+        $this->processAndAssertStatusCode($expectedResponse, $response);
+
+        $this->ba->proxyAuth();
+        $request = array(
+            'url'     => '/trusted_badge',
+            'method'  => 'GET',
+            'content' => []
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('ineligible', $response['status']);
+    }
+
+    public function testUpdateTrustedBadgeEligibilityInternalWithWrongStatus(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->startTest();
+    }
 }

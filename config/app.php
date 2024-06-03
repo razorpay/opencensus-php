@@ -379,6 +379,8 @@ return array(
 
     'rtb_splitz_experiment_id' => env('RTB_SPLITZ_EXPERIMENT_ID'),
 
+    'rtb_mailers_splitz_experiment_id' => env('RTB_MAILERS_SPLITZ_EXPERIMENT_ID'),
+
     'settle_to_partner_alerting_experiment_id' => env('SETTLE_TO_PARTNER_ALERTING_EXPERIMENT_ID'),
 
     'add_subm_ratelimiting_experiment_id' => env('ADD_SUBM_RATELIMITING_EXPERIMENT_ID'),

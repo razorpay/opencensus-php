@@ -175,9 +175,39 @@ class Core extends Base\Core
             }
 
             $this->recordHistory($merchantId, $status, $trustedBadge->merchant_status);
-            $this->triggerMailers($trustedBadge->merchant, $status, $trustedBadge->merchant_status);
+            if ($this->shouldTriggerMailers($merchantId) === true) {
+                $this->triggerMailers($trustedBadge->merchant, $status, $trustedBadge->merchant_status);
+            }
             $this->deleteTrustedBadgeStatusInRedis($merchantId);
         });
+    }
+
+    public function shouldTriggerMailers(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.rtb_mailers_splitz_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            // if its variant_monolith, then send mailers. else don't send emails. they will go via checkout-service
+            $variantName = $response['response']['variant']['name'] ?? '';
+
+            return  $variantName === "variant_monolith";
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::RTB_SPLITZ_ERROR);
+
+            return false;
+        }
     }
 
     public function upsertMerchantStatus(string $merchantId, string $merchantStatus): void
@@ -223,7 +253,9 @@ class Core extends Base\Core
             }
 
             $this->recordHistory($merchantId, $trustedBadge->status, $merchantStatus);
-            $this->triggerMailers($trustedBadge->merchant, $trustedBadge->status, $merchantStatus);
+            if ($this->shouldTriggerMailers($merchantId) === true) {
+                $this->triggerMailers($trustedBadge->merchant, $trustedBadge->status, $merchantStatus);
+            }
             $this->deleteTrustedBadgeStatusInRedis($merchantId);
         });
     }

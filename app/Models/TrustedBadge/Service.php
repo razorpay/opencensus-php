@@ -129,6 +129,22 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * updateTrustedBadgeEligibilityInternal updates the status column of the merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function updateTrustedBadgeEligibilityInternal($input): void
+    {
+        $merchantId = $this->merchant->getMerchantId();
+
+        $status = $input['status'] ?? '';
+
+        (new Validator())->validateStatus(Entity::STATUS ,$status);
+
+        $this->core->upsertStatus($merchantId, $status);
+    }
+
     public function redirectUrl($input): array
     {
         (new Validator())->validateInput('validate_redirect', $input);

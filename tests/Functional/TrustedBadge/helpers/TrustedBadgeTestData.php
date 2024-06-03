@@ -292,4 +292,27 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_TRUSTED_BADGE_MERCHANT_STATUS
         ],
     ],
+
+    'testUpdateTrustedBadgeEligibilityInternalWithWrongStatus' => [
+        'request' => [
+            'content' => [
+                'status' => 'abcd'
+            ],
+            'url'     => '/internal/trusted_badge/eligibility',
+            'method'  => 'PATCH'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid status for Razorpay trusted badge',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_TRUSTED_BADGE_STATUS
+        ],
+    ],
 ];

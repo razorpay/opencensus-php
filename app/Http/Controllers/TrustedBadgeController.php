@@ -67,6 +67,17 @@ class TrustedBadgeController extends Controller
         return ApiResponse::json($response);
     }
 
+    // updateTrustedBadgeEligibilityInternal is used temporarily, to allow dual writes of checkout-service airflow onto
+    // trusted_badge table while we migrate this table from API monolith to checkout-service
+    public function updateTrustedBadgeEligibilityInternal()
+    {
+        $input = Request::all();
+
+        $this->service()->updateTrustedBadgeEligibilityInternal($input);
+
+        return ApiResponse::json([], Response::HTTP_NO_CONTENT);
+    }
+
     public function redirectUrl()
     {
         $input = Request::all();

@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         'merchant_id'   => 'required|filled|string'
     ];
 
-    protected function validateStatus($attribute, $status): void
+    public function validateStatus($attribute, $status): void
     {
         if (!in_array($status, self::$validStatuses, true))
         {
