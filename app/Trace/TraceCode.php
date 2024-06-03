@@ -1422,6 +1422,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANTS_RISK_PROXY_REQUEST                          = 'MERCHANTS_RISK_PROXY_REQUEST';
     const MERCHANTS_RISK_PROXY_RESPONSE                         = 'MERCHANTS_RISK_PROXY_RESPONSE';
 
+    const MERCHANTS_RISK_DIRECT_REQUEST                         = 'MERCHANTS_RISK_DIRECT_REQUEST';
+
     const MERCHANTS_RISK_ALERT_CONFIG                           = 'MERCHANTS_RISK_ALERT_CONFIG';
 
     const ENTITIES_BEFORE_SYNC                                  = 'ENTITIES_BEFORE_SYNC';

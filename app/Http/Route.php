@@ -1446,6 +1446,7 @@ class Route
 
 
 
+        'merchants_risk_direct'                    => ['any',      'merchants-risk/direct/{path?}',                  'MerchantsRiskController@handleDirectRequests'                      ],
         'merchants_risk_service'                   => ['any',      'merchants-risk/service/{path?}',                 'MerchantsRiskController@handleProxyRequests'                       ],
         'merchants_risk_admin'                     => ['any',      'merchants-risk/admin/{path?}',                   'MerchantsRiskController@handleAdminRequests'                       ],
         'merchants_risk_create_alert_config'       => ['post',     'merchants-risk/alert_configs/create',            'MerchantsRiskController@createAlertConfig'                         ],
@@ -11648,6 +11649,7 @@ class Route
         'capital_collections_webhook',
         'capital_marketplace_oauth',
         'download_papernach_form',
+        'merchants_risk_direct',
         'splitz_evaluate',
         'splitz_evaluate_bulk',
         'splitz_preflight',
@@ -12095,6 +12097,7 @@ class Route
             'onboarding_get',
             'onboarding_save',
             'merchant_bmc_response_save',
+            'merchants_risk_direct',
             'onboarding_order_create',
             'onboarding_order_verify',
             'merchant_consents_save',

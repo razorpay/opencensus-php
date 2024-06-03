@@ -20,9 +20,15 @@ class MerchantsRiskController extends Controller
     const RISK_DETAILS  = 'RISK_DETAILS';
     const FRAUD_DETAILS = 'FRAUD_DETAILS';
 
+    const CAPTURE_FINGERPRINT = 'CAPTURE_FINGERPRINT';
+
     const ROUTES_URL_MAP = [
         self::RISK_DETAILS          => '/twirp\/rzp.merchants_risk.impersonation.v1.ImpersonationService\/GetDetails/',
         self::FRAUD_DETAILS         => '/twirp\/rzp.merchants_risk.fraudlist.v1.FraudlistService\/GetFraudList/'
+    ];
+
+    const DIRECT_ROUTES_URL_MAP = [
+        self::CAPTURE_FINGERPRINT   => 'twirp/rzp.merchants_risk.fingerprint.v1.FingerprintService/CaptureFingerprint',
     ];
 
     const CREATE_ALERT_CONFIG_URL   = 'twirp/rzp.merchants_risk.riskAlertConfig.v1.RiskAlertConfigService/Create';
@@ -32,6 +38,10 @@ class MerchantsRiskController extends Controller
     const MERCHANT_ROUTES = [
         self::RISK_DETAILS,
         self::FRAUD_DETAILS
+    ];
+
+    const DIRECT_ROUTES = [
+        self::CAPTURE_FINGERPRINT,
     ];
 
     protected function handleProxyRequests($path = null)
@@ -118,6 +128,45 @@ class MerchantsRiskController extends Controller
         $response = $this->sendRequestAndParseResponse($url, $request->method(), $body, $headers);
 
         return $response;
+    }
+
+    protected function handleDirectRequests($path = null)
+    {
+        $request = Request::instance();
+        $url     = $path;
+        $body    = $request->all();
+        $method = $request->method();
+
+        $this->trace->info(TraceCode::MERCHANTS_RISK_DIRECT_REQUEST, [
+            'request' => $url,
+        ]);
+
+        $isValidRoute = false;
+
+        foreach (self::DIRECT_ROUTES as $route)
+        {
+            if (self::DIRECT_ROUTES_URL_MAP[$route] === $path)
+            {
+                $isValidRoute = true;
+                break;
+            }
+        }
+
+        if ($isValidRoute === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        $headers = [
+            'X-Auth-Type'   => 'direct'
+        ];
+
+        if ($request->getQueryString() !== null)
+        {
+            $url .= '?' . $request->getQueryString();
+        }
+
+        return $this->sendRequestAndParseResponse($url, $method, $body, $headers);
     }
 
     public function createAlertConfig() {
