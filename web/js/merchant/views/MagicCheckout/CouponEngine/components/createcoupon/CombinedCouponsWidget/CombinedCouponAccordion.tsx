@@ -11,11 +11,14 @@ import { Alert } from '@razorpay/blade/components';
 // context imports
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
 
+// constants
+import { DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CombinedCouponsWidget/constants';
+
 interface CombinedCouponProps {
   couponName: string;
-  combinedCouponConfig: object;
 }
-const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName, combinedCouponConfig }) => {
+
+const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName }) => {
   const { widgetsData, setWidgetsData } = useContext(ModalContext);
 
   const isCombinedCouponsChecboxChecked = useCallback(() => {
@@ -46,12 +49,16 @@ const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName, combinedCou
     }));
   };
 
+  if (!DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG[couponName]) {
+    return null;
+  }
+
   return (
     <FormGroup>
       <div className="form-label">Combine this discount with</div>
       <div className="form-input max-width-100">
         <div className="display-flex flex--column gap--12">
-          {combinedCouponConfig[couponName].map((item) => {
+          {DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG[couponName].map((item) => {
             return (
               <div className="display-flex" key={item.type}>
                 <Input.Check
