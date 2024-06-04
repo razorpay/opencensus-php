@@ -179,7 +179,7 @@ trait ExternalOffersRepo
             try
             {
                 $responseOffers = $this->fetchExternalEntitiesBulk($merchantId, [], [
-                    Constants::STATE => Constants::STATE_CREATED,
+                    Constants::STATUS => Constants::STATUS_ACTIVE,
                 ]);
 
                 if (empty($responseOffers) === true)
@@ -229,7 +229,7 @@ trait ExternalOffersRepo
             {
                 $responseOffers = $this->fetchExternalEntitiesBulk($merchantId, [],
                     [
-                        Constants::STATE => Constants::STATE_CREATED,
+                        Constants::STATUS => Constants::STATUS_ACTIVE,
                     ]);
 
                 if (empty($responseOffers) === true)
@@ -296,6 +296,7 @@ trait ExternalOffersRepo
                 $responseOffers = $this->fetchExternalEntitiesBulk($merchantId, [],
                     [
                         Constants::OFFER_TYPE => Constants::OFFER_TYPE_STAGE_REGULAR,
+                        Constants::STATUS => Constants::STATUS_ACTIVE,
                     ]
                 );
 
