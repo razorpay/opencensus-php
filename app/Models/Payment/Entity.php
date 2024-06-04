@@ -6807,7 +6807,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isHdfcVasDSCustomerFeeBearerSurcharge()
     {
-        if ($this->isCard() === false || Gateway::isPOSGateway($this->getGateway()) )
+        if ($this->isCard() === false || Gateway::isHdfcPosGateway($this->getGateway()) )
         {
             return false;
         }

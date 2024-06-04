@@ -612,12 +612,6 @@ class Gateway
         self::CARD_FSS,
     ];
 
-    /**
-     * Gateways that are used for payments via Ezetap POS devices
-     */
-    const POS_GATEWAYS = [
-        self::HDFC_POS
-    ];
 
     /**
      * Gateways for which we are skipping auth code validation to authorize the Payments
@@ -6647,12 +6641,10 @@ class Gateway
         return (in_array($gateway, self::ADDRESS_NAME_REQUIRED_GATEWAYS, true));
     }
 
-   /*
-    * Checks if gateway is supported for Ezetap POS device transactions
-    */
-    public static function isPOSGateway($gateway) : bool
+
+    public static function isHdfcPosGateway($gateway) : bool
     {
-        return (in_array($gateway, self::POS_GATEWAYS, true));
+        return $gateway == self::HDFC_POS;
     }
 
     /*

@@ -908,10 +908,7 @@ class Service extends Base\Service
 
                         $data[RefundConstants::GATEWAY_CURRENCY_DENOMINATION] = Currency::getDenomination($payment->getGatewayCurrency());
 
-                        if (Gateway::isPOSGateway($payment->getGateway()))
-                        {
-                            $data[Payment\Entity::GATEWAY_TXN_ID] = $payment->getGatewayTxnId();
-                        }
+                        $data[Payment\Entity::GATEWAY_TXN_ID] = $payment->getGatewayTxnId();
 
                         $data[RefundConstants::SOURCE_CHANNEL] = $payment->getSourceChannel();
                     }
