@@ -13,6 +13,9 @@ use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Services\EsClient;
 use RZP\Http\Request\Requests;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Order\Service as OrderService;
 
 class PublicController extends Controller
 {
@@ -209,6 +212,75 @@ class PublicController extends Controller
         ]);
     }
 
+    protected function isHDFCCheckout2Supported($params)
+    {
+        try 
+        {
+            $mode = $params['checkout']['notes']['mode'] ?? Mode::LIVE;
+            // set mode. It will be used while getting order
+            $this->app['rzp.mode'] = $mode;
+            $orderID = $params['checkout']['order_id'];
+            $order = '';
+            if (empty($orderID) === false)
+            {
+                if($mode === 'test')
+                {
+                    $order = $this->repo->order->findByPublicId($orderID);
+                }else
+                {
+                    $order = (new OrderService())->fetchCompleteOrderById($orderID);
+                }
+            }
+            else
+            {
+                return false;
+            }
+            $merchantID = $order['merchant_id'];
+            $merchant = $this->repo->merchant->findOrFail($merchantID);
+            $isCheckout2FeatureEnabled = $merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2);
+            $app = \App::getFacadeRoot();
+
+            $app['trace']->info(TraceCode::RENDER_CHECKOUT_HOSTED, [
+                'mode' => $mode,
+                'orderID' => $orderID,
+                'merchantID' => $merchantID,
+                'order' => $order,
+                'isCheckout2FeatureEnabled' => $isCheckout2FeatureEnabled
+            ]);
+
+            // check the experiment
+            $variant = $this->app['razorx']->getTreatment($merchantID,
+                RazorxTreatment::HDFC_CHECKOUT_2, $mode);
+            if (strtolower($variant) === 'on')
+            {
+                return $isCheckout2FeatureEnabled;
+            }
+        } catch (\Exception $e) 
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::HDFC_CHECKOUT_2_RAZORX_ERROR
+            );
+        }
+        
+        return false;
+    }
+
+    public function renderHostedStandardVas($key, $requestOptions, $meta)  
+    {
+        $script = $this->config->get('url.cdn.production') . '/static/hosted/standard-vas.js';
+        $options = 
+        [
+            'key'          => $key,
+            'options'      => $requestOptions,
+            'meta'         => json_encode($meta, JSON_FORCE_OBJECT),
+            'script'       => $script,
+            'urls'         => "{}"
+        ];
+   
+        return View::make('public.embedded', $options);
+    }    
     public function renderCheckoutHosted()
     {
         $params = Request::all();
@@ -219,6 +291,26 @@ class PublicController extends Controller
         $showEmbeddedUi = false;
         $options     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
         $urls        = json_encode($params['url'], JSON_FORCE_OBJECT);
+
+        if($this->isHDFCCheckout2Supported($params))
+        {
+            $key = $params['checkout']['key'];
+            $params['checkout']['callback_url'] =  $params['url']['callback'];
+            $requestOptions     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
+            $meta = 
+            [
+                'type' => 'hdfcvas'
+            ];
+            $app = \App::getFacadeRoot();
+
+            $app['trace']->info(TraceCode::RENDER_HDFC_CHECKOUT_2, [
+                'key' => $key,
+                'requestOptions' => $requestOptions,
+                'meta' => $meta
+            ]);
+
+            return $this->renderHostedStandardVas($key, $requestOptions, $meta);
+        }
 
         if ($showEmbeddedUi) {
             $key         = $params['checkout']['key'];

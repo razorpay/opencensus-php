@@ -1126,6 +1126,9 @@ final class RazorxTreatment
 
     const ZERO_EXPONENT_CURRENCY_SUPPORT = 'zero_exponent_currency_support';
 
+    // Razorx for checkout 2.0
+    const HDFC_CHECKOUT_2 = 'hdfc_checkout_2';
+
     const SETTLEMENT_TRANSACTION_READ_MIGRATION = 'settlement_transaction_read_migration';
 
     const FETCH_ORDER_ASSOCIATIONS_FROM_API = 'fetch_order_associations_from_api';
