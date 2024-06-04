@@ -7915,6 +7915,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GET_PARTNER_AUTH_CONTEXT_ERROR                        = 'GET_PARTNER_AUTH_CONTEXT_ERROR';
 
+    const  UPLOAD_MIQ_CONTEXT_ERROR             = 'UPLOAD_MIQ_CONTEXT_ERROR';
+
     const CREATE_CRON_JOB                       = 'CREATE_CRON_JOB';
     const EDIT_CRON_JOB                         = 'EDIT_CRON_JOB';
 

@@ -909,7 +909,7 @@ class Core extends Base\Core
         ];
         // load merchant to avoid null values
         $merchant = $this->merchant;
-        if ($this->isPartnerAuthContextRoute())
+        if ($this->isPartnerAuthContextRoute() or $this->uploadMIQRoute())
         {
             $merchantDetails->load('merchant');
             $merchant = $merchantDetails->merchant;
@@ -970,6 +970,20 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
             ]);
         }
+    }
+
+    protected function uploadMIQRoute()
+    {
+        try
+        {
+            $routeName = app('request.ctx')->getRoute();
+            return in_array($routeName, DetailConstants::UPLOAD_MIQ_ROUTES);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::UPLOAD_MIQ_CONTEXT_ERROR);
+        }
+        return false;
     }
 
     protected function isPartnerAuthContextRoute()
@@ -11987,8 +12001,8 @@ class Core extends Base\Core
         if (empty($websiteDetail) === false)
         {
             $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
-            
-            
+
+
             /* example of policiesData
             [
                 "terms" => [
