@@ -23,6 +23,7 @@ use RZP\Models\Order;
 use RZP\Services\FTS;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
+use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Models\Invoice;
 use RZP\Models\Reversal;
@@ -4712,6 +4713,8 @@ trait Refund
 
     public function reverseTransfersAndRefundPayments($payment, array & $input, array & $response)
     {
+        $mutexConfig = Transfer\AbstractTransfer::fetchTransferProcessMutexConfig();
+
         $this->mutex->acquireAndRelease($payment->getId(), function() use (&$input, $payment, &$response)
         {
             // Determine if transfer reversals should be processed along with the refund
@@ -4872,6 +4875,11 @@ trait Refund
                     $response['error']['code']=$e->getCode();
                     $response['error']['message']=$e->getMessage();
             }
-        });
+        },
+        $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_LOCK_TIMEOUT_SEC_KEY],
+        ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS,
+        $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_NUM_RETRIES_KEY],
+        $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_MIN_RETRY_DELAY_MS_KEY],
+        $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_MAX_RETRY_DELAY_MS_KEY], true);
     }
 }

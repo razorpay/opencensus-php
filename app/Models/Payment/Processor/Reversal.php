@@ -19,6 +19,8 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Transfer\Payment\Core as TransferPaymentCore;
+use RZP\Models\Ledger;
+use RZP\Models\LedgerOutbox;
 use RZP\Trace\TraceCode;
 
 trait Reversal
@@ -339,7 +341,9 @@ trait Reversal
         //  - Payment has not been transferred (amount_transferred = 0), or
         //  - Payment method = 'transfer'
         //
-        $isFailTransfersExpEnabled = $this->checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($payment->merchant);
+        $transferCore = new Transfer\Core();
+
+        $isFailTransfersExpEnabled = $transferCore->checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($payment->merchant);
 
         if ((($payment->isTransferred() === false) and ($isFailTransfersExpEnabled === false)) or
             ($payment->isTransfer() === true))
@@ -387,25 +391,11 @@ trait Reversal
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
                 }
 
-                if (($isFailTransfersExpEnabled === true) and ($transfer->getStatus() === Transfer\Status::PENDING))
+                $this->validateTransferReversalAllowedIfLedgerReverseShadowEnabled($transfer);
+
+                if (($isFailTransfersExpEnabled) === true and ($transfer->getStatus() === Transfer\Status::PENDING))
                 {
-                    $transfer->setStatus(Transfer\Status::FAILED);
-
-                    $transfer->setAttempts(Transfer\Constant::MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS);
-
-                    $transfer->setErrorCode(ErrorCode::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
-
-                    $transfer->setMessage(PublicErrorDescription::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
-
-                    $transfer->saveOrFail();
-
-                    $this->trace->info(
-                        TraceCode::TRANSFER_FAILED_AS_SOURCE_PAYMENT_IS_REFUNDED,
-                        [
-                            'transfer_id'      => $transfer->getId(),
-                            'source_type'      => Transfer\Constant::PAYMENT,
-                            'payment_id'       => $payment->getId(),
-                        ]);
+                    $transferCore->failTransferIfSourcePaymentIsRefunded($transfer, $payment);
 
                     continue;
                 }
@@ -427,27 +417,12 @@ trait Reversal
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
                     }
 
+                    $this->validateTransferReversalAllowedIfLedgerReverseShadowEnabled($transfer);
+
                     if (($isFailTransfersExpEnabled === true) and
                         (($transfer->getStatus() === Transfer\Status::PENDING) or ($transfer->getStatus() === Transfer\Status::CREATED)))
                     {
-                        $transfer->setStatus(Transfer\Status::FAILED);
-
-                        $transfer->setAttempts(Transfer\Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS);
-
-                        $transfer->setErrorCode(ErrorCode::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
-
-                        $transfer->setMessage(PublicErrorDescription::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
-
-                        $transfer->saveOrFail();
-
-                        $this->trace->info(
-                            TraceCode::TRANSFER_FAILED_AS_SOURCE_PAYMENT_IS_REFUNDED,
-                            [
-                                'transfer_id'      => $transfer->getId(),
-                                'source_type'      => Transfer\Constant::ORDER,
-                                'payment_id'       => $payment->getId(),
-                                'order_id'         => $orderId,
-                            ]);
+                        $transferCore->failTransferIfSourcePaymentIsRefunded($transfer, $payment);
 
                         continue;
                     }
@@ -645,5 +620,26 @@ trait Reversal
             ]);
 
         return $isExperimentEnabled;
+    }
+
+    protected function validateTransferReversalAllowedIfLedgerReverseShadowEnabled($transfer)
+    {
+        $merchant = $transfer->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            return;
+        }
+
+        $payloadName = $this->getPayloadName($transfer->getPublicId(), Ledger\Constants::TRANSFER);
+
+        $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadName($payloadName);
+
+        if (count($outboxEntries) > 0)
+        {
+            // If an outbox entry is present, then the transfer is already pushed to CLS for journal creation.
+            // Throw exception here to disallow refund with reverse_all until the transfer is processed
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
+        }
     }
 }

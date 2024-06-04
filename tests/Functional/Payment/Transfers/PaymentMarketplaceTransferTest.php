@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment\Transfers;
 
 use Mockery;
 use Carbon\Carbon;
+use RZP\Jobs\TransferProcess;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -1870,6 +1871,102 @@ class PaymentMarketplaceTransferTest extends TestCase
         $response = $this->runRequestResponseFlow($data);
 
         $this->assertEquals(2, $response['payment_transfers_count']['category1']);
+    }
+
+    public function testPaymentTransferProcessingWhenExperimentIsEnabledAndPaymentIsRefunded()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED, 'on');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $paymentId = $this->payment['id'];
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->payment->edit($paymentId, ['status' => 'refunded']);
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('pending', $transfer['status']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $paymentIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $this->assertEquals($paymentId, $paymentIds[0]);
+
+        $this->assertNotNULL($transfer['processed_at']);
+
+        $this->assertEquals(1, $transfer['attempts']);
+    }
+
+    public function testOrderTransferProcessingWhenExperimentIsEnabledAndPaymentIsRefunded()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED, 'on');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $paymentId = $this->payment['id'];
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $order = $this->fixtures->order->create(['receipt' => 'check123', 'bank' => 'ICICI', 'account_number' => '0040304030403040', 'amount' => '50000', 'status' => 'paid']);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['order_id' => $order['id'], 'status' => 'refunded']);
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => $order['id'],
+            'source_type'        => "order",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('pending', $transfer['status']);
+
+        (new TransferProcess('test', $paymentId, 'order'))->handle();
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $this->assertNotNULL($transfer['processed_at']);
+
+        $this->assertEquals(4, $transfer['attempts']);
     }
 
     protected function mockSplitzTreatmentBulkRequest($output)

@@ -1077,4 +1077,14 @@ return [
         ]
     ],
 
+    'testPaymentTransferProcessingWhenExperimentIsEnabledAndPaymentIsRefunded' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/payment_transfers/process_pending',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
 ];

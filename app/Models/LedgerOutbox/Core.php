@@ -912,7 +912,7 @@ class Core extends Base\Core
 
                     $transferProcessor = new PaymentTransfer($sourcePayment);
 
-                    $mutexResource = Transfer\Core::getTransferProcessingMutexResource(Transfer\Constant::PAYMENT);
+                    $mutexResource = Transfer\Core::getTransferProcessingMutexResource(Transfer\Constant::PAYMENT, $sourcePayment);
                 }
                 else if ($transfer->getSourceType() === E::ORDER)
                 {
@@ -966,7 +966,7 @@ class Core extends Base\Core
 
                     $transferProcessor = new OrderTransfer($sourcePayment);
 
-                    $mutexResource = Transfer\Core::getTransferProcessingMutexResource(Transfer\Constant::ORDER);
+                    $mutexResource = Transfer\Core::getTransferProcessingMutexResource(Transfer\Constant::ORDER, $sourcePayment);
                 }
             }
             catch (\Exception $e)

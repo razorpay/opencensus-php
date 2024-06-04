@@ -29,7 +29,7 @@ class PaymentTransfer extends  AbstractTransfer
 
         $mutexLockTimeoutSec = $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_LOCK_TIMEOUT_SEC_KEY];
 
-        $mutexResource = Core::getTransferProcessingMutexResource(Constant::PAYMENT);
+        $mutexResource = Core::getTransferProcessingMutexResource(Constant::PAYMENT, $this->payment);
 
         try
         {

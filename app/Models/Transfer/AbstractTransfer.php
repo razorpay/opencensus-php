@@ -105,6 +105,26 @@ abstract class AbstractTransfer
                         ->fetchBySourceTypeAndIdAndMerchant($this->transfermode,  $this->sourceId, $this->merchant , $transferStatus);
         });
 
+        if ($payment->getStatus() === Payment\Status::REFUNDED)
+        {
+            $core = new Core();
+
+            $isFailTransfersExpEnabled = $core->checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($payment->merchant);
+
+            if ($isFailTransfersExpEnabled === true)
+            {
+                foreach ($transfers as $transfer)
+                {
+                    if ($transfer->getStatus() === Status::CREATED || $transfer->getStatus() === Status::PENDING)
+                    {
+                        $core->failTransferIfSourcePaymentIsRefunded($transfer, $payment);
+                    }
+                }
+
+                return [$transfers, []];
+            }
+        }
+
         $this->trace->info($this->tracecode,
             [
                 'payment_id'   => $payment->getPublicId(),

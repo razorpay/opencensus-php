@@ -17,6 +17,7 @@ use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
@@ -65,6 +66,8 @@ class Core extends Base\Core
 
     const ASYNC_CUSTOMER_TRANSFER_LIVE_MODE_EXPERIMENT_ID   = 'app.customer_async_transfer_experiment_id';
     const FLAG_ASYNC_CUSTOMER_TRANSFER                      = 'async';
+
+    const PAYMENT_ID_MUTEX_FOR_TRF_PROCESSING_EXPERIMENT   = 'payment_id_mutex_for_transfer_processing';
 
     protected $oauthApplicationId;
 
@@ -2589,8 +2592,15 @@ class Core extends Base\Core
         return $variant === self::FLAG_ASYNC_CUSTOMER_TRANSFER;
     }
 
-    public static function getTransferProcessingMutexResource($transferType)
+    public static function getTransferProcessingMutexResource($transferType, $payment)
     {
+        $isExperimentEnabled = (new Core())->checkIfPaymentIdMutexExperimentIsEnabled($payment->merchant);
+
+        if ($isExperimentEnabled === true)
+        {
+            return $payment->getId();
+        }
+
         if ($transferType == Transfer\Constant::ORDER) {
             return 'order_transfer_process_';
         } else if ($transferType == Transfer\Constant::PAYMENT) {
@@ -2598,6 +2608,26 @@ class Core extends Base\Core
         } else {
             throw new Exception\LogicException('Unsupported transfer type');
         }
+    }
+
+    protected function checkIfPaymentIdMutexExperimentIsEnabled($merchant): bool
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            self::PAYMENT_ID_MUTEX_FOR_TRF_PROCESSING_EXPERIMENT,
+            $this->mode
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(
+            TraceCode::PAYMENT_ID_MUTEX_TRANSFER_PROCESSING_EXP_CHECK,
+            [
+                'merchant_id'    => $merchant->getId(),
+                'is_exp_enabled' => $isExperimentEnabled,
+            ]);
+
+        return $isExperimentEnabled;
     }
 
     public function pushTransferForAsyncBalanceUpdateIfApplicable($transfer): void
@@ -2614,5 +2644,56 @@ class Core extends Base\Core
                     'merchant_id'         => $transfer->getMerchantId(),
                 ]);
         }
+    }
+
+    public function checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($merchant)
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED,
+            $this->mode
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(
+            TraceCode::FAIL_CREATED_AND_PENDING_TRANSFERS_EXPERIMENT_CHECK,
+            [
+                'merchant_id'    => $merchant->getId(),
+                'is_exp_enabled' => $isExperimentEnabled,
+            ]);
+
+        return $isExperimentEnabled;
+    }
+
+    public function failTransferIfSourcePaymentIsRefunded($transfer, $payment)
+    {
+        $transfer->setFailed();
+
+        $sourceType = $transfer->getSourceType();
+
+        if ($sourceType === Constant::PAYMENT)
+        {
+            $transfer->setAttempts(Transfer\Constant::MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS);
+        }
+        else if ($sourceType === Constant::ORDER)
+        {
+            $transfer->setAttempts(Transfer\Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS);
+        }
+
+        $transfer->setErrorCode(ErrorCode::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
+
+        $transfer->setMessage(PublicErrorDescription::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
+
+        $transfer->saveOrFail();
+
+        $this->trace->info(
+            TraceCode::TRANSFER_FAILED_AS_SOURCE_PAYMENT_IS_REFUNDED,
+            [
+                'transfer_id'      => $transfer->getId(),
+                'source_type'      => $sourceType,
+                'source_id'        => $transfer->getSourceId(),
+                'payment_id'       => $payment->getId(),
+            ]);
     }
 }
