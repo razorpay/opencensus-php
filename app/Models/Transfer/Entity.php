@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Order\Repository as OrderRepository;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
@@ -616,6 +617,15 @@ class Entity extends Base\PublicEntity
         $details = $account->setVisible($accountAttributes)->toArray();
 
         return $details;
+    }
+
+    public function getToAttribute() {
+        if ($this->getToType() === E::MERCHANT)
+        {
+            return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'to', 'getToId');
+        }
+
+        return $this->to()->first();
     }
 
     /** unset the ParentPaymentId attribute based on the feature flag.
