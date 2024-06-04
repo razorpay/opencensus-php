@@ -16867,6 +16867,8 @@ class Route
             'internal_merchant_fetch',
             'user_fetch_internal',
             'merchant_analytics',
+            'user_all_roles',
+            'merchant_features_fetch',
         ],
 
         'mandate_hq' => [
