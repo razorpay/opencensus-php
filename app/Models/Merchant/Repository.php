@@ -1432,8 +1432,8 @@ class Repository extends Base\Repository
 
 
 
-        if(!$this->repo->isTransactionActive() && $this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
-            $merchant = $this->findForWrite($merchantId);
+        if($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchant = $this->find($merchantId);
         } else {
             $query = $useWritePdo === true ?  $this->newQueryWithConnection($mode)->useWritePdo() : $this->newQuery();
             $merchant = $query->find($merchantId);
