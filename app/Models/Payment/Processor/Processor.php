@@ -415,6 +415,12 @@ class Processor
     const BANKING_ORG_ID_CARDS_PAYMENTS_VIA_PGROUTER = 'banking_org_id_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a banking Org ID card payment should go via PG Router and CPS or just via API service
+     */
+    const BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER = 'banking_org_id_MOTO_payments_via_pg_router';
+
+
+    /**
      * Razorx flag to block merchants from re-arch flow
      */
     const BLOCK_MERCHANTS_ON_REARCH_UPS = 'block_merchants_on_rearch_ups';
@@ -1116,14 +1122,23 @@ class Processor
                 }
             }
 
+            $routeMotoToRearch = false;
+
             if ((isset($input['auth_type']) === true) and ($input['auth_type'] === AuthType::SKIP))
             {
-                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                    'reason' => "MOTO_Payment",
-                    'merchant_id' => $merchant->getId(),
-                    'banking_org_id' => $merchant->getOrgId(),
-                ]);
-                return false;
+                $result = $this->app->razorx->getTreatment($merchant->getOrgId(), self::BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                if($result !== 'on')
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "MOTO_Payment",
+                        'merchant_id' => $merchant->getId(),
+                        'banking_org_id' => $merchant->getOrgId(),
+                    ]);
+                    return false;
+                }
+
+                $routeMotoToRearch = true;
             }
 
             // check if eligible banking org id to redirect to card's re-arch
@@ -1245,12 +1260,15 @@ class Processor
             if (($input[Payment\Entity::METHOD] == Payment\METHOD::CARD) and
                 ($merchant->isFeatureEnabled('skip_cvv') === true))
             {
-                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                    'reason' => "merchant_feature",
-                    "feature_name" => "skip_cvv",
-                    'merchant_id' => $merchant->getId(),
-                ]);
-                return false;
+               if($routeMotoToRearch === false)
+               {
+                   $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                       'reason' => "merchant_feature",
+                       "feature_name" => "skip_cvv",
+                       'merchant_id' => $merchant->getId(),
+                   ]);
+                   return false;
+               }
             }
 
             if ((Arr::get($input, Payment\Entity::METHOD) === Payment\METHOD::CARD) &&

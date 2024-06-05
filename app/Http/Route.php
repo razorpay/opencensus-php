@@ -17934,6 +17934,7 @@ class Route
     ];
 
     protected static $rearchRoutes = [
+        'payment_create_private',
         'payment_create_ajax',
         'payment_create_private_old',
         'payment_create_private_json',
