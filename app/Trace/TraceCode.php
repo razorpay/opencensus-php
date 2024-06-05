@@ -782,7 +782,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_COD_INELIGIBLE_REASON                         = 'PAYMENT_COD_INELIGIBLE_REASON';
     const COUPON_EXPIRY_NOTIFICATION                            = 'COUPON_EXPIRY_NOTIFICATION';
     const COUPON_EXPIRY_NOTIFICATION_FAILED                     = 'COUPON_EXPIRY_NOTIFICATION_FAILED  ';
-
     const ATTACHMENTS_NOT_FOUND_FOR_GIVEN_PAYOUT_IDS            = 'ATTACHMENTS_NOT_FOUND_FOR_GIVEN_PAYOUT_IDS';
     const PAYOUTS_NOT_FOUND_FOR_GIVEN_INPUT                     = 'PAYOUTS_NOT_FOUND_FOR_GIVEN_INPUT';
     const PAYOUT_UFH_SERVICE_NULL                               = 'PAYOUT_UFH_SERVICE_NULL';
