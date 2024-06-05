@@ -92,8 +92,12 @@ class Service extends Base\Service
         $merchantId = $input['merchant_id'];
         unset($input['merchant_id']);
 
-        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
-            $merchantId, ['methods', \RZP\Models\Merchant\Entity::GROUPS, \RZP\Models\Merchant\Entity::ADMINS]);
+        //findOrFailPublic is fetching merchant from asv, so using that function and setting the relations explicitly.
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant->load('methods');
+        $merchant->load(\RZP\Models\Merchant\Entity::GROUPS);
+        $merchant->load(\RZP\Models\Merchant\Entity::ADMINS);
+
         $this->merchant = $merchant;
 
         try
@@ -466,8 +470,11 @@ class Service extends Base\Service
      */
     public function fetchByCustomerAndMerchantId($customerId, $merchantId)
     {
-        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
-            $merchantId, ['methods', \RZP\Models\Merchant\Entity::GROUPS, \RZP\Models\Merchant\Entity::ADMINS]);
+        //findOrFailPublic is fetching merchant from asv, so using that function and setting the relations explicitly.
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant->load('methods');
+        $merchant->load(\RZP\Models\Merchant\Entity::GROUPS);
+        $merchant->load(\RZP\Models\Merchant\Entity::ADMINS);
 
         $this->merchant = $merchant;
 

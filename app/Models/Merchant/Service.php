@@ -1710,8 +1710,11 @@ class Service extends Base\Service
      */
     public function getMerchantData($merchantId)
     {
-        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
-            $merchantId, ['methods', Entity::GROUPS, Entity::ADMINS]);
+        //findOrFailPublic is fetching merchant from asv, so using that function and setting the relations explicitly.
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant->load('methods');
+        $merchant->load(Entity::GROUPS);
+        $merchant->load(Entity::ADMINS);
 
         // Merchant to array public
         $data = $merchant->toArrayPublic();
@@ -3936,8 +3939,11 @@ class Service extends Base\Service
      */
     public function getPaymentMethodsById($merchantId)
     {
-        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
-            $merchantId, ['methods', \RZP\Models\Merchant\Entity::GROUPS, Entity::ADMINS]);
+        //findOrFailPublic is fetching merchant from asv, so using that function and setting the relations explicitly.
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant->load('methods');
+        $merchant->load(Entity::GROUPS);
+        $merchant->load(Entity::ADMINS);
 
         $this->merchant = $merchant;
 
