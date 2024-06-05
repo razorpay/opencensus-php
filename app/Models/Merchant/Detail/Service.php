@@ -2234,6 +2234,11 @@ class Service extends Base\Service
 
         $merchant = $this->app['basicauth']->getMerchant();
         $merchantId = $merchant->getId();
+        
+        $this->trace->info(TraceCode::MERCHANT_PRE_SIGNUP_DETAILS, [
+            'merchant_id' => $merchantId,
+            'input'       => $input,
+        ]);
         (new Validator)->validateSignupViaChannel($input, $merchant);
         (new Validator)->validateUniqueContactMobile($input, $merchantId);
 
@@ -2279,6 +2284,11 @@ class Service extends Base\Service
             if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
             {
                 $this->handlePreSignUpOptionalFields($input);
+                
+                $this->trace->info(TraceCode::HANDLE_PRE_SIGNUP_OPTIONAL_FIELDS, [
+                    'merchant_id' => $merchant->getId(),
+                    'input'       => $input,
+                ]);
             }
 
             if (empty($referral) === false)
@@ -2374,7 +2384,11 @@ class Service extends Base\Service
                     'business_website' => $input['business_website'],
                     'merchantId' => $merchantId,
                 ];
-
+                
+                $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+                    'payload' => $body,
+                ]);
+                
                 $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $body, $this->merchant, true);
 
                 $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [

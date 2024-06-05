@@ -6739,7 +6739,7 @@ class Core extends Base\Core
                 );
             } catch (BadRequestException $e) {
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::FETCH_MERCHANT_POLICY_VERIFICATION_RESULT_FAILED);
-                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                return Status::UNDER_REVIEW;
             }
         }
 
