@@ -661,6 +661,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USED_AT);
     }
 
+    public function getUsedCount()
+    {
+        return $this->getAttribute(self::USED_COUNT);
+    }
+
     public function getExpiredAt()
     {
         return $this->getAttribute(self::EXPIRED_AT);

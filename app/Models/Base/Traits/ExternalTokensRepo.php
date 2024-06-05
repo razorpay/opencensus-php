@@ -656,6 +656,43 @@ trait ExternalTokensRepo
         return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
     }
 
+    public function saveOrFail($token, array $options = array())
+    {
+        if (($token !== null) and ($token->isExternal() === true))
+        {
+            try
+            {
+                $this->entityName = $this->entity;
+
+                if ($this->validateExternalUpdateEnabledForTokens() and
+                    (EntityConstants::validateExternalRepoEntity($this->entityName) === true))
+                {
+                    $params = $this->getUpdatableTokensField($token);
+
+                    $params[Token\Entity::ID] = $token->getId();
+
+                    $this->updateTokenById($params);
+                }
+
+                return;
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::TOKENS_ENTITY_UPDATE_FAILURE,
+                    [
+                        'exception_message' => $ex->getMessage(),
+                        'function_name'     => __FUNCTION__
+                    ]);
+                throw $ex;
+            }
+        }
+
+        parent::saveOrFail($token, $options);
+    }
+
     public function fetchExternalTokens($params, $input=[])
     {
         $class = Entity::getExternalRepoSingleton($this->entity);
@@ -767,6 +804,43 @@ trait ExternalTokensRepo
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 
+    public function updateTokenById($params)
+    {
+        $class = Entity::getExternalRepoSingleton($this->entity);
+
+        try
+        {
+            return $class->updateToken($params);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data'        => $e->getMessage(),
+                ]);
+        }
+
+        $data = [
+            'model'      => $this->entityName,
+            'operation'  => 'update'
+        ];
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    public function getUpdatableTokensField($token)
+    {
+        $params[Token\Entity::USED_AT] = $token->getUsedAt();
+
+        $params[Token\Entity::EXPIRED_AT] = $token->getExpiredAt();
+
+        return $params;
+    }
+
     public function mergeTokenEntitiesFromAPIAndTokensService(PublicCollection $apiTokens, PublicCollection $serviceTokens) : PublicCollection
     {
         $combinedTokens = [];
@@ -801,6 +875,38 @@ trait ExternalTokensRepo
 
             $this->trace->info(
                 TraceCode::TOKENS_ENTITY_FETCH_RAZORX_EXPERIMENT_RESPONSE,
+                [
+                    'result'    => $result,
+                    'mode'      => $mode,
+                    'key_status'=> $keyStatus,
+                ]);
+
+            if ($result === 'on')
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function validateExternalUpdateEnabledForTokens() : bool
+    {
+        $keyName = Entity::getExternalConfigKeyName($this->entityName);
+
+        $keyStatus = (bool) ConfigKey::get($keyName, false);
+
+        if ($keyStatus === true)
+        {
+            $mode = $this->app['rzp.mode'] ?? 'live';
+
+            $result = $this->app['razorx']->getTreatment(
+                UniqueIdEntity::generateUniqueId(),
+                RazorxTreatment::ENTITY_UPDATE_IN_TOKENS_SERVICE,
+                $mode);
+
+            $this->trace->info(
+                TraceCode::TOKENS_ENTITY_UPDATE_RAZORX_EXPERIMENT_RESPONSE,
                 [
                     'result'    => $result,
                     'mode'      => $mode,

@@ -48,7 +48,8 @@ class Tokens
 
     const URLS = [
         'fetch_tokens_multiple' => 'fetch',
-        'fetch_tokens_by_ids'   => 'fetch_by_ids'
+        'fetch_tokens_by_ids'   => 'fetch_by_ids',
+        'update_token_by_id'    => 'update'
     ];
 
 
@@ -169,6 +170,11 @@ class Tokens
 
     }
 
+    public function updateToken($input)
+    {
+         return $this->updateTokenInternal($input);
+    }
+
     public function fetchTokensInternal($input)
     {
         $resp = $this->sendRequest(
@@ -225,6 +231,27 @@ class Tokens
                 'Unexpected response code received from Tokens service.',
                 [
                     'customer_id'         => $input['customer_id'],
+                ]);
+        }
+
+        return $resp;
+    }
+
+    public function updateTokenInternal($input)
+    {
+        $resp = $this->sendUpdateRequest(
+            self::TokensBaseURL. '/'. self::URLS['update_token_by_id'],
+            Requests::POST,
+            $input,
+            true
+        );
+
+        if (in_array($resp['code'], [200, 201, "200", "201"]) == false)
+        {
+            return new Exception\RuntimeException(
+                'Unexpected response code received from Tokens service.',
+                [
+                    'input'         => array_keys($input),
                 ]);
         }
 
@@ -318,6 +345,28 @@ class Tokens
         $this->trace->info(TraceCode::TOKENS_RESPONSE, [
             'function_name' => __FUNCTION__,
             'response_size'      => is_array($decodedResponse['data']) ? sizeof($decodedResponse['data']) : 0,
+        ]);
+
+        return $this->parseResponse($response, $throwExceptionOnFailure);
+    }
+
+    protected function sendUpdateRequest(
+        string $endpoint,
+        string $method,
+        array $data = [],
+        bool $throwExceptionOnFailure = false,
+        int $timeout = self::DEFAULT_REQUEST_TIMEOUT,
+    ): array
+    {
+        $request = $this->generateRequest($endpoint, $method, $data, $timeout);
+
+        $response = $this->sendTokensRequest($request);
+
+        $decodedResponse = json_decode($response->body, true);
+
+        $this->trace->info(TraceCode::TOKENS_RESPONSE, [
+            'function_name' => __FUNCTION__,
+            'response'      => !isset($decodedResponse['error']) ? 1 : 0,
         ]);
 
         return $this->parseResponse($response, $throwExceptionOnFailure);
