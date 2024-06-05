@@ -8,6 +8,11 @@ import ShippingSettingsTab from 'merchant/views/MagicCheckout/Settings/container
 import CheckoutSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CheckoutSettingsTab';
 import CouponEngineSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CouponEngineSettingsTab';
 
+//Files suffixed with V2 are entry points to respective tabs for new dashboard UI
+import PlatformSettingsV2 from 'merchant/views/MagicCheckout/Settings/containers/PlatformSettingsV2';
+import CODComponentV2 from 'merchant/views/MagicCheckout/Settings/containers/CODV2';
+import RTOReductionSetupV2 from 'merchant/views/MagicCheckout/Settings/containers/RTOReductionSetupV2';
+
 import NativeCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/native/CheckoutSettings';
 import NativeShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/native/ShippingWrapper';
 
@@ -15,6 +20,8 @@ import CODOrderAutomation from 'merchant/views/MagicCheckout/CODOrderAutomation'
 
 import ConfigDashboard from 'merchant/views/MagicCheckout/CODToPrepaid/ConfigsDashboard';
 import MagicXStoreSettings from 'merchant/views/MagicCheckout/MagicXStoreSettings';
+import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
+import CardCTA from 'merchant/views/MagicCheckout/common/components/CardCTA';
 
 const AnalyticsSettings = lazy(() =>
   import(
@@ -284,3 +291,228 @@ export const RCOD_SETTINGS_INFO =
 
 export const UPDATE_WOOC_PLUGIN_MSG =
   'Note: To use advance COD settings, please update your Razorpay WooCommerce plugin to version 4.5.6 or above.';
+
+/**
+ * In new UI , Platform settings is under a route indifferent with current UI where its located
+ * as widget/container instead of a route. we will be showing Platform Settings route by default even when other routes
+ * checking fail , hence default routes
+ */
+export const DEFAULT_ROUTES = {
+  [PLATFORMS?.NATIVE]: [
+    {
+      className: 'platform-settings-container',
+      path: '/magic/setup-settings/platform-settings',
+      label: 'Platform Setup',
+      Component: PlatformSettingsV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+  ],
+  [PLATFORMS?.SHOPIFY]: [
+    {
+      className: 'platform-settings-container',
+      path: '/magic/setup-settings/platform-settings',
+      label: 'Platform Setup',
+      Component: PlatformSettingsV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+  ],
+  [PLATFORMS?.WOOCOMMERCE]: [
+    {
+      className: 'platform-settings-container',
+      path: '/magic/setup-settings/platform-settings',
+      label: 'Platform Setup',
+      Component: PlatformSettingsV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+  ],
+};
+
+export const ROUTES = {
+  [PLATFORMS?.NATIVE]: [
+    {
+      className: 'platform-settings-container',
+      label: 'Platform Setup',
+      path: '/magic/setup-settings/platform-settings',
+      Component: PlatformSettingsV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+    {
+      className: 'magic-checkout-settings',
+      path: '/magic/setup-settings/checkout-setup',
+      label: 'Checkout Settings',
+      Component: NativeCoupons,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'shipping-settings',
+      label: 'Shipping Setup',
+      path: '/magic/setup-settings/shipping-setup',
+      Component: NativeShippingWrapper,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'intelligence-settings',
+      label: 'RTO Reduction Setup',
+      path: '/magic/setup-settings/rto-reduction-setup',
+      Component: RTOReductionSetupV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'automation-settings',
+      path: '/magic/setup-settings/cod-review-workflow',
+      label: 'COD Review Workflow',
+      Component: CODOrderAutomation,
+      condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
+    },
+    {
+      label: 'Upload Addresses',
+      path: '/magic/setup-settings/upload-address',
+      Component: BulkAddressUpload,
+      condition: (_user) => _user.isBulkAddressUploadEnabled,
+      onRCOD: true,
+    },
+  ],
+  [PLATFORMS?.SHOPIFY]: [
+    {
+      className: 'platform-settings-container',
+      label: 'Platform Setup',
+      path: '/magic/setup-settings/platform-settings',
+      Component: PlatformSettingsV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+    {
+      className: 'magic-checkout-settings',
+      path: '/magic/setup-settings/checkout-setup',
+      label: 'Checkout Setup',
+      Component: CheckoutSettingsTab,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'magic-checkout-settings',
+      path: '/magic/setup-settings/checkout-setup-magicx',
+      label: 'Checkout Setup',
+      Component: MagicXStoreSettings,
+      condition: (_user, abExperiments) =>
+        ACCESS_ROLES.includes(_user.role) &&
+        abExperiments?.magic_x_store_settings?.variables?.result === 'on',
+      onRCODOnly: true,
+    },
+    {
+      className: 'cod-settings',
+      label: 'COD',
+      path: '/magic/setup-settings/cod',
+      Component: CODComponentV2,
+      condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,
+      onRCOD: true,
+    },
+    {
+      className: 'intelligence-settings',
+      label: 'RTO Reduction Setup',
+      path: '/magic/setup-settings/rto-reduction-setup',
+      Component: RTOReductionSetupV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+    {
+      className: 'shipping-settings',
+      label: 'Shipping Setup',
+      path: '/magic/setup-settings/shipping-setup',
+      Component: ShippingSettingsTab,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+    {
+      className: 'magic-checkout-settings',
+      label: 'Coupon Setup',
+      path: '/magic/setup-settings/coupon-setup',
+      Component: () => (
+        <CardCTA
+          redirectUrl="/magic/coupons"
+          heading="You can setup Coupons under 'Coupons' tab."
+        />
+      ),
+      condition: (_user, abExperiments) => {
+        return abExperiments?.magic_coupon_engine?.variables?.result === 'on';
+      },
+    },
+    {
+      className: 'analytics-settings',
+      label: 'Analytics Setup',
+      path: '/magic/setup-settings/analytics-setup',
+      Component: AnalyticsSettings,
+      condition: (_, abExperiments) =>
+        abExperiments?.magic_analytics_setting?.variables?.result === 'on',
+    },
+    {
+      className: 'automation-settings',
+      path: '/magic/setup-settings/cod-review-workflow',
+      label: 'COD Review Workflow',
+      Component: CODOrderAutomation,
+      condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
+    },
+    {
+      path: '/magic/setup-settings/upload-address',
+      label: 'Upload Addresses',
+      Component: BulkAddressUpload,
+      condition: (_user) => _user.isBulkAddressUploadEnabled,
+      onRCOD: true,
+    },
+  ],
+  [PLATFORMS?.WOOCOMMERCE]: [
+    {
+      className: 'platform-settings-container',
+      label: 'Platform Setup',
+      path: '/magic/setup-settings/platform-settings',
+      Component: PlatformSettingsV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+    {
+      className: 'magic-checkout-settings',
+      path: '/magic/settings',
+      label: 'Checkout Settings',
+      Component: WoocCoupons,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'cod-settings',
+      path: '/magic/setup-settings/cod',
+      label: 'COD',
+      Component: CODComponentV2,
+      condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,
+    },
+    {
+      path: '/magic/setup-settings/rto-reduction-setup/',
+      label: 'RTO Reduction Setup',
+      Component: RTOReductionSetupV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+    {
+      className: 'shipping-settings',
+      path: '/magic/setup-settings/shipping-setup',
+      label: 'Shipping Setup',
+      Component: WoocShippingTab,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'automation-settings',
+      path: '/magic/setup-settings/cod-review-workflow',
+      label: 'COD Review Workflow',
+      Component: CODOrderAutomation,
+      condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
+    },
+    {
+      path: '/magic/setup-settings/upload-address',
+      label: 'Upload Addresses',
+      Component: BulkAddressUpload,
+      condition: (_user) => _user.isBulkAddressUploadEnabled,
+      onRCOD: true,
+    },
+  ],
+};

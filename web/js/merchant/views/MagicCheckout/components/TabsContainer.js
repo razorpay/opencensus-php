@@ -9,8 +9,7 @@ import { RouteGuard } from 'merchant/components/ShowWhen';
 import magicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
-import { RCOD_APP_NAME, SOPC_APP_NAME } from '../common/constants';
-
+import { RCOD_APP_NAME, SOPC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 let redirectPath;
 
 const getTabName = (tabName, dashboardView) => {

@@ -8,6 +8,7 @@ import {
   fetchIntelligenceConfig,
   resetIntelligenceConfig,
 } from 'merchant/reducers/magicCheckout';
+import { fetchMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { FEATURES_DATA } from 'merchant/views/MagicCheckout/data';
 import MagicCheckoutLanding from 'merchant/views/MagicCheckout/components/Landing';
 import MagicCheckoutFeatures from 'merchant/views/MagicCheckout/components/Features';
@@ -24,9 +25,11 @@ const MagicCheckout = ({
   magicCheckout,
   fetchIntelligenceConfig,
   resetIntelligenceConfig,
+  fetchMagicSettings,
 }) => {
   useEffect(() => {
     fetchStatus();
+    fetchMagicSettings();
     fetchIntelligenceConfig();
 
     return () => resetIntelligenceConfig();
@@ -109,6 +112,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   fetchStatus: () => dispatch(fetchMagicCheckoutStatus()),
   fetchIntelligenceConfig: () => dispatch(fetchIntelligenceConfig()),
+  fetchMagicSettings: () => dispatch(fetchMagicSettings()),
   resetIntelligenceConfig: () => dispatch(resetIntelligenceConfig()),
 });
 
