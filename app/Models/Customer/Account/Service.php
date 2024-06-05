@@ -1699,4 +1699,70 @@ class Service extends Base\Service
         return $externalAddressList;
 
     }
+
+    private function saveGlobalAddresses($customerId, $contact, array $addressList)
+    {
+        $externalAddressList = [];
+        foreach ($addressList as $address) {
+            $shippingAddress = [
+                'name' => $address['name'] ?? '',
+                'contact' => $contact,
+                'type' => $address['type'] ?? 'shipping_address',
+                'line1' => $address['line1'] ?? '',
+                'line2' => $address['line2'] ?? '',
+                'city' => $address['city'] ?? '',
+                'zipcode' => $address['zipcode'] ?? '',
+                'state' => $address['state'] ?? '',
+                'country' => $address['country'] ?? '',
+                'source_type' => 'unicommerce_turbo'
+            ];
+
+            $globalAddress = [
+                'contact' => $contact,
+                'shipping_address' => $shippingAddress,
+            ];
+            $externalAddress = $this->core->createGlobalAddress($globalAddress, $customerId, $this->merchant->getId());
+
+            if (isset($externalAddress['shipping_address']))
+            {
+                array_push($externalAddressList, $externalAddress['shipping_address']);
+            }
+        }
+
+        return $externalAddressList;
+
+    }
+
+    public function createGlobalCustomerAndAddress(array $input){
+
+        (new Validator())->setStrictFalse()->validateInput('create_global_customer_and_address', $input);
+
+        // Set Merchant basic auth
+        $merchantId = $input['merchant_id'];
+
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        $createCustomerRequest = [
+            'contact' => $input['contact'],
+            'email'  => $input['email']
+        ];
+
+        $customer = $this->core->createGlobalCustomer($createCustomerRequest, false);
+
+        $savedAddress = [];
+
+        if(isset($input['addresses']) === true)
+        {
+            $savedAddress = $this->saveGlobalAddresses($customer->getId(), $customer->getContact(), $input['addresses']);
+        }
+
+        return [
+            'contact' => $input['contact'],
+            'email' => $input['email'],
+            'customer_id' => $customer['id'],
+            'addresses' => $savedAddress
+        ];
+    }
 }

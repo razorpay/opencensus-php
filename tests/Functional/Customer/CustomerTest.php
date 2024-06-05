@@ -1892,4 +1892,151 @@ class CustomerTest extends TestCase
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    protected function testBulkAddress($contact, $email = null, $merchant_id, $addresses = null)
+    {
+        $content = [
+            'contact' => $contact,
+            'email' => $email,
+            'merchant_id' => $merchant_id,
+        ];
+
+        if ($addresses !== null)
+        {
+            $content['addresses'] = $addresses;
+        }
+        if ($email !== null)
+        {
+            $content['email'] = $email;
+        }
+
+        $request = array(
+            'url' => '/internal/1cc/customer/addresses',
+            'method' => 'post',
+            'content' => $content
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    public function testCreateCustomerAndBulkAddress()
+    {
+        $this->fixtures->merchant->createAccount('10000000000001');
+
+        $this->fixtures->create('customer', [
+            'id'          => 'magic1customer',
+            'merchant_id' => '100000Razorpay',
+            'contact'     => '+919988771111']);
+
+        $this->ba->magicCheckoutAppAuth();
+
+        $address1 = [
+            'line1'         => 'some line one',
+            'line2'         => 'some line two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560078',
+            'country'       => 'India',
+            'type'  => 'shipping_address'
+        ];
+
+        $address2 = [
+            'line1'         => 'some line one',
+            'line2'         => 'some line two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560078',
+            'country'       => 'India',
+            'type'  => 'shipping_address'
+        ];
+
+        $addresses = array($address1, $address2);
+
+        $response = $this->testBulkAddress("+919988771111", null,'10000000000001',$addresses);
+
+        $this->assertEquals('+919988771111', $response['contact']);
+
+        $this->assertEquals('magic1customer',$response['customer_id']);
+
+        $this->assertEmpty($response['email']);
+
+        $this->assertCount(2, $response['addresses']);
+    }
+
+    public function testCreateCustomerAndAddressesWithEmptyContact()
+    {
+        $this->ba->magicCheckoutAppAuth();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The contact field is required.');
+
+        $this->testBulkAddress('', null,'10000000000001',null);
+    }
+
+    public function testCreateCustomerAndAddressesWithInvalidContact()
+    {
+        $this->ba->magicCheckoutAppAuth();
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT);
+
+        $this->expectExceptionMessage('Contact number should be at least 8 digits, including country code');
+
+        $this->testBulkAddress('1234', null,'10000000000001',null);
+    }
+
+    public function testCreateCustomerAndAddressesWithEmptyMerchantId()
+    {
+        $this->ba->magicCheckoutAppAuth();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The merchant id field is required.');
+
+        $this->testBulkAddress("+919988771111", null,'',null);
+    }
+
+    public function testCreateCustomerAndAddressesWithInvalidMerchantId()
+    {
+        $this->ba->magicCheckoutAppAuth();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The merchant id must be 14 characters.');
+
+        $this->testBulkAddress("+919988771111", null,'qwefh',null);
+
+    }
+
+    public function testCreateCustomerAndBulkAddressWithNoAddress()
+    {
+        $this->fixtures->merchant->createAccount('10000000000001');
+
+        $this->fixtures->create('customer', [
+            'id'          => 'magic1customer',
+            'merchant_id' => '100000Razorpay',
+            'contact'     => '+919988771111']);
+
+        $this->ba->magicCheckoutAppAuth();
+
+        $response = $this->testBulkAddress("+919988771111", null,'10000000000001',null);
+
+        $this->assertEquals('+919988771111', $response['contact']);
+
+        $this->assertEquals('magic1customer',$response['customer_id']);
+
+        $this->assertEmpty($response['email']);
+
+        $this->assertCount(0, $response['addresses']);
+    }
 }

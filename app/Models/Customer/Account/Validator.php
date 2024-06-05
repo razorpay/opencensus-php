@@ -126,6 +126,13 @@ class Validator extends Base\Validator
        Entity::EMAIL   => 'sometimes|email',
    ];
 
+    protected static $createGlobalCustomerAndAddressRules = [
+        Entity::CONTACT           => 'required|contact_syntax',
+        Entity::EMAIL             => 'sometimes|nullable|email',
+        Entity::MERCHANT_ID       => 'required|string|size:14',
+        'addresses'               => 'sometimes|array'
+    ];
+
     public function __construct($entity = null)
     {
         parent::__construct($entity);
@@ -317,5 +324,4 @@ class Validator extends Base\Validator
     {
         (new static)->validateInput('editGlobalCustomer', $input);
     }
-
 }

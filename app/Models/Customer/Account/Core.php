@@ -962,7 +962,7 @@ class Core extends Base\Core
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\InvalidArgumentException
      */
-    public function createGlobalAddress($input, string $customerId = '')
+    public function createGlobalAddress($input, string $customerId = '', string $merchantId = '')
     {
         $this->trace->count(AddressMetric::GLOBAL_CREATE_ADDRESS_COUNT);
 
@@ -991,6 +991,13 @@ class Core extends Base\Core
             Customer\Validator::validateCreateGlobalAddress($input);
 
             $input = Customer\Validator::validateAndParseContactInInput($input);
+
+            if ($merchantId !== '')
+            {
+                $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $this->app['basicauth']->setMerchant($this->merchant);
+            }
 
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
                 ['app_token' => $appToken, Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId],
@@ -1942,4 +1949,5 @@ class Core extends Base\Core
             $contact,
             $this->getSharedAccount());
     }
+
 }

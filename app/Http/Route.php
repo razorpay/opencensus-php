@@ -1386,6 +1386,7 @@ class Route
         'customer_logout_global'                   => ['delete',   'apps/logout',                                    'CustomerController@logoutCustomer'                                 ],
         'customer_create_global_address'           => ['post',     'customers/addresses',                            'CustomerController@createGlobalAddress'                            ],
         'customer_edit_global_address'             => ['put',      'customers/addresses',                            'CustomerController@editGlobalAddress'                            ],
+        'internal_create_customer_global_address'  => ['post',     'internal/1cc/customer/addresses',                    'CustomerController@createGlobalCustomerAndAddress' ],
         'customer_record_1cc_address_consent_view'     => ['put',      '1cc/consent/address/view',                   'CustomerController@recordAddressConsent1ccAudits'                  ],
         'customer_record_1cc_address_consent'          => ['put',      '1cc/address/consent',                        'CustomerController@recordAddressConsent1cc'                        ],
         'record_1cc_customer_consent'              => ['post',     '1cc/customer/consent/marketing',                 'CustomerController@recordCustomerConsent1cc'                       ],
@@ -6464,6 +6465,7 @@ class Route
         'update_cod_slabs_dark',
         'update_cod_serviceability_slabs_dark',
         'update_merchant_1cc_coupon_config',
+        'internal_create_customer_global_address',
         'banking_axis_invitations_send',
 
         'buy_pricing_terminal_cost',
@@ -17813,6 +17815,7 @@ class Route
             'order_payments',
             'internal_merchant_details_fetch',
             'payment_refund',
+            'internal_create_customer_global_address',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',

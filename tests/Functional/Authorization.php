@@ -281,6 +281,12 @@ class Authorization
         $this->appAuth($user, \Config::get('applications.consumer_app')['secret']);
     }
 
+    public function magicCheckoutAppAuth($user = 'rzp_test')
+    {
+        // TODO: Change auth config
+        $this->appAuth($user, \Config::get('applications.magic_checkout_service')['secret']);
+    }
+
     public function mandateHQAuth()
     {
         $this->appAuth('rzp_test', \Config::get('applications.mandate_hq')['secret']);

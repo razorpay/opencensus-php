@@ -655,4 +655,13 @@ class CustomerController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createGlobalCustomerAndAddress()
+    {
+        $input = Request::all();
+
+        $address = $this->service()->createGlobalCustomerAndAddress($input);
+
+        return ApiResponse::json($address);
+    }
 }
