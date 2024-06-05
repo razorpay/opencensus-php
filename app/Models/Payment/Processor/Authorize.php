@@ -5541,14 +5541,6 @@ trait Authorize
         }
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $merchant->getCurrency(), $input);
 
-        /*
-         * Base amount modification for opgsp flows
-         * We are modifying the base amount by a said markup fx percent, this would reduce the base amount and we would settle less to the merchant.
-         * This is being done to get more NR by charging fx fees when we are settling to merchant in a different currency in OPGSP(ICICI and JPMC) flows.
-         * Returns the same base amount if merchant does not belong to opgsp flows, otherwise applies the fx markup fees and returns a reduced base amount.
-         */
-        $baseAmount = $this->getBaseAmountComputationForOpgspFlows($amount, $baseAmount, $currency, $merchant);
-
         if($merchant->isLRSFlowEnabled() === true)
         {
             unset($input['is_lrs_convert_amount']);
@@ -5620,16 +5612,6 @@ trait Authorize
         unset($input['mcc_mark_down_percent'], $input['mcc_forex_rate'], $input['mcc_applied'], $input['is_lrs_merchant']);
 
         $payment->setBaseAmount($baseAmount);
-    }
-
-    public function getBaseAmountComputationForOpgspFlows($amount, $baseAmount, $currency, $merchant) {
-
-        if ($merchant->isOpgspImportEnabled() or $merchant->isJpmcImportFlowEnabled()) {
-            $fxMarkUpRate = $merchant->isOpgspImportEnabled()? PaymentConstants::DEFAULT_FX_MARKUP_RATE_FOR_ICICI: PaymentConstants::DEFAULT_FX_MARKUP_RATE_FOR_JPMC;
-            $baseAmount = round(($amount/Currency\Currency::DENOMINATION_FACTOR[$currency]) / (1 + ($fxMarkUpRate/100)), 2) * Currency\Currency::DENOMINATION_FACTOR[$currency];
-        }
-
-        return $baseAmount;
     }
 
     protected function isAllowedWithoutCustomerForSubscription(Payment\Entity $payment)
