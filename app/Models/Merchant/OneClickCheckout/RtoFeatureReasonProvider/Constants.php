@@ -59,6 +59,9 @@ class Constants {
     const MLModelHighPurchaseAmountInOneHour = "High purchase amount in one hour";
     const MLModelHighPurchaseAmountInOneDay  = "High purchase amount in one day";
     const MLModelNewCustomerOnYourStore      = "New customer on your store";
+    const MLModelHighOrderPlacementInOneDay = "Multiple orders placed by customer on same day";
+    const MLModelGibberishAddress           = "Gibberish detected in address";
+    const MLModelGibberishEmail             = "Gibberish detected in email";
 
     // COD ML Model Reasons
     const MLModelFewPrepaidOrdersSeenFromEmailInYourStore = "Few prepaid orders seen from email in your store";
@@ -196,5 +199,10 @@ class Constants {
         "cityglobalfeatures_countrtoitems" => self::MLModelHighRTOCityAcrossAllStores,
         "citymerchantfeatures_countrtoitems" => self::MLModelHighRTOCityOnYourStore,
         "cityglobalfeatures_rtopercent" => self::MLModelHighRTOCityAcrossAllStores,
+        "emailmerchantfeatures_countsuccesstransinoneday" => self::MLModelHighOrderPlacementInOneDay,
+		"phonemerchantfeatures_countsuccesstransinoneday" => self::MLModelHighOrderPlacementInOneDay,
+		"deviceidmerchantfeatures_countsuccesstransinoneday" => self::MLModelHighOrderPlacementInOneDay,
+		"addressstaticfeatures_hasgibberish" => self::MLModelGibberishAddress,
+		"emailstaticfeatures_hasgibberish" => self::MLModelGibberishEmail,
     ];
 }

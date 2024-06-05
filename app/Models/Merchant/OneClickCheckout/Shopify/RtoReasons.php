@@ -114,6 +114,11 @@ class RtoReasons extends Base\Core
             'emailmerchantfeatures_sumpurchaseamountinoneday' => 'High purchase amount in one day',
             'generic_createaccounttimebucket' => 'New customer on your store',
             'phonemerchantfeatures_sumpurchaseamountinoneday' => 'High purchase amount in one day',
+            'emailmerchantfeatures_countsuccesstransinoneday' => 'Multiple orders placed by customer on same day',
+		    'phonemerchantfeatures_countsuccesstransinoneday' => 'Multiple orders placed by customer on same day',
+		    'deviceidmerchantfeatures_countsuccesstransinoneday' => 'Multiple orders placed by customer on same day',
+		    'addressstaticfeatures_hasgibberish' => 'Gibberish detected in address',
+		    'emailstaticfeatures_hasgibberish' => 'Gibberish detected in email',
         ];
 
         $rtoReason = isset($rtoReasonsMap[$rto]) ? $rtoReasonsMap[$rto] : '';
@@ -123,7 +128,7 @@ class RtoReasons extends Base\Core
             $dimensions = [
                 'rto' => $rto,
             ];
-            
+
             $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_RTO_LABEL_MISSING_COUNT, $dimensions);
 
             $this->trace->info(
@@ -137,5 +142,5 @@ class RtoReasons extends Base\Core
 
         return $rtoReason;
     }
-    
+
 }
