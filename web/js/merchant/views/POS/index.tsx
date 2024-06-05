@@ -24,6 +24,12 @@ type POS = {
   mode: 'live' | 'test';
 };
 
+declare global {
+  interface Window {
+    SEGMENT_API_KEY: string;
+  }
+}
+
 try {
   // initialize analytics 2.0
   analytics.init_EXPERIMENTAL({
@@ -32,6 +38,10 @@ try {
         key: window.LUMBERJACK_API_KEY,
         appName: 'onboarding-new-events',
         url: window.LUMBERJACK_API_URL,
+      },
+      segment: {
+        key: window.SEGMENT_API_KEY,
+        priority: 'high',
       },
     },
     locale: 'IN',
