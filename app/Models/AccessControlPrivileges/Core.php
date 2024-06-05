@@ -2,11 +2,13 @@
 
 namespace RZP\Models\AccessControlPrivileges;;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\AccessPolicyAuthzRolesMap;
 use RZP\Exception;
+use RZP\Models\RoleAccessPolicyMap as RoleMap;
 
 
 class Core extends Base\Core
@@ -134,6 +136,80 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function addNewPrivilegeAndItsDependencies(array $input) :array
+    {
+        $this->trace->info(TraceCode::CREATE_PRIVILEGE_AND_RELATED_DATA_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $privilegeEntity = $this->repo->transactionOnConnection(function() use ($input)
+        {
+            if (isset($input['privilege_id'])) {
+                $privilegeId = $input['privilege_id'];
+
+                $privilegeEntity = [];
+            } else {
+                //create privilge
+                $privilegeData = $input['privilege'];
+
+                $privilegeEntity = $this->create($privilegeData);
+
+                $privilegeId = $privilegeEntity['id'];
+            }
+
+            //create access policies
+            foreach ($input['accessPolicies'] as $accessPolicy)
+            {
+                $accessPolicyData = $accessPolicy['data'];
+
+                if (isset($accessPolicy['access_policy_id'])) {
+                    $accessPolicyId = $accessPolicy['access_policy_id'];
+
+                    $accessPolicyEntity = "";
+                } else {
+                    $accessPolicyData[AccessPolicyAuthzRolesMap\Entity::PRIVILEGE_ID] = $privilegeId;
+
+                    $accessPolicyEntity = (new AccessPolicyAuthzRolesMap\Service())->createMap($accessPolicyData);
+
+                    $accessPolicyId = $accessPolicyEntity[AccessPolicyAuthzRolesMap\Entity::ID];
+                }
+
+                $authzRoles = $accessPolicyData[AccessPolicyAuthzRolesMap\Entity::AUTHZ_ROLES];
+
+                //Update Role access policy map
+                foreach ($accessPolicy['standardRolesApplicable'] as $roleId)
+                {
+                    $roleMap = $this->repo->role_access_policy_map->findOrFailByRoleId($roleId);
+
+                    $newAccessPolicyIds = array_values(array_unique(array_merge($roleMap->getAccessPolicyIds(), [$accessPolicyId])));
+
+                    $newAuthzRoles = array_values(array_unique(array_merge($roleMap->getAuthzRoles(), $authzRoles)));
+
+                    $roleMapEditInput = [
+                        RoleMap\Entity::ROLE_ID => $roleId,
+                        RoleMap\Entity::ACCESS_POLICY_IDS => $newAccessPolicyIds,
+                        RoleMap\Entity::AUTHZ_ROLES => $newAuthzRoles
+                    ];
+
+                    (new RoleMap\Service())->edit($roleMapEditInput);
+                }
+            }
+
+            return $privilegeEntity;
+        }, $mode);
+
+        $this->trace->info(TraceCode::CREATE_PRIVILEGE_AND_RELATED_DATA_RESPONSE,
+            [
+                'privilege' => $privilegeEntity,
+                // 'privilege_live' => $privilegeEntity
+            ]);
+
+        return $privilegeEntity;
     }
 
 }

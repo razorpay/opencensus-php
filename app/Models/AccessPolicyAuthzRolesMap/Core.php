@@ -19,7 +19,7 @@ class Core extends Base\Core
         $entity = (new Entity)->build($input);
 
         // check if privilege exists in access_control_privilege entity
-        $privilegeEntity = $this->repo->access_control_privileges->findById($input['privilege_id']);
+        $privilegeEntity = $this->repo->access_control_privileges->findById($input['privilege_id'], true);
 
         if(empty($privilegeEntity) === true)
         {

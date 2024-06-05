@@ -28,6 +28,13 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()->whereJsonContains('access_policy_ids', $access_policy_id)->get();
     }
+
+    public function findOrFailByRoleId($roleId)
+    {
+        return $this->newQuery()
+            ->where(Entity::ROLE_ID, '=', $roleId)
+            ->firstOrFail();
+    }
 }
 
 

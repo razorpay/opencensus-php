@@ -45,4 +45,9 @@ class Service extends Base\Service
 
         return [Entity::PRIVILEGE_DATA => $privileges];
     }
+
+    public function addNewPrivilegeAndItsDependencies($input)
+    {
+        return $this->core->addNewPrivilegeAndItsDependencies($input);
+    }
 }

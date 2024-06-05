@@ -14,11 +14,13 @@ class Entity extends PublicEntity
     const META_DATA     = 'meta_data';
 
     const ACTION_TYPE_VIEW = 'view';
+    const ACTION_TYPE_VIEW_ALL = 'view_all';
     const ACTION_TYPE_CREATE = 'create';
 
     const ACTION_TYPES = [
         self::ACTION_TYPE_VIEW,
-        self::ACTION_TYPE_CREATE
+        self::ACTION_TYPE_CREATE,
+        self::ACTION_TYPE_VIEW_ALL
     ];
 
     protected $entity = Constants\Table::ACCESS_POLICY_AUTHZ_ROLES_MAP;

@@ -4916,6 +4916,7 @@ class Route
         'get_all_country_dashboard_config'          => ['get',  'country/{country_code}/dashboard/configs',                  'DashboardUIController@getAllCountryDashboardUIConfigs'],
         'get_country_dashboard_config'              => ['get',  'country/{country_code}/dashboard/config/{config}',         'DashboardUIController@getCountryDashboardUIConfig'],
         'edit_country_dashboard_config'             => ['put',  'country/{country_code}/dashboard/configs',                  'DashboardUIController@editCountryConfigs'],
+        'cac_add_privilege_and_data'                => ['post', 'cac/privilege',                                             'AccessControlPrivilegesController@addNewPrivilegeAndItsDependencies'],
 
 
         // mozart audit logs
@@ -8024,6 +8025,7 @@ class Route
         'admin_fetch_banking_account',
         'admin_fetch_banking_accounts_multiple',
         'admin_merchant_get_terminals',
+        'cac_add_privilege_and_data',
         'admin_fetch_merchant_sr',
         'merchant_activation_eligibilty',
         'merchant_activation_clarifications_save_admin',
@@ -9431,6 +9433,7 @@ class Route
         'dispute_dcs_config_update'                     => Permission::DISPUTES_DCS_CONFIG_UPDATE,
         'dispute_dcs_config_get'                        => Permission::DISPUTES_DCS_CONFIG_GET,
         'merchant_activation_clarifications_save_admin' => Permission::EDIT_MERCHANT,
+        'cac_add_privilege_and_data'                    => Permission::VIEW_ACTIVATION_FORM,
         'merchant_activation_clarifications_fetch_admin'=> Permission::VIEW_MERCHANT,
         'merchant_nc_revamp_eligibility_admin'          => Permission::VIEW_MERCHANT,
         'merchant_activation_business_categories_v3'       => Permission::VIEW_MERCHANT,
@@ -13728,6 +13731,7 @@ class Route
             'media_service_upload_process',
             'admin_merchant_get_terminals',
             'proxy_for_activation_status',
+            'cac_add_privilege_and_data',
             'merchant_activation_eligibilty',
             'qa_roast_get_token',
             'merchant_activation_clarifications_fetch',
@@ -16112,6 +16116,7 @@ class Route
 
             //CAC
             'cac_privileges_fetch',
+            'cac_add_privilege_and_data',
             'cac_role_fetch_all',
             'admin_fetch_role_map',
             'view_cac_role',

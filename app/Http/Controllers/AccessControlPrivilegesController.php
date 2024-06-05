@@ -14,4 +14,13 @@ class AccessControlPrivilegesController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function addNewPrivilegeAndItsDependencies()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->addNewPrivilegeAndItsDependencies($input);
+
+        return ApiResponse::json($response);
+    }
 }
