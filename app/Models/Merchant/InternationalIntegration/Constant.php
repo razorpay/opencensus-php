@@ -19,6 +19,7 @@ final class Constant
     const INTEGRATION_ENTITY_OPGSP_IMPORT = 'icici_opgsp_import';
     const INTEGRATION_ENTITY_JPMC_IMPORT_FLOW = 'jpmc_import_flow';
     const HS_CODE = 'hs_code';
+    const SETTLEMENT_CURRENCY = 'settlement_currency';
 
     const DOCUMENT_ID_SIGN = 'doc_';
     const FILE_ID_SIGN     = 'file_';

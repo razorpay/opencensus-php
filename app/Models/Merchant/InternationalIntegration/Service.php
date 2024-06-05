@@ -163,7 +163,7 @@ class Service extends Base\Service
 
         $eddStatus = (new MerchantDetailsCore)->getEDDStatus(['merchant_id' => $merchant->getID()]);
 
-        if ($eddStatus !== MerchantDetailsConstants::VERIFIED) 
+        if ($eddStatus !== MerchantDetailsConstants::VERIFIED)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_EDD_STATUS_NOT_VERIFIED, null,
             [
@@ -703,6 +703,32 @@ class Service extends Base\Service
         return $mii_notes;
     }
 
+    public function getMerchantHsCodeAndCurrency($merchantId)
+    {
+        $merchant = $this->merchant;
+
+        if($merchant !== null){
+            $mid = $this->merchant->getId();
+        }else{
+            $mid = $merchantId;
+            $this->merchant = $this->repo->merchant->fetchMerchantFromId($mid);
+        }
+
+        $mii_notes = [];
+
+        $mii = $this->repo->merchant_international_integrations
+            ->getByMerchantIdAndIntegrationEntity($mid, $this->getIntegrationEntityFromFeatureFlag());
+
+        if(isset($mii))
+        {
+            $mii_notes[Constant::HS_CODE] = $mii->getNotes()[Constant::HS_CODE];
+            $mii_notes[Constant::SETTLEMENT_CURRENCY] = $mii->getNotes()[Constant::SETTLEMENT_CURRENCY];
+        }
+
+        return $mii_notes;
+    }
+
+
     public function sendInvoiceRemindersForInternationalIntegration($input)
     {
         $response = [];
@@ -798,7 +824,7 @@ class Service extends Base\Service
 
             // if mii previously set and
             // if hsCode previously not set but new hscode is blacklisted, then disallow updates
-            if ((empty($currentHSCode) === false) and 
+            if ((empty($currentHSCode) === false) and
                 (isset($currentHSCode[Constant::HS_CODE]) === true) and
                 (empty($currentHSCode[Constant::HS_CODE]) === true) and
                 (HsCodeList::isBlacklistedHSCodeForJPMCImportFlow($input[Constant::HS_CODE]) === true))

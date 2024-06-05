@@ -4,13 +4,18 @@ namespace RZP\Models\Settlement\Processor\OPGSPImportICICI;
 
 use Carbon\Carbon;
 use RZP\Constants\Country;
+use RZP\Constants\Disputes;
 use RZP\Constants\Environment;
 use RZP\Constants\Timezone;
 use RZP\Excel\Export as ExcelExport;
 use RZP\Excel\ExportSheet as ExcelSheetExport;
 use RZP\Exception\RecoverableException;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
+use RZP\Jobs\CrossBorder\Metrics;
 use RZP\Models\Base;
+use RZP\Models\Currency\Core;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Adjustment;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Models\Merchant\HsCode\HsCodeList;
 use RZP\Models\Merchant\InternationalIntegration\Service as MIIService;
@@ -28,6 +33,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\GenericDocument;
 use RZP\Mail\Base\Constants as MailConstants;
+use function Termwind\ValueObjects\append;
 
 
 class Processor extends Base\Core
@@ -52,7 +58,6 @@ class Processor extends Base\Core
             $sendFile = $input['send_file'];
             $from = $input['from'] ?? Carbon::yesterday(Timezone::IST)->getTimestamp();
             $to = $input['to'] ?? Carbon::today(Timezone::IST)->getTimestamp();
-            $currentDate = Carbon::now(Timezone::IST)->isoFormat('DD-MM-YYYY');
 
             $settlements = $this->repo->settlement
                 ->getProcessedSettlementsForTimePeriodForMid($merchantId, $from, $to, null);
@@ -73,32 +78,45 @@ class Processor extends Base\Core
             }
 
             $country = Country::getCountryNameByCode($countryCode);
-            $currency = Currency::getCurrencyForCountry($merchantAccount['beneficiary_country']);
             $bankAccountCountry = Country::getCountryNameByCode($merchantAccount['beneficiary_country']);
 
-            $hscode = (new MIIService())->getMerchantHsCode($merchantId);
+            $miiNotes = (new MIIService())->getMerchantHsCodeAndCurrency($merchantId);
 
-            if(isset($hscode) === false)
+            if(isset($miiNotes) === false)
             {
-                $this->trace->info(TraceCode::INVALID_HS_CODE_FOR_MERCHANT, [
+                $this->trace->info(TraceCode::OPGSP_IMPORT_INTEGRATION_NOTES_MISSING_FOR_MERCHANT, [
                     'input'           => $input,
-                    'hscode'          => $hscode,
                 ]);
+                (new Metrics())->pushErrorMetrics(Metrics::CROSS_BORDER_COMMON_WORKER_JOB_FAILED, [
+                    Metrics::ACTION => CrossBorderCommonUseCases::OPGSP_IMPORT_GENERATE_SETTLEMENT_FILE,
+                    Metrics::IS_DELETED => true
+                ]);
+
                 return;
             }
 
-            $isGoodsMerchant = HsCodeList::isGoodsMerchant($hscode['hs_code']);
-            $hsCodeDescription = HsCodeList::getHsCodeDescDescription($hscode['hs_code']);
+            $isGoodsMerchant = HsCodeList::isGoodsMerchant($miiNotes['hs_code']);
+            $hsCodeDescription = HsCodeList::getHsCodeDescDescription($miiNotes['hs_code']);
+
+            $currency = $miiNotes['settlement_currency'];
+
+            if(!isset($currency) or empty($currency) or !Currency::isSupportedCurrency($currency)) {
+                (new Metrics())->pushErrorMetrics(Metrics::CROSS_BORDER_COMMON_WORKER_JOB_FAILED, [
+                    Metrics::ACTION => CrossBorderCommonUseCases::OPGSP_IMPORT_GENERATE_SETTLEMENT_FILE,
+                    Metrics::IS_DELETED => true
+                ]);
+                return;
+            }
 
             $fileCount = 1;
             foreach ($settlements as $settlement)
             {
 
                 $consolidatedData = $this->getConsolidatedFileData($settlement, $currency, $country, $merchantAccount,
-                    $merchantDetail, $bankAccountCountry,$isGoodsMerchant);
+                    $merchantDetail, $bankAccountCountry,$isGoodsMerchant, $miiNotes, $hsCodeDescription);
 
                 $transactionCount = $this->repo->transaction
-                    ->getCountBySettlementIdAndTypes($settlement->getId(), [Type::PAYMENT, Type::REFUND]);
+                    ->getCountBySettlementIdAndTypes($settlement->getId(), [Type::PAYMENT, Type::REFUND, Type::REVERSAL]);
 
                 // get number of batches based on the batch size
                 $numberOfBatches = intdiv($transactionCount, Constants::FILE_BATCH_SIZE) + 1;
@@ -108,7 +126,7 @@ class Processor extends Base\Core
                     $offset = $batch * Constants::FILE_BATCH_SIZE;
 
                     $transactions = $this->repo->transaction
-                        ->getBySettlementIdAndTypesWithOffset($settlement->getId(), [Type::PAYMENT, Type::REFUND],
+                        ->getBySettlementIdAndTypesWithOffset($settlement->getId(), [Type::PAYMENT, Type::REFUND, Type::REVERSAL],
                             $offset, Constants::FILE_BATCH_SIZE);
 
                     // Add chargebacks in the last file
@@ -128,18 +146,37 @@ class Processor extends Base\Core
                     $payments = [];
                     $disputes = [];
                     $addressMap = array();
+
+                    // Refunds to Payments map
+
                     if(!empty($refundIds))
                     {
                         $refunds = $this->repo->refund->fetchRefundByRefundIds($refundIds);
                     }
 
-                    [$refundPaymentIds, $refundIdPaymentIdMap] = $this->getPaymentIdsForRefund($refunds);
+                    [$refundPaymentIds, $refundIdPaymentIdMap] = $this->getPaymentIdsForEntity($refunds);
 
                     $paymentIds = array_merge($paymentIds,$refundPaymentIds);
 
+                    // Disputes to payments map
+                    $disputeIdToAdjustmentIdMap = [];
+
+                    if(!empty($adjustmentIds))
+                    {
+                        $disputeAdjustments = $this->repo->adjustment->fetchAdjustmentsWithIdAndEntityType($adjustmentIds, Constants::DISPUTE);
+                        list($disputeIdToAdjustmentIdMap , $disputeIds) = $this->getAdjustmentsToDisputes($disputeAdjustments);
+                        $disputes = $this->repo->dispute->getDisputes( $disputeIds);
+                    }
+
+                    [$disputePaymentIds, $disputeIdPaymentIdMap] = $this->getPaymentIdsForEntity($disputes);
+
+                    $paymentIds = array_merge($paymentIds,$disputePaymentIds);
+
+                    $adjustmentIdDisputeMap = $this->getAdjustmentIdDisputeMapFromArray($disputeIdToAdjustmentIdMap, $disputes);
+
                     if(!empty($paymentIds))
                     {
-                        $payments = $this->repo->payment->fetchPaymentsGivenIds($paymentIds,Constants::FILE_BATCH_SIZE);
+                        $payments = $this->repo->payment->fetchPaymentsGivenIds($paymentIds,Constants::PAYMENT_BATCH_SIZE);
 
                         foreach ($payments as $payment)
                         {
@@ -176,17 +213,11 @@ class Processor extends Base\Core
 
                     $paymentIdMap = $this->getIdMapFromArray($payments);
 
-                    if(!empty($adjustmentIds))
-                    {
-                        $disputes = $this->repo->dispute->getDisputesForAdjustmentIds($merchantId, $adjustmentIds);
-                    }
-
-                    $adjustmentIdDisputeMap = $this->getAdjustmentIdDisputeMapFromArray($disputes);
-
                     $transactionalData = $this->getTransactionalFileData($transactions, $currency, $country,
-                        $merchantAccount, $bankAccountCountry, $merchantDetail,$isGoodsMerchant, $hscode,
+                        $merchantAccount, $bankAccountCountry, $merchantDetail,$isGoodsMerchant, $miiNotes,
                         $hsCodeDescription,$merchantId,$paymentIdMap,$refundIdPaymentIdMap, $addressMap, $adjustmentIdDisputeMap);
 
+                    $currentDate = Carbon::createFromTimestamp($settlement->getCreatedAt())->isoFormat('DD-MM-YYYY');
                     $fileName = 'Razorpay_settlement_'.$merchantId .'_' .$currentDate . '_'. $fileCount++;
                     $this->generateFile($consolidatedData, $transactionalData, $fileName,$sendFile, $merchantId);
                 }
@@ -205,7 +236,7 @@ class Processor extends Base\Core
     }
 
     private function getConsolidatedFileData($settlement, $currency, $country, $merchantAccount,
-                                             $merchantDetail, $bankAccountCountry,$isGoodsMerchant)
+                                             $merchantDetail, $bankAccountCountry,$isGoodsMerchant, $miiNotes, $hsCodeDescription)
     {
 
         $row = new ConsolidatedFileFormat();
@@ -226,6 +257,8 @@ class Processor extends Base\Core
         $row->BeneficiaryBankCountry = $bankAccountCountry;
         $row->CommodityCode = $isGoodsMerchant? 'Goods':'Digital';
         $row->PurposeOfRemittance= $isGoodsMerchant? 'Goods':'Digital';
+        $row->HSCode = $miiNotes['hs_code'];
+        $row->HSCodeDescription = $hsCodeDescription;
 
         $sheets = $row->getAssocArray();
 
@@ -234,7 +267,7 @@ class Processor extends Base\Core
     }
 
     private function getTransactionalFileData($transactions, $currency, $country, $merchantAccount, $bankAccountCountry,
-                                              $merchantDetail,$isGoodsMerchant, $hscode, $hsCodeDescription,$merchantId,
+                                              $merchantDetail,$isGoodsMerchant, $miiNotes, $hsCodeDescription,$merchantId,
                                               $paymentIdMap,$refundIdPaymentIdMap, $addressMap, $adjustmentIdDisputeMap)
     {
         $transactionalData = array();
@@ -248,6 +281,7 @@ class Processor extends Base\Core
             $row->Date = Carbon::createFromTimestamp($transaction->getCreatedAt())->isoFormat('DD-MM-YYYY');
 
             $netAmountValue = 0;
+            $shouldSkipRow = false;
 
             switch ($transaction->getType())
             {
@@ -258,12 +292,16 @@ class Processor extends Base\Core
                     $row->Mode = $paymentIdMap[$transaction->getEntityId()]['method'];
                     if(!empty($paymentIdMap[$transaction->getEntityId()]['notes']))
                     {
-                        $row->InvoiceNumber = $row->AirwayBill = $paymentIdMap[$transaction->getEntityId()]['notes']['invoice_number'];
+                        $row->InvoiceNumber =  $paymentIdMap[$transaction->getEntityId()]['notes']['invoice_number'];
                     }
+                    $row->AirwayBill = $isGoodsMerchant? $row->InvoiceNumber : 'NA';
                     $address = $addressMap[$transaction->getEntityId()];
                     [$name,$consolidatedAddress] = $this->getBuyerAddressAndName($address);
                     $row->BuyerName = $name;
                     $row->BuyerAddress = $consolidatedAddress;
+                    if (abs($paymentIdMap[$transaction->getEntityId()]['base_amount']) <= 100) { // base_amount in paise , hence less <= 100 (< Rs1)
+                        $shouldSkipRow = true;
+                    }
                     break;
 
                 case Type::REFUND:
@@ -274,12 +312,16 @@ class Processor extends Base\Core
                     $row->OPGSPTransactionRefNo = $paymentForRefund['id'];
                     if(!empty($paymentForRefund['notes']))
                     {
-                        $row->InvoiceNumber = $row->AirwayBill = $paymentForRefund['notes']['invoice_number'];
+                        $row->InvoiceNumber =  $paymentForRefund['notes']['invoice_number'];
                     }
+                    $row->AirwayBill = $isGoodsMerchant? $row->InvoiceNumber : 'NA';
                     $address = $addressMap[$refundIdPaymentIdMap[$transaction->getEntityId()]];
                     [$name,$consolidatedAddress] = $this->getBuyerAddressAndName($address);
                     $row->BuyerName = $name;
                     $row->BuyerAddress = $consolidatedAddress;
+                    if (abs($paymentForRefund['base_amount']) <= 100) { // base_amount in paise , hence less <= 100 (< Rs1)
+                        $shouldSkipRow = true;
+                    }
                     break;
 
                 case Type::ADJUSTMENT:
@@ -293,7 +335,15 @@ class Processor extends Base\Core
                     }
                     $dispute = $adjustmentIdDisputeMap[$transaction->getEntityId()];
                     $row->OPGSPTransactionRefNo = $dispute[DisputeEntity::PAYMENT_ID];
-
+                    $disputePayment =$paymentIdMap[$dispute[DisputeEntity::PAYMENT_ID]];
+                    $address = $addressMap[$disputePayment['id']];
+                    [$name,$consolidatedAddress] = $this->getBuyerAddressAndName($address);
+                    $row->BuyerName = $name;
+                    $row->BuyerAddress = $consolidatedAddress;
+                    $row->Mode = $disputePayment['method'];
+                    if (abs($netAmountValue) <= 1) { // amount in Rs
+                        $shouldSkipRow = true;
+                    }
                     break;
 
                 default:
@@ -304,6 +354,10 @@ class Processor extends Base\Core
                             'transaction_type'  => $transaction->getType(),
                         ]);
                     break;
+            }
+
+            if ($shouldSkipRow === true) {
+                continue;
             }
 
             $row->INRAmount = $netAmountValue;
@@ -318,7 +372,7 @@ class Processor extends Base\Core
             $row->BeneficiaryBankCountry = $bankAccountCountry;
             $row->InvoiceDate = Carbon::createFromTimestamp($transaction->getCreatedAt())->isoFormat('DD-MM-YYYY');
             $row->CommodityCode = $isGoodsMerchant? 'Goods':'Digital';
-            $row->HSCode = $hscode['hs_code'];
+            $row->HSCode = $miiNotes['hs_code'];
             $row->HSCodeDescription = $hsCodeDescription;
             $row->PurposeOfRemittance= $isGoodsMerchant? 'Goods':'Digital';
             $row->TransactionAmount = $netAmountValue;
@@ -517,18 +571,18 @@ class Processor extends Base\Core
         return [$paymentIds, $refundIds, $adjustmentIds];
     }
 
-    protected function getPaymentIdsForRefund($data)
+    protected function getPaymentIdsForEntity($data)
     {
         $ids = [];
-        $refundIdPaymentIdMap = array();
+        $paymentIdMap = array();
 
         foreach ($data as $datum)
         {
             array_push($ids, $datum['payment_id']);
-            $refundIdPaymentIdMap[$datum['id']] = $datum['payment_id'];
+            $paymentIdMap[$datum['id']] = $datum['payment_id'];
         }
 
-        return [$ids, $refundIdPaymentIdMap];
+        return [$ids, $paymentIdMap];
     }
 
     protected function getIdMapFromArray($data)
@@ -555,16 +609,31 @@ class Processor extends Base\Core
         return $idMap;
     }
 
-    protected function getAdjustmentIdDisputeMapFromArray($data)
+    protected function getAdjustmentIdDisputeMapFromArray($adjustmentIdMap, $data)
     {
         $idMap = array();
 
         foreach ($data as $datum)
         {
-            $idMap[$datum[DisputeEntity::DEDUCTION_SOURCE_ID]] = $datum;
+            $idMap[$adjustmentIdMap[$datum[DisputeEntity::ID]]] = $datum;
         }
 
         return $idMap;
+    }
+
+    protected function getAdjustmentsToDisputes($data)
+    {
+        $idMap = array();
+        $disputeIds = [];
+
+        foreach ($data as $datum)
+        {
+            $idMap[$datum[Adjustment\Entity::ENTITY_ID]] = $datum[Adjustment\Entity::ID];
+
+            array_push($disputeIds,$datum[Adjustment\Entity::ENTITY_ID]);
+        }
+
+        return [$idMap, $disputeIds] ;
     }
 
     protected  function getBuyerAddressAndName($address)

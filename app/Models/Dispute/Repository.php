@@ -557,6 +557,13 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function getDisputes($ids)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->whereIn(Entity::ID, $ids)
+            ->get();
+    }
+
     public function getNonDaoLostAndWonDisputes($merchantId)
     {
         return $this->newQuery()

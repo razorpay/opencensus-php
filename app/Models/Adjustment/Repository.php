@@ -174,4 +174,13 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchAdjustmentsWithIdAndEntityType( array $adjustmentIds, string $type) {
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->whereIn(Adjustment\Entity::ID, $adjustmentIds)
+            ->where(Entity::ENTITY_TYPE, '=', $type)
+            ->get();
+
+    }
+
 }
