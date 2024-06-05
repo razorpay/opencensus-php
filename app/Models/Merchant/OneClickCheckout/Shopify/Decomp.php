@@ -121,15 +121,6 @@ class Decomp extends Base\Service
         {
             return false;
         }
-        // These are the feature flags currently being migrated.
-        if (
-            $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_ENABLE_NECTOR_COINS) ||
-            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_GIFT_CARD) ||
-            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_COUPON_ENGINE)
-        )
-        {
-            return (new SplitzExperimentEvaluator())->useMCSForShopifyCompleteCheckoutForFeatureFlags($merchantId);
-        }
         return true;
     }
 
