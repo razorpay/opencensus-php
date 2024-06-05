@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { compose } from 'redux';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import Slider, { SliderDots } from 'common/new-ui/Slider';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
-import lazy from 'merchant/routes/LazyLoader';
-import { RZPFeatures } from 'merchant/helpers/data';
 import onBoardingHOC, {
   OnBoardingWrapper,
   getOnBoardingDataFromLocalState,
   setOnBoardingDataInLocalState,
 } from 'merchant/components/OnBoarding';
-
-import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
+import { RZPFeatures } from 'merchant/helpers/data';
+import lazy from 'merchant/routes/LazyLoader';
 import { onboardPageVisit } from 'merchant/views/Navigator/components/OnBoarding/track';
+import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 
 const Intro = lazy(() =>
   import(
@@ -34,11 +32,11 @@ const Survey = lazy(() =>
   ),
 );
 
-const PricingPlan = lazy(() =>
-  import(
-    /* webpackChunkName: 'PricingPlan' */ 'merchant/views/Navigator/components/OnBoarding/components/PricingPlan'
-  ),
-);
+// const PricingPlan = lazy(() =>
+//   import(
+//     /* webpackChunkName: 'PricingPlan' */ 'merchant/views/Navigator/components/OnBoarding/components/PricingPlan'
+//   ),
+// );
 
 function OptimizerOnBoarding() {
   const {
@@ -146,7 +144,7 @@ function OptimizerOnBoarding() {
             />
           )}
 
-          {(sliderProps) => <PricingPlan sliderProps={sliderProps} />}
+          {/* {(sliderProps) => <PricingPlan sliderProps={sliderProps} />} */}
         </Slider>
       </SuspenseWithLoader>
     </OnBoardingWrapper>

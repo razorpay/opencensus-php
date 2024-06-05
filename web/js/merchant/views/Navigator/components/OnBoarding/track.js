@@ -34,6 +34,13 @@ export const CLICK_NEXT_ON_SURVEY = {
   screen: 'Optimizer - Onboarding',
 };
 
+export const clickBookDemo = (details) => ({
+  objectName: `Optimizer Book Demo`,
+  actionName: 'clicked',
+  screen: 'Optimizer - Onboarding',
+  properties: { ...details },
+});
+
 export const CLICK_BACK_ON_PRICING_PLAN = {
   objectName: `Optimizer Back on Pricing Plan`,
   actionName: 'clicked',

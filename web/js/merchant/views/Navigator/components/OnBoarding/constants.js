@@ -9,10 +9,7 @@ export const FEATURES_DATA = [
   {
     icon: 'https://razorpay.com/assets/optimizer/fold-5/card-2.png',
     title: 'Add multiple gateways in a single click',
-    // prettier-ignore
-    desc:
-      // eslint-disable-next-line prettier/prettier
-      'Save on transaction costs by routing across gateways by payment method, value and any other factor'
+    desc: 'Save on transaction costs by routing across gateways by payment method, value and any other factor',
   },
   {
     icon: 'https://razorpay.com/assets/optimizer/fold-5/card-3.png',
@@ -22,10 +19,7 @@ export const FEATURES_DATA = [
   {
     icon: 'https://razorpay.com/assets/optimizer/fold-5/card-4.png',
     title: 'Single Data Source',
-    // prettier-ignore
-    desc:
-      // eslint-disable-next-line prettier/prettier
-      'Get all your settlement reports and success rate data from all your payment gateways in a single click'
+    desc: 'Get all your settlement reports and success rate data from all your payment gateways in a single click',
   },
 ];
 
@@ -59,7 +53,7 @@ export const HAVE_MULTIPLE_GATEWAYS_OPTIONS = [
 ];
 
 export const POINTS = [
-  { title: 'Improve payment success rate by 5%' },
-  { title: 'Reduce transaction costs by 30%' },
-  { title: 'Get 10% increase in your revenues' },
+  { title: 'Get one click Integration with 15+ top payment gateways' },
+  { title: 'Boost payments success rates by 10% with AI powered routing' },
+  { title: 'Save 15+ hours with automated reconciliation across all PGs' },
 ];

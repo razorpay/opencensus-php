@@ -1,21 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-import ShowWhen from 'merchant/components/ShowWhen';
-
+import Button from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
-
-import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 import {
-  CLICK_BACK_ON_SURVEY,
-  CLICK_NEXT_ON_SURVEY,
-} from 'merchant/views/Navigator/components/OnBoarding/track';
+  getOnBoardingDataFromLocalState,
+  setOnBoardingDataInLocalState,
+} from 'merchant/components/OnBoarding';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { RZPFeatures } from 'merchant/helpers/data';
 import {
   IMG_URL,
   GATEWAYS_OPTIONS,
   HAVE_MULTIPLE_GATEWAYS_OPTIONS,
 } from 'merchant/views/Navigator/components/OnBoarding/constants';
+import {
+  CLICK_BACK_ON_SURVEY,
+  clickBookDemo,
+} from 'merchant/views/Navigator/components/OnBoarding/track';
+import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 
 function Survey({
   sliderProps,
@@ -24,15 +27,25 @@ function Survey({
   helpDetails,
   isHelpDetailsValid,
 }) {
+  const local = getOnBoardingDataFromLocalState(RZPFeatures.OPTIMIZER);
+  const [hasBookedForDemo, setHasBookedForDemo] = useState(local.hasBookedForDemo ?? false);
+
+  useEffect(() => {
+    setOnBoardingDataInLocalState({
+      feature: RZPFeatures.OPTIMIZER,
+      data: { hasBookedForDemo },
+    });
+  }, [hasBookedForDemo]);
+
   const handleBackButton = () => {
     sliderProps?.prev();
 
     trackOptimizerEvents(CLICK_BACK_ON_SURVEY);
   };
 
-  const handleFormSubmit = () => {
-    sliderProps?.next();
-    trackOptimizerEvents(CLICK_NEXT_ON_SURVEY);
+  const handleHasBookedForDemo = () => {
+    setHasBookedForDemo(!hasBookedForDemo);
+    trackOptimizerEvents(clickBookDemo(helpDetails));
   };
 
   return (
@@ -52,7 +65,7 @@ function Survey({
             <div className="header-title">Please help us with a few details</div>
           </div>
 
-          <Form className="survey-form" onSubmit={handleFormSubmit}>
+          <Form className="survey-form" onSubmit={handleHasBookedForDemo}>
             <Input.Radio
               className="Input--vTop Input--required"
               size="medium"
@@ -86,16 +99,17 @@ function Survey({
                 Back
               </Button.Transparent>
 
-              <Button className="Forward-Button" type="submit" disabled={!isHelpDetailsValid()}>
-                Next
-              </Button>
+              {hasBookedForDemo ? (
+                <Button className="joined-button" type="button">
+                  <i className="i i-tick" /> Booked a demo
+                </Button>
+              ) : (
+                <Button className="Forward-Button" type="submit" disabled={!isHelpDetailsValid()}>
+                  Book a demo
+                </Button>
+              )}
             </div>
           </Form>
-
-          <div className="quick-tip">
-            <b>Quick Tip:</b> You can now go-live on Optimizer with Paytm, PayU and Razorpay with
-            just 2-clicks!
-          </div>
         </div>
       </div>
     </div>

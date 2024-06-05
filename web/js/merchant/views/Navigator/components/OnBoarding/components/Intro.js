@@ -1,12 +1,10 @@
 import React from 'react';
 
-import { RZPFeatures } from 'merchant/helpers/data';
-
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
-
-import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
-import { CLICK_READ_MORE } from 'merchant/views/Navigator/components/OnBoarding/track';
+import { RZPFeatures } from 'merchant/helpers/data';
 import { IMG_URL, POINTS } from 'merchant/views/Navigator/components/OnBoarding/constants';
+import { CLICK_READ_MORE } from 'merchant/views/Navigator/components/OnBoarding/track';
+import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 
 function Intro({ sliderProps }) {
   const handleNextSlide = (params) => {
@@ -21,7 +19,7 @@ function Intro({ sliderProps }) {
       className="intro"
       next={handleNextSlide}
       ctaText="Know More"
-      title="Optimizer | The Smart Payment OS"
+      title="Optimizer | India’s First AI-Powered Payments Router"
       feature={RZPFeatures.OPTIMIZER}
       imageUrl={IMG_URL}
       desc={renderDescription}
