@@ -606,6 +606,7 @@ class Name
     const REJECT_PAYOUT                       = 'reject_payout';
     const RETRY_PAYOUT_WORKFLOW_BULK          = 'retry_payout_workflow_bulk';
     const VIEW_PAYOUT                         = 'view_payout';
+    const VIEW_ALL_PAYOUTS                    = 'view_all_payouts';
     const CANCEL_PAYOUT                       = 'cancel_payout';
     const UPDATE_PAYOUT                       = 'update_payout';
     const DOWNLOAD_PAYOUT_ATTACHMENTS         = 'download_payout_attachments';
@@ -617,6 +618,7 @@ class Name
     const PROCESS_PAYOUT_SCHEDULED            = 'process_payout_scheduled';
     const VIEW_PAYOUT_SUMMARY                 = 'view_payout_summary';
     const VIEW_PAYOUT_WORKFLOW_SUMMARY        = 'view_payout_workflow_summary';
+    const VIEW_ALL_PAYOUT_LINKS               = 'view_all_payout_links';
     const VIEW_PAYOUT_LINKS                   = 'view_payout_links';
     const CREATE_PAYOUT_LINKS                 = 'create_payout_links';
     const APPROVE_PAYOUT_LINKS                = 'approve_payout_links';

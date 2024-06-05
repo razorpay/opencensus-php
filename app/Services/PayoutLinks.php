@@ -93,6 +93,9 @@ class PayoutLinks
     const CANCEL_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/CancelPayoutLink';
     const FETCH_PAYOUT_LINK_PATH                   = 'twirp/payoutlinks.Payoutlinks/FetchPayoutLink';
     const FETCH_PAYOUT_LINK_MULTIPLE_PATH          = 'twirp/payoutlinks.Payoutlinks/FetchMultiplePayoutLinks';
+    const FETCH_MY_PENDING_PAYOUT_LINK_PATH        = 'twirp/payoutlinks.Payoutlinks/FetchMyPendingPayoutLinks';
+    const FETCH_MY_PAYOUT_LINK_PATH               = 'twirp/payoutlinks.Payoutlinks/FetchMyPayoutLinks';
+    const FETCH_ALL_PAYOUT_LINK_PATH               = 'twirp/payoutlinks.Payoutlinks/FetchAllPayoutLinks';
     const FETCH_PAYOUT_LINKS_SUMMARY_PATH          = 'twirp/payoutlinks.Payoutlinks/FetchPayoutLinksSummary';
     const GET_SETTINGS_PAYOUT_LINK_PATH            = 'twirp/payoutlinks.Payoutlinks/GetSettings';
     const UPDATE_SETTINGS_PAYOUT_LINK_PATH         = 'twirp/payoutlinks.Payoutlinks/UpdateSettings';
@@ -585,6 +588,21 @@ class PayoutLinks
     public function fetchMultiple(array $input)
     {
         $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_MULTIPLE_PATH);
+
+        if (array_key_exists('fetch_all', $input) === true) {
+            $url = $this->getConstructedUrl(self::FETCH_ALL_PAYOUT_LINK_PATH);
+            unset($input['fetch_all']);
+        }
+
+        if (array_key_exists('fetch_mine', $input) === true) {
+            $url = $this->getConstructedUrl(self::FETCH_MY_PAYOUT_LINK_PATH);
+            unset($input['fetch_mine']);
+        }
+
+        if (array_key_exists('fetch_my_pending', $input) === true) {
+            $url = $this->getConstructedUrl(self::FETCH_MY_PENDING_PAYOUT_LINK_PATH);
+            unset($input['fetch_my_pending']);
+        }
 
         if(key_exists('id', $input))
         {

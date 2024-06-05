@@ -41,6 +41,33 @@ class XperienceController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getAllBulkPayouts()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getAllBulkPayouts($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMyBulkPayouts()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getMyBulkPayouts($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMyPendingBulkPayouts()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getMyPendingBulkPayouts($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function ownerBulkRejectBulkPayouts()
     {
         $input = Request::all();

@@ -31,6 +31,9 @@ class Xperience
     // RPCs
     const BULK_PAYOUT_GET_PATH               = 'v1/bulk-payouts/%s';
     const BULK_PAYOUTS_FETCH_MULTIPLE_PATH   = 'v1/bulk-payouts';
+    const BULK_PAYOUTS_FETCH_ALL_PATH        = 'v1/bulk-payouts/fetch/all';
+    const BULK_PAYOUTS_FETCH_MY_PATH         = 'v1/bulk-payouts/fetch/me';
+    const BULK_PAYOUTS_FETCH_MY_PENDING_PATH = 'v1/bulk-payouts/fetch/my-approvals';
     const OWNER_REJECT_BULK_PAYOUTS_PATH     = 'v1/bulk-payouts/reject/owner';
     const GET_PENDING_BULK_PAYOUTS_PATH      = 'v1/bulk-payouts/pending';
     const APPROVE_BULK_PAYOUTS_PATH          = 'v1/bulk-payouts/approve';
@@ -364,6 +367,36 @@ class Xperience
     {
 
         $url = $this->getConstructedUrl(self::BULK_PAYOUTS_FETCH_MULTIPLE_PATH);
+
+        $response = $this->makeRequest($url, $queryParams, [], self::GET);
+
+        return $response;
+    }
+
+    public function getAllBulkPayouts(array $queryParams)
+    {
+
+        $url = $this->getConstructedUrl(self::BULK_PAYOUTS_FETCH_ALL_PATH);
+
+        $response = $this->makeRequest($url, $queryParams, [], self::GET);
+
+        return $response;
+    }
+
+    public function getMyBulkPayouts(array $queryParams)
+    {
+
+        $url = $this->getConstructedUrl(self::BULK_PAYOUTS_FETCH_MY_PATH);
+
+        $response = $this->makeRequest($url, $queryParams, [], self::GET);
+
+        return $response;
+    }
+
+    public function getMyPendingBulkPayouts(array $queryParams)
+    {
+
+        $url = $this->getConstructedUrl(self::BULK_PAYOUTS_FETCH_MY_PENDING_PATH);
 
         $response = $this->makeRequest($url, $queryParams, [], self::GET);
 

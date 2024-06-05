@@ -352,6 +352,27 @@ class PayoutLinkController extends Controller
         return ApiResponse::json($entities);
     }
 
+    public function fetchAllPayoutLinks() 
+    {
+        $entities = $this->service()->fetchAllPayoutLinks($this->input);
+
+        return ApiResponse::json($entities);
+    }
+
+    public function fetchMyPayoutLinks()
+    {
+        $entities = $this->service()->fetchMyPayoutLinks($this->input);
+
+        return ApiResponse::json($entities);
+    }
+
+    public function fetchMyPendingPayoutLinks()
+    {
+        $entities = $this->service()->fetchMyPendingPayoutLinks($this->input);
+
+        return ApiResponse::json($entities);
+    }
+
     public function adminActions()
     {
         return $this->service()->adminActions($this->input);

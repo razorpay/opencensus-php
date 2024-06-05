@@ -839,6 +839,33 @@ class Service extends Base\Service
         return $this->app['payout-links']->fetchMultiple($input);
     }
 
+    public function fetchAllPayoutLinks(array $input): array
+    {
+        $input['merchant_id'] = $this->merchant->getId();
+        $input['user_id'] = $this->auth->getUser()->getId();
+        $input['user_role'] = $this->auth->getUserRole();
+        $input['fetch_all'] = true;
+        return $this->app['payout-links']->fetchMultiple($input);
+    }
+
+    public function fetchMyPayoutLinks(array $input): array
+    {
+        $input['merchant_id'] = $this->merchant->getId();
+        $input['user_id'] = $this->auth->getUser()->getId();
+        $input['user_role'] = $this->auth->getUserRole();
+        $input['fetch_mine'] = true;
+        return $this->app['payout-links']->fetchMultiple($input);
+    }
+
+    public function fetchMyPendingPayoutLinks(array $input): array
+    {
+        $input['merchant_id'] = $this->merchant->getId();
+        $input['user_id'] = $this->auth->getUser()->getId();
+        $input['user_role'] = $this->auth->getUserRole();
+        $input['fetch_my_pending'] = true;
+        return $this->app['payout-links']->fetchMultiple($input);
+    }
+
     public function adminActions(array $input): array
     {
         $this->checkIfPLServiceIsDown();
