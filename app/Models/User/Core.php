@@ -533,7 +533,8 @@ class Core extends Base\Core
             }
         }
 
-        if($user->getPassword() !== null) {
+        if($user->getPassword() !== null)
+        {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
                 null,
                 [
@@ -554,12 +555,14 @@ class Core extends Base\Core
 
         LoginSignupRateLimit::resetKey($user->getId(), Constants::VERIFY_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
 
-        try {
+        try
+        {
             $pgosProxyController = new MerchantOnboardingProxyController();
 
             // send request to PGOS to save email
             $merchant = $user->getMerchantEntity();
-            if (is_null($merchant)) {
+            if ($merchant === null)
+            {
                 $this->trace->info(TraceCode::VERIFY_EMAIL_OTP_NO_MERCHANT_FOUND, [
                     'user_id' => $user->getId(),
                 ]);
@@ -567,20 +570,32 @@ class Core extends Base\Core
                 return ["user_id" => $user->getId()];
             }
             $merchantId = $merchant->getId();
-            $pgosResponse = $pgosProxyController->handlePGOSProxyRequests($pgosProxyController::MERCHANT_ACTIVATION_SAVE, [
+            $this->trace->debug(TraceCode::PGOS_CALL_TO_SAVE_VERIFIED_EMAIL, [
                 'merchant_id' => $merchantId,
-                'email' => $email,
-            ], $merchant);
+                'caller'      => 'verifyEmailOtp',
+            ]);
+
+            $pgosResponse = $pgosProxyController->handlePGOSProxyRequests(
+                $pgosProxyController::MERCHANT_ACTIVATION_SAVE,
+                [
+                'merchant_id' => $merchantId,
+                'email'       => $email,
+                ],
+                $merchant);
 
             if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
             {
                 throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
             }
 
-            $this->trace->info(TraceCode::PGOS_MERCHANT_ACTIVATION_SAVE, [
-                'merchant_id' => $merchantId,
-                'pgos_response' => $pgosResponse,
-            ]);
+            if($pgosResponse === null)
+            {
+                $this->trace->info(TraceCode::PGOS_MERCHANT_ACTIVATION_SAVE, [
+                    'merchant_id'   => $merchantId,
+                    'pgos_response' => $pgosResponse,
+                    'caller'        => 'verifyEmailOtp',
+                ]);
+            }
 
             return ["user_id" => $user->getId()];
         }
@@ -5111,6 +5126,52 @@ class Core extends Base\Core
             $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input) {
                 $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
                 $this->repo->saveOrFail($merchant);
+
+                try
+                {
+                    $pgosProxyController = new MerchantOnboardingProxyController();
+
+                    // send request to PGOS to save email
+                    $merchantId = $merchant->getId();
+
+                    $this->trace->debug(TraceCode::PGOS_CALL_TO_SAVE_VERIFIED_EMAIL, [
+                        'merchant_id' => $merchantId,
+                        'caller'      => 'verifyEmailWithOtp',
+                    ]);
+
+                    $pgosResponse = $pgosProxyController->handlePGOSProxyRequests(
+                        $pgosProxyController::MERCHANT_ACTIVATION_SAVE,
+                        [
+                        'merchant_id' => $merchantId,
+                        'email'       => $input['email'],
+                        ],
+                        $merchant);
+
+                    if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                    {
+                        throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                    }
+
+                    if($pgosResponse === null)
+                    {
+                        $this->trace->info(TraceCode::PGOS_MERCHANT_ACTIVATION_SAVE, [
+                            'merchant_id'   => $merchantId,
+                            'pgos_response' => $pgosResponse,
+                            'caller'        => 'verifyEmailWithOtp',
+                        ]);
+                    }
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                        'merchant_id'   => $merchantId,
+                        'error_message' => $exception->getMessage()
+                    ]);
+
+                    throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                        'error description' => 'submitted data could not be processed'
+                    ]);
+                }
             });
 
             $merchantDetails = $this->merchant->merchantDetail;

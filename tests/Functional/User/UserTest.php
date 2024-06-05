@@ -8721,6 +8721,52 @@ class UserTest extends TestCase
         $this->assertEquals($user->getEmail(), 'abc@rzp.com');
     }
 
+    public function testVerifyEmailWithCallToPGOS()
+    {
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [UserEntity::CONFIRM_TOKEN => 'testing123456789']);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => '10000000000000',
+            'contact_name'  => 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $input = [
+            "experiment_id" => "MyenLcfNh1lKpZ",
+            "id"            => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->fixtures->create('user_device_detail', ["user_id" => UserFixture::MERCHANT_USER_ID,
+            'merchant_id' => '10000000000000',
+            "signup_campaign" => 'easy_onboarding',
+            'metadata' => [
+                'service' => 'pgos'
+            ],
+        ]);
+
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+        $this->assertTrue($user->getConfirmedAttribute());
+        $this->assertTrue($user->confirmed);
+        $this->assertEquals($user->getEmail(), 'abc@rzp.com');
+    }
+
     public function testVerifyEmailWithOtpAlreadyVerified()
     {
         $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
@@ -10120,34 +10166,34 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
-    
+
     public function testOptInStatusForWhatsappForAdminAuth()
     {
         $merchantId = '10000000000000';
-    
+
         $this->fixtures->edit('merchant', $merchantId, [
             'name' => 'test merchant',
         ]);
-        
+
         $admin = $this->ba->getAdmin();
-    
+
         $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
-    
+
         $role = $admin->roles()->get()[0];
-    
+
         $perm = $this->fixtures->create('permission', ['name' => PermissionName::VIEW_USER_OPT_IN_STATUS_WHATSAPP]);
-    
+
         $role->permissions()->attach($perm->getId());
-        
+
         $this->ba->adminProxyAuth($merchantId, 'rzp_test_'.$merchantId);
-        
+
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
             [
                 UserEntity::CONTACT_MOBILE          => '9999999999',
             ]);
-    
+
         $this->expectStorkServiceRequestForAction('optInStatusForWhatsapp');
-        
+
         $this->startTest();
     }
 
