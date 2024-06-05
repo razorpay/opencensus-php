@@ -181,7 +181,15 @@ class Core extends Base\Core
 
         try
         {
-            $fundAccountValidation = $this->createValidationEntity($input, $merchant, $isCompositeFavRequest);
+            $fundAccountValidation = $this->createValidationEntity($input, $merchant);
+
+            // adding unique identifier to identify composite fav during webhook update
+            if ($isCompositeFavRequest === true)
+            {
+                $fundAccountValidation->setReceipt(Constants::TYPE_NEW_FAV_COMPOSITE . "_" .$fundAccountValidation->getId());
+
+                $this->repo->saveOrFail($fundAccountValidation);
+            }
 
             // Skip fts calls for validation in case of ledger failure
             // This will be picked up from async job when ledger status is checked
@@ -287,7 +295,7 @@ class Core extends Base\Core
 
     public function setAdditionalFieldsForCompositeResponse(Entity $fav, bool $isCompositeFavRequest = false)
     {
-        if (($isCompositeFavRequest === true) || ($fav->getReceipt() === Constants::TYPE_NEW_FAV_COMPOSITE))
+        if (($isCompositeFavRequest === true) || (str_contains($fav->getReceipt(), Constants::TYPE_NEW_FAV_COMPOSITE)))
         {
             $fav->setIsCompositeResponse(true);
 
@@ -609,7 +617,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    protected function createValidationEntity(array $input, Merchant\Entity $merchant, $isCompositeFavRequest = false): Entity
+    protected function createValidationEntity(array $input, Merchant\Entity $merchant): Entity
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
@@ -621,12 +629,12 @@ class Core extends Base\Core
 
         if (self::shouldFavGoThroughLedgerReverseShadowFlow($validation) === true)
         {
-            $validation = $this->processFavThroughLedger($validation, $merchant, $input, $isCompositeFavRequest);
+            $validation = $this->processFavThroughLedger($validation, $merchant, $input);
 
             return $validation;
         }
 
-        $validation = $this->repo->transaction(function () use ($input, $validation, $merchant, $isCompositeFavRequest)
+        $validation = $this->repo->transaction(function () use ($input, $validation, $merchant)
         {
             $this->runInputValidations($validation, $input);
 
@@ -635,11 +643,6 @@ class Core extends Base\Core
             $processor->setDefaultValuesForValidation();
 
             $validation->setAttempts(1);
-
-            if ($isCompositeFavRequest === true)
-            {
-                $validation->setReceipt(Constants::TYPE_NEW_FAV_COMPOSITE);
-            }
 
             // We are saving here because when creating transaction,
             // it is assumed that source already exist.
@@ -719,10 +722,10 @@ class Core extends Base\Core
         return $favInput;
     }
 
-    public function processFavThroughLedger(Entity $validation, Merchant\Entity $merchant, array $input, $isCompositeFavRequest = false): Entity
+    public function processFavThroughLedger(Entity $validation, Merchant\Entity $merchant, array $input): Entity
     {
         // Create the entity first, and calculate the pricing changes.
-        list($validation, $feesSplit) = $this->repo->transaction(function () use ($input, $validation, $merchant, $isCompositeFavRequest)
+        list($validation, $feesSplit) = $this->repo->transaction(function () use ($input, $validation, $merchant)
         {
             $this->runInputValidations($validation, $input);
 
@@ -737,11 +740,6 @@ class Core extends Base\Core
             $validation->setFees($fee);
 
             $validation->setTax($tax);
-
-            if ($isCompositeFavRequest === true)
-            {
-                $validation->setReceipt(Constants::TYPE_NEW_FAV_COMPOSITE);
-            }
 
             $this->repo->saveOrFail($validation);
 

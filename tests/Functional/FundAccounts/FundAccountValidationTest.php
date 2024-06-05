@@ -1305,7 +1305,7 @@ class FundAccountValidationTest extends TestCase
 
         $fav = $this->getDbLastEntity('fund_account_validation');
 
-        $this->assertEquals('new_fav_composite', $fav['receipt']);
+        $this->assertEquals('new_fav_composite'."_".$fav->getId(), $fav['receipt']);
 
         $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
 
@@ -1376,7 +1376,7 @@ class FundAccountValidationTest extends TestCase
 
         $fav = $this->getDbLastEntity('fund_account_validation');
 
-        self::assertEquals("new_fav_composite", $fav['receipt']);
+        self::assertEquals("new_fav_composite"."_".$fav->getId(), $fav['receipt']);
 
         $fav     = $this->getLastEntity('fund_account_validation', true);
         $txn     = $this->getLastEntity('transaction', true);
