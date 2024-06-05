@@ -214,6 +214,8 @@ class ProviderCode
     Const PTHDFC             = 'pthdfc';
     Const FREOICICI          = 'freoicici';
     Const YESPOP             = 'yespop';
+    Const MBOI               = 'mboi';
+    Const SUPERYES           = 'superyes';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -419,6 +421,8 @@ class ProviderCode
         self::PTYES              => 'NPCI',
         self::FREOICICI          => 'NPCI',
         self::YESPOP             => 'NPCI',
+        self::MBOI               => 'NPCI',
+        self::SUPERYES           => 'NPCI',
     ];
 
     /**
@@ -545,6 +549,8 @@ class ProviderCode
         ProviderPsp::BHIM_CRGB_PAY,
         ProviderPsp::FREO,
         ProviderPsp::POP,
+        ProviderPsp::BOI_MOBILE_OMNI_NEO_BANK,
+        ProviderPsp::SUPER_MONEY,
     ];
 
     /**
@@ -621,6 +627,8 @@ class ProviderCode
         self::FREOICICI    => ProviderPsp::FREO,
         self::CRGB         => ProviderPsp::BHIM_CRGB_PAY,
         self::YESPOP       => ProviderPsp::POP,
+        self::MBOI         => ProviderPsp::BOI_MOBILE_OMNI_NEO_BANK,
+        self::SUPERYES     => ProviderPsp::SUPER_MONEY,
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
     ];

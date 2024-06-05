@@ -63,6 +63,8 @@ class ProviderPsp
     Const FAVE_MONEY         = 'fave_money';
     Const FREO               = 'freo';
     Const POP                = 'pop';
+    Const SUPER_MONEY        = 'super_money';
+    Const BOI_MOBILE_OMNI_NEO_BANK  = 'boi_mobile_omni_neo_bank';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';
