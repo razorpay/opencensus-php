@@ -2633,6 +2633,8 @@ class GatewayController extends Controller
                             'action'    => $payment->getTerminalId()
                         ]);
 
+                    $response = (new MozartBase($this->app))->sendMozartRequest(Gateway::WALLET_PAYMENT, Gateway::TNGD, Gateway::S2S_TOKEN ,$input, "v1",false,"60", "10", false, false);
+
                     $accessToken = $input['request']['body']['accessToken'];
 
                     $tokenFunction = $input['request']['head']['function'];
@@ -2661,7 +2663,6 @@ class GatewayController extends Controller
 
                     $token = (new Payment\Processor\Processor($merchant))->updateToken($payment, $tokenData);
 
-                    $response = (new MozartBase($this->app))->sendMozartRequest(Gateway::WALLET_PAYMENT, Gateway::TNGD, Gateway::S2S_TOKEN ,$input, "v1",false,"60", "10", false, false);
 
                     $this->trace->info(TraceCode::TOKEN_CREATE,[ "token_data" => $token['id']]);
 
