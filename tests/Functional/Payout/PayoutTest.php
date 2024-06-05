@@ -12412,6 +12412,192 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    /**
+     * Create payouts from 2 users associated with the same merchant.
+     * Set the proxy auth as user 2 and hit fetch_multiple.
+     * The user should be able to view the payout created by the user only.
+     */
+    public function testFetchMultipleWithPermissionToViewSelfCreatedPayoutsOnly()
+    {
+        // Set up splitz experiment as on
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on",
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.x_data_privacy_splitz_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')
+                   ->zeroOrMoreTimes()
+                   ->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))
+                   ->andReturn($splitzResp);
+
+        // Add merchant_details. Otherwise, a check fails.
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        // Create a payout from user 1
+        $this->testCreatePayoutViaDashboard();
+
+        // Create another payout from user 2
+        $this->testCreatePayoutViaDashboard();
+
+        // Get User 2
+        $user = $this->getDbLastEntity('user');
+
+        // Set proxy auth of user 2
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        // Hit fetch multiple
+        $this->startTest();
+    }
+
+    /**
+     * Create payouts from 2 users associated with the same merchant.
+     * Set the proxy auth as user 2 and hit fetch_multiple.
+     * The user should be able to view both payouts as splitz experiment is turned off.
+     */
+    public function testFetchMultipleWithPermissionToViewSelfCreatedPayoutsOnlyExpOff()
+    {
+        // Set up splitz experiment as off
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "off",
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.x_data_privacy_splitz_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')
+                   ->zeroOrMoreTimes()
+                   ->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))
+                   ->andReturn($splitzResp);
+
+        // Add merchant_details. Otherwise, a check fails.
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        // Create a payout from user 1
+        $this->testCreatePayoutViaDashboard();
+
+        // Create another payout from user 2
+        $this->testCreatePayoutViaDashboard();
+
+        // Get User 2
+        $user = $this->getDbLastEntity('user');
+
+        // Set proxy auth of user 2
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        // Hit fetch multiple
+        $this->startTest();
+    }
+
+    /**
+     * Create payouts from one user which is pending on another.
+     * Set the proxy auth of the second user and hit fetch_multiple.
+     * The user should be able to view the payout pending on him.
+     */
+    public function testFetchMultipleMyApprovalsWithPermissionToViewSelfCreatedPayoutsOnly()
+    {
+        // Set up splitz experiment as on
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on",
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.x_data_privacy_splitz_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')
+                   ->zeroOrMoreTimes()
+                   ->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))
+                   ->andReturn($splitzResp);
+
+        //1. Set up Fund Account and Merchant User mapping that may be needed to setup on live
+        $this->liveSetUp();
+        $this->buildRolesRequiredForWorkflow();
+        $this->setupWorkflowForLiveMode($this->getWorkflow1());
+
+        //2. Create a Payout
+        $payout           = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $expectedPayoutId = $payout["id"];
+
+        //3. I, finL1RoleUser should see the payout as it is pending on me
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL1RoleUser->getId());
+
+        $request = [
+            'method'  => 'get',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'product'          => 'banking',
+                'expand'           => ['user'],
+                'pending_on_roles' => ['finance_l1']
+            ],
+            'url'     => '/payouts',
+        ];
+
+        $response = $this->sendRequest($request);
+        $payout   = json_decode($response->getContent(), false);
+
+        $this->assertEquals($expectedPayoutId, $payout->items[0]->id);
+        $this->assertTrue(
+            (isset($payout->items[0]->pending_on_user)) and
+            ($payout->items[0]->pending_on_user === true)
+        );
+    }
+
+    public function testCreatePayoutViaDashboard()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $user->getId(),
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->startTest();
+    }
+
     public function testBulkPayout()
     {
         $this->ba->batchAuth();

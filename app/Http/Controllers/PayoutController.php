@@ -370,9 +370,75 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
+        $userId = $this->app['basicauth']->getUser()?->getId();
+
+        if ((isset($userId) === true) and ($this->app['basicauth']->isMerchantDashboardApp() === true))
+        {
+            $pendingOnMyRole = false;
+            $userRole = $this->app['basicauth']->getUserRole();
+
+            if (isset($input[Entity::PENDING_ON_ROLES]) and
+                is_array($input[Entity::PENDING_ON_ROLES]) and
+                in_array($userRole, $input[Entity::PENDING_ON_ROLES], true))
+            {
+                $pendingOnMyRole = true;
+            }
+
+            $xDataPrivacyExperimentOn = $this->isXDataPrivacyExperimentOn();
+
+            // If we should fetch the payouts for the current user, set the user ID in the input
+            if ($xDataPrivacyExperimentOn === true and $pendingOnMyRole === false)
+            {
+                $input[Entity::USER_ID] = $userId;
+            }
+        }
+
         $data = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function getPayoutsAll()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Checks if the X Data Privacy Experiment is turned on for the current merchant
+     *
+     * @return bool Returns true if the X Data Privacy Experiment is turned on, false otherwise.
+     * @throws \Exception If there is an error during the process.
+     */
+    protected function isXDataPrivacyExperimentOn(): bool
+    {
+        $merchantId = $this->app['basicauth']->getMerchantId();
+
+        if (isset($merchantId) === true)
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.x_data_privacy_splitz_experiment_id'),
+                'request_data'  => json_encode(['merchantId' => $merchantId]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variables = $response['response']['variant']['variables'];
+            if (is_array($variables)) {
+                foreach ($variables as $variable)
+                {
+                    if (is_array($variable) && $variable['key'] === "result" && $variable['value'] === "on")
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     public function postPayoutRetry(string $id)

@@ -779,6 +779,9 @@ return [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],
+            'user_id' => [
+                'type'  => 'keyword',
+            ],
         ],
     ],
 

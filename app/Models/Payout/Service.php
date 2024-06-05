@@ -3589,8 +3589,9 @@ class Service extends Base\Service
 
         $routeName = $route->getCurrentRouteName();
 
-        if (($routeName !== Entity::PAYOUT_FETCH_MULTIPLE) or
-            ($basicAuth->isSlackApp() === true))
+        // If route is not fetch_multiple or fetch_multiple_all or if the request is from Slack app, return
+        if (!in_array($routeName, [Entity::PAYOUT_FETCH_MULTIPLE, Entity::PAYOUT_FETCH_MULTIPLE_ALL], true)
+            or ($basicAuth->isSlackApp() ===  true))
         {
             return;
         }
