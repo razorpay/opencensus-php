@@ -2495,6 +2495,72 @@ return [
     ],
 
 
+    'testCreateCompositePayoutPettyCash' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/composite_payout_internal',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'content' => [
+                'mode'                      => 'UPI',
+                'balance_id'                => '',
+                'amount'                    => 100,
+                'currency'                  => 'INR',
+                'purpose'                   => 'petty cash',
+                'narration'                 => 'Batman',
+                "queue_if_low_balance"      => true,
+                'fund_account'   => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'test@ybl',
+                    ],
+                    'contact'     => [
+                        'name'    => 'Test Merchant',
+                    ],
+                ],
+                'source_details'  =>  [
+                    [
+                        'source_id'     =>  'HYKmlGHHyEhZuM', // dummy ID
+                        "source_type"   =>  'petty_cash',
+                        'priority'      =>  1
+                    ]
+                ],
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_JLYYnaOtQ0Xgzt', // dummy ID
+                        'file_name' => 'new file.pdf',
+                    ]
+                ],
+                'notes'  => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'petty cash',
+                'status'          => 'processing',
+                'mode'            => 'UPI',
+                'source_details'  => [
+                    [
+                        'source_id'     => 'HYKmlGHHyEhZuM',
+                        'source_type'   => 'petty_cash',
+                        'priority'      => 1
+                    ]
+                ],
+                'notes'  => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+
     'testApprovePayoutWithBearerAuth' => [
         'request'  => [
             'server' => [
@@ -9191,7 +9257,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 7,
+                'count'     => 8,
                 'items'     =>  [
                     [
                         'purpose'       =>  'refund',
@@ -9219,6 +9285,10 @@ return [
                     ],
                     [
                         'purpose'       => 'vendor advance',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -9271,7 +9341,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 8,
+                'count'     => 9,
                 'items'     =>  [
                     [
                         'purpose'       => 'Give Mehul A Bonus',
@@ -9303,6 +9373,10 @@ return [
                     ],
                     [
                         'purpose'       => 'vendor advance',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -9336,7 +9410,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 11,
+                'count'     => 12,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Mehul A Bonus',
@@ -9381,6 +9455,10 @@ return [
                     [
                         'purpose'       => 'vendor advance',
                         'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'petty cash',
+                        'purpose_type'  =>  'settlement',
                     ]
                 ],
             ],
@@ -9409,7 +9487,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 10,
+                'count'     => 11,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Sumit A Bonus',
@@ -9449,6 +9527,10 @@ return [
                     ],
                     [
                         'purpose'       => 'vendor advance',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -9537,7 +9619,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 11,
+                'count'     => 12,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Mehul A Bonus',
@@ -9581,6 +9663,10 @@ return [
                     ],
                     [
                         'purpose'       => 'vendor advance',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],

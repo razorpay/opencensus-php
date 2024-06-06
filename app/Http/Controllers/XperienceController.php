@@ -372,4 +372,225 @@ class XperienceController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createBudget()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->createBudget($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listBudgets()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listBudgets($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBudget(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getBudget($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listBudgetsExpense()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listBudgetsExpense($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBudgetsExpense(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getBudgetsExpense($id,$input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listBudgetsAll()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listBudgetsAll($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBudgetAll(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getBudgetAll($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateBudget(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->updateBudget($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBudgetsSummaryAll()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getBudgetsSummaryAll($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBudgetsSummary()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getBudgetsSummary($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getPettyCashBalance()
+    {
+        $response = $this->xperience->getPettyCashBalance();
+
+        return ApiResponse::json($response);
+    }
+
+    public function updatePettyCashBalance()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->updatePettyCashBalance($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createPettyCash()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->createPettyCash($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function hardUpdateStatusPettyCash()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->hardUpdateStatusPettyCash($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function pettyCashStatusCallback()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->pettyCashStatusCallback($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listPettyCashSelf()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listPettyCashSelf($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getPettyCash(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getPettyCash($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listPettyCash()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listPettyCash($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listPettyCashAll()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listPettyCashAll($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getPettyCashAll(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getPettyCashAll($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createExpenseCategory()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->createExpenseCategory($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listExpenseCategories()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->listExpenseCategories($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateExpenseCategory(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->updateExpenseCategory($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteExpenseCategory(string $id)
+    {
+        $response = $this->xperience->deleteExpenseCategory($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function budgetCron()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->budgetCron($input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -221,6 +221,16 @@ class UserRolePermissionsMap
                  Permission::CREATE_USER_GROUP,
                  Permission::VIEW_GROUP_TYPE,
                  Permission::CREATE_GROUP_TYPE,
+
+                 // Budgets & Pettycash
+                 Permission::CREATE_BUDGET,
+                 Permission::VIEW_BUDGET,
+                 Permission::VIEW_ALL_BUDGET,
+                 Permission::CREATE_PETTY_CASH,
+                 Permission::VIEW_PETTY_CASH,
+                 Permission::VIEW_ALL_PETTY_CASH,
+                 Permission::CREATE_EXPENSE_CATEGORY,
+                 Permission::VIEW_EXPENSE_CATEGORIES,
              ],
 
              BankingRole::ADMIN => [
@@ -394,6 +404,16 @@ class UserRolePermissionsMap
                  Permission::CREATE_USER_GROUP,
                  Permission::VIEW_GROUP_TYPE,
                  Permission::CREATE_GROUP_TYPE,
+
+                // Budgets & Pettycash
+                Permission::CREATE_BUDGET,
+                Permission::VIEW_BUDGET,
+                Permission::VIEW_ALL_BUDGET,
+                Permission::CREATE_PETTY_CASH,
+                Permission::VIEW_PETTY_CASH,
+                Permission::VIEW_ALL_PETTY_CASH,
+                Permission::CREATE_EXPENSE_CATEGORY,
+                Permission::VIEW_EXPENSE_CATEGORIES,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -536,6 +556,13 @@ class UserRolePermissionsMap
                  Permission::VIEW_USER_GROUP_MAPPING,
                  Permission::VIEW_USER_GROUP,
                  Permission::VIEW_GROUP_TYPE,
+
+                 // Budgets & Pettycash
+                 Permission::CREATE_BUDGET,
+                 Permission::VIEW_BUDGET,
+                 Permission::VIEW_ALL_BUDGET,
+                 Permission::CREATE_EXPENSE_CATEGORY,
+                 Permission::VIEW_EXPENSE_CATEGORIES,
              ],
 
              BankingRole::OPERATIONS => [

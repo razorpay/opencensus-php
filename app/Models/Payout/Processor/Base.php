@@ -2336,6 +2336,17 @@ class Base extends BaseCore
 
             return false;
         }
+
+        /**
+         * Skip is xperience app flow
+         */
+        if ((new Payout\Service())->isXperienceApp() === true)
+        {
+            $this->workflowFeature = Payout\WorkflowFeature::SKIP_WF_FOR_XPERIENCE;
+
+            return false;
+        }
+
         //
         // Skip workflow if:
         // test mode

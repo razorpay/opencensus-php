@@ -7046,6 +7046,46 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('Batman', $payoutAttempt['narration']);
     }
 
+    public function testCreateCompositePayoutPettyCash()
+    {
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'rbl',
+            'balance'        => 10000000,
+            'account_number' => '2224440041626905',
+        ]);
+
+        $this->ba->xperienceServiceAppAuth();
+
+        $dataToReplace = [
+            'request'   => [
+                'content'   => [
+                    'balance_id'    => $balance->getId(),
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutId = substr($payout['id'], 5);
+
+        $payoutDetails = (new \RZP\Models\PayoutsDetails\Repository())->getPayoutDetailsByPayoutId($payoutId);
+
+        $this->assertEquals([
+                [
+                    'file_id'   => 'file_JLYYnaOtQ0Xgzt',
+                    'file_name' => 'new file.pdf',
+                ]
+            ]
+        , $payoutDetails->first()->getAdditionalInfo()['attachments']);
+
+        $this->assertEquals(9, $payout['workflow_feature']);
+    }
+
     public function testCreateCompositePayoutWithOtpAndWithoutOtpInput()
     {
         $this->ba->proxyAuth();

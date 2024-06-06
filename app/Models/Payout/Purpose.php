@@ -23,6 +23,7 @@ class Purpose
     const UTILITY_BILL         = 'utility bill';
     const VENDOR_BILL          = 'vendor bill';
     const VENDOR_ADVANCE       = 'vendor advance';
+    const PETTY_CASH           = 'petty cash';
     const BUSINESS_DISBURSAL   = 'business disbursal';
     const CREDIT_CARD_BILL     = 'credit card bill';
     const PAYOUT               = 'payout';
@@ -41,6 +42,7 @@ class Purpose
         self::UTILITY_BILL,
         self::VENDOR_BILL,
         self::VENDOR_ADVANCE,
+        self::PETTY_CASH,
     ];
 
     protected static $defaultPurposeTypeMap = [
@@ -51,6 +53,7 @@ class Purpose
         self::UTILITY_BILL    => FTAPurpose::SETTLEMENT,
         self::VENDOR_BILL     => FTAPurpose::SETTLEMENT,
         self::VENDOR_ADVANCE  => FTAPurpose::SETTLEMENT,
+        self::PETTY_CASH      => FTAPurpose::SETTLEMENT,
     ];
 
     protected static $internalPurposeTypeMap = [

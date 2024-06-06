@@ -736,6 +736,15 @@ class Name
     const CREATE_USER_GROUP_MAPPING      = 'create_user_group_mapping';
     const REMOVE_USER_GROUP_MAPPING      = 'remove_user_group_mapping';
 
+    const CREATE_BUDGET                  =  'create_budget';
+    const VIEW_BUDGET                    =  'view_budget';
+    const VIEW_ALL_BUDGET                =  'view_all_budget';
+    const CREATE_PETTY_CASH              =  'create_petty_cash';
+    const VIEW_PETTY_CASH                =  'view_petty_cash';
+    const VIEW_ALL_PETTY_CASH            =  'view_all_petty_cash';
+    const CREATE_EXPENSE_CATEGORY        =  'create_expense_category';
+    const VIEW_EXPENSE_CATEGORIES        =  'view_expense_categories';
+
     // self serve workflow
     const SELF_SERVE_WORKFLOW_CONFIG     = 'self_serve_workflow_config';
 

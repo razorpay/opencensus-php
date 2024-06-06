@@ -89,6 +89,15 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postCompositePayoutInternal()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postCompositePayoutInternal($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function validatePayout()
     {
         $input = Request::all();

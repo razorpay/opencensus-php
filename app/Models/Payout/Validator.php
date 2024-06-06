@@ -1485,6 +1485,7 @@ class Validator extends Base\Validator
         // so we'll allow composite API for these apps
         if (((new Service)->isSettlementsApp() === true) or
             ((new Service)->isXPayrollApp() === true) or
+            ((new Service)->isXperienceApp() === true) or
             ((new Service)->isScroogeApp() === true))
             //  check if this is required, since we are not using composite api
         {
@@ -1839,7 +1840,8 @@ class Validator extends Base\Validator
             $payoutDetailsValidator->validateInput(PayoutDetailsValidator::ATTACHMENT, $attachment);
 
             // validating file-hash for non-internal app auths
-            if($app['basicauth']->isPayoutLinkApp() === false)
+            if($app['basicauth']->isPayoutLinkApp() === false &&
+                $app['basicauth']->isXperienceApp() === false)
             {
                 $payoutDetailsValidator->validateAttachmentFileIdHash($attachment);
             }

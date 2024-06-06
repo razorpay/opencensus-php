@@ -71,6 +71,11 @@ class Factory
                     array_push($subscriberList, (new CapitalCollectionsUpdater($payout, $mode)));
 
                     break;
+
+                case PayoutSourceEntity::PETTY_CASH:
+                    array_push($subscriberList, (new PettyCashUpdater($payout, $mode)));
+
+                    break;
             }
         }
 

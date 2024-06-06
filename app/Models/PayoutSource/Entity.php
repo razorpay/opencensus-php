@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const CHARGE_COLLECTIONS             = 'charge_collections';
     const CAPITAL_COLLECTIONS            = 'capital_collections';
     const GENERIC_ACCOUNTING_INTEGRATION = 'generic_accounting_integration';
+    const PETTY_CASH                     = 'petty_cash';
 
     // Relations
     const PAYOUT = 'payout';
@@ -46,7 +47,8 @@ class Entity extends Base\PublicEntity
         self::TAX_PAYMENTS,
         self::SETTLEMENTS,
         self::XPAYROLL,
-        self::CAPITAL_COLLECTIONS
+        self::CAPITAL_COLLECTIONS,
+        self::PETTY_CASH,
     ];
 
     protected $fillable   = [

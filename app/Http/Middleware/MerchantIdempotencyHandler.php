@@ -89,13 +89,16 @@ class MerchantIdempotencyHandler
         // Vendor Payments app will be using Idempotency feature to
         // to make sure multiple payouts for the same req are not created.
         //
+        // Xperience app will be using Idempotency feature to make
+        // sure multiple payouts for the same req are not created.
         if (($this->basicauth->isStrictPrivateAuth() === false) and
             ($this->basicauth->isVendorPaymentApp() === false) and
             ($this->basicauth->isPayoutLinkApp() === false) and
             ($this->basicauth->isAccountsReceivableApp() === false) and
             ($this->basicauth->isSettlementsApp() === false) and
             ($this->basicauth->isXPayrollApp() === false) and
-            ($this->basicauth->isRouteDirectTransferRequest() === false))
+            ($this->basicauth->isRouteDirectTransferRequest() === false) and
+            ($this->basicauth->isXperienceApp() === false))
         {
             return $next($request);
         }

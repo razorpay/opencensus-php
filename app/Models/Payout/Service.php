@@ -698,7 +698,7 @@ class Service extends Base\Service
      * @return array
      * @throws Exception\BadRequestException
      */
-    public function postCompositePayoutWithOtp(array $input, bool $internal = false): array
+    public function postCompositePayoutWithOtp(array $input, bool $internal = false) : array
     {
         $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
 
@@ -709,6 +709,40 @@ class Service extends Base\Service
             $this->user,
             $this->mode === Constants\Mode::TEST);
 
+        return $this->postCompositePayout($input, $internal);
+    }
+
+    /**
+     * Composite Payout Creation for internal apps
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function postCompositePayoutInternal(array $input)
+    {
+        if ($this->app['basicauth']->isXperienceApp())
+        {
+            /** @var \RZP\Models\Merchant\Balance\Entity $inputBalance  */
+            $inputBalance = $this->repo->balance->findOrFailById($input[Entity::BALANCE_ID]);
+
+            $input[Entity::ACCOUNT_NUMBER] = $inputBalance->getAccountNumber();
+
+            unset($input[Entity::BALANCE_ID]);
+        }
+
+        return $this->postCompositePayout($input);
+    }
+
+    /**
+     * Composite Payout Creation
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function postCompositePayout(array $input, bool $internal = false): array
+    {
         (new Validator)->setStrictFalse()
             ->validateInput(Validator::FUND_ACCOUNT_PAYOUT_COMPOSITE, $input);
 
@@ -721,14 +755,15 @@ class Service extends Base\Service
         $requestTime = microtime(true);
 
         $this->trace->info(
-            TraceCode::COMPOSITE_PAYOUT_WITH_OTP_REQUEST,
+            TraceCode::COMPOSITE_PAYOUT_CREATE_REQUEST,
             [
-                'input' => $payoutInput,
-                'time'  => $requestTime
+                'input'     => $payoutInput,
+                'time'      => $requestTime,
             ]);
 
-        // Proxy auth on this flow has been added to support composite payout creation with OTP
-        if ($this->auth->isProxyAuth() === false)
+        // Only ProxyAuth and xperience internal auth are supported for this flow
+        if (($this->auth->isProxyAuth() === false) &&
+            ($this->app['basicauth']->isXperienceApp() === false))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
@@ -780,13 +815,13 @@ class Service extends Base\Service
         $responseTime = microtime(true);
 
         $this->trace->info(
-            TraceCode::COMPOSITE_PAYOUT_WITH_OTP_RESPONSE,
+            TraceCode::COMPOSITE_PAYOUT_CREATE_RESPONSE,
             [
                 'input'         => $input,
                 'payout_id'     => $payout->getId(),
                 'is_composite'  => $isCompositePayout,
                 'time'          => $responseTime,
-                'response_time' => $responseTime - $requestTime
+                'response_time' => $responseTime - $requestTime,
             ]);
 
         if ($payout->getIsPayoutService() === true)
@@ -836,7 +871,8 @@ class Service extends Base\Service
                $this->auth->isScroogeApp() or
                $this->auth->isChargeCollectionsApp() or
                $this->auth->isCapitalCollectionsApp() or
-               $this->auth->isFTSApp();
+               $this->auth->isFTSApp() or
+               $this->auth->isXperienceApp();
     }
 
     public function isSettlementsApp(): bool
@@ -867,6 +903,11 @@ class Service extends Base\Service
     public function isBatchApp(): bool
     {
         return $this->auth->isBatchApp();
+    }
+
+    public function isXperienceApp(): bool
+    {
+        return $this->auth->isXperienceApp();
     }
 
     public function approveIciciCaFundAccountPayout(array $input): array
@@ -6351,4 +6392,5 @@ class Service extends Base\Service
 
         return $response;
     }
+
 }

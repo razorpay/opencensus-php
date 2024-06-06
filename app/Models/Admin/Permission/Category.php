@@ -84,4 +84,7 @@ class Category
     const COST_CENTER                  = 'cost_center';
     const RZP_KMS                       = 'rzp_kms';
     const USER_GROUP                   = 'user_group';
+    const BUDGET_GROUP                 = 'budget_group';
+    const PETTY_CASH_GROUP             = 'petty_cash_group';
+    const EXPENSE_CATEGORY_GROUP       = 'expense_category_group';
 }

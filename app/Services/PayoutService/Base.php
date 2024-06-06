@@ -176,6 +176,13 @@ class Base
 
     public function getRequest(array $input, string $action, string $method, array $headers = [])
     {
+        $devstackLabel = $this->app['request']->header(RequestHeader::DEV_SERVE_USER);
+
+        if ($this->app['env'] !== Constants\Environment::PRODUCTION && empty($devstackLabel) === false)
+        {
+            $headers[RequestHeader::DEV_SERVE_USER] = $devstackLabel;
+        }
+
         $request = [
             'url' => $this->getUrl($action),
             'method' => $method,

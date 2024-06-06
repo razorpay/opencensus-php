@@ -2490,6 +2490,47 @@ return [
             ],
         ],
 
+        // Budget Groups
+        PermissionCategory::BUDGET_GROUP    => [
+            Permission::CREATE_BUDGET     =>[
+                'description' => 'create_budget',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_BUDGET     =>[
+                'description' => 'view_budget',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_ALL_BUDGET     =>[
+                'description' => 'view_all_budget',
+                'assignable'  => true,
+            ],
+        ],
+        // PettyCash Groups
+        PermissionCategory::PETTY_CASH_GROUP    =>  [
+            Permission::CREATE_PETTY_CASH     =>  [
+                'description' => 'create_petty_cash',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_PETTY_CASH       =>  [
+                'description' => 'view_petty_cash',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_ALL_PETTY_CASH       =>  [
+                'description' => 'view_all_petty_cash',
+                'assignable'  => true,
+            ],
+        ],
+        // Expense Category Groups
+        PermissionCategory::EXPENSE_CATEGORY_GROUP    =>  [
+            Permission::CREATE_EXPENSE_CATEGORY     =>  [
+                'description' => 'create_expense_category',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_EXPENSE_CATEGORIES       =>  [
+                'description' => 'view_expense_categories',
+                'assignable'  => true,
+            ],
+        ],
     ],
 
     'workflows' => [

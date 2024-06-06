@@ -4,6 +4,8 @@ namespace RZP\Services;
 
 use Config;
 use Illuminate\Http\Request;
+use Predis\Command\Redis\GET;
+use RZP\Exception;
 use Razorpay\Edge\Passport\Passport;
 use RZP\Constants\Environment;
 use RZP\Constants\Mode;
@@ -13,6 +15,8 @@ use RZP\Exception\ServerErrorException;
 use RZP\Http\Request\Requests;
 use RZP\Http\RequestHeader;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
 use RZP\Trace\TraceCode;
 
 /**
@@ -66,8 +70,35 @@ class Xperience
     const USER_INVITE_ACCEPTED_PATH          = 'v1/users/callbacks/invite-accepted';
     const BULK_CREATE_USER_DETAILS_PATH      = 'v1/bulk-users';
     const BULK_CREATE_USER_DETAILS_RAW_PATH  = 'v1/bulk-users-raw';
+    const CREATE_BUDGET_PATH                 = 'v1/budgets';
+    const LIST_BUDGETS_PATH                  = 'v1/budgets';
+    const GET_BUDGET_PATH                    = 'v1/budgets/%s';
+    const LIST_BUDGETS_EXPENSE_PATH          = 'v1/budgets-expense';
+    const GET_BUDGETS_EXPENSE_PATH           = 'v1/budgets-expense/%s';
+    const LIST_BUDGET_ALL_PATH               = 'v1/budgets-all';
+    const GET_BUDGET_ALL_PATH                = 'v1/budgets-all/%s';
+    const UPDATE_BUDGET_PATH                 = 'v1/budgets/%s';
+    const BUDGET_ACTIVATION_CRON_PATH        = 'v1/budgets-activation-cron';
+    const BUDGET_EXPIRY_CRON_PATH            = 'v1/budgets-expiry-cron';
+    const BUDGET_RECURRING_CRON_PATH         = 'v1/budgets-recurring-cron';
+    const GET_BUDGETS_SUMMARY_PATH           = 'v1/budgets-summary';
+    const GET_BUDGETS_SUMMARY_ALL_PATH       = 'v1/budgets-summary-all';
+    const GET_PETTY_CASH_BALANCE_PATH        = 'v1/petty-cash-balance';
+    const UPDATE_PETTY_CASH_BALANCE_PATH     = 'v1/petty-cash-balance';
+    const CREATE_PETTY_CASH_PATH             = 'v1/petty-cash';
+    const HARD_UPDATE_PETTY_CASH_STATUS      = 'v1/petty-cash/hard-update-status';
+    const LIST_PETTY_CASH_SELF_PATH          = 'v1/petty-cash-self';
+    const GET_PETTY_CASH_PATH                = 'v1/petty-cash/%s';
+    const LIST_PETTY_CASH_PATH               = 'v1/petty-cash';
+    const LIST_PETTY_CASH_ALL_PATH           = 'v1/petty-cash-all';
+    const GET_PETTY_CASH_ALL_PATH            = 'v1/petty-cash-all/%s';
+    const CREATE_EXPENSE_CATEGORY_PATH       = 'v1/expense-categories';
+    const LIST_EXPENSE_CATEGORIES_PATH       = 'v1/expense-categories';
+    const UPDATE_EXPENSE_CATEGORY_PATH       = 'v1/expense-categories/%s';
+    const DELETE_EXPENSE_CATEGORY_PATH       = 'v1/expense-categories/%s';
 
     const PENDING_ENTITIES_SUMMARY_EMAIL_PATH = 'v1/aggregator/send-pending-entities-email';
+    const PETTY_CASH_PAYOUT_STATUS_CALLBACK_PATH = 'v1/petty-cash/callbacks/update-status';
 
 
     // header constants
@@ -91,6 +122,9 @@ class Xperience
 
     // parameter constants
     const IS_BULK_WORKFLOW_ENABLED = 'is_bulk_workflow_enabled';
+    const ACTIVATION               = 'activation';
+    const EXPIRY                   = 'expiry';
+    const RECURRING                = 'recurring';
     const SCHEDULED_AT             = 'scheduled_at';
     const BULK_PAYOUT_IDS          = 'bulk_payout_ids';
     const ACCOUNT_NUMBERS          = 'account_numbers';
@@ -108,6 +142,7 @@ class Xperience
     const NAME                     = 'name';
     const CONTACT                  = 'contact';
     const ROLE                     = 'role';
+    const TYPE                     = 'type';
 
     protected $baseUrl;
 
@@ -715,6 +750,198 @@ class Xperience
         return $this->makeRequest($url, $input, [], self::POST);
     }
 
+    public function createBudget(array $input)
+    {
+        $url = $this->getConstructedUrl(self::CREATE_BUDGET_PATH);
+
+        return $this->makeRequest($url, $input, [], self::POST);
+    }
+
+    public function listBudgets(array $input)
+    {
+        $url = $this->getConstructedUrl(self::LIST_BUDGETS_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function getBudget(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::GET_BUDGET_PATH, $id));
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function listBudgetsExpense(array $input)
+    {
+        $url = $this->getConstructedUrl(self::LIST_BUDGETS_EXPENSE_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function getBudgetsExpense(string $id,array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::GET_BUDGETS_EXPENSE_PATH,$id));
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function listBudgetsAll(array $input)
+    {
+        $url = $this->getConstructedUrl(self::LIST_BUDGET_ALL_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function getBudgetAll(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::GET_BUDGET_ALL_PATH, $id));
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function getBudgetsSummaryAll(array $input)
+    {
+        $url = $this->getConstructedUrl(self::GET_BUDGETS_SUMMARY_ALL_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function updateBudget(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::UPDATE_BUDGET_PATH, $id));
+
+        return $this->makeRequest($url, $input, [], self::PATCH);
+    }
+
+    public function getBudgetsSummary(array $input)
+    {
+        $url = $this->getConstructedUrl(self::GET_BUDGETS_SUMMARY_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function getPettyCashBalance()
+    {
+        $url = $this->getConstructedUrl(self::GET_PETTY_CASH_BALANCE_PATH);
+
+        return $this->makeRequest($url, [], [], self::GET);
+    }
+
+    public function updatePettyCashBalance(array $input)
+    {
+        $url = $this->getConstructedUrl(self::UPDATE_PETTY_CASH_BALANCE_PATH);
+
+        return $this->makeRequest($url, $input, [], self::PATCH);
+    }
+
+    public function createPettyCash(array $input)
+    {
+        $url = $this->getConstructedUrl(self::CREATE_PETTY_CASH_PATH);
+
+        $input[self::USER_DETAILS] = $this->getUserDetails();
+
+        return $this->makeRequest($url, $input, [], self::POST);
+    }
+
+    public function pettyCashStatusCallback(array $input)
+    {
+        $url = $this->getConstructedUrl(self::PETTY_CASH_PAYOUT_STATUS_CALLBACK_PATH);
+
+        return $this->makeRequest($url, $input, [], self::POST);
+    }
+
+    public function hardUpdateStatusPettyCash(array $input)
+    {
+        $url = $this->getConstructedUrl(self::HARD_UPDATE_PETTY_CASH_STATUS);
+
+        return $this->makeRequest($url, $input, [], self::POST);
+    }
+
+    public function listPettyCashSelf(array $input)
+    {
+        $url = $this->getConstructedUrl(self::LIST_PETTY_CASH_SELF_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function getPettyCash(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::GET_PETTY_CASH_PATH, $id));
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function listPettyCash(array $input)
+    {
+        $url = $this->getConstructedUrl(self::LIST_PETTY_CASH_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function listPettyCashAll(array $input)
+    {
+        $url = $this->getConstructedUrl(self::LIST_PETTY_CASH_ALL_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function getPettyCashAll(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::GET_PETTY_CASH_ALL_PATH, $id));
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function createExpenseCategory(array $input)
+    {
+        $url = $this->getConstructedUrl(self::CREATE_EXPENSE_CATEGORY_PATH);
+
+        return $this->makeRequest($url, $input, [], self::POST);
+    }
+
+    public function listExpenseCategories(array $input)
+    {
+        $url = $this->getConstructedUrl(self::LIST_EXPENSE_CATEGORIES_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
+    }
+
+    public function updateExpenseCategory(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::UPDATE_EXPENSE_CATEGORY_PATH, $id));
+
+        return $this->makeRequest($url, $input, [], self::PATCH);
+    }
+
+    public function deleteExpenseCategory(string $id)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::DELETE_EXPENSE_CATEGORY_PATH, $id));
+
+        return $this->makeRequest($url, [], [], self::DELETE);
+    }
+
+    public function budgetCron(array $input)
+    {
+        $url = '';
+
+        switch ($input[self::TYPE])
+        {
+            case self::ACTIVATION:
+                $url = $this->getConstructedUrl(self::BUDGET_ACTIVATION_CRON_PATH);
+                break;
+            case self::EXPIRY:
+                $url = $this->getConstructedUrl(self::BUDGET_EXPIRY_CRON_PATH);
+                break;
+            case self::RECURRING:
+                $url = $this->getConstructedUrl(self::BUDGET_RECURRING_CRON_PATH);
+                break;
+            default:
+                throw new Exception\LogicException('invalid cron type');
+        }
+
+        return $this->makeRequest($url, [], [], self::POST);
+    }
+
     protected function isBulkPayoutsWorkflowEnabled(): bool
     {
         $ba = app('basicauth');
@@ -746,6 +973,37 @@ class Xperience
         $this->makeRequest($url, [], [], self::GET);
 
         return ['success' => true];
+    }
+
+
+    /**
+     * This is being called from Payout Source Updater
+     * @param PayoutEntity $payout
+     * @param string $mode
+     * @return mixed
+     * @throws BadRequestException
+     */
+    public function pushPayoutStatusUpdate(PayoutEntity $payout, string $mode)
+    {
+        $url = $this->getConstructedUrl(self::PETTY_CASH_PAYOUT_STATUS_CALLBACK_PATH);
+
+        $input = [
+            'payout_status' => $payout->getStatus(),
+            'payout_id'     => $payout->getPublicId(),
+            'merchant_id'   => $payout->getMerchantId(),
+        ];
+
+        $sourceDetails = $payout->getSourceDetails();
+        foreach ($sourceDetails as $sourceDetail) {
+            switch ($sourceDetail->getSourceType())
+            {
+                case PayoutSourceEntity::PETTY_CASH:
+                    $input['id'] = $sourceDetail->getSourceId();
+                    break;
+            }
+        }
+
+        return $this->makeRequest( $url, $input, []);
     }
 }
 

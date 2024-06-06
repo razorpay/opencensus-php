@@ -158,7 +158,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 7,
+                'count'     => 8,
                 'items'     =>  [
                     [
                         'purpose'       =>  'refund',
@@ -186,6 +186,10 @@ return [
                     ],
                     [
                         'purpose'       => 'vendor advance',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
