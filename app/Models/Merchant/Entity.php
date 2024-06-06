@@ -4128,6 +4128,20 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
+    
+    public function isSignupCampaignAnyOfFromMaster(array $signupCampaigns): bool
+    {
+        $app = App::getFacadeRoot();
+        
+        $deviceDetail = $app['repo']->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($this->getId());
+        
+        if (in_array(optional($deviceDetail)->getSignupCampaign(), $signupCampaigns, true))
+        {
+            return true;
+        }
+        
+        return false;
+    }
 
     public function isSignupCampaign($signupCampaign): bool
     {

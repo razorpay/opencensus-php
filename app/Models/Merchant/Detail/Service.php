@@ -2281,7 +2281,7 @@ class Service extends Base\Service
                                                 $originProduct,
                                                 Event\Constants::SIGN_UP);
 
-            if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
+            if ($merchant->isSignupCampaignAnyOfFromMaster(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
             {
                 $this->handlePreSignUpOptionalFields($input);
                 
