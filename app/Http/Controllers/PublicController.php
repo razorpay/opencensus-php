@@ -212,6 +212,46 @@ class PublicController extends Controller
         ]);
     }
 
+    protected function getHDFCCheckout2Meta($params)
+    {
+        $meta = 
+        [
+            'type' => 'hdfcvas'
+        ];
+        try 
+        {
+            $mode = $params['checkout']['notes']['mode'] ?? Mode::LIVE;
+            // set mode. It will be used while getting order
+            $this->app['rzp.mode'] = $mode;
+            $orderID = $params['checkout']['order_id'];
+            $order = '';
+            if (empty($orderID) === false)
+            {
+                if($mode === 'test')
+                {
+                    $order = $this->repo->order->findByPublicId($orderID);
+                }else
+                {
+                    $order = (new OrderService())->fetchCompleteOrderById($orderID);
+                }
+                $merchantID = $order['merchant_id'];
+                $merchant = $this->repo->merchant->findOrFail($merchantID);
+                $meta['custom_code'] = $merchant->org->getCustomCode();
+                $meta['checkout_logo_url'] = $merchant->org->getCheckoutLogo();
+                $meta['custom_checkout_logo_enabled'] = $merchant->org->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_CHECKOUT_LOGO);
+            }
+        } catch (\Exception $e) 
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::HDFC_CHECKOUT_2_META_ERROR
+            );
+        }
+        
+        return $meta;
+    }
+
     protected function isHDFCCheckout2Supported($params)
     {
         try 
@@ -297,10 +337,7 @@ class PublicController extends Controller
             $key = $params['checkout']['key'];
             $params['checkout']['callback_url'] =  $params['url']['callback'];
             $requestOptions     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
-            $meta = 
-            [
-                'type' => 'hdfcvas'
-            ];
+            $meta = $this->getHDFCCheckout2Meta($params);
             $app = \App::getFacadeRoot();
 
             $app['trace']->info(TraceCode::RENDER_HDFC_CHECKOUT_2, [

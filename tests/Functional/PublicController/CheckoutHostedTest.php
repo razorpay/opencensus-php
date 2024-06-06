@@ -53,7 +53,7 @@ class CheckoutHostedTest extends TestCase
         );
     }
 
-    protected function generateHDFCCheckout2ViewMocks($orderId, $mode)
+    protected function generateHDFCCheckout2ViewMocks($orderId, $mode, $customCode)
     {
         $arr = [
             "key" => " rzp_" . $mode . "_LtX0CbrmyiGV5j",
@@ -65,7 +65,7 @@ class CheckoutHostedTest extends TestCase
                 '","name":"Shopify Test Store","prefill":{"email":"test@razorpay.com"},"notes":{"mode":"' .
                 $mode .
                 '","shopify_order_id":"rQFI1IJ6T2yPiryRCTGjZ3pLx","referer_url":" https:\/\/shoes-store-testing-rzp.myshopify.com\/"},"_":{"integration":"shopify","integration_version":"shopify-payment-app"},"__referer":"https:\/\/shoes-store-testing-rzp.myshopify.com\/","callback_url":"https:\/\/shoes-store-testing-rzp.myshopify.com\/"}',
-            "meta" => '{"type":"hdfcvas"}',
+            "meta" => '{"type":"hdfcvas","custom_code":"'.$customCode.'","checkout_logo_url":null,"custom_checkout_logo_enabled":false}',
             "script" =>
                 "https://cdn.razorpay.com/static/hosted/standard-vas.js",
             "urls" => "{}",
@@ -118,7 +118,7 @@ class CheckoutHostedTest extends TestCase
         ] = $orderId;
 
         $this->fixtures->merchant->addFeatures(["hdfc_checkout_2"]);
-        $this->generateHDFCCheckout2ViewMocks($orderId, "test");
+        $this->generateHDFCCheckout2ViewMocks($orderId, "test",  $org->getCustomCode());
         $this->startTest();
     }
 
@@ -144,7 +144,7 @@ class CheckoutHostedTest extends TestCase
         ] = $orderId;
 
         $this->fixtures->merchant->addFeatures(["hdfc_checkout_2"]);
-        $this->generateHDFCCheckout2ViewMocks($orderId, "live");
+        $this->generateHDFCCheckout2ViewMocks($orderId, "live",  $org->getCustomCode());
         $this->startTest();
     }
 
