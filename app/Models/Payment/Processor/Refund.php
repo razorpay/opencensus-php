@@ -2325,7 +2325,7 @@ trait Refund
 
                 $transferInput[RefundConstants::REVERSE_ALL] = true;
 
-                $data[RefundConstants::IS_TRANSFERS_REVERSAL_ALLOWED] = $this->shouldProcessReversals($payment, $transferInput);
+                $data[RefundConstants::IS_TRANSFERS_REVERSAL_ALLOWED] = $this->allowTransferReversalsFromDashboard($payment, $transferInput);
             }
             catch (\Throwable $ex)
             {

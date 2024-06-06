@@ -34,7 +34,7 @@ class PaymentTransfer extends  AbstractTransfer
         try
         {
             [$transfersProcessed, $failedTransfersToRetry] = $this->mutex->acquireAndRelease(
-                $mutexResource . $this->payment->getPublicId(),
+                $mutexResource,
                 function () {
 
                     $payment =  $this->payment;

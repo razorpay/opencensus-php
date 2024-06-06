@@ -642,4 +642,70 @@ trait Reversal
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
         }
     }
+
+    protected function allowTransferReversalsFromDashboard(Payment\Entity $payment, array & $input, bool $rearchRefund = false) : bool
+    {
+        //
+        // Don't process if either:
+        //  - Payment has not been transferred (amount_transferred = 0), or
+        //  - Payment method = 'transfer'
+        //
+        if (($payment->isTransferred() === false) or
+            ($payment->isTransfer() === true))
+        {
+            return false;
+        }
+
+        $validator = new Payment\Refund\Validator;
+
+        $validator->setPayment($payment);
+
+        if ($rearchRefund === false)
+        {
+            // Validating here to verify reversal attributes in the refund request
+            $validator->validateInput('create', $input);
+        }
+
+        $reverseAll = boolval($input['reverse_all'] ?? '0');
+
+        if ($reverseAll === true)
+        {
+            $transfers = new Base\PublicCollection();
+
+            $transfersFromPayment = (new Transfer\Core())->getForPayment($payment->getId());
+
+            foreach ($transfersFromPayment as $transfer)
+            {
+                $transfers->push($transfer);
+            }
+
+            if ($payment->hasOrder() === true)
+            {
+                $orderId = $payment->getApiOrderId();
+
+                $transfersFromOrder = (new Transfer\Core())->getForOrder($orderId);
+
+                foreach ($transfersFromOrder as $transfer)
+                {
+                    $transfers->push($transfer);
+                }
+            }
+
+            if (isset($input['refund_type']) === true)
+            {
+                $refundType = $input['refund_type'];
+            }
+            else
+            {
+                $refundType = $this->getPaymentRefundType($input, $payment);
+            }
+
+            $validator->validateReverseAll($refundType, $transfers);
+
+            $this->implicitAddReversalsForFullRefund($transfers, $input);
+        }
+
+        return $reverseAll;
+    }
+
 }

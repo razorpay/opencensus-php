@@ -516,7 +516,7 @@ class Service extends Base\Service
             [
                 'order_ids'      => $orderIds,
                 'time_taken'     => ($endTime - $startTime),
-                'count'          => array_count_values($orderIds),
+                'count'          => count($orderIds),
                 'sync'           => $syncProcessing,
                 'older_than_min' => $olderThanMinutes
             ]
@@ -546,7 +546,7 @@ class Service extends Base\Service
             [
                 'order_ids'      => $orderIds,
                 'time_taken'     => ($endTime - $startTime),
-                'count'          => array_count_values($orderIds),
+                'count'          => count($orderIds),
                 'sync'           => $syncProcessing,
                 'older_than_min' => $olderThanMinutes
             ]
@@ -574,7 +574,7 @@ class Service extends Base\Service
                 [
                     'order_ids' => $orderIds,
                     'time_taken' => ($endTime - $startTime),
-                    'count' => array_count_values($orderIds),
+                    'count' => count($orderIds),
                     'older_than_min' => $olderThanMinutes
                 ]
             );
@@ -657,7 +657,7 @@ class Service extends Base\Service
             [
                 'payment_ids'    => $paymentIds,
                 'time_taken'     => ($endTime - $startTime),
-                'count'          => array_count_values($paymentIds),
+                'count'          => count($paymentIds),
                 'sync'           => $syncProcessing,
                 'older_than_min' => $olderThanMinutes
             ]
@@ -692,7 +692,7 @@ class Service extends Base\Service
             [
                 'payment_ids'    => $paymentIds,
                 'time_taken'     => ($endTime - $startTime),
-                'count'          => array_count_values($paymentIds),
+                'count'          => count($paymentIds),
                 'sync'           => $syncProcessing,
                 'older_than_min' => $olderThanMinutes
             ]
@@ -908,6 +908,8 @@ class Service extends Base\Service
 
             if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {
+                $this->core->fetchTransfersAndIncrementAttempts($order);
+
                 continue;
             }
 

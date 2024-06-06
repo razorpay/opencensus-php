@@ -407,6 +407,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROCESSED_AT);
     }
 
+    public function getUpdatedAt()
+    {
+        return $this->getAttribute(self::UPDATED_AT);
+    }
+
     public function getErrorCode()
     {
         return $this->getAttribute(self::ERROR_CODE);

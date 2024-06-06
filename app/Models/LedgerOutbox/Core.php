@@ -989,7 +989,7 @@ class Core extends Base\Core
             try
             {
                 $this->mutex->acquireAndRelease(
-                    $mutexResource . $sourcePayment->getPublicId(),
+                    $mutexResource,
                     function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source, $journal)
                     {
                         $this->repo->transaction(function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source, $journal)

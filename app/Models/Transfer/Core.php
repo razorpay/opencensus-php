@@ -2602,9 +2602,9 @@ class Core extends Base\Core
         }
 
         if ($transferType == Transfer\Constant::ORDER) {
-            return 'order_transfer_process_';
+            return 'order_transfer_process_' . $payment->getPublicId();
         } else if ($transferType == Transfer\Constant::PAYMENT) {
-            return 'payment_transfer_process_';
+            return 'payment_transfer_process_' . $payment->getPublicId();
         } else {
             throw new Exception\LogicException('Unsupported transfer type');
         }

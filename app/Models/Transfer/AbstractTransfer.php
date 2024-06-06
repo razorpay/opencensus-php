@@ -139,6 +139,14 @@ abstract class AbstractTransfer
         {
             $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
 
+            $this->trace->info(TraceCode::TRANSFER_STATUS_BEFORE_PROCESSING,
+                [
+                    'transfer_id'  => $transfer->getId(),
+                    'payment_id'   => $payment->getPublicId(),
+                    'source_id'    => $this->sourceId,
+                    'updated_at'   => $transfer->getUpdatedAt(),
+                ]);
+
             try
             {
                 $transferProcessStartTime = microtime(true);
