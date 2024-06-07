@@ -683,6 +683,12 @@ export default class User {
     return this.isFeatureEnabled('file_upload_pp');
   }
 
+  // ES Feature: used when there is downtime for ES onDemand and users need to be informed. Generally, it is for short duration, say 3-4 hrs.
+  // Note: It is different from ES Restricted which is due to some other data based concerns.
+  get isEsOnDemandBlocked() {
+    return getSplitzExperimentVariant('capital_es_blocked_splitz')?.variables?.result === 'on';
+  }
+
   get isPaymentPageMagicEnabled() {
     return this.getExpStatus('pp_magic_setting');
   }

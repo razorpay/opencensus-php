@@ -346,8 +346,9 @@ class HomeContainer extends Component {
     // prettier-ignore
     const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
       this.props.ondemand_restrictions.data;
-
-    if (this.isOnDemandDisabled) {
+    if (this.props.user.isEsOnDemandBlocked) {
+      return `Temporary Downtime: We're experiencing some technical difficulties, and the Settle Now feature is temporarily unavailable. Our team is working on resolving the issue. We apologize for the inconvenience.`;
+    } else if (this.isOnDemandDisabled) {
       const restrictedItem = this.restrictedFeatures
         .filter((feat) => this.props.user.isFeatureEnabled(feat))
         .map((feat) => this.featureName[feat]);

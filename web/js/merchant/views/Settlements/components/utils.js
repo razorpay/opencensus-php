@@ -19,11 +19,14 @@ export const settleNowRestrictionMsgFn = (
   isOnDemandDisabled,
   user,
   isNodalAccountBalanceLow,
+  isEsOnDemandBlocked,
 ) => {
   if (!settlementRestricted) return null;
   const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
     ondemand_restrictions.data;
-  if (isOnDemandDisabled()) {
+  if (isEsOnDemandBlocked) {
+    return 'Temporary Downtime: Settle Now Feature Unavailable Due to Technical Issues';
+  } else if (isOnDemandDisabled()) {
     const restrictedItem = restrictedFeatures
       .filter((feat) => user.isFeatureEnabled(feat))
       .map((feat) => featureName[feat]);

@@ -46,13 +46,19 @@ const SettleNow = (props) => {
   const isSettleNowRestricted =
     settlementRestricted && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
 
+  const isEsOnDemandBlocked = user.isEsOnDemandBlocked;
+
   let balance = current_balance.data.balance || 0;
 
   if (balance < 0) {
     balance = Math.abs(balance);
   }
   const checkIfSettlementDisabled =
-    isSettleNowRestricted || current_balance.loading || balance < 100 || isOnDemandDisabled();
+    isSettleNowRestricted ||
+    current_balance.loading ||
+    balance < 100 ||
+    isOnDemandDisabled() ||
+    isEsOnDemandBlocked;
 
   const fetchRestrictionsIfAny = () => {
     if (settlementRestricted) {
@@ -85,6 +91,7 @@ const SettleNow = (props) => {
     isOnDemandDisabled,
     user,
     isNodalAccountLowBalanceBlocked,
+    isEsOnDemandBlocked,
   );
 
   useEffect(() => {
@@ -94,7 +101,7 @@ const SettleNow = (props) => {
   return (
     <div className={showLeftBorder ? 'box-left-pad10-inline' : ''}>
       <SettleNowButton
-        disabled={checkIfSettlementDisabled}
+        disabled={checkIfSettlementDisabled || isEsOnDemandBlocked}
         merchantId={user.current}
         fromWhere="Settlements"
         settlementExists={settlementExists}

@@ -36,6 +36,7 @@ const SettlementsBanner = (props) => {
   const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
   const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
+  const isEsOnDemandBlocked = user.isEsOnDemandBlocked;
   const handleContactSupport = () => {
     closeModal();
 
@@ -130,6 +131,12 @@ const SettlementsBanner = (props) => {
         Update Bank Account Details <i className="i i-external-link" />
       </Link>
     );
+    className = 'highlight-error';
+  } else if (isEsOnDemandBlocked) {
+    icon = <i className="i i-triangle-alert alert-red" />;
+    title = 'Temporary downtime';
+    subTitle = `We're experiencing some technical difficulties, and the Settle Now feature is temporarily unavailable. Our team is working on resolving the issue. We apologize for the inconvenience.`;
+    actions = null;
     className = 'highlight-error';
   }
 

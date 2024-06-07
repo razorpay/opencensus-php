@@ -257,13 +257,16 @@ class AnalyticsMobile extends Component {
     const attemptsLeft = ondemand_restrictions && ondemand_restrictions.data.attempts_left;
     const isOndemandRestrictionsLoading = ondemand_restrictions && ondemand_restrictions.loading;
     const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
+    const isEsOnDemandBlocked = user.isEsOnDemandBlocked;
     const isSettleNowRestricted =
       ondemand_restrictions && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
     const checkIfSettlementDisabled =
       isSettleNowRestricted ||
       current_balance.loading ||
       current_balance.data.balance < 100 ||
-      isOnDemandDisabled;
+      isOnDemandDisabled ||
+      isEsOnDemandBlocked;
+
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
     const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter(
       (ticket) =>

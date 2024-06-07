@@ -292,6 +292,10 @@ export default {
     // prod experiment id
     'J7Kt1EpzaLk9dQ',
   ],
+  capital_es_blocked_splitz: [
+    //prod experiment id
+    'OD1YE557azf99K',
+  ],
   ultra_exclusiveoffer_card_a: [
     // prod
     'JIswqOkKfeIiRG',
