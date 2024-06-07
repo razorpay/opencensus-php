@@ -894,11 +894,10 @@ class Core extends Merchant\Core
         if ($partner->isCobrandedOnboardingEnabled())
         {
             $isRouteAccount = (new Merchant\Account\Core())->checkIfRouteAccount($accountId, $accountType);
-
             $phantomPrefillEnabled = !$isRouteAccount;
         }
-
-        Request::instance()->request->add([Constants::PHANTOM_PREFILL_ENABLED => $phantomPrefillEnabled]);
+        // Note: Instead of ::instance()->request->add(), ::merge() works for GET requests too.
+        Request::merge([Constants::PHANTOM_PREFILL_ENABLED => $phantomPrefillEnabled]);
     }
 
     public function getBMCAnswers(Merchant\Entity $subMerchant, ?string $partnerId): array|null

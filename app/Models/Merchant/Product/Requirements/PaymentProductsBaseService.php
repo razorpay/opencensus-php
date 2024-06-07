@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Models\Merchant\Product\TncMap\Acceptance as TncAcceptance;
 use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Questions as BMCQuestionnaire;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields as SelectiveRequiredFields;
@@ -32,6 +33,7 @@ class PaymentProductsBaseService extends Base\Service
      * @var Detail\Core
      */
     private $merchantDetailCore;
+    private $merchantDetailService;
 
     private $validationFields;
 
@@ -54,6 +56,8 @@ class PaymentProductsBaseService extends Base\Service
         parent::__construct();
 
         $this->merchantDetailCore = new Detail\Core();
+
+        $this->merchantDetailService = new Detail\Service();
 
         $this->documentCore = new Document\Core();
 
@@ -322,9 +326,16 @@ class PaymentProductsBaseService extends Base\Service
 
         $ipRequirement = [];
 
+        $isPhantomPrefillEnabled = \Request::all()[Account\Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled === true && $hasPendingTnc === true) {
+            if ($this->merchantDetailService->checkIfConsentsPresent($merchant->getId(), ConsentConstant::VALID_LEGAL_DOC_L2) === true) {
+                $hasPendingTnc = false;
+            }
+        }
+        
         if ($hasPendingTnc === true)
         {
-            $isPhantomPrefillEnabled = \Request::all()[Account\Constants::PHANTOM_PREFILL_ENABLED] ?? false;
 
             $requirement[Constants::FIELD_REFERENCE] = Constants::TNC_ACCEPTED;
 

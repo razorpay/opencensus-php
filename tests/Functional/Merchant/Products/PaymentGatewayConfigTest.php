@@ -2480,7 +2480,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->mockTerminalServiceResponse();
 
-        $testData = $this->testData['createPrefillAccount'];
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
 
         $accountResponse = $this->runRequestResponseFlow($testData);
 
@@ -2503,7 +2503,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->mockTerminalServiceResponse();
 
-        $testData = $this->testData['createPrefillAccount'];
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
 
         $accountResponse = $this->runRequestResponseFlow($testData);
 
@@ -2516,6 +2516,135 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->storkMock->shouldReceive('optOutForWhatsapp')->once();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    private function extractRequirementsFromResponse($response, $fieldReferences)
+    {
+        $requirements = $response['requirements'];
+        $allRequiredFields = array_column($requirements, 'field_reference');
+        $selectiveRequirements = [];
+        foreach ($fieldReferences as $fieldReference) {
+            $fieldIndex = array_search($fieldReference, $allRequiredFields);
+            if($fieldIndex !== false)
+                array_push($selectiveRequirements, $requirements[$fieldIndex]);
+        }
+        return $selectiveRequirements;
+    }
+
+    private function createMerchantConsentsForL2Documents(string $merchantId) {
+        $documents = [
+            'KdSCny9TA9OrmA' => 'L2_Terms and Conditions', 
+            'KdSCny9TA9OrmB' => 'L2_Privacy Policy', 
+            'KdSCny9TA9OrmC' => 'L2_Service Agreement'
+        ];
+        foreach ($documents as $id => $document) {
+            $this->fixtures->create(
+                'merchant_consents',
+                [
+                    'id' => $id,
+                    'merchant_id' => $merchantId,
+                    'consent_for' => $document,
+                ]
+            );
+        }
+    }
+
+    /*
+     * This testcase validates the following
+     * 1. Create an unregistered account through V2 API
+     * 2. Create a product config for payment gateway
+     * 3. Fetch the payment gateway product config for the unregistered account
+     * 4. Fetch and verify TNC requirements are shown in requirements
+    */
+    public function testCreateAndFetchProductConfigWithoutMerchantConsent()
+    {
+        Mail::fake();
+
+        $this->createAndFetchMocks();
+
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->mockTerminalServiceResponse();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateProductConfigWithoutMerchantConsent'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $selectiveRequirements = $this->extractRequirementsFromResponse($response, ['tnc_accepted', 'ip']);
+
+        $this->assertSame($testData['response']['content']['requirements'], $selectiveRequirements);
+
+        $productId = $response['id'];
+
+        $testData = $this->testData['testFetchProductConfigWithoutMerchantConsent'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $productId;
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $selectiveRequirements = $this->extractRequirementsFromResponse($response, ['tnc_accepted', 'ip']);
+
+        $this->assertSame($testData['response']['content']['requirements'], $selectiveRequirements);
+    }
+
+    /*
+     * This testcase validates the following
+     * testCreateProductConfigWithMerchantConsent
+    */
+    public function testCreateAndFetchProductConfigWithMerchantConsent()
+    {
+        Mail::fake();
+
+        $this->createAndFetchMocks();
+
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->mockTerminalServiceResponse();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $merchantId = substr($accountId, 4);
+
+        $testData = $this->testData['testCreateProductConfigWithMerchantConsent'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        // Accept Merchant Consents for L2 docs
+        $this->createMerchantConsentsForL2Documents($merchantId);
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $selectiveRequirements = $this->extractRequirementsFromResponse($response, ['tnc_accepted', 'ip']);
+
+        $this->assertSame($testData['response']['content']['requirements'], $selectiveRequirements);
+
+        $productId = $response['id'];
+
+        $testData = $this->testData['testFetchProductConfigWithMerchantConsent'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $productId;
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $selectiveRequirements = $this->extractRequirementsFromResponse($response, ['tnc_accepted', 'ip']);
+
+        $this->assertSame($testData['response']['content']['requirements'], $selectiveRequirements);
     }
 }
 

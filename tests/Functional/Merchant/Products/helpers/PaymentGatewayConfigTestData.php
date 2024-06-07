@@ -3061,4 +3061,69 @@ return [
             'status_code' => 400
         ],
     ],
+    'testCreateProductConfigWithMerchantConsent' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'product_name' => 'payment_gateway',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'activation_status' => 'created',
+                'requirements' => []
+            ]
+        ]
+    ],
+    'testFetchProductConfigWithMerchantConsent' => [
+        'request'  => [
+            'url'    => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'requirements' => []
+            ]
+        ]
+    ],
+    'testCreateProductConfigWithoutMerchantConsent' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'product_name' => 'payment_gateway',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'requirements' => [
+                    [
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => 'NA',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ]
+                ]
+            ],
+        ],
+    ],
+    'testFetchProductConfigWithoutMerchantConsent' => [
+        'request'  => [
+            'url'    => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'requirements' => [
+                    [
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => 'NA',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ]
+                ]
+            ]
+        ]
+    ],
 ];
