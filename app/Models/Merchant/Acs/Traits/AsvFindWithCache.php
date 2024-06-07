@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -43,7 +44,7 @@ trait AsvFindWithCache
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND);
         if ($shouldCallAsv === true)
         {
-            if ($this->isTransactionActive()) {
+            if ($this->isTransactionActive() || (new Detail\Core())->getIsTransactionActive($id, $this->entity)) {
                 return $this->AsvFindEntity($id, $columns, $connectionType);
             }
 
@@ -70,7 +71,7 @@ trait AsvFindWithCache
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_OR_FAIL);
         if ($shouldCallAsv === true)
         {
-            if ($this->isTransactionActive()) {
+            if ($this->isTransactionActive() || (new Detail\Core())->getIsTransactionActive($id, $this->entity)) {
                 return $this->AsvFindEntityOrFail($id, $columns, $connectionType);
             }
 

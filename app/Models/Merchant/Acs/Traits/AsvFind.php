@@ -8,6 +8,7 @@ use Database\Connection;
 use RZP\Constants\Environment;
 use RZP\Constants\Metric;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\BadRequestException;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
@@ -222,7 +223,7 @@ trait AsvFind
 
         if ($shouldCallAsv === true) {
             $shouldCacheResults = in_array($this->entity, ["merchant", "merchant_detail"]);
-            if ($shouldCacheResults === true && $this->isTransactionActive() === false) {
+            if ($shouldCacheResults === true && $this->isTransactionActive() === false && (new Detail\Core())->getIsTransactionActive($id, $this->entity) === false) {
                 return Cache::store('query_cache_live')
                     ->tags(strtolower($this->entity) . '_' . $id)
                     ->remember(
