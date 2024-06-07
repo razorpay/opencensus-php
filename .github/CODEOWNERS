@@ -42,4 +42,4 @@ web/js/merchant/views/POS                         @amitabh-blade @prashant-kush 
 plugins/i18n-rules                                @razorpay/i18n-fe
 smart-linter.js                                   @razorpay/i18n-fe
 apps/pos                                          @amitabh-blade @prashant-kush @loombarishav
-pnpm-lock.yaml                                    @aniketonweb
+pnpm-lock.yaml                                    @aniketonweb @razorpay/ssab-fe
