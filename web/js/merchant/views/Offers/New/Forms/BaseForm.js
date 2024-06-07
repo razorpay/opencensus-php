@@ -178,6 +178,7 @@ export default class BaseForm extends React.Component {
     return (
       <Wizard
         {...this.props}
+        zIndex={9990} //TODO: Added this since it is causing the other forms to move behind the base form making the inout fields inaccessible. It will be removed once we migrate the TypeSelector Modal to blade which requires designs from the designers which are currently not available.
         validTabs={[false, false, false, false, false]}
         tabsData={[
           {

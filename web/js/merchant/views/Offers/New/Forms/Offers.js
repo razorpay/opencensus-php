@@ -94,6 +94,7 @@ export default class OffersForm extends BaseForm {
         onChange={this.onFieldChange}
         onClose={this.props.onClose}
         onSubmit={this.onSubmit}
+        zIndex={9999}
       />
     );
   }

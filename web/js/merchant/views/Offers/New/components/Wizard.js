@@ -1,8 +1,7 @@
 import React from 'react';
-import { Button, Heading } from '@razorpay/blade/components';
+import { Button, Box, Modal, ModalBody, ModalFooter, Heading } from '@razorpay/blade/components';
 
 import Form from 'common/new-ui/Form';
-import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
@@ -10,7 +9,6 @@ import {
   isLowCostAmountMissing,
   isOfferTypeAbsent,
 } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
-
 const CLASS_NAME = 'Offers--Create-form';
 
 export default class CreateOfferWizard extends React.Component {
@@ -20,7 +18,7 @@ export default class CreateOfferWizard extends React.Component {
   };
 
   IS_MODAL_VIEW = !!this.props.onClose;
-
+  zIndex = this.props.zIndex;
   // TODO: Refactor this
   TABS_DATA = this.props.tabsData;
 
@@ -117,91 +115,96 @@ export default class CreateOfferWizard extends React.Component {
       }
       return !validTabs[currentTab];
     };
-
     return (
-      <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
-        <ModalAsideNav
-          title={props.title || 'Create an Offer'}
-          description={<p>Provide details regarding how you would like the offer to function</p>}
-          tabs={this.TABS_NAMES}
-          activeTab={currentTab}
-          tabsValidity={validTabs}
-          tabClickHandler={this.handleTabChange}
-          disableTabCondition={(tabIndex) => {
-            let isDisabled = tabIndex !== 0 && !validTabs[tabIndex - 1];
-            // If low cost tenure selected but form is invalid disable next step in sidebar
-            if (tabIndex >= 3 && isApplicableOnStepValid()) {
-              return true;
-            }
-            if (tabIndex === 4) {
-              validTabs.forEach((isValidTab, idx) => {
-                if (!isValidTab && idx !== 4 && !isDisabled) {
-                  isDisabled = true;
+      <Modal isOpen={true} onDismiss={this.props.onClose} zIndex={this.props.zIndex} size="large">
+        <ModalBody padding="spacing.0">
+          <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
+            <ModalAsideNav
+              title={props.title || 'Create an Offer'}
+              description={
+                <p>Provide details regarding how you would like the offer to function</p>
+              }
+              tabs={this.TABS_NAMES}
+              activeTab={currentTab}
+              tabsValidity={validTabs}
+              tabClickHandler={this.handleTabChange}
+              disableTabCondition={(tabIndex) => {
+                let isDisabled = tabIndex !== 0 && !validTabs[tabIndex - 1];
+                // If low cost tenure selected but form is invalid disable next step in sidebar
+                if (tabIndex >= 3 && isApplicableOnStepValid()) {
+                  return true;
                 }
-              });
-            }
+                if (tabIndex === 4) {
+                  validTabs.forEach((isValidTab, idx) => {
+                    if (!isValidTab && idx !== 4 && !isDisabled) {
+                      isDisabled = true;
+                    }
+                  });
+                }
+                return isDisabled;
+              }}
+            />
 
-            return isDisabled;
-          }}
-        />
+            <main class="form-container">
+              <Heading size="medium">{this.TABS_DATA[currentTab].name}</Heading>
 
-        <main class="form-container">
-          <Heading size="medium">{this.TABS_DATA[currentTab].name}</Heading>
+              <Form class={CLASS_NAME} layout={layout} onChange={props.onChange}>
+                {this.renderForm()}
+              </Form>
+            </main>
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Box display="flex" justifyContent="flex-end">
+            {currentTab > 0 && (
+              <Button
+                color="primary"
+                onClick={this.changeTab(-1)}
+                size="medium"
+                type="button"
+                variant="tertiary"
+                marginRight={'spacing.4'}
+              >
+                Previous
+              </Button>
+            )}
 
-          <Form class={CLASS_NAME} layout={layout} onChange={props.onChange}>
-            {this.renderForm()}
-          </Form>
-        </main>
-
-        <footer>
-          {currentTab > 0 && (
-            <Button
-              color="primary"
-              onClick={this.changeTab(-1)}
-              size="medium"
-              type="button"
-              variant="tertiary"
-              marginRight={'spacing.4'}
-            >
-              Previous
-            </Button>
-          )}
-
-          {!isLastTab ? (
-            <Button
-              color="primary"
-              onClick={this.changeTab(1)}
-              size="medium"
-              type="button"
-              variant="primary"
-              isDisabled={isDisabled()}
-            >
-              Next
-            </Button>
-          ) : (
-            <Button
-              color="primary"
-              onClick={props.onSubmit}
-              size="medium"
-              type="submit"
-              variant="primary"
-              isDisabled={disabled}
-              isLoading={!!this.props.isPending}
-            >
-              {props.submitBtnText}
-            </Button>
-          )}
-        </footer>
-      </div>
+            {!isLastTab ? (
+              <Button
+                color="primary"
+                onClick={this.changeTab(1)}
+                size="medium"
+                type="button"
+                variant="primary"
+                isDisabled={isDisabled()}
+              >
+                Next
+              </Button>
+            ) : (
+              <Button
+                color="primary"
+                onClick={props.onSubmit}
+                size="medium"
+                type="submit"
+                variant="primary"
+                isDisabled={disabled}
+                isLoading={!!this.props.isPending}
+              >
+                {props.submitBtnText}
+              </Button>
+            )}
+          </Box>
+        </ModalFooter>
+      </Modal>
     );
   }
 
   render() {
     if (this.IS_MODAL_VIEW) {
       return (
-        <Modal class="NewSubscriptionLink Offers--Create" onClose={this.props.onClose}>
-          <ModalContent>{this.renderWizard()}</ModalContent>
-        </Modal>
+        <div class="NewSubscriptionLink Offers--Create ">
+          <div>{this.renderWizard()}</div>
+        </div>
       );
     }
 
