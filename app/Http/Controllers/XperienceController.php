@@ -301,6 +301,15 @@ class XperienceController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateGroupHierarchy()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->updateGroupHierarchy($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function listGroups()
     {
         $input = Request::all();

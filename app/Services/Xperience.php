@@ -62,6 +62,7 @@ class Xperience
     const REMOVE_GROUP_OF_USERS              = 'v1/users/group';
     const ADD_GROUP_FOR_USERS                = 'v1/users/group';
     const SINGLE_GROUP                       = 'v1/groups/%s';
+    const GROUP_HIERARCHY                    = 'v1/groups/update_hierarchy';
     const LIST_GROUPS                        = 'v1/groups';
     const CREATE_GROUP                       = 'v1/groups';
     const LIST_GROUP_TYPES                   = 'v1/group-types';
@@ -699,6 +700,13 @@ class Xperience
         $url = $this->getConstructedUrl(sprintf(self::SINGLE_GROUP, $id));
 
         return $this->makeRequest($url, $input, [], self::PATCH);
+    }
+
+    public function updateGroupHierarchy(array $input)
+    {
+        $url = $this->getConstructedUrl(self::GROUP_HIERARCHY);
+
+        return $this->makeRequest($url, $input, [], self::PUT);
     }
 
     public function listGroups(array $input)
