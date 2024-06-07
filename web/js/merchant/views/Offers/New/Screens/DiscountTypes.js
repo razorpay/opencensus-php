@@ -173,7 +173,7 @@ export default function DiscountType({
   );
 }
 
-function validateDiscountType(val) {
+export function validateDiscountType(val) {
   if (!val || val == '') {
     return 'Please select a discount type';
   }
@@ -195,7 +195,7 @@ function validatePercentRate(val) {
   return false;
 }
 
-function validateFlatCashback(min_amount) {
+export function validateFlatCashback(min_amount) {
   return (val) => {
     const decimalPointError = validateDecimalPointValue(val);
     if (decimalPointError) return decimalPointError;
@@ -215,7 +215,12 @@ function validateFlatCashback(min_amount) {
   };
 }
 
-function validateMinAmount({ flat_cashback, isPERCENTDiscount, max_order_amount, minAmount }) {
+export function validateMinAmount({
+  flat_cashback,
+  isPERCENTDiscount,
+  max_order_amount,
+  minAmount,
+}) {
   return (val) => {
     if (!val && isPERCENTDiscount) {
       return false;
@@ -245,7 +250,7 @@ function validateMinAmount({ flat_cashback, isPERCENTDiscount, max_order_amount,
   };
 }
 
-function validateMaxCashback(val) {
+export function validateMaxCashback(val) {
   const decimalPointError = validateDecimalPointValue(val);
   if (decimalPointError) return decimalPointError;
 
@@ -280,7 +285,7 @@ function validateMaxOrderAmount(min_amount) {
 }
 
 const DECIMAL_POINT_REGEX = '^[0-9]+(.[0-9][0-9]?)?$';
-function validateDecimalPointValue(val) {
+export function validateDecimalPointValue(val) {
   const isValid = new RegExp(DECIMAL_POINT_REGEX).test(val);
 
   if (!isValid) return 'Please enter number upto 2 decimal points';

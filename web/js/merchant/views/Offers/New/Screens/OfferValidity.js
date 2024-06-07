@@ -95,7 +95,7 @@ export default class OfferValidity extends React.Component {
   }
 }
 
-function validatesEndsAt(start_at) {
+export function validatesEndsAt(start_at) {
   return (val) => {
     if (!val) return 'Please select a date';
 
@@ -105,13 +105,13 @@ function validatesEndsAt(start_at) {
   };
 }
 
-function validateBlock(val) {
+export function validateBlock(val) {
   if (!val || val == '') {
     return 'Please select an option';
   }
 }
 
-function validateMaxOfferUsage(val) {
+export function validateMaxOfferUsage(val) {
   if (!val) return;
 
   if (!new RegExp('^[0-9]+$').test(val)) {

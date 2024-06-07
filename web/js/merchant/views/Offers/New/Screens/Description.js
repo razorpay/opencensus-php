@@ -64,24 +64,24 @@ export default ({ formData, isFormLocked, hideType }) => {
   );
 };
 
-function validateName(val) {
+export function validateName(val) {
   if (!val || val.length < 4) {
     return 'Short name should be at least of 4 characters';
   }
 }
 
-function validateDisplayText(val) {
+export function validateDisplayText(val) {
   if (!val || val.length < 4) {
     return 'Short description should be at least of 4 characters';
   }
 }
-function validateTerms(val) {
+export function validateTerms(val) {
   if (!val || val.length < 4) {
     return 'Offer terms should contain at least of 4 characters';
   }
 }
 
-function validateDiscountType(val) {
+export function validateDiscountType(val) {
   if (!val || val == '') {
     return 'Please select a discount type';
   }

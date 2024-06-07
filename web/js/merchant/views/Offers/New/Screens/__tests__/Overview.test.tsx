@@ -1,8 +1,10 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+
+import { render } from 'test-utils';
 
 import '@testing-library/jest-dom/extend-expect';
-import OverView from '../Overview';
+import OverView, { wordWithSpace } from '../Overview';
 const mockAbExperiments = { razorpay_offers: { variables: { result: 'on' } } };
 jest.mock('common/splitz', () => ({
   useSplitzService: () => ({ abExperiments: mockAbExperiments }),
@@ -43,10 +45,29 @@ describe('OverView Component', () => {
     render(<OverView {...mockFormData} />);
     expect(screen.getByText('Offer Type:')).toBeInTheDocument();
     expect(screen.getByText('Offer Terms:')).toBeInTheDocument();
+    expect(screen.getByText('someTerms')).toBeInTheDocument();
+    expect(screen.getByText('someDisplayText')).toBeInTheDocument();
+    expect(screen.getByText('Offer Validity:')).toBeInTheDocument();
+    expect(screen.getByText('Valid till --')).toBeInTheDocument();
   });
 
   it('should render creation terms accepted checkbox', () => {
     render(<OverView {...mockFormData} />);
     expect(screen.getByText('Terms and Conditions')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        'I understand that the discount/cashback given in this offer will be borne by me and not Razorpay',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('should return word with space if word is provided', () => {
+    const result = wordWithSpace('Word');
+    expect(result).toBe('Word ');
+  });
+
+  it('should return empty string if word is not provided', () => {
+    const result = wordWithSpace('');
+    expect(result).toBe('');
   });
 });

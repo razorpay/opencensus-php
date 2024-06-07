@@ -183,6 +183,6 @@ function DualColumnTable({ heading, children, columnRatio = 0.25 }) {
   );
 }
 
-function wordWithSpace(word) {
+export function wordWithSpace(word) {
   return word ? `${word} ` : '';
 }

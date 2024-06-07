@@ -42,4 +42,35 @@ describe('<NoCostOfferActionRow>', () => {
     await fireEvent.change(merchantDiscount, { target: { value: '1.4' } });
     expect(merchantDiscount).toHaveValue('1.4');
   });
+
+  test('should display correct customer borne discount', () => {
+    render(<NoCostOfferActionRow {...initProps} />);
+    const checkbox = screen.getByRole('checkbox');
+    userEvent.click(checkbox);
+
+    const offerTypeSelect = screen.getByTestId('offer-type-select');
+    userEvent.selectOptions(offerTypeSelect, 'low_cost');
+
+    const merchantDiscountInput = screen.getAllByRole('textbox')[0];
+    fireEvent.change(merchantDiscountInput, { target: { value: '1.4' } });
+    fireEvent.blur(merchantDiscountInput);
+
+    const customerDiscountInput = screen.getAllByRole('textbox')[1];
+    expect(customerDiscountInput).toHaveValue('2.4');
+  });
+
+  test('should disable inputs correctly based on EMI type', () => {
+    render(<NoCostOfferActionRow {...initProps} />);
+    const checkbox = screen.getByRole('checkbox');
+    userEvent.click(checkbox);
+
+    const offerTypeSelect = screen.getByTestId('offer-type-select');
+    userEvent.selectOptions(offerTypeSelect, 'no_cost');
+
+    const merchantDiscountInput = screen.getAllByRole('textbox')[0];
+    expect(merchantDiscountInput).toBeDisabled();
+
+    const customerDiscountInput = screen.getAllByRole('textbox')[1];
+    expect(customerDiscountInput).toBeDisabled();
+  });
 });
