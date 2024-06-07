@@ -1,5 +1,7 @@
-import Input from 'common/new-ui/Input';
+/* eslint-disable consistent-return */
+import React from 'react';
 
+import Input from 'common/new-ui/Input';
 import { OFFER_TYPES_OPTIONS, OFFER_TYPES } from 'merchant/views/Offers/constants';
 
 export default ({ formData, isFormLocked, hideType }) => {

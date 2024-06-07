@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 
 import * as Ajax from 'merchant/utils/ajax';
 import { render } from 'test-utils';

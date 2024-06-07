@@ -1,7 +1,10 @@
+/* eslint-disable consistent-return */
+import React from 'react';
+
 import Input from 'common/new-ui/Input';
-import { MAX_DISCOUNT } from 'merchant/views/Offers/constants';
-import DocsLink from 'merchant/components/DocsLink';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
+import DocsLink from 'merchant/components/DocsLink';
+import { MAX_DISCOUNT } from 'merchant/views/Offers/constants';
 
 const LINK_TO_DOCS = 'https://razorpay.com/docs/payment-gateway/orders/';
 const PAYMENT_FAILURE_OPTIONS = [

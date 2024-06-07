@@ -49,6 +49,7 @@ describe('OffersOnBoarding Component', () => {
 
   it('should return false if offers are present or loading is true', () => {
     const offers = [1];
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const loading = true;
     expect(getIsAllowedResetOffersOnBoarding(offers, loading)).toBe(false);
   });

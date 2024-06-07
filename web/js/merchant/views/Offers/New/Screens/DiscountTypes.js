@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react';
+
 import Input from 'common/new-ui/Input';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 import {
   DISCOUNT_TYPES,
   OFFER_TYPES,
   MAX_DISCOUNT,
   REDEMPTION_TYPE_OPTIONS,
 } from 'merchant/views/Offers/constants';
-import { rupeesToPaise } from 'common/utils/rzp-utils';
 
 const DISCOUNT_TYPES_OPTIONS = [
   { label: '--Select Type--', name: '' },
