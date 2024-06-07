@@ -1,6 +1,5 @@
 version: '2.2'
 services:
-
   jaeger:
     image: jaegertracing/all-in-one:1.18
     environment:
@@ -12,6 +11,7 @@ services:
     build:
       context: .
       args:
+        GIT_TOKEN: "${GIT_TOKEN:-dev_token}"
         CACHEBUST: "test"
       dockerfile: Dockerfile.dev
     image: razorpay:api
@@ -100,8 +100,8 @@ services:
       APP_MODE: dev
       JAEGER_HOSTNAME: 'jaeger'
   api_db:
-    image: mysql:8
-    platform: linux/x86_64
+    image: mysql:8.0
+    platform: linux/amd64
     command: --default-authentication-plugin=mysql_native_password
     ports:
       - 23306:3306
@@ -111,8 +111,10 @@ services:
       MYSQL_PASSWORD: 123
     volumes:
       - ./dockerconf/api_db.sql:/docker-entrypoint-initdb.d/init.sql
+      # - ~/mysql/:/var/lib/mysql:delegated
   cache:
     image: redis:3-alpine
+    platform: linux/amd64
     ports:
       - 26379:6379
     container_name: api_cache
@@ -137,6 +139,7 @@ services:
       - 29200:9200
   statsd_exporter:
     image: prom/statsd-exporter:v0.18.0
+    platform: linux/amd64
     container_name: statsd-exporter
     volumes:
       - ./statsd_mapping.yml:/tmp/statsd_mapping.yml
@@ -153,7 +156,7 @@ services:
 # uncomment this container. Refer readme-docker.md for details.
 
 #  redis-cluster:
-#    image: grokzen/redis-cluster:5.0.9
+#    image: grokzen/redis-cluster:6.0.0
 #    container_name: redis-cluster
 #    ports:
 #      - '7000-7050:7000-7050'

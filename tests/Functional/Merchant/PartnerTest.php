@@ -2750,27 +2750,18 @@ class PartnerTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $app = $this->createResellerApp();
-
-        $this->fixtures->on('test')->create('merchant_detail:sane',[
+        $commonFixture = [
             'merchant_id' => $app->merchant_id,
             'contact_name'=> 'randomName',
             'contact_mobile'=> '9123456789',
+            'contact_email' => 'testing@example.com',
             'business_type' => 2
-        ]);
+        ];
+        $this->fixtures->on('test')->create('merchant_detail:sane', $commonFixture);
 
-        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane',[
-            'merchant_id' => $app->merchant_id,
-            'contact_name'=> 'randomName',
-            'contact_mobile'=> '9123456789',
-            'business_type' => 2
-        ]);
+        $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_detail:sane', $commonFixture);
 
-        $this->fixtures->on('live')->create('merchant_detail:sane',[
-            'merchant_id' => $app->merchant_id,
-            'contact_name'=> 'randomName',
-            'contact_mobile'=> '9123456789',
-            'business_type' => 2
-        ]);
+        $this->fixtures->on('live')->create('merchant_detail:sane', $commonFixture);
 
         $this->fixtures->on('live')->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2, 'activation_status' => 'activated', 'contact_mobile'=> '9123456788']);
         $this->fixtures->on('test')->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2, 'activation_status' => 'activated', 'contact_mobile'=> '9123456788']);

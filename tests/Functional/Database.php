@@ -258,7 +258,7 @@ class Database
 
         foreach ($tables as $table)
         {
-            if (strpos($table, 'migrations') !== false)
+            if (strpos($table, 'migrations') !== false || $table == "")
             {
                 continue;
             }

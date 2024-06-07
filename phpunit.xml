@@ -696,6 +696,8 @@
     </listeners>
     <php>
         <ini name="memory_limit" value="8192M"/>
+        <!-- Reduces deprecation logs in the phpunit output -->
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak"/>
         <env name="ENABLE_DUAL_WRITE_PAYMENTS" value="true" force="true" />
         <env name="ENABLE_QUERY_FALLBACK_ON_ARCHIVED_CARD" value="true" force="true" />
         <env name="ENABLE_QUERY_FALLBACK_ON_ARCHIVED_PAYMENT" value="true" force="true" />

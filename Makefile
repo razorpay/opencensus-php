@@ -32,10 +32,18 @@ AT=
 
 # ERROR_MODULE repo info
 ERROR_MODULE_GIT_URL := "https://github.com/razorpay/"
-GIT_TOKEN := "$(cat /run/secrets/git_token)"
+GIT_TOKEN_FROM_SECRETS := "$(cat /run/secrets/git_token)"
+
+# Pickup GIT_TOKEN from env if still empty
+ifneq ($(GIT_TOKEN_FROM_SECRETS),"")
+$(info Found GIT_TOKEN from secrets. Using it instead of from the environment)
+GIT_TOKEN := $(GIT_TOKEN_FROM_SECRETS)
+endif
+
 
 DRONE_ERROR_MODULE_GIT_URL := "https://$(GIT_TOKEN)@github.com/razorpay/error-mapping-module"
 ifneq ($(GIT_TOKEN),)
+$(info Found GIT_TOKEN. Using the access token url for error modules)
 ERROR_MODULE_GIT_URL = $(DRONE_ERROR_MODULE_GIT_URL)
 endif
 
@@ -57,7 +65,7 @@ build: clean
 	@echo "Installing necessary composer packages"
 	$(COMPOSER) install
 	@echo "Building docker containers"
-	$(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) up -d --build
+	BUILDKIT_PROGRESS=plain $(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) up -d --build 
 	$(SHELL) $(DOCKER_STATUS_CHECKER)
 	@echo "Seeding elasticsearch indexes"
 	@echo "===================="
@@ -73,7 +81,7 @@ build: clean
 
 redis-cluster:
 	if [ "x$(DOCKER_PS_REDIS_CLUSTER_CONTAINER_ID)" != x ]; then $(DOCKER_STOP) $(DOCKER_PS_REDIS_CLUSTER_CONTAINER_ID); $(DOCKER_RM) $(DOCKER_PS_REDIS_CLUSTER_CONTAINER_ID); fi
-	$(DOCKER) run -e IP=0.0.0.0 -p 7000-7050:7000-7050 -p 5000-5010:5000-5010 -d grokzen/redis-cluster:5.0.9
+	$(DOCKER) run --name api-redis-cluster -e IP=0.0.0.0 -p 7000-7050:7000-7050 -p 5000-5010:5000-5010 -d grokzen/redis-cluster:6.0.0 --platform linux/amd64
 
 clean:
 	$(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) down --remove-orphans
@@ -88,6 +96,8 @@ clean-all:
 	if [ "x$(DOCKER_IMAGES)" != x ]; then $(DOCKER_RMI) $(DOCKER_IMAGES); fi
 
 up:
+	$(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) up -d --no-recreate
+	$(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) pause
 	$(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) unpause
 	$(SHELL) $(DOCKER_STATUS_CHECKER)
 

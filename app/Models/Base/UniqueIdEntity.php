@@ -296,7 +296,7 @@ class UniqueIdEntity extends Entity
 
         if (PHP_OS === self::MAC_OS)
         {
-            $cmd = '/usr/local/opt/coreutils/libexec/gnubin/';
+            $cmd = '/opt/homebrew/opt/coreutils/libexec/gnubin/';
         }
 
         $cmd .= 'date +%s%N';
