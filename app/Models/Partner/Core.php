@@ -1825,7 +1825,7 @@ class Core extends Detail\Core
         $relations = [];
         foreach($requiredEntities as $entity)
         {
-            if(in_array($entity, ["tax_components","merchant"], true)  == false)
+            if(in_array($entity, ["tax_components","merchant", "merchant_detail"], true)  == false)
             {
                 $relations[] = Str::camel($entity);
             }
@@ -1835,7 +1835,15 @@ class Core extends Detail\Core
             'entities'   => $requiredEntities,
             'relations'  => $relations
         ]);
-        $merchants =  $this->repo->merchant->findManyWithRelations($merchantIds, $relations);
+
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchants = $this->repo->merchant->findMerchantsByIds($merchantIds);
+            $merchants->load($relations);
+        } else
+        {
+            $merchants =  $this->repo->merchant->findManyWithRelations($merchantIds, $relations);
+        }
+
         foreach ($merchants as $merchant) {
             if (empty($merchant) == false)
             {

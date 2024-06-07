@@ -161,8 +161,8 @@ class PublicController extends Controller
         $app = \App::getFacadeRoot();
 
         if(((isset($meta['type']) === true) and
-        ($meta['type'] === 'hdfcvas') and
-        ($merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2) === true)) or ($merchant->org->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2)))
+                ($meta['type'] === 'hdfcvas') and
+                ($merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2) === true)) or ($merchant->org->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2)))
         {
             $script = $this->config->get('url.cdn.production') . '/static/hosted/standard-vas.js';
         }
@@ -214,11 +214,11 @@ class PublicController extends Controller
 
     protected function getHDFCCheckout2Meta($params)
     {
-        $meta = 
+        $meta =
         [
             'type' => 'hdfcvas'
         ];
-        try 
+        try
         {
             $mode = $params['checkout']['notes']['mode'] ?? Mode::LIVE;
             // set mode. It will be used while getting order
@@ -240,7 +240,7 @@ class PublicController extends Controller
                 $meta['checkout_logo_url'] = $merchant->org->getCheckoutLogo();
                 $meta['custom_checkout_logo_enabled'] = $merchant->org->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_CHECKOUT_LOGO);
             }
-        } catch (\Exception $e) 
+        } catch (\Exception $e)
         {
             $this->app['trace']->traceException(
                 $e,
@@ -248,13 +248,13 @@ class PublicController extends Controller
                 TraceCode::HDFC_CHECKOUT_2_META_ERROR
             );
         }
-        
+
         return $meta;
     }
 
     protected function isHDFCCheckout2Supported($params)
     {
-        try 
+        try
         {
             $mode = $params['checkout']['notes']['mode'] ?? Mode::LIVE;
             // set mode. It will be used while getting order
@@ -295,7 +295,7 @@ class PublicController extends Controller
             {
                 return $isCheckout2FeatureEnabled;
             }
-        } catch (\Exception $e) 
+        } catch (\Exception $e)
         {
             $this->app['trace']->traceException(
                 $e,
@@ -303,24 +303,24 @@ class PublicController extends Controller
                 TraceCode::HDFC_CHECKOUT_2_RAZORX_ERROR
             );
         }
-        
+
         return false;
     }
 
-    public function renderHostedStandardVas($key, $requestOptions, $meta)  
+    public function renderHostedStandardVas($key, $requestOptions, $meta)
     {
         $script = $this->config->get('url.cdn.production') . '/static/hosted/standard-vas.js';
-        $options = 
-        [
-            'key'          => $key,
-            'options'      => $requestOptions,
-            'meta'         => json_encode($meta, JSON_FORCE_OBJECT),
-            'script'       => $script,
-            'urls'         => "{}"
-        ];
-   
+        $options =
+            [
+                'key'          => $key,
+                'options'      => $requestOptions,
+                'meta'         => json_encode($meta, JSON_FORCE_OBJECT),
+                'script'       => $script,
+                'urls'         => "{}"
+            ];
+
         return View::make('public.embedded', $options);
-    }    
+    }
     public function renderCheckoutHosted()
     {
         $params = Request::all();
