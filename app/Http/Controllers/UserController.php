@@ -1936,10 +1936,13 @@ class UserController extends Controller
     {
         try
         {
+
+            $isAdminAsMerchant = (new Admin\Service)->isAdminLoggedIn();
+
             $isSubMerchant = $details[MerchantConstants::IS_SUB_MERCHANT] ?? false;
             $partnerType = $details[MerchantConstants::PARTNER_TYPE] ?? null;
 
-            if($isSubMerchant === true || empty($partnerType) === false || $this->isEligibleForPos($details) === true)
+            if($isAdminAsMerchant === true || $isSubMerchant === true || empty($partnerType) === false || $this->isEligibleForPos($details) === true)
             {
                 return false;
             }
