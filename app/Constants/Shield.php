@@ -129,6 +129,9 @@ final class Shield
     const POSTAL_CODE                 = 'postal_code';
     const ZIPCODE                     = 'zipcode';
 
+    const FINGERPRINT_PAYLOAD         = 'fingerprint_payload';
+    const SEALED_FINGERPRINT_DATA     = 'sealed_fingerprint_data';
+
     const CUSTOMER_ORDER_DATA         = 'customer_order_data';
     const CUSTOMER                    = 'customer';
     const LINE_ITEMS                  = 'line_items';

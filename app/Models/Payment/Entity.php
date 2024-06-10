@@ -239,6 +239,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const METADATA              = 'metadata';
     const BILLING_ADDRESS       = 'billing_address';
 
+    const DEVICE_FINGERPRINT    = 'device_fingerprint';
+
     const RECEIVER              = 'receiver';
     const AADHAAR               = 'aadhaar';
     const BANK_ACCOUNT          = 'bank_account';

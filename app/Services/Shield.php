@@ -334,6 +334,13 @@ class Shield
             }
         }
 
+        if(isset($input[Payment\Entity::DEVICE_FINGERPRINT]) === true)
+        {
+            $deviceFingerprint = $input[Payment\Entity::DEVICE_FINGERPRINT];
+
+            $payloadDetails[ShieldConstants::SEALED_FINGERPRINT_DATA] = isset($deviceFingerprint[ShieldConstants::FINGERPRINT_PAYLOAD]) ? $deviceFingerprint[ShieldConstants::FINGERPRINT_PAYLOAD] : null;
+        }
+
         switch ($payloadDetails[ShieldConstants::METHOD])
         {
             case Payment\Method::NETBANKING:
@@ -418,7 +425,7 @@ class Shield
         $customer['has_account'] = $customer['insights']['has_account'] ?? '';
         $customer['registered_at'] = $customer['insights']['registered_at'] ?? '';
         $customer['tier'] = $customer['insights']['tier'] ?? '';
-        
+
         unset($customer['insights']['registered_at']);
         unset($customer['insights']['tier']);
         unset($customer['insights']['has_account']);
