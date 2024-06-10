@@ -28,6 +28,7 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OrderTest extends TestCase
@@ -379,6 +380,29 @@ class OrderTest extends TestCase
         $merchantDetailAttribute = [
             Entity::MERCHANT_ID             => $merchantId,
             DetailEntity::BUSINESS_TYPE     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testOrderForNonRegisteredBusinessIncludesOldMCC()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            Entity::CATEGORY => 5691,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            Entity::MERCHANT_ID             => $merchantId,
+            DetailEntity::BUSINESS_TYPE     => 2,
+            DetailEntity::BUSINESS_SUBCATEGORY => BusinessSubcategory::FASHION_AND_LIFESTYLE,
         ];
 
         $this->fixtures->create('merchant_detail', $merchantDetailAttribute);

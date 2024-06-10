@@ -89,6 +89,7 @@ use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 use RZP\Models\Merchant\Fraud\HealthChecker;
@@ -6842,13 +6843,22 @@ class Core extends Base\Core
         {
            $amount = $merchant->getMaxPaymentAmountDefaultForUnregistered();
 
+            // Check if MCC is present in predefined list
+            $isMccPresent = BusinessSubCategoryMetaData::isMccPresentInPredefinedList($merchant->getCategory());
+
             //
             // Mcc can have values other then predefined values
             // for those cases we should return default values
             //
-            if (BusinessSubCategoryMetaData::isMccPresentInPredefinedList($merchant->getCategory()) === false)
+            if ($isMccPresent === false)
             {
-                $this->trace->count(Metric::UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL);
+               $amount = $this->getAmountFromSubcategoryIfApplicable($merchant, $merchantDetail);
+
+                if ($amount === null)
+                {
+                    $amount = $merchant->getMaxPaymentAmountDefaultForUnregistered();
+                    $this->trace->count(Metric::UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL);
+                }
 
                 return $amount;
             }
@@ -6867,6 +6877,24 @@ class Core extends Base\Core
         }
 
         return (int) $amount;
+    }
+    public function getAmountFromSubcategoryIfApplicable(Entity $merchant, Detail\Entity $merchantDetail)
+    {
+        $amount =  null;
+        if ($merchant->getCountry() === "IN" and
+            empty($merchantDetail->getBusinessSubcategory()) === false and
+            isset(BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$merchantDetail->getBusinessSubcategory()]) === true)
+        {
+            $businessSubCategory = BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$merchantDetail->getBusinessSubcategory()];
+
+            $amount = $businessSubCategory[BusinessSubCategoryMetaData::NON_REGISTERED_MAX_PAYABLE_AMOUNT];
+
+            $this->trace->info(TraceCode::MERCHANT_SUB_CATEGORY_METADATA_EXISTS, [
+                DetailEntity::BUSINESS_SUBCATEGORY => $merchantDetail->getBusinessSubcategory(),
+            ]);
+        }
+
+        return $amount;
     }
 
     public function getPaymentTimeoutWindow(Entity $merchant)
