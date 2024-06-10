@@ -752,6 +752,11 @@ class Entity extends Base\PublicEntity
             return $source;
         }
 
+        if ($this->getSourceType() === E::MERCHANT)
+        {
+            return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'source', 'getSourceId');
+        }
+
         if ($this->getSourceType() === Constant::ORDER)
         {
             $source = $this->source()->with('offers')->first();

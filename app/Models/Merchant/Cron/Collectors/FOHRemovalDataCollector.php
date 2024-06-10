@@ -247,7 +247,14 @@ class FOHRemovalDataCollector extends DbDataCollector
 
     Private function  filterOnHoldMerchants(array $merchantIds) : array
     {
-        $merchants = $this->repo->merchant->findManyByPublicIds($merchantIds);
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            Merchant\Entity::verifyIdAndStripSignMultiple($merchantIds);
+            $merchants = $this->repo->merchant->findMerchantsByIds($merchantIds);
+        } else
+        {
+            $merchants = $this->repo->merchant->findManyByPublicIds($merchantIds);
+        }
 
         $includeIds  = [];
 
