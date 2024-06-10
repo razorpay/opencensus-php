@@ -248,7 +248,7 @@ class Core extends Base\Core
             }
             else if ($payment->getMethod() == Method::UPI and $this->isOptimiserAuditPayment($payment) === true)
             {
-                $namespace = Constants::UPI_OPTIMIZER_AUDIT;
+                $namespace = Constants::UPI_OPTIMIZER_AUDIT_VERIFY;
             }
             else
             {
