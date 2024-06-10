@@ -389,10 +389,15 @@ class Server extends Base\Mock\Server
         return json_encode($response);
     }
 
-    public function getUnexpectedAsyncCallbackContentForAirtel()
+    public function getUnexpectedAsyncCallbackContentForAirtel(bool $isSuccess = true)
     {
+        $code = '0';
+        if ($isSuccess === false)
+        {
+            $code = '1';
+        }
         $response = [
-            'code'        => '0',
+            'code'        => $code ,
             'errorCode'   => '000',
             'messageText' => 'success',
             'rrn'         => '987654321',

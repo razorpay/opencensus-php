@@ -640,6 +640,31 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
         }
     }
 
+    /**
+     * testUnexpectedPaymentFailureWithUpsPreProcess failed payment with pre_process through UPS
+     */
+    public function testUnexpectedPaymentFailureWithUpsPreProcess()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+
+        $this->fixtures->merchant->enableMethod(Account::DEMO_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
+        });
+
+        $content = $this->mockServer('upi_airtel')->getUnexpectedAsyncCallbackContentForAirtel(false);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertNull($paymentEntity);
+    }
+
     public function testUpiAirtelRefundRecon()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();

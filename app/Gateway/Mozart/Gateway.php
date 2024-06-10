@@ -3425,6 +3425,7 @@ class Gateway extends Base\Gateway
 
     public function validatePush($input)
     {
+        // It checks if the version is V2,which is request from art
         if ((isset($input['meta']['version']) === true) and
             ($input['meta']['version'] === 'api_v2'))
         {
@@ -3434,11 +3435,15 @@ class Gateway extends Base\Gateway
 
             return;
         }
-
+        
         $version = $input['data']['version'] ?? '';
         if ($version === 'v2')
         {
-            return $this->upiValidatePush($input);
+            $this->upiValidatePush($input);
+
+            $this->checkUnexpectedPaymentResponseStatus($input['success']);
+
+            return;
         }
         parent::action($input, Base\Action::VALIDATE_PUSH);
 
