@@ -27,7 +27,8 @@ use RZP\Base\RepositoryManager;
  */
 class BusinessAuth
 {
-    const SSL_CERT_HEADER = 'X-Forwarded-Tls-Client-Cert';
+    const SSL_CERT_HEADER_FWD  = 'X-Forwarded-Clientcert';
+    const SSL_CERT_HEADER_MTLS = 'X-Amzn-Mtls-Clientcert';
 
     const OAUTH = 'oauth';
     const KEY   = 'key';
@@ -316,8 +317,12 @@ class BusinessAuth
             return null;
         }
 
-        if ($request->hasHeader(self::SSL_CERT_HEADER) === false)
-        {
+        $certHeader = $this->getCertHeader($request, [
+                                self::SSL_CERT_HEADER_FWD,
+                                self::SSL_CERT_HEADER_MTLS
+                            ]);
+
+        if ($certHeader === null) {
             app()->trace->info(
                 TraceCode::SSL_HEADER_MISSING,
                 []
@@ -326,19 +331,16 @@ class BusinessAuth
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
 
-        $certsString = $request->header(self::SSL_CERT_HEADER);
+        $certsString = $request->header($certHeader);
 
-        $certsArray = explode(',', $certsString);
+        $decodedCerts = rawurldecode($certsString);
+
+        // Split the string by "-----END CERTIFICATE-----"
+        $certsArray = explode("-----END CERTIFICATE-----\n", $decodedCerts);
 
         foreach($certsArray as $cert)
         {
-            $cert = urldecode($cert);
-
-            $start = "-----BEGIN CERTIFICATE-----\n";
-
-            $end = "\n-----END CERTIFICATE-----";
-
-            $cert = $start . $cert . $end;
+            $cert .= "-----END CERTIFICATE-----\n";
 
             $certDetails = openssl_x509_parse($cert);
 
@@ -359,5 +361,15 @@ class BusinessAuth
         );
 
         throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+    }
+
+    private function getCertHeader($request, array $headers) {
+        foreach ($headers as $header ) {
+            if ($request->hasHeader($header) === true ) {
+                return $header;
+            }
+        }
+
+        return null;
     }
 }
