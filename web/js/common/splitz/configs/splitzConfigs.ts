@@ -668,6 +668,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'enable_downtime_banner',
+          experimentId: {
+            beta: 'OH6P4bLoL8lgSh',
+            production: 'OH6XOpF0HzXGUH',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

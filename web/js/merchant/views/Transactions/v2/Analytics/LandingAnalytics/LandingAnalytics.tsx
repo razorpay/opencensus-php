@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { Box, Link, RefreshIcon, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
-import { Box, Link, RefreshIcon, Text } from '@razorpay/blade/components';
+
+import Dropdown from 'common/components/Dropdown';
+import { Option } from 'common/components/Dropdown/types';
+import { useMobile } from 'common/hooks/useMobile';
+import {
+  fetchSchedule as fetchScheduleFn,
+  fetchHolidayList as fetchHolidayListFn,
+  fetchSettlementConfig as fetchSettlementConfigFn,
+} from 'merchant/reducers/settlements/details';
 import OverviewContainer from 'merchant/views/Transactions/v2/Analytics/components/OverviewContainer';
 import {
   usePaymentsData,
@@ -9,15 +18,6 @@ import {
   useFailedPaymentsData,
   useSuccessRateData,
 } from 'merchant/views/Transactions/v2/Analytics/hooks';
-import Dropdown from 'common/components/Dropdown';
-import { endOfDay, getFromTime } from 'merchant/views/Transactions/v2/common/utils';
-import { Option } from 'common/components/Dropdown/types';
-import { Duration, DurationOption } from 'merchant/views/Transactions/v2/common/types';
-import { useMobile } from 'common/hooks/useMobile';
-import { getOptions, isSrEnabledForUser } from 'merchant/views/Transactions/v2/Analytics/utils';
-import BottomOverview from './BottomOverview';
-import TopOverviewContainer from './TopOverview';
-import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import {
   BottomOverviewProps,
   EnvironmentsModes,
@@ -27,13 +27,16 @@ import {
   RefetchDataTypes,
   TopOverviewContainerProps,
 } from 'merchant/views/Transactions/v2/Analytics/types';
+import { getOptions, isSrEnabledForUser } from 'merchant/views/Transactions/v2/Analytics/utils';
 import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
+import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { trackOverviewDuration } from 'merchant/views/Transactions/v2/common/tracking';
-import {
-  fetchSchedule as fetchScheduleFn,
-  fetchHolidayList as fetchHolidayListFn,
-  fetchSettlementConfig as fetchSettlementConfigFn,
-} from 'merchant/reducers/settlements/details';
+import { Duration, DurationOption } from 'merchant/views/Transactions/v2/common/types';
+import { endOfDay, getFromTime } from 'merchant/views/Transactions/v2/common/utils';
+
+import BottomOverview from './BottomOverview';
+import DowntimeBanner from './DowntimeBanner';
+import TopOverviewContainer from './TopOverview';
 
 const LandingAnalytics = ({
   mode,
@@ -187,36 +190,39 @@ const LandingAnalytics = ({
   }, []);
 
   return (
-    <OverviewContainer>
-      <Box
-        display="flex"
-        flexDirection="row"
-        alignItems="center"
-        gap="spacing.2"
-        justifyContent="space-between"
-      >
-        <Box display="flex" flexDirection="row" gap="spacing.2">
-          <Text weight="semibold" color="surface.text.gray.normal">
-            Overview
-          </Text>
-          <Dropdown
-            onChange={onDurationChange}
-            options={durationOptions}
-            defaultOptions={[defaultDuration]}
-            isDisabled={isLoading}
-            bottomSheetTitle="Duration"
-            isLink={true}
-          />
+    <Box display="flex" flexDirection="column" gap="spacing.3">
+      <DowntimeBanner />
+      <OverviewContainer>
+        <Box
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          gap="spacing.2"
+          justifyContent="space-between"
+        >
+          <Box display="flex" flexDirection="row" gap="spacing.2">
+            <Text weight="semibold" color="surface.text.gray.normal">
+              Overview
+            </Text>
+            <Dropdown
+              onChange={onDurationChange}
+              options={durationOptions}
+              defaultOptions={[defaultDuration]}
+              isDisabled={isLoading}
+              bottomSheetTitle="Duration"
+              isLink={true}
+            />
+          </Box>
+          {isFetchFailed ? (
+            <Link icon={RefreshIcon} variant="button" onClick={refetchFailedApi}>
+              Refresh
+            </Link>
+          ) : null}
         </Box>
-        {isFetchFailed ? (
-          <Link icon={RefreshIcon} variant="button" onClick={refetchFailedApi}>
-            Refresh
-          </Link>
-        ) : null}
-      </Box>
-      <TopOverviewContainer {...topOverviewProps} />
-      <BottomOverview {...bottomOverviewProps} />
-    </OverviewContainer>
+        <TopOverviewContainer {...topOverviewProps} />
+        <BottomOverview {...bottomOverviewProps} />
+      </OverviewContainer>
+    </Box>
   );
 };
 

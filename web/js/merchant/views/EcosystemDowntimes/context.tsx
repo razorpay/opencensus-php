@@ -58,6 +58,7 @@ export const EcosystemDowntimeContext = createContext<EcosystemDowntimesContextT
 const ContextProvider = ({
   children,
   showNotification,
+  isPreviousDowntimesFetchDisabled = false,
 }: EcosystemDowntimesProviderType): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const queryCache = useQueryClient();
@@ -124,6 +125,7 @@ const ContextProvider = ({
     refetchOnMount: 'always',
     onError: handleOnError,
     onSuccess: onResolvedApiSuccess,
+    enabled: !isPreviousDowntimesFetchDisabled,
   });
 
   const refreshData = () => {

@@ -3,6 +3,7 @@ import type { Dispatch } from 'react';
 export type EcosystemDowntimesProviderType = {
   children: React.ReactNode;
   showNotification: (payload) => void;
+  isPreviousDowntimesFetchDisabled: boolean;
 };
 
 type InstrumentField = 'logo' | 'name' | 'key' | 'method' | 'group';
