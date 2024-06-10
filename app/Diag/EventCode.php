@@ -96,6 +96,16 @@ class EventCode
         'name'  => 'payment.terminals.received.from.smart.routing'
     ];
 
+    const PAYMENT_EMANDATE_SDN_IDENTIFICATION    = [
+        'group' => 'internal_checks',
+        'name'  => 'payment.emandate.sdn.identification'
+    ];
+
+    const PAYMENT_EMANDATE_SDN_ALTERNATE_TERMINAL_NOT_FOUND    = [
+        'group' => 'internal_checks',
+        'name'  => 'payment.emandate.sdn.alternate.terminal.not.found'
+    ];
+
     const PAYMENT_CREATION_PROCESSED                    = [
         'group' => 'payment_creation',
         'name'  => 'payment.creation.processed'

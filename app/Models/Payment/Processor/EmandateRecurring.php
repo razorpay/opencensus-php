@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeZone;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -649,7 +650,7 @@ trait EmandateRecurring
 
             if($this->isCitiTerminal($terminal, $payment->getMethod()) and $this->isCitiSdnRazorxEnabled())
             {
-                $isBeneficiaryNameMatched = $this->isBeneficiaryNameMatched($token->getBeneficiaryName());
+                $isBeneficiaryNameMatched = $this->isBeneficiaryNameMatched($token->getBeneficiaryName(), $payment);
 
                 if($isBeneficiaryNameMatched)
                 {
@@ -683,8 +684,19 @@ trait EmandateRecurring
                 [
                     "merchant_id"       => $payment->getMerchantId(),
                     "beneficiary_name"  => $token->getBeneficiaryName(),
-                    'payment_id'        => $payment->getMethod()
+                    'payment_id'        => $payment->getId(),
+                    "token_id"          => $payment->getTokenId(),
+                    "method"           => $payment->getMethod(),
                 ]);
+
+            $properties = [
+                "payment_id"       => $payment->getId(),
+                "merchant_id"      => $payment->getMerchantId(),
+                "token_id"         => $payment->getTokenId(),
+                "method"           => $payment->getMethod(),
+            ];
+
+            $this->sendPaymentEvent($payment, EventCode::PAYMENT_EMANDATE_SDN_ALTERNATE_TERMINAL_NOT_FOUND, $properties);
 
             throw new Exception\BadRequestValidationFailureException(
                 'No alternate terminal found for merchant to redirect due to citi sdn issue',
@@ -724,7 +736,7 @@ trait EmandateRecurring
         return $variant === "on";
     }
 
-    protected function isBeneficiaryNameMatched(string $beneficiaryName): bool
+    protected function isBeneficiaryNameMatched(string $beneficiaryName, Payment\Entity $payment): bool
     {
         foreach (EMandate\Constants::CITI_SDN_BLACKLISTED_NAMES as $blackListedName)
         {
@@ -736,19 +748,46 @@ trait EmandateRecurring
 
             if($isMatch === true)
             {
-                $metricData = [
+                $this->trace->info(TraceCode::EMANDATE_CITI_SDN_IDENTIFICATION_MATCH, [
                     "blacklisted_name" => $blackListedName,
                     "beneficiary_name" => $beneficiaryName,
                     "percentage_match" => $matchPercentage,
+                    "payment_id"       => $payment->getId(),
+                    "merchant_id"      => $payment->getMerchantId(),
+                    "token_id"         => $payment->getTokenId(),
+                    "method"           => $payment->getMethod(),
+                    "payment_redirect" => true
+                ]);
+
+                $properties = [
+                    "blacklisted_name" => $blackListedName,
+                    "beneficiary_name" => $beneficiaryName,
+                    "percentage_match" => $matchPercentage,
+                    "payment_id"       => $payment->getId(),
+                    "merchant_id"      => $payment->getMerchantId(),
+                    "token_id"         => $payment->getTokenId(),
+                    "method"           => $payment->getMethod(),
+                    "payment_redirect" => true
                 ];
-
-                $this->trace->count(EMandate\Metric::EMANDATE_SDN_IDENTIFICATION_MATCH, $metricData);
-
-                $this->trace->info(TraceCode::EMANDATE_CITI_SDN_IDENTIFICATION_MATCH, $metricData);
+    
+                $this->sendPaymentEvent($payment, EventCode::PAYMENT_EMANDATE_SDN_IDENTIFICATION, $properties);
+    
+                $this->trace->count(EMandate\Metric::EMANDATE_SDN_IDENTIFICATION_MATCH, $properties);
 
                 return true;
             }
         }
+
+        $properties = [
+            "beneficiary_name" => $beneficiaryName,
+            "payment_id"       => $payment->getId(),
+            "merchant_id"      => $payment->getMerchantId(),
+            "token_id"         => $payment->getTokenId(),
+            "method"           => $payment->getMethod(),
+            "payment_redirect" => false
+        ];
+        
+        $this->sendPaymentEvent($payment, EventCode::PAYMENT_EMANDATE_SDN_IDENTIFICATION, $properties);
 
         return false;
     }
@@ -784,12 +823,31 @@ trait EmandateRecurring
                 [
                     "selected_terminal"       => $selectedTerminal,
                     "gateway"                 => $selectedTerminal->getGateway(),
-                    "acquirer"                => $selectedTerminal->getGatewayAcquirer()
+                    "acquirer"                => $selectedTerminal->getGatewayAcquirer(),
+                    "payment_id"              => $payment->getId(),
+                    "merchant_id"             => $payment->getMerchantId(),
+                    "token_id"                => $payment->getTokenId()
                 ]);
 
             return $selectedTerminal;
         }
 
         return null;
+    }
+
+    public function sendPaymentEvent(Payment\Entity $payment, $event, $properties): void
+    {
+        $meta = [
+            'metadata' => [
+                'trackId' => $this->app['req.context']->getTrackId(),
+                'payment' => [
+                    'id'           => $payment->getPublicId(),
+                ]
+            ],
+            'read_key' => array('trackId'),
+            'write_key' => 'payment.id'
+        ];
+
+        $this->app['diag']->trackPaymentEventV2($event, $payment, null, $meta, $properties);
     }
 }
