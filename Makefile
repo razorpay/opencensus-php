@@ -34,16 +34,16 @@ AT=
 ERROR_MODULE_GIT_URL := "https://github.com/razorpay/"
 GIT_TOKEN_FROM_SECRETS := "$(cat /run/secrets/git_token)"
 
-# Pickup GIT_TOKEN from env if still empty
-ifneq ($(GIT_TOKEN_FROM_SECRETS),"")
-$(info Found GIT_TOKEN from secrets. Using it instead of from the environment)
+# Set GIT_TOKEN variable from secrets if present (defaults to env variable)
+ifneq ($(GIT_TOKEN_FROM_SECRETS),)
+$(info Found GIT_TOKEN from secrets)
 GIT_TOKEN := $(GIT_TOKEN_FROM_SECRETS)
 endif
 
 
 DRONE_ERROR_MODULE_GIT_URL := "https://$(GIT_TOKEN)@github.com/razorpay/error-mapping-module"
 ifneq ($(GIT_TOKEN),)
-$(info Found GIT_TOKEN. Using the access token url for error modules)
+$(info Creating git url using GIT_TOKEN for error modules)
 ERROR_MODULE_GIT_URL = $(DRONE_ERROR_MODULE_GIT_URL)
 endif
 
@@ -115,7 +115,7 @@ error-module-clean:
 
 
 error-module-fetch: ## Fetch ERROR_MODULE files from remote repo
-	@echo "\n + Fetching ERROR_MODULE files from branch: $(ERROR_MODULE_BRANCH) \n"
+	@echo "\nFetching ERROR_MODULE files from branch: $(ERROR_MODULE_BRANCH) \n"
 	@mkdir $(ERROR_MODULE_ROOT) && \
 	cd $(ERROR_MODULE_ROOT) && \
 	git init --quiet && \
@@ -123,4 +123,5 @@ error-module-fetch: ## Fetch ERROR_MODULE files from remote repo
 	cp $(CURDIR)/error_modules .git/info/sparse-checkout && \
 	git remote add origin $(ERROR_MODULE_GIT_URL)  && \
 	git fetch origin $(ERROR_MODULE_BRANCH) --quiet && \
-	git checkout origin/$(ERROR_MODULE_BRANCH) --quiet
+	git checkout origin/$(ERROR_MODULE_BRANCH) --quiet && \
+	echo "\nDone fetching ERROR_MODULE files from branch: $(ERROR_MODULE_BRANCH) \n"
