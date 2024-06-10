@@ -58,4 +58,10 @@ final class Constant
     const TRANSFER_PROCESS_MUTEX_MAX_RETRY_DELAY_MS_KEY = 'max_delay_ms';
 
     const TRANSFER_PROCESS_MUTEX_LOCK_TIMEOUT_SEC_KEY = 'lock_timeout_sec';
+
+    const DEDICATED_QUEUE_ONE   = 'dedicated_queue_one';
+    const DEDICATED_QUEUE_TWO   = 'dedicated_queue_two';
+    const DEDICATED_QUEUE_THREE = 'dedicated_queue_three';
+    const DEDICATED_QUEUE_FOUR  = 'dedicated_queue_four';
+    const DEDICATED_QUEUE_FIVE  = 'dedicated_queue_five';
 }

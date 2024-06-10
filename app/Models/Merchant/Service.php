@@ -7540,6 +7540,7 @@ class Service extends Base\Service
         $createFlags['optimise']      = $optimise;
         $createFlags['linkedAccount'] = $isLinkedAccount;
 
+        $this->trace->info(TraceCode::SUBMERCHANT_CREATE_FLAG, ['optimise_flag' => $createFlags['optimise']]);
 
         list($subMerchant, $newUser, $createdNew, $response) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS_INTERNAL], function () use ($input, $merchant, $ownerId, $product, $actualProduct, $createFlags) {
             if ($createFlags['v2CreateFlow'] === false) {

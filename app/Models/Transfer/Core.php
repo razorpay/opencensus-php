@@ -11,8 +11,15 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Jobs\AsyncBalanceUpdateForTransfer;
+use RZP\Jobs\TransferLedgerOutboxPush;
+use RZP\Jobs\TransferProcessDedicatedQueueOne;
+use RZP\Jobs\TransferProcessDedicatedQueueTwo;
+use RZP\Jobs\TransferProcessDedicatedQueueThree;
+use RZP\Jobs\TransferProcessDedicatedQueueFour;
+use RZP\Jobs\TransferProcessDedicatedQueueFive;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Admin;
 use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -1550,13 +1557,21 @@ class Core extends Base\Core
         }
     }
 
-    public function dispatchForTransferProcessing(string $sourceType, Payment\Entity $payment, int $delaySecs = 0, bool $isReverseShadow = false, array $transferInput = [])
+    public function dispatchForTransferProcessing(string $sourceType, Payment\Entity $payment, int $delaySecs = 0, bool $isReverseShadowTxnCreate = false, array $transferInput = [])
     {
         $merchant = $payment->merchant;
 
+        $useLedgerOutboxPushQueue = false;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $useLedgerOutboxPushQueue = true;
+        }
+
         if (($sourceType === Constant::PAYMENT) and
+            ($useLedgerOutboxPushQueue === false) and
             (($merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true) or
-             ($merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)))
+                ($merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)))
         {
             $delaySecs = 15 * 60; // 15 minutes
         }
@@ -1564,34 +1579,74 @@ class Core extends Base\Core
         if (($sourceType === Constant::ORDER) and
             ($payment->isExternal() === true))
         {
-            $delaySecs = 5 * 60; // 15 minutes
+            $delaySecs = 5 * 60; // 5 minutes
         }
 
-        if ($this->app['api.route']->getCurrentRouteName() === 'payment_transfer_batch')
+        try
         {
-            TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
+            $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ROUTE_TRANSFER_QUEUE_CONFIG]) ?? [];
+        }
+        catch (\Throwable $ex)
+        {
+            // Fallback to other queues if an error occurs
+            $config = [];
+        }
+
+        if (in_array($merchant->getId(), $config[Constant::DEDICATED_QUEUE_TWO] ?? []) === true)
+        {
+            TransferProcessDedicatedQueueTwo::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
+
+            return;
+        }
+        else if (in_array($merchant->getId(), $config[Constant::DEDICATED_QUEUE_THREE] ?? []) === true)
+        {
+            TransferProcessDedicatedQueueThree::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
+
+            return;
+        }
+        else if (in_array($merchant->getId(), $config[Constant::DEDICATED_QUEUE_FOUR] ?? []) === true)
+        {
+            TransferProcessDedicatedQueueFour::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
+
+            return;
+        }
+        else if (in_array($merchant->getId(), $config[Constant::DEDICATED_QUEUE_FIVE] ?? []) === true)
+        {
+            TransferProcessDedicatedQueueFive::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
+
+            return;
+        }
+        else if ($useLedgerOutboxPushQueue === true)
+        {
+            $delaySecs = 5 * 60; // 5 minutes
+
+            TransferLedgerOutboxPush::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
+
+            return;
+        }
+        else if ($this->app['api.route']->getCurrentRouteName() === 'payment_transfer_batch')
+        {
+            TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
 
             return;
         }
         else if (($merchant->isCapitalFloatRouteMerchant() === true) and
-                 ($this->isLiveMode() === true))
+            ($this->isLiveMode() === true))
         {
-            // TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
+            TransferProcessDedicatedQueueOne::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
 
-            // return;
-
-            // Disabling dispatch to capital float queue as it is re-used for AsyncBalanceUpdateForTransfer job
+            return;
         }
         else if (($merchant->isSliceRouteMerchant() === true) and
-                 ($this->isLiveMode() === true))
+            ($this->isLiveMode() === true))
         {
-            TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
+            TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
 
             return;
         }
         else if ($merchant->isRouteKeyMerchant() === true)
         {
-            TransferProcessKeyMerchants::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
+            TransferProcessKeyMerchants::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
 
             return;
         }
@@ -1607,14 +1662,14 @@ class Core extends Base\Core
             {
                 case 1:
                 {
-                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
+                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
 
                     return;
                 }
 
                 case 2:
                 {
-                    TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
+                    TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
 
                     return;
                 }
@@ -1628,14 +1683,14 @@ class Core extends Base\Core
                         ]
                     );
 
-                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
+                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
 
                     return;
                 }
             }
         }
 
-        TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
+        TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
     }
 
     public function  createTransferTransactionsInReverseShadow($sourcePayment, array $transferInput)

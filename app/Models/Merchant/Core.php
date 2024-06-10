@@ -532,8 +532,11 @@ class Core extends Base\Core
             $this->assignSubMerchantPricingPlan($aggregatorMerchant, $subMerchant, $linkedAccount);
         });
 
+        $this->trace->info(TraceCode::SUBMERCHANT_CREATE_FLAG, ['optimise_flag' => $optimise]);
+
         if($optimise == true)
         {
+            $this->trace->info(TraceCode::SUBMERCHANT_CREATE_ASYNC, ['msg' => 'supporting entities created in async']);
             $this->repo->saveOrFail($subMerchant);
 
             Tracer::inspan(['name' => HyperTrace::ADD_SUBMERCHANT_SUPPORTING_ENTITIES], function() use ($subMerchant, $aggregatorMerchant, $jobInput, $linkedAccount) {
@@ -551,6 +554,7 @@ class Core extends Base\Core
         }
         else
         {
+            $this->trace->info(TraceCode::SUBMERCHANT_CREATE_SYNC, ['msg' => 'supporting entities created in sync']);
             $this->associateLegalEntityToSubmerchant($subMerchant, $jobInput);
 
             $this->setSubMerchantMaxPaymentAmount($aggregatorMerchant,$subMerchant, $jobInput[Detail\Entity::BUSINESS_TYPE]);

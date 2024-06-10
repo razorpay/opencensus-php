@@ -139,6 +139,7 @@ class Validator extends Base\Validator
         ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG          => 'filled|array',
         ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_HOURLY_RATE_LIMIT_PER_MID => 'filled|integer',
         ConfigKey::TRANSFER_PROCESSING_MUTEX_CONFIG                           => 'filled|array',
+        ConfigKey::ROUTE_TRANSFER_QUEUE_CONFIG                                => 'filled|array',
 
         ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT              => 'filled|integer',
         ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT      => 'filled|integer',

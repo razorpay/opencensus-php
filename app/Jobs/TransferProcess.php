@@ -31,7 +31,7 @@ class TransferProcess extends Job
 
     protected $transferMode;
 
-    protected $isReverseShadow;
+    protected $isReverseShadowTxnCreate;
 
     protected $transferInput;
 
@@ -41,7 +41,7 @@ class TransferProcess extends Job
 
     protected int $attemptLimit = 0;
 
-    public function __construct(string $mode, $payment, $transfermode = Transfer\Constant::ORDER, $isReverseShadow = false, $transferInput = [])
+    public function __construct(string $mode, $payment, $transfermode = Transfer\Constant::ORDER, $isReverseShadowTxnCreate = false, $transferInput = [])
     {
         parent::__construct($mode);
 
@@ -49,7 +49,7 @@ class TransferProcess extends Job
 
         $this->transferMode = $transfermode;
 
-        $this->isReverseShadow = $isReverseShadow;
+        $this->isReverseShadowTxnCreate = $isReverseShadowTxnCreate;
 
         $this->transferInput = $transferInput;
 
@@ -73,7 +73,7 @@ class TransferProcess extends Job
             // this happens for merchants who are on async balance update flow
             $delay = $this->checkProcessingDelay($this->payment);
 
-            if ($this->isReverseShadow ===  true)
+            if ($this->isReverseShadowTxnCreate ===  true)
             {
                 // In pg ledger reverse Shadow phase,we create journals in CLS followed by transaction creation in async.
                 // For transfers use case, we push payload to outbox table to create journals in CLS.
@@ -129,7 +129,7 @@ class TransferProcess extends Job
         }
         catch (\Exception $ex)
         {
-            if ($this->isReverseShadow === true)
+            if ($this->isReverseShadowTxnCreate === true)
             {
                 (new Metric())->pushMetricForTransferTransactionsCreate($ex);
 

@@ -273,6 +273,37 @@ return [
         'live'       => env('AWS_TRANSFER_REVERSAL_TRANSACTION_LIVE_QUEUE'),
     ],
 
+    // Dedicated transfer ledger outbox push queue for reverse shadow
+    'transfer_ledger_outbox_push' => [
+        'test'       => env('AWS_TRANSFER_LEDGER_OUTBOX_PUSH_TEST_QUEUE'),
+        'live'       => env('AWS_TRANSFER_LEDGER_OUTBOX_PUSH_LIVE_QUEUE'),
+    ],
+
+    // Dedicated transfer queue 1 for merchants
+    'transfer_process_dedicate_queue_one' => [
+        'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_ONE_LIVE'),
+    ],
+
+    // Dedicated transfer queue 2 for merchants
+    'transfer_process_dedicate_queue_two' => [
+        'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_TWO_LIVE'),
+    ],
+
+    // Dedicated transfer queue 3 for merchants
+    'transfer_process_dedicate_queue_three' => [
+        'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_THREE_LIVE'),
+    ],
+
+    // Dedicated transfer queue 4 for merchants
+    'transfer_process_dedicate_queue_four' => [
+        'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_FOUR_LIVE'),
+    ],
+
+    // Dedicated transfer queue 5 for merchants
+    'transfer_process_dedicate_queue_five' => [
+        'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_FIVE_LIVE'),
+    ],
+
     // settlement related QUEUES
     'settlement_create' => [
         'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),
