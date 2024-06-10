@@ -12,6 +12,7 @@ use RZP\Exception\BadRequestException;
 
 class Role
 {
+    const RAZORPAY_SALES        = 'razorpay_sales';
     const MANAGER               = 'manager';
     const OPERATIONS            = 'operations';
     const FINANCE               = 'finance';
