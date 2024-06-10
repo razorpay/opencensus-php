@@ -18,9 +18,7 @@ class Repository extends Base\Repository
 {
     protected $entity = 'transfer';
 
-    protected $expands = [
-        Entity::TO,
-    ];
+    protected $expands = [];
 
     protected $entityFetchParamRules = [
         Entity::RECIPIENT               => 'sometimes|string|max:20',
