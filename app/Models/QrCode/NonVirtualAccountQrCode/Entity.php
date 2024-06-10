@@ -39,6 +39,7 @@ class Entity extends QrCode\Entity
     const REQUEST_SOURCE               = 'request_source';
     const VPA                          = 'vpa';
     const GATEWAY                      = 'gateway';
+    const DEVICE_ID                    = 'device_id';
 
     const SHARED_ID = 'FallbackQrCode';
 
@@ -62,6 +63,7 @@ class Entity extends QrCode\Entity
         self::MPANS_TOKENIZED,
         self::TAX_INVOICE,
         self::REQUEST_SOURCE,
+        self::DEVICE_ID,
     ];
 
     protected $visible = [
@@ -85,6 +87,7 @@ class Entity extends QrCode\Entity
         self::CLOSED_AT,
         self::CLOSE_REASON,
         self::TAX_INVOICE,
+        self::DEVICE_ID,
     ];
 
     protected $public = [
@@ -141,6 +144,7 @@ class Entity extends QrCode\Entity
         self::CLOSE_BY                 => null,
         self::TAX_INVOICE              => [],
         self::REQUEST_SOURCE           => null,
+        self::DEVICE_ID                => null,
     ];
 
     protected static $generators = [
@@ -189,6 +193,11 @@ class Entity extends QrCode\Entity
         Status::checkStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setDeviceId(string $deviceId)
+    {
+        $this->setAttribute(self::DEVICE_ID, $deviceId);
     }
 
     public function setRequestSource(string $requestSource)
@@ -313,6 +322,11 @@ class Entity extends QrCode\Entity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getDeviceId()
+    {
+        return $this->getAttribute(self::DEVICE_ID);
     }
 
     public function getUsageType()

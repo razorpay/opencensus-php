@@ -1626,5 +1626,94 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->assertEquals($response['payment_id'], $payment['id']);
     }
 
+    public function testPOSDeviceDetailOnDashboardForOfflineQRCode()
+    {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+
+        $this->createPricingForOffline();
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type' => 'upi_qr',
+                         'vpa'   => 'testvpaOffline@mairtel',
+                         'device_id' => '873648ABCD6',
+                     ],
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+
+        $this->runQrCodeEntityAssertions('test');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random78']);
+        $this->runQrPaymentEntityAssertions();
+        $payment = $this->getDbLastEntity('payment');
+
+        $user = $this->fixtures->user->createUserForMerchant();
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/pay_' . $payment['id'];
+
+        $response = $this->makeRequestAndGetContent($this->testData[__FUNCTION__]['request']);
+
+        $this->assertEquals('873648ABCD6', $response['device_detail']);
+        $this->assertEquals('testvpaOffline@mairtel', $response['payee_vpa']);
+    }
+
+    public function testOnDashboardForOfflineQRCodeIfPOSDeviceDetailIsNull(): void
+    {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+
+        $this->createPricingForOffline();
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type' => 'upi_qr',
+                     ],
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+
+        $this->runQrCodeEntityAssertions('test');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals('upi_airtel', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+
+        $user = $this->fixtures->user->createUserForMerchant();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->testData['testPOSDeviceDetailOnDashboardForOfflineQRCode']['request']['url'] = '/payments/pay_' . $payment['id'];
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPOSDeviceDetailOnDashboardForOfflineQRCode']['request']);
+
+        $this->assertEquals(null, $response['device_detail']);
+        $this->assertEquals('testvpaOffline@mairtel', $response['payee_vpa']);
+    }
 
 }

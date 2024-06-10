@@ -3786,7 +3786,8 @@ ALTER TABLE qr_code
     ADD notes json,
     ADD close_reason varchar(10),
     ADD closed_at int,
-    ADD close_by int;
+    ADD close_by int,
+    ADD device_id varchar(20);
 
 ALTER TABLE qr_code MODIFY entity_id varchar(14) DEFAULT NULL;
 ALTER TABLE qr_code MODIFY entity_type varchar(50) DEFAULT NULL;

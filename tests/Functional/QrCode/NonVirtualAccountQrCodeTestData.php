@@ -1527,6 +1527,18 @@ return [
         ],
     ],
 
+    'testPOSDeviceDetailOnDashboardForOfflineQRCode' => [
+        'request'   => [
+            'method'  => 'get',
+            'url'     => '/payments',
+            'content' => [
+                'dashboard_flag' => [
+                    'qr_device_detail',
+                ],
+            ],
+        ],
+    ],
+
     'testQrCodeCreditedEventWithTransactionIsolation' => [
         "entity" => "event",
         "account_id" => "acc_10000000000000",

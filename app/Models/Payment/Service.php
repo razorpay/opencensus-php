@@ -11,6 +11,7 @@ use RZP\Models\Admin;
 use RZP\Models\BharatQr;
 use RZP\Models\Emi\ProcessingFeePlan;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\QrPayment\Constants as QrConstants;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Http\Controllers\GatewayController;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
@@ -26,7 +27,7 @@ use RZP\Constants\Mode;
 use RZP\Base\RuntimeManager;
 
 use RZP\Jobs;
-
+use RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant\Checkout;
 use RZP\Models\Payment\Processor\CardlessEmi;
@@ -2771,6 +2772,21 @@ class Service extends Base\Service
     protected function addDashboardFlagRefundCreateData(array &$entity, $payment)
     {
         $this->getNewProcessor($this->merchant)->getRefundCreationDataForDashboard($payment, $entity);
+    }
+
+    //qr_device_detail: Frontend needs to send this flag in the input inside dashboard_flag array
+    protected function addDashboardFlagQrDeviceDetail(array &$entity, $payment)
+    {
+        if (($payment->getReceiverType() === "qr_code") && ($payment->getReference13() === QrConstants::PAYMENT_TYPE_IN_PERSON))
+        {
+            $qrCode = (new NonVirtualAccountQrCode\Repository())->fetchQrCodeForPaymentId($payment->getPublicId(), $this->merchant->getId());
+
+            if ((empty($qrCode[0]) === false) && ($qrCode[0] instanceof NonVirtualAccountQrCode\Entity))
+            {
+                $entity['payee_vpa'] = $qrCode[0]->getQrVpa();
+                $entity['device_detail'] = $qrCode[0]->getDeviceId();
+            }
+        }
     }
 
     public function redirectToDCCInfo($id)
