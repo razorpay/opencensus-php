@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Jobs\Job;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
@@ -453,9 +454,11 @@ class CrossBorderCommonUseCases extends Job
 
         $merchantId = $input['merchant_id'];
         $paymentId  = $input['payment_id'];
-        $hscode = $input['hscode'] ?? null;
+      //  $hscode = $input['hscode'] ?? null;
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $purpose_code=$merchant->getPurposeCode();
 
         if(($merchant->isOpgspImportSettlementEnabled() === false) and
            ($merchant->isJpmcImportFlowEnabled() === false))
@@ -467,21 +470,8 @@ class CrossBorderCommonUseCases extends Job
             return;
         }
 
-        if(!isset($hscode))
-        {
-            $hscode = (new MIIService())->getMerchantHsCode($merchantId);
-        }
-
-        if(isset($hscode) === false)
-        {
-            $this->trace->info(TraceCode::INVALID_HS_CODE_FOR_MERCHANT, [
-                'input'           => $input,
-                'hscode'          => $hscode,
-            ]);
-            return;
-        }
-
-        $isAwbCheckRequired = HsCodeList::isGoodsMerchant($hscode['hs_code']);
+        $AwbCheckRequiredCodes = Constant::OPGSP_AWB_REQUIRED;
+        $isAwbCheckRequired=in_array($purpose_code, $AwbCheckRequiredCodes);
 
         $paymentSupportingDocuments = (new InvoiceService())->findByPaymentId($paymentId);
 
@@ -497,11 +487,11 @@ class CrossBorderCommonUseCases extends Job
 
         foreach($paymentSupportingDocuments as $document)
         {
-            if ($document[InvoiceEntity::TYPE] === InvoiceType::OPGSP_INVOICE and
-                isset($document[InvoiceEntity::REF_NUM]))
-            {
-                $isInvoiceUploaded = true;
-            }
+//            if ($document[InvoiceEntity::TYPE] === InvoiceType::OPGSP_INVOICE and
+//                isset($document[InvoiceEntity::REF_NUM]))
+//            {
+//                $isInvoiceUploaded = true;
+//            }
 
             if ($document[InvoiceEntity::TYPE] === InvoiceType::JPMC_INVOICE and
                 isset($document[InvoiceEntity::REF_NUM]))

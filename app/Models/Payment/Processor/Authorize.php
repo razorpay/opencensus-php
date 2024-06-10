@@ -14226,7 +14226,16 @@ trait Authorize
         {
             $paymentNotes = $payment->getNotes()->toArray();
 
-            // todo: add check for type in future to support AWB
+            if ((empty($payment->merchant->getPurposeCode()) !== true) and
+                (in_array($payment->merchant->getPurposeCode(), Constant::OPGSP_AWB_REQUIRED) === true))
+            {
+                $invoiceEntity[InvoiceEntity::TYPE] = InvoiceType::OPGSP_AWB;
+
+                $invoice = (new InvoiceService())->createPaymentSupportingDocuments($invoiceEntity, $payment);
+
+                $invoice->setReceipt($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]);
+                $this->repo->saveOrFail($invoice);
+            }
             $invoiceEntity[InvoiceEntity::TYPE] = InvoiceType::OPGSP_INVOICE;
 
             $invoice = (new InvoiceService())->createPaymentSupportingDocuments($invoiceEntity, $payment);

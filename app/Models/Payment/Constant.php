@@ -29,4 +29,13 @@ class Constant
 
     const ERROR_MERCHANT_DESC     = 'error_merchant_desc';
 
+    const S0101 = 'S0101';
+    const S0102 = 'S0102';
+
+    //list of codes for opgsp import flow for awb upload
+    const OPGSP_AWB_REQUIRED = [
+        self::S0101,
+        self::S0102,
+    ];
+
 }

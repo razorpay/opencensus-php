@@ -39,6 +39,7 @@ class Constants
     const B2B_EXPORT_INVOICE                      = 'b2b_export_invoice';
     const APM_ONBOARDING                          = 'apm_onboarding';
     const OPGSP_INVOICE                           = 'opgsp_invoice';
+    const OPGSP_AWB                               = 'opgsp_awb';
     const JPMC_INVOICE                            = 'jpmc_invoice';
     const INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT = 'international_products_pa_cb_enablement';
 
@@ -51,6 +52,7 @@ class Constants
         self::B2B_EXPORT_INVOICE,
         self::APM_ONBOARDING,
         self::OPGSP_INVOICE,
+        self::OPGSP_AWB,
         self::JPMC_INVOICE,
         self::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT
     ];

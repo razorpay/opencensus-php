@@ -421,6 +421,123 @@ class CBPaymentCreateTest extends TestCase
 
     }
 
+
+    //checking  two entries opgsp_invoice and opgsp_awb will be created after a payment in invoice table
+    public function testOpgspImportForAWB()
+    {
+        $merchantId = "10000000000000";
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+            'purpose_code' => 'S0101',
+        ];
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['amount'] = '1000000';
+        $payment['notes'] = [
+            'invoice_number' => 'AWBINV12'
+        ];
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+        $this->mockPGRouterForRearch();
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+        $paymentEntity = $this->getDbLastPayment();
+        $paymentSupportingDocs = $this->getDbEntities('invoice', ['entity_id' =>$paymentEntity['id']]);
+        $this->assertEquals($paymentSupportingDocs[0]['type'],'opgsp_awb');
+        $this->assertEquals($paymentSupportingDocs[1]['type'],'opgsp_invoice');
+        $this->assertEquals($paymentSupportingDocs[0]['receipt'], 'AWBINV12');
+        $this->assertEquals($paymentSupportingDocs[1]['receipt'], 'AWBINV12');
+    }
+
+
+    //checking for invalidpurposecode for awb as invoice will be strored
+    public function testOPGSPImportForAWBInvalidPurposeCode()
+    {
+        $merchantId = "10000000000000";
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+            'purpose_code' => 'S0104',
+        ];
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['amount'] = '1000000';
+        $payment['notes'] = [
+            'invoice_number' => 'AWBINV12'
+        ];
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        // this function makes sure that checks for card rearch pass
+        $this->mockPGRouterForRearch();
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+        $paymentEntity = $this->getDbLastPayment();
+        $paymentSupportingDocs = $this->getDbEntities('invoice', ['entity_id' =>$paymentEntity['id']]);
+        $this->assertNotEquals($paymentSupportingDocs[0]['type'],'opgsp_awb');
+        $this->assertEquals($paymentSupportingDocs[0]['type'],'opgsp_invoice');
+    }
+
+    //checking ref num  will be set after single upload in invoice table for awb
+    public function testOpgspImportForSingleUploadAWB()
+{
+    $merchantId = "10000000000000";
+
+    $merchantAttribute = [
+        MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        'purpose_code' => 'S0101',
+
+
+    ];
+    $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+    $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+    $merchantDetailAttribute = [
+        DetailEntity::MERCHANT_ID => $merchantId,
+    ];
+
+    $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+    $payment = $this->getDefaultNetbankingPaymentArray();
+    $payment['amount'] = '1000000';
+    $payment['notes'] = [
+        'invoice_number' => 'AWBINV12'
+    ];
+
+    $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+    $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+    $paymentEntity = $this->getDbLastPayment();
+    $paymentSupportingDocs = $this->getDbEntities('invoice', ['entity_id' =>$paymentEntity['id']]);
+    $this->assertEquals($paymentSupportingDocs[0]['type'],'opgsp_awb');
+    $this->assertEquals($paymentSupportingDocs[1]['type'],'opgsp_invoice');
+    $this->assertEquals($paymentSupportingDocs[0]['receipt'], 'AWBINV12');
+    $this->assertEquals($paymentSupportingDocs[1]['receipt'], 'AWBINV12');
+    $this->assertNull($paymentSupportingDocs[0]['ref_num']);
+    $this->assertNull($paymentSupportingDocs[1]['ref_num']);
+
+    $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+    $this->ba->proxyAuth('rzp_test_' . $merchantId , $merchantUser['id']);
+
+    $request = [
+        'url'    => '/payment/'.$paymentEntity['id'].'/update_merchant_doc',
+        'method' => 'patch',
+        'content' => [
+            'document_id' => "12345678901234",
+            'document_type' => "opgsp_awb"
+        ]
+    ];
+
+    $response = $this->makeRequestAndGetContent($request);
+    $this->assertEquals(true, $response['document_updated']);
+    $paymentSupportingDocs = $this->getDbEntities('invoice', ['entity_id' =>$paymentEntity['id'],'type'=>'opgsp_awb']);
+    $this->assertEquals($paymentSupportingDocs[0]['ref_num'],'12345678901234');
+
+}
     /*public function testOpgspImportPaymentPositive()
     {
         $merchantId = "10000000000000";

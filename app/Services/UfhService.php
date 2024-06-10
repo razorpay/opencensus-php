@@ -347,6 +347,12 @@ class UfhService
             $fileNameFromPath = array_pop($fileNameArray);
             $storageFileName = "opgsp_invoice/" . implode('/', $fileNameArray) . '/' . $entity->getId() . '/' . $fileNameFromPath;
         }
+        if($type === GenericDocumentConstants::OPGSP_AWB)
+        {
+            $fileNameArray= (explode("/",$storageFileName));
+            $fileNameFromPath = array_pop($fileNameArray);
+            $storageFileName = "opgsp_awb/" . implode('/', $fileNameArray) . '/' . $entity->getId() . '/' . $fileNameFromPath;
+        }
 
         if($type === GenericDocumentConstants::JPMC_INVOICE)
         {
