@@ -52,6 +52,9 @@ class Core extends Base\Core
                 Constants::GATEWAY_DISPUTE_PAYABLE_AMOUNT    => strval($adjustmentAmount),
                 Constants::MERCHANT_BALANCE_LIMIT            => strval($maxNegativeLimit)
             ],
+            Constants::NOTES                        => [
+                Constants::ADJUSTMENT_ID    => $adjustment->getId()
+            ]
         );
 
         $journalPayload = array_merge($transactionMessage, $disputeDeductData);
@@ -67,7 +70,7 @@ class Core extends Base\Core
 
     public function createAdjustemntAndDisputeJournalInLedger($journalPayload)
     {
-        try 
+        try
         {
             $journal = $this->createJournalInLedger($journalPayload);
 
@@ -78,7 +81,7 @@ class Core extends Base\Core
             $err = $e->getError() ? $e->getError()->toPublicArray() : [];
 
             $errorResponse = $err['error'] ?? [];
-            
+
             $errorMessage =  $errorResponse[Error::DESCRIPTION];
 
             $transactorId = $journalPayload[Constants::TRANSACTOR_ID];
@@ -129,6 +132,9 @@ class Core extends Base\Core
                 Constants::GATEWAY_DISPUTE_PAYABLE_AMOUNT    => strval($adjustmentAmount),
                 Constants::MERCHANT_BALANCE_LIMIT            => strval($maxNegativeLimit)
             ],
+            Constants::NOTES                        => [
+                Constants::ADJUSTMENT_ID    => $adjustment->getId()
+            ]
         );
 
         $journalPayload = array_merge($transactionMessage, $disputeReversalData);

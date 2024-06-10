@@ -161,6 +161,9 @@ class Core extends Base\Core
             LedgerConstants::TRANSACTOR_ID                => $reversal->getPublicId(),
             LedgerConstants::TRANSACTION_DATE             => $reversal->getUpdatedAt(),
             LedgerConstants::CURRENCY                     => $reversal->merchant->getCurrency() ?? "INR",
+            LedgerConstants::NOTES                        => [
+                LedgerConstants::REFUND_ID  => $refund->getId(),
+            ]
         ];
 
         $reversalJournalPayload = array_merge($transactionMessage, $reversalCreditJournal);
