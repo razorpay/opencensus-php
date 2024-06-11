@@ -174,6 +174,7 @@ final class Constants
     const METHOD = 'method';
     const CARD_TYPE = 'card_type';
     const CARD_NETWORK = 'card_network';
+    const IS_CARD_INTERNATIONAL = 'is_card_international';
     const IIN = 'iin';
     const WALLET = 'wallet';
     const PROVIDER = 'provider';

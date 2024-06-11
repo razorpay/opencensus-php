@@ -544,6 +544,11 @@ class OffersEngine extends Base\Core
             array_push($availConditionWhenArray, 'PaymentInstrument.Iin in [' . $iinStr . ']');
         }
 
+        if($offer->isInternational() === true)
+        {
+            array_push($availConditionWhenArray, 'PaymentInstrument.IsCardInternational == true' );
+        }
+
         // convert conditions array to string with && logic
         $availConditionWhen = implode(' && ', $availConditionWhenArray);
 
@@ -1152,6 +1157,7 @@ class OffersEngine extends Base\Core
                 Constants::CARD_NETWORK => $this->payment->card->getNetworkCode(),
                 Constants::IIN => $cardIin,
                 Constants::ISSUER => $this->payment->card->getIssuer(),
+                Constants::IS_CARD_INTERNATIONAL => $this->payment->card->isInternational(),
             ];
         }
 
@@ -1199,17 +1205,12 @@ class OffersEngine extends Base\Core
 
         $fact[Constants::CUSTOMER_FACT][Constants::CARD_NUMBER] = $card_number;
 
-
-        // todo: subscription handling
-//        if ($this->payment->getSubscriptionId() !== null)
-//        {
-//            $subscription = $this->repo->offer->fetchSubscriptionOfferById($offerId, $merchantId);
-//
-//            $fact[Constants::SUBSCRIPTION_FACT] = [
-//                SubscriptionOfferEntity::REDEMPTION_TYPE => $subscription[SubscriptionOfferEntity::REDEMPTION_TYPE],
-//                SubscriptionOfferEntity::NO_OF_CYCLES => $subscription[SubscriptionOfferEntity::NO_OF_CYCLES],
-//            ];
-//        }
+        if ($this->payment->getSubscriptionId() !== null)
+        {
+            $fact[Constants::SUBSCRIPTION_FACT] = [
+                SubscriptionOfferEntity::NO_OF_CYCLES => 1,
+            ];
+        }
 
         return $fact;
     }

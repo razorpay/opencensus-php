@@ -1293,10 +1293,6 @@ class Core extends Base\Core
                     $oeValidateCall = false;
                 }
 
-                if ($payment->card->isInternational() === true)
-                {
-                    $oeValidateCall = false;
-                }
             }
             if ($oeValidateCall)
             {
