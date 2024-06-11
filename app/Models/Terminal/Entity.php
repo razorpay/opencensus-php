@@ -1934,7 +1934,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            return $this->getAttribute(self::RAZORPAY);
+            return $this->getAttribute(self::PROCURER);
         }
     }
 
