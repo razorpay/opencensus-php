@@ -13,7 +13,7 @@ import {
 
 import { StepWrapper } from 'merchant/views/Optimizer/AddProvider/components/styled';
 
-export const TestingSteps = ({ steps, changeIntegrationTestingStep }) => {
+export const TestingSteps = ({ steps }) => {
   const renderStep = (step) => {
     return (
       <StepWrapper active={step.active} key={step.value}>
@@ -75,7 +75,6 @@ export const TestingSteps = ({ steps, changeIntegrationTestingStep }) => {
                 }}
               />
             }
-            onClick={({ name }) => changeIntegrationTestingStep({ name })}
           />
         </ActionList>
       </StepWrapper>

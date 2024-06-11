@@ -495,10 +495,7 @@ const IntegrationTesting = ({
       <ModalBody padding="spacing.0">
         <Box display="flex" flexDirection="row">
           <Box display="flex" flexDirection="column">
-            <TestingSteps
-              steps={steps}
-              changeIntegrationTestingStep={changeIntegrationTestingStep}
-            />
+            <TestingSteps steps={steps} />
           </Box>
           <Box display="flex" flexDirection="column">
             {currentStep === 'payment_testing' && (

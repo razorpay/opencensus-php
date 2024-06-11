@@ -2,7 +2,6 @@ import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 import { TestingSteps } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/TestingSteps';
 
@@ -42,7 +41,6 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
         blocked: false,
       },
     ],
-    changeIntegrationTestingStep: jest.fn(),
   };
 
   const App = (props) => {
@@ -57,7 +55,7 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
     expect(() => render(<App {...mockProps} />)).not.toThrow();
   });
 
-  it('should render all steps', async () => {
+  it('should render all steps', () => {
     render(<App {...mockProps} />);
     const steps = [
       'Payment testing',
@@ -71,8 +69,6 @@ describe('Optimizer IntegrationTesting TestingSteps', () => {
     expect(screen.getByTestId('integration-right-icon')).toBeInTheDocument();
     expect(screen.queryByTestId('integration-check-icon')).not.toBeInTheDocument();
     expect(screen.queryByTestId('integration-close-icon')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByText('Refund testing'));
-    expect(mockProps.changeIntegrationTestingStep).toHaveBeenCalledWith({ name: 'refund_testing' });
   });
 
   it('should render steps with successful and active state', () => {

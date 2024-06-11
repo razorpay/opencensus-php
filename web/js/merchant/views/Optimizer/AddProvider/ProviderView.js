@@ -215,7 +215,7 @@ const ProviderView = (props) => {
 
   const gatewayMethods =
     supportedGateways?.[provider?.Gateway?.toLowerCase()]?.['Payment Methods']?.data_value ?? [];
-  const providerStatus = provider?.status;
+  const providerStatus = provider?.Status;
 
   const handleGoBack = () => {
     const { location, history } = props;

@@ -67,6 +67,9 @@ export const StepWrapper = styled.div<{ active: boolean }>`
     div:nth-child(1) {
       padding: 0;
     }
+    button {
+      cursor: default;
+    }
   }
 }
 `;
