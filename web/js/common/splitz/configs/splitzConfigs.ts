@@ -976,7 +976,7 @@ export const splitzConfig: SplitzInitConfig = {
     },
     {
       matchByDashboard: ['product'],
-      routesToMatch: [/^(\/optimizer\/(add-provider|update-provider\/[^/]*$))/i],
+      routesToMatch: [/^(\/optimizer\/(add-provider|update-provider|provider\/[^/]*$))/i],
       abExperiments: [
         {
           uniqueHashKey: 'add_provider_revamp',
