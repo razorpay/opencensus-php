@@ -9,6 +9,7 @@ use RZP\Constants\Environment;
 use RZP\Models\Feature\Constants;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\TraceCode;
+use RZP\Models\Order\OrderMeta\Type;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Risk;
@@ -439,6 +440,25 @@ class Shield
         $customerOrderData[ShieldConstants::CAMPAIGN] = $cartInfo['campaign'] ?? null;
 
         $payloadDetails[ShieldConstants::CUSTOMER_ORDER_DATA] = $customerOrderData;
+
+        $isAmazonGcValidationsEnabled = $payment->merchant->isFeatureEnabled(Constants::AMAZON_GC_VALIDATIONS);
+        if ($isAmazonGcValidationsEnabled === true)
+        {
+            $this->trace->info(TraceCode::UPDATE_SHIELD_REQUEST_AMAZON_GIFTCARD,
+                ['payment_id' => $payment->getId()]);
+
+            $lineItems = $cartInfo['line_items'];
+            foreach ($lineItems as $lineItem)
+            {
+                if ($lineItem['type'] == 'amazon_giftcard')
+                {
+                    $payloadDetails[ShieldConstants::ORDER_TYPE] = Type::CART_INFO;
+                    $payloadDetails[ShieldConstants::LINE_ITEMS_TYPE] = $lineItem['type'];
+                    $payloadDetails[ShieldConstants::SKU] = $lineItem['sku'] ?? '';
+                    $payloadDetails[ShieldConstants::CUSTOMER_CONTACT] = $cartInfo['customer_details']['contact'] ?? '';
+                }
+            }
+        }
     }
 
     protected function populateSecure3dInternationalFlag(Merchant\Entity $merchant, array & $payloadDetails)

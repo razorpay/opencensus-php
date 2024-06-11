@@ -139,6 +139,10 @@ final class Shield
     const REFUND_ALLOWED              = 'refund_allowed';
     const CAMPAIGN                    = 'campaign';
     CONST SHIPPING_DETAILS            = 'shipping_details';
+    CONST ORDER_TYPE                  = 'order_type';
+    CONST LINE_ITEMS_TYPE             = 'line_item_type';
+    CONST SKU                         = 'sku';
+    CONST CUSTOMER_CONTACT            = 'customer_contact';
 
     // Response constants
     const ACTION_KEY              = 'action';
