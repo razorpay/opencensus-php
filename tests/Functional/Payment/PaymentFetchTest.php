@@ -4,26 +4,33 @@ namespace RZP\Tests\Functional\Payment;
 
 use Cache;
 use Mockery;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Services\RazorXClient;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Services\SplitzService;
 use RZP\Models\Currency\Currency;
+use RZP\Tests\Traits\MocksSplitz;
+use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Exception\ExtraFieldsException;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
-use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Feature\Entity as FeatureEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use Carbon\Carbon;
-use RZP\Models\Payment;
-use RZP\Services\SplitzService;
+use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 
 /**
  * Covers Base/Fetch implementation. Currently it's not enabled for Payment
@@ -35,6 +42,8 @@ class PaymentFetchTest extends TestCase
 {
     use OAuthTrait;
     use PaymentTrait;
+    use PartnerTrait;
+    use MocksSplitz;
     use DbEntityFetchTrait;
     use CustomBrandingTrait;
 
@@ -1006,6 +1015,222 @@ class PaymentFetchTest extends TestCase
         $this->assertEquals($signedAccountId, $resp['account_id']);
 
         $this->assertEquals($paymentId, $resp["id"]);
+    }
+
+    public function testPaymentFetchWithSettlementExpandUsingOAuthAndFeatureEnabled()
+    {
+        $token = $this->setPurePlatformContext(Mode::TEST);
+
+        $this->mockCardVault();
+
+        $response = $this->makeSubmerchantPaymentsWithOauth(Mode::TEST, false, true, 1, $token);
+
+        $featureParams = [
+            FeatureEntity::ENTITY_ID   => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            FeatureEntity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            FeatureEntity::NAME        => FeatureConstants::SUBM_MANUAL_SETTLEMENT,
+        ];
+
+        $this->fixtures->feature->create($featureParams);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $txnId = $payment['transaction_id'];
+
+        $settlement = $this->fixtures->create('settlement', ['merchant_id' => '100submerchant']);
+
+        $txn = $this->fixtures->edit('transaction', $txnId, ['settlement_id' => $settlement['id']]);
+
+        $paymentId = $payment['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $paymentId . '/?expand[]=settlement';
+
+        $this->ba->oauthBearerAuth($token);
+
+        $this->startTest($testData);
+    }
+
+    public function testOnHoldPaymentFetchWithSettlementExpandUsingOAuthAndFeatureEnabled()
+    {
+        $token = $this->setPurePlatformContext(Mode::TEST);
+
+        $this->mockCardVault();
+
+        $response = $this->makeSubmerchantPaymentsWithOauth(Mode::TEST, true, true, 1, $token);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $txnId = $payment['transaction_id'];
+
+        $settlement = $this->fixtures->create('settlement', ['merchant_id' => '100submerchant']);
+
+        $txn = $this->fixtures->edit('transaction', $txnId, ['settlement_id' => $settlement['id']]);
+
+        $paymentId = $payment['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $paymentId . '/?expand[]=settlement';
+
+        $this->ba->oauthBearerAuth($token);
+
+        $this->startTest($testData);
+    }
+
+    public function testPaymentFetchHavingNoTrxnWithSettlementExpandUsingOAuthAndFeatureEnabled()
+    {
+        $token = $this->setPurePlatformContext(Mode::TEST);
+
+        $this->mockCardVault();
+
+        $response = $this->makeSubmerchantPaymentsWithOauth(Mode::TEST, true, true, 1, $token);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $paymentId = $payment['id'];
+
+        $this->fixtures->edit('payment', $paymentId, ['transaction_id' => null]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $paymentId . '/?expand[]=settlement';
+
+        $this->ba->oauthBearerAuth($token);
+
+        $resp = $this->startTest($testData);
+    }
+
+    public function testPaymentFetchWithSettlementExpandUsingPartnerAuthAndFeatureEnabled()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->mockCardVault();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->feature->create(['entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+        $this->fixtures->feature->create(['entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'subm_manual_settlement']);
+
+        $this->createMerchantApplication('10000000000000', 'aggregator', $client->getApplicationId());
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+
+        $response = $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $txnId = $pay['transaction_id'];
+
+        $settlement = $this->fixtures->create('settlement', ['merchant_id' => $sub->getId()]);
+
+        $txn = $this->fixtures->edit('transaction', $txnId, ['settlement_id' => $settlement['id']]);
+
+        $paymentId = $pay['id'];
+
+        $this->ba->partnerAuth($sub->getId(), 'rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $paymentId . '/?expand[]=settlement';
+
+        $testData['request']['server'] = ['HTTP_X-Razorpay-Account' => 'acc_10000000000000'];
+
+        $resp = $this->startTest($testData);
+
+        $this->assertEquals($paymentId, $resp["id"]);
+    }
+
+    public function testPaymentFetchWithSettlementExpandUsingPartnerAuthAndFeatureNotEnabled()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->mockCardVault();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->feature->create(['entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+        $this->createMerchantApplication('10000000000000', 'aggregator', $client->getApplicationId());
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+
+        $response = $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $txnId = $pay['transaction_id'];
+
+        $settlement = $this->fixtures->create('settlement', ['merchant_id' => $sub->getId()]);
+
+        $txn = $this->fixtures->edit('transaction', $txnId, ['settlement_id' => $settlement['id']]);
+
+        $paymentId = $pay['id'];
+
+        $this->ba->partnerAuth($sub->getId(), 'rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $paymentId . '/?expand[]=settlement';
+
+        $testData['request']['server'] = ['HTTP_X-Razorpay-Account' => 'acc_10000000000000'];
+
+        $this->startTest($testData);
+    }
+
+    public function testPaymentFetchWithSettlementExpandUsingPrivateAuth()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $response['id'] . '/?expand[]=settlement';
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
     }
 
     public function testPaymentFetchWithDifferentPartnerAuthWithoutAccountIdInHeader()

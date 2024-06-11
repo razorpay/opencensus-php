@@ -829,6 +829,105 @@ return [
         ],
     ],
 
+    'testPaymentFetchWithSettlementExpandUsingPartnerAuthAndFeatureEnabled' => [
+        'request' => [
+            'url'     => '/payments/{id}/partner',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'settlement_onhold' => false,
+                'settlement' => [
+                    'entity' => 'settlement',
+                    'status' => 'created'
+                ]
+            ],
+        ],
+    ],
+
+    'testPaymentFetchWithSettlementExpandUsingOAuthAndFeatureEnabled' => [
+        'request' => [
+            'url'     => '/payments/{id}/partner',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'settlement_onhold' => false,
+                'settlement' => [
+                    'entity' => 'settlement',
+                    'status' => 'created'
+                ]
+            ],
+        ],
+    ],
+
+    'testOnHoldPaymentFetchWithSettlementExpandUsingOAuthAndFeatureEnabled' => [
+        'request' => [
+            'url'     => '/payments/{id}/partner',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'settlement_onhold' => true,
+                'settlement' => [
+                    'entity' => 'settlement',
+                    'status' => 'created'
+                ]
+            ],
+        ],
+    ],
+
+    'testPaymentFetchHavingNoTrxnWithSettlementExpandUsingOAuthAndFeatureEnabled' => [
+        'request' => [
+            'url'     => '/payments/{id}/partner',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'settlement_onhold' => true,
+                'settlement' => null
+            ],
+        ],
+    ],
+
+    'testPaymentFetchWithSettlementExpandUsingPartnerAuthAndFeatureNotEnabled' => [
+        'request' => [
+            'url'     => '/payments/{id}/partner',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED,
+        ],
+    ],
+
+    'testPaymentFetchWithSettlementExpandUsingPrivateAuth' => [
+        'request' => [
+            'url'     => '/payments/{id}/partner',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED,
+        ],
+    ],
+
     'testPaymentFetchWithDifferentPartnerAuthWithoutAccountIdInHeader' => [
         'request' => [
             'url'     => '/payments/{id}/partner',

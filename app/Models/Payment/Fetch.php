@@ -27,7 +27,7 @@ class Fetch extends BaseFetch
             Entity::TRANSFER_ID                  => 'filled|public_id|size:18',
             Entity::CAPTURED                     => 'sometimes|boolean',
             Entity::BATCH_ID                     => 'sometimes|string|size:20',
-            self::EXPAND_EACH                    => 'filled|string|in:card,emi,transaction,transaction.settlement,refunds,offers,token',
+            self::EXPAND_EACH                    => 'filled|string|in:card,emi,transaction,transaction.settlement,refunds,offers,token,settlement',
             Entity::NOTES                        => 'sometimes|string|max:500',
             Entity::VERIFIED                     => 'sometimes|in:null,0,1,2',
             Entity::REFUND_STATUS                => 'sometimes|in:null,partial,full',

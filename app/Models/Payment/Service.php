@@ -2517,12 +2517,13 @@ class Service extends Base\Service
     {
         $id = Entity::stripSignWithoutValidation($id);
 
-        $payment = $this->repo
-                        ->payment
-                        ->findOrFailByPublicIdWithParams($id, $input);
+        $showSettlementHoldStatus = false;
+
+        (new Payment\Validator())->validateExpandsForPaymentFetch($input, $showSettlementHoldStatus);
+
+        $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, $input);
 
         $paymentMerchantId = $payment->getMerchantId();
-
 
         if ($this->merchant->getId() !== $paymentMerchantId)
         {
@@ -2589,6 +2590,13 @@ class Service extends Base\Service
         if (in_array($this->app['basicauth']->getInternalApp(), ['merchant_dashboard', 'admin_dashboard']) === true)
         {
             $this->addAdditionalPaymentErrorDetails($entity, $payment->getInternalErrorCode());
+        }
+
+        if ($showSettlementHoldStatus === true)
+        {
+            $paymentTxn = $payment->transaction;
+
+            $entity[PaymentsConstants::SETTLEMENT_ONHOLD] = empty($paymentTxn) ? true : $paymentTxn->isOnHold();
         }
 
         return $entity;
@@ -8455,7 +8463,7 @@ class Service extends Base\Service
 
         $paymentArr = $payment->toArray();
 
-        $paymentArr['settlement_onhold'] = $paymentTrxn->isOnHold();
+        $paymentArr[PaymentsConstants::SETTLEMENT_ONHOLD] = $paymentTrxn->isOnHold();
 
         return $paymentArr;
     }

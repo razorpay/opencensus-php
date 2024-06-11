@@ -28,7 +28,7 @@ class PaymentController extends Controller
     const BARRICADE_ACTION = 'merchant_integration_fetch_verify';
     const BARRICADE_MERCHANT_INTEGRATION_FETCH_ID_FLOW = 'barricade_merchant_integration_fetch_id_flow';
 
-        public function getPayment($id)
+    public function getPayment($id)
     {
         $input = Request::all();
 

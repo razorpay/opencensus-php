@@ -42,5 +42,5 @@ class Constant
         self::S0102,
     ];
 
-
+    const SETTLEMENT_ONHOLD = 'settlement_onhold';
 }

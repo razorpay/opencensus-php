@@ -232,6 +232,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFUNDS               = 'refunds';
     const TRANSACTION           = 'transaction';
     const OFFERS                = 'offers';
+    const SETTLEMENT            = 'settlement';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -672,6 +673,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     protected $expanded = [
         self::TRANSACTION,
+        self::SETTLEMENT
     ];
 
     /**
@@ -5407,6 +5409,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function transaction()
     {
         return $this->belongsTo('RZP\Models\Transaction\Entity');
+    }
+
+    public function settlement()
+    {
+        return $this->hasOneThrough(
+            'RZP\Models\Settlement\Entity',
+            'RZP\Models\Transaction\Entity',
+            'entity_id',
+            'id',
+            'id',
+            'settlement_id'
+        );
     }
 
     public function hdfc()

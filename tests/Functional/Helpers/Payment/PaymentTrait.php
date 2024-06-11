@@ -4466,9 +4466,10 @@ trait PaymentTrait
         string $mode,
         bool $enableManualSettlement,
         bool $enableExp = true,
-        int $paymentCount = 1): mixed
+        int $paymentCount = 1,
+        string $accessToken = null): mixed
     {
-        $accessToken = $this->setPurePlatformContext($mode);
+        $accessToken = $accessToken ?? $this->setPurePlatformContext($mode);
 
         if ($enableManualSettlement === true)
         {

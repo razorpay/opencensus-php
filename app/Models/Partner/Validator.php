@@ -165,7 +165,7 @@ class Validator extends Base\Validator
      * @param string|null $oauthApplicationId
      * @throws BadRequestException
      */
-    public function validateIfSubmerchantManualSettlementEnabled(Entity $partner, ?string $oauthApplicationId)
+    public function validateIfSubmerchantManualSettlementEnabled(Entity $partner, ?string $oauthApplicationId = null)
     {
         if ((new Service())->isFeatureEnabledForPartner(FeatureConstants::SUBM_MANUAL_SETTLEMENT, $partner, $oauthApplicationId) === false)
         {

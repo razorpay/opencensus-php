@@ -38,6 +38,7 @@ use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Currency\Core as CurrencyCore;
+use RZP\Models\Partner\Validator as PartnerValidator;
 
 class Validator extends Base\Validator
 {
@@ -2196,6 +2197,34 @@ class Validator extends Base\Validator
                 $payment->getId(),
                 [Entity::TRANSACTION_ID => $transaction->getId()]
             );
+        }
+    }
+
+    public function validateExpandsForPaymentFetch(array $paymentFetchParams, bool & $showSettlementHoldStatus)
+    {
+        if (empty($paymentFetchParams))
+        {
+            return;
+        }
+
+        // The 'settlement' expand should only be accessed by partner with required feature flags
+        if (isset($paymentFetchParams[Base\Repository::EXPAND]) === true and
+            in_array(Entity::SETTLEMENT, $paymentFetchParams[Base\Repository::EXPAND]) === true)
+        {
+            $app = App::getFacadeRoot();
+
+            $partner = $app['basicauth']->getPartnerMerchant();
+
+            if (empty($partner))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED);
+            }
+
+            $oauthAppId = $app['basicauth']->getOAuthApplicationId();
+
+            (new PartnerValidator())->validateIfSubmerchantManualSettlementEnabled($partner, $oauthAppId);
+
+            $showSettlementHoldStatus = true;
         }
     }
 }
