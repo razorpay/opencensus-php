@@ -924,7 +924,7 @@ export const initialState = {
           header: 'Apps',
           list: [
             {
-              name: 'Paypal',
+              name: 'PayPal',
               description: 'Accept International Payments using PayPal on Razorpay Checkout',
               status: 'greyed',
               slug: 'paypal',

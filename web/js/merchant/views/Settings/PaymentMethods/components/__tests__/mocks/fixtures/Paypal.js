@@ -3,7 +3,7 @@ import Paypal from 'merchant/views/Settings/PaymentMethods/components/Paypal';
 
 export const defaultProps = {
   instrument: {
-    name: 'Paypal',
+    name: 'PayPal',
     description: 'Accept International Payments using PayPal on Razorpay Checkout',
     status: 'account_linkable',
     slug: 'paypal',

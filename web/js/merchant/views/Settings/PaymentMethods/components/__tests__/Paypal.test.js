@@ -8,6 +8,7 @@ describe('Paypal', () => {
       expect(
         screen.getByText('Accept International Payments using PayPal on Razorpay Checkout'),
       ).toBeInTheDocument();
+      expect(screen.getByText('PayPal')).toBeInTheDocument();
     });
 
     test('should render Pending badge when terminal status is created', () => {
