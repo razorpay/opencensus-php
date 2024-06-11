@@ -234,5 +234,8 @@ return [
 
         // enable testing for vas
         'ENABLE_TESTING_FOR_VAS' => env('ENABLE_TESTING_FOR_VAS', ''),
+
+        // disables capital Instant Settlements Settle Now button
+        'CAPITAL_ES_BLOCKED_SPLITZ' => env('CAPITAL_ES_BLOCKED_SPLITZ', ''),
     ]
 ];
