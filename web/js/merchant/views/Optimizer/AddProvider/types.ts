@@ -1,9 +1,10 @@
 export interface GatewayCoverage {
   method: string;
   enabled: boolean;
-  MethodType?: {
-    [key: string]: object | boolean;
-  };
+  card?: object;
+  netbanking?: object;
+  upi?: object;
+  wallets?: object;
 }
 
 export interface Coverage {

@@ -82,8 +82,9 @@ export const WALLETS_MAP = {
 };
 
 export const CARD_TYPES = {
-  debit_type: 'Debit Card',
-  credit_type: 'Credit Card',
+  debitType: 'Debit Card',
+  creditType: 'Credit Card',
+  prepaidType: 'Prepaid Card',
 };
 
 export const CARD_NETWORKS = {

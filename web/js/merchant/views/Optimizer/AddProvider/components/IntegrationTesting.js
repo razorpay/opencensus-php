@@ -176,6 +176,9 @@ const IntegrationTesting = ({
       });
       setMethods(enabledMethods);
     }
+    if (goToStep === 'integration_audit_summary') {
+      blockSteps(['payment_testing', 'refund_testing']);
+    }
   }, [activeMethods, goToStep]);
 
   useEffect(() => {
@@ -230,14 +233,8 @@ const IntegrationTesting = ({
                   });
                 }
               });
-            } else if (goToStep !== 'payment_testing') {
-              blockSteps(['refund_testing']);
             }
-          } else if (goToStep !== 'payment_testing') {
-            blockSteps(['payment_testing', 'refund_testing']);
           }
-        } else if (goToStep !== 'payment_testing') {
-          blockSteps(['payment_testing', 'refund_testing']);
         }
       });
       const enabledMethods = {};

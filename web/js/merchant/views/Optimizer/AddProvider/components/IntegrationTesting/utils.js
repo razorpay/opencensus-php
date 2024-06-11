@@ -42,10 +42,10 @@ const CoverageBadge = ({ status }) => {
 
 export const getCardCoverageData = (gatewayCoverage, razorpayCoverage) => {
   const cardGatewayCoverageData = gatewayCoverage.filter((item) => item.method === 'card');
-  const cardGatewayCoverage = cardGatewayCoverageData[0]?.MethodType?.Card;
+  const cardGatewayCoverage = cardGatewayCoverageData[0]?.card;
 
   const cardRazorpayCoverageData = razorpayCoverage.filter((item) => item.method === 'card');
-  const cardRazorpayCoverage = cardRazorpayCoverageData[0]?.MethodType?.Card;
+  const cardRazorpayCoverage = cardRazorpayCoverageData[0]?.card;
 
   const data = [];
   Object.keys(cardGatewayCoverage).forEach((key) => {
@@ -85,10 +85,10 @@ export const getCardCoverageColumns = (gateway) => {
 
 export const getUPICoverageData = (gatewayCoverage, razorpayCoverage) => {
   const upiGatewayCoverageData = gatewayCoverage.filter((item) => item.method === 'upi');
-  const upiGatewayCoverage = upiGatewayCoverageData[0]?.MethodType?.Upi;
+  const upiGatewayCoverage = upiGatewayCoverageData[0]?.upi;
 
   const upiRazorpayCoverageData = razorpayCoverage.filter((item) => item.method === 'upi');
-  const upiRazorpayCoverage = upiRazorpayCoverageData[0]?.MethodType?.Upi;
+  const upiRazorpayCoverage = upiRazorpayCoverageData[0]?.upi;
 
   const data = [];
   Object.keys(upiGatewayCoverage).forEach((key) => {
@@ -123,12 +123,12 @@ export const getNetbankingCoverageData = (gatewayCoverage, razorpayCoverage) => 
   const netbankingGatewayCoverageData = gatewayCoverage.filter(
     (item) => item.method === 'netbanking',
   );
-  const netbankingGatewayCoverage = netbankingGatewayCoverageData[0]?.MethodType?.Netbanking;
+  const netbankingGatewayCoverage = netbankingGatewayCoverageData[0]?.netbanking;
 
   const netbankingRazorpayCoverageData = razorpayCoverage.filter(
     (item) => item.method === 'netbanking',
   );
-  const netbankingRazorpayCoverage = netbankingRazorpayCoverageData[0]?.MethodType?.Netbanking;
+  const netbankingRazorpayCoverage = netbankingRazorpayCoverageData[0]?.netbanking;
 
   const data = [];
   netbankingGatewayCoverage?.banks?.forEach((bank) => {
@@ -161,10 +161,10 @@ export const getNetbankingCoverageColumns = (gateway) => {
 
 export const getWalletCoverageData = (gatewayCoverage, razorpayCoverage) => {
   const walletGatewayCoverageData = gatewayCoverage.filter((item) => item.method === 'wallet');
-  const walletGatewayCoverage = walletGatewayCoverageData[0]?.MethodType?.Wallets;
+  const walletGatewayCoverage = walletGatewayCoverageData[0]?.wallets;
 
   const walletRazorpayCoverageData = razorpayCoverage.filter((item) => item.method === 'wallet');
-  const walletRazorpayCoverage = walletRazorpayCoverageData[0]?.MethodType?.Wallets;
+  const walletRazorpayCoverage = walletRazorpayCoverageData[0]?.wallets;
 
   const data = [];
   Object.keys(walletGatewayCoverage).forEach((key) => {

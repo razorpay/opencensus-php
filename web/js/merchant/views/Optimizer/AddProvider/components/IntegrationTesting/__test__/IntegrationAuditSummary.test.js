@@ -20,45 +20,37 @@ describe('Optimizer IntegrationTesting IntegrationAuditSummary', () => {
       {
         method: 'card',
         enabled: true,
-        MethodType: {
-          Card: {
-            debit_type: {
-              network: ['MC', 'MAES', 'RUPAY', 'VISA'],
-            },
-            credit_type: {
-              network: ['VISA', 'MC', 'RUPAY', 'DICL'],
-            },
+        card: {
+          debitType: {
+            network: ['MC', 'MAES', 'RUPAY', 'VISA'],
+          },
+          creditType: {
+            network: ['VISA', 'MC', 'RUPAY', 'DICL'],
           },
         },
       },
       {
         method: 'upi',
         enabled: true,
-        MethodType: {
-          Upi: {
-            intent: true,
-            collect: true,
-          },
+        upi: {
+          intent: true,
+          collect: true,
         },
       },
       {
         method: 'netbanking',
         enabled: true,
-        MethodType: {
-          Netbanking: {
-            banks: ['HDFC', 'SBIN', 'ICIC'],
-          },
+        netbanking: {
+          banks: ['HDFC', 'SBIN', 'ICIC'],
         },
       },
       {
         method: 'wallet',
         enabled: true,
-        MethodType: {
-          Wallets: {
-            phonepe: true,
-            jiomoney: true,
-            olamoney: true,
-          },
+        wallets: {
+          phonepe: true,
+          jiomoney: true,
+          olamoney: true,
         },
       },
       {
@@ -74,45 +66,37 @@ describe('Optimizer IntegrationTesting IntegrationAuditSummary', () => {
       {
         method: 'card',
         enabled: true,
-        MethodType: {
-          Card: {
-            debit_type: {
-              network: ['MC', 'MAES', 'RUPAY', 'VISA'],
-            },
-            credit_type: {
-              network: ['VISA', 'MC', 'RUPAY', 'DICL'],
-            },
+        card: {
+          debitType: {
+            network: ['MC', 'MAES', 'RUPAY', 'VISA'],
+          },
+          creditType: {
+            network: ['VISA', 'MC', 'RUPAY', 'DICL'],
           },
         },
       },
       {
         method: 'upi',
         enabled: true,
-        MethodType: {
-          Upi: {
-            intent: true,
-            collect: true,
-          },
+        upi: {
+          intent: true,
+          collect: true,
         },
       },
       {
         method: 'netbanking',
         enabled: true,
-        MethodType: {
-          Netbanking: {
-            banks: ['HDFC', 'SBIN', 'ICIC'],
-          },
+        netbanking: {
+          banks: ['HDFC', 'SBIN', 'ICIC'],
         },
       },
       {
         method: 'wallet',
         enabled: true,
-        MethodType: {
-          Wallets: {
-            phonepe: true,
-            jiomoney: true,
-            olamoney: true,
-          },
+        wallets: {
+          phonepe: true,
+          jiomoney: true,
+          olamoney: true,
         },
       },
       {
