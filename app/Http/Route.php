@@ -17023,6 +17023,7 @@ class Route
             'merchant_analytics',
             'user_all_roles',
             'merchant_features_fetch',
+            'merchant_razorx_bulk_evaluate'
         ],
 
         'mandate_hq' => [
