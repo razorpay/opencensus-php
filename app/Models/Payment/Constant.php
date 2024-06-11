@@ -29,6 +29,10 @@ class Constant
 
     const ERROR_MERCHANT_DESC     = 'error_merchant_desc';
 
+    const RZP_ACTIONABLE          = 'rzp_actionable';
+
+    const ERROR_RZP_ACTIONABLE    = 'error_rzp_actionable';
+
     const S0101 = 'S0101';
     const S0102 = 'S0102';
 
@@ -37,5 +41,6 @@ class Constant
         self::S0101,
         self::S0102,
     ];
+
 
 }

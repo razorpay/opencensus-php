@@ -2509,6 +2509,8 @@ class Service extends Base\Service
         $entity[PaymentsConstants::ERROR_MERCHANT_DESC] = $error_details[PaymentsConstants::MERCHANT_DESC] ?? null;
 
         $entity[PaymentsConstants::ERROR_PERCEPTION] =  $error_details[PaymentsConstants::PERCEPTION] ?? null;
+
+        $entity[PaymentsConstants::ERROR_RZP_ACTIONABLE] =  $error_details[PaymentsConstants::RZP_ACTIONABLE] ?? null;
     }
 
     public function fetch(string $id, array $input = []): array
