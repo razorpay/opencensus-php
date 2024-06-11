@@ -12,6 +12,7 @@ use App\Merchant;
 use App\Lib\Util;
 use App\Http\ApiUrl;
 use App\User\Helper;
+use App\Http\Headers;
 use App\User\Constants;
 use App\Edge\EdgeClient;
 use App\Trace\TraceCode;
@@ -705,12 +706,19 @@ class UserController extends Controller
             return false;
         }
 
-        if (empty($queryParams['host']) === false and in_array($queryParams['host'], Constants::USL_EXCLUDED_DOMAINS) === true)
-        {
-            $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
-                'giga_flow_check' => $queryParams['host'],
-            ]);
+        // in case server and host is not there fallback to default domain as we can't make a decision without its presence
+        $domain = \Request::server('SERVER_NAME') ?? $queryParams['host']  ?? UserConstants::DASHBOARD_PROD;
 
+        $devServe = \Request::header(Headers::DEV_SERVE_USER) ?? '';
+
+        // USL is only applicable for dashboard domain, do an exact match, in case of empty move forward
+        $isDashboardDomain = in_array($domain, self::getDashboardDomains($devServe));
+
+        $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+            'isDashboardDomain' => $isDashboardDomain,
+        ]);
+
+        if (!$isDashboardDomain) {
             return false;
         }
 
@@ -748,6 +756,19 @@ class UserController extends Controller
         ]);
 
         return ($data[$unifiedExperimentID]['variables']['result'] ?? null) === 'on';
+    }
+
+    public function getDashboardDomains($devServe): array
+    {
+        return [
+            UserConstants::DASHBOARD_PREFIX . $devServe . UserConstants::DASHBOARD_SUFFIX_DEV,
+            UserConstants::DASHBOARD_PREFIX . $devServe . UserConstants::DASHBOARD_SUFFIX_INT_DEV,
+            UserConstants::DASHBOARD_DEV,
+            UserConstants::DASHBOARD_INT_DEV,
+            UserConstants::DASHBOARD_PROD,
+            UserConstants::CURLEC_PROD,
+            UserConstants::CURLEC_COM
+        ];
     }
 
     private function matchExclusionsToRedirect(bool $isExpEnabled = false): bool

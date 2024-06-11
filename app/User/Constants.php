@@ -51,6 +51,26 @@ class Constants
 
     const DASHBOARD = 'dashboard';
 
+    const DASHBOARD_PROD = 'dashboard.razorpay.com';
+
+    const DASHBOARD_PREFIX = 'dashboard-';
+
+    const DASHBOARD_SUFFIX_DEV = '.dev.razorpay.in';
+
+    const DASHBOARD_SUFFIX_INT_DEV = '.int.dev.razorpay.in';
+
+    const DASHBOARD_SUFFIX_PROD = '.razorpay.com';
+
+    const DASHBOARD_DEV = 'dashboard.dev.razorpay.in';
+
+    const DASHBOARD_INT_DEV = 'dashboard.int.dev.razorpay.in';
+
+    const CURLEC_PROD = 'curlec.razorpay.com';
+
+    const CURLEC_COM = 'curlec.com';
+
+    const CURLEC_DEV = 'dashboard-curlec.dev.razorpay.in';
+
 
     /**
      * determines the 2fa verification state of user in session
@@ -104,10 +124,6 @@ class Constants
         "qa+uiautomation@razorpay.com",
         "qa+rzp@razorpay.com",
         "annapurna.pal+008@razorpay.com"
-    ];
-
-    const USL_EXCLUDED_DOMAINS = [
-        "giga.razorpay.com"
     ];
 
     const SPLITZ_API_CACHING_ENABLED = 'SPLITZ_API_CACHING_ENABLED';
