@@ -36,4 +36,6 @@ class Constants
     const TS_TERMINAL_GATEWAY = 'terminals.gateway';
 
     const TS_TERMINAL_ACQUIRER = 'terminals.gateway_acquirer';
+
+    const TERMINALS_DUAL_WRITE_REMOVAL = 'terminals_dual_write_removal';
 }

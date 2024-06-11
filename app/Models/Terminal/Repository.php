@@ -87,6 +87,11 @@ class Repository extends Base\Repository
 
     public function saveOrFail($entity, array $options = array())
     {
+        if($this->stopTerminalsDualWrite(__FUNCTION__))
+        {
+            return $this->saveOrFailNew($entity, $options);
+        }
+
         $shouldSync = true;
 
         if (isset($options['shouldSync']) === true)
@@ -108,7 +113,11 @@ class Repository extends Base\Repository
         }
         else if ($shouldSync === false)
         {
-            $this->trace->info(TraceCode::TERMINALS_REPO_WRITE_CALL_RECEIVED, ['method' => 'saveOrFail', 'route_name' => $this->fetchRouteName()]);
+            $this->trace->info(TraceCode::TERMINALS_REPO_WRITE_CALL_RECEIVED, [
+                'method' => 'saveOrFail',
+                'route_name' => $this->fetchRouteName(),
+                'save_on_api_only' => true,
+            ]);
 
             parent::saveOrFail($entity, $options);
         }
@@ -161,6 +170,18 @@ class Repository extends Base\Repository
         }
 
         return $terminal;
+    }
+
+    public function saveOrFailNew($entity, array $options = array())
+    {
+        if($entity->exists === false)
+        {
+            $entity->setId(Base\UniqueIdEntity::generateUniqueId());
+        }
+
+        $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdateNew($entity, $options);
+
+        return $entity;
     }
 
     public function addQueryParamDeleted($query, $params)
@@ -1148,6 +1169,11 @@ class Repository extends Base\Repository
     public function getNonFailedNonDeactivatedByParams(array $params, $proxyTs = true)
     {
 
+        if($this->stopTerminalsDualWrite(__FUNCTION__))
+        {
+            return $this->getNonFailedNonDeactivatedByParamsNew($params);
+        }
+
         $metricData = [
             'route' => $this->fetchRouteName(),
             "function" => __FUNCTION__
@@ -1230,6 +1256,66 @@ class Repository extends Base\Repository
               ->cachetags($cacheTag);
 
         return $query->get();
+    }
+
+    //Fetch activated terminals with additional params in the filter for the duplicate check in terminals write
+    public function getNonFailedNonDeactivatedByParamsNew(array $params)
+    {
+
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        if($this->isTestEnv())
+        {
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
+
+            $query = $this->buildFetchByParamsQuery($params);
+
+            $terminals = $query->where(Entity::STATUS, '!=', Status::FAILED)
+                ->where(Entity::STATUS, '!=', Status::DEACTIVATED)
+                ->get();
+
+            return $terminals;
+
+        }
+
+        try
+        {
+            $data = ["function" => "getNonFailedNonDeactivatedByParams", "params" => $params];
+
+            if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
+            {
+//                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
+
+                $content = Terminal\Service::getTerminalServiceRequestFromParam($params);
+
+                $content['statuses'] = [Status::ACTIVATED, Status::CREATED, Status::PENDING];
+
+                $path = "v1/merchants/terminals";
+
+                $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+                $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+
+                return $tsTerminals;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $data['message'] = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+            throw $ex;
+        }
+
     }
 
     public function getTerminalForMerchantParentMerchantAndSharedMerchant(Merchant\Entity $merchant)
@@ -2257,6 +2343,15 @@ class Repository extends Base\Repository
 
     public function deleteOrFail($entity, array $options = array())
     {
+
+        if($this->stopTerminalsDualWrite(__FUNCTION__))
+        {
+            $this->deleteOrFailNew($entity, $options);
+
+            return;
+        }
+
+
         return $this->transaction(function() use ($entity,$options)
         {
             $sync = $this->app['config']->get('applications.terminals_service.sync');
@@ -2285,6 +2380,13 @@ class Repository extends Base\Repository
 
             return $entity;
         });
+    }
+
+    public function deleteOrFailNew($entity, array $options = array())
+    {
+        (new Terminal\Service)->migrateTerminalDelete($entity->getId(),$options);
+
+        return $entity;
     }
 
     public function restoreOrFail($terminal)
@@ -3045,6 +3147,23 @@ class Repository extends Base\Repository
         }
 
         return $terminals;
+    }
+
+    public function stopTerminalsDualWrite($function)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            $function,
+            Terminal\Constants::TERMINALS_DUAL_WRITE_REMOVAL,
+            $mode);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }

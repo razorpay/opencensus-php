@@ -1278,8 +1278,40 @@ class Service extends Base\Service
 
     }
 
+    public function migrateTerminalCreateOrUpdateNew($terminal, array $options = array()) : Entity
+    {
+        $client = $this->app['terminals_service'];
+
+        $migrateTerminalResponse = $client->migrateTerminal($terminal, $options);
+
+        $fetchTerminalResponse = $client->fetchTerminalById($terminal->getId());
+
+        if ($this->isMigrateTerminalSuccess($terminal, $fetchTerminalResponse) === true)
+        {
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_SYNC_SUCCESS, ["terminal_id" => $terminal->getId()]);
+
+            return $terminal;
+        }
+        else
+        {
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_SYNC_FAILED, ["terminal_id" => $terminal->getId()]);
+
+            throw new Exception\IntegrationException('terminals service field mismatch');
+        }
+
+        return $terminal;
+
+    }
+
     public function migrateTerminalDelete(string $terminalId, array $options = array())
     {
+        if($this->repo->terminal->stopTerminalsDualWrite(__FUNCTION__))
+        {
+            $this->migrateTerminalDeleteNew($terminalId, $options);
+
+            return;
+        }
+
         $client = $this->app['terminals_service'];
 
         $terminal = $this->repo->terminal->getById($terminalId);
@@ -1357,6 +1389,44 @@ class Service extends Base\Service
             }
 
         });
+    }
+
+    public function migrateTerminalDeleteNew(string $terminalId, array $options = array())
+    {
+        $client = $this->app['terminals_service'];
+
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+            try
+            {
+                $client->deleteTerminalById($terminal->getId(),$options);
+            }
+            catch (\Exception $exception)
+            {
+                $exceptionData = $exception->getData();
+
+                if ($exceptionData === null)
+                {
+                    throw $exception;
+                }
+
+                $statusCode = (int)($exceptionData['status_code']);
+
+                if (($statusCode === 400) and
+                    ($exception->getCode() === ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR) and
+                    ($exception->getMessage() === 'Terminal doesn\'t exist with this Id'))
+                {
+                    $this->app['trace']->info(TraceCode::TERMINALS_SERVICE_TERMINAL_ALREADY_DELETED,
+                        [
+                            Entity::ID => $terminal->getId(),
+                        ]);
+                }
+                else
+                {
+                    throw $exception;
+                }
+            }
+
     }
 
     public function migrateTerminalAddMerchant(Terminal\Entity $terminal, Merchant\Entity $merchant)

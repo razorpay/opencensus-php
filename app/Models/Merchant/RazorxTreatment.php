@@ -1144,7 +1144,7 @@ final class RazorxTreatment
      * Razorx for Payout Fetch API for Smart Routing Merchants
      */
     const RX_UNSET_ACCOUNT_NUMBER = 'rx_unset_account_number';
-  
+
     /**
      * Razorx for reverse shadow
      */

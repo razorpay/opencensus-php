@@ -412,8 +412,6 @@ class TerminalsService
 
         $path = $path . '?' . http_build_query($input);
 
-        $this->trace->info(TraceCode::TERMINAL_PROXY_CALL_ERROR_RETRY_ATTEMPT, ['content'=>$path]);
-
         try
         {
             $response = $this->sendRequest($path, '', $params[self::METHOD]);
