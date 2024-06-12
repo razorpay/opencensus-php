@@ -482,7 +482,6 @@ class CrossBorderCommonUseCases extends Job
             return;
         }
 
-        $isInvoiceUploaded = false;
         $isAwbUploaded = false;
 
         foreach($paymentSupportingDocuments as $document)
@@ -493,11 +492,11 @@ class CrossBorderCommonUseCases extends Job
 //                $isInvoiceUploaded = true;
 //            }
 
-            if ($document[InvoiceEntity::TYPE] === InvoiceType::JPMC_INVOICE and
-                isset($document[InvoiceEntity::REF_NUM]))
-            {
-                $isInvoiceUploaded = true;
-            }
+//            if ($document[InvoiceEntity::TYPE] === InvoiceType::JPMC_INVOICE and
+//                isset($document[InvoiceEntity::REF_NUM]))
+//            {
+//                $isInvoiceUploaded = true;
+//            }
 
             if ($document[InvoiceEntity::TYPE] === InvoiceType::OPGSP_AWB and
                 isset($document[InvoiceEntity::REF_NUM]))
@@ -505,10 +504,7 @@ class CrossBorderCommonUseCases extends Job
                 $isAwbUploaded = true;
             }
         }
-
-        if ($isInvoiceUploaded === false or
-            ($isAwbCheckRequired === true
-                and $isAwbUploaded === false))
+        if ($isAwbCheckRequired === true and $isAwbUploaded === false)
         {
             return;
         }

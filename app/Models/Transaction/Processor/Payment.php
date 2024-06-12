@@ -4,6 +4,7 @@ namespace RZP\Models\Transaction\Processor;
 
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
+use RZP\Models\Payment\Constant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
@@ -603,7 +604,7 @@ class Payment extends Base
         $merchant = $payment->merchant;
 
         if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_ON_HOLD) === true or
-            $merchant->isOpgspImportEnabled() === true or
+            ($merchant->isOpgspImportEnabled() === true and in_array($merchant->getPurposeCode(), Constant::OPGSP_AWB_REQUIRED)) or
             self::shouldHoldSubmerchantPayment($payment, $merchant) === true)
         {
             $this->txn->setOnHold(true);
