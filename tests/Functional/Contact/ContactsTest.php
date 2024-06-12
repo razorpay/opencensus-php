@@ -1676,6 +1676,17 @@ class ContactsTest extends TestCase
     {
         $this->ba->vendorExperienceServiceAppAuth();
 
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createVendor'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('createVendor')
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 0, 'tds_category' => 1, 'gstin' => '22AAAAA0000A1Z5', 'pan' => 'test_pan']);
+
         $this->startTest();
     }
 

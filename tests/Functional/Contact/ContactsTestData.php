@@ -2928,13 +2928,20 @@ return [
             'method'  => 'POST'
         ],
         'response' => [
-            'content' => [],
-            'status_code' => 400,
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+            'status_code' => '201'
         ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VENDOR_CONTACT_CREATION_NOT_PERMITTED,
-        ]
     ],
 
     'testCreateContactFromVendorPaymentsServiceWithFFEnabled' => [

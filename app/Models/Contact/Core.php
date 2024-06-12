@@ -945,9 +945,7 @@ class Core extends Base\Core
         // Block contact update for vendor type if merchant has `vendor_onboarding_enabled` feature enabled
         // This is to ensure that the vendor contact updation is done via vendor experience service only
         if (($contact->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VENDOR_ONBOARDING_ENABLED) === true
-                and $this->app['basicauth']->isVendorExperienceApp() === false)
-            or ($contact->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VENDOR_ONBOARDING_ENABLED) === false
-                and $this->app['basicauth']->isVendorExperienceApp() === true))
+                and $this->app['basicauth']->isVendorExperienceApp() === false))
         {
             return true;
         }
