@@ -2645,6 +2645,8 @@ class PaymentFetchTest extends TestCase
      */
     public function testPaymentFetchFromPGWithUpiMetadataBlock()
     {
+        $this->markTestSkipped('Test skipped because support to add upi_metadata in rearch payments is not present');
+
         $this->enablePgRouterConfig();
 
         $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();

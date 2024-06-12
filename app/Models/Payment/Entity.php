@@ -2978,6 +2978,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return null;
         }
 
+        if ($this->hasMetadata(UpiMetadata\Entity::UPI_METADATA))
+        {
+            return $this->getMetadata(UpiMetadata\Entity::UPI_METADATA);
+        }
+
+        // inApp payments is not supported for re-arch
+        if ($this->isExternal() === true)
+        {
+            return null;
+        }
+
         return (new UpiMetadata\Repository())->fetchByPaymentId($this->getId());
     }
 
