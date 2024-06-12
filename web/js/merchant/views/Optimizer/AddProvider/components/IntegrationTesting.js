@@ -82,7 +82,6 @@ const IntegrationTesting = ({
         .then((res) => {
           const capturedPayments = res.data.items?.filter((item) => item.status === 'captured');
           setPayments(capturedPayments?.slice(0, 5));
-          setPayments(res.data.items);
         })
         .catch((err) => {
           setPayments([]);
@@ -132,25 +131,31 @@ const IntegrationTesting = ({
     if (!name) {
       return;
     }
-    const newSteps = steps.map((step) => {
-      if (step.value === name) {
-        let success = false;
-        let failed = false;
-        if (successValue !== undefined) {
-          success = successValue;
-        }
-        if (failedValue !== undefined) {
-          failed = failedValue;
+
+    setSteps((prevState) => {
+      const newSteps = prevState.map((step) => {
+        if (step.value === name) {
+          let success = false;
+          let failed = false;
+          if (successValue !== undefined) {
+            success = successValue;
+          }
+          if (failedValue !== undefined) {
+            failed = failedValue;
+          }
+          if (successValue !== undefined || failedValue !== undefined) {
+            return { ...step, success, failed };
+          } else {
+            return { ...step, active: true };
+          }
         }
         if (successValue !== undefined || failedValue !== undefined) {
-          return { ...step, success, failed };
-        } else {
-          return { ...step, active: true };
+          return { ...step };
         }
-      }
-      return { ...step, active: false };
+        return { ...step, active: false };
+      });
+      return newSteps;
     });
-    setSteps(newSteps);
   };
 
   /**
@@ -354,7 +359,7 @@ const IntegrationTesting = ({
           audit_type: AUDIT_TYPES.refund,
           audit_data: { id: res?.data?.id },
         });
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           setIsRefundDetialsFetched(true);
           setIsRefundDone(true);
           changeIntegrationTestingStep({
@@ -373,6 +378,7 @@ const IntegrationTesting = ({
             });
             if (resp.data.gateway_data.code === 'GATEWAY_ERROR_TRANSACTION_PENDING') {
               clearInterval(refundPolling);
+              clearTimeout(timeoutId);
               setIsRefundDetialsFetched(true);
               setRefundResult({
                 transactionId: id,
